@@ -85,7 +85,7 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
-        public void ResetPath(string path, string affectedFile)
+        public void ResetPath(string path, string? affectedFile)
         {
             lock (_timerLock)
             {
@@ -147,13 +147,6 @@ namespace Emby.Server.Implementations.IO
                 try
                 {
                     item.ChangedExternally();
-                }
-                catch (IOException ex)
-                {
-                    // For now swallow and log.
-                    // Research item: If an IOException occurs, the item may be in a disconnected state (media unavailable)
-                    // Should we remove it from it's parent?
-                    _logger.LogError(ex, "Error refreshing {Name}", item.Name);
                 }
                 catch (Exception ex)
                 {
@@ -217,7 +210,6 @@ namespace Emby.Server.Implementations.IO
 
             DisposeTimer();
             _disposed = true;
-            GC.SuppressFinalize(this);
         }
     }
 }

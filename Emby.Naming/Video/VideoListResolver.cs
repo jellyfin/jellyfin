@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Emby.Naming.Common;
+using Jellyfin.Extensions;
 using MediaBrowser.Model.IO;
 
 namespace Emby.Naming.Video
@@ -11,8 +12,14 @@ namespace Emby.Naming.Video
     /// <summary>
     /// Resolves alternative versions and extras from list of video files.
     /// </summary>
-    public static class VideoListResolver
+    public static partial class VideoListResolver
     {
+        [GeneratedRegex("[0-9]{2}[0-9]+[ip]", RegexOptions.IgnoreCase)]
+        private static partial Regex ResolutionRegex();
+
+        [GeneratedRegex(@"^\[([^]]*)\]")]
+        private static partial Regex CheckMultiVersionRegex();
+
         /// <summary>
         /// Resolves alternative versions and extras from list of video files.
         /// </summary>
@@ -115,19 +122,34 @@ namespace Emby.Naming.Video
                     continue;
                 }
 
-                if (!IsEligibleForMultiVersion(folderName, video.Files[0].Path, namingOptions))
+                if (!IsEligibleForMultiVersion(folderName, video.Files[0].FileNameWithoutExtension, namingOptions))
                 {
                     return videos;
                 }
 
-                if (folderName.Equals(Path.GetFileNameWithoutExtension(video.Files[0].Path.AsSpan()), StringComparison.Ordinal))
+                if (folderName.Equals(video.Files[0].FileNameWithoutExtension, StringComparison.Ordinal))
                 {
                     primary = video;
                 }
             }
 
-            // The list is created and overwritten in the caller, so we are allowed to do in-place sorting
-            videos.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.Ordinal));
+            if (videos.Count > 1)
+            {
+                var groups = videos.GroupBy(x => ResolutionRegex().IsMatch(x.Files[0].FileNameWithoutExtension)).ToList();
+                videos.Clear();
+                foreach (var group in groups)
+                {
+                    if (group.Key)
+                    {
+                        videos.InsertRange(0, group.OrderByDescending(x => x.Files[0].FileNameWithoutExtension.ToString(), new AlphanumericComparator()));
+                    }
+                    else
+                    {
+                        videos.AddRange(group.OrderBy(x => x.Files[0].FileNameWithoutExtension.ToString(), new AlphanumericComparator()));
+                    }
+                }
+            }
+
             primary ??= videos[0];
             videos.Remove(primary);
 
@@ -161,9 +183,8 @@ namespace Emby.Naming.Video
             return true;
         }
 
-        private static bool IsEligibleForMultiVersion(ReadOnlySpan<char> folderName, string testFilePath, NamingOptions namingOptions)
+        private static bool IsEligibleForMultiVersion(ReadOnlySpan<char> folderName, ReadOnlySpan<char> testFilename, NamingOptions namingOptions)
         {
-            var testFilename = Path.GetFileNameWithoutExtension(testFilePath.AsSpan());
             if (!testFilename.StartsWith(folderName, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
@@ -176,16 +197,15 @@ namespace Emby.Naming.Video
             }
 
             // There are no span overloads for regex unfortunately
-            var tmpTestFilename = testFilename.ToString();
-            if (CleanStringParser.TryClean(tmpTestFilename, namingOptions.CleanStringRegexes, out var cleanName))
+            if (CleanStringParser.TryClean(testFilename.ToString(), namingOptions.CleanStringRegexes, out var cleanName))
             {
-                tmpTestFilename = cleanName.Trim();
+                testFilename = cleanName.AsSpan().Trim();
             }
 
             // The CleanStringParser should have removed common keywords etc.
-            return string.IsNullOrEmpty(tmpTestFilename)
+            return testFilename.IsEmpty
                    || testFilename[0] == '-'
-                   || Regex.IsMatch(tmpTestFilename, @"^\[([^]]*)\]", RegexOptions.Compiled);
+                   || CheckMultiVersionRegex().IsMatch(testFilename);
         }
     }
 }

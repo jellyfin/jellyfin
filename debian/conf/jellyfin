@@ -24,6 +24,9 @@ JELLYFIN_WEB_OPT="--webdir=/usr/share/jellyfin/web"
 # ffmpeg binary paths, overriding the system values
 JELLYFIN_FFMPEG_OPT="--ffmpeg=/usr/lib/jellyfin-ffmpeg/ffmpeg"
 
+# Disable glibc dynamic heap adjustment
+MALLOC_TRIM_THRESHOLD_=131072
+
 # [OPTIONAL] run Jellyfin as a headless service
 #JELLYFIN_SERVICE_OPT="--service"
 
@@ -47,4 +50,4 @@ JELLYFIN_ADDITIONAL_OPTS=""
 # Application username
 JELLYFIN_USER="jellyfin"
 # Full application command
-JELLYFIN_ARGS="$JELLYFIN_WEB_OPT $JELLYFIN_FFMPEG_OPT $JELLYFIN_SERVICE_OPT $JELLYFIN_NOWEBAPP_OPT $JELLFIN_ADDITIONAL_OPTS"
+JELLYFIN_ARGS="$JELLYFIN_WEB_OPT $JELLYFIN_FFMPEG_OPT $JELLYFIN_SERVICE_OPT $JELLYFIN_NOWEBAPP_OPT $JELLFIN_ADDITIONAL_OPTS --datadir $JELLYFIN_DATA_DIR --configdir $JELLYFIN_CONFIG_DIR --logdir $JELLYFIN_LOG_DIR --cachedir $JELLYFIN_CACHE_DIR"

@@ -20,11 +20,13 @@ namespace Jellyfin.Extensions
             {
                 return 0;
             }
-            else if (s1 is null)
+
+            if (s1 is null)
             {
                 return -1;
             }
-            else if (s2 is null)
+
+            if (s2 is null)
             {
                 return 1;
             }
@@ -37,11 +39,13 @@ namespace Jellyfin.Extensions
             {
                 return 0;
             }
-            else if (len1 == 0)
+
+            if (len1 == 0)
             {
                 return -1;
             }
-            else if (len2 == 0)
+
+            if (len2 == 0)
             {
                 return 1;
             }
@@ -82,7 +86,8 @@ namespace Jellyfin.Extensions
                     {
                         return -1;
                     }
-                    else if (span1Len > span2Len)
+
+                    if (span1Len > span2Len)
                     {
                         return 1;
                     }

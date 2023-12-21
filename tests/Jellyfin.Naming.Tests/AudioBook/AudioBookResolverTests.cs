@@ -14,18 +14,18 @@ namespace Jellyfin.Naming.Tests.AudioBook
 
             data.Add(
                 new AudioBookFileInfo(
-                    @"/server/AudioBooks/Larry Potter/Larry Potter.mp3",
+                    "/server/AudioBooks/Larry Potter/Larry Potter.mp3",
                     "mp3"));
 
             data.Add(
                 new AudioBookFileInfo(
-                    @"/server/AudioBooks/Berry Potter/Chapter 1 .ogg",
+                    "/server/AudioBooks/Berry Potter/Chapter 1 .ogg",
                     "ogg",
                     chapterNumber: 1));
 
             data.Add(
                 new AudioBookFileInfo(
-                    @"/server/AudioBooks/Nerry Potter/Part 3 - Chapter 2.mp3",
+                    "/server/AudioBooks/Nerry Potter/Part 3 - Chapter 2.mp3",
                     "mp3",
                     chapterNumber: 2,
                     partNumber: 3));
@@ -49,7 +49,7 @@ namespace Jellyfin.Naming.Tests.AudioBook
         [Fact]
         public void Resolve_InvalidExtension()
         {
-            var result = new AudioBookResolver(_namingOptions).Resolve(@"/server/AudioBooks/Larry Potter/Larry Potter.mp9");
+            var result = new AudioBookResolver(_namingOptions).Resolve("/server/AudioBooks/Larry Potter/Larry Potter.mp9");
 
             Assert.Null(result);
         }

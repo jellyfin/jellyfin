@@ -2,9 +2,11 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
+using Jellyfin.Api.Helpers;
 using Jellyfin.Data.Dtos;
 using Jellyfin.Data.Entities.Security;
 using Jellyfin.Data.Queries;
+using MediaBrowser.Common.Api;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Devices;
@@ -48,6 +50,7 @@ public class DevicesController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<QueryResult<DeviceInfo>>> GetDevices([FromQuery] bool? supportsSync, [FromQuery] Guid? userId)
     {
+        userId = RequestHelpers.GetUserId(User, userId);
         return await _deviceManager.GetDevicesForUser(userId, supportsSync).ConfigureAwait(false);
     }
 

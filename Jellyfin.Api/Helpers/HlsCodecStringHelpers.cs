@@ -5,7 +5,9 @@ using System.Text;
 namespace Jellyfin.Api.Helpers;
 
 /// <summary>
-/// Hls Codec string helpers.
+/// Helpers to generate HLS codec strings according to
+/// <a href="https://datatracker.ietf.org/doc/html/rfc6381#section-3.3">RFC 6381 section 3.3</a>
+/// and the <a href="https://mp4ra.org">MP4 Registration Authority</a>.
 /// </summary>
 public static class HlsCodecStringHelpers
 {
@@ -27,7 +29,7 @@ public static class HlsCodecStringHelpers
     /// <summary>
     /// Codec name for FLAC.
     /// </summary>
-    public const string FLAC = "flac";
+    public const string FLAC = "fLaC";
 
     /// <summary>
     /// Codec name for ALAC.
@@ -37,7 +39,7 @@ public static class HlsCodecStringHelpers
     /// <summary>
     /// Codec name for OPUS.
     /// </summary>
-    public const string OPUS = "opus";
+    public const string OPUS = "Opus";
 
     /// <summary>
     /// Gets a MP3 codec string.
@@ -176,6 +178,64 @@ public static class HlsCodecStringHelpers
         result.Append(".L")
             .Append(level)
             .Append(".B0");
+
+        return result.ToString();
+    }
+
+    /// <summary>
+    /// Gets an AV1 codec string.
+    /// </summary>
+    /// <param name="profile">AV1 profile.</param>
+    /// <param name="level">AV1 level.</param>
+    /// <param name="tierFlag">AV1 tier flag.</param>
+    /// <param name="bitDepth">AV1 bit depth.</param>
+    /// <returns>The AV1 codec string.</returns>
+    public static string GetAv1String(string? profile, int level, bool tierFlag, int bitDepth)
+    {
+        // https://aomedia.org/av1/specification/annex-a/
+        // FORMAT: [codecTag].[profile].[level][tier].[bitDepth]
+        StringBuilder result = new StringBuilder("av01", 13);
+
+        if (string.Equals(profile, "Main", StringComparison.OrdinalIgnoreCase))
+        {
+            result.Append(".0");
+        }
+        else if (string.Equals(profile, "High", StringComparison.OrdinalIgnoreCase))
+        {
+            result.Append(".1");
+        }
+        else if (string.Equals(profile, "Professional", StringComparison.OrdinalIgnoreCase))
+        {
+            result.Append(".2");
+        }
+        else
+        {
+            // Default to Main
+            result.Append(".0");
+        }
+
+        if (level <= 0
+            || level > 31)
+        {
+            // Default to the maximum defined level 6.3
+            level = 19;
+        }
+
+        if (bitDepth != 8
+            && bitDepth != 10
+            && bitDepth != 12)
+        {
+            // Default to 8 bits
+            bitDepth = 8;
+        }
+
+        result.Append('.')
+            .Append(level)
+            .Append(tierFlag ? 'H' : 'M');
+
+        string bitDepthD2 = bitDepth.ToString("D2", CultureInfo.InvariantCulture);
+        result.Append('.')
+            .Append(bitDepthD2);
 
         return result.ToString();
     }

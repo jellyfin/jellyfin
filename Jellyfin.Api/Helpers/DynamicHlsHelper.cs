@@ -9,14 +9,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Models.StreamingDtos;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Devices;
-using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Trickplay;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Net;
@@ -34,58 +36,54 @@ public class DynamicHlsHelper
 {
     private readonly ILibraryManager _libraryManager;
     private readonly IUserManager _userManager;
-    private readonly IDlnaManager _dlnaManager;
     private readonly IMediaSourceManager _mediaSourceManager;
     private readonly IServerConfigurationManager _serverConfigurationManager;
     private readonly IMediaEncoder _mediaEncoder;
-    private readonly IDeviceManager _deviceManager;
     private readonly TranscodingJobHelper _transcodingJobHelper;
     private readonly INetworkManager _networkManager;
     private readonly ILogger<DynamicHlsHelper> _logger;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly EncodingHelper _encodingHelper;
+    private readonly ITrickplayManager _trickplayManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DynamicHlsHelper"/> class.
     /// </summary>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
-    /// <param name="dlnaManager">Instance of the <see cref="IDlnaManager"/> interface.</param>
     /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
     /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
     /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
-    /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
     /// <param name="transcodingJobHelper">Instance of <see cref="TranscodingJobHelper"/>.</param>
     /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger{DynamicHlsHelper}"/> interface.</param>
     /// <param name="httpContextAccessor">Instance of the <see cref="IHttpContextAccessor"/> interface.</param>
     /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
+    /// <param name="trickplayManager">Instance of <see cref="ITrickplayManager"/>.</param>
     public DynamicHlsHelper(
         ILibraryManager libraryManager,
         IUserManager userManager,
-        IDlnaManager dlnaManager,
         IMediaSourceManager mediaSourceManager,
         IServerConfigurationManager serverConfigurationManager,
         IMediaEncoder mediaEncoder,
-        IDeviceManager deviceManager,
         TranscodingJobHelper transcodingJobHelper,
         INetworkManager networkManager,
         ILogger<DynamicHlsHelper> logger,
         IHttpContextAccessor httpContextAccessor,
-        EncodingHelper encodingHelper)
+        EncodingHelper encodingHelper,
+        ITrickplayManager trickplayManager)
     {
         _libraryManager = libraryManager;
         _userManager = userManager;
-        _dlnaManager = dlnaManager;
         _mediaSourceManager = mediaSourceManager;
         _serverConfigurationManager = serverConfigurationManager;
         _mediaEncoder = mediaEncoder;
-        _deviceManager = deviceManager;
         _transcodingJobHelper = transcodingJobHelper;
         _networkManager = networkManager;
         _logger = logger;
         _httpContextAccessor = httpContextAccessor;
         _encodingHelper = encodingHelper;
+        _trickplayManager = trickplayManager;
     }
 
     /// <summary>
@@ -132,14 +130,12 @@ public class DynamicHlsHelper
                 _serverConfigurationManager,
                 _mediaEncoder,
                 _encodingHelper,
-                _dlnaManager,
-                _deviceManager,
                 _transcodingJobHelper,
                 transcodingJobType,
                 cancellationTokenSource.Token)
             .ConfigureAwait(false);
 
-        _httpContextAccessor.HttpContext.Response.Headers.Add(HeaderNames.Expires, "0");
+        _httpContextAccessor.HttpContext.Response.Headers.Append(HeaderNames.Expires, "0");
         if (isHeadRequest)
         {
             return new FileContentResult(Array.Empty<byte>(), MimeTypes.GetMimeType("playlist.m3u8"));
@@ -198,20 +194,13 @@ public class DynamicHlsHelper
 
         if (state.VideoStream is not null && state.VideoRequest is not null)
         {
-            // Provide a workaround for the case issue between flac and fLaC.
-            var flacWaPlaylist = ApplyFlacCaseWorkaround(state, basicPlaylist.ToString());
-            if (!string.IsNullOrEmpty(flacWaPlaylist))
-            {
-                builder.Append(flacWaPlaylist);
-            }
-
             var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
 
             // Provide SDR HEVC entrance for backward compatibility.
             if (encodingOptions.AllowHevcEncoding
+                && !encodingOptions.AllowAv1Encoding
                 && EncodingHelper.IsCopyCodec(state.OutputVideoCodec)
-                && !string.IsNullOrEmpty(state.VideoStream.VideoRange)
-                && string.Equals(state.VideoStream.VideoRange, "HDR", StringComparison.OrdinalIgnoreCase)
+                && state.VideoStream.VideoRange == VideoRange.HDR
                 && string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase))
             {
                 var requestedVideoProfiles = state.GetRequestedProfiles("hevc");
@@ -223,17 +212,18 @@ public class DynamicHlsHelper
                     sdrVideoUrl += "&AllowVideoStreamCopy=false";
 
                     var sdrOutputVideoBitrate = _encodingHelper.GetVideoBitrateParamValue(state.VideoRequest, state.VideoStream, state.OutputVideoCodec);
-                    var sdrOutputAudioBitrate = _encodingHelper.GetAudioBitrateParam(state.VideoRequest, state.AudioStream) ?? 0;
-                    var sdrTotalBitrate = sdrOutputAudioBitrate + sdrOutputVideoBitrate;
-
-                    var sdrPlaylist = AppendPlaylist(builder, state, sdrVideoUrl, sdrTotalBitrate, subtitleGroup);
-
-                    // Provide a workaround for the case issue between flac and fLaC.
-                    flacWaPlaylist = ApplyFlacCaseWorkaround(state, sdrPlaylist.ToString());
-                    if (!string.IsNullOrEmpty(flacWaPlaylist))
+                    var sdrOutputAudioBitrate = 0;
+                    if (EncodingHelper.LosslessAudioCodecs.Contains(state.VideoRequest.AudioCodec, StringComparison.OrdinalIgnoreCase))
                     {
-                        builder.Append(flacWaPlaylist);
+                        sdrOutputAudioBitrate = state.AudioStream.BitRate ?? 0;
                     }
+                    else
+                    {
+                        sdrOutputAudioBitrate = _encodingHelper.GetAudioBitrateParam(state.VideoRequest, state.AudioStream, state.OutputAudioChannels) ?? 0;
+                    }
+
+                    var sdrTotalBitrate = sdrOutputAudioBitrate + sdrOutputVideoBitrate;
+                    AppendPlaylist(builder, state, sdrVideoUrl, sdrTotalBitrate, subtitleGroup);
 
                     // Restore the video codec
                     state.OutputVideoCodec = "copy";
@@ -243,11 +233,12 @@ public class DynamicHlsHelper
             // Provide Level 5.0 entrance for backward compatibility.
             // e.g. Apple A10 chips refuse the master playlist containing SDR HEVC Main Level 5.1 video,
             // but in fact it is capable of playing videos up to Level 6.1.
-            if (EncodingHelper.IsCopyCodec(state.OutputVideoCodec)
+            if (encodingOptions.AllowHevcEncoding
+                && !encodingOptions.AllowAv1Encoding
+                && EncodingHelper.IsCopyCodec(state.OutputVideoCodec)
                 && state.VideoStream.Level.HasValue
                 && state.VideoStream.Level > 150
-                && !string.IsNullOrEmpty(state.VideoStream.VideoRange)
-                && string.Equals(state.VideoStream.VideoRange, "SDR", StringComparison.OrdinalIgnoreCase)
+                && state.VideoStream.VideoRange == VideoRange.SDR
                 && string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase))
             {
                 var playlistCodecsField = new StringBuilder();
@@ -263,17 +254,10 @@ public class DynamicHlsHelper
                 state.VideoStream.Level = originalLevel;
                 var newPlaylist = ReplacePlaylistCodecsField(basicPlaylist, playlistCodecsField, newPlaylistCodecsField);
                 builder.Append(newPlaylist);
-
-                // Provide a workaround for the case issue between flac and fLaC.
-                flacWaPlaylist = ApplyFlacCaseWorkaround(state, newPlaylist);
-                if (!string.IsNullOrEmpty(flacWaPlaylist))
-                {
-                    builder.Append(flacWaPlaylist);
-                }
             }
         }
 
-        if (EnableAdaptiveBitrateStreaming(state, isLiveStream, enableAdaptiveBitrateStreaming, _httpContextAccessor.HttpContext.GetNormalizedRemoteIp()))
+        if (EnableAdaptiveBitrateStreaming(state, isLiveStream, enableAdaptiveBitrateStreaming, _httpContextAccessor.HttpContext.GetNormalizedRemoteIP()))
         {
             var requestedVideoBitrate = state.VideoRequest is null ? 0 : state.VideoRequest.VideoBitRate ?? 0;
 
@@ -288,6 +272,13 @@ public class DynamicHlsHelper
             newBitrate = totalBitrate - variation;
             variantUrl = ReplaceVideoBitrate(playlistUrl, requestedVideoBitrate, requestedVideoBitrate - variation);
             AppendPlaylist(builder, state, variantUrl, newBitrate, subtitleGroup);
+        }
+
+        if (!isLiveStream && (state.VideoRequest?.EnableTrickplay ?? false))
+        {
+            var sourceId = Guid.Parse(state.Request.MediaSourceId);
+            var trickplayResolutions = await _trickplayManager.GetTrickplayResolutions(sourceId).ConfigureAwait(false);
+            AddTrickplay(state, trickplayResolutions, builder, _httpContextAccessor.HttpContext.User);
         }
 
         return new FileContentResult(Encoding.UTF8.GetBytes(builder.ToString()), MimeTypes.GetMimeType("playlist.m3u8"));
@@ -331,17 +322,17 @@ public class DynamicHlsHelper
     /// <param name="state">StreamState of the current stream.</param>
     private void AppendPlaylistVideoRangeField(StringBuilder builder, StreamState state)
     {
-        if (state.VideoStream is not null && !string.IsNullOrEmpty(state.VideoStream.VideoRange))
+        if (state.VideoStream is not null && state.VideoStream.VideoRange != VideoRange.Unknown)
         {
             var videoRange = state.VideoStream.VideoRange;
             if (EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
             {
-                if (string.Equals(videoRange, "SDR", StringComparison.OrdinalIgnoreCase))
+                if (videoRange == VideoRange.SDR)
                 {
                     builder.Append(",VIDEO-RANGE=SDR");
                 }
 
-                if (string.Equals(videoRange, "HDR", StringComparison.OrdinalIgnoreCase))
+                if (videoRange == VideoRange.HDR)
                 {
                     builder.Append(",VIDEO-RANGE=PQ");
                 }
@@ -519,6 +510,41 @@ public class DynamicHlsHelper
     }
 
     /// <summary>
+    /// Appends EXT-X-IMAGE-STREAM-INF playlists for each available trickplay resolution.
+    /// </summary>
+    /// <param name="state">StreamState of the current stream.</param>
+    /// <param name="trickplayResolutions">Dictionary of widths to corresponding tiles info.</param>
+    /// <param name="builder">StringBuilder to append the field to.</param>
+    /// <param name="user">Http user context.</param>
+    private void AddTrickplay(StreamState state, Dictionary<int, TrickplayInfo> trickplayResolutions, StringBuilder builder, ClaimsPrincipal user)
+    {
+        const string playlistFormat = "#EXT-X-IMAGE-STREAM-INF:BANDWIDTH={0},RESOLUTION={1}x{2},CODECS=\"jpeg\",URI=\"{3}\"";
+
+        foreach (var resolution in trickplayResolutions)
+        {
+            var width = resolution.Key;
+            var trickplayInfo = resolution.Value;
+
+            var url = string.Format(
+                CultureInfo.InvariantCulture,
+                "Trickplay/{0}/tiles.m3u8?MediaSourceId={1}&api_key={2}",
+                width.ToString(CultureInfo.InvariantCulture),
+                state.Request.MediaSourceId,
+                user.GetToken());
+
+            builder.AppendFormat(
+                CultureInfo.InvariantCulture,
+                playlistFormat,
+                trickplayInfo.Bandwidth.ToString(CultureInfo.InvariantCulture),
+                trickplayInfo.Width.ToString(CultureInfo.InvariantCulture),
+                trickplayInfo.Height.ToString(CultureInfo.InvariantCulture),
+                url);
+
+            builder.AppendLine();
+        }
+    }
+
+    /// <summary>
     /// Get the H.26X level of the output video stream.
     /// </summary>
     /// <param name="state">StreamState of the current stream.</param>
@@ -530,7 +556,7 @@ public class DynamicHlsHelper
             && state.VideoStream is not null
             && state.VideoStream.Level.HasValue)
         {
-            levelString = state.VideoStream.Level.ToString() ?? string.Empty;
+            levelString = state.VideoStream.Level.Value.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
         }
         else
         {
@@ -546,6 +572,12 @@ public class DynamicHlsHelper
                 levelString = state.GetRequestedLevel("h265") ?? state.GetRequestedLevel("hevc") ?? "120";
                 levelString = EncodingHelper.NormalizeTranscodingLevel(state, levelString);
             }
+
+            if (string.Equals(state.ActualOutputVideoCodec, "av1", StringComparison.OrdinalIgnoreCase))
+            {
+                levelString = state.GetRequestedLevel("av1") ?? "19";
+                levelString = EncodingHelper.NormalizeTranscodingLevel(state, levelString);
+            }
         }
 
         if (int.TryParse(levelString, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedLevel))
@@ -557,11 +589,11 @@ public class DynamicHlsHelper
     }
 
     /// <summary>
-    /// Get the H.26X profile of the output video stream.
+    /// Get the profile of the output video stream.
     /// </summary>
     /// <param name="state">StreamState of the current stream.</param>
     /// <param name="codec">Video codec.</param>
-    /// <returns>H.26X profile of the output video stream.</returns>
+    /// <returns>Profile of the output video stream.</returns>
     private string GetOutputVideoCodecProfile(StreamState state, string codec)
     {
         string profileString = string.Empty;
@@ -579,7 +611,8 @@ public class DynamicHlsHelper
             }
 
             if (string.Equals(state.ActualOutputVideoCodec, "h265", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase))
+                || string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(state.ActualOutputVideoCodec, "av1", StringComparison.OrdinalIgnoreCase))
             {
                 profileString ??= "main";
             }
@@ -649,9 +682,9 @@ public class DynamicHlsHelper
     {
         if (level == 0)
         {
-            // This is 0 when there's no requested H.26X level in the device profile
-            // and the source is not encoded in H.26X
-            _logger.LogError("Got invalid H.26X level when building CODECS field for HLS master playlist");
+            // This is 0 when there's no requested level in the device profile
+            // and the source is not encoded in H.26X or AV1
+            _logger.LogError("Got invalid level when building CODECS field for HLS master playlist");
             return string.Empty;
         }
 
@@ -666,6 +699,22 @@ public class DynamicHlsHelper
         {
             string profile = GetOutputVideoCodecProfile(state, "hevc");
             return HlsCodecStringHelpers.GetH265String(profile, level);
+        }
+
+        if (string.Equals(codec, "av1", StringComparison.OrdinalIgnoreCase))
+        {
+            string profile = GetOutputVideoCodecProfile(state, "av1");
+
+            // Currently we only transcode to 8 bits AV1
+            int bitDepth = 8;
+            if (EncodingHelper.IsCopyCodec(state.OutputVideoCodec)
+                && state.VideoStream is not null
+                && state.VideoStream.BitDepth.HasValue)
+            {
+                bitDepth = state.VideoStream.BitDepth.Value;
+            }
+
+            return HlsCodecStringHelpers.GetAv1String(profile, level, false, bitDepth);
         }
 
         return string.Empty;
@@ -732,17 +781,5 @@ public class DynamicHlsHelper
             oldValue.ToString(),
             newValue.ToString(),
             StringComparison.Ordinal);
-    }
-
-    private string ApplyFlacCaseWorkaround(StreamState state, string srcPlaylist)
-    {
-        if (!string.Equals(state.ActualOutputAudioCodec, "flac", StringComparison.OrdinalIgnoreCase))
-        {
-            return string.Empty;
-        }
-
-        var newPlaylist = srcPlaylist.Replace(",flac\"", ",fLaC\"", StringComparison.Ordinal);
-
-        return newPlaylist.Contains(",fLaC\"", StringComparison.Ordinal) ? newPlaylist : string.Empty;
     }
 }

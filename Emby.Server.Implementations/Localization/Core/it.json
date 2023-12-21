@@ -124,5 +124,7 @@
     "TaskKeyframeExtractor": "Estrattore di Keyframe",
     "TaskKeyframeExtractorDescription": "Estrae i keyframe dai video per creare migliori playlist HLS. Questa procedura potrebbe richiedere molto tempo.",
     "External": "Esterno",
-    "HearingImpaired": "con problemi di udito"
+    "HearingImpaired": "con problemi di udito",
+    "TaskRefreshTrickplayImages": "Genera immagini Trickplay",
+    "TaskRefreshTrickplayImagesDescription": "Crea anteprime trickplay per i video nelle librerie abilitate."
 }

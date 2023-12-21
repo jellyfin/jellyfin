@@ -76,8 +76,8 @@ public class YearsController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] excludeItemTypes,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaTypes,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] sortBy,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] MediaType[] mediaTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemSortBy[] sortBy,
         [FromQuery] bool? enableUserData,
         [FromQuery] int? imageTypeLimit,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
@@ -85,11 +85,12 @@ public class YearsController : BaseJellyfinApiController
         [FromQuery] bool recursive = true,
         [FromQuery] bool? enableImages = true)
     {
+        userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
-        User? user = userId is null || userId.Value.Equals(default)
+        User? user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
         BaseItem parentItem = _libraryManager.GetParentItem(parentId, userId);
@@ -171,6 +172,7 @@ public class YearsController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<BaseItemDto> GetYear([FromRoute, Required] int year, [FromQuery] Guid? userId)
     {
+        userId = RequestHelpers.GetUserId(User, userId);
         var item = _libraryManager.GetYear(year);
         if (item is null)
         {
@@ -180,7 +182,7 @@ public class YearsController : BaseJellyfinApiController
         var dtoOptions = new DtoOptions()
             .AddClientFields(User);
 
-        if (userId.HasValue && !userId.Value.Equals(default))
+        if (!userId.Value.Equals(default))
         {
             var user = _userManager.GetUserById(userId.Value);
             return _dtoService.GetBaseItemDto(item, dtoOptions, user);
@@ -189,7 +191,7 @@ public class YearsController : BaseJellyfinApiController
         return _dtoService.GetBaseItemDto(item, dtoOptions);
     }
 
-    private bool FilterItem(BaseItem f, IReadOnlyCollection<BaseItemKind> excludeItemTypes, IReadOnlyCollection<BaseItemKind> includeItemTypes, IReadOnlyCollection<string> mediaTypes)
+    private bool FilterItem(BaseItem f, IReadOnlyCollection<BaseItemKind> excludeItemTypes, IReadOnlyCollection<BaseItemKind> includeItemTypes, IReadOnlyCollection<MediaType> mediaTypes)
     {
         var baseItemKind = f.GetBaseItemKind();
         // Exclude item types
@@ -205,7 +207,7 @@ public class YearsController : BaseJellyfinApiController
         }
 
         // Include MediaTypes
-        if (mediaTypes.Count > 0 && !mediaTypes.Contains(f.MediaType ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+        if (mediaTypes.Count > 0 && !mediaTypes.Contains(f.MediaType))
         {
             return false;
         }

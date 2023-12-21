@@ -1,5 +1,4 @@
 #nullable disable
-#pragma warning disable CS1591
 
 using System;
 using System.Collections.Generic;
@@ -9,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
@@ -19,7 +19,10 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.MediaEncoding.Probing
 {
-    public class ProbeResultNormalizer
+    /// <summary>
+    /// Class responsible for normalizing FFprobe output.
+    /// </summary>
+    public partial class ProbeResultNormalizer
     {
         // When extracting subtitles, the maximum length to consider (to avoid invalid filenames)
         private const int MaxSubtitleDescriptionExtractionLength = 100;
@@ -28,13 +31,16 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private readonly char[] _nameDelimiters = { '/', '|', ';', '\\' };
 
-        private static readonly Regex _performerPattern = new(@"(?<name>.*) \((?<instrument>.*)\)");
-
         private readonly ILogger _logger;
         private readonly ILocalizationManager _localization;
 
         private string[] _splitWhiteList;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ProbeResultNormalizer"/> class.
+        /// </summary>
+        /// <param name="logger">The <see cref="ILogger{ProbeResultNormalizer}"/> for use with the <see cref="ProbeResultNormalizer"/> instance.</param>
+        /// <param name="localization">The <see cref="ILocalizationManager"/> for use with the <see cref="ProbeResultNormalizer"/> instance.</param>
         public ProbeResultNormalizer(ILogger logger, ILocalizationManager localization)
         {
             _logger = logger;
@@ -67,8 +73,21 @@ namespace MediaBrowser.MediaEncoding.Probing
             "諭吉佳作/men",
             "//dARTH nULL",
             "Phantom/Ghost",
+            "She/Her/Hers",
+            "5/8erl in Ehr'n",
+            "Smith/Kotzen",
+            "We;Na",
         };
 
+        /// <summary>
+        /// Transforms a FFprobe response into its <see cref="MediaInfo"/> equivalent.
+        /// </summary>
+        /// <param name="data">The <see cref="InternalMediaInfoResult"/>.</param>
+        /// <param name="videoType">The <see cref="VideoType"/>.</param>
+        /// <param name="isAudio">A boolean indicating whether the media is audio.</param>
+        /// <param name="path">Path to media file.</param>
+        /// <param name="protocol">Path media protocol.</param>
+        /// <returns>The <see cref="MediaInfo"/>.</returns>
         public MediaInfo GetMediaInfo(InternalMediaInfoResult data, VideoType? videoType, bool isAudio, string path, MediaProtocol protocol)
         {
             var info = new MediaInfo
@@ -97,12 +116,9 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 info.Container = NormalizeFormat(data.Format.FormatName);
 
-                if (!string.IsNullOrEmpty(data.Format.BitRate))
+                if (int.TryParse(data.Format.BitRate, CultureInfo.InvariantCulture, out var value))
                 {
-                    if (int.TryParse(data.Format.BitRate, NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
-                    {
-                        info.Bitrate = value;
-                    }
+                    info.Bitrate = value;
                 }
             }
 
@@ -251,14 +267,30 @@ namespace MediaBrowser.MediaEncoding.Probing
                 return null;
             }
 
-            if (string.Equals(format, "mpegvideo", StringComparison.OrdinalIgnoreCase))
+            // Input can be a list of multiple, comma-delimited formats - each of them needs to be checked
+            var splitFormat = format.Split(',');
+            for (var i = 0; i < splitFormat.Length; i++)
             {
-                return "mpeg";
+                // Handle MPEG-1 container
+                if (string.Equals(splitFormat[i], "mpegvideo", StringComparison.OrdinalIgnoreCase))
+                {
+                    splitFormat[i] = "mpeg";
+                }
+
+                // Handle MPEG-2 container
+                else if (string.Equals(splitFormat[i], "mpeg", StringComparison.OrdinalIgnoreCase))
+                {
+                    splitFormat[i] = "ts";
+                }
+
+                // Handle matroska container
+                else if (string.Equals(splitFormat[i], "matroska", StringComparison.OrdinalIgnoreCase))
+                {
+                    splitFormat[i] = "mkv";
+                }
             }
 
-            format = format.Replace("matroska", "mkv", StringComparison.OrdinalIgnoreCase);
-
-            return format;
+            return string.Join(',', splitFormat);
         }
 
         private int? GetEstimatedAudioBitrate(string codec, int? channels)
@@ -484,7 +516,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private void ProcessPairs(string key, List<NameValuePair> pairs, MediaInfo info)
         {
-            IList<BaseItemPerson> peoples = new List<BaseItemPerson>();
+            List<BaseItemPerson> peoples = new List<BaseItemPerson>();
             if (string.Equals(key, "studio", StringComparison.OrdinalIgnoreCase))
             {
                 info.Studios = pairs.Select(p => p.Value)
@@ -499,7 +531,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                     peoples.Add(new BaseItemPerson
                     {
                         Name = pair.Value,
-                        Type = PersonType.Writer
+                        Type = PersonKind.Writer
                     });
                 }
             }
@@ -510,7 +542,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                     peoples.Add(new BaseItemPerson
                     {
                         Name = pair.Value,
-                        Type = PersonType.Producer
+                        Type = PersonKind.Producer
                     });
                 }
             }
@@ -521,7 +553,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                     peoples.Add(new BaseItemPerson
                     {
                         Name = pair.Value,
-                        Type = PersonType.Director
+                        Type = PersonKind.Director
                     });
                 }
             }
@@ -561,8 +593,8 @@ namespace MediaBrowser.MediaEncoding.Probing
                 }
             }
 
-            if (string.IsNullOrWhiteSpace(name) ||
-                string.IsNullOrWhiteSpace(value))
+            if (string.IsNullOrWhiteSpace(name)
+                || string.IsNullOrWhiteSpace(value))
             {
                 return null;
             }
@@ -580,11 +612,11 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 codec = "dvbsub";
             }
-            else if ((codec ?? string.Empty).IndexOf("PGS", StringComparison.OrdinalIgnoreCase) != -1)
+            else if ((codec ?? string.Empty).Contains("PGS", StringComparison.OrdinalIgnoreCase))
             {
                 codec = "PGSSUB";
             }
-            else if ((codec ?? string.Empty).IndexOf("DVD", StringComparison.OrdinalIgnoreCase) != -1)
+            else if ((codec ?? string.Empty).Contains("DVD", StringComparison.OrdinalIgnoreCase))
             {
                 codec = "DVDSUB";
             }
@@ -674,9 +706,9 @@ namespace MediaBrowser.MediaEncoding.Probing
 
                 stream.Channels = streamInfo.Channels;
 
-                if (int.TryParse(streamInfo.SampleRate, NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
+                if (int.TryParse(streamInfo.SampleRate, CultureInfo.InvariantCulture, out var sampleRate))
                 {
-                    stream.SampleRate = value;
+                    stream.SampleRate = sampleRate;
                 }
 
                 stream.ChannelLayout = ParseChannelLayout(streamInfo.ChannelLayout);
@@ -729,9 +761,11 @@ namespace MediaBrowser.MediaEncoding.Probing
                     && !string.Equals(streamInfo.FieldOrder, "progressive", StringComparison.OrdinalIgnoreCase);
 
                 if (isAudio
-                    || string.Equals(stream.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(stream.Codec, "gif", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(stream.Codec, "png", StringComparison.OrdinalIgnoreCase))
+                    && (string.Equals(stream.Codec, "bmp", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(stream.Codec, "gif", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(stream.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(stream.Codec, "png", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(stream.Codec, "webp", StringComparison.OrdinalIgnoreCase)))
                 {
                     stream.Type = MediaStreamType.EmbeddedImage;
                 }
@@ -853,22 +887,18 @@ namespace MediaBrowser.MediaEncoding.Probing
             // Get stream bitrate
             var bitrate = 0;
 
-            if (!string.IsNullOrEmpty(streamInfo.BitRate))
+            if (int.TryParse(streamInfo.BitRate, CultureInfo.InvariantCulture, out var value))
             {
-                if (int.TryParse(streamInfo.BitRate, NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
-                {
-                    bitrate = value;
-                }
+                bitrate = value;
             }
 
             // The bitrate info of FLAC musics and some videos is included in formatInfo.
             if (bitrate == 0
                 && formatInfo is not null
-                && !string.IsNullOrEmpty(formatInfo.BitRate)
                 && (stream.Type == MediaStreamType.Video || (isAudio && stream.Type == MediaStreamType.Audio)))
             {
                 // If the stream info doesn't have a bitrate get the value from the media format info
-                if (int.TryParse(formatInfo.BitRate, NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
+                if (int.TryParse(formatInfo.BitRate, CultureInfo.InvariantCulture, out value))
                 {
                     bitrate = value;
                 }
@@ -972,8 +1002,8 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             var parts = (original ?? string.Empty).Split(':');
             if (!(parts.Length == 2
-                    && int.TryParse(parts[0], NumberStyles.Any, CultureInfo.InvariantCulture, out var width)
-                    && int.TryParse(parts[1], NumberStyles.Any, CultureInfo.InvariantCulture, out var height)
+                    && int.TryParse(parts[0], CultureInfo.InvariantCulture, out var width)
+                    && int.TryParse(parts[1], CultureInfo.InvariantCulture, out var height)
                     && width > 0
                     && height > 0))
             {
@@ -1117,7 +1147,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
 
             var duration = GetDictionaryValue(streamInfo.Tags, "DURATION-eng") ?? GetDictionaryValue(streamInfo.Tags, "DURATION");
-            if (!string.IsNullOrEmpty(duration) && TimeSpan.TryParse(duration, out var parsedDuration))
+            if (TimeSpan.TryParse(duration, out var parsedDuration))
             {
                 return parsedDuration.TotalSeconds;
             }
@@ -1152,14 +1182,14 @@ namespace MediaBrowser.MediaEncoding.Probing
             info.Size = string.IsNullOrEmpty(data.Format.Size) ? null : long.Parse(data.Format.Size, CultureInfo.InvariantCulture);
         }
 
-        private void SetAudioInfoFromTags(MediaInfo audio, IReadOnlyDictionary<string, string> tags)
+        private void SetAudioInfoFromTags(MediaInfo audio, Dictionary<string, string> tags)
         {
             var people = new List<BaseItemPerson>();
             if (tags.TryGetValue("composer", out var composer) && !string.IsNullOrWhiteSpace(composer))
             {
                 foreach (var person in Split(composer, false))
                 {
-                    people.Add(new BaseItemPerson { Name = person, Type = PersonType.Composer });
+                    people.Add(new BaseItemPerson { Name = person, Type = PersonKind.Composer });
                 }
             }
 
@@ -1167,7 +1197,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 foreach (var person in Split(conductor, false))
                 {
-                    people.Add(new BaseItemPerson { Name = person, Type = PersonType.Conductor });
+                    people.Add(new BaseItemPerson { Name = person, Type = PersonKind.Conductor });
                 }
             }
 
@@ -1175,7 +1205,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 foreach (var person in Split(lyricist, false))
                 {
-                    people.Add(new BaseItemPerson { Name = person, Type = PersonType.Lyricist });
+                    people.Add(new BaseItemPerson { Name = person, Type = PersonKind.Lyricist });
                 }
             }
 
@@ -1183,7 +1213,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 foreach (var person in Split(performer, false))
                 {
-                    Match match = _performerPattern.Match(person);
+                    Match match = PerformerRegex().Match(person);
 
                     // If the performer doesn't have any instrument/role associated, it won't match. In that case, chances are it's simply a band name, so we skip it.
                     if (match.Success)
@@ -1191,7 +1221,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                         people.Add(new BaseItemPerson
                         {
                             Name = match.Groups["name"].Value,
-                            Type = PersonType.Actor,
+                            Type = PersonKind.Actor,
                             Role = CultureInfo.InvariantCulture.TextInfo.ToTitleCase(match.Groups["instrument"].Value)
                         });
                     }
@@ -1203,7 +1233,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 foreach (var person in Split(writer, false))
                 {
-                    people.Add(new BaseItemPerson { Name = person, Type = PersonType.Writer });
+                    people.Add(new BaseItemPerson { Name = person, Type = PersonKind.Writer });
                 }
             }
 
@@ -1211,7 +1241,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 foreach (var person in Split(arranger, false))
                 {
-                    people.Add(new BaseItemPerson { Name = person, Type = PersonType.Arranger });
+                    people.Add(new BaseItemPerson { Name = person, Type = PersonKind.Arranger });
                 }
             }
 
@@ -1219,7 +1249,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 foreach (var person in Split(engineer, false))
                 {
-                    people.Add(new BaseItemPerson { Name = person, Type = PersonType.Engineer });
+                    people.Add(new BaseItemPerson { Name = person, Type = PersonKind.Engineer });
                 }
             }
 
@@ -1227,7 +1257,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 foreach (var person in Split(mixer, false))
                 {
-                    people.Add(new BaseItemPerson { Name = person, Type = PersonType.Mixer });
+                    people.Add(new BaseItemPerson { Name = person, Type = PersonKind.Mixer });
                 }
             }
 
@@ -1235,7 +1265,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 foreach (var person in Split(remixer, false))
                 {
-                    people.Add(new BaseItemPerson { Name = person, Type = PersonType.Remixer });
+                    people.Add(new BaseItemPerson { Name = person, Type = PersonKind.Remixer });
                 }
             }
 
@@ -1309,7 +1339,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         {
             // Only use the comma as a delimiter if there are no slashes or pipes.
             // We want to be careful not to split names that have commas in them
-            var delimiter = !allowCommaDelimiter || _nameDelimiters.Any(i => val.IndexOf(i, StringComparison.Ordinal) != -1) ?
+            var delimiter = !allowCommaDelimiter || _nameDelimiters.Any(i => val.Contains(i, StringComparison.Ordinal)) ?
                 _nameDelimiters :
                 new[] { ',' };
 
@@ -1446,7 +1476,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             // Limit accuracy to milliseconds to match xml saving
             var secondsString = chapter.StartTime;
 
-            if (double.TryParse(secondsString, NumberStyles.Any, CultureInfo.InvariantCulture, out var seconds))
+            if (double.TryParse(secondsString, CultureInfo.InvariantCulture, out var seconds))
             {
                 var ms = Math.Round(TimeSpan.FromSeconds(seconds).TotalMilliseconds);
                 info.StartPositionTicks = TimeSpan.FromMilliseconds(ms).Ticks;
@@ -1487,7 +1517,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 video.People = people.Split(new[] { ';', '/' }, StringSplitOptions.RemoveEmptyEntries)
                     .Where(i => !string.IsNullOrWhiteSpace(i))
-                    .Select(i => new BaseItemPerson { Name = i.Trim(), Type = PersonType.Actor })
+                    .Select(i => new BaseItemPerson { Name = i.Trim(), Type = PersonKind.Actor })
                     .ToArray();
             }
 
@@ -1622,5 +1652,8 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             return TransportStreamTimestamp.Valid;
         }
+
+        [GeneratedRegex("(?<name>.*) \\((?<instrument>.*)\\)")]
+        private static partial Regex PerformerRegex();
     }
 }

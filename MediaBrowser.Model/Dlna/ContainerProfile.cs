@@ -11,7 +11,7 @@ namespace MediaBrowser.Model.Dlna
         [XmlAttribute("type")]
         public DlnaProfileType Type { get; set; }
 
-        public ProfileCondition[]? Conditions { get; set; } = Array.Empty<ProfileCondition>();
+        public ProfileCondition[] Conditions { get; set; } = Array.Empty<ProfileCondition>();
 
         [XmlAttribute("container")]
         public string Container { get; set; } = string.Empty;

@@ -50,6 +50,12 @@ public class NullImageEncoder : IImageEncoder
     }
 
     /// <inheritdoc />
+    public int CreateTrickplayTile(ImageCollageOptions options, int quality, int imgWidth, int? imgHeight)
+    {
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc />
     public string GetImageBlurHash(int xComp, int yComp, string path)
     {
         throw new NotImplementedException();

@@ -1,14 +1,12 @@
 using System;
-using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
-using System.Runtime.InteropServices;
 using System.Text;
 using Jellyfin.Api.Middleware;
 using Jellyfin.MediaEncoding.Hls.Extensions;
-using Jellyfin.Networking.Configuration;
+using Jellyfin.Networking.HappyEyeballs;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.HealthChecks;
 using Jellyfin.Server.Implementations;
@@ -36,7 +34,7 @@ namespace Jellyfin.Server
     /// </summary>
     public class Startup
     {
-        private readonly IServerApplicationHost _serverApplicationHost;
+        private readonly CoreAppHost _serverApplicationHost;
         private readonly IServerConfigurationManager _serverConfigurationManager;
 
         /// <summary>
@@ -79,6 +77,13 @@ namespace Jellyfin.Server
             var acceptJsonHeader = new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Json, 1.0);
             var acceptXmlHeader = new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Xml, 0.9);
             var acceptAnyHeader = new MediaTypeWithQualityHeaderValue("*/*", 0.8);
+            Func<IServiceProvider, HttpMessageHandler> eyeballsHttpClientHandlerDelegate = (_) => new SocketsHttpHandler()
+            {
+                AutomaticDecompression = DecompressionMethods.All,
+                RequestHeaderEncodingSelector = (_, _) => Encoding.UTF8,
+                ConnectCallback = HttpClientExtension.OnConnect
+            };
+
             Func<IServiceProvider, HttpMessageHandler> defaultHttpClientHandlerDelegate = (_) => new SocketsHttpHandler()
             {
                 AutomaticDecompression = DecompressionMethods.All,
@@ -92,7 +97,7 @@ namespace Jellyfin.Server
                     c.DefaultRequestHeaders.Accept.Add(acceptXmlHeader);
                     c.DefaultRequestHeaders.Accept.Add(acceptAnyHeader);
                 })
-                .ConfigurePrimaryHttpMessageHandler(defaultHttpClientHandlerDelegate);
+                .ConfigurePrimaryHttpMessageHandler(eyeballsHttpClientHandlerDelegate);
 
             services.AddHttpClient(NamedClient.MusicBrainz, c =>
                 {
@@ -101,21 +106,14 @@ namespace Jellyfin.Server
                     c.DefaultRequestHeaders.Accept.Add(acceptXmlHeader);
                     c.DefaultRequestHeaders.Accept.Add(acceptAnyHeader);
                 })
-                .ConfigurePrimaryHttpMessageHandler(defaultHttpClientHandlerDelegate);
+                .ConfigurePrimaryHttpMessageHandler(eyeballsHttpClientHandlerDelegate);
 
-            services.AddHttpClient(NamedClient.Dlna, c =>
+            services.AddHttpClient(NamedClient.DirectIp, c =>
                 {
-                    c.DefaultRequestHeaders.UserAgent.ParseAdd(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "{0}/{1} UPnP/1.0 {2}/{3}",
-                            Environment.OSVersion.Platform,
-                            Environment.OSVersion,
-                            _serverApplicationHost.Name,
-                            _serverApplicationHost.ApplicationVersionString));
-
-                    c.DefaultRequestHeaders.Add("CPFN.UPNP.ORG", _serverApplicationHost.FriendlyName); // Required for UPnP DeviceArchitecture v2.0
-                    c.DefaultRequestHeaders.Add("FriendlyName.DLNA.ORG", _serverApplicationHost.FriendlyName); // REVIEW: where does this come from?
+                    c.DefaultRequestHeaders.UserAgent.Add(productHeader);
+                    c.DefaultRequestHeaders.Accept.Add(acceptJsonHeader);
+                    c.DefaultRequestHeaders.Accept.Add(acceptXmlHeader);
+                    c.DefaultRequestHeaders.Accept.Add(acceptAnyHeader);
                 })
                 .ConfigurePrimaryHttpMessageHandler(defaultHttpClientHandlerDelegate);
 
@@ -165,7 +163,7 @@ namespace Jellyfin.Server
 
                 // This must be injected before any path related middleware.
                 mainApp.UsePathTrim();
-                mainApp.UseStaticFiles();
+
                 if (appConfig.HostWebClient())
                 {
                     var extensionProvider = new FileExtensionContentTypeProvider();
@@ -173,6 +171,11 @@ namespace Jellyfin.Server
                     // subtitles octopus requires .data, .mem files.
                     extensionProvider.Mappings.Add(".data", MediaTypeNames.Application.Octet);
                     extensionProvider.Mappings.Add(".mem", MediaTypeNames.Application.Octet);
+                    mainApp.UseDefaultFiles(new DefaultFilesOptions
+                    {
+                        FileProvider = new PhysicalFileProvider(_serverConfigurationManager.ApplicationPaths.WebPath),
+                        RequestPath = "/web"
+                    });
                     mainApp.UseStaticFiles(new StaticFileOptions
                     {
                         FileProvider = new PhysicalFileProvider(_serverConfigurationManager.ApplicationPaths.WebPath),
@@ -183,6 +186,7 @@ namespace Jellyfin.Server
                     mainApp.UseRobotsRedirection();
                 }
 
+                mainApp.UseStaticFiles();
                 mainApp.UseAuthentication();
                 mainApp.UseJellyfinApiSwagger(_serverConfigurationManager);
                 mainApp.UseQueryStringDecoding();
@@ -190,7 +194,7 @@ namespace Jellyfin.Server
                 mainApp.UseAuthorization();
 
                 mainApp.UseLanFiltering();
-                mainApp.UseIpBasedAccessValidation();
+                mainApp.UseIPBasedAccessValidation();
                 mainApp.UseWebSocketHandler();
                 mainApp.UseServerStartupMessage();
 

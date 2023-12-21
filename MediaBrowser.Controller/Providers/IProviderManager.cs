@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Events;
@@ -53,14 +52,6 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task<ItemUpdateType> RefreshSingleItem(BaseItem item, MetadataRefreshOptions options, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Runs multiple metadata refreshes concurrently.
-        /// </summary>
-        /// <param name="action">The action to run.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        Task RunMetadataRefresh(Func<Task> action, CancellationToken cancellationToken);
 
         /// <summary>
         /// Saves the image.
@@ -206,15 +197,6 @@ namespace MediaBrowser.Controller.Providers
             CancellationToken cancellationToken)
             where TItemType : BaseItem, new()
             where TLookupType : ItemLookupInfo;
-
-        /// <summary>
-        /// Gets the search image.
-        /// </summary>
-        /// <param name="providerName">Name of the provider.</param>
-        /// <param name="url">The URL.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{HttpResponseInfo}.</returns>
-        Task<HttpResponseMessage> GetSearchImage(string providerName, string url, CancellationToken cancellationToken);
 
         HashSet<Guid> GetRefreshQueue();
 

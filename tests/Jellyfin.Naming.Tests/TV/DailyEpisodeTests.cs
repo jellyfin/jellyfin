@@ -9,10 +9,11 @@ namespace Jellyfin.Naming.Tests.TV
         private readonly EpisodeResolver _resolver = new EpisodeResolver(new NamingOptions());
 
         [Theory]
-        [InlineData(@"/server/anything_1996.11.14.mp4", "anything", 1996, 11, 14)]
-        [InlineData(@"/server/anything_1996-11-14.mp4", "anything", 1996, 11, 14)]
-        [InlineData(@"/server/james.corden.2017.04.20.anne.hathaway.720p.hdtv.x264-crooks.mkv", "james.corden", 2017, 04, 20)]
-        [InlineData(@"/server/ABC News 2018_03_24_19_00_00.mkv", "ABC News", 2018, 03, 24)]
+        [InlineData("/server/anything_1996.11.14.mp4", "anything", 1996, 11, 14)]
+        [InlineData("/server/anything_1996-11-14.mp4", "anything", 1996, 11, 14)]
+        [InlineData("/server/james.corden.2017.04.20.anne.hathaway.720p.hdtv.x264-crooks.mkv", "james.corden", 2017, 04, 20)]
+        [InlineData("/server/ABC News 2018_03_24_19_00_00.mkv", "ABC News", 2018, 03, 24)]
+        [InlineData("/server/Jeopardy 2023 07 14 HDTV x264 AC3.mkv", "Jeopardy", 2023, 07, 14)]
         // TODO: [InlineData(@"/server/anything_14.11.1996.mp4", "anything", 1996, 11, 14)]
         // TODO: [InlineData(@"/server/A Daily Show - (2015-01-15) - Episode Name - [720p].mkv", "A Daily Show", 2015, 01, 15)]
         // TODO: [InlineData(@"/server/Last Man Standing_KTLADT_2018_05_25_01_28_00.wtv", "Last Man Standing", 2018, 05, 25)]

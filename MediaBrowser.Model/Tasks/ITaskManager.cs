@@ -9,9 +9,9 @@ namespace MediaBrowser.Model.Tasks
 {
     public interface ITaskManager : IDisposable
     {
-        event EventHandler<GenericEventArgs<IScheduledTaskWorker>> TaskExecuting;
+        event EventHandler<GenericEventArgs<IScheduledTaskWorker>>? TaskExecuting;
 
-        event EventHandler<TaskCompletionEventArgs> TaskCompleted;
+        event EventHandler<TaskCompletionEventArgs>? TaskCompleted;
 
         /// <summary>
         /// Gets the list of Scheduled Tasks.

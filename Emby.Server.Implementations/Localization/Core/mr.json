@@ -122,5 +122,8 @@
     "External": "बाहेरचा",
     "DeviceOnlineWithName": "{0} कनेक्ट झाले",
     "DeviceOfflineWithName": "{0} डिस्कनेक्ट झाला आहे",
-    "AuthenticationSucceededWithUserName": "{0} यशस्वीरित्या प्रमाणीकृत"
+    "AuthenticationSucceededWithUserName": "{0} यशस्वीरित्या प्रमाणीकृत",
+    "HearingImpaired": "कर्णबधीर",
+    "TaskRefreshTrickplayImages": "ट्रिकप्ले प्रतिमा तयार करा",
+    "TaskRefreshTrickplayImagesDescription": "सक्षम लायब्ररीमधील व्हिडिओंसाठी ट्रिकप्ले पूर्वावलोकन तयार करते."
 }

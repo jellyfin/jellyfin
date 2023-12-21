@@ -9,11 +9,14 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
+using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.LibraryDtos;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
+using MediaBrowser.Common.Api;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
@@ -142,12 +145,13 @@ public class LibraryController : BaseJellyfinApiController
         [FromQuery] Guid? userId,
         [FromQuery] bool inheritFromParent = false)
     {
-        var user = userId is null || userId.Value.Equals(default)
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
 
         var item = itemId.Equals(default)
-            ? (userId is null || userId.Value.Equals(default)
+            ? (userId.Value.Equals(default)
                 ? _libraryManager.RootFolder
                 : _libraryManager.GetUserRootFolder())
             : _libraryManager.GetItemById(itemId);
@@ -208,12 +212,13 @@ public class LibraryController : BaseJellyfinApiController
         [FromQuery] Guid? userId,
         [FromQuery] bool inheritFromParent = false)
     {
-        var user = userId is null || userId.Value.Equals(default)
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
 
         var item = itemId.Equals(default)
-            ? (userId is null || userId.Value.Equals(default)
+            ? (userId.Value.Equals(default)
                 ? _libraryManager.RootFolder
                 : _libraryManager.GetUserRootFolder())
             : _libraryManager.GetItemById(itemId);
@@ -290,8 +295,8 @@ public class LibraryController : BaseJellyfinApiController
 
         return new AllThemeMediaResult
         {
-            ThemeSongsResult = themeSongs?.Value,
-            ThemeVideosResult = themeVideos?.Value,
+            ThemeSongsResult = themeSongs.Value,
+            ThemeVideosResult = themeVideos.Value,
             SoundtrackSongsResult = new ThemeMediaResult()
         };
     }
@@ -329,12 +334,26 @@ public class LibraryController : BaseJellyfinApiController
     [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult DeleteItem(Guid itemId)
     {
-        var item = _libraryManager.GetItemById(itemId);
-        var user = _userManager.GetUserById(User.GetUserId());
+        var isApiKey = User.GetIsApiKey();
+        var userId = User.GetUserId();
+        var user = !isApiKey && !userId.Equals(default)
+            ? _userManager.GetUserById(userId) ?? throw new ResourceNotFoundException()
+            : null;
+        if (!isApiKey && user is null)
+        {
+            return Unauthorized("Unauthorized access");
+        }
 
-        if (!item.CanDelete(user))
+        var item = _libraryManager.GetItemById(itemId);
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        if (user is not null && !item.CanDelete(user))
         {
             return Unauthorized("Unauthorized access");
         }
@@ -358,26 +377,31 @@ public class LibraryController : BaseJellyfinApiController
     [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult DeleteItems([FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] ids)
     {
-        if (ids.Length == 0)
+        var isApiKey = User.GetIsApiKey();
+        var userId = User.GetUserId();
+        var user = !isApiKey && !userId.Equals(default)
+            ? _userManager.GetUserById(userId) ?? throw new ResourceNotFoundException()
+            : null;
+
+        if (!isApiKey && user is null)
         {
-            return NoContent();
+            return Unauthorized("Unauthorized access");
         }
 
         foreach (var i in ids)
         {
             var item = _libraryManager.GetItemById(i);
-            var user = _userManager.GetUserById(User.GetUserId());
-
-            if (!item.CanDelete(user))
+            if (item is null)
             {
-                if (ids.Length > 1)
-                {
-                    return Unauthorized("Unauthorized access");
-                }
+                return NotFound();
+            }
 
-                continue;
+            if (user is not null && !item.CanDelete(user))
+            {
+                return Unauthorized("Unauthorized access");
             }
 
             _libraryManager.DeleteItem(
@@ -403,7 +427,8 @@ public class LibraryController : BaseJellyfinApiController
         [FromQuery] Guid? userId,
         [FromQuery] bool? isFavorite)
     {
-        var user = userId is null || userId.Value.Equals(default)
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -437,6 +462,7 @@ public class LibraryController : BaseJellyfinApiController
     public ActionResult<IEnumerable<BaseItemDto>> GetAncestors([FromRoute, Required] Guid itemId, [FromQuery] Guid? userId)
     {
         var item = _libraryManager.GetItemById(itemId);
+        userId = RequestHelpers.GetUserId(User, userId);
 
         if (item is null)
         {
@@ -445,7 +471,7 @@ public class LibraryController : BaseJellyfinApiController
 
         var baseItemDtos = new List<BaseItemDto>();
 
-        var user = userId is null || userId.Value.Equals(default)
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -465,7 +491,7 @@ public class LibraryController : BaseJellyfinApiController
 
             baseItemDtos.Add(_dtoService.GetBaseItemDto(parent, dtoOptions, user));
 
-            parent = parent?.GetParent();
+            parent = parent.GetParent();
         }
 
         return baseItemDtos;
@@ -675,8 +701,9 @@ public class LibraryController : BaseJellyfinApiController
         [FromQuery] int? limit,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields)
     {
+        userId = RequestHelpers.GetUserId(User, userId);
         var item = itemId.Equals(default)
-            ? (userId is null || userId.Value.Equals(default)
+            ? (userId.Value.Equals(default)
                 ? _libraryManager.RootFolder
                 : _libraryManager.GetUserRootFolder())
             : _libraryManager.GetItemById(itemId);
@@ -691,7 +718,7 @@ public class LibraryController : BaseJellyfinApiController
             return new QueryResult<BaseItemDto>();
         }
 
-        var user = userId is null || userId.Value.Equals(default)
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
         var dtoOptions = new DtoOptions { Fields = fields }
@@ -762,7 +789,7 @@ public class LibraryController : BaseJellyfinApiController
     [Authorize(Policy = Policies.FirstTimeSetupOrDefault)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<LibraryOptionsResultDto> GetLibraryOptionsInfo(
-        [FromQuery] string? libraryContentType,
+        [FromQuery] CollectionType? libraryContentType,
         [FromQuery] bool isNewLibrary = false)
     {
         var result = new LibraryOptionsResultDto();
@@ -896,19 +923,19 @@ public class LibraryController : BaseJellyfinApiController
         }
     }
 
-    private static string[] GetRepresentativeItemTypes(string? contentType)
+    private static string[] GetRepresentativeItemTypes(CollectionType? contentType)
     {
         return contentType switch
         {
-            CollectionType.BoxSets => new[] { "BoxSet" },
-            CollectionType.Playlists => new[] { "Playlist" },
-            CollectionType.Movies => new[] { "Movie" },
-            CollectionType.TvShows => new[] { "Series", "Season", "Episode" },
-            CollectionType.Books => new[] { "Book" },
-            CollectionType.Music => new[] { "MusicArtist", "MusicAlbum", "Audio", "MusicVideo" },
-            CollectionType.HomeVideos => new[] { "Video", "Photo" },
-            CollectionType.Photos => new[] { "Video", "Photo" },
-            CollectionType.MusicVideos => new[] { "MusicVideo" },
+            CollectionType.boxsets => new[] { "BoxSet" },
+            CollectionType.playlists => new[] { "Playlist" },
+            CollectionType.movies => new[] { "Movie" },
+            CollectionType.tvshows => new[] { "Series", "Season", "Episode" },
+            CollectionType.books => new[] { "Book" },
+            CollectionType.music => new[] { "MusicArtist", "MusicAlbum", "Audio", "MusicVideo" },
+            CollectionType.homevideos => new[] { "Video", "Photo" },
+            CollectionType.photos => new[] { "Video", "Photo" },
+            CollectionType.musicvideos => new[] { "MusicVideo" },
             _ => new[] { "Series", "Season", "Episode", "Movie" }
         };
     }
@@ -943,12 +970,8 @@ public class LibraryController : BaseJellyfinApiController
                    || string.Equals(name, "MusicBrainz", StringComparison.OrdinalIgnoreCase);
         }
 
-        var metadataOptions = _serverConfigurationManager.Configuration.MetadataOptions
-            .Where(i => string.Equals(i.ItemType, type, StringComparison.OrdinalIgnoreCase))
-            .ToArray();
-
-        return metadataOptions.Length == 0
-               || metadataOptions.Any(i => !i.DisabledMetadataFetchers.Contains(name, StringComparison.OrdinalIgnoreCase));
+        var metadataOptions = _serverConfigurationManager.GetMetadataOptionsForType(type);
+        return metadataOptions is null || !metadataOptions.DisabledMetadataFetchers.Contains(name, StringComparison.OrdinalIgnoreCase);
     }
 
     private bool IsImageFetcherEnabledByDefault(string name, string type, bool isNewLibrary)
@@ -969,15 +992,7 @@ public class LibraryController : BaseJellyfinApiController
                    || string.Equals(name, "Image Extractor", StringComparison.OrdinalIgnoreCase);
         }
 
-        var metadataOptions = _serverConfigurationManager.Configuration.MetadataOptions
-            .Where(i => string.Equals(i.ItemType, type, StringComparison.OrdinalIgnoreCase))
-            .ToArray();
-
-        if (metadataOptions.Length == 0)
-        {
-            return true;
-        }
-
-        return metadataOptions.Any(i => !i.DisabledImageFetchers.Contains(name, StringComparison.OrdinalIgnoreCase));
+        var metadataOptions = _serverConfigurationManager.GetMetadataOptionsForType(type);
+        return metadataOptions is null || !metadataOptions.DisabledImageFetchers.Contains(name, StringComparison.OrdinalIgnoreCase);
     }
 }

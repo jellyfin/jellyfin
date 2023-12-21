@@ -47,7 +47,7 @@ jobs:
     displayName: Set release version (stable)
     condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
 
-  - script: 'docker build -f deployment/Dockerfile.$(BuildConfiguration) -t jellyfin-server-$(BuildConfiguration) deployment'
+  - script: 'docker build -f deployment/Dockerfile.$(BuildConfiguration) -t jellyfin-server-$(BuildConfiguration) --label "org.opencontainers.image.url=$(Build.Repository.Uri)" --label "org.opencontainers.image.revision=$(Build.SourceVersion)"  deployment'
     displayName: 'Build Dockerfile'
 
   - script: 'docker image ls -a && docker run -v $(pwd)/deployment/dist:/dist -v $(pwd):/jellyfin -e IS_UNSTABLE="yes" -e BUILD_ID=$(Build.BuildNumber) jellyfin-server-$(BuildConfiguration)'
@@ -168,6 +168,7 @@ jobs:
 - job: CollectArtifacts
   timeoutInMinutes: 20
   displayName: 'Collect Artifacts'
+  condition: succeededOrFailed()
   continueOnError: true
   dependsOn:
   - BuildPackage
@@ -207,10 +208,10 @@ jobs:
 
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET 7.0 sdk'
+    displayName: 'Use .NET 8.0 sdk'
     inputs:
       packageType: 'sdk'
-      version: '7.0.x'
+      version: '8.0.x'
 
   - task: DotNetCoreCLI@2
     displayName: 'Build Stable Nuget packages'

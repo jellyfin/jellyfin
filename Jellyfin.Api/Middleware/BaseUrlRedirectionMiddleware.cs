@@ -1,6 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using Jellyfin.Networking.Configuration;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -48,8 +48,6 @@ public class BaseUrlRedirectionMiddleware
         if (string.IsNullOrEmpty(localPath)
             || string.Equals(localPath, baseUrlPrefix, StringComparison.OrdinalIgnoreCase)
             || string.Equals(localPath, baseUrlPrefix + "/", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(localPath, baseUrlPrefix + "/web", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(localPath, baseUrlPrefix + "/web/", StringComparison.OrdinalIgnoreCase)
             || !localPath.StartsWith(baseUrlPrefix, StringComparison.OrdinalIgnoreCase)
            )
         {

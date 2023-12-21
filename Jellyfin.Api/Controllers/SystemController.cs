@@ -4,14 +4,13 @@ using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Net.Mime;
-using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
+using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.System;
@@ -27,46 +26,50 @@ namespace Jellyfin.Api.Controllers;
 /// </summary>
 public class SystemController : BaseJellyfinApiController
 {
+    private readonly ILogger<SystemController> _logger;
     private readonly IServerApplicationHost _appHost;
     private readonly IApplicationPaths _appPaths;
     private readonly IFileSystem _fileSystem;
-    private readonly INetworkManager _network;
-    private readonly ILogger<SystemController> _logger;
+    private readonly INetworkManager _networkManager;
+    private readonly ISystemManager _systemManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SystemController"/> class.
     /// </summary>
-    /// <param name="serverConfigurationManager">Instance of <see cref="IServerConfigurationManager"/> interface.</param>
+    /// <param name="logger">Instance of <see cref="ILogger{SystemController}"/> interface.</param>
+    /// <param name="appPaths">Instance of <see cref="IServerApplicationPaths"/> interface.</param>
     /// <param name="appHost">Instance of <see cref="IServerApplicationHost"/> interface.</param>
     /// <param name="fileSystem">Instance of <see cref="IFileSystem"/> interface.</param>
-    /// <param name="network">Instance of <see cref="INetworkManager"/> interface.</param>
-    /// <param name="logger">Instance of <see cref="ILogger{SystemController}"/> interface.</param>
+    /// <param name="networkManager">Instance of <see cref="INetworkManager"/> interface.</param>
+    /// <param name="systemManager">Instance of <see cref="ISystemManager"/> interface.</param>
     public SystemController(
-        IServerConfigurationManager serverConfigurationManager,
+        ILogger<SystemController> logger,
         IServerApplicationHost appHost,
+        IServerApplicationPaths appPaths,
         IFileSystem fileSystem,
-        INetworkManager network,
-        ILogger<SystemController> logger)
+        INetworkManager networkManager,
+        ISystemManager systemManager)
     {
-        _appPaths = serverConfigurationManager.ApplicationPaths;
-        _appHost = appHost;
-        _fileSystem = fileSystem;
-        _network = network;
         _logger = logger;
+        _appHost = appHost;
+        _appPaths = appPaths;
+        _fileSystem = fileSystem;
+        _networkManager = networkManager;
+        _systemManager = systemManager;
     }
 
     /// <summary>
     /// Gets information about the server.
     /// </summary>
     /// <response code="200">Information retrieved.</response>
+    /// <response code="403">User does not have permission to retrieve information.</response>
     /// <returns>A <see cref="SystemInfo"/> with info about the system.</returns>
     [HttpGet("Info")]
     [Authorize(Policy = Policies.FirstTimeSetupOrIgnoreParentalControl)]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public ActionResult<SystemInfo> GetSystemInfo()
-    {
-        return _appHost.GetSystemInfo(Request);
-    }
+        => _systemManager.GetSystemInfo(Request);
 
     /// <summary>
     /// Gets public information about the server.
@@ -76,9 +79,7 @@ public class SystemController : BaseJellyfinApiController
     [HttpGet("Info/Public")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<PublicSystemInfo> GetPublicSystemInfo()
-    {
-        return _appHost.GetPublicSystemInfo(Request);
-    }
+        => _systemManager.GetPublicSystemInfo(Request);
 
     /// <summary>
     /// Pings the system.
@@ -89,25 +90,21 @@ public class SystemController : BaseJellyfinApiController
     [HttpPost("Ping", Name = "PostPingSystem")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<string> PingSystem()
-    {
-        return _appHost.Name;
-    }
+        => _appHost.Name;
 
     /// <summary>
     /// Restarts the application.
     /// </summary>
     /// <response code="204">Server restarted.</response>
+    /// <response code="403">User does not have permission to restart server.</response>
     /// <returns>No content. Server restarted.</returns>
     [HttpPost("Restart")]
     [Authorize(Policy = Policies.LocalAccessOrRequiresElevation)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public ActionResult RestartApplication()
     {
-        Task.Run(async () =>
-        {
-            await Task.Delay(100).ConfigureAwait(false);
-            _appHost.Restart();
-        });
+        _systemManager.Restart();
         return NoContent();
     }
 
@@ -115,17 +112,15 @@ public class SystemController : BaseJellyfinApiController
     /// Shuts down the application.
     /// </summary>
     /// <response code="204">Server shut down.</response>
+    /// <response code="403">User does not have permission to shutdown server.</response>
     /// <returns>No content. Server shut down.</returns>
     [HttpPost("Shutdown")]
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public ActionResult ShutdownApplication()
     {
-        Task.Run(async () =>
-        {
-            await Task.Delay(100).ConfigureAwait(false);
-            await _appHost.Shutdown().ConfigureAwait(false);
-        });
+        _systemManager.Shutdown();
         return NoContent();
     }
 
@@ -133,10 +128,12 @@ public class SystemController : BaseJellyfinApiController
     /// Gets a list of available server log files.
     /// </summary>
     /// <response code="200">Information retrieved.</response>
+    /// <response code="403">User does not have permission to get server logs.</response>
     /// <returns>An array of <see cref="LogFile"/> with the available log files.</returns>
     [HttpGet("Logs")]
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public ActionResult<LogFile[]> GetServerLogs()
     {
         IEnumerable<FileSystemMetadata> files;
@@ -170,16 +167,18 @@ public class SystemController : BaseJellyfinApiController
     /// Gets information about the request endpoint.
     /// </summary>
     /// <response code="200">Information retrieved.</response>
+    /// <response code="403">User does not have permission to get endpoint information.</response>
     /// <returns><see cref="EndPointInfo"/> with information about the endpoint.</returns>
     [HttpGet("Endpoint")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public ActionResult<EndPointInfo> GetEndpointInfo()
     {
         return new EndPointInfo
         {
             IsLocal = HttpContext.IsLocal(),
-            IsInNetwork = _network.IsInLocalNetwork(HttpContext.GetNormalizedRemoteIp())
+            IsInNetwork = _networkManager.IsInLocalNetwork(HttpContext.GetNormalizedRemoteIP())
         };
     }
 
@@ -188,10 +187,12 @@ public class SystemController : BaseJellyfinApiController
     /// </summary>
     /// <param name="name">The name of the log file to get.</param>
     /// <response code="200">Log file retrieved.</response>
+    /// <response code="403">User does not have permission to get log files.</response>
     /// <returns>The log file.</returns>
     [HttpGet("Logs/Log")]
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesFile(MediaTypeNames.Text.Plain)]
     public ActionResult GetLogFile([FromQuery, Required] string name)
     {
@@ -215,7 +216,7 @@ public class SystemController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<IEnumerable<WakeOnLanInfo>> GetWakeOnLanInfo()
     {
-        var result = _network.GetMacAddresses()
+        var result = _networkManager.GetMacAddresses()
             .Select(i => new WakeOnLanInfo(i));
         return Ok(result);
     }

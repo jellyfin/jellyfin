@@ -1,7 +1,9 @@
 #pragma warning disable CA1819 // Properties should not return arrays
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Xml.Serialization;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Model.MediaInfo;
 
@@ -226,9 +228,12 @@ namespace MediaBrowser.Model.Dlna
         /// The GetSupportedMediaTypes.
         /// </summary>
         /// <returns>The .</returns>
-        public string[] GetSupportedMediaTypes()
+        public MediaType[] GetSupportedMediaTypes()
         {
-            return ContainerProfile.SplitValue(SupportedMediaTypes);
+            return ContainerProfile.SplitValue(SupportedMediaTypes)
+                .Select(m => Enum.TryParse<MediaType>(m, out var parsed) ? parsed : MediaType.Unknown)
+                .Where(m => m != MediaType.Unknown)
+                .ToArray();
         }
 
         /// <summary>
@@ -313,7 +318,7 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="audioSampleRate">The audio sample rate.</param>
         /// <param name="audioBitDepth">The audio bit depth.</param>
         /// <returns>The <see cref="ResponseProfile"/>.</returns>
-        public ResponseProfile? GetAudioMediaProfile(string container, string? audioCodec, int? audioChannels, int? audioBitrate, int? audioSampleRate, int? audioBitDepth)
+        public ResponseProfile? GetAudioMediaProfile(string? container, string? audioCodec, int? audioChannels, int? audioBitrate, int? audioSampleRate, int? audioBitDepth)
         {
             foreach (var i in ResponseProfiles)
             {
@@ -437,15 +442,15 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="isAvc">True if Avc.</param>
         /// <returns>The <see cref="ResponseProfile"/>.</returns>
         public ResponseProfile? GetVideoMediaProfile(
-            string container,
+            string? container,
             string? audioCodec,
             string? videoCodec,
             int? width,
             int? height,
             int? bitDepth,
             int? videoBitrate,
-            string videoProfile,
-            string videoRangeType,
+            string? videoProfile,
+            VideoRangeType videoRangeType,
             double? videoLevel,
             float? videoFramerate,
             int? packetLength,
@@ -455,7 +460,7 @@ namespace MediaBrowser.Model.Dlna
             int? refFrames,
             int? numVideoStreams,
             int? numAudioStreams,
-            string videoCodecTag,
+            string? videoCodecTag,
             bool? isAvc)
         {
             foreach (var i in ResponseProfiles)

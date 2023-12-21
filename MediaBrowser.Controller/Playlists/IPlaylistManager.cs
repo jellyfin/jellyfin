@@ -44,6 +44,12 @@ namespace MediaBrowser.Controller.Playlists
         /// <summary>
         /// Gets the playlists folder.
         /// </summary>
+        /// <returns>Folder.</returns>
+        Folder GetPlaylistsFolder();
+
+        /// <summary>
+        /// Gets the playlists folder for a user.
+        /// </summary>
         /// <param name="userId">The user identifier.</param>
         /// <returns>Folder.</returns>
         Folder GetPlaylistsFolder(Guid userId);
@@ -56,5 +62,19 @@ namespace MediaBrowser.Controller.Playlists
         /// <param name="newIndex">The new index.</param>
         /// <returns>Task.</returns>
         Task MoveItemAsync(string playlistId, string entryId, int newIndex);
+
+        /// <summary>
+        /// Removed all playlists of a user.
+        /// If the playlist is shared, ownership is transferred.
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <returns>Task.</returns>
+        Task RemovePlaylistsAsync(Guid userId);
+
+        /// <summary>
+        /// Saves a playlist.
+        /// </summary>
+        /// <param name="item">The playlist.</param>
+        void SavePlaylistFile(Playlist item);
     }
 }

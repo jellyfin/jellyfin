@@ -63,7 +63,7 @@ namespace Emby.Server.Implementations.Library.Validators
                 {
                     var movies = _libraryManager.GetItemList(new InternalItemsQuery
                     {
-                        MediaTypes = new string[] { MediaType.Video },
+                        MediaTypes = new[] { MediaType.Video },
                         IncludeItemTypes = new[] { BaseItemKind.Movie },
                         IsVirtualItem = false,
                         OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) },

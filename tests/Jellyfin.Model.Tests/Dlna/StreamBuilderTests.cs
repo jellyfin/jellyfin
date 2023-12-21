@@ -162,7 +162,7 @@ namespace Jellyfin.Model.Tests
         [InlineData("Tizen4-4K-5.1", "mkv-vp9-aac-srt-2600k", PlayMethod.DirectPlay)]
         [InlineData("Tizen4-4K-5.1", "mkv-vp9-ac3-srt-2600k", PlayMethod.DirectPlay)]
         [InlineData("Tizen4-4K-5.1", "mkv-vp9-vorbis-vtt-2600k", PlayMethod.DirectPlay)]
-        public async Task BuildVideoItemSimple(string deviceName, string mediaSource, PlayMethod? playMethod, TranscodeReason why = (TranscodeReason)0, string transcodeMode = "DirectStream", string transcodeProtocol = "")
+        public async Task BuildVideoItemSimple(string deviceName, string mediaSource, PlayMethod? playMethod, TranscodeReason why = default, string transcodeMode = "DirectStream", string transcodeProtocol = "")
         {
             var options = await GetMediaOptions(deviceName, mediaSource);
             BuildVideoItemSimpleTest(options, playMethod, why, transcodeMode, transcodeProtocol);
@@ -260,7 +260,7 @@ namespace Jellyfin.Model.Tests
         [InlineData("Tizen4-4K-5.1", "mkv-vp9-aac-srt-2600k", PlayMethod.DirectPlay)]
         [InlineData("Tizen4-4K-5.1", "mkv-vp9-ac3-srt-2600k", PlayMethod.DirectPlay)]
         [InlineData("Tizen4-4K-5.1", "mkv-vp9-vorbis-vtt-2600k", PlayMethod.DirectPlay)]
-        public async Task BuildVideoItemWithFirstExplicitStream(string deviceName, string mediaSource, PlayMethod? playMethod, TranscodeReason why = (TranscodeReason)0, string transcodeMode = "DirectStream", string transcodeProtocol = "")
+        public async Task BuildVideoItemWithFirstExplicitStream(string deviceName, string mediaSource, PlayMethod? playMethod, TranscodeReason why = default, string transcodeMode = "DirectStream", string transcodeProtocol = "")
         {
             var options = await GetMediaOptions(deviceName, mediaSource);
             options.AudioStreamIndex = 1;
@@ -296,7 +296,7 @@ namespace Jellyfin.Model.Tests
         // Tizen 4 4K 5.1
         [InlineData("Tizen4-4K-5.1", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.DirectPlay, (TranscodeReason)0, "Remux")]
         [InlineData("Tizen4-4K-5.1", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.DirectPlay, (TranscodeReason)0, "Remux")]
-        public async Task BuildVideoItemWithDirectPlayExplicitStreams(string deviceName, string mediaSource, PlayMethod? playMethod, TranscodeReason why = (TranscodeReason)0, string transcodeMode = "DirectStream", string transcodeProtocol = "")
+        public async Task BuildVideoItemWithDirectPlayExplicitStreams(string deviceName, string mediaSource, PlayMethod? playMethod, TranscodeReason why = default, string transcodeMode = "DirectStream", string transcodeProtocol = "")
         {
             var options = await GetMediaOptions(deviceName, mediaSource);
             var streamCount = options.MediaSources[0].MediaStreams.Count;
@@ -351,11 +351,11 @@ namespace Jellyfin.Model.Tests
                 // Assert.Contains(uri.Extension, containers);
 
                 // Check expected video codec (1)
-                Assert.Contains(targetVideoStream.Codec, streamInfo.TargetVideoCodec);
+                Assert.Contains(targetVideoStream?.Codec, streamInfo.TargetVideoCodec);
                 Assert.Single(streamInfo.TargetVideoCodec);
 
                 // Check expected audio codecs (1)
-                Assert.Contains(targetAudioStream.Codec, streamInfo.TargetAudioCodec);
+                Assert.Contains(targetAudioStream?.Codec, streamInfo.TargetAudioCodec);
                 Assert.Single(streamInfo.TargetAudioCodec);
                 // Assert.Single(val.AudioCodecs);
 
@@ -410,13 +410,13 @@ namespace Jellyfin.Model.Tests
                 else
                 {
                     // Check expected video codec (1)
-                    Assert.Contains(targetVideoStream.Codec, streamInfo.TargetVideoCodec);
+                    Assert.Contains(targetVideoStream?.Codec, streamInfo.TargetVideoCodec);
                     Assert.Single(streamInfo.TargetVideoCodec);
 
                     if (transcodeMode.Equals("DirectStream", StringComparison.Ordinal))
                     {
                         // Check expected audio codecs (1)
-                        if (!targetAudioStream.IsExternal)
+                        if (targetAudioStream?.IsExternal == false)
                         {
                             // Check expected audio codecs (1)
                             if (streamInfo.TranscodeReasons.HasFlag(TranscodeReason.ContainerNotSupported))
@@ -432,7 +432,7 @@ namespace Jellyfin.Model.Tests
                     else if (transcodeMode.Equals("Remux", StringComparison.Ordinal))
                     {
                         // Check expected audio codecs (1)
-                        Assert.Contains(targetAudioStream.Codec, streamInfo.AudioCodecs);
+                        Assert.Contains(targetAudioStream?.Codec, streamInfo.AudioCodecs);
                         Assert.Single(streamInfo.AudioCodecs);
                     }
 
@@ -440,10 +440,10 @@ namespace Jellyfin.Model.Tests
                     var videoStream = targetVideoStream;
                     Assert.False(streamInfo.EstimateContentLength);
                     Assert.Equal(TranscodeSeekInfo.Auto, streamInfo.TranscodeSeekInfo);
-                    Assert.Contains(videoStream.Profile?.ToLowerInvariant() ?? string.Empty, streamInfo.TargetVideoProfile?.Split(",").Select(s => s.ToLowerInvariant()) ?? Array.Empty<string>());
-                    Assert.Equal(videoStream.Level, streamInfo.TargetVideoLevel);
-                    Assert.Equal(videoStream.BitDepth, streamInfo.TargetVideoBitDepth);
-                    Assert.InRange(streamInfo.VideoBitrate.GetValueOrDefault(), videoStream.BitRate.GetValueOrDefault(), int.MaxValue);
+                    Assert.Contains(videoStream?.Profile?.ToLowerInvariant() ?? string.Empty, streamInfo.TargetVideoProfile?.Split(",").Select(s => s.ToLowerInvariant()) ?? Array.Empty<string>());
+                    Assert.Equal(videoStream?.Level, streamInfo.TargetVideoLevel);
+                    Assert.Equal(videoStream?.BitDepth, streamInfo.TargetVideoBitDepth);
+                    Assert.InRange(streamInfo.VideoBitrate.GetValueOrDefault(), videoStream?.BitRate.GetValueOrDefault() ?? 0, int.MaxValue);
 
                     // Audio codec not supported
                     if ((why & TranscodeReason.AudioCodecNotSupported) != 0)
@@ -452,7 +452,7 @@ namespace Jellyfin.Model.Tests
                         if (options.AudioStreamIndex >= 0)
                         {
                             // TODO:fixme
-                            if (!targetAudioStream.IsExternal)
+                            if (targetAudioStream?.IsExternal == false)
                             {
                                 Assert.DoesNotContain(targetAudioStream.Codec, streamInfo.AudioCodecs);
                             }
@@ -488,16 +488,16 @@ namespace Jellyfin.Model.Tests
         private static async ValueTask<T> TestData<T>(string name)
         {
             var path = Path.Join("Test Data", typeof(T).Name + "-" + name + ".json");
-            using (var stream = File.OpenRead(path))
-            {
-                var value = await JsonSerializer.DeserializeAsync<T>(stream, JsonDefaults.Options);
-                if (value is not null)
-                {
-                    return value;
-                }
 
-                throw new SerializationException("Invalid test data: " + name);
+            using var stream = File.OpenRead(path);
+
+            var value = await JsonSerializer.DeserializeAsync<T>(stream, JsonDefaults.Options);
+            if (value is not null)
+            {
+                return value;
             }
+
+            throw new SerializationException("Invalid test data: " + name);
         }
 
         private StreamBuilder GetStreamBuilder()

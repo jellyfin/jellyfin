@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Data.Queries;
+using MediaBrowser.Common.Api;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;

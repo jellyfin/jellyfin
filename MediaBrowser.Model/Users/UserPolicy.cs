@@ -2,6 +2,8 @@
 #pragma warning disable CS1591, CA1819
 
 using System;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Xml.Serialization;
 using Jellyfin.Data.Enums;
 using AccessSchedule = Jellyfin.Data.Entities.AccessSchedule;
@@ -14,6 +16,7 @@ namespace MediaBrowser.Model.Users
         {
             IsHidden = true;
             EnableCollectionManagement = false;
+            EnableSubtitleManagement = false;
 
             EnableContentDeletion = false;
             EnableContentDeletionFromFolders = Array.Empty<string>();
@@ -46,6 +49,7 @@ namespace MediaBrowser.Model.Users
             LoginAttemptsBeforeLockout = -1;
 
             MaxActiveSessions = 0;
+            MaxParentalRating = null;
 
             EnableAllChannels = true;
             EnabledChannels = Array.Empty<Guid>();
@@ -78,7 +82,15 @@ namespace MediaBrowser.Model.Users
         /// Gets or sets a value indicating whether this instance can manage collections.
         /// </summary>
         /// <value><c>true</c> if this instance is hidden; otherwise, <c>false</c>.</value>
+        [DefaultValue(false)]
         public bool EnableCollectionManagement { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance can manage subtitles.
+        /// </summary>
+        /// <value><c>true</c> if this instance is allowed; otherwise, <c>false</c>.</value>
+        [DefaultValue(false)]
+        public bool EnableSubtitleManagement { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is disabled.
@@ -163,8 +175,10 @@ namespace MediaBrowser.Model.Users
         public int RemoteClientBitrateLimit { get; set; }
 
         [XmlElement(ElementName = "AuthenticationProviderId")]
+        [Required(AllowEmptyStrings = false)]
         public string AuthenticationProviderId { get; set; }
 
+        [Required(AllowEmptyStrings= false)]
         public string PasswordResetProviderId { get; set; }
 
         /// <summary>

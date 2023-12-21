@@ -15,6 +15,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Playlists
@@ -33,9 +34,12 @@ namespace MediaBrowser.Controller.Playlists
         public Playlist()
         {
             Shares = Array.Empty<Share>();
+            OpenAccess = false;
         }
 
         public Guid OwnerUserId { get; set; }
+
+        public bool OpenAccess { get; set; }
 
         public Share[] Shares { get; set; }
 
@@ -65,7 +69,7 @@ namespace MediaBrowser.Controller.Playlists
         public override bool SupportsInheritedParentImages => false;
 
         [JsonIgnore]
-        public override bool SupportsPlayedStatus => string.Equals(MediaType, "Video", StringComparison.OrdinalIgnoreCase);
+        public override bool SupportsPlayedStatus => MediaType == Jellyfin.Data.Enums.MediaType.Video;
 
         [JsonIgnore]
         public override bool AlwaysScanInternalMetadataPath => true;
@@ -76,10 +80,10 @@ namespace MediaBrowser.Controller.Playlists
         [JsonIgnore]
         public override bool IsPreSorted => true;
 
-        public string PlaylistMediaType { get; set; }
+        public MediaType PlaylistMediaType { get; set; }
 
         [JsonIgnore]
-        public override string MediaType => PlaylistMediaType;
+        public override MediaType MediaType => PlaylistMediaType;
 
         [JsonIgnore]
         private bool IsSharedItem
@@ -103,9 +107,9 @@ namespace MediaBrowser.Controller.Playlists
             return System.IO.Path.HasExtension(path) && !Directory.Exists(path);
         }
 
-        public void SetMediaType(string value)
+        public void SetMediaType(MediaType? value)
         {
-            PlaylistMediaType = value;
+            PlaylistMediaType = value ?? MediaType.Unknown;
         }
 
         public override double GetDefaultPrimaryImageAspectRatio()
@@ -163,7 +167,7 @@ namespace MediaBrowser.Controller.Playlists
             return base.GetChildren(user, true, query);
         }
 
-        public static List<BaseItem> GetPlaylistItems(string playlistMediaType, IEnumerable<BaseItem> inputItems, User user, DtoOptions options)
+        public static List<BaseItem> GetPlaylistItems(MediaType playlistMediaType, IEnumerable<BaseItem> inputItems, User user, DtoOptions options)
         {
             if (user is not null)
             {
@@ -181,7 +185,7 @@ namespace MediaBrowser.Controller.Playlists
             return list;
         }
 
-        private static IEnumerable<BaseItem> GetPlaylistItems(BaseItem item, User user, string mediaType, DtoOptions options)
+        private static IEnumerable<BaseItem> GetPlaylistItems(BaseItem item, User user, MediaType mediaType, DtoOptions options)
         {
             if (item is MusicGenre musicGenre)
             {
@@ -232,7 +236,13 @@ namespace MediaBrowser.Controller.Playlists
                 return base.IsVisible(user);
             }
 
-            if (user.Id.Equals(OwnerUserId))
+            if (OpenAccess)
+            {
+                return true;
+            }
+
+            var userId = user.Id;
+            if (userId.Equals(OwnerUserId))
             {
                 return true;
             }
@@ -240,10 +250,9 @@ namespace MediaBrowser.Controller.Playlists
             var shares = Shares;
             if (shares.Length == 0)
             {
-                return base.IsVisible(user);
+                return false;
             }
 
-            var userId = user.Id;
             return shares.Any(share => Guid.TryParse(share.UserId, out var id) && id.Equals(userId));
         }
 

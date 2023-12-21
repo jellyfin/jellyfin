@@ -14,7 +14,6 @@
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
     <ProjectReference Include="..\MediaBrowser.Providers\MediaBrowser.Providers.csproj" />
     <ProjectReference Include="..\MediaBrowser.XbmcMetadata\MediaBrowser.XbmcMetadata.csproj" />
-    <ProjectReference Include="..\Emby.Dlna\Emby.Dlna.csproj" />
     <ProjectReference Include="..\MediaBrowser.LocalMetadata\MediaBrowser.LocalMetadata.csproj" />
     <ProjectReference Include="..\Emby.Photos\Emby.Photos.csproj" />
     <ProjectReference Include="..\src\Jellyfin.Drawing\Jellyfin.Drawing.csproj" />
@@ -24,14 +23,13 @@
   <ItemGroup>
     <PackageReference Include="DiscUtils.Udf" />
     <PackageReference Include="Jellyfin.XmlTv" />
+    <PackageReference Include="Microsoft.Data.Sqlite" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
-    <PackageReference Include="Mono.Nat" />
     <PackageReference Include="prometheus-net.DotNetRuntime" />
-    <PackageReference Include="SQLitePCL.pretty.netstandard" />
     <PackageReference Include="DotNet.Glob" />
   </ItemGroup>
 
@@ -40,19 +38,22 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <!-- https://github.com/microsoft/ApplicationInsights-dotnet/issues/2047 -->
-    <NoWarn>AD0001</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <CodeAnalysisTreatWarningsAsErrors>false</CodeAnalysisTreatWarningsAsErrors>
   </PropertyGroup>
 
-  <!-- Code Analyzers-->
+  <!-- Code Analyzers -->
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <!-- TODO: Add IDisposableAnalyzers -->
+    <!-- <PackageReference Include="IDisposableAnalyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference> -->
     <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>

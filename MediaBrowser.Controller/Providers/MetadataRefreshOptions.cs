@@ -26,6 +26,7 @@ namespace MediaBrowser.Controller.Providers
             ReplaceAllMetadata = copy.ReplaceAllMetadata;
             EnableRemoteContentProbe = copy.EnableRemoteContentProbe;
 
+            IsAutomated = copy.IsAutomated;
             ImageRefreshMode = copy.ImageRefreshMode;
             ReplaceAllImages = copy.ReplaceAllImages;
             ReplaceImages = copy.ReplaceImages;

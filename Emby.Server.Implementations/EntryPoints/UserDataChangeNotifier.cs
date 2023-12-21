@@ -87,15 +87,14 @@ namespace Emby.Server.Implementations.EntryPoints
             }
         }
 
-        private void UpdateTimerCallback(object? state)
+        private async void UpdateTimerCallback(object? state)
         {
+            List<KeyValuePair<Guid, List<BaseItem>>> changes;
             lock (_syncLock)
             {
                 // Remove dupes in case some were saved multiple times
-                var changes = _changedItems.ToList();
+                changes = _changedItems.ToList();
                 _changedItems.Clear();
-
-                SendNotifications(changes, CancellationToken.None).GetAwaiter().GetResult();
 
                 if (_updateTimer is not null)
                 {
@@ -103,13 +102,15 @@ namespace Emby.Server.Implementations.EntryPoints
                     _updateTimer = null;
                 }
             }
+
+            await SendNotifications(changes, CancellationToken.None).ConfigureAwait(false);
         }
 
         private async Task SendNotifications(List<KeyValuePair<Guid, List<BaseItem>>> changes, CancellationToken cancellationToken)
         {
-            foreach (var pair in changes)
+            foreach ((var key, var value) in changes)
             {
-                await SendNotifications(pair.Key, pair.Value, cancellationToken).ConfigureAwait(false);
+                await SendNotifications(key, value, cancellationToken).ConfigureAwait(false);
             }
         }
 

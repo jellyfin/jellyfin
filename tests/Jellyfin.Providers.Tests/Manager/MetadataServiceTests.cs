@@ -238,9 +238,6 @@ namespace Jellyfin.Providers.Tests.Manager
                     }
                 };
 
-            object? result;
-            List<PersonInfo> actual;
-
             // overwrite provider id
             var overwriteNewValue = new List<PersonInfo>
             {
@@ -249,9 +246,9 @@ namespace Jellyfin.Providers.Tests.Manager
                     Name = "Name 2"
                 }
             };
-            Assert.False(TestMergeBaseItemDataPerson(GetOldValue(), overwriteNewValue, null, false, out result));
+            Assert.False(TestMergeBaseItemDataPerson(GetOldValue(), overwriteNewValue, null, false, out var result));
             // People not already in target are not merged into it from source
-            actual = (List<PersonInfo>)result!;
+            List<PersonInfo> actual = (List<PersonInfo>)result!;
             Assert.Single(actual);
             Assert.Equal("Name 1", actual[0].Name);
 

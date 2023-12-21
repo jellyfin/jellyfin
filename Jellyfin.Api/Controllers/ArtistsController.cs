@@ -95,7 +95,7 @@ public class ArtistsController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFilter[] filters,
         [FromQuery] bool? isFavorite,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] MediaType[] mediaTypes,
         [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] genres,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] genreIds,
         [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] officialRatings,
@@ -113,11 +113,12 @@ public class ArtistsController : BaseJellyfinApiController
         [FromQuery] string? nameStartsWithOrGreater,
         [FromQuery] string? nameStartsWith,
         [FromQuery] string? nameLessThan,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] sortBy,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemSortBy[] sortBy,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] SortOrder[] sortOrder,
         [FromQuery] bool? enableImages = true,
         [FromQuery] bool enableTotalRecordCount = true)
     {
+        userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
@@ -125,7 +126,7 @@ public class ArtistsController : BaseJellyfinApiController
         User? user = null;
         BaseItem parentItem = _libraryManager.GetParentItem(parentId, userId);
 
-        if (userId.HasValue && !userId.Equals(default))
+        if (!userId.Value.Equals(default))
         {
             user = _userManager.GetUserById(userId.Value);
         }
@@ -298,7 +299,7 @@ public class ArtistsController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFilter[] filters,
         [FromQuery] bool? isFavorite,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] MediaType[] mediaTypes,
         [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] genres,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] genreIds,
         [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] officialRatings,
@@ -316,11 +317,12 @@ public class ArtistsController : BaseJellyfinApiController
         [FromQuery] string? nameStartsWithOrGreater,
         [FromQuery] string? nameStartsWith,
         [FromQuery] string? nameLessThan,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] sortBy,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemSortBy[] sortBy,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] SortOrder[] sortOrder,
         [FromQuery] bool? enableImages = true,
         [FromQuery] bool enableTotalRecordCount = true)
     {
+        userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
@@ -328,7 +330,7 @@ public class ArtistsController : BaseJellyfinApiController
         User? user = null;
         BaseItem parentItem = _libraryManager.GetParentItem(parentId, userId);
 
-        if (userId.HasValue && !userId.Equals(default))
+        if (!userId.Value.Equals(default))
         {
             user = _userManager.GetUserById(userId.Value);
         }
@@ -462,11 +464,12 @@ public class ArtistsController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<BaseItemDto> GetArtistByName([FromRoute, Required] string name, [FromQuery] Guid? userId)
     {
+        userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions().AddClientFields(User);
 
         var item = _libraryManager.GetArtist(name, dtoOptions);
 
-        if (userId.HasValue && !userId.Value.Equals(default))
+        if (!userId.Value.Equals(default))
         {
             var user = _userManager.GetUserById(userId.Value);
 

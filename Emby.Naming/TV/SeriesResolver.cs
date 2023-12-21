@@ -7,14 +7,15 @@ namespace Emby.Naming.TV
     /// <summary>
     /// Used to resolve information about series from path.
     /// </summary>
-    public static class SeriesResolver
+    public static partial class SeriesResolver
     {
         /// <summary>
         /// Regex that matches strings of at least 2 characters separated by a dot or underscore.
         /// Used for removing separators between words, i.e turns "The_show" into "The show" while
         /// preserving namings like "S.H.O.W".
         /// </summary>
-        private static readonly Regex _seriesNameRegex = new Regex(@"((?<a>[^\._]{2,})[\._]*)|([\._](?<b>[^\._]{2,}))");
+        [GeneratedRegex(@"((?<a>[^\._]{2,})[\._]*)|([\._](?<b>[^\._]{2,}))")]
+        private static partial Regex SeriesNameRegex();
 
         /// <summary>
         /// Resolve information about series from path.
@@ -37,7 +38,7 @@ namespace Emby.Naming.TV
 
             if (!string.IsNullOrEmpty(seriesName))
             {
-                seriesName = _seriesNameRegex.Replace(seriesName, "${a} ${b}").Trim();
+                seriesName = SeriesNameRegex().Replace(seriesName, "${a} ${b}").Trim();
             }
 
             return new SeriesInfo(path)

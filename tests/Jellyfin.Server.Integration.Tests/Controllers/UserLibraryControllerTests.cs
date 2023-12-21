@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Net;
+using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Extensions.Json;
@@ -25,9 +26,9 @@ public sealed class UserLibraryControllerTests : IClassFixture<JellyfinApplicati
     public async Task GetRootFolder_NonExistenUserId_NotFound()
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client).ConfigureAwait(false));
+        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
-        var response = await client.GetAsync($"Users/{Guid.NewGuid()}/Items/Root").ConfigureAwait(false);
+        var response = await client.GetAsync($"Users/{Guid.NewGuid()}/Items/Root");
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
@@ -35,9 +36,9 @@ public sealed class UserLibraryControllerTests : IClassFixture<JellyfinApplicati
     public async Task GetRootFolder_UserId_Valid()
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client).ConfigureAwait(false));
+        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
-        _ = await AuthHelper.GetRootFolderDtoAsync(client).ConfigureAwait(false);
+        _ = await AuthHelper.GetRootFolderDtoAsync(client);
     }
 
     [Theory]
@@ -49,11 +50,11 @@ public sealed class UserLibraryControllerTests : IClassFixture<JellyfinApplicati
     public async Task GetItem_NonExistenUserId_NotFound(string format)
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client).ConfigureAwait(false));
+        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
-        var rootFolderDto = await AuthHelper.GetRootFolderDtoAsync(client).ConfigureAwait(false);
+        var rootFolderDto = await AuthHelper.GetRootFolderDtoAsync(client);
 
-        var response = await client.GetAsync(string.Format(CultureInfo.InvariantCulture, format, Guid.NewGuid(), rootFolderDto.Id)).ConfigureAwait(false);
+        var response = await client.GetAsync(string.Format(CultureInfo.InvariantCulture, format, Guid.NewGuid(), rootFolderDto.Id));
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
@@ -66,11 +67,11 @@ public sealed class UserLibraryControllerTests : IClassFixture<JellyfinApplicati
     public async Task GetItem_NonExistentItemId_NotFound(string format)
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client).ConfigureAwait(false));
+        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
-        var userDto = await AuthHelper.GetUserDtoAsync(client).ConfigureAwait(false);
+        var userDto = await AuthHelper.GetUserDtoAsync(client);
 
-        var response = await client.GetAsync(string.Format(CultureInfo.InvariantCulture, format, userDto.Id, Guid.NewGuid())).ConfigureAwait(false);
+        var response = await client.GetAsync(string.Format(CultureInfo.InvariantCulture, format, userDto.Id, Guid.NewGuid()));
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
@@ -78,16 +79,14 @@ public sealed class UserLibraryControllerTests : IClassFixture<JellyfinApplicati
     public async Task GetItem_UserIdAndItemId_Valid()
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client).ConfigureAwait(false));
+        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
-        var userDto = await AuthHelper.GetUserDtoAsync(client).ConfigureAwait(false);
-        var rootFolderDto = await AuthHelper.GetRootFolderDtoAsync(client, userDto.Id).ConfigureAwait(false);
+        var userDto = await AuthHelper.GetUserDtoAsync(client);
+        var rootFolderDto = await AuthHelper.GetRootFolderDtoAsync(client, userDto.Id);
 
-        var response = await client.GetAsync($"Users/{userDto.Id}/Items/{rootFolderDto.Id}").ConfigureAwait(false);
+        var response = await client.GetAsync($"Users/{userDto.Id}/Items/{rootFolderDto.Id}");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var rootDto = await JsonSerializer.DeserializeAsync<BaseItemDto>(
-                    await response.Content.ReadAsStreamAsync().ConfigureAwait(false),
-                    _jsonOptions).ConfigureAwait(false);
+        var rootDto = await response.Content.ReadFromJsonAsync<BaseItemDto>(_jsonOptions);
         Assert.NotNull(rootDto);
     }
 
@@ -95,16 +94,14 @@ public sealed class UserLibraryControllerTests : IClassFixture<JellyfinApplicati
     public async Task GetIntros_UserIdAndItemId_Valid()
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client).ConfigureAwait(false));
+        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
-        var userDto = await AuthHelper.GetUserDtoAsync(client).ConfigureAwait(false);
-        var rootFolderDto = await AuthHelper.GetRootFolderDtoAsync(client, userDto.Id).ConfigureAwait(false);
+        var userDto = await AuthHelper.GetUserDtoAsync(client);
+        var rootFolderDto = await AuthHelper.GetRootFolderDtoAsync(client, userDto.Id);
 
-        var response = await client.GetAsync($"Users/{userDto.Id}/Items/{rootFolderDto.Id}/Intros").ConfigureAwait(false);
+        var response = await client.GetAsync($"Users/{userDto.Id}/Items/{rootFolderDto.Id}/Intros");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var rootDto = await JsonSerializer.DeserializeAsync<QueryResult<BaseItemDto>>(
-                    await response.Content.ReadAsStreamAsync().ConfigureAwait(false),
-                    _jsonOptions).ConfigureAwait(false);
+        var rootDto = await response.Content.ReadFromJsonAsync<QueryResult<BaseItemDto>>(_jsonOptions);
         Assert.NotNull(rootDto);
     }
 
@@ -114,16 +111,14 @@ public sealed class UserLibraryControllerTests : IClassFixture<JellyfinApplicati
     public async Task LocalTrailersAndSpecialFeatures_UserIdAndItemId_Valid(string format)
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client).ConfigureAwait(false));
+        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
-        var userDto = await AuthHelper.GetUserDtoAsync(client).ConfigureAwait(false);
-        var rootFolderDto = await AuthHelper.GetRootFolderDtoAsync(client, userDto.Id).ConfigureAwait(false);
+        var userDto = await AuthHelper.GetUserDtoAsync(client);
+        var rootFolderDto = await AuthHelper.GetRootFolderDtoAsync(client, userDto.Id);
 
-        var response = await client.GetAsync(string.Format(CultureInfo.InvariantCulture, format, userDto.Id, rootFolderDto.Id)).ConfigureAwait(false);
+        var response = await client.GetAsync(string.Format(CultureInfo.InvariantCulture, format, userDto.Id, rootFolderDto.Id));
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var rootDto = await JsonSerializer.DeserializeAsync<BaseItemDto[]>(
-                    await response.Content.ReadAsStreamAsync().ConfigureAwait(false),
-                    _jsonOptions).ConfigureAwait(false);
+        var rootDto = await response.Content.ReadFromJsonAsync<BaseItemDto[]>(_jsonOptions);
         Assert.NotNull(rootDto);
     }
 }

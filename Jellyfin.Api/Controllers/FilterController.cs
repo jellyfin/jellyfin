@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
@@ -49,9 +50,10 @@ public class FilterController : BaseJellyfinApiController
         [FromQuery] Guid? userId,
         [FromQuery] Guid? parentId,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaTypes)
+        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] MediaType[] mediaTypes)
     {
-        var user = userId is null || userId.Value.Equals(default)
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -143,7 +145,8 @@ public class FilterController : BaseJellyfinApiController
         [FromQuery] bool? isSeries,
         [FromQuery] bool? recursive)
     {
-        var user = userId is null || userId.Value.Equals(default)
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
 

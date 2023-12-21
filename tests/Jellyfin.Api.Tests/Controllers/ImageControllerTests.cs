@@ -1,4 +1,3 @@
-using System;
 using Jellyfin.Api.Controllers;
 using Xunit;
 
@@ -28,7 +27,7 @@ public static class ImageControllerTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("text/html")]
-    public static void TryGetImageExtensionFromContentType_InValid_False(string contentType)
+    public static void TryGetImageExtensionFromContentType_InValid_False(string? contentType)
     {
         Assert.False(ImageController.TryGetImageExtensionFromContentType(contentType, out var ex));
         Assert.Null(ex);

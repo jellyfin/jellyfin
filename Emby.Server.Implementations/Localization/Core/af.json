@@ -123,5 +123,7 @@
     "TaskKeyframeExtractorDescription": "Haal keyframes vanuit video lêers om meer presiese HLS afspeellyste te maak. Dit kan lank duur.",
     "TaskKeyframeExtractor": "Keyframe Ekstraktor",
     "External": "Ekstern",
-    "HearingImpaired": "gehoorgestremd"
+    "HearingImpaired": "gehoorgestremd",
+    "TaskRefreshTrickplayImages": "Genereer Fopspeel Beelde",
+    "TaskRefreshTrickplayImagesDescription": "Skep fopspeel voorskou vir videos in aangeskakelde media versameling."
 }

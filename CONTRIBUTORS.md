@@ -57,6 +57,7 @@
  - [hawken93](https://github.com/hawken93)
  - [HelloWorld017](https://github.com/HelloWorld017)
  - [ikomhoog](https://github.com/ikomhoog)
+ - [iwalton3](https://github.com/iwalton3)
  - [jftuga](https://github.com/jftuga)
  - [jmshrv](https://github.com/jmshrv)
  - [joern-h](https://github.com/joern-h)
@@ -88,6 +89,7 @@
  - [neilsb](https://github.com/neilsb)
  - [nevado](https://github.com/nevado)
  - [Nickbert7](https://github.com/Nickbert7)
+ - [nicknsy](https://github.com/nicknsy)
  - [nvllsvm](https://github.com/nvllsvm)
  - [nyanmisaka](https://github.com/nyanmisaka)
  - [OancaAndrei](https://github.com/OancaAndrei)
@@ -126,6 +128,7 @@
  - [SuperSandro2000](https://github.com/SuperSandro2000)
  - [tbraeutigam](https://github.com/tbraeutigam)
  - [teacupx](https://github.com/teacupx)
+ - [TelepathicWalrus](https://github.com/TelepathicWalrus)
  - [Terror-Gene](https://github.com/Terror-Gene)
  - [ThatNerdyPikachu](https://github.com/ThatNerdyPikachu)
  - [ThibaultNocchi](https://github.com/ThibaultNocchi)
@@ -163,6 +166,14 @@
  - [vgambier](https://github.com/vgambier)
  - [MinecraftPlaye](https://github.com/MinecraftPlaye)
  - [RealGreenDragon](https://github.com/RealGreenDragon)
+ - [ipitio](https://github.com/ipitio)
+ - [TheTyrius](https://github.com/TheTyrius)
+ - [tallbl0nde](https://github.com/tallbl0nde)
+ - [sleepycatcoding](https://github.com/sleepycatcoding)
+ - [scampower3](https://github.com/scampower3)
+ - [Chris-Codes-It] (https://github.com/Chris-Codes-It)
+ - [Pithaya](https://github.com/Pithaya)
+ - [Çağrı Sakaoğlu](https://github.com/ilovepilav)
 
 # Emby Contributors
 
@@ -233,3 +244,4 @@
  - [Jakob Kukla](https://github.com/jakobkukla)
  - [Utku Özdemir](https://github.com/utkuozdemir)
  - [JPUC1143](https://github.com/Jpuc1143/)
+ - [0x25CBFC4F](https://github.com/0x25CBFC4F)

@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Entities
@@ -17,38 +18,38 @@ namespace MediaBrowser.Controller.Entities
             // Normalize
             if (string.Equals(person.Role, PersonType.GuestStar, StringComparison.OrdinalIgnoreCase))
             {
-                person.Type = PersonType.GuestStar;
+                person.Type = PersonKind.GuestStar;
             }
             else if (string.Equals(person.Role, PersonType.Director, StringComparison.OrdinalIgnoreCase))
             {
-                person.Type = PersonType.Director;
+                person.Type = PersonKind.Director;
             }
             else if (string.Equals(person.Role, PersonType.Producer, StringComparison.OrdinalIgnoreCase))
             {
-                person.Type = PersonType.Producer;
+                person.Type = PersonKind.Producer;
             }
             else if (string.Equals(person.Role, PersonType.Writer, StringComparison.OrdinalIgnoreCase))
             {
-                person.Type = PersonType.Writer;
+                person.Type = PersonKind.Writer;
             }
 
             // If the type is GuestStar and there's already an Actor entry, then update it to avoid dupes
-            if (string.Equals(person.Type, PersonType.GuestStar, StringComparison.OrdinalIgnoreCase))
+            if (person.Type == PersonKind.GuestStar)
             {
-                var existing = people.FirstOrDefault(p => p.Name.Equals(person.Name, StringComparison.OrdinalIgnoreCase) && p.Type.Equals(PersonType.Actor, StringComparison.OrdinalIgnoreCase));
+                var existing = people.FirstOrDefault(p => p.Name.Equals(person.Name, StringComparison.OrdinalIgnoreCase) && p.Type == PersonKind.Actor);
 
                 if (existing is not null)
                 {
-                    existing.Type = PersonType.GuestStar;
+                    existing.Type = PersonKind.GuestStar;
                     MergeExisting(existing, person);
                     return;
                 }
             }
 
-            if (string.Equals(person.Type, PersonType.Actor, StringComparison.OrdinalIgnoreCase))
+            if (person.Type == PersonKind.Actor)
             {
                 // If the actor already exists without a role and we have one, fill it in
-                var existing = people.FirstOrDefault(p => p.Name.Equals(person.Name, StringComparison.OrdinalIgnoreCase) && (p.Type.Equals(PersonType.Actor, StringComparison.OrdinalIgnoreCase) || p.Type.Equals(PersonType.GuestStar, StringComparison.OrdinalIgnoreCase)));
+                var existing = people.FirstOrDefault(p => p.Name.Equals(person.Name, StringComparison.OrdinalIgnoreCase) && (p.Type == PersonKind.Actor || p.Type == PersonKind.GuestStar));
                 if (existing is null)
                 {
                     // Wasn't there - add it
@@ -68,8 +69,8 @@ namespace MediaBrowser.Controller.Entities
             else
             {
                 var existing = people.FirstOrDefault(p =>
-                            string.Equals(p.Name, person.Name, StringComparison.OrdinalIgnoreCase) &&
-                            string.Equals(p.Type, person.Type, StringComparison.OrdinalIgnoreCase));
+                    string.Equals(p.Name, person.Name, StringComparison.OrdinalIgnoreCase)
+                    && p.Type == person.Type);
 
                 // Check for dupes based on the combination of Name and Type
                 if (existing is null)

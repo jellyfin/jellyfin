@@ -20,9 +20,9 @@
     "HeaderFavoriteAlbums": "Mėgstami Albumai",
     "HeaderFavoriteArtists": "Mėgstami Atlikėjai",
     "HeaderFavoriteEpisodes": "Mėgstamiausios serijos",
-    "HeaderFavoriteShows": "Mėgstamiausi serialai",
-    "HeaderFavoriteSongs": "Mėgstamos dainos",
-    "HeaderLiveTV": "TV gyvai",
+    "HeaderFavoriteShows": "Mėgstamiausios TV Laidos",
+    "HeaderFavoriteSongs": "Mėgstamos Dainos",
+    "HeaderLiveTV": "Tiesioginė TV",
     "HeaderNextUp": "Toliau eilėje",
     "HeaderRecordingGroups": "Įrašų grupės",
     "HomeVideos": "Namų vaizdo įrašai",
@@ -124,5 +124,7 @@
     "TaskKeyframeExtractor": "Pagrindinių kadrų ištraukėjas",
     "TaskOptimizeDatabaseDescription": "Suspaudžia duomenų bazę ir atlaisvina vietą. Paleidžiant šią užduotį, po bibliotekos skenavimo arba kitų veiksmų kurie galimai modifikuoja duomenų bazė, gali pagerinti greitaveiką.",
     "External": "Išorinis",
-    "HearingImpaired": "Su klausos sutrikimais"
+    "HearingImpaired": "Su klausos sutrikimais",
+    "TaskRefreshTrickplayImages": "Generuoti Trickplay atvaizdus",
+    "TaskRefreshTrickplayImagesDescription": "Sukuria trickplay peržiūras vaizdo įrašams įgalintose bibliotekose."
 }

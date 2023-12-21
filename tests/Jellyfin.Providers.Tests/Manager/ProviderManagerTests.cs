@@ -82,7 +82,7 @@ namespace Jellyfin.Providers.Tests.Manager
             AddParts(providerManager, metadataServices: servicesList.Select(s => s.Object).ToArray());
 
             var refreshOptions = new MetadataRefreshOptions(Mock.Of<IDirectoryService>(MockBehavior.Strict));
-            var actual = await providerManager.RefreshSingleItem(item, refreshOptions, CancellationToken.None).ConfigureAwait(false);
+            var actual = await providerManager.RefreshSingleItem(item, refreshOptions, CancellationToken.None);
 
             Assert.Equal(ItemUpdateType.MetadataDownload, actual);
             for (var i = 0; i < servicesList.Length; i++)
@@ -105,7 +105,7 @@ namespace Jellyfin.Providers.Tests.Manager
             AddParts(providerManager, metadataServices: servicesList.Select(s => s.Object).ToArray());
 
             var refreshOptions = new MetadataRefreshOptions(Mock.Of<IDirectoryService>(MockBehavior.Strict));
-            var actual = await providerManager.RefreshSingleItem(item, refreshOptions, CancellationToken.None).ConfigureAwait(false);
+            var actual = await providerManager.RefreshSingleItem(item, refreshOptions, CancellationToken.None);
 
             var expectedResult = serviceFound ? ItemUpdateType.MetadataDownload : ItemUpdateType.None;
             Assert.Equal(expectedResult, actual);
@@ -368,8 +368,8 @@ namespace Jellyfin.Providers.Tests.Manager
         [Theory]
         [InlineData(nameof(ICustomMetadataProvider), true)]
         [InlineData(nameof(IRemoteMetadataProvider), true)]
-        [InlineData(nameof(ILocalMetadataProvider), false)]
-        public void GetMetadataProviders_CanRefreshMetadataOwned_WhenNotLocal(string providerType, bool expected)
+        [InlineData(nameof(ILocalMetadataProvider), true)]
+        public void GetMetadataProviders_CanRefreshMetadataOwned(string providerType, bool expected)
         {
             GetMetadataProviders_CanRefreshMetadata_Tester(providerType, expected, ownedItem: true);
         }

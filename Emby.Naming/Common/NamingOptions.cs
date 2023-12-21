@@ -141,8 +141,7 @@ namespace Emby.Naming.Common
             VideoFileStackingRules = new[]
             {
                 new FileStackRule(@"^(?<filename>.*?)(?:(?<=[\]\)\}])|[ _.-]+)[\(\[]?(?<parttype>cd|dvd|part|pt|dis[ck])[ _.-]*(?<number>[0-9]+)[\)\]]?(?:\.[^.]+)?$", true),
-                new FileStackRule(@"^(?<filename>.*?)(?:(?<=[\]\)\}])|[ _.-]+)[\(\[]?(?<parttype>cd|dvd|part|pt|dis[ck])[ _.-]*(?<number>[a-d])[\)\]]?(?:\.[^.]+)?$", false),
-                new FileStackRule(@"^(?<filename>.*?)(?:(?<=[\]\)\}])|[ _.-]?)(?<number>[a-d])(?:\.[^.]+)?$", false)
+                new FileStackRule(@"^(?<filename>.*?)(?:(?<=[\]\)\}])|[ _.-]+)[\(\[]?(?<parttype>cd|dvd|part|pt|dis[ck])[ _.-]*(?<number>[a-d])[\)\]]?(?:\.[^.]+)?$", false)
             };
 
             CleanDateTimes = new[]
@@ -157,7 +156,8 @@ namespace Emby.Naming.Common
                 @"^(?<cleaned>.+?)(\[.*\])",
                 @"^\s*(?<cleaned>.+?)\WE[0-9]+(-|~)E?[0-9]+(\W|$)",
                 @"^\s*\[[^\]]+\](?!\.\w+$)\s*(?<cleaned>.+)",
-                @"^\s*(?<cleaned>.+?)\s+-\s+[0-9]+\s*$"
+                @"^\s*(?<cleaned>.+?)\s+-\s+[0-9]+\s*$",
+                @"^\s*(?<cleaned>.+?)(([-._ ](trailer|sample))|-(scene|clip|behindthescenes|deleted|deletedscene|featurette|short|interview|other|extra))$"
             };
 
             SubtitleFileExtensions = new[]
@@ -270,7 +270,6 @@ namespace Emby.Naming.Common
                 ".sfx",
                 ".shn",
                 ".sid",
-                ".spc",
                 ".stm",
                 ".strm",
                 ".ult",
@@ -319,26 +318,36 @@ namespace Emby.Naming.Common
                 new EpisodeExpression(@"[\._ -]()[Ee][Pp]_?([0-9]+)([^\\/]*)$"),
                 // <!-- foo.E01., foo.e01. -->
                 new EpisodeExpression(@"[^\\/]*?()\.?[Ee]([0-9]+)\.([^\\/]*)$"),
-                new EpisodeExpression("(?<year>[0-9]{4})[\\.-](?<month>[0-9]{2})[\\.-](?<day>[0-9]{2})", true)
+                new EpisodeExpression("(?<year>[0-9]{4})[._ -](?<month>[0-9]{2})[._ -](?<day>[0-9]{2})", true)
                 {
                     DateTimeFormats = new[]
                     {
                         "yyyy.MM.dd",
                         "yyyy-MM-dd",
-                        "yyyy_MM_dd"
+                        "yyyy_MM_dd",
+                        "yyyy MM dd"
                     }
                 },
-                new EpisodeExpression(@"(?<day>[0-9]{2})[.-](?<month>[0-9]{2})[.-](?<year>[0-9]{4})", true)
+                new EpisodeExpression("(?<day>[0-9]{2})[._ -](?<month>[0-9]{2})[._ -](?<year>[0-9]{4})", true)
                 {
                     DateTimeFormats = new[]
                     {
                         "dd.MM.yyyy",
                         "dd-MM-yyyy",
-                        "dd_MM_yyyy"
+                        "dd_MM_yyyy",
+                        "dd MM yyyy"
                     }
                 },
 
-                // This isn't a Kodi naming rule, but the expression below causes false positives,
+                // This isn't a Kodi naming rule, but the expression below causes false episode numbers for
+                // Title Season X Episode X naming schemes.
+                // "Series Season X Episode X - Title.avi", "Series S03 E09.avi", "s3 e9 - Title.avi"
+                new EpisodeExpression(@".*[\\\/]((?<seriesname>[^\\/]+?)\s)?[Ss](?:eason)?\s*(?<seasonnumber>[0-9]+)\s+[Ee](?:pisode)?\s*(?<epnumber>[0-9]+).*$")
+                {
+                    IsNamed = true
+                },
+
+                // Not a Kodi rule as well, but the expression below also causes false positives,
                 // so we make sure this one gets tested first.
                 // "Foo Bar 889"
                 new EpisodeExpression(@".*[\\\/](?![Ee]pisode)(?<seriesname>[\w\s]+?)\s(?<epnumber>[0-9]{1,4})(-(?<endingepnumber>[0-9]{2,4}))*[^\\\/x]*$")
@@ -367,7 +376,7 @@ namespace Emby.Naming.Common
                     IsNamed = true,
                     SupportsAbsoluteEpisodeNumbers = false
                 },
-                new EpisodeExpression("[\\/._ -]p(?:ar)?t[_. -]()([ivx]+|[0-9]+)([._ -][^\\/]*)$")
+                new EpisodeExpression(@"[\/._ -]p(?:ar)?t[_. -]()([ivx]+|[0-9]+)([._ -][^\/]*)$")
                 {
                     SupportsAbsoluteEpisodeNumbers = true
                 },
@@ -408,7 +417,7 @@ namespace Emby.Naming.Common
                 },
 
                 // "1-12 episode title"
-                new EpisodeExpression(@"([0-9]+)-([0-9]+)"),
+                new EpisodeExpression("([0-9]+)-([0-9]+)"),
 
                 // "01 - blah.avi", "01-blah.avi"
                 new EpisodeExpression(@".*(\\|\/)(?<epnumber>[0-9]{1,3})(-(?<endingepnumber>[0-9]{2,3}))*\s?-\s?[^\\\/]*$")
@@ -451,16 +460,6 @@ namespace Emby.Naming.Common
                 {
                     IsNamed = true
                 },
-            };
-
-            EpisodeWithoutSeasonExpressions = new[]
-            {
-                @"[/\._ \-]()([0-9]+)(-[0-9]+)?"
-            };
-
-            EpisodeMultiPartExpressions = new[]
-            {
-                @"^[-_ex]+([0-9]+(?:(?:[a-i]|\\.[1-9])(?![0-9]))?)"
             };
 
             VideoExtraRules = new[]
@@ -713,7 +712,7 @@ namespace Emby.Naming.Common
                 // Chapter is often beginning of filename
                 "^(?<chapter>[0-9]+)",
                 // Part if often ending of filename
-                @"(?<!ch(?:apter) )(?<part>[0-9]+)$",
+                "(?<!ch(?:apter) )(?<part>[0-9]+)$",
                 // Sometimes named as 0001_005 (chapter_part)
                 "(?<chapter>[0-9]+)_(?<part>[0-9]+)",
                 // Some audiobooks are ripped from cd's, and will be named by disk number.
@@ -798,16 +797,6 @@ namespace Emby.Naming.Common
         public EpisodeExpression[] EpisodeExpressions { get; set; }
 
         /// <summary>
-        /// Gets or sets list of raw episode without season regular expressions strings.
-        /// </summary>
-        public string[] EpisodeWithoutSeasonExpressions { get; set; }
-
-        /// <summary>
-        /// Gets or sets list of raw multi-part episodes regular expressions strings.
-        /// </summary>
-        public string[] EpisodeMultiPartExpressions { get; set; }
-
-        /// <summary>
         /// Gets or sets list of video file extensions.
         /// </summary>
         public string[] VideoFileExtensions { get; set; }
@@ -878,24 +867,12 @@ namespace Emby.Naming.Common
         public Regex[] CleanStringRegexes { get; private set; } = Array.Empty<Regex>();
 
         /// <summary>
-        /// Gets list of episode without season regular expressions.
-        /// </summary>
-        public Regex[] EpisodeWithoutSeasonRegexes { get; private set; } = Array.Empty<Regex>();
-
-        /// <summary>
-        /// Gets list of multi-part episode regular expressions.
-        /// </summary>
-        public Regex[] EpisodeMultiPartRegexes { get; private set; } = Array.Empty<Regex>();
-
-        /// <summary>
         /// Compiles raw regex strings into regexes.
         /// </summary>
         public void Compile()
         {
             CleanDateTimeRegexes = CleanDateTimes.Select(Compile).ToArray();
             CleanStringRegexes = CleanStrings.Select(Compile).ToArray();
-            EpisodeWithoutSeasonRegexes = EpisodeWithoutSeasonExpressions.Select(Compile).ToArray();
-            EpisodeMultiPartRegexes = EpisodeMultiPartExpressions.Select(Compile).ToArray();
         }
 
         private Regex Compile(string exp)

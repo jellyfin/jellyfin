@@ -86,7 +86,7 @@
     "Shows": "Шоу",
     "ServerNameNeedsToBeRestarted": "{0} потрібно перезапустити",
     "ScheduledTaskStartedWithName": "{0} розпочато",
-    "ScheduledTaskFailedWithName": "Помилка {0}",
+    "ScheduledTaskFailedWithName": "{0} незавершено, збій",
     "ProviderValue": "Постачальник: {0}",
     "PluginUpdatedWithName": "{0} оновлено",
     "PluginUninstalledWithName": "{0} видалено",
@@ -123,5 +123,7 @@
     "TaskKeyframeExtractorDescription": "Витягує ключові кадри з відеофайлів для створення більш точних списків відтворення HLS. Це завдання може виконуватися протягом тривалого часу.",
     "TaskKeyframeExtractor": "Екстрактор ключових кадрів",
     "External": "Зовнішній",
-    "HearingImpaired": "З порушеннями слуху"
+    "HearingImpaired": "З порушеннями слуху",
+    "TaskRefreshTrickplayImagesDescription": "Створює trickplay-зображення для відео у ввімкнених медіатеках.",
+    "TaskRefreshTrickplayImages": "Створення Trickplay-зображень"
 }

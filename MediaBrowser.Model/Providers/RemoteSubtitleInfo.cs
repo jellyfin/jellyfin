@@ -25,8 +25,18 @@ namespace MediaBrowser.Model.Providers
 
         public float? CommunityRating { get; set; }
 
+        public float? FrameRate { get; set; }
+
         public int? DownloadCount { get; set; }
 
         public bool? IsHashMatch { get; set; }
+
+        public bool? AiTranslated { get; set; }
+
+        public bool? MachineTranslated { get; set; }
+
+        public bool? Forced { get; set; }
+
+        public bool? HearingImpaired { get; set; }
     }
 }

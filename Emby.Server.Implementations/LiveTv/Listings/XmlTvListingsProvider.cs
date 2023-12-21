@@ -84,38 +84,53 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 _logger.LogInformation("Downloading xmltv listings from {Path}", info.Path);
 
                 using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(info.Path, cancellationToken).ConfigureAwait(false);
-                await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-                return await UnzipIfNeededAndCopy(info.Path, stream, cacheFile, cancellationToken).ConfigureAwait(false);
+                var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+                await using (stream.ConfigureAwait(false))
+                {
+                    return await UnzipIfNeededAndCopy(info.Path, stream, cacheFile, cancellationToken).ConfigureAwait(false);
+                }
             }
             else
             {
-                await using var stream = AsyncFile.OpenRead(info.Path);
-                return await UnzipIfNeededAndCopy(info.Path, stream, cacheFile, cancellationToken).ConfigureAwait(false);
+                var stream = AsyncFile.OpenRead(info.Path);
+                await using (stream.ConfigureAwait(false))
+                {
+                    return await UnzipIfNeededAndCopy(info.Path, stream, cacheFile, cancellationToken).ConfigureAwait(false);
+                }
             }
         }
 
         private async Task<string> UnzipIfNeededAndCopy(string originalUrl, Stream stream, string file, CancellationToken cancellationToken)
         {
-            await using var fileStream = new FileStream(file, FileMode.CreateNew, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
+            var fileStream = new FileStream(
+                file,
+                FileMode.CreateNew,
+                FileAccess.Write,
+                FileShare.None,
+                IODefaults.FileStreamBufferSize,
+                FileOptions.Asynchronous);
 
-            if (Path.GetExtension(originalUrl.AsSpan().LeftPart('?')).Equals(".gz", StringComparison.OrdinalIgnoreCase))
+            await using (fileStream.ConfigureAwait(false))
             {
-                try
+                if (Path.GetExtension(originalUrl.AsSpan().LeftPart('?')).Equals(".gz", StringComparison.OrdinalIgnoreCase))
                 {
-                    using var reader = new GZipStream(stream, CompressionMode.Decompress);
-                    await reader.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
+                    try
+                    {
+                        using var reader = new GZipStream(stream, CompressionMode.Decompress);
+                        await reader.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error extracting from gz file {File}", originalUrl);
+                    }
                 }
-                catch (Exception ex)
+                else
                 {
-                    _logger.LogError(ex, "Error extracting from gz file {File}", originalUrl);
+                    await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
                 }
-            }
-            else
-            {
-                await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
-            }
 
-            return file;
+                return file;
+            }
         }
 
         public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)

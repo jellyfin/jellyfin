@@ -8,8 +8,10 @@ using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Providers.Music;
+using MediaBrowser.Providers.Plugins.MusicBrainz.Configuration;
 using MetaBrainz.MusicBrainz;
 using MetaBrainz.MusicBrainz.Interfaces.Entities;
 using MetaBrainz.MusicBrainz.Interfaces.Searches;
@@ -23,8 +25,7 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz;
 public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, ArtistInfo>, IDisposable
 {
     private readonly ILogger<MusicBrainzArtistProvider> _logger;
-    private readonly Query _musicBrainzQuery;
-    private readonly string _musicBrainzDefaultUri = "https://musicbrainz.org";
+    private Query _musicBrainzQuery;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MusicBrainzArtistProvider"/> class.
@@ -33,33 +34,36 @@ public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, Ar
     public MusicBrainzArtistProvider(ILogger<MusicBrainzArtistProvider> logger)
     {
         _logger = logger;
-
-        MusicBrainz.Plugin.Instance!.ConfigurationChanged += (_, _) =>
-            {
-                if (Uri.TryCreate(MusicBrainz.Plugin.Instance.Configuration.Server, UriKind.Absolute, out var server))
-                {
-                    Query.DefaultServer = server.Host;
-                    Query.DefaultPort = server.Port;
-                    Query.DefaultUrlScheme = server.Scheme;
-                }
-                else
-                {
-                    // Fallback to official server
-                    _logger.LogWarning("Invalid MusicBrainz server specified, falling back to official server");
-                    var defaultServer = new Uri(_musicBrainzDefaultUri);
-                    Query.DefaultServer = defaultServer.Host;
-                    Query.DefaultPort = defaultServer.Port;
-                    Query.DefaultUrlScheme = defaultServer.Scheme;
-                }
-
-                Query.DelayBetweenRequests = MusicBrainz.Plugin.Instance.Configuration.RateLimit;
-            };
-
         _musicBrainzQuery = new Query();
+        ReloadConfig(null, MusicBrainz.Plugin.Instance!.Configuration);
+        MusicBrainz.Plugin.Instance!.ConfigurationChanged += ReloadConfig;
     }
 
     /// <inheritdoc />
     public string Name => "MusicBrainz";
+
+    private void ReloadConfig(object? sender, BasePluginConfiguration e)
+    {
+        var configuration = (PluginConfiguration)e;
+        if (Uri.TryCreate(configuration.Server, UriKind.Absolute, out var server))
+        {
+            Query.DefaultServer = server.DnsSafeHost;
+            Query.DefaultPort = server.Port;
+            Query.DefaultUrlScheme = server.Scheme;
+        }
+        else
+        {
+            // Fallback to official server
+            _logger.LogWarning("Invalid MusicBrainz server specified, falling back to official server");
+            var defaultServer = new Uri(PluginConfiguration.DefaultServer);
+            Query.DefaultServer = defaultServer.Host;
+            Query.DefaultPort = defaultServer.Port;
+            Query.DefaultUrlScheme = defaultServer.Scheme;
+        }
+
+        Query.DelayBetweenRequests = configuration.RateLimit;
+        _musicBrainzQuery = new Query();
+    }
 
     /// <inheritdoc />
     public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(ArtistInfo searchInfo, CancellationToken cancellationToken)
@@ -112,7 +116,8 @@ public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, Ar
         {
             Name = artist.Name,
             ProductionYear = artist.LifeSpan?.Begin?.Year,
-            PremiereDate = artist.LifeSpan?.Begin?.NearestDate
+            PremiereDate = artist.LifeSpan?.Begin?.NearestDate,
+            SearchProviderName = Name,
         };
 
         searchResult.SetProviderId(MetadataProvider.MusicBrainzArtist, artist.Id.ToString());

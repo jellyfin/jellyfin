@@ -85,16 +85,17 @@ public class MusicGenresController : BaseJellyfinApiController
         [FromQuery] string? nameStartsWithOrGreater,
         [FromQuery] string? nameStartsWith,
         [FromQuery] string? nameLessThan,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] sortBy,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemSortBy[] sortBy,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] SortOrder[] sortOrder,
         [FromQuery] bool? enableImages = true,
         [FromQuery] bool enableTotalRecordCount = true)
     {
+        userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, false, imageTypeLimit, enableImageTypes);
 
-        User? user = userId is null || userId.Value.Equals(default)
+        User? user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -144,11 +145,12 @@ public class MusicGenresController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<BaseItemDto> GetMusicGenre([FromRoute, Required] string genreName, [FromQuery] Guid? userId)
     {
+        userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions().AddClientFields(User);
 
         MusicGenre? item;
 
-        if (genreName.IndexOf(BaseItem.SlugChar, StringComparison.OrdinalIgnoreCase) != -1)
+        if (genreName.Contains(BaseItem.SlugChar, StringComparison.OrdinalIgnoreCase))
         {
             item = GetItemFromSlugName<MusicGenre>(_libraryManager, genreName, dtoOptions, BaseItemKind.MusicGenre);
         }
@@ -162,7 +164,7 @@ public class MusicGenresController : BaseJellyfinApiController
             return NotFound();
         }
 
-        if (userId.HasValue && !userId.Value.Equals(default))
+        if (!userId.Value.Equals(default))
         {
             var user = _userManager.GetUserById(userId.Value);
 

@@ -1,5 +1,4 @@
 using System.Threading.Tasks;
-using Jellyfin.Networking.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -38,7 +37,7 @@ public class LanFilteringMiddleware
             return;
         }
 
-        var host = httpContext.GetNormalizedRemoteIp();
+        var host = httpContext.GetNormalizedRemoteIP();
         if (!networkManager.IsInLocalNetwork(host))
         {
             return;

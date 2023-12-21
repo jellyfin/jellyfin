@@ -33,8 +33,7 @@ public class RobotsRedirectionMiddleware
     /// <returns>The async task.</returns>
     public async Task Invoke(HttpContext httpContext)
     {
-        var localPath = httpContext.Request.Path.ToString();
-        if (string.Equals(localPath, "/robots.txt", StringComparison.OrdinalIgnoreCase))
+        if (httpContext.Request.Path.Equals("/robots.txt", StringComparison.OrdinalIgnoreCase))
         {
             _logger.LogDebug("Redirecting robots.txt request to web/robots.txt");
             httpContext.Response.Redirect("web/robots.txt");

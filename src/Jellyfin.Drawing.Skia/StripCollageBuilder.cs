@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using SkiaSharp;
+using SkiaSharp.HarfBuzz;
 
 namespace Jellyfin.Drawing.Skia;
 
 /// <summary>
 /// Used to build collages of multiple images arranged in vertical strips.
 /// </summary>
-public class StripCollageBuilder
+public partial class StripCollageBuilder
 {
     private readonly SkiaEncoder _skiaEncoder;
 
@@ -22,6 +23,12 @@ public class StripCollageBuilder
         _skiaEncoder = skiaEncoder;
     }
 
+    [GeneratedRegex(@"[^\p{IsCJKUnifiedIdeographs}\p{IsCJKUnifiedIdeographsExtensionA}\p{IsKatakana}\p{IsHiragana}\p{IsHangulSyllables}\p{IsHangulJamo}]")]
+    private static partial Regex NonCjkPatternRegex();
+
+    [GeneratedRegex(@"\p{IsArabic}|\p{IsArmenian}|\p{IsHebrew}|\p{IsSyriac}|\p{IsThaana}")]
+    private static partial Regex IsRtlTextRegex();
+
     /// <summary>
     /// Check which format an image has been encoded with using its filename extension.
     /// </summary>
@@ -31,25 +38,25 @@ public class StripCollageBuilder
     {
         ArgumentNullException.ThrowIfNull(outputPath);
 
-        var ext = Path.GetExtension(outputPath);
+        var ext = Path.GetExtension(outputPath.AsSpan());
 
-        if (string.Equals(ext, ".jpg", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(ext, ".jpeg", StringComparison.OrdinalIgnoreCase))
+        if (ext.Equals(".jpg", StringComparison.OrdinalIgnoreCase)
+            || ext.Equals(".jpeg", StringComparison.OrdinalIgnoreCase))
         {
             return SKEncodedImageFormat.Jpeg;
         }
 
-        if (string.Equals(ext, ".webp", StringComparison.OrdinalIgnoreCase))
+        if (ext.Equals(".webp", StringComparison.OrdinalIgnoreCase))
         {
             return SKEncodedImageFormat.Webp;
         }
 
-        if (string.Equals(ext, ".gif", StringComparison.OrdinalIgnoreCase))
+        if (ext.Equals(".gif", StringComparison.OrdinalIgnoreCase))
         {
             return SKEncodedImageFormat.Gif;
         }
 
-        if (string.Equals(ext, ".bmp", StringComparison.OrdinalIgnoreCase))
+        if (ext.Equals(".bmp", StringComparison.OrdinalIgnoreCase))
         {
             return SKEncodedImageFormat.Bmp;
         }
@@ -119,8 +126,7 @@ public class StripCollageBuilder
         var typeFace = SKTypeface.FromFamilyName("sans-serif", SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright);
 
         // use the system fallback to find a typeface for the given CJK character
-        var nonCjkPattern = @"[^\p{IsCJKUnifiedIdeographs}\p{IsCJKUnifiedIdeographsExtensionA}\p{IsKatakana}\p{IsHiragana}\p{IsHangulSyllables}\p{IsHangulJamo}]";
-        var filteredName = Regex.Replace(libraryName ?? string.Empty, nonCjkPattern, string.Empty);
+        var filteredName = NonCjkPatternRegex().Replace(libraryName ?? string.Empty, string.Empty);
         if (!string.IsNullOrEmpty(filteredName))
         {
             typeFace = SKFontManager.Default.MatchCharacter(null, SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright, null, filteredName[0]);
@@ -144,7 +150,19 @@ public class StripCollageBuilder
             textPaint.TextSize = 0.9f * width * textPaint.TextSize / textWidth;
         }
 
-        canvas.DrawText(libraryName, width / 2f, (height / 2f) + (textPaint.FontMetrics.XHeight / 2), textPaint);
+        if (string.IsNullOrWhiteSpace(libraryName))
+        {
+            return bitmap;
+        }
+
+        if (IsRtlTextRegex().IsMatch(libraryName))
+        {
+            canvas.DrawShapedText(libraryName, width / 2f, (height / 2f) + (textPaint.FontMetrics.XHeight / 2), textPaint);
+        }
+        else
+        {
+            canvas.DrawText(libraryName, width / 2f, (height / 2f) + (textPaint.FontMetrics.XHeight / 2), textPaint);
+        }
 
         return bitmap;
     }
@@ -171,12 +189,12 @@ public class StripCollageBuilder
 
                 // Scale image. The FromBitmap creates a copy
                 var imageInfo = new SKImageInfo(cellWidth, cellHeight, currentBitmap.ColorType, currentBitmap.AlphaType, currentBitmap.ColorSpace);
-                using var resizedBitmap = SKBitmap.FromImage(SkiaEncoder.ResizeImage(currentBitmap, imageInfo));
+                using var resizeImage = SkiaEncoder.ResizeImage(currentBitmap, imageInfo);
 
                 // draw this image into the strip at the next position
                 var xPos = x * cellWidth;
                 var yPos = y * cellHeight;
-                canvas.DrawBitmap(resizedBitmap, xPos, yPos);
+                canvas.DrawImage(resizeImage, xPos, yPos);
             }
         }
 

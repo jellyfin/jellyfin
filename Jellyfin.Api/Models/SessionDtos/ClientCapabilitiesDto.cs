@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions.Json.Converters;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Session;
@@ -16,7 +17,7 @@ public class ClientCapabilitiesDto
     /// Gets or sets the list of playable media types.
     /// </summary>
     [JsonConverter(typeof(JsonCommaDelimitedArrayConverterFactory))]
-    public IReadOnlyList<string> PlayableMediaTypes { get; set; } = Array.Empty<string>();
+    public IReadOnlyList<MediaType> PlayableMediaTypes { get; set; } = Array.Empty<MediaType>();
 
     /// <summary>
     /// Gets or sets the list of supported commands.

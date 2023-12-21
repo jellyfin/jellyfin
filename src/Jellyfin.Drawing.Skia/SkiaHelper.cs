@@ -19,7 +19,6 @@ public static class SkiaHelper
     public static SKBitmap? GetNextValidImage(SkiaEncoder skiaEncoder, IReadOnlyList<string> paths, int currentIndex, out int newIndex)
     {
         var imagesTested = new Dictionary<int, int>();
-        SKBitmap? bitmap = null;
 
         while (imagesTested.Count < paths.Count)
         {
@@ -28,7 +27,7 @@ public static class SkiaHelper
                 currentIndex = 0;
             }
 
-            bitmap = skiaEncoder.Decode(paths[currentIndex], false, null, out _);
+            SKBitmap? bitmap = skiaEncoder.Decode(paths[currentIndex], false, null, out _);
 
             imagesTested[currentIndex] = 0;
 
@@ -36,11 +35,12 @@ public static class SkiaHelper
 
             if (bitmap is not null)
             {
-                break;
+                newIndex = currentIndex;
+                return bitmap;
             }
         }
 
         newIndex = currentIndex;
-        return bitmap;
+        return null;
     }
 }

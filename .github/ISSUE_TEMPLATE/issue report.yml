@@ -30,9 +30,9 @@ body:
       label: Jellyfin Version
       description: What version of Jellyfin are you running?
       options:
-        - 10.8.0
+        - 10.8.z
+        - 10.8.9
         - 10.7.7
-        - 10.7.z
         - 10.6.4
         - Other
     validations:
@@ -47,13 +47,15 @@ body:
       label: Environment
       description: |
         Examples:
-        - **OS**: [e.g. Debian, Windows]
+        - **OS**: [e.g. Debian 11, Windows 10]
+        - **Linux Kernel**: [e.g. none, 5.15, 6.1, etc.]
         - **Virtualization**: [e.g. Docker, KVM, LXC]
         - **Clients**: [Browser, Android, Fire Stick, etc.]
         - **Browser**: [e.g. Firefox 91, Chrome 93, Safari 13]
-        - **FFmpeg Version**: [e.g. 4.3.2-Jellyfin]
+        - **FFmpeg Version**: [e.g. 5.1.2-Jellyfin]
         - **Playback**: [Direct Play, Remux, Direct Stream, Transcode]
         - **Hardware Acceleration**: [e.g. none, VAAPI, NVENC, etc.]
+        - **GPU Model**: [e.g. none, UHD630, GTX1050, etc.]
         - **Installed Plugins**: [e.g. none, Fanart, Anime, etc.]
         - **Reverse Proxy**: [e.g. none, nginx, apache, etc.]
         - **Base URL**: [e.g. none, yes: /example]
@@ -61,12 +63,14 @@ body:
         - **Storage**: [e.g. local, NFS, cloud]
       value: |
         - OS:
+        - Linux Kernel:
         - Virtualization:
         - Clients:
         - Browser:
         - FFmpeg Version:
         - Playback Method:
         - Hardware Acceleration:
+        - GPU Model:
         - Plugins:
         - Reverse Proxy:
         - Base URL:
@@ -84,8 +88,8 @@ body:
     id: ffmpeg-logs
     attributes:
       label: FFmpeg logs
-      description: Please copy and paste any relevant log output. This can be found in Dashboard > Logs.
-      placeholder: It's important to include the specific codec details. If no FFmpeg logs appear, the file was Direct Played and did not use FFmpeg.
+      description: Please copy and paste recent FFmpeg log output. This can be found in Dashboard > Logs > FFmpeg*.log.
+      placeholder: This field is mandatory for debugging hardware transcoding issues. It's important to include the specific codec details. If no FFmpeg logs appear, the file was Direct Played and did not use FFmpeg.
       render: shell
   - type: textarea
     id: browserlogs
