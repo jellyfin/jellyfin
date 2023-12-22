@@ -414,6 +414,19 @@
     ],
     "CodecProfiles": [
         {
+            "Type": "VideoAudio",
+            "Conditions": [
+                {
+                    "Condition": "Equals",
+                    "Property": "IsSecondaryAudio",
+                    "Value": "false",
+                    "IsRequired": false,
+                    "$type": "ProfileCondition"
+                }
+            ],
+            "$type": "CodecProfile"
+        },
+        {
             "Type": "Video",
             "Conditions": [
                 {
