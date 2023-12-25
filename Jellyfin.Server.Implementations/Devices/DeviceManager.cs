@@ -110,21 +110,21 @@ namespace Jellyfin.Server.Implementations.Devices
         /// <inheritdoc />
         public async Task<DeviceInfo?> GetDevice(string id)
         {
-            Device? device;
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
-                device = await dbContext.Devices
+                var device = await dbContext.Devices
                     .Where(d => d.DeviceId == id)
                     .OrderByDescending(d => d.DateLastActivity)
                     .Include(d => d.User)
+                    .SelectMany(d => dbContext.DeviceOptions.Where(o => o.DeviceId == d.DeviceId).DefaultIfEmpty(), (d, o) => new { Device = d, Options = o })
                     .FirstOrDefaultAsync()
                     .ConfigureAwait(false);
+
+                var deviceInfo = device is null ? null : ToDeviceInfo(device.Device, device.Options);
+
+                return deviceInfo;
             }
-
-            var deviceInfo = device is null ? null : ToDeviceInfo(device);
-
-            return deviceInfo;
         }
 
         /// <inheritdoc />
@@ -172,15 +172,15 @@ namespace Jellyfin.Server.Implementations.Devices
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
-                IAsyncEnumerable<Device> sessions = dbContext.Devices
+                var sessions = dbContext.Devices
                     .Include(d => d.User)
                     .OrderByDescending(d => d.DateLastActivity)
                     .ThenBy(d => d.DeviceId)
+                    .SelectMany(d => dbContext.DeviceOptions.Where(o => o.DeviceId == d.DeviceId).DefaultIfEmpty(), (d, o) => new { Device = d, Options = o })
                     .AsAsyncEnumerable();
-
                 if (supportsSync.HasValue)
                 {
-                    sessions = sessions.Where(i => GetCapabilities(i.DeviceId).SupportsSync == supportsSync.Value);
+                    sessions = sessions.Where(i => GetCapabilities(i.Device.DeviceId).SupportsSync == supportsSync.Value);
                 }
 
                 if (userId.HasValue)
@@ -191,10 +191,10 @@ namespace Jellyfin.Server.Implementations.Devices
                         throw new ResourceNotFoundException();
                     }
 
-                    sessions = sessions.Where(i => CanAccessDevice(user, i.DeviceId));
+                    sessions = sessions.Where(i => CanAccessDevice(user, i.Device.DeviceId));
                 }
 
-                var array = await sessions.Select(device => ToDeviceInfo(device)).ToArrayAsync().ConfigureAwait(false);
+                var array = await sessions.Select(device => ToDeviceInfo(device.Device, device.Options)).ToArrayAsync().ConfigureAwait(false);
 
                 return new QueryResult<DeviceInfo>(array);
             }
@@ -226,7 +226,7 @@ namespace Jellyfin.Server.Implementations.Devices
                    || !GetCapabilities(deviceId).SupportsPersistentIdentifier;
         }
 
-        private DeviceInfo ToDeviceInfo(Device authInfo)
+        private DeviceInfo ToDeviceInfo(Device authInfo, DeviceOptions? options = null)
         {
             var caps = GetCapabilities(authInfo.DeviceId);
 
@@ -239,7 +239,8 @@ namespace Jellyfin.Server.Implementations.Devices
                 LastUserName = authInfo.User.Username,
                 Name = authInfo.DeviceName,
                 DateLastActivity = authInfo.DateLastActivity,
-                IconUrl = caps.IconUrl
+                IconUrl = caps.IconUrl,
+                CustomName = options?.CustomName,
             };
         }
     }

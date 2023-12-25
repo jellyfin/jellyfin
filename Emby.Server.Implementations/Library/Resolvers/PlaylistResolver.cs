@@ -23,7 +23,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
         private CollectionType?[] _musicPlaylistCollectionTypes =
         {
             null,
-            CollectionType.Music
+            CollectionType.music
         };
 
         /// <inheritdoc/>

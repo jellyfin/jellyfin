@@ -33,6 +33,11 @@ namespace MediaBrowser.Model.Entities
         /// <summary>
         /// The import.
         /// </summary>
-        Import = 6
+        Import = 6,
+
+        /// <summary>
+        /// API call updated item user data.
+        /// </summary>
+        UpdateUserData = 7,
     }
 }

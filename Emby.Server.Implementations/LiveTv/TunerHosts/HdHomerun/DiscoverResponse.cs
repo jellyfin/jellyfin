@@ -30,7 +30,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             {
                 var model = ModelNumber ?? string.Empty;
 
-                if (model.IndexOf("hdtc", StringComparison.OrdinalIgnoreCase) != -1)
+                if (model.Contains("hdtc", StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }

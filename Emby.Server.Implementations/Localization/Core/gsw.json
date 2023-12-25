@@ -124,5 +124,7 @@
     "TaskOptimizeDatabaseDescription": "Kompromiert d Datenbank und trennt freie Speicherplatz. Durch die Ufagb cha d Leistig nach em ne Scan vor Bibliothek oder andere Ufgabe verbesseret werde.",
     "HearingImpaired": "Hörgschädigti",
     "TaskKeyframeExtractor": "Keyframe-Extraktor",
-    "TaskKeyframeExtractorDescription": "Extrahiert Keyframes us Videodateien zum erstelle vo genauere HLS Playliste. Die Ufgab cha für e langi Zyt laufe."
+    "TaskKeyframeExtractorDescription": "Extrahiert Keyframes us Videodateien zum erstelle vo genauere HLS Playliste. Die Ufgab cha für e langi Zyt laufe.",
+    "TaskRefreshTrickplayImages": "Trickplay-Bilder erstelle",
+    "TaskRefreshTrickplayImagesDescription": "Erstellt Trickplay-Vorschaue für Video in aktivierte Bibliothèke."
 }

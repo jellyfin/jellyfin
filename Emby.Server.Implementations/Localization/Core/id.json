@@ -13,7 +13,7 @@
     "HomeVideos": "Video Rumahan",
     "HeaderRecordingGroups": "Grup Rekaman",
     "HeaderNextUp": "Selanjutnya",
-    "HeaderLiveTV": "TV Live",
+    "HeaderLiveTV": "Siaran langsung",
     "HeaderFavoriteSongs": "Lagu Favorit",
     "HeaderFavoriteShows": "Tayangan Favorit",
     "HeaderFavoriteEpisodes": "Episode Favorit",
@@ -123,5 +123,7 @@
     "TaskKeyframeExtractorDescription": "Ekstrak bingkai utama dari file video untuk membuat daftar putar HLS yang lebih tepat. Tugas ini dapat berjalan untuk waktu yang lama.",
     "TaskKeyframeExtractor": "Ekstraktor Bingkai Utama",
     "External": "Luar",
-    "HearingImpaired": "Gangguan Pendengaran"
+    "HearingImpaired": "Gangguan Pendengaran",
+    "TaskRefreshTrickplayImages": "Hasilkan Gambar Trickplay",
+    "TaskRefreshTrickplayImagesDescription": "Buat pratinjau trickplay untuk video di perpustakaan yang diaktifkan."
 }

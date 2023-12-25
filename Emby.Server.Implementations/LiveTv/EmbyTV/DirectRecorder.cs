@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
 {
-    public class DirectRecorder : IRecorder
+    public sealed class DirectRecorder : IRecorder
     {
         private readonly ILogger _logger;
         private readonly IHttpClientFactory _httpClientFactory;
@@ -46,7 +46,15 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             Directory.CreateDirectory(Path.GetDirectoryName(targetFile) ?? throw new ArgumentException("Path can't be a root directory.", nameof(targetFile)));
 
-            await using (var output = new FileStream(targetFile, FileMode.CreateNew, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous))
+            var output = new FileStream(
+                targetFile,
+                FileMode.CreateNew,
+                FileAccess.Write,
+                FileShare.Read,
+                IODefaults.FileStreamBufferSize,
+                FileOptions.Asynchronous);
+
+            await using (output.ConfigureAwait(false))
             {
                 onStarted();
 
@@ -80,24 +88,31 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             Directory.CreateDirectory(Path.GetDirectoryName(targetFile) ?? throw new ArgumentException("Path can't be a root directory.", nameof(targetFile)));
 
-            await using var output = new FileStream(targetFile, FileMode.CreateNew, FileAccess.Write, FileShare.Read, IODefaults.CopyToBufferSize, FileOptions.Asynchronous);
+            var output = new FileStream(targetFile, FileMode.CreateNew, FileAccess.Write, FileShare.Read, IODefaults.CopyToBufferSize, FileOptions.Asynchronous);
+            await using (output.ConfigureAwait(false))
+            {
+                onStarted();
 
-            onStarted();
+                _logger.LogInformation("Copying recording stream to file {0}", targetFile);
 
-            _logger.LogInformation("Copying recording stream to file {0}", targetFile);
+                // The media source if infinite so we need to handle stopping ourselves
+                using var durationToken = new CancellationTokenSource(duration);
+                using var linkedCancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token);
+                cancellationToken = linkedCancellationToken.Token;
 
-            // The media source if infinite so we need to handle stopping ourselves
-            using var durationToken = new CancellationTokenSource(duration);
-            using var linkedCancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token);
-            cancellationToken = linkedCancellationToken.Token;
+                await _streamHelper.CopyUntilCancelled(
+                    await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false),
+                    output,
+                    IODefaults.CopyToBufferSize,
+                    cancellationToken).ConfigureAwait(false);
 
-            await _streamHelper.CopyUntilCancelled(
-                await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false),
-                output,
-                IODefaults.CopyToBufferSize,
-                cancellationToken).ConfigureAwait(false);
+                _logger.LogInformation("Recording completed to file {0}", targetFile);
+            }
+        }
 
-            _logger.LogInformation("Recording completed to file {0}", targetFile);
+        /// <inheritdoc />
+        public void Dispose()
+        {
         }
     }
 }

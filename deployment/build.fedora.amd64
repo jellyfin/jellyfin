@@ -6,7 +6,7 @@ set -o errexit
 set -o xtrace
 
 # Move to source directory
-pushd ${SOURCE_DIR}
+pushd "${SOURCE_DIR}"
 
 if [[ ${IS_DOCKER} == YES ]]; then
     # Remove BuildRequires for dotnet, since it's installed manually
@@ -39,10 +39,10 @@ make -f fedora/Makefile srpm outdir=/root/rpmbuild/SRPMS
 rpmbuild -rb /root/rpmbuild/SRPMS/jellyfin-*.src.rpm
 
 # Move the artifacts out
-mv /root/rpmbuild/RPMS/x86_64/jellyfin-*.rpm /root/rpmbuild/SRPMS/jellyfin-*.src.rpm ${ARTIFACT_DIR}/
+mv /root/rpmbuild/RPMS/x86_64/jellyfin-*.rpm /root/rpmbuild/SRPMS/jellyfin-*.src.rpm "${ARTIFACT_DIR}/"
 
 if [[ ${IS_DOCKER} == YES ]]; then
-    chown -Rc $(stat -c %u:%g ${ARTIFACT_DIR}) ${ARTIFACT_DIR}
+    chown -Rc $(stat -c %u:%g "${ARTIFACT_DIR}") "${ARTIFACT_DIR}"
 fi
 
 rm -f fedora/jellyfin*.tar.gz
@@ -51,7 +51,7 @@ if [[ ${IS_DOCKER} == YES ]]; then
     pushd fedora
 
     cp -a /tmp/spec.orig jellyfin.spec
-    chown -Rc $(stat -c %u:%g ${ARTIFACT_DIR}) ${ARTIFACT_DIR}
+    chown -Rc $(stat -c %u:%g "${ARTIFACT_DIR}") "${ARTIFACT_DIR}"
 
     popd
 fi
