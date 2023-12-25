@@ -46,6 +46,8 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
             var internalMediaInfoResult = JsonSerializer.Deserialize<InternalMediaInfoResult>(bytes, _jsonOptions);
             MediaInfo res = _probeResultNormalizer.GetMediaInfo(internalMediaInfoResult, VideoType.VideoFile, false, "Test Data/Probing/video_metadata.mkv", MediaProtocol.File);
 
+            Assert.Equal("mkv", res.Container);
+
             Assert.Equal(3, res.MediaStreams.Count);
 
             Assert.NotNull(res.VideoStream);
@@ -171,6 +173,21 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
             var internalMediaInfoResult = JsonSerializer.Deserialize<InternalMediaInfoResult>(bytes, _jsonOptions);
 
             MediaInfo res = _probeResultNormalizer.GetMediaInfo(internalMediaInfoResult, VideoType.VideoFile, false, "Test Data/Probing/video_metadata.mkv", MediaProtocol.File);
+
+            Assert.Equal(2, res.MediaStreams.Count);
+
+            Assert.False(res.MediaStreams[0].IsAVC);
+        }
+
+        [Fact]
+        public void GetMediaInfo_WebM_Success()
+        {
+            var bytes = File.ReadAllBytes("Test Data/Probing/video_webm.json");
+            var internalMediaInfoResult = JsonSerializer.Deserialize<InternalMediaInfoResult>(bytes, _jsonOptions);
+
+            MediaInfo res = _probeResultNormalizer.GetMediaInfo(internalMediaInfoResult, VideoType.VideoFile, false, "Test Data/Probing/video_metadata.webm", MediaProtocol.File);
+
+            Assert.Equal("mkv,webm", res.Container);
 
             Assert.Equal(2, res.MediaStreams.Count);
 
