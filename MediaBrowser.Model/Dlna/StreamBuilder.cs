@@ -751,8 +751,9 @@ namespace MediaBrowser.Model.Dlna
             {
                 // Can't direct play, find the transcoding profile
                 // If we do this for direct-stream we will overwrite the info
-                var transcodingProfile = GetVideoTranscodeProfile(item, options, videoStream, audioStream, candidateAudioStreams, subtitleStream, playlistItem);
-                if (transcodingProfile is not null)
+                var (transcodingProfile, playMethod) = GetVideoTranscodeProfile(item, options, videoStream, audioStream, candidateAudioStreams, subtitleStream, playlistItem);
+
+                if (transcodingProfile is not null && playMethod.HasValue)
                 {
                     SetStreamInfoOptionsFromTranscodingProfile(item, playlistItem, transcodingProfile);
 
@@ -790,7 +791,7 @@ namespace MediaBrowser.Model.Dlna
             return playlistItem;
         }
 
-        private TranscodingProfile? GetVideoTranscodeProfile(
+        private (TranscodingProfile? Profile, PlayMethod? PlayMethod) GetVideoTranscodeProfile(
             MediaSourceInfo item,
             MediaOptions options,
             MediaStream? videoStream,
@@ -801,7 +802,7 @@ namespace MediaBrowser.Model.Dlna
         {
             if (!(item.SupportsTranscoding || item.SupportsDirectStream))
             {
-                return null;
+                return (null, null);
             }
 
             var transcodingProfiles = options.Profile.TranscodingProfiles
@@ -812,41 +813,78 @@ namespace MediaBrowser.Model.Dlna
                 transcodingProfiles = transcodingProfiles.Where(i => string.Equals(i.Container, "ts", StringComparison.OrdinalIgnoreCase));
             }
 
-            if (options.AllowVideoStreamCopy)
-            {
-                // prefer direct copy profile
-                float videoFramerate = videoStream?.ReferenceFrameRate ?? 0;
-                TransportStreamTimestamp? timestamp = videoStream is null ? TransportStreamTimestamp.None : item.Timestamp;
-                int? numAudioStreams = item.GetStreamCount(MediaStreamType.Audio);
-                int? numVideoStreams = item.GetStreamCount(MediaStreamType.Video);
+            var videoCodec = videoStream?.Codec;
+            float videoFramerate = videoStream?.ReferenceFrameRate ?? 0;
+            TransportStreamTimestamp? timestamp = videoStream is null ? TransportStreamTimestamp.None : item.Timestamp;
+            int? numAudioStreams = item.GetStreamCount(MediaStreamType.Audio);
+            int? numVideoStreams = item.GetStreamCount(MediaStreamType.Video);
 
-                transcodingProfiles = transcodingProfiles.ToLookup(transcodingProfile =>
+            var audioCodec = audioStream?.Codec;
+            var audioProfile = audioStream?.Profile;
+            var audioChannels = audioStream?.Channels;
+            var audioBitrate = audioStream?.BitRate;
+            var audioSampleRate = audioStream?.SampleRate;
+            var audioBitDepth = audioStream?.BitDepth;
+
+            var analyzedProfiles = transcodingProfiles
+                .Select(transcodingProfile =>
                 {
-                    var videoCodecs = ContainerProfile.SplitValue(transcodingProfile.VideoCodec);
+                    var rank = new Tuple<int, int>(3, 3);
 
-                    if (ContainerProfile.ContainsContainer(videoCodecs, item.VideoStream?.Codec))
+                    var container = transcodingProfile.Container;
+
+                    if (options.AllowVideoStreamCopy)
                     {
-                        var videoCodec = videoStream?.Codec;
-                        var container = transcodingProfile.Container;
-                        var appliedVideoConditions = options.Profile.CodecProfiles
-                            .Where(i => i.Type == CodecType.Video &&
-                                i.ContainsAnyCodec(videoCodec, container) &&
-                                i.ApplyConditions.All(applyCondition => ConditionProcessor.IsVideoConditionSatisfied(applyCondition, videoStream?.Width, videoStream?.Height, videoStream?.BitDepth, videoStream?.BitRate, videoStream?.Profile, videoStream?.VideoRangeType, videoStream?.Level, videoFramerate, videoStream?.PacketLength, timestamp, videoStream?.IsAnamorphic, videoStream?.IsInterlaced, videoStream?.RefFrames, numVideoStreams, numAudioStreams, videoStream?.CodecTag, videoStream?.IsAVC)))
-                            .Select(i =>
-                                i.Conditions.All(condition => ConditionProcessor.IsVideoConditionSatisfied(condition, videoStream?.Width, videoStream?.Height, videoStream?.BitDepth, videoStream?.BitRate, videoStream?.Profile, videoStream?.VideoRangeType, videoStream?.Level, videoFramerate, videoStream?.PacketLength, timestamp, videoStream?.IsAnamorphic, videoStream?.IsInterlaced, videoStream?.RefFrames, numVideoStreams, numAudioStreams, videoStream?.CodecTag, videoStream?.IsAVC)));
+                        var videoCodecs = ContainerProfile.SplitValue(transcodingProfile.VideoCodec);
 
-                        // An empty appliedVideoConditions means that the codec has no conditions for the current video stream
-                        var conditionsSatisfied = appliedVideoConditions.All(satisfied => satisfied);
-                        return conditionsSatisfied ? 1 : 2;
+                        if (ContainerProfile.ContainsContainer(videoCodecs, videoCodec))
+                        {
+                            var appliedVideoConditions = options.Profile.CodecProfiles
+                                .Where(i => i.Type == CodecType.Video &&
+                                    i.ContainsAnyCodec(videoCodec, container) &&
+                                    i.ApplyConditions.All(applyCondition => ConditionProcessor.IsVideoConditionSatisfied(applyCondition, videoStream?.Width, videoStream?.Height, videoStream?.BitDepth, videoStream?.BitRate, videoStream?.Profile, videoStream?.VideoRangeType, videoStream?.Level, videoFramerate, videoStream?.PacketLength, timestamp, videoStream?.IsAnamorphic, videoStream?.IsInterlaced, videoStream?.RefFrames, numVideoStreams, numAudioStreams, videoStream?.CodecTag, videoStream?.IsAVC)))
+                                .Select(i =>
+                                    i.Conditions.All(condition => ConditionProcessor.IsVideoConditionSatisfied(condition, videoStream?.Width, videoStream?.Height, videoStream?.BitDepth, videoStream?.BitRate, videoStream?.Profile, videoStream?.VideoRangeType, videoStream?.Level, videoFramerate, videoStream?.PacketLength, timestamp, videoStream?.IsAnamorphic, videoStream?.IsInterlaced, videoStream?.RefFrames, numVideoStreams, numAudioStreams, videoStream?.CodecTag, videoStream?.IsAVC)));
+
+                            // An empty appliedVideoConditions means that the codec has no conditions for the current video stream
+                            var conditionsSatisfied = appliedVideoConditions.All(satisfied => satisfied);
+                            rank = new Tuple<int, int>(conditionsSatisfied ? 1 : 2, rank.Item2);
+                        }
                     }
 
-                    return 3;
-                })
-                .OrderBy(lookup => lookup.Key)
-                .SelectMany(lookup => lookup);
-            }
+                    if (options.AllowAudioStreamCopy)
+                    {
+                        var audioCodecs = ContainerProfile.SplitValue(transcodingProfile.AudioCodec);
 
-            return transcodingProfiles.FirstOrDefault();
+                        if (ContainerProfile.ContainsContainer(audioCodecs, audioCodec))
+                        {
+                            var appliedVideoConditions = options.Profile.CodecProfiles
+                                .Where(i => i.Type == CodecType.VideoAudio &&
+                                    i.ContainsAnyCodec(audioCodec, container) &&
+                                    i.ApplyConditions.All(applyCondition => ConditionProcessor.IsVideoAudioConditionSatisfied(applyCondition, audioChannels, audioBitrate, audioSampleRate, audioBitDepth, audioProfile, false)))
+                                .Select(i =>
+                                    i.Conditions.All(condition => ConditionProcessor.IsVideoAudioConditionSatisfied(condition, audioChannels, audioBitrate, audioSampleRate, audioBitDepth, audioProfile, false)));
+
+                            // An empty appliedVideoConditions means that the codec has no conditions for the current audio stream
+                            var conditionsSatisfied = appliedVideoConditions.All(satisfied => satisfied);
+                            rank = new Tuple<int, int>(rank.Item1, conditionsSatisfied ? 1 : 2);
+                        }
+                    }
+
+                    PlayMethod playMethod = PlayMethod.Transcode;
+
+                    if (rank.Item1 == 1)
+                    {
+                        playMethod = PlayMethod.DirectStream;
+                    }
+
+                    return (Profile: transcodingProfile, PlayMethod: playMethod, Rank: rank);
+                })
+                .OrderBy(analysis => analysis.Rank);
+
+            var profileMatch = analyzedProfiles.FirstOrDefault();
+
+            return (profileMatch.Profile, profileMatch.PlayMethod);
         }
 
         private void BuildStreamVideoItem(
