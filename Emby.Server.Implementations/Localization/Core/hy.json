@@ -31,5 +31,9 @@
     "TaskRefreshPeople": "Թարմացնել մարդկանց",
     "TaskRefreshChannels": "Թարմացնել ալիքները",
     "TaskDownloadMissingSubtitles": "Ներբեռնել պակասող ենթագրերը",
-    "Albums": "Ալբոմներ"
+    "Albums": "Ալբոմներ",
+    "AppDeviceValues": "Հավելված` {0}, Սարք `{1}",
+    "ChapterNameValue": "Գլուխ {0}",
+    "Collections": "Հավաքածուներ",
+    "DeviceOnlineWithName": "{0}-ն միացված է"
 }
