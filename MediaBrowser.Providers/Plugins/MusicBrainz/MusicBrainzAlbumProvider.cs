@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
@@ -279,9 +280,9 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
             var children = result.Item.Children.ToArray();
             if (children.Any(s => s is Audio && s.IndexNumber == null) && releaseId != null)
             {
-                var rspobj = _musicBrainzQuery.LookupRelease(Guid.Parse(releaseId), Include.Recordings);
+                var rspobj = await _musicBrainzQuery.LookupReleaseAsync(Guid.Parse(releaseId), Include.Recordings, cancellationToken).ConfigureAwait(false);
 
-                IList<ITrack> tracks = new List<ITrack>();
+                var tracks = new List<ITrack>();
 
                 if (rspobj.Media != null)
                 {
@@ -294,7 +295,7 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
                 foreach (var c in children.Where(x =>
                     x is Audio &&
                     children.Any(p => Guid.Equals(p.Id, x.ParentId)) &&
-                    string.Equals(x.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) &&
+                    x.MediaType == MediaType.Audio &&
                     ((x.RunTimeTicks == null) || (x.IndexNumber == null))))
                 {
                     long? ticks = c.RunTimeTicks;
