@@ -1,4 +1,6 @@
-FROM mcr.microsoft.com/dotnet/sdk:8.0-bookworm-slim
+ARG DOTNET_VERSION=8.0
+
+FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_VERSION}-bookworm-slim
 # Docker build arguments
 ARG SOURCE_DIR=/jellyfin
 ARG ARTIFACT_DIR=/dist
