@@ -66,6 +66,7 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
         }
 
         Query.DelayBetweenRequests = configuration.RateLimit;
+        _musicBrainzQuery?.Dispose();
         _musicBrainzQuery = new Query();
     }
 
@@ -301,15 +302,9 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
                     long? ticks = c.RunTimeTicks;
                     int? index = c.IndexNumber;
                     var trk = tracks.FirstOrDefault(t => string.Equals(t.Title, c.Name, StringComparison.OrdinalIgnoreCase));
-                    if (c.RunTimeTicks == null)
-                    {
-                        c.RunTimeTicks = trk?.Length?.Ticks ?? 0L;
-                    }
+                    c.RunTimeTicks ??= trk?.Length?.Ticks ?? 0L;
 
-                    if (c.IndexNumber == null)
-                    {
-                        c.IndexNumber = trk?.Position;
-                    }
+                    c.IndexNumber ??= trk?.Position;
 
                     if ((ticks != c.RunTimeTicks) || (index != c.IndexNumber))
                     {
