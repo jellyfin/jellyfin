@@ -24,6 +24,6 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\..\Emby.Server.Implementations\Emby.Server.Implementations.csproj" />
+    <ProjectReference Include="..\..\src\Jellyfin.LiveTv\Jellyfin.LiveTv.csproj" />
   </ItemGroup>
 </Project>

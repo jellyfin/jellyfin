@@ -1,5 +1,5 @@
 using System;
-using Emby.Server.Implementations.LiveTv.EmbyTV;
+using Jellyfin.LiveTv.EmbyTV;
 using MediaBrowser.Controller.LiveTv;
 using Xunit;
 

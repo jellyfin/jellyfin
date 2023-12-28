@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoMoq;
-using Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun;
+using Jellyfin.LiveTv.TunerHosts.HdHomerun;
 using MediaBrowser.Model.LiveTv;
 using Moq;
 using Moq.Protected;

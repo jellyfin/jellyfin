@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
-using Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos;
 using Jellyfin.Extensions.Json;
+using Jellyfin.LiveTv.Listings.SchedulesDirectDtos;
 using Xunit;
 
 namespace Jellyfin.LiveTv.Tests.SchedulesDirect

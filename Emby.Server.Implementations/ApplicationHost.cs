@@ -25,7 +25,6 @@ using Emby.Server.Implementations.Dto;
 using Emby.Server.Implementations.HttpServer.Security;
 using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Library;
-using Emby.Server.Implementations.LiveTv;
 using Emby.Server.Implementations.Localization;
 using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.Plugins;
@@ -566,9 +565,6 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IPlaylistManager, PlaylistManager>();
 
             serviceCollection.AddSingleton<ISyncPlayManager, SyncPlayManager>();
-
-            serviceCollection.AddSingleton<LiveTvDtoService>();
-            serviceCollection.AddSingleton<ILiveTvManager, LiveTvManager>();
 
             serviceCollection.AddSingleton<IUserViewManager, UserViewManager>();
 

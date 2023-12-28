@@ -6,6 +6,7 @@ using Emby.Server.Implementations.Session;
 using Jellyfin.Api.WebSocketListeners;
 using Jellyfin.Drawing;
 using Jellyfin.Drawing.Skia;
+using Jellyfin.LiveTv;
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Activity;
 using Jellyfin.Server.Implementations.Devices;
@@ -20,6 +21,7 @@ using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
@@ -96,6 +98,9 @@ namespace Jellyfin.Server
 
             serviceCollection.AddScoped<IAuthenticationManager, AuthenticationManager>();
 
+            serviceCollection.AddSingleton<LiveTvDtoService>();
+            serviceCollection.AddSingleton<ILiveTvManager, LiveTvManager>();
+
             foreach (var type in GetExportTypes<ILyricProvider>())
             {
                 serviceCollection.AddSingleton(typeof(ILyricProvider), type);
@@ -117,6 +122,9 @@ namespace Jellyfin.Server
 
             // Jellyfin.Server.Implementations
             yield return typeof(JellyfinDbContext).Assembly;
+
+            // Jellyfin.LiveTv
+            yield return typeof(LiveTvManager).Assembly;
         }
     }
 }

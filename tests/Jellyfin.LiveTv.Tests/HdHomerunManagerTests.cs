@@ -1,6 +1,6 @@
 using System;
 using System.Text;
-using Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun;
+using Jellyfin.LiveTv.TunerHosts.HdHomerun;
 using Xunit;
 
 namespace Jellyfin.LiveTv.Tests
