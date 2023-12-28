@@ -12,7 +12,7 @@ using Moq;
 using Moq.Protected;
 using Xunit;
 
-namespace Jellyfin.Server.Implementations.Tests.LiveTv.Listings;
+namespace Jellyfin.LiveTv.Tests.Listings;
 
 public class XmlTvListingsProviderTests
 {

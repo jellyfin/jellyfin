@@ -3,7 +3,7 @@ using Emby.Server.Implementations.LiveTv.EmbyTV;
 using MediaBrowser.Controller.LiveTv;
 using Xunit;
 
-namespace Jellyfin.Server.Implementations.Tests.LiveTv
+namespace Jellyfin.LiveTv.Tests
 {
     public static class RecordingHelperTests
     {

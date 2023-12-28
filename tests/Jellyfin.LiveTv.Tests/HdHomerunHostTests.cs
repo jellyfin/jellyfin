@@ -12,7 +12,7 @@ using Moq;
 using Moq.Protected;
 using Xunit;
 
-namespace Jellyfin.Server.Implementations.Tests.LiveTv
+namespace Jellyfin.LiveTv.Tests
 {
     public class HdHomerunHostTests
     {

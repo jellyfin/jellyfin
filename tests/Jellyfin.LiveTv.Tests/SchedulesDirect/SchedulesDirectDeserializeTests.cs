@@ -6,7 +6,7 @@ using Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos;
 using Jellyfin.Extensions.Json;
 using Xunit;
 
-namespace Jellyfin.Server.Implementations.Tests.LiveTv.SchedulesDirect
+namespace Jellyfin.LiveTv.Tests.SchedulesDirect
 {
     public class SchedulesDirectDeserializeTests
     {

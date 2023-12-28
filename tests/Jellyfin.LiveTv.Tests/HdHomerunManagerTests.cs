@@ -3,7 +3,7 @@ using System.Text;
 using Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun;
 using Xunit;
 
-namespace Jellyfin.Server.Implementations.Tests.LiveTv
+namespace Jellyfin.LiveTv.Tests
 {
     public class HdHomerunManagerTests
     {
