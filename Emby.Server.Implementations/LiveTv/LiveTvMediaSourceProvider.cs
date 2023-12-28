@@ -61,7 +61,7 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 if (activeRecordingInfo is not null)
                 {
-                    sources = await EmbyTV.EmbyTV.Current.GetRecordingStreamMediaSources(activeRecordingInfo, cancellationToken)
+                    sources = await _mediaSourceManager.GetRecordingStreamMediaSources(activeRecordingInfo, cancellationToken)
                         .ConfigureAwait(false);
                 }
                 else

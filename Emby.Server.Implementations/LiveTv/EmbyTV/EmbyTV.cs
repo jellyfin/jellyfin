@@ -47,7 +47,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private const int TunerDiscoveryDurationMs = 3000;
 
-        private readonly IServerApplicationHost _appHost;
         private readonly ILogger<EmbyTV> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IServerConfigurationManager _config;
@@ -76,7 +75,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         private bool _disposed;
 
         public EmbyTV(
-            IServerApplicationHost appHost,
             IStreamHelper streamHelper,
             IMediaSourceManager mediaSourceManager,
             ILogger<EmbyTV> logger,
@@ -91,7 +89,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             Current = this;
 
-            _appHost = appHost;
             _logger = logger;
             _httpClientFactory = httpClientFactory;
             _config = config;
@@ -1019,35 +1016,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
 
             throw new NotImplementedException();
-        }
-
-        public async Task<List<MediaSourceInfo>> GetRecordingStreamMediaSources(ActiveRecordingInfo info, CancellationToken cancellationToken)
-        {
-            var stream = new MediaSourceInfo
-            {
-                EncoderPath = _appHost.GetApiUrlForLocalAccess() + "/LiveTv/LiveRecordings/" + info.Id + "/stream",
-                EncoderProtocol = MediaProtocol.Http,
-                Path = info.Path,
-                Protocol = MediaProtocol.File,
-                Id = info.Id,
-                SupportsDirectPlay = false,
-                SupportsDirectStream = true,
-                SupportsTranscoding = true,
-                IsInfiniteStream = true,
-                RequiresOpening = false,
-                RequiresClosing = false,
-                BufferMs = 0,
-                IgnoreDts = true,
-                IgnoreIndex = true
-            };
-
-            await new LiveStreamHelper(_mediaEncoder, _logger, _config.CommonApplicationPaths)
-                .AddMediaInfoWithProbe(stream, false, false, cancellationToken).ConfigureAwait(false);
-
-            return new List<MediaSourceInfo>
-            {
-                stream
-            };
         }
 
         public Task CloseLiveStream(string id, CancellationToken cancellationToken)
