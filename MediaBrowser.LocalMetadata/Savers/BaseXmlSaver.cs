@@ -94,7 +94,7 @@ namespace MediaBrowser.LocalMetadata.Savers
         {
             var path = GetSavePath(item);
             var directory = Path.GetDirectoryName(path) ?? throw new InvalidDataException($"Provided path ({path}) is not valid.");
-            Directory.CreateDirectory(directory);
+            _ = directory.Length > 260 ? Directory.CreateDirectory(directory[..260]) : Directory.CreateDirectory(directory);
 
             // On Windows, savint the file will fail if the file is hidden or readonly
             FileSystem.SetAttributes(path, false, false);
