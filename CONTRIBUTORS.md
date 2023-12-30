@@ -174,6 +174,7 @@
  - [Chris-Codes-It] (https://github.com/Chris-Codes-It)
  - [Pithaya](https://github.com/Pithaya)
  - [Çağrı Sakaoğlu](https://github.com/ilovepilav)
+ - [devstra](https://github.com/devstra)
 
 # Emby Contributors
 
