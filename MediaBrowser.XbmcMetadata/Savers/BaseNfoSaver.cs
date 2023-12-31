@@ -197,13 +197,22 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await SaveToFileAsync(memoryStream, path).ConfigureAwait(false);
+                await SaveToFileAsync(memoryStream, item).ConfigureAwait(false);
             }
         }
 
-        private async Task SaveToFileAsync(Stream stream, string path)
+        private async Task SaveToFileAsync(Stream stream, BaseItem item)
         {
-            var directory = Path.GetDirectoryName(path) ?? throw new ArgumentException($"Provided path ({path}) is not valid.", nameof(path));
+            var path = GetSavePath(item);
+            var directory = Path.GetDirectoryName(path) ?? throw new InvalidDataException($"Provided path ({path}) is not valid.");
+
+            if (directory.Length > 260 || item.Name.Length > 255)
+            {
+                _ = OperatingSystem.IsWindows() ? _ = directory.Insert(0, @"\\?\") : directory = Path.Combine(
+                    Path.GetDirectoryName(directory) ?? "/", item.Name[..255]);
+                path = Path.Combine(directory, GetRootElementName(item) + ".nfo");
+            }
+
             Directory.CreateDirectory(directory);
 
             // On Windows, saving the file will fail if the file is hidden or readonly
