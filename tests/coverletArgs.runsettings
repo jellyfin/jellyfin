@@ -10,7 +10,7 @@
           <SingleHit>false</SingleHit>
           <UseSourceLink>false</UseSourceLink>
           <IncludeTestAssembly>false</IncludeTestAssembly>
-          <!--<SkipAutoProps>true</SkipAutoProps>-->
+          <SkipAutoProps>true</SkipAutoProps>
         </Configuration>
       </DataCollector>
     </DataCollectors>
