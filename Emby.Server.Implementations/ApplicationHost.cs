@@ -448,16 +448,7 @@ namespace Emby.Server.Implementations
 
             ConfigurationManager.AddParts(GetExports<IConfigurationFactory>());
 
-            // this is needed as Github Codespaces will not be able to find the process if we bind on interfaces directly.
-
-            if (bool.TryParse(Environment.GetEnvironmentVariable("JELLYFIN_NETWORKMANAGER_BINDALL"), out var bindAll) && bindAll)
-            {
-                NetManager = new BindAllNetworkManager(ConfigurationManager, _startupConfig, LoggerFactory.CreateLogger<NetworkManager>());
-            }
-            else
-            {
-                NetManager = new NetworkManager(ConfigurationManager, _startupConfig, LoggerFactory.CreateLogger<NetworkManager>());
-            }
+            NetManager = new NetworkManager(ConfigurationManager, _startupConfig, LoggerFactory.CreateLogger<NetworkManager>());
 
             // Initialize runtime stat collection
             if (ConfigurationManager.Configuration.EnableMetrics)

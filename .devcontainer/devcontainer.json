@@ -5,9 +5,6 @@
     "postStartCommand": "dotnet restore; dotnet workload update; dotnet dev-certs https --trust",
     // reads the extensions list and installs them
     "postAttachCommand": "cat .vscode/extensions.json | jq -r .recommendations[] | xargs -n 1 code --install-extension",
-    "containerEnv": {
-        "JELLYFIN_NETWORKMANAGER_BINDALL": "true"
-    },
     "features": {
         "ghcr.io/devcontainers/features/dotnet:2": {
             "version": "none",
