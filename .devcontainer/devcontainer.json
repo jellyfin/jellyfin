@@ -1,9 +1,10 @@
 {
     "name": "Plain JF Dotnet 8",
     "image":"mcr.microsoft.com/devcontainers/dotnet:8.0-jammy",
-        //required to get skia to run
-	"postCreateCommand": "sudo apt-get update && sudo apt-get install -y libfontconfig1",
+    // restores nuget packages, installs the dotnet workloads and installs the dev https certificate
     "postStartCommand": "dotnet restore; dotnet workload update; dotnet dev-certs https --trust",
+    // reads the extensions list and installs them
+    "postAttachCommand": "cat .vscode/extensions.json | jq -r .recommendations[] | xargs -n 1 code --install-extension",
     "containerEnv": {
         "JELLYFIN_NETWORKMANAGER_BINDALL": "true"
     },
@@ -12,7 +13,16 @@
             "version": "none",
             "dotnetRuntimeVersions": "8.0",
             "aspNetCoreRuntimeVersions": "8.0"
-        }
+        },
+        "ghcr.io/devcontainers-contrib/features/apt-packages:1": {
+            "preserve_apt_list": false,
+            "packages": ["libfontconfig1"]
+        },
+        "ghcr.io/devcontainers/features/docker-in-docker:2": {
+            "dockerDashComposeVersion": "v2"
+        },
+        "ghcr.io/devcontainers/features/github-cli:1": {},
+        "ghcr.io/eitsupi/devcontainer-features/jq-likes:2": {}
     },
     "customizations": {
         "vscode": {
