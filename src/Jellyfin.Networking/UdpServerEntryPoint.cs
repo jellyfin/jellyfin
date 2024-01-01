@@ -6,12 +6,11 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Networking.Udp;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Plugins;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using IConfigurationManager = MediaBrowser.Common.Configuration.IConfigurationManager;
 
 namespace Jellyfin.Networking;
 
@@ -30,7 +29,6 @@ public sealed class UdpServerEntryPoint : IServerEntryPoint
     /// </summary>
     private readonly ILogger<UdpServerEntryPoint> _logger;
     private readonly IServerApplicationHost _appHost;
-    private readonly IConfiguration _config;
     private readonly IConfigurationManager _configurationManager;
     private readonly INetworkManager _networkManager;
 
@@ -46,19 +44,16 @@ public sealed class UdpServerEntryPoint : IServerEntryPoint
     /// </summary>
     /// <param name="logger">Instance of the <see cref="ILogger{UdpServerEntryPoint}"/> interface.</param>
     /// <param name="appHost">Instance of the <see cref="IServerApplicationHost"/> interface.</param>
-    /// <param name="configuration">Instance of the <see cref="IConfiguration"/> interface.</param>
     /// <param name="configurationManager">Instance of the <see cref="IConfigurationManager"/> interface.</param>
     /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
     public UdpServerEntryPoint(
         ILogger<UdpServerEntryPoint> logger,
         IServerApplicationHost appHost,
-        IConfiguration configuration,
         IConfigurationManager configurationManager,
         INetworkManager networkManager)
     {
         _logger = logger;
         _appHost = appHost;
-        _config = configuration;
         _configurationManager = configurationManager;
         _networkManager = networkManager;
         _udpServers = new List<UdpServer>();
@@ -81,7 +76,7 @@ public sealed class UdpServerEntryPoint : IServerEntryPoint
             if (OperatingSystem.IsLinux())
             {
                 // Add global broadcast listener
-                var server = new UdpServer(_logger, _appHost, _config, IPAddress.Broadcast, PortNumber);
+                var server = new UdpServer(_logger, _appHost, IPAddress.Broadcast, PortNumber);
                 server.Start(_cancellationTokenSource.Token);
                 _udpServers.Add(server);
 
@@ -93,7 +88,7 @@ public sealed class UdpServerEntryPoint : IServerEntryPoint
                     var broadcastAddress = NetworkUtils.GetBroadcastAddress(intf.Subnet);
                     _logger.LogDebug("Binding UDP server to {Address} on port {PortNumber}", broadcastAddress, PortNumber);
 
-                    server = new UdpServer(_logger, _appHost, _config, broadcastAddress, PortNumber);
+                    server = new UdpServer(_logger, _appHost, broadcastAddress, PortNumber);
                     server.Start(_cancellationTokenSource.Token);
                     _udpServers.Add(server);
                 }
@@ -108,7 +103,7 @@ public sealed class UdpServerEntryPoint : IServerEntryPoint
                     var intfAddress = intf.Address;
                     _logger.LogDebug("Binding UDP server to {Address} on port {PortNumber}", intfAddress, PortNumber);
 
-                    var server = new UdpServer(_logger, _appHost, _config, intfAddress, PortNumber);
+                    var server = new UdpServer(_logger, _appHost, intfAddress, PortNumber);
                     server.Start(_cancellationTokenSource.Token);
                     _udpServers.Add(server);
                 }

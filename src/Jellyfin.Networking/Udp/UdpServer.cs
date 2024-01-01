@@ -23,7 +23,6 @@ public sealed class UdpServer : IDisposable
     /// </summary>
     private readonly ILogger _logger;
     private readonly IServerApplicationHost _appHost;
-    private readonly IConfiguration _config;
 
     private readonly byte[] _receiveBuffer = new byte[8192];
 
@@ -36,19 +35,16 @@ public sealed class UdpServer : IDisposable
     /// </summary>
     /// <param name="logger">The logger.</param>
     /// <param name="appHost">The application host.</param>
-    /// <param name="configuration">The configuration manager.</param>
     /// <param name="bindAddress"> The bind address.</param>
     /// <param name="port">The port.</param>
     public UdpServer(
         ILogger logger,
         IServerApplicationHost appHost,
-        IConfiguration configuration,
         IPAddress bindAddress,
         int port)
     {
         _logger = logger;
         _appHost = appHost;
-        _config = configuration;
 
         _endpoint = new IPEndPoint(bindAddress, port);
 
@@ -61,12 +57,7 @@ public sealed class UdpServer : IDisposable
 
     private async Task RespondToV2Message(EndPoint endpoint, CancellationToken cancellationToken)
     {
-        string? localUrl = _config[AddressOverrideKey];
-        if (string.IsNullOrEmpty(localUrl))
-        {
-            localUrl = _appHost.GetSmartApiUrl(((IPEndPoint)endpoint).Address);
-        }
-
+        var localUrl = _appHost.GetSmartApiUrl(((IPEndPoint)endpoint).Address);
         if (string.IsNullOrEmpty(localUrl))
         {
             _logger.LogWarning("Unable to respond to server discovery request because the local ip address could not be determined.");
