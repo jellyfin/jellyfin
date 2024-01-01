@@ -144,8 +144,6 @@ cd Jellyfin.Server/bin/Debug/net8.0 # Change into the build output directory
 
 ### Running from GH-Codespaces
 
-Building and running the server from Github Codespaces require you to install the recommended VS-Code extensions as listed in the `.vscode/extensions.json` file. VsCode should ask you to install them each time you open the Server repro on GH-Codespaces.
-
 As Jellyfin will run on a container on a github hosted server, JF needs to handle 3 things differently.
 1. Address Binding.
 Github will put all networked services behind a reverse proxy and will only autodetect it correctly if it will bind to `Ipv4.Any`. Because of this, there is an adapted `BindAllNetworkManager` that will overwrite all set bindings and bind to any IPV4 address.
