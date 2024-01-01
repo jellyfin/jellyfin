@@ -24,16 +24,6 @@
         "ghcr.io/devcontainers/features/github-cli:1": {},
         "ghcr.io/eitsupi/devcontainer-features/jq-likes:2": {}
     },
-    "customizations": {
-        "vscode": {
-            "extensions": [
-                "GitHub.vscode-github-actions",
-                "ms-dotnettools.vscode-dotnet-runtime",
-                "ms-dotnettools.csdevkit",
-                "ms-dotnetools.csharp"
-            ]
-        }
-    },
     "hostRequirements": {
         "memory": "8gb",
         "cpus": 4
