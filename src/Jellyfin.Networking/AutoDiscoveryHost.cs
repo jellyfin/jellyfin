@@ -27,43 +27,63 @@ public sealed class AutoDiscoveryHost : BackgroundService
     private readonly ILogger<AutoDiscoveryHost> _logger;
     private readonly IServerApplicationHost _appHost;
     private readonly IConfigurationManager _configurationManager;
+    private readonly INetworkManager _networkManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AutoDiscoveryHost" /> class.
     /// </summary>
-    /// <param name="logger">Instance of the <see cref="ILogger{UdpServerEntryPoint}"/> interface.</param>
-    /// <param name="appHost">Instance of the <see cref="IServerApplicationHost"/> interface.</param>
-    /// <param name="configurationManager">Instance of the <see cref="IConfigurationManager"/> interface.</param>
+    /// <param name="logger">The <see cref="ILogger{AutoDiscoveryHost}"/>.</param>
+    /// <param name="appHost">The <see cref="IServerApplicationHost"/>.</param>
+    /// <param name="configurationManager">The <see cref="IConfigurationManager"/>.</param>
+    /// <param name="networkManager">The <see cref="INetworkManager"/>.</param>
     public AutoDiscoveryHost(
         ILogger<AutoDiscoveryHost> logger,
         IServerApplicationHost appHost,
-        IConfigurationManager configurationManager)
+        IConfigurationManager configurationManager,
+        INetworkManager networkManager)
     {
         _logger = logger;
         _appHost = appHost;
         _configurationManager = configurationManager;
+        _networkManager = networkManager;
     }
 
     /// <inheritdoc />
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
         if (!_configurationManager.GetNetworkConfiguration().AutoDiscovery)
         {
-            return;
+            return Task.CompletedTask;
         }
 
-        using var udpClient = new UdpClient(PortNumber);
+        // Linux needs to bind to the broadcast addresses to receive broadcast traffic
+        if (OperatingSystem.IsLinux())
+        {
+            _ = Task.Run(() => ListenForAutoDiscoveryMessage(IPAddress.Broadcast, stoppingToken), stoppingToken);
+        }
+
+        foreach (var intf in _networkManager.GetInternalBindAddresses())
+        {
+            _ = Task.Run(() => ListenForAutoDiscoveryMessage(intf.Address, stoppingToken), stoppingToken);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private async Task ListenForAutoDiscoveryMessage(IPAddress address, CancellationToken cancellationToken)
+    {
+        using var udpClient = new UdpClient(new IPEndPoint(address, PortNumber));
         udpClient.MulticastLoopback = false;
 
-        while (!stoppingToken.IsCancellationRequested)
+        while (!cancellationToken.IsCancellationRequested)
         {
             try
             {
-                var result = await udpClient.ReceiveAsync(stoppingToken).ConfigureAwait(false);
+                var result = await udpClient.ReceiveAsync(cancellationToken).ConfigureAwait(false);
                 var text = Encoding.UTF8.GetString(result.Buffer);
                 if (text.Contains("who is JellyfinServer?", StringComparison.OrdinalIgnoreCase))
                 {
-                    await RespondToV2Message(udpClient, result.RemoteEndPoint, stoppingToken).ConfigureAwait(false);
+                    await RespondToV2Message(udpClient, result.RemoteEndPoint, cancellationToken).ConfigureAwait(false);
                 }
             }
             catch (SocketException ex)
