@@ -8,7 +8,7 @@ using MediaBrowser.Model.Dto;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
 {
-    public interface IRecorder
+    public interface IRecorder : IDisposable
     {
         /// <summary>
         /// Records the specified media source.

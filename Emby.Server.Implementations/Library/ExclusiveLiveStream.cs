@@ -12,7 +12,7 @@ using MediaBrowser.Model.Dto;
 
 namespace Emby.Server.Implementations.Library
 {
-    public class ExclusiveLiveStream : ILiveStream
+    public sealed class ExclusiveLiveStream : ILiveStream
     {
         private readonly Func<Task> _closeFn;
 
@@ -50,6 +50,11 @@ namespace Emby.Server.Implementations.Library
         public Task Open(CancellationToken openCancellationToken)
         {
             return Task.CompletedTask;
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
         }
     }
 }

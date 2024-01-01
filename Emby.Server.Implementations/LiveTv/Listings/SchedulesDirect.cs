@@ -287,7 +287,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 IsMovie = IsMovie(details),
                 Etag = programInfo.Md5,
                 IsLive = string.Equals(programInfo.LiveTapeDelay, "live", StringComparison.OrdinalIgnoreCase),
-                IsPremiere = programInfo.Premiere || (programInfo.IsPremiereOrFinale ?? string.Empty).IndexOf("premiere", StringComparison.OrdinalIgnoreCase) != -1
+                IsPremiere = programInfo.Premiere || (programInfo.IsPremiereOrFinale ?? string.Empty).Contains("premiere", StringComparison.OrdinalIgnoreCase)
             };
 
             var showId = programId;
@@ -414,7 +414,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 return null;
             }
 
-            if (uri.IndexOf("http", StringComparison.OrdinalIgnoreCase) != -1)
+            if (uri.Contains("http", StringComparison.OrdinalIgnoreCase))
             {
                 return uri;
             }

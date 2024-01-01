@@ -23,7 +23,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Books
             var collectionType = args.GetCollectionType();
 
             // Only process items that are in a collection folder containing books
-            if (collectionType != CollectionType.Books)
+            if (collectionType != CollectionType.books)
             {
                 return null;
             }

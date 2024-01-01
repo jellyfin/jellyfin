@@ -50,7 +50,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="currentLiveStreams">The current live streams.</param>
         /// <param name="cancellationToken">The cancellation token to cancel operation.</param>
         /// <returns>Live stream wrapped in a task.</returns>
-        Task<ILiveStream> GetChannelStream(string channelId, string streamId, List<ILiveStream> currentLiveStreams, CancellationToken cancellationToken);
+        Task<ILiveStream> GetChannelStream(string channelId, string streamId, IList<ILiveStream> currentLiveStreams, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the channel stream media sources.

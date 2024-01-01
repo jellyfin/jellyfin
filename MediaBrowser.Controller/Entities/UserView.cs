@@ -19,19 +19,19 @@ namespace MediaBrowser.Controller.Entities
     {
         private static readonly CollectionType?[] _viewTypesEligibleForGrouping =
         {
-            Jellyfin.Data.Enums.CollectionType.Movies,
-            Jellyfin.Data.Enums.CollectionType.TvShows,
+            Jellyfin.Data.Enums.CollectionType.movies,
+            Jellyfin.Data.Enums.CollectionType.tvshows,
             null
         };
 
         private static readonly CollectionType?[] _originalFolderViewTypes =
         {
-            Jellyfin.Data.Enums.CollectionType.Books,
-            Jellyfin.Data.Enums.CollectionType.MusicVideos,
-            Jellyfin.Data.Enums.CollectionType.HomeVideos,
-            Jellyfin.Data.Enums.CollectionType.Photos,
-            Jellyfin.Data.Enums.CollectionType.Music,
-            Jellyfin.Data.Enums.CollectionType.BoxSets
+            Jellyfin.Data.Enums.CollectionType.books,
+            Jellyfin.Data.Enums.CollectionType.musicvideos,
+            Jellyfin.Data.Enums.CollectionType.homevideos,
+            Jellyfin.Data.Enums.CollectionType.photos,
+            Jellyfin.Data.Enums.CollectionType.music,
+            Jellyfin.Data.Enums.CollectionType.boxsets
         };
 
         public static ITVSeriesManager TVSeriesManager { get; set; }
@@ -161,7 +161,7 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            return collectionFolder.CollectionType == Jellyfin.Data.Enums.CollectionType.Playlists;
+            return collectionFolder.CollectionType == Jellyfin.Data.Enums.CollectionType.playlists;
         }
 
         public static bool IsEligibleForGrouping(Folder folder)

@@ -64,8 +64,17 @@
 
                     var clientConfig, pluginConfig;
                     var configureImageScaling = function() {
-                        if (clientConfig === null || pluginConfig === null) {
+                        if (clientConfig === undefined || pluginConfig === undefined) {
                             return;
+                        }
+                        if (Object.keys(clientConfig).length === 0) {
+                            clientConfig = {
+                                PosterSizes: [pluginConfig.PosterSize],
+                                BackdropSizes: [pluginConfig.BackdropSize],
+                                LogoSizes: [pluginConfig.LogoSize],
+                                ProfileSizes: [pluginConfig.ProfileSize],
+                                StillSizes: [pluginConfig.StillSize]
+                            };
                         }
 
                         var sizeOptionsGenerator = function (size) {
@@ -104,6 +113,15 @@
                     ApiClient.fetch(request).then(function (config) {
                         clientConfig = config;
                         configureImageScaling();
+                    }, function (error) {
+                        error.text().then(function (contents) {
+                            Dashboard.alert({
+                                title: error.statusText,
+                                message: contents
+                            });
+                            clientConfig = {};
+                            configureImageScaling();
+                        });
                     });
 
                     ApiClient.getPluginConfiguration(PluginConfig.pluginId).then(function (config) {
