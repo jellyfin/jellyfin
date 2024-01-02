@@ -144,12 +144,10 @@ cd Jellyfin.Server/bin/Debug/net8.0 # Change into the build output directory
 
 ### Running from GH-Codespaces
 
-As Jellyfin will run on a container on a github hosted server, JF needs to handle 3 things differently.
-1. Address Binding.
-Github will put all networked services behind a reverse proxy and will only autodetect it correctly if it will bind to `Ipv4.Any`. Because of this, there is an adapted `BindAllNetworkManager` that will overwrite all set bindings and bind to any IPV4 address.
+As Jellyfin will run on a container on a github hosted server, JF needs to handle some things differently.
 **NOTE:** If you want to access the JF instance from outside, like with a WebClient on another PC, remember to set the "ports" in the lower VsCode window to public.
 
-2. FFmpeg installation.
+#### FFmpeg installation.
 Because sometimes you need FFMPEG to test certain cases, follow the instructions from the wiki on the dev enviorment:
 https://jellyfin.org/docs/general/installation/linux/#ffmpeg-installation
 
