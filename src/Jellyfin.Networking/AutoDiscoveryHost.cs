@@ -64,7 +64,11 @@ public sealed class AutoDiscoveryHost : BackgroundService
 
         foreach (var intf in _networkManager.GetInternalBindAddresses())
         {
-            _ = Task.Run(() => ListenForAutoDiscoveryMessage(intf.Address, stoppingToken), stoppingToken);
+            var address = OperatingSystem.IsLinux()
+                ? NetworkUtils.GetBroadcastAddress(intf.Subnet)
+                : intf.Address;
+
+            _ = Task.Run(() => ListenForAutoDiscoveryMessage(address, stoppingToken), stoppingToken);
         }
 
         return Task.CompletedTask;
