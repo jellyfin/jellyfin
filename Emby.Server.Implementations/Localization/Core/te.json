@@ -38,5 +38,18 @@
     "HeaderFavoriteSongs": "ఇష్టమైన పాటలు",
     "HeaderLiveTV": "ప్రత్యక్ష TV",
     "HeaderNextUp": "తదుపరి",
-    "HeaderRecordingGroups": "రికార్డింగ్ గుంపులు"
+    "HeaderRecordingGroups": "రికార్డింగ్ గుంపులు",
+    "MessageApplicationUpdated": "జెల్లీఫిన్ సర్వర్ అప్‌డేట్ చేయడం పూర్తి అయ్యింది",
+    "MessageApplicationUpdatedTo": "జెల్లీఫిన్ సర్వర్ {0} వెర్షన్ కి అప్‌డేట్ చెయ్యబడింది",
+    "MessageServerConfigurationUpdated": "సర్వర్ కన్ఫిగరేషన్ అప్డేట్ చేయబడింది",
+    "NewVersionIsAvailable": "జెల్లీఫిన్ సర్వర్ యొక్క కొత్త వెర్షన్ డౌన్‌లోడ్ చేసుకోవడానికి అందుబాటులో ఉంది.",
+    "NotificationOptionApplicationUpdateInstalled": "అప్లికేషన్ అప్‌డేట్ ఇన్‌స్టాల్ చేయబడింది",
+    "ItemAddedWithName": "{0} లైబ్రరీకి జోడించబడింది",
+    "ItemRemovedWithName": "లైబ్రరీ నుండి {0} తీసివేయబడింది",
+    "LabelIpAddressValue": "ఐపీ చిరునామా: {0}",
+    "LabelRunningTimeValue": "నడుస్తున్న సమయం: {0}",
+    "Latest": "తాజా",
+    "NameInstallFailed": "{0} ఇన్‌స్టాలేషన్ విఫలమైంది",
+    "NameSeasonUnknown": "భాగం తెలియదు",
+    "NotificationOptionApplicationUpdateAvailable": "అప్లికేషన్ అప్‌డేట్ అందుబాటులో ఉంది"
 }
