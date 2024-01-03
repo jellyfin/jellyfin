@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -49,29 +51,28 @@ public sealed class AutoDiscoveryHost : BackgroundService
     }
 
     /// <inheritdoc />
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         if (!_configurationManager.GetNetworkConfiguration().AutoDiscovery)
         {
-            return Task.CompletedTask;
+            return;
         }
 
+        var udpServers = new List<Task>();
         // Linux needs to bind to the broadcast addresses to receive broadcast traffic
         if (OperatingSystem.IsLinux())
         {
-            _ = Task.Run(() => ListenForAutoDiscoveryMessage(IPAddress.Broadcast, stoppingToken), stoppingToken);
+            udpServers.Add(ListenForAutoDiscoveryMessage(IPAddress.Broadcast, stoppingToken));
         }
 
-        foreach (var intf in _networkManager.GetInternalBindAddresses())
-        {
-            var address = OperatingSystem.IsLinux()
-                ? NetworkUtils.GetBroadcastAddress(intf.Subnet)
-                : intf.Address;
+        udpServers.AddRange(_networkManager.GetInternalBindAddresses()
+            .Select(intf => ListenForAutoDiscoveryMessage(
+                OperatingSystem.IsLinux()
+                    ? NetworkUtils.GetBroadcastAddress(intf.Subnet)
+                    : intf.Address,
+                stoppingToken)));
 
-            _ = Task.Run(() => ListenForAutoDiscoveryMessage(address, stoppingToken), stoppingToken);
-        }
-
-        return Task.CompletedTask;
+        await Task.WhenAll(udpServers).ConfigureAwait(false);
     }
 
     private async Task ListenForAutoDiscoveryMessage(IPAddress address, CancellationToken cancellationToken)
