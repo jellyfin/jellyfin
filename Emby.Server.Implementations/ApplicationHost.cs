@@ -76,6 +76,7 @@ using MediaBrowser.Controller.TV;
 using MediaBrowser.LocalMetadata.Savers;
 using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.MediaEncoding.Subtitles;
+using MediaBrowser.MediaEncoding.Transcoding;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
@@ -583,7 +584,7 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<IAttachmentExtractor, MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor>();
 
-            serviceCollection.AddSingleton<TranscodingJobHelper>();
+            serviceCollection.AddSingleton<ITranscodeManager, TranscodeManager>();
             serviceCollection.AddScoped<MediaInfoHelper>();
             serviceCollection.AddScoped<AudioHelper>();
             serviceCollection.AddScoped<DynamicHlsHelper>();
