@@ -1,5 +1,5 @@
 {
-    "name": "Plain JF Dotnet 8",
+    "name": "Development Jellyfin Server",
     "image":"mcr.microsoft.com/devcontainers/dotnet:8.0-jammy",
     // restores nuget packages, installs the dotnet workloads and installs the dev https certificate
     "postStartCommand": "dotnet restore; dotnet workload update; dotnet dev-certs https --trust",
