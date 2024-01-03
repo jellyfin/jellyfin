@@ -1842,7 +1842,7 @@ namespace Emby.Server.Implementations.Library
 
             var parentItem = item.GetParent();
             var isLiveTvShow = item.SourceType != SourceType.Library &&
-                               parentItem != null &&
+                               parentItem is not null &&
                                parentItem.SourceType != SourceType.Library; // not a channel
 
             // Skip image processing if current or live tv show
