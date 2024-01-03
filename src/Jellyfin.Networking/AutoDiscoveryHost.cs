@@ -67,7 +67,7 @@ public sealed class AutoDiscoveryHost : BackgroundService
 
         udpServers.AddRange(_networkManager.GetInternalBindAddresses()
             .Select(intf => ListenForAutoDiscoveryMessage(
-                OperatingSystem.IsLinux()
+                OperatingSystem.IsLinux() && intf.AddressFamily == AddressFamily.InterNetwork
                     ? NetworkUtils.GetBroadcastAddress(intf.Subnet)
                     : intf.Address,
                 stoppingToken)));
