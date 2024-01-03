@@ -1,7 +1,6 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -11,6 +10,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using AsyncKeyedLock;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
@@ -18,6 +18,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -27,7 +28,7 @@ using UtfUnknown;
 
 namespace MediaBrowser.MediaEncoding.Subtitles
 {
-    public sealed class SubtitleEncoder : ISubtitleEncoder
+    public sealed class SubtitleEncoder : ISubtitleEncoder, IDisposable
     {
         private readonly ILogger<SubtitleEncoder> _logger;
         private readonly IApplicationPaths _appPaths;
@@ -40,8 +41,11 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// <summary>
         /// The _semaphoreLocks.
         /// </summary>
-        private readonly ConcurrentDictionary<string, SemaphoreSlim> _semaphoreLocks =
-            new ConcurrentDictionary<string, SemaphoreSlim>();
+        private readonly AsyncKeyedLocker<string> _semaphoreLocks = new(o =>
+        {
+            o.PoolSize = 20;
+            o.PoolInitialFill = 1;
+        });
 
         public SubtitleEncoder(
             ILogger<SubtitleEncoder> logger,
@@ -318,16 +322,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         }
 
         /// <summary>
-        /// Gets the lock.
-        /// </summary>
-        /// <param name="filename">The filename.</param>
-        /// <returns>System.Object.</returns>
-        private SemaphoreSlim GetLock(string filename)
-        {
-            return _semaphoreLocks.GetOrAdd(filename, _ => new SemaphoreSlim(1, 1));
-        }
-
-        /// <summary>
         /// Converts the text subtitle to SRT.
         /// </summary>
         /// <param name="subtitleStream">The subtitle stream.</param>
@@ -337,20 +331,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// <returns>Task.</returns>
         private async Task ConvertTextSubtitleToSrt(MediaStream subtitleStream, MediaSourceInfo mediaSource, string outputPath, CancellationToken cancellationToken)
         {
-            var semaphore = GetLock(outputPath);
-
-            await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
+            using (await _semaphoreLocks.LockAsync(outputPath, cancellationToken).ConfigureAwait(false))
             {
                 if (!File.Exists(outputPath))
                 {
                     await ConvertTextSubtitleToSrtInternal(subtitleStream, mediaSource, outputPath, cancellationToken).ConfigureAwait(false);
                 }
-            }
-            finally
-            {
-                semaphore.Release();
             }
         }
 
@@ -484,16 +470,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             string outputPath,
             CancellationToken cancellationToken)
         {
-            var semaphore = GetLock(outputPath);
-
-            await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            var subtitleStreamIndex = EncodingHelper.FindIndex(mediaSource.MediaStreams, subtitleStream);
-
-            try
+            using (await _semaphoreLocks.LockAsync(outputPath, cancellationToken).ConfigureAwait(false))
             {
                 if (!File.Exists(outputPath))
                 {
+                    var subtitleStreamIndex = EncodingHelper.FindIndex(mediaSource.MediaStreams, subtitleStream);
+
                     var args = _mediaEncoder.GetInputArgument(mediaSource.Path, mediaSource);
 
                     if (subtitleStream.IsExternal)
@@ -508,10 +490,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                         outputPath,
                         cancellationToken).ConfigureAwait(false);
                 }
-            }
-            finally
-            {
-                semaphore.Release();
             }
         }
 
@@ -726,6 +704,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 default:
                     throw new ArgumentOutOfRangeException(nameof(protocol));
             }
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            _semaphoreLocks.Dispose();
         }
 
 #pragma warning disable CA1034 // Nested types should not be visible
