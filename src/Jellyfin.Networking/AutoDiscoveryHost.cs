@@ -53,14 +53,15 @@ public sealed class AutoDiscoveryHost : BackgroundService
     /// <inheritdoc />
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        if (!_configurationManager.GetNetworkConfiguration().AutoDiscovery)
+        var networkConfig = _configurationManager.GetNetworkConfiguration();
+        if (!networkConfig.AutoDiscovery)
         {
             return;
         }
 
         var udpServers = new List<Task>();
         // Linux needs to bind to the broadcast addresses to receive broadcast traffic
-        if (OperatingSystem.IsLinux())
+        if (OperatingSystem.IsLinux() && networkConfig.EnableIPv4)
         {
             udpServers.Add(ListenForAutoDiscoveryMessage(IPAddress.Broadcast, stoppingToken));
         }
