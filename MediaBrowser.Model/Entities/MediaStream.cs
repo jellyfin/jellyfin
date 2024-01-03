@@ -214,6 +214,26 @@ namespace MediaBrowser.Model.Entities
             }
         }
 
+        /// <summary>
+        /// Gets the audio spatial format.
+        /// </summary>
+        /// <value>The audio spatial format.</value>
+        public AudioSpatialFormat AudioSpatialFormat
+        {
+            get
+            {
+                if (Type != MediaStreamType.Audio || string.IsNullOrEmpty(Profile))
+                {
+                    return AudioSpatialFormat.None;
+                }
+
+                return
+                    Profile.Contains("Dolby Atmos", StringComparison.OrdinalIgnoreCase) ? AudioSpatialFormat.DolbyAtmos :
+                    Profile.Contains("DTS:X", StringComparison.OrdinalIgnoreCase) ? AudioSpatialFormat.DTSX :
+                    AudioSpatialFormat.None;
+            }
+        }
+
         public string LocalizedUndefined { get; set; }
 
         public string LocalizedDefault { get; set; }
