@@ -1101,7 +1101,7 @@ namespace Emby.Server.Implementations.LiveTv
             progress.Report(100);
         }
 
-        private async Task<Tuple<List<Guid>, List<Guid>>> RefreshChannelsInternal(ILiveTvService service, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task<Tuple<List<Guid>, List<Guid>>> RefreshChannelsInternal(ILiveTvService service, ActionableProgress<double> progress, CancellationToken cancellationToken)
         {
             progress.Report(10);
 
@@ -2168,7 +2168,7 @@ namespace Emby.Server.Implementations.LiveTv
         public Folder GetInternalLiveTvFolder(CancellationToken cancellationToken)
         {
             var name = _localization.GetLocalizedString("HeaderLiveTV");
-            return _libraryManager.GetNamedView(name, CollectionType.LiveTv, name);
+            return _libraryManager.GetNamedView(name, CollectionType.livetv, name);
         }
 
         public async Task<TunerHostInfo> SaveTunerHost(TunerHostInfo info, bool dataSourceChanged = true)

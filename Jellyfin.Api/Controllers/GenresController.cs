@@ -131,8 +131,8 @@ public class GenresController : BaseJellyfinApiController
 
         QueryResult<(BaseItem, ItemCounts)> result;
         if (parentItem is ICollectionFolder parentCollectionFolder
-            && (parentCollectionFolder.CollectionType == CollectionType.Music
-                || parentCollectionFolder.CollectionType == CollectionType.MusicVideos))
+            && (parentCollectionFolder.CollectionType == CollectionType.music
+                || parentCollectionFolder.CollectionType == CollectionType.musicvideos))
         {
             result = _libraryManager.GetMusicGenres(query);
         }

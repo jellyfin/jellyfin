@@ -83,7 +83,7 @@ namespace Jellyfin.Server.Implementations.Tests.Library
         [InlineData(@"\home/jeff\myfile.mkv", '\\', @"\home\jeff\myfile.mkv")]
         [InlineData(@"\home/jeff\myfile.mkv", '/', "/home/jeff/myfile.mkv")]
         [InlineData("", '/', "")]
-        public void NormalizePath_SpecifyingSeparator_Normalizes(string path, char separator, string expectedPath)
+        public void NormalizePath_SpecifyingSeparator_Normalizes(string? path, char separator, string? expectedPath)
         {
             Assert.Equal(expectedPath, path.NormalizePath(separator));
         }

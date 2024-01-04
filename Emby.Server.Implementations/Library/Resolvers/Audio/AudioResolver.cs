@@ -61,7 +61,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
             List<FileSystemMetadata> files,
             CollectionType? collectionType)
         {
-            if (collectionType == CollectionType.Books)
+            if (collectionType == CollectionType.books)
             {
                 return ResolveMultipleAudio(parent, files, true);
             }
@@ -80,7 +80,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
 
             var collectionType = args.GetCollectionType();
 
-            var isBooksCollectionType = collectionType == CollectionType.Books;
+            var isBooksCollectionType = collectionType == CollectionType.books;
 
             if (args.IsDirectory)
             {
@@ -112,7 +112,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
 
                 MediaBrowser.Controller.Entities.Audio.Audio item = null;
 
-                var isMusicCollectionType = collectionType == CollectionType.Music;
+                var isMusicCollectionType = collectionType == CollectionType.music;
 
                 // Use regular audio type for mixed libraries, owned items and music
                 if (isMixedCollectionType ||

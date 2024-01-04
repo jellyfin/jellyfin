@@ -13,7 +13,6 @@ using System.Net;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using Emby.Dlna.Main;
 using Emby.Naming.Common;
 using Emby.Photos;
 using Emby.Server.Implementations.Channels;
@@ -43,6 +42,7 @@ using Jellyfin.Api.Helpers;
 using Jellyfin.Drawing;
 using Jellyfin.MediaEncoding.Hls.Playlist;
 using Jellyfin.Networking.Manager;
+using Jellyfin.Networking.Udp;
 using Jellyfin.Server.Implementations;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
@@ -79,6 +79,7 @@ using MediaBrowser.Controller.TV;
 using MediaBrowser.LocalMetadata.Savers;
 using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.MediaEncoding.Subtitles;
+using MediaBrowser.MediaEncoding.Transcoding;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
@@ -580,7 +581,7 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<IAttachmentExtractor, MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor>();
 
-            serviceCollection.AddSingleton<TranscodingJobHelper>();
+            serviceCollection.AddSingleton<ITranscodeManager, TranscodeManager>();
             serviceCollection.AddScoped<MediaInfoHelper>();
             serviceCollection.AddScoped<AudioHelper>();
             serviceCollection.AddScoped<DynamicHlsHelper>();
@@ -873,9 +874,6 @@ namespace Emby.Server.Implementations
 
             // MediaEncoding
             yield return typeof(MediaBrowser.MediaEncoding.Encoder.MediaEncoder).Assembly;
-
-            // Dlna
-            yield return typeof(DlnaHost).Assembly;
 
             // Local metadata
             yield return typeof(BoxSetXmlSaver).Assembly;

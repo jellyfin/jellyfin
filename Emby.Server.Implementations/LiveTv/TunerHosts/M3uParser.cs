@@ -66,7 +66,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 .ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
 
-            return await response.Content.ReadAsStreamAsync(cancellationToken);
+            return await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         }
 
         private async Task<List<ChannelInfo>> GetChannelsAsync(TextReader reader, string channelIdPrefix, string tunerHostId)
