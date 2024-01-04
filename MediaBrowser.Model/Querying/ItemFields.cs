@@ -175,13 +175,6 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         Studios,
 
-        BasicSyncInfo,
-
-        /// <summary>
-        /// The synchronize information.
-        /// </summary>
-        SyncInfo,
-
         /// <summary>
         /// The taglines of the item.
         /// </summary>

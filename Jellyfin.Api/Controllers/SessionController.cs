@@ -385,7 +385,6 @@ public class SessionController : BaseJellyfinApiController
     /// <param name="playableMediaTypes">A list of playable media types, comma delimited. Audio, Video, Book, Photo.</param>
     /// <param name="supportedCommands">A list of supported remote control commands, comma delimited.</param>
     /// <param name="supportsMediaControl">Determines whether media can be played remotely..</param>
-    /// <param name="supportsSync">Determines whether sync is supported.</param>
     /// <param name="supportsPersistentIdentifier">Determines whether the device supports a unique identifier.</param>
     /// <response code="204">Capabilities posted.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
@@ -397,7 +396,6 @@ public class SessionController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] MediaType[] playableMediaTypes,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] GeneralCommandType[] supportedCommands,
         [FromQuery] bool supportsMediaControl = false,
-        [FromQuery] bool supportsSync = false,
         [FromQuery] bool supportsPersistentIdentifier = true)
     {
         if (string.IsNullOrWhiteSpace(id))
@@ -410,7 +408,6 @@ public class SessionController : BaseJellyfinApiController
             PlayableMediaTypes = playableMediaTypes,
             SupportedCommands = supportedCommands,
             SupportsMediaControl = supportsMediaControl,
-            SupportsSync = supportsSync,
             SupportsPersistentIdentifier = supportsPersistentIdentifier
         });
         return NoContent();

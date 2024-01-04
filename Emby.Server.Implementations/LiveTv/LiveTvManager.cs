@@ -1095,7 +1095,6 @@ namespace Emby.Server.Implementations.LiveTv
             // Load these now which will prefetch metadata
             var dtoOptions = new DtoOptions();
             var fields = dtoOptions.Fields.ToList();
-            fields.Remove(ItemFields.BasicSyncInfo);
             dtoOptions.Fields = fields.ToArray();
 
             progress.Report(100);

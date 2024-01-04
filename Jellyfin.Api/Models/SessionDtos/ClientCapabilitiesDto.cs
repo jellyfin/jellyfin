@@ -31,24 +31,9 @@ public class ClientCapabilitiesDto
     public bool SupportsMediaControl { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether session supports content uploading.
-    /// </summary>
-    public bool SupportsContentUploading { get; set; }
-
-    /// <summary>
-    /// Gets or sets the message callback url.
-    /// </summary>
-    public string? MessageCallbackUrl { get; set; }
-
-    /// <summary>
     /// Gets or sets a value indicating whether session supports a persistent identifier.
     /// </summary>
     public bool SupportsPersistentIdentifier { get; set; }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether session supports sync.
-    /// </summary>
-    public bool SupportsSync { get; set; }
 
     /// <summary>
     /// Gets or sets the device profile.
@@ -76,10 +61,7 @@ public class ClientCapabilitiesDto
             PlayableMediaTypes = PlayableMediaTypes,
             SupportedCommands = SupportedCommands,
             SupportsMediaControl = SupportsMediaControl,
-            SupportsContentUploading = SupportsContentUploading,
-            MessageCallbackUrl = MessageCallbackUrl,
             SupportsPersistentIdentifier = SupportsPersistentIdentifier,
-            SupportsSync = SupportsSync,
             DeviceProfile = DeviceProfile,
             AppStoreUrl = AppStoreUrl,
             IconUrl = IconUrl
