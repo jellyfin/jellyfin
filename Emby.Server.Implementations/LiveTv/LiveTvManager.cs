@@ -105,9 +105,9 @@ namespace Emby.Server.Implementations.LiveTv
         /// <value>The services.</value>
         public IReadOnlyList<ILiveTvService> Services => _services;
 
-        public ITunerHost[] TunerHosts => _tunerHosts;
+        public IReadOnlyList<ITunerHost> TunerHosts => _tunerHosts;
 
-        public IListingsProvider[] ListingProviders => _listingProviders;
+        public IReadOnlyList<IListingsProvider> ListingProviders => _listingProviders;
 
         private LiveTvOptions GetConfiguration()
         {
