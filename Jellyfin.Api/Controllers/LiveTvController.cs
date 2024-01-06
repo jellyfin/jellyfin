@@ -16,6 +16,7 @@ using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.LiveTvDtos;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
@@ -179,7 +180,7 @@ public class LiveTvController : BaseJellyfinApiController
             dtoOptions,
             CancellationToken.None);
 
-        var user = userId.Value.Equals(default)
+        var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -211,10 +212,10 @@ public class LiveTvController : BaseJellyfinApiController
     public ActionResult<BaseItemDto> GetChannel([FromRoute, Required] Guid channelId, [FromQuery] Guid? userId)
     {
         userId = RequestHelpers.GetUserId(User, userId);
-        var user = userId.Value.Equals(default)
+        var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
-        var item = channelId.Equals(default)
+        var item = channelId.IsEmpty()
             ? _libraryManager.GetUserRootFolder()
             : _libraryManager.GetItemById(channelId);
 
@@ -384,7 +385,7 @@ public class LiveTvController : BaseJellyfinApiController
     public async Task<ActionResult<QueryResult<BaseItemDto>>> GetRecordingFolders([FromQuery] Guid? userId)
     {
         userId = RequestHelpers.GetUserId(User, userId);
-        var user = userId.Value.Equals(default)
+        var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
         var folders = await _liveTvManager.GetRecordingFoldersAsync(user).ConfigureAwait(false);
@@ -407,10 +408,10 @@ public class LiveTvController : BaseJellyfinApiController
     public ActionResult<BaseItemDto> GetRecording([FromRoute, Required] Guid recordingId, [FromQuery] Guid? userId)
     {
         userId = RequestHelpers.GetUserId(User, userId);
-        var user = userId.Value.Equals(default)
+        var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
-        var item = recordingId.Equals(default) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(recordingId);
+        var item = recordingId.IsEmpty() ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(recordingId);
 
         var dtoOptions = new DtoOptions()
             .AddClientFields(User);
@@ -564,7 +565,7 @@ public class LiveTvController : BaseJellyfinApiController
         [FromQuery] bool enableTotalRecordCount = true)
     {
         userId = RequestHelpers.GetUserId(User, userId);
-        var user = userId.Value.Equals(default)
+        var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -591,7 +592,7 @@ public class LiveTvController : BaseJellyfinApiController
             GenreIds = genreIds
         };
 
-        if (librarySeriesId.HasValue && !librarySeriesId.Equals(default))
+        if (!librarySeriesId.IsNullOrEmpty())
         {
             query.IsSeries = true;
 
@@ -620,7 +621,7 @@ public class LiveTvController : BaseJellyfinApiController
     [Authorize(Policy = Policies.LiveTvAccess)]
     public async Task<ActionResult<QueryResult<BaseItemDto>>> GetPrograms([FromBody] GetProgramsDto body)
     {
-        var user = body.UserId.Equals(default) ? null : _userManager.GetUserById(body.UserId);
+        var user = body.UserId.IsEmpty() ? null : _userManager.GetUserById(body.UserId);
 
         var query = new InternalItemsQuery(user)
         {
@@ -645,7 +646,7 @@ public class LiveTvController : BaseJellyfinApiController
             GenreIds = body.GenreIds
         };
 
-        if (!body.LibrarySeriesId.Equals(default))
+        if (!body.LibrarySeriesId.IsEmpty())
         {
             query.IsSeries = true;
 
@@ -704,7 +705,7 @@ public class LiveTvController : BaseJellyfinApiController
         [FromQuery] bool enableTotalRecordCount = true)
     {
         userId = RequestHelpers.GetUserId(User, userId);
-        var user = userId.Value.Equals(default)
+        var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -743,7 +744,7 @@ public class LiveTvController : BaseJellyfinApiController
         [FromQuery] Guid? userId)
     {
         userId = RequestHelpers.GetUserId(User, userId);
-        var user = userId.Value.Equals(default)
+        var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
 

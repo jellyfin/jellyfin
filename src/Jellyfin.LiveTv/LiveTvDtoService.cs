@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Drawing;
@@ -456,7 +457,7 @@ namespace Jellyfin.LiveTv
                 info.Id = timer.ExternalId;
             }
 
-            if (!dto.ChannelId.Equals(default) && string.IsNullOrEmpty(info.ChannelId))
+            if (!dto.ChannelId.IsEmpty() && string.IsNullOrEmpty(info.ChannelId))
             {
                 var channel = _libraryManager.GetItemById(dto.ChannelId);
 
@@ -522,7 +523,7 @@ namespace Jellyfin.LiveTv
                 info.Id = timer.ExternalId;
             }
 
-            if (!dto.ChannelId.Equals(default) && string.IsNullOrEmpty(info.ChannelId))
+            if (!dto.ChannelId.IsEmpty() && string.IsNullOrEmpty(info.ChannelId))
             {
                 var channel = _libraryManager.GetItemById(dto.ChannelId);
 

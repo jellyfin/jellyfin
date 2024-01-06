@@ -159,7 +159,7 @@ namespace Jellyfin.LiveTv.Channels
         /// <inheritdoc />
         public async Task<QueryResult<Channel>> GetChannelsInternalAsync(ChannelQuery query)
         {
-            var user = query.UserId.Equals(default)
+            var user = query.UserId.IsEmpty()
                 ? null
                 : _userManager.GetUserById(query.UserId);
 
@@ -272,7 +272,7 @@ namespace Jellyfin.LiveTv.Channels
         /// <inheritdoc />
         public async Task<QueryResult<BaseItemDto>> GetChannelsAsync(ChannelQuery query)
         {
-            var user = query.UserId.Equals(default)
+            var user = query.UserId.IsEmpty()
                 ? null
                 : _userManager.GetUserById(query.UserId);
 
@@ -716,7 +716,7 @@ namespace Jellyfin.LiveTv.Channels
             // Find the corresponding channel provider plugin
             var channelProvider = GetChannelProvider(channel);
 
-            var parentItem = query.ParentId.Equals(default)
+            var parentItem = query.ParentId.IsEmpty()
                 ? channel
                 : _libraryManager.GetItemById(query.ParentId);
 
@@ -729,7 +729,7 @@ namespace Jellyfin.LiveTv.Channels
                 cancellationToken)
                 .ConfigureAwait(false);
 
-            if (query.ParentId.Equals(default))
+            if (query.ParentId.IsEmpty())
             {
                 query.Parent = channel;
             }

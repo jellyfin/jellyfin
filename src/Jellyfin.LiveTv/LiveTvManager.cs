@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
@@ -175,7 +176,7 @@ namespace Jellyfin.LiveTv
 
         public QueryResult<BaseItem> GetInternalChannels(LiveTvChannelQuery query, DtoOptions dtoOptions, CancellationToken cancellationToken)
         {
-            var user = query.UserId.Equals(default)
+            var user = query.UserId.IsEmpty()
                 ? null
                 : _userManager.GetUserById(query.UserId);
 
@@ -1270,7 +1271,7 @@ namespace Jellyfin.LiveTv
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (itemId.Equals(default))
+                if (itemId.IsEmpty())
                 {
                     // Somehow some invalid data got into the db. It probably predates the boundary checking
                     continue;
@@ -1529,7 +1530,7 @@ namespace Jellyfin.LiveTv
 
         public async Task<QueryResult<BaseItemDto>> GetRecordingsAsync(RecordingQuery query, DtoOptions options)
         {
-            var user = query.UserId.Equals(default)
+            var user = query.UserId.IsEmpty()
                 ? null
                 : _userManager.GetUserById(query.UserId);
 
