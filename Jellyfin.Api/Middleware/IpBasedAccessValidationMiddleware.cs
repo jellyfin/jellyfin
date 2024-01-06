@@ -42,7 +42,7 @@ public class IPBasedAccessValidationMiddleware
         if (!networkManager.HasRemoteAccess(remoteIP))
         {
             // No access from network, respond with 503 instead of 200.
-            httpContext.Response.StatusCode = (int)HttpStatusCode.ServiceUnavailable;
+            httpContext.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
             return;
         }
 
