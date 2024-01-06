@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -26,7 +27,7 @@ namespace MediaBrowser.Model.Net
         /// <summary>
         /// Any extension in this list is considered a video file.
         /// </summary>
-        private static readonly HashSet<string> _videoFileExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        private static readonly FrozenSet<string> _videoFileExtensions = new[]
         {
             ".3gp",
             ".asf",
@@ -57,79 +58,79 @@ namespace MediaBrowser.Model.Net
             ".webm",
             ".wmv",
             ".wtv",
-        };
+        }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Used for extensions not in <see cref="Model.MimeTypes"/> or to override them.
         /// </summary>
-        private static readonly Dictionary<string, string> _mimeTypeLookup = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        private static readonly FrozenDictionary<string, string> _mimeTypeLookup = new KeyValuePair<string, string>[]
         {
             // Type application
-            { ".azw3", "application/vnd.amazon.ebook" },
+            new(".azw3", "application/vnd.amazon.ebook"),
 
             // Type image
-            { ".tbn", "image/jpeg" },
+            new(".tbn", "image/jpeg"),
 
             // Type text
-            { ".ass", "text/x-ssa" },
-            { ".ssa", "text/x-ssa" },
-            { ".edl", "text/plain" },
-            { ".html", "text/html; charset=UTF-8" },
-            { ".htm", "text/html; charset=UTF-8" },
+            new(".ass", "text/x-ssa"),
+            new(".ssa", "text/x-ssa"),
+            new(".edl", "text/plain"),
+            new(".html", "text/html; charset=UTF-8"),
+            new(".htm", "text/html; charset=UTF-8"),
 
             // Type video
-            { ".mpegts", "video/mp2t" },
+            new(".mpegts", "video/mp2t"),
 
             // Type audio
-            { ".aac", "audio/aac" },
-            { ".ac3", "audio/ac3" },
-            { ".ape", "audio/x-ape" },
-            { ".dsf", "audio/dsf" },
-            { ".dsp", "audio/dsp" },
-            { ".flac", "audio/flac" },
-            { ".m4b", "audio/m4b" },
-            { ".mp3", "audio/mpeg" },
-            { ".vorbis", "audio/vorbis" },
-            { ".webma", "audio/webm" },
-            { ".wv", "audio/x-wavpack" },
-            { ".xsp", "audio/xsp" },
-        };
+            new(".aac", "audio/aac"),
+            new(".ac3", "audio/ac3"),
+            new(".ape", "audio/x-ape"),
+            new(".dsf", "audio/dsf"),
+            new(".dsp", "audio/dsp"),
+            new(".flac", "audio/flac"),
+            new(".m4b", "audio/m4b"),
+            new(".mp3", "audio/mpeg"),
+            new(".vorbis", "audio/vorbis"),
+            new(".webma", "audio/webm"),
+            new(".wv", "audio/x-wavpack"),
+            new(".xsp", "audio/xsp"),
+        }.ToFrozenDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase);
 
-        private static readonly Dictionary<string, string> _extensionLookup = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        private static readonly FrozenDictionary<string, string> _extensionLookup = new KeyValuePair<string, string>[]
         {
             // Type application
-            { "application/x-cbz", ".cbz" },
-            { "application/x-javascript", ".js" },
-            { "application/xml", ".xml" },
-            { "application/x-mpegURL", ".m3u8" },
+            new("application/x-cbz", ".cbz"),
+            new("application/x-javascript", ".js"),
+            new("application/xml", ".xml"),
+            new("application/x-mpegURL", ".m3u8"),
 
             // Type audio
-            { "audio/aac", ".aac" },
-            { "audio/ac3", ".ac3" },
-            { "audio/dsf", ".dsf" },
-            { "audio/dsp", ".dsp" },
-            { "audio/flac", ".flac" },
-            { "audio/m4b", ".m4b" },
-            { "audio/vorbis", ".vorbis" },
-            { "audio/x-ape", ".ape" },
-            { "audio/xsp", ".xsp" },
-            { "audio/x-wavpack", ".wv" },
+            new("audio/aac", ".aac"),
+            new("audio/ac3", ".ac3"),
+            new("audio/dsf", ".dsf"),
+            new("audio/dsp", ".dsp"),
+            new("audio/flac", ".flac"),
+            new("audio/m4b", ".m4b"),
+            new("audio/vorbis", ".vorbis"),
+            new("audio/x-ape", ".ape"),
+            new("audio/xsp", ".xsp"),
+            new("audio/x-wavpack", ".wv"),
 
             // Type image
-            { "image/jpeg", ".jpg" },
-            { "image/tiff", ".tiff" },
-            { "image/x-png", ".png" },
-            { "image/x-icon", ".ico" },
+            new("image/jpeg", ".jpg"),
+            new("image/tiff", ".tiff"),
+            new("image/x-png", ".png"),
+            new("image/x-icon", ".ico"),
 
             // Type text
-            { "text/plain", ".txt" },
-            { "text/rtf", ".rtf" },
-            { "text/x-ssa", ".ssa" },
+            new("text/plain", ".txt"),
+            new("text/rtf", ".rtf"),
+            new("text/x-ssa", ".ssa"),
 
             // Type video
-            { "video/vnd.mpeg.dash.mpd", ".mpd" },
-            { "video/x-matroska", ".mkv" },
-        };
+            new("video/vnd.mpeg.dash.mpd", ".mpd"),
+            new("video/x-matroska", ".mkv"),
+        }.ToFrozenDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase);
 
         public static string GetMimeType(string path) => GetMimeType(path, "application/octet-stream");
 
