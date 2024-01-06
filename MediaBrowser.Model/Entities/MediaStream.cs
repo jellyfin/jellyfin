@@ -218,6 +218,7 @@ namespace MediaBrowser.Model.Entities
         /// Gets the audio spatial format.
         /// </summary>
         /// <value>The audio spatial format.</value>
+        [DefaultValue(AudioSpatialFormat.None)]
         public AudioSpatialFormat AudioSpatialFormat
         {
             get
