@@ -1,3 +1,4 @@
+using System.Net;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -40,6 +41,8 @@ public class LanFilteringMiddleware
         var host = httpContext.GetNormalizedRemoteIP();
         if (!networkManager.IsInLocalNetwork(host))
         {
+            // No access from network, respond with 503 instead of 200.
+            httpContext.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
             return;
         }
 
