@@ -30,14 +30,14 @@ ENV JELLYFIN_CACHE_DIR=/cache
 COPY --from=qemu /usr/bin/qemu-arm-static /usr/bin
 
 RUN apt-get update \
- && apt-get install --no-install-recommends --no-install-suggests -y ca-certificates gnupg curl apt-transport-https \
+ && apt-get install --no-install-recommends --no-install-suggests -y ca-certificates gnupg curl \
  && curl -fsSL https://repo.jellyfin.org/jellyfin_team.gpg.key | gpg --dearmor -o /etc/apt/trusted.gpg.d/debian-jellyfin.gpg \
  && curl -fsSL https://keyserver.ubuntu.com/pks/lookup?op=get\&search=0x6587ffd6536b8826e88a62547876ae518cbcf2f2 | gpg --dearmor -o /etc/apt/trusted.gpg.d/ubuntu-jellyfin.gpg \
  && echo "deb [arch=$( dpkg --print-architecture )] https://repo.jellyfin.org/$( awk -F'=' '/^ID=/{ print $NF }' /etc/os-release ) $( awk -F'=' '/^VERSION_CODENAME=/{ print $NF }' /etc/os-release ) main" | tee /etc/apt/sources.list.d/jellyfin.list \
  && echo "deb http://ppa.launchpad.net/ubuntu-raspi2/ppa/ubuntu bionic main">> /etc/apt/sources.list.d/raspbins.list \
  && apt-get update \
  && apt-get install --no-install-recommends --no-install-suggests -y jellyfin-ffmpeg6 libssl-dev libfontconfig1 libfreetype6 vainfo libva2 locales \
- && apt-get remove gnupg apt-transport-https -y \
+ && apt-get remove gnupg -y \
  && apt-get clean autoclean -y \
  && apt-get autoremove -y \
  && rm -rf /var/lib/apt/lists/* \

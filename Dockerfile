@@ -34,7 +34,7 @@ ARG NEO_VERSION=23.35.27191.9
 ARG LEVEL_ZERO_VERSION=1.3.27191.9
 
 RUN apt-get update \
- && apt-get install --no-install-recommends --no-install-suggests -y ca-certificates gnupg curl apt-transport-https \
+ && apt-get install --no-install-recommends --no-install-suggests -y ca-certificates gnupg curl \
  && curl -fsSL https://repo.jellyfin.org/jellyfin_team.gpg.key | gpg --dearmor -o /etc/apt/trusted.gpg.d/debian-jellyfin.gpg \
  && echo "deb [arch=$( dpkg --print-architecture )] https://repo.jellyfin.org/$( awk -F'=' '/^ID=/{ print $NF }' /etc/os-release ) $( awk -F'=' '/^VERSION_CODENAME=/{ print $NF }' /etc/os-release ) main" | tee /etc/apt/sources.list.d/jellyfin.list \
  && apt-get update \
@@ -52,7 +52,7 @@ RUN apt-get update \
  && dpkg -i *.deb \
  && cd .. \
  && rm -rf intel-compute-runtime \
- && apt-get remove gnupg apt-transport-https -y \
+ && apt-get remove gnupg -y \
  && apt-get clean autoclean -y \
  && apt-get autoremove -y \
  && rm -rf /var/lib/apt/lists/* \
