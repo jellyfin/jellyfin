@@ -28,7 +28,6 @@ using Emby.Server.Implementations.Library;
 using Emby.Server.Implementations.LiveTv;
 using Emby.Server.Implementations.Localization;
 using Emby.Server.Implementations.Metrics;
-using Emby.Server.Implementations.Net;
 using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.Plugins;
 using Emby.Server.Implementations.QuickConnect;
