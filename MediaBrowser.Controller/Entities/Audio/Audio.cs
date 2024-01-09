@@ -38,6 +38,9 @@ namespace MediaBrowser.Controller.Entities.Audio
         public IReadOnlyList<string> AlbumArtists { get; set; }
 
         [JsonIgnore]
+        public override bool SupportsPositionTicksResume => true;
+
+        [JsonIgnore]
         public override bool SupportsPlayedStatus => true;
 
         [JsonIgnore]
