@@ -8,7 +8,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using Microsoft.Extensions.Logging;
 
-namespace Emby.Server.Implementations.Channels
+namespace Jellyfin.LiveTv.Channels
 {
     /// <summary>
     /// A task to remove all non-installed channels from the database.

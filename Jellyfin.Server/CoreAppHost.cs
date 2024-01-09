@@ -7,6 +7,7 @@ using Jellyfin.Api.WebSocketListeners;
 using Jellyfin.Drawing;
 using Jellyfin.Drawing.Skia;
 using Jellyfin.LiveTv;
+using Jellyfin.LiveTv.Channels;
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Activity;
 using Jellyfin.Server.Implementations.Devices;
@@ -17,6 +18,7 @@ using Jellyfin.Server.Implementations.Users;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.BaseItemManager;
+using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Events;
@@ -100,6 +102,7 @@ namespace Jellyfin.Server
 
             serviceCollection.AddSingleton<LiveTvDtoService>();
             serviceCollection.AddSingleton<ILiveTvManager, LiveTvManager>();
+            serviceCollection.AddSingleton<IChannelManager, ChannelManager>();
 
             foreach (var type in GetExportTypes<ILyricProvider>())
             {

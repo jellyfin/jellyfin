@@ -34,7 +34,7 @@ using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
 using Season = MediaBrowser.Controller.Entities.TV.Season;
 using Series = MediaBrowser.Controller.Entities.TV.Series;
 
-namespace Emby.Server.Implementations.Channels
+namespace Jellyfin.LiveTv.Channels
 {
     /// <summary>
     /// The LiveTV channel manager.

@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="Jellyfin.XmlTv" />
+    <PackageReference Include="System.Linq.Async" />
   </ItemGroup>
 
   <ItemGroup>

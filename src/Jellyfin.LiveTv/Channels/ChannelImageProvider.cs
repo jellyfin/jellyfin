@@ -7,7 +7,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 
-namespace Emby.Server.Implementations.Channels
+namespace Jellyfin.LiveTv.Channels
 {
     /// <summary>
     /// An image provider for channels.

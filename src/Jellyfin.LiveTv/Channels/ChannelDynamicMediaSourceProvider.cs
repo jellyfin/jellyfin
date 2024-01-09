@@ -8,7 +8,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 
-namespace Emby.Server.Implementations.Channels
+namespace Jellyfin.LiveTv.Channels
 {
     /// <summary>
     /// A media source provider for channels.

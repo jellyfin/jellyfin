@@ -15,7 +15,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Emby.Naming.Common;
 using Emby.Photos;
-using Emby.Server.Implementations.Channels;
 using Emby.Server.Implementations.Collections;
 using Emby.Server.Implementations.Configuration;
 using Emby.Server.Implementations.Cryptography;
@@ -555,8 +554,6 @@ namespace Emby.Server.Implementations
             // TODO: Refactor to eliminate the circular dependency here so that Lazy<T> isn't required
             serviceCollection.AddTransient(provider => new Lazy<ILiveTvManager>(provider.GetRequiredService<ILiveTvManager>));
             serviceCollection.AddSingleton<IDtoService, DtoService>();
-
-            serviceCollection.AddSingleton<IChannelManager, ChannelManager>();
 
             serviceCollection.AddSingleton<ISessionManager, SessionManager>();
 
