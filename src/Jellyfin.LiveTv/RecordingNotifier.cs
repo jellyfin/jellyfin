@@ -15,7 +15,7 @@ using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
 
-namespace Emby.Server.Implementations.EntryPoints
+namespace Jellyfin.LiveTv
 {
     public sealed class RecordingNotifier : IServerEntryPoint
     {
