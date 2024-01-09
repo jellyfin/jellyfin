@@ -29,6 +29,7 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Trickplay;
 using MediaBrowser.Model.Activity;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Providers.Lyric;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -103,6 +104,7 @@ namespace Jellyfin.Server
             serviceCollection.AddSingleton<LiveTvDtoService>();
             serviceCollection.AddSingleton<ILiveTvManager, LiveTvManager>();
             serviceCollection.AddSingleton<IChannelManager, ChannelManager>();
+            serviceCollection.AddSingleton<IStreamHelper, StreamHelper>();
 
             foreach (var type in GetExportTypes<ILyricProvider>())
             {

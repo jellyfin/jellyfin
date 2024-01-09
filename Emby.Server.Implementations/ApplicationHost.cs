@@ -502,8 +502,6 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton(_xmlSerializer);
 
-            serviceCollection.AddSingleton<IStreamHelper, StreamHelper>();
-
             serviceCollection.AddSingleton<ICryptoProvider, CryptographyProvider>();
 
             serviceCollection.AddSingleton<ISocketFactory, SocketFactory>();

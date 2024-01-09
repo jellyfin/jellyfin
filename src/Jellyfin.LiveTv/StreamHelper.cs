@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
 
-namespace Emby.Server.Implementations.IO
+namespace Jellyfin.LiveTv
 {
     public class StreamHelper : IStreamHelper
     {
