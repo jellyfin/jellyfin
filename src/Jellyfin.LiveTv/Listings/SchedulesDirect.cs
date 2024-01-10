@@ -105,8 +105,7 @@ namespace Jellyfin.LiveTv.Listings
             using var options = new HttpRequestMessage(HttpMethod.Post, ApiUrl + "/schedules");
             options.Content = JsonContent.Create(requestList, options: _jsonOptions);
             options.Headers.TryAddWithoutValidation("token", token);
-            using var response = await Send(options, true, info, cancellationToken).ConfigureAwait(false);
-            var dailySchedules = await response.Content.ReadFromJsonAsync<IReadOnlyList<DayDto>>(_jsonOptions, cancellationToken).ConfigureAwait(false);
+            var dailySchedules = await Request<IReadOnlyList<DayDto>>(options, true, info, cancellationToken).ConfigureAwait(false);
             if (dailySchedules is null)
             {
                 return Array.Empty<ProgramInfo>();
@@ -120,8 +119,8 @@ namespace Jellyfin.LiveTv.Listings
             var programIds = dailySchedules.SelectMany(d => d.Programs.Select(s => s.ProgramId)).Distinct();
             programRequestOptions.Content = JsonContent.Create(programIds, options: _jsonOptions);
 
-            using var innerResponse = await Send(programRequestOptions, true, info, cancellationToken).ConfigureAwait(false);
-            var programDetails = await innerResponse.Content.ReadFromJsonAsync<IReadOnlyList<ProgramDetailsDto>>(_jsonOptions, cancellationToken).ConfigureAwait(false);
+            var programDetails = await Request<IReadOnlyList<ProgramDetailsDto>>(programRequestOptions, true, info, cancellationToken)
+                    .ConfigureAwait(false);
             if (programDetails is null)
             {
                 return Array.Empty<ProgramInfo>();
@@ -471,16 +470,13 @@ namespace Jellyfin.LiveTv.Listings
             str.Length--;
             str.Append(']');
 
-            using var message = new HttpRequestMessage(HttpMethod.Post, ApiUrl + "/metadata/programs")
-            {
-                Content = new StringContent(str.ToString(), Encoding.UTF8, MediaTypeNames.Application.Json)
-            };
+            using var message = new HttpRequestMessage(HttpMethod.Post, ApiUrl + "/metadata/programs");
             message.Headers.TryAddWithoutValidation("token", token);
+            message.Content = new StringContent(str.ToString(), Encoding.UTF8, MediaTypeNames.Application.Json);
 
             try
             {
-                using var innerResponse2 = await Send(message, true, info, cancellationToken).ConfigureAwait(false);
-                return await innerResponse2.Content.ReadFromJsonAsync<IReadOnlyList<ShowImagesDto>>(_jsonOptions, cancellationToken).ConfigureAwait(false);
+                return await Request<IReadOnlyList<ShowImagesDto>>(message, true, info, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -506,8 +502,7 @@ namespace Jellyfin.LiveTv.Listings
 
             try
             {
-                using var httpResponse = await Send(options, false, info, cancellationToken).ConfigureAwait(false);
-                var root = await httpResponse.Content.ReadFromJsonAsync<IReadOnlyList<HeadendsDto>>(_jsonOptions, cancellationToken).ConfigureAwait(false);
+                var root = await Request<IReadOnlyList<HeadendsDto>>(options, false, info, cancellationToken).ConfigureAwait(false);
                 if (root is not null)
                 {
                     foreach (HeadendsDto headend in root)
@@ -597,7 +592,7 @@ namespace Jellyfin.LiveTv.Listings
             }
         }
 
-        private async Task<HttpResponseMessage> Send(
+        private async Task<T> Request<T>(
             HttpRequestMessage message,
             bool enableRetry,
             ListingsProviderInfo providerInfo,
@@ -605,16 +600,12 @@ namespace Jellyfin.LiveTv.Listings
             HttpCompletionOption completionOption = HttpCompletionOption.ResponseContentRead)
         {
             using var client = _httpClientFactory.CreateClient(NamedClient.Default);
-            var response = await client.SendAsync(message, completionOption, cancellationToken).ConfigureAwait(false);
+            using var response = await client.SendAsync(message, completionOption, cancellationToken).ConfigureAwait(false);
             if (response.IsSuccessStatusCode)
             {
-                return response;
+                return await response.Content.ReadFromJsonAsync<T>(_jsonOptions, cancellationToken).ConfigureAwait(false);
             }
 
-            // Response is automatically disposed in the calling function,
-            // so dispose manually if not returning.
-#pragma warning disable IDISP016, IDISP017
-            response.Dispose();
             if (!enableRetry || (int)response.StatusCode >= 500)
             {
                 throw new HttpRequestException(
@@ -622,7 +613,6 @@ namespace Jellyfin.LiveTv.Listings
                     null,
                     response.StatusCode);
             }
-#pragma warning restore IDISP016, IDISP017
 
             _tokens.Clear();
             using var retryMessage = new HttpRequestMessage(message.Method, message.RequestUri);
@@ -631,7 +621,7 @@ namespace Jellyfin.LiveTv.Listings
                 "token",
                 await GetToken(providerInfo, cancellationToken).ConfigureAwait(false));
 
-            return await Send(retryMessage, false, providerInfo, cancellationToken).ConfigureAwait(false);
+            return await Request<T>(retryMessage, false, providerInfo, cancellationToken).ConfigureAwait(false);
         }
 
         private async Task<string> GetTokenInternal(
@@ -648,9 +638,7 @@ namespace Jellyfin.LiveTv.Listings
             string hashedPassword = Convert.ToHexString(hashedPasswordBytes).ToLowerInvariant();
             options.Content = new StringContent("{\"username\":\"" + username + "\",\"password\":\"" + hashedPassword + "\"}", Encoding.UTF8, MediaTypeNames.Application.Json);
 
-            using var response = await Send(options, false, null, cancellationToken).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
-            var root = await response.Content.ReadFromJsonAsync<TokenDto>(_jsonOptions, cancellationToken).ConfigureAwait(false);
+            var root = await Request<TokenDto>(options, false, null, cancellationToken).ConfigureAwait(false);
             if (string.Equals(root?.Message, "OK", StringComparison.Ordinal))
             {
                 _logger.LogInformation("Authenticated with Schedules Direct token: {Token}", root.Token);
@@ -689,9 +677,7 @@ namespace Jellyfin.LiveTv.Listings
 
             try
             {
-                using var httpResponse = await Send(options, false, null, cancellationToken).ConfigureAwait(false);
-                httpResponse.EnsureSuccessStatusCode();
-                var root = await httpResponse.Content.ReadFromJsonAsync<LineupsDto>(_jsonOptions, cancellationToken).ConfigureAwait(false);
+                var root = await Request<LineupsDto>(options, false, null, cancellationToken).ConfigureAwait(false);
                 return root?.Lineups.Any(i => string.Equals(info.ListingsId, i.Lineup, StringComparison.OrdinalIgnoreCase)) ?? false;
             }
             catch (HttpRequestException ex)
@@ -744,8 +730,7 @@ namespace Jellyfin.LiveTv.Listings
             using var options = new HttpRequestMessage(HttpMethod.Get, ApiUrl + "/lineups/" + listingsId);
             options.Headers.TryAddWithoutValidation("token", token);
 
-            using var httpResponse = await Send(options, true, info, cancellationToken).ConfigureAwait(false);
-            var root = await httpResponse.Content.ReadFromJsonAsync<ChannelDto>(_jsonOptions, cancellationToken).ConfigureAwait(false);
+            var root = await Request<ChannelDto>(options, true, info, cancellationToken).ConfigureAwait(false);
             if (root is null)
             {
                 return new List<ChannelInfo>();
