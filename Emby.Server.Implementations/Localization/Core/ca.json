@@ -124,5 +124,7 @@
     "TaskKeyframeExtractorDescription": "Extreu fotogrames clau dels fitxers de vídeo per crear llistes de reproducció HLS més precises. Aquesta tasca pot durar molt de temps.",
     "TaskKeyframeExtractor": "Extractor de fotogrames clau",
     "External": "Extern",
-    "HearingImpaired": "Discapacitat auditiva"
+    "HearingImpaired": "Discapacitat auditiva",
+    "TaskRefreshTrickplayImages": "Generar miniatures de línia de temps",
+    "TaskRefreshTrickplayImagesDescription": "Crear miniatures de línia de temps per vídeos en les biblioteques habilitades."
 }

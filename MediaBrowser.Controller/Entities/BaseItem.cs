@@ -724,7 +724,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (this is IHasCollectionType view)
                 {
-                    if (view.CollectionType == CollectionType.LiveTv)
+                    if (view.CollectionType == CollectionType.livetv)
                     {
                         return true;
                     }
@@ -772,8 +772,6 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The remote trailers.</value>
         public IReadOnlyList<MediaUrl> RemoteTrailers { get; set; }
-
-        public virtual bool SupportsExternalTransfer => false;
 
         public virtual double GetDefaultPrimaryImageAspectRatio()
         {

@@ -6,6 +6,7 @@ using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.StreamingDtos;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model.Dlna;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

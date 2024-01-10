@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Controller.MediaEncoding;
 
-namespace Jellyfin.Api.Models.StreamingDtos;
+namespace MediaBrowser.Controller.Streaming;
 
 /// <summary>
 /// The audio streaming request dto.

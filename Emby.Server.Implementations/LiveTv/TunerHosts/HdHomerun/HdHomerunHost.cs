@@ -527,7 +527,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             return list;
         }
 
-        protected override async Task<ILiveStream> GetChannelStream(TunerHostInfo tunerHost, ChannelInfo channel, string streamId, List<ILiveStream> currentLiveStreams, CancellationToken cancellationToken)
+        protected override async Task<ILiveStream> GetChannelStream(TunerHostInfo tunerHost, ChannelInfo channel, string streamId, IList<ILiveStream> currentLiveStreams, CancellationToken cancellationToken)
         {
             var tunerCount = tunerHost.TunerCount;
 

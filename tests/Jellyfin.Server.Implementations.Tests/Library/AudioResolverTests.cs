@@ -63,7 +63,7 @@ public class AudioResolverTests
             null,
             Mock.Of<ILibraryManager>())
         {
-            CollectionType = CollectionType.Books,
+            CollectionType = CollectionType.books,
             FileInfo = new FileSystemMetadata
             {
                 FullName = parent,

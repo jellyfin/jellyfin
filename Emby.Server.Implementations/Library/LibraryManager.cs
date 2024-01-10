@@ -1514,7 +1514,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (item is UserView view)
             {
-                if (view.ViewType == CollectionType.LiveTv)
+                if (view.ViewType == CollectionType.livetv)
                 {
                     return new[] { view.Id };
                 }
@@ -1543,7 +1543,7 @@ namespace Emby.Server.Implementations.Library
                 }
 
                 // Handle grouping
-                if (user is not null && view.ViewType != CollectionType.Unknown && UserView.IsEligibleForGrouping(view.ViewType)
+                if (user is not null && view.ViewType != CollectionType.unknown && UserView.IsEligibleForGrouping(view.ViewType)
                     && user.GetPreference(PreferenceKind.GroupedFolders).Length > 0)
                 {
                     return GetUserRootFolder()

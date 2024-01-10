@@ -1,4 +1,4 @@
-namespace Jellyfin.Api.Models.StreamingDtos;
+namespace MediaBrowser.Controller.Streaming;
 
 /// <summary>
 /// The video request dto.

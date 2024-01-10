@@ -124,5 +124,7 @@
     "TaskKeyframeExtractorDescription": "فریم های کلیدی را از فایل های ویدئویی استخراج می کند تا لیست های پخش HLS دقیق تری ایجاد کند. این کار ممکن است برای مدت طولانی اجرا شود.",
     "TaskKeyframeExtractor": "استخراج کننده فریم کلیدی",
     "External": "خارجی",
-    "HearingImpaired": "مشکل شنوایی"
+    "HearingImpaired": "مشکل شنوایی",
+    "TaskRefreshTrickplayImages": "تولید تصاویر Trickplay",
+    "TaskRefreshTrickplayImagesDescription": "تولید پیش‌نمایش های trickplay برای ویدیو های فعال شده در کتابخانه."
 }

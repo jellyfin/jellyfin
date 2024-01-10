@@ -60,11 +60,11 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                 var seriesInfo = Naming.TV.SeriesResolver.Resolve(_namingOptions, args.Path);
 
                 var collectionType = args.GetCollectionType();
-                if (collectionType == CollectionType.TvShows)
+                if (collectionType == CollectionType.tvshows)
                 {
                     // TODO refactor into separate class or something, this is copied from LibraryManager.GetConfiguredContentType
                     var configuredContentType = args.GetConfiguredContentType();
-                    if (configuredContentType != CollectionType.TvShows)
+                    if (configuredContentType != CollectionType.tvshows)
                     {
                         return new Series
                         {

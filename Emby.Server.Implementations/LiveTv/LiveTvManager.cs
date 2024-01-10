@@ -105,9 +105,9 @@ namespace Emby.Server.Implementations.LiveTv
         /// <value>The services.</value>
         public IReadOnlyList<ILiveTvService> Services => _services;
 
-        public ITunerHost[] TunerHosts => _tunerHosts;
+        public IReadOnlyList<ITunerHost> TunerHosts => _tunerHosts;
 
-        public IListingsProvider[] ListingProviders => _listingProviders;
+        public IReadOnlyList<IListingsProvider> ListingProviders => _listingProviders;
 
         private LiveTvOptions GetConfiguration()
         {
@@ -1095,13 +1095,12 @@ namespace Emby.Server.Implementations.LiveTv
             // Load these now which will prefetch metadata
             var dtoOptions = new DtoOptions();
             var fields = dtoOptions.Fields.ToList();
-            fields.Remove(ItemFields.BasicSyncInfo);
             dtoOptions.Fields = fields.ToArray();
 
             progress.Report(100);
         }
 
-        private async Task<Tuple<List<Guid>, List<Guid>>> RefreshChannelsInternal(ILiveTvService service, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task<Tuple<List<Guid>, List<Guid>>> RefreshChannelsInternal(ILiveTvService service, ActionableProgress<double> progress, CancellationToken cancellationToken)
         {
             progress.Report(10);
 
@@ -2168,7 +2167,7 @@ namespace Emby.Server.Implementations.LiveTv
         public Folder GetInternalLiveTvFolder(CancellationToken cancellationToken)
         {
             var name = _localization.GetLocalizedString("HeaderLiveTV");
-            return _libraryManager.GetNamedView(name, CollectionType.LiveTv, name);
+            return _libraryManager.GetNamedView(name, CollectionType.livetv, name);
         }
 
         public async Task<TunerHostInfo> SaveTunerHost(TunerHostInfo info, bool dataSourceChanged = true)
