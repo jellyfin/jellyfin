@@ -598,14 +598,14 @@ namespace Jellyfin.LiveTv.Listings
         }
 
         private async Task<HttpResponseMessage> Send(
-            HttpRequestMessage options,
+            HttpRequestMessage message,
             bool enableRetry,
             ListingsProviderInfo providerInfo,
             CancellationToken cancellationToken,
             HttpCompletionOption completionOption = HttpCompletionOption.ResponseContentRead)
         {
-            var response = await _httpClientFactory.CreateClient(NamedClient.Default)
-                .SendAsync(options, completionOption, cancellationToken).ConfigureAwait(false);
+            using var client = _httpClientFactory.CreateClient(NamedClient.Default);
+            var response = await client.SendAsync(message, completionOption, cancellationToken).ConfigureAwait(false);
             if (response.IsSuccessStatusCode)
             {
                 return response;
@@ -625,8 +625,13 @@ namespace Jellyfin.LiveTv.Listings
 #pragma warning restore IDISP016, IDISP017
 
             _tokens.Clear();
-            options.Headers.TryAddWithoutValidation("token", await GetToken(providerInfo, cancellationToken).ConfigureAwait(false));
-            return await Send(options, false, providerInfo, cancellationToken).ConfigureAwait(false);
+            using var retryMessage = new HttpRequestMessage(message.Method, message.RequestUri);
+            retryMessage.Content = message.Content;
+            retryMessage.Headers.TryAddWithoutValidation(
+                "token",
+                await GetToken(providerInfo, cancellationToken).ConfigureAwait(false));
+
+            return await Send(retryMessage, false, providerInfo, cancellationToken).ConfigureAwait(false);
         }
 
         private async Task<string> GetTokenInternal(
