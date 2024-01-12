@@ -494,6 +494,11 @@ namespace Emby.Server.Implementations.LiveTv
 
             item.Name = channelInfo.Name;
 
+            if (item.PrimaryImageSourceUri != channelInfo.ImageUrl)
+            {
+                await item.DeleteImageAsync(ImageType.Primary, 0).ConfigureAwait(false);
+            }
+
             if (!item.HasImage(ImageType.Primary))
             {
                 if (!string.IsNullOrWhiteSpace(channelInfo.ImagePath))
@@ -504,6 +509,7 @@ namespace Emby.Server.Implementations.LiveTv
                 else if (!string.IsNullOrWhiteSpace(channelInfo.ImageUrl))
                 {
                     item.SetImagePath(ImageType.Primary, channelInfo.ImageUrl);
+                    item.PrimaryImageSourceUri = channelInfo.ImageUrl;
                     forceUpdate = true;
                 }
             }

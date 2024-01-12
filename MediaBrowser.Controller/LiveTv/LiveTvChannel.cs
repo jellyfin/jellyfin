@@ -46,6 +46,8 @@ namespace MediaBrowser.Controller.LiveTv
         [JsonIgnore]
         public override MediaType MediaType => ChannelType == ChannelType.Radio ? MediaType.Audio : MediaType.Video;
 
+        public string PrimaryImageSourceUri { get; set; }
+
         [JsonIgnore]
         public bool IsMovie { get; set; }
 
