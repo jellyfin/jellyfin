@@ -195,6 +195,7 @@ namespace Emby.Server.Implementations.LiveTv
                 IsLiked = query.IsLiked,
                 StartIndex = query.StartIndex,
                 Limit = query.Limit,
+                ChannelGroups = query.ChannelGroups,
                 DtoOptions = dtoOptions
             };
 

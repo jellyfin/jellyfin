@@ -2,6 +2,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Generic;
 using Jellyfin.Data.Enums;
 
 namespace MediaBrowser.Model.LiveTv
@@ -15,6 +16,7 @@ namespace MediaBrowser.Model.LiveTv
         {
             EnableUserData = true;
             SortBy = Array.Empty<ItemSortBy>();
+            ChannelGroups = Array.Empty<string>();
         }
 
         /// <summary>
@@ -106,5 +108,10 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The sort order.</value>
         public SortOrder? SortOrder { get; set; }
+
+        /// <summary>
+        /// Gets or sets the channel groups to filter on.
+        /// </summary>
+        public IReadOnlyList<string> ChannelGroups { get; set; }
     }
 }

@@ -32,6 +32,7 @@ namespace MediaBrowser.Controller.Entities
             ExcludeTags = Array.Empty<string>();
             GenreIds = Array.Empty<Guid>();
             Genres = Array.Empty<string>();
+            ChannelGroups = Array.Empty<string>();
             GroupByPresentationUniqueKey = true;
             ImageTypes = Array.Empty<ImageType>();
             IncludeItemTypes = Array.Empty<BaseItemKind>();
@@ -99,6 +100,8 @@ namespace MediaBrowser.Controller.Entities
         public string[] IncludeInheritedTags { get; set; }
 
         public IReadOnlyList<string> Genres { get; set; }
+
+        public IReadOnlyList<string> ChannelGroups { get; set; }
 
         public bool? IsSpecialSeason { get; set; }
 
