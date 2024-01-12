@@ -773,8 +773,6 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The remote trailers.</value>
         public IReadOnlyList<MediaUrl> RemoteTrailers { get; set; }
 
-        public virtual bool SupportsExternalTransfer => false;
-
         public virtual double GetDefaultPrimaryImageAspectRatio()
         {
             return 0;

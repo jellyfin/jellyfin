@@ -299,7 +299,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
                     if (!string.IsNullOrWhiteSpace(person.ProfilePath))
                     {
-                        personInfo.ImageUrl = _tmdbClientManager.GetPosterUrl(person.ProfilePath);
+                        personInfo.ImageUrl = _tmdbClientManager.GetProfileUrl(person.ProfilePath);
                     }
 
                     if (person.Id > 0)
