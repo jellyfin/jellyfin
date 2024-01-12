@@ -28,10 +28,10 @@ ENV JELLYFIN_DATA_DIR=/config
 ENV JELLYFIN_CACHE_DIR=/cache
 
 # https://github.com/intel/compute-runtime/releases
-ARG GMMLIB_VERSION=22.3.11.ci17747749
-ARG IGC_VERSION=1.0.15136.4
-ARG NEO_VERSION=23.35.27191.9
-ARG LEVEL_ZERO_VERSION=1.3.27191.9
+ARG GMMLIB_VERSION=22.3.11.ci17757293
+ARG IGC_VERSION=1.0.15136.22
+ARG NEO_VERSION=23.39.27427.23
+ARG LEVEL_ZERO_VERSION=1.3.27427.23
 
 RUN apt-get update \
  && apt-get install --no-install-recommends --no-install-suggests -y ca-certificates gnupg curl \
