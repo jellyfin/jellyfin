@@ -15,7 +15,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Emby.Naming.Common;
 using Emby.Photos;
-using Emby.Server.Implementations.Channels;
 using Emby.Server.Implementations.Collections;
 using Emby.Server.Implementations.Configuration;
 using Emby.Server.Implementations.Cryptography;
@@ -25,7 +24,6 @@ using Emby.Server.Implementations.Dto;
 using Emby.Server.Implementations.HttpServer.Security;
 using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Library;
-using Emby.Server.Implementations.LiveTv;
 using Emby.Server.Implementations.Localization;
 using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.Plugins;
@@ -504,8 +502,6 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton(_xmlSerializer);
 
-            serviceCollection.AddSingleton<IStreamHelper, StreamHelper>();
-
             serviceCollection.AddSingleton<ICryptoProvider, CryptographyProvider>();
 
             serviceCollection.AddSingleton<ISocketFactory, SocketFactory>();
@@ -557,8 +553,6 @@ namespace Emby.Server.Implementations
             serviceCollection.AddTransient(provider => new Lazy<ILiveTvManager>(provider.GetRequiredService<ILiveTvManager>));
             serviceCollection.AddSingleton<IDtoService, DtoService>();
 
-            serviceCollection.AddSingleton<IChannelManager, ChannelManager>();
-
             serviceCollection.AddSingleton<ISessionManager, SessionManager>();
 
             serviceCollection.AddSingleton<ICollectionManager, CollectionManager>();
@@ -566,9 +560,6 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IPlaylistManager, PlaylistManager>();
 
             serviceCollection.AddSingleton<ISyncPlayManager, SyncPlayManager>();
-
-            serviceCollection.AddSingleton<LiveTvDtoService>();
-            serviceCollection.AddSingleton<ILiveTvManager, LiveTvManager>();
 
             serviceCollection.AddSingleton<IUserViewManager, UserViewManager>();
 
