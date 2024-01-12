@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
-using MediaBrowser.Common.Configuration;
+using Jellyfin.LiveTv.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Channels;
@@ -107,11 +107,6 @@ namespace Jellyfin.LiveTv
         public IReadOnlyList<ITunerHost> TunerHosts => _tunerHosts;
 
         public IReadOnlyList<IListingsProvider> ListingProviders => _listingProviders;
-
-        private LiveTvOptions GetConfiguration()
-        {
-            return _config.GetConfiguration<LiveTvOptions>("livetv");
-        }
 
         public string GetEmbyTvActiveRecordingPath(string id)
         {
@@ -1302,7 +1297,7 @@ namespace Jellyfin.LiveTv
 
         private double GetGuideDays()
         {
-            var config = GetConfiguration();
+            var config = _config.GetLiveTvConfiguration();
 
             if (config.GuideDays.HasValue)
             {
@@ -2125,7 +2120,7 @@ namespace Jellyfin.LiveTv
 
         private bool IsLiveTvEnabled(User user)
         {
-            return user.HasPermission(PermissionKind.EnableLiveTvAccess) && (Services.Count > 1 || GetConfiguration().TunerHosts.Length > 0);
+            return user.HasPermission(PermissionKind.EnableLiveTvAccess) && (Services.Count > 1 || _config.GetLiveTvConfiguration().TunerHosts.Length > 0);
         }
 
         public IEnumerable<User> GetEnabledUsers()
@@ -2187,7 +2182,7 @@ namespace Jellyfin.LiveTv
                 await configurable.Validate(info).ConfigureAwait(false);
             }
 
-            var config = GetConfiguration();
+            var config = _config.GetLiveTvConfiguration();
 
             var list = config.TunerHosts.ToList();
             var index = list.FindIndex(i => string.Equals(i.Id, info.Id, StringComparison.OrdinalIgnoreCase));
@@ -2232,7 +2227,7 @@ namespace Jellyfin.LiveTv
 
             await provider.Validate(info, validateLogin, validateListings).ConfigureAwait(false);
 
-            LiveTvOptions config = GetConfiguration();
+            var config = _config.GetLiveTvConfiguration();
 
             var list = config.ListingProviders.ToList();
             int index = list.FindIndex(i => string.Equals(i.Id, info.Id, StringComparison.OrdinalIgnoreCase));
@@ -2257,7 +2252,7 @@ namespace Jellyfin.LiveTv
 
         public void DeleteListingsProvider(string id)
         {
-            var config = GetConfiguration();
+            var config = _config.GetLiveTvConfiguration();
 
             config.ListingProviders = config.ListingProviders.Where(i => !string.Equals(id, i.Id, StringComparison.OrdinalIgnoreCase)).ToArray();
 
@@ -2267,7 +2262,7 @@ namespace Jellyfin.LiveTv
 
         public async Task<TunerChannelMapping> SetChannelMapping(string providerId, string tunerChannelNumber, string providerChannelNumber)
         {
-            var config = GetConfiguration();
+            var config = _config.GetLiveTvConfiguration();
 
             var listingsProviderInfo = config.ListingProviders.First(i => string.Equals(providerId, i.Id, StringComparison.OrdinalIgnoreCase));
             listingsProviderInfo.ChannelMappings = listingsProviderInfo.ChannelMappings.Where(i => !string.Equals(i.Name, tunerChannelNumber, StringComparison.OrdinalIgnoreCase)).ToArray();
@@ -2327,7 +2322,7 @@ namespace Jellyfin.LiveTv
 
         public Task<List<NameIdPair>> GetLineups(string providerType, string providerId, string country, string location)
         {
-            var config = GetConfiguration();
+            var config = _config.GetLiveTvConfiguration();
 
             if (string.IsNullOrWhiteSpace(providerId))
             {
@@ -2357,13 +2352,13 @@ namespace Jellyfin.LiveTv
 
         public Task<List<ChannelInfo>> GetChannelsForListingsProvider(string id, CancellationToken cancellationToken)
         {
-            var info = GetConfiguration().ListingProviders.First(i => string.Equals(i.Id, id, StringComparison.OrdinalIgnoreCase));
+            var info = _config.GetLiveTvConfiguration().ListingProviders.First(i => string.Equals(i.Id, id, StringComparison.OrdinalIgnoreCase));
             return EmbyTV.EmbyTV.Current.GetChannelsForListingsProvider(info, cancellationToken);
         }
 
         public Task<List<ChannelInfo>> GetChannelsFromListingsProviderData(string id, CancellationToken cancellationToken)
         {
-            var info = GetConfiguration().ListingProviders.First(i => string.Equals(i.Id, id, StringComparison.OrdinalIgnoreCase));
+            var info = _config.GetLiveTvConfiguration().ListingProviders.First(i => string.Equals(i.Id, id, StringComparison.OrdinalIgnoreCase));
             var provider = _listingProviders.First(i => string.Equals(i.Type, info.Type, StringComparison.OrdinalIgnoreCase));
             return provider.GetChannels(info, cancellationToken);
         }

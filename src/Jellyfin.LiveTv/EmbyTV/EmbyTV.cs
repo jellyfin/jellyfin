@@ -17,6 +17,7 @@ using System.Xml;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
 using Jellyfin.Extensions;
+using Jellyfin.LiveTv.Configuration;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
@@ -126,7 +127,7 @@ namespace Jellyfin.LiveTv.EmbyTV
         {
             get
             {
-                var path = GetConfiguration().RecordingPath;
+                var path = _config.GetLiveTvConfiguration().RecordingPath;
 
                 return string.IsNullOrWhiteSpace(path)
                     ? DefaultRecordingPath
@@ -189,7 +190,7 @@ namespace Jellyfin.LiveTv.EmbyTV
                     pathsAdded.AddRange(pathsToCreate);
                 }
 
-                var config = GetConfiguration();
+                var config = _config.GetLiveTvConfiguration();
 
                 var pathsToRemove = config.MediaLocationsCreated
                     .Except(recordingFolders.SelectMany(i => i.Locations))
@@ -831,7 +832,7 @@ namespace Jellyfin.LiveTv.EmbyTV
 
         public Task<SeriesTimerInfo> GetNewTimerDefaultsAsync(CancellationToken cancellationToken, ProgramInfo program = null)
         {
-            var config = GetConfiguration();
+            var config = _config.GetLiveTvConfiguration();
 
             var defaults = new SeriesTimerInfo()
             {
@@ -932,7 +933,7 @@ namespace Jellyfin.LiveTv.EmbyTV
 
         private List<Tuple<IListingsProvider, ListingsProviderInfo>> GetListingProviders()
         {
-            return GetConfiguration().ListingProviders
+            return _config.GetLiveTvConfiguration().ListingProviders
                 .Select(i =>
                 {
                     var provider = _liveTvManager.ListingProviders.FirstOrDefault(l => string.Equals(l.Type, i.Type, StringComparison.OrdinalIgnoreCase));
@@ -1076,7 +1077,7 @@ namespace Jellyfin.LiveTv.EmbyTV
         private string GetRecordingPath(TimerInfo timer, RemoteSearchResult metadata, out string seriesPath)
         {
             var recordPath = RecordingPath;
-            var config = GetConfiguration();
+            var config = _config.GetLiveTvConfiguration();
             seriesPath = null;
 
             if (timer.IsProgramSeries)
@@ -1596,7 +1597,7 @@ namespace Jellyfin.LiveTv.EmbyTV
 
         private void PostProcessRecording(TimerInfo timer, string path)
         {
-            var options = GetConfiguration();
+            var options = _config.GetLiveTvConfiguration();
             if (string.IsNullOrWhiteSpace(options.RecordingPostProcessor))
             {
                 return;
@@ -1777,7 +1778,7 @@ namespace Jellyfin.LiveTv.EmbyTV
                     program.AddGenre("News");
                 }
 
-                var config = GetConfiguration();
+                var config = _config.GetLiveTvConfiguration();
 
                 if (config.SaveRecordingNFO)
                 {
@@ -2126,11 +2127,6 @@ namespace Jellyfin.LiveTv.EmbyTV
             }
 
             return _libraryManager.GetItemList(query).Cast<LiveTvProgram>().FirstOrDefault();
-        }
-
-        private LiveTvOptions GetConfiguration()
-        {
-            return _config.GetConfiguration<LiveTvOptions>("livetv");
         }
 
         private bool ShouldCancelTimerForSeriesTimer(SeriesTimerInfo seriesTimer, TimerInfo timer)
@@ -2519,7 +2515,7 @@ namespace Jellyfin.LiveTv.EmbyTV
                 };
             }
 
-            var customPath = GetConfiguration().MovieRecordingPath;
+            var customPath = _config.GetLiveTvConfiguration().MovieRecordingPath;
             if (!string.IsNullOrWhiteSpace(customPath) && !string.Equals(customPath, defaultFolder, StringComparison.OrdinalIgnoreCase) && Directory.Exists(customPath))
             {
                 yield return new VirtualFolderInfo
@@ -2530,7 +2526,7 @@ namespace Jellyfin.LiveTv.EmbyTV
                 };
             }
 
-            customPath = GetConfiguration().SeriesRecordingPath;
+            customPath = _config.GetLiveTvConfiguration().SeriesRecordingPath;
             if (!string.IsNullOrWhiteSpace(customPath) && !string.Equals(customPath, defaultFolder, StringComparison.OrdinalIgnoreCase) && Directory.Exists(customPath))
             {
                 yield return new VirtualFolderInfo
@@ -2546,7 +2542,7 @@ namespace Jellyfin.LiveTv.EmbyTV
         {
             var list = new List<TunerHostInfo>();
 
-            var configuredDeviceIds = GetConfiguration().TunerHosts
+            var configuredDeviceIds = _config.GetLiveTvConfiguration().TunerHosts
                .Where(i => !string.IsNullOrWhiteSpace(i.DeviceId))
                .Select(i => i.DeviceId)
                .ToList();
@@ -2579,7 +2575,7 @@ namespace Jellyfin.LiveTv.EmbyTV
         {
             var discoveredDevices = await DiscoverDevices(host, TunerDiscoveryDurationMs, cancellationToken).ConfigureAwait(false);
 
-            var configuredDevices = GetConfiguration().TunerHosts
+            var configuredDevices = _config.GetLiveTvConfiguration().TunerHosts
                 .Where(i => string.Equals(i.Type, host.Type, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 

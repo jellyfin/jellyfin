@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using Jellyfin.Extensions.Json.Converters;
+using Jellyfin.LiveTv.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -278,7 +279,7 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
         {
             var list = new List<LiveTvTunerInfo>();
 
-            foreach (var host in GetConfiguration().TunerHosts
+            foreach (var host in Config.GetLiveTvConfiguration().TunerHosts
                 .Where(i => string.Equals(i.Type, Type, StringComparison.OrdinalIgnoreCase)))
             {
                 try
