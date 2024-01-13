@@ -34,9 +34,8 @@ public interface ITunerHostManager
     /// Discovers the available tuners.
     /// </summary>
     /// <param name="newDevicesOnly">A value indicating whether to only return new devices.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to use.</param>
     /// <returns>The <see cref="TunerHostInfo"/>s.</returns>
-    Task<List<TunerHostInfo>> DiscoverTuners(bool newDevicesOnly, CancellationToken cancellationToken);
+    IAsyncEnumerable<TunerHostInfo> DiscoverTuners(bool newDevicesOnly);
 
     /// <summary>
     /// Scans for tuner devices that have changed URLs.

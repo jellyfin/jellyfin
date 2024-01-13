@@ -1144,8 +1144,8 @@ public class LiveTvController : BaseJellyfinApiController
     [HttpGet("Tuners/Discover")]
     [Authorize(Policy = Policies.LiveTvManagement)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<TunerHostInfo>>> DiscoverTuners([FromQuery] bool newDevicesOnly = false)
-        => await _tunerHostManager.DiscoverTuners(newDevicesOnly, CancellationToken.None).ConfigureAwait(false);
+    public IAsyncEnumerable<TunerHostInfo> DiscoverTuners([FromQuery] bool newDevicesOnly = false)
+        => _tunerHostManager.DiscoverTuners(newDevicesOnly);
 
     /// <summary>
     /// Gets a live tv recording stream.

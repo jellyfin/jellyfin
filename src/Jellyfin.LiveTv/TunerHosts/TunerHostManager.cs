@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Extensions;
 using Jellyfin.LiveTv.Configuration;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
@@ -101,10 +100,8 @@ public class TunerHostManager : ITunerHostManager
     }
 
     /// <inheritdoc />
-    public async Task<List<TunerHostInfo>> DiscoverTuners(bool newDevicesOnly, CancellationToken cancellationToken)
+    public async IAsyncEnumerable<TunerHostInfo> DiscoverTuners(bool newDevicesOnly)
     {
-        var list = new List<TunerHostInfo>();
-
         var configuredDeviceIds = _config.GetLiveTvConfiguration().TunerHosts
             .Where(i => !string.IsNullOrWhiteSpace(i.DeviceId))
             .Select(i => i.DeviceId)
@@ -112,19 +109,15 @@ public class TunerHostManager : ITunerHostManager
 
         foreach (var host in _tunerHosts)
         {
-            var discoveredDevices = await DiscoverDevices(host, TunerDiscoveryDurationMs, cancellationToken).ConfigureAwait(false);
-
-            if (newDevicesOnly)
+            var discoveredDevices = await DiscoverDevices(host, TunerDiscoveryDurationMs, CancellationToken.None).ConfigureAwait(false);
+            foreach (var tuner in discoveredDevices)
             {
-                discoveredDevices = discoveredDevices
-                    .Where(d => !configuredDeviceIds.Contains(d.DeviceId, StringComparison.OrdinalIgnoreCase))
-                    .ToList();
+                if (!newDevicesOnly || !configuredDeviceIds.Contains(tuner.DeviceId, StringComparer.OrdinalIgnoreCase))
+                {
+                    yield return tuner;
+                }
             }
-
-            list.AddRange(discoveredDevices);
         }
-
-        return list;
     }
 
     /// <inheritdoc />
@@ -158,7 +151,7 @@ public class TunerHostManager : ITunerHostManager
         }
     }
 
-    private async Task<List<TunerHostInfo>> DiscoverDevices(ITunerHost host, int discoveryDurationMs, CancellationToken cancellationToken)
+    private async Task<IList<TunerHostInfo>> DiscoverDevices(ITunerHost host, int discoveryDurationMs, CancellationToken cancellationToken)
     {
         try
         {
@@ -175,7 +168,7 @@ public class TunerHostManager : ITunerHostManager
         {
             _logger.LogError(ex, "Error discovering tuner devices");
 
-            return new List<TunerHostInfo>();
+            return Array.Empty<TunerHostInfo>();
         }
     }
 }
