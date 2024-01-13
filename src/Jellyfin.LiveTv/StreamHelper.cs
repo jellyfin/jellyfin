@@ -81,36 +81,6 @@ namespace Jellyfin.LiveTv
             }
         }
 
-        public async Task CopyToAsync(Stream source, Stream destination, long copyLength, CancellationToken cancellationToken)
-        {
-            byte[] buffer = ArrayPool<byte>.Shared.Rent(IODefaults.CopyToBufferSize);
-            try
-            {
-                int bytesRead;
-
-                while ((bytesRead = await source.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) != 0)
-                {
-                    var bytesToWrite = Math.Min(bytesRead, copyLength);
-
-                    if (bytesToWrite > 0)
-                    {
-                        await destination.WriteAsync(buffer.AsMemory(0, Convert.ToInt32(bytesToWrite)), cancellationToken).ConfigureAwait(false);
-                    }
-
-                    copyLength -= bytesToWrite;
-
-                    if (copyLength <= 0)
-                    {
-                        break;
-                    }
-                }
-            }
-            finally
-            {
-                ArrayPool<byte>.Shared.Return(buffer);
-            }
-        }
-
         public async Task CopyUntilCancelled(Stream source, Stream target, int bufferSize, CancellationToken cancellationToken)
         {
             byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);

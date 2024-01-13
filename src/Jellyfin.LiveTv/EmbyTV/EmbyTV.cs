@@ -1023,11 +1023,6 @@ namespace Jellyfin.LiveTv.EmbyTV
             return Task.CompletedTask;
         }
 
-        public Task RecordLiveStream(string id, CancellationToken cancellationToken)
-        {
-            return Task.CompletedTask;
-        }
-
         public Task ResetTuner(string id, CancellationToken cancellationToken)
         {
             return Task.CompletedTask;

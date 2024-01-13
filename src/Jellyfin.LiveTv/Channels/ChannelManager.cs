@@ -114,15 +114,6 @@ namespace Jellyfin.LiveTv.Channels
         }
 
         /// <inheritdoc />
-        public bool EnableMediaProbe(BaseItem item)
-        {
-            var internalChannel = _libraryManager.GetItemById(item.ChannelId);
-            var channel = Channels.FirstOrDefault(i => GetInternalChannelId(i.Name).Equals(internalChannel.Id));
-
-            return channel is ISupportsMediaProbe;
-        }
-
-        /// <inheritdoc />
         public Task DeleteItem(BaseItem item)
         {
             var internalChannel = _libraryManager.GetItemById(item.ChannelId);
@@ -560,18 +551,6 @@ namespace Jellyfin.LiveTv.Channels
             var channelProvider = GetChannelProvider(channel);
 
             return GetChannelFeaturesDto(channel, channelProvider, channelProvider.GetChannelFeatures());
-        }
-
-        /// <summary>
-        /// Checks whether the provided Guid supports external transfer.
-        /// </summary>
-        /// <param name="channelId">The Guid.</param>
-        /// <returns>Whether or not the provided Guid supports external transfer.</returns>
-        public bool SupportsExternalTransfer(Guid channelId)
-        {
-            var channelProvider = GetChannelProvider(channelId);
-
-            return channelProvider.GetChannelFeatures().SupportsContentDownloading;
         }
 
         /// <summary>
@@ -1210,19 +1189,6 @@ namespace Jellyfin.LiveTv.Channels
             if (result is null)
             {
                 throw new ResourceNotFoundException("No channel provider found for channel " + channel.Name);
-            }
-
-            return result;
-        }
-
-        internal IChannel GetChannelProvider(Guid internalChannelId)
-        {
-            var result = GetAllChannels()
-                .FirstOrDefault(i => internalChannelId.Equals(GetInternalChannelId(i.Name)));
-
-            if (result is null)
-            {
-                throw new ResourceNotFoundException("No channel provider found for channel id " + internalChannelId);
             }
 
             return result;
