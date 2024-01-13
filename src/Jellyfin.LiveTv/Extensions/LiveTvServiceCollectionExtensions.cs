@@ -1,4 +1,6 @@
 ﻿using Jellyfin.LiveTv.Channels;
+using Jellyfin.LiveTv.TunerHosts;
+using Jellyfin.LiveTv.TunerHosts.HdHomerun;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.IO;
@@ -21,5 +23,9 @@ public static class LiveTvServiceCollectionExtensions
         services.AddSingleton<ILiveTvManager, LiveTvManager>();
         services.AddSingleton<IChannelManager, ChannelManager>();
         services.AddSingleton<IStreamHelper, StreamHelper>();
+        services.AddSingleton<ITunerHostManager, TunerHostManager>();
+
+        services.AddSingleton<ITunerHost, HdHomerunHost>();
+        services.AddSingleton<ITunerHost, M3UTunerHost>();
     }
 }

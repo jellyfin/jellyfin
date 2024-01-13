@@ -57,9 +57,9 @@ namespace Jellyfin.LiveTv
         private readonly IFileSystem _fileSystem;
         private readonly IChannelManager _channelManager;
         private readonly LiveTvDtoService _tvDtoService;
+        private readonly ITunerHostManager _tunerHostManager;
 
         private ILiveTvService[] _services = Array.Empty<ILiveTvService>();
-        private ITunerHost[] _tunerHosts = Array.Empty<ITunerHost>();
         private IListingsProvider[] _listingProviders = Array.Empty<IListingsProvider>();
 
         public LiveTvManager(
@@ -74,7 +74,8 @@ namespace Jellyfin.LiveTv
             ILocalizationManager localization,
             IFileSystem fileSystem,
             IChannelManager channelManager,
-            LiveTvDtoService liveTvDtoService)
+            LiveTvDtoService liveTvDtoService,
+            ITunerHostManager tunerHostManager)
         {
             _config = config;
             _logger = logger;
@@ -88,6 +89,7 @@ namespace Jellyfin.LiveTv
             _userDataManager = userDataManager;
             _channelManager = channelManager;
             _tvDtoService = liveTvDtoService;
+            _tunerHostManager = tunerHostManager;
         }
 
         public event EventHandler<GenericEventArgs<TimerEventInfo>> SeriesTimerCancelled;
@@ -104,8 +106,6 @@ namespace Jellyfin.LiveTv
         /// <value>The services.</value>
         public IReadOnlyList<ILiveTvService> Services => _services;
 
-        public IReadOnlyList<ITunerHost> TunerHosts => _tunerHosts;
-
         public IReadOnlyList<IListingsProvider> ListingProviders => _listingProviders;
 
         public string GetEmbyTvActiveRecordingPath(string id)
@@ -113,16 +113,10 @@ namespace Jellyfin.LiveTv
             return EmbyTV.EmbyTV.Current.GetActiveRecordingPath(id);
         }
 
-        /// <summary>
-        /// Adds the parts.
-        /// </summary>
-        /// <param name="services">The services.</param>
-        /// <param name="tunerHosts">The tuner hosts.</param>
-        /// <param name="listingProviders">The listing providers.</param>
-        public void AddParts(IEnumerable<ILiveTvService> services, IEnumerable<ITunerHost> tunerHosts, IEnumerable<IListingsProvider> listingProviders)
+        /// <inheritdoc />
+        public void AddParts(IEnumerable<ILiveTvService> services, IEnumerable<IListingsProvider> listingProviders)
         {
             _services = services.ToArray();
-            _tunerHosts = tunerHosts.Where(i => i.IsSupported).ToArray();
 
             _listingProviders = listingProviders.ToArray();
 
@@ -152,20 +146,6 @@ namespace Jellyfin.LiveTv
                 {
                     ProgramId = _tvDtoService.GetInternalProgramId(timer.ProgramId)
                 }));
-        }
-
-        public List<NameIdPair> GetTunerHostTypes()
-        {
-            return _tunerHosts.OrderBy(i => i.Name).Select(i => new NameIdPair
-            {
-                Name = i.Name,
-                Id = i.Type
-            }).ToList();
-        }
-
-        public Task<List<TunerHostInfo>> DiscoverTuners(bool newDevicesOnly, CancellationToken cancellationToken)
-        {
-            return EmbyTV.EmbyTV.Current.DiscoverTuners(newDevicesOnly, cancellationToken);
         }
 
         public QueryResult<BaseItem> GetInternalChannels(LiveTvChannelQuery query, DtoOptions dtoOptions, CancellationToken cancellationToken)
@@ -1029,7 +1009,7 @@ namespace Jellyfin.LiveTv
         {
             await EmbyTV.EmbyTV.Current.CreateRecordingFolders().ConfigureAwait(false);
 
-            await EmbyTV.EmbyTV.Current.ScanForTunerDeviceChanges(cancellationToken).ConfigureAwait(false);
+            await _tunerHostManager.ScanForTunerDeviceChanges(cancellationToken).ConfigureAwait(false);
 
             var numComplete = 0;
             double progressPerService = _services.Length == 0
@@ -2164,48 +2144,6 @@ namespace Jellyfin.LiveTv
         {
             var name = _localization.GetLocalizedString("HeaderLiveTV");
             return _libraryManager.GetNamedView(name, CollectionType.livetv, name);
-        }
-
-        public async Task<TunerHostInfo> SaveTunerHost(TunerHostInfo info, bool dataSourceChanged = true)
-        {
-            info = JsonSerializer.Deserialize<TunerHostInfo>(JsonSerializer.SerializeToUtf8Bytes(info));
-
-            var provider = _tunerHosts.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase));
-
-            if (provider is null)
-            {
-                throw new ResourceNotFoundException();
-            }
-
-            if (provider is IConfigurableTunerHost configurable)
-            {
-                await configurable.Validate(info).ConfigureAwait(false);
-            }
-
-            var config = _config.GetLiveTvConfiguration();
-
-            var list = config.TunerHosts.ToList();
-            var index = list.FindIndex(i => string.Equals(i.Id, info.Id, StringComparison.OrdinalIgnoreCase));
-
-            if (index == -1 || string.IsNullOrWhiteSpace(info.Id))
-            {
-                info.Id = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
-                list.Add(info);
-                config.TunerHosts = list.ToArray();
-            }
-            else
-            {
-                config.TunerHosts[index] = info;
-            }
-
-            _config.SaveConfiguration("livetv", config);
-
-            if (dataSourceChanged)
-            {
-                _taskManager.CancelIfRunningAndQueue<RefreshGuideScheduledTask>();
-            }
-
-            return info;
         }
 
         public async Task<ListingsProviderInfo> SaveListingProvider(ListingsProviderInfo info, bool validateLogin, bool validateListings)

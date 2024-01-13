@@ -44,8 +44,6 @@ namespace Jellyfin.LiveTv.EmbyTV
     {
         public const string DateAddedFormat = "yyyy-MM-dd HH:mm:ss";
 
-        private const int TunerDiscoveryDurationMs = 3000;
-
         private readonly ILogger<EmbyTV> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IServerConfigurationManager _config;
@@ -54,6 +52,7 @@ namespace Jellyfin.LiveTv.EmbyTV
         private readonly TimerManager _timerProvider;
 
         private readonly LiveTvManager _liveTvManager;
+        private readonly ITunerHostManager _tunerHostManager;
         private readonly IFileSystem _fileSystem;
 
         private readonly ILibraryMonitor _libraryMonitor;
@@ -80,6 +79,7 @@ namespace Jellyfin.LiveTv.EmbyTV
             IHttpClientFactory httpClientFactory,
             IServerConfigurationManager config,
             ILiveTvManager liveTvManager,
+            ITunerHostManager tunerHostManager,
             IFileSystem fileSystem,
             ILibraryManager libraryManager,
             ILibraryMonitor libraryMonitor,
@@ -97,6 +97,7 @@ namespace Jellyfin.LiveTv.EmbyTV
             _providerManager = providerManager;
             _mediaEncoder = mediaEncoder;
             _liveTvManager = (LiveTvManager)liveTvManager;
+            _tunerHostManager = tunerHostManager;
             _mediaSourceManager = mediaSourceManager;
             _streamHelper = streamHelper;
 
@@ -310,7 +311,7 @@ namespace Jellyfin.LiveTv.EmbyTV
         {
             var list = new List<ChannelInfo>();
 
-            foreach (var hostInstance in _liveTvManager.TunerHosts)
+            foreach (var hostInstance in _tunerHostManager.TunerHosts)
             {
                 try
                 {
@@ -510,7 +511,7 @@ namespace Jellyfin.LiveTv.EmbyTV
         {
             var list = new List<ChannelInfo>();
 
-            foreach (var hostInstance in _liveTvManager.TunerHosts)
+            foreach (var hostInstance in _tunerHostManager.TunerHosts)
             {
                 try
                 {
@@ -966,7 +967,7 @@ namespace Jellyfin.LiveTv.EmbyTV
                 return result;
             }
 
-            foreach (var hostInstance in _liveTvManager.TunerHosts)
+            foreach (var hostInstance in _tunerHostManager.TunerHosts)
             {
                 try
                 {
@@ -998,7 +999,7 @@ namespace Jellyfin.LiveTv.EmbyTV
                 throw new ArgumentNullException(nameof(channelId));
             }
 
-            foreach (var hostInstance in _liveTvManager.TunerHosts)
+            foreach (var hostInstance in _tunerHostManager.TunerHosts)
             {
                 try
                 {
@@ -2535,82 +2536,6 @@ namespace Jellyfin.LiveTv.EmbyTV
                     Name = "Recorded Shows",
                     CollectionType = CollectionTypeOptions.TvShows
                 };
-            }
-        }
-
-        public async Task<List<TunerHostInfo>> DiscoverTuners(bool newDevicesOnly, CancellationToken cancellationToken)
-        {
-            var list = new List<TunerHostInfo>();
-
-            var configuredDeviceIds = _config.GetLiveTvConfiguration().TunerHosts
-               .Where(i => !string.IsNullOrWhiteSpace(i.DeviceId))
-               .Select(i => i.DeviceId)
-               .ToList();
-
-            foreach (var host in _liveTvManager.TunerHosts)
-            {
-                var discoveredDevices = await DiscoverDevices(host, TunerDiscoveryDurationMs, cancellationToken).ConfigureAwait(false);
-
-                if (newDevicesOnly)
-                {
-                    discoveredDevices = discoveredDevices.Where(d => !configuredDeviceIds.Contains(d.DeviceId, StringComparison.OrdinalIgnoreCase))
-                            .ToList();
-                }
-
-                list.AddRange(discoveredDevices);
-            }
-
-            return list;
-        }
-
-        public async Task ScanForTunerDeviceChanges(CancellationToken cancellationToken)
-        {
-            foreach (var host in _liveTvManager.TunerHosts)
-            {
-                await ScanForTunerDeviceChanges(host, cancellationToken).ConfigureAwait(false);
-            }
-        }
-
-        private async Task ScanForTunerDeviceChanges(ITunerHost host, CancellationToken cancellationToken)
-        {
-            var discoveredDevices = await DiscoverDevices(host, TunerDiscoveryDurationMs, cancellationToken).ConfigureAwait(false);
-
-            var configuredDevices = _config.GetLiveTvConfiguration().TunerHosts
-                .Where(i => string.Equals(i.Type, host.Type, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-            foreach (var device in discoveredDevices)
-            {
-                var configuredDevice = configuredDevices.FirstOrDefault(i => string.Equals(i.DeviceId, device.DeviceId, StringComparison.OrdinalIgnoreCase));
-
-                if (configuredDevice is not null && !string.Equals(device.Url, configuredDevice.Url, StringComparison.OrdinalIgnoreCase))
-                {
-                    _logger.LogInformation("Tuner url has changed from {PreviousUrl} to {NewUrl}", configuredDevice.Url, device.Url);
-
-                    configuredDevice.Url = device.Url;
-                    await _liveTvManager.SaveTunerHost(configuredDevice).ConfigureAwait(false);
-                }
-            }
-        }
-
-        private async Task<List<TunerHostInfo>> DiscoverDevices(ITunerHost host, int discoveryDurationMs, CancellationToken cancellationToken)
-        {
-            try
-            {
-                var discoveredDevices = await host.DiscoverDevices(discoveryDurationMs, cancellationToken).ConfigureAwait(false);
-
-                foreach (var device in discoveredDevices)
-                {
-                    _logger.LogInformation("Discovered tuner device {0} at {1}", host.Name, device.Url);
-                }
-
-                return discoveredDevices;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error discovering tuner devices");
-
-                return new List<TunerHostInfo>();
             }
         }
     }
