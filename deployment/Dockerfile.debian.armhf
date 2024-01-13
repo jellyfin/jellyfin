@@ -15,7 +15,7 @@ ENV IS_DOCKER=YES
 
 # Prepare Debian build environment
 RUN apt-get update -yqq \
-  && apt-get install --no-install-recommends -yqq\
+  && apt-get install --no-install-recommends -yqq \
      debhelper gnupg devscripts build-essential mmv
 
 # Prepare the cross-toolchain
