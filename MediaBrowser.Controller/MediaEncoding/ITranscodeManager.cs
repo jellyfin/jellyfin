@@ -100,6 +100,6 @@ public interface ITranscodeManager
     /// </summary>
     /// <param name="outputPath">The output path of the transcoded file.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A <see cref="SemaphoreSlim"/>.</returns>
+    /// <returns>An <see cref="IDisposable"/>.</returns>
     ValueTask<IDisposable> LockAsync(string outputPath, CancellationToken cancellationToken);
 }

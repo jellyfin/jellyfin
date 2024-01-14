@@ -11,6 +11,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using AsyncKeyedLock;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using Jellyfin.Extensions.Json.Converters;
@@ -60,7 +61,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly IServerConfigurationManager _serverConfig;
         private readonly string _startupOptionFFmpegPath;
 
-        private readonly SemaphoreSlim _thumbnailResourcePool;
+        private readonly AsyncNonKeyedLocker _thumbnailResourcePool;
 
         private readonly object _runningProcessesLock = new object();
         private readonly List<ProcessWrapper> _runningProcesses = new List<ProcessWrapper>();
@@ -116,7 +117,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _jsonSerializerOptions.Converters.Add(new JsonBoolStringConverter());
 
             var semaphoreCount = 2 * Environment.ProcessorCount;
-            _thumbnailResourcePool = new SemaphoreSlim(semaphoreCount, semaphoreCount);
+            _thumbnailResourcePool = new(semaphoreCount);
         }
 
         /// <inheritdoc />
@@ -754,8 +755,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 bool ranToCompletion;
 
-                await _thumbnailResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-                try
+                using (await _thumbnailResourcePool.LockAsync(cancellationToken).ConfigureAwait(false))
                 {
                     StartProcess(processWrapper);
 
@@ -775,10 +775,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                         process.Kill(true);
                         ranToCompletion = false;
                     }
-                }
-                finally
-                {
-                    _thumbnailResourcePool.Release();
                 }
 
                 var exitCode = ranToCompletion ? processWrapper.ExitCode ?? 0 : -1;

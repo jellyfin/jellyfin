@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using AsyncKeyedLock;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions.Json;
@@ -51,7 +52,7 @@ namespace Emby.Server.Implementations.Library
         private readonly IDirectoryService _directoryService;
 
         private readonly ConcurrentDictionary<string, ILiveStream> _openStreams = new ConcurrentDictionary<string, ILiveStream>(StringComparer.OrdinalIgnoreCase);
-        private readonly SemaphoreSlim _liveStreamSemaphore = new SemaphoreSlim(1, 1);
+        private readonly AsyncNonKeyedLocker _liveStreamLocker = new(1);
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
         private IMediaSourceProvider[] _providers;
@@ -467,12 +468,10 @@ namespace Emby.Server.Implementations.Library
 
         public async Task<Tuple<LiveStreamResponse, IDirectStreamProvider>> OpenLiveStreamInternal(LiveStreamRequest request, CancellationToken cancellationToken)
         {
-            await _liveStreamSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
             MediaSourceInfo mediaSource;
             ILiveStream liveStream;
 
-            try
+            using (await _liveStreamLocker.LockAsync(cancellationToken).ConfigureAwait(false))
             {
                 var (provider, keyId) = GetProvider(request.OpenToken);
 
@@ -491,10 +490,6 @@ namespace Emby.Server.Implementations.Library
                 SetKeyProperties(provider, mediaSource);
 
                 _openStreams[mediaSource.LiveStreamId] = liveStream;
-            }
-            finally
-            {
-                _liveStreamSemaphore.Release();
             }
 
             try
@@ -836,9 +831,7 @@ namespace Emby.Server.Implementations.Library
         {
             ArgumentException.ThrowIfNullOrEmpty(id);
 
-            await _liveStreamSemaphore.WaitAsync().ConfigureAwait(false);
-
-            try
+            using (await _liveStreamLocker.LockAsync().ConfigureAwait(false))
             {
                 if (_openStreams.TryGetValue(id, out ILiveStream liveStream))
                 {
@@ -856,10 +849,6 @@ namespace Emby.Server.Implementations.Library
                         _logger.LogInformation("Live stream {0} closed successfully", id);
                     }
                 }
-            }
-            finally
-            {
-                _liveStreamSemaphore.Release();
             }
         }
 
@@ -897,7 +886,7 @@ namespace Emby.Server.Implementations.Library
                     CloseLiveStream(key).GetAwaiter().GetResult();
                 }
 
-                _liveStreamSemaphore.Dispose();
+                _liveStreamLocker.Dispose();
             }
         }
     }
