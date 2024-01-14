@@ -15,13 +15,13 @@ ENV IS_DOCKER=YES
 
 # Prepare Debian build environment
 RUN apt-get update -yq \
-  && apt-get install --no-install-recommends -yq \
-     debhelper gnupg devscripts build-essential mmv \
-     libcurl4-openssl-dev libfontconfig1-dev libfreetype6-dev \
-     libssl-dev libssl3 liblttng-ust1 \
-  && apt-get clean autoclean -yq \
-  && apt-get autoremove -yq \
-  && rm -rf /var/lib/apt/lists/*
+ && apt-get install --no-install-recommends -yq \
+    debhelper gnupg devscripts build-essential mmv \
+    libcurl4-openssl-dev libfontconfig1-dev libfreetype6-dev \
+    libssl-dev libssl3 liblttng-ust1 \
+ && apt-get clean autoclean -yq \
+ && apt-get autoremove -yq \
+ && rm -rf /var/lib/apt/lists/*
 
 # Link to build script
 RUN ln -sf ${SOURCE_DIR}/deployment/build.debian.amd64 /build.sh

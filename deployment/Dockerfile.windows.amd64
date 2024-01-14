@@ -14,13 +14,13 @@ ENV IS_DOCKER=YES
 
 # Prepare Debian build environment
 RUN apt-get update -yqq \
-  && apt-get install --no-install-recommends -yqq \
-     debhelper gnupg devscripts unzip \
-     mmv libcurl4-openssl-dev libfontconfig1-dev \
-     libfreetype6-dev libssl-dev libssl3 liblttng-ust1 zip \
-  && apt-get clean autoclean -yqq \
-  && apt-get autoremove -yqq \
-  && rm -rf /var/lib/apt/lists/*
+ && apt-get install --no-install-recommends -yqq \
+    debhelper gnupg devscripts unzip \
+    mmv libcurl4-openssl-dev libfontconfig1-dev \
+    libfreetype6-dev libssl-dev libssl3 liblttng-ust1 zip \
+ && apt-get clean autoclean -yqq \
+ && apt-get autoremove -yqq \
+ && rm -rf /var/lib/apt/lists/*
 
 # Link to docker-build script
 RUN ln -sf ${SOURCE_DIR}/deployment/build.windows.amd64 /build.sh
