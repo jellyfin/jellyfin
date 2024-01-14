@@ -505,11 +505,8 @@ namespace Emby.Server.Implementations.Library
                 }
                 else
                 {
-                    // hack - these two values were taken from LiveTVMediaSourceProvider
-                    string cacheKey = request.OpenToken;
-
                     await new LiveStreamHelper(_mediaEncoder, _logger, _appPaths)
-                        .AddMediaInfoWithProbe(mediaSource, false, cacheKey, true, cancellationToken)
+                        .AddMediaInfoWithProbe(mediaSource, false, true, cancellationToken)
                         .ConfigureAwait(false);
                 }
             }
