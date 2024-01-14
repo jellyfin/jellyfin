@@ -902,7 +902,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             using (var processWrapper = new ProcessWrapper(process, this))
             {
-                bool ranToCompletion = false:
+                bool ranToCompletion = false;
 
                 using (await _thumbnailResourcePool.LockAsync(cancellationToken).ConfigureAwait(false))
                 {
