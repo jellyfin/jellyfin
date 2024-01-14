@@ -46,7 +46,7 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
             var internalMediaInfoResult = JsonSerializer.Deserialize<InternalMediaInfoResult>(bytes, _jsonOptions);
             MediaInfo res = _probeResultNormalizer.GetMediaInfo(internalMediaInfoResult, VideoType.VideoFile, false, "Test Data/Probing/video_metadata.mkv", MediaProtocol.File);
 
-            Assert.Single(res.MediaStreams);
+            Assert.Equal(3, res.MediaStreams.Count);
 
             Assert.NotNull(res.VideoStream);
             Assert.Equal("4:3", res.VideoStream.AspectRatio);
@@ -82,6 +82,14 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
             Assert.Equal(0, res.VideoStream.ElPresentFlag);
             Assert.Equal(1, res.VideoStream.BlPresentFlag);
             Assert.Equal(0, res.VideoStream.DvBlSignalCompatibilityId);
+
+            var audio1 = res.MediaStreams[1];
+            Assert.Equal("eac3", audio1.Codec);
+            Assert.Equal(AudioSpatialFormat.DolbyAtmos, audio1.AudioSpatialFormat);
+
+            var audio2 = res.MediaStreams[2];
+            Assert.Equal("dts", audio2.Codec);
+            Assert.Equal(AudioSpatialFormat.DTSX, audio2.AudioSpatialFormat);
 
             Assert.Empty(res.Chapters);
             Assert.Equal("Just color bars", res.Overview);

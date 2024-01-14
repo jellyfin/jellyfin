@@ -36,7 +36,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <value>The services.</value>
         IReadOnlyList<ILiveTvService> Services { get; }
 
-        IListingsProvider[] ListingProviders { get; }
+        IReadOnlyList<IListingsProvider> ListingProviders { get; }
 
         /// <summary>
         /// Gets the new timer defaults asynchronous.

@@ -42,16 +42,15 @@ public class DevicesController : BaseJellyfinApiController
     /// <summary>
     /// Get Devices.
     /// </summary>
-    /// <param name="supportsSync">Gets or sets a value indicating whether [supports synchronize].</param>
     /// <param name="userId">Gets or sets the user identifier.</param>
     /// <response code="200">Devices retrieved.</response>
     /// <returns>An <see cref="OkResult"/> containing the list of devices.</returns>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<QueryResult<DeviceInfo>>> GetDevices([FromQuery] bool? supportsSync, [FromQuery] Guid? userId)
+    public async Task<ActionResult<QueryResult<DeviceInfo>>> GetDevices([FromQuery] Guid? userId)
     {
         userId = RequestHelpers.GetUserId(User, userId);
-        return await _deviceManager.GetDevicesForUser(userId, supportsSync).ConfigureAwait(false);
+        return await _deviceManager.GetDevicesForUser(userId).ConfigureAwait(false);
     }
 
     /// <summary>
