@@ -87,7 +87,7 @@ body:
     id: browserlogs
     attributes:
       label: Browser / Client Logs
-      description: Please attach any browser or client logs here. Please submit them as text in this field. Do NOT submit a screenshot of logs. Do NOT use paste services. Do NOT translate them.
+      description: Please attach any browser or client logs here. Do NOT use paste services. Do NOT translate them.
       placeholder: Access browser logs by using the F12 to bring up the console. Screenshots are typically easier to read than raw logs. For clients such as Android or iOS, please see our documentation.
   - type: textarea
     id: screenshots
