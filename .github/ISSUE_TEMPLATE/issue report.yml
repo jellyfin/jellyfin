@@ -7,6 +7,7 @@ body:
     attributes:
       value: |
         Thanks for taking the time to fill out this bug report! Please provide as much detail as necessary, most questions may not be applicable to you. If you need real-time help, join us on [Matrix](https://matrix.to/#/#jellyfin-troubleshooting:matrix.org) or [Discord](https://discord.gg/zHBxVSXdBV).
+        Do keep in mind that Jellyfin is an English only project. Please submit bug reports in English if you can. If you don't feel comfortable using English, then submit in your native language, and wait for someone to translate it. Do not resort to tools like Google Translate.
   - type: textarea
     id: what-happened
     attributes:
@@ -24,24 +25,14 @@ body:
           4. See error...
     validations:
       required: true
-  - type: dropdown
+  - type: input
     id: version
     attributes:
       label: Jellyfin Version
       description: What version of Jellyfin are you running?
-      options:
-        - 10.8.z
-        - 10.8.9
-        - 10.7.7
-        - 10.6.4
-        - Other
+      placeholder: "eg. 10.8.13"
     validations:
       required: true
-  - type: input
-    id: version-other
-    attributes:
-      label: "if other:"
-      placeholder: Other
   - type: textarea
     attributes:
       label: Environment
@@ -81,20 +72,20 @@ body:
     id: logs
     attributes:
       label: Jellyfin logs
-      description: Please copy and paste any relevant log output. This can be found in Dashboard > Logs.
+      description: Please copy and paste any relevant log output. This can be found in Dashboard > Logs. Please submit them as text in this field. Do NOT submit a screenshot of logs. Do NOT use paste services. Do NOT translate them.
       placeholder: For playback issues, browser/client and FFmpeg logs may be more useful.
       render: shell
   - type: textarea
     id: ffmpeg-logs
     attributes:
       label: FFmpeg logs
-      description: Please copy and paste recent FFmpeg log output. This can be found in Dashboard > Logs > FFmpeg*.log.
+      description: Please copy and paste recent FFmpeg log output. This can be found in Dashboard > Logs > FFmpeg*.log. Please submit them as text in this field. Do NOT submit a screenshot of logs. Do NOT use paste services. Do NOT translate them.
       placeholder: This field is mandatory for debugging hardware transcoding issues. It's important to include the specific codec details. If no FFmpeg logs appear, the file was Direct Played and did not use FFmpeg.
       render: shell
   - type: textarea
     id: browserlogs
     attributes:
-      label: Please attach any browser or client logs here
+      label: Please attach any browser or client logs here. Please submit them as text in this field. Do NOT submit a screenshot of logs. Do NOT use paste services. Do NOT translate them.
       placeholder: Access browser logs by using the F12 to bring up the console. Screenshots are typically easier to read than raw logs. For clients such as Android or iOS, please see our documentation.
   - type: textarea
     id: screenshots
