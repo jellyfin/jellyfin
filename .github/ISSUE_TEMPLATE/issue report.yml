@@ -8,6 +8,7 @@ body:
       value: |
         Thanks for taking the time to fill out this bug report! Please provide as much detail as necessary, most questions may not be applicable to you. If you need real-time help, join us on [Matrix](https://matrix.to/#/#jellyfin-troubleshooting:matrix.org) or [Discord](https://discord.gg/zHBxVSXdBV).
         Do keep in mind that Jellyfin is an English only project. Please submit bug reports in English if you can. If you don't feel comfortable using English, then submit in your native language, and wait for someone to translate it. Do not resort to tools like Google Translate.
+        Issues not following this template may be closed as invalid without further investigation.
   - type: textarea
     id: what-happened
     attributes:
