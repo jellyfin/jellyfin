@@ -468,11 +468,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                                 BaseNfoSaver.YouTubeWatchUrl,
                                 StringComparison.OrdinalIgnoreCase));
 
-                            var suggested_url = trailer.Replace(
+                            var suggestedUrl = trailer.Replace(
                                 "plugin://plugin.video.youtube/?action=play_video&videoid=",
                                 "plugin://plugin.video.youtube/play/?video_id=",
                                 StringComparison.OrdinalIgnoreCase);
-                            Logger.LogWarning("Trailer URL uses a deprecated format : {URL}. Using {URL_NEW} instead is advised.", [trailer, suggested_url]);
+                            Logger.LogWarning("Trailer URL uses a deprecated format : {Url}. Using {NewUrl} instead is advised.", [trailer, suggestedUrl]);
                         }
                         else if (trailer.StartsWith("plugin://plugin.video.youtube/play/?video_id=", StringComparison.OrdinalIgnoreCase))
                         {
