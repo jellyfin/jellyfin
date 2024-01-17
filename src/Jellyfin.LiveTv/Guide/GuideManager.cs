@@ -146,11 +146,6 @@ public class GuideManager : IGuideManager
             await coreService.RefreshTimers(cancellationToken).ConfigureAwait(false);
         }
 
-        // Load these now which will prefetch metadata
-        var dtoOptions = new DtoOptions();
-        var fields = dtoOptions.Fields.ToList();
-        dtoOptions.Fields = fields.ToArray();
-
         progress.Report(100);
     }
 
