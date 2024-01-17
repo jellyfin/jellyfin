@@ -47,9 +47,9 @@ namespace Jellyfin.LiveTv
         private readonly ILocalizationManager _localization;
         private readonly IChannelManager _channelManager;
         private readonly LiveTvDtoService _tvDtoService;
+        private readonly IListingsProvider[] _listingProviders;
 
         private ILiveTvService[] _services = Array.Empty<ILiveTvService>();
-        private IListingsProvider[] _listingProviders = Array.Empty<IListingsProvider>();
 
         public LiveTvManager(
             IServerConfigurationManager config,
@@ -61,7 +61,8 @@ namespace Jellyfin.LiveTv
             ITaskManager taskManager,
             ILocalizationManager localization,
             IChannelManager channelManager,
-            LiveTvDtoService liveTvDtoService)
+            LiveTvDtoService liveTvDtoService,
+            IEnumerable<IListingsProvider> listingProviders)
         {
             _config = config;
             _logger = logger;
@@ -73,6 +74,7 @@ namespace Jellyfin.LiveTv
             _userDataManager = userDataManager;
             _channelManager = channelManager;
             _tvDtoService = liveTvDtoService;
+            _listingProviders = listingProviders.ToArray();
         }
 
         public event EventHandler<GenericEventArgs<TimerEventInfo>> SeriesTimerCancelled;
@@ -97,11 +99,9 @@ namespace Jellyfin.LiveTv
         }
 
         /// <inheritdoc />
-        public void AddParts(IEnumerable<ILiveTvService> services, IEnumerable<IListingsProvider> listingProviders)
+        public void AddParts(IEnumerable<ILiveTvService> services)
         {
             _services = services.ToArray();
-
-            _listingProviders = listingProviders.ToArray();
 
             foreach (var service in _services)
             {

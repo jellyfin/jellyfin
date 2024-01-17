@@ -71,8 +71,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// Adds the parts.
         /// </summary>
         /// <param name="services">The services.</param>
-        /// <param name="listingProviders">The listing providers.</param>
-        void AddParts(IEnumerable<ILiveTvService> services, IEnumerable<IListingsProvider> listingProviders);
+        void AddParts(IEnumerable<ILiveTvService> services);
 
         /// <summary>
         /// Gets the timer.

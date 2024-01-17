@@ -1,5 +1,6 @@
 ﻿using Jellyfin.LiveTv.Channels;
 using Jellyfin.LiveTv.Guide;
+using Jellyfin.LiveTv.Listings;
 using Jellyfin.LiveTv.TunerHosts;
 using Jellyfin.LiveTv.TunerHosts.HdHomerun;
 using MediaBrowser.Controller.Channels;
@@ -29,5 +30,7 @@ public static class LiveTvServiceCollectionExtensions
 
         services.AddSingleton<ITunerHost, HdHomerunHost>();
         services.AddSingleton<ITunerHost, M3UTunerHost>();
+        services.AddSingleton<IListingsProvider, SchedulesDirect>();
+        services.AddSingleton<IListingsProvider, XmlTvListingsProvider>();
     }
 }
