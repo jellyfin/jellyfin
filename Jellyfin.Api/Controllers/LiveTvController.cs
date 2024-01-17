@@ -10,7 +10,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
@@ -43,6 +42,7 @@ namespace Jellyfin.Api.Controllers;
 public class LiveTvController : BaseJellyfinApiController
 {
     private readonly ILiveTvManager _liveTvManager;
+    private readonly ITunerHostManager _tunerHostManager;
     private readonly IUserManager _userManager;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILibraryManager _libraryManager;
@@ -55,6 +55,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// Initializes a new instance of the <see cref="LiveTvController"/> class.
     /// </summary>
     /// <param name="liveTvManager">Instance of the <see cref="ILiveTvManager"/> interface.</param>
+    /// <param name="tunerHostManager">Instance of the <see cref="ITunerHostManager"/> interface.</param>
     /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
     /// <param name="httpClientFactory">Instance of the <see cref="IHttpClientFactory"/> interface.</param>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
@@ -64,6 +65,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <param name="transcodeManager">Instance of the <see cref="ITranscodeManager"/> interface.</param>
     public LiveTvController(
         ILiveTvManager liveTvManager,
+        ITunerHostManager tunerHostManager,
         IUserManager userManager,
         IHttpClientFactory httpClientFactory,
         ILibraryManager libraryManager,
@@ -73,6 +75,7 @@ public class LiveTvController : BaseJellyfinApiController
         ITranscodeManager transcodeManager)
     {
         _liveTvManager = liveTvManager;
+        _tunerHostManager = tunerHostManager;
         _userManager = userManager;
         _httpClientFactory = httpClientFactory;
         _libraryManager = libraryManager;
@@ -951,9 +954,7 @@ public class LiveTvController : BaseJellyfinApiController
     [Authorize(Policy = Policies.LiveTvManagement)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<TunerHostInfo>> AddTunerHost([FromBody] TunerHostInfo tunerHostInfo)
-    {
-        return await _liveTvManager.SaveTunerHost(tunerHostInfo).ConfigureAwait(false);
-    }
+        => await _tunerHostManager.SaveTunerHost(tunerHostInfo).ConfigureAwait(false);
 
     /// <summary>
     /// Deletes a tuner host.
@@ -1130,10 +1131,8 @@ public class LiveTvController : BaseJellyfinApiController
     [HttpGet("TunerHosts/Types")]
     [Authorize(Policy = Policies.LiveTvAccess)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<IEnumerable<NameIdPair>> GetTunerHostTypes()
-    {
-        return _liveTvManager.GetTunerHostTypes();
-    }
+    public IEnumerable<NameIdPair> GetTunerHostTypes()
+        => _tunerHostManager.GetTunerHostTypes();
 
     /// <summary>
     /// Discover tuners.
@@ -1145,10 +1144,8 @@ public class LiveTvController : BaseJellyfinApiController
     [HttpGet("Tuners/Discover")]
     [Authorize(Policy = Policies.LiveTvManagement)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<TunerHostInfo>>> DiscoverTuners([FromQuery] bool newDevicesOnly = false)
-    {
-        return await _liveTvManager.DiscoverTuners(newDevicesOnly, CancellationToken.None).ConfigureAwait(false);
-    }
+    public IAsyncEnumerable<TunerHostInfo> DiscoverTuners([FromQuery] bool newDevicesOnly = false)
+        => _tunerHostManager.DiscoverTuners(newDevicesOnly);
 
     /// <summary>
     /// Gets a live tv recording stream.
