@@ -15,16 +15,22 @@ namespace Jellyfin.LiveTv
     public class RefreshGuideScheduledTask : IScheduledTask, IConfigurableScheduledTask
     {
         private readonly ILiveTvManager _liveTvManager;
+        private readonly IGuideManager _guideManager;
         private readonly IConfigurationManager _config;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RefreshGuideScheduledTask"/> class.
         /// </summary>
         /// <param name="liveTvManager">The live tv manager.</param>
+        /// <param name="guideManager">The guide manager.</param>
         /// <param name="config">The configuration manager.</param>
-        public RefreshGuideScheduledTask(ILiveTvManager liveTvManager, IConfigurationManager config)
+        public RefreshGuideScheduledTask(
+            ILiveTvManager liveTvManager,
+            IGuideManager guideManager,
+            IConfigurationManager config)
         {
             _liveTvManager = liveTvManager;
+            _guideManager = guideManager;
             _config = config;
         }
 
@@ -51,11 +57,7 @@ namespace Jellyfin.LiveTv
 
         /// <inheritdoc />
         public Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
-        {
-            var manager = (LiveTvManager)_liveTvManager;
-
-            return manager.RefreshChannels(progress, cancellationToken);
-        }
+            => _guideManager.RefreshGuide(progress, cancellationToken);
 
         /// <inheritdoc />
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()

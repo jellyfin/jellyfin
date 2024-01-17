@@ -175,12 +175,6 @@ namespace MediaBrowser.Controller.LiveTv
         Task CreateSeriesTimer(SeriesTimerInfoDto timer, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets the guide information.
-        /// </summary>
-        /// <returns>GuideInfo.</returns>
-        GuideInfo GetGuideInfo();
-
-        /// <summary>
         /// Gets the recommended programs.
         /// </summary>
         /// <param name="query">The query.</param>
