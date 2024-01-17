@@ -1165,12 +1165,6 @@ namespace Jellyfin.LiveTv
             return new QueryResult<SeriesTimerInfoDto>(returnArray);
         }
 
-        public BaseItem GetLiveTvChannel(TimerInfo timer, ILiveTvService service)
-        {
-            var internalChannelId = _tvDtoService.GetInternalChannelId(service.Name, timer.ChannelId);
-            return _libraryManager.GetItemById(internalChannelId);
-        }
-
         public void AddChannelInfo(IReadOnlyCollection<(BaseItemDto ItemDto, LiveTvChannel Channel)> items, DtoOptions options, User user)
         {
             var now = DateTime.UtcNow;
@@ -1634,16 +1628,6 @@ namespace Jellyfin.LiveTv
             var info = _config.GetLiveTvConfiguration().ListingProviders.First(i => string.Equals(i.Id, id, StringComparison.OrdinalIgnoreCase));
             var provider = _listingProviders.First(i => string.Equals(i.Type, info.Type, StringComparison.OrdinalIgnoreCase));
             return provider.GetChannels(info, cancellationToken);
-        }
-
-        public Guid GetInternalChannelId(string serviceName, string externalId)
-        {
-            return _tvDtoService.GetInternalChannelId(serviceName, externalId);
-        }
-
-        public Guid GetInternalProgramId(string externalId)
-        {
-            return _tvDtoService.GetInternalProgramId(externalId);
         }
 
         /// <inheritdoc />

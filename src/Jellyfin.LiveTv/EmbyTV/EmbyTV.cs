@@ -51,7 +51,6 @@ namespace Jellyfin.LiveTv.EmbyTV
         private readonly ItemDataProvider<SeriesTimerInfo> _seriesTimerProvider;
         private readonly TimerManager _timerProvider;
 
-        private readonly LiveTvManager _liveTvManager;
         private readonly ITunerHostManager _tunerHostManager;
         private readonly IFileSystem _fileSystem;
 
@@ -61,6 +60,8 @@ namespace Jellyfin.LiveTv.EmbyTV
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IStreamHelper _streamHelper;
+        private readonly LiveTvDtoService _tvDtoService;
+        private readonly IListingsProvider[] _listingsProviders;
 
         private readonly ConcurrentDictionary<string, ActiveRecordingInfo> _activeRecordings =
             new ConcurrentDictionary<string, ActiveRecordingInfo>(StringComparer.OrdinalIgnoreCase);
@@ -78,13 +79,14 @@ namespace Jellyfin.LiveTv.EmbyTV
             ILogger<EmbyTV> logger,
             IHttpClientFactory httpClientFactory,
             IServerConfigurationManager config,
-            ILiveTvManager liveTvManager,
             ITunerHostManager tunerHostManager,
             IFileSystem fileSystem,
             ILibraryManager libraryManager,
             ILibraryMonitor libraryMonitor,
             IProviderManager providerManager,
-            IMediaEncoder mediaEncoder)
+            IMediaEncoder mediaEncoder,
+            LiveTvDtoService tvDtoService,
+            IEnumerable<IListingsProvider> listingsProviders)
         {
             Current = this;
 
@@ -96,10 +98,11 @@ namespace Jellyfin.LiveTv.EmbyTV
             _libraryMonitor = libraryMonitor;
             _providerManager = providerManager;
             _mediaEncoder = mediaEncoder;
-            _liveTvManager = (LiveTvManager)liveTvManager;
+            _tvDtoService = tvDtoService;
             _tunerHostManager = tunerHostManager;
             _mediaSourceManager = mediaSourceManager;
             _streamHelper = streamHelper;
+            _listingsProviders = listingsProviders.ToArray();
 
             _seriesTimerProvider = new SeriesTimerManager(_logger, Path.Combine(DataPath, "seriestimers.json"));
             _timerProvider = new TimerManager(_logger, Path.Combine(DataPath, "timers.json"));
@@ -937,7 +940,7 @@ namespace Jellyfin.LiveTv.EmbyTV
             return _config.GetLiveTvConfiguration().ListingProviders
                 .Select(i =>
                 {
-                    var provider = _liveTvManager.ListingProviders.FirstOrDefault(l => string.Equals(l.Type, i.Type, StringComparison.OrdinalIgnoreCase));
+                    var provider = _listingsProviders.FirstOrDefault(l => string.Equals(l.Type, i.Type, StringComparison.OrdinalIgnoreCase));
 
                     return provider is null ? null : new Tuple<IListingsProvider, ListingsProviderInfo>(provider, i);
                 })
@@ -1181,6 +1184,12 @@ namespace Jellyfin.LiveTv.EmbyTV
             return Path.Combine(recordPath, recordingFileName);
         }
 
+        private BaseItem GetLiveTvChannel(TimerInfo timer)
+        {
+            var internalChannelId = _tvDtoService.GetInternalChannelId(Name, timer.ChannelId);
+            return _libraryManager.GetItemById(internalChannelId);
+        }
+
         private async Task RecordStream(TimerInfo timer, DateTime recordingEndDate, ActiveRecordingInfo activeRecordingInfo)
         {
             ArgumentNullException.ThrowIfNull(timer);
@@ -1206,7 +1215,7 @@ namespace Jellyfin.LiveTv.EmbyTV
             var remoteMetadata = await FetchInternetMetadata(timer, CancellationToken.None).ConfigureAwait(false);
             var recordPath = GetRecordingPath(timer, remoteMetadata, out string seriesPath);
 
-            var channelItem = _liveTvManager.GetLiveTvChannel(timer, this);
+            var channelItem = GetLiveTvChannel(timer);
 
             string liveStreamId = null;
             RecordingStatus recordingStatus;
@@ -2089,7 +2098,7 @@ namespace Jellyfin.LiveTv.EmbyTV
         {
             var query = new InternalItemsQuery
             {
-                ItemIds = new[] { _liveTvManager.GetInternalProgramId(programId) },
+                ItemIds = [_tvDtoService.GetInternalProgramId(programId)],
                 Limit = 1,
                 DtoOptions = new DtoOptions()
             };
@@ -2119,7 +2128,7 @@ namespace Jellyfin.LiveTv.EmbyTV
 
             if (!string.IsNullOrWhiteSpace(channelId))
             {
-                query.ChannelIds = new[] { _liveTvManager.GetInternalChannelId(Name, channelId) };
+                query.ChannelIds = [_tvDtoService.GetInternalChannelId(Name, channelId)];
             }
 
             return _libraryManager.GetItemList(query).Cast<LiveTvProgram>().FirstOrDefault();
@@ -2155,7 +2164,7 @@ namespace Jellyfin.LiveTv.EmbyTV
         private void HandleDuplicateShowIds(List<TimerInfo> timers)
         {
             // sort showings by HD channels first, then by startDate, record earliest showing possible
-            foreach (var timer in timers.OrderByDescending(t => _liveTvManager.GetLiveTvChannel(t, this).IsHD).ThenBy(t => t.StartDate).Skip(1))
+            foreach (var timer in timers.OrderByDescending(t => GetLiveTvChannel(t).IsHD).ThenBy(t => t.StartDate).Skip(1))
             {
                 timer.Status = RecordingStatus.Cancelled;
                 _timerProvider.Update(timer);
@@ -2305,7 +2314,7 @@ namespace Jellyfin.LiveTv.EmbyTV
 
             if (!seriesTimer.RecordAnyChannel)
             {
-                query.ChannelIds = new[] { _liveTvManager.GetInternalChannelId(Name, seriesTimer.ChannelId) };
+                query.ChannelIds = [_tvDtoService.GetInternalChannelId(Name, seriesTimer.ChannelId)];
             }
 
             var tempChannelCache = new Dictionary<Guid, LiveTvChannel>();
