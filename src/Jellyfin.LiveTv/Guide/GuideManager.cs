@@ -233,7 +233,7 @@ public class GuideManager : IGuideManager
                 var existingPrograms = _libraryManager.GetItemList(new InternalItemsQuery
                 {
                     IncludeItemTypes = [BaseItemKind.LiveTvProgram],
-                    ChannelIds = new[] { currentChannel.Id },
+                    ChannelIds = [currentChannel.Id],
                     DtoOptions = new DtoOptions(true)
                 }).Cast<LiveTvProgram>().ToDictionary(i => i.Id);
 
