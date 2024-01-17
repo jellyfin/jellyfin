@@ -6,14 +6,12 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
 using Jellyfin.LiveTv.Configuration;
-using Jellyfin.LiveTv.Guide;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -27,7 +25,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.LiveTv
@@ -43,12 +40,10 @@ namespace Jellyfin.LiveTv
         private readonly IDtoService _dtoService;
         private readonly IUserDataManager _userDataManager;
         private readonly ILibraryManager _libraryManager;
-        private readonly ITaskManager _taskManager;
         private readonly ILocalizationManager _localization;
         private readonly IChannelManager _channelManager;
         private readonly LiveTvDtoService _tvDtoService;
         private readonly ILiveTvService[] _services;
-        private readonly IListingsProvider[] _listingProviders;
 
         public LiveTvManager(
             IServerConfigurationManager config,
@@ -57,25 +52,21 @@ namespace Jellyfin.LiveTv
             IDtoService dtoService,
             IUserManager userManager,
             ILibraryManager libraryManager,
-            ITaskManager taskManager,
             ILocalizationManager localization,
             IChannelManager channelManager,
             LiveTvDtoService liveTvDtoService,
-            IEnumerable<ILiveTvService> services,
-            IEnumerable<IListingsProvider> listingProviders)
+            IEnumerable<ILiveTvService> services)
         {
             _config = config;
             _logger = logger;
             _userManager = userManager;
             _libraryManager = libraryManager;
-            _taskManager = taskManager;
             _localization = localization;
             _dtoService = dtoService;
             _userDataManager = userDataManager;
             _channelManager = channelManager;
             _tvDtoService = liveTvDtoService;
             _services = services.ToArray();
-            _listingProviders = listingProviders.ToArray();
 
             var defaultService = _services.OfType<EmbyTV.EmbyTV>().First();
             defaultService.TimerCreated += OnEmbyTvTimerCreated;
@@ -95,8 +86,6 @@ namespace Jellyfin.LiveTv
         /// </summary>
         /// <value>The services.</value>
         public IReadOnlyList<ILiveTvService> Services => _services;
-
-        public IReadOnlyList<IListingsProvider> ListingProviders => _listingProviders;
 
         public string GetEmbyTvActiveRecordingPath(string id)
         {
@@ -1463,161 +1452,6 @@ namespace Jellyfin.LiveTv
         {
             var name = _localization.GetLocalizedString("HeaderLiveTV");
             return _libraryManager.GetNamedView(name, CollectionType.livetv, name);
-        }
-
-        public async Task<ListingsProviderInfo> SaveListingProvider(ListingsProviderInfo info, bool validateLogin, bool validateListings)
-        {
-            // Hack to make the object a pure ListingsProviderInfo instead of an AddListingProvider
-            // ServerConfiguration.SaveConfiguration crashes during xml serialization for AddListingProvider
-            info = JsonSerializer.Deserialize<ListingsProviderInfo>(JsonSerializer.SerializeToUtf8Bytes(info));
-
-            var provider = _listingProviders.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase));
-
-            if (provider is null)
-            {
-                throw new ResourceNotFoundException(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "Couldn't find provider of type: '{0}'",
-                        info.Type));
-            }
-
-            await provider.Validate(info, validateLogin, validateListings).ConfigureAwait(false);
-
-            var config = _config.GetLiveTvConfiguration();
-
-            var list = config.ListingProviders.ToList();
-            int index = list.FindIndex(i => string.Equals(i.Id, info.Id, StringComparison.OrdinalIgnoreCase));
-
-            if (index == -1 || string.IsNullOrWhiteSpace(info.Id))
-            {
-                info.Id = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
-                list.Add(info);
-                config.ListingProviders = list.ToArray();
-            }
-            else
-            {
-                config.ListingProviders[index] = info;
-            }
-
-            _config.SaveConfiguration("livetv", config);
-
-            _taskManager.CancelIfRunningAndQueue<RefreshGuideScheduledTask>();
-
-            return info;
-        }
-
-        public void DeleteListingsProvider(string id)
-        {
-            var config = _config.GetLiveTvConfiguration();
-
-            config.ListingProviders = config.ListingProviders.Where(i => !string.Equals(id, i.Id, StringComparison.OrdinalIgnoreCase)).ToArray();
-
-            _config.SaveConfiguration("livetv", config);
-            _taskManager.CancelIfRunningAndQueue<RefreshGuideScheduledTask>();
-        }
-
-        public async Task<TunerChannelMapping> SetChannelMapping(string providerId, string tunerChannelNumber, string providerChannelNumber)
-        {
-            var config = _config.GetLiveTvConfiguration();
-
-            var listingsProviderInfo = config.ListingProviders.First(i => string.Equals(providerId, i.Id, StringComparison.OrdinalIgnoreCase));
-            listingsProviderInfo.ChannelMappings = listingsProviderInfo.ChannelMappings.Where(i => !string.Equals(i.Name, tunerChannelNumber, StringComparison.OrdinalIgnoreCase)).ToArray();
-
-            if (!string.Equals(tunerChannelNumber, providerChannelNumber, StringComparison.OrdinalIgnoreCase))
-            {
-                var list = listingsProviderInfo.ChannelMappings.ToList();
-                list.Add(new NameValuePair
-                {
-                    Name = tunerChannelNumber,
-                    Value = providerChannelNumber
-                });
-                listingsProviderInfo.ChannelMappings = list.ToArray();
-            }
-
-            _config.SaveConfiguration("livetv", config);
-
-            var tunerChannels = await GetChannelsForListingsProvider(providerId, CancellationToken.None)
-                        .ConfigureAwait(false);
-
-            var providerChannels = await GetChannelsFromListingsProviderData(providerId, CancellationToken.None)
-                     .ConfigureAwait(false);
-
-            var mappings = listingsProviderInfo.ChannelMappings;
-
-            var tunerChannelMappings =
-                tunerChannels.Select(i => GetTunerChannelMapping(i, mappings, providerChannels)).ToList();
-
-            _taskManager.CancelIfRunningAndQueue<RefreshGuideScheduledTask>();
-
-            return tunerChannelMappings.First(i => string.Equals(i.Id, tunerChannelNumber, StringComparison.OrdinalIgnoreCase));
-        }
-
-        public TunerChannelMapping GetTunerChannelMapping(ChannelInfo tunerChannel, NameValuePair[] mappings, List<ChannelInfo> providerChannels)
-        {
-            var result = new TunerChannelMapping
-            {
-                Name = tunerChannel.Name,
-                Id = tunerChannel.Id
-            };
-
-            if (!string.IsNullOrWhiteSpace(tunerChannel.Number))
-            {
-                result.Name = tunerChannel.Number + " " + result.Name;
-            }
-
-            var providerChannel = EmbyTV.EmbyTV.Current.GetEpgChannelFromTunerChannel(mappings, tunerChannel, providerChannels);
-
-            if (providerChannel is not null)
-            {
-                result.ProviderChannelName = providerChannel.Name;
-                result.ProviderChannelId = providerChannel.Id;
-            }
-
-            return result;
-        }
-
-        public Task<List<NameIdPair>> GetLineups(string providerType, string providerId, string country, string location)
-        {
-            var config = _config.GetLiveTvConfiguration();
-
-            if (string.IsNullOrWhiteSpace(providerId))
-            {
-                var provider = _listingProviders.FirstOrDefault(i => string.Equals(providerType, i.Type, StringComparison.OrdinalIgnoreCase));
-
-                if (provider is null)
-                {
-                    throw new ResourceNotFoundException();
-                }
-
-                return provider.GetLineups(null, country, location);
-            }
-            else
-            {
-                var info = config.ListingProviders.FirstOrDefault(i => string.Equals(i.Id, providerId, StringComparison.OrdinalIgnoreCase));
-
-                var provider = _listingProviders.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase));
-
-                if (provider is null)
-                {
-                    throw new ResourceNotFoundException();
-                }
-
-                return provider.GetLineups(info, country, location);
-            }
-        }
-
-        public Task<List<ChannelInfo>> GetChannelsForListingsProvider(string id, CancellationToken cancellationToken)
-        {
-            var info = _config.GetLiveTvConfiguration().ListingProviders.First(i => string.Equals(i.Id, id, StringComparison.OrdinalIgnoreCase));
-            return EmbyTV.EmbyTV.Current.GetChannelsForListingsProvider(info, cancellationToken);
-        }
-
-        public Task<List<ChannelInfo>> GetChannelsFromListingsProviderData(string id, CancellationToken cancellationToken)
-        {
-            var info = _config.GetLiveTvConfiguration().ListingProviders.First(i => string.Equals(i.Id, id, StringComparison.OrdinalIgnoreCase));
-            var provider = _listingProviders.First(i => string.Equals(i.Type, info.Type, StringComparison.OrdinalIgnoreCase));
-            return provider.GetChannels(info, cancellationToken);
         }
 
         /// <inheritdoc />

@@ -61,13 +61,10 @@ namespace Jellyfin.LiveTv.EmbyTV
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IStreamHelper _streamHelper;
         private readonly LiveTvDtoService _tvDtoService;
-        private readonly IListingsProvider[] _listingsProviders;
+        private readonly IListingsManager _listingsManager;
 
         private readonly ConcurrentDictionary<string, ActiveRecordingInfo> _activeRecordings =
             new ConcurrentDictionary<string, ActiveRecordingInfo>(StringComparer.OrdinalIgnoreCase);
-
-        private readonly ConcurrentDictionary<string, EpgChannelData> _epgChannels =
-            new ConcurrentDictionary<string, EpgChannelData>(StringComparer.OrdinalIgnoreCase);
 
         private readonly AsyncNonKeyedLocker _recordingDeleteSemaphore = new(1);
 
@@ -86,7 +83,7 @@ namespace Jellyfin.LiveTv.EmbyTV
             IProviderManager providerManager,
             IMediaEncoder mediaEncoder,
             LiveTvDtoService tvDtoService,
-            IEnumerable<IListingsProvider> listingsProviders)
+            IListingsManager listingsManager)
         {
             Current = this;
 
@@ -102,7 +99,7 @@ namespace Jellyfin.LiveTv.EmbyTV
             _tunerHostManager = tunerHostManager;
             _mediaSourceManager = mediaSourceManager;
             _streamHelper = streamHelper;
-            _listingsProviders = listingsProviders.ToArray();
+            _listingsManager = listingsManager;
 
             _seriesTimerProvider = new SeriesTimerManager(_logger, Path.Combine(DataPath, "seriestimers.json"));
             _timerProvider = new TimerManager(_logger, Path.Combine(DataPath, "timers.json"));
@@ -312,15 +309,15 @@ namespace Jellyfin.LiveTv.EmbyTV
 
         private async Task<IEnumerable<ChannelInfo>> GetChannelsAsync(bool enableCache, CancellationToken cancellationToken)
         {
-            var list = new List<ChannelInfo>();
+            var channels = new List<ChannelInfo>();
 
             foreach (var hostInstance in _tunerHostManager.TunerHosts)
             {
                 try
                 {
-                    var channels = await hostInstance.GetChannels(enableCache, cancellationToken).ConfigureAwait(false);
+                    var tunerChannels = await hostInstance.GetChannels(enableCache, cancellationToken).ConfigureAwait(false);
 
-                    list.AddRange(channels);
+                    channels.AddRange(tunerChannels);
                 }
                 catch (Exception ex)
                 {
@@ -328,209 +325,9 @@ namespace Jellyfin.LiveTv.EmbyTV
                 }
             }
 
-            foreach (var provider in GetListingProviders())
-            {
-                var enabledChannels = list
-                    .Where(i => IsListingProviderEnabledForTuner(provider.Item2, i.TunerHostId))
-                    .ToList();
+            await _listingsManager.AddProviderMetadata(channels, enableCache, cancellationToken).ConfigureAwait(false);
 
-                if (enabledChannels.Count > 0)
-                {
-                    try
-                    {
-                        await AddMetadata(provider.Item1, provider.Item2, enabledChannels, enableCache, cancellationToken).ConfigureAwait(false);
-                    }
-                    catch (NotSupportedException)
-                    {
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error adding metadata");
-                    }
-                }
-            }
-
-            return list;
-        }
-
-        private async Task AddMetadata(
-            IListingsProvider provider,
-            ListingsProviderInfo info,
-            IEnumerable<ChannelInfo> tunerChannels,
-            bool enableCache,
-            CancellationToken cancellationToken)
-        {
-            var epgChannels = await GetEpgChannels(provider, info, enableCache, cancellationToken).ConfigureAwait(false);
-
-            foreach (var tunerChannel in tunerChannels)
-            {
-                var epgChannel = GetEpgChannelFromTunerChannel(info, tunerChannel, epgChannels);
-
-                if (epgChannel is not null)
-                {
-                    if (!string.IsNullOrWhiteSpace(epgChannel.Name))
-                    {
-                        // tunerChannel.Name = epgChannel.Name;
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(epgChannel.ImageUrl))
-                    {
-                        tunerChannel.ImageUrl = epgChannel.ImageUrl;
-                    }
-                }
-            }
-        }
-
-        private async Task<EpgChannelData> GetEpgChannels(
-            IListingsProvider provider,
-            ListingsProviderInfo info,
-            bool enableCache,
-            CancellationToken cancellationToken)
-        {
-            if (!enableCache || !_epgChannels.TryGetValue(info.Id, out var result))
-            {
-                var channels = await provider.GetChannels(info, cancellationToken).ConfigureAwait(false);
-
-                foreach (var channel in channels)
-                {
-                    _logger.LogInformation("Found epg channel in {0} {1} {2} {3}", provider.Name, info.ListingsId, channel.Name, channel.Id);
-                }
-
-                result = new EpgChannelData(channels);
-                _epgChannels.AddOrUpdate(info.Id, result, (_, _) => result);
-            }
-
-            return result;
-        }
-
-        private async Task<ChannelInfo> GetEpgChannelFromTunerChannel(IListingsProvider provider, ListingsProviderInfo info, ChannelInfo tunerChannel, CancellationToken cancellationToken)
-        {
-            var epgChannels = await GetEpgChannels(provider, info, true, cancellationToken).ConfigureAwait(false);
-
-            return GetEpgChannelFromTunerChannel(info, tunerChannel, epgChannels);
-        }
-
-        private static string GetMappedChannel(string channelId, NameValuePair[] mappings)
-        {
-            foreach (NameValuePair mapping in mappings)
-            {
-                if (string.Equals(mapping.Name, channelId, StringComparison.OrdinalIgnoreCase))
-                {
-                    return mapping.Value;
-                }
-            }
-
-            return channelId;
-        }
-
-        internal ChannelInfo GetEpgChannelFromTunerChannel(NameValuePair[] mappings, ChannelInfo tunerChannel, List<ChannelInfo> epgChannels)
-        {
-            return GetEpgChannelFromTunerChannel(mappings, tunerChannel, new EpgChannelData(epgChannels));
-        }
-
-        private ChannelInfo GetEpgChannelFromTunerChannel(ListingsProviderInfo info, ChannelInfo tunerChannel, EpgChannelData epgChannels)
-        {
-            return GetEpgChannelFromTunerChannel(info.ChannelMappings, tunerChannel, epgChannels);
-        }
-
-        private ChannelInfo GetEpgChannelFromTunerChannel(
-            NameValuePair[] mappings,
-            ChannelInfo tunerChannel,
-            EpgChannelData epgChannelData)
-        {
-            if (!string.IsNullOrWhiteSpace(tunerChannel.Id))
-            {
-                var mappedTunerChannelId = GetMappedChannel(tunerChannel.Id, mappings);
-
-                if (string.IsNullOrWhiteSpace(mappedTunerChannelId))
-                {
-                    mappedTunerChannelId = tunerChannel.Id;
-                }
-
-                var channel = epgChannelData.GetChannelById(mappedTunerChannelId);
-
-                if (channel is not null)
-                {
-                    return channel;
-                }
-            }
-
-            if (!string.IsNullOrWhiteSpace(tunerChannel.TunerChannelId))
-            {
-                var tunerChannelId = tunerChannel.TunerChannelId;
-                if (tunerChannelId.Contains(".json.schedulesdirect.org", StringComparison.OrdinalIgnoreCase))
-                {
-                    tunerChannelId = tunerChannelId.Replace(".json.schedulesdirect.org", string.Empty, StringComparison.OrdinalIgnoreCase).TrimStart('I');
-                }
-
-                var mappedTunerChannelId = GetMappedChannel(tunerChannelId, mappings);
-
-                if (string.IsNullOrWhiteSpace(mappedTunerChannelId))
-                {
-                    mappedTunerChannelId = tunerChannelId;
-                }
-
-                var channel = epgChannelData.GetChannelById(mappedTunerChannelId);
-
-                if (channel is not null)
-                {
-                    return channel;
-                }
-            }
-
-            if (!string.IsNullOrWhiteSpace(tunerChannel.Number))
-            {
-                var tunerChannelNumber = GetMappedChannel(tunerChannel.Number, mappings);
-
-                if (string.IsNullOrWhiteSpace(tunerChannelNumber))
-                {
-                    tunerChannelNumber = tunerChannel.Number;
-                }
-
-                var channel = epgChannelData.GetChannelByNumber(tunerChannelNumber);
-
-                if (channel is not null)
-                {
-                    return channel;
-                }
-            }
-
-            if (!string.IsNullOrWhiteSpace(tunerChannel.Name))
-            {
-                var normalizedName = EpgChannelData.NormalizeName(tunerChannel.Name);
-
-                var channel = epgChannelData.GetChannelByName(normalizedName);
-
-                if (channel is not null)
-                {
-                    return channel;
-                }
-            }
-
-            return null;
-        }
-
-        public async Task<List<ChannelInfo>> GetChannelsForListingsProvider(ListingsProviderInfo listingsProvider, CancellationToken cancellationToken)
-        {
-            var list = new List<ChannelInfo>();
-
-            foreach (var hostInstance in _tunerHostManager.TunerHosts)
-            {
-                try
-                {
-                    var channels = await hostInstance.GetChannels(false, cancellationToken).ConfigureAwait(false);
-
-                    list.AddRange(channels);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error getting channels");
-                }
-            }
-
-            return list
-                .Where(i => IsListingProviderEnabledForTuner(listingsProvider, i.TunerHostId))
-                .ToList();
+            return channels;
         }
 
         public Task<IEnumerable<ChannelInfo>> GetChannelsAsync(CancellationToken cancellationToken)
@@ -877,75 +674,13 @@ namespace Jellyfin.LiveTv.EmbyTV
             return Task.FromResult((IEnumerable<SeriesTimerInfo>)_seriesTimerProvider.GetAll());
         }
 
-        private bool IsListingProviderEnabledForTuner(ListingsProviderInfo info, string tunerHostId)
-        {
-            if (info.EnableAllTuners)
-            {
-                return true;
-            }
-
-            if (string.IsNullOrWhiteSpace(tunerHostId))
-            {
-                throw new ArgumentNullException(nameof(tunerHostId));
-            }
-
-            return info.EnabledTuners.Contains(tunerHostId, StringComparison.OrdinalIgnoreCase);
-        }
-
         public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
         {
             var channels = await GetChannelsAsync(true, cancellationToken).ConfigureAwait(false);
             var channel = channels.First(i => string.Equals(i.Id, channelId, StringComparison.OrdinalIgnoreCase));
 
-            foreach (var provider in GetListingProviders())
-            {
-                if (!IsListingProviderEnabledForTuner(provider.Item2, channel.TunerHostId))
-                {
-                    _logger.LogDebug("Skipping getting programs for channel {0}-{1} from {2}-{3}, because it's not enabled for this tuner.", channel.Number, channel.Name, provider.Item1.Name, provider.Item2.ListingsId ?? string.Empty);
-                    continue;
-                }
-
-                _logger.LogDebug("Getting programs for channel {0}-{1} from {2}-{3}", channel.Number, channel.Name, provider.Item1.Name, provider.Item2.ListingsId ?? string.Empty);
-
-                var epgChannel = await GetEpgChannelFromTunerChannel(provider.Item1, provider.Item2, channel, cancellationToken).ConfigureAwait(false);
-
-                if (epgChannel is null)
-                {
-                    _logger.LogDebug("EPG channel not found for tuner channel {0}-{1} from {2}-{3}", channel.Number, channel.Name, provider.Item1.Name, provider.Item2.ListingsId ?? string.Empty);
-                    continue;
-                }
-
-                List<ProgramInfo> programs = (await provider.Item1.GetProgramsAsync(provider.Item2, epgChannel.Id, startDateUtc, endDateUtc, cancellationToken)
-                           .ConfigureAwait(false)).ToList();
-
-                // Replace the value that came from the provider with a normalized value
-                foreach (var program in programs)
-                {
-                    program.ChannelId = channelId;
-
-                    program.Id += "_" + channelId;
-                }
-
-                if (programs.Count > 0)
-                {
-                    return programs;
-                }
-            }
-
-            return Enumerable.Empty<ProgramInfo>();
-        }
-
-        private List<Tuple<IListingsProvider, ListingsProviderInfo>> GetListingProviders()
-        {
-            return _config.GetLiveTvConfiguration().ListingProviders
-                .Select(i =>
-                {
-                    var provider = _listingsProviders.FirstOrDefault(l => string.Equals(l.Type, i.Type, StringComparison.OrdinalIgnoreCase));
-
-                    return provider is null ? null : new Tuple<IListingsProvider, ListingsProviderInfo>(provider, i);
-                })
-                .Where(i => i is not null)
-                .ToList();
+            return await _listingsManager.GetProgramsAsync(channel, startDateUtc, endDateUtc, cancellationToken)
+                .ConfigureAwait(false);
         }
 
         public Task<MediaSourceInfo> GetChannelStream(string channelId, string streamId, CancellationToken cancellationToken)
