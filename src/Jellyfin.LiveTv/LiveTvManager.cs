@@ -13,6 +13,7 @@ using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
 using Jellyfin.LiveTv.Configuration;
+using Jellyfin.LiveTv.Guide;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
