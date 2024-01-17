@@ -1992,7 +1992,7 @@ namespace Jellyfin.LiveTv.EmbyTV
                         await writer.WriteElementStringAsync(null, "genre", null, genre).ConfigureAwait(false);
                     }
 
-                    var people = item.Id.Equals(default) ? new List<PersonInfo>() : _libraryManager.GetPeople(item);
+                    var people = item.Id.IsEmpty() ? new List<PersonInfo>() : _libraryManager.GetPeople(item);
 
                     var directors = people
                         .Where(i => i.IsType(PersonKind.Director))
@@ -2317,7 +2317,7 @@ namespace Jellyfin.LiveTv.EmbyTV
         {
             string channelId = seriesTimer.RecordAnyChannel ? null : seriesTimer.ChannelId;
 
-            if (string.IsNullOrWhiteSpace(channelId) && !parent.ChannelId.Equals(default))
+            if (string.IsNullOrWhiteSpace(channelId) && !parent.ChannelId.IsEmpty())
             {
                 if (!tempChannelCache.TryGetValue(parent.ChannelId, out LiveTvChannel channel))
                 {
@@ -2376,7 +2376,7 @@ namespace Jellyfin.LiveTv.EmbyTV
         {
             string channelId = null;
 
-            if (!programInfo.ChannelId.Equals(default))
+            if (!programInfo.ChannelId.IsEmpty())
             {
                 if (!tempChannelCache.TryGetValue(programInfo.ChannelId, out LiveTvChannel channel))
                 {
