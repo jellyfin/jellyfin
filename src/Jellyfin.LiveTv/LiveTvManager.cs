@@ -47,9 +47,8 @@ namespace Jellyfin.LiveTv
         private readonly ILocalizationManager _localization;
         private readonly IChannelManager _channelManager;
         private readonly LiveTvDtoService _tvDtoService;
+        private readonly ILiveTvService[] _services;
         private readonly IListingsProvider[] _listingProviders;
-
-        private ILiveTvService[] _services = Array.Empty<ILiveTvService>();
 
         public LiveTvManager(
             IServerConfigurationManager config,
@@ -62,6 +61,7 @@ namespace Jellyfin.LiveTv
             ILocalizationManager localization,
             IChannelManager channelManager,
             LiveTvDtoService liveTvDtoService,
+            IEnumerable<ILiveTvService> services,
             IEnumerable<IListingsProvider> listingProviders)
         {
             _config = config;
@@ -74,7 +74,12 @@ namespace Jellyfin.LiveTv
             _userDataManager = userDataManager;
             _channelManager = channelManager;
             _tvDtoService = liveTvDtoService;
+            _services = services.ToArray();
             _listingProviders = listingProviders.ToArray();
+
+            var defaultService = _services.OfType<EmbyTV.EmbyTV>().First();
+            defaultService.TimerCreated += OnEmbyTvTimerCreated;
+            defaultService.TimerCancelled += OnEmbyTvTimerCancelled;
         }
 
         public event EventHandler<GenericEventArgs<TimerEventInfo>> SeriesTimerCancelled;
@@ -96,21 +101,6 @@ namespace Jellyfin.LiveTv
         public string GetEmbyTvActiveRecordingPath(string id)
         {
             return EmbyTV.EmbyTV.Current.GetActiveRecordingPath(id);
-        }
-
-        /// <inheritdoc />
-        public void AddParts(IEnumerable<ILiveTvService> services)
-        {
-            _services = services.ToArray();
-
-            foreach (var service in _services)
-            {
-                if (service is EmbyTV.EmbyTV embyTv)
-                {
-                    embyTv.TimerCreated += OnEmbyTvTimerCreated;
-                    embyTv.TimerCancelled += OnEmbyTvTimerCancelled;
-                }
-            }
         }
 
         private void OnEmbyTvTimerCancelled(object sender, GenericEventArgs<string> e)
