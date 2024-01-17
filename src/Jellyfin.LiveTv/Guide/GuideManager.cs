@@ -159,7 +159,7 @@ public class GuideManager : IGuideManager
         var config = _config.GetLiveTvConfiguration();
 
         return config.GuideDays.HasValue
-            ? Math.Max(1, Math.Min(config.GuideDays.Value, MaxGuideDays))
+            ? Math.Clamp(config.GuideDays.Value, 1, MaxGuideDays)
             : 7;
     }
 
