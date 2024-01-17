@@ -80,22 +80,6 @@ namespace Jellyfin.LiveTv.TunerHosts
                 .ConfigureAwait(false);
         }
 
-        public Task<List<LiveTvTunerInfo>> GetTunerInfos(CancellationToken cancellationToken)
-        {
-            var list = GetTunerHosts()
-            .Select(i => new LiveTvTunerInfo()
-            {
-                Name = Name,
-                SourceType = Type,
-                Status = LiveTvTunerStatus.Available,
-                Id = i.Url.GetMD5().ToString("N", CultureInfo.InvariantCulture),
-                Url = i.Url
-            })
-            .ToList();
-
-            return Task.FromResult(list);
-        }
-
         protected override async Task<ILiveStream> GetChannelStream(TunerHostInfo tunerHost, ChannelInfo channel, string streamId, IList<ILiveStream> currentLiveStreams, CancellationToken cancellationToken)
         {
             var tunerCount = tunerHost.TunerCount;
