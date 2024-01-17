@@ -48,20 +48,25 @@ namespace Emby.Server.Implementations.Library
 
             if (!string.IsNullOrEmpty(cacheKey))
             {
-                FileStream jsonStream = AsyncFile.OpenRead(cacheFilePath);
                 try
                 {
-                    mediaInfo = await JsonSerializer.DeserializeAsync<MediaInfo>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+                    FileStream jsonStream = AsyncFile.OpenRead(cacheFilePath);
 
-                    // _logger.LogDebug("Found cached media info");
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error deserializing mediainfo cache");
-                }
-                finally
-                {
+                    try
+                    {
+                        mediaInfo = await JsonSerializer.DeserializeAsync<MediaInfo>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+                        // _logger.LogDebug("Found cached media info");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error deserializing mediainfo cache");
+                    }
+
                     await jsonStream.DisposeAsync().ConfigureAwait(false);
+                }
+                catch
+                {
+                    _logger.LogError("Could not open cached media info");
                 }
             }
 
