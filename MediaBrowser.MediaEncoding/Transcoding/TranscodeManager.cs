@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
@@ -400,7 +401,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
 
         if (state.VideoRequest is not null && !EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
         {
-            var user = userId.Equals(default) ? null : _userManager.GetUserById(userId);
+            var user = userId.IsEmpty() ? null : _userManager.GetUserById(userId);
             if (user is not null && !user.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding))
             {
                 this.OnTranscodeFailedToStart(outputPath, transcodingJobType, state);

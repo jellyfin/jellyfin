@@ -10,12 +10,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.LiveTvDtos;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
@@ -43,6 +43,7 @@ namespace Jellyfin.Api.Controllers;
 public class LiveTvController : BaseJellyfinApiController
 {
     private readonly ILiveTvManager _liveTvManager;
+    private readonly ITunerHostManager _tunerHostManager;
     private readonly IUserManager _userManager;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILibraryManager _libraryManager;
@@ -55,6 +56,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// Initializes a new instance of the <see cref="LiveTvController"/> class.
     /// </summary>
     /// <param name="liveTvManager">Instance of the <see cref="ILiveTvManager"/> interface.</param>
+    /// <param name="tunerHostManager">Instance of the <see cref="ITunerHostManager"/> interface.</param>
     /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
     /// <param name="httpClientFactory">Instance of the <see cref="IHttpClientFactory"/> interface.</param>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
@@ -64,6 +66,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <param name="transcodeManager">Instance of the <see cref="ITranscodeManager"/> interface.</param>
     public LiveTvController(
         ILiveTvManager liveTvManager,
+        ITunerHostManager tunerHostManager,
         IUserManager userManager,
         IHttpClientFactory httpClientFactory,
         ILibraryManager libraryManager,
@@ -73,6 +76,7 @@ public class LiveTvController : BaseJellyfinApiController
         ITranscodeManager transcodeManager)
     {
         _liveTvManager = liveTvManager;
+        _tunerHostManager = tunerHostManager;
         _userManager = userManager;
         _httpClientFactory = httpClientFactory;
         _libraryManager = libraryManager;
@@ -179,7 +183,7 @@ public class LiveTvController : BaseJellyfinApiController
             dtoOptions,
             CancellationToken.None);
 
-        var user = userId.Value.Equals(default)
+        var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -211,10 +215,10 @@ public class LiveTvController : BaseJellyfinApiController
     public ActionResult<BaseItemDto> GetChannel([FromRoute, Required] Guid channelId, [FromQuery] Guid? userId)
     {
         userId = RequestHelpers.GetUserId(User, userId);
-        var user = userId.Value.Equals(default)
+        var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
-        var item = channelId.Equals(default)
+        var item = channelId.IsEmpty()
             ? _libraryManager.GetUserRootFolder()
             : _libraryManager.GetItemById(channelId);
 
@@ -384,7 +388,7 @@ public class LiveTvController : BaseJellyfinApiController
     public async Task<ActionResult<QueryResult<BaseItemDto>>> GetRecordingFolders([FromQuery] Guid? userId)
     {
         userId = RequestHelpers.GetUserId(User, userId);
-        var user = userId.Value.Equals(default)
+        var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
         var folders = await _liveTvManager.GetRecordingFoldersAsync(user).ConfigureAwait(false);
@@ -407,10 +411,10 @@ public class LiveTvController : BaseJellyfinApiController
     public ActionResult<BaseItemDto> GetRecording([FromRoute, Required] Guid recordingId, [FromQuery] Guid? userId)
     {
         userId = RequestHelpers.GetUserId(User, userId);
-        var user = userId.Value.Equals(default)
+        var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
-        var item = recordingId.Equals(default) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(recordingId);
+        var item = recordingId.IsEmpty() ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(recordingId);
 
         var dtoOptions = new DtoOptions()
             .AddClientFields(User);
@@ -564,7 +568,7 @@ public class LiveTvController : BaseJellyfinApiController
         [FromQuery] bool enableTotalRecordCount = true)
     {
         userId = RequestHelpers.GetUserId(User, userId);
-        var user = userId.Value.Equals(default)
+        var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -591,7 +595,7 @@ public class LiveTvController : BaseJellyfinApiController
             GenreIds = genreIds
         };
 
-        if (librarySeriesId.HasValue && !librarySeriesId.Equals(default))
+        if (!librarySeriesId.IsNullOrEmpty())
         {
             query.IsSeries = true;
 
@@ -620,7 +624,7 @@ public class LiveTvController : BaseJellyfinApiController
     [Authorize(Policy = Policies.LiveTvAccess)]
     public async Task<ActionResult<QueryResult<BaseItemDto>>> GetPrograms([FromBody] GetProgramsDto body)
     {
-        var user = body.UserId.Equals(default) ? null : _userManager.GetUserById(body.UserId);
+        var user = body.UserId.IsEmpty() ? null : _userManager.GetUserById(body.UserId);
 
         var query = new InternalItemsQuery(user)
         {
@@ -645,7 +649,7 @@ public class LiveTvController : BaseJellyfinApiController
             GenreIds = body.GenreIds
         };
 
-        if (!body.LibrarySeriesId.Equals(default))
+        if (!body.LibrarySeriesId.IsEmpty())
         {
             query.IsSeries = true;
 
@@ -704,7 +708,7 @@ public class LiveTvController : BaseJellyfinApiController
         [FromQuery] bool enableTotalRecordCount = true)
     {
         userId = RequestHelpers.GetUserId(User, userId);
-        var user = userId.Value.Equals(default)
+        var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -743,7 +747,7 @@ public class LiveTvController : BaseJellyfinApiController
         [FromQuery] Guid? userId)
     {
         userId = RequestHelpers.GetUserId(User, userId);
-        var user = userId.Value.Equals(default)
+        var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -951,9 +955,7 @@ public class LiveTvController : BaseJellyfinApiController
     [Authorize(Policy = Policies.LiveTvManagement)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<TunerHostInfo>> AddTunerHost([FromBody] TunerHostInfo tunerHostInfo)
-    {
-        return await _liveTvManager.SaveTunerHost(tunerHostInfo).ConfigureAwait(false);
-    }
+        => await _tunerHostManager.SaveTunerHost(tunerHostInfo).ConfigureAwait(false);
 
     /// <summary>
     /// Deletes a tuner host.
@@ -1130,10 +1132,8 @@ public class LiveTvController : BaseJellyfinApiController
     [HttpGet("TunerHosts/Types")]
     [Authorize(Policy = Policies.LiveTvAccess)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<IEnumerable<NameIdPair>> GetTunerHostTypes()
-    {
-        return _liveTvManager.GetTunerHostTypes();
-    }
+    public IEnumerable<NameIdPair> GetTunerHostTypes()
+        => _tunerHostManager.GetTunerHostTypes();
 
     /// <summary>
     /// Discover tuners.
@@ -1145,10 +1145,8 @@ public class LiveTvController : BaseJellyfinApiController
     [HttpGet("Tuners/Discover")]
     [Authorize(Policy = Policies.LiveTvManagement)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<TunerHostInfo>>> DiscoverTuners([FromQuery] bool newDevicesOnly = false)
-    {
-        return await _liveTvManager.DiscoverTuners(newDevicesOnly, CancellationToken.None).ConfigureAwait(false);
-    }
+    public IAsyncEnumerable<TunerHostInfo> DiscoverTuners([FromQuery] bool newDevicesOnly = false)
+        => _tunerHostManager.DiscoverTuners(newDevicesOnly);
 
     /// <summary>
     /// Gets a live tv recording stream.

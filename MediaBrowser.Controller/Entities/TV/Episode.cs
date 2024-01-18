@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -74,12 +75,12 @@ namespace MediaBrowser.Controller.Entities.TV
             get
             {
                 var seriesId = SeriesId;
-                if (seriesId.Equals(default))
+                if (seriesId.IsEmpty())
                 {
                     seriesId = FindSeriesId();
                 }
 
-                return seriesId.Equals(default) ? null : (LibraryManager.GetItemById(seriesId) as Series);
+                return seriesId.IsEmpty() ? null : (LibraryManager.GetItemById(seriesId) as Series);
             }
         }
 
@@ -89,12 +90,12 @@ namespace MediaBrowser.Controller.Entities.TV
             get
             {
                 var seasonId = SeasonId;
-                if (seasonId.Equals(default))
+                if (seasonId.IsEmpty())
                 {
                     seasonId = FindSeasonId();
                 }
 
-                return seasonId.Equals(default) ? null : (LibraryManager.GetItemById(seasonId) as Season);
+                return seasonId.IsEmpty() ? null : (LibraryManager.GetItemById(seasonId) as Season);
             }
         }
 
@@ -271,7 +272,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
             var seasonId = SeasonId;
 
-            if (!seasonId.Equals(default) && !list.Contains(seasonId))
+            if (!seasonId.IsEmpty() && !list.Contains(seasonId))
             {
                 list.Add(seasonId);
             }

@@ -699,7 +699,7 @@ namespace Emby.Server.Implementations.Data
                 saveItemStatement.TryBindNull("@EndDate");
             }
 
-            saveItemStatement.TryBind("@ChannelId", item.ChannelId.Equals(default) ? null : item.ChannelId.ToString("N", CultureInfo.InvariantCulture));
+            saveItemStatement.TryBind("@ChannelId", item.ChannelId.IsEmpty() ? null : item.ChannelId.ToString("N", CultureInfo.InvariantCulture));
 
             if (item is IHasProgramAttributes hasProgramAttributes)
             {
@@ -729,7 +729,7 @@ namespace Emby.Server.Implementations.Data
             saveItemStatement.TryBind("@ProductionYear", item.ProductionYear);
 
             var parentId = item.ParentId;
-            if (parentId.Equals(default))
+            if (parentId.IsEmpty())
             {
                 saveItemStatement.TryBindNull("@ParentId");
             }
@@ -925,7 +925,7 @@ namespace Emby.Server.Implementations.Data
             {
                 saveItemStatement.TryBind("@SeasonName", episode.SeasonName);
 
-                var nullableSeasonId = episode.SeasonId.Equals(default) ? (Guid?)null : episode.SeasonId;
+                var nullableSeasonId = episode.SeasonId.IsEmpty() ? (Guid?)null : episode.SeasonId;
 
                 saveItemStatement.TryBind("@SeasonId", nullableSeasonId);
             }
@@ -937,7 +937,7 @@ namespace Emby.Server.Implementations.Data
 
             if (item is IHasSeries hasSeries)
             {
-                var nullableSeriesId = hasSeries.SeriesId.Equals(default) ? (Guid?)null : hasSeries.SeriesId;
+                var nullableSeriesId = hasSeries.SeriesId.IsEmpty() ? (Guid?)null : hasSeries.SeriesId;
 
                 saveItemStatement.TryBind("@SeriesId", nullableSeriesId);
                 saveItemStatement.TryBind("@SeriesPresentationUniqueKey", hasSeries.SeriesPresentationUniqueKey);
@@ -1010,7 +1010,7 @@ namespace Emby.Server.Implementations.Data
             }
 
             Guid ownerId = item.OwnerId;
-            if (ownerId.Equals(default))
+            if (ownerId.IsEmpty())
             {
                 saveItemStatement.TryBindNull("@OwnerId");
             }
@@ -1266,7 +1266,7 @@ namespace Emby.Server.Implementations.Data
         /// <exception cref="ArgumentException"><paramr name="id"/> is <seealso cref="Guid.Empty"/>.</exception>
         public BaseItem RetrieveItem(Guid id)
         {
-            if (id.Equals(default))
+            if (id.IsEmpty())
             {
                 throw new ArgumentException("Guid can't be empty", nameof(id));
             }
@@ -1970,7 +1970,7 @@ namespace Emby.Server.Implementations.Data
         {
             CheckDisposed();
 
-            if (id.Equals(default))
+            if (id.IsEmpty())
             {
                 throw new ArgumentNullException(nameof(id));
             }
@@ -3230,7 +3230,7 @@ namespace Emby.Server.Implementations.Data
                 whereClauses.Add($"ChannelId in ({inClause})");
             }
 
-            if (!query.ParentId.Equals(default))
+            if (!query.ParentId.IsEmpty())
             {
                 whereClauses.Add("ParentId=@ParentId");
                 statement?.TryBind("@ParentId", query.ParentId);
@@ -4452,7 +4452,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
         public void DeleteItem(Guid id)
         {
-            if (id.Equals(default))
+            if (id.IsEmpty())
             {
                 throw new ArgumentNullException(nameof(id));
             }
@@ -4583,13 +4583,13 @@ AND Type = @InternalPersonType)");
                 statement?.TryBind("@UserId", query.User.InternalId);
             }
 
-            if (!query.ItemId.Equals(default))
+            if (!query.ItemId.IsEmpty())
             {
                 whereClauses.Add("ItemId=@ItemId");
                 statement?.TryBind("@ItemId", query.ItemId);
             }
 
-            if (!query.AppearsInItemId.Equals(default))
+            if (!query.AppearsInItemId.IsEmpty())
             {
                 whereClauses.Add("p.Name in (Select Name from People where ItemId=@AppearsInItemId)");
                 statement?.TryBind("@AppearsInItemId", query.AppearsInItemId);
@@ -4640,7 +4640,7 @@ AND Type = @InternalPersonType)");
 
         private void UpdateAncestors(Guid itemId, List<Guid> ancestorIds, SqliteConnection db, SqliteCommand deleteAncestorsStatement)
         {
-            if (itemId.Equals(default))
+            if (itemId.IsEmpty())
             {
                 throw new ArgumentNullException(nameof(itemId));
             }
@@ -5156,7 +5156,7 @@ AND Type = @InternalPersonType)");
 
         private void UpdateItemValues(Guid itemId, List<(int MagicNumber, string Value)> values, SqliteConnection db)
         {
-            if (itemId.Equals(default))
+            if (itemId.IsEmpty())
             {
                 throw new ArgumentNullException(nameof(itemId));
             }
@@ -5228,7 +5228,7 @@ AND Type = @InternalPersonType)");
 
         public void UpdatePeople(Guid itemId, List<PersonInfo> people)
         {
-            if (itemId.Equals(default))
+            if (itemId.IsEmpty())
             {
                 throw new ArgumentNullException(nameof(itemId));
             }
@@ -5378,7 +5378,7 @@ AND Type = @InternalPersonType)");
         {
             CheckDisposed();
 
-            if (id.Equals(default))
+            if (id.IsEmpty())
             {
                 throw new ArgumentNullException(nameof(id));
             }
@@ -5758,7 +5758,7 @@ AND Type = @InternalPersonType)");
             CancellationToken cancellationToken)
         {
             CheckDisposed();
-            if (id.Equals(default))
+            if (id.IsEmpty())
             {
                 throw new ArgumentException("Guid can't be empty.", nameof(id));
             }
