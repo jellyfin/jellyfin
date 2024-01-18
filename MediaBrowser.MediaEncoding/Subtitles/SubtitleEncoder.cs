@@ -472,8 +472,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// <returns>Task.</returns>
         private async Task ExtractAllTextSubtitles(MediaSourceInfo mediaSource, CancellationToken cancellationToken)
         {
-            var semaphores = new List<SemaphoreSlim> { };
-            var extractableStreams = new List<MediaStream> { };
+            var semaphores = new List<SemaphoreSlim>();
+            var extractableStreams = new List<MediaStream>();
 
             try
             {
@@ -498,9 +498,9 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 }
 
                 if (extractableStreams.Count > 0)
-                    {
-                        await ExtractAllTextSubtitlesInternal(mediaSource, extractableStreams, cancellationToken).ConfigureAwait(false);
-                    }
+                {
+                    await ExtractAllTextSubtitlesInternal(mediaSource, extractableStreams, cancellationToken).ConfigureAwait(false);
+                }
             }
             catch (Exception ex)
             {
@@ -521,7 +521,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             CancellationToken cancellationToken)
         {
             var inputPath = mediaSource.Path;
-            var outputPaths = new List<string> { };
+            var outputPaths = new List<string>();
             var args = string.Format(
                 CultureInfo.InvariantCulture,
                 "-i {0} -copyts",
@@ -531,6 +531,13 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + GetTextSubtitleFormat(subtitleStream));
                 var outputCodec = IsCodecCopyable(subtitleStream.Codec) ? "copy" : "srt";
+                var streamIndex = EncodingHelper.FindIndex(mediaSource.MediaStreams, subtitleStream);
+
+                if (streamIndex == -1)
+                {
+                    _logger.LogError("Cannot find subtitle stream index for {InputPath} ({Index}), skipping this stream", inputPath, subtitleStream.Index);
+                    continue;
+                }
 
                 Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? throw new FileNotFoundException($"Calculated path ({outputPath}) is not valid."));
 
@@ -538,7 +545,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 args += string.Format(
                     CultureInfo.InvariantCulture,
                     " -map 0:{0} -an -vn -c:s {1} \"{2}\"",
-                    subtitleStream.Index,
+                    streamIndex,
                     outputCodec,
                     outputPath);
             }
@@ -614,16 +621,15 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     {
                         _logger.LogError("ffmpeg subtitle extraction failed for {InputPath} to {OutputPath}", inputPath, outputPath);
                         failed = true;
+                        continue;
                     }
-                    else
-                    {
-                        if (outputPath.EndsWith("ass", StringComparison.OrdinalIgnoreCase))
-                        {
-                            await SetAssFont(outputPath, cancellationToken).ConfigureAwait(false);
-                        }
 
-                        _logger.LogInformation("ffmpeg subtitle extraction completed for {InputPath} to {OutputPath}", inputPath, outputPath);
+                    if (outputPath.EndsWith("ass", StringComparison.OrdinalIgnoreCase))
+                    {
+                        await SetAssFont(outputPath, cancellationToken).ConfigureAwait(false);
                     }
+
+                    _logger.LogInformation("ffmpeg subtitle extraction completed for {InputPath} to {OutputPath}", inputPath, outputPath);
                 }
             }
 
