@@ -1,7 +1,11 @@
-FROM ubuntu:bionic
+ARG DOTNET_VERSION=8.0
+
+FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_VERSION}-jammy
+
 # Docker build arguments
 ARG SOURCE_DIR=/jellyfin
 ARG ARTIFACT_DIR=/dist
+
 # Docker run environment
 ENV SOURCE_DIR=/jellyfin
 ENV ARTIFACT_DIR=/dist
@@ -11,16 +15,13 @@ ENV IS_DOCKER=YES
 
 # Prepare Debian build environment
 RUN apt-get update -yqq \
-  && apt-get install -yqq --no-install-recommends \
+ && apt-get install --no-install-recommends -yqq \
     debhelper gnupg wget ca-certificates devscripts \
     mmv build-essential libcurl4-openssl-dev libfontconfig1-dev \
-    libfreetype6-dev libssl-dev libssl1.1 liblttng-ust0
-
-# Install dotnet repository
-RUN wget -q https://download.visualstudio.microsoft.com/download/pr/5226a5fa-8c0b-474f-b79a-8984ad7c5beb/3113ccbf789c9fd29972835f0f334b7a/dotnet-sdk-8.0.100-linux-x64.tar.gz -O dotnet-sdk.tar.gz \
-  && mkdir -p dotnet-sdk \
-  && tar -xzf dotnet-sdk.tar.gz -C dotnet-sdk \
-  && ln -s $( pwd )/dotnet-sdk/dotnet /usr/bin/dotnet
+    libfreetype6-dev libssl-dev libssl3 liblttng-ust1 \
+ && apt-get clean autoclean -yqq \
+ && apt-get autoremove -yqq \
+ && rm -rf /var/lib/apt/lists/*
 
 # Link to build script
 RUN ln -sf ${SOURCE_DIR}/deployment/build.ubuntu.amd64 /build.sh

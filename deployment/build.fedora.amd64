@@ -42,7 +42,7 @@ rpmbuild -rb /root/rpmbuild/SRPMS/jellyfin-*.src.rpm
 mv /root/rpmbuild/RPMS/x86_64/jellyfin-*.rpm /root/rpmbuild/SRPMS/jellyfin-*.src.rpm "${ARTIFACT_DIR}/"
 
 if [[ ${IS_DOCKER} == YES ]]; then
-    chown -Rc $(stat -c %u:%g "${ARTIFACT_DIR}") "${ARTIFACT_DIR}"
+    chown -Rc "$(stat -c %u:%g "${ARTIFACT_DIR}")" "${ARTIFACT_DIR}"
 fi
 
 rm -f fedora/jellyfin*.tar.gz
@@ -51,7 +51,7 @@ if [[ ${IS_DOCKER} == YES ]]; then
     pushd fedora
 
     cp -a /tmp/spec.orig jellyfin.spec
-    chown -Rc $(stat -c %u:%g "${ARTIFACT_DIR}") "${ARTIFACT_DIR}"
+    chown -Rc "$(stat -c %u:%g "${ARTIFACT_DIR}")" "${ARTIFACT_DIR}"
 
     popd
 fi
