@@ -1068,7 +1068,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             // hw transpose filters should be added manually.
-            args.Append(" -autorotate 0");
+            args.Append(" -noautorotate");
 
             return args.ToString().Trim();
         }
@@ -1159,7 +1159,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isSwDecoder = string.IsNullOrEmpty(GetHardwareVideoDecoder(state, options));
             if (!isSwDecoder && _mediaEncoder.EncoderVersion >= new Version(4, 4))
             {
-                arg.Append(" -autoscale 0");
+                arg.Append(" -noautoscale");
             }
 
             return arg.ToString();

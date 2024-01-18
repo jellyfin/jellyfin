@@ -142,6 +142,17 @@ cd Jellyfin.Server/bin/Debug/net8.0 # Change into the build output directory
 
 2. Execute the build output. On Linux, Mac, etc. use `./jellyfin` and on Windows use `jellyfin.exe`.
 
+### Running from GH-Codespaces
+
+As Jellyfin will run on a container on a github hosted server, JF needs to handle some things differently.
+**NOTE:** If you want to access the JF instance from outside, like with a WebClient on another PC, remember to set the "ports" in the lower VsCode window to public.
+
+#### FFmpeg installation.
+Because sometimes you need FFMPEG to test certain cases, follow the instructions from the wiki on the dev enviorment:
+https://jellyfin.org/docs/general/installation/linux/#ffmpeg-installation
+
+**NOTE:** When first opening the server instance with any WebUI, you will be send to the login instead of the setup page. Refresh the login page once and you should be redirected to the Setup.
+
 ### Running The Tests
 
 This repository also includes unit tests that are used to validate functionality as part of a CI pipeline on Azure. There are several ways to run these tests.

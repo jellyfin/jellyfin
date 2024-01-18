@@ -115,9 +115,10 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
         List<LinkedChild>? itemsToRemove = null;
         foreach (var linkedChild in folder.LinkedChildren)
         {
-            if (!File.Exists(folder.Path))
+            var path = linkedChild.Path;
+            if (!File.Exists(path))
             {
-                _logger.LogInformation("Item in {FolderName} cannot be found at {ItemPath}", folder.Name, linkedChild.Path);
+                _logger.LogInformation("Item in {FolderName} cannot be found at {ItemPath}", folder.Name, path);
                 (itemsToRemove ??= new List<LinkedChild>()).Add(linkedChild);
             }
         }

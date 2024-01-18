@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -211,6 +212,27 @@ namespace MediaBrowser.Model.Entities
                 }
 
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the audio spatial format.
+        /// </summary>
+        /// <value>The audio spatial format.</value>
+        [DefaultValue(AudioSpatialFormat.None)]
+        public AudioSpatialFormat AudioSpatialFormat
+        {
+            get
+            {
+                if (Type != MediaStreamType.Audio || string.IsNullOrEmpty(Profile))
+                {
+                    return AudioSpatialFormat.None;
+                }
+
+                return
+                    Profile.Contains("Dolby Atmos", StringComparison.OrdinalIgnoreCase) ? AudioSpatialFormat.DolbyAtmos :
+                    Profile.Contains("DTS:X", StringComparison.OrdinalIgnoreCase) ? AudioSpatialFormat.DTSX :
+                    AudioSpatialFormat.None;
             }
         }
 

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -80,7 +81,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     return Guid.Empty;
                 }
-            }).Where(i => !i.Equals(default)).ToArray();
+            }).Where(i => !i.IsEmpty()).ToArray();
 
             return GetInstantMixFromGenreIds(genreIds, user, dtoOptions);
         }
