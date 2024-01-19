@@ -162,6 +162,8 @@ This creates a container that has everything to run and debug the Jellyfin Media
 this extens the default server with an default installation of ffmpeg6 though the means described here: https://jellyfin.org/docs/general/installation/linux#repository-manual
 If you want to install a specific ffmpeg version, follow the comments embedded in the `.devcontainer/Dev - Server Ffmpeg/install.ffmpeg.sh` file.
 
+Use the `ghcs .NET Launch (nowebclient, ffmpeg)` launch config to run with the jellyfin-ffmpeg enabled.
+
 
 ### Running The Tests
 
