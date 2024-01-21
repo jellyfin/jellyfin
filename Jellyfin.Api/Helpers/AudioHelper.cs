@@ -2,15 +2,13 @@
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Api.Models.StreamingDtos;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Devices;
-using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
 using Microsoft.AspNetCore.Http;
@@ -23,14 +21,12 @@ namespace Jellyfin.Api.Helpers;
 /// </summary>
 public class AudioHelper
 {
-    private readonly IDlnaManager _dlnaManager;
     private readonly IUserManager _userManager;
     private readonly ILibraryManager _libraryManager;
     private readonly IMediaSourceManager _mediaSourceManager;
     private readonly IServerConfigurationManager _serverConfigurationManager;
     private readonly IMediaEncoder _mediaEncoder;
-    private readonly IDeviceManager _deviceManager;
-    private readonly TranscodingJobHelper _transcodingJobHelper;
+    private readonly ITranscodeManager _transcodeManager;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly EncodingHelper _encodingHelper;
@@ -38,38 +34,32 @@ public class AudioHelper
     /// <summary>
     /// Initializes a new instance of the <see cref="AudioHelper"/> class.
     /// </summary>
-    /// <param name="dlnaManager">Instance of the <see cref="IDlnaManager"/> interface.</param>
     /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
     /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
     /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
-    /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
-    /// <param name="transcodingJobHelper">Instance of <see cref="TranscodingJobHelper"/>.</param>
+    /// <param name="transcodeManager">Instance of <see cref="ITranscodeManager"/> interface.</param>
     /// <param name="httpClientFactory">Instance of the <see cref="IHttpClientFactory"/> interface.</param>
     /// <param name="httpContextAccessor">Instance of the <see cref="IHttpContextAccessor"/> interface.</param>
     /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
     public AudioHelper(
-        IDlnaManager dlnaManager,
         IUserManager userManager,
         ILibraryManager libraryManager,
         IMediaSourceManager mediaSourceManager,
         IServerConfigurationManager serverConfigurationManager,
         IMediaEncoder mediaEncoder,
-        IDeviceManager deviceManager,
-        TranscodingJobHelper transcodingJobHelper,
+        ITranscodeManager transcodeManager,
         IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor,
         EncodingHelper encodingHelper)
     {
-        _dlnaManager = dlnaManager;
         _userManager = userManager;
         _libraryManager = libraryManager;
         _mediaSourceManager = mediaSourceManager;
         _serverConfigurationManager = serverConfigurationManager;
         _mediaEncoder = mediaEncoder;
-        _deviceManager = deviceManager;
-        _transcodingJobHelper = transcodingJobHelper;
+        _transcodeManager = transcodeManager;
         _httpClientFactory = httpClientFactory;
         _httpContextAccessor = httpContextAccessor;
         _encodingHelper = encodingHelper;
@@ -104,17 +94,13 @@ public class AudioHelper
                 _serverConfigurationManager,
                 _mediaEncoder,
                 _encodingHelper,
-                _dlnaManager,
-                _deviceManager,
-                _transcodingJobHelper,
+                _transcodeManager,
                 transcodingJobType,
                 cancellationTokenSource.Token)
             .ConfigureAwait(false);
 
         if (streamingRequest.Static && state.DirectStreamProvider is not null)
         {
-            StreamingHelpers.AddDlnaHeaders(state, _httpContextAccessor.HttpContext.Response.Headers, true, streamingRequest.StartTimeTicks, _httpContextAccessor.HttpContext.Request, _dlnaManager);
-
             var liveStreamInfo = _mediaSourceManager.GetLiveStreamInfo(streamingRequest.LiveStreamId);
             if (liveStreamInfo is null)
             {
@@ -129,8 +115,6 @@ public class AudioHelper
         // Static remote stream
         if (streamingRequest.Static && state.InputProtocol == MediaProtocol.Http)
         {
-            StreamingHelpers.AddDlnaHeaders(state, _httpContextAccessor.HttpContext.Response.Headers, true, streamingRequest.StartTimeTicks, _httpContextAccessor.HttpContext.Request, _dlnaManager);
-
             var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
             return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, httpClient, _httpContextAccessor.HttpContext).ConfigureAwait(false);
         }
@@ -141,12 +125,6 @@ public class AudioHelper
         }
 
         var outputPath = state.OutputFilePath;
-        var outputPathExists = File.Exists(outputPath);
-
-        var transcodingJob = _transcodingJobHelper.GetTranscodingJob(outputPath, TranscodingJobType.Progressive);
-        var isTranscodeCached = outputPathExists && transcodingJob is not null;
-
-        StreamingHelpers.AddDlnaHeaders(state, _httpContextAccessor.HttpContext.Response.Headers, streamingRequest.Static || isTranscodeCached, streamingRequest.StartTimeTicks, _httpContextAccessor.HttpContext.Request, _dlnaManager);
 
         // Static stream
         if (streamingRequest.Static)
@@ -155,7 +133,7 @@ public class AudioHelper
 
             if (state.MediaSource.IsInfiniteStream)
             {
-                var stream = new ProgressiveFileStream(state.MediaPath, null, _transcodingJobHelper);
+                var stream = new ProgressiveFileStream(state.MediaPath, null, _transcodeManager);
                 return new FileStreamResult(stream, contentType);
             }
 
@@ -171,7 +149,7 @@ public class AudioHelper
             state,
             isHeadRequest,
             _httpContextAccessor.HttpContext,
-            _transcodingJobHelper,
+            _transcodeManager,
             ffmpegCommandLineArguments,
             transcodingJobType,
             cancellationTokenSource).ConfigureAwait(false);

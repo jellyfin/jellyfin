@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Collections;
@@ -198,7 +199,7 @@ namespace MediaBrowser.Controller.Entities
         {
             item.SetParent(this);
 
-            if (item.Id.Equals(default))
+            if (item.Id.IsEmpty())
             {
                 item.Id = LibraryManager.GetNewItemId(item.Path, item.GetType());
             }
@@ -697,7 +698,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (this is not UserRootFolder
                 && this is not AggregateFolder
-                && query.ParentId.Equals(default))
+                && query.ParentId.IsEmpty())
             {
                 query.Parent = this;
             }
@@ -834,7 +835,7 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            if (query.AdjacentTo.HasValue && !query.AdjacentTo.Value.Equals(default))
+            if (!query.AdjacentTo.IsNullOrEmpty())
             {
                 Logger.LogDebug("Query requires post-filtering due to AdjacentTo");
                 return true;
@@ -981,7 +982,7 @@ namespace MediaBrowser.Controller.Entities
             #pragma warning restore CA1309
 
             // This must be the last filter
-            if (query.AdjacentTo.HasValue && !query.AdjacentTo.Value.Equals(default))
+            if (!query.AdjacentTo.IsNullOrEmpty())
             {
                 items = UserViewBuilder.FilterForAdjacency(items.ToList(), query.AdjacentTo.Value);
             }

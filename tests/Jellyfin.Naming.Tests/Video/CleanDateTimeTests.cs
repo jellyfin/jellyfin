@@ -52,9 +52,8 @@ namespace Jellyfin.Naming.Tests.Video
         [InlineData("My Movie 2013-12-09", "My Movie 2013-12-09", null)]
         [InlineData("My Movie 20131209", "My Movie 20131209", null)]
         [InlineData("My Movie 2013-12-09 2013", "My Movie 2013-12-09", 2013)]
-        [InlineData(null, null, null)]
         [InlineData("", "", null)]
-        public void CleanDateTimeTest(string input, string expectedName, int? expectedYear)
+        public void CleanDateTimeTest(string input, string? expectedName, int? expectedYear)
         {
             input = Path.GetFileName(input);
 

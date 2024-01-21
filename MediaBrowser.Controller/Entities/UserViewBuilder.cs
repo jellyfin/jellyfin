@@ -58,58 +58,58 @@ namespace MediaBrowser.Controller.Entities
 
             switch (viewType)
             {
-                case CollectionType.Folders:
+                case CollectionType.folders:
                     return GetResult(_libraryManager.GetUserRootFolder().GetChildren(user, true), query);
 
-                case CollectionType.TvShows:
+                case CollectionType.tvshows:
                     return GetTvView(queryParent, user, query);
 
-                case CollectionType.Movies:
+                case CollectionType.movies:
                     return GetMovieFolders(queryParent, user, query);
 
-                case CollectionType.TvShowSeries:
+                case CollectionType.tvshowseries:
                     return GetTvSeries(queryParent, user, query);
 
-                case CollectionType.TvGenres:
+                case CollectionType.tvgenres:
                     return GetTvGenres(queryParent, user, query);
 
-                case CollectionType.TvGenre:
+                case CollectionType.tvgenre:
                     return GetTvGenreItems(queryParent, displayParent, user, query);
 
-                case CollectionType.TvResume:
+                case CollectionType.tvresume:
                     return GetTvResume(queryParent, user, query);
 
-                case CollectionType.TvNextUp:
+                case CollectionType.tvnextup:
                     return GetTvNextUp(queryParent, query);
 
-                case CollectionType.TvLatest:
+                case CollectionType.tvlatest:
                     return GetTvLatest(queryParent, user, query);
 
-                case CollectionType.MovieFavorites:
+                case CollectionType.moviefavorites:
                     return GetFavoriteMovies(queryParent, user, query);
 
-                case CollectionType.MovieLatest:
+                case CollectionType.movielatest:
                     return GetMovieLatest(queryParent, user, query);
 
-                case CollectionType.MovieGenres:
+                case CollectionType.moviegenres:
                     return GetMovieGenres(queryParent, user, query);
 
-                case CollectionType.MovieGenre:
+                case CollectionType.moviegenre:
                     return GetMovieGenreItems(queryParent, displayParent, user, query);
 
-                case CollectionType.MovieResume:
+                case CollectionType.movieresume:
                     return GetMovieResume(queryParent, user, query);
 
-                case CollectionType.MovieMovies:
+                case CollectionType.moviemovies:
                     return GetMovieMovies(queryParent, user, query);
 
-                case CollectionType.MovieCollections:
+                case CollectionType.moviecollection:
                     return GetMovieCollections(user, query);
 
-                case CollectionType.TvFavoriteEpisodes:
+                case CollectionType.tvfavoriteepisodes:
                     return GetFavoriteEpisodes(queryParent, user, query);
 
-                case CollectionType.TvFavoriteSeries:
+                case CollectionType.tvfavoriteseries:
                     return GetFavoriteSeries(queryParent, user, query);
 
                 default:
@@ -146,12 +146,12 @@ namespace MediaBrowser.Controller.Entities
 
             var list = new List<BaseItem>
             {
-                GetUserView(CollectionType.MovieResume, "HeaderContinueWatching", "0", parent),
-                GetUserView(CollectionType.MovieLatest, "Latest", "1", parent),
-                GetUserView(CollectionType.MovieMovies, "Movies", "2", parent),
-                GetUserView(CollectionType.MovieCollections, "Collections", "3", parent),
-                GetUserView(CollectionType.MovieFavorites, "Favorites", "4", parent),
-                GetUserView(CollectionType.MovieGenres, "Genres", "5", parent)
+                GetUserView(CollectionType.movieresume, "HeaderContinueWatching", "0", parent),
+                GetUserView(CollectionType.movielatest, "Latest", "1", parent),
+                GetUserView(CollectionType.moviemovies, "Movies", "2", parent),
+                GetUserView(CollectionType.moviecollection, "Collections", "3", parent),
+                GetUserView(CollectionType.moviefavorites, "Favorites", "4", parent),
+                GetUserView(CollectionType.moviegenres, "Genres", "5", parent)
             };
 
             return GetResult(list, query);
@@ -264,7 +264,7 @@ namespace MediaBrowser.Controller.Entities
                     }
                 })
                 .Where(i => i is not null)
-                .Select(i => GetUserViewWithName(CollectionType.MovieGenre, i.SortName, parent));
+                .Select(i => GetUserViewWithName(CollectionType.moviegenre, i.SortName, parent));
 
             return GetResult(genres, query);
         }
@@ -303,13 +303,13 @@ namespace MediaBrowser.Controller.Entities
 
             var list = new List<BaseItem>
             {
-                GetUserView(CollectionType.TvResume, "HeaderContinueWatching", "0", parent),
-                GetUserView(CollectionType.TvNextUp, "HeaderNextUp", "1", parent),
-                GetUserView(CollectionType.TvLatest, "Latest", "2", parent),
-                GetUserView(CollectionType.TvShowSeries, "Shows", "3", parent),
-                GetUserView(CollectionType.TvFavoriteSeries, "HeaderFavoriteShows", "4", parent),
-                GetUserView(CollectionType.TvFavoriteEpisodes, "HeaderFavoriteEpisodes", "5", parent),
-                GetUserView(CollectionType.TvGenres, "Genres", "6", parent)
+                GetUserView(CollectionType.tvresume, "HeaderContinueWatching", "0", parent),
+                GetUserView(CollectionType.tvnextup, "HeaderNextUp", "1", parent),
+                GetUserView(CollectionType.tvlatest, "Latest", "2", parent),
+                GetUserView(CollectionType.tvshowseries, "Shows", "3", parent),
+                GetUserView(CollectionType.tvfavoriteseries, "HeaderFavoriteShows", "4", parent),
+                GetUserView(CollectionType.tvfavoriteepisodes, "HeaderFavoriteEpisodes", "5", parent),
+                GetUserView(CollectionType.tvgenres, "Genres", "6", parent)
             };
 
             return GetResult(list, query);
@@ -330,7 +330,7 @@ namespace MediaBrowser.Controller.Entities
 
         private QueryResult<BaseItem> GetTvNextUp(Folder parent, InternalItemsQuery query)
         {
-            var parentFolders = GetMediaFolders(parent, query.User, new[] { CollectionType.TvShows });
+            var parentFolders = GetMediaFolders(parent, query.User, new[] { CollectionType.tvshows });
 
             var result = _tvSeriesManager.GetNextUp(
                 new NextUpQuery
@@ -392,7 +392,7 @@ namespace MediaBrowser.Controller.Entities
                     }
                 })
                 .Where(i => i is not null)
-                .Select(i => GetUserViewWithName(CollectionType.TvGenre, i.SortName, parent));
+                .Select(i => GetUserViewWithName(CollectionType.tvgenre, i.SortName, parent));
 
             return GetResult(genres, query);
         }
@@ -433,7 +433,7 @@ namespace MediaBrowser.Controller.Entities
             var user = query.User;
 
             // This must be the last filter
-            if (query.AdjacentTo.HasValue && !query.AdjacentTo.Value.Equals(default))
+            if (!query.AdjacentTo.IsNullOrEmpty())
             {
                 items = FilterForAdjacency(items.ToList(), query.AdjacentTo.Value);
             }

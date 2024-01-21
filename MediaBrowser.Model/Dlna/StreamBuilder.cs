@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
@@ -1536,7 +1537,7 @@ namespace MediaBrowser.Model.Dlna
 
         private static void ValidateMediaOptions(MediaOptions options, bool isMediaSource)
         {
-            if (options.ItemId.Equals(default))
+            if (options.ItemId.IsEmpty())
             {
                 ArgumentException.ThrowIfNullOrEmpty(options.DeviceId);
             }
