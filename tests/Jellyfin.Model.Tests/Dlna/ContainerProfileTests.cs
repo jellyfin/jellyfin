@@ -13,7 +13,7 @@ public class ContainerProfileTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("mp4")]
-    public void ContainsContainer_EmptyContainerProfile_ReturnsTrue(string containers)
+    public void ContainsContainer_EmptyContainerProfile_ReturnsTrue(string? containers)
     {
         Assert.True(_emptyContainerProfile.ContainsContainer(containers));
     }
@@ -35,7 +35,7 @@ public class ContainerProfileTests
     [InlineData("-mp3,mpeg", "mp3")]
     [InlineData("-mp3,mpeg,avi", "mpeg,avi")]
     [Theory]
-    public void ContainsContainer_NotInList_ReturnsFalse(string container, string extension)
+    public void ContainsContainer_NotInList_ReturnsFalse(string container, string? extension)
     {
         Assert.False(container.ContainsContainer(extension));
     }

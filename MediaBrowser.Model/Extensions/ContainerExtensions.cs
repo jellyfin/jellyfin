@@ -18,7 +18,7 @@ public static class ContainerExtensions
     /// <returns>The result of the operation.</returns>
     public static bool ContainsContainer(this string? profileContainers, string? inputContainer)
     {
-        var isNegativeList = inputContainer == string.Empty;
+        var isNegativeList = inputContainer != null && inputContainer.Length == 0;
         if (profileContainers != null && profileContainers.StartsWith('-'))
         {
             isNegativeList = true;
