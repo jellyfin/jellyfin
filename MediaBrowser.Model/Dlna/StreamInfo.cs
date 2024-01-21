@@ -628,10 +628,9 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="accessToken">The access Token.</param>
         /// <param name="query">Optional extra query.</param>
         /// <returns>A querystring representation of this object.</returns>
-        public string ToUrl(string baseUrl, string? accessToken, string query)
+        public string ToUrl(string? baseUrl, string? accessToken, string? query)
         {
             var sb = new StringBuilder();
-
             if (!string.IsNullOrEmpty(baseUrl))
             {
                 sb.Append(baseUrl.TrimEnd('/'));
@@ -870,7 +869,7 @@ namespace MediaBrowser.Model.Dlna
                     continue;
                 }
 
-                // strip spaces to avoid having to encode h264 profile names
+                // Strip spaces to avoid having to encode h264 profile names
                 sb.Append('&');
                 sb.Append(pair.Key);
                 sb.Append('=');
@@ -890,23 +889,6 @@ namespace MediaBrowser.Model.Dlna
             }
 
             return sb.ToString();
-        }
-
-        private List<SubtitleStreamInfo> GetExternalSubtitles(ITranscoderSupport transcoderSupport, bool includeSelectedTrackOnly, bool enableAllProfiles, string baseUrl, string accessToken)
-        {
-            var list = GetSubtitleProfiles(transcoderSupport, includeSelectedTrackOnly, enableAllProfiles, baseUrl, accessToken);
-            var newList = new List<SubtitleStreamInfo>();
-
-            // First add the selected track
-            foreach (SubtitleStreamInfo stream in list)
-            {
-                if (stream.DeliveryMethod == SubtitleDeliveryMethod.External)
-                {
-                    newList.Add(stream);
-                }
-            }
-
-            return newList;
         }
 
         public IEnumerable<SubtitleStreamInfo> GetSubtitleProfiles(ITranscoderSupport transcoderSupport, bool includeSelectedTrackOnly, string baseUrl, string? accessToken)

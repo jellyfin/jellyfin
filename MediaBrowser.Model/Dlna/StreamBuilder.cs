@@ -728,7 +728,7 @@ namespace MediaBrowser.Model.Dlna
                 options.SubtitleStreamIndex,
                 playlistItem.PlayMethod,
                 playlistItem.TranscodeReasons,
-                playlistItem.ToUrl("media:", "<token>", string.Empty));
+                playlistItem.ToUrl("media:", "<token>", null));
 
             item.Container = NormalizeMediaSourceFormatIntoSingleContainer(item.Container, options.Profile, DlnaProfileType.Video, directPlayProfile);
             return playlistItem;
