@@ -288,7 +288,7 @@ public class MediaInfoHelper
                 mediaSource.SupportsDirectPlay = false;
                 mediaSource.SupportsDirectStream = false;
 
-                mediaSource.TranscodingUrl = streamInfo.ToUrl(null, claimsPrincipal.GetToken(), "&allowVideoStreamCopy=false&allowAudioStreamCopy=false");
+                mediaSource.TranscodingUrl = streamInfo.ToUrl(string.Empty, claimsPrincipal.GetToken(), "&allowVideoStreamCopy=false&allowAudioStreamCopy=false");
                 mediaSource.TranscodingContainer = streamInfo.Container;
                 mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
             }
@@ -297,7 +297,7 @@ public class MediaInfoHelper
                 if (!mediaSource.SupportsDirectPlay && (mediaSource.SupportsTranscoding || mediaSource.SupportsDirectStream))
                 {
                     streamInfo.PlayMethod = PlayMethod.Transcode;
-                    mediaSource.TranscodingUrl = streamInfo.ToUrl(null, claimsPrincipal.GetToken());
+                    mediaSource.TranscodingUrl = streamInfo.ToUrl(string.Empty, claimsPrincipal.GetToken(), string.Empty);
 
                     if (!allowVideoStreamCopy)
                     {

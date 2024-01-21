@@ -628,7 +628,7 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="accessToken">The access Token.</param>
         /// <param name="query">Optional extra query.</param>
         /// <returns>A querystring representation of this object.</returns>
-        public string ToUrl(string baseUrl, string? accessToken, string query = null)
+        public string ToUrl(string baseUrl, string? accessToken, string query)
         {
             var sb = new StringBuilder();
 
