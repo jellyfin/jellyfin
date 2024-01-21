@@ -11,11 +11,11 @@ ENV IS_DOCKER=YES
 
 # Prepare CentOS environment
 RUN dnf update -yq \
- && dnf install -yq epel-release \
  && dnf install -yq \
-    rpmdevtools libcurl-devel fontconfig-devel \
+    @buildsys-build rpmdevtools git \
+    dnf-plugins-core libcurl-devel fontconfig-devel \
     freetype-devel openssl-devel glibc-devel \
-    libicu-devel git wget dnf-plugins-core \
+    libicu-devel systemd wget make \
  && dnf clean all \
  && rm -rf /var/cache/dnf
 
