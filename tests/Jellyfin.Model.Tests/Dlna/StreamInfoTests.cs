@@ -208,29 +208,35 @@ public class StreamInfoTests
     [Theory]
     public void Test_Blank_Url_Method(DlnaProfileType type)
     {
-        var streamInfo = new LegacyStreamInfo(Guid.Empty, type, new DeviceProfile());
+        var streamInfo = new LegacyStreamInfo(Guid.Empty, type)
+        {
+            DeviceProfile = new DeviceProfile()
+        };
 
         string legacyUrl = streamInfo.ToUrl_Original(BaseUrl, "123");
 
         // New version will return and & after the ? due to optional parameters.
-        string newUrl = streamInfo.ToUrl(BaseUrl, "123").Replace("?&", "?", StringComparison.OrdinalIgnoreCase);
+        string newUrl = streamInfo.ToUrl(BaseUrl, "123", null).Replace("?&", "?", StringComparison.OrdinalIgnoreCase);
 
-        Assert.True(string.Equals(legacyUrl, newUrl, StringComparison.OrdinalIgnoreCase));
+        Assert.Equal(legacyUrl, newUrl, ignoreCase: true);
     }
 
     [Fact]
     public void Fuzzy_Comparison()
     {
-        var streamInfo = new LegacyStreamInfo(Guid.Empty, DlnaProfileType.Video, new DeviceProfile());
+        var streamInfo = new LegacyStreamInfo(Guid.Empty, DlnaProfileType.Video)
+        {
+            DeviceProfile = new DeviceProfile()
+        };
         for (int i = 0; i < 100000; i++)
         {
             FillAllProperties(streamInfo);
             string legacyUrl = streamInfo.ToUrl_Original(BaseUrl, "123");
 
             // New version will return and & after the ? due to optional parameters.
-            string newUrl = streamInfo.ToUrl(BaseUrl, "123").Replace("?&", "?", StringComparison.OrdinalIgnoreCase);
+            string newUrl = streamInfo.ToUrl(BaseUrl, "123", null).Replace("?&", "?", StringComparison.OrdinalIgnoreCase);
 
-            Assert.True(string.Equals(legacyUrl, newUrl, StringComparison.OrdinalIgnoreCase));
+            Assert.Equal(legacyUrl, newUrl, ignoreCase: true);
         }
     }
 }

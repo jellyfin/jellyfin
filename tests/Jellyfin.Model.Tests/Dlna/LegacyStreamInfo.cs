@@ -10,11 +10,10 @@ namespace Jellyfin.Model.Tests.Dlna;
 
 public class LegacyStreamInfo : StreamInfo
 {
-    public LegacyStreamInfo(Guid itemId, DlnaProfileType mediaType, DeviceProfile profile)
+    public LegacyStreamInfo(Guid itemId, DlnaProfileType mediaType)
     {
         ItemId = itemId;
         MediaType = mediaType;
-        DeviceProfile = profile;
     }
 
     /// <summary>

@@ -1,4 +1,5 @@
-#pragma warning disable CS1591
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+#pragma warning disable CA1819 // Properties should not return arrays
 
 using System;
 using System.Collections.Generic;
@@ -26,6 +27,7 @@ namespace MediaBrowser.Model.Dlna
             VideoCodecs = Array.Empty<string>();
             SubtitleCodecs = Array.Empty<string>();
             StreamOptions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            DeviceProfile = new DeviceProfile();
         }
 
         public Guid ItemId { get; set; }
