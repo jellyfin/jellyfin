@@ -64,9 +64,9 @@ namespace Emby.Server.Implementations.Library
 
                     await jsonStream.DisposeAsync().ConfigureAwait(false);
                 }
-                catch (IOException)
+                catch (IOException ex)
                 {
-                    _logger.LogDebug("Could not open cached media info");
+                    _logger.LogDebug(ex, "Could not open cached media info");
                 }
                 catch (Exception ex)
                 {
