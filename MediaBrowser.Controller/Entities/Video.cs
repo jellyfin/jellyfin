@@ -474,7 +474,10 @@ namespace MediaBrowser.Controller.Entities
 
             foreach (var item in localAlternates)
             {
-                item.ImageInfos = ImageInfos;
+                // The original code here was making a reference assignment, this
+                // will only copy the values over to match.
+                item.ImageInfos.Clear();
+                item.ImageInfos.AddRange(ImageInfos);
                 item.Overview = Overview;
                 item.ProductionYear = ProductionYear;
                 item.PremiereDate = PremiereDate;

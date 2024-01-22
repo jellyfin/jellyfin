@@ -89,6 +89,9 @@ namespace MediaBrowser.Controller.Entities
 
         public const char SlugChar = '-';
 
+        [JsonIgnore]
+        private readonly List<ItemImageInfo> _imageInfos;
+
         protected BaseItem()
         {
             Tags = Array.Empty<string>();
@@ -96,7 +99,7 @@ namespace MediaBrowser.Controller.Entities
             Studios = Array.Empty<string>();
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             LockedFields = Array.Empty<MetadataField>();
-            ImageInfos = Array.Empty<ItemImageInfo>();
+            _imageInfos = new List<ItemImageInfo>();
             ProductionLocations = Array.Empty<string>();
             RemoteTrailers = Array.Empty<MediaUrl>();
             ExtraIds = Array.Empty<Guid>();
@@ -116,7 +119,10 @@ namespace MediaBrowser.Controller.Entities
         public string Tagline { get; set; }
 
         [JsonIgnore]
-        public virtual ItemImageInfo[] ImageInfos { get; set; }
+        public virtual List<ItemImageInfo> ImageInfos
+        {
+            get { return _imageInfos; }
+        }
 
         [JsonIgnore]
         public bool IsVirtualItem { get; set; }
@@ -1948,17 +1954,12 @@ namespace MediaBrowser.Controller.Entities
 
         public void RemoveImages(IEnumerable<ItemImageInfo> deletedImages)
         {
-            ImageInfos = ImageInfos.Except(deletedImages).ToArray();
+            ImageInfos.RemoveAll(deletedImages.Contains);
         }
 
         public void AddImage(ItemImageInfo image)
         {
-            var current = ImageInfos;
-            var currentCount = current.Length;
-            var newArr = new ItemImageInfo[currentCount + 1];
-            current.CopyTo(newArr, 0);
-            newArr[currentCount] = image;
-            ImageInfos = newArr;
+            ImageInfos.Add(image);
         }
 
         public virtual Task UpdateToRepositoryAsync(ItemUpdateType updateReason, CancellationToken cancellationToken)
@@ -2097,7 +2098,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             // Yield return is more performant than LINQ Where on an Array
-            for (var i = 0; i < ImageInfos.Length; i++)
+            for (var i = 0; i < ImageInfos.Count; i++)
             {
                 var imageInfo = ImageInfos[i];
                 if (imageInfo.Type == imageType)
@@ -2162,7 +2163,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (newImageList.Count > 0)
             {
-                ImageInfos = ImageInfos.Concat(newImageList.Select(i => GetImageInfo(i, imageType))).ToArray();
+                ImageInfos.AddRange(newImageList.Select(i => GetImageInfo(i, imageType)));
             }
 
             return imageUpdated || newImageList.Count > 0;

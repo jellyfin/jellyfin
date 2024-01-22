@@ -1066,9 +1066,9 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        internal string SerializeImages(ItemImageInfo[] images)
+        internal string SerializeImages(List<ItemImageInfo> images)
         {
-            if (images.Length == 0)
+            if (images.Count == 0)
             {
                 return null;
             }
@@ -1785,9 +1785,10 @@ namespace Emby.Server.Implementations.Data
 
             if (query.DtoOptions.EnableImages)
             {
-                if (item.ImageInfos.Length == 0 && reader.TryGetString(index, out var imageInfos))
+                if (item.ImageInfos.Count == 0 && reader.TryGetString(index, out var imageInfos))
                 {
-                    item.ImageInfos = DeserializeImages(imageInfos);
+                    item.ImageInfos.Clear();
+                    item.ImageInfos.AddRange(DeserializeImages(imageInfos));
                 }
 
                 index++;
