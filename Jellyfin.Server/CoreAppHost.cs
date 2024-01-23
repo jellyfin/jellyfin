@@ -6,6 +6,7 @@ using Emby.Server.Implementations.Session;
 using Jellyfin.Api.WebSocketListeners;
 using Jellyfin.Drawing;
 using Jellyfin.Drawing.Skia;
+using Jellyfin.LiveTv;
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Activity;
 using Jellyfin.Server.Implementations.Devices;
@@ -117,6 +118,9 @@ namespace Jellyfin.Server
 
             // Jellyfin.Server.Implementations
             yield return typeof(JellyfinDbContext).Assembly;
+
+            // Jellyfin.LiveTv
+            yield return typeof(LiveTvManager).Assembly;
         }
     }
 }

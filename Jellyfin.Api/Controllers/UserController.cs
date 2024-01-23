@@ -8,6 +8,7 @@ using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.UserDtos;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -532,7 +533,7 @@ public class UserController : BaseJellyfinApiController
     public ActionResult<UserDto> GetCurrentUser()
     {
         var userId = User.GetUserId();
-        if (userId.Equals(default))
+        if (userId.IsEmpty())
         {
             return BadRequest();
         }

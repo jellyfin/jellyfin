@@ -246,7 +246,7 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                if (!ChannelId.Equals(default))
+                if (!ChannelId.IsEmpty())
                 {
                     return SourceType.Channel;
                 }
@@ -536,7 +536,7 @@ namespace MediaBrowser.Controller.Entities
             get
             {
                 var id = DisplayParentId;
-                if (id.Equals(default))
+                if (id.IsEmpty())
                 {
                     return null;
                 }
@@ -752,7 +752,7 @@ namespace MediaBrowser.Controller.Entities
         public virtual bool StopRefreshIfLocalMetadataFound => true;
 
         [JsonIgnore]
-        protected virtual bool SupportsOwnedItems => !ParentId.Equals(default) && IsFileProtocol;
+        protected virtual bool SupportsOwnedItems => !ParentId.IsEmpty() && IsFileProtocol;
 
         [JsonIgnore]
         public virtual bool SupportsPeople => false;
@@ -829,7 +829,7 @@ namespace MediaBrowser.Controller.Entities
         public BaseItem GetOwner()
         {
             var ownerId = OwnerId;
-            return ownerId.Equals(default) ? null : LibraryManager.GetItemById(ownerId);
+            return ownerId.IsEmpty() ? null : LibraryManager.GetItemById(ownerId);
         }
 
         public bool CanDelete(User user, List<Folder> allCollectionFolders)
@@ -974,7 +974,7 @@ namespace MediaBrowser.Controller.Entities
         public BaseItem GetParent()
         {
             var parentId = ParentId;
-            if (parentId.Equals(default))
+            if (parentId.IsEmpty())
             {
                 return null;
             }
@@ -1367,7 +1367,7 @@ namespace MediaBrowser.Controller.Entities
             var tasks = extras.Select(i =>
             {
                 var subOptions = new MetadataRefreshOptions(options);
-                if (!i.OwnerId.Equals(ownerId) || !i.ParentId.Equals(default))
+                if (!i.OwnerId.Equals(ownerId) || !i.ParentId.IsEmpty())
                 {
                     i.OwnerId = ownerId;
                     i.ParentId = Guid.Empty;
@@ -1679,7 +1679,7 @@ namespace MediaBrowser.Controller.Entities
             // First get using the cached Id
             if (info.ItemId.HasValue)
             {
-                if (info.ItemId.Value.Equals(default))
+                if (info.ItemId.Value.IsEmpty())
                 {
                     return null;
                 }
@@ -2440,7 +2440,7 @@ namespace MediaBrowser.Controller.Entities
                 return Task.FromResult(true);
             }
 
-            if (video.OwnerId.Equals(default))
+            if (video.OwnerId.IsEmpty())
             {
                 video.OwnerId = this.Id;
             }
