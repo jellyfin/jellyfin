@@ -608,6 +608,11 @@ namespace Jellyfin.LiveTv.Listings
 
             if (!enableRetry || (int)response.StatusCode >= 500)
             {
+                _logger.LogError(
+                    "Request to {Url} failed with response {Response}",
+                    message.RequestUri,
+                    await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
+
                 throw new HttpRequestException(
                     string.Format(CultureInfo.InvariantCulture, "Request failed: {0}", response.ReasonPhrase),
                     null,
@@ -655,11 +660,22 @@ namespace Jellyfin.LiveTv.Listings
             ArgumentException.ThrowIfNullOrEmpty(token);
             ArgumentException.ThrowIfNullOrEmpty(info.ListingsId);
 
-            _logger.LogInformation("Adding new LineUp ");
+            _logger.LogInformation("Adding new lineup {Id}", info.ListingsId);
 
-            using var options = new HttpRequestMessage(HttpMethod.Put, ApiUrl + "/lineups/" + info.ListingsId);
-            options.Headers.TryAddWithoutValidation("token", token);
-            using var response = await _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(options, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+            using var message = new HttpRequestMessage(HttpMethod.Put, ApiUrl + "/lineups/" + info.ListingsId);
+            message.Headers.TryAddWithoutValidation("token", token);
+
+            using var client = _httpClientFactory.CreateClient(NamedClient.Default);
+            using var response = await client
+                .SendAsync(message, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogError(
+                    "Error adding lineup to account: {Response}",
+                    await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
+            }
         }
 
         private async Task<bool> HasLineup(ListingsProviderInfo info, CancellationToken cancellationToken)
