@@ -18,6 +18,7 @@ using AsyncKeyedLock;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
 using Jellyfin.Extensions;
+using Jellyfin.LiveTv.Configuration;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
@@ -44,8 +45,6 @@ namespace Jellyfin.LiveTv.EmbyTV
     {
         public const string DateAddedFormat = "yyyy-MM-dd HH:mm:ss";
 
-        private const int TunerDiscoveryDurationMs = 3000;
-
         private readonly ILogger<EmbyTV> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IServerConfigurationManager _config;
@@ -54,6 +53,7 @@ namespace Jellyfin.LiveTv.EmbyTV
         private readonly TimerManager _timerProvider;
 
         private readonly LiveTvManager _liveTvManager;
+        private readonly ITunerHostManager _tunerHostManager;
         private readonly IFileSystem _fileSystem;
 
         private readonly ILibraryMonitor _libraryMonitor;
@@ -80,6 +80,7 @@ namespace Jellyfin.LiveTv.EmbyTV
             IHttpClientFactory httpClientFactory,
             IServerConfigurationManager config,
             ILiveTvManager liveTvManager,
+            ITunerHostManager tunerHostManager,
             IFileSystem fileSystem,
             ILibraryManager libraryManager,
             ILibraryMonitor libraryMonitor,
@@ -97,6 +98,7 @@ namespace Jellyfin.LiveTv.EmbyTV
             _providerManager = providerManager;
             _mediaEncoder = mediaEncoder;
             _liveTvManager = (LiveTvManager)liveTvManager;
+            _tunerHostManager = tunerHostManager;
             _mediaSourceManager = mediaSourceManager;
             _streamHelper = streamHelper;
 
@@ -127,7 +129,7 @@ namespace Jellyfin.LiveTv.EmbyTV
         {
             get
             {
-                var path = GetConfiguration().RecordingPath;
+                var path = _config.GetLiveTvConfiguration().RecordingPath;
 
                 return string.IsNullOrWhiteSpace(path)
                     ? DefaultRecordingPath
@@ -190,7 +192,7 @@ namespace Jellyfin.LiveTv.EmbyTV
                     pathsAdded.AddRange(pathsToCreate);
                 }
 
-                var config = GetConfiguration();
+                var config = _config.GetLiveTvConfiguration();
 
                 var pathsToRemove = config.MediaLocationsCreated
                     .Except(recordingFolders.SelectMany(i => i.Locations))
@@ -310,7 +312,7 @@ namespace Jellyfin.LiveTv.EmbyTV
         {
             var list = new List<ChannelInfo>();
 
-            foreach (var hostInstance in _liveTvManager.TunerHosts)
+            foreach (var hostInstance in _tunerHostManager.TunerHosts)
             {
                 try
                 {
@@ -510,7 +512,7 @@ namespace Jellyfin.LiveTv.EmbyTV
         {
             var list = new List<ChannelInfo>();
 
-            foreach (var hostInstance in _liveTvManager.TunerHosts)
+            foreach (var hostInstance in _tunerHostManager.TunerHosts)
             {
                 try
                 {
@@ -832,7 +834,7 @@ namespace Jellyfin.LiveTv.EmbyTV
 
         public Task<SeriesTimerInfo> GetNewTimerDefaultsAsync(CancellationToken cancellationToken, ProgramInfo program = null)
         {
-            var config = GetConfiguration();
+            var config = _config.GetLiveTvConfiguration();
 
             var defaults = new SeriesTimerInfo()
             {
@@ -933,7 +935,7 @@ namespace Jellyfin.LiveTv.EmbyTV
 
         private List<Tuple<IListingsProvider, ListingsProviderInfo>> GetListingProviders()
         {
-            return GetConfiguration().ListingProviders
+            return _config.GetLiveTvConfiguration().ListingProviders
                 .Select(i =>
                 {
                     var provider = _liveTvManager.ListingProviders.FirstOrDefault(l => string.Equals(l.Type, i.Type, StringComparison.OrdinalIgnoreCase));
@@ -966,7 +968,7 @@ namespace Jellyfin.LiveTv.EmbyTV
                 return result;
             }
 
-            foreach (var hostInstance in _liveTvManager.TunerHosts)
+            foreach (var hostInstance in _tunerHostManager.TunerHosts)
             {
                 try
                 {
@@ -998,7 +1000,7 @@ namespace Jellyfin.LiveTv.EmbyTV
                 throw new ArgumentNullException(nameof(channelId));
             }
 
-            foreach (var hostInstance in _liveTvManager.TunerHosts)
+            foreach (var hostInstance in _tunerHostManager.TunerHosts)
             {
                 try
                 {
@@ -1018,11 +1020,6 @@ namespace Jellyfin.LiveTv.EmbyTV
         }
 
         public Task CloseLiveStream(string id, CancellationToken cancellationToken)
-        {
-            return Task.CompletedTask;
-        }
-
-        public Task RecordLiveStream(string id, CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
         }
@@ -1077,7 +1074,7 @@ namespace Jellyfin.LiveTv.EmbyTV
         private string GetRecordingPath(TimerInfo timer, RemoteSearchResult metadata, out string seriesPath)
         {
             var recordPath = RecordingPath;
-            var config = GetConfiguration();
+            var config = _config.GetLiveTvConfiguration();
             seriesPath = null;
 
             if (timer.IsProgramSeries)
@@ -1591,7 +1588,7 @@ namespace Jellyfin.LiveTv.EmbyTV
 
         private void PostProcessRecording(TimerInfo timer, string path)
         {
-            var options = GetConfiguration();
+            var options = _config.GetLiveTvConfiguration();
             if (string.IsNullOrWhiteSpace(options.RecordingPostProcessor))
             {
                 return;
@@ -1772,7 +1769,7 @@ namespace Jellyfin.LiveTv.EmbyTV
                     program.AddGenre("News");
                 }
 
-                var config = GetConfiguration();
+                var config = _config.GetLiveTvConfiguration();
 
                 if (config.SaveRecordingNFO)
                 {
@@ -1990,7 +1987,7 @@ namespace Jellyfin.LiveTv.EmbyTV
                         await writer.WriteElementStringAsync(null, "genre", null, genre).ConfigureAwait(false);
                     }
 
-                    var people = item.Id.Equals(default) ? new List<PersonInfo>() : _libraryManager.GetPeople(item);
+                    var people = item.Id.IsEmpty() ? new List<PersonInfo>() : _libraryManager.GetPeople(item);
 
                     var directors = people
                         .Where(i => i.IsType(PersonKind.Director))
@@ -2121,11 +2118,6 @@ namespace Jellyfin.LiveTv.EmbyTV
             }
 
             return _libraryManager.GetItemList(query).Cast<LiveTvProgram>().FirstOrDefault();
-        }
-
-        private LiveTvOptions GetConfiguration()
-        {
-            return _config.GetConfiguration<LiveTvOptions>("livetv");
         }
 
         private bool ShouldCancelTimerForSeriesTimer(SeriesTimerInfo seriesTimer, TimerInfo timer)
@@ -2320,7 +2312,7 @@ namespace Jellyfin.LiveTv.EmbyTV
         {
             string channelId = seriesTimer.RecordAnyChannel ? null : seriesTimer.ChannelId;
 
-            if (string.IsNullOrWhiteSpace(channelId) && !parent.ChannelId.Equals(default))
+            if (string.IsNullOrWhiteSpace(channelId) && !parent.ChannelId.IsEmpty())
             {
                 if (!tempChannelCache.TryGetValue(parent.ChannelId, out LiveTvChannel channel))
                 {
@@ -2379,7 +2371,7 @@ namespace Jellyfin.LiveTv.EmbyTV
         {
             string channelId = null;
 
-            if (!programInfo.ChannelId.Equals(default))
+            if (!programInfo.ChannelId.IsEmpty())
             {
                 if (!tempChannelCache.TryGetValue(programInfo.ChannelId, out LiveTvChannel channel))
                 {
@@ -2514,7 +2506,7 @@ namespace Jellyfin.LiveTv.EmbyTV
                 };
             }
 
-            var customPath = GetConfiguration().MovieRecordingPath;
+            var customPath = _config.GetLiveTvConfiguration().MovieRecordingPath;
             if (!string.IsNullOrWhiteSpace(customPath) && !string.Equals(customPath, defaultFolder, StringComparison.OrdinalIgnoreCase) && Directory.Exists(customPath))
             {
                 yield return new VirtualFolderInfo
@@ -2525,7 +2517,7 @@ namespace Jellyfin.LiveTv.EmbyTV
                 };
             }
 
-            customPath = GetConfiguration().SeriesRecordingPath;
+            customPath = _config.GetLiveTvConfiguration().SeriesRecordingPath;
             if (!string.IsNullOrWhiteSpace(customPath) && !string.Equals(customPath, defaultFolder, StringComparison.OrdinalIgnoreCase) && Directory.Exists(customPath))
             {
                 yield return new VirtualFolderInfo
@@ -2534,82 +2526,6 @@ namespace Jellyfin.LiveTv.EmbyTV
                     Name = "Recorded Shows",
                     CollectionType = CollectionTypeOptions.TvShows
                 };
-            }
-        }
-
-        public async Task<List<TunerHostInfo>> DiscoverTuners(bool newDevicesOnly, CancellationToken cancellationToken)
-        {
-            var list = new List<TunerHostInfo>();
-
-            var configuredDeviceIds = GetConfiguration().TunerHosts
-               .Where(i => !string.IsNullOrWhiteSpace(i.DeviceId))
-               .Select(i => i.DeviceId)
-               .ToList();
-
-            foreach (var host in _liveTvManager.TunerHosts)
-            {
-                var discoveredDevices = await DiscoverDevices(host, TunerDiscoveryDurationMs, cancellationToken).ConfigureAwait(false);
-
-                if (newDevicesOnly)
-                {
-                    discoveredDevices = discoveredDevices.Where(d => !configuredDeviceIds.Contains(d.DeviceId, StringComparison.OrdinalIgnoreCase))
-                            .ToList();
-                }
-
-                list.AddRange(discoveredDevices);
-            }
-
-            return list;
-        }
-
-        public async Task ScanForTunerDeviceChanges(CancellationToken cancellationToken)
-        {
-            foreach (var host in _liveTvManager.TunerHosts)
-            {
-                await ScanForTunerDeviceChanges(host, cancellationToken).ConfigureAwait(false);
-            }
-        }
-
-        private async Task ScanForTunerDeviceChanges(ITunerHost host, CancellationToken cancellationToken)
-        {
-            var discoveredDevices = await DiscoverDevices(host, TunerDiscoveryDurationMs, cancellationToken).ConfigureAwait(false);
-
-            var configuredDevices = GetConfiguration().TunerHosts
-                .Where(i => string.Equals(i.Type, host.Type, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-            foreach (var device in discoveredDevices)
-            {
-                var configuredDevice = configuredDevices.FirstOrDefault(i => string.Equals(i.DeviceId, device.DeviceId, StringComparison.OrdinalIgnoreCase));
-
-                if (configuredDevice is not null && !string.Equals(device.Url, configuredDevice.Url, StringComparison.OrdinalIgnoreCase))
-                {
-                    _logger.LogInformation("Tuner url has changed from {PreviousUrl} to {NewUrl}", configuredDevice.Url, device.Url);
-
-                    configuredDevice.Url = device.Url;
-                    await _liveTvManager.SaveTunerHost(configuredDevice).ConfigureAwait(false);
-                }
-            }
-        }
-
-        private async Task<List<TunerHostInfo>> DiscoverDevices(ITunerHost host, int discoveryDurationMs, CancellationToken cancellationToken)
-        {
-            try
-            {
-                var discoveredDevices = await host.DiscoverDevices(discoveryDurationMs, cancellationToken).ConfigureAwait(false);
-
-                foreach (var device in discoveredDevices)
-                {
-                    _logger.LogInformation("Discovered tuner device {0} at {1}", host.Name, device.Url);
-                }
-
-                return discoveredDevices;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error discovering tuner devices");
-
-                return new List<TunerHostInfo>();
             }
         }
     }

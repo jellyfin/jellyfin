@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using AsyncKeyedLock;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
@@ -519,10 +520,10 @@ namespace Emby.Server.Implementations.Library
             _logger.LogInformation("Live stream opened: {@MediaSource}", mediaSource);
             var clone = JsonSerializer.Deserialize<MediaSourceInfo>(json, _jsonOptions);
 
-            if (!request.UserId.Equals(default))
+            if (!request.UserId.IsEmpty())
             {
                 var user = _userManager.GetUserById(request.UserId);
-                var item = request.ItemId.Equals(default)
+                var item = request.ItemId.IsEmpty()
                     ? null
                     : _libraryManager.GetItemById(request.ItemId);
                 SetDefaultAudioAndSubtitleStreamIndexes(item, clone, user);

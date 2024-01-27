@@ -173,9 +173,10 @@
  - [tallbl0nde](https://github.com/tallbl0nde)
  - [sleepycatcoding](https://github.com/sleepycatcoding)
  - [scampower3](https://github.com/scampower3)
- - [Chris-Codes-It] (https://github.com/Chris-Codes-It)
+ - [Chris-Codes-It](https://github.com/Chris-Codes-It)
  - [Pithaya](https://github.com/Pithaya)
  - [Çağrı Sakaoğlu](https://github.com/ilovepilav)
+ - [Gauvino](https://github.com/Gauvino)
 
 # Emby Contributors
 

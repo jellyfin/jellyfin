@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.LiveTv.Configuration;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Tasks;
 
 namespace Jellyfin.LiveTv
@@ -38,7 +38,7 @@ namespace Jellyfin.LiveTv
         public string Category => "Live TV";
 
         /// <inheritdoc />
-        public bool IsHidden => _liveTvManager.Services.Count == 1 && GetConfiguration().TunerHosts.Length == 0;
+        public bool IsHidden => _liveTvManager.Services.Count == 1 && _config.GetLiveTvConfiguration().TunerHosts.Length == 0;
 
         /// <inheritdoc />
         public bool IsEnabled => true;
@@ -65,11 +65,6 @@ namespace Jellyfin.LiveTv
                 // Every so often
                 new TaskTriggerInfo { Type = TaskTriggerInfo.TriggerInterval, IntervalTicks = TimeSpan.FromHours(24).Ticks }
             };
-        }
-
-        private LiveTvOptions GetConfiguration()
-        {
-            return _config.GetConfiguration<LiveTvOptions>("livetv");
         }
     }
 }

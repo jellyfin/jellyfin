@@ -115,15 +115,6 @@ namespace Jellyfin.LiveTv.Channels
         }
 
         /// <inheritdoc />
-        public bool EnableMediaProbe(BaseItem item)
-        {
-            var internalChannel = _libraryManager.GetItemById(item.ChannelId);
-            var channel = Channels.FirstOrDefault(i => GetInternalChannelId(i.Name).Equals(internalChannel.Id));
-
-            return channel is ISupportsMediaProbe;
-        }
-
-        /// <inheritdoc />
         public Task DeleteItem(BaseItem item)
         {
             var internalChannel = _libraryManager.GetItemById(item.ChannelId);
@@ -160,7 +151,7 @@ namespace Jellyfin.LiveTv.Channels
         /// <inheritdoc />
         public async Task<QueryResult<Channel>> GetChannelsInternalAsync(ChannelQuery query)
         {
-            var user = query.UserId.Equals(default)
+            var user = query.UserId.IsEmpty()
                 ? null
                 : _userManager.GetUserById(query.UserId);
 
@@ -273,7 +264,7 @@ namespace Jellyfin.LiveTv.Channels
         /// <inheritdoc />
         public async Task<QueryResult<BaseItemDto>> GetChannelsAsync(ChannelQuery query)
         {
-            var user = query.UserId.Equals(default)
+            var user = query.UserId.IsEmpty()
                 ? null
                 : _userManager.GetUserById(query.UserId);
 
@@ -564,18 +555,6 @@ namespace Jellyfin.LiveTv.Channels
         }
 
         /// <summary>
-        /// Checks whether the provided Guid supports external transfer.
-        /// </summary>
-        /// <param name="channelId">The Guid.</param>
-        /// <returns>Whether or not the provided Guid supports external transfer.</returns>
-        public bool SupportsExternalTransfer(Guid channelId)
-        {
-            var channelProvider = GetChannelProvider(channelId);
-
-            return channelProvider.GetChannelFeatures().SupportsContentDownloading;
-        }
-
-        /// <summary>
         /// Gets the provided channel's supported features.
         /// </summary>
         /// <param name="channel">The channel.</param>
@@ -717,7 +696,7 @@ namespace Jellyfin.LiveTv.Channels
             // Find the corresponding channel provider plugin
             var channelProvider = GetChannelProvider(channel);
 
-            var parentItem = query.ParentId.Equals(default)
+            var parentItem = query.ParentId.IsEmpty()
                 ? channel
                 : _libraryManager.GetItemById(query.ParentId);
 
@@ -730,7 +709,7 @@ namespace Jellyfin.LiveTv.Channels
                 cancellationToken)
                 .ConfigureAwait(false);
 
-            if (query.ParentId.Equals(default))
+            if (query.ParentId.IsEmpty())
             {
                 query.Parent = channel;
             }
@@ -1205,19 +1184,6 @@ namespace Jellyfin.LiveTv.Channels
             if (result is null)
             {
                 throw new ResourceNotFoundException("No channel provider found for channel " + channel.Name);
-            }
-
-            return result;
-        }
-
-        internal IChannel GetChannelProvider(Guid internalChannelId)
-        {
-            var result = GetAllChannels()
-                .FirstOrDefault(i => internalChannelId.Equals(GetInternalChannelId(i.Name)));
-
-            if (result is null)
-            {
-                throw new ResourceNotFoundException("No channel provider found for channel id " + internalChannelId);
             }
 
             return result;
