@@ -835,30 +835,25 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public string GetGraphicalSubCanvasSize(EncodingJobInfo state)
         {
-            // DVBSUB and DVDSUB use the fixed canvas size 720x576
+            // DVBSUB uses the fixed canvas size 720x576
             if (state.SubtitleStream is not null
                 && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode
                 && !state.SubtitleStream.IsTextSubtitleStream
-                && !string.Equals(state.SubtitleStream.Codec, "DVBSUB", StringComparison.OrdinalIgnoreCase)
-                && !string.Equals(state.SubtitleStream.Codec, "DVDSUB", StringComparison.OrdinalIgnoreCase))
+                && !string.Equals(state.SubtitleStream.Codec, "DVBSUB", StringComparison.OrdinalIgnoreCase))
             {
-                var inW = state.VideoStream?.Width;
-                var inH = state.VideoStream?.Height;
-                var reqW = state.BaseRequest.Width;
-                var reqH = state.BaseRequest.Height;
-                var reqMaxW = state.BaseRequest.MaxWidth;
-                var reqMaxH = state.BaseRequest.MaxHeight;
+                var subtitleWidth = state.SubtitleStream?.Width;
+                var subtitleHeight = state.SubtitleStream?.Height;
 
-                // setup a relative small canvas_size for overlay_qsv/vaapi to reduce transfer overhead
-                var (overlayW, overlayH) = GetFixedOutputSize(inW, inH, reqW, reqH, reqMaxW, 1080);
-
-                if (overlayW.HasValue && overlayH.HasValue)
+                if (subtitleWidth.HasValue
+                    && subtitleHeight.HasValue
+                    && subtitleWidth.Value > 0
+                    && subtitleHeight.Value > 0)
                 {
                     return string.Format(
                         CultureInfo.InvariantCulture,
                         " -canvas_size {0}x{1}",
-                        overlayW.Value,
-                        overlayH.Value);
+                        subtitleWidth.Value,
+                        subtitleHeight.Value);
                 }
             }
 
@@ -2877,7 +2872,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             return string.Empty;
         }
 
-        public static string GetCustomSwScaleFilter(
+        public static string GetGraphicalSubPreProcessFilters(
             int? videoWidth,
             int? videoHeight,
             int? requestedWidth,
@@ -2897,7 +2892,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 return string.Format(
                     CultureInfo.InvariantCulture,
-                    "scale=s={0}x{1}:flags=fast_bilinear",
+                    @"scale=-1:{1}:fast_bilinear,crop,pad=max({0}\,iw):max({1}\,ih):(ow-iw)/2:(oh-ih)/2:black@0,crop={0}:{1}",
                     outWidth.Value,
                     outHeight.Value);
             }
@@ -3340,9 +3335,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
             else if (hasGraphicalSubs)
             {
-                // [0:s]scale=s=1280x720
-                var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
-                subFilters.Add(subSwScaleFilter);
+                var subPreProcFilters = GetGraphicalSubPreProcessFilters(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                subFilters.Add(subPreProcFilters);
                 overlayFilters.Add("overlay=eof_action=pass:repeatlast=0");
             }
 
@@ -3504,9 +3498,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     if (hasGraphicalSubs)
                     {
-                        // scale=s=1280x720,format=yuva420p,hwupload
-                        var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
-                        subFilters.Add(subSwScaleFilter);
+                        var subPreProcFilters = GetGraphicalSubPreProcessFilters(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                        subFilters.Add(subPreProcFilters);
                         subFilters.Add("format=yuva420p");
                     }
                     else if (hasTextSubs)
@@ -3527,8 +3520,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
-                    subFilters.Add(subSwScaleFilter);
+                    var subPreProcFilters = GetGraphicalSubPreProcessFilters(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    subFilters.Add(subPreProcFilters);
                     overlayFilters.Add("overlay=eof_action=pass:repeatlast=0");
                 }
             }
@@ -3702,9 +3695,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     if (hasGraphicalSubs)
                     {
-                        // scale=s=1280x720,format=yuva420p,hwupload
-                        var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
-                        subFilters.Add(subSwScaleFilter);
+                        var subPreProcFilters = GetGraphicalSubPreProcessFilters(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                        subFilters.Add(subPreProcFilters);
                         subFilters.Add("format=yuva420p");
                     }
                     else if (hasTextSubs)
@@ -3727,8 +3719,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
-                    subFilters.Add(subSwScaleFilter);
+                    var subPreProcFilters = GetGraphicalSubPreProcessFilters(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    subFilters.Add(subPreProcFilters);
                     overlayFilters.Add("overlay=eof_action=pass:repeatlast=0");
                 }
             }
@@ -3938,10 +3930,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     if (hasGraphicalSubs)
                     {
-                        // scale,format=bgra,hwupload
-                        // overlay_qsv can handle overlay scaling,
-                        // add a dummy scale filter to pair with -canvas_size.
-                        subFilters.Add("scale=flags=fast_bilinear");
+                        // overlay_qsv can handle overlay scaling, setup a smaller height to reduce transfer overhead
+                        var subPreProcFilters = GetGraphicalSubPreProcessFilters(inW, inH, reqW, reqH, reqMaxW, 1080);
+                        subFilters.Add(subPreProcFilters);
                         subFilters.Add("format=bgra");
                     }
                     else if (hasTextSubs)
@@ -3973,8 +3964,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
-                    subFilters.Add(subSwScaleFilter);
+                    var subPreProcFilters = GetGraphicalSubPreProcessFilters(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    subFilters.Add(subPreProcFilters);
                     overlayFilters.Add("overlay=eof_action=pass:repeatlast=0");
                 }
             }
@@ -4158,7 +4149,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     if (hasGraphicalSubs)
                     {
-                        subFilters.Add("scale=flags=fast_bilinear");
+                        // overlay_qsv can handle overlay scaling, setup a smaller height to reduce transfer overhead
+                        var subPreProcFilters = GetGraphicalSubPreProcessFilters(inW, inH, reqW, reqH, reqMaxW, 1080);
+                        subFilters.Add(subPreProcFilters);
                         subFilters.Add("format=bgra");
                     }
                     else if (hasTextSubs)
@@ -4189,8 +4182,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
-                    subFilters.Add(subSwScaleFilter);
+                    var subPreProcFilters = GetGraphicalSubPreProcessFilters(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    subFilters.Add(subPreProcFilters);
                     overlayFilters.Add("overlay=eof_action=pass:repeatlast=0");
                 }
             }
@@ -4425,7 +4418,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     if (hasGraphicalSubs)
                     {
-                        subFilters.Add("scale=flags=fast_bilinear");
+                        // overlay_vaapi can handle overlay scaling, setup a smaller height to reduce transfer overhead
+                        var subPreProcFilters = GetGraphicalSubPreProcessFilters(inW, inH, reqW, reqH, reqMaxW, 1080);
+                        subFilters.Add(subPreProcFilters);
                         subFilters.Add("format=bgra");
                     }
                     else if (hasTextSubs)
@@ -4454,8 +4449,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
-                    subFilters.Add(subSwScaleFilter);
+                    var subPreProcFilters = GetGraphicalSubPreProcessFilters(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    subFilters.Add(subPreProcFilters);
                     overlayFilters.Add("overlay=eof_action=pass:repeatlast=0");
 
                     if (isVaapiEncoder)
@@ -4599,9 +4594,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    // scale=s=1280x720,format=bgra,hwupload
-                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
-                    subFilters.Add(subSwScaleFilter);
+                    var subPreProcFilters = GetGraphicalSubPreProcessFilters(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    subFilters.Add(subPreProcFilters);
                     subFilters.Add("format=bgra");
                 }
                 else if (hasTextSubs)
@@ -4815,8 +4809,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
-                    subFilters.Add(subSwScaleFilter);
+                    var subPreProcFilters = GetGraphicalSubPreProcessFilters(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    subFilters.Add(subPreProcFilters);
                     overlayFilters.Add("overlay=eof_action=pass:repeatlast=0");
 
                     if (isVaapiEncoder)
