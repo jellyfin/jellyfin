@@ -2908,7 +2908,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             int? requestedHeight,
             int? requestedMaxWidth,
             int? requestedMaxHeight,
-            int? framerate)
+            float? framerate)
         {
             var reqTicks = state.BaseRequest.StartTimeTicks ?? 0;
             var startTime = TimeSpan.FromTicks(reqTicks).ToString(@"hh\\\:mm\\\:ss\\\.fff", CultureInfo.InvariantCulture);
@@ -2927,7 +2927,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     "alphasrc=s={0}x{1}:r={2}:start='{3}'",
                     outWidth.Value,
                     outHeight.Value,
-                    framerate ?? 10,
+                    framerate ?? 25,
                     reqTicks > 0 ? startTime : 0);
             }
 
@@ -3504,8 +3504,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                     }
                     else if (hasTextSubs)
                     {
+                        var framerate = state.VideoStream?.RealFrameRate;
+                        var subFramerate = hasAssSubs ? Math.Min(framerate ?? 25, 60) : 10;
+
                         // alphasrc=s=1280x720:r=10:start=0,format=yuva420p,subtitles,hwupload
-                        var alphaSrcFilter = GetAlphaSrcFilter(state, inW, inH, reqW, reqH, reqMaxW, reqMaxH, hasAssSubs ? 10 : 5);
+                        var alphaSrcFilter = GetAlphaSrcFilter(state, inW, inH, reqW, reqH, reqMaxW, reqMaxH, subFramerate);
                         var subTextSubtitlesFilter = GetTextSubtitlesFilter(state, true, true);
                         subFilters.Add(alphaSrcFilter);
                         subFilters.Add("format=yuva420p");
@@ -3701,8 +3704,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                     }
                     else if (hasTextSubs)
                     {
+                        var framerate = state.VideoStream?.RealFrameRate;
+                        var subFramerate = hasAssSubs ? Math.Min(framerate ?? 25, 60) : 10;
+
                         // alphasrc=s=1280x720:r=10:start=0,format=yuva420p,subtitles,hwupload
-                        var alphaSrcFilter = GetAlphaSrcFilter(state, inW, inH, reqW, reqH, reqMaxW, reqMaxH, hasAssSubs ? 10 : 5);
+                        var alphaSrcFilter = GetAlphaSrcFilter(state, inW, inH, reqW, reqH, reqMaxW, reqMaxH, subFramerate);
                         var subTextSubtitlesFilter = GetTextSubtitlesFilter(state, true, true);
                         subFilters.Add(alphaSrcFilter);
                         subFilters.Add("format=yuva420p");
@@ -3937,8 +3943,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                     }
                     else if (hasTextSubs)
                     {
+                        var framerate = state.VideoStream?.RealFrameRate;
+                        var subFramerate = hasAssSubs ? Math.Min(framerate ?? 25, 60) : 10;
+
                         // alphasrc=s=1280x720:r=10:start=0,format=bgra,subtitles,hwupload
-                        var alphaSrcFilter = GetAlphaSrcFilter(state, inW, inH, reqW, reqH, reqMaxW, 1080, hasAssSubs ? 10 : 5);
+                        var alphaSrcFilter = GetAlphaSrcFilter(state, inW, inH, reqW, reqH, reqMaxW, 1080, subFramerate);
                         var subTextSubtitlesFilter = GetTextSubtitlesFilter(state, true, true);
                         subFilters.Add(alphaSrcFilter);
                         subFilters.Add("format=bgra");
@@ -4156,7 +4165,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                     }
                     else if (hasTextSubs)
                     {
-                        var alphaSrcFilter = GetAlphaSrcFilter(state, inW, inH, reqW, reqH, reqMaxW, 1080, hasAssSubs ? 10 : 5);
+                        var framerate = state.VideoStream?.RealFrameRate;
+                        var subFramerate = hasAssSubs ? Math.Min(framerate ?? 25, 60) : 10;
+
+                        var alphaSrcFilter = GetAlphaSrcFilter(state, inW, inH, reqW, reqH, reqMaxW, 1080, subFramerate);
                         var subTextSubtitlesFilter = GetTextSubtitlesFilter(state, true, true);
                         subFilters.Add(alphaSrcFilter);
                         subFilters.Add("format=bgra");
@@ -4425,7 +4437,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                     }
                     else if (hasTextSubs)
                     {
-                        var alphaSrcFilter = GetAlphaSrcFilter(state, inW, inH, reqW, reqH, reqMaxW, 1080, hasAssSubs ? 10 : 5);
+                        var framerate = state.VideoStream?.RealFrameRate;
+                        var subFramerate = hasAssSubs ? Math.Min(framerate ?? 25, 60) : 10;
+
+                        var alphaSrcFilter = GetAlphaSrcFilter(state, inW, inH, reqW, reqH, reqMaxW, 1080, subFramerate);
                         var subTextSubtitlesFilter = GetTextSubtitlesFilter(state, true, true);
                         subFilters.Add(alphaSrcFilter);
                         subFilters.Add("format=bgra");
@@ -4600,7 +4615,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
                 else if (hasTextSubs)
                 {
-                    var alphaSrcFilter = GetAlphaSrcFilter(state, inW, inH, reqW, reqH, reqMaxW, reqMaxH, hasAssSubs ? 10 : 5);
+                    var framerate = state.VideoStream?.RealFrameRate;
+                    var subFramerate = hasAssSubs ? Math.Min(framerate ?? 25, 60) : 10;
+
+                    var alphaSrcFilter = GetAlphaSrcFilter(state, inW, inH, reqW, reqH, reqMaxW, reqMaxH, subFramerate);
                     var subTextSubtitlesFilter = GetTextSubtitlesFilter(state, true, true);
                     subFilters.Add(alphaSrcFilter);
                     subFilters.Add("format=bgra");
