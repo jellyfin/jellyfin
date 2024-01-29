@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using Jellyfin.Api.Constants;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Model.MediaSegments;
@@ -68,6 +69,7 @@ public class MediaSegmentController : BaseJellyfinApiController
     /// <response code="400">Missing query parameter.</response>
     /// <returns>An <see cref="OkResult"/>containing the queryresult of segment.</returns>
     [HttpPost("Segment")]
+    [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<QueryResult<MediaSegment>>> PostSegment(
@@ -104,6 +106,7 @@ public class MediaSegmentController : BaseJellyfinApiController
     /// <response code="400">Invalid segments.</response>
     /// <returns>An <see cref="OkResult"/>containing the queryresult of segment.</returns>
     [HttpPost]
+    [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<QueryResult<MediaSegment>>> PostSegments(
@@ -125,6 +128,7 @@ public class MediaSegmentController : BaseJellyfinApiController
     /// <response code="400">Missing query parameter.</response>
     /// <returns>An <see cref="OkResult"/>containing the queryresult of segments.</returns>
     [HttpDelete]
+    [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<QueryResult<MediaSegment>>> DeleteSegments(
