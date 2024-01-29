@@ -7,7 +7,7 @@ using Jellyfin.Data.Enums;
 namespace Jellyfin.Data.Entities
 {
     /// <summary>
-    /// Class MediaSegment.
+    /// A moment in time of a media stream (ItemId+StreamIndex) with Type and possible Action applicable between StartTicks/Endticks.
     /// </summary>
     public class MediaSegment
     {

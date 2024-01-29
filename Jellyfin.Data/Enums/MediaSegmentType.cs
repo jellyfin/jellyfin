@@ -1,7 +1,7 @@
 namespace Jellyfin.Data.Enums
 {
     /// <summary>
-    /// Enum MediaSegmentType.
+    /// An enum representing the Type of MediaSegment.
     /// </summary>
     public enum MediaSegmentType
     {

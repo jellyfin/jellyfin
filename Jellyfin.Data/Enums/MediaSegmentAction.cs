@@ -1,7 +1,7 @@
 namespace Jellyfin.Data.Enums
 {
     /// <summary>
-    /// Enum MediaSegmentAction.
+    /// An enum representing the Action of MediaSegment.
     /// </summary>
     public enum MediaSegmentAction
     {
