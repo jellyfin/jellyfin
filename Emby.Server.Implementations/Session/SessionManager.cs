@@ -394,6 +394,7 @@ namespace Emby.Server.Implementations.Session
             session.PlayState.SubtitleStreamIndex = info.SubtitleStreamIndex;
             session.PlayState.PlayMethod = info.PlayMethod;
             session.PlayState.RepeatMode = info.RepeatMode;
+            session.PlayState.ShuffleMode = info.ShuffleMode;
             session.PlaylistItemId = info.PlaylistItemId;
 
             var nowPlayingQueue = info.NowPlayingQueue;

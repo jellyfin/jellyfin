@@ -107,6 +107,12 @@ namespace MediaBrowser.Model.Session
         /// <value>The repeat mode.</value>
         public RepeatMode RepeatMode { get; set; }
 
+        /// <summary>
+        /// Gets or sets the shuffle mode.
+        /// </summary>
+        /// <value>The shuffle mode.</value>
+        public ShuffleMode ShuffleMode { get; set; }
+
         public QueueItem[] NowPlayingQueue { get; set; }
 
         public string PlaylistItemId { get; set; }
