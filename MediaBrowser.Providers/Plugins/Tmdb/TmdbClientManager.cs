@@ -276,7 +276,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 if (ep is not null)
                 {
                     seasonNumber = ep.SeasonNumber;
-                    episodeNumber = ep.EpisodeNumber;
+                    episodeNumber = ep.Order + 1;
                 }
             }
 
