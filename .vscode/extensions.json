@@ -2,7 +2,7 @@
 	"recommendations": [
         "ms-dotnettools.csharp",
         "editorconfig.editorconfig",
-        "GitHub.vscode-github-actions",
+        "github.vscode-github-actions",
         "ms-dotnettools.vscode-dotnet-runtime",
         "ms-dotnettools.csdevkit"
 	],
