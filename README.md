@@ -144,7 +144,7 @@ cd Jellyfin.Server/bin/Debug/net8.0 # Change into the build output directory
 
 #### Accessing the Hosted Web Client
 
-If the Server is configured to host the Web Client, and the Server is running, the Web Client can be accessed at `localhost:8096` by default.
+If the Server is configured to host the Web Client, and the Server is running, the Web Client can be accessed at `http://localhost:8096` by default.
 
 API documentation can be viewed at `http://localhost:8096/api-docs/swagger/index.html`
 
