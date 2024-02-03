@@ -2,6 +2,7 @@
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Library;
@@ -41,7 +42,7 @@ namespace Jellyfin.Api.Auth.DefaultAuthorizationPolicy
             var isApiKey = context.User.GetIsApiKey();
             var userId = context.User.GetUserId();
             // This likely only happens during the wizard, so skip the default checks and let any other handlers do it
-            if (!isApiKey && userId.Equals(default))
+            if (!isApiKey && userId.IsEmpty())
             {
                 return Task.CompletedTask;
             }

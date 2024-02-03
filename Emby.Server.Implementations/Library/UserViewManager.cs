@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
@@ -151,7 +152,7 @@ namespace Emby.Server.Implementations.Library
                     var index = Array.IndexOf(orders, i.Id);
                     if (index == -1
                         && i is UserView view
-                        && !view.DisplayParentId.Equals(default))
+                        && !view.DisplayParentId.IsEmpty())
                     {
                         index = Array.IndexOf(orders, view.DisplayParentId);
                     }
@@ -253,7 +254,7 @@ namespace Emby.Server.Implementations.Library
 
             var parents = new List<BaseItem>();
 
-            if (!parentId.Equals(default))
+            if (!parentId.IsEmpty())
             {
                 var parentItem = _libraryManager.GetItemById(parentId);
                 if (parentItem is Channel)

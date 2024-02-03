@@ -904,8 +904,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 bool ranToCompletion = false;
 
-                await _thumbnailResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-                try
+                using (await _thumbnailResourcePool.LockAsync(cancellationToken).ConfigureAwait(false))
                 {
                     StartProcess(processWrapper);
 
@@ -958,10 +957,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                         _logger.LogInformation("Stopping trickplay extraction due to process inactivity.");
                         StopProcess(processWrapper, 1000);
                     }
-                }
-                finally
-                {
-                    _thumbnailResourcePool.Release();
                 }
 
                 var exitCode = ranToCompletion ? processWrapper.ExitCode ?? 0 : -1;

@@ -742,6 +742,10 @@ namespace MediaBrowser.MediaEncoding.Probing
                 stream.LocalizedExternal = _localization.GetLocalizedString("External");
                 stream.LocalizedHearingImpaired = _localization.GetLocalizedString("HearingImpaired");
 
+                // Graphical subtitle may have width and height info
+                stream.Width = streamInfo.Width;
+                stream.Height = streamInfo.Height;
+
                 if (string.IsNullOrEmpty(stream.Title))
                 {
                     // mp4 missing track title workaround: fall back to handler_name if populated and not the default "SubtitleHandler"

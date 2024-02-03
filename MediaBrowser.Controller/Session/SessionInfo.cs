@@ -19,7 +19,7 @@ namespace MediaBrowser.Controller.Session
     /// <summary>
     /// Class SessionInfo.
     /// </summary>
-    public sealed class SessionInfo : IAsyncDisposable, IDisposable
+    public sealed class SessionInfo : IAsyncDisposable
     {
         // 1 second
         private const long ProgressIncrement = 10000000;
@@ -374,8 +374,7 @@ namespace MediaBrowser.Controller.Session
             }
         }
 
-        /// <inheritdoc />
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
             _disposed = true;
 
@@ -386,28 +385,15 @@ namespace MediaBrowser.Controller.Session
 
             foreach (var controller in controllers)
             {
-                if (controller is IDisposable disposable)
-                {
-                    _logger.LogDebug("Disposing session controller synchronously {TypeName}", disposable.GetType().Name);
-                    disposable.Dispose();
-                }
-            }
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            _disposed = true;
-
-            StopAutomaticProgress();
-
-            var controllers = SessionControllers.ToList();
-
-            foreach (var controller in controllers)
-            {
                 if (controller is IAsyncDisposable disposableAsync)
                 {
                     _logger.LogDebug("Disposing session controller asynchronously {TypeName}", disposableAsync.GetType().Name);
                     await disposableAsync.DisposeAsync().ConfigureAwait(false);
+                }
+                else if (controller is IDisposable disposable)
+                {
+                    _logger.LogDebug("Disposing session controller synchronously {TypeName}", disposable.GetType().Name);
+                    disposable.Dispose();
                 }
             }
         }

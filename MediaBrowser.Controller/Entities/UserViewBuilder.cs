@@ -433,7 +433,7 @@ namespace MediaBrowser.Controller.Entities
             var user = query.User;
 
             // This must be the last filter
-            if (query.AdjacentTo.HasValue && !query.AdjacentTo.Value.Equals(default))
+            if (!query.AdjacentTo.IsNullOrEmpty())
             {
                 items = FilterForAdjacency(items.ToList(), query.AdjacentTo.Value);
             }

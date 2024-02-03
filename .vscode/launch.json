@@ -30,6 +30,18 @@
             "internalConsoleOptions": "openOnSessionStart"
         },
         {
+            "name": "ghcs .NET Launch (nowebclient, ffmpeg)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/Jellyfin.Server/bin/Debug/net8.0/jellyfin.dll",
+            "args": ["--nowebclient", "--ffmpeg", "/usr/lib/jellyfin-ffmpeg/ffmpeg"],
+            "cwd": "${workspaceFolder}/Jellyfin.Server",
+            "console": "internalConsole",
+            "stopAtEntry": false,
+            "internalConsoleOptions": "openOnSessionStart"
+        },
+        {
             "name": ".NET Attach",
             "type": "coreclr",
             "request": "attach",

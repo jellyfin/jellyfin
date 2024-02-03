@@ -706,7 +706,7 @@ namespace MediaBrowser.Providers.Manager
         {
             BaseItem? referenceItem = null;
 
-            if (!searchInfo.ItemId.Equals(default))
+            if (!searchInfo.ItemId.IsEmpty())
             {
                 referenceItem = _libraryManager.GetItemById(searchInfo.ItemId);
             }
@@ -944,7 +944,7 @@ namespace MediaBrowser.Providers.Manager
         public void QueueRefresh(Guid itemId, MetadataRefreshOptions options, RefreshPriority priority)
         {
             ArgumentNullException.ThrowIfNull(itemId);
-            if (itemId.Equals(default))
+            if (itemId.IsEmpty())
             {
                 throw new ArgumentException("Guid can't be empty", nameof(itemId));
             }

@@ -10,6 +10,7 @@ using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.SessionDtos;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
@@ -71,7 +72,7 @@ public class SessionController : BaseJellyfinApiController
             result = result.Where(i => string.Equals(i.DeviceId, deviceId, StringComparison.OrdinalIgnoreCase));
         }
 
-        if (controllableByUserId.HasValue && !controllableByUserId.Equals(default))
+        if (!controllableByUserId.IsNullOrEmpty())
         {
             result = result.Where(i => i.SupportsRemoteControl);
 
@@ -83,12 +84,12 @@ public class SessionController : BaseJellyfinApiController
 
             if (!user.HasPermission(PermissionKind.EnableRemoteControlOfOtherUsers))
             {
-                result = result.Where(i => i.UserId.Equals(default) || i.ContainsUser(controllableByUserId.Value));
+                result = result.Where(i => i.UserId.IsEmpty() || i.ContainsUser(controllableByUserId.Value));
             }
 
             if (!user.HasPermission(PermissionKind.EnableSharedDeviceControl))
             {
-                result = result.Where(i => !i.UserId.Equals(default));
+                result = result.Where(i => !i.UserId.IsEmpty());
             }
 
             result = result.Where(i =>

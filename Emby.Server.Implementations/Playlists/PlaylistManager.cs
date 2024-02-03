@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -178,7 +179,7 @@ namespace Emby.Server.Implementations.Playlists
 
         public Task AddToPlaylistAsync(Guid playlistId, IReadOnlyCollection<Guid> itemIds, Guid userId)
         {
-            var user = userId.Equals(default) ? null : _userManager.GetUserById(userId);
+            var user = userId.IsEmpty() ? null : _userManager.GetUserById(userId);
 
             return AddToPlaylistInternal(playlistId, itemIds, user, new DtoOptions(false)
             {

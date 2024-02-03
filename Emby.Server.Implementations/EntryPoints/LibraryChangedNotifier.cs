@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Events;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -241,7 +242,7 @@ public sealed class LibraryChangedNotifier : IServerEntryPoint
     {
         var userIds = _sessionManager.Sessions
             .Select(i => i.UserId)
-            .Where(i => !i.Equals(default))
+            .Where(i => !i.IsEmpty())
             .Distinct()
             .ToArray();
 

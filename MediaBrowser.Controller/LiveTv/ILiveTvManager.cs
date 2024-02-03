@@ -71,9 +71,8 @@ namespace MediaBrowser.Controller.LiveTv
         /// Adds the parts.
         /// </summary>
         /// <param name="services">The services.</param>
-        /// <param name="tunerHosts">The tuner hosts.</param>
         /// <param name="listingProviders">The listing providers.</param>
-        void AddParts(IEnumerable<ILiveTvService> services, IEnumerable<ITunerHost> tunerHosts, IEnumerable<IListingsProvider> listingProviders);
+        void AddParts(IEnumerable<ILiveTvService> services, IEnumerable<IListingsProvider> listingProviders);
 
         /// <summary>
         /// Gets the timer.
@@ -176,12 +175,6 @@ namespace MediaBrowser.Controller.LiveTv
         Task CreateSeriesTimer(SeriesTimerInfoDto timer, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets the guide information.
-        /// </summary>
-        /// <returns>GuideInfo.</returns>
-        GuideInfo GetGuideInfo();
-
-        /// <summary>
         /// Gets the recommended programs.
         /// </summary>
         /// <param name="query">The query.</param>
@@ -254,14 +247,6 @@ namespace MediaBrowser.Controller.LiveTv
         Task AddInfoToProgramDto(IReadOnlyCollection<(BaseItem Item, BaseItemDto ItemDto)> programs, IReadOnlyList<ItemFields> fields, User user = null);
 
         /// <summary>
-        /// Saves the tuner host.
-        /// </summary>
-        /// <param name="info">Turner host to save.</param>
-        /// <param name="dataSourceChanged">Option to specify that data source has changed.</param>
-        /// <returns>Tuner host information wrapped in a task.</returns>
-        Task<TunerHostInfo> SaveTunerHost(TunerHostInfo info, bool dataSourceChanged = true);
-
-        /// <summary>
         /// Saves the listing provider.
         /// </summary>
         /// <param name="info">The information.</param>
@@ -297,10 +282,6 @@ namespace MediaBrowser.Controller.LiveTv
         Task<List<ChannelInfo>> GetChannelsForListingsProvider(string id, CancellationToken cancellationToken);
 
         Task<List<ChannelInfo>> GetChannelsFromListingsProviderData(string id, CancellationToken cancellationToken);
-
-        List<NameIdPair> GetTunerHostTypes();
-
-        Task<List<TunerHostInfo>> DiscoverTuners(bool newDevicesOnly, CancellationToken cancellationToken);
 
         string GetEmbyTvActiveRecordingPath(string id);
 

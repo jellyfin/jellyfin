@@ -18,7 +18,7 @@ namespace Jellyfin.Extensions.Json.Converters
         {
             // null got handled higher up the call stack
             var val = value!.Value;
-            if (val.Equals(default))
+            if (val.IsEmpty())
             {
                 writer.WriteNullValue();
             }
