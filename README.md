@@ -142,6 +142,13 @@ cd Jellyfin.Server/bin/Debug/net8.0 # Change into the build output directory
 
 2. Execute the build output. On Linux, Mac, etc. use `./jellyfin` and on Windows use `jellyfin.exe`.
 
+#### Accessing the Hosted Web Client
+
+If the Server is configured to host the Web Client, and the Server is running, the Web Client can be accessed at `http://localhost:8096` by default.
+
+API documentation can be viewed at `http://localhost:8096/api-docs/swagger/index.html`
+
+
 ### Running from GH-Codespaces
 
 As Jellyfin will run on a container on a github hosted server, JF needs to handle some things differently.
