@@ -96,9 +96,10 @@ public interface ITranscodeManager
     public void OnTranscodeEndRequest(TranscodingJob job);
 
     /// <summary>
-    /// Gets the transcoding lock.
+    /// Transcoding lock.
     /// </summary>
     /// <param name="outputPath">The output path of the transcoded file.</param>
-    /// <returns>A <see cref="SemaphoreSlim"/>.</returns>
-    public SemaphoreSlim GetTranscodingLock(string outputPath);
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>An <see cref="IDisposable"/>.</returns>
+    ValueTask<IDisposable> LockAsync(string outputPath, CancellationToken cancellationToken);
 }

@@ -14,6 +14,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using AsyncKeyedLock;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
 using Jellyfin.Extensions;
@@ -68,7 +69,7 @@ namespace Jellyfin.LiveTv.EmbyTV
         private readonly ConcurrentDictionary<string, EpgChannelData> _epgChannels =
             new ConcurrentDictionary<string, EpgChannelData>(StringComparer.OrdinalIgnoreCase);
 
-        private readonly SemaphoreSlim _recordingDeleteSemaphore = new SemaphoreSlim(1, 1);
+        private readonly AsyncNonKeyedLocker _recordingDeleteSemaphore = new(1);
 
         private bool _disposed;
 
@@ -1444,9 +1445,7 @@ namespace Jellyfin.LiveTv.EmbyTV
                 return;
             }
 
-            await _recordingDeleteSemaphore.WaitAsync().ConfigureAwait(false);
-
-            try
+            using (await _recordingDeleteSemaphore.LockAsync().ConfigureAwait(false))
             {
                 if (_disposed)
                 {
@@ -1498,10 +1497,6 @@ namespace Jellyfin.LiveTv.EmbyTV
                         _logger.LogError(ex, "Error deleting item");
                     }
                 }
-            }
-            finally
-            {
-                _recordingDeleteSemaphore.Release();
             }
         }
 

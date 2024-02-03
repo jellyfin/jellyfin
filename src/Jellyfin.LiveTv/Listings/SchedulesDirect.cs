@@ -16,6 +16,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using AsyncKeyedLock;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using Jellyfin.LiveTv.Listings.SchedulesDirectDtos;
@@ -35,7 +36,7 @@ namespace Jellyfin.LiveTv.Listings
 
         private readonly ILogger<SchedulesDirect> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly SemaphoreSlim _tokenSemaphore = new SemaphoreSlim(1, 1);
+        private readonly AsyncNonKeyedLocker _tokenLock = new(1);
 
         private readonly ConcurrentDictionary<string, NameValuePair> _tokens = new ConcurrentDictionary<string, NameValuePair>();
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
@@ -573,27 +574,25 @@ namespace Jellyfin.LiveTv.Listings
                 }
             }
 
-            await _tokenSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-            try
+            using (await _tokenLock.LockAsync(cancellationToken).ConfigureAwait(false))
             {
-                var result = await GetTokenInternal(username, password, cancellationToken).ConfigureAwait(false);
-                savedToken.Name = result;
-                savedToken.Value = DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
-                return result;
-            }
-            catch (HttpRequestException ex)
-            {
-                if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.BadRequest)
+                try
                 {
-                    _tokens.Clear();
-                    _lastErrorResponse = DateTime.UtcNow;
+                    var result = await GetTokenInternal(username, password, cancellationToken).ConfigureAwait(false);
+                    savedToken.Name = result;
+                    savedToken.Value = DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
+                    return result;
                 }
+                catch (HttpRequestException ex)
+                {
+                    if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.BadRequest)
+                    {
+                        _tokens.Clear();
+                        _lastErrorResponse = DateTime.UtcNow;
+                    }
 
-                throw;
-            }
-            finally
-            {
-                _tokenSemaphore.Release();
+                    throw;
+                }
             }
         }
 
@@ -801,7 +800,7 @@ namespace Jellyfin.LiveTv.Listings
 
             if (disposing)
             {
-                _tokenSemaphore?.Dispose();
+                _tokenLock?.Dispose();
             }
 
             _disposed = true;

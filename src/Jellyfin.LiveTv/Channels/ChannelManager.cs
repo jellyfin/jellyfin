@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using AsyncKeyedLock;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
@@ -50,7 +51,7 @@ namespace Jellyfin.LiveTv.Channels
         private readonly IFileSystem _fileSystem;
         private readonly IProviderManager _providerManager;
         private readonly IMemoryCache _memoryCache;
-        private readonly SemaphoreSlim _resourcePool = new SemaphoreSlim(1, 1);
+        private readonly AsyncNonKeyedLocker _resourcePool = new(1);
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
         private bool _disposed = false;
 
@@ -811,9 +812,7 @@ namespace Jellyfin.LiveTv.Channels
             {
             }
 
-            await _resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
+            using (await _resourcePool.LockAsync(cancellationToken).ConfigureAwait(false))
             {
                 try
                 {
@@ -859,10 +858,6 @@ namespace Jellyfin.LiveTv.Channels
                 await CacheResponse(result, cachePath).ConfigureAwait(false);
 
                 return result;
-            }
-            finally
-            {
-                _resourcePool.Release();
             }
         }
 

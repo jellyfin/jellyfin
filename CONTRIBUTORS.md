@@ -78,6 +78,7 @@
  - [Marenz](https://github.com/Marenz)
  - [marius-luca-87](https://github.com/marius-luca-87)
  - [mark-monteiro](https://github.com/mark-monteiro)
+ - [MarkCiliaVincenti](https://github.com/MarkCiliaVincenti)
  - [Matt07211](https://github.com/Matt07211)
  - [Maxr1998](https://github.com/Maxr1998)
  - [mcarlton00](https://github.com/mcarlton00)
