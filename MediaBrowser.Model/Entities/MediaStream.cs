@@ -246,6 +246,8 @@ namespace MediaBrowser.Model.Entities
 
         public string LocalizedHearingImpaired { get; set; }
 
+        public string LocalizedOffset { get; set; }
+
         public string DisplayTitle
         {
             get
@@ -375,6 +377,11 @@ namespace MediaBrowser.Model.Entities
                             attributes.Add(string.IsNullOrEmpty(LocalizedHearingImpaired) ? "Hearing Impaired" : LocalizedHearingImpaired);
                         }
 
+                        if (Offset.HasValue && Offset != 0)
+                        {
+                            attributes.Add((string.IsNullOrEmpty(LocalizedOffset) ? "Offset" : LocalizedOffset) + " " + (Offset > 0 ? "+" : string.Empty) + $"{Offset / 1000f:0.#}" + "s");
+                        }
+
                         if (IsDefault)
                         {
                             attributes.Add(string.IsNullOrEmpty(LocalizedDefault) ? "Default" : LocalizedDefault);
@@ -488,6 +495,12 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value><c>true</c> if this instance is for the hearing impaired; otherwise, <c>false</c>.</value>
         public bool IsHearingImpaired { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating the desired offset of this instance.
+        /// </summary>
+        /// <value>The number of milliseconds of the offset.</value>
+        public int? Offset { get; set; }
 
         /// <summary>
         /// Gets or sets the height.

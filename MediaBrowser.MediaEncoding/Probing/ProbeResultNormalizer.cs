@@ -741,6 +741,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 stream.LocalizedForced = _localization.GetLocalizedString("Forced");
                 stream.LocalizedExternal = _localization.GetLocalizedString("External");
                 stream.LocalizedHearingImpaired = _localization.GetLocalizedString("HearingImpaired");
+                stream.LocalizedOffset = _localization.GetLocalizedString("Offset");
 
                 // Graphical subtitle may have width and height info
                 stream.Width = streamInfo.Width;

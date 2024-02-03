@@ -306,6 +306,11 @@ namespace Emby.Naming.Common
                 "sdh"
             };
 
+            MediaOffsetFlags = new[]
+            {
+                "offset"
+            };
+
             EpisodeExpressions = new[]
             {
                 // *** Begin Kodi Standard Naming
@@ -775,6 +780,11 @@ namespace Emby.Naming.Common
         /// Gets or sets list of external media hearing impaired flags.
         /// </summary>
         public string[] MediaHearingImpairedFlags { get; set; }
+
+        /// <summary>
+        /// Gets or sets list of external media offset flags.
+        /// </summary>
+        public string[] MediaOffsetFlags { get; set; }
 
         /// <summary>
         /// Gets or sets list of album stacking prefixes.
