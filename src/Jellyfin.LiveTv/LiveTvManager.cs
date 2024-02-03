@@ -47,9 +47,8 @@ namespace Jellyfin.LiveTv
         private readonly ILocalizationManager _localization;
         private readonly IChannelManager _channelManager;
         private readonly LiveTvDtoService _tvDtoService;
-
-        private ILiveTvService[] _services = Array.Empty<ILiveTvService>();
-        private IListingsProvider[] _listingProviders = Array.Empty<IListingsProvider>();
+        private readonly ILiveTvService[] _services;
+        private readonly IListingsProvider[] _listingProviders;
 
         public LiveTvManager(
             IServerConfigurationManager config,
@@ -61,7 +60,9 @@ namespace Jellyfin.LiveTv
             ITaskManager taskManager,
             ILocalizationManager localization,
             IChannelManager channelManager,
-            LiveTvDtoService liveTvDtoService)
+            LiveTvDtoService liveTvDtoService,
+            IEnumerable<ILiveTvService> services,
+            IEnumerable<IListingsProvider> listingProviders)
         {
             _config = config;
             _logger = logger;
@@ -73,6 +74,12 @@ namespace Jellyfin.LiveTv
             _userDataManager = userDataManager;
             _channelManager = channelManager;
             _tvDtoService = liveTvDtoService;
+            _services = services.ToArray();
+            _listingProviders = listingProviders.ToArray();
+
+            var defaultService = _services.OfType<EmbyTV.EmbyTV>().First();
+            defaultService.TimerCreated += OnEmbyTvTimerCreated;
+            defaultService.TimerCancelled += OnEmbyTvTimerCancelled;
         }
 
         public event EventHandler<GenericEventArgs<TimerEventInfo>> SeriesTimerCancelled;
@@ -94,23 +101,6 @@ namespace Jellyfin.LiveTv
         public string GetEmbyTvActiveRecordingPath(string id)
         {
             return EmbyTV.EmbyTV.Current.GetActiveRecordingPath(id);
-        }
-
-        /// <inheritdoc />
-        public void AddParts(IEnumerable<ILiveTvService> services, IEnumerable<IListingsProvider> listingProviders)
-        {
-            _services = services.ToArray();
-
-            _listingProviders = listingProviders.ToArray();
-
-            foreach (var service in _services)
-            {
-                if (service is EmbyTV.EmbyTV embyTv)
-                {
-                    embyTv.TimerCreated += OnEmbyTvTimerCreated;
-                    embyTv.TimerCancelled += OnEmbyTvTimerCancelled;
-                }
-            }
         }
 
         private void OnEmbyTvTimerCancelled(object sender, GenericEventArgs<string> e)
@@ -1165,12 +1155,6 @@ namespace Jellyfin.LiveTv
             return new QueryResult<SeriesTimerInfoDto>(returnArray);
         }
 
-        public BaseItem GetLiveTvChannel(TimerInfo timer, ILiveTvService service)
-        {
-            var internalChannelId = _tvDtoService.GetInternalChannelId(service.Name, timer.ChannelId);
-            return _libraryManager.GetItemById(internalChannelId);
-        }
-
         public void AddChannelInfo(IReadOnlyCollection<(BaseItemDto ItemDto, LiveTvChannel Channel)> items, DtoOptions options, User user)
         {
             var now = DateTime.UtcNow;
@@ -1634,16 +1618,6 @@ namespace Jellyfin.LiveTv
             var info = _config.GetLiveTvConfiguration().ListingProviders.First(i => string.Equals(i.Id, id, StringComparison.OrdinalIgnoreCase));
             var provider = _listingProviders.First(i => string.Equals(i.Type, info.Type, StringComparison.OrdinalIgnoreCase));
             return provider.GetChannels(info, cancellationToken);
-        }
-
-        public Guid GetInternalChannelId(string serviceName, string externalId)
-        {
-            return _tvDtoService.GetInternalChannelId(serviceName, externalId);
-        }
-
-        public Guid GetInternalProgramId(string externalId)
-        {
-            return _tvDtoService.GetInternalProgramId(externalId);
         }
 
         /// <inheritdoc />

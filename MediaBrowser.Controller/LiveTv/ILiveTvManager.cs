@@ -68,13 +68,6 @@ namespace MediaBrowser.Controller.LiveTv
         Task CancelSeriesTimer(string id);
 
         /// <summary>
-        /// Adds the parts.
-        /// </summary>
-        /// <param name="services">The services.</param>
-        /// <param name="listingProviders">The listing providers.</param>
-        void AddParts(IEnumerable<ILiveTvService> services, IEnumerable<IListingsProvider> listingProviders);
-
-        /// <summary>
         /// Gets the timer.
         /// </summary>
         /// <param name="id">The identifier.</param>

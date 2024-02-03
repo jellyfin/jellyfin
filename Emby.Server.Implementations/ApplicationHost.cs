@@ -695,8 +695,6 @@ namespace Emby.Server.Implementations
                 GetExports<IMetadataSaver>(),
                 GetExports<IExternalId>());
 
-            Resolve<ILiveTvManager>().AddParts(GetExports<ILiveTvService>(), GetExports<IListingsProvider>());
-
             Resolve<IMediaSourceManager>().AddParts(GetExports<IMediaSourceProvider>());
         }
 
