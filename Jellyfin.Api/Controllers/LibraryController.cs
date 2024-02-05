@@ -328,12 +328,10 @@ public class LibraryController : BaseJellyfinApiController
     /// </summary>
     /// <param name="itemId">The item id.</param>
     /// <response code="204">Item deleted.</response>
-    /// <response code="401">Unauthorized access.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpDelete("Items/{itemId}")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult DeleteItem(Guid itemId)
     {
@@ -371,12 +369,10 @@ public class LibraryController : BaseJellyfinApiController
     /// </summary>
     /// <param name="ids">The item ids.</param>
     /// <response code="204">Items deleted.</response>
-    /// <response code="401">Unauthorized access.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpDelete("Items")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult DeleteItems([FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] ids)
     {
