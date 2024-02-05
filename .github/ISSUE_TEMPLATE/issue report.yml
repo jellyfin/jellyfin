@@ -10,6 +10,7 @@ body:
         1. Please head to our forum or chat rooms and troubleshoot with volunteers if you haven't already. Links can be found here: https://jellyfin.org/contact/
         2. Please search the bug tracker for similar issues. If you do find one, please comment there instead of opening a new bug report.
         3. If you decide to open a new report, please provide as much detail as possible.
+        4. Please **ONLY** report **ONE** issue per report. If you are experiencing multiple issues, please open multiple reports.
   - type: textarea
     id: what-happened
     attributes:
@@ -17,8 +18,7 @@ body:
       description: Also tell us, what did you expect to happen?
       placeholder: |
         The more information that you are able to provide, the better. Did you do anything before this happened? Did you upgrade or change anything? Any screenshots or logs you can provide will be helpful.
-
-        This is my issue.
+        If you are using an old release of Jellyfin, please also explain why.
     validations:
       required: true
   - type: textarea
@@ -84,6 +84,8 @@ body:
         - Networking:
         - Storage:
       render: markdown
+    validations:
+      required: true
   - type: markdown
     attributes:
       value: |
@@ -101,6 +103,8 @@ body:
       description: Please copy and paste any relevant log output. This can be found in Dashboard > Logs.
       placeholder: For playback issues, browser/client and FFmpeg logs may be more useful.
       render: shell
+    validations:
+      required: true
   - type: textarea
     id: ffmpeg-logs
     attributes:
