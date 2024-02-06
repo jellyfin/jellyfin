@@ -25,7 +25,7 @@ jobs:
       - name: Generate openapi.json
         run: dotnet test tests/Jellyfin.Server.Integration.Tests/Jellyfin.Server.Integration.Tests.csproj -c Release --filter "Jellyfin.Server.Integration.Tests.OpenApiSpecTests"
       - name: Upload openapi.json
-        uses: actions/upload-artifact@26f96dfa697d77e81fd5907df203aa23a56210a8 # v4.3.0
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         with:
           name: openapi-head
           retention-days: 14
@@ -59,7 +59,7 @@ jobs:
       - name: Generate openapi.json
         run: dotnet test tests/Jellyfin.Server.Integration.Tests/Jellyfin.Server.Integration.Tests.csproj -c Release --filter "Jellyfin.Server.Integration.Tests.OpenApiSpecTests"
       - name: Upload openapi.json
-        uses: actions/upload-artifact@26f96dfa697d77e81fd5907df203aa23a56210a8 # v4.3.0
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         with:
           name: openapi-base
           retention-days: 14
@@ -78,12 +78,12 @@ jobs:
       - openapi-base
     steps:
       - name: Download openapi-head
-        uses: actions/download-artifact@6b208ae046db98c579e8a3aa621ab581ff575935 # v4.1.1
+        uses: actions/download-artifact@eaceaf801fd36c7dee90939fad912460b18a1ffe # v4.1.2
         with:
           name: openapi-head
           path: openapi-head
       - name: Download openapi-base
-        uses: actions/download-artifact@6b208ae046db98c579e8a3aa621ab581ff575935 # v4.1.1
+        uses: actions/download-artifact@eaceaf801fd36c7dee90939fad912460b18a1ffe # v4.1.2
         with:
           name: openapi-base
           path: openapi-base
