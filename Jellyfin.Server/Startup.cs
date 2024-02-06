@@ -125,6 +125,7 @@ namespace Jellyfin.Server
             services.AddLiveTvServices();
 
             services.AddHostedService<AutoDiscoveryHost>();
+            services.AddHostedService<PortForwardingHost>();
         }
 
         /// <summary>
