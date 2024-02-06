@@ -325,6 +325,7 @@ public class DynamicHlsHelper
         if (state.VideoStream is not null && state.VideoStream.VideoRange != VideoRange.Unknown)
         {
             var videoRange = state.VideoStream.VideoRange;
+            var videoRangeType = state.VideoStream.VideoRangeType;
             if (EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
             {
                 if (videoRange == VideoRange.SDR)
@@ -334,7 +335,14 @@ public class DynamicHlsHelper
 
                 if (videoRange == VideoRange.HDR)
                 {
-                    builder.Append(",VIDEO-RANGE=PQ");
+                    if (videoRangeType == VideoRangeType.HLG)
+                    {
+                        builder.Append(",VIDEO-RANGE=HLG");
+                    }
+                    else
+                    {
+                        builder.Append(",VIDEO-RANGE=PQ");
+                    }
                 }
             }
             else
