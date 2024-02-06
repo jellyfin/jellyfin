@@ -22,7 +22,6 @@ using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
@@ -1048,18 +1047,14 @@ namespace Emby.Server.Implementations.Library
 
             await ValidateTopLibraryFolders(cancellationToken).ConfigureAwait(false);
 
-            var innerProgress = new ActionableProgress<double>();
-
-            innerProgress.RegisterAction(pct => progress.Report(pct * 0.96));
+            var innerProgress = new Progress<double>(pct => progress.Report(pct * 0.96));
 
             // Validate the entire media library
             await RootFolder.ValidateChildren(innerProgress, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), recursive: true, cancellationToken).ConfigureAwait(false);
 
             progress.Report(96);
 
-            innerProgress = new ActionableProgress<double>();
-
-            innerProgress.RegisterAction(pct => progress.Report(96 + (pct * .04)));
+            innerProgress = new Progress<double>(pct => progress.Report(96 + (pct * .04)));
 
             await RunPostScanTasks(innerProgress, cancellationToken).ConfigureAwait(false);
 
@@ -1081,12 +1076,10 @@ namespace Emby.Server.Implementations.Library
 
             foreach (var task in tasks)
             {
-                var innerProgress = new ActionableProgress<double>();
-
                 // Prevent access to modified closure
                 var currentNumComplete = numComplete;
 
-                innerProgress.RegisterAction(pct =>
+                var innerProgress = new Progress<double>(pct =>
                 {
                     double innerPercent = pct;
                     innerPercent /= 100;
