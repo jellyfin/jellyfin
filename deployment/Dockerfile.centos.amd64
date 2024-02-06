@@ -12,8 +12,7 @@ ENV IS_DOCKER=YES
 # Prepare CentOS environment
 RUN dnf update -yq \
  && dnf install -yq \
-    @buildsys-build rpmdevtools git \
-    dnf-plugins-core libcurl-devel fontconfig-devel \
+    rpmdevtools git libcurl-devel fontconfig-devel \
     freetype-devel openssl-devel glibc-devel \
     libicu-devel systemd wget make \
  && dnf clean all \
