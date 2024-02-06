@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text;
+using Emby.Server.Implementations.EntryPoints;
 using Jellyfin.Api.Middleware;
 using Jellyfin.LiveTv.Extensions;
 using Jellyfin.MediaEncoding.Hls.Extensions;
@@ -126,6 +127,7 @@ namespace Jellyfin.Server
 
             services.AddHostedService<AutoDiscoveryHost>();
             services.AddHostedService<PortForwardingHost>();
+            services.AddHostedService<LibraryChangedNotifier>();
         }
 
         /// <summary>
