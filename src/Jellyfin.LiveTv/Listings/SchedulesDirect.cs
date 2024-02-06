@@ -599,8 +599,9 @@ namespace Jellyfin.LiveTv.Listings
             CancellationToken cancellationToken,
             HttpCompletionOption completionOption = HttpCompletionOption.ResponseContentRead)
         {
-            using var client = _httpClientFactory.CreateClient(NamedClient.Default);
-            using var response = await client.SendAsync(message, completionOption, cancellationToken).ConfigureAwait(false);
+            using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
+                .SendAsync(message, completionOption, cancellationToken)
+                .ConfigureAwait(false);
             if (response.IsSuccessStatusCode)
             {
                 return await response.Content.ReadFromJsonAsync<T>(_jsonOptions, cancellationToken).ConfigureAwait(false);
@@ -665,8 +666,7 @@ namespace Jellyfin.LiveTv.Listings
             using var message = new HttpRequestMessage(HttpMethod.Put, ApiUrl + "/lineups/" + info.ListingsId);
             message.Headers.TryAddWithoutValidation("token", token);
 
-            using var client = _httpClientFactory.CreateClient(NamedClient.Default);
-            using var response = await client
+            using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
                 .SendAsync(message, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
                 .ConfigureAwait(false);
 
