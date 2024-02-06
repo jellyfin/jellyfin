@@ -19,6 +19,7 @@ using Jellyfin.Server.Infrastructure;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Extensions;
+using MediaBrowser.XbmcMetadata;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -128,6 +129,7 @@ namespace Jellyfin.Server
 
             services.AddHostedService<AutoDiscoveryHost>();
             services.AddHostedService<PortForwardingHost>();
+            services.AddHostedService<NfoUserDataSaver>();
             services.AddHostedService<LibraryChangedNotifier>();
             services.AddHostedService<UserDataChangeNotifier>();
             services.AddHostedService<RecordingNotifier>();
