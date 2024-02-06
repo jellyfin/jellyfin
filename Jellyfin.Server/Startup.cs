@@ -6,6 +6,7 @@ using System.Net.Mime;
 using System.Text;
 using Emby.Server.Implementations.EntryPoints;
 using Jellyfin.Api.Middleware;
+using Jellyfin.LiveTv;
 using Jellyfin.LiveTv.Extensions;
 using Jellyfin.MediaEncoding.Hls.Extensions;
 using Jellyfin.Networking;
@@ -129,6 +130,7 @@ namespace Jellyfin.Server
             services.AddHostedService<PortForwardingHost>();
             services.AddHostedService<LibraryChangedNotifier>();
             services.AddHostedService<UserDataChangeNotifier>();
+            services.AddHostedService<RecordingNotifier>();
         }
 
         /// <summary>
