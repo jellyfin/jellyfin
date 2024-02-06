@@ -21,7 +21,6 @@ using Jellyfin.Extensions;
 using Jellyfin.LiveTv.Configuration;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -261,7 +260,7 @@ namespace Jellyfin.LiveTv.EmbyTV
 
             if (requiresRefresh)
             {
-                await _libraryManager.ValidateMediaLibrary(new SimpleProgress<double>(), CancellationToken.None).ConfigureAwait(false);
+                await _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None).ConfigureAwait(false);
             }
         }
 

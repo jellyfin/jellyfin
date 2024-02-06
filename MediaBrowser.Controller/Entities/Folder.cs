@@ -922,7 +922,7 @@ namespace MediaBrowser.Controller.Entities
                     query.ChannelIds = new[] { ChannelId };
 
                     // Don't blow up here because it could cause parent screens with other content to fail
-                    return ChannelManager.GetChannelItemsInternal(query, new SimpleProgress<double>(), CancellationToken.None).GetAwaiter().GetResult();
+                    return ChannelManager.GetChannelItemsInternal(query, new Progress<double>(), CancellationToken.None).GetAwaiter().GetResult();
                 }
                 catch
                 {

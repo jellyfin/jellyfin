@@ -1022,7 +1022,7 @@ namespace Emby.Server.Implementations.Library
 
             // Start by just validating the children of the root, but go no further
             await RootFolder.ValidateChildren(
-                new SimpleProgress<double>(),
+                new Progress<double>(),
                 new MetadataRefreshOptions(new DirectoryService(_fileSystem)),
                 recursive: false,
                 cancellationToken).ConfigureAwait(false);
@@ -1030,7 +1030,7 @@ namespace Emby.Server.Implementations.Library
             await GetUserRootFolder().RefreshMetadata(cancellationToken).ConfigureAwait(false);
 
             await GetUserRootFolder().ValidateChildren(
-                new SimpleProgress<double>(),
+                new Progress<double>(),
                 new MetadataRefreshOptions(new DirectoryService(_fileSystem)),
                 recursive: false,
                 cancellationToken).ConfigureAwait(false);
@@ -2954,7 +2954,7 @@ namespace Emby.Server.Implementations.Library
             Task.Run(() =>
             {
                 // No need to start if scanning the library because it will handle it
-                ValidateMediaLibrary(new SimpleProgress<double>(), CancellationToken.None);
+                ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
             });
         }
 
