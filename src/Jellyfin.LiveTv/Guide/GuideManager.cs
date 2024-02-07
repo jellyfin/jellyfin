@@ -7,7 +7,6 @@ using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using Jellyfin.LiveTv.Configuration;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -108,8 +107,7 @@ public class GuideManager : IGuideManager
 
             try
             {
-                var innerProgress = new ActionableProgress<double>();
-                innerProgress.RegisterAction(p => progress.Report(p * progressPerService));
+                var innerProgress = new Progress<double>(p => progress.Report(p * progressPerService));
 
                 var idList = await RefreshChannelsInternal(service, innerProgress, cancellationToken).ConfigureAwait(false);
 
@@ -158,7 +156,7 @@ public class GuideManager : IGuideManager
             : 7;
     }
 
-    private async Task<Tuple<List<Guid>, List<Guid>>> RefreshChannelsInternal(ILiveTvService service, ActionableProgress<double> progress, CancellationToken cancellationToken)
+    private async Task<Tuple<List<Guid>, List<Guid>>> RefreshChannelsInternal(ILiveTvService service, IProgress<double> progress, CancellationToken cancellationToken)
     {
         progress.Report(10);
 
