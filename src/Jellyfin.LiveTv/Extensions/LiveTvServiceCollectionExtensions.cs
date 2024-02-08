@@ -2,6 +2,7 @@
 using Jellyfin.LiveTv.Guide;
 using Jellyfin.LiveTv.IO;
 using Jellyfin.LiveTv.Listings;
+using Jellyfin.LiveTv.Recordings;
 using Jellyfin.LiveTv.Timers;
 using Jellyfin.LiveTv.TunerHosts;
 using Jellyfin.LiveTv.TunerHosts.HdHomerun;
@@ -26,6 +27,7 @@ public static class LiveTvServiceCollectionExtensions
         services.AddSingleton<LiveTvDtoService>();
         services.AddSingleton<TimerManager>();
         services.AddSingleton<SeriesTimerManager>();
+        services.AddSingleton<RecordingsMetadataManager>();
         services.AddSingleton<ILiveTvManager, LiveTvManager>();
         services.AddSingleton<IChannelManager, ChannelManager>();
         services.AddSingleton<IStreamHelper, StreamHelper>();
