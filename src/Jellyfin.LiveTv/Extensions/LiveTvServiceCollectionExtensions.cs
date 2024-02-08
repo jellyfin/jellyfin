@@ -1,7 +1,7 @@
 ﻿using Jellyfin.LiveTv.Channels;
-using Jellyfin.LiveTv.EmbyTV;
 using Jellyfin.LiveTv.Guide;
 using Jellyfin.LiveTv.Listings;
+using Jellyfin.LiveTv.Timers;
 using Jellyfin.LiveTv.TunerHosts;
 using Jellyfin.LiveTv.TunerHosts.HdHomerun;
 using MediaBrowser.Controller.Channels;

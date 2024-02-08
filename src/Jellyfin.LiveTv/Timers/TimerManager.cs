@@ -7,12 +7,13 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using Jellyfin.Data.Events;
+using Jellyfin.LiveTv.EmbyTV;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.LiveTv;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.LiveTv.EmbyTV
+namespace Jellyfin.LiveTv.Timers
 {
     public class TimerManager : ItemDataProvider<TimerInfo>
     {
