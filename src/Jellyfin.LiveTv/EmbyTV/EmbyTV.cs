@@ -47,21 +47,18 @@ namespace Jellyfin.LiveTv.EmbyTV
         private readonly ILogger<EmbyTV> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IServerConfigurationManager _config;
-
-        private readonly ItemDataProvider<SeriesTimerInfo> _seriesTimerProvider;
-        private readonly TimerManager _timerProvider;
-
         private readonly ITunerHostManager _tunerHostManager;
         private readonly IFileSystem _fileSystem;
-
         private readonly ILibraryMonitor _libraryMonitor;
         private readonly ILibraryManager _libraryManager;
         private readonly IProviderManager _providerManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IStreamHelper _streamHelper;
-        private readonly LiveTvDtoService _tvDtoService;
         private readonly IListingsManager _listingsManager;
+        private readonly LiveTvDtoService _tvDtoService;
+        private readonly TimerManager _timerManager;
+        private readonly ItemDataProvider<SeriesTimerInfo> _seriesTimerManager;
 
         private readonly ConcurrentDictionary<string, ActiveRecordingInfo> _activeRecordings =
             new ConcurrentDictionary<string, ActiveRecordingInfo>(StringComparer.OrdinalIgnoreCase);
@@ -82,8 +79,10 @@ namespace Jellyfin.LiveTv.EmbyTV
             ILibraryMonitor libraryMonitor,
             IProviderManager providerManager,
             IMediaEncoder mediaEncoder,
+            IListingsManager listingsManager,
             LiveTvDtoService tvDtoService,
-            IListingsManager listingsManager)
+            TimerManager timerManager,
+            SeriesTimerManager seriesTimerManager)
         {
             Current = this;
 
@@ -95,16 +94,15 @@ namespace Jellyfin.LiveTv.EmbyTV
             _libraryMonitor = libraryMonitor;
             _providerManager = providerManager;
             _mediaEncoder = mediaEncoder;
-            _tvDtoService = tvDtoService;
             _tunerHostManager = tunerHostManager;
             _mediaSourceManager = mediaSourceManager;
             _streamHelper = streamHelper;
             _listingsManager = listingsManager;
+            _tvDtoService = tvDtoService;
+            _timerManager = timerManager;
+            _seriesTimerManager = seriesTimerManager;
 
-            _seriesTimerProvider = new SeriesTimerManager(_logger, Path.Combine(DataPath, "seriestimers.json"));
-            _timerProvider = new TimerManager(_logger, Path.Combine(DataPath, "timers.json"));
-            _timerProvider.TimerFired += OnTimerProviderTimerFired;
-
+            _timerManager.TimerFired += OnTimerManagerTimerFired;
             _config.NamedConfigurationUpdated += OnNamedConfigurationUpdated;
         }
 
@@ -146,7 +144,7 @@ namespace Jellyfin.LiveTv.EmbyTV
 
         public Task Start()
         {
-            _timerProvider.RestartTimers();
+            _timerManager.RestartTimers();
 
             return CreateRecordingFolders();
         }
@@ -298,13 +296,13 @@ namespace Jellyfin.LiveTv.EmbyTV
                 }
 
                 CopyProgramInfoToTimerInfo(program, timer, tempChannelCache);
-                _timerProvider.Update(timer);
+                _timerManager.Update(timer);
             }
         }
 
         private void OnTimerOutOfDate(TimerInfo timer)
         {
-            _timerProvider.Delete(timer);
+            _timerManager.Delete(timer);
         }
 
         private async Task<IEnumerable<ChannelInfo>> GetChannelsAsync(bool enableCache, CancellationToken cancellationToken)
@@ -337,7 +335,7 @@ namespace Jellyfin.LiveTv.EmbyTV
 
         public Task CancelSeriesTimerAsync(string timerId, CancellationToken cancellationToken)
         {
-            var timers = _timerProvider
+            var timers = _timerManager
                 .GetAll()
                 .Where(i => string.Equals(i.SeriesTimerId, timerId, StringComparison.OrdinalIgnoreCase))
                 .ToList();
@@ -347,10 +345,10 @@ namespace Jellyfin.LiveTv.EmbyTV
                 CancelTimerInternal(timer.Id, true, true);
             }
 
-            var remove = _seriesTimerProvider.GetAll().FirstOrDefault(r => string.Equals(r.Id, timerId, StringComparison.OrdinalIgnoreCase));
+            var remove = _seriesTimerManager.GetAll().FirstOrDefault(r => string.Equals(r.Id, timerId, StringComparison.OrdinalIgnoreCase));
             if (remove is not null)
             {
-                _seriesTimerProvider.Delete(remove);
+                _seriesTimerManager.Delete(remove);
             }
 
             return Task.CompletedTask;
@@ -358,7 +356,7 @@ namespace Jellyfin.LiveTv.EmbyTV
 
         private void CancelTimerInternal(string timerId, bool isSeriesCancelled, bool isManualCancellation)
         {
-            var timer = _timerProvider.GetTimer(timerId);
+            var timer = _timerManager.GetTimer(timerId);
             if (timer is not null)
             {
                 var statusChanging = timer.Status != RecordingStatus.Cancelled;
@@ -371,11 +369,11 @@ namespace Jellyfin.LiveTv.EmbyTV
 
                 if (string.IsNullOrWhiteSpace(timer.SeriesTimerId) || isSeriesCancelled)
                 {
-                    _timerProvider.Delete(timer);
+                    _timerManager.Delete(timer);
                 }
                 else
                 {
-                    _timerProvider.AddOrUpdate(timer, false);
+                    _timerManager.AddOrUpdate(timer, false);
                 }
 
                 if (statusChanging && TimerCancelled is not null)
@@ -411,7 +409,7 @@ namespace Jellyfin.LiveTv.EmbyTV
         {
             var existingTimer = string.IsNullOrWhiteSpace(info.ProgramId) ?
                 null :
-                _timerProvider.GetTimerByProgramId(info.ProgramId);
+                _timerManager.GetTimerByProgramId(info.ProgramId);
 
             if (existingTimer is not null)
             {
@@ -420,7 +418,7 @@ namespace Jellyfin.LiveTv.EmbyTV
                 {
                     existingTimer.Status = RecordingStatus.New;
                     existingTimer.IsManual = true;
-                    _timerProvider.Update(existingTimer);
+                    _timerManager.Update(existingTimer);
                     return Task.FromResult(existingTimer.Id);
                 }
 
@@ -448,7 +446,7 @@ namespace Jellyfin.LiveTv.EmbyTV
             }
 
             info.IsManual = true;
-            _timerProvider.Add(info);
+            _timerManager.Add(info);
 
             TimerCreated?.Invoke(this, new GenericEventArgs<TimerInfo>(info));
 
@@ -489,14 +487,14 @@ namespace Jellyfin.LiveTv.EmbyTV
                 })
                 .ToList();
 
-            _seriesTimerProvider.Add(info);
+            _seriesTimerManager.Add(info);
 
             foreach (var timer in existingTimers)
             {
                 timer.SeriesTimerId = info.Id;
                 timer.IsManual = true;
 
-                _timerProvider.AddOrUpdate(timer, false);
+                _timerManager.AddOrUpdate(timer, false);
             }
 
             UpdateTimersForSeriesTimer(info, true, false);
@@ -506,7 +504,7 @@ namespace Jellyfin.LiveTv.EmbyTV
 
         public Task UpdateSeriesTimerAsync(SeriesTimerInfo info, CancellationToken cancellationToken)
         {
-            var instance = _seriesTimerProvider.GetAll().FirstOrDefault(i => string.Equals(i.Id, info.Id, StringComparison.OrdinalIgnoreCase));
+            var instance = _seriesTimerManager.GetAll().FirstOrDefault(i => string.Equals(i.Id, info.Id, StringComparison.OrdinalIgnoreCase));
 
             if (instance is not null)
             {
@@ -526,7 +524,7 @@ namespace Jellyfin.LiveTv.EmbyTV
                 instance.KeepUntil = info.KeepUntil;
                 instance.StartDate = info.StartDate;
 
-                _seriesTimerProvider.Update(instance);
+                _seriesTimerManager.Update(instance);
 
                 UpdateTimersForSeriesTimer(instance, true, true);
             }
@@ -536,7 +534,7 @@ namespace Jellyfin.LiveTv.EmbyTV
 
         public Task UpdateTimerAsync(TimerInfo updatedTimer, CancellationToken cancellationToken)
         {
-            var existingTimer = _timerProvider.GetTimer(updatedTimer.Id);
+            var existingTimer = _timerManager.GetTimer(updatedTimer.Id);
 
             if (existingTimer is null)
             {
@@ -551,7 +549,7 @@ namespace Jellyfin.LiveTv.EmbyTV
                 existingTimer.IsPostPaddingRequired = updatedTimer.IsPostPaddingRequired;
                 existingTimer.IsPrePaddingRequired = updatedTimer.IsPrePaddingRequired;
 
-                _timerProvider.Update(existingTimer);
+                _timerManager.Update(existingTimer);
             }
 
             return Task.CompletedTask;
@@ -625,7 +623,7 @@ namespace Jellyfin.LiveTv.EmbyTV
                 RecordingStatus.Completed
             };
 
-            var timers = _timerProvider.GetAll()
+            var timers = _timerManager.GetAll()
                 .Where(i => !excludeStatues.Contains(i.Status));
 
             return Task.FromResult(timers);
@@ -671,7 +669,7 @@ namespace Jellyfin.LiveTv.EmbyTV
 
         public Task<IEnumerable<SeriesTimerInfo>> GetSeriesTimersAsync(CancellationToken cancellationToken)
         {
-            return Task.FromResult((IEnumerable<SeriesTimerInfo>)_seriesTimerProvider.GetAll());
+            return Task.FromResult((IEnumerable<SeriesTimerInfo>)_seriesTimerManager.GetAll());
         }
 
         public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
@@ -766,7 +764,7 @@ namespace Jellyfin.LiveTv.EmbyTV
             return Task.CompletedTask;
         }
 
-        private async void OnTimerProviderTimerFired(object sender, GenericEventArgs<TimerInfo> e)
+        private async void OnTimerManagerTimerFired(object sender, GenericEventArgs<TimerInfo> e)
         {
             var timer = e.Argument;
 
@@ -996,7 +994,7 @@ namespace Jellyfin.LiveTv.EmbyTV
                     _activeRecordings.TryAdd(timer.Id, activeRecordingInfo);
 
                     timer.Status = RecordingStatus.InProgress;
-                    _timerProvider.AddOrUpdate(timer, false);
+                    _timerManager.AddOrUpdate(timer, false);
 
                     await SaveRecordingMetadata(timer, recordPath, seriesPath).ConfigureAwait(false);
 
@@ -1050,18 +1048,18 @@ namespace Jellyfin.LiveTv.EmbyTV
                 timer.PrePaddingSeconds = 0;
                 timer.StartDate = DateTime.UtcNow.AddSeconds(RetryIntervalSeconds);
                 timer.RetryCount++;
-                _timerProvider.AddOrUpdate(timer);
+                _timerManager.AddOrUpdate(timer);
             }
             else if (File.Exists(recordPath))
             {
                 timer.RecordingPath = recordPath;
                 timer.Status = RecordingStatus.Completed;
-                _timerProvider.AddOrUpdate(timer, false);
+                _timerManager.AddOrUpdate(timer, false);
                 OnSuccessfulRecording(timer, recordPath);
             }
             else
             {
-                _timerProvider.Delete(timer);
+                _timerManager.Delete(timer);
             }
         }
 
@@ -1176,7 +1174,7 @@ namespace Jellyfin.LiveTv.EmbyTV
             }
 
             var seriesTimerId = timer.SeriesTimerId;
-            var seriesTimer = _seriesTimerProvider.GetAll().FirstOrDefault(i => string.Equals(i.Id, seriesTimerId, StringComparison.OrdinalIgnoreCase));
+            var seriesTimer = _seriesTimerManager.GetAll().FirstOrDefault(i => string.Equals(i.Id, seriesTimerId, StringComparison.OrdinalIgnoreCase));
 
             if (seriesTimer is null || seriesTimer.KeepUpTo <= 0)
             {
@@ -1195,7 +1193,7 @@ namespace Jellyfin.LiveTv.EmbyTV
                     return;
                 }
 
-                var timersToDelete = _timerProvider.GetAll()
+                var timersToDelete = _timerManager.GetAll()
                     .Where(i => i.Status == RecordingStatus.Completed && !string.IsNullOrWhiteSpace(i.RecordingPath))
                     .Where(i => string.Equals(i.SeriesTimerId, seriesTimerId, StringComparison.OrdinalIgnoreCase))
                     .OrderByDescending(i => i.EndDate)
@@ -1282,7 +1280,7 @@ namespace Jellyfin.LiveTv.EmbyTV
                 _fileSystem.DeleteFile(timer.RecordingPath);
             }
 
-            _timerProvider.Delete(timer);
+            _timerManager.Delete(timer);
         }
 
         private string EnsureFileUnique(string path, string timerId)
@@ -1896,7 +1894,7 @@ namespace Jellyfin.LiveTv.EmbyTV
             foreach (var timer in timers.OrderByDescending(t => GetLiveTvChannel(t).IsHD).ThenBy(t => t.StartDate).Skip(1))
             {
                 timer.Status = RecordingStatus.Cancelled;
-                _timerProvider.Update(timer);
+                _timerManager.Update(timer);
             }
         }
 
@@ -1935,10 +1933,10 @@ namespace Jellyfin.LiveTv.EmbyTV
             var enabledTimersForSeries = new List<TimerInfo>();
             foreach (var timer in allTimers)
             {
-                var existingTimer = _timerProvider.GetTimer(timer.Id)
+                var existingTimer = _timerManager.GetTimer(timer.Id)
                     ?? (string.IsNullOrWhiteSpace(timer.ProgramId)
                         ? null
-                        : _timerProvider.GetTimerByProgramId(timer.ProgramId));
+                        : _timerManager.GetTimerByProgramId(timer.ProgramId));
 
                 if (existingTimer is null)
                 {
@@ -1951,7 +1949,7 @@ namespace Jellyfin.LiveTv.EmbyTV
                         enabledTimersForSeries.Add(timer);
                     }
 
-                    _timerProvider.Add(timer);
+                    _timerManager.Add(timer);
 
                     TimerCreated?.Invoke(this, new GenericEventArgs<TimerInfo>(timer));
                 }
@@ -1991,7 +1989,7 @@ namespace Jellyfin.LiveTv.EmbyTV
                     }
 
                     existingTimer.SeriesTimerId = seriesTimer.Id;
-                    _timerProvider.Update(existingTimer);
+                    _timerManager.Update(existingTimer);
                 }
             }
 
@@ -2008,7 +2006,7 @@ namespace Jellyfin.LiveTv.EmbyTV
                     RecordingStatus.New
                 };
 
-                var deletes = _timerProvider.GetAll()
+                var deletes = _timerManager.GetAll()
                     .Where(i => string.Equals(i.SeriesTimerId, seriesTimer.Id, StringComparison.OrdinalIgnoreCase))
                     .Where(i => !allTimerIds.Contains(i.Id, StringComparison.OrdinalIgnoreCase) && i.StartDate > DateTime.UtcNow)
                     .Where(i => deleteStatuses.Contains(i.Status))

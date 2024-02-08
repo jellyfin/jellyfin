@@ -1,4 +1,5 @@
 ﻿using Jellyfin.LiveTv.Channels;
+using Jellyfin.LiveTv.EmbyTV;
 using Jellyfin.LiveTv.Guide;
 using Jellyfin.LiveTv.Listings;
 using Jellyfin.LiveTv.TunerHosts;
@@ -22,6 +23,8 @@ public static class LiveTvServiceCollectionExtensions
     public static void AddLiveTvServices(this IServiceCollection services)
     {
         services.AddSingleton<LiveTvDtoService>();
+        services.AddSingleton<TimerManager>();
+        services.AddSingleton<SeriesTimerManager>();
         services.AddSingleton<ILiveTvManager, LiveTvManager>();
         services.AddSingleton<IChannelManager, ChannelManager>();
         services.AddSingleton<IStreamHelper, StreamHelper>();
