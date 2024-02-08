@@ -1,7 +1,3 @@
-#nullable disable
-
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -12,36 +8,34 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Plugins;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Mono.Nat;
 
 namespace Jellyfin.Networking;
 
 /// <summary>
-/// Server entrypoint handling external port forwarding.
+/// <see cref="IHostedService"/> responsible for UPnP port forwarding.
 /// </summary>
-public sealed class ExternalPortForwarding : IServerEntryPoint
+public sealed class PortForwardingHost : IHostedService, IDisposable
 {
     private readonly IServerApplicationHost _appHost;
-    private readonly ILogger<ExternalPortForwarding> _logger;
+    private readonly ILogger<PortForwardingHost> _logger;
     private readonly IServerConfigurationManager _config;
+    private readonly ConcurrentDictionary<IPEndPoint, byte> _createdRules = new();
 
-    private readonly ConcurrentDictionary<IPEndPoint, byte> _createdRules = new ConcurrentDictionary<IPEndPoint, byte>();
-
-    private Timer _timer;
-    private string _configIdentifier;
-
+    private Timer? _timer;
+    private string? _configIdentifier;
     private bool _disposed;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ExternalPortForwarding"/> class.
+    /// Initializes a new instance of the <see cref="PortForwardingHost"/> class.
     /// </summary>
     /// <param name="logger">The logger.</param>
     /// <param name="appHost">The application host.</param>
     /// <param name="config">The configuration manager.</param>
-    public ExternalPortForwarding(
-        ILogger<ExternalPortForwarding> logger,
+    public PortForwardingHost(
+        ILogger<PortForwardingHost> logger,
         IServerApplicationHost appHost,
         IServerConfigurationManager config)
     {
@@ -66,7 +60,7 @@ public sealed class ExternalPortForwarding : IServerEntryPoint
             .ToString();
     }
 
-    private void OnConfigurationUpdated(object sender, EventArgs e)
+    private void OnConfigurationUpdated(object? sender, EventArgs e)
     {
         var oldConfigIdentifier = _configIdentifier;
         _configIdentifier = GetConfigIdentifier();
@@ -79,11 +73,19 @@ public sealed class ExternalPortForwarding : IServerEntryPoint
     }
 
     /// <inheritdoc />
-    public Task RunAsync()
+    public Task StartAsync(CancellationToken cancellationToken)
     {
         Start();
 
         _config.ConfigurationUpdated += OnConfigurationUpdated;
+
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        Stop();
 
         return Task.CompletedTask;
     }
@@ -101,7 +103,8 @@ public sealed class ExternalPortForwarding : IServerEntryPoint
         NatUtility.DeviceFound += OnNatUtilityDeviceFound;
         NatUtility.StartDiscovery();
 
-        _timer = new Timer((_) => _createdRules.Clear(), null, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
+        _timer?.Dispose();
+        _timer = new Timer(_ => _createdRules.Clear(), null, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
     }
 
     private void Stop()
@@ -112,32 +115,28 @@ public sealed class ExternalPortForwarding : IServerEntryPoint
         NatUtility.DeviceFound -= OnNatUtilityDeviceFound;
 
         _timer?.Dispose();
+        _timer = null;
     }
 
-    private async void OnNatUtilityDeviceFound(object sender, DeviceEventArgs e)
+    private async void OnNatUtilityDeviceFound(object? sender, DeviceEventArgs e)
     {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+
         try
         {
-            await CreateRules(e.Device).ConfigureAwait(false);
+            // On some systems the device discovered event seems to fire repeatedly
+            // This check will help ensure we're not trying to port map the same device over and over
+            if (!_createdRules.TryAdd(e.Device.DeviceEndpoint, 0))
+            {
+                return;
+            }
+
+            await Task.WhenAll(CreatePortMaps(e.Device)).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating port forwarding rules");
         }
-    }
-
-    private Task CreateRules(INatDevice device)
-    {
-        ObjectDisposedException.ThrowIf(_disposed, this);
-
-        // On some systems the device discovered event seems to fire repeatedly
-        // This check will help ensure we're not trying to port map the same device over and over
-        if (!_createdRules.TryAdd(device.DeviceEndpoint, 0))
-        {
-            return Task.CompletedTask;
-        }
-
-        return Task.WhenAll(CreatePortMaps(device));
     }
 
     private IEnumerable<Task> CreatePortMaps(INatDevice device)
@@ -184,8 +183,6 @@ public sealed class ExternalPortForwarding : IServerEntryPoint
         }
 
         _config.ConfigurationUpdated -= OnConfigurationUpdated;
-
-        Stop();
 
         _timer?.Dispose();
         _timer = null;
