@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.LiveTv.Configuration;
@@ -55,10 +54,6 @@ public class ListingsManager : IListingsManager
     public async Task<ListingsProviderInfo> SaveListingProvider(ListingsProviderInfo info, bool validateLogin, bool validateListings)
     {
         ArgumentNullException.ThrowIfNull(info);
-
-        // Hack to make the object a pure ListingsProviderInfo instead of an AddListingProvider
-        // ServerConfiguration.SaveConfiguration crashes during xml serialization for AddListingProvider
-        info = JsonSerializer.Deserialize<ListingsProviderInfo>(JsonSerializer.SerializeToUtf8Bytes(info))!;
 
         var provider = GetProvider(info.Type);
         await provider.Validate(info, validateLogin, validateListings).ConfigureAwait(false);
