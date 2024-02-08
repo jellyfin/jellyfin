@@ -7,7 +7,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.LiveTv.Configuration;
-using Jellyfin.LiveTv.EmbyTV;
 using Jellyfin.LiveTv.Guide;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
@@ -267,16 +266,13 @@ public class ListingsManager : IListingsManager
         return tunerChannelMappings.First(i => string.Equals(i.Id, tunerChannelNumber, StringComparison.OrdinalIgnoreCase));
     }
 
-    private List<Tuple<IListingsProvider, ListingsProviderInfo>> GetListingProviders()
+    private List<(IListingsProvider Provider, ListingsProviderInfo ProviderInfo)> GetListingProviders()
         => _config.GetLiveTvConfiguration().ListingProviders
-            .Select(i =>
-            {
-                var provider = _listingsProviders
-                    .FirstOrDefault(l => string.Equals(l.Type, i.Type, StringComparison.OrdinalIgnoreCase));
-
-                return provider is null ? null : new Tuple<IListingsProvider, ListingsProviderInfo>(provider, i);
-            })
-            .Where(i => i is not null)
+            .Select(info => (
+                Provider: _listingsProviders.FirstOrDefault(l
+                    => string.Equals(l.Type, info.Type, StringComparison.OrdinalIgnoreCase)),
+                ProviderInfo: info))
+            .Where(i => i.Provider is not null)
             .ToList()!; // Already filtered out null
 
     private async Task AddMetadata(
