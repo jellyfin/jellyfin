@@ -28,12 +28,14 @@ public static class LiveTvServiceCollectionExtensions
         services.AddSingleton<TimerManager>();
         services.AddSingleton<SeriesTimerManager>();
         services.AddSingleton<RecordingsMetadataManager>();
+
         services.AddSingleton<ILiveTvManager, LiveTvManager>();
         services.AddSingleton<IChannelManager, ChannelManager>();
         services.AddSingleton<IStreamHelper, StreamHelper>();
         services.AddSingleton<ITunerHostManager, TunerHostManager>();
         services.AddSingleton<IListingsManager, ListingsManager>();
         services.AddSingleton<IGuideManager, GuideManager>();
+        services.AddSingleton<IRecordingsManager, RecordingsManager>();
 
         services.AddSingleton<ILiveTvService, EmbyTV.EmbyTV>();
         services.AddSingleton<ITunerHost, HdHomerunHost>();

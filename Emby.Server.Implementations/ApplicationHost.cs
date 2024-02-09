@@ -630,7 +630,7 @@ namespace Emby.Server.Implementations
             BaseItem.FileSystem = Resolve<IFileSystem>();
             BaseItem.UserDataManager = Resolve<IUserDataManager>();
             BaseItem.ChannelManager = Resolve<IChannelManager>();
-            Video.LiveTvManager = Resolve<ILiveTvManager>();
+            Video.RecordingsManager = Resolve<IRecordingsManager>();
             Folder.UserViewManager = Resolve<IUserViewManager>();
             UserView.TVSeriesManager = Resolve<ITVSeriesManager>();
             UserView.CollectionManager = Resolve<ICollectionManager>();
