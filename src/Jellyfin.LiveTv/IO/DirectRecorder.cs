@@ -12,7 +12,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.LiveTv.EmbyTV
+namespace Jellyfin.LiveTv.IO
 {
     public sealed class DirectRecorder : IRecorder
     {

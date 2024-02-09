@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 
-namespace Jellyfin.LiveTv.EmbyTV
+namespace Jellyfin.LiveTv.IO
 {
     public interface IRecorder : IDisposable
     {
