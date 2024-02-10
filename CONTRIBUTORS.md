@@ -117,6 +117,7 @@
  - [sebPomme](https://github.com/sebPomme)
  - [SegiH](https://github.com/SegiH)
  - [SenorSmartyPants](https://github.com/SenorSmartyPants)
+ - [shanewilhelm](https://github.com/shanewilhelm)
  - [shemanaev](https://github.com/shemanaev)
  - [skaro13](https://github.com/skaro13)
  - [sl1288](https://github.com/sl1288)
