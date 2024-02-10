@@ -6541,13 +6541,14 @@ namespace MediaBrowser.Controller.MediaEncoding
             return " -codec:s:0 " + codec + " -disposition:s:0 default";
         }
 
-        public string GetProgressiveVideoFullCommandLine(EncodingJobInfo state, EncodingOptions encodingOptions, string outputPath, string defaultPreset)
+        public string GetProgressiveVideoFullCommandLine(EncodingJobInfo state, EncodingOptions encodingOptions, string defaultPreset)
         {
             // Get the output codec name
             var videoCodec = GetVideoEncoder(state, encodingOptions);
 
             var format = string.Empty;
             var keyFrame = string.Empty;
+            var outputPath = state.OutputFilePath;
 
             if (Path.GetExtension(outputPath.AsSpan()).Equals(".mp4", StringComparison.OrdinalIgnoreCase)
                 && state.BaseRequest.Context == EncodingContext.Streaming)
