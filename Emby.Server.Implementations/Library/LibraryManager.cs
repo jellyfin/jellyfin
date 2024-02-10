@@ -1232,6 +1232,19 @@ namespace Emby.Server.Implementations.Library
             return item;
         }
 
+        /// <inheritdoc />
+        public T GetItemById<T>(Guid id)
+         where T : BaseItem
+        {
+            var item = GetItemById(id);
+            if (item is T typedItem)
+            {
+                return typedItem;
+            }
+
+            return null;
+        }
+
         public List<BaseItem> GetItemList(InternalItemsQuery query, bool allowExternalContent)
         {
             if (query.Recursive && !query.ParentId.IsEmpty())

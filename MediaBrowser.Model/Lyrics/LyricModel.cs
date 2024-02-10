@@ -1,12 +1,11 @@
-using System;
 using System.Collections.Generic;
 
-namespace MediaBrowser.Controller.Lyrics;
+namespace MediaBrowser.Model.Lyrics;
 
 /// <summary>
 /// LyricResponse model.
 /// </summary>
-public class LyricResponse
+public class LyricModel
 {
     /// <summary>
     /// Gets or sets Metadata for the lyrics.
@@ -16,5 +15,5 @@ public class LyricResponse
     /// <summary>
     /// Gets or sets a collection of individual lyric lines.
     /// </summary>
-    public IReadOnlyList<LyricLine> Lyrics { get; set; } = Array.Empty<LyricLine>();
+    public IReadOnlyList<LyricLine> Lyrics { get; set; } = [];
 }

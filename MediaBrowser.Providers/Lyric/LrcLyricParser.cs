@@ -8,6 +8,7 @@ using LrcParser.Model;
 using LrcParser.Parser;
 using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.Resolvers;
+using MediaBrowser.Model.Lyrics;
 
 namespace MediaBrowser.Providers.Lyric;
 
@@ -39,7 +40,7 @@ public class LrcLyricParser : ILyricParser
     public ResolverPriority Priority => ResolverPriority.Fourth;
 
     /// <inheritdoc />
-    public LyricResponse? ParseLyrics(LyricFile lyrics)
+    public LyricModel? ParseLyrics(LyricFile lyrics)
     {
         if (!_supportedMediaTypes.Contains(Path.GetExtension(lyrics.Name.AsSpan()), StringComparison.OrdinalIgnoreCase))
         {
@@ -95,7 +96,7 @@ public class LrcLyricParser : ILyricParser
             return null;
         }
 
-        List<LyricLine> lyricList = new();
+        List<LyricLine> lyricList = [];
 
         for (int i = 0; i < sortedLyricData.Count; i++)
         {
@@ -106,7 +107,7 @@ public class LrcLyricParser : ILyricParser
             }
 
             long ticks = TimeSpan.FromMilliseconds(timeData.Value).Ticks;
-            lyricList.Add(new LyricLine(sortedLyricData[i].Text, ticks));
+            lyricList.Add(new LyricLine(sortedLyricData[i].Text.Trim(), ticks));
         }
 
         if (fileMetaData.Count != 0)
@@ -114,10 +115,10 @@ public class LrcLyricParser : ILyricParser
             // Map metaData values from LRC file to LyricMetadata properties
             LyricMetadata lyricMetadata = MapMetadataValues(fileMetaData);
 
-            return new LyricResponse { Metadata = lyricMetadata, Lyrics = lyricList };
+            return new LyricModel { Metadata = lyricMetadata, Lyrics = lyricList };
         }
 
-        return new LyricResponse { Lyrics = lyricList };
+        return new LyricModel { Lyrics = lyricList };
     }
 
     /// <summary>

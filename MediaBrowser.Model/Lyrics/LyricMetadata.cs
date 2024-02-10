@@ -1,4 +1,4 @@
-namespace MediaBrowser.Controller.Lyrics;
+namespace MediaBrowser.Model.Lyrics;
 
 /// <summary>
 /// LyricMetadata model.

@@ -11,7 +11,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Models.SubtitleDtos;
 using MediaBrowser.Common.Api;
@@ -407,7 +406,11 @@ public class SubtitleController : BaseJellyfinApiController
         [FromBody, Required] UploadSubtitleDto body)
     {
         var video = (Video)_libraryManager.GetItemById(itemId);
-        var stream = new CryptoStream(Request.Body, new FromBase64Transform(), CryptoStreamMode.Read);
+
+        var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(body.Data));
+        using var transform = new FromBase64Transform();
+        var stream = new CryptoStream(memoryStream, transform, CryptoStreamMode.Read);
+        await using (memoryStream.ConfigureAwait(false))
         await using (stream.ConfigureAwait(false))
         {
             await _subtitleManager.UploadSubtitle(

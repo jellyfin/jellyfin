@@ -18,7 +18,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
@@ -52,7 +51,6 @@ namespace Emby.Server.Implementations.Dto
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly Lazy<ILiveTvManager> _livetvManagerFactory;
 
-        private readonly ILyricManager _lyricManager;
         private readonly ITrickplayManager _trickplayManager;
 
         public DtoService(
@@ -65,7 +63,6 @@ namespace Emby.Server.Implementations.Dto
             IApplicationHost appHost,
             IMediaSourceManager mediaSourceManager,
             Lazy<ILiveTvManager> livetvManagerFactory,
-            ILyricManager lyricManager,
             ITrickplayManager trickplayManager)
         {
             _logger = logger;
@@ -77,7 +74,6 @@ namespace Emby.Server.Implementations.Dto
             _appHost = appHost;
             _mediaSourceManager = mediaSourceManager;
             _livetvManagerFactory = livetvManagerFactory;
-            _lyricManager = lyricManager;
             _trickplayManager = trickplayManager;
         }
 
@@ -271,7 +267,7 @@ namespace Emby.Server.Implementations.Dto
 
             if (item is Audio audio)
             {
-                dto.HasLyrics = _lyricManager.HasLyricsAsync(audio).GetAwaiter().GetResult();
+                dto.HasLyrics = audio.GetMediaStreams().Any(s => s.Type == MediaStreamType.Lyric);
             }
 
             return dto;
