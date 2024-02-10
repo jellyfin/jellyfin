@@ -4,6 +4,7 @@
  - [97carmine](https://github.com/97carmine)
  - [Abbe98](https://github.com/Abbe98)
  - [agrenott](https://github.com/agrenott)
+ - [alltilla](https://github.com/alltilla)
  - [AndreCarvalho](https://github.com/AndreCarvalho)
  - [anthonylavado](https://github.com/anthonylavado)
  - [Artiume](https://github.com/Artiume)
@@ -77,6 +78,7 @@
  - [Marenz](https://github.com/Marenz)
  - [marius-luca-87](https://github.com/marius-luca-87)
  - [mark-monteiro](https://github.com/mark-monteiro)
+ - [MarkCiliaVincenti](https://github.com/MarkCiliaVincenti)
  - [Matt07211](https://github.com/Matt07211)
  - [Maxr1998](https://github.com/Maxr1998)
  - [mcarlton00](https://github.com/mcarlton00)
@@ -176,6 +178,7 @@
  - [Pithaya](https://github.com/Pithaya)
  - [Çağrı Sakaoğlu](https://github.com/ilovepilav)
  - [TheMelmacian](https://github.com/TheMelmacian)
+ _ [Barasingha](https://github.com/MaVdbussche)
  - [Gauvino](https://github.com/Gauvino)
 
 # Emby Contributors

@@ -68,13 +68,6 @@ namespace MediaBrowser.Controller.LiveTv
         Task CancelSeriesTimer(string id);
 
         /// <summary>
-        /// Adds the parts.
-        /// </summary>
-        /// <param name="services">The services.</param>
-        /// <param name="listingProviders">The listing providers.</param>
-        void AddParts(IEnumerable<ILiveTvService> services, IEnumerable<IListingsProvider> listingProviders);
-
-        /// <summary>
         /// Gets the timer.
         /// </summary>
         /// <param name="id">The identifier.</param>
@@ -173,12 +166,6 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task CreateSeriesTimer(SeriesTimerInfoDto timer, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Gets the guide information.
-        /// </summary>
-        /// <returns>GuideInfo.</returns>
-        GuideInfo GetGuideInfo();
 
         /// <summary>
         /// Gets the recommended programs.

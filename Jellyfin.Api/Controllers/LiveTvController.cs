@@ -43,6 +43,7 @@ namespace Jellyfin.Api.Controllers;
 public class LiveTvController : BaseJellyfinApiController
 {
     private readonly ILiveTvManager _liveTvManager;
+    private readonly IGuideManager _guideManager;
     private readonly ITunerHostManager _tunerHostManager;
     private readonly IUserManager _userManager;
     private readonly IHttpClientFactory _httpClientFactory;
@@ -56,6 +57,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// Initializes a new instance of the <see cref="LiveTvController"/> class.
     /// </summary>
     /// <param name="liveTvManager">Instance of the <see cref="ILiveTvManager"/> interface.</param>
+    /// <param name="guideManager">Instance of the <see cref="IGuideManager"/> interface.</param>
     /// <param name="tunerHostManager">Instance of the <see cref="ITunerHostManager"/> interface.</param>
     /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
     /// <param name="httpClientFactory">Instance of the <see cref="IHttpClientFactory"/> interface.</param>
@@ -66,6 +68,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <param name="transcodeManager">Instance of the <see cref="ITranscodeManager"/> interface.</param>
     public LiveTvController(
         ILiveTvManager liveTvManager,
+        IGuideManager guideManager,
         ITunerHostManager tunerHostManager,
         IUserManager userManager,
         IHttpClientFactory httpClientFactory,
@@ -76,6 +79,7 @@ public class LiveTvController : BaseJellyfinApiController
         ITranscodeManager transcodeManager)
     {
         _liveTvManager = liveTvManager;
+        _guideManager = guideManager;
         _tunerHostManager = tunerHostManager;
         _userManager = userManager;
         _httpClientFactory = httpClientFactory;
@@ -941,9 +945,7 @@ public class LiveTvController : BaseJellyfinApiController
     [Authorize(Policy = Policies.LiveTvAccess)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<GuideInfo> GetGuideInfo()
-    {
-        return _liveTvManager.GetGuideInfo();
-    }
+        => _guideManager.GetGuideInfo();
 
     /// <summary>
     /// Adds a tuner host.

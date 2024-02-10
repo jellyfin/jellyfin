@@ -6,11 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.LibraryStructureDto;
 using MediaBrowser.Common.Api;
-using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -180,7 +178,7 @@ public class LibraryStructureController : BaseJellyfinApiController
                 // No need to start if scanning the library because it will handle it
                 if (refreshLibrary)
                 {
-                    await _libraryManager.ValidateMediaLibrary(new SimpleProgress<double>(), CancellationToken.None).ConfigureAwait(false);
+                    await _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None).ConfigureAwait(false);
                 }
                 else
                 {
@@ -224,7 +222,7 @@ public class LibraryStructureController : BaseJellyfinApiController
                 // No need to start if scanning the library because it will handle it
                 if (refreshLibrary)
                 {
-                    await _libraryManager.ValidateMediaLibrary(new SimpleProgress<double>(), CancellationToken.None).ConfigureAwait(false);
+                    await _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None).ConfigureAwait(false);
                 }
                 else
                 {
@@ -293,7 +291,7 @@ public class LibraryStructureController : BaseJellyfinApiController
                 // No need to start if scanning the library because it will handle it
                 if (refreshLibrary)
                 {
-                    await _libraryManager.ValidateMediaLibrary(new SimpleProgress<double>(), CancellationToken.None).ConfigureAwait(false);
+                    await _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None).ConfigureAwait(false);
                 }
                 else
                 {

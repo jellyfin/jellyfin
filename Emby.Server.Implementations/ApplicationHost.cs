@@ -62,7 +62,6 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Playlists;
-using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.QuickConnect;
 using MediaBrowser.Controller.Resolvers;
@@ -393,7 +392,7 @@ namespace Emby.Server.Implementations
         /// Runs the startup tasks.
         /// </summary>
         /// <returns><see cref="Task" />.</returns>
-        public async Task RunStartupTasksAsync()
+        public Task RunStartupTasksAsync()
         {
             Logger.LogInformation("Running startup tasks");
 
@@ -405,38 +404,10 @@ namespace Emby.Server.Implementations
             Resolve<IMediaEncoder>().SetFFmpegPath();
 
             Logger.LogInformation("ServerId: {ServerId}", SystemId);
-
-            var entryPoints = GetExports<IServerEntryPoint>();
-
-            var stopWatch = new Stopwatch();
-            stopWatch.Start();
-
-            await Task.WhenAll(StartEntryPoints(entryPoints, true)).ConfigureAwait(false);
-            Logger.LogInformation("Executed all pre-startup entry points in {Elapsed:g}", stopWatch.Elapsed);
-
             Logger.LogInformation("Core startup complete");
             CoreStartupHasCompleted = true;
 
-            stopWatch.Restart();
-
-            await Task.WhenAll(StartEntryPoints(entryPoints, false)).ConfigureAwait(false);
-            Logger.LogInformation("Executed all post-startup entry points in {Elapsed:g}", stopWatch.Elapsed);
-            stopWatch.Stop();
-        }
-
-        private IEnumerable<Task> StartEntryPoints(IEnumerable<IServerEntryPoint> entryPoints, bool isBeforeStartup)
-        {
-            foreach (var entryPoint in entryPoints)
-            {
-                if (isBeforeStartup != (entryPoint is IRunBeforeStartup))
-                {
-                    continue;
-                }
-
-                Logger.LogDebug("Starting entry point {Type}", entryPoint.GetType());
-
-                yield return entryPoint.RunAsync();
-            }
+            return Task.CompletedTask;
         }
 
         /// <inheritdoc/>
@@ -694,8 +665,6 @@ namespace Emby.Server.Implementations
                 GetExports<IMetadataProvider>(),
                 GetExports<IMetadataSaver>(),
                 GetExports<IExternalId>());
-
-            Resolve<ILiveTvManager>().AddParts(GetExports<ILiveTvService>(), GetExports<IListingsProvider>());
 
             Resolve<IMediaSourceManager>().AddParts(GetExports<IMediaSourceProvider>());
         }

@@ -188,16 +188,24 @@ public class SystemController : BaseJellyfinApiController
     /// <param name="name">The name of the log file to get.</param>
     /// <response code="200">Log file retrieved.</response>
     /// <response code="403">User does not have permission to get log files.</response>
+    /// <response code="404">Could not find a log file with the name.</response>
     /// <returns>The log file.</returns>
     [HttpGet("Logs/Log")]
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesFile(MediaTypeNames.Text.Plain)]
     public ActionResult GetLogFile([FromQuery, Required] string name)
     {
-        var file = _fileSystem.GetFiles(_appPaths.LogDirectoryPath)
-            .First(i => string.Equals(i.Name, name, StringComparison.OrdinalIgnoreCase));
+        var file = _fileSystem
+            .GetFiles(_appPaths.LogDirectoryPath)
+            .FirstOrDefault(i => string.Equals(i.Name, name, StringComparison.OrdinalIgnoreCase));
+
+        if (file is null)
+        {
+            return NotFound("Log file not found.");
+        }
 
         // For older files, assume fully static
         var fileShare = file.LastWriteTimeUtc < DateTime.UtcNow.AddHours(-1) ? FileShare.Read : FileShare.ReadWrite;
