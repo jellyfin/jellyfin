@@ -461,7 +461,7 @@ public class VideosController : BaseJellyfinApiController
         var outputPath = state.OutputFilePath;
 
         // Static stream
-        if (@static.HasValue && @static.Value)
+        if (@static.HasValue && @static.Value && !(state.MediaSource.VideoType == VideoType.BluRay || state.MediaSource.VideoType == VideoType.Dvd))
         {
             var contentType = state.GetMimeType("." + state.OutputContainer, false) ?? state.GetMimeType(state.MediaPath);
 
