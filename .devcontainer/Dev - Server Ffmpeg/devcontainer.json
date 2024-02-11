@@ -1,0 +1,28 @@
+{
+    "name": "Development Jellyfin Server - FFmpeg",
+    "image":"mcr.microsoft.com/devcontainers/dotnet:8.0-jammy",
+    // restores nuget packages, installs the dotnet workloads and installs the dev https certificate
+    "postStartCommand": "dotnet restore; dotnet workload update; dotnet dev-certs https --trust; sudo bash \"./.devcontainer/Dev - Server Ffmpeg/install-ffmpeg.sh\"",
+    // reads the extensions list and installs them
+    "postAttachCommand": "cat .vscode/extensions.json | jq -r .recommendations[] | xargs -n 1 code --install-extension",
+    "features": {
+        "ghcr.io/devcontainers/features/dotnet:2": {
+            "version": "none",
+            "dotnetRuntimeVersions": "8.0",
+            "aspNetCoreRuntimeVersions": "8.0"
+        },
+        "ghcr.io/devcontainers-contrib/features/apt-packages:1": {
+            "preserve_apt_list": false,
+            "packages": ["libfontconfig1"]
+        },
+        "ghcr.io/devcontainers/features/docker-in-docker:2": {
+            "dockerDashComposeVersion": "v2"
+        },
+        "ghcr.io/devcontainers/features/github-cli:1": {},
+        "ghcr.io/eitsupi/devcontainer-features/jq-likes:2": {}
+    },
+    "hostRequirements": {
+        "memory": "8gb",
+        "cpus": 4
+    }
+}

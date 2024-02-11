@@ -182,7 +182,6 @@ public class SkiaEncoder : IImageEncoder
     /// <inheritdoc />
     /// <exception cref="ArgumentNullException">The path is null.</exception>
     /// <exception cref="FileNotFoundException">The path is not valid.</exception>
-    /// <exception cref="SkiaCodecException">The file at the specified path could not be used to generate a codec.</exception>
     public string GetImageBlurHash(int xComp, int yComp, string path)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);

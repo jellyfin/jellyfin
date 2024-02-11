@@ -95,12 +95,5 @@ namespace MediaBrowser.Controller.Channels
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The item media sources.</returns>
         IEnumerable<MediaSourceInfo> GetStaticMediaSources(BaseItem item, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Whether the item supports media probe.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>Whether media probe should be enabled.</returns>
-        bool EnableMediaProbe(BaseItem item);
     }
 }

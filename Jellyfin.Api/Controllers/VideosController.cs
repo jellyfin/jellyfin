@@ -11,6 +11,7 @@ using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
@@ -96,12 +97,12 @@ public class VideosController : BaseJellyfinApiController
     public ActionResult<QueryResult<BaseItemDto>> GetAdditionalPart([FromRoute, Required] Guid itemId, [FromQuery] Guid? userId)
     {
         userId = RequestHelpers.GetUserId(User, userId);
-        var user = userId.Value.Equals(default)
+        var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
 
-        var item = itemId.Equals(default)
-            ? (userId.Value.Equals(default)
+        var item = itemId.IsEmpty()
+            ? (userId.IsNullOrEmpty()
                 ? _libraryManager.RootFolder
                 : _libraryManager.GetUserRootFolder())
             : _libraryManager.GetItemById(itemId);

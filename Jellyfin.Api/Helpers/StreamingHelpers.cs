@@ -82,7 +82,7 @@ public static class StreamingHelpers
         };
 
         var userId = httpContext.User.GetUserId();
-        if (!userId.Equals(default))
+        if (!userId.IsEmpty())
         {
             state.User = userManager.GetUserById(userId);
         }

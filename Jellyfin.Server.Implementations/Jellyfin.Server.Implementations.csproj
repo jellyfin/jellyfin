@@ -26,6 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AsyncKeyedLock" />
     <PackageReference Include="EFCoreSecondLevelCacheInterceptor" />
     <PackageReference Include="System.Linq.Async" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />

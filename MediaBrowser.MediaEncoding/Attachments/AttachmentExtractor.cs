@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using AsyncKeyedLock;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Entities;
@@ -22,7 +23,7 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.MediaEncoding.Attachments
 {
-    public sealed class AttachmentExtractor : IAttachmentExtractor
+    public sealed class AttachmentExtractor : IAttachmentExtractor, IDisposable
     {
         private readonly ILogger<AttachmentExtractor> _logger;
         private readonly IApplicationPaths _appPaths;
@@ -30,8 +31,11 @@ namespace MediaBrowser.MediaEncoding.Attachments
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IMediaSourceManager _mediaSourceManager;
 
-        private readonly ConcurrentDictionary<string, SemaphoreSlim> _semaphoreLocks =
-            new ConcurrentDictionary<string, SemaphoreSlim>();
+        private readonly AsyncKeyedLocker<string> _semaphoreLocks = new(o =>
+        {
+            o.PoolSize = 20;
+            o.PoolInitialFill = 1;
+        });
 
         public AttachmentExtractor(
             ILogger<AttachmentExtractor> logger,
@@ -84,11 +88,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
             string outputPath,
             CancellationToken cancellationToken)
         {
-            var semaphore = _semaphoreLocks.GetOrAdd(outputPath, key => new SemaphoreSlim(1, 1));
-
-            await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
+            using (await _semaphoreLocks.LockAsync(outputPath, cancellationToken).ConfigureAwait(false))
             {
                 if (!Directory.Exists(outputPath))
                 {
@@ -99,10 +99,6 @@ namespace MediaBrowser.MediaEncoding.Attachments
                         cancellationToken).ConfigureAwait(false);
                 }
             }
-            finally
-            {
-                semaphore.Release();
-            }
         }
 
         public async Task ExtractAllAttachmentsExternal(
@@ -111,11 +107,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
             string outputPath,
             CancellationToken cancellationToken)
         {
-            var semaphore = _semaphoreLocks.GetOrAdd(outputPath, key => new SemaphoreSlim(1, 1));
-
-            await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
+            using (await _semaphoreLocks.LockAsync(outputPath, cancellationToken).ConfigureAwait(false))
             {
                 if (!File.Exists(Path.Join(outputPath, id)))
                 {
@@ -130,10 +122,6 @@ namespace MediaBrowser.MediaEncoding.Attachments
                         File.Create(Path.Join(outputPath, id));
                     }
                 }
-            }
-            finally
-            {
-                semaphore.Release();
             }
         }
 
@@ -256,11 +244,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
             string outputPath,
             CancellationToken cancellationToken)
         {
-            var semaphore = _semaphoreLocks.GetOrAdd(outputPath, key => new SemaphoreSlim(1, 1));
-
-            await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
+            using (await _semaphoreLocks.LockAsync(outputPath, cancellationToken).ConfigureAwait(false))
             {
                 if (!File.Exists(outputPath))
                 {
@@ -270,10 +254,6 @@ namespace MediaBrowser.MediaEncoding.Attachments
                         outputPath,
                         cancellationToken).ConfigureAwait(false);
                 }
-            }
-            finally
-            {
-                semaphore.Release();
             }
         }
 
@@ -378,6 +358,12 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
             var prefix = filename.AsSpan(0, 1);
             return Path.Join(_appPaths.DataPath, "attachments", prefix, filename);
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            _semaphoreLocks.Dispose();
         }
     }
 }

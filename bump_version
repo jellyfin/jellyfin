@@ -21,7 +21,7 @@ fi
 shared_version_file="./SharedVersion.cs"
 build_file="./build.yaml"
 # csproj files for nuget packages
-jellyfin_subprojects=( 
+jellyfin_subprojects=(
   MediaBrowser.Common/MediaBrowser.Common.csproj
   Jellyfin.Data/Jellyfin.Data.csproj
   MediaBrowser.Controller/MediaBrowser.Controller.csproj
@@ -97,7 +97,7 @@ cat ${debian_changelog_file} >> ${debian_changelog_temp}
 # Move into place
 mv ${debian_changelog_temp} ${debian_changelog_file}
 
-# Write out a temporary Yum changelog with our new stuff prepended and some templated formatting
+# Write out a temporary Dnf changelog with our new stuff prepended and some templated formatting
 fedora_spec_file="fedora/jellyfin.spec"
 fedora_changelog_temp="$( mktemp )"
 fedora_spec_temp_dir="$( mktemp -d )"

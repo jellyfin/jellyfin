@@ -6,6 +6,7 @@ using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -95,7 +96,7 @@ public class MusicGenresController : BaseJellyfinApiController
             .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, false, imageTypeLimit, enableImageTypes);
 
-        User? user = userId.Value.Equals(default)
+        User? user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -164,7 +165,7 @@ public class MusicGenresController : BaseJellyfinApiController
             return NotFound();
         }
 
-        if (!userId.Value.Equals(default))
+        if (!userId.IsNullOrEmpty())
         {
             var user = _userManager.GetUserById(userId.Value);
 

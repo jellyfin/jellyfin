@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.StartupDtos;
 using Jellyfin.Api.Models.UserDtos;
+using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Model.Dto;
 using Xunit;
@@ -56,7 +57,7 @@ namespace Jellyfin.Server.Integration.Tests
 
         public static async Task<BaseItemDto> GetRootFolderDtoAsync(HttpClient client, Guid userId = default)
         {
-            if (userId.Equals(default))
+            if (userId.IsEmpty())
             {
                 var userDto = await GetUserDtoAsync(client);
                 userId = userDto.Id;

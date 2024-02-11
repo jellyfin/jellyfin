@@ -124,5 +124,7 @@
     "External": "Luaran",
     "TaskOptimizeDatabase": "Optimumkan pangkalan data",
     "TaskKeyframeExtractor": "Ekstrak bingkai kunci",
-    "TaskKeyframeExtractorDescription": "Ekstrak bingkai kunci dari fail video untuk membina HLS playlist yang lebih tepat. Tugas ini mungkin perlukan masa yang panjang."
+    "TaskKeyframeExtractorDescription": "Ekstrak bingkai kunci dari fail video untuk membina HLS playlist yang lebih tepat. Tugas ini mungkin perlukan masa yang panjang.",
+    "TaskRefreshTrickplayImagesDescription": "Jana gambar prebiu Trickplay untuk video dalam perpustakaan.",
+    "TaskRefreshTrickplayImages": "Jana gambar Trickplay"
 }

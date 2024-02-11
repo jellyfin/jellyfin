@@ -13,7 +13,6 @@ using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.BaseItemManager;
 using MediaBrowser.Controller.Configuration;
@@ -706,7 +705,7 @@ namespace MediaBrowser.Providers.Manager
         {
             BaseItem? referenceItem = null;
 
-            if (!searchInfo.ItemId.Equals(default))
+            if (!searchInfo.ItemId.IsEmpty())
             {
                 referenceItem = _libraryManager.GetItemById(searchInfo.ItemId);
             }
@@ -944,7 +943,7 @@ namespace MediaBrowser.Providers.Manager
         public void QueueRefresh(Guid itemId, MetadataRefreshOptions options, RefreshPriority priority)
         {
             ArgumentNullException.ThrowIfNull(itemId);
-            if (itemId.Equals(default))
+            if (itemId.IsEmpty())
             {
                 throw new ArgumentException("Guid can't be empty", nameof(itemId));
             }
@@ -1025,7 +1024,7 @@ namespace MediaBrowser.Providers.Manager
                     await RefreshCollectionFolderChildren(options, collectionFolder, cancellationToken).ConfigureAwait(false);
                     break;
                 case Folder folder:
-                    await folder.ValidateChildren(new SimpleProgress<double>(), options, cancellationToken: cancellationToken).ConfigureAwait(false);
+                    await folder.ValidateChildren(new Progress<double>(), options, cancellationToken: cancellationToken).ConfigureAwait(false);
                     break;
             }
         }
@@ -1036,7 +1035,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 await child.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
 
-                await child.ValidateChildren(new SimpleProgress<double>(), options, cancellationToken: cancellationToken).ConfigureAwait(false);
+                await child.ValidateChildren(new Progress<double>(), options, cancellationToken: cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -1058,7 +1057,7 @@ namespace MediaBrowser.Providers.Manager
                 .Select(i => i.MusicArtist)
                 .Where(i => i is not null);
 
-            var musicArtistRefreshTasks = musicArtists.Select(i => i.ValidateChildren(new SimpleProgress<double>(), options, true, cancellationToken));
+            var musicArtistRefreshTasks = musicArtists.Select(i => i.ValidateChildren(new Progress<double>(), options, true, cancellationToken));
 
             await Task.WhenAll(musicArtistRefreshTasks).ConfigureAwait(false);
 

@@ -4,11 +4,14 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using AsyncKeyedLock;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
@@ -42,7 +45,11 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
     private readonly IAttachmentExtractor _attachmentExtractor;
 
     private readonly List<TranscodingJob> _activeTranscodingJobs = new();
-    private readonly Dictionary<string, SemaphoreSlim> _transcodingLocks = new();
+    private readonly AsyncKeyedLocker<string> _transcodingLocks = new(o =>
+    {
+        o.PoolSize = 20;
+        o.PoolInitialFill = 1;
+    });
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TranscodeManager"/> class.
@@ -223,11 +230,6 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
             }
         }
 
-        lock (_transcodingLocks)
-        {
-            _transcodingLocks.Remove(job.Path!);
-        }
-
         job.Stop();
 
         if (delete(job.Path!))
@@ -400,7 +402,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
 
         if (state.VideoRequest is not null && !EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
         {
-            var user = userId.Equals(default) ? null : _userManager.GetUserById(userId);
+            var user = userId.IsEmpty() ? null : _userManager.GetUserById(userId);
             if (user is not null && !user.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding))
             {
                 this.OnTranscodeFailedToStart(outputPath, transcodingJobType, state);
@@ -624,11 +626,6 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
             }
         }
 
-        lock (_transcodingLocks)
-        {
-            _transcodingLocks.Remove(path);
-        }
-
         if (!string.IsNullOrWhiteSpace(state.Request.DeviceId))
         {
             _sessionManager.ClearTranscodingInfo(state.Request.DeviceId);
@@ -704,21 +701,6 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         }
     }
 
-    /// <inheritdoc />
-    public SemaphoreSlim GetTranscodingLock(string outputPath)
-    {
-        lock (_transcodingLocks)
-        {
-            if (!_transcodingLocks.TryGetValue(outputPath, out SemaphoreSlim? result))
-            {
-                result = new SemaphoreSlim(1, 1);
-                _transcodingLocks[outputPath] = result;
-            }
-
-            return result;
-        }
-    }
-
     private void OnPlaybackProgress(object? sender, PlaybackProgressEventArgs e)
     {
         if (!string.IsNullOrWhiteSpace(e.PlaySessionId))
@@ -741,10 +723,23 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         }
     }
 
+    /// <summary>
+    /// Transcoding lock.
+    /// </summary>
+    /// <param name="outputPath">The output path of the transcoded file.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>An <see cref="IDisposable"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ValueTask<IDisposable> LockAsync(string outputPath, CancellationToken cancellationToken)
+    {
+        return _transcodingLocks.LockAsync(outputPath, cancellationToken);
+    }
+
     /// <inheritdoc />
     public void Dispose()
     {
         _sessionManager.PlaybackProgress -= OnPlaybackProgress;
         _sessionManager.PlaybackStart -= OnPlaybackProgress;
+        _transcodingLocks.Dispose();
     }
 }

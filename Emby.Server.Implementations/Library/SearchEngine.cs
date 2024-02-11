@@ -30,7 +30,7 @@ namespace Emby.Server.Implementations.Library
         public QueryResult<SearchHintInfo> GetSearchHints(SearchQuery query)
         {
             User user = null;
-            if (!query.UserId.Equals(default))
+            if (!query.UserId.IsEmpty())
             {
                 user = _userManager.GetUserById(query.UserId);
             }
@@ -177,7 +177,7 @@ namespace Emby.Server.Implementations.Library
 
             if (searchQuery.IncludeItemTypes.Length == 1 && searchQuery.IncludeItemTypes[0] == BaseItemKind.MusicArtist)
             {
-                if (!searchQuery.ParentId.Equals(default))
+                if (!searchQuery.ParentId.IsEmpty())
                 {
                     searchQuery.AncestorIds = new[] { searchQuery.ParentId };
                     searchQuery.ParentId = Guid.Empty;

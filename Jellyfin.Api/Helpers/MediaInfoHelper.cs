@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -86,7 +87,7 @@ public class MediaInfoHelper
         string? mediaSourceId = null,
         string? liveStreamId = null)
     {
-        var user = userId is null || userId.Value.Equals(default)
+        var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
         var item = _libraryManager.GetItemById(id);

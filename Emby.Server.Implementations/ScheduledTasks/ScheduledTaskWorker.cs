@@ -14,7 +14,6 @@ using Jellyfin.Data.Events;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Progress;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -371,7 +370,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 throw new InvalidOperationException("Cannot execute a Task that is already running");
             }
 
-            var progress = new SimpleProgress<double>();
+            var progress = new Progress<double>();
 
             CurrentCancellationTokenSource = new CancellationTokenSource();
 

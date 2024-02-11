@@ -1,10 +1,9 @@
-#pragma warning disable CS1591
-
-using System;
-
 namespace MediaBrowser.Controller.Library
 {
-    public interface ILibraryMonitor : IDisposable
+    /// <summary>
+    /// Service responsible for monitoring library filesystems for changes.
+    /// </summary>
+    public interface ILibraryMonitor
     {
         /// <summary>
         /// Starts this instance.

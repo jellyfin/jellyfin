@@ -167,7 +167,7 @@ namespace Jellyfin.Server.Implementations.Devices
         }
 
         /// <inheritdoc />
-        public async Task<QueryResult<DeviceInfo>> GetDevicesForUser(Guid? userId, bool? supportsSync)
+        public async Task<QueryResult<DeviceInfo>> GetDevicesForUser(Guid? userId)
         {
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
@@ -178,10 +178,6 @@ namespace Jellyfin.Server.Implementations.Devices
                     .ThenBy(d => d.DeviceId)
                     .SelectMany(d => dbContext.DeviceOptions.Where(o => o.DeviceId == d.DeviceId).DefaultIfEmpty(), (d, o) => new { Device = d, Options = o })
                     .AsAsyncEnumerable();
-                if (supportsSync.HasValue)
-                {
-                    sessions = sessions.Where(i => GetCapabilities(i.Device.DeviceId).SupportsSync == supportsSync.Value);
-                }
 
                 if (userId.HasValue)
                 {

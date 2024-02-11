@@ -5,6 +5,7 @@ using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -91,7 +92,7 @@ public class StudiosController : BaseJellyfinApiController
             .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
-        User? user = userId.Value.Equals(default)
+        User? user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -144,7 +145,7 @@ public class StudiosController : BaseJellyfinApiController
         var dtoOptions = new DtoOptions().AddClientFields(User);
 
         var item = _libraryManager.GetStudio(name);
-        if (!userId.Equals(default))
+        if (!userId.IsNullOrEmpty())
         {
             var user = _userManager.GetUserById(userId.Value);
 

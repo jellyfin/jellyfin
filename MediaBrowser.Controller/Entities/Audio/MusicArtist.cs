@@ -24,7 +24,7 @@ namespace MediaBrowser.Controller.Entities.Audio
     public class MusicArtist : Folder, IItemByName, IHasMusicGenres, IHasDualAccess, IHasLookupInfo<ArtistInfo>
     {
         [JsonIgnore]
-        public bool IsAccessedByName => ParentId.Equals(default);
+        public bool IsAccessedByName => ParentId.IsEmpty();
 
         [JsonIgnore]
         public override bool IsFolder => !IsAccessedByName;

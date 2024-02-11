@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.SyncPlay;
@@ -553,7 +554,7 @@ namespace Emby.Server.Implementations.SyncPlay
             if (playingItemRemoved)
             {
                 var itemId = PlayQueue.GetPlayingItemId();
-                if (!itemId.Equals(default))
+                if (!itemId.IsEmpty())
                 {
                     var item = _libraryManager.GetItemById(itemId);
                     RunTimeTicks = item.RunTimeTicks ?? 0;

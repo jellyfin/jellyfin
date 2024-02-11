@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -115,6 +116,14 @@ namespace MediaBrowser.Controller.Library
         /// <param name="uniqueId">The unique identifier.</param>
         /// <returns>An instance of <see cref="ILiveStream"/>.</returns>
         public ILiveStream GetLiveStreamInfoByUniqueId(string uniqueId);
+
+        /// <summary>
+        /// Gets the media sources for an active recording.
+        /// </summary>
+        /// <param name="info">The <see cref="ActiveRecordingInfo"/>.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
+        /// <returns>A task containing the <see cref="MediaSourceInfo"/>'s for the recording.</returns>
+        Task<List<MediaSourceInfo>> GetRecordingStreamMediaSources(ActiveRecordingInfo info, CancellationToken cancellationToken);
 
         /// <summary>
         /// Closes the media source.

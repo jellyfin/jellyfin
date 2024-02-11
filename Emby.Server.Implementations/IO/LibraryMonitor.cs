@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -11,11 +9,13 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.IO;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.IO
 {
-    public class LibraryMonitor : ILibraryMonitor
+    /// <inheritdoc cref="ILibraryMonitor" />
+    public sealed class LibraryMonitor : ILibraryMonitor, IDisposable
     {
         private readonly ILogger<LibraryMonitor> _logger;
         private readonly ILibraryManager _libraryManager;
@@ -25,19 +25,19 @@ namespace Emby.Server.Implementations.IO
         /// <summary>
         /// The file system watchers.
         /// </summary>
-        private readonly ConcurrentDictionary<string, FileSystemWatcher> _fileSystemWatchers = new ConcurrentDictionary<string, FileSystemWatcher>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, FileSystemWatcher> _fileSystemWatchers = new(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// The affected paths.
         /// </summary>
-        private readonly List<FileRefresher> _activeRefreshers = new List<FileRefresher>();
+        private readonly List<FileRefresher> _activeRefreshers = [];
 
         /// <summary>
         /// A dynamic list of paths that should be ignored.  Added to during our own file system modifications.
         /// </summary>
-        private readonly ConcurrentDictionary<string, string> _tempIgnoredPaths = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, string> _tempIgnoredPaths = new(StringComparer.OrdinalIgnoreCase);
 
-        private bool _disposed = false;
+        private bool _disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryMonitor" /> class.
@@ -46,34 +46,31 @@ namespace Emby.Server.Implementations.IO
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="fileSystem">The filesystem.</param>
+        /// <param name="appLifetime">The <see cref="IHostApplicationLifetime"/>.</param>
         public LibraryMonitor(
             ILogger<LibraryMonitor> logger,
             ILibraryManager libraryManager,
             IServerConfigurationManager configurationManager,
-            IFileSystem fileSystem)
+            IFileSystem fileSystem,
+            IHostApplicationLifetime appLifetime)
         {
             _libraryManager = libraryManager;
             _logger = logger;
             _configurationManager = configurationManager;
             _fileSystem = fileSystem;
+
+            appLifetime.ApplicationStarted.Register(Start);
         }
 
-        /// <summary>
-        /// Add the path to our temporary ignore list.  Use when writing to a path within our listening scope.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        private void TemporarilyIgnore(string path)
-        {
-            _tempIgnoredPaths[path] = path;
-        }
-
+        /// <inheritdoc />
         public void ReportFileSystemChangeBeginning(string path)
         {
             ArgumentException.ThrowIfNullOrEmpty(path);
 
-            TemporarilyIgnore(path);
+            _tempIgnoredPaths[path] = path;
         }
 
+        /// <inheritdoc />
         public async void ReportFileSystemChangeComplete(string path, bool refreshPath)
         {
             ArgumentException.ThrowIfNullOrEmpty(path);
@@ -107,14 +104,10 @@ namespace Emby.Server.Implementations.IO
 
             var options = _libraryManager.GetLibraryOptions(item);
 
-            if (options is not null)
-            {
-                return options.EnableRealtimeMonitor;
-            }
-
-            return false;
+            return options is not null && options.EnableRealtimeMonitor;
         }
 
+        /// <inheritdoc />
         public void Start()
         {
             _libraryManager.ItemAdded += OnLibraryManagerItemAdded;
@@ -306,18 +299,9 @@ namespace Emby.Server.Implementations.IO
             {
                 if (removeFromList)
                 {
-                    RemoveWatcherFromList(watcher);
+                    _fileSystemWatchers.TryRemove(watcher.Path, out _);
                 }
             }
-        }
-
-        /// <summary>
-        /// Removes the watcher from list.
-        /// </summary>
-        /// <param name="watcher">The watcher.</param>
-        private void RemoveWatcherFromList(FileSystemWatcher watcher)
-        {
-            _fileSystemWatchers.TryRemove(watcher.Path, out _);
         }
 
         /// <summary>
@@ -352,6 +336,7 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
+        /// <inheritdoc />
         public void ReportFileSystemChanged(string path)
         {
             ArgumentException.ThrowIfNullOrEmpty(path);
@@ -479,31 +464,15 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
+        /// <inheritdoc />
         public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool disposing)
         {
             if (_disposed)
             {
                 return;
             }
 
-            if (disposing)
-            {
-                Stop();
-            }
-
+            Stop();
             _disposed = true;
         }
     }

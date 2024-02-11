@@ -90,7 +90,7 @@ public class YearsController : BaseJellyfinApiController
             .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
-        User? user = userId.Value.Equals(default)
+        User? user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
         BaseItem parentItem = _libraryManager.GetParentItem(parentId, userId);
@@ -110,7 +110,7 @@ public class YearsController : BaseJellyfinApiController
         {
             var folder = (Folder)parentItem;
 
-            if (userId.Equals(default))
+            if (userId.IsNullOrEmpty())
             {
                 items = recursive ? folder.GetRecursiveChildren(Filter) : folder.Children.Where(Filter).ToList();
             }
@@ -182,7 +182,7 @@ public class YearsController : BaseJellyfinApiController
         var dtoOptions = new DtoOptions()
             .AddClientFields(User);
 
-        if (!userId.Value.Equals(default))
+        if (!userId.IsNullOrEmpty())
         {
             var user = _userManager.GetUserById(userId.Value);
             return _dtoService.GetBaseItemDto(item, dtoOptions, user);

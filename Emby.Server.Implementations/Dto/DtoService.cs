@@ -418,15 +418,6 @@ namespace Emby.Server.Implementations.Dto
             {
                 dto.PlayAccess = item.GetPlayAccess(user);
             }
-
-            if (options.ContainsField(ItemFields.BasicSyncInfo))
-            {
-                var userCanSync = user is not null && user.HasPermission(PermissionKind.EnableContentDownloading);
-                if (userCanSync && item.SupportsExternalTransfer)
-                {
-                    dto.SupportsSync = true;
-                }
-            }
         }
 
         private static int GetChildCount(Folder folder, User user)

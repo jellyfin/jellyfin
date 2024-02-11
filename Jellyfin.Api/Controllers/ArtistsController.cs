@@ -6,6 +6,7 @@ using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -126,7 +127,7 @@ public class ArtistsController : BaseJellyfinApiController
         User? user = null;
         BaseItem parentItem = _libraryManager.GetParentItem(parentId, userId);
 
-        if (!userId.Value.Equals(default))
+        if (!userId.IsNullOrEmpty())
         {
             user = _userManager.GetUserById(userId.Value);
         }
@@ -330,7 +331,7 @@ public class ArtistsController : BaseJellyfinApiController
         User? user = null;
         BaseItem parentItem = _libraryManager.GetParentItem(parentId, userId);
 
-        if (!userId.Value.Equals(default))
+        if (!userId.IsNullOrEmpty())
         {
             user = _userManager.GetUserById(userId.Value);
         }
@@ -469,7 +470,7 @@ public class ArtistsController : BaseJellyfinApiController
 
         var item = _libraryManager.GetArtist(name, dtoOptions);
 
-        if (!userId.Value.Equals(default))
+        if (!userId.IsNullOrEmpty())
         {
             var user = _userManager.GetUserById(userId.Value);
 

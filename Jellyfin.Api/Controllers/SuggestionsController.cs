@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -62,7 +63,7 @@ public class SuggestionsController : BaseJellyfinApiController
         [FromQuery] int? limit,
         [FromQuery] bool enableTotalRecordCount = false)
     {
-        var user = userId.Equals(default)
+        var user = userId.IsEmpty()
             ? null
             : _userManager.GetUserById(userId);
 

@@ -209,7 +209,7 @@ public class SearchController : BaseJellyfinApiController
                 break;
         }
 
-        if (!item.ChannelId.Equals(default))
+        if (!item.ChannelId.IsEmpty())
         {
             var channel = _libraryManager.GetItemById(item.ChannelId);
             result.ChannelName = channel?.Name;

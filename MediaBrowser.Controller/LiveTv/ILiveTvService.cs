@@ -141,14 +141,6 @@ namespace MediaBrowser.Controller.LiveTv
         Task CloseLiveStream(string id, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Records the live stream.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task RecordLiveStream(string id, CancellationToken cancellationToken);
-
-        /// <summary>
         /// Resets the tuner.
         /// </summary>
         /// <param name="id">The identifier.</param>
@@ -179,10 +171,5 @@ namespace MediaBrowser.Controller.LiveTv
     public interface ISupportsDirectStreamProvider
     {
         Task<ILiveStream> GetChannelStreamWithDirectStreamProvider(string channelId, string streamId, List<ILiveStream> currentLiveStreams, CancellationToken cancellationToken);
-    }
-
-    public interface ISupportsUpdatingDefaults
-    {
-        Task UpdateTimerDefaults(SeriesTimerInfo info, CancellationToken cancellationToken);
     }
 }

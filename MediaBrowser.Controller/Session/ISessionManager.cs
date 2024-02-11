@@ -111,7 +111,8 @@ namespace MediaBrowser.Controller.Session
         /// Reports the session ended.
         /// </summary>
         /// <param name="sessionId">The session identifier.</param>
-        void ReportSessionEnded(string sessionId);
+        /// <returns>Task.</returns>
+        ValueTask ReportSessionEnded(string sessionId);
 
         /// <summary>
         /// Sends the general command.

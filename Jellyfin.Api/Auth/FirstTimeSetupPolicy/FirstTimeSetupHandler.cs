@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Library;
@@ -46,7 +47,7 @@ namespace Jellyfin.Api.Auth.FirstTimeSetupPolicy
             }
 
             var userId = contextUser.GetUserId();
-            if (userId.Equals(default))
+            if (userId.IsEmpty())
             {
                 context.Fail();
                 return Task.CompletedTask;

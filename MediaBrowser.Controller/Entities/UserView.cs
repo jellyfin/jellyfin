@@ -70,11 +70,11 @@ namespace MediaBrowser.Controller.Entities
         /// <inheritdoc />
         public override IEnumerable<Guid> GetIdsForAncestorQuery()
         {
-            if (!DisplayParentId.Equals(default))
+            if (!DisplayParentId.IsEmpty())
             {
                 yield return DisplayParentId;
             }
-            else if (!ParentId.Equals(default))
+            else if (!ParentId.IsEmpty())
             {
                 yield return ParentId;
             }
@@ -95,11 +95,11 @@ namespace MediaBrowser.Controller.Entities
         {
             var parent = this as Folder;
 
-            if (!DisplayParentId.Equals(default))
+            if (!DisplayParentId.IsEmpty())
             {
                 parent = LibraryManager.GetItemById(DisplayParentId) as Folder ?? parent;
             }
-            else if (!ParentId.Equals(default))
+            else if (!ParentId.IsEmpty())
             {
                 parent = LibraryManager.GetItemById(ParentId) as Folder ?? parent;
             }

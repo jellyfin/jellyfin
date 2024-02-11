@@ -69,7 +69,7 @@ namespace Jellyfin.Model.Tests.Net
         [InlineData(".dsp", "audio/dsp")]
         [InlineData(".flac", "audio/flac")]
         [InlineData(".m4a", "audio/mp4")]
-        [InlineData(".m4b", "audio/m4b")]
+        [InlineData(".m4b", "audio/mp4")]
         [InlineData(".mid", "audio/midi")]
         [InlineData(".midi", "audio/midi")]
         [InlineData(".mp3", "audio/mpeg")]
