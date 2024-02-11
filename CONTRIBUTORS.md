@@ -179,6 +179,7 @@
  - [Çağrı Sakaoğlu](https://github.com/ilovepilav)
  _ [Barasingha](https://github.com/MaVdbussche)
  - [Gauvino](https://github.com/Gauvino)
+ - [felix920506](https://github.com/felix920506)
 
 # Emby Contributors
 

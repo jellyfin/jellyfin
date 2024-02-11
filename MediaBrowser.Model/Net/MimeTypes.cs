@@ -87,7 +87,7 @@ namespace MediaBrowser.Model.Net
             { ".dsf", "audio/dsf" },
             { ".dsp", "audio/dsp" },
             { ".flac", "audio/flac" },
-            { ".m4b", "audio/m4b" },
+            { ".m4b", "audio/mp4" },
             { ".mp3", "audio/mpeg" },
             { ".vorbis", "audio/vorbis" },
             { ".webma", "audio/webm" },
