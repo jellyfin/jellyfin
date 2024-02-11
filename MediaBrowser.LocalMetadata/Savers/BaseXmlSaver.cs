@@ -89,11 +89,42 @@ namespace MediaBrowser.LocalMetadata.Savers
         /// <returns><c>true</c> if [is enabled for] [the specified item]; otherwise, <c>false</c>.</returns>
         public abstract bool IsEnabledFor(BaseItem item, ItemUpdateType updateType);
 
+        /// <summary>
+        /// Changes save path to truncated version.
+        /// </summary>
+        /// <param name="directory">The modified directory.</param>
+        /// <param name="item">The item.</param>
+        /// <returns><see cref="string"/>.</returns>
+        protected virtual string UpdateTruncatedPath(string directory, BaseItem item)
+            => Path.Combine(directory, GetRootElementName(item) + ".nfo");
+
         /// <inheritdoc />
         public async Task SaveAsync(BaseItem item, CancellationToken cancellationToken)
         {
             var path = GetSavePath(item);
             var directory = Path.GetDirectoryName(path) ?? throw new InvalidDataException($"Provided path ({path}) is not valid.");
+
+            // Prevent internet-fetched metadata from creating folder longer than max path size.
+            // Note that metadata that does not inherit from Folder gets its name from an existing file,
+            // so checking if the path is over max path length is redundant for these.
+            if (item.GetType().IsSubclassOf(typeof(Folder)))
+            {
+                if (item.Name.Length > 255 && !OperatingSystem.IsWindows())
+                {
+                    var upperDirectory = Path.GetDirectoryName(directory);
+                    directory = Path.Combine(upperDirectory ?? "/", item.Name[..255]);
+                    path = UpdateTruncatedPath(directory, item);
+                    item.Path = directory;
+                }
+                else if (path.Length > 260 && OperatingSystem.IsWindows())
+                {
+                    // Use Windows extended path notation
+                    _ = directory.Insert(0, @"\\?\");
+                    path = UpdateTruncatedPath(directory, item);
+                    item.Path = directory;
+                }
+            }
+
             Directory.CreateDirectory(directory);
 
             // On Windows, savint the file will fail if the file is hidden or readonly
