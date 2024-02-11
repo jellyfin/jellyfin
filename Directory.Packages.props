@@ -19,7 +19,7 @@
     <PackageVersion Include="EFCoreSecondLevelCacheInterceptor" Version="4.2.0" />
     <PackageVersion Include="FsCheck.Xunit" Version="2.16.6" />
     <PackageVersion Include="HarfBuzzSharp.NativeAssets.Linux" Version="7.3.0.1" />
-    <PackageVersion Include="IDisposableAnalyzers" Version="4.0.4" />
+    <PackageVersion Include="IDisposableAnalyzers" Version="4.0.7" />
     <PackageVersion Include="Jellyfin.XmlTv" Version="10.8.0" />
     <PackageVersion Include="libse" Version="3.6.13" />
     <PackageVersion Include="LrcParser" Version="2023.524.0" />
