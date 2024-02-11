@@ -8,7 +8,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
+using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Models.LyricDtos;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
@@ -16,7 +18,6 @@ using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Lyrics;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Providers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -64,6 +65,94 @@ public class LyricController : BaseJellyfinApiController
     }
 
     /// <summary>
+    /// Gets an item's lyrics.
+    /// </summary>
+    /// <param name="itemId">Item id.</param>
+    /// <response code="200">Lyrics returned.</response>
+    /// <response code="404">Something went wrong. No Lyrics will be returned.</response>
+    /// <returns>An <see cref="OkResult"/> containing the item's lyrics.</returns>
+    [HttpGet("Audio/{itemId}/Lyrics")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<LyricModel>> GetLyrics([FromRoute, Required] Guid itemId)
+    {
+        var isApiKey = User.GetIsApiKey();
+        var userId = User.GetUserId();
+        if (!isApiKey && userId.IsEmpty())
+        {
+            return BadRequest();
+        }
+
+        var audio = _libraryManager.GetItemById<Audio>(itemId);
+        if (audio is null)
+        {
+            return NotFound();
+        }
+
+        if (!isApiKey)
+        {
+            var user = _userManager.GetUserById(userId);
+            if (user is null)
+            {
+                return NotFound();
+            }
+
+            // Check the item is visible for the user
+            if (!audio.IsVisible(user))
+            {
+                return Unauthorized($"{user.Username} is not permitted to access item {audio.Name}.");
+            }
+        }
+
+        var result = await _lyricManager.GetLyricsAsync(audio, CancellationToken.None).ConfigureAwait(false);
+        if (result is not null)
+        {
+            return Ok(result);
+        }
+
+        return NotFound();
+    }
+
+    /// <summary>
+    /// Upload an external lyric file.
+    /// </summary>
+    /// <param name="itemId">The item the lyric belongs to.</param>
+    /// <param name="body">The request body.</param>
+    /// <response code="204">Lyric uploaded.</response>
+    /// <returns>A <see cref="NoContentResult"/>.</returns>
+    [HttpPost("Audio/{itemId}/Lyrics")]
+    [Authorize(Policy = Policies.LyricManagement)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<ActionResult> UploadLyric(
+        [FromRoute, Required] Guid itemId,
+        [FromBody, Required] UploadLyricDto body)
+    {
+        var audio = _libraryManager.GetItemById<Audio>(itemId);
+        if (audio is null)
+        {
+            return NotFound();
+        }
+
+        var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(body.Data));
+        using var transform = new FromBase64Transform();
+        var stream = new CryptoStream(memoryStream, transform, CryptoStreamMode.Read);
+        await using (memoryStream.ConfigureAwait(false))
+        await using (stream.ConfigureAwait(false))
+        {
+            await _lyricManager.UploadLyricAsync(
+                audio,
+                new LyricResponse
+                {
+                    Format = body.Format,
+                    Stream = stream
+                }).ConfigureAwait(false);
+            _providerManager.QueueRefresh(audio.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.High);
+
+            return NoContent();
+        }
+    }
+
+    /// <summary>
     /// Deletes an external lyric file.
     /// </summary>
     /// <param name="itemId">The item id.</param>
@@ -71,7 +160,7 @@ public class LyricController : BaseJellyfinApiController
     /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpDelete("Audio/{itemId}/Lyrics")]
-    [Authorize(Policy = Policies.RequiresElevation)]
+    [Authorize(Policy = Policies.LyricManagement)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> DeleteLyrics(
@@ -129,8 +218,7 @@ public class LyricController : BaseJellyfinApiController
 
         try
         {
-            await _lyricManager.DownloadLyricsAsync(audio, lyricId, CancellationToken.None)
-                .ConfigureAwait(false);
+            await _lyricManager.DownloadLyricsAsync(audio, lyricId, CancellationToken.None).ConfigureAwait(false);
 
             _providerManager.QueueRefresh(audio.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.High);
         }
@@ -145,95 +233,16 @@ public class LyricController : BaseJellyfinApiController
     /// <summary>
     /// Gets the remote lyrics.
     /// </summary>
-    /// <param name="id">The item id.</param>
+    /// <param name="id">The remote provider item id.</param>
     /// <response code="200">File returned.</response>
     /// <returns>A <see cref="FileStreamResult"/> with the lyric file.</returns>
-    [HttpGet("Providers/Lyrics/Lyrics/{id}")]
-    [Authorize]
+    [HttpGet("Providers/Lyrics/{id}")]
+    [Authorize(Policy = Policies.LyricManagement)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [Produces(MediaTypeNames.Application.Octet)]
-    [ProducesFile("text/*")]
+    [ProducesFile(MediaTypeNames.Text.Plain)]
     public async Task<ActionResult> GetRemoteLyrics([FromRoute, Required] string id)
     {
         var result = await _lyricManager.GetRemoteLyricsAsync(id, CancellationToken.None).ConfigureAwait(false);
-        return File(result.Stream, MimeTypes.GetMimeType("file.txt"));
-    }
-
-    /// <summary>
-    /// Gets an item's lyrics.
-    /// </summary>
-    /// <param name="userId">User id.</param>
-    /// <param name="itemId">Item id.</param>
-    /// <response code="200">Lyrics returned.</response>
-    /// <response code="404">Something went wrong. No Lyrics will be returned.</response>
-    /// <returns>An <see cref="OkResult"/> containing the item's lyrics.</returns>
-    [HttpGet("Users/{userId}/Items/{itemId}/Lyrics")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<LyricModel>> GetLyrics([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
-    {
-        var user = _userManager.GetUserById(userId);
-        if (user is null)
-        {
-            return NotFound();
-        }
-
-        var audio = _libraryManager.GetItemById<Audio>(itemId);
-        if (audio is null)
-        {
-            return NotFound();
-        }
-
-        // Check the item is visible for the user
-        if (!audio.IsVisible(user))
-        {
-            return Unauthorized($"{user.Username} is not permitted to access item {audio.Name}.");
-        }
-
-        var result = await _lyricManager.GetLyricsAsync(audio, CancellationToken.None).ConfigureAwait(false);
-        if (result is not null)
-        {
-            return Ok(result);
-        }
-
-        return NotFound();
-    }
-
-    /// <summary>
-    /// Upload an external lyric file.
-    /// </summary>
-    /// <param name="itemId">The item the lyric belongs to.</param>
-    /// <param name="body">The request body.</param>
-    /// <response code="204">Lyric uploaded.</response>
-    /// <returns>A <see cref="NoContentResult"/>.</returns>
-    [HttpPost("Audio/{itemId}/Lyrics")]
-    [Authorize(Policy = Policies.LyricManagement)]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<ActionResult> UploadLyric(
-        [FromRoute, Required] Guid itemId,
-        [FromBody, Required] UploadLyricDto body)
-    {
-        var audio = _libraryManager.GetItemById<Audio>(itemId);
-        if (audio is null)
-        {
-            return NotFound();
-        }
-
-        var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(body.Data));
-        using var transform = new FromBase64Transform();
-        var stream = new CryptoStream(memoryStream, transform, CryptoStreamMode.Read);
-        await using (memoryStream.ConfigureAwait(false))
-        await using (stream.ConfigureAwait(false))
-        {
-            await _lyricManager.UploadLyricAsync(
-                audio,
-                new LyricResponse
-                {
-                    Format = body.Format,
-                    Stream = stream
-                }).ConfigureAwait(false);
-            _providerManager.QueueRefresh(audio.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.High);
-
-            return NoContent();
-        }
+        return File(result.Stream, MediaTypeNames.Text.Plain);
     }
 }
