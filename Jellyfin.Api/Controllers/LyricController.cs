@@ -28,6 +28,7 @@ namespace Jellyfin.Api.Controllers;
 /// <summary>
 /// Lyrics controller.
 /// </summary>
+[Route("")]
 public class LyricController : BaseJellyfinApiController
 {
     private readonly ILibraryManager _libraryManager;
@@ -92,7 +93,7 @@ public class LyricController : BaseJellyfinApiController
     /// <param name="itemId">The item id.</param>
     /// <response code="200">lyrics retrieved.</response>
     /// <returns>An array of <see cref="RemoteLyricInfo"/>.</returns>
-    [HttpGet("Items/{itemId}/RemoteSearch/Lyric")]
+    [HttpGet("Items/{itemId}/RemoteSearch/Lyrics")]
     [Authorize(Policy = Policies.LyricManagement)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<RemoteLyricInfo>>> SearchRemotelyrics([FromRoute, Required] Guid itemId)

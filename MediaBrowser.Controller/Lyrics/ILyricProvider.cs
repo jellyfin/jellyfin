@@ -12,7 +12,7 @@ namespace MediaBrowser.Controller.Lyrics;
 public interface ILyricProvider
 {
     /// <summary>
-    /// Gets a value indicating the provider name.
+    /// Gets the provider name.
     /// </summary>
     string Name { get; }
 

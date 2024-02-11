@@ -19,8 +19,8 @@ public class LrcLyricParser : ILyricParser
 {
     private readonly LyricParser _lrcLyricParser;
 
-    private static readonly string[] _supportedMediaTypes = { ".lrc", ".elrc" };
-    private static readonly string[] _acceptedTimeFormats = { "HH:mm:ss", "H:mm:ss", "mm:ss", "m:ss" };
+    private static readonly string[] _supportedMediaTypes = [".lrc", ".elrc"];
+    private static readonly string[] _acceptedTimeFormats = ["HH:mm:ss", "H:mm:ss", "mm:ss", "m:ss"];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LrcLyricParser"/> class.
