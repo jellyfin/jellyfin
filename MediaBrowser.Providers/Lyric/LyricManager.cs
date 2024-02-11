@@ -70,12 +70,15 @@ public class LyricManager : ILyricManager
     /// <inheritdoc />
     public Task<RemoteLyricInfo[]> SearchLyricsAsync(Audio audio, bool isAutomated, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(audio);
+
         var request = new LyricSearchRequest
         {
             MediaPath = audio.Path,
             SongName = audio.Name,
             AlbumName = audio.Album,
             ArtistNames = audio.GetAllArtists().ToList(),
+            Duration = audio.RunTimeTicks,
             IsAutomated = isAutomated
         };
 
@@ -85,6 +88,8 @@ public class LyricManager : ILyricManager
     /// <inheritdoc />
     public async Task<RemoteLyricInfo[]> SearchLyricsAsync(LyricSearchRequest request, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(request);
+
         var providers = _lyricProviders
             .Where(i => !request.DisabledLyricFetchers.Contains(i.Name, StringComparer.OrdinalIgnoreCase))
             .OrderBy(i =>
@@ -145,6 +150,9 @@ public class LyricManager : ILyricManager
     /// <inheritdoc />
     public Task DownloadLyricsAsync(Audio audio, string lyricId, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(audio);
+        ArgumentException.ThrowIfNullOrWhiteSpace(lyricId);
+
         var libraryOptions = BaseItem.LibraryManager.GetLibraryOptions(audio);
 
         return DownloadLyricsAsync(audio, libraryOptions, lyricId, cancellationToken);
@@ -153,6 +161,8 @@ public class LyricManager : ILyricManager
     /// <inheritdoc />
     public async Task DownloadLyricsAsync(Audio audio, LibraryOptions libraryOptions, string lyricId, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(audio);
+        ArgumentNullException.ThrowIfNull(libraryOptions);
         ArgumentException.ThrowIfNullOrWhiteSpace(lyricId);
 
         var parts = lyricId.Split('_', 2);
@@ -183,6 +193,8 @@ public class LyricManager : ILyricManager
     /// <inheritdoc />
     public Task UploadLyricAsync(Audio audio, LyricResponse lyricResponse)
     {
+        ArgumentNullException.ThrowIfNull(audio);
+        ArgumentNullException.ThrowIfNull(lyricResponse);
         var libraryOptions = BaseItem.LibraryManager.GetLibraryOptions(audio);
         return TrySaveLyric(audio, libraryOptions, lyricResponse);
     }
@@ -199,25 +211,28 @@ public class LyricManager : ILyricManager
     }
 
     /// <inheritdoc />
-    public Task DeleteLyricsAsync(Audio audio, int index)
+    public Task DeleteLyricsAsync(Audio audio)
     {
-        var stream = _mediaSourceManager.GetMediaStreams(new MediaStreamQuery
+        ArgumentNullException.ThrowIfNull(audio);
+        var streams = _mediaSourceManager.GetMediaStreams(new MediaStreamQuery
         {
-            Index = index,
             ItemId = audio.Id,
             Type = MediaStreamType.Lyric
-        })[0];
+        });
 
-        var path = stream.Path;
-        _libraryMonitor.ReportFileSystemChangeBeginning(path);
+        foreach (var stream in streams)
+        {
+            var path = stream.Path;
+            _libraryMonitor.ReportFileSystemChangeBeginning(path);
 
-        try
-        {
-            _fileSystem.DeleteFile(path);
-        }
-        finally
-        {
-            _libraryMonitor.ReportFileSystemChangeComplete(path, false);
+            try
+            {
+                _fileSystem.DeleteFile(path);
+            }
+            finally
+            {
+                _libraryMonitor.ReportFileSystemChangeComplete(path, false);
+            }
         }
 
         return audio.RefreshMetadata(CancellationToken.None);
@@ -235,34 +250,31 @@ public class LyricManager : ILyricManager
     }
 
     /// <inheritdoc />
-    public async Task<LyricModel?> GetLyricsAsync(Audio audio, int streamIndex, CancellationToken cancellationToken)
+    public async Task<LyricModel?> GetLyricsAsync(Audio audio, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(audio);
 
-        var lyricStream = audio.GetMediaStreams().FirstOrDefault(s => s.Index == streamIndex);
-        if (lyricStream is null
-            || lyricStream.Type != MediaStreamType.Lyric)
+        var lyricStreams = audio.GetMediaStreams().Where(s => s.Type == MediaStreamType.Lyric);
+        foreach (var lyricStream in lyricStreams)
         {
-            return null;
-        }
+            var lyricContents = await File.ReadAllTextAsync(lyricStream.Path, Encoding.UTF8, cancellationToken).ConfigureAwait(false);
 
-        var lyricContents = await File.ReadAllTextAsync(lyricStream.Path, Encoding.UTF8, cancellationToken).ConfigureAwait(false);
-
-        var lyricFile = new LyricFile(Path.GetFileName(lyricStream.Path), lyricContents);
-        foreach (var parser in _lyricParsers)
-        {
-            var parsedLyrics = parser.ParseLyrics(lyricFile);
-            if (parsedLyrics is not null)
+            var lyricFile = new LyricFile(Path.GetFileName(lyricStream.Path), lyricContents);
+            foreach (var parser in _lyricParsers)
             {
-                return parsedLyrics;
+                var parsedLyrics = parser.ParseLyrics(lyricFile);
+                if (parsedLyrics is not null)
+                {
+                    return parsedLyrics;
+                }
             }
         }
 
         return null;
     }
 
-    private ILyricProvider GetProvider(string name)
-        => _lyricProviders.First(p => string.Equals(name, p.Name, StringComparison.Ordinal));
+    private ILyricProvider GetProvider(string providerId)
+        => _lyricProviders.First(p => string.Equals(providerId, GetProviderId(p.Name), StringComparison.Ordinal));
 
     private string GetProviderId(string name)
         => name.ToLowerInvariant().GetMD5().ToString("N", CultureInfo.InvariantCulture);

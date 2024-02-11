@@ -29,6 +29,11 @@ public class LyricSearchRequest : IHasProviderIds
     /// </summary>
     public string? SongName { get; set; }
 
+    /// <summary>
+    /// Gets or sets the track duration in ticks.
+    /// </summary>
+    public long? Duration { get; set; }
+
     /// <inheritdoc />
     public Dictionary<string, string> ProviderIds { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 

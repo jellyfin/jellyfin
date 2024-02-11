@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Model.Lyrics;
 using MediaBrowser.Model.Providers;
 
-namespace MediaBrowser.Providers.Lyric;
+namespace MediaBrowser.Controller.Lyrics;
 
 /// <summary>
 /// Interface ILyricsProvider.

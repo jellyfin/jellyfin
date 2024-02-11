@@ -88,9 +88,8 @@ public interface ILyricManager
     /// Deletes the lyrics.
     /// </summary>
     /// <param name="audio">The audio file to remove lyrics from.</param>
-    /// <param name="index">The lyric index.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    Task DeleteLyricsAsync(Audio audio, int index);
+    Task DeleteLyricsAsync(Audio audio);
 
     /// <summary>
     /// Get the list of lyric providers.
@@ -103,8 +102,7 @@ public interface ILyricManager
     /// Get the existing lyric for the audio.
     /// </summary>
     /// <param name="audio">The audio item.</param>
-    /// <param name="streamIndex">The stream index.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The parsed lyric model.</returns>
-    Task<LyricModel?> GetLyricsAsync(Audio audio, int streamIndex, CancellationToken cancellationToken);
+    Task<LyricModel?> GetLyricsAsync(Audio audio, CancellationToken cancellationToken);
 }

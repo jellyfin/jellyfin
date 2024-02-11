@@ -66,17 +66,15 @@ public class LyricController : BaseJellyfinApiController
     /// Deletes an external lyric file.
     /// </summary>
     /// <param name="itemId">The item id.</param>
-    /// <param name="index">The index of the lyric file.</param>
     /// <response code="204">lyric deleted.</response>
     /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
-    [HttpDelete("Audio/{itemId}/Lyrics/{index}")]
+    [HttpDelete("Audio/{itemId}/Lyrics")]
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> DeleteLyrics(
-        [FromRoute, Required] Guid itemId,
-        [FromRoute, Required] int index)
+        [FromRoute, Required] Guid itemId)
     {
         var audio = _libraryManager.GetItemById<Audio>(itemId);
         if (audio is null)
@@ -84,7 +82,7 @@ public class LyricController : BaseJellyfinApiController
             return NotFound();
         }
 
-        await _lyricManager.DeleteLyricsAsync(audio, index).ConfigureAwait(false);
+        await _lyricManager.DeleteLyricsAsync(audio).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -165,13 +163,12 @@ public class LyricController : BaseJellyfinApiController
     /// </summary>
     /// <param name="userId">User id.</param>
     /// <param name="itemId">Item id.</param>
-    /// <param name="index">The lyric index.</param>
     /// <response code="200">Lyrics returned.</response>
     /// <response code="404">Something went wrong. No Lyrics will be returned.</response>
     /// <returns>An <see cref="OkResult"/> containing the item's lyrics.</returns>
-    [HttpGet("Users/{userId}/Items/{itemId}/Lyrics/{index}")]
+    [HttpGet("Users/{userId}/Items/{itemId}/Lyrics")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<LyricModel>> GetLyrics([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId, [FromRoute, Required] int index)
+    public async Task<ActionResult<LyricModel>> GetLyrics([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
     {
         var user = _userManager.GetUserById(userId);
         if (user is null)
@@ -191,7 +188,7 @@ public class LyricController : BaseJellyfinApiController
             return Unauthorized($"{user.Username} is not permitted to access item {audio.Name}.");
         }
 
-        var result = await _lyricManager.GetLyricsAsync(audio, index, CancellationToken.None).ConfigureAwait(false);
+        var result = await _lyricManager.GetLyricsAsync(audio, CancellationToken.None).ConfigureAwait(false);
         if (result is not null)
         {
             return Ok(result);
