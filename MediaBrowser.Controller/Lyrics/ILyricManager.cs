@@ -27,7 +27,7 @@ public interface ILyricManager
     /// <param name="isAutomated">Whether the request is automated.</param>
     /// <param name="cancellationToken">CancellationToken to use for the operation.</param>
     /// <returns>The list of lyrics.</returns>
-    Task<RemoteLyricInfo[]> SearchLyricsAsync(
+    Task<IReadOnlyList<RemoteLyricInfoDto>> SearchLyricsAsync(
         Audio audio,
         bool isAutomated,
         CancellationToken cancellationToken);
@@ -38,7 +38,7 @@ public interface ILyricManager
     /// <param name="request">The search request.</param>
     /// <param name="cancellationToken">CancellationToken to use for the operation.</param>
     /// <returns>The list of lyrics.</returns>
-    Task<RemoteLyricInfo[]> SearchLyricsAsync(
+    Task<IReadOnlyList<RemoteLyricInfoDto>> SearchLyricsAsync(
         LyricSearchRequest request,
         CancellationToken cancellationToken);
 
@@ -48,8 +48,8 @@ public interface ILyricManager
     /// <param name="audio">The audio.</param>
     /// <param name="lyricId">The remote lyric id.</param>
     /// <param name="cancellationToken">CancellationToken to use for the operation.</param>
-    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    Task DownloadLyricsAsync(
+    /// <returns>The downloaded lyrics.</returns>
+    Task<LyricModel?> DownloadLyricsAsync(
         Audio audio,
         string lyricId,
         CancellationToken cancellationToken);
@@ -61,8 +61,8 @@ public interface ILyricManager
     /// <param name="libraryOptions">The library options to use.</param>
     /// <param name="lyricId">The remote lyric id.</param>
     /// <param name="cancellationToken">CancellationToken to use for the operation.</param>
-    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    Task DownloadLyricsAsync(
+    /// <returns>The downloaded lyrics.</returns>
+    Task<LyricModel?> DownloadLyricsAsync(
         Audio audio,
         LibraryOptions libraryOptions,
         string lyricId,
@@ -74,7 +74,7 @@ public interface ILyricManager
     /// <param name="audio">The audio file the lyrics belong to.</param>
     /// <param name="lyricResponse">The lyric response.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    Task UploadLyricAsync(Audio audio, LyricResponse lyricResponse);
+    Task<LyricModel?> UploadLyricAsync(Audio audio, LyricResponse lyricResponse);
 
     /// <summary>
     /// Get the remote lyrics.
@@ -82,7 +82,7 @@ public interface ILyricManager
     /// <param name="id">The remote lyrics id.</param>
     /// <param name="cancellationToken">CancellationToken to use for the operation.</param>
     /// <returns>The lyric response.</returns>
-    Task<LyricResponse> GetRemoteLyricsAsync(string id, CancellationToken cancellationToken);
+    Task<LyricModel?> GetRemoteLyricsAsync(string id, CancellationToken cancellationToken);
 
     /// <summary>
     /// Deletes the lyrics.

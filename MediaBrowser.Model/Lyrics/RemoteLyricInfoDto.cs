@@ -1,11 +1,9 @@
-using MediaBrowser.Model.Lyrics;
-
-namespace MediaBrowser.Model.Providers;
+namespace MediaBrowser.Model.Lyrics;
 
 /// <summary>
-/// The remote lyric info.
+/// The remote lyric info dto.
 /// </summary>
-public class RemoteLyricInfo
+public class RemoteLyricInfoDto
 {
     /// <summary>
     /// Gets or sets the id for the lyric.
@@ -25,5 +23,5 @@ public class RemoteLyricInfo
     /// <summary>
     /// Gets the lyrics.
     /// </summary>
-    public required LyricResponse Lyrics { get; init; }
+    public required LyricModel Lyrics { get; init; }
 }

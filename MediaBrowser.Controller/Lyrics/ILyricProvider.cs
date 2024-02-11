@@ -30,5 +30,5 @@ public interface ILyricProvider
     /// <param name="id">The remote lyric id.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The lyric response.</returns>
-    Task<LyricResponse> GetLyricsAsync(string id, CancellationToken cancellationToken);
+    Task<LyricResponse?> GetLyricsAsync(string id, CancellationToken cancellationToken);
 }

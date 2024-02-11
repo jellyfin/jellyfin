@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Jellyfin.Api.Models.LyricDtos;
+namespace MediaBrowser.Model.Lyrics;
 
 /// <summary>
 /// Upload lyric dto.
@@ -8,19 +8,13 @@ namespace Jellyfin.Api.Models.LyricDtos;
 public class UploadLyricDto
 {
     /// <summary>
-    /// Gets or sets the subtitle format.
+    /// Gets or sets the lyric format, typically the file extension.
     /// </summary>
     [Required]
     public string Format { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets a value indicating whether the lyric is synced.
-    /// </summary>
-    [Required]
-    public bool IsSynced { get; set; }
-
-    /// <summary>
-    /// Gets or sets the subtitle data, Base64 encoded.
+    /// Gets or sets the lyric data, plaintext.
     /// </summary>
     [Required]
     public string Data { get; set; } = string.Empty;
