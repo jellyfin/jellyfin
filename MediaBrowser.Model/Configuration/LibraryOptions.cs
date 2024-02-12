@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.ComponentModel;
 
 namespace MediaBrowser.Model.Configuration
 {
@@ -93,6 +94,7 @@ namespace MediaBrowser.Model.Configuration
 
         public bool SaveSubtitlesWithMedia { get; set; }
 
+        [DefaultValue(true)]
         public bool SaveLyricsWithMedia { get; set; }
 
         public bool AutomaticallyAddToCollection { get; set; }

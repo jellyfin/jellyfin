@@ -40,7 +40,7 @@ public class LrcLyricParser : ILyricParser
     public ResolverPriority Priority => ResolverPriority.Fourth;
 
     /// <inheritdoc />
-    public LyricModel? ParseLyrics(LyricFile lyrics)
+    public LyricDto? ParseLyrics(LyricFile lyrics)
     {
         if (!_supportedMediaTypes.Contains(Path.GetExtension(lyrics.Name.AsSpan()), StringComparison.OrdinalIgnoreCase))
         {
@@ -115,10 +115,10 @@ public class LrcLyricParser : ILyricParser
             // Map metaData values from LRC file to LyricMetadata properties
             LyricMetadata lyricMetadata = MapMetadataValues(fileMetaData);
 
-            return new LyricModel { Metadata = lyricMetadata, Lyrics = lyricList };
+            return new LyricDto { Metadata = lyricMetadata, Lyrics = lyricList };
         }
 
-        return new LyricModel { Lyrics = lyricList };
+        return new LyricDto { Lyrics = lyricList };
     }
 
     /// <summary>

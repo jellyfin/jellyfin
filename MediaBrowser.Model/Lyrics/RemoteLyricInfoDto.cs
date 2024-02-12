@@ -16,12 +16,7 @@ public class RemoteLyricInfoDto
     public required string ProviderName { get; init; }
 
     /// <summary>
-    /// Gets the lyric metadata.
-    /// </summary>
-    public required LyricMetadata Metadata { get; init; }
-
-    /// <summary>
     /// Gets the lyrics.
     /// </summary>
-    public required LyricModel Lyrics { get; init; }
+    public required LyricDto Lyrics { get; init; }
 }

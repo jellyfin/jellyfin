@@ -24,5 +24,5 @@ public interface ILyricParser
     /// </summary>
     /// <param name="lyrics">The raw lyrics content.</param>
     /// <returns>The parsed lyrics or null if invalid.</returns>
-    LyricModel? ParseLyrics(LyricFile lyrics);
+    LyricDto? ParseLyrics(LyricFile lyrics);
 }

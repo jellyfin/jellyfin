@@ -65,7 +65,7 @@ public class LyricController : BaseJellyfinApiController
     [HttpGet("Audio/{itemId}/Lyrics")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<LyricModel>> GetLyrics([FromRoute, Required] Guid itemId)
+    public async Task<ActionResult<LyricDto>> GetLyrics([FromRoute, Required] Guid itemId)
     {
         var isApiKey = User.GetIsApiKey();
         var userId = User.GetUserId();
@@ -109,16 +109,16 @@ public class LyricController : BaseJellyfinApiController
     /// </summary>
     /// <param name="itemId">The item the lyric belongs to.</param>
     /// <param name="body">The request body.</param>
-    /// <response code="204">Lyrics uploaded.</response>
+    /// <response code="200">Lyrics uploaded.</response>
     /// <response code="400">Error processing upload.</response>
     /// <response code="404">Item not found.</response>
     /// <returns>The uploaded lyric.</returns>
     [HttpPost("Audio/{itemId}/Lyrics")]
     [Authorize(Policy = Policies.LyricManagement)]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<LyricModel>> UploadLyric(
+    public async Task<ActionResult<LyricDto>> UploadLyrics(
         [FromRoute, Required] Guid itemId,
         [FromBody, Required] UploadLyricDto body)
     {
@@ -128,7 +128,7 @@ public class LyricController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var bytes = Encoding.UTF8.GetBytes(body.Data);
+        var bytes = Encoding.UTF8.GetBytes(body.Content);
         var stream = new MemoryStream(bytes, 0, bytes.Length, false, true);
         await using (stream.ConfigureAwait(false))
         {
@@ -209,7 +209,7 @@ public class LyricController : BaseJellyfinApiController
     [Authorize(Policy = Policies.LyricManagement)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<LyricModel>> DownloadRemoteLyrics(
+    public async Task<ActionResult<LyricDto>> DownloadRemoteLyrics(
         [FromRoute, Required] Guid itemId,
         [FromRoute, Required] string lyricId)
     {
@@ -240,7 +240,7 @@ public class LyricController : BaseJellyfinApiController
     [Authorize(Policy = Policies.LyricManagement)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<LyricModel>> GetRemoteLyrics([FromRoute, Required] string lyricId)
+    public async Task<ActionResult<LyricDto>> GetRemoteLyrics([FromRoute, Required] string lyricId)
     {
         var result = await _lyricManager.GetRemoteLyricsAsync(lyricId, CancellationToken.None).ConfigureAwait(false);
         if (result is null)

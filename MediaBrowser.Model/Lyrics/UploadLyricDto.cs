@@ -18,5 +18,5 @@ public class UploadLyricDto
     /// Gets or sets the lyric data, plaintext.
     /// </summary>
     [Required]
-    public string Data { get; set; } = string.Empty;
+    public string Content { get; set; } = string.Empty;
 }

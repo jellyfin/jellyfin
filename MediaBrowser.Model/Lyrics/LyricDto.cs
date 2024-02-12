@@ -5,7 +5,7 @@ namespace MediaBrowser.Model.Lyrics;
 /// <summary>
 /// LyricResponse model.
 /// </summary>
-public class LyricModel
+public class LyricDto
 {
     /// <summary>
     /// Gets or sets Metadata for the lyrics.

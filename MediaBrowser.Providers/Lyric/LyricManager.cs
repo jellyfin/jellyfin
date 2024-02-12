@@ -122,7 +122,7 @@ public class LyricManager : ILyricManager
     }
 
     /// <inheritdoc />
-    public Task<LyricModel?> DownloadLyricsAsync(Audio audio, string lyricId, CancellationToken cancellationToken)
+    public Task<LyricDto?> DownloadLyricsAsync(Audio audio, string lyricId, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(audio);
         ArgumentException.ThrowIfNullOrWhiteSpace(lyricId);
@@ -133,7 +133,7 @@ public class LyricManager : ILyricManager
     }
 
     /// <inheritdoc />
-    public async Task<LyricModel?> DownloadLyricsAsync(Audio audio, LibraryOptions libraryOptions, string lyricId, CancellationToken cancellationToken)
+    public async Task<LyricDto?> DownloadLyricsAsync(Audio audio, LibraryOptions libraryOptions, string lyricId, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(audio);
         ArgumentNullException.ThrowIfNull(libraryOptions);
@@ -182,7 +182,7 @@ public class LyricManager : ILyricManager
     }
 
     /// <inheritdoc />
-    public async Task<LyricModel?> UploadLyricAsync(Audio audio, LyricResponse lyricResponse)
+    public async Task<LyricDto?> UploadLyricAsync(Audio audio, LyricResponse lyricResponse)
     {
         ArgumentNullException.ThrowIfNull(audio);
         ArgumentNullException.ThrowIfNull(lyricResponse);
@@ -199,7 +199,7 @@ public class LyricManager : ILyricManager
     }
 
     /// <inheritdoc />
-    public async Task<LyricModel?> GetRemoteLyricsAsync(string id, CancellationToken cancellationToken)
+    public async Task<LyricDto?> GetRemoteLyricsAsync(string id, CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrEmpty(id);
 
@@ -252,7 +252,7 @@ public class LyricManager : ILyricManager
     }
 
     /// <inheritdoc />
-    public async Task<LyricModel?> GetLyricsAsync(Audio audio, CancellationToken cancellationToken)
+    public async Task<LyricDto?> GetLyricsAsync(Audio audio, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(audio);
 
@@ -289,7 +289,7 @@ public class LyricManager : ILyricManager
     private string GetProviderId(string name)
         => name.ToLowerInvariant().GetMD5().ToString("N", CultureInfo.InvariantCulture);
 
-    private async Task<LyricModel?> InternalParseRemoteLyricsAsync(LyricResponse lyricResponse, CancellationToken cancellationToken)
+    private async Task<LyricDto?> InternalParseRemoteLyricsAsync(LyricResponse lyricResponse, CancellationToken cancellationToken)
     {
         lyricResponse.Stream.Seek(0, SeekOrigin.Begin);
         using var streamReader = new StreamReader(lyricResponse.Stream, leaveOpen: true);
@@ -340,11 +340,11 @@ public class LyricManager : ILyricManager
                     continue;
                 }
 
+                parsedLyrics.Metadata = result.Metadata;
                 parsedResults.Add(new RemoteLyricInfoDto
                 {
                     Id = $"{providerId}_{result.Id}",
                     ProviderName = result.ProviderName,
-                    Metadata = result.Metadata,
                     Lyrics = parsedLyrics
                 });
             }

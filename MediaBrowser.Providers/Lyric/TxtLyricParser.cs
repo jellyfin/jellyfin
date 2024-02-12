@@ -25,7 +25,7 @@ public class TxtLyricParser : ILyricParser
     public ResolverPriority Priority => ResolverPriority.Fifth;
 
     /// <inheritdoc />
-    public LyricModel? ParseLyrics(LyricFile lyrics)
+    public LyricDto? ParseLyrics(LyricFile lyrics)
     {
         if (!_supportedMediaTypes.Contains(Path.GetExtension(lyrics.Name.AsSpan()), StringComparison.OrdinalIgnoreCase))
         {
@@ -40,6 +40,6 @@ public class TxtLyricParser : ILyricParser
             lyricList[lyricLineIndex] = new LyricLine(lyricTextLines[lyricLineIndex].Trim());
         }
 
-        return new LyricModel { Lyrics = lyricList };
+        return new LyricDto { Lyrics = lyricList };
     }
 }
