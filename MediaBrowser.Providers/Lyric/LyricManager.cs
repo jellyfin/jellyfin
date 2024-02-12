@@ -141,6 +141,10 @@ public class LyricManager : ILyricManager
 
         var parts = lyricId.Split('_', 2);
         var provider = GetProvider(parts[0]);
+        if (provider is null)
+        {
+            return null;
+        }
 
         try
         {
@@ -271,8 +275,16 @@ public class LyricManager : ILyricManager
         return null;
     }
 
-    private ILyricProvider GetProvider(string providerId)
-        => _lyricProviders.First(p => string.Equals(providerId, GetProviderId(p.Name), StringComparison.Ordinal));
+    private ILyricProvider? GetProvider(string providerId)
+    {
+        var provider = _lyricProviders.FirstOrDefault(p => string.Equals(providerId, GetProviderId(p.Name), StringComparison.Ordinal));
+        if (provider is null)
+        {
+            _logger.LogDebug("Unknown provider id: {ProviderId}", providerId);
+        }
+
+        return provider;
+    }
 
     private string GetProviderId(string name)
         => name.ToLowerInvariant().GetMD5().ToString("N", CultureInfo.InvariantCulture);
@@ -295,14 +307,19 @@ public class LyricManager : ILyricManager
         return null;
     }
 
-    private Task<LyricResponse?> InternalGetRemoteLyricsAsync(string id, CancellationToken cancellationToken)
+    private async Task<LyricResponse?> InternalGetRemoteLyricsAsync(string id, CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         var parts = id.Split('_', 2);
         var provider = GetProvider(parts[0]);
+        if (provider is null)
+        {
+            return null;
+        }
+
         id = parts[^1];
 
-        return provider.GetLyricsAsync(id, cancellationToken);
+        return await provider.GetLyricsAsync(id, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<IReadOnlyList<RemoteLyricInfoDto>> InternalSearchProviderAsync(
