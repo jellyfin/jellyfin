@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Jellyfin.Api.Extensions;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Library;
 using Microsoft.AspNetCore.Authorization;
@@ -32,15 +33,19 @@ namespace Jellyfin.Api.Auth.UserPermissionPolicy
             }
             else
             {
-                var user = _userManager.GetUserById(context.User.GetUserId());
-                if (user is null)
+                var userId = context.User.GetUserId();
+                if (!userId.IsEmpty())
                 {
-                    throw new ResourceNotFoundException();
-                }
+                    var user = _userManager.GetUserById(context.User.GetUserId());
+                    if (user is null)
+                    {
+                        throw new ResourceNotFoundException();
+                    }
 
-                if (user.HasPermission(requirement.RequiredPermission))
-                {
-                    context.Succeed(requirement);
+                    if (user.HasPermission(requirement.RequiredPermission))
+                    {
+                        context.Succeed(requirement);
+                    }
                 }
             }
 
