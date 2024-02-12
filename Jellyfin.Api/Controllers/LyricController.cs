@@ -128,7 +128,8 @@ public class LyricController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var stream = new MemoryStream(Encoding.UTF8.GetBytes(body.Data));
+        var bytes = Encoding.UTF8.GetBytes(body.Data);
+        var stream = new MemoryStream(bytes, 0, bytes.Length, false, true);
         await using (stream.ConfigureAwait(false))
         {
             var uploadedLyric = await _lyricManager.UploadLyricAsync(

@@ -407,25 +407,28 @@ public class SubtitleController : BaseJellyfinApiController
     {
         var video = (Video)_libraryManager.GetItemById(itemId);
 
-        var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(body.Data));
-        using var transform = new FromBase64Transform();
-        var stream = new CryptoStream(memoryStream, transform, CryptoStreamMode.Read);
+        var bytes = Encoding.UTF8.GetBytes(body.Data);
+        var memoryStream = new MemoryStream(bytes, 0, bytes.Length, false, true);
         await using (memoryStream.ConfigureAwait(false))
-        await using (stream.ConfigureAwait(false))
         {
-            await _subtitleManager.UploadSubtitle(
-                video,
-                new SubtitleResponse
-                {
-                    Format = body.Format,
-                    Language = body.Language,
-                    IsForced = body.IsForced,
-                    IsHearingImpaired = body.IsHearingImpaired,
-                    Stream = stream
-                }).ConfigureAwait(false);
-            _providerManager.QueueRefresh(video.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.High);
+            using var transform = new FromBase64Transform();
+            var stream = new CryptoStream(memoryStream, transform, CryptoStreamMode.Read);
+            await using (stream.ConfigureAwait(false))
+            {
+                await _subtitleManager.UploadSubtitle(
+                    video,
+                    new SubtitleResponse
+                    {
+                        Format = body.Format,
+                        Language = body.Language,
+                        IsForced = body.IsForced,
+                        IsHearingImpaired = body.IsHearingImpaired,
+                        Stream = stream
+                    }).ConfigureAwait(false);
+                _providerManager.QueueRefresh(video.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.High);
 
-            return NoContent();
+                return NoContent();
+            }
         }
     }
 
