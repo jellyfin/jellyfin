@@ -181,7 +181,7 @@ public class LyricController : BaseJellyfinApiController
     /// <response code="200">Lyrics retrieved.</response>
     /// <response code="404">Item not found.</response>
     /// <returns>An array of <see cref="RemoteLyricInfo"/>.</returns>
-    [HttpGet("Items/{itemId}/RemoteSearch/Lyrics")]
+    [HttpGet("Audio/{itemId}/RemoteSearch/Lyrics")]
     [Authorize(Policy = Policies.LyricManagement)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -205,7 +205,7 @@ public class LyricController : BaseJellyfinApiController
     /// <response code="200">Lyric downloaded.</response>
     /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
-    [HttpPost("Items/{itemId}/RemoteSearch/Lyrics/{lyricId}")]
+    [HttpPost("Audio/{itemId}/RemoteSearch/Lyrics/{lyricId}")]
     [Authorize(Policy = Policies.LyricManagement)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

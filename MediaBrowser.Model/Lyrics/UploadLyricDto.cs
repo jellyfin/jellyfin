@@ -11,6 +11,7 @@ public class UploadLyricDto
     /// Gets or sets the lyric format, typically the file extension.
     /// </summary>
     [Required]
+    [RegularExpression("^[A-Za-z]+$")]
     public string Format { get; set; } = string.Empty;
 
     /// <summary>

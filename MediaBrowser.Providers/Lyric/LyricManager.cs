@@ -280,7 +280,7 @@ public class LyricManager : ILyricManager
         var provider = _lyricProviders.FirstOrDefault(p => string.Equals(providerId, GetProviderId(p.Name), StringComparison.Ordinal));
         if (provider is null)
         {
-            _logger.LogDebug("Unknown provider id: {ProviderId}", providerId);
+            _logger.LogWarning("Unknown provider id: {ProviderId}", providerId.ReplaceLineEndings(string.Empty));
         }
 
         return provider;
@@ -378,7 +378,7 @@ public class LyricManager : ILyricManager
             }
 
             var savePaths = new List<string>();
-            var saveFileName = Path.GetFileNameWithoutExtension(audio.Path) + "." + lyricResponse.Format.ToLowerInvariant();
+            var saveFileName = Path.GetFileNameWithoutExtension(audio.Path) + "." + lyricResponse.Format.ReplaceLineEndings(string.Empty).ToLowerInvariant();
 
             if (saveInMediaFolder)
             {
@@ -415,7 +415,7 @@ public class LyricManager : ILyricManager
 
         foreach (var savePath in savePaths)
         {
-            _logger.LogInformation("Saving lyrics to {SavePath}", savePath);
+            _logger.LogInformation("Saving lyrics to {SavePath}", savePath.ReplaceLineEndings(string.Empty));
 
             _libraryMonitor.ReportFileSystemChangeBeginning(savePath);
 
