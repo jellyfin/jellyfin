@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -139,8 +140,7 @@ public class LyricManager : ILyricManager
         ArgumentNullException.ThrowIfNull(libraryOptions);
         ArgumentException.ThrowIfNullOrWhiteSpace(lyricId);
 
-        var parts = lyricId.Split('_', 2);
-        var provider = GetProvider(parts[0]);
+        var provider = GetProvider(lyricId.AsSpan().LeftPart('_').ToString());
         if (provider is null)
         {
             return null;
