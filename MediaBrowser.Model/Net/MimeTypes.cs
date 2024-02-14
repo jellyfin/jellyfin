@@ -103,6 +103,12 @@ namespace MediaBrowser.Model.Net
         private static readonly Dictionary<string, string> _extensionLookup = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             // Type application
+            { "application/vnd.comicbook-rar", ".cbr" },
+            { "application/vnd.comicbook+zip", ".cbz" },
+            { "application/x-cb7", ".cb7" },
+            { "application/x-cba", ".cba" },
+            { "application/x-cbr", ".cbr" },
+            { "application/x-cbt", ".cbt" },
             { "application/x-cbz", ".cbz" },
             { "application/x-javascript", ".js" },
             { "application/xml", ".xml" },
