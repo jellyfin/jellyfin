@@ -225,7 +225,7 @@ public static class StreamingHelpers
 
         var ext = string.IsNullOrWhiteSpace(state.OutputContainer)
             ? GetOutputFileExtension(state, mediaSource)
-            : ("." + state.OutputContainer);
+            : ("." + GetContainerFileExtension(state.OutputContainer));
 
         state.OutputFilePath = GetOutputFilePath(state, ext, serverConfigurationManager, streamingRequest.DeviceId, streamingRequest.PlaySessionId);
 
@@ -558,5 +558,24 @@ public static class StreamingHelpers
                     break;
             }
         }
+    }
+
+    /// <summary>
+    /// Parses the container into its file extension.
+    /// </summary>
+    /// <param name="container">The container.</param>
+    private static string? GetContainerFileExtension(string? container)
+    {
+        if (string.Equals(container, "mpegts", StringComparison.OrdinalIgnoreCase))
+        {
+            return "ts";
+        }
+
+        if (string.Equals(container, "matroska", StringComparison.OrdinalIgnoreCase))
+        {
+            return "mkv";
+        }
+
+        return container;
     }
 }

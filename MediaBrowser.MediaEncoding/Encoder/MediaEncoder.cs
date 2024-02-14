@@ -1111,6 +1111,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return allVobs
                 .Where(vob => titles.Contains(_fileSystem.GetFileNameWithoutExtension(vob).AsSpan().RightPart('_').ToString()))
                 .Select(i => i.FullName)
+                .Order()
                 .ToList();
         }
 
@@ -1127,6 +1128,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return directoryFiles
                 .Where(f => validPlaybackFiles.Contains(f.Name, StringComparer.OrdinalIgnoreCase))
                 .Select(f => f.FullName)
+                .Order()
                 .ToList();
         }
 
@@ -1150,31 +1152,29 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             // Generate concat configuration entries for each file and write to file
-            using (StreamWriter sw = new StreamWriter(concatFilePath))
+            using StreamWriter sw = new StreamWriter(concatFilePath);
+            foreach (var path in files)
             {
-                foreach (var path in files)
-                {
-                    var mediaInfoResult = GetMediaInfo(
-                        new MediaInfoRequest
+                var mediaInfoResult = GetMediaInfo(
+                    new MediaInfoRequest
+                    {
+                        MediaType = DlnaProfileType.Video,
+                        MediaSource = new MediaSourceInfo
                         {
-                            MediaType = DlnaProfileType.Video,
-                            MediaSource = new MediaSourceInfo
-                            {
-                                Path = path,
-                                Protocol = MediaProtocol.File,
-                                VideoType = videoType
-                            }
-                        },
-                        CancellationToken.None).GetAwaiter().GetResult();
+                            Path = path,
+                            Protocol = MediaProtocol.File,
+                            VideoType = videoType
+                        }
+                    },
+                    CancellationToken.None).GetAwaiter().GetResult();
 
-                    var duration = TimeSpan.FromTicks(mediaInfoResult.RunTimeTicks.Value).TotalSeconds;
+                var duration = TimeSpan.FromTicks(mediaInfoResult.RunTimeTicks.Value).TotalSeconds;
 
-                    // Add file path stanza to concat configuration
-                    sw.WriteLine("file '{0}'", path);
+                // Add file path stanza to concat configuration
+                sw.WriteLine("file '{0}'", path);
 
-                    // Add duration stanza to concat configuration
-                    sw.WriteLine("duration {0}", duration);
-                }
+                // Add duration stanza to concat configuration
+                sw.WriteLine("duration {0}", duration);
             }
         }
 
