@@ -6,6 +6,11 @@ namespace Jellyfin.Model.Tests.Net
     public class MimeTypesTests
     {
         [Theory]
+        [InlineData(".cb7", "application/x-cb7")]
+        [InlineData(".cba", "application/x-cba")]
+        [InlineData(".cbr", "application/vnd.comicbook-rar")]
+        [InlineData(".cbt", "application/x-cbt")]
+        [InlineData(".cbz", "application/vnd.comicbook+zip")]
         [InlineData(".dll", "application/octet-stream")]
         [InlineData(".log", "text/plain")]
         [InlineData(".srt", "application/x-subrip")]

@@ -66,6 +66,11 @@ namespace MediaBrowser.Model.Net
         {
             // Type application
             { ".azw3", "application/vnd.amazon.ebook" },
+            { ".cb7", "application/x-cb7" },
+            { ".cba", "application/x-cba" },
+            { ".cbr", "application/vnd.comicbook-rar" },
+            { ".cbt", "application/x-cbt" },
+            { ".cbz", "application/vnd.comicbook+zip" },
 
             // Type image
             { ".tbn", "image/jpeg" },
