@@ -309,6 +309,18 @@ namespace MediaBrowser.Controller.MediaEncoding
                    && state.VideoStream.VideoRangeType == VideoRangeType.HDR10;
         }
 
+        private bool IsVideoToolboxVppTonemapAvailable(EncodingJobInfo state, EncodingOptions options)
+        {
+            if (state.VideoStream is null
+                || !options.EnableVideoToolboxTonemapping
+                || GetVideoColorBitDepth(state) != 10)
+            {
+                return false;
+            }
+            return state.VideoStream.VideoRange == VideoRange.HDR
+                   && state.VideoStream.VideoRangeType == VideoRangeType.HDR10;
+        }
+
         /// <summary>
         /// Gets the name of the output video codec.
         /// </summary>
@@ -4991,7 +5003,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var supportsHwDeint = _mediaEncoder.SupportsFilter("yadif_videotoolbox");
             var supportsHwScale = _mediaEncoder.SupportsFilter("scale_vt");
             // VideoToolbox is special. It does not use a separate tone mapping filter like others. Instead, it performs both tone mapping and scaling in a single filter.
-            var useHwToneMapping = IsHwTonemapAvailable(state, options) && supportsHwScale;
+            var useHwToneMapping = IsVideoToolboxVppTonemapAvailable(state, options) && supportsHwScale;
             // fallback to software filters if we are using filters not supported by hardware yet.
             var useHardwareFilters = noOverlay && (!doDeintH2645 || supportsHwDeint);
 

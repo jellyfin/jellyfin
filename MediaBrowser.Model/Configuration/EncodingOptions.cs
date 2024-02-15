@@ -147,6 +147,11 @@ public class EncodingOptions
     public bool EnableVppTonemapping { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether videotoolbox tonemapping is enabled.
+    /// </summary>
+    public bool EnableVideoToolboxTonemapping { get; set; }
+
+    /// <summary>
     /// Gets or sets the tone-mapping algorithm.
     /// </summary>
     public string TonemappingAlgorithm { get; set; }
