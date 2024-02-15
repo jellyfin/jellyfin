@@ -11,7 +11,7 @@ using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.LiveTv
+namespace Jellyfin.LiveTv.Recordings
 {
     /// <summary>
     /// <see cref="IHostedService"/> responsible for notifying users when a LiveTV recording is completed.
