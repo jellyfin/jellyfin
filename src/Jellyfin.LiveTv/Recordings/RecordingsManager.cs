@@ -416,7 +416,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
             timer.RecordingPath = recordingPath;
             timer.Status = RecordingStatus.Completed;
             _timerManager.AddOrUpdate(timer, false);
-            PostProcessRecording(recordingPath);
+            await PostProcessRecording(recordingPath).ConfigureAwait(false);
         }
         else
         {
@@ -800,7 +800,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
         return new DirectRecorder(_logger, _httpClientFactory, _streamHelper);
     }
 
-    private void PostProcessRecording(string path)
+    private async Task PostProcessRecording(string path)
     {
         var options = _config.GetLiveTvConfiguration();
         if (string.IsNullOrWhiteSpace(options.RecordingPostProcessor))
@@ -810,40 +810,29 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
 
         try
         {
-            var process = new Process
+            using var process = new Process();
+            process.StartInfo = new ProcessStartInfo
             {
-                StartInfo = new ProcessStartInfo
-                {
-                    Arguments = options.RecordingPostProcessorArguments
-                        .Replace("{path}", path, StringComparison.OrdinalIgnoreCase),
-                    CreateNoWindow = true,
-                    ErrorDialog = false,
-                    FileName = options.RecordingPostProcessor,
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    UseShellExecute = false
-                },
-                EnableRaisingEvents = true
+                Arguments = options.RecordingPostProcessorArguments
+                    .Replace("{path}", path, StringComparison.OrdinalIgnoreCase),
+                CreateNoWindow = true,
+                ErrorDialog = false,
+                FileName = options.RecordingPostProcessor,
+                WindowStyle = ProcessWindowStyle.Hidden,
+                UseShellExecute = false
             };
+            process.EnableRaisingEvents = true;
 
             _logger.LogInformation("Running recording post processor {0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
-            process.Exited += OnProcessExited;
             process.Start();
+            await process.WaitForExitAsync(CancellationToken.None).ConfigureAwait(false);
+
+            _logger.LogInformation("Recording post-processing script completed with exit code {ExitCode}", process.ExitCode);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error running recording post processor");
-        }
-    }
-
-    private void OnProcessExited(object? sender, EventArgs e)
-    {
-        if (sender is Process process)
-        {
-            using (process)
-            {
-                _logger.LogInformation("Recording post-processing script completed with exit code {ExitCode}", process.ExitCode);
-            }
         }
     }
 }
