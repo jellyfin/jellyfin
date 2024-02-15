@@ -272,7 +272,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var isNvdecDecoder = vidDecoder.Contains("cuda", StringComparison.OrdinalIgnoreCase);
                 var isVaapiDecoder = vidDecoder.Contains("vaapi", StringComparison.OrdinalIgnoreCase);
                 var isD3d11vaDecoder = vidDecoder.Contains("d3d11va", StringComparison.OrdinalIgnoreCase);
-                return isSwDecoder || isNvdecDecoder || isVaapiDecoder || isD3d11vaDecoder;
+                var isVideoToolBoxDecoder = vidDecoder.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase);
+                return isSwDecoder || isNvdecDecoder || isVaapiDecoder || isD3d11vaDecoder || isVideoToolBoxDecoder;
             }
 
             return state.VideoStream.VideoRange == VideoRange.HDR
@@ -4988,6 +4989,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             var noOverlay = swFilterChain.OverlayFilters.Count == 0;
             var supportsHwDeint = _mediaEncoder.SupportsFilter("yadif_videotoolbox");
             var supportsHwScale = _mediaEncoder.SupportsFilter("scale_vt");
+            // VideoToolbox is special. It does not use a separate tone mapping filter like others. Instead, it performs both tone mapping and scaling in a single filter.
+            var useHwToneMapping = IsHwTonemapAvailable(state, options) && supportsHwScale;
             // fallback to software filters if we are using filters not supported by hardware yet.
             var useHardwareFilters = noOverlay && (!doDeintH2645 || supportsHwDeint);
 
@@ -5008,6 +5011,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (supportsHwScale)
             {
                 var hwScaleFilter = GetHwScaleFilter("vt", "", inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                if (useHwToneMapping)
+                {
+                    hwScaleFilter = string.IsNullOrEmpty(hwScaleFilter) ? "scale_vt=0:0:bt709:bt709:bt709"
+                        : string.Format(CultureInfo.InvariantCulture, hwScaleFilter, ":bt709:bt709:bt709");
+                }
                 newfilters.Add(hwScaleFilter);
             }
 
