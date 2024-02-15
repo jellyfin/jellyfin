@@ -2955,6 +2955,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 arg2 = (isSizeFixed ? ':' : '=') + arg2;
             }
+
             if (string.Equals(hwScaleSuffix, "vt", StringComparison.OrdinalIgnoreCase))
             {
                 // VideoToolBox scaling filter requires different syntax
@@ -5004,18 +5005,20 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var swScaleFilter = GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH);
                 newfilters.Add(swScaleFilter);
             }
+
             // hwupload on videotoolbox encoders can automatically convert AVFrame into its CVPixelBuffer equivalent
             // videotoolbox will automatically convert the CVPixelBuffer to a pixel format the encoder supports, so we don't have to set a pixel format explicitly here
             // This will reduce CPU usage significantly on UHD videos with 10 bit colors because we bypassed the ffmpeg pixel format conversion
             newfilters.Add("hwupload");
             if (supportsHwScale)
             {
-                var hwScaleFilter = GetHwScaleFilter("vt", "", inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                var hwScaleFilter = GetHwScaleFilter("vt", string.Empty, inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                 if (useHwToneMapping)
                 {
                     hwScaleFilter = string.IsNullOrEmpty(hwScaleFilter) ? "scale_vt=0:0:bt709:bt709:bt709"
                         : string.Format(CultureInfo.InvariantCulture, hwScaleFilter, ":bt709:bt709:bt709");
                 }
+
                 newfilters.Add(hwScaleFilter);
             }
 
