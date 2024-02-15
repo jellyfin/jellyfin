@@ -2954,6 +2954,13 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 arg2 = (isSizeFixed ? ':' : '=') + arg2;
             }
+            if (string.Equals(hwScaleSuffix, "vt", StringComparison.OrdinalIgnoreCase))
+            {
+                // VideoToolBox scaling filter requires different syntax
+                arg1 = isSizeFixed ? ("=" + outWidth.Value + ":" + outHeight.Value) : string.Empty;
+                // VideoToolBox does format conversion automatically
+                arg2 = string.Empty;
+            }
 
             if (!string.IsNullOrEmpty(hwScaleSuffix) && (isSizeFixed || isFormatFixed))
             {
@@ -4980,6 +4987,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var newfilters = new List<string>();
             var noOverlay = swFilterChain.OverlayFilters.Count == 0;
             var supportsHwDeint = _mediaEncoder.SupportsFilter("yadif_videotoolbox");
+            var supportsHwScale = _mediaEncoder.SupportsFilter("scale_vt");
             // fallback to software filters if we are using filters not supported by hardware yet.
             var useHardwareFilters = noOverlay && (!doDeintH2645 || supportsHwDeint);
 
@@ -4988,14 +4996,20 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return swFilterChain;
             }
 
-            // ffmpeg cannot use videotoolbox to scale
-            var swScaleFilter = GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH);
-            newfilters.Add(swScaleFilter);
-
+            if (!supportsHwScale)
+            {
+                var swScaleFilter = GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH);
+                newfilters.Add(swScaleFilter);
+            }
             // hwupload on videotoolbox encoders can automatically convert AVFrame into its CVPixelBuffer equivalent
             // videotoolbox will automatically convert the CVPixelBuffer to a pixel format the encoder supports, so we don't have to set a pixel format explicitly here
             // This will reduce CPU usage significantly on UHD videos with 10 bit colors because we bypassed the ffmpeg pixel format conversion
             newfilters.Add("hwupload");
+            if (supportsHwScale)
+            {
+                var hwScaleFilter = GetHwScaleFilter("vt", "", inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                newfilters.Add(hwScaleFilter);
+            }
 
             if (doDeintH2645)
             {
