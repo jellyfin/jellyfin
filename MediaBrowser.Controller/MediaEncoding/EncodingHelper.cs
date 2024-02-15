@@ -272,8 +272,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var isNvdecDecoder = vidDecoder.Contains("cuda", StringComparison.OrdinalIgnoreCase);
                 var isVaapiDecoder = vidDecoder.Contains("vaapi", StringComparison.OrdinalIgnoreCase);
                 var isD3d11vaDecoder = vidDecoder.Contains("d3d11va", StringComparison.OrdinalIgnoreCase);
-                var isVideoToolBoxDecoder = vidDecoder.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase);
-                return isSwDecoder || isNvdecDecoder || isVaapiDecoder || isD3d11vaDecoder || isVideoToolBoxDecoder;
+                return isSwDecoder || isNvdecDecoder || isVaapiDecoder || isD3d11vaDecoder;
             }
 
             return state.VideoStream.VideoRange == VideoRange.HDR
@@ -317,8 +316,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 return false;
             }
+
+            // Certain DV profile 5 video works in Safari with direct playing, but the VideoToolBox does not produce correct mapping results with trascoding.
+            // All other HDR formats working.
             return state.VideoStream.VideoRange == VideoRange.HDR
-                   && state.VideoStream.VideoRangeType == VideoRangeType.HDR10;
+                   && state.VideoStream.VideoRangeType is VideoRangeType.HDR10 or VideoRangeType.HLG or VideoRangeType.HDR10Plus;
         }
 
         /// <summary>
@@ -5025,7 +5027,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (supportsHwScale)
             {
                 var hwScaleFilter = GetHwScaleFilter("vt", string.Empty, inW, inH, reqW, reqH, reqMaxW, reqMaxH);
-                if (useHwToneMapping)
+                if (true)
                 {
                     hwScaleFilter = string.IsNullOrEmpty(hwScaleFilter) ? "scale_vt=0:0:bt709:bt709:bt709"
                         : string.Format(CultureInfo.InvariantCulture, hwScaleFilter, ":bt709:bt709:bt709");
