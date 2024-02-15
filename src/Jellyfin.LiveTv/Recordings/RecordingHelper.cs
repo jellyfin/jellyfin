@@ -1,11 +1,9 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Globalization;
 using System.Text;
 using MediaBrowser.Controller.LiveTv;
 
-namespace Jellyfin.LiveTv.EmbyTV
+namespace Jellyfin.LiveTv.Recordings
 {
     internal static class RecordingHelper
     {
