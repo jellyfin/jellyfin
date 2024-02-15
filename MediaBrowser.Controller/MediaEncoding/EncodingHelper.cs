@@ -4999,7 +4999,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             // VideoToolbox is special. It does not use a separate tone mapping filter like others. Instead, it performs both tone mapping and scaling in a single filter.
             var useHwToneMapping = IsVideoToolboxTonemapAvailable(state, options) && supportsHwScale;
             // fallback to software filters if we are using filters not supported by hardware yet.
-            var useHardwareFilters = noOverlay && (!doDeintH2645 || supportsHwDeint);
+            var useHardwareFilters = noOverlay && (!doDeintH2645 || supportsHwDeint || supportsHwScale);
 
             if (!useHardwareFilters)
             {
