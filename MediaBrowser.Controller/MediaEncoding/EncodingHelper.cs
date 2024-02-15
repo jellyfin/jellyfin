@@ -2970,14 +2970,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 arg2 = (isSizeFixed ? ':' : '=') + arg2;
             }
 
-            if (string.Equals(hwScaleSuffix, "vt", StringComparison.OrdinalIgnoreCase))
-            {
-                // VideoToolBox scaling filter requires different syntax
-                arg1 = isSizeFixed ? ("=" + outWidth.Value + ":" + outHeight.Value) : string.Empty;
-                // VideoToolBox does format conversion automatically
-                arg2 = string.Empty;
-            }
-
             if (!string.IsNullOrEmpty(hwScaleSuffix) && (isSizeFixed || isFormatFixed))
             {
                 return string.Format(
@@ -5026,11 +5018,13 @@ namespace MediaBrowser.Controller.MediaEncoding
             newfilters.Add("hwupload");
             if (supportsHwScale)
             {
-                var hwScaleFilter = GetHwScaleFilter("vt", string.Empty, inW, inH, reqW, reqH, reqMaxW, reqMaxH);
-                if (true)
+                var hwScaleFilter = GetHwScaleFilter("vt", null, inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                if (useHwToneMapping)
                 {
-                    hwScaleFilter = string.IsNullOrEmpty(hwScaleFilter) ? "scale_vt=0:0:bt709:bt709:bt709"
-                        : string.Format(CultureInfo.InvariantCulture, hwScaleFilter, ":bt709:bt709:bt709");
+                    var tonemapArgs = "color_matrix=bt709:color_primaries=bt709:color_transfer=bt709";
+                    hwScaleFilter = string.IsNullOrEmpty(hwScaleFilter)
+                        ? "scale_vt=" + tonemapArgs
+                        : hwScaleFilter + ":" + tonemapArgs;
                 }
 
                 newfilters.Add(hwScaleFilter);
