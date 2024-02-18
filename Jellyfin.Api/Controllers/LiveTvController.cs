@@ -628,7 +628,7 @@ public class LiveTvController : BaseJellyfinApiController
     [Authorize(Policy = Policies.LiveTvAccess)]
     public async Task<ActionResult<QueryResult<BaseItemDto>>> GetPrograms([FromBody] GetProgramsDto body)
     {
-        var user = body.UserId.IsEmpty() ? null : _userManager.GetUserById(body.UserId);
+        var user = body.UserId.IsNullOrEmpty() ? null : _userManager.GetUserById(body.UserId.Value);
 
         var query = new InternalItemsQuery(user)
         {
