@@ -2453,9 +2453,47 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="options">The <see cref="MediaOptions"/> object for which to check compatibility.</param>
         public void CheckCompatibility(MediaType mediaType, MediaSourceInfo mediaSource, MediaOptions options)
         {
+            var profile = options.Profile;
+            int audioCount = 0;
+            bool audioSupport = false;
+            bool audioSupportDefault = false;
+
             foreach (var stream in mediaSource.MediaStreams)
             {
-                stream.DirectPlayErrors ??= GetCompatibility(mediaType, mediaSource, stream, options);
+                bool isInternalAudioStream = stream.Type == MediaStreamType.Audio && !stream.IsExternal;
+
+                if (!stream.DirectPlayErrors.HasValue)
+                {
+                    bool isSecondaryAudio = profile.SingleAudioPolicy is null && isInternalAudioStream && audioCount > 0;
+
+                    stream.DirectPlayErrors = GetCompatibility(mediaType, mediaSource, stream, options, isSecondaryAudio);
+
+                    if (isInternalAudioStream)
+                    {
+                        if ((profile.SingleAudioPolicy == SingleAudioPolicy.First && audioCount > 0)
+                            || (profile.SingleAudioPolicy == SingleAudioPolicy.FirstSupported && audioSupport)
+                            || (profile.SingleAudioPolicy == SingleAudioPolicy.Default && !stream.IsDefault)
+                            || (profile.SingleAudioPolicy == SingleAudioPolicy.DefaultSupported && (!stream.IsDefault || audioSupportDefault)))
+                        {
+                            stream.DirectPlayErrors |= TranscodeReason.SecondaryAudioNotSupported;
+                        }
+                    }
+                }
+
+                if (isInternalAudioStream)
+                {
+                    audioCount++;
+
+                    if ((stream.DirectPlayErrors & AudioReasons) == 0)
+                    {
+                        audioSupport = true;
+
+                        if (stream.IsDefault)
+                        {
+                            audioSupportDefault = true;
+                        }
+                    }
+                }
             }
         }
 
@@ -2466,13 +2504,14 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="mediaSource">The <see cref="MediaSourceInfo"/>.</param>
         /// <param name="stream">The <see cref="MediaStream"/> for which to check compatibility.</param>
         /// <param name="options">The <see cref="MediaOptions"/> object for which to check compatibility.</param>
+        /// <param name="isSecondaryAudio">True if secondary audio stream.</param>
         /// <returns>Stream compatibility errors, if any.</returns>
-        private TranscodeReason GetCompatibility(MediaType mediaType, MediaSourceInfo mediaSource, MediaStream stream, MediaOptions options)
+        private TranscodeReason GetCompatibility(MediaType mediaType, MediaSourceInfo mediaSource, MediaStream stream, MediaOptions options, bool isSecondaryAudio)
         {
             switch (stream.Type)
             {
                 case MediaStreamType.Audio:
-                    return GetCompatibilityAudio(options, mediaSource, stream, mediaType == MediaType.Video);
+                    return GetCompatibilityAudio(options, mediaSource, stream, mediaType == MediaType.Video, isSecondaryAudio);
 
                 case MediaStreamType.Video:
                     return GetCompatibilityVideo(options, mediaSource, stream);
@@ -2559,8 +2598,9 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="mediaSource">The <see cref="MediaSourceInfo"/>.</param>
         /// <param name="audioStream">The <see cref="MediaStream"/> of the audio stream.</param>
         /// <param name="isVideo">True if source is video.</param>
+        /// <param name="isSecondaryAudio">True if secondary audio stream.</param>
         /// <returns>Audio stream compatibility errors, if any.</returns>
-        private TranscodeReason GetCompatibilityAudio(MediaOptions options, MediaSourceInfo mediaSource, MediaStream audioStream, bool isVideo)
+        private TranscodeReason GetCompatibilityAudio(MediaOptions options, MediaSourceInfo mediaSource, MediaStream audioStream, bool isVideo, bool isSecondaryAudio)
         {
             var profile = options.Profile;
             string container = mediaSource.Container;
@@ -2603,8 +2643,6 @@ namespace MediaBrowser.Model.Dlna
 
             if (audioSupported)
             {
-                bool isSecondaryAudio = isVideo ? mediaSource.IsSecondaryAudio(audioStream) ?? false : false;
-
                 failures |= GetCompatibilityAudioCodecDirect(options, mediaSource, container, audioStream, isVideo, isSecondaryAudio);
             }
             else
