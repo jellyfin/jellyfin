@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace MediaBrowser.Model.Lyrics;
 
@@ -8,15 +9,8 @@ namespace MediaBrowser.Model.Lyrics;
 public class UploadLyricDto
 {
     /// <summary>
-    /// Gets or sets the lyric format, typically the file extension.
+    /// Gets or sets the lyrics file.
     /// </summary>
     [Required]
-    [RegularExpression("^[A-Za-z]+$")]
-    public string Format { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Gets or sets the lyric data, plaintext.
-    /// </summary>
-    [Required]
-    public string Content { get; set; } = string.Empty;
+    public IFormFile Lyrics { get; set; } = null!;
 }

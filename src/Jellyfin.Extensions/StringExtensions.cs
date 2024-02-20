@@ -61,6 +61,11 @@ namespace Jellyfin.Extensions
         /// <returns>The part left of the <paramref name="needle" />.</returns>
         public static ReadOnlySpan<char> LeftPart(this ReadOnlySpan<char> haystack, char needle)
         {
+            if (haystack.IsEmpty)
+            {
+                return ReadOnlySpan<char>.Empty;
+            }
+
             var pos = haystack.IndexOf(needle);
             return pos == -1 ? haystack : haystack[..pos];
         }
@@ -73,6 +78,11 @@ namespace Jellyfin.Extensions
         /// <returns>The part right of the <paramref name="needle" />.</returns>
         public static ReadOnlySpan<char> RightPart(this ReadOnlySpan<char> haystack, char needle)
         {
+            if (haystack.IsEmpty)
+            {
+                return ReadOnlySpan<char>.Empty;
+            }
+
             var pos = haystack.LastIndexOf(needle);
             if (pos == -1)
             {

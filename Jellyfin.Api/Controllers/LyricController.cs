@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
-using System.Text;
+using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Extensions;
@@ -108,19 +108,20 @@ public class LyricController : BaseJellyfinApiController
     /// Upload an external lyric file.
     /// </summary>
     /// <param name="itemId">The item the lyric belongs to.</param>
-    /// <param name="body">The request body.</param>
+    /// <param name="content">The lyrics content.</param>
     /// <response code="200">Lyrics uploaded.</response>
     /// <response code="400">Error processing upload.</response>
     /// <response code="404">Item not found.</response>
     /// <returns>The uploaded lyric.</returns>
     [HttpPost("Audio/{itemId}/Lyrics")]
     [Authorize(Policy = Policies.LyricManagement)]
+    [Consumes(MediaTypeNames.Multipart.FormData)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<LyricDto>> UploadLyrics(
         [FromRoute, Required] Guid itemId,
-        [FromBody, Required] UploadLyricDto body)
+        [FromForm, Required] UploadLyricDto content)
     {
         var audio = _libraryManager.GetItemById<Audio>(itemId);
         if (audio is null)
@@ -128,15 +129,27 @@ public class LyricController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var bytes = Encoding.UTF8.GetBytes(body.Content);
-        var stream = new MemoryStream(bytes, 0, bytes.Length, false, true);
+        var lyrics = content.Lyrics;
+        if (lyrics.Length == 0)
+        {
+            return BadRequest("No lyrics uploaded");
+        }
+
+        // Utilize Path.GetExtension as it provides extra path validation.
+        var format = Path.GetExtension(lyrics.FileName.AsSpan()).RightPart('.').ToString();
+        if (string.IsNullOrEmpty(format))
+        {
+            return BadRequest("Extension is required on filename");
+        }
+
+        var stream = lyrics.OpenReadStream();
         await using (stream.ConfigureAwait(false))
         {
             var uploadedLyric = await _lyricManager.UploadLyricAsync(
                 audio,
                 new LyricResponse
                 {
-                    Format = body.Format,
+                    Format = format,
                     Stream = stream
                 }).ConfigureAwait(false);
 
