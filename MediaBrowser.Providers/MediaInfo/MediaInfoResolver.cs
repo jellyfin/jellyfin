@@ -149,7 +149,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            return mediaStreams.AsReadOnly();
+            return mediaStreams;
         }
 
         /// <summary>
@@ -178,20 +178,20 @@ namespace MediaBrowser.Providers.MediaInfo
                 return Array.Empty<MediaStream>();
             }
 
-            var mediaStreams = new List<MediaStream>(pathInfos.Count);
+            var mediaStreams = new MediaStream[pathInfos.Count];
 
-            foreach (var pathInfo in pathInfos)
+            for (var i = 0; i < pathInfos.Count; i++)
             {
-                mediaStreams.Add(new MediaStream
+                mediaStreams[i] = new MediaStream
                 {
                     Type = MediaStreamType.Lyric,
-                    Path = pathInfo.Path,
-                    Language = pathInfo.Language,
+                    Path = pathInfos[i].Path,
+                    Language = pathInfos[i].Language,
                     Index = startIndex++
-                });
+                };
             }
 
-            return mediaStreams.AsReadOnly();
+            return mediaStreams;
         }
 
         /// <summary>

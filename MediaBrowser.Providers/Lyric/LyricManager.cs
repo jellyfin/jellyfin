@@ -95,7 +95,7 @@ public class LyricManager : ILyricManager
             .Where(i => !request.DisabledLyricFetchers.Contains(i.Name, StringComparer.OrdinalIgnoreCase))
             .OrderBy(i =>
             {
-                var index = request.LyricFetcherOrder.ToList().IndexOf(i.Name);
+                var index = request.LyricFetcherOrder.IndexOf(i.Name);
                 return index == -1 ? int.MaxValue : index;
             })
             .ToArray();
