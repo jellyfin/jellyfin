@@ -163,14 +163,12 @@ namespace Jellyfin.Server.Implementations.MediaSegments
 
         /// <summary>
         /// Delete all segments when itemid is deleted from library.
-        /// TODO: Do not block.
         /// </summary>
         /// <param name="sender">The sending entity.</param>
         /// <param name="itemChangeEventArgs">The <see cref="ItemChangeEventArgs"/>.</param>
-        private void LibraryManagerItemRemoved(object? sender, ItemChangeEventArgs itemChangeEventArgs)
+        private async void LibraryManagerItemRemoved(object? sender, ItemChangeEventArgs itemChangeEventArgs)
         {
-            var task = Task.Run(async () => { await DeleteSegmentsAsync(itemChangeEventArgs.Item.Id).ConfigureAwait(false); });
-            task.Wait();
+            await DeleteSegmentsAsync(itemChangeEventArgs.Item.Id).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
