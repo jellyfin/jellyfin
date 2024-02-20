@@ -459,8 +459,16 @@ namespace Jellyfin.Model.Tests
                         // Audio stream not specified
                         else
                         {
-                            // TODO: Fixme
-                            Assert.All(audioStreams, stream =>
+                            bool isDefault = targetAudioStream?.IsDefault == true;
+                            var language = targetAudioStream?.Language;
+
+                            // Collect candidate audio streams
+                            var candidateAudioStreams = audioStreams.Where(stream =>
+                            {
+                                return isDefault ? stream.IsDefault : (stream.Language == language);
+                            });
+
+                            Assert.All(candidateAudioStreams, stream =>
                             {
                                 if (!stream.IsExternal)
                                 {
