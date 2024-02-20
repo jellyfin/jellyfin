@@ -26,6 +26,7 @@ public static class LiveTvServiceCollectionExtensions
         services.AddSingleton<IChannelManager, ChannelManager>();
         services.AddSingleton<IStreamHelper, StreamHelper>();
         services.AddSingleton<ITunerHostManager, TunerHostManager>();
+        services.AddSingleton<IListingsManager, ListingsManager>();
         services.AddSingleton<IGuideManager, GuideManager>();
 
         services.AddSingleton<ILiveTvService, EmbyTV.EmbyTV>();

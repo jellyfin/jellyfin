@@ -45,6 +45,7 @@ public class LiveTvController : BaseJellyfinApiController
     private readonly ILiveTvManager _liveTvManager;
     private readonly IGuideManager _guideManager;
     private readonly ITunerHostManager _tunerHostManager;
+    private readonly IListingsManager _listingsManager;
     private readonly IUserManager _userManager;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILibraryManager _libraryManager;
@@ -59,6 +60,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <param name="liveTvManager">Instance of the <see cref="ILiveTvManager"/> interface.</param>
     /// <param name="guideManager">Instance of the <see cref="IGuideManager"/> interface.</param>
     /// <param name="tunerHostManager">Instance of the <see cref="ITunerHostManager"/> interface.</param>
+    /// <param name="listingsManager">Instance of the <see cref="IListingsManager"/> interface.</param>
     /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
     /// <param name="httpClientFactory">Instance of the <see cref="IHttpClientFactory"/> interface.</param>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
@@ -70,6 +72,7 @@ public class LiveTvController : BaseJellyfinApiController
         ILiveTvManager liveTvManager,
         IGuideManager guideManager,
         ITunerHostManager tunerHostManager,
+        IListingsManager listingsManager,
         IUserManager userManager,
         IHttpClientFactory httpClientFactory,
         ILibraryManager libraryManager,
@@ -81,6 +84,7 @@ public class LiveTvController : BaseJellyfinApiController
         _liveTvManager = liveTvManager;
         _guideManager = guideManager;
         _tunerHostManager = tunerHostManager;
+        _listingsManager = listingsManager;
         _userManager = userManager;
         _httpClientFactory = httpClientFactory;
         _libraryManager = libraryManager;
@@ -1015,7 +1019,7 @@ public class LiveTvController : BaseJellyfinApiController
             listingsProviderInfo.Password = Convert.ToHexString(SHA1.HashData(Encoding.UTF8.GetBytes(pw))).ToLowerInvariant();
         }
 
-        return await _liveTvManager.SaveListingProvider(listingsProviderInfo, validateLogin, validateListings).ConfigureAwait(false);
+        return await _listingsManager.SaveListingProvider(listingsProviderInfo, validateLogin, validateListings).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -1029,7 +1033,7 @@ public class LiveTvController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public ActionResult DeleteListingProvider([FromQuery] string? id)
     {
-        _liveTvManager.DeleteListingsProvider(id);
+        _listingsManager.DeleteListingsProvider(id);
         return NoContent();
     }
 
@@ -1050,9 +1054,7 @@ public class LiveTvController : BaseJellyfinApiController
         [FromQuery] string? type,
         [FromQuery] string? location,
         [FromQuery] string? country)
-    {
-        return await _liveTvManager.GetLineups(type, id, country, location).ConfigureAwait(false);
-    }
+        => await _listingsManager.GetLineups(type, id, country, location).ConfigureAwait(false);
 
     /// <summary>
     /// Gets available countries.
@@ -1083,48 +1085,20 @@ public class LiveTvController : BaseJellyfinApiController
     [HttpGet("ChannelMappingOptions")]
     [Authorize(Policy = Policies.LiveTvAccess)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<ChannelMappingOptionsDto>> GetChannelMappingOptions([FromQuery] string? providerId)
-    {
-        var config = _configurationManager.GetConfiguration<LiveTvOptions>("livetv");
-
-        var listingsProviderInfo = config.ListingProviders.First(i => string.Equals(providerId, i.Id, StringComparison.OrdinalIgnoreCase));
-
-        var listingsProviderName = _liveTvManager.ListingProviders.First(i => string.Equals(i.Type, listingsProviderInfo.Type, StringComparison.OrdinalIgnoreCase)).Name;
-
-        var tunerChannels = await _liveTvManager.GetChannelsForListingsProvider(providerId, CancellationToken.None)
-            .ConfigureAwait(false);
-
-        var providerChannels = await _liveTvManager.GetChannelsFromListingsProviderData(providerId, CancellationToken.None)
-            .ConfigureAwait(false);
-
-        var mappings = listingsProviderInfo.ChannelMappings;
-
-        return new ChannelMappingOptionsDto
-        {
-            TunerChannels = tunerChannels.Select(i => _liveTvManager.GetTunerChannelMapping(i, mappings, providerChannels)).ToList(),
-            ProviderChannels = providerChannels.Select(i => new NameIdPair
-            {
-                Name = i.Name,
-                Id = i.Id
-            }).ToList(),
-            Mappings = mappings,
-            ProviderName = listingsProviderName
-        };
-    }
+    public Task<ChannelMappingOptionsDto> GetChannelMappingOptions([FromQuery] string? providerId)
+        => _listingsManager.GetChannelMappingOptions(providerId);
 
     /// <summary>
     /// Set channel mappings.
     /// </summary>
-    /// <param name="setChannelMappingDto">The set channel mapping dto.</param>
+    /// <param name="dto">The set channel mapping dto.</param>
     /// <response code="200">Created channel mapping returned.</response>
     /// <returns>An <see cref="OkResult"/> containing the created channel mapping.</returns>
     [HttpPost("ChannelMappings")]
     [Authorize(Policy = Policies.LiveTvManagement)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<TunerChannelMapping>> SetChannelMapping([FromBody, Required] SetChannelMappingDto setChannelMappingDto)
-    {
-        return await _liveTvManager.SetChannelMapping(setChannelMappingDto.ProviderId, setChannelMappingDto.TunerChannelId, setChannelMappingDto.ProviderChannelId).ConfigureAwait(false);
-    }
+    public Task<TunerChannelMapping> SetChannelMapping([FromBody, Required] SetChannelMappingDto dto)
+        => _listingsManager.SetChannelMapping(dto.ProviderId, dto.TunerChannelId, dto.ProviderChannelId);
 
     /// <summary>
     /// Get tuner host types.

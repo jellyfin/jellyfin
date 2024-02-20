@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
 
-namespace Jellyfin.Api.Models.LiveTvDtos;
+namespace MediaBrowser.Model.LiveTv;
 
 /// <summary>
 /// Channel mapping options dto.
