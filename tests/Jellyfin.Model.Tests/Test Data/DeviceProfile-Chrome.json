@@ -13,6 +13,7 @@
     "RequiresPlainFolders": false,
     "EnableMSMediaReceiverRegistrar": false,
     "IgnoreTranscodeByteRangeRequests": false,
+    "SingleAudioPolicy": "FirstSupported",
     "DirectPlayProfiles": [
         {
             "Container": "webm",
@@ -196,29 +197,6 @@
     ],
     "ContainerProfiles": [],
     "CodecProfiles": [
-        {
-            "Type": "VideoAudio",
-            "Codec": "aac",
-            "Conditions": [
-                {
-                    "Condition": "Equals",
-                    "Property": "IsSecondaryAudio",
-                    "Value": "false",
-                    "IsRequired": false
-                }
-            ]
-        },
-        {
-            "Type": "VideoAudio",
-            "Conditions": [
-                {
-                    "Condition": "Equals",
-                    "Property": "IsSecondaryAudio",
-                    "Value": "false",
-                    "IsRequired": false
-                }
-            ]
-        },
         {
             "Type": "Video",
             "Codec": "h264",
