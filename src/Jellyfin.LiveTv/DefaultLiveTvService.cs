@@ -24,13 +24,13 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.LiveTv;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.LiveTv.EmbyTV
+namespace Jellyfin.LiveTv
 {
-    public sealed class EmbyTV : ILiveTvService, ISupportsDirectStreamProvider, ISupportsNewTimerIds
+    public sealed class DefaultLiveTvService : ILiveTvService, ISupportsDirectStreamProvider, ISupportsNewTimerIds
     {
         public const string ServiceName = "Emby";
 
-        private readonly ILogger<EmbyTV> _logger;
+        private readonly ILogger<DefaultLiveTvService> _logger;
         private readonly IServerConfigurationManager _config;
         private readonly ITunerHostManager _tunerHostManager;
         private readonly IListingsManager _listingsManager;
@@ -40,8 +40,8 @@ namespace Jellyfin.LiveTv.EmbyTV
         private readonly TimerManager _timerManager;
         private readonly SeriesTimerManager _seriesTimerManager;
 
-        public EmbyTV(
-            ILogger<EmbyTV> logger,
+        public DefaultLiveTvService(
+            ILogger<DefaultLiveTvService> logger,
             IServerConfigurationManager config,
             ITunerHostManager tunerHostManager,
             IListingsManager listingsManager,

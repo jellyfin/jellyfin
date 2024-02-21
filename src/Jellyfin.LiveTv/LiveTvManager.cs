@@ -72,7 +72,7 @@ namespace Jellyfin.LiveTv
             _recordingsManager = recordingsManager;
             _services = services.ToArray();
 
-            var defaultService = _services.OfType<EmbyTV.EmbyTV>().First();
+            var defaultService = _services.OfType<DefaultLiveTvService>().First();
             defaultService.TimerCreated += OnEmbyTvTimerCreated;
             defaultService.TimerCancelled += OnEmbyTvTimerCancelled;
         }
@@ -340,7 +340,7 @@ namespace Jellyfin.LiveTv
             // Set the total bitrate if not already supplied
             mediaSource.InferTotalBitrate();
 
-            if (service is not EmbyTV.EmbyTV)
+            if (service is not DefaultLiveTvService)
             {
                 // We can't trust that we'll be able to direct stream it through emby server, no matter what the provider says
                 // mediaSource.SupportsDirectPlay = false;
@@ -769,7 +769,7 @@ namespace Jellyfin.LiveTv
 
             var channel = string.IsNullOrWhiteSpace(info.ChannelId)
                 ? null
-                : _libraryManager.GetItemById(_tvDtoService.GetInternalChannelId(EmbyTV.EmbyTV.ServiceName, info.ChannelId));
+                : _libraryManager.GetItemById(_tvDtoService.GetInternalChannelId(DefaultLiveTvService.ServiceName, info.ChannelId));
 
             dto.SeriesTimerId = string.IsNullOrEmpty(info.SeriesTimerId)
                 ? null
@@ -1005,7 +1005,7 @@ namespace Jellyfin.LiveTv
 
             await service.CancelTimerAsync(timer.ExternalId, CancellationToken.None).ConfigureAwait(false);
 
-            if (service is not EmbyTV.EmbyTV)
+            if (service is not DefaultLiveTvService)
             {
                 TimerCancelled?.Invoke(this, new GenericEventArgs<TimerEventInfo>(new TimerEventInfo(id)));
             }
@@ -1314,7 +1314,7 @@ namespace Jellyfin.LiveTv
 
             _logger.LogInformation("New recording scheduled");
 
-            if (service is not EmbyTV.EmbyTV)
+            if (service is not DefaultLiveTvService)
             {
                 TimerCreated?.Invoke(this, new GenericEventArgs<TimerEventInfo>(
                     new TimerEventInfo(newTimerId)

@@ -141,7 +141,7 @@ public class GuideManager : IGuideManager
             CleanDatabase(newProgramIdList.ToArray(), [BaseItemKind.LiveTvProgram], progress, cancellationToken);
         }
 
-        var coreService = _liveTvManager.Services.OfType<EmbyTV.EmbyTV>().FirstOrDefault();
+        var coreService = _liveTvManager.Services.OfType<DefaultLiveTvService>().FirstOrDefault();
         if (coreService is not null)
         {
             await coreService.RefreshSeriesTimers(cancellationToken).ConfigureAwait(false);
