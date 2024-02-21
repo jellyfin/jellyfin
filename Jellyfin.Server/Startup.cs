@@ -128,7 +128,7 @@ namespace Jellyfin.Server
             services.AddHlsPlaylistGenerator();
             services.AddLiveTvServices();
 
-            services.AddHostedService<LiveTvHost>();
+            services.AddHostedService<RecordingsHost>();
             services.AddHostedService<AutoDiscoveryHost>();
             services.AddHostedService<PortForwardingHost>();
             services.AddHostedService<NfoUserDataSaver>();
