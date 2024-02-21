@@ -24,13 +24,15 @@ namespace Jellyfin.LiveTv
         private const char StreamIdDelimiter = '_';
 
         private readonly ILiveTvManager _liveTvManager;
+        private readonly IRecordingsManager _recordingsManager;
         private readonly ILogger<LiveTvMediaSourceProvider> _logger;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IServerApplicationHost _appHost;
 
-        public LiveTvMediaSourceProvider(ILiveTvManager liveTvManager, ILogger<LiveTvMediaSourceProvider> logger, IMediaSourceManager mediaSourceManager, IServerApplicationHost appHost)
+        public LiveTvMediaSourceProvider(ILiveTvManager liveTvManager, IRecordingsManager recordingsManager, ILogger<LiveTvMediaSourceProvider> logger, IMediaSourceManager mediaSourceManager, IServerApplicationHost appHost)
         {
             _liveTvManager = liveTvManager;
+            _recordingsManager = recordingsManager;
             _logger = logger;
             _mediaSourceManager = mediaSourceManager;
             _appHost = appHost;
@@ -40,7 +42,7 @@ namespace Jellyfin.LiveTv
         {
             if (item.SourceType == SourceType.LiveTV)
             {
-                var activeRecordingInfo = _liveTvManager.GetActiveRecordingInfo(item.Path);
+                var activeRecordingInfo = _recordingsManager.GetActiveRecordingInfo(item.Path);
 
                 if (string.IsNullOrEmpty(item.Path) || activeRecordingInfo is not null)
                 {

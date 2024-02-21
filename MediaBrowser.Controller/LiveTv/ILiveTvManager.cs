@@ -245,10 +245,6 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="user">The user.</param>
         void AddChannelInfo(IReadOnlyCollection<(BaseItemDto ItemDto, LiveTvChannel Channel)> items, DtoOptions options, User user);
 
-        string GetEmbyTvActiveRecordingPath(string id);
-
-        ActiveRecordingInfo GetActiveRecordingInfo(string path);
-
         void AddInfoToRecordingDto(BaseItem item, BaseItemDto dto, ActiveRecordingInfo activeRecordingInfo, User user = null);
 
         Task<BaseItem[]> GetRecordingFoldersAsync(User user);

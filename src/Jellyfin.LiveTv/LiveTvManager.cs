@@ -12,6 +12,7 @@ using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
 using Jellyfin.LiveTv.Configuration;
+using Jellyfin.LiveTv.IO;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -42,6 +43,7 @@ namespace Jellyfin.LiveTv
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _localization;
         private readonly IChannelManager _channelManager;
+        private readonly IRecordingsManager _recordingsManager;
         private readonly LiveTvDtoService _tvDtoService;
         private readonly ILiveTvService[] _services;
 
@@ -54,6 +56,7 @@ namespace Jellyfin.LiveTv
             ILibraryManager libraryManager,
             ILocalizationManager localization,
             IChannelManager channelManager,
+            IRecordingsManager recordingsManager,
             LiveTvDtoService liveTvDtoService,
             IEnumerable<ILiveTvService> services)
         {
@@ -66,6 +69,7 @@ namespace Jellyfin.LiveTv
             _userDataManager = userDataManager;
             _channelManager = channelManager;
             _tvDtoService = liveTvDtoService;
+            _recordingsManager = recordingsManager;
             _services = services.ToArray();
 
             var defaultService = _services.OfType<EmbyTV.EmbyTV>().First();
@@ -86,11 +90,6 @@ namespace Jellyfin.LiveTv
         /// </summary>
         /// <value>The services.</value>
         public IReadOnlyList<ILiveTvService> Services => _services;
-
-        public string GetEmbyTvActiveRecordingPath(string id)
-        {
-            return EmbyTV.EmbyTV.Current.GetActiveRecordingPath(id);
-        }
 
         private void OnEmbyTvTimerCancelled(object sender, GenericEventArgs<string> e)
         {
@@ -764,18 +763,13 @@ namespace Jellyfin.LiveTv
             return AddRecordingInfo(programTuples, CancellationToken.None);
         }
 
-        public ActiveRecordingInfo GetActiveRecordingInfo(string path)
-        {
-            return EmbyTV.EmbyTV.Current.GetActiveRecordingInfo(path);
-        }
-
         public void AddInfoToRecordingDto(BaseItem item, BaseItemDto dto, ActiveRecordingInfo activeRecordingInfo, User user = null)
         {
-            var service = EmbyTV.EmbyTV.Current;
-
             var info = activeRecordingInfo.Timer;
 
-            var channel = string.IsNullOrWhiteSpace(info.ChannelId) ? null : _libraryManager.GetItemById(_tvDtoService.GetInternalChannelId(service.Name, info.ChannelId));
+            var channel = string.IsNullOrWhiteSpace(info.ChannelId)
+                ? null
+                : _libraryManager.GetItemById(_tvDtoService.GetInternalChannelId(EmbyTV.EmbyTV.ServiceName, info.ChannelId));
 
             dto.SeriesTimerId = string.IsNullOrEmpty(info.SeriesTimerId)
                 ? null
@@ -1460,7 +1454,7 @@ namespace Jellyfin.LiveTv
 
         private async Task<BaseItem[]> GetRecordingFoldersAsync(User user, bool refreshChannels)
         {
-            var folders = EmbyTV.EmbyTV.Current.GetRecordingFolders()
+            var folders = _recordingsManager.GetRecordingFolders()
                 .SelectMany(i => i.Locations)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Select(i => _libraryManager.FindByPath(i, true))

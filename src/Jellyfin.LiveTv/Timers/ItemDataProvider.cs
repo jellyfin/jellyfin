@@ -9,7 +9,7 @@ using System.Text.Json;
 using Jellyfin.Extensions.Json;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.LiveTv.EmbyTV
+namespace Jellyfin.LiveTv.Timers
 {
     public class ItemDataProvider<T>
         where T : class

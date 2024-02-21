@@ -46,6 +46,7 @@ public class LiveTvController : BaseJellyfinApiController
     private readonly IGuideManager _guideManager;
     private readonly ITunerHostManager _tunerHostManager;
     private readonly IListingsManager _listingsManager;
+    private readonly IRecordingsManager _recordingsManager;
     private readonly IUserManager _userManager;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILibraryManager _libraryManager;
@@ -61,6 +62,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <param name="guideManager">Instance of the <see cref="IGuideManager"/> interface.</param>
     /// <param name="tunerHostManager">Instance of the <see cref="ITunerHostManager"/> interface.</param>
     /// <param name="listingsManager">Instance of the <see cref="IListingsManager"/> interface.</param>
+    /// <param name="recordingsManager">Instance of the <see cref="IRecordingsManager"/> interface.</param>
     /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
     /// <param name="httpClientFactory">Instance of the <see cref="IHttpClientFactory"/> interface.</param>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
@@ -73,6 +75,7 @@ public class LiveTvController : BaseJellyfinApiController
         IGuideManager guideManager,
         ITunerHostManager tunerHostManager,
         IListingsManager listingsManager,
+        IRecordingsManager recordingsManager,
         IUserManager userManager,
         IHttpClientFactory httpClientFactory,
         ILibraryManager libraryManager,
@@ -85,6 +88,7 @@ public class LiveTvController : BaseJellyfinApiController
         _guideManager = guideManager;
         _tunerHostManager = tunerHostManager;
         _listingsManager = listingsManager;
+        _recordingsManager = recordingsManager;
         _userManager = userManager;
         _httpClientFactory = httpClientFactory;
         _libraryManager = libraryManager;
@@ -1140,8 +1144,7 @@ public class LiveTvController : BaseJellyfinApiController
     [ProducesVideoFile]
     public ActionResult GetLiveRecordingFile([FromRoute, Required] string recordingId)
     {
-        var path = _liveTvManager.GetEmbyTvActiveRecordingPath(recordingId);
-
+        var path = _recordingsManager.GetActiveRecordingPath(recordingId);
         if (string.IsNullOrWhiteSpace(path))
         {
             return NotFound();

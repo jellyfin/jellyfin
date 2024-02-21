@@ -34,6 +34,7 @@ public class GuideManager : IGuideManager
     private readonly ILibraryManager _libraryManager;
     private readonly ILiveTvManager _liveTvManager;
     private readonly ITunerHostManager _tunerHostManager;
+    private readonly IRecordingsManager _recordingsManager;
     private readonly LiveTvDtoService _tvDtoService;
 
     /// <summary>
@@ -46,6 +47,7 @@ public class GuideManager : IGuideManager
     /// <param name="libraryManager">The <see cref="ILibraryManager"/>.</param>
     /// <param name="liveTvManager">The <see cref="ILiveTvManager"/>.</param>
     /// <param name="tunerHostManager">The <see cref="ITunerHostManager"/>.</param>
+    /// <param name="recordingsManager">The <see cref="IRecordingsManager"/>.</param>
     /// <param name="tvDtoService">The <see cref="LiveTvDtoService"/>.</param>
     public GuideManager(
         ILogger<GuideManager> logger,
@@ -55,6 +57,7 @@ public class GuideManager : IGuideManager
         ILibraryManager libraryManager,
         ILiveTvManager liveTvManager,
         ITunerHostManager tunerHostManager,
+        IRecordingsManager recordingsManager,
         LiveTvDtoService tvDtoService)
     {
         _logger = logger;
@@ -64,6 +67,7 @@ public class GuideManager : IGuideManager
         _libraryManager = libraryManager;
         _liveTvManager = liveTvManager;
         _tunerHostManager = tunerHostManager;
+        _recordingsManager = recordingsManager;
         _tvDtoService = tvDtoService;
     }
 
@@ -85,7 +89,7 @@ public class GuideManager : IGuideManager
     {
         ArgumentNullException.ThrowIfNull(progress);
 
-        await EmbyTV.EmbyTV.Current.CreateRecordingFolders().ConfigureAwait(false);
+        await _recordingsManager.CreateRecordingFolders().ConfigureAwait(false);
 
         await _tunerHostManager.ScanForTunerDeviceChanges(cancellationToken).ConfigureAwait(false);
 

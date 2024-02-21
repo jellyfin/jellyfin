@@ -47,6 +47,7 @@ namespace Emby.Server.Implementations.Dto
 
         private readonly IImageProcessor _imageProcessor;
         private readonly IProviderManager _providerManager;
+        private readonly IRecordingsManager _recordingsManager;
 
         private readonly IApplicationHost _appHost;
         private readonly IMediaSourceManager _mediaSourceManager;
@@ -62,6 +63,7 @@ namespace Emby.Server.Implementations.Dto
             IItemRepository itemRepo,
             IImageProcessor imageProcessor,
             IProviderManager providerManager,
+            IRecordingsManager recordingsManager,
             IApplicationHost appHost,
             IMediaSourceManager mediaSourceManager,
             Lazy<ILiveTvManager> livetvManagerFactory,
@@ -74,6 +76,7 @@ namespace Emby.Server.Implementations.Dto
             _itemRepo = itemRepo;
             _imageProcessor = imageProcessor;
             _providerManager = providerManager;
+            _recordingsManager = recordingsManager;
             _appHost = appHost;
             _mediaSourceManager = mediaSourceManager;
             _livetvManagerFactory = livetvManagerFactory;
@@ -256,8 +259,7 @@ namespace Emby.Server.Implementations.Dto
                 dto.Etag = item.GetEtag(user);
             }
 
-            var liveTvManager = LivetvManager;
-            var activeRecording = liveTvManager.GetActiveRecordingInfo(item.Path);
+            var activeRecording = _recordingsManager.GetActiveRecordingInfo(item.Path);
             if (activeRecording is not null)
             {
                 dto.Type = BaseItemKind.Recording;
@@ -270,7 +272,7 @@ namespace Emby.Server.Implementations.Dto
                     dto.Name = dto.SeriesName;
                 }
 
-                liveTvManager.AddInfoToRecordingDto(item, dto, activeRecording, user);
+                LivetvManager.AddInfoToRecordingDto(item, dto, activeRecording, user);
             }
 
             return dto;

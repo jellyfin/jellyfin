@@ -3,21 +3,27 @@
 using System;
 using System.Collections.Concurrent;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using Jellyfin.Data.Events;
+using Jellyfin.LiveTv.EmbyTV;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.LiveTv;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.LiveTv.EmbyTV
+namespace Jellyfin.LiveTv.Timers
 {
     public class TimerManager : ItemDataProvider<TimerInfo>
     {
-        private readonly ConcurrentDictionary<string, Timer> _timers = new ConcurrentDictionary<string, Timer>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, Timer> _timers = new(StringComparer.OrdinalIgnoreCase);
 
-        public TimerManager(ILogger logger, string dataPath)
-            : base(logger, dataPath, (r1, r2) => string.Equals(r1.Id, r2.Id, StringComparison.OrdinalIgnoreCase))
+        public TimerManager(ILogger<TimerManager> logger, IConfigurationManager config)
+            : base(
+                logger,
+                Path.Combine(config.CommonApplicationPaths.DataPath, "livetv"),
+                (r1, r2) => string.Equals(r1.Id, r2.Id, StringComparison.OrdinalIgnoreCase))
         {
         }
 
@@ -80,22 +86,11 @@ namespace Jellyfin.LiveTv.EmbyTV
             AddOrUpdateSystemTimer(item);
         }
 
-        private static bool ShouldStartTimer(TimerInfo item)
-        {
-            if (item.Status == RecordingStatus.Completed
-                || item.Status == RecordingStatus.Cancelled)
-            {
-                return false;
-            }
-
-            return true;
-        }
-
         private void AddOrUpdateSystemTimer(TimerInfo item)
         {
             StopTimer(item);
 
-            if (!ShouldStartTimer(item))
+            if (item.Status is RecordingStatus.Completed or RecordingStatus.Cancelled)
             {
                 return;
             }
@@ -169,13 +164,9 @@ namespace Jellyfin.LiveTv.EmbyTV
         }
 
         public TimerInfo? GetTimer(string id)
-        {
-            return GetAll().FirstOrDefault(r => string.Equals(r.Id, id, StringComparison.OrdinalIgnoreCase));
-        }
+            => GetAll().FirstOrDefault(r => string.Equals(r.Id, id, StringComparison.OrdinalIgnoreCase));
 
         public TimerInfo? GetTimerByProgramId(string programId)
-        {
-            return GetAll().FirstOrDefault(r => string.Equals(r.ProgramId, programId, StringComparison.OrdinalIgnoreCase));
-        }
+            => GetAll().FirstOrDefault(r => string.Equals(r.ProgramId, programId, StringComparison.OrdinalIgnoreCase));
     }
 }

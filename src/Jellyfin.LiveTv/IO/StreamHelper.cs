@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
 
-namespace Jellyfin.LiveTv
+namespace Jellyfin.LiveTv.IO
 {
     public class StreamHelper : IStreamHelper
     {

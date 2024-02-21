@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 
-namespace Jellyfin.LiveTv
+namespace Jellyfin.LiveTv.IO
 {
     public sealed class ExclusiveLiveStream : ILiveStream
     {
