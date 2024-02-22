@@ -95,7 +95,7 @@ namespace Jellyfin.LiveTv.Timers
                 return;
             }
 
-            var startDate = RecordingHelper.GetStartTime(item);
+            var startDate = item.StartDate.AddSeconds(-item.PrePaddingSeconds);
             var now = DateTime.UtcNow;
 
             if (startDate < now)

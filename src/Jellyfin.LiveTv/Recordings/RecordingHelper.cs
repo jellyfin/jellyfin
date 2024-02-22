@@ -7,11 +7,6 @@ namespace Jellyfin.LiveTv.Recordings
 {
     internal static class RecordingHelper
     {
-        public static DateTime GetStartTime(TimerInfo timer)
-        {
-            return timer.StartDate.AddSeconds(-timer.PrePaddingSeconds);
-        }
-
         public static string GetRecordingName(TimerInfo info)
         {
             var name = info.Name;
