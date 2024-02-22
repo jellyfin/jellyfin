@@ -12,7 +12,6 @@ using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
 using Jellyfin.LiveTv.Configuration;
-using Jellyfin.LiveTv.IO;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -152,73 +151,6 @@ namespace Jellyfin.LiveTv
             return _libraryManager.GetItemsResult(internalQuery);
         }
 
-        public async Task<Tuple<MediaSourceInfo, ILiveStream>> GetChannelStream(string id, string mediaSourceId, List<ILiveStream> currentLiveStreams, CancellationToken cancellationToken)
-        {
-            if (string.Equals(id, mediaSourceId, StringComparison.OrdinalIgnoreCase))
-            {
-                mediaSourceId = null;
-            }
-
-            var channel = (LiveTvChannel)_libraryManager.GetItemById(id);
-
-            bool isVideo = channel.ChannelType == ChannelType.TV;
-            var service = GetService(channel);
-            _logger.LogInformation("Opening channel stream from {0}, external channel Id: {1}", service.Name, channel.ExternalId);
-
-            MediaSourceInfo info;
-#pragma warning disable CA1859 // TODO: Analyzer bug?
-            ILiveStream liveStream;
-#pragma warning restore CA1859
-            if (service is ISupportsDirectStreamProvider supportsManagedStream)
-            {
-                liveStream = await supportsManagedStream.GetChannelStreamWithDirectStreamProvider(channel.ExternalId, mediaSourceId, currentLiveStreams, cancellationToken).ConfigureAwait(false);
-                info = liveStream.MediaSource;
-            }
-            else
-            {
-                info = await service.GetChannelStream(channel.ExternalId, mediaSourceId, cancellationToken).ConfigureAwait(false);
-                var openedId = info.Id;
-                Func<Task> closeFn = () => service.CloseLiveStream(openedId, CancellationToken.None);
-
-                liveStream = new ExclusiveLiveStream(info, closeFn);
-
-                var startTime = DateTime.UtcNow;
-                await liveStream.Open(cancellationToken).ConfigureAwait(false);
-                var endTime = DateTime.UtcNow;
-                _logger.LogInformation("Live stream opened after {0}ms", (endTime - startTime).TotalMilliseconds);
-            }
-
-            info.RequiresClosing = true;
-
-            var idPrefix = service.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture) + "_";
-
-            info.LiveStreamId = idPrefix + info.Id;
-
-            Normalize(info, service, isVideo);
-
-            return new Tuple<MediaSourceInfo, ILiveStream>(info, liveStream);
-        }
-
-        public async Task<IEnumerable<MediaSourceInfo>> GetChannelMediaSources(BaseItem item, CancellationToken cancellationToken)
-        {
-            var baseItem = (LiveTvChannel)item;
-            var service = GetService(baseItem);
-
-            var sources = await service.GetChannelStreamMediaSources(baseItem.ExternalId, cancellationToken).ConfigureAwait(false);
-
-            if (sources.Count == 0)
-            {
-                throw new NotImplementedException();
-            }
-
-            foreach (var source in sources)
-            {
-                Normalize(source, service, baseItem.ChannelType == ChannelType.TV);
-            }
-
-            return sources;
-        }
-
         private ILiveTvService GetService(LiveTvChannel item)
         {
             var name = item.ServiceName;
@@ -239,127 +171,6 @@ namespace Jellyfin.LiveTv
                         CultureInfo.InvariantCulture,
                         "No service with the name '{0}' can be found.",
                         name));
-
-        private static void Normalize(MediaSourceInfo mediaSource, ILiveTvService service, bool isVideo)
-        {
-            // Not all of the plugins are setting this
-            mediaSource.IsInfiniteStream = true;
-
-            if (mediaSource.MediaStreams.Count == 0)
-            {
-                if (isVideo)
-                {
-                    mediaSource.MediaStreams = new MediaStream[]
-                    {
-                        new MediaStream
-                        {
-                            Type = MediaStreamType.Video,
-                            // Set the index to -1 because we don't know the exact index of the video stream within the container
-                            Index = -1,
-
-                            // Set to true if unknown to enable deinterlacing
-                            IsInterlaced = true
-                        },
-                        new MediaStream
-                        {
-                            Type = MediaStreamType.Audio,
-                            // Set the index to -1 because we don't know the exact index of the audio stream within the container
-                            Index = -1
-                        }
-                    };
-                }
-                else
-                {
-                    mediaSource.MediaStreams = new MediaStream[]
-                    {
-                        new MediaStream
-                        {
-                            Type = MediaStreamType.Audio,
-                            // Set the index to -1 because we don't know the exact index of the audio stream within the container
-                            Index = -1
-                        }
-                    };
-                }
-            }
-
-            // Clean some bad data coming from providers
-            foreach (var stream in mediaSource.MediaStreams)
-            {
-                if (stream.BitRate.HasValue && stream.BitRate <= 0)
-                {
-                    stream.BitRate = null;
-                }
-
-                if (stream.Channels.HasValue && stream.Channels <= 0)
-                {
-                    stream.Channels = null;
-                }
-
-                if (stream.AverageFrameRate.HasValue && stream.AverageFrameRate <= 0)
-                {
-                    stream.AverageFrameRate = null;
-                }
-
-                if (stream.RealFrameRate.HasValue && stream.RealFrameRate <= 0)
-                {
-                    stream.RealFrameRate = null;
-                }
-
-                if (stream.Width.HasValue && stream.Width <= 0)
-                {
-                    stream.Width = null;
-                }
-
-                if (stream.Height.HasValue && stream.Height <= 0)
-                {
-                    stream.Height = null;
-                }
-
-                if (stream.SampleRate.HasValue && stream.SampleRate <= 0)
-                {
-                    stream.SampleRate = null;
-                }
-
-                if (stream.Level.HasValue && stream.Level <= 0)
-                {
-                    stream.Level = null;
-                }
-            }
-
-            var indexes = mediaSource.MediaStreams.Select(i => i.Index).Distinct().ToList();
-
-            // If there are duplicate stream indexes, set them all to unknown
-            if (indexes.Count != mediaSource.MediaStreams.Count)
-            {
-                foreach (var stream in mediaSource.MediaStreams)
-                {
-                    stream.Index = -1;
-                }
-            }
-
-            // Set the total bitrate if not already supplied
-            mediaSource.InferTotalBitrate();
-
-            if (service is not DefaultLiveTvService)
-            {
-                // We can't trust that we'll be able to direct stream it through emby server, no matter what the provider says
-                // mediaSource.SupportsDirectPlay = false;
-                // mediaSource.SupportsDirectStream = false;
-                mediaSource.SupportsTranscoding = true;
-                foreach (var stream in mediaSource.MediaStreams)
-                {
-                    if (stream.Type == MediaStreamType.Video && string.IsNullOrWhiteSpace(stream.NalLengthSize))
-                    {
-                        stream.NalLengthSize = "0";
-                    }
-
-                    if (stream.Type == MediaStreamType.Video)
-                    {
-                        stream.IsInterlaced = true;
-                    }
-                }
-            }
-        }
 
         public async Task<BaseItemDto> GetProgram(string id, CancellationToken cancellationToken, User user = null)
         {

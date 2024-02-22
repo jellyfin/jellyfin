@@ -10,7 +10,6 @@ using Jellyfin.Data.Entities;
 using Jellyfin.Data.Events;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
@@ -104,16 +103,6 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{QueryResult{SeriesTimerInfoDto}}.</returns>
         Task<QueryResult<SeriesTimerInfoDto>> GetSeriesTimers(SeriesTimerQuery query, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Gets the channel stream.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <param name="mediaSourceId">The media source identifier.</param>
-        /// <param name="currentLiveStreams">The current live streams.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{StreamResponseInfo}.</returns>
-        Task<Tuple<MediaSourceInfo, ILiveStream>> GetChannelStream(string id, string mediaSourceId, List<ILiveStream> currentLiveStreams, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the program.
@@ -219,14 +208,6 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Internal channels.</returns>
         QueryResult<BaseItem> GetInternalChannels(LiveTvChannelQuery query, DtoOptions dtoOptions, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Gets the channel media sources.
-        /// </summary>
-        /// <param name="item">Item to search for.</param>
-        /// <param name="cancellationToken">CancellationToken to use for operation.</param>
-        /// <returns>Channel media sources wrapped in a task.</returns>
-        Task<IEnumerable<MediaSourceInfo>> GetChannelMediaSources(BaseItem item, CancellationToken cancellationToken);
 
         /// <summary>
         /// Adds the information to program dto.
