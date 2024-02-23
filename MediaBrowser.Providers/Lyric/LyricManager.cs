@@ -424,7 +424,7 @@ public class LyricManager : ILyricManager
                 Directory.CreateDirectory(Path.GetDirectoryName(savePath) ?? throw new InvalidOperationException("Path can't be a root directory."));
 
                 var fileOptions = AsyncFile.WriteOptions;
-                fileOptions.Mode = FileMode.CreateNew;
+                fileOptions.Mode = FileMode.Create;
                 fileOptions.PreallocationSize = stream.Length;
                 var fs = new FileStream(savePath, fileOptions);
                 await using (fs.ConfigureAwait(false))
