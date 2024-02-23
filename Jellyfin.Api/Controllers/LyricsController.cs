@@ -5,6 +5,7 @@ using System.IO;
 using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Api;
@@ -25,7 +26,7 @@ namespace Jellyfin.Api.Controllers;
 /// Lyrics controller.
 /// </summary>
 [Route("")]
-public class LyricController : BaseJellyfinApiController
+public class LyricsController : BaseJellyfinApiController
 {
     private readonly ILibraryManager _libraryManager;
     private readonly ILyricManager _lyricManager;
@@ -34,14 +35,14 @@ public class LyricController : BaseJellyfinApiController
     private readonly IUserManager _userManager;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="LyricController"/> class.
+    /// Initializes a new instance of the <see cref="LyricsController"/> class.
     /// </summary>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="lyricManager">Instance of the <see cref="ILyricManager"/> interface.</param>
     /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
-    public LyricController(
+    public LyricsController(
         ILibraryManager libraryManager,
         ILyricManager lyricManager,
         IProviderManager providerManager,
@@ -108,20 +109,20 @@ public class LyricController : BaseJellyfinApiController
     /// Upload an external lyric file.
     /// </summary>
     /// <param name="itemId">The item the lyric belongs to.</param>
-    /// <param name="content">The lyrics content.</param>
+    /// <param name="fileName">Name of the file being uploaded.</param>
     /// <response code="200">Lyrics uploaded.</response>
     /// <response code="400">Error processing upload.</response>
     /// <response code="404">Item not found.</response>
     /// <returns>The uploaded lyric.</returns>
     [HttpPost("Audio/{itemId}/Lyrics")]
     [Authorize(Policy = Policies.LyricManagement)]
-    [Consumes(MediaTypeNames.Multipart.FormData)]
+    [AcceptsFile(MediaTypeNames.Text.Plain)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<LyricDto>> UploadLyrics(
         [FromRoute, Required] Guid itemId,
-        [FromForm, Required] UploadLyricDto content)
+        [FromQuery, Required] string fileName)
     {
         var audio = _libraryManager.GetItemById<Audio>(itemId);
         if (audio is null)
@@ -129,22 +130,22 @@ public class LyricController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var lyrics = content.Lyrics;
-        if (lyrics.Length == 0)
+        if (Request.ContentLength.GetValueOrDefault(0) == 0)
         {
             return BadRequest("No lyrics uploaded");
         }
 
         // Utilize Path.GetExtension as it provides extra path validation.
-        var format = Path.GetExtension(lyrics.FileName.AsSpan()).RightPart('.').ToString();
+        var format = Path.GetExtension(fileName.AsSpan()).RightPart('.').ToString();
         if (string.IsNullOrEmpty(format))
         {
             return BadRequest("Extension is required on filename");
         }
 
-        var stream = lyrics.OpenReadStream();
+        var stream = new MemoryStream();
         await using (stream.ConfigureAwait(false))
         {
+            await Request.Body.CopyToAsync(stream).ConfigureAwait(false);
             var uploadedLyric = await _lyricManager.UploadLyricAsync(
                 audio,
                 new LyricResponse

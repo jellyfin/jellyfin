@@ -37,7 +37,6 @@ using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using AuthenticationSchemes = Jellyfin.Api.Constants.AuthenticationSchemes;
-using IPNetwork = System.Net.IPNetwork;
 
 namespace Jellyfin.Server.Extensions
 {
@@ -252,7 +251,6 @@ namespace Jellyfin.Server.Extensions
                 c.OperationFilter<FileResponseFilter>();
                 c.OperationFilter<FileRequestFilter>();
                 c.OperationFilter<ParameterObsoleteFilter>();
-                c.OperationFilter<FromFormOperationFilter>();
                 c.DocumentFilter<AdditionalModelFilter>();
             });
         }
