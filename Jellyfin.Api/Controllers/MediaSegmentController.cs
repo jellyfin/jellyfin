@@ -4,9 +4,9 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
-using Jellyfin.Api.Constants;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using MediaBrowser.Common.Api;
 using MediaBrowser.Model.MediaSegments;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
@@ -65,6 +65,7 @@ public class MediaSegmentController : BaseJellyfinApiController
     /// <param name="type">Segment type.</param>
     /// <param name="typeIndex">Optional: If you want to add a type multiple times to the same itemId increment it.</param>
     /// <param name="action">Optional: Creator recommends an action.</param>
+    /// <param name="comment">Optional: A comment.</param>
     /// <response code="200">Segments returned.</response>
     /// <response code="400">Missing query parameter.</response>
     /// <returns>An <see cref="OkResult"/>containing the queryresult of segment.</returns>
@@ -79,7 +80,8 @@ public class MediaSegmentController : BaseJellyfinApiController
         [FromQuery, Required] int streamIndex,
         [FromQuery, Required] MediaSegmentType type,
         [FromQuery, DefaultValue(0)] int typeIndex,
-        [FromQuery, DefaultValue(MediaSegmentAction.Auto)] MediaSegmentAction action)
+        [FromQuery, DefaultValue(MediaSegmentAction.Auto)] MediaSegmentAction action,
+        [FromQuery] string comment)
     {
         var newMediaSegment = new MediaSegment()
         {
@@ -89,13 +91,17 @@ public class MediaSegmentController : BaseJellyfinApiController
             StreamIndex = streamIndex,
             Type = type,
             TypeIndex = typeIndex,
-            Action = action
+            Action = action,
+            Comment = comment
         };
 
         var segment = await _mediaSegmentManager.CreateMediaSegmentAsync(newMediaSegment).ConfigureAwait(false);
 
         return new QueryResult<MediaSegment>(
-            new List<MediaSegment> { segment });
+            new List<MediaSegment>
+            {
+                segment
+            });
     }
 
     /// <summary>

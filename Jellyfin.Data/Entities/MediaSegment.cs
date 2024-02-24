@@ -52,5 +52,11 @@ namespace Jellyfin.Data.Entities
         /// </summary>
         /// <value>The media segment action.</value>
         public MediaSegmentAction Action { get; set; }
+
+        /// <summary>
+        /// Gets or sets a comment.
+        /// </summary>
+        /// <value>The media segment action.</value>
+        public string Comment { get; set; }
     }
 }

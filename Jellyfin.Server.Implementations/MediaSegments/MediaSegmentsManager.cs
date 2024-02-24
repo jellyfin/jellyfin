@@ -137,6 +137,7 @@ namespace Jellyfin.Server.Implementations.MediaSegments
                 found.StartTicks = segment.StartTicks;
                 found.EndTicks = segment.EndTicks;
                 found.Action = segment.Action;
+                found.Comment = segment.Comment;
             }
             else
             {

@@ -29,5 +29,10 @@ namespace Jellyfin.Data.Enums
         /// Commercial that interrupt the viewer.
         /// </summary>
         Commercial = 4,
+
+        /// <summary>
+        /// A Comment or additional info.
+        /// </summary>
+        Annotation = 5,
     }
 }
