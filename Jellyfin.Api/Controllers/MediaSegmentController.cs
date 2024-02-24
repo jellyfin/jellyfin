@@ -126,7 +126,7 @@ public class MediaSegmentController : BaseJellyfinApiController
     /// <param name="type">Optional: All segments of type.</param>
     /// <param name="typeIndex">Optional: All segments with typeIndex.</param>
     /// <response code="200">Segments returned.</response>
-    /// <response code="400">Missing query parameter.</response>
+    /// <response code="404">Segments not found.</response>
     /// <returns>An <see cref="OkResult"/>containing the queryresult of segments.</returns>
     [HttpDelete]
     [Authorize(Policy = Policies.RequiresElevation)]
