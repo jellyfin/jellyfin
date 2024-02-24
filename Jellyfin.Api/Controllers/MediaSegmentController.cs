@@ -45,9 +45,9 @@ public class MediaSegmentController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<List<MediaSegment>> GetSegments(
         [FromQuery] Guid itemId,
-        [FromQuery, DefaultValue(-1)] int streamIndex,
+        [FromQuery] int? streamIndex,
         [FromQuery] MediaSegmentType? type,
-        [FromQuery, DefaultValue(-1)] int typeIndex)
+        [FromQuery] int? typeIndex)
     {
         var list = _mediaSegmentManager.GetAllMediaSegments(itemId, streamIndex, typeIndex, type);
 

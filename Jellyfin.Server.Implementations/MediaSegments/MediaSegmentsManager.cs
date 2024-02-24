@@ -89,7 +89,7 @@ namespace Jellyfin.Server.Implementations.MediaSegments
         }
 
         /// <inheritdoc/>
-        public List<MediaSegment> GetAllMediaSegments(Guid itemId = default, int streamIndex = -1, int typeIndex = -1, MediaSegmentType? type = null)
+        public List<MediaSegment> GetAllMediaSegments(Guid itemId = default, int? streamIndex = null, int? typeIndex = null, MediaSegmentType? type = null)
         {
             var allSegments = new List<MediaSegment>();
 
@@ -103,7 +103,7 @@ namespace Jellyfin.Server.Implementations.MediaSegments
                     queryable = queryable.Where(s => s.ItemId.Equals(itemId));
                 }
 
-                if (!streamIndex.Equals(-1))
+                if (!streamIndex.Equals(null))
                 {
                     queryable = queryable.Where(s => s.StreamIndex.Equals(streamIndex));
                 }
@@ -113,7 +113,7 @@ namespace Jellyfin.Server.Implementations.MediaSegments
                     queryable = queryable.Where(s => s.Type.Equals(type));
                 }
 
-                if (typeIndex > -1)
+                if (!typeIndex.Equals(null))
                 {
                     queryable = queryable.Where(s => s.TypeIndex.Equals(typeIndex));
                 }
