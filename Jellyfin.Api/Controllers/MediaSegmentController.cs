@@ -40,7 +40,7 @@ public class MediaSegmentController : BaseJellyfinApiController
     /// <param name="type">Optional: All segments of type.</param>
     /// <param name="typeIndex">Optional: All segments with typeIndex.</param>
     /// <response code="200">Segments returned.</response>
-    /// <returns>An <see cref="OkResult"/>containing the queryresult of segments.</returns>
+    /// <returns>An <see cref="OkResult"/>containing the found segments.</returns>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<List<MediaSegment>> GetSegments(
@@ -67,7 +67,7 @@ public class MediaSegmentController : BaseJellyfinApiController
     /// <param name="comment">Optional: A comment.</param>
     /// <response code="200">Segments returned.</response>
     /// <response code="400">Missing query parameter.</response>
-    /// <returns>An <see cref="OkResult"/>containing the queryresult of segment.</returns>
+    /// <returns>An <see cref="OkResult"/>containing the segment.</returns>
     [HttpPost("Segment")]
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -105,7 +105,7 @@ public class MediaSegmentController : BaseJellyfinApiController
     /// <param name="segments">All segments that should be added.</param>
     /// <response code="200">Segments returned.</response>
     /// <response code="400">Invalid segments.</response>
-    /// <returns>An <see cref="OkResult"/>containing the queryresult of segment.</returns>
+    /// <returns>An <see cref="OkResult"/>containing the created/updated segments.</returns>
     [HttpPost]
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -127,7 +127,7 @@ public class MediaSegmentController : BaseJellyfinApiController
     /// <param name="typeIndex">Optional: All segments with typeIndex.</param>
     /// <response code="200">Segments returned.</response>
     /// <response code="404">Segments not found.</response>
-    /// <returns>An <see cref="OkResult"/>containing the queryresult of segments.</returns>
+    /// <returns>An <see cref="OkResult"/>containing the deleted segments.</returns>
     [HttpDelete]
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status200OK)]
