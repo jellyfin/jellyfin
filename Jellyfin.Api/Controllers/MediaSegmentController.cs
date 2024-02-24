@@ -8,7 +8,6 @@ using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Model.MediaSegments;
-using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -44,7 +43,7 @@ public class MediaSegmentController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/>containing the queryresult of segments.</returns>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<QueryResult<MediaSegment>> GetSegments(
+    public ActionResult<List<MediaSegment>> GetSegments(
         [FromQuery] Guid itemId,
         [FromQuery, DefaultValue(-1)] int streamIndex,
         [FromQuery] MediaSegmentType? type,
@@ -52,7 +51,7 @@ public class MediaSegmentController : BaseJellyfinApiController
     {
         var list = _mediaSegmentManager.GetAllMediaSegments(itemId, streamIndex, typeIndex, type);
 
-        return new QueryResult<MediaSegment>(list);
+        return list;
     }
 
     /// <summary>
@@ -73,7 +72,7 @@ public class MediaSegmentController : BaseJellyfinApiController
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<QueryResult<MediaSegment>>> PostSegment(
+    public async Task<ActionResult<MediaSegment>> PostSegment(
         [FromQuery, Required] long startTicks,
         [FromQuery, Required] long endTicks,
         [FromQuery, Required] Guid itemId,
@@ -97,11 +96,7 @@ public class MediaSegmentController : BaseJellyfinApiController
 
         var segment = await _mediaSegmentManager.CreateMediaSegmentAsync(newMediaSegment).ConfigureAwait(false);
 
-        return new QueryResult<MediaSegment>(
-            new List<MediaSegment>
-            {
-                segment
-            });
+        return segment;
     }
 
     /// <summary>
@@ -115,12 +110,12 @@ public class MediaSegmentController : BaseJellyfinApiController
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<QueryResult<MediaSegment>>> PostSegments(
+    public async Task<ActionResult<List<MediaSegment>>> PostSegments(
         [FromBody, Required] IEnumerable<MediaSegment> segments)
     {
         var nsegments = await _mediaSegmentManager.CreateMediaSegmentsAsync(segments).ConfigureAwait(false);
 
-        return new QueryResult<MediaSegment>(nsegments.ToList());
+        return nsegments.ToList();
     }
 
     /// <summary>
@@ -137,7 +132,7 @@ public class MediaSegmentController : BaseJellyfinApiController
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<QueryResult<MediaSegment>>> DeleteSegments(
+    public async Task<ActionResult<List<MediaSegment>>> DeleteSegments(
         [FromQuery] Guid itemId,
         [FromQuery, DefaultValue(-1)] int streamIndex,
         [FromQuery] MediaSegmentType? type,
@@ -145,6 +140,6 @@ public class MediaSegmentController : BaseJellyfinApiController
     {
         var list = await _mediaSegmentManager.DeleteSegmentsAsync(itemId, streamIndex, typeIndex, type).ConfigureAwait(false);
 
-        return new QueryResult<MediaSegment>(list);
+        return list;
     }
 }
