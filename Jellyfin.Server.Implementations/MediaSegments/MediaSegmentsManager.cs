@@ -173,7 +173,7 @@ namespace Jellyfin.Server.Implementations.MediaSegments
         }
 
         /// <inheritdoc/>
-        public async Task<List<MediaSegment>> DeleteSegmentsAsync(Guid itemId, int streamIndex = -1, int typeIndex = -1, MediaSegmentType? type = null)
+        public async Task<List<MediaSegment>> DeleteSegmentsAsync(Guid itemId, int? streamIndex = null, int? typeIndex = null, MediaSegmentType? type = null)
         {
             var allSegments = new List<MediaSegment>();
 
@@ -187,7 +187,7 @@ namespace Jellyfin.Server.Implementations.MediaSegments
             {
                 IQueryable<MediaSegment> queryable = dbContext.Segments.Where(s => s.ItemId.Equals(itemId));
 
-                if (!streamIndex.Equals(-1))
+                if (!streamIndex.Equals(null))
                 {
                     queryable = queryable.Where(s => s.StreamIndex.Equals(streamIndex));
                 }
@@ -197,7 +197,7 @@ namespace Jellyfin.Server.Implementations.MediaSegments
                     queryable = queryable.Where(s => s.Type.Equals(type));
                 }
 
-                if (typeIndex > -1)
+                if (!typeIndex.Equals(null))
                 {
                     queryable = queryable.Where(s => s.TypeIndex.Equals(typeIndex));
                 }

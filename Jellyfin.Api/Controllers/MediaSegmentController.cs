@@ -131,12 +131,12 @@ public class MediaSegmentController : BaseJellyfinApiController
     [HttpDelete]
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<List<MediaSegment>>> DeleteSegments(
-        [FromQuery] Guid itemId,
-        [FromQuery, DefaultValue(-1)] int streamIndex,
+        [FromQuery, Required] Guid itemId,
+        [FromQuery] int? streamIndex,
         [FromQuery] MediaSegmentType? type,
-        [FromQuery, DefaultValue(-1)] int typeIndex)
+        [FromQuery] int? typeIndex)
     {
         var list = await _mediaSegmentManager.DeleteSegmentsAsync(itemId, streamIndex, typeIndex, type).ConfigureAwait(false);
 

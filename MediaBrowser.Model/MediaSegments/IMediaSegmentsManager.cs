@@ -44,6 +44,6 @@ namespace MediaBrowser.Model.MediaSegments
         /// <param name="typeIndex">Optional: The typeIndex.</param>
         /// <param name="type">Optional: The segment type.</param>
         /// <returns>Deleted segments.</returns>
-        Task<List<MediaSegment>> DeleteSegmentsAsync(Guid itemId, int streamIndex = -1, int typeIndex = -1, MediaSegmentType? type = null);
+        Task<List<MediaSegment>> DeleteSegmentsAsync(Guid itemId, int? streamIndex, int? typeIndex, MediaSegmentType? type);
     }
 }
