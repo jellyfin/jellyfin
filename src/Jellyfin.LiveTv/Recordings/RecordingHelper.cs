@@ -1,19 +1,12 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Globalization;
 using System.Text;
 using MediaBrowser.Controller.LiveTv;
 
-namespace Jellyfin.LiveTv.EmbyTV
+namespace Jellyfin.LiveTv.Recordings
 {
     internal static class RecordingHelper
     {
-        public static DateTime GetStartTime(TimerInfo timer)
-        {
-            return timer.StartDate.AddSeconds(-timer.PrePaddingSeconds);
-        }
-
         public static string GetRecordingName(TimerInfo info)
         {
             var name = info.Name;

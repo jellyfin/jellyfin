@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using AsyncKeyedLock;
 using Jellyfin.Data.Enums;
 using Jellyfin.LiveTv.Configuration;
-using Jellyfin.LiveTv.EmbyTV;
 using Jellyfin.LiveTv.IO;
 using Jellyfin.LiveTv.Timers;
 using MediaBrowser.Common.Configuration;

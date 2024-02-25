@@ -4,22 +4,22 @@ using Jellyfin.LiveTv.Timers;
 using MediaBrowser.Controller.LiveTv;
 using Microsoft.Extensions.Hosting;
 
-namespace Jellyfin.LiveTv.EmbyTV;
+namespace Jellyfin.LiveTv.Recordings;
 
 /// <summary>
-/// <see cref="IHostedService"/> responsible for initializing Live TV.
+/// <see cref="IHostedService"/> responsible for Live TV recordings.
 /// </summary>
-public sealed class LiveTvHost : IHostedService
+public sealed class RecordingsHost : IHostedService
 {
     private readonly IRecordingsManager _recordingsManager;
     private readonly TimerManager _timerManager;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="LiveTvHost"/> class.
+    /// Initializes a new instance of the <see cref="RecordingsHost"/> class.
     /// </summary>
     /// <param name="recordingsManager">The <see cref="IRecordingsManager"/>.</param>
     /// <param name="timerManager">The <see cref="TimerManager"/>.</param>
-    public LiveTvHost(IRecordingsManager recordingsManager, TimerManager timerManager)
+    public RecordingsHost(IRecordingsManager recordingsManager, TimerManager timerManager)
     {
         _recordingsManager = recordingsManager;
         _timerManager = timerManager;

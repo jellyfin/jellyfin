@@ -9,7 +9,6 @@ using System.Xml;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using Jellyfin.LiveTv.Configuration;
-using Jellyfin.LiveTv.EmbyTV;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Dto;

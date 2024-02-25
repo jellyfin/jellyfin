@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using Jellyfin.Data.Events;
-using Jellyfin.LiveTv.EmbyTV;
+using Jellyfin.LiveTv.Recordings;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.LiveTv;
@@ -95,7 +95,7 @@ namespace Jellyfin.LiveTv.Timers
                 return;
             }
 
-            var startDate = RecordingHelper.GetStartTime(item);
+            var startDate = item.StartDate.AddSeconds(-item.PrePaddingSeconds);
             var now = DateTime.UtcNow;
 
             if (startDate < now)

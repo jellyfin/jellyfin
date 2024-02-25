@@ -37,7 +37,7 @@ public static class LiveTvServiceCollectionExtensions
         services.AddSingleton<IGuideManager, GuideManager>();
         services.AddSingleton<IRecordingsManager, RecordingsManager>();
 
-        services.AddSingleton<ILiveTvService, EmbyTV.EmbyTV>();
+        services.AddSingleton<ILiveTvService, DefaultLiveTvService>();
         services.AddSingleton<ITunerHost, HdHomerunHost>();
         services.AddSingleton<ITunerHost, M3UTunerHost>();
         services.AddSingleton<IListingsProvider, SchedulesDirect>();
