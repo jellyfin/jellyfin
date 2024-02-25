@@ -437,7 +437,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
             }
         }
 
-        using var process = new Process
+        var process = new Process
         {
             StartInfo = new ProcessStartInfo
             {
