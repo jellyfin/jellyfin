@@ -45,7 +45,7 @@ if [[ ${IS_DOCKER} == YES ]]; then
     chown -Rc "$(stat -c %u:%g "${ARTIFACT_DIR}")" "${ARTIFACT_DIR}"
 fi
 
-rm -f fedorajellyfin*.tar.gz
+rm -f fedora/jellyfin*.tar.gz
 
 if [[ ${IS_DOCKER} == YES ]]; then
     pushd fedora
