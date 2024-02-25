@@ -98,12 +98,12 @@ namespace MediaBrowser.Controller.Entities
 
         public override bool IsVisible(User user)
         {
-            if (GetLibraryOptions().Disabled)
+            if (GetLibraryOptions().Enabled)
             {
-                return false;
+                return base.IsVisible(user);
             }
 
-            return base.IsVisible(user);
+            return false;
         }
 
         private static LibraryOptions LoadLibraryOptions(string path)
