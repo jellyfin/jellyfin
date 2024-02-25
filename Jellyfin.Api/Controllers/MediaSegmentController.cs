@@ -43,13 +43,13 @@ public class MediaSegmentController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/>containing the found segments.</returns>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<List<MediaSegment>> GetSegments(
+    public async Task<ActionResult<List<MediaSegment>>> GetSegments(
         [FromQuery] Guid itemId,
         [FromQuery] int? streamIndex,
         [FromQuery] MediaSegmentType? type,
         [FromQuery] int? typeIndex)
     {
-        var list = _mediaSegmentManager.GetAllMediaSegments(itemId, streamIndex, typeIndex, type);
+        var list = await _mediaSegmentManager.GetAllMediaSegments(itemId, streamIndex, typeIndex, type).ConfigureAwait(false);
 
         return list;
     }
@@ -94,7 +94,7 @@ public class MediaSegmentController : BaseJellyfinApiController
             Comment = comment
         };
 
-        var segment = await _mediaSegmentManager.CreateMediaSegmentAsync(newMediaSegment).ConfigureAwait(false);
+        var segment = await _mediaSegmentManager.CreateMediaSegment(newMediaSegment).ConfigureAwait(false);
 
         return segment;
     }
@@ -111,9 +111,9 @@ public class MediaSegmentController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<List<MediaSegment>>> PostSegments(
-        [FromBody, Required] IEnumerable<MediaSegment> segments)
+        [FromBody, Required] IReadOnlyList<MediaSegment> segments)
     {
-        var nsegments = await _mediaSegmentManager.CreateMediaSegmentsAsync(segments).ConfigureAwait(false);
+        var nsegments = await _mediaSegmentManager.CreateMediaSegments(segments).ConfigureAwait(false);
 
         return nsegments.ToList();
     }
@@ -122,7 +122,7 @@ public class MediaSegmentController : BaseJellyfinApiController
     /// Delete media segments. All query parameters can be freely defined.
     /// </summary>
     /// <param name="itemId">Optional: All segments with MediaSourceId.</param>
-    /// <param name="streamIndex">Segment is associated with MediaStreamIndex.</param>
+    /// <param name="streamIndex">Optional: Segment is associated with MediaStreamIndex.</param>
     /// <param name="type">Optional: All segments of type.</param>
     /// <param name="typeIndex">Optional: All segments with typeIndex.</param>
     /// <response code="200">Segments returned.</response>
@@ -138,7 +138,7 @@ public class MediaSegmentController : BaseJellyfinApiController
         [FromQuery] MediaSegmentType? type,
         [FromQuery] int? typeIndex)
     {
-        var list = await _mediaSegmentManager.DeleteSegmentsAsync(itemId, streamIndex, typeIndex, type).ConfigureAwait(false);
+        var list = await _mediaSegmentManager.DeleteSegments(itemId, streamIndex, typeIndex, type).ConfigureAwait(false);
 
         return list;
     }

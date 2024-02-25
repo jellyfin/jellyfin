@@ -17,14 +17,14 @@ namespace MediaBrowser.Model.MediaSegments
         /// </summary>
         /// <param name="segment">The segment.</param>
         /// <returns>New MediaSegment.</returns>
-        Task<MediaSegment> CreateMediaSegmentAsync(MediaSegment segment);
+        Task<MediaSegment> CreateMediaSegment(MediaSegment segment);
 
         /// <summary>
-        /// Create multiple new media segment.
+        /// Create or update multiple media segments.
         /// </summary>
         /// <param name="segments">List of segments.</param>
-        /// <returns>New MediaSegment.</returns>
-        Task<IEnumerable<MediaSegment>> CreateMediaSegmentsAsync(IEnumerable<MediaSegment> segments);
+        /// <returns>New or updated MediaSegments.</returns>
+        Task<IReadOnlyList<MediaSegment>> CreateMediaSegments(IReadOnlyList<MediaSegment> segments);
 
         /// <summary>
         /// Get all media segments.
@@ -34,7 +34,7 @@ namespace MediaBrowser.Model.MediaSegments
         /// <param name="typeIndex">Optional: The typeIndex.</param>
         /// <param name="type">Optional: The segment type.</param>
         /// <returns>List of MediaSegment.</returns>
-        List<MediaSegment> GetAllMediaSegments(Guid itemId, int? streamIndex = null, int? typeIndex = null, MediaSegmentType? type = null);
+        public Task<List<MediaSegment>> GetAllMediaSegments(Guid itemId, int? streamIndex = null, int? typeIndex = null, MediaSegmentType? type = null);
 
         /// <summary>
         /// Delete Media Segments.
@@ -44,6 +44,6 @@ namespace MediaBrowser.Model.MediaSegments
         /// <param name="typeIndex">Optional: The typeIndex.</param>
         /// <param name="type">Optional: The segment type.</param>
         /// <returns>Deleted segments.</returns>
-        Task<List<MediaSegment>> DeleteSegmentsAsync(Guid itemId, int? streamIndex = null, int? typeIndex = null, MediaSegmentType? type = null);
+        Task<List<MediaSegment>> DeleteSegments(Guid itemId, int? streamIndex = null, int? typeIndex = null, MediaSegmentType? type = null);
     }
 }

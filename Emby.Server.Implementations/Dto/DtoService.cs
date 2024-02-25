@@ -1075,7 +1075,7 @@ namespace Emby.Server.Implementations.Dto
 
                 foreach (var source in dto.MediaSources)
                 {
-                    allSegments.AddRange(_mediaSegmentsManager.GetAllMediaSegments(Guid.Parse(source.Id)));
+                    allSegments.AddRange(_mediaSegmentsManager.GetAllMediaSegments(Guid.Parse(source.Id)).GetAwaiter().GetResult());
                 }
 
                 dto.MediaSegments = allSegments;

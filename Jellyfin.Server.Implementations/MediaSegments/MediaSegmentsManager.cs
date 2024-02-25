@@ -1,61 +1,48 @@
-#pragma warning disable CA1307
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.MediaSegments;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Implementations.MediaSegments
 {
     /// <summary>
     /// Manages the creation and retrieval of <see cref="MediaSegment"/> instances.
     /// </summary>
-    public class MediaSegmentsManager : IMediaSegmentsManager
+    public class MediaSegmentsManager : IMediaSegmentsManager, IDisposable
     {
         private readonly ILibraryManager _libraryManager;
         private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
-        private readonly IUserManager _userManager;
-        private readonly ILogger<MediaSegmentsManager> _logger;
+        private bool _disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MediaSegmentsManager"/> class.
         /// </summary>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="dbProvider">The database provider.</param>
-        /// <param name="userManager">The user manager.</param>
-        /// <param name="logger">The logger.</param>
         public MediaSegmentsManager(
-            ILibraryManager libraryManager,
-            IDbContextFactory<JellyfinDbContext> dbProvider,
-            IUserManager userManager,
-            ILogger<MediaSegmentsManager> logger)
+        ILibraryManager libraryManager,
+        IDbContextFactory<JellyfinDbContext> dbProvider)
         {
             _libraryManager = libraryManager;
             _libraryManager.ItemRemoved += LibraryManagerItemRemoved;
-
             _dbProvider = dbProvider;
-            _userManager = userManager;
-            _logger = logger;
         }
 
-        // <inheritdoc/>
-        // public event EventHandler<GenericEventArgs<User>>? OnUserUpdated;
-
         /// <inheritdoc/>
-        public async Task<MediaSegment> CreateMediaSegmentAsync(MediaSegment segment)
+        public async Task<MediaSegment> CreateMediaSegment(MediaSegment segment)
         {
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
                 ValidateSegment(segment);
 
-                var found = dbContext.Segments.Where(s => s.ItemId.Equals(segment.ItemId) && s.Type.Equals(segment.Type) && s.TypeIndex.Equals(segment.TypeIndex)).FirstOrDefault();
+                var found = await dbContext.Segments.FirstOrDefaultAsync(s => s.ItemId.Equals(segment.ItemId) && s.Type.Equals(segment.Type) && s.TypeIndex.Equals(segment.TypeIndex)).ConfigureAwait(false);
 
                 AddOrUpdateSegment(dbContext, segment, found);
 
@@ -66,18 +53,17 @@ namespace Jellyfin.Server.Implementations.MediaSegments
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<MediaSegment>> CreateMediaSegmentsAsync(IEnumerable<MediaSegment> segments)
+        public async Task<IReadOnlyList<MediaSegment>> CreateMediaSegments(IReadOnlyList<MediaSegment> segments)
         {
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
-                var foundSegments = dbContext.Segments.Select(s => s);
-
                 foreach (var segment in segments)
                 {
                     ValidateSegment(segment);
 
-                    var found = foundSegments.Where(s => s.ItemId.Equals(segment.ItemId) && s.StreamIndex.Equals(segment.StreamIndex) && s.Type.Equals(segment.Type) && s.TypeIndex.Equals(segment.TypeIndex)).FirstOrDefault();
+                    var found = await dbContext.Segments.FirstOrDefaultAsync(s => s.ItemId.Equals(segment.ItemId) && s.StreamIndex == segment.StreamIndex && s.Type == segment.Type && s.TypeIndex == segment.TypeIndex)
+                        .ConfigureAwait(false);
 
                     AddOrUpdateSegment(dbContext, segment, found);
                 }
@@ -89,36 +75,36 @@ namespace Jellyfin.Server.Implementations.MediaSegments
         }
 
         /// <inheritdoc/>
-        public List<MediaSegment> GetAllMediaSegments(Guid itemId = default, int? streamIndex = null, int? typeIndex = null, MediaSegmentType? type = null)
+        public async Task<List<MediaSegment>> GetAllMediaSegments(Guid itemId = default, int? streamIndex = null, int? typeIndex = null, MediaSegmentType? type = null)
         {
-            var allSegments = new List<MediaSegment>();
+            List<MediaSegment> allSegments;
 
-            var dbContext = _dbProvider.CreateDbContext();
-            using (dbContext)
+            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+            await using (dbContext.ConfigureAwait(false))
             {
                 IQueryable<MediaSegment> queryable = dbContext.Segments.Select(s => s);
 
-                if (!itemId.Equals(default))
+                if (!itemId.IsEmpty())
                 {
                     queryable = queryable.Where(s => s.ItemId.Equals(itemId));
                 }
 
-                if (!streamIndex.Equals(null))
+                if (streamIndex is not null)
                 {
-                    queryable = queryable.Where(s => s.StreamIndex.Equals(streamIndex));
+                    queryable = queryable.Where(s => s.StreamIndex == streamIndex.Value);
                 }
 
-                if (!type.Equals(null))
+                if (type is not null)
                 {
-                    queryable = queryable.Where(s => s.Type.Equals(type));
+                    queryable = queryable.Where(s => s.Type == type.Value);
                 }
 
                 if (!typeIndex.Equals(null))
                 {
-                    queryable = queryable.Where(s => s.TypeIndex.Equals(typeIndex));
+                    queryable = queryable.Where(s => s.TypeIndex == typeIndex.Value);
                 }
 
-                allSegments = queryable.AsNoTracking().ToList();
+                allSegments = await queryable.AsNoTracking().ToListAsync().ConfigureAwait(false);
             }
 
             return allSegments;
@@ -169,17 +155,17 @@ namespace Jellyfin.Server.Implementations.MediaSegments
         /// <param name="itemChangeEventArgs">The <see cref="ItemChangeEventArgs"/>.</param>
         private async void LibraryManagerItemRemoved(object? sender, ItemChangeEventArgs itemChangeEventArgs)
         {
-            await DeleteSegmentsAsync(itemChangeEventArgs.Item.Id).ConfigureAwait(false);
+            await DeleteSegments(itemChangeEventArgs.Item.Id).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
-        public async Task<List<MediaSegment>> DeleteSegmentsAsync(Guid itemId, int? streamIndex = null, int? typeIndex = null, MediaSegmentType? type = null)
+        public async Task<List<MediaSegment>> DeleteSegments(Guid itemId, int? streamIndex = null, int? typeIndex = null, MediaSegmentType? type = null)
         {
-            var allSegments = new List<MediaSegment>();
+            List<MediaSegment> allSegments;
 
-            if (itemId.Equals(default))
+            if (itemId.IsEmpty())
             {
-                throw new ArgumentException($"itemId is not set. Please provide one.");
+                throw new ArgumentException("Default value provided", nameof(itemId));
             }
 
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
@@ -187,28 +173,52 @@ namespace Jellyfin.Server.Implementations.MediaSegments
             {
                 IQueryable<MediaSegment> queryable = dbContext.Segments.Where(s => s.ItemId.Equals(itemId));
 
-                if (!streamIndex.Equals(null))
+                if (streamIndex is not null)
                 {
-                    queryable = queryable.Where(s => s.StreamIndex.Equals(streamIndex));
+                    queryable = queryable.Where(s => s.StreamIndex == streamIndex);
                 }
 
-                if (!type.Equals(null))
+                if (type is not null)
                 {
-                    queryable = queryable.Where(s => s.Type.Equals(type));
+                    queryable = queryable.Where(s => s.Type == type);
                 }
 
-                if (!typeIndex.Equals(null))
+                if (typeIndex is not null)
                 {
-                    queryable = queryable.Where(s => s.TypeIndex.Equals(typeIndex));
+                    queryable = queryable.Where(s => s.TypeIndex == typeIndex);
                 }
 
-                allSegments = queryable.AsNoTracking().ToList();
+                allSegments = await queryable.ToListAsync().ConfigureAwait(false);
 
                 dbContext.Segments.RemoveRange(allSegments);
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
             }
 
             return allSegments;
+        }
+
+        /// <summary>
+        /// Dispose event.
+        /// </summary>
+        /// <param name="disposing">dispose.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    _libraryManager.ItemRemoved -= LibraryManagerItemRemoved;
+                }
+
+                _disposed = true;
+            }
+        }
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }
