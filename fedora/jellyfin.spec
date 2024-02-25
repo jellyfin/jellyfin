@@ -52,6 +52,7 @@ the Jellyfin server to bind to ports 80 and/or 443 for example.
 
 %build
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
+export DOTNET_LTTNG=0
 export PATH=$PATH:/usr/local/bin
 # cannot use --output due to https://github.com/dotnet/sdk/issues/22220
 dotnet publish --configuration Release --self-contained --runtime linux-x64 \
@@ -64,6 +65,9 @@ dotnet publish --configuration Release --self-contained --runtime linux-x64 \
 %{__cp} -r Jellyfin.Server/bin/Release/net8.0/linux-x64/publish/* %{buildroot}%{_libdir}/jellyfin
 %{__install} -D %{SOURCE10} %{buildroot}%{_bindir}/jellyfin
 sed -i -e 's|/usr/lib64|%{_libdir}|g' %{buildroot}%{_bindir}/jellyfin
+# A workaround for upstream issue: https://github.com/dotnet/runtime/issues/57784
+# dotnet is requiring an old version of liblttng which is no longer shipped in debian
+rm "%{buildroot}%{_libdir}/jellyfin/libcoreclrtraceptprovider.so"
 
 # Jellyfin config
 %{__install} -D Jellyfin.Server/Resources/Configuration/logging.json %{buildroot}%{_sysconfdir}/jellyfin/logging.json
