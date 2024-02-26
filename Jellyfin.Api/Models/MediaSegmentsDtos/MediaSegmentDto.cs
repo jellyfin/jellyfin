@@ -71,7 +71,8 @@ public class MediaSegmentDto
             TypeIndex = TypeIndex,
             ItemId = ItemId,
             StreamIndex = StreamIndex,
-            Action = Action
+            Action = Action,
+            Comment = Comment
         };
     }
 
@@ -90,7 +91,8 @@ public class MediaSegmentDto
             TypeIndex = seg.TypeIndex,
             ItemId = seg.ItemId,
             StreamIndex = seg.StreamIndex,
-            Action = seg.Action
+            Action = seg.Action,
+            Comment = seg.Comment
         };
     }
 }
