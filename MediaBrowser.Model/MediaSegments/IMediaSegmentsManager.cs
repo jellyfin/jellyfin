@@ -29,7 +29,7 @@ namespace MediaBrowser.Model.MediaSegments
         /// <summary>
         /// Get all media segments.
         /// </summary>
-        /// <param name="itemId">Optional: Just segments with MediaSourceId.</param>
+        /// <param name="itemId">Optional: Just segments with itemId.</param>
         /// <param name="streamIndex">Optional: Just segments with MediaStreamIndex.</param>
         /// <param name="typeIndex">Optional: The typeIndex.</param>
         /// <param name="type">Optional: The segment type.</param>
@@ -39,7 +39,7 @@ namespace MediaBrowser.Model.MediaSegments
         /// <summary>
         /// Delete Media Segments.
         /// </summary>
-        /// <param name="itemId">Required: The MediaSourceId.</param>
+        /// <param name="itemId">Required: The itemId.</param>
         /// <param name="streamIndex">Optional: Just segments with MediaStreamIndex.</param>
         /// <param name="typeIndex">Optional: The typeIndex.</param>
         /// <param name="type">Optional: The segment type.</param>

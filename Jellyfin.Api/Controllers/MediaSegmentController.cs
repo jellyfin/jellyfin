@@ -35,7 +35,7 @@ public class MediaSegmentController : BaseJellyfinApiController
     /// <summary>
     /// Get all media segments.
     /// </summary>
-    /// <param name="itemId">Optional: Just segments with MediaSourceId.</param>
+    /// <param name="itemId">Optional: Just segments with itemId.</param>
     /// <param name="streamIndex">Optional: Just segments with MediaStreamIndex.</param>
     /// <param name="type">Optional: All segments of type.</param>
     /// <param name="typeIndex">Optional: All segments with typeIndex.</param>
@@ -59,7 +59,7 @@ public class MediaSegmentController : BaseJellyfinApiController
     /// </summary>
     /// <param name="startTicks">Start position of segment in Ticks.</param>
     /// <param name="endTicks">End position of segment in Ticks.</param>
-    /// <param name="itemId">Segment is associated with MediaSourceId.</param>
+    /// <param name="itemId">Segment is associated with itemId.</param>
     /// <param name="streamIndex">Segment is associated with MediaStreamIndex.</param>
     /// <param name="type">Segment type.</param>
     /// <param name="typeIndex">Optional: If you want to add a type multiple times to the same itemId increment it.</param>
@@ -121,7 +121,7 @@ public class MediaSegmentController : BaseJellyfinApiController
     /// <summary>
     /// Delete media segments. All query parameters can be freely defined.
     /// </summary>
-    /// <param name="itemId">Optional: All segments with MediaSourceId.</param>
+    /// <param name="itemId">Optional: All segments with itemId.</param>
     /// <param name="streamIndex">Optional: Segment is associated with MediaStreamIndex.</param>
     /// <param name="type">Optional: All segments of type.</param>
     /// <param name="typeIndex">Optional: All segments with typeIndex.</param>
