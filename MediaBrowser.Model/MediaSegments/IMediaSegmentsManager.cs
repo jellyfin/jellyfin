@@ -13,13 +13,6 @@ namespace MediaBrowser.Model.MediaSegments
     public interface IMediaSegmentsManager
     {
         /// <summary>
-        /// Create or update a media segment.
-        /// </summary>
-        /// <param name="segment">The segment.</param>
-        /// <returns>New MediaSegment.</returns>
-        Task<MediaSegment> CreateMediaSegment(MediaSegment segment);
-
-        /// <summary>
         /// Create or update multiple media segments.
         /// </summary>
         /// <param name="segments">List of segments.</param>

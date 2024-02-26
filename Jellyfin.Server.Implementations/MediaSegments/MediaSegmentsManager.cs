@@ -35,24 +35,6 @@ namespace Jellyfin.Server.Implementations.MediaSegments
         }
 
         /// <inheritdoc/>
-        public async Task<MediaSegment> CreateMediaSegment(MediaSegment segment)
-        {
-            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
-            {
-                ValidateSegment(segment);
-
-                var found = await dbContext.Segments.FirstOrDefaultAsync(s => s.ItemId.Equals(segment.ItemId) && s.Type.Equals(segment.Type) && s.TypeIndex.Equals(segment.TypeIndex)).ConfigureAwait(false);
-
-                AddOrUpdateSegment(dbContext, segment, found);
-
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
-            }
-
-            return segment;
-        }
-
-        /// <inheritdoc/>
         public async Task<IReadOnlyList<MediaSegment>> CreateMediaSegments(IReadOnlyList<MediaSegment> segments)
         {
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);

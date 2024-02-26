@@ -55,51 +55,6 @@ public class MediaSegmentController : BaseJellyfinApiController
     }
 
     /// <summary>
-    /// Create or update a media segment. You can update start/end/action.
-    /// </summary>
-    /// <param name="startTicks">Start position of segment in Ticks.</param>
-    /// <param name="endTicks">End position of segment in Ticks.</param>
-    /// <param name="itemId">Segment is associated with itemId.</param>
-    /// <param name="streamIndex">Segment is associated with MediaStreamIndex.</param>
-    /// <param name="type">Segment type.</param>
-    /// <param name="typeIndex">Optional: If you want to add a type multiple times to the same itemId increment it.</param>
-    /// <param name="action">Optional: Creator recommends an action.</param>
-    /// <param name="comment">Optional: A comment.</param>
-    /// <response code="200">Segments returned.</response>
-    /// <response code="400">Missing query parameter.</response>
-    /// <returns>An <see cref="OkResult"/>containing the segment.</returns>
-    [HttpPost("Segment")]
-    [Authorize(Policy = Policies.RequiresElevation)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<MediaSegment>> PostSegment(
-        [FromQuery, Required] long startTicks,
-        [FromQuery, Required] long endTicks,
-        [FromQuery, Required] Guid itemId,
-        [FromQuery, Required] int streamIndex,
-        [FromQuery, Required] MediaSegmentType type,
-        [FromQuery, DefaultValue(0)] int typeIndex,
-        [FromQuery, DefaultValue(MediaSegmentAction.Auto)] MediaSegmentAction action,
-        [FromQuery] string comment)
-    {
-        var newMediaSegment = new MediaSegment()
-        {
-            StartTicks = startTicks,
-            EndTicks = endTicks,
-            ItemId = itemId,
-            StreamIndex = streamIndex,
-            Type = type,
-            TypeIndex = typeIndex,
-            Action = action,
-            Comment = comment
-        };
-
-        var segment = await _mediaSegmentManager.CreateMediaSegment(newMediaSegment).ConfigureAwait(false);
-
-        return segment;
-    }
-
-    /// <summary>
     /// Create or update multiple media segments. See /MediaSegment/Segment for required properties.
     /// </summary>
     /// <param name="segments">All segments that should be added.</param>
