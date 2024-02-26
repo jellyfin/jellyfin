@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
+using Jellyfin.Api.Models.MediaSegmentsDtos;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Model.MediaSegments;
@@ -43,19 +42,19 @@ public class MediaSegmentController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/>containing the found segments.</returns>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<MediaSegment>>> GetSegments(
-        [FromQuery] Guid itemId,
+    public async Task<ActionResult<List<MediaSegmentDto>>> GetSegments(
+        [FromQuery, Required] Guid itemId,
         [FromQuery] int? streamIndex,
         [FromQuery] MediaSegmentType? type,
         [FromQuery] int? typeIndex)
     {
         var list = await _mediaSegmentManager.GetAllMediaSegments(itemId, streamIndex, typeIndex, type).ConfigureAwait(false);
 
-        return list;
+        return list.Select(s => MediaSegmentDto.FromMediaSegment(s)).ToList();
     }
 
     /// <summary>
-    /// Create or update multiple media segments. See /MediaSegment/Segment for required properties.
+    /// Create or update multiple media segments.
     /// </summary>
     /// <param name="segments">All segments that should be added.</param>
     /// <response code="200">Segments returned.</response>
@@ -65,12 +64,12 @@ public class MediaSegmentController : BaseJellyfinApiController
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<List<MediaSegment>>> PostSegments(
-        [FromBody, Required] IReadOnlyList<MediaSegment> segments)
+    public async Task<ActionResult<List<MediaSegmentDto>>> PostSegments(
+        [FromBody, Required] IReadOnlyList<MediaSegmentDto> segments)
     {
-        var nsegments = await _mediaSegmentManager.CreateMediaSegments(segments).ConfigureAwait(false);
+        var nsegments = await _mediaSegmentManager.CreateMediaSegments(segments.Select(s => s.ToMediaSegment()).ToList()).ConfigureAwait(false);
 
-        return nsegments.ToList();
+        return nsegments.Select(s => MediaSegmentDto.FromMediaSegment(s)).ToList();
     }
 
     /// <summary>
@@ -87,7 +86,7 @@ public class MediaSegmentController : BaseJellyfinApiController
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<List<MediaSegment>>> DeleteSegments(
+    public async Task<ActionResult<List<MediaSegmentDto>>> DeleteSegments(
         [FromQuery, Required] Guid itemId,
         [FromQuery] int? streamIndex,
         [FromQuery] MediaSegmentType? type,
@@ -95,6 +94,6 @@ public class MediaSegmentController : BaseJellyfinApiController
     {
         var list = await _mediaSegmentManager.DeleteSegments(itemId, streamIndex, typeIndex, type).ConfigureAwait(false);
 
-        return list;
+        return list.Select(s => MediaSegmentDto.FromMediaSegment(s)).ToList();
     }
 }
