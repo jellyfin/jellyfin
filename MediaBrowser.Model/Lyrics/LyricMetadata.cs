@@ -1,4 +1,4 @@
-namespace MediaBrowser.Controller.Lyrics;
+namespace MediaBrowser.Model.Lyrics;
 
 /// <summary>
 /// LyricMetadata model.
@@ -49,4 +49,9 @@ public class LyricMetadata
     /// Gets or sets the version of the creator used.
     /// </summary>
     public string? Version { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether this lyric is synced.
+    /// </summary>
+    public bool? IsSynced { get; set; }
 }

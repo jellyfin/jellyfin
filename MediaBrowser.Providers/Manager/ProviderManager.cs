@@ -21,6 +21,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Configuration;
@@ -52,6 +53,7 @@ namespace MediaBrowser.Providers.Manager
         private readonly IServerApplicationPaths _appPaths;
         private readonly ILibraryManager _libraryManager;
         private readonly ISubtitleManager _subtitleManager;
+        private readonly ILyricManager _lyricManager;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IBaseItemManager _baseItemManager;
         private readonly ConcurrentDictionary<Guid, double> _activeRefreshes = new();
@@ -78,6 +80,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="appPaths">The server application paths.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="baseItemManager">The BaseItem manager.</param>
+        /// <param name="lyricManager">The lyric manager.</param>
         public ProviderManager(
             IHttpClientFactory httpClientFactory,
             ISubtitleManager subtitleManager,
@@ -87,7 +90,8 @@ namespace MediaBrowser.Providers.Manager
             IFileSystem fileSystem,
             IServerApplicationPaths appPaths,
             ILibraryManager libraryManager,
-            IBaseItemManager baseItemManager)
+            IBaseItemManager baseItemManager,
+            ILyricManager lyricManager)
         {
             _logger = logger;
             _httpClientFactory = httpClientFactory;
@@ -98,6 +102,7 @@ namespace MediaBrowser.Providers.Manager
             _libraryManager = libraryManager;
             _subtitleManager = subtitleManager;
             _baseItemManager = baseItemManager;
+            _lyricManager = lyricManager;
         }
 
         /// <inheritdoc/>
@@ -503,13 +508,20 @@ namespace MediaBrowser.Providers.Manager
             AddMetadataPlugins(pluginList, dummy, libraryOptions, options);
             AddImagePlugins(pluginList, imageProviders);
 
-            var subtitleProviders = _subtitleManager.GetSupportedProviders(dummy);
-
             // Subtitle fetchers
+            var subtitleProviders = _subtitleManager.GetSupportedProviders(dummy);
             pluginList.AddRange(subtitleProviders.Select(i => new MetadataPlugin
             {
                 Name = i.Name,
                 Type = MetadataPluginType.SubtitleFetcher
+            }));
+
+            // Lyric fetchers
+            var lyricProviders = _lyricManager.GetSupportedProviders(dummy);
+            pluginList.AddRange(lyricProviders.Select(i => new MetadataPlugin
+            {
+                Name = i.Name,
+                Type = MetadataPluginType.LyricFetcher
             }));
 
             summary.Plugins = pluginList.ToArray();
