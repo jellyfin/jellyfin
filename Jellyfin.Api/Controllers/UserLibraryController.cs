@@ -71,7 +71,7 @@ public class UserLibraryController : BaseJellyfinApiController
     /// <param name="itemId">Item id.</param>
     /// <response code="200">Item returned.</response>
     /// <returns>An <see cref="OkResult"/> containing the item.</returns>
-    [HttpGet("Users/Items/{itemId}")]
+    [HttpGet("Items/{itemId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<BaseItemDto>> GetItem(
         [FromQuery] Guid? userId,
@@ -129,7 +129,7 @@ public class UserLibraryController : BaseJellyfinApiController
     /// <param name="userId">User id.</param>
     /// <response code="200">Root folder returned.</response>
     /// <returns>An <see cref="OkResult"/> containing the user's root folder.</returns>
-    [HttpGet("Users/Items/Root")]
+    [HttpGet("Items/Root")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<BaseItemDto> GetRootFolder([FromQuery] Guid? userId)
     {
@@ -166,7 +166,7 @@ public class UserLibraryController : BaseJellyfinApiController
     /// <param name="itemId">Item id.</param>
     /// <response code="200">Intros returned.</response>
     /// <returns>An <see cref="OkResult"/> containing the intros to play.</returns>
-    [HttpGet("Users/Items/{itemId}/Intros")]
+    [HttpGet("Items/{itemId}/Intros")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<QueryResult<BaseItemDto>>> GetIntros(
         [FromQuery] Guid? userId,
@@ -225,7 +225,7 @@ public class UserLibraryController : BaseJellyfinApiController
     /// <param name="itemId">Item id.</param>
     /// <response code="200">Item marked as favorite.</response>
     /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
-    [HttpPost("Users/FavoriteItems/{itemId}")]
+    [HttpPost("UserFavoriteItems/{itemId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<UserItemDataDto> MarkFavoriteItem(
         [FromQuery] Guid? userId,
@@ -280,7 +280,7 @@ public class UserLibraryController : BaseJellyfinApiController
     /// <param name="itemId">Item id.</param>
     /// <response code="200">Item unmarked as favorite.</response>
     /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
-    [HttpDelete("Users/FavoriteItems/{itemId}")]
+    [HttpDelete("UserFavoriteItems/{itemId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<UserItemDataDto> UnmarkFavoriteItem(
         [FromQuery] Guid? userId,
@@ -335,7 +335,7 @@ public class UserLibraryController : BaseJellyfinApiController
     /// <param name="itemId">Item id.</param>
     /// <response code="200">Personal rating removed.</response>
     /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
-    [HttpDelete("Users/Items/{itemId}/Rating")]
+    [HttpDelete("UserItems/{itemId}/Rating")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<UserItemDataDto> DeleteUserItemRating(
         [FromQuery] Guid? userId,
@@ -391,7 +391,7 @@ public class UserLibraryController : BaseJellyfinApiController
     /// <param name="likes">Whether this <see cref="UpdateUserItemRating" /> is likes.</param>
     /// <response code="200">Item rating updated.</response>
     /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
-    [HttpPost("Users/Items/{itemId}/Rating")]
+    [HttpPost("UserItems/{itemId}/Rating")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<UserItemDataDto> UpdateUserItemRating(
         [FromQuery] Guid? userId,
@@ -449,7 +449,7 @@ public class UserLibraryController : BaseJellyfinApiController
     /// <param name="itemId">Item id.</param>
     /// <response code="200">An <see cref="OkResult"/> containing the item's local trailers.</response>
     /// <returns>The items local trailers.</returns>
-    [HttpGet("Users/Items/{itemId}/LocalTrailers")]
+    [HttpGet("Items/{itemId}/LocalTrailers")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<IEnumerable<BaseItemDto>> GetLocalTrailers(
         [FromQuery] Guid? userId,
@@ -513,7 +513,7 @@ public class UserLibraryController : BaseJellyfinApiController
     /// <param name="itemId">Item id.</param>
     /// <response code="200">Special features returned.</response>
     /// <returns>An <see cref="OkResult"/> containing the special features.</returns>
-    [HttpGet("Users/Items/{itemId}/SpecialFeatures")]
+    [HttpGet("Items/{itemId}/SpecialFeatures")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<IEnumerable<BaseItemDto>> GetSpecialFeatures(
         [FromQuery] Guid? userId,
@@ -582,7 +582,7 @@ public class UserLibraryController : BaseJellyfinApiController
     /// <param name="groupItems">Whether or not to group items into a parent container.</param>
     /// <response code="200">Latest media returned.</response>
     /// <returns>An <see cref="OkResult"/> containing the latest media.</returns>
-    [HttpGet("Users/Items/Latest")]
+    [HttpGet("Items/Latest")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<IEnumerable<BaseItemDto>> GetLatestMedia(
         [FromQuery] Guid? userId,

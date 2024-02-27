@@ -90,7 +90,7 @@ public class ImageController : BaseJellyfinApiController
     /// <response code="204">Image updated.</response>
     /// <response code="403">User does not have permission to delete the image.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
-    [HttpPost("Users/Images")]
+    [HttpPost("UserImage")]
     [Authorize]
     [AcceptsImageFile]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -192,7 +192,7 @@ public class ImageController : BaseJellyfinApiController
     /// <response code="204">Image deleted.</response>
     /// <response code="403">User does not have permission to delete the image.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
-    [HttpDelete("Users/Images")]
+    [HttpDelete("UserImage")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -1470,8 +1470,8 @@ public class ImageController : BaseJellyfinApiController
     /// A <see cref="FileStreamResult"/> containing the file stream on success,
     /// or a <see cref="NotFoundResult"/> if item not found.
     /// </returns>
-    [HttpGet("Users/Images")]
-    [HttpHead("Users/Images", Name = "HeadUserImage")]
+    [HttpGet("UserImage")]
+    [HttpHead("UserImage", Name = "HeadUserImage")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

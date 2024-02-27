@@ -68,7 +68,7 @@ public class PlaystateController : BaseJellyfinApiController
     /// <response code="200">Item marked as played.</response>
     /// <response code="404">Item not found.</response>
     /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>, or a <see cref="NotFoundResult"/> if item was not found.</returns>
-    [HttpPost("Users/PlayedItems/{itemId}")]
+    [HttpPost("UserPlayedItems/{itemId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<UserItemDataDto>> MarkPlayedItem(
@@ -134,7 +134,7 @@ public class PlaystateController : BaseJellyfinApiController
     /// <response code="200">Item marked as unplayed.</response>
     /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>, or a <see cref="NotFoundResult"/> if item was not found.</returns>
-    [HttpDelete("Users/PlayedItems/{itemId}")]
+    [HttpDelete("UserPlayedItems/{itemId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<UserItemDataDto>> MarkUnplayedItem(
@@ -257,7 +257,7 @@ public class PlaystateController : BaseJellyfinApiController
     }
 
     /// <summary>
-    /// Reports that a user has begun playing an item.
+    /// Reports that a session has begun playing an item.
     /// </summary>
     /// <param name="itemId">Item id.</param>
     /// <param name="mediaSourceId">The id of the MediaSource.</param>
@@ -269,7 +269,7 @@ public class PlaystateController : BaseJellyfinApiController
     /// <param name="canSeek">Indicates if the client can seek.</param>
     /// <response code="204">Play start recorded.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
-    [HttpPost("Users/PlayingItems/{itemId}")]
+    [HttpPost("PlayingItems/{itemId}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> OnPlaybackStart(
         [FromRoute, Required] Guid itemId,
@@ -331,7 +331,7 @@ public class PlaystateController : BaseJellyfinApiController
         => OnPlaybackStart(itemId, mediaSourceId, audioStreamIndex, subtitleStreamIndex, playMethod, liveStreamId, playSessionId, canSeek);
 
     /// <summary>
-    /// Reports a user's playback progress.
+    /// Reports a session's playback progress.
     /// </summary>
     /// <param name="itemId">Item id.</param>
     /// <param name="mediaSourceId">The id of the MediaSource.</param>
@@ -347,7 +347,7 @@ public class PlaystateController : BaseJellyfinApiController
     /// <param name="isMuted">Indicates if the player is muted.</param>
     /// <response code="204">Play progress recorded.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
-    [HttpPost("Users/PlayingItems/{itemId}/Progress")]
+    [HttpPost("PlayingItems/{itemId}/Progress")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> OnPlaybackProgress(
         [FromRoute, Required] Guid itemId,
@@ -425,7 +425,7 @@ public class PlaystateController : BaseJellyfinApiController
         => OnPlaybackProgress(itemId, mediaSourceId, positionTicks, audioStreamIndex, subtitleStreamIndex, volumeLevel, playMethod, liveStreamId, playSessionId, repeatMode, isPaused, isMuted);
 
     /// <summary>
-    /// Reports that a user has stopped playing an item.
+    /// Reports that a session has stopped playing an item.
     /// </summary>
     /// <param name="itemId">Item id.</param>
     /// <param name="mediaSourceId">The id of the MediaSource.</param>
@@ -435,7 +435,7 @@ public class PlaystateController : BaseJellyfinApiController
     /// <param name="playSessionId">The play session id.</param>
     /// <response code="204">Playback stop recorded.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
-    [HttpDelete("Users/PlayingItems/{itemId}")]
+    [HttpDelete("PlayingItems/{itemId}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> OnPlaybackStopped(
         [FromRoute, Required] Guid itemId,

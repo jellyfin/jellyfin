@@ -55,7 +55,7 @@ public class SuggestionsController : BaseJellyfinApiController
     /// <param name="enableTotalRecordCount">Whether to enable the total record count.</param>
     /// <response code="200">Suggestions returned.</response>
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the suggestions.</returns>
-    [HttpGet("Users/Suggestions")]
+    [HttpGet("Items/Suggestions")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<QueryResult<BaseItemDto>> GetSuggestions(
         [FromQuery] Guid? userId,
