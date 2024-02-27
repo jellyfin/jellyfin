@@ -184,6 +184,16 @@ namespace Jellyfin.Data.Entities
         public string? SubtitleLanguagePreference { get; set; }
 
         /// <summary>
+        /// Gets or sets the subtitle codec preference.
+        /// </summary>
+        /// <remarks>
+        /// Max length = 32.
+        /// </remarks>
+        [MaxLength(32)]
+        [StringLength(32)]
+        public string? SubtitleCodecPreference { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether missing episodes should be displayed.
         /// </summary>
         /// <remarks>

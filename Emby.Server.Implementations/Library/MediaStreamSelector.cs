@@ -32,7 +32,8 @@ namespace Emby.Server.Implementations.Library
             IEnumerable<MediaStream> streams,
             IReadOnlyList<string> preferredLanguages,
             SubtitlePlaybackMode mode,
-            string audioTrackLanguage)
+            string audioTrackLanguage,
+            string[] preferredCodecs)
         {
             if (mode == SubtitlePlaybackMode.None)
             {
@@ -46,6 +47,7 @@ namespace Emby.Server.Implementations.Library
                 .ThenByDescending(x => x.IsForced)
                 .ThenByDescending(x => x.IsDefault)
                 .ThenByDescending(x => preferredLanguages.Contains(x.Language, StringComparison.OrdinalIgnoreCase))
+                .ThenByDescending(x => preferredCodecs.Contains(x.Codec, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
             MediaStream? stream = null;
@@ -60,13 +62,19 @@ namespace Emby.Server.Implementations.Library
                 // If no subtitles of preferred language available, use default behaviour.
                 if (!preferredLanguages.Contains(audioTrackLanguage, StringComparison.OrdinalIgnoreCase))
                 {
-                    stream = sortedStreams.FirstOrDefault(x => preferredLanguages.Contains(x.Language, StringComparison.OrdinalIgnoreCase)) ??
-                        sortedStreams.FirstOrDefault(x => x.IsExternal || x.IsForced || x.IsDefault);
+                    // In this case, we don't want to prefer forced subtitles, but full subtitles, so sort again
+                    stream = sortedStreams
+                        .OrderByDescending(x => preferredLanguages.Contains(x.Language, StringComparison.OrdinalIgnoreCase))
+                        .ThenByDescending(x => x.IsExternal)
+                        .ThenByDescending(x => x.IsDefault)
+                        .ThenByDescending(x => !x.IsForced)
+                        .ThenByDescending(x => preferredCodecs.Contains(x.Codec, StringComparison.OrdinalIgnoreCase))
+                        .FirstOrDefault();
                 }
                 else
                 {
-                    // Respect forced flag.
-                    stream = sortedStreams.FirstOrDefault(x => x.IsForced);
+                    // Respect forced flag, but make sure to match the language
+                    stream = sortedStreams.FirstOrDefault(x => x.IsForced && string.Equals(x.Language, audioTrackLanguage, StringComparison.OrdinalIgnoreCase));
                 }
             }
             else if (mode == SubtitlePlaybackMode.Always)
