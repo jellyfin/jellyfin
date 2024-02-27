@@ -574,7 +574,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the media segments data.
         /// </summary>
         /// <value>The media segments.</value>
-        public List<MediaSegment> MediaSegments { get; set; }
+        public IReadOnlyList<MediaSegment> MediaSegments { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the location.

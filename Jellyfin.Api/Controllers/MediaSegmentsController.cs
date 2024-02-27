@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.MediaSegmentsDtos;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Model.MediaSegments;
 using Microsoft.AspNetCore.Authorization;
@@ -17,15 +17,15 @@ namespace Jellyfin.Api.Controllers;
 /// Media Segments controller.
 /// </summary>
 [Authorize]
-public class MediaSegmentController : BaseJellyfinApiController
+public class MediaSegmentsController : BaseJellyfinApiController
 {
     private readonly IMediaSegmentsManager _mediaSegmentManager;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="MediaSegmentController"/> class.
+    /// Initializes a new instance of the <see cref="MediaSegmentsController"/> class.
     /// </summary>
     /// <param name="mediaSegmentManager">Instance of the <see cref="IMediaSegmentsManager"/> interface.</param>
-    public MediaSegmentController(
+    public MediaSegmentsController(
         IMediaSegmentsManager mediaSegmentManager)
     {
         _mediaSegmentManager = mediaSegmentManager;
@@ -34,66 +34,67 @@ public class MediaSegmentController : BaseJellyfinApiController
     /// <summary>
     /// Get all media segments.
     /// </summary>
-    /// <param name="itemId">Optional: Just segments with itemId.</param>
-    /// <param name="streamIndex">Optional: Just segments with MediaStreamIndex.</param>
-    /// <param name="type">Optional: All segments of type.</param>
-    /// <param name="typeIndex">Optional: All segments with typeIndex.</param>
+    /// <param name="itemId">The item id.</param>
+    /// <param name="streamIndex">Just segments with MediaStreamIndex.</param>
+    /// <param name="type">All segments of type.</param>
+    /// <param name="typeIndex">All segments with typeIndex.</param>
     /// <response code="200">Segments returned.</response>
     /// <returns>An <see cref="OkResult"/>containing the found segments.</returns>
-    [HttpGet]
+    [HttpGet("{itemId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<MediaSegmentDto>>> GetSegments(
-        [FromQuery, Required] Guid itemId,
+    public async Task<ActionResult<IReadOnlyList<MediaSegmentDto>>> GetSegments(
+        [FromRoute, Required] Guid itemId,
         [FromQuery] int? streamIndex,
         [FromQuery] MediaSegmentType? type,
         [FromQuery] int? typeIndex)
     {
         var list = await _mediaSegmentManager.GetAllMediaSegments(itemId, streamIndex, typeIndex, type).ConfigureAwait(false);
-
-        return list.Select(s => MediaSegmentDto.FromMediaSegment(s)).ToList();
+        return Ok(list.ConvertAll(MediaSegmentDto.FromMediaSegment));
     }
 
     /// <summary>
     /// Create or update multiple media segments.
     /// </summary>
+    /// <param name="itemId">The item the segments belong to.</param>
     /// <param name="segments">All segments that should be added.</param>
     /// <response code="200">Segments returned.</response>
     /// <response code="400">Invalid segments.</response>
     /// <returns>An <see cref="OkResult"/>containing the created/updated segments.</returns>
-    [HttpPost]
+    [HttpPost("{itemId}")]
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<List<MediaSegmentDto>>> PostSegments(
+    public async Task<ActionResult<IReadOnlyList<MediaSegmentDto>>> PostSegments(
+        [FromRoute, Required] Guid itemId,
         [FromBody, Required] IReadOnlyList<MediaSegmentDto> segments)
     {
-        var nsegments = await _mediaSegmentManager.CreateMediaSegments(segments.Select(s => s.ToMediaSegment()).ToList()).ConfigureAwait(false);
+        var segmentsToAdd = segments.ConvertAll(s => s.ToMediaSegment());
+        var addedSegments = await _mediaSegmentManager.CreateMediaSegments(itemId, segmentsToAdd).ConfigureAwait(false);
 
-        return nsegments.Select(s => MediaSegmentDto.FromMediaSegment(s)).ToList();
+        return Ok(addedSegments.ConvertAll(MediaSegmentDto.FromMediaSegment));
     }
 
     /// <summary>
     /// Delete media segments. All query parameters can be freely defined.
     /// </summary>
-    /// <param name="itemId">Optional: All segments with itemId.</param>
-    /// <param name="streamIndex">Optional: Segment is associated with MediaStreamIndex.</param>
-    /// <param name="type">Optional: All segments of type.</param>
-    /// <param name="typeIndex">Optional: All segments with typeIndex.</param>
+    /// <param name="itemId">The item id.</param>
+    /// <param name="streamIndex">Segment is associated with MediaStreamIndex.</param>
+    /// <param name="type">All segments of type.</param>
+    /// <param name="typeIndex">All segments with typeIndex.</param>
     /// <response code="200">Segments returned.</response>
     /// <response code="404">Segments not found.</response>
     /// <returns>An <see cref="OkResult"/>containing the deleted segments.</returns>
-    [HttpDelete]
+    [HttpDelete("{itemId}")]
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<List<MediaSegmentDto>>> DeleteSegments(
-        [FromQuery, Required] Guid itemId,
+    public async Task<ActionResult<IReadOnlyList<MediaSegmentDto>>> DeleteSegments(
+        [FromRoute, Required] Guid itemId,
         [FromQuery] int? streamIndex,
         [FromQuery] MediaSegmentType? type,
         [FromQuery] int? typeIndex)
     {
         var list = await _mediaSegmentManager.DeleteSegments(itemId, streamIndex, typeIndex, type).ConfigureAwait(false);
-
-        return list.Select(s => MediaSegmentDto.FromMediaSegment(s)).ToList();
+        return Ok(list.ConvertAll(MediaSegmentDto.FromMediaSegment));
     }
 }

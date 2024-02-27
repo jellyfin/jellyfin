@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Jellyfin.Extensions
 {
@@ -72,6 +73,29 @@ namespace Jellyfin.Extensions
             }
 
             return source[0];
+        }
+
+        /// <summary>
+        /// Converts a ReadOnlyList{TIn} to ReadOnlyList{TOut}.
+        /// </summary>
+        /// <param name="source">The source list.</param>
+        /// <param name="converter">The converter to use.</param>
+        /// <typeparam name="TIn">The input type.</typeparam>
+        /// <typeparam name="TOut">The output type.</typeparam>
+        /// <returns>The converted list.</returns>
+        public static IReadOnlyList<TOut> ConvertAll<TIn, TOut>(this IReadOnlyList<TIn>? source, Converter<TIn, TOut> converter)
+        {
+            if (source is null || source.Count == 0)
+            {
+                return Array.Empty<TOut>();
+            }
+
+            return source switch
+            {
+                List<TIn> list => list.ConvertAll(converter),
+                TIn[] array => Array.ConvertAll(array, converter),
+                _ => source.Select(s => converter(s)).ToList()
+            };
         }
     }
 }
