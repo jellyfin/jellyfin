@@ -112,11 +112,12 @@ public class UserViewsController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Obsolete("Kept for backwards compatibility")]
     [ApiExplorerSettings(IgnoreApi = true)]
-    public QueryResult<BaseItemDto> GetUserViews2(
+    public QueryResult<BaseItemDto> GetUserViewsLegacy(
         [FromRoute, Required] Guid userId,
         [FromQuery] bool? includeExternalContent,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] CollectionType?[] presetViews,
-        [FromQuery] bool includeHidden = false) => GetUserViews(userId, includeExternalContent, presetViews, includeHidden);
+        [FromQuery] bool includeHidden = false)
+        => GetUserViews(userId, includeExternalContent, presetViews, includeHidden);
 
     /// <summary>
     /// Get user view grouping options.
@@ -168,6 +169,7 @@ public class UserViewsController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Obsolete("Kept for backwards compatibility")]
     [ApiExplorerSettings(IgnoreApi = true)]
-    public ActionResult<IEnumerable<SpecialViewOptionDto>> GetGroupingOptions2(
-        [FromRoute, Required] Guid userId) => GetGroupingOptions(userId);
+    public ActionResult<IEnumerable<SpecialViewOptionDto>> GetGroupingOptionsLegacy(
+        [FromRoute, Required] Guid userId)
+        => GetGroupingOptions(userId);
 }
