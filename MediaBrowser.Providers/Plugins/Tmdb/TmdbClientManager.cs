@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
@@ -35,7 +36,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         public TmdbClientManager(IMemoryCache memoryCache)
         {
             _memoryCache = memoryCache;
-            _tmDbClient = new TMDbClient(TmdbUtils.ApiKey);
+
+            var apiKey = Plugin.Instance.Configuration.TmdbApiKey;
+            apiKey = string.IsNullOrEmpty(apiKey) ? TmdbUtils.ApiKey : apiKey;
+            _tmDbClient = new TMDbClient(apiKey);
+
             // Not really interested in NotFoundException
             _tmDbClient.ThrowApiExceptions = false;
         }

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Session;
@@ -18,7 +19,7 @@ namespace MediaBrowser.Controller.Session
     /// <summary>
     /// Class SessionInfo.
     /// </summary>
-    public sealed class SessionInfo : IAsyncDisposable, IDisposable
+    public sealed class SessionInfo : IAsyncDisposable
     {
         // 1 second
         private const long ProgressIncrement = 10000000;
@@ -60,13 +61,13 @@ namespace MediaBrowser.Controller.Session
         /// Gets the playable media types.
         /// </summary>
         /// <value>The playable media types.</value>
-        public IReadOnlyList<string> PlayableMediaTypes
+        public IReadOnlyList<MediaType> PlayableMediaTypes
         {
             get
             {
                 if (Capabilities is null)
                 {
-                    return Array.Empty<string>();
+                    return Array.Empty<MediaType>();
                 }
 
                 return Capabilities.PlayableMediaTypes;
@@ -108,6 +109,12 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <value>The last playback check in.</value>
         public DateTime LastPlaybackCheckIn { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last paused date.
+        /// </summary>
+        /// <value>The last paused date.</value>
+        public DateTime? LastPausedDate { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the device.
@@ -367,8 +374,7 @@ namespace MediaBrowser.Controller.Session
             }
         }
 
-        /// <inheritdoc />
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
             _disposed = true;
 
@@ -379,28 +385,15 @@ namespace MediaBrowser.Controller.Session
 
             foreach (var controller in controllers)
             {
-                if (controller is IDisposable disposable)
-                {
-                    _logger.LogDebug("Disposing session controller synchronously {TypeName}", disposable.GetType().Name);
-                    disposable.Dispose();
-                }
-            }
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            _disposed = true;
-
-            StopAutomaticProgress();
-
-            var controllers = SessionControllers.ToList();
-
-            foreach (var controller in controllers)
-            {
                 if (controller is IAsyncDisposable disposableAsync)
                 {
                     _logger.LogDebug("Disposing session controller asynchronously {TypeName}", disposableAsync.GetType().Name);
                     await disposableAsync.DisposeAsync().ConfigureAwait(false);
+                }
+                else if (controller is IDisposable disposable)
+                {
+                    _logger.LogDebug("Disposing session controller synchronously {TypeName}", disposable.GetType().Name);
+                    disposable.Dispose();
                 }
             }
         }

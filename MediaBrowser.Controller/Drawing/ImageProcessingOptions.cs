@@ -119,7 +119,8 @@ namespace MediaBrowser.Controller.Drawing
         private bool IsFormatSupported(string originalImagePath)
         {
             var ext = Path.GetExtension(originalImagePath);
-            return SupportedOutputFormats.Any(outputFormat => string.Equals(ext, "." + outputFormat, StringComparison.OrdinalIgnoreCase));
+            ext = ext.Replace(".jpeg", ".jpg", StringComparison.OrdinalIgnoreCase);
+            return SupportedOutputFormats.Any(outputFormat => string.Equals(ext, outputFormat.GetExtension(), StringComparison.OrdinalIgnoreCase));
         }
     }
 }

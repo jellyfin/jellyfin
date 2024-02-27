@@ -7,6 +7,7 @@ using System.Net.Mime;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using AsyncKeyedLock;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
@@ -38,7 +39,7 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
     private readonly IServerApplicationPaths _appPaths;
     private readonly IImageEncoder _imageEncoder;
 
-    private readonly SemaphoreSlim _parallelEncodingLimit;
+    private readonly AsyncNonKeyedLocker _parallelEncodingLimit;
 
     private bool _disposed;
 
@@ -68,7 +69,7 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
             semaphoreCount = 2 * Environment.ProcessorCount;
         }
 
-        _parallelEncodingLimit = new(semaphoreCount, semaphoreCount);
+        _parallelEncodingLimit = new(semaphoreCount);
     }
 
     private string ResizedImageCachePath => Path.Combine(_appPaths.ImageCachePath, "resized-images");
@@ -108,20 +109,8 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
     public bool SupportsImageCollageCreation => _imageEncoder.SupportsImageCollageCreation;
 
     /// <inheritdoc />
-    public async Task ProcessImage(ImageProcessingOptions options, Stream toStream)
-    {
-        var file = await ProcessImage(options).ConfigureAwait(false);
-        using var fileStream = AsyncFile.OpenRead(file.Path);
-        await fileStream.CopyToAsync(toStream).ConfigureAwait(false);
-    }
-
-    /// <inheritdoc />
     public IReadOnlyCollection<ImageFormat> GetSupportedImageOutputFormats()
         => _imageEncoder.SupportedOutputFormats;
-
-    /// <inheritdoc />
-    public bool SupportsTransparency(string path)
-        => _transparentImageTypes.Contains(Path.GetExtension(path));
 
     /// <inheritdoc />
     public async Task<(string Path, string? MimeType, DateTime DateModified)> ProcessImage(ImageProcessingOptions options)
@@ -205,17 +194,12 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
         {
             if (!File.Exists(cacheFilePath))
             {
-                // Limit number of parallel (more precisely: concurrent) image encodings to prevent a high memory usage
-                await _parallelEncodingLimit.WaitAsync().ConfigureAwait(false);
-
                 string resultPath;
-                try
+
+                // Limit number of parallel (more precisely: concurrent) image encodings to prevent a high memory usage
+                using (await _parallelEncodingLimit.LockAsync().ConfigureAwait(false))
                 {
                     resultPath = _imageEncoder.EncodeImage(originalImagePath, dateModified, cacheFilePath, autoOrient, orientation, quality, options, outputFormat);
-                }
-                finally
-                {
-                    _parallelEncodingLimit.Release();
                 }
 
                 if (string.Equals(resultPath, originalImagePath, StringComparison.OrdinalIgnoreCase))
@@ -224,7 +208,7 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
                 }
             }
 
-            return (cacheFilePath, GetMimeType(outputFormat, cacheFilePath), _fileSystem.GetLastWriteTimeUtc(cacheFilePath));
+            return (cacheFilePath, outputFormat.GetMimeType(), _fileSystem.GetLastWriteTimeUtc(cacheFilePath));
         }
         catch (Exception ex)
         {
@@ -261,17 +245,6 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
         // We should never actually get here
         return ImageFormat.Jpg;
     }
-
-    private string GetMimeType(ImageFormat format, string path)
-        => format switch
-        {
-            ImageFormat.Bmp => MimeTypes.GetMimeType("i.bmp"),
-            ImageFormat.Gif => MimeTypes.GetMimeType("i.gif"),
-            ImageFormat.Jpg => MimeTypes.GetMimeType("i.jpg"),
-            ImageFormat.Png => MimeTypes.GetMimeType("i.png"),
-            ImageFormat.Webp => MimeTypes.GetMimeType("i.webp"),
-            _ => MimeTypes.GetMimeType(path)
-        };
 
     /// <summary>
     /// Gets the cache file path based on a set of parameters.
@@ -374,7 +347,7 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
         filename.Append(",v=");
         filename.Append(Version);
 
-        return GetCachePath(ResizedImageCachePath, filename.ToString(), "." + format.ToString().ToLowerInvariant());
+        return GetCachePath(ResizedImageCachePath, filename.ToString(), format.GetExtension());
     }
 
     /// <inheritdoc />
@@ -470,35 +443,6 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
         {
             return Task.FromResult((originalImagePath, dateModified));
         }
-
-        // TODO _mediaEncoder.ConvertImage is not implemented
-        // if (!_imageEncoder.SupportedInputFormats.Contains(inputFormat))
-        // {
-        //     try
-        //     {
-        //         string filename = (originalImagePath + dateModified.Ticks.ToString(CultureInfo.InvariantCulture)).GetMD5().ToString("N", CultureInfo.InvariantCulture);
-        //
-        //         string cacheExtension = _mediaEncoder.SupportsEncoder("libwebp") ? ".webp" : ".png";
-        //         var outputPath = Path.Combine(_appPaths.ImageCachePath, "converted-images", filename + cacheExtension);
-        //
-        //         var file = _fileSystem.GetFileInfo(outputPath);
-        //         if (!file.Exists)
-        //         {
-        //             await _mediaEncoder.ConvertImage(originalImagePath, outputPath).ConfigureAwait(false);
-        //             dateModified = _fileSystem.GetLastWriteTimeUtc(outputPath);
-        //         }
-        //         else
-        //         {
-        //             dateModified = file.LastWriteTimeUtc;
-        //         }
-        //
-        //         originalImagePath = outputPath;
-        //     }
-        //     catch (Exception ex)
-        //     {
-        //         _logger.LogError(ex, "Image conversion failed for {Path}", originalImagePath);
-        //     }
-        // }
 
         return Task.FromResult((originalImagePath, dateModified));
     }

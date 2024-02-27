@@ -699,7 +699,7 @@ namespace Emby.Server.Implementations.Data
                 saveItemStatement.TryBindNull("@EndDate");
             }
 
-            saveItemStatement.TryBind("@ChannelId", item.ChannelId.Equals(default) ? null : item.ChannelId.ToString("N", CultureInfo.InvariantCulture));
+            saveItemStatement.TryBind("@ChannelId", item.ChannelId.IsEmpty() ? null : item.ChannelId.ToString("N", CultureInfo.InvariantCulture));
 
             if (item is IHasProgramAttributes hasProgramAttributes)
             {
@@ -722,14 +722,14 @@ namespace Emby.Server.Implementations.Data
             saveItemStatement.TryBind("@IsLocked", item.IsLocked);
             saveItemStatement.TryBind("@Name", item.Name);
             saveItemStatement.TryBind("@OfficialRating", item.OfficialRating);
-            saveItemStatement.TryBind("@MediaType", item.MediaType);
+            saveItemStatement.TryBind("@MediaType", item.MediaType.ToString());
             saveItemStatement.TryBind("@Overview", item.Overview);
             saveItemStatement.TryBind("@ParentIndexNumber", item.ParentIndexNumber);
             saveItemStatement.TryBind("@PremiereDate", item.PremiereDate);
             saveItemStatement.TryBind("@ProductionYear", item.ProductionYear);
 
             var parentId = item.ParentId;
-            if (parentId.Equals(default))
+            if (parentId.IsEmpty())
             {
                 saveItemStatement.TryBindNull("@ParentId");
             }
@@ -925,7 +925,7 @@ namespace Emby.Server.Implementations.Data
             {
                 saveItemStatement.TryBind("@SeasonName", episode.SeasonName);
 
-                var nullableSeasonId = episode.SeasonId.Equals(default) ? (Guid?)null : episode.SeasonId;
+                var nullableSeasonId = episode.SeasonId.IsEmpty() ? (Guid?)null : episode.SeasonId;
 
                 saveItemStatement.TryBind("@SeasonId", nullableSeasonId);
             }
@@ -937,7 +937,7 @@ namespace Emby.Server.Implementations.Data
 
             if (item is IHasSeries hasSeries)
             {
-                var nullableSeriesId = hasSeries.SeriesId.Equals(default) ? (Guid?)null : hasSeries.SeriesId;
+                var nullableSeriesId = hasSeries.SeriesId.IsEmpty() ? (Guid?)null : hasSeries.SeriesId;
 
                 saveItemStatement.TryBind("@SeriesId", nullableSeriesId);
                 saveItemStatement.TryBind("@SeriesPresentationUniqueKey", hasSeries.SeriesPresentationUniqueKey);
@@ -1010,7 +1010,7 @@ namespace Emby.Server.Implementations.Data
             }
 
             Guid ownerId = item.OwnerId;
-            if (ownerId.Equals(default))
+            if (ownerId.IsEmpty())
             {
                 saveItemStatement.TryBindNull("@OwnerId");
             }
@@ -1266,7 +1266,7 @@ namespace Emby.Server.Implementations.Data
         /// <exception cref="ArgumentException"><paramr name="id"/> is <seealso cref="Guid.Empty"/>.</exception>
         public BaseItem RetrieveItem(Guid id)
         {
-            if (id.Equals(default))
+            if (id.IsEmpty())
             {
                 throw new ArgumentException("Guid can't be empty", nameof(id));
             }
@@ -1970,7 +1970,7 @@ namespace Emby.Server.Implementations.Data
         {
             CheckDisposed();
 
-            if (id.Equals(default))
+            if (id.IsEmpty())
             {
                 throw new ArgumentNullException(nameof(id));
             }
@@ -2042,7 +2042,7 @@ namespace Emby.Server.Implementations.Data
                 return false;
             }
 
-            var sortingFields = new HashSet<string>(query.OrderBy.Select(i => i.OrderBy), StringComparer.OrdinalIgnoreCase);
+            var sortingFields = new HashSet<ItemSortBy>(query.OrderBy.Select(i => i.OrderBy));
 
             return sortingFields.Contains(ItemSortBy.IsFavoriteOrLiked)
                     || sortingFields.Contains(ItemSortBy.IsPlayed)
@@ -2832,20 +2832,20 @@ namespace Emby.Server.Implementations.Data
 
             if (hasSimilar || hasSearch)
             {
-                List<(string, SortOrder)> prepend = new List<(string, SortOrder)>(4);
+                List<(ItemSortBy, SortOrder)> prepend = new List<(ItemSortBy, SortOrder)>(4);
                 if (hasSearch)
                 {
-                    prepend.Add(("SearchScore", SortOrder.Descending));
+                    prepend.Add((ItemSortBy.SearchScore, SortOrder.Descending));
                     prepend.Add((ItemSortBy.SortName, SortOrder.Ascending));
                 }
 
                 if (hasSimilar)
                 {
-                    prepend.Add(("SimilarityScore", SortOrder.Descending));
+                    prepend.Add((ItemSortBy.SimilarityScore, SortOrder.Descending));
                     prepend.Add((ItemSortBy.Random, SortOrder.Ascending));
                 }
 
-                var arr = new (string, SortOrder)[prepend.Count + orderBy.Count];
+                var arr = new (ItemSortBy, SortOrder)[prepend.Count + orderBy.Count];
                 prepend.CopyTo(arr, 0);
                 orderBy.CopyTo(arr, prepend.Count);
                 orderBy = query.OrderBy = arr;
@@ -2863,166 +2863,43 @@ namespace Emby.Server.Implementations.Data
             }));
         }
 
-        private string MapOrderByField(string name, InternalItemsQuery query)
+        private string MapOrderByField(ItemSortBy sortBy, InternalItemsQuery query)
         {
-            if (string.Equals(name, ItemSortBy.AirTime, StringComparison.OrdinalIgnoreCase))
+            return sortBy switch
             {
-                // TODO
-                return "SortName";
-            }
-
-            if (string.Equals(name, ItemSortBy.Runtime, StringComparison.OrdinalIgnoreCase))
-            {
-                return "RuntimeTicks";
-            }
-
-            if (string.Equals(name, ItemSortBy.Random, StringComparison.OrdinalIgnoreCase))
-            {
-                return "RANDOM()";
-            }
-
-            if (string.Equals(name, ItemSortBy.DatePlayed, StringComparison.OrdinalIgnoreCase))
-            {
-                if (query.GroupBySeriesPresentationUniqueKey)
-                {
-                    return "MAX(LastPlayedDate)";
-                }
-
-                return "LastPlayedDate";
-            }
-
-            if (string.Equals(name, ItemSortBy.PlayCount, StringComparison.OrdinalIgnoreCase))
-            {
-                return ItemSortBy.PlayCount;
-            }
-
-            if (string.Equals(name, ItemSortBy.IsFavoriteOrLiked, StringComparison.OrdinalIgnoreCase))
-            {
-                return "(Select Case When IsFavorite is null Then 0 Else IsFavorite End )";
-            }
-
-            if (string.Equals(name, ItemSortBy.IsFolder, StringComparison.OrdinalIgnoreCase))
-            {
-                return ItemSortBy.IsFolder;
-            }
-
-            if (string.Equals(name, ItemSortBy.IsPlayed, StringComparison.OrdinalIgnoreCase))
-            {
-                return "played";
-            }
-
-            if (string.Equals(name, ItemSortBy.IsUnplayed, StringComparison.OrdinalIgnoreCase))
-            {
-                return "played";
-            }
-
-            if (string.Equals(name, ItemSortBy.DateLastContentAdded, StringComparison.OrdinalIgnoreCase))
-            {
-                return "DateLastMediaAdded";
-            }
-
-            if (string.Equals(name, ItemSortBy.Artist, StringComparison.OrdinalIgnoreCase))
-            {
-                return "(select CleanValue from ItemValues where ItemId=Guid and Type=0 LIMIT 1)";
-            }
-
-            if (string.Equals(name, ItemSortBy.AlbumArtist, StringComparison.OrdinalIgnoreCase))
-            {
-                return "(select CleanValue from ItemValues where ItemId=Guid and Type=1 LIMIT 1)";
-            }
-
-            if (string.Equals(name, ItemSortBy.OfficialRating, StringComparison.OrdinalIgnoreCase))
-            {
-                return "InheritedParentalRatingValue";
-            }
-
-            if (string.Equals(name, ItemSortBy.Studio, StringComparison.OrdinalIgnoreCase))
-            {
-                return "(select CleanValue from ItemValues where ItemId=Guid and Type=3 LIMIT 1)";
-            }
-
-            if (string.Equals(name, ItemSortBy.SeriesDatePlayed, StringComparison.OrdinalIgnoreCase))
-            {
-                return "(Select MAX(LastPlayedDate) from TypedBaseItems B" + GetJoinUserDataText(query) + " where Played=1 and B.SeriesPresentationUniqueKey=A.PresentationUniqueKey)";
-            }
-
-            if (string.Equals(name, ItemSortBy.SeriesSortName, StringComparison.OrdinalIgnoreCase))
-            {
-                return "SeriesName";
-            }
-
-            if (string.Equals(name, ItemSortBy.AiredEpisodeOrder, StringComparison.OrdinalIgnoreCase))
-            {
-                return ItemSortBy.AiredEpisodeOrder;
-            }
-
-            if (string.Equals(name, ItemSortBy.Album, StringComparison.OrdinalIgnoreCase))
-            {
-                return ItemSortBy.Album;
-            }
-
-            if (string.Equals(name, ItemSortBy.DateCreated, StringComparison.OrdinalIgnoreCase))
-            {
-                return ItemSortBy.DateCreated;
-            }
-
-            if (string.Equals(name, ItemSortBy.PremiereDate, StringComparison.OrdinalIgnoreCase))
-            {
-                return ItemSortBy.PremiereDate;
-            }
-
-            if (string.Equals(name, ItemSortBy.StartDate, StringComparison.OrdinalIgnoreCase))
-            {
-                return ItemSortBy.StartDate;
-            }
-
-            if (string.Equals(name, ItemSortBy.Name, StringComparison.OrdinalIgnoreCase))
-            {
-                return ItemSortBy.Name;
-            }
-
-            if (string.Equals(name, ItemSortBy.CommunityRating, StringComparison.OrdinalIgnoreCase))
-            {
-                return ItemSortBy.CommunityRating;
-            }
-
-            if (string.Equals(name, ItemSortBy.ProductionYear, StringComparison.OrdinalIgnoreCase))
-            {
-                return ItemSortBy.ProductionYear;
-            }
-
-            if (string.Equals(name, ItemSortBy.CriticRating, StringComparison.OrdinalIgnoreCase))
-            {
-                return ItemSortBy.CriticRating;
-            }
-
-            if (string.Equals(name, ItemSortBy.VideoBitRate, StringComparison.OrdinalIgnoreCase))
-            {
-                return ItemSortBy.VideoBitRate;
-            }
-
-            if (string.Equals(name, ItemSortBy.ParentIndexNumber, StringComparison.OrdinalIgnoreCase))
-            {
-                return ItemSortBy.ParentIndexNumber;
-            }
-
-            if (string.Equals(name, ItemSortBy.IndexNumber, StringComparison.OrdinalIgnoreCase))
-            {
-                return ItemSortBy.IndexNumber;
-            }
-
-            if (string.Equals(name, ItemSortBy.SimilarityScore, StringComparison.OrdinalIgnoreCase))
-            {
-                return ItemSortBy.SimilarityScore;
-            }
-
-            if (string.Equals(name, ItemSortBy.SearchScore, StringComparison.OrdinalIgnoreCase))
-            {
-                return ItemSortBy.SearchScore;
-            }
-
-            // Unknown SortBy, just sort by the SortName.
-            return ItemSortBy.SortName;
+                ItemSortBy.AirTime => "SortName", // TODO
+                ItemSortBy.Runtime => "RuntimeTicks",
+                ItemSortBy.Random => "RANDOM()",
+                ItemSortBy.DatePlayed when query.GroupBySeriesPresentationUniqueKey => "MAX(LastPlayedDate)",
+                ItemSortBy.DatePlayed => "LastPlayedDate",
+                ItemSortBy.PlayCount => "PlayCount",
+                ItemSortBy.IsFavoriteOrLiked => "(Select Case When IsFavorite is null Then 0 Else IsFavorite End )",
+                ItemSortBy.IsFolder => "IsFolder",
+                ItemSortBy.IsPlayed => "played",
+                ItemSortBy.IsUnplayed => "played",
+                ItemSortBy.DateLastContentAdded => "DateLastMediaAdded",
+                ItemSortBy.Artist => "(select CleanValue from ItemValues where ItemId=Guid and Type=0 LIMIT 1)",
+                ItemSortBy.AlbumArtist => "(select CleanValue from ItemValues where ItemId=Guid and Type=1 LIMIT 1)",
+                ItemSortBy.OfficialRating => "InheritedParentalRatingValue",
+                ItemSortBy.Studio => "(select CleanValue from ItemValues where ItemId=Guid and Type=3 LIMIT 1)",
+                ItemSortBy.SeriesDatePlayed => "(Select MAX(LastPlayedDate) from TypedBaseItems B" + GetJoinUserDataText(query) + " where Played=1 and B.SeriesPresentationUniqueKey=A.PresentationUniqueKey)",
+                ItemSortBy.SeriesSortName => "SeriesName",
+                ItemSortBy.AiredEpisodeOrder => "AiredEpisodeOrder",
+                ItemSortBy.Album => "Album",
+                ItemSortBy.DateCreated => "DateCreated",
+                ItemSortBy.PremiereDate => "PremiereDate",
+                ItemSortBy.StartDate => "StartDate",
+                ItemSortBy.Name => "Name",
+                ItemSortBy.CommunityRating => "CommunityRating",
+                ItemSortBy.ProductionYear => "ProductionYear",
+                ItemSortBy.CriticRating => "CriticRating",
+                ItemSortBy.VideoBitRate => "VideoBitRate",
+                ItemSortBy.ParentIndexNumber => "ParentIndexNumber",
+                ItemSortBy.IndexNumber => "IndexNumber",
+                ItemSortBy.SimilarityScore => "SimilarityScore",
+                ItemSortBy.SearchScore => "SearchScore",
+                _ => "SortName"
+            };
         }
 
         public List<Guid> GetItemIdsList(InternalItemsQuery query)
@@ -3107,11 +2984,6 @@ namespace Emby.Server.Implementations.Data
             }
 
             return true;
-        }
-
-        private bool IsValidMediaType(string value)
-        {
-            return IsAlphaNumeric(value);
         }
 
         private bool IsValidPersonType(string value)
@@ -3358,7 +3230,7 @@ namespace Emby.Server.Implementations.Data
                 whereClauses.Add($"ChannelId in ({inClause})");
             }
 
-            if (!query.ParentId.Equals(default))
+            if (!query.ParentId.IsEmpty())
             {
                 whereClauses.Add("ParentId=@ParentId");
                 statement?.TryBind("@ParentId", query.ParentId);
@@ -3540,10 +3412,7 @@ namespace Emby.Server.Implementations.Data
                         .Append(paramName)
                         .Append("))) OR ");
 
-                    if (statement is not null)
-                    {
-                        statement.TryBind(paramName, query.PersonIds[i]);
-                    }
+                    statement?.TryBind(paramName, query.PersonIds[i]);
                 }
 
                 clauseBuilder.Length -= Or.Length;
@@ -4124,15 +3993,14 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
-            var queryMediaTypes = query.MediaTypes.Where(IsValidMediaType).ToArray();
-            if (queryMediaTypes.Length == 1)
+            if (query.MediaTypes.Length == 1)
             {
                 whereClauses.Add("MediaType=@MediaTypes");
-                statement?.TryBind("@MediaTypes", queryMediaTypes[0]);
+                statement?.TryBind("@MediaTypes", query.MediaTypes[0].ToString());
             }
-            else if (queryMediaTypes.Length > 1)
+            else if (query.MediaTypes.Length > 1)
             {
-                var val = string.Join(',', queryMediaTypes.Select(i => "'" + i + "'"));
+                var val = string.Join(',', query.MediaTypes.Select(i => $"'{i}'"));
                 whereClauses.Add("MediaType in (" + val + ")");
             }
 
@@ -4382,7 +4250,7 @@ namespace Emby.Server.Implementations.Data
 
                 foreach (var videoType in query.VideoTypes)
                 {
-                    videoTypes.Add("data like '%\"VideoType\":\"" + videoType.ToString() + "\"%'");
+                    videoTypes.Add("data like '%\"VideoType\":\"" + videoType + "\"%'");
                 }
 
                 whereClauses.Add("(" + string.Join(" OR ", videoTypes) + ")");
@@ -4584,7 +4452,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
         public void DeleteItem(Guid id)
         {
-            if (id.Equals(default))
+            if (id.IsEmpty())
             {
                 throw new ArgumentNullException(nameof(id));
             }
@@ -4715,13 +4583,13 @@ AND Type = @InternalPersonType)");
                 statement?.TryBind("@UserId", query.User.InternalId);
             }
 
-            if (!query.ItemId.Equals(default))
+            if (!query.ItemId.IsEmpty())
             {
                 whereClauses.Add("ItemId=@ItemId");
                 statement?.TryBind("@ItemId", query.ItemId);
             }
 
-            if (!query.AppearsInItemId.Equals(default))
+            if (!query.AppearsInItemId.IsEmpty())
             {
                 whereClauses.Add("p.Name in (Select Name from People where ItemId=@AppearsInItemId)");
                 statement?.TryBind("@AppearsInItemId", query.AppearsInItemId);
@@ -4772,7 +4640,7 @@ AND Type = @InternalPersonType)");
 
         private void UpdateAncestors(Guid itemId, List<Guid> ancestorIds, SqliteConnection db, SqliteCommand deleteAncestorsStatement)
         {
-            if (itemId.Equals(default))
+            if (itemId.IsEmpty())
             {
                 throw new ArgumentNullException(nameof(itemId));
             }
@@ -5288,7 +5156,7 @@ AND Type = @InternalPersonType)");
 
         private void UpdateItemValues(Guid itemId, List<(int MagicNumber, string Value)> values, SqliteConnection db)
         {
-            if (itemId.Equals(default))
+            if (itemId.IsEmpty())
             {
                 throw new ArgumentNullException(nameof(itemId));
             }
@@ -5360,7 +5228,7 @@ AND Type = @InternalPersonType)");
 
         public void UpdatePeople(Guid itemId, List<PersonInfo> people)
         {
-            if (itemId.Equals(default))
+            if (itemId.IsEmpty())
             {
                 throw new ArgumentNullException(nameof(itemId));
             }
@@ -5510,7 +5378,7 @@ AND Type = @InternalPersonType)");
         {
             CheckDisposed();
 
-            if (id.Equals(default))
+            if (id.IsEmpty())
             {
                 throw new ArgumentNullException(nameof(id));
             }
@@ -5890,7 +5758,7 @@ AND Type = @InternalPersonType)");
             CancellationToken cancellationToken)
         {
             CheckDisposed();
-            if (id.Equals(default))
+            if (id.IsEmpty())
             {
                 throw new ArgumentException("Guid can't be empty.", nameof(id));
             }

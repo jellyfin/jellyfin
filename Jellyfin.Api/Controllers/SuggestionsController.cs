@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -56,13 +57,13 @@ public class SuggestionsController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<QueryResult<BaseItemDto>> GetSuggestions(
         [FromRoute, Required] Guid userId,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaType,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] MediaType[] mediaType,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] type,
         [FromQuery] int? startIndex,
         [FromQuery] int? limit,
         [FromQuery] bool enableTotalRecordCount = false)
     {
-        var user = userId.Equals(default)
+        var user = userId.IsEmpty()
             ? null
             : _userManager.GetUserById(userId);
 

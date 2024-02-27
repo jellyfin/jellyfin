@@ -124,5 +124,7 @@
     "TaskKeyframeExtractorDescription": "Извличат се ключови кадри от видеофайловете ,за да се създаде по точен ХЛС списък . Задачата може да отнеме много време.",
     "TaskKeyframeExtractor": "Извличане на ключови кадри",
     "External": "Външен",
-    "HearingImpaired": "Увреден слух"
+    "HearingImpaired": "Увреден слух",
+    "TaskRefreshTrickplayImages": "Генерирай изображение",
+    "TaskRefreshTrickplayImagesDescription": "Създава прегледи на Trickplay за видеа в активирани библиотеки."
 }

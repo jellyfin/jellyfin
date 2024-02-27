@@ -30,11 +30,6 @@ namespace MediaBrowser.Common.Plugins
         IEnumerable<Assembly> LoadAssemblies();
 
         /// <summary>
-        /// Unloads all of the assemblies.
-        /// </summary>
-        void UnloadAssemblies();
-
-        /// <summary>
         /// Registers the plugin's services with the DI.
         /// Note: DI is not yet instantiated yet.
         /// </summary>

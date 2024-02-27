@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -184,7 +185,7 @@ namespace MediaBrowser.Controller.Entities
         /// <exception cref="ArgumentNullException">The id is empty.</exception>
         public BaseItem FindVirtualChild(Guid id)
         {
-            if (id.Equals(default))
+            if (id.IsEmpty())
             {
                 throw new ArgumentNullException(nameof(id));
             }

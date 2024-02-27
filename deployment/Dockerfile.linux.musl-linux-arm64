@@ -1,7 +1,11 @@
-FROM mcr.microsoft.com/dotnet/sdk:7.0-bullseye-slim
+ARG DOTNET_VERSION=8.0
+
+FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_VERSION}-bookworm-slim
+
 # Docker build arguments
 ARG SOURCE_DIR=/jellyfin
 ARG ARTIFACT_DIR=/dist
+
 # Docker run environment
 ENV SOURCE_DIR=/jellyfin
 ENV ARTIFACT_DIR=/dist
@@ -11,10 +15,13 @@ ENV IS_DOCKER=YES
 
 # Prepare Debian build environment
 RUN apt-get update -yqq \
-  && apt-get install -yqq --no-install-recommends \
-    apt-transport-https debhelper gnupg devscripts unzip \
+ && apt-get install --no-install-recommends -yqq \
+    debhelper gnupg devscripts unzip \
     mmv libcurl4-openssl-dev libfontconfig1-dev \
-    libfreetype6-dev libssl-dev libssl1.1 liblttng-ust0
+    libfreetype6-dev libssl-dev libssl3 liblttng-ust1 \
+ && apt-get clean autoclean -yqq \
+ && apt-get autoremove -yqq \
+ && rm -rf /var/lib/apt/lists/*
 
 # Link to docker-build script
 RUN ln -sf ${SOURCE_DIR}/deployment/build.linux.musl-linux-arm64 /build.sh

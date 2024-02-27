@@ -22,7 +22,6 @@ using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
@@ -46,7 +45,6 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Tasks;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 using EpisodeInfo = Emby.Naming.TV.EpisodeInfo;
@@ -526,14 +524,14 @@ namespace Emby.Server.Implementations.Library
             IDirectoryService directoryService,
             IItemResolver[] resolvers,
             Folder parent = null,
-            string collectionType = null,
+            CollectionType? collectionType = null,
             LibraryOptions libraryOptions = null)
         {
             ArgumentNullException.ThrowIfNull(fileInfo);
 
             var fullPath = fileInfo.FullName;
 
-            if (string.IsNullOrEmpty(collectionType) && parent is not null)
+            if (collectionType is null && parent is not null)
             {
                 collectionType = GetContentTypeOverride(fullPath, true);
             }
@@ -608,7 +606,7 @@ namespace Emby.Server.Implementations.Library
             var originalList = paths.ToList();
 
             var list = originalList.Where(i => i.IsDirectory)
-                .Select(i => _fileSystem.NormalizePath(i.FullName))
+                .Select(i => Path.TrimEndingDirectorySeparator(i.FullName))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
@@ -636,7 +634,7 @@ namespace Emby.Server.Implementations.Library
             return !args.ContainsFileSystemEntryByName(".ignore");
         }
 
-        public IEnumerable<BaseItem> ResolvePaths(IEnumerable<FileSystemMetadata> files, IDirectoryService directoryService, Folder parent, LibraryOptions libraryOptions, string collectionType = null)
+        public IEnumerable<BaseItem> ResolvePaths(IEnumerable<FileSystemMetadata> files, IDirectoryService directoryService, Folder parent, LibraryOptions libraryOptions, CollectionType? collectionType = null)
         {
             return ResolvePaths(files, directoryService, parent, libraryOptions, collectionType, EntityResolvers);
         }
@@ -646,7 +644,7 @@ namespace Emby.Server.Implementations.Library
             IDirectoryService directoryService,
             Folder parent,
             LibraryOptions libraryOptions,
-            string collectionType,
+            CollectionType? collectionType,
             IItemResolver[] resolvers)
         {
             var fileList = files.Where(i => !IgnoreFile(i, parent)).ToList();
@@ -676,7 +674,7 @@ namespace Emby.Server.Implementations.Library
             IReadOnlyList<FileSystemMetadata> fileList,
             IDirectoryService directoryService,
             Folder parent,
-            string collectionType,
+            CollectionType? collectionType,
             IItemResolver[] resolvers,
             LibraryOptions libraryOptions)
         {
@@ -733,7 +731,7 @@ namespace Emby.Server.Implementations.Library
                 Path = path
             };
 
-            if (folder.Id.Equals(default))
+            if (folder.Id.IsEmpty())
             {
                 if (string.IsNullOrEmpty(folder.Path))
                 {
@@ -839,19 +837,12 @@ namespace Emby.Server.Implementations.Library
         {
             var path = Person.GetPath(name);
             var id = GetItemByNameId<Person>(path);
-            if (GetItemById(id) is not Person item)
+            if (GetItemById(id) is Person item)
             {
-                item = new Person
-                {
-                    Name = name,
-                    Id = id,
-                    DateCreated = DateTime.UtcNow,
-                    DateModified = DateTime.UtcNow,
-                    Path = path
-                };
+                return item;
             }
 
-            return item;
+            return null;
         }
 
         /// <summary>
@@ -1030,7 +1021,7 @@ namespace Emby.Server.Implementations.Library
 
             // Start by just validating the children of the root, but go no further
             await RootFolder.ValidateChildren(
-                new SimpleProgress<double>(),
+                new Progress<double>(),
                 new MetadataRefreshOptions(new DirectoryService(_fileSystem)),
                 recursive: false,
                 cancellationToken).ConfigureAwait(false);
@@ -1038,7 +1029,7 @@ namespace Emby.Server.Implementations.Library
             await GetUserRootFolder().RefreshMetadata(cancellationToken).ConfigureAwait(false);
 
             await GetUserRootFolder().ValidateChildren(
-                new SimpleProgress<double>(),
+                new Progress<double>(),
                 new MetadataRefreshOptions(new DirectoryService(_fileSystem)),
                 recursive: false,
                 cancellationToken).ConfigureAwait(false);
@@ -1056,18 +1047,14 @@ namespace Emby.Server.Implementations.Library
 
             await ValidateTopLibraryFolders(cancellationToken).ConfigureAwait(false);
 
-            var innerProgress = new ActionableProgress<double>();
-
-            innerProgress.RegisterAction(pct => progress.Report(pct * 0.96));
+            var innerProgress = new Progress<double>(pct => progress.Report(pct * 0.96));
 
             // Validate the entire media library
             await RootFolder.ValidateChildren(innerProgress, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), recursive: true, cancellationToken).ConfigureAwait(false);
 
             progress.Report(96);
 
-            innerProgress = new ActionableProgress<double>();
-
-            innerProgress.RegisterAction(pct => progress.Report(96 + (pct * .04)));
+            innerProgress = new Progress<double>(pct => progress.Report(96 + (pct * .04)));
 
             await RunPostScanTasks(innerProgress, cancellationToken).ConfigureAwait(false);
 
@@ -1089,12 +1076,10 @@ namespace Emby.Server.Implementations.Library
 
             foreach (var task in tasks)
             {
-                var innerProgress = new ActionableProgress<double>();
-
                 // Prevent access to modified closure
                 var currentNumComplete = numComplete;
 
-                innerProgress.RegisterAction(pct =>
+                var innerProgress = new Progress<double>(pct =>
                 {
                     double innerPercent = pct;
                     innerPercent /= 100;
@@ -1162,7 +1147,7 @@ namespace Emby.Server.Implementations.Library
                 Name = Path.GetFileName(dir),
 
                 Locations = _fileSystem.GetFilePaths(dir, false)
-                .Where(i => string.Equals(ShortcutFileExtension, Path.GetExtension(i), StringComparison.OrdinalIgnoreCase))
+                .Where(i => Path.GetExtension(i.AsSpan()).Equals(ShortcutFileExtension, StringComparison.OrdinalIgnoreCase))
                     .Select(i =>
                     {
                         try
@@ -1227,7 +1212,7 @@ namespace Emby.Server.Implementations.Library
         /// <exception cref="ArgumentNullException"><paramref name="id"/> is <c>null</c>.</exception>
         public BaseItem GetItemById(Guid id)
         {
-            if (id.Equals(default))
+            if (id.IsEmpty())
             {
                 throw new ArgumentException("Guid can't be empty", nameof(id));
             }
@@ -1247,9 +1232,22 @@ namespace Emby.Server.Implementations.Library
             return item;
         }
 
+        /// <inheritdoc />
+        public T GetItemById<T>(Guid id)
+         where T : BaseItem
+        {
+            var item = GetItemById(id);
+            if (item is T typedItem)
+            {
+                return typedItem;
+            }
+
+            return null;
+        }
+
         public List<BaseItem> GetItemList(InternalItemsQuery query, bool allowExternalContent)
         {
-            if (query.Recursive && !query.ParentId.Equals(default))
+            if (query.Recursive && !query.ParentId.IsEmpty())
             {
                 var parent = GetItemById(query.ParentId);
                 if (parent is not null)
@@ -1280,7 +1278,7 @@ namespace Emby.Server.Implementations.Library
 
         public int GetCount(InternalItemsQuery query)
         {
-            if (query.Recursive && !query.ParentId.Equals(default))
+            if (query.Recursive && !query.ParentId.IsEmpty())
             {
                 var parent = GetItemById(query.ParentId);
                 if (parent is not null)
@@ -1438,7 +1436,7 @@ namespace Emby.Server.Implementations.Library
 
         public QueryResult<BaseItem> GetItemsResult(InternalItemsQuery query)
         {
-            if (query.Recursive && !query.ParentId.Equals(default))
+            if (query.Recursive && !query.ParentId.IsEmpty())
             {
                 var parent = GetItemById(query.ParentId);
                 if (parent is not null)
@@ -1494,7 +1492,7 @@ namespace Emby.Server.Implementations.Library
         private void AddUserToQuery(InternalItemsQuery query, User user, bool allowExternalContent = true)
         {
             if (query.AncestorIds.Length == 0 &&
-                query.ParentId.Equals(default) &&
+                query.ParentId.IsEmpty() &&
                 query.ChannelIds.Count == 0 &&
                 query.TopParentIds.Length == 0 &&
                 string.IsNullOrEmpty(query.AncestorWithPresentationUniqueKey) &&
@@ -1522,13 +1520,13 @@ namespace Emby.Server.Implementations.Library
         {
             if (item is UserView view)
             {
-                if (string.Equals(view.ViewType, CollectionType.LiveTv, StringComparison.Ordinal))
+                if (view.ViewType == CollectionType.livetv)
                 {
                     return new[] { view.Id };
                 }
 
                 // Translate view into folders
-                if (!view.DisplayParentId.Equals(default))
+                if (!view.DisplayParentId.IsEmpty())
                 {
                     var displayParent = GetItemById(view.DisplayParentId);
                     if (displayParent is not null)
@@ -1539,7 +1537,7 @@ namespace Emby.Server.Implementations.Library
                     return Array.Empty<Guid>();
                 }
 
-                if (!view.ParentId.Equals(default))
+                if (!view.ParentId.IsEmpty())
                 {
                     var displayParent = GetItemById(view.ParentId);
                     if (displayParent is not null)
@@ -1551,13 +1549,13 @@ namespace Emby.Server.Implementations.Library
                 }
 
                 // Handle grouping
-                if (user is not null && !string.IsNullOrEmpty(view.ViewType) && UserView.IsEligibleForGrouping(view.ViewType)
+                if (user is not null && view.ViewType != CollectionType.unknown && UserView.IsEligibleForGrouping(view.ViewType)
                     && user.GetPreference(PreferenceKind.GroupedFolders).Length > 0)
                 {
                     return GetUserRootFolder()
                         .GetChildren(user, true)
                         .OfType<CollectionFolder>()
-                        .Where(i => string.IsNullOrEmpty(i.CollectionType) || string.Equals(i.CollectionType, view.ViewType, StringComparison.OrdinalIgnoreCase))
+                        .Where(i => i.CollectionType is null || i.CollectionType == view.ViewType)
                         .Where(i => user.IsFolderGrouped(i.Id))
                         .SelectMany(i => GetTopParentIdsForQuery(i, user));
                 }
@@ -1686,7 +1684,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="sortBy">The sort by.</param>
         /// <param name="sortOrder">The sort order.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        public IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<string> sortBy, SortOrder sortOrder)
+        public IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<ItemSortBy> sortBy, SortOrder sortOrder)
         {
             var isFirst = true;
 
@@ -1709,7 +1707,7 @@ namespace Emby.Server.Implementations.Library
             return orderedItems ?? items;
         }
 
-        public IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<(string OrderBy, SortOrder SortOrder)> orderBy)
+        public IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<(ItemSortBy OrderBy, SortOrder SortOrder)> orderBy)
         {
             var isFirst = true;
 
@@ -1744,9 +1742,9 @@ namespace Emby.Server.Implementations.Library
         /// <param name="name">The name.</param>
         /// <param name="user">The user.</param>
         /// <returns>IBaseItemComparer.</returns>
-        private IBaseItemComparer GetComparer(string name, User user)
+        private IBaseItemComparer GetComparer(ItemSortBy name, User user)
         {
-            var comparer = Comparers.FirstOrDefault(c => string.Equals(name, c.Name, StringComparison.OrdinalIgnoreCase));
+            var comparer = Comparers.FirstOrDefault(c => name == c.Type);
 
             // If it requires a user, create a new one, and assign the user
             if (comparer is IUserBaseItemComparer)
@@ -2073,16 +2071,16 @@ namespace Emby.Server.Implementations.Library
                 : collectionFolder.GetLibraryOptions();
         }
 
-        public string GetContentType(BaseItem item)
+        public CollectionType? GetContentType(BaseItem item)
         {
-            string configuredContentType = GetConfiguredContentType(item, false);
-            if (!string.IsNullOrEmpty(configuredContentType))
+            var configuredContentType = GetConfiguredContentType(item, false);
+            if (configuredContentType is not null)
             {
                 return configuredContentType;
             }
 
             configuredContentType = GetConfiguredContentType(item, true);
-            if (!string.IsNullOrEmpty(configuredContentType))
+            if (configuredContentType is not null)
             {
                 return configuredContentType;
             }
@@ -2090,31 +2088,31 @@ namespace Emby.Server.Implementations.Library
             return GetInheritedContentType(item);
         }
 
-        public string GetInheritedContentType(BaseItem item)
+        public CollectionType? GetInheritedContentType(BaseItem item)
         {
             var type = GetTopFolderContentType(item);
 
-            if (!string.IsNullOrEmpty(type))
+            if (type is not null)
             {
                 return type;
             }
 
             return item.GetParents()
                 .Select(GetConfiguredContentType)
-                .LastOrDefault(i => !string.IsNullOrEmpty(i));
+                .LastOrDefault(i => i is not null);
         }
 
-        public string GetConfiguredContentType(BaseItem item)
+        public CollectionType? GetConfiguredContentType(BaseItem item)
         {
             return GetConfiguredContentType(item, false);
         }
 
-        public string GetConfiguredContentType(string path)
+        public CollectionType? GetConfiguredContentType(string path)
         {
             return GetContentTypeOverride(path, false);
         }
 
-        public string GetConfiguredContentType(BaseItem item, bool inheritConfiguredPath)
+        public CollectionType? GetConfiguredContentType(BaseItem item, bool inheritConfiguredPath)
         {
             if (item is ICollectionFolder collectionFolder)
             {
@@ -2124,23 +2122,28 @@ namespace Emby.Server.Implementations.Library
             return GetContentTypeOverride(item.ContainingFolderPath, inheritConfiguredPath);
         }
 
-        private string GetContentTypeOverride(string path, bool inherit)
+        private CollectionType? GetContentTypeOverride(string path, bool inherit)
         {
             var nameValuePair = _configurationManager.Configuration.ContentTypes
                                     .FirstOrDefault(i => _fileSystem.AreEqual(i.Name, path)
                                                          || (inherit && !string.IsNullOrEmpty(i.Name)
                                                                      && _fileSystem.ContainsSubPath(i.Name, path)));
-            return nameValuePair?.Value;
+            if (Enum.TryParse<CollectionType>(nameValuePair?.Value, out var collectionType))
+            {
+                return collectionType;
+            }
+
+            return null;
         }
 
-        private string GetTopFolderContentType(BaseItem item)
+        private CollectionType? GetTopFolderContentType(BaseItem item)
         {
             if (item is null)
             {
                 return null;
             }
 
-            while (!item.ParentId.Equals(default))
+            while (!item.ParentId.IsEmpty())
             {
                 var parent = item.GetParent();
                 if (parent is null || parent is AggregateFolder)
@@ -2155,13 +2158,13 @@ namespace Emby.Server.Implementations.Library
                 .OfType<ICollectionFolder>()
                 .Where(i => string.Equals(i.Path, item.Path, StringComparison.OrdinalIgnoreCase) || i.PhysicalLocations.Contains(item.Path))
                 .Select(i => i.CollectionType)
-                .FirstOrDefault(i => !string.IsNullOrEmpty(i));
+                .FirstOrDefault(i => i is not null);
         }
 
         public UserView GetNamedView(
             User user,
             string name,
-            string viewType,
+            CollectionType? viewType,
             string sortName)
         {
             return GetNamedView(user, name, Guid.Empty, viewType, sortName);
@@ -2169,13 +2172,13 @@ namespace Emby.Server.Implementations.Library
 
         public UserView GetNamedView(
             string name,
-            string viewType,
+            CollectionType viewType,
             string sortName)
         {
             var path = Path.Combine(
                 _configurationManager.ApplicationPaths.InternalMetadataPath,
                 "views",
-                _fileSystem.GetValidFilename(viewType));
+                _fileSystem.GetValidFilename(viewType.ToString()));
 
             var id = GetNewItemId(path + "_namedview_" + name, typeof(UserView));
 
@@ -2215,13 +2218,13 @@ namespace Emby.Server.Implementations.Library
             User user,
             string name,
             Guid parentId,
-            string viewType,
+            CollectionType? viewType,
             string sortName)
         {
-            var parentIdString = parentId.Equals(default)
+            var parentIdString = parentId.IsEmpty()
                 ? null
                 : parentId.ToString("N", CultureInfo.InvariantCulture);
-            var idValues = "38_namedview_" + name + user.Id.ToString("N", CultureInfo.InvariantCulture) + (parentIdString ?? string.Empty) + (viewType ?? string.Empty);
+            var idValues = "38_namedview_" + name + user.Id.ToString("N", CultureInfo.InvariantCulture) + (parentIdString ?? string.Empty) + (viewType?.ToString() ?? string.Empty);
 
             var id = GetNewItemId(idValues, typeof(UserView));
 
@@ -2254,7 +2257,7 @@ namespace Emby.Server.Implementations.Library
 
             var refresh = isNew || DateTime.UtcNow - item.DateLastRefreshed >= _viewRefreshInterval;
 
-            if (!refresh && !item.DisplayParentId.Equals(default))
+            if (!refresh && !item.DisplayParentId.IsEmpty())
             {
                 var displayParent = GetItemById(item.DisplayParentId);
                 refresh = displayParent is not null && displayParent.DateLastSaved > item.DateLastRefreshed;
@@ -2277,7 +2280,7 @@ namespace Emby.Server.Implementations.Library
 
         public UserView GetShadowView(
             BaseItem parent,
-            string viewType,
+            CollectionType? viewType,
             string sortName)
         {
             ArgumentNullException.ThrowIfNull(parent);
@@ -2285,7 +2288,7 @@ namespace Emby.Server.Implementations.Library
             var name = parent.Name;
             var parentId = parent.Id;
 
-            var idValues = "38_namedview_" + name + parentId + (viewType ?? string.Empty);
+            var idValues = "38_namedview_" + name + parentId + (viewType?.ToString() ?? string.Empty);
 
             var id = GetNewItemId(idValues, typeof(UserView));
 
@@ -2318,7 +2321,7 @@ namespace Emby.Server.Implementations.Library
 
             var refresh = isNew || DateTime.UtcNow - item.DateLastRefreshed >= _viewRefreshInterval;
 
-            if (!refresh && !item.DisplayParentId.Equals(default))
+            if (!refresh && !item.DisplayParentId.IsEmpty())
             {
                 var displayParent = GetItemById(item.DisplayParentId);
                 refresh = displayParent is not null && displayParent.DateLastSaved > item.DateLastRefreshed;
@@ -2342,16 +2345,16 @@ namespace Emby.Server.Implementations.Library
         public UserView GetNamedView(
             string name,
             Guid parentId,
-            string viewType,
+            CollectionType? viewType,
             string sortName,
             string uniqueId)
         {
             ArgumentException.ThrowIfNullOrEmpty(name);
 
-            var parentIdString = parentId.Equals(default)
+            var parentIdString = parentId.IsEmpty()
                 ? null
                 : parentId.ToString("N", CultureInfo.InvariantCulture);
-            var idValues = "37_namedview_" + name + (parentIdString ?? string.Empty) + (viewType ?? string.Empty);
+            var idValues = "37_namedview_" + name + (parentIdString ?? string.Empty) + (viewType?.ToString() ?? string.Empty);
             if (!string.IsNullOrEmpty(uniqueId))
             {
                 idValues += uniqueId;
@@ -2386,7 +2389,7 @@ namespace Emby.Server.Implementations.Library
                 isNew = true;
             }
 
-            if (!string.Equals(viewType, item.ViewType, StringComparison.OrdinalIgnoreCase))
+            if (viewType != item.ViewType)
             {
                 item.ViewType = viewType;
                 item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).GetAwaiter().GetResult();
@@ -2394,7 +2397,7 @@ namespace Emby.Server.Implementations.Library
 
             var refresh = isNew || DateTime.UtcNow - item.DateLastRefreshed >= _viewRefreshInterval;
 
-            if (!refresh && !item.DisplayParentId.Equals(default))
+            if (!refresh && !item.DisplayParentId.IsEmpty())
             {
                 var displayParent = GetItemById(item.DisplayParentId);
                 refresh = displayParent is not null && displayParent.DateLastSaved > item.DateLastRefreshed;
@@ -2422,7 +2425,7 @@ namespace Emby.Server.Implementations.Library
                 return GetItemById(parentId.Value);
             }
 
-            if (userId.HasValue && !userId.Equals(default))
+            if (!userId.IsNullOrEmpty())
             {
                 return GetUserRootFolder();
             }
@@ -2858,7 +2861,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     var path = Path.Combine(virtualFolderPath, collectionType.ToString().ToLowerInvariant() + ".collection");
 
-                    File.WriteAllBytes(path, Array.Empty<byte>());
+                    await File.WriteAllBytesAsync(path, Array.Empty<byte>()).ConfigureAwait(false);
                 }
 
                 CollectionFolder.SaveLibraryOptions(virtualFolderPath, options);
@@ -2900,9 +2903,18 @@ namespace Emby.Server.Implementations.Library
                 var saveEntity = false;
                 var personEntity = GetPerson(person.Name);
 
-                // if PresentationUniqueKey is empty it's likely a new item.
-                if (string.IsNullOrEmpty(personEntity.PresentationUniqueKey))
+                if (personEntity is null)
                 {
+                    var path = Person.GetPath(person.Name);
+                    personEntity = new Person()
+                    {
+                        Name = person.Name,
+                        Id = GetItemByNameId<Person>(path),
+                        DateCreated = DateTime.UtcNow,
+                        DateModified = DateTime.UtcNow,
+                        Path = path
+                    };
+
                     personEntity.PresentationUniqueKey = personEntity.CreatePresentationUniqueKey();
                     saveEntity = true;
                 }
@@ -2948,7 +2960,7 @@ namespace Emby.Server.Implementations.Library
             Task.Run(() =>
             {
                 // No need to start if scanning the library because it will handle it
-                ValidateMediaLibrary(new SimpleProgress<double>(), CancellationToken.None);
+                ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
             });
         }
 
@@ -3135,7 +3147,7 @@ namespace Emby.Server.Implementations.Library
             }
 
             var shortcut = _fileSystem.GetFilePaths(virtualFolderPath, true)
-                .Where(i => string.Equals(ShortcutFileExtension, Path.GetExtension(i), StringComparison.OrdinalIgnoreCase))
+                .Where(i => Path.GetExtension(i.AsSpan()).Equals(ShortcutFileExtension, StringComparison.OrdinalIgnoreCase))
                 .FirstOrDefault(f => _appHost.ExpandVirtualPath(_fileSystem.ResolveShortcut(f)).Equals(mediaPath, StringComparison.OrdinalIgnoreCase));
 
             if (!string.IsNullOrEmpty(shortcut))

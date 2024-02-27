@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 
 using System;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Sorting;
@@ -14,7 +15,7 @@ namespace Emby.Server.Implementations.Sorting
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name => ItemSortBy.AiredEpisodeOrder;
+        public ItemSortBy Type => ItemSortBy.AiredEpisodeOrder;
 
         /// <summary>
         /// Compares the specified x.

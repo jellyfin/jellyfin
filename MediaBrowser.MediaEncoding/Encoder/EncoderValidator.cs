@@ -45,7 +45,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "mpeg4_cuvid",
             "vp8_cuvid",
             "vp9_cuvid",
-            "av1_cuvid"
+            "av1_cuvid",
+            "h264_rkmpp",
+            "hevc_rkmpp",
+            "mpeg1_rkmpp",
+            "mpeg2_rkmpp",
+            "mpeg4_rkmpp",
+            "vp8_rkmpp",
+            "vp9_rkmpp",
+            "av1_rkmpp"
         };
 
         private static readonly string[] _requiredEncoders = new[]
@@ -82,7 +90,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "av1_vaapi",
             "h264_v4l2m2m",
             "h264_videotoolbox",
-            "hevc_videotoolbox"
+            "hevc_videotoolbox",
+            "h264_rkmpp",
+            "hevc_rkmpp"
         };
 
         private static readonly string[] _requiredFilters = new[]
@@ -116,12 +126,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "libplacebo",
             "scale_vulkan",
             "overlay_vulkan",
-            "hwupload_vaapi",
             // videotoolbox
-            "yadif_videotoolbox"
+            "yadif_videotoolbox",
+            // rkrga
+            "scale_rkrga",
+            "vpp_rkrga",
+            "overlay_rkrga"
         };
 
-        private static readonly IReadOnlyDictionary<int, string[]> _filterOptionsDict = new Dictionary<int, string[]>
+        private static readonly Dictionary<int, string[]> _filterOptionsDict = new Dictionary<int, string[]>
         {
             { 0, new string[] { "scale_cuda", "Output format (default \"same\")" } },
             { 1, new string[] { "tonemap_cuda", "GPU accelerated HDR to SDR tonemapping" } },
@@ -132,7 +145,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         };
 
         // These are the library versions that corresponds to our minimum ffmpeg version 4.x according to the version table below
-        private static readonly IReadOnlyDictionary<string, Version> _ffmpegMinimumLibraryVersions = new Dictionary<string, Version>
+        private static readonly Dictionary<string, Version> _ffmpegMinimumLibraryVersions = new Dictionary<string, Version>
         {
             { "libavutil", new Version(56, 14) },
             { "libavcodec", new Version(58, 18) },
@@ -197,7 +210,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         internal bool ValidateVersionInternal(string versionOutput)
         {
-            if (versionOutput.IndexOf("Libav developers", StringComparison.OrdinalIgnoreCase) != -1)
+            if (versionOutput.Contains("Libav developers", StringComparison.OrdinalIgnoreCase))
             {
                 _logger.LogError("FFmpeg validation: avconv instead of ffmpeg is not supported");
                 return false;
@@ -333,7 +346,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         /// <param name="output">The 'ffmpeg -version' output.</param>
         /// <returns>The library names and major.minor version numbers.</returns>
-        private static IReadOnlyDictionary<string, Version> GetFFmpegLibraryVersions(string output)
+        private static Dictionary<string, Version> GetFFmpegLibraryVersions(string output)
         {
             var map = new Dictionary<string, Version>();
 
@@ -499,8 +512,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var required = codec == Codec.Encoder ? _requiredEncoders : _requiredDecoders;
 
-            var found = Regex
-                .Matches(output, @"^\s\S{6}\s(?<codec>[\w|-]+)\s+.+$", RegexOptions.Multiline)
+            var found = CodecRegex()
+                .Matches(output)
                 .Select(x => x.Groups["codec"].Value)
                 .Where(x => required.Contains(x));
 
@@ -527,8 +540,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 return Enumerable.Empty<string>();
             }
 
-            var found = Regex
-                .Matches(output, @"^\s\S{3}\s(?<filter>[\w|-]+)\s+.+$", RegexOptions.Multiline)
+            var found = FilterRegex()
+                .Matches(output)
                 .Select(x => x.Groups["filter"].Value)
                 .Where(x => _requiredFilters.Contains(x));
 
@@ -537,9 +550,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return found;
         }
 
-        private IDictionary<int, bool> GetFFmpegFiltersWithOption()
+        private Dictionary<int, bool> GetFFmpegFiltersWithOption()
         {
-            IDictionary<int, bool> dict = new Dictionary<int, bool>();
+            Dictionary<int, bool> dict = new Dictionary<int, bool>();
             for (int i = 0; i < _filterOptionsDict.Count; i++)
             {
                 if (_filterOptionsDict.TryGetValue(i, out var val) && val.Length == 2)
@@ -582,5 +595,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 return reader.ReadToEnd();
             }
         }
+
+        [GeneratedRegex("^\\s\\S{6}\\s(?<codec>[\\w|-]+)\\s+.+$", RegexOptions.Multiline)]
+        private static partial Regex CodecRegex();
+
+        [GeneratedRegex("^\\s\\S{3}\\s(?<filter>[\\w|-]+)\\s+.+$", RegexOptions.Multiline)]
+        private static partial Regex FilterRegex();
     }
 }

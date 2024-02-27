@@ -22,7 +22,7 @@ namespace MediaBrowser.MediaEncoding.Probing
     /// <summary>
     /// Class responsible for normalizing FFprobe output.
     /// </summary>
-    public class ProbeResultNormalizer
+    public partial class ProbeResultNormalizer
     {
         // When extracting subtitles, the maximum length to consider (to avoid invalid filenames)
         private const int MaxSubtitleDescriptionExtractionLength = 100;
@@ -30,8 +30,8 @@ namespace MediaBrowser.MediaEncoding.Probing
         private const string ArtistReplaceValue = " | ";
 
         private readonly char[] _nameDelimiters = { '/', '|', ';', '\\' };
-
-        private static readonly Regex _performerPattern = new(@"(?<name>.*) \((?<instrument>.*)\)");
+        private readonly string[] _webmVideoCodecs = { "av1", "vp8", "vp9" };
+        private readonly string[] _webmAudioCodecs = { "opus", "vorbis" };
 
         private readonly ILogger _logger;
         private readonly ILocalizationManager _localization;
@@ -78,6 +78,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             "She/Her/Hers",
             "5/8erl in Ehr'n",
             "Smith/Kotzen",
+            "We;Na",
         };
 
         /// <summary>
@@ -115,7 +116,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             if (data.Format is not null)
             {
-                info.Container = NormalizeFormat(data.Format.FormatName);
+                info.Container = NormalizeFormat(data.Format.FormatName, info.MediaStreams);
 
                 if (int.TryParse(data.Format.BitRate, CultureInfo.InvariantCulture, out var value))
                 {
@@ -261,7 +262,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             return info;
         }
 
-        private string NormalizeFormat(string format)
+        private string NormalizeFormat(string format, IReadOnlyList<MediaStream> mediaStreams)
         {
             if (string.IsNullOrWhiteSpace(format))
             {
@@ -289,9 +290,20 @@ namespace MediaBrowser.MediaEncoding.Probing
                 {
                     splitFormat[i] = "mkv";
                 }
+
+                // Handle WebM
+                else if (string.Equals(splitFormat[i], "webm", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Limit WebM to supported codecs
+                    if (mediaStreams.Any(stream => (stream.Type == MediaStreamType.Video && !_webmVideoCodecs.Contains(stream.Codec, StringComparison.OrdinalIgnoreCase))
+                        || (stream.Type == MediaStreamType.Audio && !_webmAudioCodecs.Contains(stream.Codec, StringComparison.OrdinalIgnoreCase))))
+                    {
+                        splitFormat[i] = string.Empty;
+                    }
+                }
             }
 
-            return string.Join(',', splitFormat);
+            return string.Join(',', splitFormat.Where(s => !string.IsNullOrEmpty(s)));
         }
 
         private int? GetEstimatedAudioBitrate(string codec, int? channels)
@@ -517,7 +529,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private void ProcessPairs(string key, List<NameValuePair> pairs, MediaInfo info)
         {
-            IList<BaseItemPerson> peoples = new List<BaseItemPerson>();
+            List<BaseItemPerson> peoples = new List<BaseItemPerson>();
             if (string.Equals(key, "studio", StringComparison.OrdinalIgnoreCase))
             {
                 info.Studios = pairs.Select(p => p.Value)
@@ -613,11 +625,11 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 codec = "dvbsub";
             }
-            else if ((codec ?? string.Empty).IndexOf("PGS", StringComparison.OrdinalIgnoreCase) != -1)
+            else if ((codec ?? string.Empty).Contains("PGS", StringComparison.OrdinalIgnoreCase))
             {
                 codec = "PGSSUB";
             }
-            else if ((codec ?? string.Empty).IndexOf("DVD", StringComparison.OrdinalIgnoreCase) != -1)
+            else if ((codec ?? string.Empty).Contains("DVD", StringComparison.OrdinalIgnoreCase))
             {
                 codec = "DVDSUB";
             }
@@ -742,6 +754,10 @@ namespace MediaBrowser.MediaEncoding.Probing
                 stream.LocalizedForced = _localization.GetLocalizedString("Forced");
                 stream.LocalizedExternal = _localization.GetLocalizedString("External");
                 stream.LocalizedHearingImpaired = _localization.GetLocalizedString("HearingImpaired");
+
+                // Graphical subtitle may have width and height info
+                stream.Width = streamInfo.Width;
+                stream.Height = streamInfo.Height;
 
                 if (string.IsNullOrEmpty(stream.Title))
                 {
@@ -1183,7 +1199,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             info.Size = string.IsNullOrEmpty(data.Format.Size) ? null : long.Parse(data.Format.Size, CultureInfo.InvariantCulture);
         }
 
-        private void SetAudioInfoFromTags(MediaInfo audio, IReadOnlyDictionary<string, string> tags)
+        private void SetAudioInfoFromTags(MediaInfo audio, Dictionary<string, string> tags)
         {
             var people = new List<BaseItemPerson>();
             if (tags.TryGetValue("composer", out var composer) && !string.IsNullOrWhiteSpace(composer))
@@ -1214,7 +1230,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 foreach (var person in Split(performer, false))
                 {
-                    Match match = _performerPattern.Match(person);
+                    Match match = PerformerRegex().Match(person);
 
                     // If the performer doesn't have any instrument/role associated, it won't match. In that case, chances are it's simply a band name, so we skip it.
                     if (match.Success)
@@ -1340,7 +1356,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         {
             // Only use the comma as a delimiter if there are no slashes or pipes.
             // We want to be careful not to split names that have commas in them
-            var delimiter = !allowCommaDelimiter || _nameDelimiters.Any(i => val.IndexOf(i, StringComparison.Ordinal) != -1) ?
+            var delimiter = !allowCommaDelimiter || _nameDelimiters.Any(i => val.Contains(i, StringComparison.Ordinal)) ?
                 _nameDelimiters :
                 new[] { ',' };
 
@@ -1653,5 +1669,8 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             return TransportStreamTimestamp.Valid;
         }
+
+        [GeneratedRegex("(?<name>.*) \\((?<instrument>.*)\\)")]
+        private static partial Regex PerformerRegex();
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
@@ -835,11 +836,6 @@ namespace MediaBrowser.Model.Dlna
                 playlistItem.SetOption(qualifier, "profile", videoStream.Profile.ToLowerInvariant());
             }
 
-            if (videoStream is not null && videoStream.Level != 0)
-            {
-                playlistItem.SetOption(qualifier, "level", videoStream.Level.ToString() ?? string.Empty);
-            }
-
             // Prefer matching audio codecs, could do better here
             var audioCodecs = ContainerProfile.SplitValue(audioCodec);
 
@@ -866,16 +862,16 @@ namespace MediaBrowser.Model.Dlna
 
                 // Copy matching audio codec options
                 playlistItem.AudioSampleRate = audioStream.SampleRate;
-                playlistItem.SetOption(qualifier, "audiochannels", audioStream.Channels.ToString() ?? string.Empty);
+                playlistItem.SetOption(qualifier, "audiochannels", audioStream.Channels?.ToString(CultureInfo.InvariantCulture) ?? string.Empty);
 
                 if (!string.IsNullOrEmpty(audioStream.Profile))
                 {
                     playlistItem.SetOption(audioStream.Codec, "profile", audioStream.Profile.ToLowerInvariant());
                 }
 
-                if (audioStream.Level != 0)
+                if (audioStream.Level.HasValue && audioStream.Level.Value != 0)
                 {
-                    playlistItem.SetOption(audioStream.Codec, "level", audioStream.Level.ToString() ?? string.Empty);
+                    playlistItem.SetOption(audioStream.Codec, "level", audioStream.Level.Value.ToString(CultureInfo.InvariantCulture));
                 }
             }
 
@@ -1313,7 +1309,7 @@ namespace MediaBrowser.Model.Dlna
             var audioFailureConditions = GetProfileConditionsForVideoAudio(profile.CodecProfiles, container, audioStream.Codec, audioStream.Channels, audioStream.BitRate, audioStream.SampleRate, audioStream.BitDepth, audioStream.Profile, mediaSource.IsSecondaryAudio(audioStream));
 
             var audioStreamFailureReasons = AggregateFailureConditions(mediaSource, profile, "VideoAudioCodecProfile", audioFailureConditions);
-            if (audioStream?.IsExternal == true)
+            if (audioStream.IsExternal == true)
             {
                 audioStreamFailureReasons |= TranscodeReason.AudioIsExternal;
             }
@@ -1541,7 +1537,7 @@ namespace MediaBrowser.Model.Dlna
 
         private static void ValidateMediaOptions(MediaOptions options, bool isMediaSource)
         {
-            if (options.ItemId.Equals(default))
+            if (options.ItemId.IsEmpty())
             {
                 ArgumentException.ThrowIfNullOrEmpty(options.DeviceId);
             }
@@ -1942,6 +1938,38 @@ namespace MediaBrowser.Model.Dlna
                                 else
                                 {
                                     item.SetOption(qualifier, "rangetype", string.Join(',', values));
+                                }
+                            }
+
+                            break;
+                        }
+
+                    case ProfileConditionValue.VideoCodecTag:
+                        {
+                            if (string.IsNullOrEmpty(qualifier))
+                            {
+                                continue;
+                            }
+
+                            // change from split by | to comma
+                            // strip spaces to avoid having to encode
+                            var values = value
+                                .Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+                            if (condition.Condition == ProfileConditionType.Equals)
+                            {
+                                item.SetOption(qualifier, "codectag", string.Join(',', values));
+                            }
+                            else if (condition.Condition == ProfileConditionType.EqualsAny)
+                            {
+                                var currentValue = item.GetOption(qualifier, "codectag");
+                                if (!string.IsNullOrEmpty(currentValue) && values.Any(v => string.Equals(v, currentValue, StringComparison.OrdinalIgnoreCase)))
+                                {
+                                    item.SetOption(qualifier, "codectag", currentValue);
+                                }
+                                else
+                                {
+                                    item.SetOption(qualifier, "codectag", string.Join(',', values));
                                 }
                             }
 

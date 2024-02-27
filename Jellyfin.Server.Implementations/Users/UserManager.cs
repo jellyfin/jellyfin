@@ -1,7 +1,7 @@
 ﻿#pragma warning disable CA1307
+#pragma warning disable CA1309 // Use ordinal string comparison - EF can't translate this
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -11,16 +11,17 @@ using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
 using Jellyfin.Data.Events.Users;
+using Jellyfin.Extensions;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Authentication;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Users;
 using Microsoft.EntityFrameworkCore;
@@ -35,7 +36,6 @@ namespace Jellyfin.Server.Implementations.Users
     {
         private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
         private readonly IEventManager _eventManager;
-        private readonly ICryptoProvider _cryptoProvider;
         private readonly INetworkManager _networkManager;
         private readonly IApplicationHost _appHost;
         private readonly IImageProcessor _imageProcessor;
@@ -45,82 +45,86 @@ namespace Jellyfin.Server.Implementations.Users
         private readonly InvalidAuthProvider _invalidAuthProvider;
         private readonly DefaultAuthenticationProvider _defaultAuthenticationProvider;
         private readonly DefaultPasswordResetProvider _defaultPasswordResetProvider;
-
-        private readonly IDictionary<Guid, User> _users;
+        private readonly IServerConfigurationManager _serverConfigurationManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserManager"/> class.
         /// </summary>
         /// <param name="dbProvider">The database provider.</param>
         /// <param name="eventManager">The event manager.</param>
-        /// <param name="cryptoProvider">The cryptography provider.</param>
         /// <param name="networkManager">The network manager.</param>
         /// <param name="appHost">The application host.</param>
         /// <param name="imageProcessor">The image processor.</param>
         /// <param name="logger">The logger.</param>
+        /// <param name="serverConfigurationManager">The system config manager.</param>
+        /// <param name="passwordResetProviders">The password reset providers.</param>
+        /// <param name="authenticationProviders">The authentication providers.</param>
         public UserManager(
             IDbContextFactory<JellyfinDbContext> dbProvider,
             IEventManager eventManager,
-            ICryptoProvider cryptoProvider,
             INetworkManager networkManager,
             IApplicationHost appHost,
             IImageProcessor imageProcessor,
-            ILogger<UserManager> logger)
+            ILogger<UserManager> logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IEnumerable<IPasswordResetProvider> passwordResetProviders,
+            IEnumerable<IAuthenticationProvider> authenticationProviders)
         {
             _dbProvider = dbProvider;
             _eventManager = eventManager;
-            _cryptoProvider = cryptoProvider;
             _networkManager = networkManager;
             _appHost = appHost;
             _imageProcessor = imageProcessor;
             _logger = logger;
+            _serverConfigurationManager = serverConfigurationManager;
 
-            _passwordResetProviders = appHost.GetExports<IPasswordResetProvider>();
-            _authenticationProviders = appHost.GetExports<IAuthenticationProvider>();
+            _passwordResetProviders = passwordResetProviders.ToList();
+            _authenticationProviders = authenticationProviders.ToList();
 
             _invalidAuthProvider = _authenticationProviders.OfType<InvalidAuthProvider>().First();
             _defaultAuthenticationProvider = _authenticationProviders.OfType<DefaultAuthenticationProvider>().First();
             _defaultPasswordResetProvider = _passwordResetProviders.OfType<DefaultPasswordResetProvider>().First();
-
-            _users = new ConcurrentDictionary<Guid, User>();
-            using var dbContext = _dbProvider.CreateDbContext();
-            foreach (var user in dbContext.Users
-                .AsSplitQuery()
-                .Include(user => user.Permissions)
-                .Include(user => user.Preferences)
-                .Include(user => user.AccessSchedules)
-                .Include(user => user.ProfileImage)
-                .AsEnumerable())
-            {
-                _users.Add(user.Id, user);
-            }
         }
 
         /// <inheritdoc/>
         public event EventHandler<GenericEventArgs<User>>? OnUserUpdated;
 
         /// <inheritdoc/>
-        public IEnumerable<User> Users => _users.Values;
+        public IEnumerable<User> Users
+        {
+            get
+            {
+                using var dbContext = _dbProvider.CreateDbContext();
+                return GetUsersInternal(dbContext).ToList();
+            }
+        }
 
         /// <inheritdoc/>
-        public IEnumerable<Guid> UsersIds => _users.Keys;
+        public IEnumerable<Guid> UsersIds
+        {
+            get
+            {
+                using var dbContext = _dbProvider.CreateDbContext();
+                return dbContext.Users.Select(u => u.Id).ToList();
+            }
+        }
 
         // This is some regex that matches only on unicode "word" characters, as well as -, _ and @
         // In theory this will cut out most if not all 'control' characters which should help minimize any weirdness
         // Usernames can contain letters (a-z + whatever else unicode is cool with), numbers (0-9), at-signs (@), dashes (-), underscores (_), apostrophes ('), periods (.) and spaces ( )
-        [GeneratedRegex("^[\\w\\ \\-'._@]+$")]
+        [GeneratedRegex(@"^[\w\ \-'._@]+$")]
         private static partial Regex ValidUsernameRegex();
 
         /// <inheritdoc/>
         public User? GetUserById(Guid id)
         {
-            if (id.Equals(default))
+            if (id.IsEmpty())
             {
                 throw new ArgumentException("Guid can't be empty", nameof(id));
             }
 
-            _users.TryGetValue(id, out var user);
-            return user;
+            using var dbContext = _dbProvider.CreateDbContext();
+            return GetUsersInternal(dbContext).FirstOrDefault(u => u.Id.Equals(id));
         }
 
         /// <inheritdoc/>
@@ -131,7 +135,9 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentException("Invalid username", nameof(name));
             }
 
-            return _users.Values.FirstOrDefault(u => string.Equals(u.Username, name, StringComparison.OrdinalIgnoreCase));
+            using var dbContext = _dbProvider.CreateDbContext();
+            return GetUsersInternal(dbContext)
+                .FirstOrDefault(u => string.Equals(u.Username, name));
         }
 
         /// <inheritdoc/>
@@ -196,8 +202,6 @@ namespace Jellyfin.Server.Implementations.Users
             user.AddDefaultPermissions();
             user.AddDefaultPreferences();
 
-            _users.Add(user.Id, user);
-
             return user;
         }
 
@@ -232,40 +236,46 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public async Task DeleteUserAsync(Guid userId)
         {
-            if (!_users.TryGetValue(userId, out var user))
-            {
-                throw new ResourceNotFoundException(nameof(userId));
-            }
-
-            if (_users.Count == 1)
-            {
-                throw new InvalidOperationException(string.Format(
-                    CultureInfo.InvariantCulture,
-                    "The user '{0}' cannot be deleted because there must be at least one user in the system.",
-                    user.Username));
-            }
-
-            if (user.HasPermission(PermissionKind.IsAdministrator)
-                && Users.Count(i => i.HasPermission(PermissionKind.IsAdministrator)) == 1)
-            {
-                throw new ArgumentException(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "The user '{0}' cannot be deleted because there must be at least one admin user in the system.",
-                        user.Username),
-                    nameof(userId));
-            }
-
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+
             await using (dbContext.ConfigureAwait(false))
             {
+                var user = await dbContext.Users
+                    .AsSingleQuery()
+                    .Include(u => u.Permissions)
+                    .FirstOrDefaultAsync(u => u.Id.Equals(userId))
+                    .ConfigureAwait(false);
+                if (user is null)
+                {
+                    throw new ResourceNotFoundException(nameof(userId));
+                }
+
+                if (await dbContext.Users.CountAsync().ConfigureAwait(false) == 1)
+                {
+                    throw new InvalidOperationException(string.Format(
+                        CultureInfo.InvariantCulture,
+                        "The user '{0}' cannot be deleted because there must be at least one user in the system.",
+                        user.Username));
+                }
+
+                if (user.HasPermission(PermissionKind.IsAdministrator)
+                    && await dbContext.Users
+                        .CountAsync(u => u.Permissions.Any(p => p.Kind == PermissionKind.IsAdministrator && p.Value))
+                        .ConfigureAwait(false) == 1)
+                {
+                    throw new ArgumentException(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "The user '{0}' cannot be deleted because there must be at least one admin user in the system.",
+                            user.Username),
+                        nameof(userId));
+                }
+
                 dbContext.Users.Remove(user);
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
+
+                await _eventManager.PublishAsync(new UserDeletedEventArgs(user)).ConfigureAwait(false);
             }
-
-            _users.Remove(userId);
-
-            await _eventManager.PublishAsync(new UserDeletedEventArgs(user)).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -293,6 +303,7 @@ namespace Jellyfin.Server.Implementations.Users
         public UserDto GetUserDto(User user, string? remoteEndPoint = null)
         {
             var hasPassword = GetAuthenticationProvider(user).HasPassword(user);
+            var castReceiverApplications = _serverConfigurationManager.Configuration.CastReceiverApplications;
             return new UserDto
             {
                 Name = user.Username,
@@ -320,7 +331,11 @@ namespace Jellyfin.Server.Implementations.Users
                     OrderedViews = user.GetPreferenceValues<Guid>(PreferenceKind.OrderedViews),
                     GroupedFolders = user.GetPreferenceValues<Guid>(PreferenceKind.GroupedFolders),
                     MyMediaExcludes = user.GetPreferenceValues<Guid>(PreferenceKind.MyMediaExcludes),
-                    LatestItemsExcludes = user.GetPreferenceValues<Guid>(PreferenceKind.LatestItemExcludes)
+                    LatestItemsExcludes = user.GetPreferenceValues<Guid>(PreferenceKind.LatestItemExcludes),
+                    CastReceiverId = string.IsNullOrEmpty(user.CastReceiverId)
+                        ? castReceiverApplications.FirstOrDefault()?.Id
+                        : castReceiverApplications.FirstOrDefault(c => string.Equals(c.Id, user.CastReceiverId, StringComparison.Ordinal))?.Id
+                          ?? castReceiverApplications.FirstOrDefault()?.Id
                 },
                 Policy = new UserPolicy
                 {
@@ -354,6 +369,7 @@ namespace Jellyfin.Server.Implementations.Users
                     ForceRemoteSourceTranscoding = user.HasPermission(PermissionKind.ForceRemoteSourceTranscoding),
                     EnablePublicSharing = user.HasPermission(PermissionKind.EnablePublicSharing),
                     EnableCollectionManagement = user.HasPermission(PermissionKind.EnableCollectionManagement),
+                    EnableSubtitleManagement = user.HasPermission(PermissionKind.EnableSubtitleManagement),
                     AccessSchedules = user.AccessSchedules.ToArray(),
                     BlockedTags = user.GetPreference(PreferenceKind.BlockedTags),
                     AllowedTags = user.GetPreference(PreferenceKind.AllowedTags),
@@ -384,7 +400,7 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             var user = Users.FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
-            var authResult = await AuthenticateLocalUser(username, password, user, remoteEndPoint)
+            var authResult = await AuthenticateLocalUser(username, password, user)
                 .ConfigureAwait(false);
             var authenticationProvider = authResult.AuthenticationProvider;
             var success = authResult.Success;
@@ -526,23 +542,23 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc />
         public async Task InitializeAsync()
         {
-            // TODO: Refactor the startup wizard so that it doesn't require a user to already exist.
-            if (_users.Any())
-            {
-                return;
-            }
-
-            var defaultName = Environment.UserName;
-            if (string.IsNullOrWhiteSpace(defaultName) || !ValidUsernameRegex().IsMatch(defaultName))
-            {
-                defaultName = "MyJellyfinUser";
-            }
-
-            _logger.LogWarning("No users, creating one with username {UserName}", defaultName);
-
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
+                // TODO: Refactor the startup wizard so that it doesn't require a user to already exist.
+                if (await dbContext.Users.AnyAsync().ConfigureAwait(false))
+                {
+                    return;
+                }
+
+                var defaultName = Environment.UserName;
+                if (string.IsNullOrWhiteSpace(defaultName) || !ValidUsernameRegex().IsMatch(defaultName))
+                {
+                    defaultName = "MyJellyfinUser";
+                }
+
+                _logger.LogWarning("No users, creating one with username {UserName}", defaultName);
+
                 var newUser = await CreateUserInternalAsync(defaultName, dbContext).ConfigureAwait(false);
                 newUser.SetPermission(PermissionKind.IsAdministrator, true);
                 newUser.SetPermission(PermissionKind.EnableContentDeletion, true);
@@ -589,12 +605,9 @@ namespace Jellyfin.Server.Implementations.Users
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
-                var user = dbContext.Users
-                               .Include(u => u.Permissions)
-                               .Include(u => u.Preferences)
-                               .Include(u => u.AccessSchedules)
-                               .Include(u => u.ProfileImage)
-                               .FirstOrDefault(u => u.Id.Equals(userId))
+                var user = await GetUsersInternal(dbContext)
+                    .FirstOrDefaultAsync(u => u.Id.Equals(userId))
+                    .ConfigureAwait(false)
                            ?? throw new ArgumentException("No user exists with given Id!");
 
                 user.SubtitleMode = config.SubtitleMode;
@@ -609,13 +622,19 @@ namespace Jellyfin.Server.Implementations.Users
                 user.RememberSubtitleSelections = config.RememberSubtitleSelections;
                 user.SubtitleLanguagePreference = config.SubtitleLanguagePreference;
 
+                // Only set cast receiver id if it is passed in and it exists in the server config.
+                if (!string.IsNullOrEmpty(config.CastReceiverId)
+                    && _serverConfigurationManager.Configuration.CastReceiverApplications.Any(c => string.Equals(c.Id, config.CastReceiverId, StringComparison.Ordinal)))
+                {
+                    user.CastReceiverId = config.CastReceiverId;
+                }
+
                 user.SetPreference(PreferenceKind.OrderedViews, config.OrderedViews);
                 user.SetPreference(PreferenceKind.GroupedFolders, config.GroupedFolders);
                 user.SetPreference(PreferenceKind.MyMediaExcludes, config.MyMediaExcludes);
                 user.SetPreference(PreferenceKind.LatestItemExcludes, config.LatestItemsExcludes);
 
                 dbContext.Update(user);
-                _users[user.Id] = user;
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
             }
         }
@@ -626,12 +645,9 @@ namespace Jellyfin.Server.Implementations.Users
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
-                var user = dbContext.Users
-                               .Include(u => u.Permissions)
-                               .Include(u => u.Preferences)
-                               .Include(u => u.AccessSchedules)
-                               .Include(u => u.ProfileImage)
-                               .FirstOrDefault(u => u.Id.Equals(userId))
+                var user = await GetUsersInternal(dbContext)
+                    .FirstOrDefaultAsync(u => u.Id.Equals(userId))
+                    .ConfigureAwait(false)
                            ?? throw new ArgumentException("No user exists with given Id!");
 
                 // The default number of login attempts is 3, but for some god forsaken reason it's sent to the server as "0"
@@ -671,6 +687,8 @@ namespace Jellyfin.Server.Implementations.Users
                 user.SetPermission(PermissionKind.EnableRemoteControlOfOtherUsers, policy.EnableRemoteControlOfOtherUsers);
                 user.SetPermission(PermissionKind.EnablePlaybackRemuxing, policy.EnablePlaybackRemuxing);
                 user.SetPermission(PermissionKind.EnableCollectionManagement, policy.EnableCollectionManagement);
+                user.SetPermission(PermissionKind.EnableSubtitleManagement, policy.EnableSubtitleManagement);
+                user.SetPermission(PermissionKind.EnableLyricManagement, policy.EnableLyricManagement);
                 user.SetPermission(PermissionKind.ForceRemoteSourceTranscoding, policy.ForceRemoteSourceTranscoding);
                 user.SetPermission(PermissionKind.EnablePublicSharing, policy.EnablePublicSharing);
 
@@ -690,7 +708,6 @@ namespace Jellyfin.Server.Implementations.Users
                 user.SetPreference(PreferenceKind.EnableContentDeletionFromFolders, policy.EnableContentDeletionFromFolders);
 
                 dbContext.Update(user);
-                _users[user.Id] = user;
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
             }
         }
@@ -711,7 +728,6 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             user.ProfileImage = null;
-            _users[user.Id] = user;
         }
 
         internal static void ThrowIfInvalidUsername(string name)
@@ -734,7 +750,7 @@ namespace Jellyfin.Server.Implementations.Users
             return GetPasswordResetProviders(user)[0];
         }
 
-        private IList<IAuthenticationProvider> GetAuthenticationProviders(User? user)
+        private List<IAuthenticationProvider> GetAuthenticationProviders(User? user)
         {
             var authenticationProviderId = user?.AuthenticationProviderId;
 
@@ -761,7 +777,7 @@ namespace Jellyfin.Server.Implementations.Users
             return providers;
         }
 
-        private IList<IPasswordResetProvider> GetPasswordResetProviders(User user)
+        private IPasswordResetProvider[] GetPasswordResetProviders(User user)
         {
             var passwordResetProviderId = user.PasswordResetProviderId;
             var providers = _passwordResetProviders.Where(i => i.IsEnabled).ToArray();
@@ -787,8 +803,7 @@ namespace Jellyfin.Server.Implementations.Users
         private async Task<(IAuthenticationProvider? AuthenticationProvider, string Username, bool Success)> AuthenticateLocalUser(
                 string username,
                 string password,
-                User? user,
-                string remoteEndPoint)
+                User? user)
         {
             bool success = false;
             IAuthenticationProvider? authenticationProvider = null;
@@ -859,8 +874,15 @@ namespace Jellyfin.Server.Implementations.Users
         private async Task UpdateUserInternalAsync(JellyfinDbContext dbContext, User user)
         {
             dbContext.Users.Update(user);
-            _users[user.Id] = user;
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
+
+        private IQueryable<User> GetUsersInternal(JellyfinDbContext dbContext)
+            => dbContext.Users
+                .AsSplitQuery()
+                .Include(user => user.Permissions)
+                .Include(user => user.Preferences)
+                .Include(user => user.AccessSchedules)
+                .Include(user => user.ProfileImage);
     }
 }

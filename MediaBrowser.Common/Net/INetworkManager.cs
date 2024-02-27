@@ -82,7 +82,7 @@ namespace MediaBrowser.Common.Net
         /// <param name="port">Optional port returned, if it's part of an override.</param>
         /// <param name="skipOverrides">Optional boolean denoting if published server overrides should be ignored. Defaults to false.</param>
         /// <returns>IP address to use, or loopback address if all else fails.</returns>
-        string GetBindAddress(IPAddress source, out int? port, bool skipOverrides = false);
+        string GetBindAddress(IPAddress? source, out int? port, bool skipOverrides = false);
 
         /// <summary>
         /// Retrieves the bind address to use in system URLs. (Server Discovery, PlayTo, LiveTV, SystemInfo)

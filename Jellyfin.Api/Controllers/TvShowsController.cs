@@ -111,7 +111,7 @@ public class TvShowsController : BaseJellyfinApiController
             },
             options);
 
-        var user = userId.Value.Equals(default)
+        var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -135,7 +135,7 @@ public class TvShowsController : BaseJellyfinApiController
     /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
     /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
     /// <param name="enableUserData">Optional. Include user data.</param>
-    /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the next up episodes.</returns>
+    /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the upcoming episodes.</returns>
     [HttpGet("Upcoming")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<QueryResult<BaseItemDto>> GetUpcomingEpisodes(
@@ -150,7 +150,7 @@ public class TvShowsController : BaseJellyfinApiController
         [FromQuery] bool? enableUserData)
     {
         userId = RequestHelpers.GetUserId(User, userId);
-        var user = userId.Value.Equals(default)
+        var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -219,10 +219,10 @@ public class TvShowsController : BaseJellyfinApiController
         [FromQuery] int? imageTypeLimit,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
         [FromQuery] bool? enableUserData,
-        [FromQuery] string? sortBy)
+        [FromQuery] ItemSortBy? sortBy)
     {
         userId = RequestHelpers.GetUserId(User, userId);
-        var user = userId.Value.Equals(default)
+        var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -284,12 +284,12 @@ public class TvShowsController : BaseJellyfinApiController
         }
 
         // This must be the last filter
-        if (adjacentTo.HasValue && !adjacentTo.Value.Equals(default))
+        if (!adjacentTo.IsNullOrEmpty())
         {
             episodes = UserViewBuilder.FilterForAdjacency(episodes, adjacentTo.Value).ToList();
         }
 
-        if (string.Equals(sortBy, ItemSortBy.Random, StringComparison.OrdinalIgnoreCase))
+        if (sortBy == ItemSortBy.Random)
         {
             episodes.Shuffle();
         }
@@ -339,7 +339,7 @@ public class TvShowsController : BaseJellyfinApiController
         [FromQuery] bool? enableUserData)
     {
         userId = RequestHelpers.GetUserId(User, userId);
-        var user = userId.Value.Equals(default)
+        var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
 

@@ -18,10 +18,10 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Controller.Trickplay;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
@@ -46,12 +46,13 @@ namespace Emby.Server.Implementations.Dto
 
         private readonly IImageProcessor _imageProcessor;
         private readonly IProviderManager _providerManager;
+        private readonly IRecordingsManager _recordingsManager;
 
         private readonly IApplicationHost _appHost;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly Lazy<ILiveTvManager> _livetvManagerFactory;
 
-        private readonly ILyricManager _lyricManager;
+        private readonly ITrickplayManager _trickplayManager;
 
         public DtoService(
             ILogger<DtoService> logger,
@@ -60,10 +61,11 @@ namespace Emby.Server.Implementations.Dto
             IItemRepository itemRepo,
             IImageProcessor imageProcessor,
             IProviderManager providerManager,
+            IRecordingsManager recordingsManager,
             IApplicationHost appHost,
             IMediaSourceManager mediaSourceManager,
             Lazy<ILiveTvManager> livetvManagerFactory,
-            ILyricManager lyricManager)
+            ITrickplayManager trickplayManager)
         {
             _logger = logger;
             _libraryManager = libraryManager;
@@ -71,10 +73,11 @@ namespace Emby.Server.Implementations.Dto
             _itemRepo = itemRepo;
             _imageProcessor = imageProcessor;
             _providerManager = providerManager;
+            _recordingsManager = recordingsManager;
             _appHost = appHost;
             _mediaSourceManager = mediaSourceManager;
             _livetvManagerFactory = livetvManagerFactory;
-            _lyricManager = lyricManager;
+            _trickplayManager = trickplayManager;
         }
 
         private ILiveTvManager LivetvManager => _livetvManagerFactory.Value;
@@ -144,10 +147,6 @@ namespace Emby.Server.Implementations.Dto
             else if (item is LiveTvProgram)
             {
                 LivetvManager.AddInfoToProgramDto(new[] { (item, dto) }, options.Fields, user).GetAwaiter().GetResult();
-            }
-            else if (item is Audio)
-            {
-                dto.HasLyrics = _lyricManager.HasLyricFile(item);
             }
 
             if (item is IItemByName itemByName
@@ -252,8 +251,7 @@ namespace Emby.Server.Implementations.Dto
                 dto.Etag = item.GetEtag(user);
             }
 
-            var liveTvManager = LivetvManager;
-            var activeRecording = liveTvManager.GetActiveRecordingInfo(item.Path);
+            var activeRecording = _recordingsManager.GetActiveRecordingInfo(item.Path);
             if (activeRecording is not null)
             {
                 dto.Type = BaseItemKind.Recording;
@@ -266,7 +264,12 @@ namespace Emby.Server.Implementations.Dto
                     dto.Name = dto.SeriesName;
                 }
 
-                liveTvManager.AddInfoToRecordingDto(item, dto, activeRecording, user);
+                LivetvManager.AddInfoToRecordingDto(item, dto, activeRecording, user);
+            }
+
+            if (item is Audio audio)
+            {
+                dto.HasLyrics = audio.GetMediaStreams().Any(s => s.Type == MediaStreamType.Lyric);
             }
 
             return dto;
@@ -413,15 +416,6 @@ namespace Emby.Server.Implementations.Dto
             if (options.ContainsField(ItemFields.PlayAccess))
             {
                 dto.PlayAccess = item.GetPlayAccess(user);
-            }
-
-            if (options.ContainsField(ItemFields.BasicSyncInfo))
-            {
-                var userCanSync = user is not null && user.HasPermission(PermissionKind.EnableContentDownloading);
-                if (userCanSync && item.SupportsExternalTransfer)
-                {
-                    dto.SupportsSync = true;
-                }
             }
         }
 
@@ -1057,6 +1051,11 @@ namespace Emby.Server.Implementations.Dto
                 if (options.ContainsField(ItemFields.Chapters))
                 {
                     dto.Chapters = _itemRepo.GetChapters(item);
+                }
+
+                if (options.ContainsField(ItemFields.Trickplay))
+                {
+                    dto.Trickplay = _trickplayManager.GetTrickplayManifest(item).GetAwaiter().GetResult();
                 }
 
                 if (video.ExtraType.HasValue)

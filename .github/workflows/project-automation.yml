@@ -1,0 +1,65 @@
+name: Project Automation
+
+on:
+  push:
+    branches:
+      - master
+  pull_request_target:
+  issue_comment:
+
+permissions: {}
+jobs:
+  project:
+    name: Project board
+    runs-on: ubuntu-latest
+    if: ${{ github.repository == 'jellyfin/jellyfin' }}
+    steps:
+      - name: Remove from 'Current Release' project
+        uses: alex-page/github-project-automation-plus@303f24a24c67ce7adf565a07e96720faf126fe36 # v0.9.0
+        if: (github.event.pull_request || github.event.issue.pull_request) && !contains(github.event.*.labels.*.name, 'stable backport')
+        continue-on-error: true
+        with:
+          project: Current Release
+          action: delete
+          repo-token: ${{ secrets.JF_BOT_TOKEN }}
+
+      - name: Add to 'Release Next' project
+        uses: alex-page/github-project-automation-plus@303f24a24c67ce7adf565a07e96720faf126fe36 # v0.9.0
+        if: (github.event.pull_request || github.event.issue.pull_request) && github.event.action == 'opened'
+        continue-on-error: true
+        with:
+          project: Release Next
+          column: In progress
+          repo-token: ${{ secrets.JF_BOT_TOKEN }}
+
+      - name: Add to 'Current Release' project
+        uses: alex-page/github-project-automation-plus@303f24a24c67ce7adf565a07e96720faf126fe36 # v0.9.0
+        if: (github.event.pull_request || github.event.issue.pull_request) && !contains(github.event.*.labels.*.name, 'stable backport')
+        continue-on-error: true
+        with:
+          project: Current Release
+          column: In progress
+          repo-token: ${{ secrets.JF_BOT_TOKEN }}
+
+      - name: Check number of comments from the team member
+        if: github.event.issue.pull_request == '' && github.event.comment.author_association == 'MEMBER'
+        id: member_comments
+        run: echo "::set-output name=number::$(curl -s ${{ github.event.issue.comments_url }} | jq '.[] | select(.author_association == "MEMBER") | .author_association' | wc -l)"
+
+      - name: Move issue to needs triage
+        uses: alex-page/github-project-automation-plus@303f24a24c67ce7adf565a07e96720faf126fe36 # v0.9.0
+        if: github.event.issue.pull_request == '' && github.event.comment.author_association == 'MEMBER' && steps.member_comments.outputs.number <= 1
+        continue-on-error: true
+        with:
+          project: Issue Triage for Main Repo
+          column: Needs triage
+          repo-token: ${{ secrets.JF_BOT_TOKEN }}
+
+      - name: Add issue to triage project
+        uses: alex-page/github-project-automation-plus@303f24a24c67ce7adf565a07e96720faf126fe36 # v0.9.0
+        if: github.event.issue.pull_request == '' && github.event.action == 'opened'
+        continue-on-error: true
+        with:
+          project: Issue Triage for Main Repo
+          column: Pending response
+          repo-token: ${{ secrets.JF_BOT_TOKEN }}

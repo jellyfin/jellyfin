@@ -58,6 +58,7 @@ namespace Jellyfin.Server.Migrations.Routines
             var dataPath = _appPaths.DataPath;
             using (var connection = new SqliteConnection($"Filename={Path.Combine(dataPath, DbFilename)}"))
             {
+                connection.Open();
                 using var dbContext = _dbProvider.CreateDbContext();
 
                 var authenticatedDevices = connection.Query("SELECT * FROM Tokens");

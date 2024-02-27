@@ -2,29 +2,12 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Runtime.InteropServices;
+using System.Collections.Generic;
+using System.ComponentModel;
 using MediaBrowser.Model.Updates;
 
 namespace MediaBrowser.Model.System
 {
-    /// <summary>
-    /// Enum describing the location of the FFmpeg tool.
-    /// </summary>
-    public enum FFmpegLocation
-    {
-        /// <summary>No path to FFmpeg found.</summary>
-        NotFound,
-
-        /// <summary>Path supplied via command line using switch --ffmpeg.</summary>
-        SetByArgument,
-
-        /// <summary>User has supplied path via Transcoding UI page.</summary>
-        Custom,
-
-        /// <summary>FFmpeg tool found on system $PATH.</summary>
-        System
-    }
-
     /// <summary>
     /// Class SystemInfo.
     /// </summary>
@@ -82,9 +65,12 @@ namespace MediaBrowser.Model.System
         /// </summary>
         /// <value><c>true</c>.</value>
         [Obsolete("This is always true")]
+        [DefaultValue(true)]
         public bool CanSelfRestart { get; set; } = true;
 
-        public bool CanLaunchWebBrowser { get; set; }
+        [Obsolete("This is always false")]
+        [DefaultValue(false)]
+        public bool CanLaunchWebBrowser { get; set; } = false;
 
         /// <summary>
         /// Gets or sets the program data path.
@@ -129,16 +115,24 @@ namespace MediaBrowser.Model.System
         public string TranscodingTempPath { get; set; }
 
         /// <summary>
+        /// Gets or sets the list of cast receiver applications.
+        /// </summary>
+        public IReadOnlyList<CastReceiverApplication> CastReceiverApplications { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this instance has update available.
         /// </summary>
         /// <value><c>true</c> if this instance has update available; otherwise, <c>false</c>.</value>
         [Obsolete("This should be handled by the package manager")]
+        [DefaultValue(false)]
         public bool HasUpdateAvailable { get; set; }
 
         [Obsolete("This isn't set correctly anymore")]
-        public FFmpegLocation EncoderLocation { get; set; }
+        [DefaultValue("System")]
+        public string EncoderLocation { get; set; } = "System";
 
         [Obsolete("This is no longer set")]
-        public Architecture SystemArchitecture { get; set; } = Architecture.X64;
+        [DefaultValue("X64")]
+        public string SystemArchitecture { get; set; } = "X64";
     }
 }

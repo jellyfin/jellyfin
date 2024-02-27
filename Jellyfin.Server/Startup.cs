@@ -1,13 +1,15 @@
 using System;
-using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text;
+using Emby.Server.Implementations.EntryPoints;
 using Jellyfin.Api.Middleware;
+using Jellyfin.LiveTv.Extensions;
+using Jellyfin.LiveTv.Recordings;
 using Jellyfin.MediaEncoding.Hls.Extensions;
-using Jellyfin.Networking.Configuration;
+using Jellyfin.Networking;
 using Jellyfin.Networking.HappyEyeballs;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.HealthChecks;
@@ -15,9 +17,9 @@ using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Extensions;
 using Jellyfin.Server.Infrastructure;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Extensions;
+using MediaBrowser.XbmcMetadata;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -27,7 +29,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
-using Microsoft.VisualBasic;
 using Prometheus;
 
 namespace Jellyfin.Server
@@ -37,7 +38,7 @@ namespace Jellyfin.Server
     /// </summary>
     public class Startup
     {
-        private readonly IServerApplicationHost _serverApplicationHost;
+        private readonly CoreAppHost _serverApplicationHost;
         private readonly IServerConfigurationManager _serverConfigurationManager;
 
         /// <summary>
@@ -120,26 +121,19 @@ namespace Jellyfin.Server
                 })
                 .ConfigurePrimaryHttpMessageHandler(defaultHttpClientHandlerDelegate);
 
-            services.AddHttpClient(NamedClient.Dlna, c =>
-                {
-                    c.DefaultRequestHeaders.UserAgent.ParseAdd(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "{0}/{1} UPnP/1.0 {2}/{3}",
-                            Environment.OSVersion.Platform,
-                            Environment.OSVersion,
-                            _serverApplicationHost.Name,
-                            _serverApplicationHost.ApplicationVersionString));
-
-                    c.DefaultRequestHeaders.Add("CPFN.UPNP.ORG", _serverApplicationHost.FriendlyName); // Required for UPnP DeviceArchitecture v2.0
-                    c.DefaultRequestHeaders.Add("FriendlyName.DLNA.ORG", _serverApplicationHost.FriendlyName); // REVIEW: where does this come from?
-                })
-                .ConfigurePrimaryHttpMessageHandler(defaultHttpClientHandlerDelegate);
-
             services.AddHealthChecks()
                 .AddCheck<DbContextFactoryHealthCheck<JellyfinDbContext>>(nameof(JellyfinDbContext));
 
             services.AddHlsPlaylistGenerator();
+            services.AddLiveTvServices();
+
+            services.AddHostedService<RecordingsHost>();
+            services.AddHostedService<AutoDiscoveryHost>();
+            services.AddHostedService<PortForwardingHost>();
+            services.AddHostedService<NfoUserDataSaver>();
+            services.AddHostedService<LibraryChangedNotifier>();
+            services.AddHostedService<UserDataChangeNotifier>();
+            services.AddHostedService<RecordingNotifier>();
         }
 
         /// <summary>

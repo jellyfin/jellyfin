@@ -173,6 +173,13 @@ namespace Emby.Naming.Common
                 ".vtt",
             };
 
+            LyricFileExtensions = new[]
+            {
+                ".lrc",
+                ".elrc",
+                ".txt"
+            };
+
             AlbumStackingPrefixes = new[]
             {
                 "cd",
@@ -318,7 +325,7 @@ namespace Emby.Naming.Common
                 new EpisodeExpression(@"[\._ -]()[Ee][Pp]_?([0-9]+)([^\\/]*)$"),
                 // <!-- foo.E01., foo.e01. -->
                 new EpisodeExpression(@"[^\\/]*?()\.?[Ee]([0-9]+)\.([^\\/]*)$"),
-                new EpisodeExpression(@"(?<year>[0-9]{4})[._ -](?<month>[0-9]{2})[._ -](?<day>[0-9]{2})", true)
+                new EpisodeExpression("(?<year>[0-9]{4})[._ -](?<month>[0-9]{2})[._ -](?<day>[0-9]{2})", true)
                 {
                     DateTimeFormats = new[]
                     {
@@ -328,7 +335,7 @@ namespace Emby.Naming.Common
                         "yyyy MM dd"
                     }
                 },
-                new EpisodeExpression(@"(?<day>[0-9]{2})[._ -](?<month>[0-9]{2})[._ -](?<year>[0-9]{4})", true)
+                new EpisodeExpression("(?<day>[0-9]{2})[._ -](?<month>[0-9]{2})[._ -](?<year>[0-9]{4})", true)
                 {
                     DateTimeFormats = new[]
                     {
@@ -376,7 +383,7 @@ namespace Emby.Naming.Common
                     IsNamed = true,
                     SupportsAbsoluteEpisodeNumbers = false
                 },
-                new EpisodeExpression("[\\/._ -]p(?:ar)?t[_. -]()([ivx]+|[0-9]+)([._ -][^\\/]*)$")
+                new EpisodeExpression(@"[\/._ -]p(?:ar)?t[_. -]()([ivx]+|[0-9]+)([._ -][^\/]*)$")
                 {
                     SupportsAbsoluteEpisodeNumbers = true
                 },
@@ -417,7 +424,7 @@ namespace Emby.Naming.Common
                 },
 
                 // "1-12 episode title"
-                new EpisodeExpression(@"([0-9]+)-([0-9]+)"),
+                new EpisodeExpression("([0-9]+)-([0-9]+)"),
 
                 // "01 - blah.avi", "01-blah.avi"
                 new EpisodeExpression(@".*(\\|\/)(?<epnumber>[0-9]{1,3})(-(?<endingepnumber>[0-9]{2,3}))*\s?-\s?[^\\\/]*$")
@@ -712,7 +719,7 @@ namespace Emby.Naming.Common
                 // Chapter is often beginning of filename
                 "^(?<chapter>[0-9]+)",
                 // Part if often ending of filename
-                @"(?<!ch(?:apter) )(?<part>[0-9]+)$",
+                "(?<!ch(?:apter) )(?<part>[0-9]+)$",
                 // Sometimes named as 0001_005 (chapter_part)
                 "(?<chapter>[0-9]+)_(?<part>[0-9]+)",
                 // Some audiobooks are ripped from cd's, and will be named by disk number.
@@ -790,6 +797,11 @@ namespace Emby.Naming.Common
         /// Gets or sets list of subtitle file extensions.
         /// </summary>
         public string[] SubtitleFileExtensions { get; set; }
+
+        /// <summary>
+        /// Gets the list of lyric file extensions.
+        /// </summary>
+        public string[] LyricFileExtensions { get; }
 
         /// <summary>
         /// Gets or sets list of episode regular expressions.

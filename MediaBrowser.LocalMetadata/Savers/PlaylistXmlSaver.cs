@@ -1,6 +1,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using System.Xml;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -48,12 +49,12 @@ namespace MediaBrowser.LocalMetadata.Savers
         {
             var game = (Playlist)item;
 
-            if (string.IsNullOrEmpty(game.PlaylistMediaType))
+            if (game.PlaylistMediaType == MediaType.Unknown)
             {
                 return Task.CompletedTask;
             }
 
-            return writer.WriteElementStringAsync(null, "PlaylistMediaType", null, game.PlaylistMediaType);
+            return writer.WriteElementStringAsync(null, "PlaylistMediaType", null, game.PlaylistMediaType.ToString());
         }
 
         /// <inheritdoc />

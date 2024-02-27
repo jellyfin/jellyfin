@@ -11,6 +11,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Configuration;
@@ -82,7 +83,7 @@ namespace Jellyfin.Providers.Tests.Manager
             AddParts(providerManager, metadataServices: servicesList.Select(s => s.Object).ToArray());
 
             var refreshOptions = new MetadataRefreshOptions(Mock.Of<IDirectoryService>(MockBehavior.Strict));
-            var actual = await providerManager.RefreshSingleItem(item, refreshOptions, CancellationToken.None).ConfigureAwait(false);
+            var actual = await providerManager.RefreshSingleItem(item, refreshOptions, CancellationToken.None);
 
             Assert.Equal(ItemUpdateType.MetadataDownload, actual);
             for (var i = 0; i < servicesList.Length; i++)
@@ -105,7 +106,7 @@ namespace Jellyfin.Providers.Tests.Manager
             AddParts(providerManager, metadataServices: servicesList.Select(s => s.Object).ToArray());
 
             var refreshOptions = new MetadataRefreshOptions(Mock.Of<IDirectoryService>(MockBehavior.Strict));
-            var actual = await providerManager.RefreshSingleItem(item, refreshOptions, CancellationToken.None).ConfigureAwait(false);
+            var actual = await providerManager.RefreshSingleItem(item, refreshOptions, CancellationToken.None);
 
             var expectedResult = serviceFound ? ItemUpdateType.MetadataDownload : ItemUpdateType.None;
             Assert.Equal(expectedResult, actual);
@@ -570,7 +571,8 @@ namespace Jellyfin.Providers.Tests.Manager
                 Mock.Of<IFileSystem>(),
                 Mock.Of<IServerApplicationPaths>(),
                 libraryManager.Object,
-                baseItemManager!);
+                baseItemManager!,
+                Mock.Of<ILyricManager>());
 
             return providerManager;
         }

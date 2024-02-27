@@ -123,5 +123,7 @@
     "TaskKeyframeExtractorDescription": "Extrage cadrele cheie din fișierele video pentru a crea liste de redare HLS mai precise. Această sarcină poate rula o perioadă lungă de timp.",
     "External": "Extern",
     "TaskKeyframeExtractor": "Extractor de cadre cheie",
-    "HearingImpaired": "Ascultare Impară"
+    "HearingImpaired": "Ascultare Impară",
+    "TaskRefreshTrickplayImages": "Generează imagini Trickplay",
+    "TaskRefreshTrickplayImagesDescription": "Generează previzualizările trickplay pentru videourile din librăriile selectate."
 }

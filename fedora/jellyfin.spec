@@ -1,10 +1,4 @@
 %global         debug_package %{nil}
-# Set the dotnet runtime
-%if 0%{?fedora}
-%global         dotnet_runtime  fedora.%{fedora}-x64
-%else
-%global         dotnet_runtime  centos-x64
-%endif
 
 Name:           jellyfin
 Version:        10.9.0
@@ -26,14 +20,8 @@ BuildRequires:  systemd
 BuildRequires:  libcurl-devel, fontconfig-devel, freetype-devel, openssl-devel, glibc-devel, libicu-devel
 # Requirements not packaged in RHEL 7 main repos, added via Makefile
 # https://packages.microsoft.com/rhel/7/prod/
-BuildRequires:  dotnet-runtime-7.0, dotnet-sdk-7.0
+BuildRequires:  dotnet-runtime-8.0, dotnet-sdk-8.0
 Requires: %{name}-server = %{version}-%{release}, %{name}-web = %{version}-%{release}
-
-# Temporary (hopefully?) fix for https://github.com/jellyfin/jellyfin/issues/7471
-%if 0%{?fedora} >= 36
-%global __requires_exclude ^liblttng-ust\\.so\\.0.*$
-%endif
-
 
 %description
 Jellyfin is a free software media system that puts you in control of managing and streaming your media.
@@ -66,15 +54,16 @@ the Jellyfin server to bind to ports 80 and/or 443 for example.
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export PATH=$PATH:/usr/local/bin
 # cannot use --output due to https://github.com/dotnet/sdk/issues/22220
-dotnet publish --configuration Release --self-contained --runtime %{dotnet_runtime} \
+dotnet publish --configuration Release --self-contained --runtime linux-x64 \
     -p:DebugSymbols=false -p:DebugType=none Jellyfin.Server
 
 
 %install
 # Jellyfin files
 %{__mkdir} -p %{buildroot}%{_libdir}/jellyfin %{buildroot}%{_bindir}
-%{__cp} -r Jellyfin.Server/bin/Release/net7.0/%{dotnet_runtime}/publish/* %{buildroot}%{_libdir}/jellyfin
+%{__cp} -r Jellyfin.Server/bin/Release/net8.0/linux-x64/publish/* %{buildroot}%{_libdir}/jellyfin
 %{__install} -D %{SOURCE10} %{buildroot}%{_bindir}/jellyfin
+sed -i -e 's|/usr/lib64|%{_libdir}|g' %{buildroot}%{_bindir}/jellyfin
 
 # Jellyfin config
 %{__install} -D Jellyfin.Server/Resources/Configuration/logging.json %{buildroot}%{_sysconfdir}/jellyfin/logging.json

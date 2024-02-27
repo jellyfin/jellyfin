@@ -1,6 +1,6 @@
 using FsCheck;
 using FsCheck.Xunit;
-using Jellyfin.Networking.Extensions;
+using MediaBrowser.Common.Net;
 using Xunit;
 
 namespace Jellyfin.Networking.Tests
@@ -16,7 +16,6 @@ namespace Jellyfin.Networking.Tests
         [InlineData("127.0.0.1:123")]
         [InlineData("localhost")]
         [InlineData("localhost:1345")]
-        [InlineData("www.google.co.uk")]
         [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517")]
         [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517/56")]
         [InlineData("[fd23:184f:2029:0:3139:7386:67d7:d517]:124")]
@@ -27,15 +26,15 @@ namespace Jellyfin.Networking.Tests
         [InlineData("192.168.1.2/255.255.255.0")]
         [InlineData("192.168.1.2/24")]
         public static void TryParse_ValidHostStrings_True(string address)
-            => Assert.True(NetworkExtensions.TryParseHost(address, out _, true, true));
+            => Assert.True(NetworkUtils.TryParseHost(address, out _, true, true));
 
         [Property]
         public static Property TryParse_IPv4Address_True(IPv4Address address)
-            => NetworkExtensions.TryParseHost(address.Item.ToString(), out _, true, true).ToProperty();
+            => NetworkUtils.TryParseHost(address.Item.ToString(), out _, true, true).ToProperty();
 
         [Property]
         public static Property TryParse_IPv6Address_True(IPv6Address address)
-            => NetworkExtensions.TryParseHost(address.Item.ToString(), out _, true, true).ToProperty();
+            => NetworkUtils.TryParseHost(address.Item.ToString(), out _, true, true).ToProperty();
 
         /// <summary>
         /// All should be invalid address strings.
@@ -48,6 +47,6 @@ namespace Jellyfin.Networking.Tests
         [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517:1231")]
         [InlineData("[fd23:184f:2029:0:3139:7386:67d7:d517:1231]")]
         public static void TryParse_InvalidAddressString_False(string address)
-            => Assert.False(NetworkExtensions.TryParseHost(address, out _, true, true));
+            => Assert.False(NetworkUtils.TryParseHost(address, out _, true, true));
     }
 }

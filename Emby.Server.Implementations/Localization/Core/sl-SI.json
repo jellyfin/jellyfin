@@ -11,7 +11,7 @@
     "Collections": "Zbirke",
     "DeviceOfflineWithName": "{0} je prekinil povezavo",
     "DeviceOnlineWithName": "{0} je povezan",
-    "FailedLoginAttemptWithUserName": "Neuspešen poskus prijave iz {0}",
+    "FailedLoginAttemptWithUserName": "Neuspešen poskus prijave z {0}",
     "Favorites": "Priljubljeno",
     "Folders": "Mape",
     "Genres": "Zvrsti",
@@ -124,5 +124,7 @@
     "TaskKeyframeExtractor": "Ekstraktor ključnih sličic",
     "External": "Zunanji",
     "TaskKeyframeExtractorDescription": "Iz video datoteke Izvleče ključne sličice, da ustvari bolj natančne sezname predvajanja HLS. Proces lahko traja dolgo časa.",
-    "HearingImpaired": "Oslabljen sluh"
+    "HearingImpaired": "Oslabljen sluh",
+    "TaskRefreshTrickplayImages": "Ustvari Trickplay slike",
+    "TaskRefreshTrickplayImagesDescription": "Ustvari trickplay predoglede za posnetke v omogočenih knjižnicah."
 }

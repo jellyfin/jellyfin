@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using Jellyfin.Api.Middleware;
-using Jellyfin.Networking.Configuration;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.OpenApi.Models;

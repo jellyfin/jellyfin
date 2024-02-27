@@ -111,7 +111,8 @@ namespace MediaBrowser.Controller.Session
         /// Reports the session ended.
         /// </summary>
         /// <param name="sessionId">The session identifier.</param>
-        void ReportSessionEnded(string sessionId);
+        /// <returns>Task.</returns>
+        ValueTask ReportSessionEnded(string sessionId);
 
         /// <summary>
         /// Sends the general command.
@@ -231,20 +232,6 @@ namespace MediaBrowser.Controller.Session
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task SendRestartRequiredNotification(CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Sends the server shutdown notification.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task SendServerShutdownNotification(CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Sends the server restart notification.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task SendServerRestartNotification(CancellationToken cancellationToken);
 
         /// <summary>
         /// Adds the additional user.

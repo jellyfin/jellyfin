@@ -4,7 +4,6 @@
 
 using System.Net;
 using MediaBrowser.Common;
-using MediaBrowser.Model.System;
 using Microsoft.AspNetCore.Http;
 
 namespace MediaBrowser.Controller
@@ -15,8 +14,6 @@ namespace MediaBrowser.Controller
     public interface IServerApplicationHost : IApplicationHost
     {
         bool CoreStartupHasCompleted { get; }
-
-        bool CanLaunchWebBrowser { get; }
 
         /// <summary>
         /// Gets the HTTP server port.
@@ -40,15 +37,6 @@ namespace MediaBrowser.Controller
         /// </summary>
         /// <value>The name of the friendly.</value>
         string FriendlyName { get; }
-
-        /// <summary>
-        /// Gets the system info.
-        /// </summary>
-        /// <param name="request">The HTTP request.</param>
-        /// <returns>SystemInfo.</returns>
-        SystemInfo GetSystemInfo(HttpRequest request);
-
-        PublicSystemInfo GetPublicSystemInfo(HttpRequest request);
 
         /// <summary>
         /// Gets a URL specific for the request.

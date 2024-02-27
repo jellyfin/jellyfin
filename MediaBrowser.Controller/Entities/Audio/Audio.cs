@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -27,6 +28,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         {
             Artists = Array.Empty<string>();
             AlbumArtists = Array.Empty<string>();
+            LyricFiles = Array.Empty<string>();
         }
 
         /// <inheritdoc />
@@ -63,7 +65,17 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// </summary>
         /// <value>The type of the media.</value>
         [JsonIgnore]
-        public override string MediaType => Model.Entities.MediaType.Audio;
+        public override MediaType MediaType => MediaType.Audio;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this audio has lyrics.
+        /// </summary>
+        public bool? HasLyrics { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of lyric paths.
+        /// </summary>
+        public IReadOnlyList<string> LyricFiles { get; set; }
 
         public override double GetDefaultPrimaryImageAspectRatio()
         {

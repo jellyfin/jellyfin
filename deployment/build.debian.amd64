@@ -1,18 +1,12 @@
 #!/bin/bash
 
-#= Debian 10+ amd64 .deb
+#= Debian 12+ amd64 .deb
 
 set -o errexit
 set -o xtrace
 
 # Move to source directory
-pushd ${SOURCE_DIR}
-
-if [[ ${IS_DOCKER} == YES ]]; then
-    # Remove build-dep for dotnet-sdk-7.0, since it's installed manually
-    cp -a debian/control /tmp/control.orig
-    sed -i '/dotnet-sdk-7.0,/d' debian/control
-fi
+pushd "${SOURCE_DIR}"
 
 # Modify changelog to unstable configuration if IS_UNSTABLE
 if [[ ${IS_UNSTABLE} == 'yes' ]]; then
@@ -32,12 +26,12 @@ fi
 # Build DEB
 dpkg-buildpackage -us -uc --pre-clean --post-clean
 
-mkdir -p ${ARTIFACT_DIR}/
-mv ../jellyfin*.{deb,dsc,tar.gz,buildinfo,changes} ${ARTIFACT_DIR}/
+mkdir -p "${ARTIFACT_DIR}/"
+mv ../jellyfin*.{deb,dsc,tar.gz,buildinfo,changes} "${ARTIFACT_DIR}/"
 
 if [[ ${IS_DOCKER} == YES ]]; then
     cp -a /tmp/control.orig debian/control
-    chown -Rc $(stat -c %u:%g ${ARTIFACT_DIR}) ${ARTIFACT_DIR}
+    chown -Rc "$(stat -c %u:%g "${ARTIFACT_DIR}")" "${ARTIFACT_DIR}"
 fi
 
 popd

@@ -8,6 +8,8 @@ using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.PlaylistDtos;
+using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
@@ -75,7 +77,7 @@ public class PlaylistsController : BaseJellyfinApiController
         [FromQuery, ParameterObsolete] string? name,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder)), ParameterObsolete] IReadOnlyList<Guid> ids,
         [FromQuery, ParameterObsolete] Guid? userId,
-        [FromQuery, ParameterObsolete] string? mediaType,
+        [FromQuery, ParameterObsolete] MediaType? mediaType,
         [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] CreatePlaylistDto? createPlaylistRequest)
     {
         if (ids.Count == 0)
@@ -172,7 +174,7 @@ public class PlaylistsController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<QueryResult<BaseItemDto>> GetPlaylistItems(
         [FromRoute, Required] Guid playlistId,
-        [FromQuery, Required] Guid userId,
+        [FromQuery] Guid? userId,
         [FromQuery] int? startIndex,
         [FromQuery] int? limit,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
@@ -181,15 +183,16 @@ public class PlaylistsController : BaseJellyfinApiController
         [FromQuery] int? imageTypeLimit,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
     {
+        userId = RequestHelpers.GetUserId(User, userId);
         var playlist = (Playlist)_libraryManager.GetItemById(playlistId);
         if (playlist is null)
         {
             return NotFound();
         }
 
-        var user = userId.Equals(default)
+        var user = userId.IsNullOrEmpty()
             ? null
-            : _userManager.GetUserById(userId);
+            : _userManager.GetUserById(userId.Value);
 
         var items = playlist.GetManageableItems().ToArray();
         var count = items.Length;

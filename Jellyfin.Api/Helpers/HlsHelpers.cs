@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.StreamingDtos;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
 
@@ -53,7 +54,7 @@ public static class HlsHelpers
                             break;
                         }
 
-                        if (line.IndexOf("#EXTINF:", StringComparison.OrdinalIgnoreCase) != -1)
+                        if (line.Contains("#EXTINF:", StringComparison.OrdinalIgnoreCase))
                         {
                             count++;
                             if (count >= segmentCount)

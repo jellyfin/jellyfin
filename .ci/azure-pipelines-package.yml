@@ -168,6 +168,7 @@ jobs:
 - job: CollectArtifacts
   timeoutInMinutes: 20
   displayName: 'Collect Artifacts'
+  condition: succeededOrFailed()
   continueOnError: true
   dependsOn:
   - BuildPackage
@@ -207,10 +208,10 @@ jobs:
 
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET 7.0 sdk'
+    displayName: 'Use .NET 8.0 sdk'
     inputs:
       packageType: 'sdk'
-      version: '7.0.x'
+      version: '8.0.x'
 
   - task: DotNetCoreCLI@2
     displayName: 'Build Stable Nuget packages'
@@ -258,7 +259,7 @@ jobs:
       publishFeedCredentials: 'NugetOrg'
       allowPackageConflicts: true # This ignores an error if the version already exists
 
-  - task: NuGetAuthenticate@0
+  - task: NuGetAuthenticate@1
     displayName: 'Authenticate to unstable Nuget feed'
     condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/master')
 

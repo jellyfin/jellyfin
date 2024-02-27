@@ -35,6 +35,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IItemRepository _itemRepo;
         private readonly ILibraryManager _libraryManager;
         private readonly IMediaSourceManager _mediaSourceManager;
+        private readonly LyricResolver _lyricResolver;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AudioFileProber"/> class.
@@ -44,22 +45,28 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
         /// <param name="itemRepo">Instance of the <see cref="IItemRepository"/> interface.</param>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
+        /// <param name="lyricResolver">Instance of the <see cref="LyricResolver"/> interface.</param>
         public AudioFileProber(
             ILogger<AudioFileProber> logger,
             IMediaSourceManager mediaSourceManager,
             IMediaEncoder mediaEncoder,
             IItemRepository itemRepo,
-            ILibraryManager libraryManager)
+            ILibraryManager libraryManager,
+            LyricResolver lyricResolver)
         {
             _logger = logger;
             _mediaEncoder = mediaEncoder;
             _itemRepo = itemRepo;
             _libraryManager = libraryManager;
             _mediaSourceManager = mediaSourceManager;
+            _lyricResolver = lyricResolver;
         }
 
-        [GeneratedRegex("I:\\s+(.*?)\\s+LUFS")]
+        [GeneratedRegex(@"I:\s+(.*?)\s+LUFS")]
         private static partial Regex LUFSRegex();
+
+        [GeneratedRegex(@"REPLAYGAIN_TRACK_GAIN:\s+-?([0-9.]+)\s+dB")]
+        private static partial Regex ReplayGainTagRegex();
 
         /// <summary>
         /// Probes the specified item for metadata.
@@ -100,14 +107,55 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                Fetch(item, result, cancellationToken);
+                Fetch(item, result, options, cancellationToken);
             }
 
             var libraryOptions = _libraryManager.GetLibraryOptions(item);
+            bool foundLUFSValue = false;
 
-            if (libraryOptions.EnableLUFSScan)
+            if (libraryOptions.UseReplayGainTags)
             {
-                string output;
+                using (var process = new Process()
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = _mediaEncoder.ProbePath,
+                        Arguments = $"-hide_banner -i \"{path}\"",
+                        RedirectStandardOutput = false,
+                        RedirectStandardError = true
+                    },
+                })
+                {
+                    try
+                    {
+                        process.Start();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error starting ffmpeg");
+
+                        throw;
+                    }
+
+                    using var reader = process.StandardError;
+                    var output = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
+                    cancellationToken.ThrowIfCancellationRequested();
+                    Match split = ReplayGainTagRegex().Match(output);
+
+                    if (split.Success)
+                    {
+                        item.LUFS = DefaultLUFSValue - float.Parse(split.Groups[1].ValueSpan, CultureInfo.InvariantCulture.NumberFormat);
+                        foundLUFSValue = true;
+                    }
+                    else
+                    {
+                        item.LUFS = DefaultLUFSValue;
+                    }
+                }
+            }
+
+            if (libraryOptions.EnableLUFSScan && !foundLUFSValue)
+            {
                 using (var process = new Process()
                 {
                     StartInfo = new ProcessStartInfo
@@ -131,7 +179,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     }
 
                     using var reader = process.StandardError;
-                    output = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
+                    var output = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
                     cancellationToken.ThrowIfCancellationRequested();
                     MatchCollection split = LUFSRegex().Matches(output);
 
@@ -145,7 +193,8 @@ namespace MediaBrowser.Providers.MediaInfo
                     }
                 }
             }
-            else
+
+            if (!libraryOptions.EnableLUFSScan && !libraryOptions.UseReplayGainTags)
             {
                 item.LUFS = DefaultLUFSValue;
             }
@@ -160,8 +209,13 @@ namespace MediaBrowser.Providers.MediaInfo
         /// </summary>
         /// <param name="audio">The <see cref="Audio"/>.</param>
         /// <param name="mediaInfo">The <see cref="Model.MediaInfo.MediaInfo"/>.</param>
+        /// <param name="options">The <see cref="MetadataRefreshOptions"/>.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
-        protected void Fetch(Audio audio, Model.MediaInfo.MediaInfo mediaInfo, CancellationToken cancellationToken)
+        protected void Fetch(
+            Audio audio,
+            Model.MediaInfo.MediaInfo mediaInfo,
+            MetadataRefreshOptions options,
+            CancellationToken cancellationToken)
         {
             audio.Container = mediaInfo.Container;
             audio.TotalBitrate = mediaInfo.Bitrate;
@@ -174,7 +228,12 @@ namespace MediaBrowser.Providers.MediaInfo
                 FetchDataFromTags(audio);
             }
 
-            _itemRepo.SaveMediaStreams(audio.Id, mediaInfo.MediaStreams, cancellationToken);
+            var mediaStreams = new List<MediaStream>(mediaInfo.MediaStreams);
+            AddExternalLyrics(audio, mediaStreams, options);
+
+            audio.HasLyrics = mediaStreams.Any(s => s.Type == MediaStreamType.Lyric);
+
+            _itemRepo.SaveMediaStreams(audio.Id, mediaStreams, cancellationToken);
         }
 
         /// <summary>
@@ -287,6 +346,18 @@ namespace MediaBrowser.Providers.MediaInfo
                 audio.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, tags.MusicBrainzReleaseGroupId);
                 audio.SetProviderId(MetadataProvider.MusicBrainzTrack, tags.MusicBrainzTrackId);
             }
+        }
+
+        private void AddExternalLyrics(
+            Audio audio,
+            List<MediaStream> currentStreams,
+            MetadataRefreshOptions options)
+        {
+            var startIndex = currentStreams.Count == 0 ? 0 : (currentStreams.Select(i => i.Index).Max() + 1);
+            var externalLyricFiles = _lyricResolver.GetExternalStreams(audio, startIndex, options.DirectoryService, false);
+
+            audio.LyricFiles = externalLyricFiles.Select(i => i.Path).Distinct().ToArray();
+            currentStreams.AddRange(externalLyricFiles);
         }
     }
 }

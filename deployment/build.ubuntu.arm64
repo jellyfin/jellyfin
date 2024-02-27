@@ -1,18 +1,12 @@
 #!/bin/bash
 
-#= Ubuntu 18.04+ arm64 .deb
+#= Ubuntu 22.04+ arm64 .deb
 
 set -o errexit
 set -o xtrace
 
 # Move to source directory
-pushd ${SOURCE_DIR}
-
-if [[ ${IS_DOCKER} == YES ]]; then
-    # Remove build-dep for dotnet-sdk-7.0, since it's installed manually
-    cp -a debian/control /tmp/control.orig
-    sed -i '/dotnet-sdk-7.0,/d' debian/control
-fi
+pushd "${SOURCE_DIR}"
 
 # Modify changelog to unstable configuration if IS_UNSTABLE
 if [[ ${IS_UNSTABLE} == 'yes' ]]; then
@@ -33,12 +27,12 @@ fi
 export CONFIG_SITE=/etc/dpkg-cross/cross-config.${ARCH}
 dpkg-buildpackage -us -uc -a arm64 --pre-clean --post-clean
 
-mkdir -p ${ARTIFACT_DIR}/
-mv ../jellyfin*.{deb,dsc,tar.gz,buildinfo,changes} ${ARTIFACT_DIR}/
+mkdir -p "${ARTIFACT_DIR}/"
+mv ../jellyfin*.{deb,dsc,tar.gz,buildinfo,changes} "${ARTIFACT_DIR}/"
 
 if [[ ${IS_DOCKER} == YES ]]; then
     cp -a /tmp/control.orig debian/control
-    chown -Rc $(stat -c %u:%g ${ARTIFACT_DIR}) ${ARTIFACT_DIR}
+    chown -Rc "$(stat -c %u:%g "${ARTIFACT_DIR}")" "${ARTIFACT_DIR}"
 fi
 
 popd

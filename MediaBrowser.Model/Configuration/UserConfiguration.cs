@@ -69,5 +69,10 @@ namespace MediaBrowser.Model.Configuration
         public bool RememberSubtitleSelections { get; set; }
 
         public bool EnableNextEpisodeAutoPlay { get; set; }
+
+        /// <summary>
+        /// Gets or sets the id of the selected cast receiver.
+        /// </summary>
+        public string? CastReceiverId { get; set; }
     }
 }

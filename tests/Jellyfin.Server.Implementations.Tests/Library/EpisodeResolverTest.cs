@@ -1,5 +1,6 @@
 using Emby.Naming.Common;
 using Emby.Server.Implementations.Library.Resolvers.TV;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -28,7 +29,7 @@ namespace Jellyfin.Server.Implementations.Tests.Library
                 null)
             {
                 Parent = parent,
-                CollectionType = CollectionType.TvShows,
+                CollectionType = CollectionType.tvshows,
                 FileInfo = new FileSystemMetadata
                 {
                     FullName = "All My Children/Season 01/Extras/All My Children S01E01 - Behind The Scenes.mkv"
@@ -51,7 +52,7 @@ namespace Jellyfin.Server.Implementations.Tests.Library
                 null)
             {
                 Parent = series,
-                CollectionType = CollectionType.TvShows,
+                CollectionType = CollectionType.tvshows,
                 FileInfo = new FileSystemMetadata
                 {
                     FullName = "Extras/Extras S01E01.mkv"

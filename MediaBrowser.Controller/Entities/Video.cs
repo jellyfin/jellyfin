@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
@@ -170,7 +171,7 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public override bool HasLocalAlternateVersions => LocalAlternateVersions.Length > 0;
 
-        public static ILiveTvManager LiveTvManager { get; set; }
+        public static IRecordingsManager RecordingsManager { get; set; }
 
         [JsonIgnore]
         public override SourceType SourceType
@@ -256,7 +257,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The type of the media.</value>
         [JsonIgnore]
-        public override string MediaType => Model.Entities.MediaType.Video;
+        public override MediaType MediaType => MediaType.Video;
 
         public override List<string> GetUserDataKeys()
         {
@@ -333,7 +334,7 @@ namespace MediaBrowser.Controller.Entities
 
         protected override bool IsActiveRecording()
         {
-            return LiveTvManager.GetActiveRecordingInfo(Path) is not null;
+            return RecordingsManager.GetActiveRecordingInfo(Path) is not null;
         }
 
         public override bool CanDelete()
@@ -455,7 +456,7 @@ namespace MediaBrowser.Controller.Entities
             foreach (var child in LinkedAlternateVersions)
             {
                 // Reset the cached value
-                if (child.ItemId.HasValue && child.ItemId.Value.Equals(default))
+                if (child.ItemId.IsNullOrEmpty())
                 {
                     child.ItemId = null;
                 }

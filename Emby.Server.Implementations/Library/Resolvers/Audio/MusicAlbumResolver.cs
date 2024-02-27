@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Naming.Audio;
 using Emby.Naming.Common;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -54,7 +55,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         protected override MusicAlbum Resolve(ItemResolveArgs args)
         {
             var collectionType = args.GetCollectionType();
-            var isMusicMediaFolder = string.Equals(collectionType, CollectionType.Music, StringComparison.OrdinalIgnoreCase);
+            var isMusicMediaFolder = collectionType == CollectionType.music;
 
             // If there's a collection type and it's not music, don't allow it.
             if (!isMusicMediaFolder)

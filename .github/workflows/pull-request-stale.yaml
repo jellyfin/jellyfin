@@ -1,0 +1,30 @@
+name: Stale PR Check
+
+on:
+  schedule:
+    - cron: '30 */12 * * *'
+  workflow_dispatch:
+
+permissions:
+  pull-requests: write
+  actions: write
+
+jobs:
+  prs-stale-conflicts:
+    name: Check PRs with merge conflicts
+    runs-on: ubuntu-latest
+    if: ${{ contains(github.repository, 'jellyfin/') }}
+    steps:
+      - uses: actions/stale@28ca1036281a5e5922ead5184a1bbf96e5fc984e # v9.0.0
+        with:
+          repo-token: ${{ secrets.JF_BOT_TOKEN }}
+          ascending: true
+          operations-per-run: 150
+          # The merge conflict action will remove the label when updated
+          remove-stale-when-updated: false
+          days-before-stale: -1
+          days-before-close: 90
+          days-before-issue-close: -1
+          stale-pr-label: merge conflict
+          close-pr-message: |-
+            This PR has been closed due to having unresolved merge conflicts.

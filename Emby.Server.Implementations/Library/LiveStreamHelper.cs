@@ -50,13 +50,21 @@ namespace Emby.Server.Implementations.Library
             {
                 try
                 {
-                    await using FileStream jsonStream = AsyncFile.OpenRead(cacheFilePath);
-                    mediaInfo = await JsonSerializer.DeserializeAsync<MediaInfo>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+                    FileStream jsonStream = AsyncFile.OpenRead(cacheFilePath);
 
-                    // _logger.LogDebug("Found cached media info");
+                    await using (jsonStream.ConfigureAwait(false))
+                    {
+                        mediaInfo = await JsonSerializer.DeserializeAsync<MediaInfo>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+                        // _logger.LogDebug("Found cached media info");
+                    }
                 }
-                catch
+                catch (IOException ex)
                 {
+                    _logger.LogDebug(ex, "Could not open cached media info");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error opening cached media info");
                 }
             }
 
@@ -84,10 +92,13 @@ namespace Emby.Server.Implementations.Library
                 if (cacheFilePath is not null)
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
-                    await using FileStream createStream = AsyncFile.OpenWrite(cacheFilePath);
-                    await JsonSerializer.SerializeAsync(createStream, mediaInfo, _jsonOptions, cancellationToken).ConfigureAwait(false);
+                    FileStream createStream = AsyncFile.OpenWrite(cacheFilePath);
+                    await using (createStream.ConfigureAwait(false))
+                    {
+                        await JsonSerializer.SerializeAsync(createStream, mediaInfo, _jsonOptions, cancellationToken).ConfigureAwait(false);
+                    }
 
-                    // _logger.LogDebug("Saved media info to {0}", cacheFilePath);
+                    _logger.LogDebug("Saved media info to {0}", cacheFilePath);
                 }
             }
 

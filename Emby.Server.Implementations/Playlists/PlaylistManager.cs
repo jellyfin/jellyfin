@@ -10,6 +10,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -74,7 +76,7 @@ namespace Emby.Server.Implementations.Playlists
                 throw new ArgumentException(nameof(parentFolder));
             }
 
-            if (string.IsNullOrEmpty(options.MediaType))
+            if (options.MediaType is null || options.MediaType == MediaType.Unknown)
             {
                 foreach (var itemId in options.ItemIdList)
                 {
@@ -84,7 +86,7 @@ namespace Emby.Server.Implementations.Playlists
                         throw new ArgumentException("No item exists with the supplied Id");
                     }
 
-                    if (!string.IsNullOrEmpty(item.MediaType))
+                    if (item.MediaType != MediaType.Unknown)
                     {
                         options.MediaType = item.MediaType;
                     }
@@ -102,20 +104,20 @@ namespace Emby.Server.Implementations.Playlists
                         {
                             options.MediaType = folder.GetRecursiveChildren(i => !i.IsFolder && i.SupportsAddingToPlaylist)
                                 .Select(i => i.MediaType)
-                                .FirstOrDefault(i => !string.IsNullOrEmpty(i));
+                                .FirstOrDefault(i => i != MediaType.Unknown);
                         }
                     }
 
-                    if (!string.IsNullOrEmpty(options.MediaType))
+                    if (options.MediaType is not null && options.MediaType != MediaType.Unknown)
                     {
                         break;
                     }
                 }
             }
 
-            if (string.IsNullOrEmpty(options.MediaType))
+            if (options.MediaType is null || options.MediaType == MediaType.Unknown)
             {
-                options.MediaType = "Audio";
+                options.MediaType = MediaType.Audio;
             }
 
             var user = _userManager.GetUserById(options.UserId);
@@ -168,7 +170,7 @@ namespace Emby.Server.Implementations.Playlists
             return path;
         }
 
-        private List<BaseItem> GetPlaylistItems(IEnumerable<Guid> itemIds, string playlistMediaType, User user, DtoOptions options)
+        private List<BaseItem> GetPlaylistItems(IEnumerable<Guid> itemIds, MediaType playlistMediaType, User user, DtoOptions options)
         {
             var items = itemIds.Select(i => _libraryManager.GetItemById(i)).Where(i => i is not null);
 
@@ -177,7 +179,7 @@ namespace Emby.Server.Implementations.Playlists
 
         public Task AddToPlaylistAsync(Guid playlistId, IReadOnlyCollection<Guid> itemIds, Guid userId)
         {
-            var user = userId.Equals(default) ? null : _userManager.GetUserById(userId);
+            var user = userId.IsEmpty() ? null : _userManager.GetUserById(userId);
 
             return AddToPlaylistInternal(playlistId, itemIds, user, new DtoOptions(false)
             {
@@ -327,9 +329,9 @@ namespace Emby.Server.Implementations.Playlists
             // this is probably best done as a metadata provider
             // saving a file over itself will require some work to prevent this from happening when not needed
             var playlistPath = item.Path;
-            var extension = Path.GetExtension(playlistPath);
+            var extension = Path.GetExtension(playlistPath.AsSpan());
 
-            if (string.Equals(".wpl", extension, StringComparison.OrdinalIgnoreCase))
+            if (extension.Equals(".wpl", StringComparison.OrdinalIgnoreCase))
             {
                 var playlist = new WplPlaylist();
                 foreach (var child in item.GetLinkedChildren())
@@ -362,8 +364,7 @@ namespace Emby.Server.Implementations.Playlists
                 string text = new WplContent().ToText(playlist);
                 File.WriteAllText(playlistPath, text);
             }
-
-            if (string.Equals(".zpl", extension, StringComparison.OrdinalIgnoreCase))
+            else if (extension.Equals(".zpl", StringComparison.OrdinalIgnoreCase))
             {
                 var playlist = new ZplPlaylist();
                 foreach (var child in item.GetLinkedChildren())
@@ -396,8 +397,7 @@ namespace Emby.Server.Implementations.Playlists
                 string text = new ZplContent().ToText(playlist);
                 File.WriteAllText(playlistPath, text);
             }
-
-            if (string.Equals(".m3u", extension, StringComparison.OrdinalIgnoreCase))
+            else if (extension.Equals(".m3u", StringComparison.OrdinalIgnoreCase))
             {
                 var playlist = new M3uPlaylist
                 {
@@ -428,8 +428,7 @@ namespace Emby.Server.Implementations.Playlists
                 string text = new M3uContent().ToText(playlist);
                 File.WriteAllText(playlistPath, text);
             }
-
-            if (string.Equals(".m3u8", extension, StringComparison.OrdinalIgnoreCase))
+            else if (extension.Equals(".m3u8", StringComparison.OrdinalIgnoreCase))
             {
                 var playlist = new M3uPlaylist();
                 playlist.IsExtended = true;
@@ -458,8 +457,7 @@ namespace Emby.Server.Implementations.Playlists
                 string text = new M3uContent().ToText(playlist);
                 File.WriteAllText(playlistPath, text);
             }
-
-            if (string.Equals(".pls", extension, StringComparison.OrdinalIgnoreCase))
+            else if (extension.Equals(".pls", StringComparison.OrdinalIgnoreCase))
             {
                 var playlist = new PlsPlaylist();
                 foreach (var child in item.GetLinkedChildren())
@@ -516,6 +514,11 @@ namespace Emby.Server.Implementations.Playlists
             }
 
             return relativePath;
+        }
+
+        public Folder GetPlaylistsFolder()
+        {
+            return GetPlaylistsFolder(Guid.Empty);
         }
 
         public Folder GetPlaylistsFolder(Guid userId)

@@ -204,16 +204,10 @@ namespace MediaBrowser.Providers.MediaInfo
                 ? Path.GetExtension(attachmentStream.FileName)
                 : MimeTypes.ToExtension(attachmentStream.MimeType);
 
-            if (string.IsNullOrEmpty(extension))
-            {
-                extension = ".jpg";
-            }
-
             ImageFormat format = extension switch
             {
                 ".bmp" => ImageFormat.Bmp,
                 ".gif" => ImageFormat.Gif,
-                ".jpg" => ImageFormat.Jpg,
                 ".png" => ImageFormat.Png,
                 ".webp" => ImageFormat.Webp,
                 _ => ImageFormat.Jpg

@@ -22,7 +22,7 @@ public class GetProgramsDto
     /// <summary>
     /// Gets or sets optional. Filter by user id.
     /// </summary>
-    public Guid UserId { get; set; }
+    public Guid? UserId { get; set; }
 
     /// <summary>
     /// Gets or sets the minimum premiere start date.
@@ -107,7 +107,7 @@ public class GetProgramsDto
     /// Optional.
     /// </summary>
     [JsonConverter(typeof(JsonCommaDelimitedArrayConverterFactory))]
-    public IReadOnlyList<string> SortBy { get; set; } = Array.Empty<string>();
+    public IReadOnlyList<ItemSortBy> SortBy { get; set; } = Array.Empty<ItemSortBy>();
 
     /// <summary>
     /// Gets or sets sort Order - Ascending,Descending.

@@ -86,6 +86,7 @@ namespace Jellyfin.Server.Migrations.Routines
             var dbFilePath = Path.Combine(_paths.DataPath, DbFilename);
             using (var connection = new SqliteConnection($"Filename={dbFilePath}"))
             {
+                connection.Open();
                 using var dbContext = _provider.CreateDbContext();
 
                 var results = connection.Query("SELECT * FROM userdisplaypreferences");
