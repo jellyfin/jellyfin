@@ -1,8 +1,11 @@
+using System.ComponentModel;
+
 namespace Jellyfin.Data.Enums;
 
 /// <summary>
 /// Media streaming protocol.
 /// </summary>
+[DefaultValue(Http)]
 public enum MediaStreamProtocol
 {
     /// <summary>
