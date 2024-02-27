@@ -290,7 +290,7 @@ namespace Emby.Server.Implementations
         public void AddPluginHttpClient<T>(
             IServiceCollection serviceCollection,
             string basedOnClientName,
-            (string Name, string[] Values)[] customHeaders = null)
+            (string Name, string[] Values)[] customHeaders)
             where T : BasePlugin
         {
             ArgumentNullException.ThrowIfNull(serviceCollection);

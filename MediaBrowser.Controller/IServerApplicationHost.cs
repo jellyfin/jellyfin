@@ -4,6 +4,7 @@
 
 using System.Net;
 using MediaBrowser.Common;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -98,7 +99,7 @@ namespace MediaBrowser.Controller
         /// <typeparam name="T">The plugin type.</typeparam>
         void AddPluginHttpClient<T>(
             IServiceCollection serviceCollection,
-            string basedOnClientName,
+            string basedOnClientName = nameof(NamedClient.Default),
             (string Name, string[] Values)[] customHeaders = null)
             where T : BasePlugin;
     }
