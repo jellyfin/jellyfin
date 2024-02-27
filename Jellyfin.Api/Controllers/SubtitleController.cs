@@ -161,17 +161,17 @@ public class SubtitleController : BaseJellyfinApiController
     /// <summary>
     /// Gets the remote subtitles.
     /// </summary>
-    /// <param name="id">The item id.</param>
+    /// <param name="subtitleId">The item id.</param>
     /// <response code="200">File returned.</response>
     /// <returns>A <see cref="FileStreamResult"/> with the subtitle file.</returns>
-    [HttpGet("Providers/Subtitles/Subtitles/{id}")]
+    [HttpGet("Providers/Subtitles/Subtitles/{subtitleId}")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Produces(MediaTypeNames.Application.Octet)]
     [ProducesFile("text/*")]
-    public async Task<ActionResult> GetRemoteSubtitles([FromRoute, Required] string id)
+    public async Task<ActionResult> GetRemoteSubtitles([FromRoute, Required] string subtitleId)
     {
-        var result = await _subtitleManager.GetRemoteSubtitles(id, CancellationToken.None).ConfigureAwait(false);
+        var result = await _subtitleManager.GetRemoteSubtitles(subtitleId, CancellationToken.None).ConfigureAwait(false);
 
         return File(result.Stream, MimeTypes.GetMimeType("file." + result.Format));
     }
