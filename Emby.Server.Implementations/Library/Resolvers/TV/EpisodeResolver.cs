@@ -50,7 +50,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
             // If the parent is a Season or Series and the parent is not an extras folder, then this is an Episode if the VideoResolver returns something
             // Also handle flat tv folders
             if (season is not null
-                || args.GetCollectionType() == CollectionType.TvShows
+                || args.GetCollectionType() == CollectionType.tvshows
                 || args.HasParent<Series>())
             {
                 var episode = ResolveVideo<Episode>(args, false);

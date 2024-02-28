@@ -81,6 +81,53 @@ namespace Emby.Server.Implementations.Library
             });
         }
 
+        public void SaveUserData(User user, BaseItem item, UpdateUserItemDataDto userDataDto, UserDataSaveReason reason)
+        {
+            ArgumentNullException.ThrowIfNull(user);
+            ArgumentNullException.ThrowIfNull(item);
+            ArgumentNullException.ThrowIfNull(reason);
+            ArgumentNullException.ThrowIfNull(userDataDto);
+
+            var userData = GetUserData(user, item);
+
+            if (userDataDto.PlaybackPositionTicks.HasValue)
+            {
+                userData.PlaybackPositionTicks = userDataDto.PlaybackPositionTicks.Value;
+            }
+
+            if (userDataDto.PlayCount.HasValue)
+            {
+                userData.PlayCount = userDataDto.PlayCount.Value;
+            }
+
+            if (userDataDto.IsFavorite.HasValue)
+            {
+                userData.IsFavorite = userDataDto.IsFavorite.Value;
+            }
+
+            if (userDataDto.Likes.HasValue)
+            {
+                userData.Likes = userDataDto.Likes.Value;
+            }
+
+            if (userDataDto.Played.HasValue)
+            {
+                userData.Played = userDataDto.Played.Value;
+            }
+
+            if (userDataDto.LastPlayedDate.HasValue)
+            {
+                userData.LastPlayedDate = userDataDto.LastPlayedDate.Value;
+            }
+
+            if (userDataDto.Rating.HasValue)
+            {
+                userData.Rating = userDataDto.Rating.Value;
+            }
+
+            SaveUserData(user, item, userData, reason, CancellationToken.None);
+        }
+
         /// <summary>
         /// Save the provided user data for the given user.  Batch operation. Does not fire any events or update the cache.
         /// </summary>

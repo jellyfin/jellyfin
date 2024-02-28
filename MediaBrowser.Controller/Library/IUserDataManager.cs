@@ -35,6 +35,15 @@ namespace MediaBrowser.Controller.Library
 
         void SaveUserData(User user, BaseItem item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken);
 
+        /// <summary>
+        /// Save the provided user data for the given user.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="item">The item.</param>
+        /// <param name="userDataDto">The reason for updating the user data.</param>
+        /// <param name="reason">The reason.</param>
+        void SaveUserData(User user, BaseItem item, UpdateUserItemDataDto userDataDto, UserDataSaveReason reason);
+
         UserItemData GetUserData(User user, BaseItem item);
 
         UserItemData GetUserData(Guid userId, BaseItem item);

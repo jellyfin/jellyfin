@@ -22,7 +22,6 @@
 
   <ItemGroup>
     <PackageReference Include="DiscUtils.Udf" />
-    <PackageReference Include="Jellyfin.XmlTv" />
     <PackageReference Include="Microsoft.Data.Sqlite" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" />

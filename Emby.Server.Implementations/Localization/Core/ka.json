@@ -4,9 +4,9 @@
     "HeaderFavoriteAlbums": "რჩეული ალბომები",
     "TasksApplicationCategory": "აპლიკაცია",
     "Albums": "ალბომები",
-    "AppDeviceValues": "აპი: {0}, მოწყობილობა: {1}",
+    "AppDeviceValues": "აპლიკაცია: {0}, მოწყობილობა: {1}",
     "Application": "აპლიკაცია",
-    "Artists": "შემსრულებლები",
+    "Artists": "არტისტი",
     "AuthenticationSucceededWithUserName": "{0} -ის ავთენტიკაცია წარმატებულია",
     "Books": "წიგნები",
     "Forced": "ძალით",
@@ -123,5 +123,7 @@
     "TaskUpdatePluginsDescription": "ავტომატურად განახლებადად მონიშნული დამატებების განახლებების გადმოწერა და დაყენება.",
     "TaskCleanTranscodeDescription": "ერთ დღეზე უფრო ძველი ტრანსკოდირების ფაილების წაშლა.",
     "TaskDownloadMissingSubtitlesDescription": "მეტამონაცემებზე დაყრდნობით ინტერნეტში ნაკლული სუბტიტრების ძებნა.",
-    "TaskOptimizeDatabaseDescription": "ბაზს შეკუშვა და ადგილის გათავისუფლება. ამ ამოცანის ბიბლიოთეკის სკანირების ან ნებისმიერი ცვლილების, რომელიც ბაზაში რამეს აკეთებს, გაშვებას შეუძლია ბაზის წარმადობა გაზარდოს."
+    "TaskOptimizeDatabaseDescription": "ბაზს შეკუშვა და ადგილის გათავისუფლება. ამ ამოცანის ბიბლიოთეკის სკანირების ან ნებისმიერი ცვლილების, რომელიც ბაზაში რამეს აკეთებს, გაშვებას შეუძლია ბაზის წარმადობა გაზარდოს.",
+    "TaskRefreshTrickplayImagesDescription": "ქმნის trickplay წინასწარ ხედებს ვიდეოებისთვის ჩართულ ბიბლიოთეკებში.",
+    "TaskRefreshTrickplayImages": "Trickplay სურათების გენერირება"
 }

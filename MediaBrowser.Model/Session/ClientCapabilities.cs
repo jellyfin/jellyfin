@@ -23,13 +23,7 @@ namespace MediaBrowser.Model.Session
 
         public bool SupportsMediaControl { get; set; }
 
-        public bool SupportsContentUploading { get; set; }
-
-        public string MessageCallbackUrl { get; set; }
-
         public bool SupportsPersistentIdentifier { get; set; }
-
-        public bool SupportsSync { get; set; }
 
         public DeviceProfile DeviceProfile { get; set; }
 

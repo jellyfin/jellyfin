@@ -31,11 +31,11 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
 
         private static readonly CollectionType[] _validCollectionTypes = new[]
         {
-            CollectionType.Movies,
-            CollectionType.HomeVideos,
-            CollectionType.MusicVideos,
-            CollectionType.TvShows,
-            CollectionType.Photos
+            CollectionType.movies,
+            CollectionType.homevideos,
+            CollectionType.musicvideos,
+            CollectionType.tvshows,
+            CollectionType.photos
         };
 
         /// <summary>
@@ -100,12 +100,12 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 Video movie = null;
                 var files = args.GetActualFileSystemChildren().ToList();
 
-                if (collectionType == CollectionType.MusicVideos)
+                if (collectionType == CollectionType.musicvideos)
                 {
                     movie = FindMovie<MusicVideo>(args, args.Path, args.Parent, files, DirectoryService, collectionType, false);
                 }
 
-                if (collectionType == CollectionType.HomeVideos)
+                if (collectionType == CollectionType.homevideos)
                 {
                     movie = FindMovie<Video>(args, args.Path, args.Parent, files, DirectoryService, collectionType, false);
                 }
@@ -126,7 +126,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                     movie = FindMovie<Movie>(args, args.Path, args.Parent, files, DirectoryService, collectionType, true);
                 }
 
-                if (collectionType == CollectionType.Movies)
+                if (collectionType == CollectionType.movies)
                 {
                     movie = FindMovie<Movie>(args, args.Path, args.Parent, files, DirectoryService, collectionType, true);
                 }
@@ -147,17 +147,17 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
 
             Video item = null;
 
-            if (collectionType == CollectionType.MusicVideos)
+            if (collectionType == CollectionType.musicvideos)
             {
                 item = ResolveVideo<MusicVideo>(args, false);
             }
 
             // To find a movie file, the collection type must be movies or boxsets
-            else if (collectionType == CollectionType.Movies)
+            else if (collectionType == CollectionType.movies)
             {
                 item = ResolveVideo<Movie>(args, true);
             }
-            else if (collectionType == CollectionType.HomeVideos || collectionType == CollectionType.Photos)
+            else if (collectionType == CollectionType.homevideos || collectionType == CollectionType.photos)
             {
                 item = ResolveVideo<Video>(args, false);
             }
@@ -195,12 +195,12 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 return null;
             }
 
-            if (collectionType is CollectionType.MusicVideos)
+            if (collectionType is CollectionType.musicvideos)
             {
                 return ResolveVideos<MusicVideo>(parent, files, true, collectionType, false);
             }
 
-            if (collectionType == CollectionType.HomeVideos || collectionType == CollectionType.Photos)
+            if (collectionType == CollectionType.homevideos || collectionType == CollectionType.photos)
             {
                 return ResolveVideos<Video>(parent, files, false, collectionType, false);
             }
@@ -221,12 +221,12 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 return ResolveVideos<Movie>(parent, files, false, collectionType, true);
             }
 
-            if (collectionType == CollectionType.Movies)
+            if (collectionType == CollectionType.movies)
             {
                 return ResolveVideos<Movie>(parent, files, true, collectionType, true);
             }
 
-            if (collectionType == CollectionType.TvShows)
+            if (collectionType == CollectionType.tvshows)
             {
                 return ResolveVideos<Episode>(parent, files, false, collectionType, true);
             }
@@ -403,7 +403,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             var multiDiscFolders = new List<FileSystemMetadata>();
 
             var libraryOptions = args.LibraryOptions;
-            var supportPhotos = collectionType == CollectionType.HomeVideos && libraryOptions.EnablePhotos;
+            var supportPhotos = collectionType == CollectionType.homevideos && libraryOptions.EnablePhotos;
             var photos = new List<FileSystemMetadata>();
 
             // Search for a folder rip
@@ -459,7 +459,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             var result = ResolveVideos<T>(parent, fileSystemEntries, SupportsMultiVersion, collectionType, parseName) ??
                 new MultiItemResolverResult();
 
-            var isPhotosCollection = collectionType == CollectionType.HomeVideos || collectionType == CollectionType.Photos;
+            var isPhotosCollection = collectionType == CollectionType.homevideos || collectionType == CollectionType.photos;
             if (!isPhotosCollection && result.Items.Count == 1)
             {
                 var videoPath = result.Items[0].Path;

@@ -7,6 +7,7 @@ using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -67,7 +68,7 @@ public static class RequestHelpers
         var authenticatedUserId = claimsPrincipal.GetUserId();
 
         // UserId not provided, fall back to authenticated user id.
-        if (userId is null || userId.Value.Equals(default))
+        if (userId.IsNullOrEmpty())
         {
             return authenticatedUserId;
         }

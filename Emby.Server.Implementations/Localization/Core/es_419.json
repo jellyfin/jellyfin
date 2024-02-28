@@ -123,5 +123,7 @@
     "External": "Externo",
     "TaskKeyframeExtractorDescription": "Extrae Fotogramas Clave de los archivos de vídeo para crear Listas de Reproducción HLS más precisas. Esta tarea puede durar mucho tiempo.",
     "TaskKeyframeExtractor": "Extractor de Fotogramas Clave",
-    "HearingImpaired": "Discapacidad auditiva"
+    "HearingImpaired": "Discapacidad auditiva",
+    "TaskRefreshTrickplayImagesDescription": "Crea previsualizaciones para la barra de reproducción en las bibliotecas habilitadas.",
+    "TaskRefreshTrickplayImages": "Generar imágenes de la barra de reproducción"
 }
