@@ -73,7 +73,7 @@ public class UserDataManager : IUserDataManager
             foreach (var key in keys)
             {
                 userData.Key = key;
-                var existingUserDataItem = await dbContext.UserDatas.FindAsync(new object[] { user.Id, userData.Key }, cancellationToken).ConfigureAwait(false);
+                var existingUserDataItem = await dbContext.UserDatas.FirstOrDefaultAsync(predicate => predicate.UserId.Equals(user.Id) && predicate.Key == userData.Key, cancellationToken).ConfigureAwait(false);
 
                 if (existingUserDataItem == null)
                 {
