@@ -13,7 +13,7 @@
     "RequiresPlainFolders": false,
     "EnableMSMediaReceiverRegistrar": false,
     "IgnoreTranscodeByteRangeRequests": false,
-    "SingleAudioPolicy": "DefaultSupported",
+    "SingleAudioPolicy": "FirstSupported",
     "DirectPlayProfiles": [
         {
             "Container": "webm",
@@ -322,6 +322,19 @@
         }
     ],
     "CodecProfiles": [
+        {
+            "Type": "VideoAudio",
+            "Conditions": [
+                {
+                    "Condition": "Equals",
+                    "Property": "IsDefaultTrack",
+                    "Value": "true",
+                    "IsRequired": false,
+                    "$type": "ProfileCondition"
+                }
+            ],
+            "$type": "CodecProfile"
+        },
         {
             "Type": "Video",
             "Conditions": [
