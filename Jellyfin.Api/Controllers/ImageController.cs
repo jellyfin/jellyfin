@@ -11,7 +11,6 @@ using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
@@ -1993,7 +1992,7 @@ public class ImageController : BaseJellyfinApiController
     {
         if (format.HasValue)
         {
-            return new[] { format.Value };
+            return [format.Value];
         }
 
         return GetClientSupportedFormats();

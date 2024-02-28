@@ -28,6 +28,11 @@ namespace MediaBrowser.Model.Drawing
         /// <summary>
         /// The webp.
         /// </summary>
-        Webp
+        Webp,
+
+        /// <summary>
+        /// The svg format.
+        /// </summary>
+        Svg,
     }
 }
