@@ -61,7 +61,7 @@ public class MediaSegmentsController : BaseJellyfinApiController
     /// <response code="400">Invalid segments.</response>
     /// <returns>An <see cref="OkResult"/>containing the created/updated segments.</returns>
     [HttpPost("{itemId}")]
-    [Authorize(Policy = Policies.RequiresElevation)]
+    [Authorize(Policy = Policies.MediaSegmentsManagement)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<IReadOnlyList<MediaSegmentDto>>> PostSegments(
@@ -85,7 +85,7 @@ public class MediaSegmentsController : BaseJellyfinApiController
     /// <response code="404">Segments not found.</response>
     /// <returns>An <see cref="OkResult"/>containing the deleted segments.</returns>
     [HttpDelete("{itemId}")]
-    [Authorize(Policy = Policies.RequiresElevation)]
+    [Authorize(Policy = Policies.MediaSegmentsManagement)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<IReadOnlyList<MediaSegmentDto>>> DeleteSegments(
