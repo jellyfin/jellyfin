@@ -129,6 +129,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // videotoolbox
             "yadif_videotoolbox",
             "scale_vt",
+            "overlay_videotoolbox",
             // rkrga
             "scale_rkrga",
             "vpp_rkrga",
