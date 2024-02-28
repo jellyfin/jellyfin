@@ -5026,6 +5026,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 mainFilters.Add(GetOverwriteColorPropertiesParam(state, true));
             }
+
             // With OpenCL tone mapping, we are using native hwmap and there's no need to specify a format for the main stream.
             // However, for other cases, we have to specify the format for the main stream when we are doing subtitle burn-in.
             // This is because the default upload option is not always processable with VideoToolbox.
@@ -5039,7 +5040,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (is8Bit)
                 {
                     mainFilters.Add("format=nv12");
-                } else if (is10Bit)
+                }
+                else if (is10Bit)
                 {
                     mainFilters.Add("format=p010");
                 }
