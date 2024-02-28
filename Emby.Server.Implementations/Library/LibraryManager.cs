@@ -1871,7 +1871,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     try
                     {
-                        var index = item.GetImageIndex(img);
+                        var index = await item.GetImageIndexAsync(img).ConfigureAwait(false);
                         image = await ConvertImageToLocal(item, img, index).ConfigureAwait(false);
                     }
                     catch (ArgumentException)

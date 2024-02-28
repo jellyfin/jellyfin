@@ -2067,13 +2067,13 @@ namespace MediaBrowser.Controller.Entities
         /// <exception cref="ArgumentException">Image index cannot be computed as no matching image found.
         /// </exception>
         /// <returns>Image index.</returns>
-        public int GetImageIndex(ItemImageInfo image)
+        public async Task<int> GetImageIndexAsync(ItemImageInfo image)
         {
             ArgumentNullException.ThrowIfNull(image);
 
             if (image.Type == ImageType.Chapter)
             {
-                var chapters = ChapterManager.GetChapters(this, CancellationToken.None).GetAwaiter().GetResult();
+                var chapters = await ChapterManager.GetChapters(this, CancellationToken.None).ConfigureAwait(false);
                 for (var i = 0; i < chapters.Count; i++)
                 {
                     if (chapters[i].ImagePath == image.Path)
