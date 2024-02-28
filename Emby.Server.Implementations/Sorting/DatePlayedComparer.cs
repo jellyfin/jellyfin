@@ -57,7 +57,7 @@ namespace Emby.Server.Implementations.Sorting
         /// <returns>DateTime.</returns>
         private DateTime GetDate(BaseItem x)
         {
-            var userdata = UserDataRepository.GetUserDataAsync(User, x).GetAwaiter().GetResult();
+            var userdata = UserDataRepository.GetUserData(User, x);
 
             if (userdata is not null && userdata.LastPlayedDate.HasValue)
             {

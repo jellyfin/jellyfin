@@ -56,7 +56,7 @@ namespace Emby.Server.Implementations.Sorting
         /// <returns>DateTime.</returns>
         private int GetValue(BaseItem x)
         {
-            var userdata = UserDataRepository.GetUserDataAsync(User, x).GetAwaiter().GetResult();
+            var userdata = UserDataRepository.GetUserData(User, x);
 
             return userdata is null ? 0 : userdata.PlayCount;
         }

@@ -325,7 +325,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     if (!string.IsNullOrWhiteSpace(nfoConfiguration.UserId))
                     {
                         var user = _userManager.GetUserById(Guid.Parse(nfoConfiguration.UserId));
-                        userData = _userDataManager.GetUserDataAsync(user, item).GetAwaiter().GetResult();
+                        userData = await _userDataManager.GetUserDataAsync(user, item).ConfigureAwait(false);
                         userData.Played = played;
                         _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
                     }
@@ -336,7 +336,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         && Guid.TryParse(nfoConfiguration.UserId, out var playCountUserId))
                     {
                         var user = _userManager.GetUserById(playCountUserId);
-                        userData = _userDataManager.GetUserDataAsync(user, item).GetAwaiter().GetResult();
+                        userData = await _userDataManager.GetUserDataAsync(user, item).ConfigureAwait(false);
                         userData.PlayCount = count;
                         _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
                     }
@@ -347,7 +347,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         && Guid.TryParse(nfoConfiguration.UserId, out var lastPlayedUserId))
                     {
                         var user = _userManager.GetUserById(lastPlayedUserId);
-                        userData = _userDataManager.GetUserDataAsync(user, item).GetAwaiter().GetResult();
+                        userData = await _userDataManager.GetUserDataAsync(user, item).ConfigureAwait(false);
                         userData.LastPlayedDate = lastPlayed;
                         _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
                     }

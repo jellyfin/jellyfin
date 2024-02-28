@@ -352,7 +352,7 @@ namespace Jellyfin.LiveTv
                 return score;
             }
 
-            var channelUserdata = _userDataManager.GetUserDataAsync(user, channel).GetAwaiter().GetResult();
+            var channelUserdata = _userDataManager.GetUserData(user, channel);
 
             if (channelUserdata.Likes.HasValue)
             {

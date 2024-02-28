@@ -51,7 +51,6 @@ namespace MediaBrowser.Controller.Library
         /// <param name="user">The user.</param>
         /// <param name="item">The BaseItem.</param>
         /// <returns>The User data.</returns>
-        [Obsolete("Use GetUserDataAsync instead.")]
         UserItemData GetUserData(User user, BaseItem item);
 
         /// <summary>
