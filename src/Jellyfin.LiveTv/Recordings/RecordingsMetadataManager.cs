@@ -9,6 +9,7 @@ using System.Xml;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using Jellyfin.LiveTv.Configuration;
+using Jellyfin.Server.Implementations.Library.Interfaces;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Dto;
@@ -17,6 +18,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
+using Genre = Jellyfin.Data.Entities.Libraries.Genre;
 
 namespace Jellyfin.LiveTv.Recordings;
 
@@ -30,6 +32,7 @@ public class RecordingsMetadataManager
     private readonly ILogger<RecordingsMetadataManager> _logger;
     private readonly IConfigurationManager _config;
     private readonly ILibraryManager _libraryManager;
+    private readonly IGenreManager _genreManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RecordingsMetadataManager"/> class.
@@ -37,14 +40,17 @@ public class RecordingsMetadataManager
     /// <param name="logger">The <see cref="ILogger"/>.</param>
     /// <param name="config">The <see cref="IConfigurationManager"/>.</param>
     /// <param name="libraryManager">The <see cref="ILibraryManager"/>.</param>
+    /// <param name="genreManager">The <see cref="IGenreManager"/>.</param>
     public RecordingsMetadataManager(
         ILogger<RecordingsMetadataManager> logger,
         IConfigurationManager config,
-        ILibraryManager libraryManager)
+        ILibraryManager libraryManager,
+        IGenreManager genreManager)
     {
         _logger = logger;
         _config = config;
         _libraryManager = libraryManager;
+        _genreManager = genreManager;
     }
 
     /// <summary>
@@ -82,18 +88,23 @@ public class RecordingsMetadataManager
 
             if (timer.IsSports)
             {
-                program.AddGenre("Sports");
+                Genre genre = await _genreManager.AddGenre("Sports").ConfigureAwait(false);
+                program.AddGenre(genre);
             }
 
             if (timer.IsKids)
             {
-                program.AddGenre("Kids");
-                program.AddGenre("Children");
+                Genre genre = await _genreManager.AddGenre("Kids").ConfigureAwait(false);
+                program.AddGenre(genre);
+
+                genre = await _genreManager.AddGenre("Children").ConfigureAwait(false);
+                program.AddGenre(genre);
             }
 
             if (timer.IsNews)
             {
-                program.AddGenre("News");
+                Genre genre = await _genreManager.AddGenre("News").ConfigureAwait(false);
+                program.AddGenre(genre);
             }
 
             var config = _config.GetLiveTvConfiguration();
