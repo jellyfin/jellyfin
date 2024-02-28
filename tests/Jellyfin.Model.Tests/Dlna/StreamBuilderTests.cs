@@ -42,6 +42,19 @@ namespace Jellyfin.Model.Tests
         [InlineData("Chrome", "mp4-dvhe.08-eac3-15200k", PlayMethod.Transcode, TranscodeReason.VideoRangeTypeNotSupported | TranscodeReason.AudioCodecNotSupported, "Transcode", "HLS.mp4")]
         [InlineData("Chrome", "numstreams-32", PlayMethod.DirectPlay)]
         [InlineData("Chrome", "numstreams-33", PlayMethod.DirectPlay)]
+        // Chrome-AudioTracksDefaultOnly
+        [InlineData("Chrome-AudioTracksDefaultOnly", "mp4-h264-aac-vtt-2600k", PlayMethod.DirectPlay)]
+        [InlineData("Chrome-AudioTracksDefaultOnly", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported, "DirectStream", "HLS.mp4")]
+        [InlineData("Chrome-AudioTracksDefaultOnly", "mp4-h264-ac3-aacDef-srt-2600k", PlayMethod.DirectPlay)]
+        [InlineData("Chrome-AudioTracksDefaultOnly", "mp4-h264-ac3-aacExt-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioIsExternal, "DirectStream", "HLS.mp4")]
+        [InlineData("Chrome-AudioTracksDefaultOnly", "mp4-h264-ac3-aac-aacDef-srt-2600k", PlayMethod.DirectPlay, (TranscodeReason)0)]
+        [InlineData("Chrome-AudioTracksDefaultOnly", "mp4-h264-ac3-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported, "DirectStream", "HLS.mp4")]
+        [InlineData("Chrome-AudioTracksDefaultOnly", "mp4-hevc-aac-srt-15200k", PlayMethod.DirectPlay)]
+        [InlineData("Chrome-AudioTracksDefaultOnly", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported, "DirectStream", "HLS.mp4")]
+        [InlineData("Chrome-AudioTracksDefaultOnly", "mp4-hevc-ac3-aacDef-srt-15200k", PlayMethod.DirectPlay)]
+        [InlineData("Chrome-AudioTracksDefaultOnly", "mkv-vp9-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.ContainerNotSupported, "Remux", "HLS.mp4")]
+        [InlineData("Chrome-AudioTracksDefaultOnly", "mkv-vp9-ac3-srt-2600k", PlayMethod.Transcode, TranscodeReason.ContainerNotSupported | TranscodeReason.AudioCodecNotSupported, "DirectStream", "HLS.mp4")]
+        [InlineData("Chrome-AudioTracksDefaultOnly", "mkv-vp9-vorbis-vtt-2600k", PlayMethod.DirectPlay)]
         // Firefox
         [InlineData("Firefox", "mp4-h264-aac-vtt-2600k", PlayMethod.DirectPlay)] // #6450
         [InlineData("Firefox", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported, "DirectStream", "HLS.mp4")] // #6450
@@ -238,6 +251,17 @@ namespace Jellyfin.Model.Tests
         [InlineData("Chrome", "mkv-vp9-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.ContainerNotSupported, "Remux", "HLS.mp4")] // #6450
         [InlineData("Chrome", "mkv-vp9-ac3-srt-2600k", PlayMethod.Transcode, TranscodeReason.ContainerNotSupported | TranscodeReason.AudioCodecNotSupported, "DirectStream", "HLS.mp4")] // #6450
         [InlineData("Chrome", "mkv-vp9-vorbis-vtt-2600k", PlayMethod.DirectPlay, (TranscodeReason)0, "Remux", "HLS.mp4")] // #6450
+        // Chrome-AudioTracksDefaultOnly
+        [InlineData("Chrome-AudioTracksDefaultOnly", "mp4-h264-aac-vtt-2600k", PlayMethod.DirectPlay)]
+        [InlineData("Chrome-AudioTracksDefaultOnly", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported, "DirectStream", "HLS.mp4")]
+        [InlineData("Chrome-AudioTracksDefaultOnly", "mp4-h264-ac3-aacDef-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported, "DirectStream", "HLS.mp4")]
+        [InlineData("Chrome-AudioTracksDefaultOnly", "mp4-h264-ac3-aacExt-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported, "DirectStream", "HLS.mp4")]
+        [InlineData("Chrome-AudioTracksDefaultOnly", "mp4-h264-ac3-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported, "DirectStream", "HLS.mp4")]
+        [InlineData("Chrome-AudioTracksDefaultOnly", "mp4-hevc-aac-srt-15200k", PlayMethod.DirectPlay)]
+        [InlineData("Chrome-AudioTracksDefaultOnly", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported, "DirectStream", "HLS.mp4")]
+        [InlineData("Chrome-AudioTracksDefaultOnly", "mkv-vp9-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.ContainerNotSupported, "Remux", "HLS.mp4")]
+        [InlineData("Chrome-AudioTracksDefaultOnly", "mkv-vp9-ac3-srt-2600k", PlayMethod.Transcode, TranscodeReason.ContainerNotSupported | TranscodeReason.AudioCodecNotSupported, "DirectStream", "HLS.mp4")]
+        [InlineData("Chrome-AudioTracksDefaultOnly", "mkv-vp9-vorbis-vtt-2600k", PlayMethod.DirectPlay)]
         // Firefox
         [InlineData("Firefox", "mp4-h264-aac-vtt-2600k", PlayMethod.DirectPlay)] // #6450
         [InlineData("Firefox", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported, "DirectStream", "HLS.mp4")] // #6450
@@ -339,6 +363,12 @@ namespace Jellyfin.Model.Tests
         [InlineData("Chrome", "mp4-h264-ac3-aac-aacDef-srt-2600k", PlayMethod.Transcode, TranscodeReason.SecondaryAudioNotSupported, "Remux", "HLS.mp4")]
         [InlineData("Chrome", "mp4-h264-ac3-aacExt-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioIsExternal, "DirectStream", "HLS.mp4")] // #6450
         [InlineData("Chrome", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.DirectPlay)]
+        // Chrome-AudioTracksDefaultOnly
+        [InlineData("Chrome-AudioTracksDefaultOnly", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.SecondaryAudioNotSupported, "Remux", "HLS.mp4")] // #6450
+        [InlineData("Chrome-AudioTracksDefaultOnly", "mp4-h264-ac3-aac-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.SecondaryAudioNotSupported, "Remux", "HLS.mp4")]
+        [InlineData("Chrome-AudioTracksDefaultOnly", "mp4-h264-ac3-aac-aacDef-srt-2600k", PlayMethod.DirectPlay)]
+        [InlineData("Chrome-AudioTracksDefaultOnly", "mp4-h264-ac3-aacExt-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioIsExternal, "DirectStream", "HLS.mp4")] // #6450
+        [InlineData("Chrome-AudioTracksDefaultOnly", "mp4-hevc-ac3-aacDef-srt-15200k", PlayMethod.DirectPlay)]
         // Firefox
         [InlineData("Firefox", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.DirectPlay)] // #6450
         [InlineData("Firefox", "mp4-h264-ac3-aac-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.SecondaryAudioNotSupported, "Remux", "HLS.mp4")]
@@ -389,6 +419,12 @@ namespace Jellyfin.Model.Tests
         [InlineData("Chrome", "mp4-h264-ac3-aac-aac-srt-2600k", new TranscodeReason[] { 0, TranscodeReason.AudioCodecNotSupported, 0, TranscodeReason.SecondaryAudioNotSupported, 0 })]
         [InlineData("Chrome", "mp4-h264-dts-srt-2600k", new TranscodeReason[] { 0, TranscodeReason.AudioCodecNotSupported, 0 })]
         [InlineData("Chrome", "mkv-vp9-aac-srt-2600k", new TranscodeReason[] { TranscodeReason.ContainerNotSupported, TranscodeReason.ContainerNotSupported, 0 })]
+        // Chrome-AudioTracksDefaultOnly
+        [InlineData("Chrome-AudioTracksDefaultOnly", "mp4-h264-ac3-aac-aac-srt-2600k", new TranscodeReason[] { 0, TranscodeReason.AudioCodecNotSupported, TranscodeReason.SecondaryAudioNotSupported, TranscodeReason.SecondaryAudioNotSupported, 0 })]
+        [InlineData("Chrome-AudioTracksDefaultOnly", "mp4-h264-dts-srt-2600k", new TranscodeReason[] { 0, TranscodeReason.AudioCodecNotSupported, 0 })]
+        [InlineData("Chrome-AudioTracksDefaultOnly", "mkv-vp9-aac-srt-2600k", new TranscodeReason[] { TranscodeReason.ContainerNotSupported, TranscodeReason.ContainerNotSupported, 0 })]
+        [InlineData("Chrome-AudioTracksDefaultOnly", "mp4-dvh1.05-eac3-15200k", new TranscodeReason[] { TranscodeReason.VideoRangeTypeNotSupported, TranscodeReason.AudioCodecNotSupported })]
+        [InlineData("Chrome-AudioTracksDefaultOnly", "mkv-dvhe.05-eac3-28000k", new TranscodeReason[] { TranscodeReason.ContainerNotSupported | TranscodeReason.VideoRangeTypeNotSupported, TranscodeReason.ContainerNotSupported | TranscodeReason.AudioCodecNotSupported })]
         // Firefox
         [InlineData("Firefox", "mp4-h264-ac3-aac-aac-srt-2600k", new TranscodeReason[] { 0, TranscodeReason.AudioCodecNotSupported, 0, TranscodeReason.SecondaryAudioNotSupported, 0 })]
         [InlineData("Firefox", "mp4-h264-dts-srt-2600k", new TranscodeReason[] { 0, TranscodeReason.AudioCodecNotSupported, 0 })]
