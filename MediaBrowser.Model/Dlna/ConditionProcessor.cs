@@ -150,6 +150,7 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="audioBitDepth">The bit depth.</param>
         /// <param name="audioProfile">The profile.</param>
         /// <param name="isSecondaryTrack">A value indicating whether the audio is a secondary track.</param>
+        /// <param name="isDefaultTrack">A value indicating whether the audio is a default track.</param>
         /// <returns><b>True</b> if the condition is satisfied.</returns>
         public static bool IsVideoAudioConditionSatisfied(
             ProfileCondition condition,
@@ -158,7 +159,8 @@ namespace MediaBrowser.Model.Dlna
             int? audioSampleRate,
             int? audioBitDepth,
             string? audioProfile,
-            bool? isSecondaryTrack)
+            bool? isSecondaryTrack,
+            bool? isDefaultTrack)
         {
             switch (condition.Property)
             {
@@ -170,6 +172,8 @@ namespace MediaBrowser.Model.Dlna
                     return IsConditionSatisfied(condition, audioChannels);
                 case ProfileConditionValue.IsSecondaryAudio:
                     return IsConditionSatisfied(condition, isSecondaryTrack);
+                case ProfileConditionValue.IsDefaultTrack:
+                    return IsConditionSatisfied(condition, isDefaultTrack);
                 case ProfileConditionValue.AudioSampleRate:
                     return IsConditionSatisfied(condition, audioSampleRate);
                 case ProfileConditionValue.AudioBitDepth:
