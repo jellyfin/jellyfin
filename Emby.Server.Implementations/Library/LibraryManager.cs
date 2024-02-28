@@ -374,6 +374,17 @@ namespace Emby.Server.Implementations.Library
 
                 try
                 {
+                    if (item.HasLocalAlternateVersions)
+                    {
+                        if (parent.GetBaseItemKind() is BaseItemKind.BoxSet)
+                        {
+                            var collectionManager = Folder.CollectionManager;
+                            IEnumerable<Guid> itemIds = [item.Id];
+
+                            collectionManager.RemoveFromCollectionAsync(parent.Id, itemIds);
+                        }
+                    }
+
                     Directory.Delete(metadataPath, true);
                 }
                 catch (Exception ex)
