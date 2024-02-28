@@ -339,6 +339,7 @@ namespace MediaBrowser.Model.Dlna
                     return TranscodeReason.InterlacedVideoNotSupported;
 
                 case ProfileConditionValue.IsSecondaryAudio:
+                case ProfileConditionValue.IsDefaultTrack:
                     return TranscodeReason.SecondaryAudioNotSupported;
 
                 case ProfileConditionValue.NumStreams:
@@ -1085,6 +1086,7 @@ namespace MediaBrowser.Model.Dlna
             playlistItem.AudioBitrate = Math.Min(playlistItem.AudioBitrate ?? audioBitrate, audioBitrate);
 
             bool? isSecondaryAudio = audioStream is null ? null : item.IsSecondaryAudio(audioStream);
+            bool? isDefaultTrack = audioStream?.IsDefault;
             int? inputAudioBitrate = audioStream?.BitRate;
             int? audioChannels = audioStream?.Channels;
             string? audioProfile = audioStream?.Profile;
@@ -1094,7 +1096,7 @@ namespace MediaBrowser.Model.Dlna
             var appliedAudioConditions = options.Profile.CodecProfiles
                 .Where(i => i.Type == CodecType.VideoAudio &&
                     i.ContainsAnyCodec(playlistItem.AudioCodecs, container) &&
-                    i.ApplyConditions.All(applyCondition => ConditionProcessor.IsVideoAudioConditionSatisfied(applyCondition, audioChannels, inputAudioBitrate, inputAudioSampleRate, inputAudioBitDepth, audioProfile, isSecondaryAudio)))
+                    i.ApplyConditions.All(applyCondition => ConditionProcessor.IsVideoAudioConditionSatisfied(applyCondition, audioChannels, inputAudioBitrate, inputAudioSampleRate, inputAudioBitDepth, audioProfile, isSecondaryAudio, isDefaultTrack)))
                 // Reverse codec profiles for backward compatibility - first codec profile has higher priority
                 .Reverse();
 
@@ -1660,14 +1662,15 @@ namespace MediaBrowser.Model.Dlna
             int? audioSampleRate,
             int? audioBitDepth,
             string audioProfile,
-            bool? isSecondaryAudio)
+            bool? isSecondaryAudio,
+            bool? isDefaultTrack)
         {
             return codecProfiles
                 .Where(profile => profile.Type == CodecType.VideoAudio &&
                     profile.ContainsAnyCodec(codec, container) &&
-                    profile.ApplyConditions.All(applyCondition => ConditionProcessor.IsVideoAudioConditionSatisfied(applyCondition, audioChannels, audioBitrate, audioSampleRate, audioBitDepth, audioProfile, isSecondaryAudio)))
+                    profile.ApplyConditions.All(applyCondition => ConditionProcessor.IsVideoAudioConditionSatisfied(applyCondition, audioChannels, audioBitrate, audioSampleRate, audioBitDepth, audioProfile, isSecondaryAudio, isDefaultTrack)))
                 .SelectMany(profile => profile.Conditions)
-                .Where(condition => !ConditionProcessor.IsVideoAudioConditionSatisfied(condition, audioChannels, audioBitrate, audioSampleRate, audioBitDepth, audioProfile, isSecondaryAudio));
+                .Where(condition => !ConditionProcessor.IsVideoAudioConditionSatisfied(condition, audioChannels, audioBitrate, audioSampleRate, audioBitDepth, audioProfile, isSecondaryAudio, isDefaultTrack));
         }
 
         private static IEnumerable<ProfileCondition> GetProfileConditionsForAudio(
@@ -1883,6 +1886,7 @@ namespace MediaBrowser.Model.Dlna
                     case ProfileConditionValue.NumStreams:
                     case ProfileConditionValue.NumAudioStreams:
                     case ProfileConditionValue.NumVideoStreams:
+                    case ProfileConditionValue.IsDefaultTrack:
                     case ProfileConditionValue.IsSecondaryAudio:
                     case ProfileConditionValue.VideoTimestamp:
                         {
@@ -2400,9 +2404,10 @@ namespace MediaBrowser.Model.Dlna
             var audioBitrate = audioStream.BitRate;
             var audioSampleRate = audioStream.SampleRate;
             var audioBitDepth = audioStream.BitDepth;
+            bool isDefaultTrack = audioStream.IsDefault;
 
             var audioFailureConditions = isVideo
-                ? GetProfileConditionsForVideoAudio(profile.CodecProfiles, container, audioCodec, audioChannels, audioBitrate, audioSampleRate, audioBitDepth, audioProfile, isSecondaryAudio)
+                ? GetProfileConditionsForVideoAudio(profile.CodecProfiles, container, audioCodec, audioChannels, audioBitrate, audioSampleRate, audioBitDepth, audioProfile, isSecondaryAudio, isDefaultTrack)
                 : GetProfileConditionsForAudio(profile.CodecProfiles, container, audioCodec, audioChannels, audioBitrate, audioSampleRate, audioBitDepth, true);
 
             var failures = AggregateFailureConditions(mediaSource, profile, "AudioCodecProfile", audioFailureConditions);

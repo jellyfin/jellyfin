@@ -364,8 +364,6 @@ namespace Jellyfin.Model.Tests
         [InlineData("Chrome", "mp4-h264-ac3-aacExt-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioIsExternal, "DirectStream", "HLS.mp4")] // #6450
         [InlineData("Chrome", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.DirectPlay)]
         // Chrome-AudioTracksDefaultOnly
-        [InlineData("Chrome-AudioTracksDefaultOnly", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.SecondaryAudioNotSupported, "Remux", "HLS.mp4")] // #6450
-        [InlineData("Chrome-AudioTracksDefaultOnly", "mp4-h264-ac3-aac-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.SecondaryAudioNotSupported, "Remux", "HLS.mp4")]
         [InlineData("Chrome-AudioTracksDefaultOnly", "mp4-h264-ac3-aac-aacDef-srt-2600k", PlayMethod.DirectPlay)]
         [InlineData("Chrome-AudioTracksDefaultOnly", "mp4-h264-ac3-aacExt-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioIsExternal, "DirectStream", "HLS.mp4")] // #6450
         [InlineData("Chrome-AudioTracksDefaultOnly", "mp4-hevc-ac3-aacDef-srt-15200k", PlayMethod.DirectPlay)]
