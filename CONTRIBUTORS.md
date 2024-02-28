@@ -98,6 +98,7 @@
  - [OancaAndrei](https://github.com/OancaAndrei)
  - [obradovichv](https://github.com/obradovichv)
  - [oddstr13](https://github.com/oddstr13)
+ - [melanie gemini emory](https://github.com/one-new-message)
  - [orryverducci](https://github.com/orryverducci)
  - [petermcneil](https://github.com/petermcneil)
  - [Phlogi](https://github.com/Phlogi)
@@ -252,4 +253,3 @@
  - [JPUC1143](https://github.com/Jpuc1143/)
  - [0x25CBFC4F](https://github.com/0x25CBFC4F)
  - [Robert Lützner](https://github.com/rluetzner)
- - [melanie gemini emory](https://github.com/one-new-message)
