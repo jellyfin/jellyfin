@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Extensions;
-using Jellyfin.Api.Models.StreamingDtos;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
@@ -18,6 +17,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Controller.Trickplay;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
@@ -39,7 +39,7 @@ public class DynamicHlsHelper
     private readonly IMediaSourceManager _mediaSourceManager;
     private readonly IServerConfigurationManager _serverConfigurationManager;
     private readonly IMediaEncoder _mediaEncoder;
-    private readonly TranscodingJobHelper _transcodingJobHelper;
+    private readonly ITranscodeManager _transcodeManager;
     private readonly INetworkManager _networkManager;
     private readonly ILogger<DynamicHlsHelper> _logger;
     private readonly IHttpContextAccessor _httpContextAccessor;
@@ -54,7 +54,7 @@ public class DynamicHlsHelper
     /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
     /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
     /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
-    /// <param name="transcodingJobHelper">Instance of <see cref="TranscodingJobHelper"/>.</param>
+    /// <param name="transcodeManager">Instance of <see cref="ITranscodeManager"/>.</param>
     /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger{DynamicHlsHelper}"/> interface.</param>
     /// <param name="httpContextAccessor">Instance of the <see cref="IHttpContextAccessor"/> interface.</param>
@@ -66,7 +66,7 @@ public class DynamicHlsHelper
         IMediaSourceManager mediaSourceManager,
         IServerConfigurationManager serverConfigurationManager,
         IMediaEncoder mediaEncoder,
-        TranscodingJobHelper transcodingJobHelper,
+        ITranscodeManager transcodeManager,
         INetworkManager networkManager,
         ILogger<DynamicHlsHelper> logger,
         IHttpContextAccessor httpContextAccessor,
@@ -78,7 +78,7 @@ public class DynamicHlsHelper
         _mediaSourceManager = mediaSourceManager;
         _serverConfigurationManager = serverConfigurationManager;
         _mediaEncoder = mediaEncoder;
-        _transcodingJobHelper = transcodingJobHelper;
+        _transcodeManager = transcodeManager;
         _networkManager = networkManager;
         _logger = logger;
         _httpContextAccessor = httpContextAccessor;
@@ -130,7 +130,7 @@ public class DynamicHlsHelper
                 _serverConfigurationManager,
                 _mediaEncoder,
                 _encodingHelper,
-                _transcodingJobHelper,
+                _transcodeManager,
                 transcodingJobType,
                 cancellationTokenSource.Token)
             .ConfigureAwait(false);
@@ -211,19 +211,8 @@ public class DynamicHlsHelper
                     var sdrVideoUrl = ReplaceProfile(playlistUrl, "hevc", string.Join(',', requestedVideoProfiles), "main");
                     sdrVideoUrl += "&AllowVideoStreamCopy=false";
 
-                    var sdrOutputVideoBitrate = _encodingHelper.GetVideoBitrateParamValue(state.VideoRequest, state.VideoStream, state.OutputVideoCodec);
-                    var sdrOutputAudioBitrate = 0;
-                    if (EncodingHelper.LosslessAudioCodecs.Contains(state.VideoRequest.AudioCodec, StringComparison.OrdinalIgnoreCase))
-                    {
-                        sdrOutputAudioBitrate = state.AudioStream.BitRate ?? 0;
-                    }
-                    else
-                    {
-                        sdrOutputAudioBitrate = _encodingHelper.GetAudioBitrateParam(state.VideoRequest, state.AudioStream, state.OutputAudioChannels) ?? 0;
-                    }
-
-                    var sdrTotalBitrate = sdrOutputAudioBitrate + sdrOutputVideoBitrate;
-                    AppendPlaylist(builder, state, sdrVideoUrl, sdrTotalBitrate, subtitleGroup);
+                    // HACK: Use the same bitrate so that the client can choose by other attributes, such as color range.
+                    AppendPlaylist(builder, state, sdrVideoUrl, totalBitrate, subtitleGroup);
 
                     // Restore the video codec
                     state.OutputVideoCodec = "copy";
@@ -325,6 +314,7 @@ public class DynamicHlsHelper
         if (state.VideoStream is not null && state.VideoStream.VideoRange != VideoRange.Unknown)
         {
             var videoRange = state.VideoStream.VideoRange;
+            var videoRangeType = state.VideoStream.VideoRangeType;
             if (EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
             {
                 if (videoRange == VideoRange.SDR)
@@ -334,7 +324,14 @@ public class DynamicHlsHelper
 
                 if (videoRange == VideoRange.HDR)
                 {
-                    builder.Append(",VIDEO-RANGE=PQ");
+                    if (videoRangeType == VideoRangeType.HLG)
+                    {
+                        builder.Append(",VIDEO-RANGE=HLG");
+                    }
+                    else
+                    {
+                        builder.Append(",VIDEO-RANGE=PQ");
+                    }
                 }
             }
             else

@@ -189,7 +189,7 @@ namespace Emby.Server.Implementations.Session
                 _logger);
         }
 
-        private void OnSessionEnded(SessionInfo info)
+        private async ValueTask OnSessionEnded(SessionInfo info)
         {
             EventHelper.QueueEventIfNotNull(
                 SessionEnded,
@@ -202,7 +202,7 @@ namespace Emby.Server.Implementations.Session
 
             _eventManager.Publish(new SessionEndedEventArgs(info));
 
-            info.Dispose();
+            await info.DisposeAsync().ConfigureAwait(false);
         }
 
         /// <inheritdoc />
@@ -301,12 +301,12 @@ namespace Emby.Server.Implementations.Session
                     await _mediaSourceManager.CloseLiveStream(session.PlayState.LiveStreamId).ConfigureAwait(false);
                 }
 
-                OnSessionEnded(session);
+                await OnSessionEnded(session).ConfigureAwait(false);
             }
         }
 
         /// <inheritdoc />
-        public void ReportSessionEnded(string sessionId)
+        public async ValueTask ReportSessionEnded(string sessionId)
         {
             CheckDisposed();
             var session = GetSession(sessionId, false);
@@ -317,7 +317,7 @@ namespace Emby.Server.Implementations.Session
 
                 _activeConnections.TryRemove(key, out _);
 
-                OnSessionEnded(session);
+                await OnSessionEnded(session).ConfigureAwait(false);
             }
         }
 
@@ -337,7 +337,7 @@ namespace Emby.Server.Implementations.Session
                 info.MediaSourceId = info.ItemId.ToString("N", CultureInfo.InvariantCulture);
             }
 
-            if (!info.ItemId.Equals(default) && info.Item is null && libraryItem is not null)
+            if (!info.ItemId.IsEmpty() && info.Item is null && libraryItem is not null)
             {
                 var current = session.NowPlayingItem;
 
@@ -394,6 +394,7 @@ namespace Emby.Server.Implementations.Session
             session.PlayState.SubtitleStreamIndex = info.SubtitleStreamIndex;
             session.PlayState.PlayMethod = info.PlayMethod;
             session.PlayState.RepeatMode = info.RepeatMode;
+            session.PlayState.PlaybackOrder = info.PlaybackOrder;
             session.PlaylistItemId = info.PlaylistItemId;
 
             var nowPlayingQueue = info.NowPlayingQueue;
@@ -529,7 +530,7 @@ namespace Emby.Server.Implementations.Session
         {
             var users = new List<User>();
 
-            if (session.UserId.Equals(default))
+            if (session.UserId.IsEmpty())
             {
                 return users;
             }
@@ -690,7 +691,7 @@ namespace Emby.Server.Implementations.Session
 
             var session = GetSession(info.SessionId);
 
-            var libraryItem = info.ItemId.Equals(default)
+            var libraryItem = info.ItemId.IsEmpty()
                 ? null
                 : GetNowPlayingItem(session, info.ItemId);
 
@@ -784,7 +785,7 @@ namespace Emby.Server.Implementations.Session
 
             var session = GetSession(info.SessionId);
 
-            var libraryItem = info.ItemId.Equals(default)
+            var libraryItem = info.ItemId.IsEmpty()
                 ? null
                 : GetNowPlayingItem(session, info.ItemId);
 
@@ -923,7 +924,7 @@ namespace Emby.Server.Implementations.Session
 
             session.StopAutomaticProgress();
 
-            var libraryItem = info.ItemId.Equals(default)
+            var libraryItem = info.ItemId.IsEmpty()
                 ? null
                 : GetNowPlayingItem(session, info.ItemId);
 
@@ -933,7 +934,7 @@ namespace Emby.Server.Implementations.Session
                 info.MediaSourceId = info.ItemId.ToString("N", CultureInfo.InvariantCulture);
             }
 
-            if (!info.ItemId.Equals(default) && info.Item is null && libraryItem is not null)
+            if (!info.ItemId.IsEmpty() && info.Item is null && libraryItem is not null)
             {
                 var current = session.NowPlayingItem;
 
@@ -1154,7 +1155,7 @@ namespace Emby.Server.Implementations.Session
 
             var session = GetSessionToRemoteControl(sessionId);
 
-            var user = session.UserId.Equals(default) ? null : _userManager.GetUserById(session.UserId);
+            var user = session.UserId.IsEmpty() ? null : _userManager.GetUserById(session.UserId);
 
             List<BaseItem> items;
 
@@ -1223,7 +1224,7 @@ namespace Emby.Server.Implementations.Session
             {
                 var controllingSession = GetSession(controllingSessionId);
                 AssertCanControl(session, controllingSession);
-                if (!controllingSession.UserId.Equals(default))
+                if (!controllingSession.UserId.IsEmpty())
                 {
                     command.ControllingUserId = controllingSession.UserId;
                 }
@@ -1342,7 +1343,7 @@ namespace Emby.Server.Implementations.Session
             {
                 var controllingSession = GetSession(controllingSessionId);
                 AssertCanControl(session, controllingSession);
-                if (!controllingSession.UserId.Equals(default))
+                if (!controllingSession.UserId.IsEmpty())
                 {
                     command.ControllingUserId = controllingSession.UserId.ToString("N", CultureInfo.InvariantCulture);
                 }
@@ -1463,7 +1464,7 @@ namespace Emby.Server.Implementations.Session
             ArgumentException.ThrowIfNullOrEmpty(request.AppVersion);
 
             User user = null;
-            if (!request.UserId.Equals(default))
+            if (!request.UserId.IsEmpty())
             {
                 user = _userManager.GetUserById(request.UserId);
             }
@@ -1590,7 +1591,7 @@ namespace Emby.Server.Implementations.Session
             {
                 try
                 {
-                    ReportSessionEnded(session.Id);
+                    await ReportSessionEnded(session.Id).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -1670,7 +1671,6 @@ namespace Emby.Server.Implementations.Session
 
                 var fields = dtoOptions.Fields.ToList();
 
-                fields.Remove(ItemFields.BasicSyncInfo);
                 fields.Remove(ItemFields.CanDelete);
                 fields.Remove(ItemFields.CanDownload);
                 fields.Remove(ItemFields.ChildCount);
@@ -1767,7 +1767,7 @@ namespace Emby.Server.Implementations.Session
         {
             ArgumentNullException.ThrowIfNull(info);
 
-            var user = info.UserId.Equals(default)
+            var user = info.UserId.IsEmpty()
                 ? null
                 : _userManager.GetUserById(info.UserId);
 

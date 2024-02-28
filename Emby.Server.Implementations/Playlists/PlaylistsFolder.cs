@@ -25,7 +25,7 @@ namespace Emby.Server.Implementations.Playlists
         public override bool SupportsInheritedParentImages => false;
 
         [JsonIgnore]
-        public override CollectionType? CollectionType => Jellyfin.Data.Enums.CollectionType.Playlists;
+        public override CollectionType? CollectionType => Jellyfin.Data.Enums.CollectionType.playlists;
 
         protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
         {

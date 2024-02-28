@@ -45,7 +45,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "mpeg4_cuvid",
             "vp8_cuvid",
             "vp9_cuvid",
-            "av1_cuvid"
+            "av1_cuvid",
+            "h264_rkmpp",
+            "hevc_rkmpp",
+            "mpeg1_rkmpp",
+            "mpeg2_rkmpp",
+            "mpeg4_rkmpp",
+            "vp8_rkmpp",
+            "vp9_rkmpp",
+            "av1_rkmpp"
         };
 
         private static readonly string[] _requiredEncoders = new[]
@@ -82,7 +90,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "av1_vaapi",
             "h264_v4l2m2m",
             "h264_videotoolbox",
-            "hevc_videotoolbox"
+            "hevc_videotoolbox",
+            "h264_rkmpp",
+            "hevc_rkmpp"
         };
 
         private static readonly string[] _requiredFilters = new[]
@@ -116,9 +126,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "libplacebo",
             "scale_vulkan",
             "overlay_vulkan",
-            "hwupload_vaapi",
             // videotoolbox
-            "yadif_videotoolbox"
+            "yadif_videotoolbox",
+            // rkrga
+            "scale_rkrga",
+            "vpp_rkrga",
+            "overlay_rkrga"
         };
 
         private static readonly Dictionary<int, string[]> _filterOptionsDict = new Dictionary<int, string[]>

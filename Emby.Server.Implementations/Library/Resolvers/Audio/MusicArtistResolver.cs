@@ -65,7 +65,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
 
             var collectionType = args.GetCollectionType();
 
-            var isMusicMediaFolder = collectionType == CollectionType.Music;
+            var isMusicMediaFolder = collectionType == CollectionType.music;
 
             // If there's a collection type and it's not music, it can't be a music artist
             if (!isMusicMediaFolder)

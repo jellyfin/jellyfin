@@ -37,7 +37,6 @@ using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using AuthenticationSchemes = Jellyfin.Api.Constants.AuthenticationSchemes;
-using IPNetwork = System.Net.IPNetwork;
 
 namespace Jellyfin.Server.Extensions
 {
@@ -83,6 +82,7 @@ namespace Jellyfin.Server.Extensions
                 options.AddPolicy(Policies.SyncPlayJoinGroup, new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.JoinGroup));
                 options.AddPolicy(Policies.SyncPlayIsInGroup, new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.IsInGroup));
                 options.AddPolicy(Policies.SubtitleManagement, new UserPermissionRequirement(PermissionKind.EnableSubtitleManagement));
+                options.AddPolicy(Policies.LyricManagement, new UserPermissionRequirement(PermissionKind.EnableLyricManagement));
                 options.AddPolicy(
                     Policies.RequiresElevation,
                     policy => policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication)

@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Querying;
@@ -48,12 +49,12 @@ namespace MediaBrowser.Controller.Entities.TV
             get
             {
                 var seriesId = SeriesId;
-                if (seriesId.Equals(default))
+                if (seriesId.IsEmpty())
                 {
                     seriesId = FindSeriesId();
                 }
 
-                return seriesId.Equals(default) ? null : (LibraryManager.GetItemById(seriesId) as Series);
+                return seriesId.IsEmpty() ? null : (LibraryManager.GetItemById(seriesId) as Series);
             }
         }
 

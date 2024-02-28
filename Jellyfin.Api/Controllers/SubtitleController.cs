@@ -11,7 +11,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Models.SubtitleDtos;
 using MediaBrowser.Common.Api;
@@ -162,17 +161,17 @@ public class SubtitleController : BaseJellyfinApiController
     /// <summary>
     /// Gets the remote subtitles.
     /// </summary>
-    /// <param name="id">The item id.</param>
+    /// <param name="subtitleId">The item id.</param>
     /// <response code="200">File returned.</response>
     /// <returns>A <see cref="FileStreamResult"/> with the subtitle file.</returns>
-    [HttpGet("Providers/Subtitles/Subtitles/{id}")]
+    [HttpGet("Providers/Subtitles/Subtitles/{subtitleId}")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Produces(MediaTypeNames.Application.Octet)]
     [ProducesFile("text/*")]
-    public async Task<ActionResult> GetRemoteSubtitles([FromRoute, Required] string id)
+    public async Task<ActionResult> GetRemoteSubtitles([FromRoute, Required] string subtitleId)
     {
-        var result = await _subtitleManager.GetRemoteSubtitles(id, CancellationToken.None).ConfigureAwait(false);
+        var result = await _subtitleManager.GetRemoteSubtitles(subtitleId, CancellationToken.None).ConfigureAwait(false);
 
         return File(result.Stream, MimeTypes.GetMimeType("file." + result.Format));
     }
@@ -407,22 +406,29 @@ public class SubtitleController : BaseJellyfinApiController
         [FromBody, Required] UploadSubtitleDto body)
     {
         var video = (Video)_libraryManager.GetItemById(itemId);
-        var stream = new CryptoStream(Request.Body, new FromBase64Transform(), CryptoStreamMode.Read);
-        await using (stream.ConfigureAwait(false))
-        {
-            await _subtitleManager.UploadSubtitle(
-                video,
-                new SubtitleResponse
-                {
-                    Format = body.Format,
-                    Language = body.Language,
-                    IsForced = body.IsForced,
-                    IsHearingImpaired = body.IsHearingImpaired,
-                    Stream = stream
-                }).ConfigureAwait(false);
-            _providerManager.QueueRefresh(video.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.High);
 
-            return NoContent();
+        var bytes = Encoding.UTF8.GetBytes(body.Data);
+        var memoryStream = new MemoryStream(bytes, 0, bytes.Length, false, true);
+        await using (memoryStream.ConfigureAwait(false))
+        {
+            using var transform = new FromBase64Transform();
+            var stream = new CryptoStream(memoryStream, transform, CryptoStreamMode.Read);
+            await using (stream.ConfigureAwait(false))
+            {
+                await _subtitleManager.UploadSubtitle(
+                    video,
+                    new SubtitleResponse
+                    {
+                        Format = body.Format,
+                        Language = body.Language,
+                        IsForced = body.IsForced,
+                        IsHearingImpaired = body.IsHearingImpaired,
+                        Stream = stream
+                    }).ConfigureAwait(false);
+                _providerManager.QueueRefresh(video.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.High);
+
+                return NoContent();
+            }
         }
     }
 

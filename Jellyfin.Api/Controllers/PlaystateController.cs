@@ -8,6 +8,7 @@ using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Session;
@@ -30,7 +31,7 @@ public class PlaystateController : BaseJellyfinApiController
     private readonly ILibraryManager _libraryManager;
     private readonly ISessionManager _sessionManager;
     private readonly ILogger<PlaystateController> _logger;
-    private readonly TranscodingJobHelper _transcodingJobHelper;
+    private readonly ITranscodeManager _transcodeManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PlaystateController"/> class.
@@ -40,14 +41,14 @@ public class PlaystateController : BaseJellyfinApiController
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="sessionManager">Instance of the <see cref="ISessionManager"/> interface.</param>
     /// <param name="loggerFactory">Instance of the <see cref="ILoggerFactory"/> interface.</param>
-    /// <param name="transcodingJobHelper">Th <see cref="TranscodingJobHelper"/> singleton.</param>
+    /// <param name="transcodeManager">Instance of the <see cref="ITranscodeManager"/> interface.</param>
     public PlaystateController(
         IUserManager userManager,
         IUserDataManager userDataRepository,
         ILibraryManager libraryManager,
         ISessionManager sessionManager,
         ILoggerFactory loggerFactory,
-        TranscodingJobHelper transcodingJobHelper)
+        ITranscodeManager transcodeManager)
     {
         _userManager = userManager;
         _userDataRepository = userDataRepository;
@@ -55,7 +56,7 @@ public class PlaystateController : BaseJellyfinApiController
         _sessionManager = sessionManager;
         _logger = loggerFactory.CreateLogger<PlaystateController>();
 
-        _transcodingJobHelper = transcodingJobHelper;
+        _transcodeManager = transcodeManager;
     }
 
     /// <summary>
@@ -188,7 +189,7 @@ public class PlaystateController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public ActionResult PingPlaybackSession([FromQuery, Required] string playSessionId)
     {
-        _transcodingJobHelper.PingTranscodingJob(playSessionId, null);
+        _transcodeManager.PingTranscodingJob(playSessionId, null);
         return NoContent();
     }
 
@@ -205,7 +206,7 @@ public class PlaystateController : BaseJellyfinApiController
         _logger.LogDebug("ReportPlaybackStopped PlaySessionId: {0}", playbackStopInfo.PlaySessionId ?? string.Empty);
         if (!string.IsNullOrWhiteSpace(playbackStopInfo.PlaySessionId))
         {
-            await _transcodingJobHelper.KillTranscodingJobs(User.GetDeviceId()!, playbackStopInfo.PlaySessionId, s => true).ConfigureAwait(false);
+            await _transcodeManager.KillTranscodingJobs(User.GetDeviceId()!, playbackStopInfo.PlaySessionId, s => true).ConfigureAwait(false);
         }
 
         playbackStopInfo.SessionId = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
@@ -354,7 +355,7 @@ public class PlaystateController : BaseJellyfinApiController
         _logger.LogDebug("ReportPlaybackStopped PlaySessionId: {0}", playbackStopInfo.PlaySessionId ?? string.Empty);
         if (!string.IsNullOrWhiteSpace(playbackStopInfo.PlaySessionId))
         {
-            await _transcodingJobHelper.KillTranscodingJobs(User.GetDeviceId()!, playbackStopInfo.PlaySessionId, s => true).ConfigureAwait(false);
+            await _transcodeManager.KillTranscodingJobs(User.GetDeviceId()!, playbackStopInfo.PlaySessionId, s => true).ConfigureAwait(false);
         }
 
         playbackStopInfo.SessionId = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
@@ -388,7 +389,7 @@ public class PlaystateController : BaseJellyfinApiController
     {
         if (method == PlayMethod.Transcode)
         {
-            var job = string.IsNullOrWhiteSpace(playSessionId) ? null : _transcodingJobHelper.GetTranscodingJob(playSessionId);
+            var job = string.IsNullOrWhiteSpace(playSessionId) ? null : _transcodeManager.GetTranscodingJob(playSessionId);
             if (job is null)
             {
                 return PlayMethod.DirectPlay;

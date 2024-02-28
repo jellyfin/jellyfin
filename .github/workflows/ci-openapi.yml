@@ -25,7 +25,7 @@ jobs:
       - name: Generate openapi.json
         run: dotnet test tests/Jellyfin.Server.Integration.Tests/Jellyfin.Server.Integration.Tests.csproj -c Release --filter "Jellyfin.Server.Integration.Tests.OpenApiSpecTests"
       - name: Upload openapi.json
-        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         with:
           name: openapi-head
           retention-days: 14
@@ -59,7 +59,7 @@ jobs:
       - name: Generate openapi.json
         run: dotnet test tests/Jellyfin.Server.Integration.Tests/Jellyfin.Server.Integration.Tests.csproj -c Release --filter "Jellyfin.Server.Integration.Tests.OpenApiSpecTests"
       - name: Upload openapi.json
-        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         with:
           name: openapi-base
           retention-days: 14
@@ -78,12 +78,12 @@ jobs:
       - openapi-base
     steps:
       - name: Download openapi-head
-        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
+        uses: actions/download-artifact@87c55149d96e628cc2ef7e6fc2aab372015aec85 # v4.1.3
         with:
           name: openapi-head
           path: openapi-head
       - name: Download openapi-base
-        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
+        uses: actions/download-artifact@87c55149d96e628cc2ef7e6fc2aab372015aec85 # v4.1.3
         with:
           name: openapi-base
           path: openapi-base
@@ -105,14 +105,14 @@ jobs:
           body="${body//$'\r'/'%0D'}"
           echo ::set-output name=body::$body
       - name: Find difference comment
-        uses: peter-evans/find-comment@a54c31d7fa095754bfef525c0c8e5e5674c4b4b1 # v2.4.0
+        uses: peter-evans/find-comment@d5fe37641ad8451bdd80312415672ba26c86575e # v3.0.0
         id: find-comment
         with:
           issue-number: ${{ github.event.pull_request.number }}
           direction: last
           body-includes: openapi-diff-workflow-comment
       - name: Reply or edit difference comment (changed)
-        uses: peter-evans/create-or-update-comment@23ff15729ef2fc348714a3bb66d2f655ca9066f2 # v3.1.0
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         if: ${{ steps.read-diff.outputs.body != '' }}
         with:
           issue-number: ${{ github.event.pull_request.number }}
@@ -127,7 +127,7 @@ jobs:
 
             </details>
       - name: Edit difference comment (unchanged)
-        uses: peter-evans/create-or-update-comment@23ff15729ef2fc348714a3bb66d2f655ca9066f2 # v3.1.0
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         if: ${{ steps.read-diff.outputs.body == '' && steps.find-comment.outputs.comment-id != '' }}
         with:
           issue-number: ${{ github.event.pull_request.number }}

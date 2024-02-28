@@ -33,6 +33,11 @@
         /// <summary>
         /// Video ToolBox.
         /// </summary>
-        VideoToolBox = 5
+        VideoToolBox = 5,
+
+        /// <summary>
+        /// Rockchip Media Process Platform (RKMPP).
+        /// </summary>
+        RKMPP = 6
     }
 }

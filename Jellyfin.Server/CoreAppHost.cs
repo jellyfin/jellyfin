@@ -6,6 +6,7 @@ using Emby.Server.Implementations.Session;
 using Jellyfin.Api.WebSocketListeners;
 using Jellyfin.Drawing;
 using Jellyfin.Drawing.Skia;
+using Jellyfin.LiveTv;
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Activity;
 using Jellyfin.Server.Implementations.Devices;
@@ -15,6 +16,7 @@ using Jellyfin.Server.Implementations.Trickplay;
 using Jellyfin.Server.Implementations.UserData;
 using Jellyfin.Server.Implementations.Users;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.BaseItemManager;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Drawing;
@@ -80,6 +82,9 @@ namespace Jellyfin.Server
             serviceCollection.AddSingleton<IActivityManager, ActivityManager>();
             serviceCollection.AddSingleton<IUserManager, UserManager>();
             serviceCollection.AddSingleton<IUserDataManager, UserDataManager>();
+            serviceCollection.AddSingleton<IAuthenticationProvider, DefaultAuthenticationProvider>();
+            serviceCollection.AddSingleton<IAuthenticationProvider, InvalidAuthProvider>();
+            serviceCollection.AddSingleton<IPasswordResetProvider, DefaultPasswordResetProvider>();
             serviceCollection.AddScoped<IDisplayPreferencesManager, DisplayPreferencesManager>();
             serviceCollection.AddSingleton<IDeviceManager, DeviceManager>();
             serviceCollection.AddSingleton<ITrickplayManager, TrickplayManager>();
@@ -115,6 +120,9 @@ namespace Jellyfin.Server
 
             // Jellyfin.Server.Implementations
             yield return typeof(JellyfinDbContext).Assembly;
+
+            // Jellyfin.LiveTv
+            yield return typeof(LiveTvManager).Assembly;
         }
     }
 }

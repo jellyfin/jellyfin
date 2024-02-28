@@ -30,6 +30,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         private const string VaapiAlias = "va";
         private const string D3d11vaAlias = "dx11";
         private const string VideotoolboxAlias = "vt";
+        private const string RkmppAlias = "rk";
         private const string OpenclAlias = "ocl";
         private const string CudaAlias = "cu";
         private const string DrmAlias = "dr";
@@ -161,6 +162,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     { "vaapi",                hwEncoder + "_vaapi" },
                     { "videotoolbox",         hwEncoder + "_videotoolbox" },
                     { "v4l2m2m",              hwEncoder + "_v4l2m2m" },
+                    { "rkmpp",                hwEncoder + "_rkmpp" },
                 };
 
                 if (!string.IsNullOrEmpty(hwType)
@@ -215,6 +217,14 @@ namespace MediaBrowser.Controller.MediaEncoding
                    && _mediaEncoder.SupportsFilter("procamp_vaapi")
                    && _mediaEncoder.SupportsFilterWithOption(FilterOptionType.OverlayVaapiFrameSync)
                    && _mediaEncoder.SupportsFilter("hwupload_vaapi");
+        }
+
+        private bool IsRkmppFullSupported()
+        {
+            return _mediaEncoder.SupportsHwaccel("rkmpp")
+                   && _mediaEncoder.SupportsFilter("scale_rkrga")
+                   && _mediaEncoder.SupportsFilter("vpp_rkrga")
+                   && _mediaEncoder.SupportsFilter("overlay_rkrga");
         }
 
         private bool IsOpenclFullSupported()
@@ -696,6 +706,14 @@ namespace MediaBrowser.Controller.MediaEncoding
             return codec.ToLowerInvariant();
         }
 
+        private string GetRkmppDeviceArgs(string alias)
+        {
+            alias ??= RkmppAlias;
+
+            // device selection in rk is not supported.
+            return " -init_hw_device rkmpp=" + alias;
+        }
+
         private string GetVideoToolboxDeviceArgs(string alias)
         {
             alias ??= VideotoolboxAlias;
@@ -835,30 +853,25 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public string GetGraphicalSubCanvasSize(EncodingJobInfo state)
         {
-            // DVBSUB and DVDSUB use the fixed canvas size 720x576
+            // DVBSUB uses the fixed canvas size 720x576
             if (state.SubtitleStream is not null
                 && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode
                 && !state.SubtitleStream.IsTextSubtitleStream
-                && !string.Equals(state.SubtitleStream.Codec, "DVBSUB", StringComparison.OrdinalIgnoreCase)
-                && !string.Equals(state.SubtitleStream.Codec, "DVDSUB", StringComparison.OrdinalIgnoreCase))
+                && !string.Equals(state.SubtitleStream.Codec, "DVBSUB", StringComparison.OrdinalIgnoreCase))
             {
-                var inW = state.VideoStream?.Width;
-                var inH = state.VideoStream?.Height;
-                var reqW = state.BaseRequest.Width;
-                var reqH = state.BaseRequest.Height;
-                var reqMaxW = state.BaseRequest.MaxWidth;
-                var reqMaxH = state.BaseRequest.MaxHeight;
+                var subtitleWidth = state.SubtitleStream?.Width;
+                var subtitleHeight = state.SubtitleStream?.Height;
 
-                // setup a relative small canvas_size for overlay_qsv/vaapi to reduce transfer overhead
-                var (overlayW, overlayH) = GetFixedOutputSize(inW, inH, reqW, reqH, reqMaxW, 1080);
-
-                if (overlayW.HasValue && overlayH.HasValue)
+                if (subtitleWidth.HasValue
+                    && subtitleHeight.HasValue
+                    && subtitleWidth.Value > 0
+                    && subtitleHeight.Value > 0)
                 {
                     return string.Format(
                         CultureInfo.InvariantCulture,
                         " -canvas_size {0}x{1}",
-                        overlayW.Value,
-                        overlayH.Value);
+                        subtitleWidth.Value,
+                        subtitleHeight.Value);
                 }
             }
 
@@ -1061,6 +1074,33 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // no videotoolbox hw filter.
                 args.Append(GetVideoToolboxDeviceArgs(VideotoolboxAlias));
             }
+            else if (string.Equals(optHwaccelType, "rkmpp", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!isLinux || !_mediaEncoder.SupportsHwaccel("rkmpp"))
+                {
+                    return string.Empty;
+                }
+
+                var isRkmppDecoder = vidDecoder.Contains("rkmpp", StringComparison.OrdinalIgnoreCase);
+                var isRkmppEncoder = vidEncoder.Contains("rkmpp", StringComparison.OrdinalIgnoreCase);
+                if (!isRkmppDecoder && !isRkmppEncoder)
+                {
+                    return string.Empty;
+                }
+
+                args.Append(GetRkmppDeviceArgs(RkmppAlias));
+
+                var filterDevArgs = string.Empty;
+                var doOclTonemap = isHwTonemapAvailable && IsOpenclFullSupported();
+
+                if (doOclTonemap && !isRkmppDecoder)
+                {
+                    args.Append(GetOpenclDeviceArgs(0, null, RkmppAlias, OpenclAlias));
+                    filterDevArgs = GetFilterHwDeviceArgs(OpenclAlias);
+                }
+
+                args.Append(filterDevArgs);
+            }
 
             if (!string.IsNullOrEmpty(vidDecoder))
             {
@@ -1068,7 +1108,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             // hw transpose filters should be added manually.
-            args.Append(" -autorotate 0");
+            args.Append(" -noautorotate");
 
             return args.ToString().Trim();
         }
@@ -1159,7 +1199,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isSwDecoder = string.IsNullOrEmpty(GetHardwareVideoDecoder(state, options));
             if (!isSwDecoder && _mediaEncoder.EncoderVersion >= new Version(4, 4))
             {
-                arg.Append(" -autoscale 0");
+                arg.Append(" -noautoscale");
             }
 
             return arg.ToString();
@@ -1477,8 +1517,10 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (string.Equals(codec, "h264_qsv", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codec, "h264_nvenc", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codec, "h264_amf", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(codec, "h264_rkmpp", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codec, "hevc_qsv", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codec, "hevc_nvenc", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(codec, "hevc_rkmpp", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codec, "av1_qsv", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codec, "av1_nvenc", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codec, "av1_amf", StringComparison.OrdinalIgnoreCase)
@@ -1918,20 +1960,22 @@ namespace MediaBrowser.Controller.MediaEncoding
                 profile = "constrained_baseline";
             }
 
-            // libx264, h264_qsv and h264_nvenc does not support Constrained Baseline profile, force Baseline in this case.
+            // libx264, h264_{qsv,nvenc,rkmpp} does not support Constrained Baseline profile, force Baseline in this case.
             if ((string.Equals(videoEncoder, "libx264", StringComparison.OrdinalIgnoreCase)
                  || string.Equals(videoEncoder, "h264_qsv", StringComparison.OrdinalIgnoreCase)
-                 || string.Equals(videoEncoder, "h264_nvenc", StringComparison.OrdinalIgnoreCase))
+                 || string.Equals(videoEncoder, "h264_nvenc", StringComparison.OrdinalIgnoreCase)
+                 || string.Equals(videoEncoder, "h264_rkmpp", StringComparison.OrdinalIgnoreCase))
                 && profile.Contains("baseline", StringComparison.OrdinalIgnoreCase))
             {
                 profile = "baseline";
             }
 
-            // libx264, h264_qsv, h264_nvenc and h264_vaapi does not support Constrained High profile, force High in this case.
+            // libx264, h264_{qsv,nvenc,vaapi,rkmpp} does not support Constrained High profile, force High in this case.
             if ((string.Equals(videoEncoder, "libx264", StringComparison.OrdinalIgnoreCase)
                  || string.Equals(videoEncoder, "h264_qsv", StringComparison.OrdinalIgnoreCase)
                  || string.Equals(videoEncoder, "h264_nvenc", StringComparison.OrdinalIgnoreCase)
-                 || string.Equals(videoEncoder, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
+                 || string.Equals(videoEncoder, "h264_vaapi", StringComparison.OrdinalIgnoreCase)
+                 || string.Equals(videoEncoder, "h264_rkmpp", StringComparison.OrdinalIgnoreCase))
                 && profile.Contains("high", StringComparison.OrdinalIgnoreCase))
             {
                 profile = "high";
@@ -2014,6 +2058,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                     {
                         param += " -level " + level;
                     }
+                }
+                else if (string.Equals(videoEncoder, "h264_rkmpp", StringComparison.OrdinalIgnoreCase)
+                         || string.Equals(videoEncoder, "hevc_rkmpp", StringComparison.OrdinalIgnoreCase))
+                {
+                    param += " -level " + level;
                 }
                 else if (!string.Equals(videoEncoder, "libx265", StringComparison.OrdinalIgnoreCase))
                 {
@@ -2833,6 +2882,48 @@ namespace MediaBrowser.Controller.MediaEncoding
             return (outputWidth, outputHeight);
         }
 
+        public static bool IsScaleRatioSupported(
+            int? videoWidth,
+            int? videoHeight,
+            int? requestedWidth,
+            int? requestedHeight,
+            int? requestedMaxWidth,
+            int? requestedMaxHeight,
+            double? maxScaleRatio)
+        {
+            var (outWidth, outHeight) = GetFixedOutputSize(
+                videoWidth,
+                videoHeight,
+                requestedWidth,
+                requestedHeight,
+                requestedMaxWidth,
+                requestedMaxHeight);
+
+            if (!videoWidth.HasValue
+                 || !videoHeight.HasValue
+                 || !outWidth.HasValue
+                 || !outHeight.HasValue
+                 || !maxScaleRatio.HasValue
+                 || (maxScaleRatio.Value < 1.0f))
+            {
+                return false;
+            }
+
+            var minScaleRatio = 1.0f / maxScaleRatio;
+            var scaleRatioW = (double)outWidth / (double)videoWidth;
+            var scaleRatioH = (double)outHeight / (double)videoHeight;
+
+            if (scaleRatioW < minScaleRatio
+                || scaleRatioW > maxScaleRatio
+                || scaleRatioH < minScaleRatio
+                || scaleRatioH > maxScaleRatio)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         public static string GetHwScaleFilter(
             string hwScaleSuffix,
             string videoFormat,
@@ -2877,7 +2968,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             return string.Empty;
         }
 
-        public static string GetCustomSwScaleFilter(
+        public static string GetGraphicalSubPreProcessFilters(
             int? videoWidth,
             int? videoHeight,
             int? requestedWidth,
@@ -2897,7 +2988,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 return string.Format(
                     CultureInfo.InvariantCulture,
-                    "scale=s={0}x{1}:flags=fast_bilinear",
+                    @"scale=-1:{1}:fast_bilinear,scale,crop,pad=max({0}\,iw):max({1}\,ih):(ow-iw)/2:(oh-ih)/2:black@0,crop={0}:{1}",
                     outWidth.Value,
                     outHeight.Value);
             }
@@ -2913,7 +3004,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             int? requestedHeight,
             int? requestedMaxWidth,
             int? requestedMaxHeight,
-            int? framerate)
+            float? framerate)
         {
             var reqTicks = state.BaseRequest.StartTimeTicks ?? 0;
             var startTime = TimeSpan.FromTicks(reqTicks).ToString(@"hh\\\:mm\\\:ss\\\.fff", CultureInfo.InvariantCulture);
@@ -2932,7 +3023,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     "alphasrc=s={0}x{1}:r={2}:start='{3}'",
                     outWidth.Value,
                     outHeight.Value,
-                    framerate ?? 10,
+                    framerate ?? 25,
                     reqTicks > 0 ? startTime : 0);
             }
 
@@ -3340,10 +3431,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
             else if (hasGraphicalSubs)
             {
-                // [0:s]scale=s=1280x720
-                var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
-                subFilters.Add(subSwScaleFilter);
-                overlayFilters.Add("overlay=eof_action=endall:shortest=1:repeatlast=0");
+                var subPreProcFilters = GetGraphicalSubPreProcessFilters(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                subFilters.Add(subPreProcFilters);
+                overlayFilters.Add("overlay=eof_action=pass:repeatlast=0");
             }
 
             return (mainFilters, subFilters, overlayFilters);
@@ -3504,15 +3594,17 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     if (hasGraphicalSubs)
                     {
-                        // scale=s=1280x720,format=yuva420p,hwupload
-                        var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
-                        subFilters.Add(subSwScaleFilter);
+                        var subPreProcFilters = GetGraphicalSubPreProcessFilters(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                        subFilters.Add(subPreProcFilters);
                         subFilters.Add("format=yuva420p");
                     }
                     else if (hasTextSubs)
                     {
+                        var framerate = state.VideoStream?.RealFrameRate;
+                        var subFramerate = hasAssSubs ? Math.Min(framerate ?? 25, 60) : 10;
+
                         // alphasrc=s=1280x720:r=10:start=0,format=yuva420p,subtitles,hwupload
-                        var alphaSrcFilter = GetAlphaSrcFilter(state, inW, inH, reqW, reqH, reqMaxW, reqMaxH, hasAssSubs ? 10 : 5);
+                        var alphaSrcFilter = GetAlphaSrcFilter(state, inW, inH, reqW, reqH, reqMaxW, reqMaxH, subFramerate);
                         var subTextSubtitlesFilter = GetTextSubtitlesFilter(state, true, true);
                         subFilters.Add(alphaSrcFilter);
                         subFilters.Add("format=yuva420p");
@@ -3520,16 +3612,16 @@ namespace MediaBrowser.Controller.MediaEncoding
                     }
 
                     subFilters.Add("hwupload=derive_device=cuda");
-                    overlayFilters.Add("overlay_cuda=eof_action=endall:shortest=1:repeatlast=0");
+                    overlayFilters.Add("overlay_cuda=eof_action=pass:repeatlast=0");
                 }
             }
             else
             {
                 if (hasGraphicalSubs)
                 {
-                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
-                    subFilters.Add(subSwScaleFilter);
-                    overlayFilters.Add("overlay=eof_action=endall:shortest=1:repeatlast=0");
+                    var subPreProcFilters = GetGraphicalSubPreProcessFilters(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    subFilters.Add(subPreProcFilters);
+                    overlayFilters.Add("overlay=eof_action=pass:repeatlast=0");
                 }
             }
 
@@ -3702,15 +3794,17 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     if (hasGraphicalSubs)
                     {
-                        // scale=s=1280x720,format=yuva420p,hwupload
-                        var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
-                        subFilters.Add(subSwScaleFilter);
+                        var subPreProcFilters = GetGraphicalSubPreProcessFilters(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                        subFilters.Add(subPreProcFilters);
                         subFilters.Add("format=yuva420p");
                     }
                     else if (hasTextSubs)
                     {
+                        var framerate = state.VideoStream?.RealFrameRate;
+                        var subFramerate = hasAssSubs ? Math.Min(framerate ?? 25, 60) : 10;
+
                         // alphasrc=s=1280x720:r=10:start=0,format=yuva420p,subtitles,hwupload
-                        var alphaSrcFilter = GetAlphaSrcFilter(state, inW, inH, reqW, reqH, reqMaxW, reqMaxH, hasAssSubs ? 10 : 5);
+                        var alphaSrcFilter = GetAlphaSrcFilter(state, inW, inH, reqW, reqH, reqMaxW, reqMaxH, subFramerate);
                         var subTextSubtitlesFilter = GetTextSubtitlesFilter(state, true, true);
                         subFilters.Add(alphaSrcFilter);
                         subFilters.Add("format=yuva420p");
@@ -3718,7 +3812,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     }
 
                     subFilters.Add("hwupload=derive_device=opencl");
-                    overlayFilters.Add("overlay_opencl=eof_action=endall:shortest=1:repeatlast=0");
+                    overlayFilters.Add("overlay_opencl=eof_action=pass:repeatlast=0");
                     overlayFilters.Add("hwmap=derive_device=d3d11va:reverse=1");
                     overlayFilters.Add("format=d3d11");
                 }
@@ -3727,9 +3821,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
-                    subFilters.Add(subSwScaleFilter);
-                    overlayFilters.Add("overlay=eof_action=endall:shortest=1:repeatlast=0");
+                    var subPreProcFilters = GetGraphicalSubPreProcessFilters(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    subFilters.Add(subPreProcFilters);
+                    overlayFilters.Add("overlay=eof_action=pass:repeatlast=0");
                 }
             }
 
@@ -3938,16 +4032,18 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     if (hasGraphicalSubs)
                     {
-                        // scale,format=bgra,hwupload
-                        // overlay_qsv can handle overlay scaling,
-                        // add a dummy scale filter to pair with -canvas_size.
-                        subFilters.Add("scale=flags=fast_bilinear");
+                        // overlay_qsv can handle overlay scaling, setup a smaller height to reduce transfer overhead
+                        var subPreProcFilters = GetGraphicalSubPreProcessFilters(inW, inH, reqW, reqH, reqMaxW, 1080);
+                        subFilters.Add(subPreProcFilters);
                         subFilters.Add("format=bgra");
                     }
                     else if (hasTextSubs)
                     {
+                        var framerate = state.VideoStream?.RealFrameRate;
+                        var subFramerate = hasAssSubs ? Math.Min(framerate ?? 25, 60) : 10;
+
                         // alphasrc=s=1280x720:r=10:start=0,format=bgra,subtitles,hwupload
-                        var alphaSrcFilter = GetAlphaSrcFilter(state, inW, inH, reqW, reqH, reqMaxW, 1080, hasAssSubs ? 10 : 5);
+                        var alphaSrcFilter = GetAlphaSrcFilter(state, inW, inH, reqW, reqH, reqMaxW, 1080, subFramerate);
                         var subTextSubtitlesFilter = GetTextSubtitlesFilter(state, true, true);
                         subFilters.Add(alphaSrcFilter);
                         subFilters.Add("format=bgra");
@@ -3964,7 +4060,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         : string.Empty;
                     var overlayQsvFilter = string.Format(
                         CultureInfo.InvariantCulture,
-                        "overlay_qsv=eof_action=endall:shortest=1:repeatlast=0{0}",
+                        "overlay_qsv=eof_action=pass:repeatlast=0{0}",
                         overlaySize);
                     overlayFilters.Add(overlayQsvFilter);
                 }
@@ -3973,9 +4069,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
-                    subFilters.Add(subSwScaleFilter);
-                    overlayFilters.Add("overlay=eof_action=endall:shortest=1:repeatlast=0");
+                    var subPreProcFilters = GetGraphicalSubPreProcessFilters(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    subFilters.Add(subPreProcFilters);
+                    overlayFilters.Add("overlay=eof_action=pass:repeatlast=0");
                 }
             }
 
@@ -4158,12 +4254,17 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     if (hasGraphicalSubs)
                     {
-                        subFilters.Add("scale=flags=fast_bilinear");
+                        // overlay_qsv can handle overlay scaling, setup a smaller height to reduce transfer overhead
+                        var subPreProcFilters = GetGraphicalSubPreProcessFilters(inW, inH, reqW, reqH, reqMaxW, 1080);
+                        subFilters.Add(subPreProcFilters);
                         subFilters.Add("format=bgra");
                     }
                     else if (hasTextSubs)
                     {
-                        var alphaSrcFilter = GetAlphaSrcFilter(state, inW, inH, reqW, reqH, reqMaxW, 1080, hasAssSubs ? 10 : 5);
+                        var framerate = state.VideoStream?.RealFrameRate;
+                        var subFramerate = hasAssSubs ? Math.Min(framerate ?? 25, 60) : 10;
+
+                        var alphaSrcFilter = GetAlphaSrcFilter(state, inW, inH, reqW, reqH, reqMaxW, 1080, subFramerate);
                         var subTextSubtitlesFilter = GetTextSubtitlesFilter(state, true, true);
                         subFilters.Add(alphaSrcFilter);
                         subFilters.Add("format=bgra");
@@ -4180,7 +4281,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         : string.Empty;
                     var overlayQsvFilter = string.Format(
                         CultureInfo.InvariantCulture,
-                        "overlay_qsv=eof_action=endall:shortest=1:repeatlast=0{0}",
+                        "overlay_qsv=eof_action=pass:repeatlast=0{0}",
                         overlaySize);
                     overlayFilters.Add(overlayQsvFilter);
                 }
@@ -4189,9 +4290,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
-                    subFilters.Add(subSwScaleFilter);
-                    overlayFilters.Add("overlay=eof_action=pass:shortest=1:repeatlast=0");
+                    var subPreProcFilters = GetGraphicalSubPreProcessFilters(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    subFilters.Add(subPreProcFilters);
+                    overlayFilters.Add("overlay=eof_action=pass:repeatlast=0");
                 }
             }
 
@@ -4425,12 +4526,17 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     if (hasGraphicalSubs)
                     {
-                        subFilters.Add("scale=flags=fast_bilinear");
+                        // overlay_vaapi can handle overlay scaling, setup a smaller height to reduce transfer overhead
+                        var subPreProcFilters = GetGraphicalSubPreProcessFilters(inW, inH, reqW, reqH, reqMaxW, 1080);
+                        subFilters.Add(subPreProcFilters);
                         subFilters.Add("format=bgra");
                     }
                     else if (hasTextSubs)
                     {
-                        var alphaSrcFilter = GetAlphaSrcFilter(state, inW, inH, reqW, reqH, reqMaxW, 1080, hasAssSubs ? 10 : 5);
+                        var framerate = state.VideoStream?.RealFrameRate;
+                        var subFramerate = hasAssSubs ? Math.Min(framerate ?? 25, 60) : 10;
+
+                        var alphaSrcFilter = GetAlphaSrcFilter(state, inW, inH, reqW, reqH, reqMaxW, 1080, subFramerate);
                         var subTextSubtitlesFilter = GetTextSubtitlesFilter(state, true, true);
                         subFilters.Add(alphaSrcFilter);
                         subFilters.Add("format=bgra");
@@ -4445,7 +4551,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         : string.Empty;
                     var overlayVaapiFilter = string.Format(
                         CultureInfo.InvariantCulture,
-                        "overlay_vaapi=eof_action=endall:shortest=1:repeatlast=0{0}",
+                        "overlay_vaapi=eof_action=pass:repeatlast=0{0}",
                         overlaySize);
                     overlayFilters.Add(overlayVaapiFilter);
                 }
@@ -4454,9 +4560,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
-                    subFilters.Add(subSwScaleFilter);
-                    overlayFilters.Add("overlay=eof_action=pass:shortest=1:repeatlast=0");
+                    var subPreProcFilters = GetGraphicalSubPreProcessFilters(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    subFilters.Add(subPreProcFilters);
+                    overlayFilters.Add("overlay=eof_action=pass:repeatlast=0");
 
                     if (isVaapiEncoder)
                     {
@@ -4599,14 +4705,16 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    // scale=s=1280x720,format=bgra,hwupload
-                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
-                    subFilters.Add(subSwScaleFilter);
+                    var subPreProcFilters = GetGraphicalSubPreProcessFilters(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    subFilters.Add(subPreProcFilters);
                     subFilters.Add("format=bgra");
                 }
                 else if (hasTextSubs)
                 {
-                    var alphaSrcFilter = GetAlphaSrcFilter(state, inW, inH, reqW, reqH, reqMaxW, reqMaxH, hasAssSubs ? 10 : 5);
+                    var framerate = state.VideoStream?.RealFrameRate;
+                    var subFramerate = hasAssSubs ? Math.Min(framerate ?? 25, 60) : 10;
+
+                    var alphaSrcFilter = GetAlphaSrcFilter(state, inW, inH, reqW, reqH, reqMaxW, reqMaxH, subFramerate);
                     var subTextSubtitlesFilter = GetTextSubtitlesFilter(state, true, true);
                     subFilters.Add(alphaSrcFilter);
                     subFilters.Add("format=bgra");
@@ -4616,7 +4724,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 subFilters.Add("hwupload=derive_device=vulkan");
                 subFilters.Add("format=vulkan");
 
-                overlayFilters.Add("overlay_vulkan=eof_action=endall:shortest=1:repeatlast=0");
+                overlayFilters.Add("overlay_vulkan=eof_action=pass:repeatlast=0");
 
                 if (isSwEncoder)
                 {
@@ -4815,9 +4923,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
-                    subFilters.Add(subSwScaleFilter);
-                    overlayFilters.Add("overlay=eof_action=pass:shortest=1:repeatlast=0");
+                    var subPreProcFilters = GetGraphicalSubPreProcessFilters(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    subFilters.Add(subPreProcFilters);
+                    overlayFilters.Add("overlay=eof_action=pass:repeatlast=0");
 
                     if (isVaapiEncoder)
                     {
@@ -4899,6 +5007,237 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
+        /// Gets the parameter of Rockchip RKMPP/RKRGA filter chain.
+        /// </summary>
+        /// <param name="state">Encoding state.</param>
+        /// <param name="options">Encoding options.</param>
+        /// <param name="vidEncoder">Video encoder to use.</param>
+        /// <returns>The tuple contains three lists: main, sub and overlay filters.</returns>
+        public (List<string> MainFilters, List<string> SubFilters, List<string> OverlayFilters) GetRkmppVidFilterChain(
+            EncodingJobInfo state,
+            EncodingOptions options,
+            string vidEncoder)
+        {
+            if (!string.Equals(options.HardwareAccelerationType, "rkmpp", StringComparison.OrdinalIgnoreCase))
+            {
+                return (null, null, null);
+            }
+
+            var isLinux = OperatingSystem.IsLinux();
+            var vidDecoder = GetHardwareVideoDecoder(state, options) ?? string.Empty;
+            var isSwDecoder = string.IsNullOrEmpty(vidDecoder);
+            var isSwEncoder = !vidEncoder.Contains("rkmpp", StringComparison.OrdinalIgnoreCase);
+            var isRkmppOclSupported = isLinux && IsRkmppFullSupported() && IsOpenclFullSupported();
+
+            if ((isSwDecoder && isSwEncoder)
+                || !isRkmppOclSupported
+                || !_mediaEncoder.SupportsFilter("alphasrc"))
+            {
+                return GetSwVidFilterChain(state, options, vidEncoder);
+            }
+
+            // prefered rkmpp + rkrga + opencl filters pipeline
+            if (isRkmppOclSupported)
+            {
+                return GetRkmppVidFiltersPrefered(state, options, vidDecoder, vidEncoder);
+            }
+
+            return (null, null, null);
+        }
+
+        public (List<string> MainFilters, List<string> SubFilters, List<string> OverlayFilters) GetRkmppVidFiltersPrefered(
+            EncodingJobInfo state,
+            EncodingOptions options,
+            string vidDecoder,
+            string vidEncoder)
+        {
+            var inW = state.VideoStream?.Width;
+            var inH = state.VideoStream?.Height;
+            var reqW = state.BaseRequest.Width;
+            var reqH = state.BaseRequest.Height;
+            var reqMaxW = state.BaseRequest.MaxWidth;
+            var reqMaxH = state.BaseRequest.MaxHeight;
+            var threeDFormat = state.MediaSource.Video3DFormat;
+
+            var isRkmppDecoder = vidDecoder.Contains("rkmpp", StringComparison.OrdinalIgnoreCase);
+            var isRkmppEncoder = vidEncoder.Contains("rkmpp", StringComparison.OrdinalIgnoreCase);
+            var isSwDecoder = !isRkmppDecoder;
+            var isSwEncoder = !isRkmppEncoder;
+            var isDrmInDrmOut = isRkmppDecoder && isRkmppEncoder;
+
+            var doDeintH264 = state.DeInterlace("h264", true) || state.DeInterlace("avc", true);
+            var doDeintHevc = state.DeInterlace("h265", true) || state.DeInterlace("hevc", true);
+            var doDeintH2645 = doDeintH264 || doDeintHevc;
+            var doOclTonemap = IsHwTonemapAvailable(state, options);
+
+            var hasSubs = state.SubtitleStream != null && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
+            var hasTextSubs = hasSubs && state.SubtitleStream.IsTextSubtitleStream;
+            var hasGraphicalSubs = hasSubs && !state.SubtitleStream.IsTextSubtitleStream;
+            var hasAssSubs = hasSubs
+                && (string.Equals(state.SubtitleStream.Codec, "ass", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(state.SubtitleStream.Codec, "ssa", StringComparison.OrdinalIgnoreCase));
+
+            /* Make main filters for video stream */
+            var mainFilters = new List<string>();
+
+            mainFilters.Add(GetOverwriteColorPropertiesParam(state, doOclTonemap));
+
+            if (isSwDecoder)
+            {
+                // INPUT sw surface(memory)
+                // sw deint
+                if (doDeintH2645)
+                {
+                    var swDeintFilter = GetSwDeinterlaceFilter(state, options);
+                    mainFilters.Add(swDeintFilter);
+                }
+
+                var outFormat = doOclTonemap ? "yuv420p10le" : (hasGraphicalSubs ? "yuv420p" : "nv12");
+                var swScaleFilter = GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH);
+                if (!string.IsNullOrEmpty(swScaleFilter))
+                {
+                    swScaleFilter += ":flags=fast_bilinear";
+                }
+
+                // sw scale
+                mainFilters.Add(swScaleFilter);
+                mainFilters.Add("format=" + outFormat);
+
+                // keep video at memory except ocl tonemap,
+                // since the overhead caused by hwupload >>> using sw filter.
+                // sw => hw
+                if (doOclTonemap)
+                {
+                    mainFilters.Add("hwupload=derive_device=opencl");
+                }
+            }
+            else if (isRkmppDecoder)
+            {
+                // INPUT rkmpp/drm surface(gem/dma-heap)
+
+                var isFullAfbcPipeline = isDrmInDrmOut && !doOclTonemap;
+                var outFormat = doOclTonemap ? "p010" : "nv12";
+                var hwScaleFilter = GetHwScaleFilter("rkrga", outFormat, inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                var hwScaleFilter2 = GetHwScaleFilter("rkrga", string.Empty, inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+
+                if (!hasSubs
+                     || !isFullAfbcPipeline
+                     || !string.IsNullOrEmpty(hwScaleFilter2))
+                {
+                    // try enabling AFBC to save DDR bandwidth
+                    if (!string.IsNullOrEmpty(hwScaleFilter) && isFullAfbcPipeline)
+                    {
+                        hwScaleFilter += ":afbc=1";
+                    }
+
+                    // hw scale
+                    mainFilters.Add(hwScaleFilter);
+                }
+            }
+
+            if (doOclTonemap && isRkmppDecoder)
+            {
+                // map from rkmpp/drm to opencl via drm-opencl interop.
+                mainFilters.Add("hwmap=derive_device=opencl:mode=read");
+            }
+
+            // ocl tonemap
+            if (doOclTonemap)
+            {
+                var tonemapFilter = GetHwTonemapFilter(options, "opencl", "nv12");
+                // enable tradeoffs for performance
+                if (!string.IsNullOrEmpty(tonemapFilter))
+                {
+                    tonemapFilter += ":tradeoff=1";
+                }
+
+                mainFilters.Add(tonemapFilter);
+            }
+
+            var memoryOutput = false;
+            var isUploadForOclTonemap = isSwDecoder && doOclTonemap;
+            if ((isRkmppDecoder && isSwEncoder) || isUploadForOclTonemap)
+            {
+                memoryOutput = true;
+
+                // OUTPUT nv12 surface(memory)
+                mainFilters.Add("hwdownload");
+                mainFilters.Add("format=nv12");
+            }
+
+            // OUTPUT nv12 surface(memory)
+            if (isSwDecoder && isRkmppEncoder)
+            {
+                memoryOutput = true;
+            }
+
+            if (memoryOutput)
+            {
+                // text subtitles
+                if (hasTextSubs)
+                {
+                    var textSubtitlesFilter = GetTextSubtitlesFilter(state, false, false);
+                    mainFilters.Add(textSubtitlesFilter);
+                }
+            }
+
+            if (isDrmInDrmOut)
+            {
+                if (doOclTonemap)
+                {
+                    // OUTPUT drm(nv12) surface(gem/dma-heap)
+                    // reverse-mapping via drm-opencl interop.
+                    mainFilters.Add("hwmap=derive_device=rkmpp:mode=write:reverse=1");
+                    mainFilters.Add("format=drm_prime");
+                }
+            }
+
+            /* Make sub and overlay filters for subtitle stream */
+            var subFilters = new List<string>();
+            var overlayFilters = new List<string>();
+            if (isDrmInDrmOut)
+            {
+                if (hasSubs)
+                {
+                    if (hasGraphicalSubs)
+                    {
+                        var subPreProcFilters = GetGraphicalSubPreProcessFilters(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                        subFilters.Add(subPreProcFilters);
+                        subFilters.Add("format=bgra");
+                    }
+                    else if (hasTextSubs)
+                    {
+                        var framerate = state.VideoStream?.RealFrameRate;
+                        var subFramerate = hasAssSubs ? Math.Min(framerate ?? 25, 60) : 10;
+
+                        // alphasrc=s=1280x720:r=10:start=0,format=bgra,subtitles,hwupload
+                        var alphaSrcFilter = GetAlphaSrcFilter(state, inW, inH, reqW, reqH, reqMaxW, reqMaxH, subFramerate);
+                        var subTextSubtitlesFilter = GetTextSubtitlesFilter(state, true, true);
+                        subFilters.Add(alphaSrcFilter);
+                        subFilters.Add("format=bgra");
+                        subFilters.Add(subTextSubtitlesFilter);
+                    }
+
+                    subFilters.Add("hwupload=derive_device=rkmpp");
+
+                    // try enabling AFBC to save DDR bandwidth
+                    overlayFilters.Add("overlay_rkrga=eof_action=pass:repeatlast=0:format=nv12:afbc=1");
+                }
+            }
+            else if (memoryOutput)
+            {
+                if (hasGraphicalSubs)
+                {
+                    var subPreProcFilters = GetGraphicalSubPreProcessFilters(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    subFilters.Add(subPreProcFilters);
+                    overlayFilters.Add("overlay=eof_action=pass:repeatlast=0");
+                }
+            }
+
+            return (mainFilters, subFilters, overlayFilters);
+        }
+
+        /// <summary>
         /// Gets the parameter of video processing filters.
         /// </summary>
         /// <param name="state">Encoding state.</param>
@@ -4943,6 +5282,10 @@ namespace MediaBrowser.Controller.MediaEncoding
             else if (string.Equals(options.HardwareAccelerationType, "videotoolbox", StringComparison.OrdinalIgnoreCase))
             {
                 (mainFilters, subFilters, overlayFilters) = GetAppleVidFilterChain(state, options, outputVideoCodec);
+            }
+            else if (string.Equals(options.HardwareAccelerationType, "rkmpp", StringComparison.OrdinalIgnoreCase))
+            {
+                (mainFilters, subFilters, overlayFilters) = GetRkmppVidFilterChain(state, options, outputVideoCodec);
             }
             else
             {
@@ -5075,18 +5418,21 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 if (string.Equals(videoStream.PixelFormat, "yuv420p", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(videoStream.PixelFormat, "yuvj420p", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(videoStream.PixelFormat, "yuv422p", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(videoStream.PixelFormat, "yuv444p", StringComparison.OrdinalIgnoreCase))
                 {
                     return 8;
                 }
 
                 if (string.Equals(videoStream.PixelFormat, "yuv420p10le", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(videoStream.PixelFormat, "yuv422p10le", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(videoStream.PixelFormat, "yuv444p10le", StringComparison.OrdinalIgnoreCase))
                 {
                     return 10;
                 }
 
                 if (string.Equals(videoStream.PixelFormat, "yuv420p12le", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(videoStream.PixelFormat, "yuv422p12le", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(videoStream.PixelFormat, "yuv444p12le", StringComparison.OrdinalIgnoreCase))
                 {
                     return 12;
@@ -5139,7 +5485,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                          || string.Equals(videoStream.Codec, "vp9", StringComparison.OrdinalIgnoreCase)
                          || string.Equals(videoStream.Codec, "av1", StringComparison.OrdinalIgnoreCase)))
                 {
-                    return null;
+                    // One exception is that RKMPP decoder can handle H.264 High 10.
+                    if (!(string.Equals(options.HardwareAccelerationType, "rkmpp", StringComparison.OrdinalIgnoreCase)
+                          && string.Equals(videoStream.Codec, "h264", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        return null;
+                    }
                 }
 
                 if (string.Equals(options.HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase))
@@ -5165,6 +5516,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (string.Equals(options.HardwareAccelerationType, "videotoolbox", StringComparison.OrdinalIgnoreCase))
                 {
                     return GetVideotoolboxVidDecoder(state, options, videoStream, bitDepth);
+                }
+
+                if (string.Equals(options.HardwareAccelerationType, "rkmpp", StringComparison.OrdinalIgnoreCase))
+                {
+                    return GetRkmppVidDecoder(state, options, videoStream, bitDepth);
                 }
             }
 
@@ -5231,6 +5587,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return null;
             }
 
+            if (string.Equals(decoderSuffix, "rkmpp", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
             return isCodecAvailable ? (" -c:v " + decoderName) : null;
         }
 
@@ -5253,6 +5614,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isCudaSupported = (isLinux || isWindows) && IsCudaFullSupported();
             var isQsvSupported = (isLinux || isWindows) && _mediaEncoder.SupportsHwaccel("qsv");
             var isVideotoolboxSupported = isMacOS && _mediaEncoder.SupportsHwaccel("videotoolbox");
+            var isRkmppSupported = isLinux && IsRkmppFullSupported();
             var isCodecAvailable = options.HardwareDecodingCodecs.Contains(videoCodec, StringComparison.OrdinalIgnoreCase);
 
             var ffmpegVersion = _mediaEncoder.EncoderVersion;
@@ -5353,6 +5715,14 @@ namespace MediaBrowser.Controller.MediaEncoding
                 && isCodecAvailable)
             {
                 return " -hwaccel videotoolbox" + (outputHwSurface ? " -hwaccel_output_format videotoolbox_vld" : string.Empty);
+            }
+
+            // Rockchip rkmpp
+            if (string.Equals(options.HardwareAccelerationType, "rkmpp", StringComparison.OrdinalIgnoreCase)
+                && isRkmppSupported
+                && isCodecAvailable)
+            {
+                return " -hwaccel rkmpp" + (outputHwSurface ? " -hwaccel_output_format drm_prime" : string.Empty);
             }
 
             return null;
@@ -5655,6 +6025,102 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (string.Equals("vp9", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
                 {
                     return GetHwaccelType(state, options, "vp9", bitDepth, false);
+                }
+            }
+
+            return null;
+        }
+
+        public string GetRkmppVidDecoder(EncodingJobInfo state, EncodingOptions options, MediaStream videoStream, int bitDepth)
+        {
+            var isLinux = OperatingSystem.IsLinux();
+
+            if (!isLinux
+                || !string.Equals(options.HardwareAccelerationType, "rkmpp", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            var inW = state.VideoStream?.Width;
+            var inH = state.VideoStream?.Height;
+            var reqW = state.BaseRequest.Width;
+            var reqH = state.BaseRequest.Height;
+            var reqMaxW = state.BaseRequest.MaxWidth;
+            var reqMaxH = state.BaseRequest.MaxHeight;
+
+            // rkrga RGA2e supports range from 1/16 to 16
+            if (!IsScaleRatioSupported(inW, inH, reqW, reqH, reqMaxW, reqMaxH, 16.0f))
+            {
+                return null;
+            }
+
+            var isRkmppOclSupported = IsRkmppFullSupported() && IsOpenclFullSupported();
+            var hwSurface = isRkmppOclSupported
+                && _mediaEncoder.SupportsFilter("alphasrc");
+
+            // rkrga RGA3 supports range from 1/8 to 8
+            var isAfbcSupported = hwSurface && IsScaleRatioSupported(inW, inH, reqW, reqH, reqMaxW, reqMaxH, 8.0f);
+
+            // TODO: add more 8/10bit and 4:2:2 formats for Rkmpp after finishing the ffcheck tool
+            var is8bitSwFormatsRkmpp = string.Equals("yuv420p", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase)
+                                       || string.Equals("yuvj420p", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase);
+            var is10bitSwFormatsRkmpp = string.Equals("yuv420p10le", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase);
+            var is8_10bitSwFormatsRkmpp = is8bitSwFormatsRkmpp || is10bitSwFormatsRkmpp;
+
+            // nv15 and nv20 are bit-stream only formats
+            if (is10bitSwFormatsRkmpp && !hwSurface)
+            {
+                return null;
+            }
+
+            if (is8bitSwFormatsRkmpp)
+            {
+                if (string.Equals(videoStream.Codec, "mpeg1video", StringComparison.OrdinalIgnoreCase))
+                {
+                    return GetHwaccelType(state, options, "mpeg1video", bitDepth, hwSurface);
+                }
+
+                if (string.Equals(videoStream.Codec, "mpeg2video", StringComparison.OrdinalIgnoreCase))
+                {
+                    return GetHwaccelType(state, options, "mpeg2video", bitDepth, hwSurface);
+                }
+
+                if (string.Equals(videoStream.Codec, "mpeg4", StringComparison.OrdinalIgnoreCase))
+                {
+                    return GetHwaccelType(state, options, "mpeg4", bitDepth, hwSurface);
+                }
+
+                if (string.Equals(videoStream.Codec, "vp8", StringComparison.OrdinalIgnoreCase))
+                {
+                    return GetHwaccelType(state, options, "vp8", bitDepth, hwSurface);
+                }
+            }
+
+            if (is8_10bitSwFormatsRkmpp)
+            {
+                if (string.Equals(videoStream.Codec, "avc", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(videoStream.Codec, "h264", StringComparison.OrdinalIgnoreCase))
+                {
+                    var accelType = GetHwaccelType(state, options, "h264", bitDepth, hwSurface);
+                    return accelType + ((!string.IsNullOrEmpty(accelType) && isAfbcSupported) ? " -afbc rga" : string.Empty);
+                }
+
+                if (string.Equals(videoStream.Codec, "hevc", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(videoStream.Codec, "h265", StringComparison.OrdinalIgnoreCase))
+                {
+                    var accelType = GetHwaccelType(state, options, "hevc", bitDepth, hwSurface);
+                    return accelType + ((!string.IsNullOrEmpty(accelType) && isAfbcSupported) ? " -afbc rga" : string.Empty);
+                }
+
+                if (string.Equals(videoStream.Codec, "vp9", StringComparison.OrdinalIgnoreCase))
+                {
+                    var accelType = GetHwaccelType(state, options, "vp9", bitDepth, hwSurface);
+                    return accelType + ((!string.IsNullOrEmpty(accelType) && isAfbcSupported) ? " -afbc rga" : string.Empty);
+                }
+
+                if (string.Equals(videoStream.Codec, "av1", StringComparison.OrdinalIgnoreCase))
+                {
+                    return GetHwaccelType(state, options, "av1", bitDepth, hwSurface);
                 }
             }
 
@@ -6075,13 +6541,14 @@ namespace MediaBrowser.Controller.MediaEncoding
             return " -codec:s:0 " + codec + " -disposition:s:0 default";
         }
 
-        public string GetProgressiveVideoFullCommandLine(EncodingJobInfo state, EncodingOptions encodingOptions, string outputPath, string defaultPreset)
+        public string GetProgressiveVideoFullCommandLine(EncodingJobInfo state, EncodingOptions encodingOptions, string defaultPreset)
         {
             // Get the output codec name
             var videoCodec = GetVideoEncoder(state, encodingOptions);
 
             var format = string.Empty;
             var keyFrame = string.Empty;
+            var outputPath = state.OutputFilePath;
 
             if (Path.GetExtension(outputPath.AsSpan()).Equals(".mp4", StringComparison.OrdinalIgnoreCase)
                 && state.BaseRequest.Context == EncodingContext.Streaming)

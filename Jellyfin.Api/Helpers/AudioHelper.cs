@@ -2,13 +2,13 @@
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Api.Models.StreamingDtos;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
 using Microsoft.AspNetCore.Http;
@@ -26,7 +26,7 @@ public class AudioHelper
     private readonly IMediaSourceManager _mediaSourceManager;
     private readonly IServerConfigurationManager _serverConfigurationManager;
     private readonly IMediaEncoder _mediaEncoder;
-    private readonly TranscodingJobHelper _transcodingJobHelper;
+    private readonly ITranscodeManager _transcodeManager;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly EncodingHelper _encodingHelper;
@@ -39,7 +39,7 @@ public class AudioHelper
     /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
     /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
     /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
-    /// <param name="transcodingJobHelper">Instance of <see cref="TranscodingJobHelper"/>.</param>
+    /// <param name="transcodeManager">Instance of <see cref="ITranscodeManager"/> interface.</param>
     /// <param name="httpClientFactory">Instance of the <see cref="IHttpClientFactory"/> interface.</param>
     /// <param name="httpContextAccessor">Instance of the <see cref="IHttpContextAccessor"/> interface.</param>
     /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
@@ -49,7 +49,7 @@ public class AudioHelper
         IMediaSourceManager mediaSourceManager,
         IServerConfigurationManager serverConfigurationManager,
         IMediaEncoder mediaEncoder,
-        TranscodingJobHelper transcodingJobHelper,
+        ITranscodeManager transcodeManager,
         IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor,
         EncodingHelper encodingHelper)
@@ -59,7 +59,7 @@ public class AudioHelper
         _mediaSourceManager = mediaSourceManager;
         _serverConfigurationManager = serverConfigurationManager;
         _mediaEncoder = mediaEncoder;
-        _transcodingJobHelper = transcodingJobHelper;
+        _transcodeManager = transcodeManager;
         _httpClientFactory = httpClientFactory;
         _httpContextAccessor = httpContextAccessor;
         _encodingHelper = encodingHelper;
@@ -94,7 +94,7 @@ public class AudioHelper
                 _serverConfigurationManager,
                 _mediaEncoder,
                 _encodingHelper,
-                _transcodingJobHelper,
+                _transcodeManager,
                 transcodingJobType,
                 cancellationTokenSource.Token)
             .ConfigureAwait(false);
@@ -133,7 +133,7 @@ public class AudioHelper
 
             if (state.MediaSource.IsInfiniteStream)
             {
-                var stream = new ProgressiveFileStream(state.MediaPath, null, _transcodingJobHelper);
+                var stream = new ProgressiveFileStream(state.MediaPath, null, _transcodeManager);
                 return new FileStreamResult(stream, contentType);
             }
 
@@ -149,7 +149,7 @@ public class AudioHelper
             state,
             isHeadRequest,
             _httpContextAccessor.HttpContext,
-            _transcodingJobHelper,
+            _transcodeManager,
             ffmpegCommandLineArguments,
             transcodingJobType,
             cancellationTokenSource).ConfigureAwait(false);
