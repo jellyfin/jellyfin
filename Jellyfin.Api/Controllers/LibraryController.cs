@@ -7,7 +7,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
@@ -17,7 +16,6 @@ using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -146,12 +144,12 @@ public class LibraryController : BaseJellyfinApiController
         [FromQuery] bool inheritFromParent = false)
     {
         userId = RequestHelpers.GetUserId(User, userId);
-        var user = userId.Value.Equals(default)
+        var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
 
-        var item = itemId.Equals(default)
-            ? (userId.Value.Equals(default)
+        var item = itemId.IsEmpty()
+            ? (userId.IsNullOrEmpty()
                 ? _libraryManager.RootFolder
                 : _libraryManager.GetUserRootFolder())
             : _libraryManager.GetItemById(itemId);
@@ -213,12 +211,12 @@ public class LibraryController : BaseJellyfinApiController
         [FromQuery] bool inheritFromParent = false)
     {
         userId = RequestHelpers.GetUserId(User, userId);
-        var user = userId.Value.Equals(default)
+        var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
 
-        var item = itemId.Equals(default)
-            ? (userId.Value.Equals(default)
+        var item = itemId.IsEmpty()
+            ? (userId.IsNullOrEmpty()
                 ? _libraryManager.RootFolder
                 : _libraryManager.GetUserRootFolder())
             : _libraryManager.GetItemById(itemId);
@@ -313,7 +311,7 @@ public class LibraryController : BaseJellyfinApiController
     {
         try
         {
-            await _libraryManager.ValidateMediaLibrary(new SimpleProgress<double>(), CancellationToken.None).ConfigureAwait(false);
+            await _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -339,7 +337,7 @@ public class LibraryController : BaseJellyfinApiController
     {
         var isApiKey = User.GetIsApiKey();
         var userId = User.GetUserId();
-        var user = !isApiKey && !userId.Equals(default)
+        var user = !isApiKey && !userId.IsEmpty()
             ? _userManager.GetUserById(userId) ?? throw new ResourceNotFoundException()
             : null;
         if (!isApiKey && user is null)
@@ -382,7 +380,7 @@ public class LibraryController : BaseJellyfinApiController
     {
         var isApiKey = User.GetIsApiKey();
         var userId = User.GetUserId();
-        var user = !isApiKey && !userId.Equals(default)
+        var user = !isApiKey && !userId.IsEmpty()
             ? _userManager.GetUserById(userId) ?? throw new ResourceNotFoundException()
             : null;
 
@@ -428,7 +426,7 @@ public class LibraryController : BaseJellyfinApiController
         [FromQuery] bool? isFavorite)
     {
         userId = RequestHelpers.GetUserId(User, userId);
-        var user = userId.Value.Equals(default)
+        var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -471,7 +469,7 @@ public class LibraryController : BaseJellyfinApiController
 
         var baseItemDtos = new List<BaseItemDto>();
 
-        var user = userId.Value.Equals(default)
+        var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -702,8 +700,8 @@ public class LibraryController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields)
     {
         userId = RequestHelpers.GetUserId(User, userId);
-        var item = itemId.Equals(default)
-            ? (userId.Value.Equals(default)
+        var item = itemId.IsEmpty()
+            ? (userId.IsNullOrEmpty()
                 ? _libraryManager.RootFolder
                 : _libraryManager.GetUserRootFolder())
             : _libraryManager.GetItemById(itemId);
@@ -718,7 +716,7 @@ public class LibraryController : BaseJellyfinApiController
             return new QueryResult<BaseItemDto>();
         }
 
-        var user = userId.Value.Equals(default)
+        var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
         var dtoOptions = new DtoOptions { Fields = fields }
@@ -915,6 +913,7 @@ public class LibraryController : BaseJellyfinApiController
                 User.GetUserId())
             {
                 ShortOverview = string.Format(CultureInfo.InvariantCulture, _localization.GetLocalizedString("AppDeviceValues"), User.GetClient(), User.GetDevice()),
+                ItemId = item.Id.ToString("N", CultureInfo.InvariantCulture)
             }).ConfigureAwait(false);
         }
         catch
@@ -927,15 +926,15 @@ public class LibraryController : BaseJellyfinApiController
     {
         return contentType switch
         {
-            CollectionType.BoxSets => new[] { "BoxSet" },
-            CollectionType.Playlists => new[] { "Playlist" },
-            CollectionType.Movies => new[] { "Movie" },
-            CollectionType.TvShows => new[] { "Series", "Season", "Episode" },
-            CollectionType.Books => new[] { "Book" },
-            CollectionType.Music => new[] { "MusicArtist", "MusicAlbum", "Audio", "MusicVideo" },
-            CollectionType.HomeVideos => new[] { "Video", "Photo" },
-            CollectionType.Photos => new[] { "Video", "Photo" },
-            CollectionType.MusicVideos => new[] { "MusicVideo" },
+            CollectionType.boxsets => new[] { "BoxSet" },
+            CollectionType.playlists => new[] { "Playlist" },
+            CollectionType.movies => new[] { "Movie" },
+            CollectionType.tvshows => new[] { "Series", "Season", "Episode" },
+            CollectionType.books => new[] { "Book" },
+            CollectionType.music => new[] { "MusicArtist", "MusicAlbum", "Audio", "MusicVideo" },
+            CollectionType.homevideos => new[] { "Video", "Photo" },
+            CollectionType.photos => new[] { "Video", "Photo" },
+            CollectionType.musicvideos => new[] { "MusicVideo" },
             _ => new[] { "Series", "Season", "Episode", "Movie" }
         };
     }

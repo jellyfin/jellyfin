@@ -66,6 +66,11 @@ namespace MediaBrowser.Model.Net
         {
             // Type application
             { ".azw3", "application/vnd.amazon.ebook" },
+            { ".cb7", "application/x-cb7" },
+            { ".cba", "application/x-cba" },
+            { ".cbr", "application/vnd.comicbook-rar" },
+            { ".cbt", "application/x-cbt" },
+            { ".cbz", "application/vnd.comicbook+zip" },
 
             // Type image
             { ".tbn", "image/jpeg" },
@@ -87,7 +92,7 @@ namespace MediaBrowser.Model.Net
             { ".dsf", "audio/dsf" },
             { ".dsp", "audio/dsp" },
             { ".flac", "audio/flac" },
-            { ".m4b", "audio/m4b" },
+            { ".m4b", "audio/mp4" },
             { ".mp3", "audio/mpeg" },
             { ".vorbis", "audio/vorbis" },
             { ".webma", "audio/webm" },
@@ -98,6 +103,12 @@ namespace MediaBrowser.Model.Net
         private static readonly Dictionary<string, string> _extensionLookup = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             // Type application
+            { "application/vnd.comicbook-rar", ".cbr" },
+            { "application/vnd.comicbook+zip", ".cbz" },
+            { "application/x-cb7", ".cb7" },
+            { "application/x-cba", ".cba" },
+            { "application/x-cbr", ".cbr" },
+            { "application/x-cbt", ".cbt" },
             { "application/x-cbz", ".cbz" },
             { "application/x-javascript", ".js" },
             { "application/xml", ".xml" },

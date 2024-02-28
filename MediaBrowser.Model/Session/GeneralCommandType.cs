@@ -48,6 +48,7 @@ namespace MediaBrowser.Model.Session
         PlayNext = 38,
         ToggleOsdMenu = 39,
         Play = 40,
-        SetMaxStreamingBitrate = 41
+        SetMaxStreamingBitrate = 41,
+        SetPlaybackOrder = 42
     }
 }

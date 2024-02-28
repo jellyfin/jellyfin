@@ -89,4 +89,9 @@ public static class Policies
     /// Policy name for accessing subtitles management.
     /// </summary>
     public const string SubtitleManagement = "SubtitleManagement";
+
+    /// <summary>
+    /// Policy name for accessing lyric management.
+    /// </summary>
+    public const string LyricManagement = "LyricManagement";
 }

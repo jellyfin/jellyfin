@@ -5,6 +5,7 @@ using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -245,7 +246,7 @@ public class ItemsController : BaseJellyfinApiController
         var isApiKey = User.GetIsApiKey();
         // if api key is used (auth.IsApiKey == true), then `user` will be null throughout this method
         userId = RequestHelpers.GetUserId(User, userId);
-        var user = !isApiKey && !userId.Value.Equals(default)
+        var user = !isApiKey && !userId.IsNullOrEmpty()
             ? _userManager.GetUserById(userId.Value) ?? throw new ResourceNotFoundException()
             : null;
 
@@ -279,7 +280,7 @@ public class ItemsController : BaseJellyfinApiController
             collectionType = hasCollectionType.CollectionType;
         }
 
-        if (collectionType == CollectionType.Playlists)
+        if (collectionType == CollectionType.playlists)
         {
             recursive = true;
             includeItemTypes = new[] { BaseItemKind.Playlist };
@@ -840,7 +841,7 @@ public class ItemsController : BaseJellyfinApiController
         var ancestorIds = Array.Empty<Guid>();
 
         var excludeFolderIds = user.GetPreferenceValues<Guid>(PreferenceKind.LatestItemExcludes);
-        if (parentIdGuid.Equals(default) && excludeFolderIds.Length > 0)
+        if (parentIdGuid.IsEmpty() && excludeFolderIds.Length > 0)
         {
             ancestorIds = _libraryManager.GetUserRootFolder().GetChildren(user, true)
                 .Where(i => i is Folder)

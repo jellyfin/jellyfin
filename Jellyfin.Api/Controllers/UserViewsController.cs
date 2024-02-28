@@ -90,7 +90,6 @@ public class UserViewsController : BaseJellyfinApiController
 
         fields.Add(ItemFields.PrimaryImageAspectRatio);
         fields.Add(ItemFields.DisplayPreferencesId);
-        fields.Remove(ItemFields.BasicSyncInfo);
         dtoOptions.Fields = fields.ToArray();
 
         var user = _userManager.GetUserById(userId);

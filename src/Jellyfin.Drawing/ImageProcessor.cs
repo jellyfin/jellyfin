@@ -7,6 +7,7 @@ using System.Net.Mime;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using AsyncKeyedLock;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
@@ -38,7 +39,7 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
     private readonly IServerApplicationPaths _appPaths;
     private readonly IImageEncoder _imageEncoder;
 
-    private readonly SemaphoreSlim _parallelEncodingLimit;
+    private readonly AsyncNonKeyedLocker _parallelEncodingLimit;
 
     private bool _disposed;
 
@@ -68,7 +69,7 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
             semaphoreCount = 2 * Environment.ProcessorCount;
         }
 
-        _parallelEncodingLimit = new(semaphoreCount, semaphoreCount);
+        _parallelEncodingLimit = new(semaphoreCount);
     }
 
     private string ResizedImageCachePath => Path.Combine(_appPaths.ImageCachePath, "resized-images");
@@ -193,17 +194,12 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
         {
             if (!File.Exists(cacheFilePath))
             {
-                // Limit number of parallel (more precisely: concurrent) image encodings to prevent a high memory usage
-                await _parallelEncodingLimit.WaitAsync().ConfigureAwait(false);
-
                 string resultPath;
-                try
+
+                // Limit number of parallel (more precisely: concurrent) image encodings to prevent a high memory usage
+                using (await _parallelEncodingLimit.LockAsync().ConfigureAwait(false))
                 {
                     resultPath = _imageEncoder.EncodeImage(originalImagePath, dateModified, cacheFilePath, autoOrient, orientation, quality, options, outputFormat);
-                }
-                finally
-                {
-                    _parallelEncodingLimit.Release();
                 }
 
                 if (string.Equals(resultPath, originalImagePath, StringComparison.OrdinalIgnoreCase))

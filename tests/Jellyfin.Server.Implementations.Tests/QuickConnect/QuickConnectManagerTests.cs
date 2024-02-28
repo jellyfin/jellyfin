@@ -85,10 +85,10 @@ namespace Jellyfin.Server.Implementations.Tests.QuickConnect
         }
 
         [Fact]
-        public void AuthorizeRequest_QuickConnectUnavailable_ThrowsAuthenticationException()
+        public async Task AuthorizeRequest_QuickConnectUnavailable_ThrowsAuthenticationException()
         {
             _config.QuickConnectAvailable = false;
-            Assert.ThrowsAsync<AuthenticationException>(() => _quickConnectManager.AuthorizeRequest(Guid.Empty, string.Empty));
+            await Assert.ThrowsAsync<AuthenticationException>(() => _quickConnectManager.AuthorizeRequest(Guid.Empty, string.Empty));
         }
 
         [Fact]

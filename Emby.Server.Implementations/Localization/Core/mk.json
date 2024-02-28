@@ -122,5 +122,6 @@
     "TaskRefreshChapterImagesDescription": "Создава тамбнеил за видеата шти имаат поглавја.",
     "TaskCleanActivityLogDescription": "Избришува логови на активности постари од определеното време.",
     "TaskCleanActivityLog": "Избриши Лог на Активности",
-    "External": "Надворешен"
+    "External": "Надворешен",
+    "HearingImpaired": "Оштетен слух"
 }

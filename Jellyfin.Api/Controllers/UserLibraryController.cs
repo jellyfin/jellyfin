@@ -8,6 +8,7 @@ using Jellyfin.Api.Extensions;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -17,6 +18,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Lyrics;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -84,7 +86,7 @@ public class UserLibraryController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var item = itemId.Equals(default)
+        var item = itemId.IsEmpty()
             ? _libraryManager.GetUserRootFolder()
             : _libraryManager.GetItemById(itemId);
 
@@ -145,7 +147,7 @@ public class UserLibraryController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var item = itemId.Equals(default)
+        var item = itemId.IsEmpty()
             ? _libraryManager.GetUserRootFolder()
             : _libraryManager.GetItemById(itemId);
 
@@ -185,7 +187,7 @@ public class UserLibraryController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var item = itemId.Equals(default)
+        var item = itemId.IsEmpty()
             ? _libraryManager.GetUserRootFolder()
             : _libraryManager.GetItemById(itemId);
 
@@ -221,7 +223,7 @@ public class UserLibraryController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var item = itemId.Equals(default)
+        var item = itemId.IsEmpty()
             ? _libraryManager.GetUserRootFolder()
             : _libraryManager.GetItemById(itemId);
 
@@ -257,7 +259,7 @@ public class UserLibraryController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var item = itemId.Equals(default)
+        var item = itemId.IsEmpty()
             ? _libraryManager.GetUserRootFolder()
             : _libraryManager.GetItemById(itemId);
 
@@ -294,7 +296,7 @@ public class UserLibraryController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var item = itemId.Equals(default)
+        var item = itemId.IsEmpty()
             ? _libraryManager.GetUserRootFolder()
             : _libraryManager.GetItemById(itemId);
 
@@ -330,7 +332,7 @@ public class UserLibraryController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var item = itemId.Equals(default)
+        var item = itemId.IsEmpty()
             ? _libraryManager.GetUserRootFolder()
             : _libraryManager.GetItemById(itemId);
 
@@ -375,7 +377,7 @@ public class UserLibraryController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var item = itemId.Equals(default)
+        var item = itemId.IsEmpty()
             ? _libraryManager.GetUserRootFolder()
             : _libraryManager.GetItemById(itemId);
 
@@ -537,49 +539,5 @@ public class UserLibraryController : BaseJellyfinApiController
         _userDataRepository.SaveUserData(user, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
 
         return _userDataRepository.GetUserDataDto(item, user);
-    }
-
-    /// <summary>
-    /// Gets an item's lyrics.
-    /// </summary>
-    /// <param name="userId">User id.</param>
-    /// <param name="itemId">Item id.</param>
-    /// <response code="200">Lyrics returned.</response>
-    /// <response code="404">Something went wrong. No Lyrics will be returned.</response>
-    /// <returns>An <see cref="OkResult"/> containing the item's lyrics.</returns>
-    [HttpGet("Users/{userId}/Items/{itemId}/Lyrics")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<LyricResponse>> GetLyrics([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
-    {
-        var user = _userManager.GetUserById(userId);
-
-        if (user is null)
-        {
-            return NotFound();
-        }
-
-        var item = itemId.Equals(default)
-            ? _libraryManager.GetUserRootFolder()
-            : _libraryManager.GetItemById(itemId);
-
-        if (item is null)
-        {
-            return NotFound();
-        }
-
-        if (item is not UserRootFolder
-            // Check the item is visible for the user
-            && !item.IsVisible(user))
-        {
-            return Unauthorized($"{user.Username} is not permitted to access item {item.Name}.");
-        }
-
-        var result = await _lyricManager.GetLyrics(item).ConfigureAwait(false);
-        if (result is not null)
-        {
-            return Ok(result);
-        }
-
-        return NotFound();
     }
 }

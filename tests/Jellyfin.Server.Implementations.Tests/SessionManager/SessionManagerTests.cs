@@ -21,7 +21,7 @@ public class SessionManagerTests
     [Theory]
     [InlineData("", typeof(ArgumentException))]
     [InlineData(null, typeof(ArgumentNullException))]
-    public async Task GetAuthorizationToken_Should_ThrowException(string deviceId, Type exceptionType)
+    public async Task GetAuthorizationToken_Should_ThrowException(string? deviceId, Type exceptionType)
     {
         await using var sessionManager = new Emby.Server.Implementations.Session.SessionManager(
             NullLogger<Emby.Server.Implementations.Session.SessionManager>.Instance,

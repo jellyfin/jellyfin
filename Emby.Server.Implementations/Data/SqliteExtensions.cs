@@ -104,6 +104,13 @@ namespace Emby.Server.Implementations.Data
 
             if (DateTime.TryParseExact(dateText, _datetimeFormats, DateTimeFormatInfo.InvariantInfo, DateTimeStyles.AdjustToUniversal, out var dateTimeResult))
             {
+                // If the resulting DateTimeKind is Unspecified it is actually Utc.
+                // This is required downstream for the Json serializer.
+                if (dateTimeResult.Kind == DateTimeKind.Unspecified)
+                {
+                    dateTimeResult = DateTime.SpecifyKind(dateTimeResult, DateTimeKind.Utc);
+                }
+
                 result = dateTimeResult;
                 return true;
             }

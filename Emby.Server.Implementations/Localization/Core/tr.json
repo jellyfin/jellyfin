@@ -111,7 +111,7 @@
     "TaskCleanLogs": "Günlük Dizinini Temizle",
     "TaskRefreshLibraryDescription": "Medya kütüphanenize eklenen yeni dosyaları arar ve ortam bilgilerini yeniler.",
     "TaskRefreshLibrary": "Medya Kütüphanesini Tara",
-    "TaskRefreshChapterImagesDescription": "Sahnelere ayrılmış videolar için küçük resimler oluştur.",
+    "TaskRefreshChapterImagesDescription": "Bölümlere ayrılmış videolar için küçük resimler oluştur.",
     "TaskRefreshChapterImages": "Bölüm Resimlerini Çıkar",
     "TaskCleanCacheDescription": "Sistem tarafından artık ihtiyaç duyulmayan önbellek dosyalarını siler.",
     "TaskCleanActivityLog": "Etkinlik Günlüğünü Temizle",

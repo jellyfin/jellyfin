@@ -171,7 +171,7 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public override bool HasLocalAlternateVersions => LocalAlternateVersions.Length > 0;
 
-        public static ILiveTvManager LiveTvManager { get; set; }
+        public static IRecordingsManager RecordingsManager { get; set; }
 
         [JsonIgnore]
         public override SourceType SourceType
@@ -334,7 +334,7 @@ namespace MediaBrowser.Controller.Entities
 
         protected override bool IsActiveRecording()
         {
-            return LiveTvManager.GetActiveRecordingInfo(Path) is not null;
+            return RecordingsManager.GetActiveRecordingInfo(Path) is not null;
         }
 
         public override bool CanDelete()
@@ -456,7 +456,7 @@ namespace MediaBrowser.Controller.Entities
             foreach (var child in LinkedAlternateVersions)
             {
                 // Reset the cached value
-                if (child.ItemId.HasValue && child.ItemId.Value.Equals(default))
+                if (child.ItemId.IsNullOrEmpty())
                 {
                     child.ItemId = null;
                 }

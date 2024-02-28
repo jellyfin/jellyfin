@@ -259,7 +259,7 @@ jobs:
       publishFeedCredentials: 'NugetOrg'
       allowPackageConflicts: true # This ignores an error if the version already exists
 
-  - task: NuGetAuthenticate@0
+  - task: NuGetAuthenticate@1
     displayName: 'Authenticate to unstable Nuget feed'
     condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/master')
 
