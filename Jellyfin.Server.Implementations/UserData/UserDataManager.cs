@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -111,6 +112,54 @@ public class UserDataManager : IUserDataManager
     }
 
     /// <inheritdoc />
+    public void SaveUserData(User user, BaseItem item, UpdateUserItemDataDto userDataDto, UserDataSaveReason reason)
+    {
+        ArgumentNullException.ThrowIfNull(user);
+        ArgumentNullException.ThrowIfNull(item);
+        ArgumentNullException.ThrowIfNull(reason);
+        ArgumentNullException.ThrowIfNull(userDataDto);
+
+        var userData = GetUserData(user, item);
+
+        if (userDataDto.PlaybackPositionTicks.HasValue)
+        {
+            userData.PlaybackPositionTicks = userDataDto.PlaybackPositionTicks.Value;
+        }
+
+        if (userDataDto.PlayCount.HasValue)
+        {
+            userData.PlayCount = userDataDto.PlayCount.Value;
+        }
+
+        if (userDataDto.IsFavorite.HasValue)
+        {
+            userData.IsFavorite = userDataDto.IsFavorite.Value;
+        }
+
+        if (userDataDto.Likes.HasValue)
+        {
+            userData.Likes = userDataDto.Likes.Value;
+        }
+
+        if (userDataDto.Played.HasValue)
+        {
+            userData.Played = userDataDto.Played.Value;
+        }
+
+        if (userDataDto.LastPlayedDate.HasValue)
+        {
+            userData.LastPlayedDate = userDataDto.LastPlayedDate.Value;
+        }
+
+        if (userDataDto.Rating.HasValue)
+        {
+            userData.Rating = userDataDto.Rating.Value;
+        }
+
+        SaveUserData(user, item, userData, reason, CancellationToken.None);
+    }
+
+    /// <inheritdoc />
     public async Task<UserItemData?> GetUserDataAsync(User? user, BaseItem item)
     {
         ArgumentNullException.ThrowIfNull(user);
@@ -130,9 +179,12 @@ public class UserDataManager : IUserDataManager
     }
 
     /// <inheritdoc />
-    public UserItemData? GetUserData(User? user, BaseItem item)
+    public UserItemData GetUserData(User? user, BaseItem item)
     {
-        return GetUserDataAsync(user, item).GetAwaiter().GetResult();
+        return GetUserDataAsync(user, item).GetAwaiter().GetResult() ?? new UserItemData
+        {
+            UserId = user?.Id ?? Guid.Empty
+        };
     }
 
     /// <inheritdoc />
@@ -196,77 +248,77 @@ public class UserDataManager : IUserDataManager
     /// <inheritdoc />
     public bool UpdatePlayState(BaseItem item, UserItemData data, long? reportedPositionTicks)
     {
-            var playedToCompletion = false;
+        var playedToCompletion = false;
 
-            var runtimeTicks = item.GetRunTimeTicksForPlayState();
+        var runtimeTicks = item.GetRunTimeTicksForPlayState();
 
-            var positionTicks = reportedPositionTicks ?? runtimeTicks;
-            var hasRuntime = runtimeTicks > 0;
+        var positionTicks = reportedPositionTicks ?? runtimeTicks;
+        var hasRuntime = runtimeTicks > 0;
 
-            // If a position has been reported, and if we know the duration
-            if (positionTicks > 0 && hasRuntime && item is not AudioBook && item is not Book)
+        // If a position has been reported, and if we know the duration
+        if (positionTicks > 0 && hasRuntime && item is not AudioBook && item is not Book)
+        {
+            var pctIn = decimal.Divide(positionTicks, runtimeTicks) * 100;
+
+            if (pctIn < _config.Configuration.MinResumePct)
             {
-                var pctIn = decimal.Divide(positionTicks, runtimeTicks) * 100;
-
-                if (pctIn < _config.Configuration.MinResumePct)
-                {
-                    // ignore progress during the beginning
-                    positionTicks = 0;
-                }
-                else if (pctIn > _config.Configuration.MaxResumePct || positionTicks >= runtimeTicks)
-                {
-                    // mark as completed close to the end
-                    positionTicks = 0;
-                    data.Played = playedToCompletion = true;
-                }
-                else
-                {
-                    // Enforce MinResumeDuration
-                    var durationSeconds = TimeSpan.FromTicks(runtimeTicks).TotalSeconds;
-                    if (durationSeconds < _config.Configuration.MinResumeDurationSeconds)
-                    {
-                        positionTicks = 0;
-                        data.Played = playedToCompletion = true;
-                    }
-                }
+                // ignore progress during the beginning
+                positionTicks = 0;
             }
-            else if (positionTicks > 0 && hasRuntime && item is AudioBook)
+            else if (pctIn > _config.Configuration.MaxResumePct || positionTicks >= runtimeTicks)
             {
-                var playbackPositionInMinutes = TimeSpan.FromTicks(positionTicks).TotalMinutes;
-                var remainingTimeInMinutes = TimeSpan.FromTicks(runtimeTicks - positionTicks).TotalMinutes;
-
-                if (playbackPositionInMinutes < _config.Configuration.MinAudiobookResume)
-                {
-                    // ignore progress during the beginning
-                    positionTicks = 0;
-                }
-                else if (remainingTimeInMinutes < _config.Configuration.MaxAudiobookResume || positionTicks >= runtimeTicks)
-                {
-                    // mark as completed close to the end
-                    positionTicks = 0;
-                    data.Played = playedToCompletion = true;
-                }
-            }
-            else if (!hasRuntime)
-            {
-                // If we don't know the runtime we'll just have to assume it was fully played
+                // mark as completed close to the end
+                positionTicks = 0;
                 data.Played = playedToCompletion = true;
-                positionTicks = 0;
             }
-
-            if (!item.SupportsPlayedStatus)
+            else
             {
-                positionTicks = 0;
-                data.Played = false;
+                // Enforce MinResumeDuration
+                var durationSeconds = TimeSpan.FromTicks(runtimeTicks).TotalSeconds;
+                if (durationSeconds < _config.Configuration.MinResumeDurationSeconds)
+                {
+                    positionTicks = 0;
+                    data.Played = playedToCompletion = true;
+                }
             }
-
-            if (!item.SupportsPositionTicksResume)
-            {
-                positionTicks = 0;
-            }
-
-            data.PlaybackPositionTicks = positionTicks;
-
-            return playedToCompletion;
         }
+        else if (positionTicks > 0 && hasRuntime && item is AudioBook)
+        {
+            var playbackPositionInMinutes = TimeSpan.FromTicks(positionTicks).TotalMinutes;
+            var remainingTimeInMinutes = TimeSpan.FromTicks(runtimeTicks - positionTicks).TotalMinutes;
+
+            if (playbackPositionInMinutes < _config.Configuration.MinAudiobookResume)
+            {
+                // ignore progress during the beginning
+                positionTicks = 0;
+            }
+            else if (remainingTimeInMinutes < _config.Configuration.MaxAudiobookResume || positionTicks >= runtimeTicks)
+            {
+                // mark as completed close to the end
+                positionTicks = 0;
+                data.Played = playedToCompletion = true;
+            }
+        }
+        else if (!hasRuntime)
+        {
+            // If we don't know the runtime we'll just have to assume it was fully played
+            data.Played = playedToCompletion = true;
+            positionTicks = 0;
+        }
+
+        if (!item.SupportsPlayedStatus)
+        {
+            positionTicks = 0;
+            data.Played = false;
+        }
+
+        if (!item.SupportsPositionTicksResume)
+        {
+            positionTicks = 0;
+        }
+
+        data.PlaybackPositionTicks = positionTicks;
+
+        return playedToCompletion;
+    }
 }
