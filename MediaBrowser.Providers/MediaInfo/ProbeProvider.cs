@@ -43,6 +43,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly ILogger<ProbeProvider> _logger;
         private readonly AudioResolver _audioResolver;
         private readonly SubtitleResolver _subtitleResolver;
+        private readonly LyricResolver _lyricResolver;
         private readonly FFProbeVideoInfo _videoProber;
         private readonly AudioFileProber _audioProber;
         private readonly Task<ItemUpdateType> _cachedTask = Task.FromResult(ItemUpdateType.None);
@@ -79,9 +80,10 @@ namespace MediaBrowser.Providers.MediaInfo
             NamingOptions namingOptions)
         {
             _logger = loggerFactory.CreateLogger<ProbeProvider>();
-            _audioProber = new AudioFileProber(loggerFactory.CreateLogger<AudioFileProber>(), mediaSourceManager, mediaEncoder, itemRepo, libraryManager);
             _audioResolver = new AudioResolver(loggerFactory.CreateLogger<AudioResolver>(), localization, mediaEncoder, fileSystem, namingOptions);
             _subtitleResolver = new SubtitleResolver(loggerFactory.CreateLogger<SubtitleResolver>(), localization, mediaEncoder, fileSystem, namingOptions);
+            _lyricResolver = new LyricResolver(loggerFactory.CreateLogger<LyricResolver>(), localization, mediaEncoder, fileSystem, namingOptions);
+
             _videoProber = new FFProbeVideoInfo(
                 loggerFactory.CreateLogger<FFProbeVideoInfo>(),
                 mediaSourceManager,
@@ -96,6 +98,14 @@ namespace MediaBrowser.Providers.MediaInfo
                 libraryManager,
                 _audioResolver,
                 _subtitleResolver);
+
+            _audioProber = new AudioFileProber(
+                loggerFactory.CreateLogger<AudioFileProber>(),
+                mediaSourceManager,
+                mediaEncoder,
+                itemRepo,
+                libraryManager,
+                _lyricResolver);
         }
 
         /// <inheritdoc />
@@ -123,23 +133,37 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            if (item.SupportsLocalMetadata && video is not null && !video.IsPlaceHolder
-                && !video.SubtitleFiles.SequenceEqual(
-                    _subtitleResolver.GetExternalFiles(video, directoryService, false)
-                    .Select(info => info.Path).ToList(),
-                    StringComparer.Ordinal))
+            if (video is not null
+                && item.SupportsLocalMetadata
+                && !video.IsPlaceHolder)
             {
-                _logger.LogDebug("Refreshing {ItemPath} due to external subtitles change.", item.Path);
-                return true;
+                if (!video.SubtitleFiles.SequenceEqual(
+                        _subtitleResolver.GetExternalFiles(video, directoryService, false)
+                            .Select(info => info.Path).ToList(),
+                        StringComparer.Ordinal))
+                {
+                    _logger.LogDebug("Refreshing {ItemPath} due to external subtitles change.", item.Path);
+                    return true;
+                }
+
+                if (!video.AudioFiles.SequenceEqual(
+                        _audioResolver.GetExternalFiles(video, directoryService, false)
+                            .Select(info => info.Path).ToList(),
+                        StringComparer.Ordinal))
+                {
+                    _logger.LogDebug("Refreshing {ItemPath} due to external audio change.", item.Path);
+                    return true;
+                }
             }
 
-            if (item.SupportsLocalMetadata && video is not null && !video.IsPlaceHolder
-                && !video.AudioFiles.SequenceEqual(
-                    _audioResolver.GetExternalFiles(video, directoryService, false)
-                    .Select(info => info.Path).ToList(),
+            if (item is Audio audio
+                && item.SupportsLocalMetadata
+                && !audio.LyricFiles.SequenceEqual(
+                    _lyricResolver.GetExternalFiles(audio, directoryService, false)
+                        .Select(info => info.Path).ToList(),
                     StringComparer.Ordinal))
             {
-                _logger.LogDebug("Refreshing {ItemPath} due to external audio change.", item.Path);
+                _logger.LogDebug("Refreshing {ItemPath} due to external lyrics change.", item.Path);
                 return true;
             }
 

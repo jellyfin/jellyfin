@@ -169,6 +169,15 @@ namespace MediaBrowser.Controller.Library
         BaseItem GetItemById(Guid id);
 
         /// <summary>
+        /// Gets the item by id, as T.
+        /// </summary>
+        /// <param name="id">The item id.</param>
+        /// <typeparam name="T">The type of item.</typeparam>
+        /// <returns>The item.</returns>
+        T GetItemById<T>(Guid id)
+            where T : BaseItem;
+
+        /// <summary>
         /// Gets the intros.
         /// </summary>
         /// <param name="item">The item.</param>

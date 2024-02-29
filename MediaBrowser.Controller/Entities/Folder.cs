@@ -13,7 +13,6 @@ using System.Threading.Tasks.Dataflow;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
-using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Configuration;
@@ -429,16 +428,22 @@ namespace MediaBrowser.Controller.Entities
 
             if (recursive)
             {
-                var innerProgress = new ActionableProgress<double>();
-
                 var folder = this;
-                innerProgress.RegisterAction(innerPercent =>
+                var innerProgress = new Progress<double>(innerPercent =>
                 {
                     var percent = ProgressHelpers.GetProgress(ProgressHelpers.UpdatedChildItems, ProgressHelpers.ScannedSubfolders, innerPercent);
 
                     progress.Report(percent);
 
-                    ProviderManager.OnRefreshProgress(folder, percent);
+                    // TODO: this is sometimes being called after the refresh has completed.
+                    try
+                    {
+                        ProviderManager.OnRefreshProgress(folder, percent);
+                    }
+                    catch (InvalidOperationException e)
+                    {
+                        Logger.LogError(e, "Error refreshing folder");
+                    }
                 });
 
                 if (validChildrenNeedGeneration)
@@ -461,10 +466,8 @@ namespace MediaBrowser.Controller.Entities
 
                 var container = this as IMetadataContainer;
 
-                var innerProgress = new ActionableProgress<double>();
-
                 var folder = this;
-                innerProgress.RegisterAction(innerPercent =>
+                var innerProgress = new Progress<double>(innerPercent =>
                 {
                     var percent = ProgressHelpers.GetProgress(ProgressHelpers.ScannedSubfolders, ProgressHelpers.RefreshedMetadata, innerPercent);
 
@@ -472,7 +475,15 @@ namespace MediaBrowser.Controller.Entities
 
                     if (recursive)
                     {
-                        ProviderManager.OnRefreshProgress(folder, percent);
+                        // TODO: this is sometimes being called after the refresh has completed.
+                        try
+                        {
+                            ProviderManager.OnRefreshProgress(folder, percent);
+                        }
+                        catch (InvalidOperationException e)
+                        {
+                            Logger.LogError(e, "Error refreshing folder");
+                        }
                     }
                 });
 
@@ -572,9 +583,7 @@ namespace MediaBrowser.Controller.Entities
             var actionBlock = new ActionBlock<int>(
                 async i =>
                 {
-                    var innerProgress = new ActionableProgress<double>();
-
-                    innerProgress.RegisterAction(innerPercent =>
+                    var innerProgress = new Progress<double>(innerPercent =>
                     {
                         // round the percent and only update progress if it changed to prevent excessive UpdateProgress calls
                         var innerPercentRounded = Math.Round(innerPercent);
@@ -922,7 +931,7 @@ namespace MediaBrowser.Controller.Entities
                     query.ChannelIds = new[] { ChannelId };
 
                     // Don't blow up here because it could cause parent screens with other content to fail
-                    return ChannelManager.GetChannelItemsInternal(query, new SimpleProgress<double>(), CancellationToken.None).GetAwaiter().GetResult();
+                    return ChannelManager.GetChannelItemsInternal(query, new Progress<double>(), CancellationToken.None).GetAwaiter().GetResult();
                 }
                 catch
                 {

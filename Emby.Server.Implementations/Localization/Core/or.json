@@ -1,4 +1,12 @@
 {
     "External": "ବହିଃସ୍ଥ",
-    "Genres": "ଧରଣ"
+    "Genres": "ଧରଣ",
+    "Albums": "ଆଲବମଗୁଡ଼ିକ",
+    "Artists": "କଳାକାରଗୁଡ଼ିକ",
+    "Application": "ଆପ୍ଲିକେସନ",
+    "Books": "ବହିଗୁଡ଼ିକ",
+    "Channels": "ଚ୍ୟାନେଲଗୁଡ଼ିକ",
+    "ChapterNameValue": "ବିଭାଗ {0}",
+    "Collections": "ସଂଗ୍ରହଗୁଡ଼ିକ",
+    "Folders": "ଫୋଲ୍ଡରଗୁଡ଼ିକ"
 }

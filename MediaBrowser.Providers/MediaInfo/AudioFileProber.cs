@@ -35,6 +35,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IItemRepository _itemRepo;
         private readonly ILibraryManager _libraryManager;
         private readonly IMediaSourceManager _mediaSourceManager;
+        private readonly LyricResolver _lyricResolver;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AudioFileProber"/> class.
@@ -44,18 +45,21 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
         /// <param name="itemRepo">Instance of the <see cref="IItemRepository"/> interface.</param>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
+        /// <param name="lyricResolver">Instance of the <see cref="LyricResolver"/> interface.</param>
         public AudioFileProber(
             ILogger<AudioFileProber> logger,
             IMediaSourceManager mediaSourceManager,
             IMediaEncoder mediaEncoder,
             IItemRepository itemRepo,
-            ILibraryManager libraryManager)
+            ILibraryManager libraryManager,
+            LyricResolver lyricResolver)
         {
             _logger = logger;
             _mediaEncoder = mediaEncoder;
             _itemRepo = itemRepo;
             _libraryManager = libraryManager;
             _mediaSourceManager = mediaSourceManager;
+            _lyricResolver = lyricResolver;
         }
 
         [GeneratedRegex(@"I:\s+(.*?)\s+LUFS")]
@@ -207,7 +211,11 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="mediaInfo">The <see cref="Model.MediaInfo.MediaInfo"/>.</param>
         /// <param name="options">The <see cref="MetadataRefreshOptions"/>.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
-        protected void Fetch(Audio audio, Model.MediaInfo.MediaInfo mediaInfo, MetadataRefreshOptions options, CancellationToken cancellationToken)
+        protected void Fetch(
+            Audio audio,
+            Model.MediaInfo.MediaInfo mediaInfo,
+            MetadataRefreshOptions options,
+            CancellationToken cancellationToken)
         {
             audio.Container = mediaInfo.Container;
             audio.TotalBitrate = mediaInfo.Bitrate;
@@ -220,7 +228,12 @@ namespace MediaBrowser.Providers.MediaInfo
                 FetchDataFromTags(audio, options);
             }
 
-            _itemRepo.SaveMediaStreams(audio.Id, mediaInfo.MediaStreams, cancellationToken);
+            var mediaStreams = new List<MediaStream>(mediaInfo.MediaStreams);
+            AddExternalLyrics(audio, mediaStreams, options);
+
+            audio.HasLyrics = mediaStreams.Any(s => s.Type == MediaStreamType.Lyric);
+
+            _itemRepo.SaveMediaStreams(audio.Id, mediaStreams, cancellationToken);
         }
 
         /// <summary>
@@ -368,6 +381,18 @@ namespace MediaBrowser.Providers.MediaInfo
                     audio.SetProviderId(MetadataProvider.MusicBrainzTrack, tags.MusicBrainzTrackId);
                 }
             }
+        }
+
+        private void AddExternalLyrics(
+            Audio audio,
+            List<MediaStream> currentStreams,
+            MetadataRefreshOptions options)
+        {
+            var startIndex = currentStreams.Count == 0 ? 0 : (currentStreams.Select(i => i.Index).Max() + 1);
+            var externalLyricFiles = _lyricResolver.GetExternalStreams(audio, startIndex, options.DirectoryService, false);
+
+            audio.LyricFiles = externalLyricFiles.Select(i => i.Path).Distinct().ToArray();
+            currentStreams.AddRange(externalLyricFiles);
         }
     }
 }
