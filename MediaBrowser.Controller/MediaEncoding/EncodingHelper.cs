@@ -6094,7 +6094,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             // Hardware surface only make sense when interop with OpenCL
             // VideoToolbox's Hardware surface in ffmpeg is not only slower than hwupload, but also breaks HDR in many cases.
             // For example: https://trac.ffmpeg.org/ticket/10884
-            var useOclToneMapping = !IsVideoToolboxTonemapAvailable(state, options) && IsHwTonemapAvailable(state, options);
+            var useOclToneMapping = !IsVideoToolboxTonemapAvailable(state, options) &&
+                                    options.EnableTonemapping &&
+                                    state.VideoStream.VideoRangeType == VideoRangeType.DOVI;
             var useHwSurface = useOclToneMapping && IsVideoToolBoxFullSupported() && _mediaEncoder.SupportsFilter("alphasrc");
 
             if (is8bitSwFormatsVt)

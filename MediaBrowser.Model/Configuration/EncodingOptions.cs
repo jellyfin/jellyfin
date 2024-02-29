@@ -28,6 +28,7 @@ public class EncodingOptions
         VaapiDevice = "/dev/dri/renderD128";
         EnableTonemapping = false;
         EnableVppTonemapping = false;
+        EnableVideoToolboxTonemapping = false;
         TonemappingAlgorithm = "bt2390";
         TonemappingMode = "auto";
         TonemappingRange = "auto";
