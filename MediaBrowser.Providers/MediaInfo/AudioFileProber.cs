@@ -320,7 +320,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     }
 
                     _libraryManager.UpdatePeople(audio, people);
-                    
+
                     if (options.ReplaceAllMetadata && performers.Length != 0)
                     {
                         audio.Artists = performers;
