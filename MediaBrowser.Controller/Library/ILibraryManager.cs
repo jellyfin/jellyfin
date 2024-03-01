@@ -517,8 +517,9 @@ namespace MediaBrowser.Controller.Library
         /// <param name="item">The item.</param>
         /// <param name="image">The image.</param>
         /// <param name="imageIndex">Index of the image.</param>
+        /// <param name="removeOnFailure">Whether to remove the image from the item on failure.</param>
         /// <returns>Task.</returns>
-        Task<ItemImageInfo> ConvertImageToLocal(BaseItem item, ItemImageInfo image, int imageIndex);
+        Task<ItemImageInfo> ConvertImageToLocal(BaseItem item, ItemImageInfo image, int imageIndex, bool removeOnFailure = true);
 
         /// <summary>
         /// Gets the items.
