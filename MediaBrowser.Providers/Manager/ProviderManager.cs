@@ -185,10 +185,7 @@ namespace MediaBrowser.Providers.Manager
                 var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
                 using var response = await httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
 
-                if (response.StatusCode != HttpStatusCode.OK)
-                {
-                    throw new HttpRequestException("Invalid image received.", null, response.StatusCode);
-                }
+                response.EnsureSuccessStatusCode();
 
                 var contentType = response.Content.Headers.ContentType?.MediaType;
 
