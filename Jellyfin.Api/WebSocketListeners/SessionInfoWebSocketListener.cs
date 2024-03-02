@@ -85,38 +85,38 @@ public class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnume
         base.Start(message);
     }
 
-    private async void OnSessionManagerSessionActivity(object? sender, SessionEventArgs e)
+    private void OnSessionManagerSessionActivity(object? sender, SessionEventArgs e)
     {
-        await SendData(false).ConfigureAwait(false);
+        SendData(false);
     }
 
-    private async void OnSessionManagerCapabilitiesChanged(object? sender, SessionEventArgs e)
+    private void OnSessionManagerCapabilitiesChanged(object? sender, SessionEventArgs e)
     {
-        await SendData(true).ConfigureAwait(false);
+        SendData(true);
     }
 
-    private async void OnSessionManagerPlaybackProgress(object? sender, PlaybackProgressEventArgs e)
+    private void OnSessionManagerPlaybackProgress(object? sender, PlaybackProgressEventArgs e)
     {
-        await SendData(!e.IsAutomated).ConfigureAwait(false);
+        SendData(!e.IsAutomated);
     }
 
-    private async void OnSessionManagerPlaybackStopped(object? sender, PlaybackStopEventArgs e)
+    private void OnSessionManagerPlaybackStopped(object? sender, PlaybackStopEventArgs e)
     {
-        await SendData(true).ConfigureAwait(false);
+        SendData(true);
     }
 
-    private async void OnSessionManagerPlaybackStart(object? sender, PlaybackProgressEventArgs e)
+    private void OnSessionManagerPlaybackStart(object? sender, PlaybackProgressEventArgs e)
     {
-        await SendData(true).ConfigureAwait(false);
+        SendData(true);
     }
 
-    private async void OnSessionManagerSessionEnded(object? sender, SessionEventArgs e)
+    private void OnSessionManagerSessionEnded(object? sender, SessionEventArgs e)
     {
-        await SendData(true).ConfigureAwait(false);
+        SendData(true);
     }
 
-    private async void OnSessionManagerSessionStarted(object? sender, SessionEventArgs e)
+    private void OnSessionManagerSessionStarted(object? sender, SessionEventArgs e)
     {
-        await SendData(true).ConfigureAwait(false);
+        SendData(true);
     }
 }

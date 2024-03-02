@@ -67,20 +67,20 @@ public class ScheduledTasksWebSocketListener : BasePeriodicWebSocketListener<IEn
         base.Dispose(dispose);
     }
 
-    private async void OnTaskCompleted(object? sender, TaskCompletionEventArgs e)
+    private void OnTaskCompleted(object? sender, TaskCompletionEventArgs e)
     {
         e.Task.TaskProgress -= OnTaskProgress;
-        await SendData(true).ConfigureAwait(false);
+        SendData(true);
     }
 
-    private async void OnTaskExecuting(object? sender, GenericEventArgs<IScheduledTaskWorker> e)
+    private void OnTaskExecuting(object? sender, GenericEventArgs<IScheduledTaskWorker> e)
     {
-        await SendData(true).ConfigureAwait(false);
+        SendData(true);
         e.Argument.TaskProgress += OnTaskProgress;
     }
 
-    private async void OnTaskProgress(object? sender, GenericEventArgs<double> e)
+    private void OnTaskProgress(object? sender, GenericEventArgs<double> e)
     {
-        await SendData(false).ConfigureAwait(false);
+        SendData(false);
     }
 }
