@@ -37,16 +37,14 @@ namespace Jellyfin.Api.Controllers;
 /// <summary>
 /// Dynamic hls controller.
 /// </summary>
-[Route("")]
 [Authorize(Policy = Policies.Playback)]
 public class DynamicHlsController : BaseJellyfinApiController
 {
     private const string DefaultVodEncoderPreset = "veryfast";
     private const string DefaultEventEncoderPreset = "superfast";
-    private const TranscodingJobType TranscodingJobType = MediaBrowser.Controller.MediaEncoding.TranscodingJobType.Hls;
+    private const TranscodingJobType DefaultTranscodingJobType = TranscodingJobType.Hls;
 
     private readonly Version _minFFmpegFlacInMp4 = new Version(6, 0);
-
     private readonly ILibraryManager _libraryManager;
     private readonly IUserManager _userManager;
     private readonly IMediaSourceManager _mediaSourceManager;
@@ -286,7 +284,7 @@ public class DynamicHlsController : BaseJellyfinApiController
                 _mediaEncoder,
                 _encodingHelper,
                 _transcodeManager,
-                TranscodingJobType,
+                DefaultTranscodingJobType,
                 cancellationToken)
             .ConfigureAwait(false);
 
@@ -307,7 +305,7 @@ public class DynamicHlsController : BaseJellyfinApiController
                                 playlistPath,
                                 GetCommandLineArguments(playlistPath, state, true, 0),
                                 Request.HttpContext.User.GetUserId(),
-                                TranscodingJobType,
+                                DefaultTranscodingJobType,
                                 cancellationTokenSource)
                             .ConfigureAwait(false);
                         job.IsLiveOutput = true;
@@ -327,7 +325,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             }
         }
 
-        job ??= _transcodeManager.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
+        job ??= _transcodeManager.OnTranscodeBeginRequest(playlistPath, DefaultTranscodingJobType);
 
         if (job is not null)
         {
@@ -509,7 +507,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             EnableTrickplay = enableTrickplay
         };
 
-        return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
+        return await _dynamicHlsHelper.GetMasterHlsPlaylist(DefaultTranscodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -675,7 +673,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             EnableAdaptiveBitrateStreaming = enableAdaptiveBitrateStreaming
         };
 
-        return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
+        return await _dynamicHlsHelper.GetMasterHlsPlaylist(DefaultTranscodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -1380,7 +1378,7 @@ public class DynamicHlsController : BaseJellyfinApiController
                 _mediaEncoder,
                 _encodingHelper,
                 _transcodeManager,
-                TranscodingJobType,
+                DefaultTranscodingJobType,
                 cancellationTokenSource.Token)
             .ConfigureAwait(false);
 
@@ -1418,7 +1416,7 @@ public class DynamicHlsController : BaseJellyfinApiController
                 _mediaEncoder,
                 _encodingHelper,
                 _transcodeManager,
-                TranscodingJobType,
+                DefaultTranscodingJobType,
                 cancellationToken)
             .ConfigureAwait(false);
 
@@ -1432,7 +1430,7 @@ public class DynamicHlsController : BaseJellyfinApiController
 
         if (System.IO.File.Exists(segmentPath))
         {
-            job = _transcodeManager.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
+            job = _transcodeManager.OnTranscodeBeginRequest(playlistPath, DefaultTranscodingJobType);
             _logger.LogDebug("returning {0} [it exists, try 1]", segmentPath);
             return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken).ConfigureAwait(false);
         }
@@ -1442,7 +1440,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             var startTranscoding = false;
             if (System.IO.File.Exists(segmentPath))
             {
-                job = _transcodeManager.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
+                job = _transcodeManager.OnTranscodeBeginRequest(playlistPath, DefaultTranscodingJobType);
                 _logger.LogDebug("returning {0} [it exists, try 2]", segmentPath);
                 return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken).ConfigureAwait(false);
             }
@@ -1493,7 +1491,7 @@ public class DynamicHlsController : BaseJellyfinApiController
                         playlistPath,
                         GetCommandLineArguments(playlistPath, state, false, segmentId),
                         Request.HttpContext.User.GetUserId(),
-                        TranscodingJobType,
+                        DefaultTranscodingJobType,
                         cancellationTokenSource).ConfigureAwait(false);
                 }
                 catch
@@ -1506,7 +1504,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             }
             else
             {
-                job = _transcodeManager.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
+                job = _transcodeManager.OnTranscodeBeginRequest(playlistPath, DefaultTranscodingJobType);
                 if (job?.TranscodingThrottler is not null)
                 {
                     await job.TranscodingThrottler.UnpauseTranscoding().ConfigureAwait(false);
@@ -1515,7 +1513,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         }
 
         _logger.LogDebug("returning {0} [general case]", segmentPath);
-        job ??= _transcodeManager.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
+        job ??= _transcodeManager.OnTranscodeBeginRequest(playlistPath, DefaultTranscodingJobType);
         return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken).ConfigureAwait(false);
     }
 
@@ -1993,7 +1991,7 @@ public class DynamicHlsController : BaseJellyfinApiController
 
     private int? GetCurrentTranscodingIndex(string playlist, string segmentExtension)
     {
-        var job = _transcodeManager.GetTranscodingJob(playlist, TranscodingJobType);
+        var job = _transcodeManager.GetTranscodingJob(playlist, DefaultTranscodingJobType);
 
         if (job is null || job.HasExited)
         {

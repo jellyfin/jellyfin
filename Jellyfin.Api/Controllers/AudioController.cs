@@ -17,6 +17,7 @@ namespace Jellyfin.Api.Controllers;
 /// <summary>
 /// The audio controller.
 /// </summary>
+[Authorize(Policy = Policies.Playback)]
 public class AudioController : BaseJellyfinApiController
 {
     private readonly AudioHelper _audioHelper;
@@ -88,7 +89,6 @@ public class AudioController : BaseJellyfinApiController
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
     [HttpGet("{itemId}/stream", Name = "GetAudioStream")]
     [HttpHead("{itemId}/stream", Name = "HeadAudioStream")]
-    [Authorize(Policy = Policies.Playback)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesAudioFile]
     public async Task<ActionResult> GetAudioStream(
@@ -253,7 +253,6 @@ public class AudioController : BaseJellyfinApiController
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
     [HttpGet("{itemId}/stream.{container}", Name = "GetAudioStreamByContainer")]
     [HttpHead("{itemId}/stream.{container}", Name = "HeadAudioStreamByContainer")]
-    [Authorize(Policy = Policies.Playback)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesAudioFile]
     public async Task<ActionResult> GetAudioStreamByContainer(
