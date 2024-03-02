@@ -45,15 +45,13 @@ namespace MediaBrowser.Controller.Net
         /// </summary>
         protected readonly ILogger<BasePeriodicWebSocketListener<TReturnDataType, TStateType>> Logger;
 
-        private readonly Task _task;
-
         protected BasePeriodicWebSocketListener(ILogger<BasePeriodicWebSocketListener<TReturnDataType, TStateType>> logger)
         {
             ArgumentNullException.ThrowIfNull(logger);
 
             Logger = logger;
 
-            _task = HandleMessages();
+            _ = HandleMessages();
         }
 
         /// <summary>
