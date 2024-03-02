@@ -178,6 +178,7 @@ namespace MediaBrowser.Providers.Manager
                             type,
                             imageIndex,
                             cancellationToken).ConfigureAwait(false);
+                        return;
                     }
                 }
 
