@@ -147,6 +147,11 @@ namespace MediaBrowser.Controller.Net
                     await _lock.WaitAsync().ConfigureAwait(false);
                     try
                     {
+                        if (_activeConnections.Count == 0)
+                        {
+                            continue;
+                        }
+
                         tuples = _activeConnections
                             .Where(c =>
                             {
@@ -165,8 +170,13 @@ namespace MediaBrowser.Controller.Net
                         _lock.Release();
                     }
 
+                    if (tuples.Length == 0)
+                    {
+                        continue;
+                    }
+
                     var data = await GetDataToSend().ConfigureAwait(false);
-                    if (data is null || tuples.Length == 0)
+                    if (data is null)
                     {
                         continue;
                     }
