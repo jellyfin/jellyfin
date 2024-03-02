@@ -222,7 +222,8 @@ namespace MediaBrowser.Controller.Net
         /// <param name="message">The message.</param>
         private void Stop(WebSocketMessageInfo message)
         {
-            lock (_activeConnections)
+            _lock.Wait();
+            try
             {
                 var connection = _activeConnections.FirstOrDefault(c => c.Connection == message.Connection);
 
@@ -230,6 +231,10 @@ namespace MediaBrowser.Controller.Net
                 {
                     DisposeConnection(connection);
                 }
+            }
+            finally
+            {
+                _lock.Release();
             }
         }
 
@@ -260,9 +265,14 @@ namespace MediaBrowser.Controller.Net
                 Logger.LogError(ex, "Error disposing websocket");
             }
 
-            lock (_activeConnections)
+            _lock.Wait();
+            try
             {
                 _activeConnections.Remove(connection);
+            }
+            finally
+            {
+                _lock.Release();
             }
         }
 
@@ -274,12 +284,17 @@ namespace MediaBrowser.Controller.Net
         {
             if (dispose)
             {
-                lock (_activeConnections)
+                _lock.Wait();
+                try
                 {
                     foreach (var connection in _activeConnections.ToArray())
                     {
                         DisposeConnection(connection);
                     }
+                }
+                finally
+                {
+                    _lock.Release();
                 }
             }
         }
