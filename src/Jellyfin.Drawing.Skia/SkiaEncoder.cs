@@ -431,7 +431,7 @@ public class SkiaEncoder : IImageEncoder
         if (outputFormat == ImageFormat.Svg
             && !inputFormat.Equals(SvgFormat, StringComparison.OrdinalIgnoreCase))
         {
-            throw new InvalidOperationException($"Requested svg output from {inputFormat} input");
+            throw new ArgumentException($"Requested svg output from {inputFormat} input");
         }
 
         var skiaOutputFormat = GetImageFormat(outputFormat);
