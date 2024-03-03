@@ -14,11 +14,10 @@ namespace Jellyfin.Server.Implementations.MediaSegments;
 /// <summary>
 /// Manages the creation and retrieval of <see cref="MediaSegment"/> instances.
 /// </summary>
-public class MediaSegmentsManager : IMediaSegmentsManager, IDisposable
+public sealed class MediaSegmentsManager : IMediaSegmentsManager, IDisposable
 {
     private readonly ILibraryManager _libraryManager;
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
-    private bool _disposed;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MediaSegmentsManager"/> class.
@@ -51,8 +50,11 @@ public class MediaSegmentsManager : IMediaSegmentsManager, IDisposable
                 segment.ItemId = itemId;
                 ValidateSegment(segment);
 
-                var found = await dbContext.Segments.FirstOrDefaultAsync(s => s.ItemId.Equals(segment.ItemId) && s.StreamIndex == segment.StreamIndex && s.Type == segment.Type && s.TypeIndex == segment.TypeIndex)
-                    .ConfigureAwait(false);
+                var found = await dbContext.Segments.FirstOrDefaultAsync(s => s.ItemId.Equals(segment.ItemId)
+                && s.StreamIndex == segment.StreamIndex
+                && s.Type == segment.Type
+                && s.TypeIndex == segment.TypeIndex)
+                .ConfigureAwait(false);
 
                 AddOrUpdateSegment(dbContext, segment, found);
             }
@@ -71,8 +73,6 @@ public class MediaSegmentsManager : IMediaSegmentsManager, IDisposable
         {
             throw new InvalidOperationException("Item not found");
         }
-
-        List<MediaSegment> allSegments;
 
         var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
         await using (dbContext.ConfigureAwait(false))
@@ -94,10 +94,8 @@ public class MediaSegmentsManager : IMediaSegmentsManager, IDisposable
                 queryable = queryable.Where(s => s.TypeIndex == typeIndex.Value);
             }
 
-            allSegments = await queryable.AsNoTracking().ToListAsync().ConfigureAwait(false);
+            return await queryable.AsNoTracking().ToListAsync().ConfigureAwait(false);
         }
-
-        return allSegments;
     }
 
     /// <summary>
@@ -108,7 +106,7 @@ public class MediaSegmentsManager : IMediaSegmentsManager, IDisposable
     /// </summary>
     private void AddOrUpdateSegment(JellyfinDbContext dbContext, MediaSegment segment, MediaSegment? found)
     {
-        if (found != null)
+        if (found is not null)
         {
             found.StartTicks = segment.StartTicks;
             found.EndTicks = segment.EndTicks;
@@ -127,15 +125,12 @@ public class MediaSegmentsManager : IMediaSegmentsManager, IDisposable
     /// <param name="segment">The segment to validate.</param>
     private void ValidateSegment(MediaSegment segment)
     {
-        if (segment.ItemId.Equals(default))
+        if (segment.ItemId.IsEmpty())
         {
             throw new ArgumentException($"itemId is default: itemId={segment.ItemId} for segment with type '{segment.Type}.{segment.TypeIndex}'");
         }
 
-        if (segment.StartTicks >= segment.EndTicks)
-        {
-            throw new ArgumentException($"start >= end: {segment.StartTicks}>={segment.EndTicks} for segment itemId '{segment.ItemId}' with type '{segment.Type}.{segment.TypeIndex}'");
-        }
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(segment.StartTicks, segment.EndTicks, $"itemId '{segment.ItemId}' with type '{segment.Type}.{segment.TypeIndex}'");
     }
 
     /// <summary>
@@ -187,27 +182,9 @@ public class MediaSegmentsManager : IMediaSegmentsManager, IDisposable
         return allSegments;
     }
 
-    /// <summary>
-    /// Dispose event.
-    /// </summary>
-    /// <param name="disposing">dispose.</param>
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!_disposed)
-        {
-            if (disposing)
-            {
-                _libraryManager.ItemRemoved -= LibraryManagerItemRemoved;
-            }
-
-            _disposed = true;
-        }
-    }
-
     /// <inheritdoc/>
     public void Dispose()
     {
-        Dispose(disposing: true);
-        GC.SuppressFinalize(this);
+        _libraryManager.ItemRemoved -= LibraryManagerItemRemoved;
     }
 }
