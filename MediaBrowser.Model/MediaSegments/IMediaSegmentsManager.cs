@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
-using Jellyfin.Data.Enums;
+using Jellyfin.Data.Entities.MediaSegment;
+using Jellyfin.Data.Enums.MediaSegmentType;
 
 namespace MediaBrowser.Model.MediaSegments;
 

@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Entities.MediaSegment;
 using Jellyfin.Data.Entities.Security;
 using Jellyfin.Data.Interfaces;
 using Microsoft.EntityFrameworkCore;

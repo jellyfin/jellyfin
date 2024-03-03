@@ -1,10 +1,8 @@
-#nullable disable
-#pragma warning disable CS1591
-
 using System;
-using Jellyfin.Data.Enums;
+using Jellyfin.Data.Enums.MediaSegmentAction;
+using Jellyfin.Data.Enums.MediaSegmentType;
 
-namespace Jellyfin.Data.Entities
+namespace Jellyfin.Data.Entities.MediaSegment
 {
     /// <summary>
     /// A moment in time of a media stream (ItemId+StreamIndex) with Type and possible Action applicable between StartTicks/Endticks.
@@ -57,6 +55,6 @@ namespace Jellyfin.Data.Entities
         /// Gets or sets a comment.
         /// </summary>
         /// <value>The media segment action.</value>
-        public string Comment { get; set; }
+        public string? Comment { get; set; }
     }
 }

@@ -1,8 +1,8 @@
-using Jellyfin.Data.Entities;
+using Jellyfin.Data.Entities.MediaSegment;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Jellyfin.Server.Implementations.ModelConfiguration
+namespace Jellyfin.Server.Implementations.ModelConfiguration.MediaSegmentConfiguration
 {
     /// <summary>
     /// FluentAPI configuration for the MediaSegment entity.

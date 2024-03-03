@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.MediaSegmentsDtos;
-using Jellyfin.Data.Enums;
+using Jellyfin.Data.Enums.MediaSegmentType;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Model.MediaSegments;

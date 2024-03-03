@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Entities.MediaSegment;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;

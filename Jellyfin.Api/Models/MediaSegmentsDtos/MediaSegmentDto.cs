@@ -1,6 +1,7 @@
 using System;
-using Jellyfin.Data.Entities;
-using Jellyfin.Data.Enums;
+using Jellyfin.Data.Entities.MediaSegment;
+using Jellyfin.Data.Enums.MediaSegmentAction;
+using Jellyfin.Data.Enums.MediaSegmentType;
 
 namespace Jellyfin.Api.Models.MediaSegmentsDtos;
 
