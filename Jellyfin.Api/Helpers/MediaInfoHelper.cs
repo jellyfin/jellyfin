@@ -264,7 +264,7 @@ public class MediaInfoHelper
             mediaSource.SupportsTranscoding =
                 streamInfo.PlayMethod == PlayMethod.DirectStream
                 || mediaSource.TranscodingContainer is not null
-                || profile.TranscodingProfiles.Any(i => i.Type == streamInfo.MediaType && i.Context == options.Context);
+                || (profile.TranscodingProfiles?.Any(i => (i.Type == streamInfo.MediaType && i.Context == options.Context)) ?? false);
 
             if (item is Audio)
             {
