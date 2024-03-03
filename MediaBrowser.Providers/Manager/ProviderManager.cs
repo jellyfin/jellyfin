@@ -221,24 +221,19 @@ namespace MediaBrowser.Providers.Manager
                     throw new HttpRequestException($"Request returned {contentType} instead of an image type", null, HttpStatusCode.NotFound);
                 }
 
-                var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+                var responseBytes = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
+                var stream = new MemoryStream(responseBytes, 0, responseBytes.Length, false);
                 await using (stream.ConfigureAwait(false))
                 {
-                    var memoryStream = new MemoryStream();
-                    await using (memoryStream.ConfigureAwait(false))
-                    {
-                        await stream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
-                        memoryStream.Seek(0, SeekOrigin.Begin);
-                        _memoryCache.Set(url, (contentType, memoryStream.GetBuffer()), TimeSpan.FromSeconds(10));
+                    _memoryCache.Set(url, (contentType, responseBytes), TimeSpan.FromSeconds(10));
 
-                        await SaveImage(
-                            item,
-                            memoryStream,
-                            contentType,
-                            type,
-                            imageIndex,
-                            cancellationToken).ConfigureAwait(false);
-                    }
+                    await SaveImage(
+                        item,
+                        stream,
+                        contentType,
+                        type,
+                        imageIndex,
+                        cancellationToken).ConfigureAwait(false);
                 }
             }
         }
