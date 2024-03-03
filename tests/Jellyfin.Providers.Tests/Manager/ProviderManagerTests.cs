@@ -17,6 +17,7 @@ using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Providers.Manager;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -572,7 +573,8 @@ namespace Jellyfin.Providers.Tests.Manager
                 Mock.Of<IServerApplicationPaths>(),
                 libraryManager.Object,
                 baseItemManager!,
-                Mock.Of<ILyricManager>());
+                Mock.Of<ILyricManager>(),
+                Mock.Of<IMemoryCache>());
 
             return providerManager;
         }

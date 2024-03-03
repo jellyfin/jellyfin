@@ -1860,7 +1860,7 @@ namespace Emby.Server.Implementations.Library
                     try
                     {
                         var index = item.GetImageIndex(img);
-                        image = await ConvertImageToLocal(item, img, index).ConfigureAwait(false);
+                        image = await ConvertImageToLocal(item, img, index, removeOnFailure: true).ConfigureAwait(false);
                     }
                     catch (ArgumentException)
                     {
@@ -2787,7 +2787,7 @@ namespace Emby.Server.Implementations.Library
             await SavePeopleMetadataAsync(people, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<ItemImageInfo> ConvertImageToLocal(BaseItem item, ItemImageInfo image, int imageIndex)
+        public async Task<ItemImageInfo> ConvertImageToLocal(BaseItem item, ItemImageInfo image, int imageIndex, bool removeOnFailure)
         {
             foreach (var url in image.Path.Split('|'))
             {
@@ -2806,6 +2806,7 @@ namespace Emby.Server.Implementations.Library
                     if (ex.StatusCode.HasValue
                         && (ex.StatusCode.Value == HttpStatusCode.NotFound || ex.StatusCode.Value == HttpStatusCode.Forbidden))
                     {
+                        _logger.LogDebug(ex, "Error downloading image {Url}", url);
                         continue;
                     }
 
@@ -2813,11 +2814,14 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            // Remove this image to prevent it from retrying over and over
-            item.RemoveImage(image);
-            await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
+            if (removeOnFailure)
+            {
+                // Remove this image to prevent it from retrying over and over
+                item.RemoveImage(image);
+                await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
+            }
 
-            throw new InvalidOperationException();
+            throw new InvalidOperationException("Unable to convert any images to local");
         }
 
         public async Task AddVirtualFolder(string name, CollectionTypeOptions? collectionType, LibraryOptions options, bool refreshLibrary)
