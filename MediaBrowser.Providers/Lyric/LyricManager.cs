@@ -155,13 +155,13 @@ public class LyricManager : ILyricManager
                 return null;
             }
 
-            var parsedLyrics = await InternalParseRemoteLyricsAsync(response, cancellationToken).ConfigureAwait(false);
+            var parsedLyrics = await InternalParseRemoteLyricsAsync(response.Format, response.Stream, cancellationToken).ConfigureAwait(false);
             if (parsedLyrics is null)
             {
                 return null;
             }
 
-            await TrySaveLyric(audio, libraryOptions, response).ConfigureAwait(false);
+            await TrySaveLyric(audio, libraryOptions, response.Format, response.Stream).ConfigureAwait(false);
             return parsedLyrics;
         }
         catch (RateLimitExceededException)
@@ -182,19 +182,33 @@ public class LyricManager : ILyricManager
     }
 
     /// <inheritdoc />
-    public async Task<LyricDto?> UploadLyricAsync(Audio audio, LyricResponse lyricResponse)
+    public async Task<LyricDto?> SaveLyricAsync(Audio audio, string format, string lyrics)
     {
         ArgumentNullException.ThrowIfNull(audio);
-        ArgumentNullException.ThrowIfNull(lyricResponse);
+        ArgumentException.ThrowIfNullOrEmpty(format);
+        ArgumentException.ThrowIfNullOrEmpty(lyrics);
+
+        var bytes = Encoding.UTF8.GetBytes(lyrics);
+        using var lyricStream = new MemoryStream(bytes, 0, bytes.Length, false, true);
+        return await SaveLyricAsync(audio, format, lyricStream).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task<LyricDto?> SaveLyricAsync(Audio audio, string format, Stream lyrics)
+    {
+        ArgumentNullException.ThrowIfNull(audio);
+        ArgumentException.ThrowIfNullOrEmpty(format);
+        ArgumentNullException.ThrowIfNull(lyrics);
+
         var libraryOptions = BaseItem.LibraryManager.GetLibraryOptions(audio);
 
-        var parsed = await InternalParseRemoteLyricsAsync(lyricResponse, CancellationToken.None).ConfigureAwait(false);
+        var parsed = await InternalParseRemoteLyricsAsync(format, lyrics, CancellationToken.None).ConfigureAwait(false);
         if (parsed is null)
         {
             return null;
         }
 
-        await TrySaveLyric(audio, libraryOptions, lyricResponse).ConfigureAwait(false);
+        await TrySaveLyric(audio, libraryOptions, format, lyrics).ConfigureAwait(false);
         return parsed;
     }
 
@@ -209,7 +223,7 @@ public class LyricManager : ILyricManager
             return null;
         }
 
-        return await InternalParseRemoteLyricsAsync(lyricResponse, cancellationToken).ConfigureAwait(false);
+        return await InternalParseRemoteLyricsAsync(lyricResponse.Format, lyricResponse.Stream, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -289,12 +303,12 @@ public class LyricManager : ILyricManager
     private string GetProviderId(string name)
         => name.ToLowerInvariant().GetMD5().ToString("N", CultureInfo.InvariantCulture);
 
-    private async Task<LyricDto?> InternalParseRemoteLyricsAsync(LyricResponse lyricResponse, CancellationToken cancellationToken)
+    private async Task<LyricDto?> InternalParseRemoteLyricsAsync(string format, Stream lyricStream, CancellationToken cancellationToken)
     {
-        lyricResponse.Stream.Seek(0, SeekOrigin.Begin);
-        using var streamReader = new StreamReader(lyricResponse.Stream, leaveOpen: true);
+        lyricStream.Seek(0, SeekOrigin.Begin);
+        using var streamReader = new StreamReader(lyricStream, leaveOpen: true);
         var lyrics = await streamReader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
-        var lyricFile = new LyricFile($"lyric.{lyricResponse.Format}", lyrics);
+        var lyricFile = new LyricFile($"lyric.{format}", lyrics);
         foreach (var parser in _lyricParsers)
         {
             var parsedLyrics = parser.ParseLyrics(lyricFile);
@@ -334,7 +348,7 @@ public class LyricManager : ILyricManager
             var parsedResults = new List<RemoteLyricInfoDto>();
             foreach (var result in searchResults)
             {
-                var parsedLyrics = await InternalParseRemoteLyricsAsync(result.Lyrics, cancellationToken).ConfigureAwait(false);
+                var parsedLyrics = await InternalParseRemoteLyricsAsync(result.Lyrics.Format, result.Lyrics.Stream, cancellationToken).ConfigureAwait(false);
                 if (parsedLyrics is null)
                 {
                     continue;
@@ -361,24 +375,23 @@ public class LyricManager : ILyricManager
     private async Task TrySaveLyric(
         Audio audio,
         LibraryOptions libraryOptions,
-        LyricResponse lyricResponse)
+        string format,
+        Stream lyricStream)
     {
         var saveInMediaFolder = libraryOptions.SaveLyricsWithMedia;
 
         var memoryStream = new MemoryStream();
         await using (memoryStream.ConfigureAwait(false))
         {
-            var stream = lyricResponse.Stream;
-
-            await using (stream.ConfigureAwait(false))
+            await using (lyricStream.ConfigureAwait(false))
             {
-                stream.Seek(0, SeekOrigin.Begin);
-                await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
+                lyricStream.Seek(0, SeekOrigin.Begin);
+                await lyricStream.CopyToAsync(memoryStream).ConfigureAwait(false);
                 memoryStream.Seek(0, SeekOrigin.Begin);
             }
 
             var savePaths = new List<string>();
-            var saveFileName = Path.GetFileNameWithoutExtension(audio.Path) + "." + lyricResponse.Format.ReplaceLineEndings(string.Empty).ToLowerInvariant();
+            var saveFileName = Path.GetFileNameWithoutExtension(audio.Path) + "." + format.ReplaceLineEndings(string.Empty).ToLowerInvariant();
 
             if (saveInMediaFolder)
             {

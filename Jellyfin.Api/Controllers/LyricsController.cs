@@ -146,13 +146,11 @@ public class LyricsController : BaseJellyfinApiController
         await using (stream.ConfigureAwait(false))
         {
             await Request.Body.CopyToAsync(stream).ConfigureAwait(false);
-            var uploadedLyric = await _lyricManager.UploadLyricAsync(
-                audio,
-                new LyricResponse
-                {
-                    Format = format,
-                    Stream = stream
-                }).ConfigureAwait(false);
+            var uploadedLyric = await _lyricManager.SaveLyricAsync(
+                    audio,
+                    format,
+                    stream)
+                .ConfigureAwait(false);
 
             if (uploadedLyric is null)
             {
