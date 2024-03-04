@@ -44,6 +44,7 @@ namespace Jellyfin.Server.Migrations
             typeof(Routines.FixPlaylistOwner),
             typeof(Routines.MigrateRatingLevels),
             typeof(Routines.AddDefaultCastReceivers),
+            typeof(Routines.UpdateDefaultPluginRepository),
             typeof(Routines.ChangeTypeOfTypedBaseItemsOwnerIdToGuid)
         };
 

@@ -509,7 +509,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             var outputPaths = new List<string>();
             var args = string.Format(
                 CultureInfo.InvariantCulture,
-                "-i {0} -copyts",
+                "-i \"{0}\" -copyts",
                 inputPath);
 
             foreach (var subtitleStream in subtitleStreams)
@@ -680,7 +680,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             var processArgs = string.Format(
                 CultureInfo.InvariantCulture,
-                "-i {0} -copyts -map 0:{1} -an -vn -c:s {2} \"{3}\"",
+                "-i \"{0}\" -copyts -map 0:{1} -an -vn -c:s {2} \"{3}\"",
                 inputPath,
                 subtitleStreamIndex,
                 outputCodec,

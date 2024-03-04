@@ -46,14 +46,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
         }
 
         /// <inheritdoc />
-        public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
-        {
-            return new ImageType[]
-            {
-                ImageType.Primary,
-                ImageType.Backdrop
-            };
-        }
+        public IEnumerable<ImageType> GetSupportedImages(BaseItem item) =>
+        [
+            ImageType.Primary,
+            ImageType.Backdrop,
+            ImageType.Thumb
+        ];
 
         /// <inheritdoc />
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)

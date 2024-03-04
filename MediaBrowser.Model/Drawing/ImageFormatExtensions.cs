@@ -22,6 +22,7 @@ public static class ImageFormatExtensions
             ImageFormat.Jpg => MediaTypeNames.Image.Jpeg,
             ImageFormat.Png => "image/png",
             ImageFormat.Webp => "image/webp",
+            ImageFormat.Svg => "image/svg+xml",
             _ => throw new InvalidEnumArgumentException(nameof(format), (int)format, typeof(ImageFormat))
         };
 
@@ -39,6 +40,7 @@ public static class ImageFormatExtensions
             ImageFormat.Jpg => ".jpg",
             ImageFormat.Png => ".png",
             ImageFormat.Webp => ".webp",
+            ImageFormat.Svg => ".svg",
             _ => throw new InvalidEnumArgumentException(nameof(format), (int)format, typeof(ImageFormat))
         };
 }

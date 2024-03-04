@@ -6,9 +6,8 @@ using System.Net.Mime;
 using System.Text;
 using Emby.Server.Implementations.EntryPoints;
 using Jellyfin.Api.Middleware;
-using Jellyfin.LiveTv;
-using Jellyfin.LiveTv.EmbyTV;
 using Jellyfin.LiveTv.Extensions;
+using Jellyfin.LiveTv.Recordings;
 using Jellyfin.MediaEncoding.Hls.Extensions;
 using Jellyfin.Networking;
 using Jellyfin.Networking.HappyEyeballs;
@@ -128,7 +127,7 @@ namespace Jellyfin.Server
             services.AddHlsPlaylistGenerator();
             services.AddLiveTvServices();
 
-            services.AddHostedService<LiveTvHost>();
+            services.AddHostedService<RecordingsHost>();
             services.AddHostedService<AutoDiscoveryHost>();
             services.AddHostedService<PortForwardingHost>();
             services.AddHostedService<NfoUserDataSaver>();
