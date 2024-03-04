@@ -13,6 +13,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
@@ -64,6 +65,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="loggerFactory">Instance of the <see cref="ILoggerFactory"/>.</param>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
         /// <param name="namingOptions">The <see cref="NamingOptions"/>.</param>
+        /// <param name="lyricManager">Instance of the <see cref="ILyricManager"/> interface.</param>
         public ProbeProvider(
             IMediaSourceManager mediaSourceManager,
             IMediaEncoder mediaEncoder,
@@ -77,7 +79,8 @@ namespace MediaBrowser.Providers.MediaInfo
             ILibraryManager libraryManager,
             IFileSystem fileSystem,
             ILoggerFactory loggerFactory,
-            NamingOptions namingOptions)
+            NamingOptions namingOptions,
+            ILyricManager lyricManager)
         {
             _logger = loggerFactory.CreateLogger<ProbeProvider>();
             _audioResolver = new AudioResolver(loggerFactory.CreateLogger<AudioResolver>(), localization, mediaEncoder, fileSystem, namingOptions);
@@ -105,7 +108,8 @@ namespace MediaBrowser.Providers.MediaInfo
                 mediaEncoder,
                 itemRepo,
                 libraryManager,
-                _lyricResolver);
+                _lyricResolver,
+                lyricManager);
         }
 
         /// <inheritdoc />

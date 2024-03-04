@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AsyncKeyedLock" />
     <PackageReference Include="LrcParser" />
     <PackageReference Include="MetaBrainz.MusicBrainz" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" />

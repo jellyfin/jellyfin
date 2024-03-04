@@ -27,6 +27,8 @@ public class GuideManager : IGuideManager
     private const string EtagKey = "ProgramEtag";
     private const string ExternalServiceTag = "ExternalServiceId";
 
+    private static readonly ParallelOptions _cacheParallelOptions = new() { MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 10) };
+
     private readonly ILogger<GuideManager> _logger;
     private readonly IConfigurationManager _config;
     private readonly IFileSystem _fileSystem;
@@ -209,6 +211,7 @@ public class GuideManager : IGuideManager
 
         _logger.LogInformation("Refreshing guide with {0} days of guide data", guideDays);
 
+        var maxCacheDate = DateTime.UtcNow.AddDays(2);
         foreach (var currentChannel in list)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -263,6 +266,7 @@ public class GuideManager : IGuideManager
                 if (newPrograms.Count > 0)
                 {
                     _libraryManager.CreateItems(newPrograms, null, cancellationToken);
+                    await PrecacheImages(newPrograms, maxCacheDate).ConfigureAwait(false);
                 }
 
                 if (updatedPrograms.Count > 0)
@@ -272,6 +276,7 @@ public class GuideManager : IGuideManager
                         currentChannel,
                         ItemUpdateType.MetadataImport,
                         cancellationToken).ConfigureAwait(false);
+                    await PrecacheImages(updatedPrograms, maxCacheDate).ConfigureAwait(false);
                 }
 
                 currentChannel.IsMovie = isMovie;
@@ -707,5 +712,42 @@ public class GuideManager : IGuideManager
         }
 
         return (item, isNew, isUpdated);
+    }
+
+    private async Task PrecacheImages(IReadOnlyList<BaseItem> programs, DateTime maxCacheDate)
+    {
+        await Parallel.ForEachAsync(
+            programs
+                .Where(p => p.EndDate.HasValue && p.EndDate.Value < maxCacheDate)
+                .DistinctBy(p => p.Id),
+            _cacheParallelOptions,
+            async (program, cancellationToken) =>
+            {
+                for (var i = 0; i < program.ImageInfos.Length; i++)
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
+                    var imageInfo = program.ImageInfos[i];
+                    if (!imageInfo.IsLocalFile)
+                    {
+                        try
+                        {
+                            program.ImageInfos[i] = await _libraryManager.ConvertImageToLocal(
+                                    program,
+                                    imageInfo,
+                                    imageIndex: 0,
+                                    removeOnFailure: false)
+                                .ConfigureAwait(false);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(ex, "Unable to precache {Url}", imageInfo.Path);
+                        }
+                    }
+                }
+            }).ConfigureAwait(false);
     }
 }
