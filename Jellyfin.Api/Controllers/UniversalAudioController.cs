@@ -8,6 +8,7 @@ using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.StreamingDtos;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
@@ -98,7 +99,7 @@ public class UniversalAudioController : BaseJellyfinApiController
         [FromQuery] int? audioBitRate,
         [FromQuery] long? startTimeTicks,
         [FromQuery] string? transcodingContainer,
-        [FromQuery] string? transcodingProtocol,
+        [FromQuery] MediaStreamProtocol? transcodingProtocol,
         [FromQuery] int? maxAudioSampleRate,
         [FromQuery] int? maxAudioBitDepth,
         [FromQuery] bool? enableRemoteMedia,
@@ -156,7 +157,7 @@ public class UniversalAudioController : BaseJellyfinApiController
         }
 
         var isStatic = mediaSource.SupportsDirectStream;
-        if (!isStatic && string.Equals(mediaSource.TranscodingSubProtocol, "hls", StringComparison.OrdinalIgnoreCase))
+        if (!isStatic && mediaSource.TranscodingSubProtocol == MediaStreamProtocol.Hls)
         {
             // hls segment container can only be mpegts or fmp4 per ffmpeg documentation
             // ffmpeg option -> file extension
@@ -232,7 +233,7 @@ public class UniversalAudioController : BaseJellyfinApiController
         string[] containers,
         string? transcodingContainer,
         string? audioCodec,
-        string? transcodingProtocol,
+        MediaStreamProtocol? transcodingProtocol,
         bool? breakOnNonKeyFrames,
         int? transcodingAudioChannels,
         int? maxAudioSampleRate,
@@ -267,7 +268,7 @@ public class UniversalAudioController : BaseJellyfinApiController
                 Context = EncodingContext.Streaming,
                 Container = transcodingContainer ?? "mp3",
                 AudioCodec = audioCodec ?? "mp3",
-                Protocol = transcodingProtocol ?? "http",
+                Protocol = transcodingProtocol ?? MediaStreamProtocol.Http,
                 BreakOnNonKeyFrames = breakOnNonKeyFrames ?? false,
                 MaxAudioChannels = transcodingAudioChannels?.ToString(CultureInfo.InvariantCulture)
             }

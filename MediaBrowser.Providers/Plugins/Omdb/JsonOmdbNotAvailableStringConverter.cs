@@ -1,6 +1,7 @@
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Jellyfin.Extensions.Json;
 
 namespace MediaBrowser.Providers.Plugins.Omdb
 {
@@ -12,7 +13,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         /// <inheritdoc />
         public override string? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            if (reader.TokenType == JsonTokenType.Null)
+            if (reader.IsNull())
             {
                 return null;
             }
