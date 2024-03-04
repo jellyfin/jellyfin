@@ -1,16 +1,18 @@
-#nullable disable
-
-#pragma warning disable CS1591
-
 using System;
 using System.Text.Json.Serialization;
+using Jellyfin.Server.Implementations;
+using Microsoft.EntityFrameworkCore;
 
-namespace MediaBrowser.Controller.Entities
+#pragma warning disable CS1591
+#pragma warning disable SA1604
+
+namespace Jellyfin.Data.Entities
 {
     /// <summary>
-    /// Class UserItemData.
+    /// An entity representing the data for a user and a BaseItem.
     /// </summary>
-    public class UserItemData
+    [PrimaryKey(nameof(UserId), nameof(Key))]
+    public class UserItemData : ILibraryModel
     {
         public const double MinLikeValue = 6.5;
 
@@ -20,16 +22,11 @@ namespace MediaBrowser.Controller.Entities
         private double? _rating;
 
         /// <summary>
-        /// Gets or sets the user id.
+        /// Gets or sets the Id of the user.
         /// </summary>
-        /// <value>The user id.</value>
         public Guid UserId { get; set; }
 
-        /// <summary>
-        /// Gets or sets the key.
-        /// </summary>
-        /// <value>The key.</value>
-        public string Key { get; set; }
+        public string? Key { get; set; }
 
         /// <summary>
         /// Gets or sets the users 0-10 rating.

@@ -68,6 +68,8 @@ namespace Jellyfin.Server
             services.AddSingleton<IActionResultExecutor<PhysicalFileResult>, SymlinkFollowingPhysicalFileResultExecutor>();
             services.AddJellyfinApi(_serverApplicationHost.GetApiPluginAssemblies(), _serverConfigurationManager.GetNetworkConfiguration());
             services.AddJellyfinDbContext();
+            services.SetupCaching();
+            services.AddLibraryDbContext();
             services.AddJellyfinApiSwagger();
 
             // configure custom legacy authentication

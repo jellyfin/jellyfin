@@ -91,7 +91,7 @@ public class PlaystateController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var dto = UpdatePlayedStatus(user, item, true, datePlayed);
+        var dto = await UpdatePlayedStatus(user, item, true, datePlayed).ConfigureAwait(false);
         foreach (var additionalUserInfo in session.AdditionalUsers)
         {
             var additionalUser = _userManager.GetUserById(additionalUserInfo.UserId);
@@ -100,7 +100,7 @@ public class PlaystateController : BaseJellyfinApiController
                 return NotFound();
             }
 
-            UpdatePlayedStatus(additionalUser, item, true, datePlayed);
+            await UpdatePlayedStatus(additionalUser, item, true, datePlayed).ConfigureAwait(false);
         }
 
         return dto;
@@ -156,7 +156,7 @@ public class PlaystateController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var dto = UpdatePlayedStatus(user, item, false, null);
+        var dto = await UpdatePlayedStatus(user, item, false, null).ConfigureAwait(false);
         foreach (var additionalUserInfo in session.AdditionalUsers)
         {
             var additionalUser = _userManager.GetUserById(additionalUserInfo.UserId);
@@ -165,7 +165,7 @@ public class PlaystateController : BaseJellyfinApiController
                 return NotFound();
             }
 
-            UpdatePlayedStatus(additionalUser, item, false, null);
+            await UpdatePlayedStatus(additionalUser, item, false, null).ConfigureAwait(false);
         }
 
         return dto;
@@ -501,18 +501,18 @@ public class PlaystateController : BaseJellyfinApiController
     /// <param name="wasPlayed">if set to <c>true</c> [was played].</param>
     /// <param name="datePlayed">The date played.</param>
     /// <returns>Task.</returns>
-    private UserItemDataDto UpdatePlayedStatus(User user, BaseItem item, bool wasPlayed, DateTime? datePlayed)
+    private async Task<UserItemDataDto> UpdatePlayedStatus(User user, BaseItem item, bool wasPlayed, DateTime? datePlayed)
     {
         if (wasPlayed)
         {
-            item.MarkPlayed(user, datePlayed, true);
+            await item.MarkPlayed(user, datePlayed, true).ConfigureAwait(false);
         }
         else
         {
-            item.MarkUnplayed(user);
+            await item.MarkUnplayed(user).ConfigureAwait(false);
         }
 
-        return _userDataRepository.GetUserDataDto(item, user);
+        return await _userDataRepository.GetUserDataDtoAsync(item, user).ConfigureAwait(false);
     }
 
     private PlayMethod ValidatePlayMethod(PlayMethod method, string? playSessionId)

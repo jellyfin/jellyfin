@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Server.Implementations.Library.Interfaces;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -24,10 +25,10 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly OmdbProvider _omdbProvider;
 
-        public OmdbImageProvider(IHttpClientFactory httpClientFactory, IFileSystem fileSystem, IServerConfigurationManager configurationManager)
+        public OmdbImageProvider(IHttpClientFactory httpClientFactory, IFileSystem fileSystem, IServerConfigurationManager configurationManager, IGenreManager genreManager)
         {
             _httpClientFactory = httpClientFactory;
-            _omdbProvider = new OmdbProvider(_httpClientFactory, fileSystem, configurationManager);
+            _omdbProvider = new OmdbProvider(_httpClientFactory, genreManager, fileSystem, configurationManager);
         }
 
         public string Name => "The Open Movie Database";

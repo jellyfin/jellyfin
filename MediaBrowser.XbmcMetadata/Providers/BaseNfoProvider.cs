@@ -72,7 +72,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
             return file.Exists && _fileSystem.GetLastWriteTimeUtc(file) > item.DateLastSaved;
         }
 
-        protected abstract void Fetch(MetadataResult<T> result, string path, CancellationToken cancellationToken);
+        protected abstract Task Fetch(MetadataResult<T> result, string path, CancellationToken cancellationToken);
 
         protected abstract FileSystemMetadata? GetXmlFile(ItemInfo info, IDirectoryService directoryService);
     }

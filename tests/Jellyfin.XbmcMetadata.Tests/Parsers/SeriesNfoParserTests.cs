@@ -1,7 +1,10 @@
 using System;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
+using Jellyfin.Server.Implementations.Library.Interfaces;
+using Jellyfin.Server.Implementations.Library.Managers;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -30,20 +33,29 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
                 .Returns(new XbmcMetadataOptions());
             var user = new Mock<IUserManager>();
             var userData = new Mock<IUserDataManager>();
+            var dbContextFactory = new InMemoryDbContextFactory();
+            var genreManager = new GenreManager(dbContextFactory);
             var directoryService = new Mock<IDirectoryService>();
 
-            _parser = new SeriesNfoParser(new NullLogger<SeriesNfoParser>(), config.Object, providerManager.Object, user.Object, userData.Object, directoryService.Object);
+            _parser = new SeriesNfoParser(
+                new NullLogger<SeriesNfoParser>(),
+                config.Object,
+                providerManager.Object,
+                user.Object,
+                userData.Object,
+                genreManager,
+                directoryService.Object);
         }
 
         [Fact]
-        public void Fetch_Valid_Success()
+        public async Task Fetch_Valid_Success()
         {
             var result = new MetadataResult<Series>()
             {
                 Item = new Series()
             };
 
-            _parser.Fetch(result, "Test Data/American Gods.nfo", CancellationToken.None);
+            await _parser.Fetch(result, "Test Data/American Gods.nfo", CancellationToken.None);
             var item = result.Item;
 
             Assert.Equal("American Gods", item.OriginalTitle);
@@ -82,36 +94,36 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
 
         [Theory]
         [InlineData("Test Data/Tvdb.nfo", "Tvdb", "121361")]
-        public void Parse_UrlFile_Success(string path, string provider, string id)
+        public async Task Parse_UrlFile_Success(string path, string provider, string id)
         {
             var result = new MetadataResult<Series>()
             {
                 Item = new Series()
             };
 
-            _parser.Fetch(result, path, CancellationToken.None);
+            await _parser.Fetch(result, path, CancellationToken.None);
             var item = result.Item;
 
             Assert.Equal(id, item.ProviderIds[provider]);
         }
 
         [Fact]
-        public void Fetch_WithNullItem_ThrowsArgumentException()
+        public async Task Fetch_WithNullItem_ThrowsArgumentException()
         {
             var result = new MetadataResult<Series>();
 
-            Assert.Throws<ArgumentException>(() => _parser.Fetch(result, "Test Data/American Gods.nfo", CancellationToken.None));
+            await Assert.ThrowsAsync<ArgumentException>(() => _parser.Fetch(result, "Test Data/American Gods.nfo", CancellationToken.None));
         }
 
         [Fact]
-        public void Fetch_NullResult_ThrowsArgumentException()
+        public async Task Fetch_NullResult_ThrowsArgumentException()
         {
             var result = new MetadataResult<Series>()
             {
                 Item = new Series()
             };
 
-            Assert.Throws<ArgumentException>(() => _parser.Fetch(result, string.Empty, CancellationToken.None));
+            await Assert.ThrowsAsync<ArgumentException>(() => _parser.Fetch(result, string.Empty, CancellationToken.None));
         }
     }
 }

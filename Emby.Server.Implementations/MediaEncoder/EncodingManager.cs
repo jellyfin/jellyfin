@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Entities;
@@ -185,7 +186,7 @@ namespace Emby.Server.Implementations.MediaEncoder
 
             if (saveChapters && changesMade)
             {
-                _chapterManager.SaveChapters(video.Id, chapters);
+                await _chapterManager.SaveChapters(video.Id, chapters).ConfigureAwait(false);
             }
 
             DeleteDeadImages(currentImages, chapters);

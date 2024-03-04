@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Server.Implementations.Library.Interfaces;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -22,11 +23,12 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         public OmdbEpisodeProvider(
             IHttpClientFactory httpClientFactory,
             ILibraryManager libraryManager,
+            IGenreManager genreManager,
             IFileSystem fileSystem,
             IServerConfigurationManager configurationManager)
         {
-            _itemProvider = new OmdbItemProvider(httpClientFactory, libraryManager, fileSystem, configurationManager);
-            _omdbProvider = new OmdbProvider(httpClientFactory, fileSystem, configurationManager);
+            _itemProvider = new OmdbItemProvider(httpClientFactory, libraryManager, genreManager, fileSystem, configurationManager);
+            _omdbProvider = new OmdbProvider(httpClientFactory, genreManager, fileSystem, configurationManager);
         }
 
         // After TheTvDb

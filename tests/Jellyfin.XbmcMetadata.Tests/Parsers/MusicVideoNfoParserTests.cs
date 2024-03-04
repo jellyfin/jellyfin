@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
+using Jellyfin.Server.Implementations;
+using Jellyfin.Server.Implementations.Library.Interfaces;
+using Jellyfin.Server.Implementations.Library.Managers;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -9,6 +13,7 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.XbmcMetadata.Parsers;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
@@ -28,8 +33,11 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             config.Setup(x => x.GetConfiguration(It.IsAny<string>()))
                 .Returns(new XbmcMetadataOptions());
 
+            // Arrange
             var user = new Mock<IUserManager>();
             var userData = new Mock<IUserDataManager>();
+            var dbContextFactory = new InMemoryDbContextFactory();
+            var genreManager = new GenreManager(dbContextFactory);
             var directoryService = new Mock<IDirectoryService>();
 
             _parser = new MovieNfoParser(
@@ -38,18 +46,19 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
                 providerManager.Object,
                 user.Object,
                 userData.Object,
+                genreManager,
                 directoryService.Object);
         }
 
         [Fact]
-        public void Fetch_Valid_Succes()
+        public async Task Fetch_Valid_Success()
         {
             var result = new MetadataResult<Video>()
             {
                 Item = new MusicVideo()
             };
 
-            _parser.Fetch(result, "Test Data/Dancing Queen.nfo", CancellationToken.None);
+            await _parser.Fetch(result, "Test Data/Dancing Queen.nfo", CancellationToken.None);
             var item = (MusicVideo)result.Item;
 
             Assert.Equal("Dancing Queen", item.Name);
@@ -59,22 +68,22 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
         }
 
         [Fact]
-        public void Fetch_WithNullItem_ThrowsArgumentException()
+        public async Task Fetch_WithNullItem_ThrowsArgumentException()
         {
             var result = new MetadataResult<Video>();
 
-            Assert.Throws<ArgumentException>(() => _parser.Fetch(result, "Test Data/Dancing Queen.nfo", CancellationToken.None));
+            await Assert.ThrowsAsync<ArgumentException>(() => _parser.Fetch(result, "Test Data/Dancing Queen.nfo", CancellationToken.None));
         }
 
         [Fact]
-        public void Fetch_NullResult_ThrowsArgumentException()
+        public async Task Fetch_NullResult_ThrowsArgumentException()
         {
             var result = new MetadataResult<Video>()
             {
                 Item = new MusicVideo()
             };
 
-            Assert.Throws<ArgumentException>(() => _parser.Fetch(result, string.Empty, CancellationToken.None));
+            await Assert.ThrowsAsync<ArgumentException>(() => _parser.Fetch(result, string.Empty, CancellationToken.None));
         }
     }
 }

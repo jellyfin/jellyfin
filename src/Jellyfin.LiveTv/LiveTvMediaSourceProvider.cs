@@ -86,7 +86,7 @@ namespace Jellyfin.LiveTv
             }
             catch (NotImplementedException)
             {
-                sources = _mediaSourceManager.GetStaticMediaSources(item, false);
+                sources = await _mediaSourceManager.GetStaticMediaSources(item, false).ConfigureAwait(false);
 
                 forceRequireOpening = true;
             }

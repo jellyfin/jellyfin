@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
@@ -17,6 +18,7 @@ using Microsoft.Extensions.Logging;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 using MetadataProvider = MediaBrowser.Model.Entities.MetadataProvider;
 using Series = MediaBrowser.Controller.Entities.TV.Series;
+#pragma warning disable CS0618 // Type or member is obsolete
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -414,14 +416,14 @@ namespace MediaBrowser.Controller.Entities
             InternalItemsQuery query)
             where T : BaseItem
         {
-            items = items.Where(i => Filter(i, query.User, query, _userDataManager, _libraryManager));
+            items = items.Where(i => Filter(i, query.User, query, _userDataManager, _libraryManager).GetAwaiter().GetResult());
 
             return PostFilterAndSort(items, null, query, _libraryManager);
         }
 
         public static bool FilterItem(BaseItem item, InternalItemsQuery query)
         {
-            return Filter(item, query.User, query, BaseItem.UserDataManager, BaseItem.LibraryManager);
+            return Filter(item, query.User, query, BaseItem.UserDataManager, BaseItem.LibraryManager).GetAwaiter().GetResult();
         }
 
         public static QueryResult<BaseItem> PostFilterAndSort(
@@ -474,7 +476,7 @@ namespace MediaBrowser.Controller.Entities
                 itemsArray);
         }
 
-        public static bool Filter(BaseItem item, User user, InternalItemsQuery query, IUserDataManager userDataManager, ILibraryManager libraryManager)
+        public static async Task<bool> Filter(BaseItem item, User user, InternalItemsQuery query, IUserDataManager userDataManager, ILibraryManager libraryManager)
         {
             if (query.MediaTypes.Length > 0 && !query.MediaTypes.Contains(item.MediaType))
             {
@@ -505,7 +507,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (query.IsLiked.HasValue)
             {
-                userData = userDataManager.GetUserData(user, item);
+                userData = await userDataManager.GetUserDataAsync(user, item).ConfigureAwait(false);
 
                 if (!userData.Likes.HasValue || userData.Likes != query.IsLiked.Value)
                 {
@@ -515,7 +517,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (query.IsFavoriteOrLiked.HasValue)
             {
-                userData = userData ?? userDataManager.GetUserData(user, item);
+                userData ??= await userDataManager.GetUserDataAsync(user, item).ConfigureAwait(false);
                 var isFavoriteOrLiked = userData.IsFavorite || (userData.Likes ?? false);
 
                 if (isFavoriteOrLiked != query.IsFavoriteOrLiked.Value)
@@ -526,7 +528,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (query.IsFavorite.HasValue)
             {
-                userData = userData ?? userDataManager.GetUserData(user, item);
+                userData ??= await userDataManager.GetUserDataAsync(user, item).ConfigureAwait(false);
 
                 if (userData.IsFavorite != query.IsFavorite.Value)
                 {
@@ -536,7 +538,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (query.IsResumable.HasValue)
             {
-                userData = userData ?? userDataManager.GetUserData(user, item);
+                userData ??= await userDataManager.GetUserDataAsync(user, item).ConfigureAwait(false);
                 var isResumable = userData.PlaybackPositionTicks > 0;
 
                 if (isResumable != query.IsResumable.Value)
@@ -547,7 +549,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (query.IsPlayed.HasValue)
             {
-                if (item.IsPlayed(user) != query.IsPlayed.Value)
+                if (await item.IsPlayed(user).ConfigureAwait(false) != query.IsPlayed.Value)
                 {
                     return false;
                 }

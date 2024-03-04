@@ -156,7 +156,7 @@ namespace Emby.Server.Implementations.Library
 
         public async Task<List<MediaSourceInfo>> GetPlaybackMediaSources(BaseItem item, User user, bool allowMediaProbe, bool enablePathSubstitution, CancellationToken cancellationToken)
         {
-            var mediaSources = GetStaticMediaSources(item, enablePathSubstitution, user);
+            var mediaSources = await GetStaticMediaSources(item, enablePathSubstitution, user).ConfigureAwait(false);
 
             // If file is strm or main media stream is missing, force a metadata refresh with remote probing
             if (allowMediaProbe && mediaSources[0].Type != MediaSourceType.Placeholder
@@ -172,7 +172,7 @@ namespace Emby.Server.Implementations.Library
                     },
                     cancellationToken).ConfigureAwait(false);
 
-                mediaSources = GetStaticMediaSources(item, enablePathSubstitution, user);
+                mediaSources = await GetStaticMediaSources(item, enablePathSubstitution, user).ConfigureAwait(false);
             }
 
             var dynamicMediaSources = await GetDynamicMediaSources(item, cancellationToken).ConfigureAwait(false);
@@ -191,7 +191,7 @@ namespace Emby.Server.Implementations.Library
 
                 if (user is not null)
                 {
-                    SetDefaultAudioAndSubtitleStreamIndexes(item, source, user);
+                    await SetDefaultAudioAndSubtitleStreamIndexes(item, source, user).ConfigureAwait(false);
 
                     if (item.MediaType == MediaType.Audio)
                     {
@@ -327,7 +327,7 @@ namespace Emby.Server.Implementations.Library
             return sources.FirstOrDefault(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase));
         }
 
-        public List<MediaSourceInfo> GetStaticMediaSources(BaseItem item, bool enablePathSubstitution, User user = null)
+        public async Task<List<MediaSourceInfo>> GetStaticMediaSources(BaseItem item, bool enablePathSubstitution, User user = null)
         {
             ArgumentNullException.ThrowIfNull(item);
 
@@ -339,7 +339,7 @@ namespace Emby.Server.Implementations.Library
             {
                 foreach (var source in sources)
                 {
-                    SetDefaultAudioAndSubtitleStreamIndexes(item, source, user);
+                    await SetDefaultAudioAndSubtitleStreamIndexes(item, source, user);
 
                     if (item.MediaType == MediaType.Audio)
                     {
@@ -421,14 +421,14 @@ namespace Emby.Server.Implementations.Library
             source.DefaultAudioStreamIndex = MediaStreamSelector.GetDefaultAudioStreamIndex(source.MediaStreams, preferredAudio, user.PlayDefaultAudioTrack);
         }
 
-        public void SetDefaultAudioAndSubtitleStreamIndexes(BaseItem item, MediaSourceInfo source, User user)
+        public async Task SetDefaultAudioAndSubtitleStreamIndexes(BaseItem item, MediaSourceInfo source, User user)
         {
             // Item would only be null if the app didn't supply ItemId as part of the live stream open request
             var mediaType = item?.MediaType ?? MediaType.Video;
 
             if (mediaType == MediaType.Video)
             {
-                var userData = item is null ? new UserItemData() : _userDataManager.GetUserData(user, item);
+                var userData = item is null ? new UserItemData() : await _userDataManager.GetUserDataAsync(user, item).ConfigureAwait(false);
 
                 var allowRememberingSelection = item is null || item.EnableRememberingTrackSelections;
 
@@ -526,7 +526,7 @@ namespace Emby.Server.Implementations.Library
                 var item = request.ItemId.IsEmpty()
                     ? null
                     : _libraryManager.GetItemById(request.ItemId);
-                SetDefaultAudioAndSubtitleStreamIndexes(item, clone, user);
+                await SetDefaultAudioAndSubtitleStreamIndexes(item, clone, user).ConfigureAwait(false);
             }
 
             return new Tuple<LiveStreamResponse, IDirectStreamProvider>(new LiveStreamResponse(clone), liveStream as IDirectStreamProvider);

@@ -5,9 +5,12 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
+using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
+using Jellyfin.Server.Implementations.Library.Interfaces;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Providers;
 using MediaBrowser.Controller.Entities;
@@ -20,6 +23,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.XbmcMetadata.Configuration;
 using MediaBrowser.XbmcMetadata.Savers;
 using Microsoft.Extensions.Logging;
+using Genre = Jellyfin.Data.Entities.Libraries.Genre;
 
 namespace MediaBrowser.XbmcMetadata.Parsers
 {
@@ -34,6 +38,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataManager;
         private readonly IDirectoryService _directoryService;
+        private readonly IGenreManager _genreManager;
         private Dictionary<string, string> _validProviderIds;
 
         /// <summary>
@@ -44,6 +49,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="userDataManager">Instance of the <see cref="IUserDataManager"/> interface.</param>
+        /// <param name="genreManager">Instance of the <see cref="IGenreManager"/> interface.</param>
         /// <param name="directoryService">Instance of the <see cref="IDirectoryService"/> interface.</param>
         public BaseNfoParser(
             ILogger logger,
@@ -51,6 +57,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             IProviderManager providerManager,
             IUserManager userManager,
             IUserDataManager userDataManager,
+            IGenreManager genreManager,
             IDirectoryService directoryService)
         {
             Logger = logger;
@@ -60,6 +67,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             _userManager = userManager;
             _userDataManager = userDataManager;
             _directoryService = directoryService;
+            _genreManager = genreManager;
         }
 
         /// <summary>
@@ -85,7 +93,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
         /// <exception cref="ArgumentNullException"><c>item</c> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException"><c>metadataFile</c> is <c>null</c> or empty.</exception>
-        public void Fetch(MetadataResult<T> item, string metadataFile, CancellationToken cancellationToken)
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public async Task Fetch(MetadataResult<T> item, string metadataFile, CancellationToken cancellationToken)
         {
             if (item.Item is null)
             {
@@ -109,7 +118,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             _validProviderIds.Add("tmdbcolid", "TmdbCollection");
             _validProviderIds.Add("imdb_id", "Imdb");
 
-            Fetch(item, metadataFile, GetXmlReaderSettings(), cancellationToken);
+            await Fetch(item, metadataFile, GetXmlReaderSettings(), cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -119,7 +128,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <param name="metadataFile">The metadata file.</param>
         /// <param name="settings">The <see cref="XmlReaderSettings"/>.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
-        protected virtual void Fetch(MetadataResult<T> item, string metadataFile, XmlReaderSettings settings, CancellationToken cancellationToken)
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        protected virtual async Task Fetch(MetadataResult<T> item, string metadataFile, XmlReaderSettings settings, CancellationToken cancellationToken)
         {
             if (!SupportsUrlAfterClosingXmlTag)
             {
@@ -129,8 +139,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 {
                     item.ResetPeople();
 
-                    reader.MoveToContent();
-                    reader.Read();
+                    await reader.MoveToContentAsync().ConfigureAwait(false);
+                    await reader.ReadAsync().ConfigureAwait(false);
 
                     // Loop through each element
                     while (!reader.EOF && reader.ReadState == ReadState.Interactive)
@@ -139,11 +149,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (reader.NodeType == XmlNodeType.Element)
                         {
-                            FetchDataFromXmlNode(reader, item);
+                            await FetchDataFromXmlNode(reader, item).ConfigureAwait(false);
                         }
                         else
                         {
-                            reader.Read();
+                            await reader.ReadAsync().ConfigureAwait(false);
                         }
                     }
                 }
@@ -156,7 +166,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             // Need to handle a url after the xml data
             // http://kodi.wiki/view/NFO_files/movies
 
-            var xml = File.ReadAllText(metadataFile);
+            var xml = await File.ReadAllTextAsync(metadataFile, cancellationToken).ConfigureAwait(false);
 
             // Find last closing Tag
             // Need to do this in two steps to account for random > characters after the closing xml
@@ -170,9 +180,14 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
             if (index != -1)
             {
-                var endingXml = xml.AsSpan().Slice(index);
+                // hack to use Span in Async
+                Block();
+                void Block()
+                {
+                    var endingXml = xml.AsSpan().Slice(index);
 
-                ParseProviderLinks(item.Item, endingXml);
+                    ParseProviderLinks(item.Item, endingXml);
+                }
 
                 // If the file is just an IMDb url, don't go any further
                 if (index == 0)
@@ -196,8 +211,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 using (var stringReader = new StringReader(xml))
                 using (var reader = XmlReader.Create(stringReader, settings))
                 {
-                    reader.MoveToContent();
-                    reader.Read();
+                    await reader.MoveToContentAsync().ConfigureAwait(false);
+                    await reader.ReadAsync().ConfigureAwait(false);
 
                     // Loop through each element
                     while (!reader.EOF && reader.ReadState == ReadState.Interactive)
@@ -206,11 +221,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (reader.NodeType == XmlNodeType.Element)
                         {
-                            FetchDataFromXmlNode(reader, item);
+                            await FetchDataFromXmlNode(reader, item).ConfigureAwait(false);
                         }
                         else
                         {
-                            reader.Read();
+                            await reader.ReadAsync().ConfigureAwait(false);
                         }
                     }
                 }
@@ -259,7 +274,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// </summary>
         /// <param name="reader">The <see cref="XmlReader"/>.</param>
         /// <param name="itemResult">The <see cref="MetadataResult{T}"/>.</param>
-        protected virtual void FetchDataFromXmlNode(XmlReader reader, MetadataResult<T> itemResult)
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        protected virtual async Task FetchDataFromXmlNode(XmlReader reader, MetadataResult<T> itemResult)
         {
             var item = itemResult.Item;
             var nfoConfiguration = _config.GetNfoConfiguration();
@@ -286,7 +302,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     item.SortName = reader.ReadNormalizedString();
                     break;
                 case "criticrating":
-                    var criticRatingText = reader.ReadElementContentAsString();
+                    var criticRatingText = await reader.ReadElementContentAsStringAsync().ConfigureAwait(false);
                     if (float.TryParse(criticRatingText, CultureInfo.InvariantCulture, out var value))
                     {
                         item.CriticRating = value;
@@ -309,7 +325,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     if (!string.IsNullOrWhiteSpace(nfoConfiguration.UserId))
                     {
                         var user = _userManager.GetUserById(Guid.Parse(nfoConfiguration.UserId));
-                        userData = _userDataManager.GetUserData(user, item);
+                        userData = await _userDataManager.GetUserDataAsync(user, item).ConfigureAwait(false);
                         userData.Played = played;
                         _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
                     }
@@ -320,7 +336,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         && Guid.TryParse(nfoConfiguration.UserId, out var playCountUserId))
                     {
                         var user = _userManager.GetUserById(playCountUserId);
-                        userData = _userDataManager.GetUserData(user, item);
+                        userData = await _userDataManager.GetUserDataAsync(user, item).ConfigureAwait(false);
                         userData.PlayCount = count;
                         _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
                     }
@@ -331,7 +347,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         && Guid.TryParse(nfoConfiguration.UserId, out var lastPlayedUserId))
                     {
                         var user = _userManager.GetUserById(lastPlayedUserId);
-                        userData = _userDataManager.GetUserData(user, item);
+                        userData = await _userDataManager.GetUserDataAsync(user, item).ConfigureAwait(false);
                         userData.LastPlayedDate = lastPlayed;
                         _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
                     }
@@ -342,7 +358,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     break;
                 case "lockedfields":
                     {
-                        var val = reader.ReadElementContentAsString();
+                        var val = await reader.ReadElementContentAsStringAsync().ConfigureAwait(false);
 
                         if (!string.IsNullOrWhiteSpace(val))
                         {
@@ -365,7 +381,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     break;
                 case "country":
                     {
-                        var val = reader.ReadElementContentAsString();
+                        var val = await reader.ReadElementContentAsStringAsync().ConfigureAwait(false);
 
                         if (!string.IsNullOrWhiteSpace(val))
                         {
@@ -385,7 +401,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     item.CustomRating = reader.ReadNormalizedString();
                     break;
                 case "runtime":
-                    var runtimeText = reader.ReadElementContentAsString();
+                    var runtimeText = await reader.ReadElementContentAsStringAsync().ConfigureAwait(false);
                     if (int.TryParse(runtimeText.AsSpan().LeftPart(' '), NumberStyles.Integer, CultureInfo.InvariantCulture, out var runtime))
                     {
                         item.RunTimeTicks = TimeSpan.FromMinutes(runtime).Ticks;
@@ -401,7 +417,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                     break;
                 case "lockdata":
-                    item.IsLocked = string.Equals(reader.ReadElementContentAsString(), "true", StringComparison.OrdinalIgnoreCase);
+                    item.IsLocked = string.Equals(await reader.ReadElementContentAsStringAsync().ConfigureAwait(false), "true", StringComparison.OrdinalIgnoreCase);
                     break;
                 case "studio":
                     var studio = reader.ReadNormalizedString();
@@ -420,7 +436,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     break;
                 case "credits":
                     {
-                        var val = reader.ReadElementContentAsString();
+                        var val = await reader.ReadElementContentAsStringAsync().ConfigureAwait(false);
 
                         if (!string.IsNullOrWhiteSpace(val))
                         {
@@ -501,7 +517,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                     break;
                 case "rating":
-                    var rating = reader.ReadElementContentAsString().Replace(',', '.');
+                    var rating = (await reader.ReadElementContentAsStringAsync().ConfigureAwait(false)).Replace(',', '.');
                     // All external meta is saving this as '.' for decimal I believe...but just to be sure
                     if (float.TryParse(rating, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var communityRating))
                     {
@@ -532,7 +548,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     break;
                 case "genre":
                     {
-                        var val = reader.ReadElementContentAsString();
+                        var val = await reader.ReadElementContentAsStringAsync().ConfigureAwait(false);
 
                         if (!string.IsNullOrWhiteSpace(val))
                         {
@@ -540,9 +556,10 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                                 .Select(i => i.Trim())
                                 .Where(i => !string.IsNullOrWhiteSpace(i));
 
-                            foreach (var p in parts)
+                            foreach (var genreName in parts)
                             {
-                                item.AddGenre(p);
+                                Genre genre = await _genreManager.AddGenre(genreName).ConfigureAwait(false);
+                                item.AddGenre(genre);
                             }
                         }
 
@@ -564,12 +581,12 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 case "uniqueid":
                     if (reader.IsEmptyElement)
                     {
-                        reader.Read();
+                        await reader.ReadAsync().ConfigureAwait(false);
                         break;
                     }
 
                     var provider = reader.GetAttribute("type");
-                    var providerId = reader.ReadElementContentAsString();
+                    var providerId = await reader.ReadElementContentAsStringAsync().ConfigureAwait(false);
                     if (!string.IsNullOrWhiteSpace(provider) && !string.IsNullOrWhiteSpace(providerId))
                     {
                         item.SetProviderId(provider, providerId);
@@ -583,7 +600,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         if (reader.IsEmptyElement)
                         {
-                            reader.Read();
+                            await reader.ReadAsync().ConfigureAwait(false);
                             break;
                         }
 
@@ -601,7 +618,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     string readerName = reader.Name;
                     if (_validProviderIds.TryGetValue(readerName, out string? providerIdValue))
                     {
-                        var id = reader.ReadElementContentAsString();
+                        var id = await reader.ReadElementContentAsStringAsync().ConfigureAwait(false);
                         if (!string.IsNullOrWhiteSpace(providerIdValue) && !string.IsNullOrWhiteSpace(id))
                         {
                             item.SetProviderId(providerIdValue, id);
@@ -609,7 +626,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     }
                     else
                     {
-                        reader.Skip();
+                        await reader.SkipAsync().ConfigureAwait(false);
                     }
 
                     break;
@@ -955,7 +972,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 ValidationType = ValidationType.None,
                 CheckCharacters = false,
                 IgnoreProcessingInstructions = true,
-                IgnoreComments = true
+                IgnoreComments = true,
+                Async = true
             };
 
         /// <summary>

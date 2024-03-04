@@ -13,6 +13,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using Emby.Server.Implementations.Playlists;
+using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
@@ -45,7 +46,7 @@ namespace Emby.Server.Implementations.Data
     public class SqliteItemRepository : BaseSqliteRepository, IItemRepository
     {
         private const string FromText = " from TypedBaseItems A";
-        private const string ChaptersTableName = "Chapters2";
+        private const string ChaptersTableName = "ChaptersInfo";
 
         private const string SaveItemCommandText =
             @"replace into TypedBaseItems
@@ -379,8 +380,6 @@ namespace Emby.Server.Implementations.Data
                 "create index if not exists idxPeopleItemId1 on People(ItemId,ListOrder)",
                 "create index if not exists idxPeopleName on People(Name)",
 
-                "create table if not exists " + ChaptersTableName + " (ItemId GUID, ChapterIndex INT NOT NULL, StartPositionTicks BIGINT NOT NULL, Name TEXT, ImagePath TEXT, PRIMARY KEY (ItemId, ChapterIndex))",
-
                 CreateMediaStreamsTableCommand,
                 CreateMediaAttachmentsTableCommand,
 
@@ -519,9 +518,6 @@ namespace Emby.Server.Implementations.Data
 
                 existingColumnNames = GetColumnNames(connection, "ItemValues");
                 AddColumn(connection, "ItemValues", "CleanValue", "Text", existingColumnNames);
-
-                existingColumnNames = GetColumnNames(connection, ChaptersTableName);
-                AddColumn(connection, ChaptersTableName, "ImageDateModified", "DATETIME", existingColumnNames);
 
                 existingColumnNames = GetColumnNames(connection, "MediaStreams");
                 AddColumn(connection, "MediaStreams", "IsAvc", "BIT", existingColumnNames);
@@ -1887,152 +1883,6 @@ namespace Emby.Server.Implementations.Data
             }
 
             return result;
-        }
-
-        /// <inheritdoc />
-        public List<ChapterInfo> GetChapters(BaseItem item)
-        {
-            CheckDisposed();
-
-            var chapters = new List<ChapterInfo>();
-            using (var connection = GetConnection())
-            using (var statement = PrepareStatement(connection, "select StartPositionTicks,Name,ImagePath,ImageDateModified from " + ChaptersTableName + " where ItemId = @ItemId order by ChapterIndex asc"))
-            {
-                statement.TryBind("@ItemId", item.Id);
-
-                foreach (var row in statement.ExecuteQuery())
-                {
-                    chapters.Add(GetChapter(row, item));
-                }
-            }
-
-            return chapters;
-        }
-
-        /// <inheritdoc />
-        public ChapterInfo GetChapter(BaseItem item, int index)
-        {
-            CheckDisposed();
-
-            using (var connection = GetConnection())
-            using (var statement = PrepareStatement(connection, "select StartPositionTicks,Name,ImagePath,ImageDateModified from " + ChaptersTableName + " where ItemId = @ItemId and ChapterIndex=@ChapterIndex"))
-            {
-                statement.TryBind("@ItemId", item.Id);
-                statement.TryBind("@ChapterIndex", index);
-
-                foreach (var row in statement.ExecuteQuery())
-                {
-                    return GetChapter(row, item);
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the chapter.
-        /// </summary>
-        /// <param name="reader">The reader.</param>
-        /// <param name="item">The item.</param>
-        /// <returns>ChapterInfo.</returns>
-        private ChapterInfo GetChapter(SqliteDataReader reader, BaseItem item)
-        {
-            var chapter = new ChapterInfo
-            {
-                StartPositionTicks = reader.GetInt64(0)
-            };
-
-            if (reader.TryGetString(1, out var chapterName))
-            {
-                chapter.Name = chapterName;
-            }
-
-            if (reader.TryGetString(2, out var imagePath))
-            {
-                chapter.ImagePath = imagePath;
-                chapter.ImageTag = _imageProcessor.GetImageCacheTag(item, chapter);
-            }
-
-            if (reader.TryReadDateTime(3, out var imageDateModified))
-            {
-                chapter.ImageDateModified = imageDateModified;
-            }
-
-            return chapter;
-        }
-
-        /// <summary>
-        /// Saves the chapters.
-        /// </summary>
-        /// <param name="id">The item id.</param>
-        /// <param name="chapters">The chapters.</param>
-        public void SaveChapters(Guid id, IReadOnlyList<ChapterInfo> chapters)
-        {
-            CheckDisposed();
-
-            if (id.IsEmpty())
-            {
-                throw new ArgumentNullException(nameof(id));
-            }
-
-            ArgumentNullException.ThrowIfNull(chapters);
-
-            using var connection = GetConnection();
-            using var transaction = connection.BeginTransaction();
-            // First delete chapters
-            using var command = connection.PrepareStatement($"delete from {ChaptersTableName} where ItemId=@ItemId");
-            command.TryBind("@ItemId", id);
-            command.ExecuteNonQuery();
-
-            InsertChapters(id, chapters, connection);
-            transaction.Commit();
-        }
-
-        private void InsertChapters(Guid idBlob, IReadOnlyList<ChapterInfo> chapters, SqliteConnection db)
-        {
-            var startIndex = 0;
-            var limit = 100;
-            var chapterIndex = 0;
-
-            const string StartInsertText = "insert into " + ChaptersTableName + " (ItemId, ChapterIndex, StartPositionTicks, Name, ImagePath, ImageDateModified) values ";
-            var insertText = new StringBuilder(StartInsertText, 256);
-
-            while (startIndex < chapters.Count)
-            {
-                var endIndex = Math.Min(chapters.Count, startIndex + limit);
-
-                for (var i = startIndex; i < endIndex; i++)
-                {
-                    insertText.AppendFormat(CultureInfo.InvariantCulture, "(@ItemId, @ChapterIndex{0}, @StartPositionTicks{0}, @Name{0}, @ImagePath{0}, @ImageDateModified{0}),", i.ToString(CultureInfo.InvariantCulture));
-                }
-
-                insertText.Length -= 1; // Remove trailing comma
-
-                using (var statement = PrepareStatement(db, insertText.ToString()))
-                {
-                    statement.TryBind("@ItemId", idBlob);
-
-                    for (var i = startIndex; i < endIndex; i++)
-                    {
-                        var index = i.ToString(CultureInfo.InvariantCulture);
-
-                        var chapter = chapters[i];
-
-                        statement.TryBind("@ChapterIndex" + index, chapterIndex);
-                        statement.TryBind("@StartPositionTicks" + index, chapter.StartPositionTicks);
-                        statement.TryBind("@Name" + index, chapter.Name);
-                        statement.TryBind("@ImagePath" + index, chapter.ImagePath);
-                        statement.TryBind("@ImageDateModified" + index, chapter.ImageDateModified);
-
-                        chapterIndex++;
-                    }
-
-                    statement.ExecuteNonQuery();
-                }
-
-                startIndex += limit;
-                insertText.Length = StartInsertText.Length;
-            }
         }
 
         private static bool EnableJoinUserData(InternalItemsQuery query)
@@ -3923,11 +3773,11 @@ namespace Emby.Server.Implementations.Data
             {
                 if (query.HasChapterImages.Value)
                 {
-                    whereClauses.Add("((select imagepath from Chapters2 where Chapters2.ItemId=A.Guid and imagepath not null limit 1) not null)");
+                    whereClauses.Add("((select imagepath from " + ChaptersTableName + " where " + ChaptersTableName + ".ItemId=A.Guid and imagepath not null limit 1) not null)");
                 }
                 else
                 {
-                    whereClauses.Add("((select imagepath from Chapters2 where Chapters2.ItemId=A.Guid and imagepath not null limit 1) is null)");
+                    whereClauses.Add("((select imagepath from " + ChaptersTableName + " where " + ChaptersTableName + ".ItemId=A.Guid and imagepath not null limit 1) is null)");
                 }
             }
 
@@ -5239,7 +5089,7 @@ AND Type = @InternalPersonType)");
 
             using var connection = GetConnection();
             using var transaction = connection.BeginTransaction();
-            // First delete chapters
+            // First delete people
             using var command = connection.CreateCommand();
             command.CommandText = "delete from People where ItemId=@ItemId";
             command.TryBind("@ItemId", itemId);

@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
@@ -25,6 +26,7 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Providers;
 using Microsoft.Extensions.Logging;
+using Genre = Jellyfin.Data.Entities.Libraries.Genre;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -295,7 +297,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 await _encodingManager.RefreshChapterImages(video, options.DirectoryService, chapters, extractDuringScan, false, cancellationToken).ConfigureAwait(false);
 
-                _chapterManager.SaveChapters(video.Id, chapters);
+                await _chapterManager.SaveChapters(video.Id, chapters).ConfigureAwait(false);
             }
         }
 
@@ -399,8 +401,9 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     video.Genres = Array.Empty<string>();
 
-                    foreach (var genre in data.Genres)
+                    foreach (var genreName in data.Genres)
                     {
+                        Genre genre = new Genre(genreName);
                         video.AddGenre(genre);
                     }
                 }

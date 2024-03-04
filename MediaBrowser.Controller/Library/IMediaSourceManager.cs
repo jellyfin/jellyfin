@@ -70,7 +70,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="enablePathSubstitution">Option to enable path substitution.</param>
         /// <param name="user">User to use for operation.</param>
         /// <returns>List of media sources.</returns>
-        List<MediaSourceInfo> GetStaticMediaSources(BaseItem item, bool enablePathSubstitution, User user = null);
+        Task<List<MediaSourceInfo>> GetStaticMediaSources(BaseItem item, bool enablePathSubstitution, User user = null);
 
         /// <summary>
         /// Gets the static media source.
@@ -138,7 +138,7 @@ namespace MediaBrowser.Controller.Library
 
         MediaProtocol GetPathProtocol(string path);
 
-        void SetDefaultAudioAndSubtitleStreamIndexes(BaseItem item, MediaSourceInfo source, User user);
+        Task SetDefaultAudioAndSubtitleStreamIndexes(BaseItem item, MediaSourceInfo source, User user);
 
         Task AddMediaInfoWithProbe(MediaSourceInfo mediaSource, bool isAudio, string cacheKey, bool addProbeDelay, bool isLiveStream, CancellationToken cancellationToken);
     }

@@ -226,7 +226,7 @@ public class SubtitleController : BaseJellyfinApiController
             var item = (Video)_libraryManager.GetItemById(itemId.Value);
 
             var idString = itemId.Value.ToString("N", CultureInfo.InvariantCulture);
-            var mediaSource = _mediaSourceManager.GetStaticMediaSources(item, false)
+            var mediaSource = (await _mediaSourceManager.GetStaticMediaSources(item, false).ConfigureAwait(false))
                 .First(i => string.Equals(i.Id, mediaSourceId ?? idString, StringComparison.Ordinal));
 
             var subtitleStream = mediaSource.MediaStreams

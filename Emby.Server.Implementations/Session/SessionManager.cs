@@ -710,7 +710,7 @@ namespace Emby.Server.Implementations.Session
             {
                 foreach (var user in users)
                 {
-                    OnPlaybackStart(user, libraryItem);
+                    await OnPlaybackStart(user, libraryItem);
                 }
             }
 
@@ -746,9 +746,9 @@ namespace Emby.Server.Implementations.Session
         /// </summary>
         /// <param name="user">The user object.</param>
         /// <param name="item">The item.</param>
-        private void OnPlaybackStart(User user, BaseItem item)
+        private async Task OnPlaybackStart(User user, BaseItem item)
         {
-            var data = _userDataManager.GetUserData(user, item);
+            var data = await _userDataManager.GetUserDataAsync(user, item).ConfigureAwait(false);
 
             data.PlayCount++;
             data.LastPlayedDate = DateTime.UtcNow;
@@ -803,7 +803,7 @@ namespace Emby.Server.Implementations.Session
             {
                 foreach (var user in users)
                 {
-                    OnPlaybackProgress(user, libraryItem, info);
+                    await OnPlaybackProgress(user, libraryItem, info).ConfigureAwait(false);
                 }
             }
 
@@ -835,9 +835,9 @@ namespace Emby.Server.Implementations.Session
             StartCheckTimers();
         }
 
-        private void OnPlaybackProgress(User user, BaseItem item, PlaybackProgressInfo info)
+        private async Task OnPlaybackProgress(User user, BaseItem item, PlaybackProgressInfo info)
         {
-            var data = _userDataManager.GetUserData(user, item);
+            var data = await _userDataManager.GetUserDataAsync(user, item).ConfigureAwait(false);
 
             var positionTicks = info.PositionTicks;
 
@@ -983,7 +983,7 @@ namespace Emby.Server.Implementations.Session
             {
                 foreach (var user in users)
                 {
-                    playedToCompletion = OnPlaybackStopped(user, libraryItem, info.PositionTicks, info.Failed);
+                    playedToCompletion = await OnPlaybackStopped(user, libraryItem, info.PositionTicks, info.Failed).ConfigureAwait(false);
                 }
             }
 
@@ -1019,14 +1019,14 @@ namespace Emby.Server.Implementations.Session
             EventHelper.QueueEventIfNotNull(PlaybackStopped, this, eventArgs, _logger);
         }
 
-        private bool OnPlaybackStopped(User user, BaseItem item, long? positionTicks, bool playbackFailed)
+        private async Task<bool> OnPlaybackStopped(User user, BaseItem item, long? positionTicks, bool playbackFailed)
         {
             if (playbackFailed)
             {
                 return false;
             }
 
-            var data = _userDataManager.GetUserData(user, item);
+            var data = await _userDataManager.GetUserDataAsync(user, item).ConfigureAwait(false);
             bool playedToCompletion;
             if (positionTicks.HasValue)
             {

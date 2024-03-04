@@ -157,7 +157,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
             var user = query.User;
 
-            Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
+            Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager).GetAwaiter().GetResult();
 
             var items = GetEpisodes(user, query.DtoOptions).Where(filter);
 

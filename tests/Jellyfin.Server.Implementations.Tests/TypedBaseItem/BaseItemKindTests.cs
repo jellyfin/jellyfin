@@ -31,21 +31,21 @@ namespace Jellyfin.Server.Implementations.Tests.TypedBaseItem
         }
 
         [Theory]
-        [MemberData(nameof(BaseItemKind_TestData))]
-        public void EnumParse_GivenValidBaseItemType_ReturnsEnumValue(Type baseItemDescendantType)
-        {
-            var enumValue = Enum.Parse<BaseItemKind>(baseItemDescendantType.Name);
-            Assert.True(Enum.IsDefined(typeof(BaseItemKind), enumValue));
-        }
-
-        [Theory]
-        [MemberData(nameof(BaseItemKind_TestData))]
+        [MemberData(nameof(BaseItemKind_TestData), DisableDiscoveryEnumeration = true)]
         public void GetBaseItemKind_WhenCalledAfterDefaultCtor_DoesNotThrow(Type baseItemDescendantType)
         {
             var defaultConstructor = baseItemDescendantType.GetConstructor(Type.EmptyTypes);
             var instance = (MediaBrowser.Controller.Entities.BaseItem)defaultConstructor!.Invoke(null);
             var exception = Record.Exception(() => instance.GetBaseItemKind());
             Assert.Null(exception);
+        }
+
+        [Theory]
+        [MemberData(nameof(BaseItemKind_TestData), DisableDiscoveryEnumeration = true)]
+        public void EnumParse_GivenValidBaseItemType_ReturnsEnumValue(Type baseItemDescendantType)
+        {
+            var enumValue = Enum.Parse<BaseItemKind>(baseItemDescendantType.Name);
+            Assert.True(Enum.IsDefined(typeof(BaseItemKind), enumValue));
         }
 
         private static bool IsProjectAssemblyName(string? name)

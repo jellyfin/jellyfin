@@ -1,7 +1,10 @@
 using System;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
+using Jellyfin.Server.Implementations.Library.Interfaces;
+using Jellyfin.Server.Implementations.Library.Managers;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -36,6 +39,8 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
                 .Returns(new XbmcMetadataOptions());
             var user = new Mock<IUserManager>();
             var userData = new Mock<IUserDataManager>();
+            var dbContextFactory = new InMemoryDbContextFactory();
+            var genreManager = new GenreManager(dbContextFactory);
             var directoryService = new Mock<IDirectoryService>();
 
             _parser = new EpisodeNfoParser(
@@ -44,18 +49,19 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
                 providerManager.Object,
                 user.Object,
                 userData.Object,
+                genreManager,
                 directoryService.Object);
         }
 
         [Fact]
-        public void Fetch_Valid_Success()
+        public async Task Fetch_Valid_Success()
         {
             var result = new MetadataResult<Episode>()
             {
                 Item = new Episode()
             };
 
-            _parser.Fetch(result, "Test Data/The Bone Orchard.nfo", CancellationToken.None);
+            await _parser.Fetch(result, "Test Data/The Bone Orchard.nfo", CancellationToken.None);
 
             var item = result.Item;
             Assert.Equal("The Bone Orchard", item.Name);
@@ -104,14 +110,14 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
         }
 
         [Fact]
-        public void Fetch_Valid_MultiEpisode_Success()
+        public async Task Fetch_Valid_MultiEpisode_Success()
         {
             var result = new MetadataResult<Episode>()
             {
                 Item = new Episode()
             };
 
-            _parser.Fetch(result, "Test Data/Rising.nfo", CancellationToken.None);
+            await _parser.Fetch(result, "Test Data/Rising.nfo", CancellationToken.None);
 
             var item = result.Item;
             Assert.Equal("Rising (1) / Rising (2)", item.Name);
@@ -124,36 +130,36 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
         }
 
         [Fact]
-        public void Parse_GivenFileWithThumbWithoutAspect_Success()
+        public async Task Parse_GivenFileWithThumbWithoutAspect_Success()
         {
             var result = new MetadataResult<Episode>
             {
                 Item = new Episode()
             };
 
-            _parser.Fetch(result, "Test Data/Sonarr-Thumb.nfo", CancellationToken.None);
+            await _parser.Fetch(result, "Test Data/Sonarr-Thumb.nfo", CancellationToken.None);
 
             Assert.Single(result.RemoteImages.Where(x => x.Type == ImageType.Primary));
             Assert.Equal("https://artworks.thetvdb.com/banners/episodes/359095/7081317.jpg", result.RemoteImages.First(x => x.Type == ImageType.Primary).Url);
         }
 
         [Fact]
-        public void Fetch_WithNullItem_ThrowsArgumentException()
+        public async Task Fetch_WithNullItem_ThrowsArgumentException()
         {
             var result = new MetadataResult<Episode>();
 
-            Assert.Throws<ArgumentException>(() => _parser.Fetch(result, "Test Data/The Bone Orchard.nfo", CancellationToken.None));
+            await Assert.ThrowsAsync<ArgumentException>(() => _parser.Fetch(result, "Test Data/The Bone Orchard.nfo", CancellationToken.None));
         }
 
         [Fact]
-        public void Fetch_NullResult_ThrowsArgumentException()
+        public async Task Fetch_NullResult_ThrowsArgumentException()
         {
             var result = new MetadataResult<Episode>()
             {
                 Item = new Episode()
             };
 
-            Assert.Throws<ArgumentException>(() => _parser.Fetch(result, string.Empty, CancellationToken.None));
+            await Assert.ThrowsAsync<ArgumentException>(() => _parser.Fetch(result, string.Empty, CancellationToken.None));
         }
     }
 }

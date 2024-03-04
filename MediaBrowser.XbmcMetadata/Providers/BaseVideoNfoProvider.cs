@@ -2,6 +2,8 @@
 
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
+using Jellyfin.Server.Implementations.Library.Interfaces;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -21,6 +23,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
         private readonly IProviderManager _providerManager;
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataManager;
+        private readonly IGenreManager _genreManager;
         private readonly IDirectoryService _directoryService;
 
         protected BaseVideoNfoProvider(
@@ -30,6 +33,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
             IProviderManager providerManager,
             IUserManager userManager,
             IUserDataManager userDataManager,
+            IGenreManager genreManager,
             IDirectoryService directoryService)
             : base(fileSystem)
         {
@@ -38,17 +42,18 @@ namespace MediaBrowser.XbmcMetadata.Providers
             _providerManager = providerManager;
             _userManager = userManager;
             _userDataManager = userDataManager;
+            _genreManager = genreManager;
             _directoryService = directoryService;
         }
 
         /// <inheritdoc />
-        protected override void Fetch(MetadataResult<T> result, string path, CancellationToken cancellationToken)
+        protected override async Task Fetch(MetadataResult<T> result, string path, CancellationToken cancellationToken)
         {
             var tmpItem = new MetadataResult<Video>
             {
                 Item = result.Item
             };
-            new MovieNfoParser(_logger, _config, _providerManager, _userManager, _userDataManager, _directoryService).Fetch(tmpItem, path, cancellationToken);
+            await new MovieNfoParser(_logger, _config, _providerManager, _userManager, _userDataManager, _genreManager, _directoryService).Fetch(tmpItem, path, cancellationToken).ConfigureAwait(false);
 
             result.Item = (T)tmpItem.Item;
             result.People = tmpItem.People;

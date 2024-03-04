@@ -13,6 +13,7 @@ using AsyncKeyedLock;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
 using Jellyfin.Extensions;
+using Jellyfin.Server.Implementations.Library.Interfaces;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.BaseItemManager;

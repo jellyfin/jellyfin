@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -44,9 +45,22 @@ namespace MediaBrowser.Controller.Library
         /// <param name="reason">The reason.</param>
         void SaveUserData(User user, BaseItem item, UpdateUserItemDataDto userDataDto, UserDataSaveReason reason);
 
+        /// <summary>
+        /// Gets the user data for a BaseItem.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="item">The BaseItem.</param>
+        /// <returns>The User data.</returns>
         UserItemData GetUserData(User user, BaseItem item);
 
-        UserItemData GetUserData(Guid userId, BaseItem item);
+        /// <summary>
+        /// Gets the user data for a BaseItem.
+        /// </summary>
+        /// <remarks>Async operation.</remarks>
+        /// <param name="user">The user.</param>
+        /// <param name="item">The BaseItem.</param>
+        /// <returns>The User data.</returns>
+        Task<UserItemData> GetUserDataAsync(User user, BaseItem item);
 
         /// <summary>
         /// Gets the user data dto.
@@ -56,22 +70,24 @@ namespace MediaBrowser.Controller.Library
         /// <returns>User data dto.</returns>
         UserItemDataDto GetUserDataDto(BaseItem item, User user);
 
+        /// <summary>
+        /// Gets the user data dto.
+        /// </summary>
+        /// <param name="item">Item to use.</param>
+        /// <param name="user">User to use.</param>
+        /// <returns>User data dto.</returns>
+        Task<UserItemDataDto> GetUserDataDtoAsync(BaseItem item, User user);
+
         UserItemDataDto GetUserDataDto(BaseItem item, BaseItemDto itemDto, User user, DtoOptions options);
+
+        Task<UserItemDataDto> GetUserDataDtoAsync(BaseItem item, BaseItemDto itemDto, User user, DtoOptions options);
 
         /// <summary>
         /// Get all user data for the given user.
         /// </summary>
-        /// <param name="userId">The user id.</param>
+        /// <param name="user">The user.</param>
         /// <returns>The user item data.</returns>
-        List<UserItemData> GetAllUserData(Guid userId);
-
-        /// <summary>
-        /// Save the all provided user data for the given user.
-        /// </summary>
-        /// <param name="userId">The user id.</param>
-        /// <param name="userData">The array of user data.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        void SaveAllUserData(Guid userId, UserItemData[] userData, CancellationToken cancellationToken);
+        Task<List<UserItemData>> GetAllUserData(User user);
 
         /// <summary>
         /// Updates playstate for an item and returns true or false indicating if it was played to completion.

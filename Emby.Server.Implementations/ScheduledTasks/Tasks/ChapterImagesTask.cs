@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -28,7 +29,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
     {
         private readonly ILogger<ChapterImagesTask> _logger;
         private readonly ILibraryManager _libraryManager;
-        private readonly IItemRepository _itemRepo;
+        private readonly IChapterManager _chapterManager;
         private readonly IApplicationPaths _appPaths;
         private readonly IEncodingManager _encodingManager;
         private readonly IFileSystem _fileSystem;
@@ -39,7 +40,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         /// </summary>
         /// <param name="logger">The logger.</param>.
         /// <param name="libraryManager">The library manager.</param>.
-        /// <param name="itemRepo">The item repository.</param>
+        /// <param name="chapterManager">The chapter manager.</param>
         /// <param name="appPaths">The application paths.</param>
         /// <param name="encodingManager">The encoding manager.</param>
         /// <param name="fileSystem">The filesystem.</param>
@@ -47,7 +48,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         public ChapterImagesTask(
             ILogger<ChapterImagesTask> logger,
             ILibraryManager libraryManager,
-            IItemRepository itemRepo,
+            IChapterManager chapterManager,
             IApplicationPaths appPaths,
             IEncodingManager encodingManager,
             IFileSystem fileSystem,
@@ -55,7 +56,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         {
             _logger = logger;
             _libraryManager = libraryManager;
-            _itemRepo = itemRepo;
+            _chapterManager = chapterManager;
             _appPaths = appPaths;
             _encodingManager = encodingManager;
             _fileSystem = fileSystem;
@@ -142,7 +143,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
 
                 try
                 {
-                    var chapters = _itemRepo.GetChapters(video);
+                    var chapters = await _chapterManager.GetChapters(video, CancellationToken.None).ConfigureAwait(false);
 
                     var success = await _encodingManager.RefreshChapterImages(video, directoryService, chapters, extract, true, cancellationToken).ConfigureAwait(false);
 

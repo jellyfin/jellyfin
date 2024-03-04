@@ -21,8 +21,10 @@ using Emby.Server.Implementations.ScheduledTasks.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
+using Jellyfin.Server.Implementations;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
@@ -45,6 +47,8 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Tasks;
+using MediaBrowser.Providers.Chapters;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 using EpisodeInfo = Emby.Naming.TV.EpisodeInfo;
@@ -65,7 +69,7 @@ namespace Emby.Server.Implementations.Library
         private readonly ConcurrentDictionary<Guid, BaseItem> _cache;
         private readonly ITaskManager _taskManager;
         private readonly IUserManager _userManager;
-        private readonly IUserDataManager _userDataRepository;
+        private readonly IUserDataManager _userDataManager;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly Lazy<ILibraryMonitor> _libraryMonitorFactory;
         private readonly Lazy<IProviderManager> _providerManagerFactory;
@@ -77,6 +81,8 @@ namespace Emby.Server.Implementations.Library
         private readonly IImageProcessor _imageProcessor;
         private readonly NamingOptions _namingOptions;
         private readonly ExtraResolver _extraResolver;
+        private readonly IDbContextFactory<LibraryDbContext> _provider;
+        private readonly IChapterManager _chapterManager;
 
         /// <summary>
         /// The _root folder sync lock.
@@ -102,7 +108,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="taskManager">The task manager.</param>
         /// <param name="userManager">The user manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
-        /// <param name="userDataRepository">The user data repository.</param>
+        /// <param name="userDataManager">The user data repository.</param>
         /// <param name="libraryMonitorFactory">The library monitor.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="providerManagerFactory">The provider manager.</param>
@@ -112,13 +118,15 @@ namespace Emby.Server.Implementations.Library
         /// <param name="imageProcessor">The image processor.</param>
         /// <param name="namingOptions">The naming options.</param>
         /// <param name="directoryService">The directory service.</param>
+        /// <param name="provider">The LibraryDB Provider.</param>
+        /// <param name="chapterManager">The ChapterManager.</param>
         public LibraryManager(
             IServerApplicationHost appHost,
             ILoggerFactory loggerFactory,
             ITaskManager taskManager,
             IUserManager userManager,
             IServerConfigurationManager configurationManager,
-            IUserDataManager userDataRepository,
+            IUserDataManager userDataManager,
             Lazy<ILibraryMonitor> libraryMonitorFactory,
             IFileSystem fileSystem,
             Lazy<IProviderManager> providerManagerFactory,
@@ -127,14 +135,16 @@ namespace Emby.Server.Implementations.Library
             IItemRepository itemRepository,
             IImageProcessor imageProcessor,
             NamingOptions namingOptions,
-            IDirectoryService directoryService)
+            IDirectoryService directoryService,
+            IDbContextFactory<LibraryDbContext> provider,
+            IChapterManager chapterManager)
         {
             _appHost = appHost;
             _logger = loggerFactory.CreateLogger<LibraryManager>();
             _taskManager = taskManager;
             _userManager = userManager;
             _configurationManager = configurationManager;
-            _userDataRepository = userDataRepository;
+            _userDataManager = userDataManager;
             _libraryMonitorFactory = libraryMonitorFactory;
             _fileSystem = fileSystem;
             _providerManagerFactory = providerManagerFactory;
@@ -148,6 +158,8 @@ namespace Emby.Server.Implementations.Library
             _extraResolver = new ExtraResolver(loggerFactory.CreateLogger<ExtraResolver>(), namingOptions, directoryService);
 
             _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
+            _provider = provider;
+            _chapterManager = chapterManager;
 
             RecordConfigurationValues(configurationManager.Configuration);
         }
@@ -1753,7 +1765,7 @@ namespace Emby.Server.Implementations.Library
 
                 userComparer.User = user;
                 userComparer.UserManager = _userManager;
-                userComparer.UserDataRepository = _userDataRepository;
+                userComparer.UserDataRepository = _userDataManager;
 
                 return userComparer;
             }
@@ -1859,7 +1871,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     try
                     {
-                        var index = item.GetImageIndex(img);
+                        var index = item.GetImageIndexAsync(img).ConfigureAwait(false);
                         image = await ConvertImageToLocal(item, img, index, removeOnFailure: true).ConfigureAwait(false);
                     }
                     catch (ArgumentException)

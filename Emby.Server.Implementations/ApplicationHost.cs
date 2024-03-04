@@ -40,6 +40,8 @@ using Jellyfin.MediaEncoding.Hls.Playlist;
 using Jellyfin.Networking.Manager;
 using Jellyfin.Networking.Udp;
 using Jellyfin.Server.Implementations;
+using Jellyfin.Server.Implementations.Library.Interfaces;
+using Jellyfin.Server.Implementations.Library.Managers;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
@@ -486,9 +488,6 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<IBlurayExaminer, BdInfoExaminer>();
 
-            serviceCollection.AddSingleton<IUserDataRepository, SqliteUserDataRepository>();
-            serviceCollection.AddSingleton<IUserDataManager, UserDataManager>();
-
             serviceCollection.AddSingleton<IItemRepository, SqliteItemRepository>();
 
             serviceCollection.AddSingleton<IMediaEncoder, MediaBrowser.MediaEncoding.Encoder.MediaEncoder>();
@@ -535,6 +534,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IUserViewManager, UserViewManager>();
 
             serviceCollection.AddSingleton<IChapterManager, ChapterManager>();
+            serviceCollection.AddSingleton<IGenreManager, GenreManager>();
 
             serviceCollection.AddSingleton<IEncodingManager, MediaEncoder.EncodingManager>();
 
@@ -565,14 +565,24 @@ namespace Emby.Server.Implementations
             {
                 if ((await jellyfinDb.Database.GetPendingMigrationsAsync().ConfigureAwait(false)).Any())
                 {
-                    Logger.LogInformation("There are pending EFCore migrations in the database. Applying... (This may take a while, do not stop Jellyfin)");
+                    Logger.LogInformation("There are pending EFCore migrations in the jellyfin database. Applying... (This may take a while, do not stop Jellyfin)");
                     await jellyfinDb.Database.MigrateAsync().ConfigureAwait(false);
                     Logger.LogInformation("EFCore migrations applied successfully");
                 }
             }
 
+            var libraryDb = await Resolve<IDbContextFactory<LibraryDbContext>>().CreateDbContextAsync().ConfigureAwait(false);
+            await using (libraryDb.ConfigureAwait(false))
+            {
+                if ((await libraryDb.Database.GetPendingMigrationsAsync().ConfigureAwait(false)).Any())
+                {
+                    Logger.LogInformation("There are pending EFCore migrations in the library database. Applying... (This may take a while, do not stop Jellyfin)");
+                    await libraryDb.Database.MigrateAsync().ConfigureAwait(false);
+                    Logger.LogInformation("EFCore migrations applied successfully");
+                }
+            }
+
             ((SqliteItemRepository)Resolve<IItemRepository>()).Initialize();
-            ((SqliteUserDataRepository)Resolve<IUserDataRepository>()).Initialize();
 
             var localizationManager = (LocalizationManager)Resolve<ILocalizationManager>();
             await localizationManager.LoadAll().ConfigureAwait(false);

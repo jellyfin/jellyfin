@@ -14,6 +14,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Extensions.Json;
+using Jellyfin.Server.Implementations.Library.Interfaces;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -38,12 +39,13 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         public OmdbItemProvider(
             IHttpClientFactory httpClientFactory,
             ILibraryManager libraryManager,
+            IGenreManager genreManager,
             IFileSystem fileSystem,
             IServerConfigurationManager configurationManager)
         {
             _httpClientFactory = httpClientFactory;
             _libraryManager = libraryManager;
-            _omdbProvider = new OmdbProvider(_httpClientFactory, fileSystem, configurationManager);
+            _omdbProvider = new OmdbProvider(_httpClientFactory, genreManager, fileSystem, configurationManager);
 
             _jsonOptions = new JsonSerializerOptions(JsonDefaults.Options);
             _jsonOptions.Converters.Add(new JsonOmdbNotAvailableStringConverter());
