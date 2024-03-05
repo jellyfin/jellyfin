@@ -399,6 +399,9 @@ namespace Emby.Server.Implementations.Library
                 SubtitleFormat.VTT => [SubtitleFormat.VTT, SubtitleFormat.WEBVTT],
                 SubtitleFormat.WEBVTT => [SubtitleFormat.VTT, SubtitleFormat.WEBVTT],
                 SubtitleFormat.TTML => [SubtitleFormat.TTML],
+                SubtitleFormat.DVBSUB => [SubtitleFormat.DVBSUB],
+                SubtitleFormat.DVDSUB => [SubtitleFormat.DVDSUB],
+                SubtitleFormat.PGSSUB => [SubtitleFormat.PGSSUB],
                 _ => Array.Empty<string>()
             };
 
