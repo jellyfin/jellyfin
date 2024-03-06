@@ -137,13 +137,27 @@ namespace Jellyfin.Server
             IHost? host = null;
             try
             {
-                host = Host.CreateDefaultBuilder()
-                    .UseConsoleLifetime()
-                    .ConfigureServices(services => appHost.Init(services))
-                    .ConfigureWebHostDefaults(webHostBuilder => webHostBuilder.ConfigureWebHostBuilder(appHost, startupConfig, appPaths, _logger).UseIIS())
-                    .ConfigureAppConfiguration(config => config.ConfigureAppConfiguration(options, appPaths, startupConfig))
-                    .UseSerilog()
-                    .Build();
+                // handle the possibility of IIS hosting.
+                if (System.Environment.GetEnvironmentVariable("ASPNETCORE_IIS_PHYSICAL_PATH") is string)
+                {
+                    host = Host.CreateDefaultBuilder()
+                        .UseConsoleLifetime()
+                        .ConfigureServices(services => appHost.Init(services))
+                        .ConfigureWebHostDefaults(webHostBuilder => webHostBuilder.ConfigureWebHostBuilder(appHost, startupConfig, appPaths, _logger).UseIIS())
+                        .ConfigureAppConfiguration(config => config.ConfigureAppConfiguration(options, appPaths, startupConfig))
+                        .UseSerilog()
+                        .Build();
+                }
+                else
+                {
+                    host = Host.CreateDefaultBuilder()
+                        .UseConsoleLifetime()
+                        .ConfigureServices(services => appHost.Init(services))
+                        .ConfigureWebHostDefaults(webHostBuilder => webHostBuilder.ConfigureWebHostBuilder(appHost, startupConfig, appPaths, _logger))
+                        .ConfigureAppConfiguration(config => config.ConfigureAppConfiguration(options, appPaths, startupConfig))
+                        .UseSerilog()
+                        .Build();
+                }
 
                 // Re-use the host service provider in the app host since ASP.NET doesn't allow a custom service collection.
                 appHost.ServiceProvider = host.Services;
