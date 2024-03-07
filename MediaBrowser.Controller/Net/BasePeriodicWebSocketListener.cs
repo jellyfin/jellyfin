@@ -296,8 +296,15 @@ namespace MediaBrowser.Controller.Net
 
         protected virtual async ValueTask DisposeAsyncCore()
         {
-            _channel.Writer.TryComplete();
-            await _messageConsumerTask.ConfigureAwait(false);
+            try
+            {
+                _channel.Writer.TryComplete();
+                await _messageConsumerTask.ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Disposing the message consumer failed");
+            }
 
             await _lock.WaitAsync().ConfigureAwait(false);
             try
