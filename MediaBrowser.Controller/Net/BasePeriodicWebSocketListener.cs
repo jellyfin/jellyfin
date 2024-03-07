@@ -22,7 +22,7 @@ namespace MediaBrowser.Controller.Net
     /// </summary>
     /// <typeparam name="TReturnDataType">The type of the T return data type.</typeparam>
     /// <typeparam name="TStateType">The type of the T state type.</typeparam>
-    public abstract class BasePeriodicWebSocketListener<TReturnDataType, TStateType> : IWebSocketListener, IDisposable
+    public abstract class BasePeriodicWebSocketListener<TReturnDataType, TStateType> : IWebSocketListener, IAsyncDisposable
         where TStateType : WebSocketListenerState, new()
         where TReturnDataType : class
     {
@@ -45,13 +45,15 @@ namespace MediaBrowser.Controller.Net
         /// </summary>
         protected readonly ILogger<BasePeriodicWebSocketListener<TReturnDataType, TStateType>> Logger;
 
+        private readonly Task _messageConsumerTask;
+
         protected BasePeriodicWebSocketListener(ILogger<BasePeriodicWebSocketListener<TReturnDataType, TStateType>> logger)
         {
             ArgumentNullException.ThrowIfNull(logger);
 
             Logger = logger;
 
-            _ = HandleMessages();
+            _messageConsumerTask = HandleMessages();
         }
 
         /// <summary>
@@ -124,9 +126,14 @@ namespace MediaBrowser.Controller.Net
                 InitialDelayMs = dueTimeMs
             };
 
-            lock (_activeConnections)
+            _lock.Wait();
+            try
             {
                 _activeConnections.Add((message.Connection, cancellationTokenSource, state));
+            }
+            finally
+            {
+                _lock.Release();
             }
         }
 
@@ -137,63 +144,66 @@ namespace MediaBrowser.Controller.Net
 
         private async Task HandleMessages()
         {
-            await foreach (var force in _channel.Reader.ReadAllAsync())
+            while (await _channel.Reader.WaitToReadAsync().ConfigureAwait(false))
             {
-                try
+                while (_channel.Reader.TryRead(out var force))
                 {
-                    (IWebSocketConnection Connection, CancellationTokenSource CancellationTokenSource, TStateType State)[] tuples;
-
-                    var now = DateTime.UtcNow;
-                    await _lock.WaitAsync().ConfigureAwait(false);
                     try
                     {
-                        if (_activeConnections.Count == 0)
+                        (IWebSocketConnection Connection, CancellationTokenSource CancellationTokenSource, TStateType State)[] tuples;
+
+                        var now = DateTime.UtcNow;
+                        await _lock.WaitAsync().ConfigureAwait(false);
+                        try
+                        {
+                            if (_activeConnections.Count == 0)
+                            {
+                                continue;
+                            }
+
+                            tuples = _activeConnections
+                                .Where(c =>
+                                {
+                                    if (c.Connection.State != WebSocketState.Open || c.CancellationTokenSource.IsCancellationRequested)
+                                    {
+                                        return false;
+                                    }
+
+                                    var state = c.State;
+                                    return force || (now - state.DateLastSendUtc).TotalMilliseconds >= state.IntervalMs;
+                                })
+                                .ToArray();
+                        }
+                        finally
+                        {
+                            _lock.Release();
+                        }
+
+                        if (tuples.Length == 0)
                         {
                             continue;
                         }
 
-                        tuples = _activeConnections
-                            .Where(c =>
-                            {
-                                if (c.Connection.State != WebSocketState.Open || c.CancellationTokenSource.IsCancellationRequested)
-                                {
-                                    return false;
-                                }
-
-                                var state = c.State;
-                                return force || (now - state.DateLastSendUtc).TotalMilliseconds >= state.IntervalMs;
-                            })
-                            .ToArray();
-                    }
-                    finally
-                    {
-                        _lock.Release();
-                    }
-
-                    if (tuples.Length == 0)
-                    {
-                        continue;
-                    }
-
-                    var data = await GetDataToSend().ConfigureAwait(false);
-                    if (data is null)
-                    {
-                        continue;
-                    }
-
-                    IEnumerable<Task> GetTasks()
-                    {
-                        foreach (var tuple in tuples)
+                        var data = await GetDataToSend().ConfigureAwait(false);
+                        if (data is null)
                         {
-                            yield return SendDataInternal(data, tuple);
+                            continue;
                         }
-                    }
 
-                    await Task.WhenAll(GetTasks()).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, "Failed to send updates to websockets");
+                        IEnumerable<Task> GetTasks()
+                        {
+                            foreach (var tuple in tuples)
+                            {
+                                yield return SendDataInternal(data, tuple);
+                            }
+                        }
+
+                        await Task.WhenAll(GetTasks()).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError(ex, "Failed to send updates to websockets");
+                    }
                 }
             }
         }
@@ -284,35 +294,29 @@ namespace MediaBrowser.Controller.Net
             }
         }
 
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool dispose)
+        protected virtual async ValueTask DisposeAsyncCore()
         {
-            if (dispose)
+            _channel.Writer.TryComplete();
+            await _messageConsumerTask.ConfigureAwait(false);
+
+            await _lock.WaitAsync().ConfigureAwait(false);
+            try
             {
-                _lock.Wait();
-                try
+                foreach (var connection in _activeConnections.ToArray())
                 {
-                    foreach (var connection in _activeConnections.ToArray())
-                    {
-                        DisposeConnection(connection);
-                    }
+                    DisposeConnection(connection);
                 }
-                finally
-                {
-                    _lock.Release();
-                }
+            }
+            finally
+            {
+                _lock.Release();
             }
         }
 
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        public void Dispose()
+        /// <inheritdoc />
+        public async ValueTask DisposeAsync()
         {
-            Dispose(true);
+            await DisposeAsyncCore().ConfigureAwait(false);
             GC.SuppressFinalize(this);
         }
     }

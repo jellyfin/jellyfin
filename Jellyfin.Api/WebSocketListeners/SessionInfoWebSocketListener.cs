@@ -16,6 +16,7 @@ namespace Jellyfin.Api.WebSocketListeners;
 public class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnumerable<SessionInfo>, WebSocketListenerState>
 {
     private readonly ISessionManager _sessionManager;
+    private bool _disposed;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SessionInfoWebSocketListener"/> class.
@@ -55,9 +56,9 @@ public class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnume
     }
 
     /// <inheritdoc />
-    protected override void Dispose(bool dispose)
+    protected override async ValueTask DisposeAsyncCore()
     {
-        if (dispose)
+        if (!_disposed)
         {
             _sessionManager.SessionStarted -= OnSessionManagerSessionStarted;
             _sessionManager.SessionEnded -= OnSessionManagerSessionEnded;
@@ -66,9 +67,10 @@ public class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnume
             _sessionManager.PlaybackProgress -= OnSessionManagerPlaybackProgress;
             _sessionManager.CapabilitiesChanged -= OnSessionManagerCapabilitiesChanged;
             _sessionManager.SessionActivity -= OnSessionManagerSessionActivity;
+            _disposed = true;
         }
 
-        base.Dispose(dispose);
+        await base.DisposeAsyncCore().ConfigureAwait(false);
     }
 
     /// <summary>
