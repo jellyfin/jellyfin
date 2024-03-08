@@ -57,6 +57,9 @@ public static class StartupHelpers
         logger.LogInformation("User Interactive: {IsUserInteractive}", Environment.UserInteractive);
         logger.LogInformation("Processor count: {ProcessorCount}", Environment.ProcessorCount);
         logger.LogInformation("Program data path: {ProgramDataPath}", appPaths.ProgramDataPath);
+        logger.LogInformation("Log Directory Path: {LogDirectoryPath}", appPaths.LogDirectoryPath);
+        logger.LogInformation("Config Directory Path: {ConfigurationDirectoryPath}", appPaths.ConfigurationDirectoryPath);
+        logger.LogInformation("Cache Path: {CachePath}", appPaths.CachePath);
         logger.LogInformation("Web resources path: {WebPath}", appPaths.WebPath);
         logger.LogInformation("Application directory: {ApplicationPath}", appPaths.ProgramSystemPath);
     }
