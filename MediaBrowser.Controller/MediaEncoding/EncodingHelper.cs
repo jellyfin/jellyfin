@@ -5011,6 +5011,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var threeDFormat = state.MediaSource.Video3DFormat;
 
             var isVtEncoder = vidEncoder.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase);
+            var hwScaleFilter = GetHwScaleFilter("vt", null, inW, inH, reqW, reqH, reqMaxW, reqMaxH);
 
             var doDeintH264 = state.DeInterlace("h264", true) || state.DeInterlace("avc", true);
             var doDeintHevc = state.DeInterlace("h265", true) || state.DeInterlace("hevc", true);
@@ -5019,6 +5020,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var doOclTonemap = !doVtTonemap && IsHwTonemapAvailable(state, options);
             var doTonemap = doVtTonemap || doOclTonemap;
 
+            var doScale = !string.IsNullOrEmpty(hwScaleFilter);
             var hasSubs = state.SubtitleStream is not null && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
             var hasTextSubs = hasSubs && state.SubtitleStream.IsTextSubtitleStream;
             var hasGraphicalSubs = hasSubs && !state.SubtitleStream.IsTextSubtitleStream;
@@ -5037,7 +5039,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             /* Make main filters for video stream */
             var mainFilters = new List<string>();
 
-            if (!(doTonemap || hasSubs || doDeintH2645))
+            if (!(doTonemap || doScale || hasSubs || doDeintH2645))
             {
                 // Dummy action to return empty filters when nothing to do.
                 return (mainFilters, mainFilters, mainFilters);
@@ -5061,7 +5063,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 mainFilters.Add(deintFilter);
             }
 
-            var hwScaleFilter = GetHwScaleFilter("vt", null, inW, inH, reqW, reqH, reqMaxW, reqMaxH);
             if (doVtTonemap)
             {
                 const string VtTonemapArgs = "color_matrix=bt709:color_primaries=bt709:color_transfer=bt709";
