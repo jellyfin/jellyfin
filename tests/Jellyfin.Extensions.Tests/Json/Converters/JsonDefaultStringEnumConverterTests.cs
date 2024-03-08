@@ -15,9 +15,9 @@ public class JsonDefaultStringEnumConverterTests
     /// <param name="input">The input string.</param>
     /// <param name="output">The expected enum value.</param>
     [Theory]
-    [InlineData("\"\"", MediaStreamProtocol.Http)]
-    [InlineData("\"Http\"", MediaStreamProtocol.Http)]
-    [InlineData("\"Hls\"", MediaStreamProtocol.Hls)]
+    [InlineData("\"\"", MediaStreamProtocol.http)]
+    [InlineData("\"Http\"", MediaStreamProtocol.http)]
+    [InlineData("\"Hls\"", MediaStreamProtocol.hls)]
     public void Deserialize_Enum_Direct(string input, MediaStreamProtocol output)
     {
         var value = JsonSerializer.Deserialize<MediaStreamProtocol>(input, _jsonOptions);
@@ -30,10 +30,10 @@ public class JsonDefaultStringEnumConverterTests
     /// <param name="input">The input string.</param>
     /// <param name="output">The expected enum value.</param>
     [Theory]
-    [InlineData(null, MediaStreamProtocol.Http)]
-    [InlineData("\"\"", MediaStreamProtocol.Http)]
-    [InlineData("\"Http\"", MediaStreamProtocol.Http)]
-    [InlineData("\"Hls\"", MediaStreamProtocol.Hls)]
+    [InlineData(null, MediaStreamProtocol.http)]
+    [InlineData("\"\"", MediaStreamProtocol.http)]
+    [InlineData("\"Http\"", MediaStreamProtocol.http)]
+    [InlineData("\"Hls\"", MediaStreamProtocol.hls)]
     public void Deserialize_Enum(string? input, MediaStreamProtocol output)
     {
         input ??= "null";
@@ -51,9 +51,9 @@ public class JsonDefaultStringEnumConverterTests
     /// <param name="output">The expected enum value.</param>
     [Theory]
     [InlineData(null, null)]
-    [InlineData("\"\"", MediaStreamProtocol.Http)]
-    [InlineData("\"Http\"", MediaStreamProtocol.Http)]
-    [InlineData("\"Hls\"", MediaStreamProtocol.Hls)]
+    [InlineData("\"\"", MediaStreamProtocol.http)]
+    [InlineData("\"Http\"", MediaStreamProtocol.http)]
+    [InlineData("\"Hls\"", MediaStreamProtocol.hls)]
     public void Deserialize_Enum_Nullable(string? input, MediaStreamProtocol? output)
     {
         input ??= "null";
@@ -69,8 +69,8 @@ public class JsonDefaultStringEnumConverterTests
     /// <param name="input">Input enum.</param>
     /// <param name="output">Output enum.</param>
     [Theory]
-    [InlineData(MediaStreamProtocol.Http, MediaStreamProtocol.Http)]
-    [InlineData(MediaStreamProtocol.Hls, MediaStreamProtocol.Hls)]
+    [InlineData(MediaStreamProtocol.http, MediaStreamProtocol.http)]
+    [InlineData(MediaStreamProtocol.hls, MediaStreamProtocol.hls)]
     public void Enum_RoundTrip(MediaStreamProtocol input, MediaStreamProtocol output)
     {
         var inputObj = new TestClass { EnumValue = input };
@@ -87,8 +87,8 @@ public class JsonDefaultStringEnumConverterTests
     /// <param name="input">Input enum.</param>
     /// <param name="output">Output enum.</param>
     [Theory]
-    [InlineData(MediaStreamProtocol.Http, MediaStreamProtocol.Http)]
-    [InlineData(MediaStreamProtocol.Hls, MediaStreamProtocol.Hls)]
+    [InlineData(MediaStreamProtocol.http, MediaStreamProtocol.http)]
+    [InlineData(MediaStreamProtocol.hls, MediaStreamProtocol.hls)]
     [InlineData(null, null)]
     public void Enum_RoundTrip_Nullable(MediaStreamProtocol? input, MediaStreamProtocol? output)
     {
