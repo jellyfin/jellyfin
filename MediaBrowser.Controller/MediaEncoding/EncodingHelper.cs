@@ -5011,16 +5011,22 @@ namespace MediaBrowser.Controller.MediaEncoding
             var threeDFormat = state.MediaSource.Video3DFormat;
 
             var isVtEncoder = vidEncoder.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase);
-            var hwScaleFilter = GetHwScaleFilter("vt", null, inW, inH, reqW, reqH, reqMaxW, reqMaxH);
 
             var doDeintH264 = state.DeInterlace("h264", true) || state.DeInterlace("avc", true);
             var doDeintHevc = state.DeInterlace("h265", true) || state.DeInterlace("hevc", true);
             var doDeintH2645 = doDeintH264 || doDeintHevc;
             var doVtTonemap = IsVideoToolboxTonemapAvailable(state, options);
             var doOclTonemap = !doVtTonemap && IsHwTonemapAvailable(state, options);
-            var doTonemap = doVtTonemap || doOclTonemap;
 
-            var doScale = !string.IsNullOrEmpty(hwScaleFilter);
+            var scaleFormat = string.Empty;
+            if (GetVideoColorBitDepth(state) == 10)
+            {
+                // Use P010 for OpenCL tone mapping, otherwise force an 8bit output.
+                scaleFormat = doOclTonemap ? "p010le" : "nv12";
+            }
+
+            var hwScaleFilter = GetHwScaleFilter("vt", scaleFormat, inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+
             var hasSubs = state.SubtitleStream is not null && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
             var hasTextSubs = hasSubs && state.SubtitleStream.IsTextSubtitleStream;
             var hasGraphicalSubs = hasSubs && !state.SubtitleStream.IsTextSubtitleStream;
@@ -5028,8 +5034,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 && (string.Equals(state.SubtitleStream.Codec, "ass", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(state.SubtitleStream.Codec, "ssa", StringComparison.OrdinalIgnoreCase));
 
-            // FIXME: scale_vt lacks of format option for the time being.
-            // hwdownload/hwmap to sw requires setting a format explicitly.
             if (!isVtEncoder)
             {
                 // should not happen.
