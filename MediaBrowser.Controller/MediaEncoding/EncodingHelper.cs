@@ -5039,12 +5039,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             /* Make main filters for video stream */
             var mainFilters = new List<string>();
 
-            if (!(doTonemap || doScale || hasSubs || doDeintH2645))
-            {
-                // Dummy action to return empty filters when nothing to do.
-                return (mainFilters, mainFilters, mainFilters);
-            }
-
             // Color override is only required for OpenCL where hardware surface is in use
             if (doOclTonemap)
             {
