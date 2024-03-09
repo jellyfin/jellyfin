@@ -103,6 +103,8 @@ body:
     attributes:
       label: "Specify the build version"
       description: Please provide the build version that is shown in the dashboard.
+    validations:
+      required: true
   - type: textarea
     id: environment-information
     attributes:
