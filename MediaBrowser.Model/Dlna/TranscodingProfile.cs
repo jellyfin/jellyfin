@@ -27,7 +27,7 @@ namespace MediaBrowser.Model.Dlna
         public string AudioCodec { get; set; } = string.Empty;
 
         [XmlAttribute("protocol")]
-        public MediaStreamProtocol Protocol { get; set; } = MediaStreamProtocol.Http;
+        public MediaStreamProtocol Protocol { get; set; } = MediaStreamProtocol.http;
 
         [DefaultValue(false)]
         [XmlAttribute("estimateContentLength")]
