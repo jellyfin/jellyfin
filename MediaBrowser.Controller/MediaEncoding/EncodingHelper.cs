@@ -5019,7 +5019,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var doOclTonemap = !doVtTonemap && IsHwTonemapAvailable(state, options);
 
             var scaleFormat = string.Empty;
-            if (GetVideoColorBitDepth(state) == 10)
+            if (!string.Equals(state.VideoStream.PixelFormat, "yuv420p", StringComparison.OrdinalIgnoreCase))
             {
                 // Use P010 for OpenCL tone mapping, otherwise force an 8bit output.
                 scaleFormat = doOclTonemap ? "p010le" : "nv12";
