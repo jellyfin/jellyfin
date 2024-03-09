@@ -13,15 +13,17 @@ body:
     id: before-posting
     attributes:
       label: "This issue respects the following points:"
-      description: All conditions are **required**. Your issue can be closed if these are checked incorrectly.
+      description: All conditions are **required**. Failure to comply with any of these conditions may cause your issue to be closed without comment.
       options:
-        - label: This is a **bug**, not a question or a configuration issue. We recommend visiting our forum or chat rooms and troubleshoot with volunteers first. The links can be found [here](https://jellyfin.org/contact/).
+        - label: This is a **bug**, not a question or a configuration issue; Please visit our forum or chat rooms first to troubleshoot with volunteers, before creating a report. The links can be found [here](https://jellyfin.org/contact/).
           required: true
         - label: This issue is **not** already reported on [GitHub](https://github.com/jellyfin/jellyfin/issues?q=is%3Aissue+is%3Aopen+label%3Abug) _(I've searched it)_.
           required: true
-        - label: I'm using an up to date version of Jellyfin Server stable, unstable or master. We generally do not support previous older versions. If possible, please update to the latest version before opening an issue.
+        - label: I'm using an up to date version of Jellyfin Server stable, unstable or master; We generally do not support previous older versions. If possible, please update to the latest version before opening an issue.
           required: true
         - label: I agree to follow Jellyfin's [Code of Conduct](https://jellyfin.org/docs/general/community-standards.html#code-of-conduct).
+          required: true
+        - label: This report addresses only a single issue; If you encounter multiple issues, kindly create separate reports for each one.
           required: true
   - type: markdown
     id: preliminary-information
@@ -29,10 +31,10 @@ body:
       value: |
         ### General preliminary information
 
-        We like ask you to keep the following things in mind when creating this issue:
+        Please keep the following in mind when creating this issue:
 
         1. Fill in as much of the template as possible. When you are unsure about the relevancy of a section, do include the information requested in that section. Only leave out information in sections when you are completely sure about it not being relevant.
-        2. Provide as much details as possible. Do not assume other people to know what is going on.
+        2. Provide as much detail as possible. Do not assume other people to know what is going on.
         3. Keep everything readable and structured. Nobody enjoys reading poorly written reports that are difficult to understand.
         4. Keep an eye on your report as long as it is open, your involvement might be requested at a later moment.
         5. Keep the title short and descriptive. The title is not the place to write down a full description of the issue.
@@ -57,7 +59,7 @@ body:
         4. Change the login disclaimer to something like "I am a cool disclaimer!"
         5. Save the settings.
         6. Sign out.
-        7. Make sure you are on the sign in screen. Otherwise navigate to the sign in screen manually.
+        7. Make sure you are on the sign in screen. Otherwise, navigate to the sign in screen manually.
     validations:
       required: true
   - type: textarea
@@ -95,7 +97,7 @@ body:
     id: version-older
     attributes:
       label: "Specify older version"
-      description: In case the 'older' option is selected, please provide the version of your older Jellyfin install.
+      description: In case the 'older' option is selected, please provide the version of your older Jellyfin installation.
       placeholder: |
         x.y.z
   - type: input
@@ -103,11 +105,14 @@ body:
     attributes:
       label: "Specify the build version"
       description: Please provide the build version that is shown in the dashboard.
+    validations:
+      required: true
   - type: textarea
     id: environment-information
     attributes:
       label: Environment
       description: |
+        Accurately fill in as much environment details as possible. If a certain environment field is not shown in the template below, but you consider useful information, please include it.
         Examples:
         - **OS**: [e.g. Debian 11, Windows 10]
         - **Linux Kernel**: [e.g. none, 5.15, 6.1, etc.]
@@ -146,11 +151,12 @@ body:
     attributes:
       value: |
         When providing logs, please keep the following things in mind:
-        1. **DO NOT** use external paste services.
+        1. **DO NOT** use external paste services. If logs are too large to paste into the field, upload them as text files.
         2. Please provide complete logs.
-          - For server logs, include everything you think is important plus *10 lines before and after*
+          - For server logs, ensure to capture all relevant information, encompassing both the events leading up to and following the occurrence of the issue. Typically, providing 10 *lines preceding and succeeding* the problem should be adequate.
           - For ffmpeg logs, please provide the entire file unmodified.
-        3. Please do not run logs through any translation program. Especially beware if your browser translates pages by default.
+        3. Please do not run logs through any translation program. We exclusively accept raw, untranslated logs. Particularly exercise caution if your browser automatically translates pages by default.
+          - Do not forget to censor out personal information such as public IP addresses.
         4. Please do not include logs as screenshots, with the only exception being client logs in browsers.
   - type: textarea
     id: jellyfin-logs
