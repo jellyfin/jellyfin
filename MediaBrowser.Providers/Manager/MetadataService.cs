@@ -773,7 +773,7 @@ namespace MediaBrowser.Providers.Manager
                             MergeData(metadata, temp, Array.Empty<MetadataField>(), false, false);
                         }
 
-                        MergeData(temp, metadata, item.LockedFields, true, false);
+                        MergeData(temp, metadata, item.LockedFields, options.ReplaceAllMetadata, false);
                     }
                 }
             }
