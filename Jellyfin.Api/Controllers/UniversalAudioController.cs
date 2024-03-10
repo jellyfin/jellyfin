@@ -157,7 +157,7 @@ public class UniversalAudioController : BaseJellyfinApiController
         }
 
         var isStatic = mediaSource.SupportsDirectStream;
-        if (!isStatic && mediaSource.TranscodingSubProtocol == MediaStreamProtocol.Hls)
+        if (!isStatic && mediaSource.TranscodingSubProtocol == MediaStreamProtocol.hls)
         {
             // hls segment container can only be mpegts or fmp4 per ffmpeg documentation
             // ffmpeg option -> file extension
@@ -268,7 +268,7 @@ public class UniversalAudioController : BaseJellyfinApiController
                 Context = EncodingContext.Streaming,
                 Container = transcodingContainer ?? "mp3",
                 AudioCodec = audioCodec ?? "mp3",
-                Protocol = transcodingProtocol ?? MediaStreamProtocol.Http,
+                Protocol = transcodingProtocol ?? MediaStreamProtocol.http,
                 BreakOnNonKeyFrames = breakOnNonKeyFrames ?? false,
                 MaxAudioChannels = transcodingAudioChannels?.ToString(CultureInfo.InvariantCulture)
             }

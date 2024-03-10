@@ -389,21 +389,21 @@ namespace Jellyfin.Model.Tests
                     // Assert.Equal("webm", val.Container);
                     Assert.Equal(streamInfo.Container, uri.Extension);
                     Assert.Equal("stream", uri.Filename);
-                    Assert.Equal(MediaStreamProtocol.Http, streamInfo.SubProtocol);
+                    Assert.Equal(MediaStreamProtocol.http, streamInfo.SubProtocol);
                 }
                 else if (transcodeProtocol.Equals("HLS.mp4", StringComparison.Ordinal))
                 {
                     Assert.Equal("mp4", streamInfo.Container);
                     Assert.Equal("m3u8", uri.Extension);
                     Assert.Equal("master", uri.Filename);
-                    Assert.Equal(MediaStreamProtocol.Hls, streamInfo.SubProtocol);
+                    Assert.Equal(MediaStreamProtocol.hls, streamInfo.SubProtocol);
                 }
                 else
                 {
                     Assert.Equal("ts", streamInfo.Container);
                     Assert.Equal("m3u8", uri.Extension);
                     Assert.Equal("master", uri.Filename);
-                    Assert.Equal(MediaStreamProtocol.Hls, streamInfo.SubProtocol);
+                    Assert.Equal(MediaStreamProtocol.hls, streamInfo.SubProtocol);
                 }
 
                 // Full transcode
@@ -489,7 +489,7 @@ namespace Jellyfin.Model.Tests
             }
             else if (playMethod is null)
             {
-                Assert.Equal(MediaStreamProtocol.Http, streamInfo.SubProtocol);
+                Assert.Equal(MediaStreamProtocol.http, streamInfo.SubProtocol);
                 Assert.Equal("stream", uri.Filename);
 
                 Assert.False(streamInfo.EstimateContentLength);

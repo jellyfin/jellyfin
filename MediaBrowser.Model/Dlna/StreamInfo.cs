@@ -670,7 +670,7 @@ namespace MediaBrowser.Model.Dlna
 
             if (MediaType == DlnaProfileType.Audio)
             {
-                if (SubProtocol == MediaStreamProtocol.Hls)
+                if (SubProtocol == MediaStreamProtocol.hls)
                 {
                     return string.Format(CultureInfo.InvariantCulture, "{0}/audio/{1}/master.m3u8?{2}", baseUrl, ItemId, queryString);
                 }
@@ -678,7 +678,7 @@ namespace MediaBrowser.Model.Dlna
                 return string.Format(CultureInfo.InvariantCulture, "{0}/audio/{1}/stream{2}?{3}", baseUrl, ItemId, extension, queryString);
             }
 
-            if (SubProtocol == MediaStreamProtocol.Hls)
+            if (SubProtocol == MediaStreamProtocol.hls)
             {
                 return string.Format(CultureInfo.InvariantCulture, "{0}/videos/{1}/master.m3u8?{2}", baseUrl, ItemId, queryString);
             }
@@ -716,7 +716,7 @@ namespace MediaBrowser.Model.Dlna
 
             long startPositionTicks = item.StartPositionTicks;
 
-            if (item.SubProtocol == MediaStreamProtocol.Hls)
+            if (item.SubProtocol == MediaStreamProtocol.hls)
             {
                 list.Add(new NameValuePair("StartTimeTicks", string.Empty));
             }
@@ -778,7 +778,7 @@ namespace MediaBrowser.Model.Dlna
 
             list.Add(new NameValuePair("SubtitleCodec", item.SubtitleStreamIndex.HasValue && item.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Embed ? subtitleCodecs : string.Empty));
 
-            if (item.SubProtocol == MediaStreamProtocol.Hls)
+            if (item.SubProtocol == MediaStreamProtocol.hls)
             {
                 list.Add(new NameValuePair("SegmentContainer", item.Container ?? string.Empty));
 
@@ -829,7 +829,7 @@ namespace MediaBrowser.Model.Dlna
             var list = new List<SubtitleStreamInfo>();
 
             // HLS will preserve timestamps so we can just grab the full subtitle stream
-            long startPositionTicks = SubProtocol == MediaStreamProtocol.Hls
+            long startPositionTicks = SubProtocol == MediaStreamProtocol.hls
                 ? 0
                 : (PlayMethod == PlayMethod.Transcode && !CopyTimestamps ? StartPositionTicks : 0);
 
