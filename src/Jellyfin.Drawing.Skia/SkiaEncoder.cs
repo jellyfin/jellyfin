@@ -19,8 +19,8 @@ namespace Jellyfin.Drawing.Skia;
 /// </summary>
 public class SkiaEncoder : IImageEncoder
 {
+    private const string SvgFormat = "svg";
     private static readonly HashSet<string> _transparentImageTypes = new(StringComparer.OrdinalIgnoreCase) { ".png", ".gif", ".webp" };
-
     private readonly ILogger<SkiaEncoder> _logger;
     private readonly IApplicationPaths _appPaths;
     private static readonly SKImageFilter _imageFilter;
@@ -89,12 +89,13 @@ public class SkiaEncoder : IImageEncoder
             // working on windows at least
             "cr2",
             "nef",
-            "arw"
+            "arw",
+            SvgFormat
         };
 
     /// <inheritdoc/>
     public IReadOnlyCollection<ImageFormat> SupportedOutputFormats
-        => new HashSet<ImageFormat> { ImageFormat.Webp, ImageFormat.Jpg, ImageFormat.Png };
+        => new HashSet<ImageFormat> { ImageFormat.Webp, ImageFormat.Jpg, ImageFormat.Png, ImageFormat.Svg };
 
     /// <summary>
     /// Check if the native lib is available.
@@ -182,7 +183,6 @@ public class SkiaEncoder : IImageEncoder
     /// <inheritdoc />
     /// <exception cref="ArgumentNullException">The path is null.</exception>
     /// <exception cref="FileNotFoundException">The path is not valid.</exception>
-    /// <exception cref="SkiaCodecException">The file at the specified path could not be used to generate a codec.</exception>
     public string GetImageBlurHash(int xComp, int yComp, string path)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
@@ -313,6 +313,31 @@ public class SkiaEncoder : IImageEncoder
         return Decode(path, false, orientation, out _);
     }
 
+    private SKBitmap? GetBitmapFromSvg(string path)
+    {
+        if (!File.Exists(path))
+        {
+            throw new FileNotFoundException("File not found", path);
+        }
+
+        using var svg = SKSvg.CreateFromFile(path);
+        if (svg.Drawable is null)
+        {
+            return null;
+        }
+
+        var width = (int)Math.Round(svg.Drawable.Bounds.Width);
+        var height = (int)Math.Round(svg.Drawable.Bounds.Height);
+
+        var bitmap = new SKBitmap(width, height);
+        using var canvas = new SKCanvas(bitmap);
+        canvas.DrawPicture(svg.Picture);
+        canvas.Flush();
+        canvas.Save();
+
+        return bitmap;
+    }
+
     private SKBitmap OrientImage(SKBitmap bitmap, SKEncodedOrigin origin)
     {
         var needsFlip = origin is SKEncodedOrigin.LeftBottom or SKEncodedOrigin.LeftTop or SKEncodedOrigin.RightBottom or SKEncodedOrigin.RightTop;
@@ -403,6 +428,12 @@ public class SkiaEncoder : IImageEncoder
             return inputPath;
         }
 
+        if (outputFormat == ImageFormat.Svg
+            && !inputFormat.Equals(SvgFormat, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException($"Requested svg output from {inputFormat} input");
+        }
+
         var skiaOutputFormat = GetImageFormat(outputFormat);
 
         var hasBackgroundColor = !string.IsNullOrWhiteSpace(options.BackgroundColor);
@@ -410,7 +441,10 @@ public class SkiaEncoder : IImageEncoder
         var blur = options.Blur ?? 0;
         var hasIndicator = options.UnplayedCount.HasValue || !options.PercentPlayed.Equals(0);
 
-        using var bitmap = GetBitmap(inputPath, autoOrient, orientation);
+        using var bitmap = inputFormat.Equals(SvgFormat, StringComparison.OrdinalIgnoreCase)
+            ? GetBitmapFromSvg(inputPath)
+            : GetBitmap(inputPath, autoOrient, orientation);
+
         if (bitmap is null)
         {
             throw new InvalidDataException($"Skia unable to read image {inputPath}");

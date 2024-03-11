@@ -619,6 +619,26 @@ namespace MediaBrowser.Controller.MediaEncoding
             return Array.Empty<string>();
         }
 
+        public string[] GetRequestedCodecTags(string codec)
+        {
+            if (!string.IsNullOrEmpty(BaseRequest.CodecTag))
+            {
+                return BaseRequest.CodecTag.Split(new[] { '|', ',' }, StringSplitOptions.RemoveEmptyEntries);
+            }
+
+            if (!string.IsNullOrEmpty(codec))
+            {
+                var codectag = BaseRequest.GetOption(codec, "codectag");
+
+                if (!string.IsNullOrEmpty(codectag))
+                {
+                    return codectag.Split(new[] { '|', ',' }, StringSplitOptions.RemoveEmptyEntries);
+                }
+            }
+
+            return Array.Empty<string>();
+        }
+
         public string GetRequestedLevel(string codec)
         {
             if (!string.IsNullOrEmpty(BaseRequest.Level))

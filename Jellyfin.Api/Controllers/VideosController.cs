@@ -11,7 +11,7 @@ using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
-using Jellyfin.Api.Models.StreamingDtos;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
@@ -20,6 +20,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -43,7 +44,7 @@ public class VideosController : BaseJellyfinApiController
     private readonly IMediaSourceManager _mediaSourceManager;
     private readonly IServerConfigurationManager _serverConfigurationManager;
     private readonly IMediaEncoder _mediaEncoder;
-    private readonly TranscodingJobHelper _transcodingJobHelper;
+    private readonly ITranscodeManager _transcodeManager;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly EncodingHelper _encodingHelper;
 
@@ -58,7 +59,7 @@ public class VideosController : BaseJellyfinApiController
     /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
     /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
     /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
-    /// <param name="transcodingJobHelper">Instance of the <see cref="TranscodingJobHelper"/> class.</param>
+    /// <param name="transcodeManager">Instance of the <see cref="ITranscodeManager"/> interface.</param>
     /// <param name="httpClientFactory">Instance of the <see cref="IHttpClientFactory"/> interface.</param>
     /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
     public VideosController(
@@ -68,7 +69,7 @@ public class VideosController : BaseJellyfinApiController
         IMediaSourceManager mediaSourceManager,
         IServerConfigurationManager serverConfigurationManager,
         IMediaEncoder mediaEncoder,
-        TranscodingJobHelper transcodingJobHelper,
+        ITranscodeManager transcodeManager,
         IHttpClientFactory httpClientFactory,
         EncodingHelper encodingHelper)
     {
@@ -78,7 +79,7 @@ public class VideosController : BaseJellyfinApiController
         _mediaSourceManager = mediaSourceManager;
         _serverConfigurationManager = serverConfigurationManager;
         _mediaEncoder = mediaEncoder;
-        _transcodingJobHelper = transcodingJobHelper;
+        _transcodeManager = transcodeManager;
         _httpClientFactory = httpClientFactory;
         _encodingHelper = encodingHelper;
     }
@@ -96,12 +97,12 @@ public class VideosController : BaseJellyfinApiController
     public ActionResult<QueryResult<BaseItemDto>> GetAdditionalPart([FromRoute, Required] Guid itemId, [FromQuery] Guid? userId)
     {
         userId = RequestHelpers.GetUserId(User, userId);
-        var user = userId.Value.Equals(default)
+        var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
 
-        var item = itemId.Equals(default)
-            ? (userId.Value.Equals(default)
+        var item = itemId.IsEmpty()
+            ? (userId.IsNullOrEmpty()
                 ? _libraryManager.RootFolder
                 : _libraryManager.GetUserRootFolder())
             : _libraryManager.GetItemById(itemId);
@@ -427,7 +428,7 @@ public class VideosController : BaseJellyfinApiController
                 _serverConfigurationManager,
                 _mediaEncoder,
                 _encodingHelper,
-                _transcodingJobHelper,
+                _transcodeManager,
                 _transcodingJobType,
                 cancellationTokenSource.Token)
             .ConfigureAwait(false);
@@ -457,16 +458,14 @@ public class VideosController : BaseJellyfinApiController
             return BadRequest($"Input protocol {state.InputProtocol} cannot be streamed statically");
         }
 
-        var outputPath = state.OutputFilePath;
-
         // Static stream
-        if (@static.HasValue && @static.Value)
+        if (@static.HasValue && @static.Value && !(state.MediaSource.VideoType == VideoType.BluRay || state.MediaSource.VideoType == VideoType.Dvd))
         {
             var contentType = state.GetMimeType("." + state.OutputContainer, false) ?? state.GetMimeType(state.MediaPath);
 
             if (state.MediaSource.IsInfiniteStream)
             {
-                var liveStream = new ProgressiveFileStream(state.MediaPath, null, _transcodingJobHelper);
+                var liveStream = new ProgressiveFileStream(state.MediaPath, null, _transcodeManager);
                 return File(liveStream, contentType);
             }
 
@@ -477,12 +476,12 @@ public class VideosController : BaseJellyfinApiController
 
         // Need to start ffmpeg (because media can't be returned directly)
         var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
-        var ffmpegCommandLineArguments = _encodingHelper.GetProgressiveVideoFullCommandLine(state, encodingOptions, outputPath, "superfast");
+        var ffmpegCommandLineArguments = _encodingHelper.GetProgressiveVideoFullCommandLine(state, encodingOptions, "superfast");
         return await FileStreamResponseHelpers.GetTranscodedFile(
             state,
             isHeadRequest,
             HttpContext,
-            _transcodingJobHelper,
+            _transcodeManager,
             ffmpegCommandLineArguments,
             _transcodingJobType,
             cancellationTokenSource).ConfigureAwait(false);

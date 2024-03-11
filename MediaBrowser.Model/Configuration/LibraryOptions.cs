@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.ComponentModel;
 
 namespace MediaBrowser.Model.Configuration
 {
@@ -20,6 +21,7 @@ namespace MediaBrowser.Model.Configuration
             AutomaticallyAddToCollection = false;
             EnablePhotos = true;
             SaveSubtitlesWithMedia = true;
+            SaveLyricsWithMedia = true;
             PathInfos = Array.Empty<MediaPathInfo>();
             EnableAutomaticSeriesGrouping = true;
             SeasonZeroDisplayName = "Specials";
@@ -30,6 +32,8 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableRealtimeMonitor { get; set; }
 
         public bool EnableLUFSScan { get; set; }
+
+        public bool UseReplayGainTags { get; set; }
 
         public bool EnableChapterImageExtraction { get; set; }
 
@@ -89,6 +93,9 @@ namespace MediaBrowser.Model.Configuration
         public bool RequirePerfectSubtitleMatch { get; set; }
 
         public bool SaveSubtitlesWithMedia { get; set; }
+
+        [DefaultValue(true)]
+        public bool SaveLyricsWithMedia { get; set; }
 
         public bool AutomaticallyAddToCollection { get; set; }
 

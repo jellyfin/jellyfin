@@ -117,5 +117,6 @@
     "TaskCleanActivityLog": "Slett aktivitetslogg",
     "Undefined": "Udefinert",
     "Forced": "Tvungen",
-    "Default": "Standard"
+    "Default": "Standard",
+    "External": "Ekstern"
 }

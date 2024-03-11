@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
 using Jellyfin.Api.Extensions;
+using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.UserViewDtos;
 using Jellyfin.Data.Enums;
@@ -59,19 +60,17 @@ public class UserViewsController : BaseJellyfinApiController
     /// <param name="includeHidden">Whether or not to include hidden content.</param>
     /// <response code="200">User views returned.</response>
     /// <returns>An <see cref="OkResult"/> containing the user views.</returns>
-    [HttpGet("Users/{userId}/Views")]
+    [HttpGet("UserViews")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public QueryResult<BaseItemDto> GetUserViews(
-        [FromRoute, Required] Guid userId,
+        [FromQuery] Guid? userId,
         [FromQuery] bool? includeExternalContent,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] CollectionType?[] presetViews,
         [FromQuery] bool includeHidden = false)
     {
-        var query = new UserViewQuery
-        {
-            UserId = userId,
-            IncludeHidden = includeHidden
-        };
+        userId = RequestHelpers.GetUserId(User, userId);
+
+        var query = new UserViewQuery { UserId = userId.Value, IncludeHidden = includeHidden };
 
         if (includeExternalContent.HasValue)
         {
@@ -90,16 +89,35 @@ public class UserViewsController : BaseJellyfinApiController
 
         fields.Add(ItemFields.PrimaryImageAspectRatio);
         fields.Add(ItemFields.DisplayPreferencesId);
-        fields.Remove(ItemFields.BasicSyncInfo);
         dtoOptions.Fields = fields.ToArray();
 
-        var user = _userManager.GetUserById(userId);
+        var user = _userManager.GetUserById(userId.Value);
 
         var dtos = folders.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user))
             .ToArray();
 
         return new QueryResult<BaseItemDto>(dtos);
     }
+
+    /// <summary>
+    /// Get user views.
+    /// </summary>
+    /// <param name="userId">User id.</param>
+    /// <param name="includeExternalContent">Whether or not to include external views such as channels or live tv.</param>
+    /// <param name="presetViews">Preset views.</param>
+    /// <param name="includeHidden">Whether or not to include hidden content.</param>
+    /// <response code="200">User views returned.</response>
+    /// <returns>An <see cref="OkResult"/> containing the user views.</returns>
+    [HttpGet("Users/{userId}/Views")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Obsolete("Kept for backwards compatibility")]
+    [ApiExplorerSettings(IgnoreApi = true)]
+    public QueryResult<BaseItemDto> GetUserViewsLegacy(
+        [FromRoute, Required] Guid userId,
+        [FromQuery] bool? includeExternalContent,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] CollectionType?[] presetViews,
+        [FromQuery] bool includeHidden = false)
+        => GetUserViews(userId, includeExternalContent, presetViews, includeHidden);
 
     /// <summary>
     /// Get user view grouping options.
@@ -111,12 +129,13 @@ public class UserViewsController : BaseJellyfinApiController
     /// An <see cref="OkResult"/> containing the user view grouping options
     /// or a <see cref="NotFoundResult"/> if user not found.
     /// </returns>
-    [HttpGet("Users/{userId}/GroupingOptions")]
+    [HttpGet("UserViews/GroupingOptions")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult<IEnumerable<SpecialViewOptionDto>> GetGroupingOptions([FromRoute, Required] Guid userId)
+    public ActionResult<IEnumerable<SpecialViewOptionDto>> GetGroupingOptions([FromQuery] Guid? userId)
     {
-        var user = _userManager.GetUserById(userId);
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = _userManager.GetUserById(userId.Value);
         if (user is null)
         {
             return NotFound();
@@ -134,4 +153,23 @@ public class UserViewsController : BaseJellyfinApiController
             .OrderBy(i => i.Name)
             .AsEnumerable());
     }
+
+    /// <summary>
+    /// Get user view grouping options.
+    /// </summary>
+    /// <param name="userId">User id.</param>
+    /// <response code="200">User view grouping options returned.</response>
+    /// <response code="404">User not found.</response>
+    /// <returns>
+    /// An <see cref="OkResult"/> containing the user view grouping options
+    /// or a <see cref="NotFoundResult"/> if user not found.
+    /// </returns>
+    [HttpGet("Users/{userId}/GroupingOptions")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Obsolete("Kept for backwards compatibility")]
+    [ApiExplorerSettings(IgnoreApi = true)]
+    public ActionResult<IEnumerable<SpecialViewOptionDto>> GetGroupingOptionsLegacy(
+        [FromRoute, Required] Guid userId)
+        => GetGroupingOptions(userId);
 }

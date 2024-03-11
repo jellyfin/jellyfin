@@ -9,11 +9,11 @@ using System.Net.Http;
 using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
+using AsyncKeyedLock;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.BaseItemManager;
 using MediaBrowser.Controller.Configuration;
@@ -22,6 +22,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Configuration;
@@ -30,6 +31,7 @@ using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Providers;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Book = MediaBrowser.Controller.Entities.Book;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
@@ -53,11 +55,19 @@ namespace MediaBrowser.Providers.Manager
         private readonly IServerApplicationPaths _appPaths;
         private readonly ILibraryManager _libraryManager;
         private readonly ISubtitleManager _subtitleManager;
+        private readonly ILyricManager _lyricManager;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IBaseItemManager _baseItemManager;
         private readonly ConcurrentDictionary<Guid, double> _activeRefreshes = new();
         private readonly CancellationTokenSource _disposeCancellationTokenSource = new();
         private readonly PriorityQueue<(Guid ItemId, MetadataRefreshOptions RefreshOptions), RefreshPriority> _refreshQueue = new();
+        private readonly IMemoryCache _memoryCache;
+
+        private readonly AsyncKeyedLocker<string> _imageSaveLock = new(o =>
+        {
+            o.PoolSize = 20;
+            o.PoolInitialFill = 1;
+        });
 
         private IImageProvider[] _imageProviders = Array.Empty<IImageProvider>();
         private IMetadataService[] _metadataServices = Array.Empty<IMetadataService>();
@@ -79,6 +89,8 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="appPaths">The server application paths.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="baseItemManager">The BaseItem manager.</param>
+        /// <param name="lyricManager">The lyric manager.</param>
+        /// <param name="memoryCache">The memory cache.</param>
         public ProviderManager(
             IHttpClientFactory httpClientFactory,
             ISubtitleManager subtitleManager,
@@ -88,7 +100,9 @@ namespace MediaBrowser.Providers.Manager
             IFileSystem fileSystem,
             IServerApplicationPaths appPaths,
             ILibraryManager libraryManager,
-            IBaseItemManager baseItemManager)
+            IBaseItemManager baseItemManager,
+            ILyricManager lyricManager,
+            IMemoryCache memoryCache)
         {
             _logger = logger;
             _httpClientFactory = httpClientFactory;
@@ -99,6 +113,8 @@ namespace MediaBrowser.Providers.Manager
             _libraryManager = libraryManager;
             _subtitleManager = subtitleManager;
             _baseItemManager = baseItemManager;
+            _lyricManager = lyricManager;
+            _memoryCache = memoryCache;
         }
 
         /// <inheritdoc/>
@@ -146,52 +162,79 @@ namespace MediaBrowser.Providers.Manager
         /// <inheritdoc/>
         public async Task SaveImage(BaseItem item, string url, ImageType type, int? imageIndex, CancellationToken cancellationToken)
         {
-            var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
-            using var response = await httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
-
-            if (response.StatusCode != HttpStatusCode.OK)
+            using (await _imageSaveLock.LockAsync(url, cancellationToken).ConfigureAwait(false))
             {
-                throw new HttpRequestException("Invalid image received.", null, response.StatusCode);
-            }
-
-            var contentType = response.Content.Headers.ContentType?.MediaType;
-
-            // Workaround for tvheadend channel icons
-            // TODO: Isolate this hack into the tvh plugin
-            if (string.IsNullOrEmpty(contentType))
-            {
-                if (url.Contains("/imagecache/", StringComparison.OrdinalIgnoreCase))
+                if (_memoryCache.TryGetValue(url, out (string ContentType, byte[] ImageContents)? cachedValue)
+                    && cachedValue is not null)
                 {
-                    contentType = "image/png";
+                    var imageContents = cachedValue.Value.ImageContents;
+                    var cacheStream = new MemoryStream(imageContents, 0, imageContents.Length, false);
+                    await using (cacheStream.ConfigureAwait(false))
+                    {
+                        await SaveImage(
+                            item,
+                            cacheStream,
+                            cachedValue.Value.ContentType,
+                            type,
+                            imageIndex,
+                            cancellationToken).ConfigureAwait(false);
+                        return;
+                    }
                 }
-                else
+
+                var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
+                using var response = await httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
+
+                response.EnsureSuccessStatusCode();
+
+                var contentType = response.Content.Headers.ContentType?.MediaType;
+
+                // Workaround for tvheadend channel icons
+                // TODO: Isolate this hack into the tvh plugin
+                if (string.IsNullOrEmpty(contentType))
                 {
-                    throw new HttpRequestException("Invalid image received: contentType not set.", null, response.StatusCode);
+                    if (url.Contains("/imagecache/", StringComparison.OrdinalIgnoreCase))
+                    {
+                        contentType = MediaTypeNames.Image.Png;
+                    }
+                    else
+                    {
+                        throw new HttpRequestException("Invalid image received: contentType not set.", null, response.StatusCode);
+                    }
                 }
-            }
 
-            // TVDb will sometimes serve a rubbish 404 html page with a 200 OK code, because reasons...
-            if (contentType.Equals(MediaTypeNames.Text.Html, StringComparison.OrdinalIgnoreCase))
-            {
-                throw new HttpRequestException("Invalid image received.", null, HttpStatusCode.NotFound);
-            }
+                // TVDb will sometimes serve a rubbish 404 html page with a 200 OK code, because reasons...
+                if (contentType.Equals(MediaTypeNames.Text.Html, StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new HttpRequestException("Invalid image received.", null, HttpStatusCode.NotFound);
+                }
 
-            // some iptv/epg providers don't correctly report media type, extract from url if no extension found
-            if (string.IsNullOrWhiteSpace(MimeTypes.ToExtension(contentType)))
-            {
-                contentType = MimeTypes.GetMimeType(url);
-            }
+                // some iptv/epg providers don't correctly report media type, extract from url if no extension found
+                if (string.IsNullOrWhiteSpace(MimeTypes.ToExtension(contentType)))
+                {
+                    // Strip query parameters from url to get actual path.
+                    contentType = MimeTypes.GetMimeType(new Uri(url).GetLeftPart(UriPartial.Path));
+                }
 
-            var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            await using (stream.ConfigureAwait(false))
-            {
-                await SaveImage(
-                    item,
-                    stream,
-                    contentType,
-                    type,
-                    imageIndex,
-                    cancellationToken).ConfigureAwait(false);
+                if (!contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new HttpRequestException($"Request returned {contentType} instead of an image type", null, HttpStatusCode.NotFound);
+                }
+
+                var responseBytes = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
+                var stream = new MemoryStream(responseBytes, 0, responseBytes.Length, false);
+                await using (stream.ConfigureAwait(false))
+                {
+                    _memoryCache.Set(url, (contentType, responseBytes), TimeSpan.FromSeconds(10));
+
+                    await SaveImage(
+                        item,
+                        stream,
+                        contentType,
+                        type,
+                        imageIndex,
+                        cancellationToken).ConfigureAwait(false);
+                }
             }
         }
 
@@ -504,13 +547,20 @@ namespace MediaBrowser.Providers.Manager
             AddMetadataPlugins(pluginList, dummy, libraryOptions, options);
             AddImagePlugins(pluginList, imageProviders);
 
-            var subtitleProviders = _subtitleManager.GetSupportedProviders(dummy);
-
             // Subtitle fetchers
+            var subtitleProviders = _subtitleManager.GetSupportedProviders(dummy);
             pluginList.AddRange(subtitleProviders.Select(i => new MetadataPlugin
             {
                 Name = i.Name,
                 Type = MetadataPluginType.SubtitleFetcher
+            }));
+
+            // Lyric fetchers
+            var lyricProviders = _lyricManager.GetSupportedProviders(dummy);
+            pluginList.AddRange(lyricProviders.Select(i => new MetadataPlugin
+            {
+                Name = i.Name,
+                Type = MetadataPluginType.LyricFetcher
             }));
 
             summary.Plugins = pluginList.ToArray();
@@ -706,7 +756,7 @@ namespace MediaBrowser.Providers.Manager
         {
             BaseItem? referenceItem = null;
 
-            if (!searchInfo.ItemId.Equals(default))
+            if (!searchInfo.ItemId.IsEmpty())
             {
                 referenceItem = _libraryManager.GetItemById(searchInfo.ItemId);
             }
@@ -944,7 +994,7 @@ namespace MediaBrowser.Providers.Manager
         public void QueueRefresh(Guid itemId, MetadataRefreshOptions options, RefreshPriority priority)
         {
             ArgumentNullException.ThrowIfNull(itemId);
-            if (itemId.Equals(default))
+            if (itemId.IsEmpty())
             {
                 throw new ArgumentException("Guid can't be empty", nameof(itemId));
             }
@@ -1025,7 +1075,7 @@ namespace MediaBrowser.Providers.Manager
                     await RefreshCollectionFolderChildren(options, collectionFolder, cancellationToken).ConfigureAwait(false);
                     break;
                 case Folder folder:
-                    await folder.ValidateChildren(new SimpleProgress<double>(), options, cancellationToken: cancellationToken).ConfigureAwait(false);
+                    await folder.ValidateChildren(new Progress<double>(), options, cancellationToken: cancellationToken).ConfigureAwait(false);
                     break;
             }
         }
@@ -1036,7 +1086,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 await child.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
 
-                await child.ValidateChildren(new SimpleProgress<double>(), options, cancellationToken: cancellationToken).ConfigureAwait(false);
+                await child.ValidateChildren(new Progress<double>(), options, cancellationToken: cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -1058,7 +1108,7 @@ namespace MediaBrowser.Providers.Manager
                 .Select(i => i.MusicArtist)
                 .Where(i => i is not null);
 
-            var musicArtistRefreshTasks = musicArtists.Select(i => i.ValidateChildren(new SimpleProgress<double>(), options, true, cancellationToken));
+            var musicArtistRefreshTasks = musicArtists.Select(i => i.ValidateChildren(new Progress<double>(), options, true, cancellationToken));
 
             await Task.WhenAll(musicArtistRefreshTasks).ConfigureAwait(false);
 
@@ -1104,6 +1154,7 @@ namespace MediaBrowser.Providers.Manager
                 }
 
                 _disposeCancellationTokenSource.Dispose();
+                _imageSaveLock.Dispose();
             }
 
             _disposed = true;

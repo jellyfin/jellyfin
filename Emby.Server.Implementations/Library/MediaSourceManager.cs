@@ -11,14 +11,17 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using EasyCaching.Core.Configurations;
+using AsyncKeyedLock;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
@@ -37,6 +40,7 @@ namespace Emby.Server.Implementations.Library
         // Do not use a pipe here because Roku http requests to the server will fail, without any explicit error message.
         private const char LiveStreamIdDelimeter = '_';
 
+        private readonly IServerApplicationHost _appHost;
         private readonly IItemRepository _itemRepo;
         private readonly IUserManager _userManager;
         private readonly ILibraryManager _libraryManager;
@@ -49,12 +53,13 @@ namespace Emby.Server.Implementations.Library
         private readonly IDirectoryService _directoryService;
 
         private readonly ConcurrentDictionary<string, ILiveStream> _openStreams = new ConcurrentDictionary<string, ILiveStream>(StringComparer.OrdinalIgnoreCase);
-        private readonly SemaphoreSlim _liveStreamSemaphore = new SemaphoreSlim(1, 1);
+        private readonly AsyncNonKeyedLocker _liveStreamLocker = new(1);
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
         private IMediaSourceProvider[] _providers;
 
         public MediaSourceManager(
+            IServerApplicationHost appHost,
             IItemRepository itemRepo,
             IApplicationPaths applicationPaths,
             ILocalizationManager localizationManager,
@@ -66,6 +71,7 @@ namespace Emby.Server.Implementations.Library
             IMediaEncoder mediaEncoder,
             IDirectoryService directoryService)
         {
+            _appHost = appHost;
             _itemRepo = itemRepo;
             _userManager = userManager;
             _libraryManager = libraryManager;
@@ -463,12 +469,10 @@ namespace Emby.Server.Implementations.Library
 
         public async Task<Tuple<LiveStreamResponse, IDirectStreamProvider>> OpenLiveStreamInternal(LiveStreamRequest request, CancellationToken cancellationToken)
         {
-            await _liveStreamSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
             MediaSourceInfo mediaSource;
             ILiveStream liveStream;
 
-            try
+            using (await _liveStreamLocker.LockAsync(cancellationToken).ConfigureAwait(false))
             {
                 var (provider, keyId) = GetProvider(request.OpenToken);
 
@@ -487,10 +491,6 @@ namespace Emby.Server.Implementations.Library
                 SetKeyProperties(provider, mediaSource);
 
                 _openStreams[mediaSource.LiveStreamId] = liveStream;
-            }
-            finally
-            {
-                _liveStreamSemaphore.Release();
             }
 
             try
@@ -520,10 +520,10 @@ namespace Emby.Server.Implementations.Library
             _logger.LogInformation("Live stream opened: {@MediaSource}", mediaSource);
             var clone = JsonSerializer.Deserialize<MediaSourceInfo>(json, _jsonOptions);
 
-            if (!request.UserId.Equals(default))
+            if (!request.UserId.IsEmpty())
             {
                 var user = _userManager.GetUserById(request.UserId);
-                var item = request.ItemId.Equals(default)
+                var item = request.ItemId.IsEmpty()
                     ? null
                     : _libraryManager.GetItemById(request.ItemId);
                 SetDefaultAudioAndSubtitleStreamIndexes(item, clone, user);
@@ -799,13 +799,40 @@ namespace Emby.Server.Implementations.Library
             return result.Item1;
         }
 
+        public async Task<List<MediaSourceInfo>> GetRecordingStreamMediaSources(ActiveRecordingInfo info, CancellationToken cancellationToken)
+        {
+            var stream = new MediaSourceInfo
+            {
+                EncoderPath = _appHost.GetApiUrlForLocalAccess() + "/LiveTv/LiveRecordings/" + info.Id + "/stream",
+                EncoderProtocol = MediaProtocol.Http,
+                Path = info.Path,
+                Protocol = MediaProtocol.File,
+                Id = info.Id,
+                SupportsDirectPlay = false,
+                SupportsDirectStream = true,
+                SupportsTranscoding = true,
+                IsInfiniteStream = true,
+                RequiresOpening = false,
+                RequiresClosing = false,
+                BufferMs = 0,
+                IgnoreDts = true,
+                IgnoreIndex = true
+            };
+
+            await new LiveStreamHelper(_mediaEncoder, _logger, _appPaths)
+                .AddMediaInfoWithProbe(stream, false, false, cancellationToken).ConfigureAwait(false);
+
+            return new List<MediaSourceInfo>
+            {
+                stream
+            };
+        }
+
         public async Task CloseLiveStream(string id)
         {
             ArgumentException.ThrowIfNullOrEmpty(id);
 
-            await _liveStreamSemaphore.WaitAsync().ConfigureAwait(false);
-
-            try
+            using (await _liveStreamLocker.LockAsync().ConfigureAwait(false))
             {
                 if (_openStreams.TryGetValue(id, out ILiveStream liveStream))
                 {
@@ -823,10 +850,6 @@ namespace Emby.Server.Implementations.Library
                         _logger.LogInformation("Live stream {0} closed successfully", id);
                     }
                 }
-            }
-            finally
-            {
-                _liveStreamSemaphore.Release();
             }
         }
 
@@ -864,7 +887,7 @@ namespace Emby.Server.Implementations.Library
                     CloseLiveStream(key).GetAwaiter().GetResult();
                 }
 
-                _liveStreamSemaphore.Dispose();
+                _liveStreamLocker.Dispose();
             }
         }
     }

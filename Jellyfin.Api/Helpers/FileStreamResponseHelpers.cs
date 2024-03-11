@@ -4,9 +4,9 @@ using System.Net.Http;
 using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Api.Models.PlaybackDtos;
-using Jellyfin.Api.Models.StreamingDtos;
+using Jellyfin.Api.Extensions;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Streaming;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
@@ -65,7 +65,7 @@ public static class FileStreamResponseHelpers
     /// <param name="state">The current <see cref="StreamState"/>.</param>
     /// <param name="isHeadRequest">Whether the current request is a HTTP HEAD request so only the headers get returned.</param>
     /// <param name="httpContext">The current http context.</param>
-    /// <param name="transcodingJobHelper">The <see cref="TranscodingJobHelper"/> singleton.</param>
+    /// <param name="transcodeManager">The <see cref="ITranscodeManager"/> singleton.</param>
     /// <param name="ffmpegCommandLineArguments">The command line arguments to start ffmpeg.</param>
     /// <param name="transcodingJobType">The <see cref="TranscodingJobType"/>.</param>
     /// <param name="cancellationTokenSource">The <see cref="CancellationTokenSource"/>.</param>
@@ -74,7 +74,7 @@ public static class FileStreamResponseHelpers
         StreamState state,
         bool isHeadRequest,
         HttpContext httpContext,
-        TranscodingJobHelper transcodingJobHelper,
+        ITranscodeManager transcodeManager,
         string ffmpegCommandLineArguments,
         TranscodingJobType transcodingJobType,
         CancellationTokenSource cancellationTokenSource)
@@ -93,27 +93,27 @@ public static class FileStreamResponseHelpers
             return new OkResult();
         }
 
-        var transcodingLock = transcodingJobHelper.GetTranscodingLock(outputPath);
-        await transcodingLock.WaitAsync(cancellationTokenSource.Token).ConfigureAwait(false);
-        try
+        using (await transcodeManager.LockAsync(outputPath, cancellationTokenSource.Token).ConfigureAwait(false))
         {
-            TranscodingJobDto? job;
+            TranscodingJob? job;
             if (!File.Exists(outputPath))
             {
-                job = await transcodingJobHelper.StartFfMpeg(state, outputPath, ffmpegCommandLineArguments, httpContext.Request, transcodingJobType, cancellationTokenSource).ConfigureAwait(false);
+                job = await transcodeManager.StartFfMpeg(
+                    state,
+                    outputPath,
+                    ffmpegCommandLineArguments,
+                    httpContext.User.GetUserId(),
+                    transcodingJobType,
+                    cancellationTokenSource).ConfigureAwait(false);
             }
             else
             {
-                job = transcodingJobHelper.OnTranscodeBeginRequest(outputPath, TranscodingJobType.Progressive);
+                job = transcodeManager.OnTranscodeBeginRequest(outputPath, TranscodingJobType.Progressive);
                 state.Dispose();
             }
 
-            var stream = new ProgressiveFileStream(outputPath, job, transcodingJobHelper);
+            var stream = new ProgressiveFileStream(outputPath, job, transcodeManager);
             return new FileStreamResult(stream, contentType);
-        }
-        finally
-        {
-            transcodingLock.Release();
         }
     }
 }
