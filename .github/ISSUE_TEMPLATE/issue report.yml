@@ -15,13 +15,15 @@ body:
       label: "This issue respects the following points:"
       description: All conditions are **required**. Failure to comply with any of these conditions may cause your issue to be closed without comment.
       options:
-        - label: This is a **bug**, not a question or a configuration issue. We recommend visiting our forum or chat rooms and troubleshoot with volunteers first. The links can be found [here](https://jellyfin.org/contact/).
+        - label: This is a **bug**, not a question or a configuration issue; Please visit our forum or chat rooms first to troubleshoot with volunteers, before creating a report. The links can be found [here](https://jellyfin.org/contact/).
           required: true
         - label: This issue is **not** already reported on [GitHub](https://github.com/jellyfin/jellyfin/issues?q=is%3Aissue+is%3Aopen+label%3Abug) _(I've searched it)_.
           required: true
-        - label: I'm using an up to date version of Jellyfin Server stable, unstable or master. We generally do not support previous older versions. If possible, please update to the latest version before opening an issue.
+        - label: I'm using an up to date version of Jellyfin Server stable, unstable or master; We generally do not support previous older versions. If possible, please update to the latest version before opening an issue.
           required: true
         - label: I agree to follow Jellyfin's [Code of Conduct](https://jellyfin.org/docs/general/community-standards.html#code-of-conduct).
+          required: true
+        - label: This report addresses only a single issue; If you encounter multiple issues, kindly create separate reports for each one.
           required: true
   - type: markdown
     id: preliminary-information
@@ -148,11 +150,11 @@ body:
     attributes:
       value: |
         When providing logs, please keep the following things in mind:
-        1. **DO NOT** use external paste services.
+        1. **DO NOT** use external paste services. If logs are too large to paste into the field, upload them as text files.
         2. Please provide complete logs.
-          - For server logs, include everything you think is important plus *10 lines before and after*
+          - For server logs, ensure to capture all relevant information, encompassing both the events leading up to and following the occurrence of the issue. Typically, providing 10 *lines preceding and succeeding* the problem should be adequate.
           - For ffmpeg logs, please provide the entire file unmodified.
-        3. Please do not run logs through any translation program. Especially beware if your browser translates pages by default.
+        3. Please do not run logs through any translation program. We only accept raw logs that are not translated. Especially beware if your browser translates pages by default.
         4. Please do not include logs as screenshots, with the only exception being client logs in browsers.
   - type: textarea
     id: jellyfin-logs
