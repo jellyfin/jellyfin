@@ -13,7 +13,7 @@ body:
     id: before-posting
     attributes:
       label: "This issue respects the following points:"
-      description: All conditions are **required**. Your issue can be closed if these are checked incorrectly.
+      description: All conditions are **required**. Failure to comply with any of these conditions may cause your issue to be closed without comment.
       options:
         - label: This is a **bug**, not a question or a configuration issue. We recommend visiting our forum or chat rooms and troubleshoot with volunteers first. The links can be found [here](https://jellyfin.org/contact/).
           required: true
