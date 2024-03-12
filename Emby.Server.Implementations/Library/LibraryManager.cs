@@ -2649,6 +2649,7 @@ namespace Emby.Server.Implementations.Library
                         if (dashIndexValue >= 0)
                         {
                             prefix = current.Name.Substring(0, dashIndexValue); // possible episode name
+                            prefix = ParseName(prefix).Name; // clean name - remove all things in brackets etc
                             string path = current.FullName;
                             path = string.Concat(path.AsSpan(0, path.LastIndexOf('-')), current.Extension);
                             var episodeInfo = resolver.Resolve(path, false);
@@ -2686,8 +2687,8 @@ namespace Emby.Server.Implementations.Library
                         }
                     }
 
-                    // if owner is Episode, only suffix type matches will be allowed, episode file name must match exactly
-                    if (owner is not Episode || (prefix is not null && prefix.Equals(Path.GetFileNameWithoutExtension(ownerVideoInfo.Path), StringComparison.OrdinalIgnoreCase)))
+                    // if owner is Episode, only suffix type matches will be allowed, episode file cleaned name must match
+                    if (owner is not Episode || (prefix is not null && prefix.Equals(ownerVideoInfo.Name, StringComparison.OrdinalIgnoreCase)))
                     {
                         var extra = GetExtra(current, extraType.Value);
                         if (extra is not null)

@@ -311,6 +311,7 @@ public class FindExtrasTests
         {
             "/series/Dexter/Season 1/Dexter - S01E01.mkv",
             "/series/Dexter/Season 1/Dexter - S01E01-deleted.mkv",
+            "/series/Dexter/Season 1/Dexter - S01E01 [WEBDL-1080p AVC][AAC 2.0][YouTube]-deleted.mkv",
             "/series/Dexter/Season 1/Dexter - S01E02 - Second Epi.mkv",
             "/series/Dexter/Season 1/Dexter - S01E02 - Second Epi-interview.mkv",
             "/series/Dexter/Season 1/Dexter - S01E02 - Second Epi-scene.mkv",
@@ -348,8 +349,10 @@ public class FindExtrasTests
         var owner = new Season { Name = "Season 1", SeriesName = "Dexter", Path = "/series/Dexter/Season 1" };
         var paths = new List<string>
         {
-            "/series/Dexter/Season 1/Dexter - S01E01.mkv",
-            "/series/Dexter/Season 1/Dexter - S01E01-deleted.mkv",
+            "/series/Dexter/Season 1/Dexter 1x01 [Bluray-1080p x264][AC3 5.1][-reward] - Northwest Passage.mkv",
+            "/series/Dexter/Season 1/Dexter 1x01-deleted.mkv",
+            "/series/Dexter/Season 1/Dexter 1x01 [WEBDL-1080p AVC][AAC 2.0][YouTube]-deleted.mkv",
+            "/series/Dexter/Season 1/Dexter 1x01 [WEBDL-1080p AVC][AAC 2.0][YouTube][-MrC] - Log Lady Introduction 1-extra.mkv",
             "/series/Dexter/Season 1/Dexter - S01E02 - Second Epi.mkv",
             "/series/Dexter/Season 1/Dexter - S01E02 - Second Epi-interview.mkv",
             "/series/Dexter/Season 1/Dexter - S01E02 - Second Epi-scene.mkv",
@@ -483,5 +486,32 @@ public class FindExtrasTests
         Assert.Equal(typeof(Video), extras[1].GetType());
         Assert.Equal("/series/Dexter/Dexter - S03E05/Dexter - S03E05 - Fifth-featurette.mkv", extras[1].Path);
         Assert.Equal("/series/Dexter/Dexter - S03E05/Dexter - S03E05 - Fifth-featurette2.mkv", extras[2].Path);
+    }
+
+    [Fact]
+    public void FindExtras_EpisodeWithExtras_CleanNameTest()
+    {
+        var paths = new List<string>
+        {
+            "/series/Dexter/Season 1/Dexter - S01E01[Bluray-1080p x264][AC3 5.1].mkv",
+            "/series/Dexter/Season 1/Dexter - S01E01 [WEBDL-1080p AVC][AAC 2.0][YouTube]-deleted.mkv",
+            "/series/Dexter/Season 1/Dexter - S01E01[Bluray-1080p x264][AC3 5.1] - Some crazy deleted scene -deleted.mkv"
+        };
+
+        var files = paths.Select(p => new FileSystemMetadata
+        {
+            FullName = p,
+            Name = Path.GetFileName(p),
+            Extension = Path.GetExtension(p),
+            IsDirectory = string.IsNullOrEmpty(Path.GetExtension(p))
+        }).ToList();
+
+        var owner = new Episode { Name = "Dexter - S01E01", Path = "/series/Dexter/Season 1/Dexter - S01E01[Bluray-1080p x264][AC3 5.1].mkv", IsInMixedFolder = true };
+        var extras = _libraryManager.FindExtras(owner, files, new DirectoryService(_fileSystemMock.Object)).OrderBy(e => e.ExtraType).ToList();
+
+        Assert.Equal(2, extras.Count);
+        Assert.Equal(ExtraType.DeletedScene, extras[0].ExtraType);
+        Assert.Equal(typeof(Video), extras[0].GetType());
+        Assert.Equal("/series/Dexter/Season 1/Dexter - S01E01 [WEBDL-1080p AVC][AAC 2.0][YouTube]-deleted.mkv", extras[0].Path);
     }
 }
