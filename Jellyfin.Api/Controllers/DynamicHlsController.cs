@@ -1804,8 +1804,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         {
             if (EncodingHelper.IsCopyCodec(codec)
                 && (state.VideoStream.VideoRangeType == VideoRangeType.DOVI
-                    || state.VideoStream.VideoRangeType == VideoRangeType.DolbyVisionWithHDR10Fallback
-                    || state.VideoStream.VideoRangeType == VideoRangeType.DolbyVisionWithHLGFallback
+                    || state.VideoStream.VideoRangeType == VideoRangeType.DOVIWithHDR10
+                    || state.VideoStream.VideoRangeType == VideoRangeType.DOVIWithHLG
                     || string.Equals(state.VideoStream.CodecTag, "dovi", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(state.VideoStream.CodecTag, "dvh1", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(state.VideoStream.CodecTag, "dvhe", StringComparison.OrdinalIgnoreCase)))

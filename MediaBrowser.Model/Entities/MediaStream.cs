@@ -706,11 +706,6 @@ namespace MediaBrowser.Model.Entities
             {
                 return (VideoRange.Unknown, VideoRangeType.Unknown);
             }
-
-            bool isDoVi = false;
-            bool isHDR10 = false;
-            bool isHLG = false;
-
             var codecTag = CodecTag;
             var dvProfile = DvProfile;
             var rpuPresentFlag = RpuPresentFlag == 1;
@@ -726,45 +721,23 @@ namespace MediaBrowser.Model.Entities
                 || string.Equals(codecTag, "dvhe", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codecTag, "dav1", StringComparison.OrdinalIgnoreCase))
             {
-                isDoVi = true;
+                return dvBlCompatId switch {
+                    1 => (VideoRange.HDR, VideoRangeType.DOVIWithHDR10),
+                    4 => (VideoRange.HDR, VideoRangeType.DOVIWithHLG),
+                    _ => (VideoRange.HDR, VideoRangeType.DOVI)
+                };
             }
 
             var colorTransfer = ColorTransfer;
 
             if (string.Equals(colorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase))
             {
-                isHDR10 = true;
-            }
-
-            if (string.Equals(colorTransfer, "arib-std-b67", StringComparison.OrdinalIgnoreCase))
-            {
-                isHLG = true;
-            }
-
-            if (isDoVi)
-            {
-                if (isHDR10)
-                {
-                    return (VideoRange.HDR, VideoRangeType.DolbyVisionWithHDR10Fallback);
-                }
-                else if (isHLG)
-                {
-                    return (VideoRange.HDR, VideoRangeType.DolbyVisionWithHLGFallback);
-                }
-
-                return (VideoRange.HDR, VideoRangeType.DOVI);
-            }
-
-            if (isHDR10)
-            {
                 return (VideoRange.HDR, VideoRangeType.HDR10);
             }
-
-            if (isHLG)
+            else if (string.Equals(colorTransfer, "arib-std-b67", StringComparison.OrdinalIgnoreCase))
             {
                 return (VideoRange.HDR, VideoRangeType.HLG);
             }
-
             return (VideoRange.SDR, VideoRangeType.SDR);
         }
     }

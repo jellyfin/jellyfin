@@ -287,8 +287,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             return state.VideoStream.VideoRange == VideoRange.HDR
                    && (state.VideoStream.VideoRangeType == VideoRangeType.HDR10
                        || state.VideoStream.VideoRangeType == VideoRangeType.HLG
-                       || state.VideoStream.VideoRangeType == VideoRangeType.DolbyVisionWithHDR10Fallback
-                       || state.VideoStream.VideoRangeType == VideoRangeType.DolbyVisionWithHLGFallback);
+                       || state.VideoStream.VideoRangeType == VideoRangeType.DOVIWithHDR10
+                       || state.VideoStream.VideoRangeType == VideoRangeType.DOVIWithHLG);
         }
 
         private bool IsVulkanHwTonemapAvailable(EncodingJobInfo state, EncodingOptions options)
@@ -317,7 +317,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             return state.VideoStream.VideoRange == VideoRange.HDR
                    && (state.VideoStream.VideoRangeType == VideoRangeType.HDR10
-                       || state.VideoStream.VideoRangeType == VideoRangeType.DolbyVisionWithHDR10Fallback);
+                       || state.VideoStream.VideoRangeType == VideoRangeType.DOVIWithHDR10);
         }
 
         private bool IsVideoToolboxTonemapAvailable(EncodingJobInfo state, EncodingOptions options)
