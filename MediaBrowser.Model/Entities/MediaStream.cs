@@ -706,6 +706,7 @@ namespace MediaBrowser.Model.Entities
             {
                 return (VideoRange.Unknown, VideoRangeType.Unknown);
             }
+
             var codecTag = CodecTag;
             var dvProfile = DvProfile;
             var rpuPresentFlag = RpuPresentFlag == 1;
@@ -734,10 +735,12 @@ namespace MediaBrowser.Model.Entities
             {
                 return (VideoRange.HDR, VideoRangeType.HDR10);
             }
+
             else if (string.Equals(colorTransfer, "arib-std-b67", StringComparison.OrdinalIgnoreCase))
             {
                 return (VideoRange.HDR, VideoRangeType.HLG);
             }
+
             return (VideoRange.SDR, VideoRangeType.SDR);
         }
     }
