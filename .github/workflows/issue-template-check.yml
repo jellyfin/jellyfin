@@ -23,6 +23,6 @@ jobs:
       - name: check and comment issue
         run: python3 single_issue_gha.py
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.JF_BOT_TOKEN }}
           GH_REPO: ${{ github.repository }}
           ISSUE: ${{ github.event.issue.number }}
