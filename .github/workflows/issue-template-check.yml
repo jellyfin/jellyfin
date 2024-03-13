@@ -1,0 +1,28 @@
+name: Check Issue Template
+on:
+  issues:
+    types:
+      - opened
+jobs:
+  check_issue:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: pull in script
+        uses: actions/checkout@v4
+        with:
+          repository: felix920506/jellychan
+      - name: install python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+      - name: install python packages
+        run: pip install -r requirements.txt
+      - name: check and comment issue
+        run: python3 single_issue_gha.py
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          ISSUE: ${{ github.event.issue.number }}
