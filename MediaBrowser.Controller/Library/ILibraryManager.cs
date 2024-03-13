@@ -169,6 +169,15 @@ namespace MediaBrowser.Controller.Library
         BaseItem GetItemById(Guid id);
 
         /// <summary>
+        /// Gets the item by id, as T.
+        /// </summary>
+        /// <param name="id">The item id.</param>
+        /// <typeparam name="T">The type of item.</typeparam>
+        /// <returns>The item.</returns>
+        T GetItemById<T>(Guid id)
+            where T : BaseItem;
+
+        /// <summary>
         /// Gets the intros.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -508,8 +517,9 @@ namespace MediaBrowser.Controller.Library
         /// <param name="item">The item.</param>
         /// <param name="image">The image.</param>
         /// <param name="imageIndex">Index of the image.</param>
+        /// <param name="removeOnFailure">Whether to remove the image from the item on failure.</param>
         /// <returns>Task.</returns>
-        Task<ItemImageInfo> ConvertImageToLocal(BaseItem item, ItemImageInfo image, int imageIndex);
+        Task<ItemImageInfo> ConvertImageToLocal(BaseItem item, ItemImageInfo image, int imageIndex, bool removeOnFailure = true);
 
         /// <summary>
         /// Gets the items.

@@ -26,7 +26,7 @@ public class SubtitleResolverTests
     public SubtitleResolverTests()
     {
         // prep BaseItem and Video for calls made that expect managers
-        Video.LiveTvManager = Mock.Of<ILiveTvManager>();
+        Video.RecordingsManager = Mock.Of<IRecordingsManager>();
 
         var applicationPaths = new Mock<IServerApplicationPaths>().Object;
         var serverConfig = new Mock<IServerConfigurationManager>();
