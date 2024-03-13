@@ -735,7 +735,6 @@ namespace MediaBrowser.Model.Entities
             {
                 return (VideoRange.HDR, VideoRangeType.HDR10);
             }
-
             else if (string.Equals(colorTransfer, "arib-std-b67", StringComparison.OrdinalIgnoreCase))
             {
                 return (VideoRange.HDR, VideoRangeType.HLG);
