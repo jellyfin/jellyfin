@@ -371,6 +371,11 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     var year = Convert.ToInt32(tags.Year);
                     audio.ProductionYear = year;
+
+                    if (!audio.PremiereDate.HasValue)
+                    {
+                        audio.PremiereDate = new DateTime(year, 01, 01);
+                    }
                 }
 
                 if (!audio.LockedFields.Contains(MetadataField.Genres))
