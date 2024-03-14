@@ -143,7 +143,7 @@ namespace Jellyfin.Server
                     .ConfigureWebHostDefaults(webHostBuilder =>
                     {
                         webHostBuilder.ConfigureWebHostBuilder(appHost, startupConfig, appPaths, _logger);
-                        if (Environment.GetEnvironmentVariable("ASPNETCORE_IIS_PHYSICAL_PATH") is not null)
+                        if (bool.TryParse(Environment.GetEnvironmentVariable("JELLYFIN_ENABLE_IIS"), out var iisEnabled) && iisEnabled)
                         {
                             webHostBuilder.UseIIS();
                         }
