@@ -12,7 +12,7 @@ jobs:
       - name: pull in script
         uses: actions/checkout@v4
         with:
-          repository: felix920506/jellychan
+          repository: jellyfin/jellyfin-triage-script
       - name: install python
         uses: actions/setup-python@v5
         with:
