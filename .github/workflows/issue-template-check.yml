@@ -19,9 +19,9 @@ jobs:
           python-version: '3.12'
           cache: 'pip'
       - name: install python packages
-        run: pip install -r requirements.txt
+        run: pip install -r main-repo-triage/requirements.txt
       - name: check and comment issue
-        run: python3 single_issue_gha.py
+        run: cd main-repo-triage/; python3 single_issue_gha.py
         env:
           GH_TOKEN: ${{ secrets.JF_BOT_TOKEN }}
           GH_REPO: ${{ github.repository }}
