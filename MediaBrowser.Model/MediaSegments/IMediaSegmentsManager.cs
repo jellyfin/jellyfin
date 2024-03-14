@@ -36,6 +36,6 @@ public interface IMediaSegmentsManager
     /// <param name="streamIndex">Optional: Just segments with MediaStreamIndex.</param>
     /// <param name="typeIndex">Optional: The typeIndex.</param>
     /// <param name="type">Optional: The segment type.</param>
-    /// <returns>Deleted segments.</returns>
-    Task<IReadOnlyList<MediaSegment>> DeleteSegments(Guid itemId, int? streamIndex = null, int? typeIndex = null, MediaSegmentType? type = null);
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    public Task DeleteSegments(Guid itemId, int? streamIndex = null, int? typeIndex = null, MediaSegmentType? type = null);
 }

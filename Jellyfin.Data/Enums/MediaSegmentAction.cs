@@ -23,7 +23,7 @@ namespace Jellyfin.Data.Enums.MediaSegmentAction
         /// <summary>
         /// Prompt user to skip the MediaSegment.
         /// </summary>
-        Prompt = 3,
+        PromptToSkip = 3,
 
         /// <summary>
         /// Mute the MediaSegment.

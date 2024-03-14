@@ -39,9 +39,11 @@ public class MediaSegmentsController : BaseJellyfinApiController
     /// <param name="type">All segments of type.</param>
     /// <param name="typeIndex">All segments with typeIndex.</param>
     /// <response code="200">Segments returned.</response>
+    /// <response code="404">itemId doesn't exist.</response>
     /// <returns>An <see cref="OkResult"/>containing the found segments.</returns>
     [HttpGet("{itemId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<IReadOnlyList<MediaSegmentDto>>> GetSegments(
         [FromRoute, Required] Guid itemId,
         [FromQuery] int? streamIndex,
@@ -64,7 +66,7 @@ public class MediaSegmentsController : BaseJellyfinApiController
     [Authorize(Policy = Policies.MediaSegmentsManagement)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<IReadOnlyList<MediaSegmentDto>>> PostSegments(
+    public async Task<ActionResult<IReadOnlyList<MediaSegmentDto>>> CreateSegments(
         [FromRoute, Required] Guid itemId,
         [FromBody, Required] IReadOnlyList<MediaSegmentDto> segments)
     {
@@ -81,20 +83,19 @@ public class MediaSegmentsController : BaseJellyfinApiController
     /// <param name="streamIndex">Segment is associated with MediaStreamIndex.</param>
     /// <param name="type">All segments of type.</param>
     /// <param name="typeIndex">All segments with typeIndex.</param>
-    /// <response code="200">Segments returned.</response>
+    /// <response code="200">Segments deleted.</response>
     /// <response code="404">Segments not found.</response>
-    /// <returns>An <see cref="OkResult"/>containing the deleted segments.</returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     [HttpDelete("{itemId}")]
     [Authorize(Policy = Policies.MediaSegmentsManagement)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<IReadOnlyList<MediaSegmentDto>>> DeleteSegments(
+    public async Task DeleteSegments(
         [FromRoute, Required] Guid itemId,
         [FromQuery] int? streamIndex,
         [FromQuery] MediaSegmentType? type,
         [FromQuery] int? typeIndex)
     {
-        var list = await _mediaSegmentManager.DeleteSegments(itemId, streamIndex, typeIndex, type).ConfigureAwait(false);
-        return Ok(list.ConvertAll(MediaSegmentDto.FromMediaSegment));
+        await _mediaSegmentManager.DeleteSegments(itemId, streamIndex, typeIndex, type).ConfigureAwait(false);
     }
 }

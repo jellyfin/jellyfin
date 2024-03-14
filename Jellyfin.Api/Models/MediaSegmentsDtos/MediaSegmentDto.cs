@@ -55,7 +55,7 @@ public class MediaSegmentDto
     /// <summary>
     /// Gets or sets a comment.
     /// </summary>
-    /// <value>The media segment action.</value>
+    /// <value>The user provided value to be displayed when the <see cref="MediaSegmentDto.Type"/> is a <see cref="MediaSegmentType.Annotation" />.</value>
     public string? Comment { get; set; }
 
     /// <summary>

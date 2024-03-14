@@ -144,10 +144,8 @@ public sealed class MediaSegmentsManager : IMediaSegmentsManager, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyList<MediaSegment>> DeleteSegments(Guid itemId, int? streamIndex = null, int? typeIndex = null, MediaSegmentType? type = null)
+    public async Task DeleteSegments(Guid itemId, int? streamIndex = null, int? typeIndex = null, MediaSegmentType? type = null)
     {
-        List<MediaSegment> allSegments;
-
         if (itemId.IsEmpty())
         {
             throw new ArgumentException("Default value provided", nameof(itemId));
@@ -173,13 +171,8 @@ public sealed class MediaSegmentsManager : IMediaSegmentsManager, IDisposable
                 queryable = queryable.Where(s => s.TypeIndex == typeIndex);
             }
 
-            allSegments = await queryable.ToListAsync().ConfigureAwait(false);
-
-            dbContext.Segments.RemoveRange(allSegments);
-            await dbContext.SaveChangesAsync().ConfigureAwait(false);
+            await queryable.ExecuteDeleteAsync().ConfigureAwait(false);
         }
-
-        return allSegments;
     }
 
     /// <inheritdoc/>
