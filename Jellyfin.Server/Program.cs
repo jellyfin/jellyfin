@@ -145,6 +145,7 @@ namespace Jellyfin.Server
                         webHostBuilder.ConfigureWebHostBuilder(appHost, startupConfig, appPaths, _logger);
                         if (bool.TryParse(Environment.GetEnvironmentVariable("JELLYFIN_ENABLE_IIS"), out var iisEnabled) && iisEnabled)
                         {
+                        _logger.LogCritical("UNSUPPORTED HOSTING ENVIORMENT Microsoft Internet Information Services. The option to run Jellyfin on IIS is an unsupported and untested feature. Only use at your own discretion.");
                             webHostBuilder.UseIIS();
                         }
                     })
