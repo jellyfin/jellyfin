@@ -177,10 +177,11 @@
  - [Chris-Codes-It](https://github.com/Chris-Codes-It)
  - [Pithaya](https://github.com/Pithaya)
  - [Çağrı Sakaoğlu](https://github.com/ilovepilav)
- _ [Barasingha](https://github.com/MaVdbussche)
+ - [Barasingha](https://github.com/MaVdbussche)
  - [Gauvino](https://github.com/Gauvino)
  - [felix920506](https://github.com/felix920506)
  - [btopherjohnson](https://github.com/btopherjohnson)
+ - [GeorgeH005](https://github.com/GeorgeH005)
 
 # Emby Contributors
 
