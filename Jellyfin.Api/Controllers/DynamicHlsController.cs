@@ -1807,10 +1807,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             if (EncodingHelper.IsCopyCodec(codec)
                 && (state.VideoStream.VideoRangeType == VideoRangeType.DOVI
                     || (state.VideoStream.VideoRangeType == VideoRangeType.DOVIWithHDR10 && requestedRange.Contains(VideoRangeType.DOVIWithHDR10.ToString(), StringComparison.OrdinalIgnoreCase))
-                    || (state.VideoStream.VideoRangeType == VideoRangeType.DOVIWithHLG && requestedRange.Contains(VideoRangeType.DOVIWithHLG.ToString(), StringComparison.OrdinalIgnoreCase))
-                    || string.Equals(state.VideoStream.CodecTag, "dovi", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(state.VideoStream.CodecTag, "dvh1", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(state.VideoStream.CodecTag, "dvhe", StringComparison.OrdinalIgnoreCase)))
+                    || (state.VideoStream.VideoRangeType == VideoRangeType.DOVIWithHLG && requestedRange.Contains(VideoRangeType.DOVIWithHLG.ToString(), StringComparison.OrdinalIgnoreCase))))
             {
                 // Prefer dvh1 to dvhe
                 args += " -tag:v:0 dvh1 -strict -2";
