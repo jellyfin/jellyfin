@@ -6,28 +6,23 @@ namespace Jellyfin.Data.Enums.MediaSegmentAction
     public enum MediaSegmentAction
     {
         /// <summary>
-        /// Auto, use default for type.
-        /// </summary>
-        Auto = 0,
-
-        /// <summary>
         /// None, do nothing with MediaSegment.
         /// </summary>
-        None = 1,
+        None = 0,
 
         /// <summary>
         /// Force skip the MediaSegment.
         /// </summary>
-        Skip = 2,
+        Skip = 1,
 
         /// <summary>
         /// Prompt user to skip the MediaSegment.
         /// </summary>
-        PromptToSkip = 3,
+        PromptToSkip = 2,
 
         /// <summary>
         /// Mute the MediaSegment.
         /// </summary>
-        Mute = 4,
+        Mute = 3,
     }
 }
