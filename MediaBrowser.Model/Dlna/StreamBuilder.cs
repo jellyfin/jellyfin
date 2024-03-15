@@ -345,7 +345,7 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="profile">The <see cref="DeviceProfile"/>.</param>
         /// <param name="type">The <see cref="DlnaProfileType"/>.</param>
         /// <param name="playProfile">The <see cref="DirectPlayProfile"/> object to get the video stream from.</param>
-        /// <returns>The the normalized input container.</returns>
+        /// <returns>The normalized input container.</returns>
         public static string? NormalizeMediaSourceFormatIntoSingleContainer(string inputContainer, DeviceProfile? profile, DlnaProfileType type, DirectPlayProfile? playProfile = null)
         {
             if (string.IsNullOrEmpty(inputContainer))
@@ -1350,7 +1350,7 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="transcoderSupport">The <see cref="ITranscoderSupport"/>.</param>
         /// <param name="outputContainer">The output container.</param>
         /// <param name="transcodingSubProtocol">The subtitle transoding protocol.</param>
-        /// <returns>The the normalized input container.</returns>
+        /// <returns>The normalized input container.</returns>
         public static SubtitleProfile GetSubtitleProfile(
             MediaSourceInfo mediaSource,
             MediaStream subtitleStream,
