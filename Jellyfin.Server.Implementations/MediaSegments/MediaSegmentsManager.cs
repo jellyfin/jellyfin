@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities.MediaSegment;
 using Jellyfin.Data.Enums.MediaSegmentType;
+using Jellyfin.Data.Events;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.MediaSegments;
@@ -34,6 +35,9 @@ public sealed class MediaSegmentsManager : IMediaSegmentsManager, IDisposable
     }
 
     /// <inheritdoc/>
+    public event EventHandler<GenericEventArgs<Guid>>? SegmentsAddedOrUpdated;
+
+    /// <inheritdoc/>
     public async Task<IReadOnlyList<MediaSegment>> CreateMediaSegments(Guid itemId, IReadOnlyList<MediaSegment> segments)
     {
         var item = _libraryManager.GetItemById(itemId);
@@ -61,6 +65,8 @@ public sealed class MediaSegmentsManager : IMediaSegmentsManager, IDisposable
 
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
+
+        SegmentsAddedOrUpdated?.Invoke(this, new GenericEventArgs<Guid>(itemId));
 
         return segments;
     }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities.MediaSegment;
 using Jellyfin.Data.Enums.MediaSegmentType;
+using Jellyfin.Data.Events;
 
 namespace MediaBrowser.Model.MediaSegments;
 
@@ -11,6 +12,11 @@ namespace MediaBrowser.Model.MediaSegments;
 /// </summary>
 public interface IMediaSegmentsManager
 {
+    /// <summary>
+    /// Occurs when new or updated segments are available for itemId.
+    /// </summary>
+    public event EventHandler<GenericEventArgs<Guid>>? SegmentsAddedOrUpdated;
+
     /// <summary>
     /// Create or update multiple media segments.
     /// </summary>
