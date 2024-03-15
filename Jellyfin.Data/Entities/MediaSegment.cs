@@ -54,7 +54,7 @@ namespace Jellyfin.Data.Entities.MediaSegment
         /// <summary>
         /// Gets or sets a comment.
         /// </summary>
-        /// <value>The media segment action.</value>
+        /// <value>The user provided value to be displayed when the <see cref="MediaSegment.Type"/> is a <see cref="MediaSegmentType.Annotation" />.</value>
         public string? Comment { get; set; }
     }
 }
