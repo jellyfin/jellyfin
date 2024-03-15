@@ -51,6 +51,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         private readonly Version _minFFmpegOclCuTonemapMode = new Version(5, 1, 3);
         private readonly Version _minFFmpegSvtAv1Params = new Version(5, 1);
         private readonly Version _minFFmpegVaapiH26xEncA53CcSei = new Version(6, 0);
+        private readonly Version _minFFmpegAutoscaleOption = new Version(4, 4);
+        private readonly Version _minFFmpegReadrateOption = new Version(5, 0);
 
         private static readonly string[] _videoProfilesH264 = new[]
         {
@@ -1221,7 +1223,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             // Disable auto inserted SW scaler for HW decoders in case of changed resolution.
             var isSwDecoder = string.IsNullOrEmpty(GetHardwareVideoDecoder(state, options));
-            if (!isSwDecoder && _mediaEncoder.EncoderVersion >= new Version(4, 4))
+            if (!isSwDecoder && _mediaEncoder.EncoderVersion >= _minFFmpegAutoscaleOption)
             {
                 arg.Append(" -noautoscale");
             }
@@ -6392,6 +6394,16 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (state.ReadInputAtNativeFramerate && state.InputProtocol != MediaProtocol.Rtsp)
             {
                 inputModifier += " -re";
+            }
+            else if (encodingOptions.EnableSegmentDeletion
+                && state.VideoStream is not null
+                && state.TranscodingType == TranscodingJobType.Hls
+                && IsCopyCodec(state.OutputVideoCodec)
+                && _mediaEncoder.EncoderVersion >= _minFFmpegReadrateOption)
+            {
+                // Set an input read rate limit 10x for using SegmentDeletion with stream-copy
+                // to prevent ffmpeg from exiting prematurely (due to fast drive)
+                inputModifier += " -readrate 10";
             }
 
             var flags = new List<string>();
