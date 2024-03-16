@@ -348,9 +348,9 @@ namespace MediaBrowser.Providers.MediaInfo
                     }
                 }
 
-                if (!audio.LockedFields.Contains(MetadataField.Name))
+                if (!audio.LockedFields.Contains(MetadataField.Name) && !string.IsNullOrEmpty(tags.Title))
                 {
-                    audio.Name = options.ReplaceAllMetadata || string.IsNullOrEmpty(audio.Name) ? tags.Title : audio.Name;
+                    audio.Name = tags.Title;
                 }
 
                 if (options.ReplaceAllMetadata)
