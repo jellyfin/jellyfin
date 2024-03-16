@@ -132,10 +132,6 @@ public class LyricsController : BaseJellyfinApiController
         var user = !isApiKey && !userId.IsEmpty()
             ? _userManager.GetUserById(userId) ?? throw new ResourceNotFoundException()
             : null;
-        if (!isApiKey && user is null)
-        {
-            return Unauthorized("Unauthorized access");
-        }
 
         var audio = _libraryManager.GetItemById<Audio>(itemId);
         if (audio is null)
@@ -201,11 +197,6 @@ public class LyricsController : BaseJellyfinApiController
             ? _userManager.GetUserById(userId) ?? throw new ResourceNotFoundException()
             : null;
 
-        if (!isApiKey && user is null)
-        {
-            return Unauthorized("Unauthorized access");
-        }
-
         var audio = _libraryManager.GetItemById<Audio>(itemId);
         if (audio is null)
         {
@@ -240,10 +231,6 @@ public class LyricsController : BaseJellyfinApiController
         var user = !isApiKey && !userId.IsEmpty()
             ? _userManager.GetUserById(userId) ?? throw new ResourceNotFoundException()
             : null;
-        if (!isApiKey && user is null)
-        {
-            return Unauthorized("Unauthorized access");
-        }
 
         var audio = _libraryManager.GetItemById<Audio>(itemId);
         if (audio is null)
@@ -281,10 +268,6 @@ public class LyricsController : BaseJellyfinApiController
         var user = !isApiKey && !userId.IsEmpty()
             ? _userManager.GetUserById(userId) ?? throw new ResourceNotFoundException()
             : null;
-        if (!isApiKey && user is null)
-        {
-            return Unauthorized("Unauthorized access");
-        }
 
         var audio = _libraryManager.GetItemById<Audio>(itemId);
         if (audio is null)
