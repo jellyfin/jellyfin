@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.Session;
+using Jellyfin.Api.Filters;
 using Jellyfin.Api.WebSocketListeners;
 using Jellyfin.Drawing;
 using Jellyfin.Drawing.Skia;
@@ -93,8 +94,8 @@ namespace Jellyfin.Server
             serviceCollection.AddSingleton<IWebSocketListener, ScheduledTasksWebSocketListener>();
             serviceCollection.AddSingleton<IWebSocketListener, SessionInfoWebSocketListener>();
 
+            serviceCollection.AddSingleton<ItemAccessFilter>();
             serviceCollection.AddSingleton<IAuthorizationContext, AuthorizationContext>();
-
             serviceCollection.AddScoped<IAuthenticationManager, AuthenticationManager>();
 
             foreach (var type in GetExportTypes<ILyricProvider>())

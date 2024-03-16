@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Net.Mime;
+using Jellyfin.Api.Filters;
 using Jellyfin.Api.Results;
 using Jellyfin.Extensions.Json;
 using Microsoft.AspNetCore.Mvc;
@@ -15,6 +16,7 @@ namespace Jellyfin.Api;
     MediaTypeNames.Application.Json,
     JsonDefaults.CamelCaseMediaType,
     JsonDefaults.PascalCaseMediaType)]
+[ServiceFilter<ItemAccessFilter>]
 public class BaseJellyfinApiController : ControllerBase
 {
     /// <summary>
