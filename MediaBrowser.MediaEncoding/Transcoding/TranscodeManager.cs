@@ -724,7 +724,14 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
 
         foreach (var file in _fileSystem.GetFilePaths(path, true))
         {
-            _fileSystem.DeleteFile(file);
+            try
+            {
+                _fileSystem.DeleteFile(file);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting encoded media cache file {Path}", path);
+            }
         }
     }
 
