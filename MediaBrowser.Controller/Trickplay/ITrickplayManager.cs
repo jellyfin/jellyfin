@@ -70,7 +70,8 @@ public interface ITrickplayManager
     /// </summary>
     /// <param name="itemId">The item.</param>
     /// <param name="width">The width of a single thumbnail.</param>
+    /// <param name="user">The requesting user.</param>
     /// <param name="apiKey">Optional api key of the requesting user.</param>
     /// <returns>The text content of the .m3u8 playlist.</returns>
-    Task<string?> GetHlsPlaylist(Guid itemId, int width, string? apiKey);
+    Task<string?> GetHlsPlaylist(Guid itemId, int width, User user, string? apiKey);
 }
