@@ -9,6 +9,7 @@ using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Api;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Lyrics;
@@ -113,6 +114,7 @@ public class LyricsController : BaseJellyfinApiController
     /// <response code="200">Lyrics uploaded.</response>
     /// <response code="400">Error processing upload.</response>
     /// <response code="404">Item not found.</response>
+    /// <response code="401">Requested item not authorized to be visible to the user.</response>
     /// <returns>The uploaded lyric.</returns>
     [HttpPost("Audio/{itemId}/Lyrics")]
     [Authorize(Policy = Policies.LyricManagement)]
@@ -120,14 +122,30 @@ public class LyricsController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<LyricDto>> UploadLyrics(
         [FromRoute, Required] Guid itemId,
         [FromQuery, Required] string fileName)
     {
+        var isApiKey = User.GetIsApiKey();
+        var userId = User.GetUserId();
+        var user = !isApiKey && !userId.IsEmpty()
+            ? _userManager.GetUserById(userId) ?? throw new ResourceNotFoundException()
+            : null;
+        if (!isApiKey && user is null)
+        {
+            return Unauthorized("Unauthorized access");
+        }
+
         var audio = _libraryManager.GetItemById<Audio>(itemId);
         if (audio is null)
         {
             return NotFound();
+        }
+
+        if (!isApiKey && !audio.IsVisible(user))
+        {
+            return Unauthorized();
         }
 
         if (Request.ContentLength.GetValueOrDefault(0) == 0)
@@ -168,6 +186,7 @@ public class LyricsController : BaseJellyfinApiController
     /// <param name="itemId">The item id.</param>
     /// <response code="204">Lyric deleted.</response>
     /// <response code="404">Item not found.</response>
+    /// <response code="401">Requested item not authorized to be visible to the user.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpDelete("Audio/{itemId}/Lyrics")]
     [Authorize(Policy = Policies.LyricManagement)]
@@ -176,10 +195,26 @@ public class LyricsController : BaseJellyfinApiController
     public async Task<ActionResult> DeleteLyrics(
         [FromRoute, Required] Guid itemId)
     {
+        var isApiKey = User.GetIsApiKey();
+        var userId = User.GetUserId();
+        var user = !isApiKey && !userId.IsEmpty()
+            ? _userManager.GetUserById(userId) ?? throw new ResourceNotFoundException()
+            : null;
+
+        if (!isApiKey && user is null)
+        {
+            return Unauthorized("Unauthorized access");
+        }
+
         var audio = _libraryManager.GetItemById<Audio>(itemId);
         if (audio is null)
         {
             return NotFound();
+        }
+
+        if (!isApiKey && !audio.IsVisible(user))
+        {
+            return Unauthorized();
         }
 
         await _lyricManager.DeleteLyricsAsync(audio).ConfigureAwait(false);
@@ -192,6 +227,7 @@ public class LyricsController : BaseJellyfinApiController
     /// <param name="itemId">The item id.</param>
     /// <response code="200">Lyrics retrieved.</response>
     /// <response code="404">Item not found.</response>
+    /// <response code="401">Requested item not authorized to be visible to the user.</response>
     /// <returns>An array of <see cref="RemoteLyricInfo"/>.</returns>
     [HttpGet("Audio/{itemId}/RemoteSearch/Lyrics")]
     [Authorize(Policy = Policies.LyricManagement)]
@@ -199,10 +235,25 @@ public class LyricsController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<IReadOnlyList<RemoteLyricInfoDto>>> SearchRemoteLyrics([FromRoute, Required] Guid itemId)
     {
+        var isApiKey = User.GetIsApiKey();
+        var userId = User.GetUserId();
+        var user = !isApiKey && !userId.IsEmpty()
+            ? _userManager.GetUserById(userId) ?? throw new ResourceNotFoundException()
+            : null;
+        if (!isApiKey && user is null)
+        {
+            return Unauthorized("Unauthorized access");
+        }
+
         var audio = _libraryManager.GetItemById<Audio>(itemId);
         if (audio is null)
         {
             return NotFound();
+        }
+
+        if (!isApiKey && !audio.IsVisible(user))
+        {
+            return Unauthorized();
         }
 
         var results = await _lyricManager.SearchLyricsAsync(audio, false, CancellationToken.None).ConfigureAwait(false);
@@ -215,7 +266,7 @@ public class LyricsController : BaseJellyfinApiController
     /// <param name="itemId">The item id.</param>
     /// <param name="lyricId">The lyric id.</param>
     /// <response code="200">Lyric downloaded.</response>
-    /// <response code="404">Item not found.</response>
+    /// <response code="401">Requested item not authorized to be visible to the user.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("Audio/{itemId}/RemoteSearch/Lyrics/{lyricId}")]
     [Authorize(Policy = Policies.LyricManagement)]
@@ -225,10 +276,25 @@ public class LyricsController : BaseJellyfinApiController
         [FromRoute, Required] Guid itemId,
         [FromRoute, Required] string lyricId)
     {
+        var isApiKey = User.GetIsApiKey();
+        var userId = User.GetUserId();
+        var user = !isApiKey && !userId.IsEmpty()
+            ? _userManager.GetUserById(userId) ?? throw new ResourceNotFoundException()
+            : null;
+        if (!isApiKey && user is null)
+        {
+            return Unauthorized("Unauthorized access");
+        }
+
         var audio = _libraryManager.GetItemById<Audio>(itemId);
         if (audio is null)
         {
             return NotFound();
+        }
+
+        if (!isApiKey && !audio.IsVisible(user))
+        {
+            return Unauthorized();
         }
 
         var downloadedLyrics = await _lyricManager.DownloadLyricsAsync(audio, lyricId, CancellationToken.None).ConfigureAwait(false);
@@ -254,6 +320,7 @@ public class LyricsController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<LyricDto>> GetRemoteLyrics([FromRoute, Required] string lyricId)
     {
+        // We do not check for explicit user permissions here because this does not involve any libraries or items directly.
         var result = await _lyricManager.GetRemoteLyricsAsync(lyricId, CancellationToken.None).ConfigureAwait(false);
         if (result is null)
         {
