@@ -23,6 +23,7 @@ public class TranscodingSegmentCleaner : IDisposable
     private readonly IMediaEncoder _mediaEncoder;
     private Timer? _timer;
     private int _segmentLength;
+    private List<string>? _excludeFilePaths;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TranscodingSegmentCleaner"/> class.
@@ -41,6 +42,7 @@ public class TranscodingSegmentCleaner : IDisposable
         _fileSystem = fileSystem;
         _mediaEncoder = mediaEncoder;
         _segmentLength = segmentLength;
+        _excludeFilePaths = null;
     }
 
     /// <summary>
@@ -104,23 +106,18 @@ public class TranscodingSegmentCleaner : IDisposable
 
             if (downloadPositionSeconds > 0 && segmentKeepSeconds > 0 && downloadPositionSeconds > segmentKeepSeconds)
             {
-                var idxMaxToRemove = (downloadPositionSeconds - segmentKeepSeconds) / _segmentLength;
+                var idxMaxToDelete = (downloadPositionSeconds - segmentKeepSeconds) / _segmentLength;
 
-                if (idxMaxToRemove > 0)
+                if (idxMaxToDelete > 0)
                 {
-                    await DeleteSegmentFiles(_job, 0, idxMaxToRemove, 0, 1500).ConfigureAwait(false);
+                    await DeleteSegmentFiles(_job, 0, idxMaxToDelete, 1500).ConfigureAwait(false);
                 }
             }
         }
     }
 
-    private async Task DeleteSegmentFiles(TranscodingJob job, long idxMin, long idxMax, int retryCount, int delayMs)
+    private async Task DeleteSegmentFiles(TranscodingJob job, long idxMin, long idxMax, int delayMs)
     {
-        if (retryCount >= 10)
-        {
-            return;
-        }
-
         var path = job.Path ?? throw new ArgumentException("Path can't be null.");
 
         _logger.LogDebug("Deleting segment file(s) index {Min} to {Max} from {Path}", idxMin, idxMax, path);
@@ -133,12 +130,6 @@ public class TranscodingSegmentCleaner : IDisposable
             {
                 DeleteHlsSegmentFiles(path, idxMin, idxMax);
             }
-        }
-        catch (IOException ex)
-        {
-            _logger.LogError(ex, "Error deleting segment file(s) {Path}", path);
-
-            await DeleteSegmentFiles(job, idxMin, idxMax, retryCount + 1, 500).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -154,7 +145,9 @@ public class TranscodingSegmentCleaner : IDisposable
         var name = Path.GetFileNameWithoutExtension(outputFilePath);
 
         var filesToDelete = _fileSystem.GetFilePaths(directory)
-            .Where(f => long.TryParse(Path.GetFileNameWithoutExtension(f).Replace(name, string.Empty, StringComparison.Ordinal), out var idx) && idx >= idxMin && idx <= idxMax);
+            .Where(f => (!_excludeFilePaths?.Contains(f) ?? true)
+                        && long.TryParse(Path.GetFileNameWithoutExtension(f).Replace(name, string.Empty, StringComparison.Ordinal), out var idx)
+                        && (idx >= idxMin && idx <= idxMax));
 
         List<Exception>? exs = null;
         foreach (var file in filesToDelete)
@@ -167,6 +160,7 @@ public class TranscodingSegmentCleaner : IDisposable
             catch (IOException ex)
             {
                 (exs ??= new List<Exception>(4)).Add(ex);
+                (_excludeFilePaths ??= new List<string>()).Add(file);
                 _logger.LogError(ex, "Error deleting HLS segment file {Path}", file);
             }
         }
