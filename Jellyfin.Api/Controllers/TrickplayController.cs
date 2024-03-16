@@ -50,13 +50,11 @@ public class TrickplayController : BaseJellyfinApiController
     /// <param name="width">The width of a single tile.</param>
     /// <param name="mediaSourceId">The media version id, if using an alternate version.</param>
     /// <response code="200">Tiles playlist returned.</response>
-    /// <response code="400">Requested item not found.</response>
-    /// <response code="401">Requested item not authorized to be edited by user.</response>
+    /// <response code="404">Requested item not found.</response>
     /// <returns>A <see cref="FileResult"/> containing the trickplay playlist file.</returns>
     [HttpGet("Videos/{itemId}/Trickplay/{width}/tiles.m3u8")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesPlaylistFile]
     public async Task<ActionResult> GetTrickplayHlsPlaylist(
         [FromRoute, Required] Guid itemId,
@@ -68,10 +66,6 @@ public class TrickplayController : BaseJellyfinApiController
         var user = !isApiKey && !userId.IsEmpty()
             ? _userManager.GetUserById(userId) ?? throw new ResourceNotFoundException()
             : null;
-        if (!isApiKey && user is null)
-        {
-            return Unauthorized("Unauthorized access");
-        }
 
         string? playlist = await _trickplayManager.GetHlsPlaylist(mediaSourceId ?? itemId, width, user, User.GetToken()).ConfigureAwait(false);
 
@@ -92,12 +86,10 @@ public class TrickplayController : BaseJellyfinApiController
     /// <param name="mediaSourceId">The media version id, if using an alternate version.</param>
     /// <response code="200">Tile image returned.</response>
     /// <response code="200">Tile image not found at specified index.</response>
-    /// <response code="401">Requested item not authorized to be visible to the user.</response>
     /// <returns>A <see cref="FileResult"/> containing the trickplay tiles image.</returns>
     [HttpGet("Videos/{itemId}/Trickplay/{width}/{index}.jpg")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesImageFile]
     public ActionResult GetTrickplayTileImage(
         [FromRoute, Required] Guid itemId,
@@ -110,10 +102,6 @@ public class TrickplayController : BaseJellyfinApiController
         var user = !isApiKey && !userId.IsEmpty()
             ? _userManager.GetUserById(userId) ?? throw new ResourceNotFoundException()
             : null;
-        if (!isApiKey && user is null)
-        {
-            return Unauthorized("Unauthorized access");
-        }
 
         var item = _libraryManager.GetItemById(mediaSourceId ?? itemId);
         if (item is null)
