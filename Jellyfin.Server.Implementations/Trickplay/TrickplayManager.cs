@@ -373,17 +373,20 @@ public class TrickplayManager : ITrickplayManager
     }
 
     /// <inheritdoc />
-    public async Task<string?> GetHlsPlaylist(Guid itemId, int width, User user, string? apiKey)
+    public async Task<string?> GetHlsPlaylist(Guid itemId, int width, User? user, string? apiKey)
     {
-        var item = _libraryManager.GetItemById(itemId);
-        if (item is null)
+        if (user is not null)
         {
-            return null;
-        }
+            var item = _libraryManager.GetItemById(itemId);
+            if (item is null)
+            {
+                return null;
+            }
 
-        if (!item.IsVisible(user))
-        {
-            return null;
+            if (!item.IsVisible(user))
+            {
+                return null;
+            }
         }
 
         var trickplayResolutions = await GetTrickplayResolutions(itemId).ConfigureAwait(false);

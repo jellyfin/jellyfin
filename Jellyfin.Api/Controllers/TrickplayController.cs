@@ -68,7 +68,7 @@ public class TrickplayController : BaseJellyfinApiController
         var user = !isApiKey && !userId.IsEmpty()
             ? _userManager.GetUserById(userId) ?? throw new ResourceNotFoundException()
             : null;
-        if (user is null)
+        if (!isApiKey && user is null)
         {
             return Unauthorized("Unauthorized access");
         }
@@ -110,7 +110,7 @@ public class TrickplayController : BaseJellyfinApiController
         var user = !isApiKey && !userId.IsEmpty()
             ? _userManager.GetUserById(userId) ?? throw new ResourceNotFoundException()
             : null;
-        if (user is null)
+        if (!isApiKey && user is null)
         {
             return Unauthorized("Unauthorized access");
         }
@@ -121,7 +121,7 @@ public class TrickplayController : BaseJellyfinApiController
             return NotFound();
         }
 
-        if (!item.IsVisible(user))
+        if (!isApiKey && !item.IsVisible(user))
         {
             return NotFound();
         }
