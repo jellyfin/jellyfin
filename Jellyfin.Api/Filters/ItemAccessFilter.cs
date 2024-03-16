@@ -43,6 +43,12 @@ public sealed class ItemAccessFilter : IActionFilter
     {
         ArgumentNullException.ThrowIfNull(context);
 
+        if (context.HttpContext.User.Identity?.IsAuthenticated != true)
+        {
+            // Non-authenticated request.
+            return;
+        }
+
         if (context.HttpContext.User.GetIsApiKey())
         {
             _ = GetItem(context);
@@ -63,14 +69,13 @@ public sealed class ItemAccessFilter : IActionFilter
         var user = _userManager.GetUserById(userId);
         if (user is null)
         {
-            context.Result = new BadRequestResult();
+            context.Result = new NotFoundResult();
             return;
         }
 
         var item = GetItem(context);
         if (item is null)
         {
-            context.Result = new NotFoundResult();
             return;
         }
 
