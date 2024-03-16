@@ -182,6 +182,7 @@
  - [felix920506](https://github.com/felix920506)
  - [btopherjohnson](https://github.com/btopherjohnson)
  - [GeorgeH005](https://github.com/GeorgeH005)
+ - [Vedant](https://github.com/viktory36/)
 
 # Emby Contributors
 
