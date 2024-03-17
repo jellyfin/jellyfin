@@ -722,10 +722,17 @@ namespace MediaBrowser.Model.Entities
                 || string.Equals(codecTag, "dvhe", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codecTag, "dav1", StringComparison.OrdinalIgnoreCase))
             {
-                return dvBlCompatId switch {
-                    1 => (VideoRange.HDR, VideoRangeType.DOVIWithHDR10),
-                    4 => (VideoRange.HDR, VideoRangeType.DOVIWithHLG),
-                    _ => (VideoRange.HDR, VideoRangeType.DOVI)
+                return dvProfile switch
+                {
+                    5 => (VideoRange.HDR, VideoRangeType.DOVI),
+                    8 => dvBlCompatId switch
+                    {
+                        1 => (VideoRange.HDR, VideoRangeType.DOVIWithHDR10),
+                        4 => (VideoRange.HDR, VideoRangeType.DOVIWithHLG),
+                        _ => (VideoRange.HDR, VideoRangeType.DOVI)
+                    },
+                    7 => (VideoRange.HDR, VideoRangeType.HDR10),
+                    _ => (VideoRange.SDR, VideoRangeType.SDR)
                 };
             }
 
