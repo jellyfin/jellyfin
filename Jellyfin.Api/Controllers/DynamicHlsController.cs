@@ -1797,8 +1797,6 @@ public class DynamicHlsController : BaseJellyfinApiController
 
         var args = "-codec:v:0 " + codec;
 
-        var requestedRange = state.GetRequestedRangeTypes(codec);
-
         if (string.Equals(state.ActualOutputVideoCodec, "h265", StringComparison.OrdinalIgnoreCase)
             || string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase)
             || string.Equals(codec, "h265", StringComparison.OrdinalIgnoreCase)
@@ -1806,8 +1804,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         {
             if (EncodingHelper.IsCopyCodec(codec)
                 && (state.VideoStream.VideoRangeType == VideoRangeType.DOVI
-                    || (state.VideoStream.VideoRangeType == VideoRangeType.DOVIWithHDR10 && requestedRange.Contains(VideoRangeType.DOVIWithHDR10.ToString(), StringComparison.OrdinalIgnoreCase))
-                    || (state.VideoStream.VideoRangeType == VideoRangeType.DOVIWithHLG && requestedRange.Contains(VideoRangeType.DOVIWithHLG.ToString(), StringComparison.OrdinalIgnoreCase))))
+                    || state.VideoStream.VideoRangeType == VideoRangeType.DOVIWithHDR10
+                    || state.VideoStream.VideoRangeType == VideoRangeType.DOVIWithHLG))
             {
                 // Prefer dvh1 to dvhe
                 args += " -tag:v:0 dvh1 -strict -2";
