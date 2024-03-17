@@ -29,7 +29,7 @@ public class MediaSegmentDto
     public MediaSegmentType Type { get; set; }
 
     /// <summary>
-    /// Gets or sets the TypeIndex which relates to the type.
+    /// Gets or sets the TypeIndex which allows to identify multiple segments that are of the same type and streamindex.
     /// </summary>
     /// <value>The type index.</value>
     public int TypeIndex { get; set; }
