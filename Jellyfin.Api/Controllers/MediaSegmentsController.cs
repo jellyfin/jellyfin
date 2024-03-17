@@ -90,13 +90,13 @@ public class MediaSegmentsController : BaseJellyfinApiController
     /// <param name="itemId">The item the segments belong to.</param>
     /// <param name="segments">All segments that should be added.</param>
     /// <response code="200">Segments returned.</response>
-    /// <response code="400">Invalid segments.</response>
+    /// <response code="404">itemId doesn't exist.</response>
     /// <response code="401">User is not authorized to access the requested item.</response>
     /// <returns>An <see cref="OkResult"/>containing the created/updated segments.</returns>
     [HttpPost("{itemId}")]
     [Authorize(Policy = Policies.MediaSegmentsManagement)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<IReadOnlyList<MediaSegmentDto>>> CreateSegments(
         [FromRoute, Required] Guid itemId,
