@@ -9,6 +9,7 @@ using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.StreamingDtos;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
@@ -33,6 +34,7 @@ public class UniversalAudioController : BaseJellyfinApiController
     private readonly MediaInfoHelper _mediaInfoHelper;
     private readonly AudioHelper _audioHelper;
     private readonly DynamicHlsHelper _dynamicHlsHelper;
+    private readonly IUserManager _userManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UniversalAudioController"/> class.
@@ -42,18 +44,21 @@ public class UniversalAudioController : BaseJellyfinApiController
     /// <param name="mediaInfoHelper">Instance of <see cref="MediaInfoHelper"/>.</param>
     /// <param name="audioHelper">Instance of <see cref="AudioHelper"/>.</param>
     /// <param name="dynamicHlsHelper">Instance of <see cref="DynamicHlsHelper"/>.</param>
+    /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
     public UniversalAudioController(
         ILibraryManager libraryManager,
         ILogger<UniversalAudioController> logger,
         MediaInfoHelper mediaInfoHelper,
         AudioHelper audioHelper,
-        DynamicHlsHelper dynamicHlsHelper)
+        DynamicHlsHelper dynamicHlsHelper,
+        IUserManager userManager)
     {
         _libraryManager = libraryManager;
         _logger = logger;
         _mediaInfoHelper = mediaInfoHelper;
         _audioHelper = audioHelper;
         _dynamicHlsHelper = dynamicHlsHelper;
+        _userManager = userManager;
     }
 
     /// <summary>
@@ -106,20 +111,27 @@ public class UniversalAudioController : BaseJellyfinApiController
         [FromQuery] bool breakOnNonKeyFrames = false,
         [FromQuery] bool enableRedirection = true)
     {
-        var deviceProfile = GetDeviceProfile(container, transcodingContainer, audioCodec, transcodingProtocol, breakOnNonKeyFrames, transcodingAudioChannels, maxAudioSampleRate, maxAudioBitDepth, maxAudioChannels);
         userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.IsNullOrEmpty()
+            ? null
+            : _userManager.GetUserById(userId.Value);
+        var item = _libraryManager.GetItemById(itemId, user);
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        var deviceProfile = GetDeviceProfile(container, transcodingContainer, audioCodec, transcodingProtocol, breakOnNonKeyFrames, transcodingAudioChannels, maxAudioSampleRate, maxAudioBitDepth, maxAudioChannels);
 
         _logger.LogInformation("GetPostedPlaybackInfo profile: {@Profile}", deviceProfile);
 
         var info = await _mediaInfoHelper.GetPlaybackInfo(
-                itemId,
-                userId,
+                item,
+                user,
                 mediaSourceId)
             .ConfigureAwait(false);
 
         // set device specific data
-        var item = _libraryManager.GetItemById(itemId);
-
         foreach (var sourceInfo in info.MediaSources)
         {
             _mediaInfoHelper.SetDeviceSpecificData(

@@ -75,11 +75,16 @@ public class InstantMixController : BaseJellyfinApiController
         [FromQuery] int? imageTypeLimit,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
     {
-        var item = _libraryManager.GetItemById(itemId);
         userId = RequestHelpers.GetUserId(User, userId);
         var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
+        var item = _libraryManager.GetItemById(itemId, user);
+        if (item is null)
+        {
+            return NotFound();
+        }
+
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
@@ -112,15 +117,20 @@ public class InstantMixController : BaseJellyfinApiController
         [FromQuery] int? imageTypeLimit,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
     {
-        var album = _libraryManager.GetItemById(itemId);
         userId = RequestHelpers.GetUserId(User, userId);
         var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
+        var item = _libraryManager.GetItemById(itemId, user);
+        if (item is null)
+        {
+            return NotFound();
+        }
+
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
-        var items = _musicManager.GetInstantMixFromItem(album, user, dtoOptions);
+        var items = _musicManager.GetInstantMixFromItem(item, user, dtoOptions);
         return GetResult(items, user, limit, dtoOptions);
     }
 
@@ -149,15 +159,20 @@ public class InstantMixController : BaseJellyfinApiController
         [FromQuery] int? imageTypeLimit,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
     {
-        var playlist = (Playlist)_libraryManager.GetItemById(itemId);
         userId = RequestHelpers.GetUserId(User, userId);
         var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
+        var item = _libraryManager.GetItemById<Playlist>(itemId, user);
+        if (item is null)
+        {
+            return NotFound();
+        }
+
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
-        var items = _musicManager.GetInstantMixFromItem(playlist, user, dtoOptions);
+        var items = _musicManager.GetInstantMixFromItem(item, user, dtoOptions);
         return GetResult(items, user, limit, dtoOptions);
     }
 
@@ -222,11 +237,16 @@ public class InstantMixController : BaseJellyfinApiController
         [FromQuery] int? imageTypeLimit,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
     {
-        var item = _libraryManager.GetItemById(itemId);
         userId = RequestHelpers.GetUserId(User, userId);
         var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
+        var item = _libraryManager.GetItemById(itemId, user);
+        if (item is null)
+        {
+            return NotFound();
+        }
+
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
@@ -259,11 +279,16 @@ public class InstantMixController : BaseJellyfinApiController
         [FromQuery] int? imageTypeLimit,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
     {
-        var item = _libraryManager.GetItemById(itemId);
         userId = RequestHelpers.GetUserId(User, userId);
         var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
+        var item = _libraryManager.GetItemById(itemId, user);
+        if (item is null)
+        {
+            return NotFound();
+        }
+
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
@@ -333,11 +358,16 @@ public class InstantMixController : BaseJellyfinApiController
         [FromQuery] int? imageTypeLimit,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
     {
-        var item = _libraryManager.GetItemById(id);
         userId = RequestHelpers.GetUserId(User, userId);
         var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
+        var item = _libraryManager.GetItemById(id, user);
+        if (item is null)
+        {
+            return NotFound();
+        }
+
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);

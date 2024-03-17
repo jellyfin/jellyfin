@@ -232,7 +232,12 @@ public class LiveTvController : BaseJellyfinApiController
             : _userManager.GetUserById(userId.Value);
         var item = channelId.IsEmpty()
             ? _libraryManager.GetUserRootFolder()
-            : _libraryManager.GetItemById(channelId);
+            : _libraryManager.GetItemById(channelId, user);
+
+        if (item is null)
+        {
+            return NotFound();
+        }
 
         var dtoOptions = new DtoOptions()
             .AddClientFields(User);
@@ -426,7 +431,13 @@ public class LiveTvController : BaseJellyfinApiController
         var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
-        var item = recordingId.IsEmpty() ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(recordingId);
+        var item = recordingId.IsEmpty()
+            ? _libraryManager.GetUserRootFolder()
+            : _libraryManager.GetItemById(recordingId, user);
+        if (item is null)
+        {
+            return NotFound();
+        }
 
         var dtoOptions = new DtoOptions()
             .AddClientFields(User);
@@ -611,7 +622,8 @@ public class LiveTvController : BaseJellyfinApiController
         {
             query.IsSeries = true;
 
-            if (_libraryManager.GetItemById(librarySeriesId.Value) is Series series)
+            var series = _libraryManager.GetItemById<Series>(librarySeriesId.Value);
+            if (series is not null)
             {
                 query.Name = series.Name;
             }
@@ -665,7 +677,8 @@ public class LiveTvController : BaseJellyfinApiController
         {
             query.IsSeries = true;
 
-            if (_libraryManager.GetItemById(body.LibrarySeriesId) is Series series)
+            var series = _libraryManager.GetItemById<Series>(body.LibrarySeriesId);
+            if (series is not null)
             {
                 query.Name = series.Name;
             }
@@ -779,7 +792,7 @@ public class LiveTvController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult DeleteRecording([FromRoute, Required] Guid recordingId)
     {
-        var item = _libraryManager.GetItemById(recordingId);
+        var item = _libraryManager.GetItemById(recordingId, User.GetUserId());
         if (item is null)
         {
             return NotFound();

@@ -4,6 +4,8 @@ using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
+using Jellyfin.Api.Extensions;
+using Jellyfin.Api.Helpers;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -64,7 +66,7 @@ public class ItemLookupController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<IEnumerable<ExternalIdInfo>> GetExternalIdInfos([FromRoute, Required] Guid itemId)
     {
-        var item = _libraryManager.GetItemById(itemId);
+        var item = _libraryManager.GetItemById(itemId, User.GetUserId());
         if (item is null)
         {
             return NotFound();
@@ -246,7 +248,12 @@ public class ItemLookupController : BaseJellyfinApiController
         [FromBody, Required] RemoteSearchResult searchResult,
         [FromQuery] bool replaceAllImages = true)
     {
-        var item = _libraryManager.GetItemById(itemId);
+        var item = _libraryManager.GetItemById(itemId, User.GetUserId());
+        if (item is null)
+        {
+            return NotFound();
+        }
+
         _logger.LogInformation(
             "Setting provider id's to item {ItemId}-{ItemName}: {@ProviderIds}",
             item.Id,

@@ -8,6 +8,7 @@ using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.MediaInfoDtos;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
@@ -32,6 +33,7 @@ public class MediaInfoController : BaseJellyfinApiController
     private readonly ILibraryManager _libraryManager;
     private readonly ILogger<MediaInfoController> _logger;
     private readonly MediaInfoHelper _mediaInfoHelper;
+    private readonly IUserManager _userManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MediaInfoController"/> class.
@@ -41,18 +43,21 @@ public class MediaInfoController : BaseJellyfinApiController
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger{MediaInfoController}"/> interface.</param>
     /// <param name="mediaInfoHelper">Instance of the <see cref="MediaInfoHelper"/>.</param>
+    /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface..</param>
     public MediaInfoController(
         IMediaSourceManager mediaSourceManager,
         IDeviceManager deviceManager,
         ILibraryManager libraryManager,
         ILogger<MediaInfoController> logger,
-        MediaInfoHelper mediaInfoHelper)
+        MediaInfoHelper mediaInfoHelper,
+        IUserManager userManager)
     {
         _mediaSourceManager = mediaSourceManager;
         _deviceManager = deviceManager;
         _libraryManager = libraryManager;
         _logger = logger;
         _mediaInfoHelper = mediaInfoHelper;
+        _userManager = userManager;
     }
 
     /// <summary>
@@ -67,10 +72,16 @@ public class MediaInfoController : BaseJellyfinApiController
     public async Task<ActionResult<PlaybackInfoResponse>> GetPlaybackInfo([FromRoute, Required] Guid itemId, [FromQuery] Guid? userId)
     {
         userId = RequestHelpers.GetUserId(User, userId);
-        return await _mediaInfoHelper.GetPlaybackInfo(
-                itemId,
-                userId)
-            .ConfigureAwait(false);
+        var user = userId.IsNullOrEmpty()
+            ? null
+            : _userManager.GetUserById(userId.Value);
+        var item = _libraryManager.GetItemById(itemId, user);
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        return await _mediaInfoHelper.GetPlaybackInfo(item, user).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -148,9 +159,19 @@ public class MediaInfoController : BaseJellyfinApiController
         allowVideoStreamCopy ??= playbackInfoDto?.AllowVideoStreamCopy ?? true;
         allowAudioStreamCopy ??= playbackInfoDto?.AllowAudioStreamCopy ?? true;
 
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.IsNullOrEmpty()
+            ? null
+            : _userManager.GetUserById(userId.Value);
+        var item = _libraryManager.GetItemById(itemId, user);
+        if (item is null)
+        {
+            return NotFound();
+        }
+
         var info = await _mediaInfoHelper.GetPlaybackInfo(
-                itemId,
-                userId,
+                item,
+                user,
                 mediaSourceId,
                 liveStreamId)
             .ConfigureAwait(false);
@@ -163,8 +184,6 @@ public class MediaInfoController : BaseJellyfinApiController
         if (profile is not null)
         {
             // set device specific data
-            var item = _libraryManager.GetItemById(itemId);
-
             foreach (var mediaSource in info.MediaSources)
             {
                 _mediaInfoHelper.SetDeviceSpecificData(

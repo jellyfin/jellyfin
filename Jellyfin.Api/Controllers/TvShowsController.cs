@@ -244,7 +244,8 @@ public class TvShowsController : BaseJellyfinApiController
         }
         else if (season.HasValue) // Season number was supplied. Get episodes by season number
         {
-            if (_libraryManager.GetItemById(seriesId) is not Series series)
+            var series = _libraryManager.GetItemById<Series>(seriesId);
+            if (series is null)
             {
                 return NotFound("Series not found");
             }
@@ -342,13 +343,13 @@ public class TvShowsController : BaseJellyfinApiController
         var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
-
-        if (_libraryManager.GetItemById(seriesId) is not Series series)
+        var item = _libraryManager.GetItemById<Series>(seriesId, user);
+        if (item is null)
         {
-            return NotFound("Series not found");
+            return NotFound();
         }
 
-        var seasons = series.GetItemList(new InternalItemsQuery(user)
+        var seasons = item.GetItemList(new InternalItemsQuery(user)
         {
             IsMissing = isMissing,
             IsSpecialSeason = isSpecialSeason,

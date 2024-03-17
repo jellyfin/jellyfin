@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Extensions;
+using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.SubtitleDtos;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
@@ -95,8 +96,7 @@ public class SubtitleController : BaseJellyfinApiController
         [FromRoute, Required] Guid itemId,
         [FromRoute, Required] int index)
     {
-        var item = _libraryManager.GetItemById(itemId);
-
+        var item = _libraryManager.GetItemById(itemId, User.GetUserId());
         if (item is null)
         {
             return NotFound();
@@ -122,9 +122,13 @@ public class SubtitleController : BaseJellyfinApiController
         [FromRoute, Required] string language,
         [FromQuery] bool? isPerfectMatch)
     {
-        var video = (Video)_libraryManager.GetItemById(itemId);
+        var item = _libraryManager.GetItemById<Video>(itemId, User.GetUserId());
+        if (item is null)
+        {
+            return NotFound();
+        }
 
-        return await _subtitleManager.SearchSubtitles(video, language, isPerfectMatch, false, CancellationToken.None).ConfigureAwait(false);
+        return await _subtitleManager.SearchSubtitles(item, language, isPerfectMatch, false, CancellationToken.None).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -141,14 +145,18 @@ public class SubtitleController : BaseJellyfinApiController
         [FromRoute, Required] Guid itemId,
         [FromRoute, Required] string subtitleId)
     {
-        var video = (Video)_libraryManager.GetItemById(itemId);
+        var item = _libraryManager.GetItemById<Video>(itemId, User.GetUserId());
+        if (item is null)
+        {
+            return NotFound();
+        }
 
         try
         {
-            await _subtitleManager.DownloadSubtitles(video, subtitleId, CancellationToken.None)
+            await _subtitleManager.DownloadSubtitles(item, subtitleId, CancellationToken.None)
                 .ConfigureAwait(false);
 
-            _providerManager.QueueRefresh(video.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.High);
+            _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.High);
         }
         catch (Exception ex)
         {
@@ -223,7 +231,7 @@ public class SubtitleController : BaseJellyfinApiController
 
         if (string.IsNullOrEmpty(format))
         {
-            var item = (Video)_libraryManager.GetItemById(itemId.Value);
+            var item = _libraryManager.GetItemById<Video>(itemId.Value);
 
             var idString = itemId.Value.ToString("N", CultureInfo.InvariantCulture);
             var mediaSource = _mediaSourceManager.GetStaticMediaSources(item, false)
@@ -333,7 +341,11 @@ public class SubtitleController : BaseJellyfinApiController
         [FromRoute, Required] string mediaSourceId,
         [FromQuery, Required] int segmentLength)
     {
-        var item = (Video)_libraryManager.GetItemById(itemId);
+        var item = _libraryManager.GetItemById<Video>(itemId, User.GetUserId());
+        if (item is null)
+        {
+            return NotFound();
+        }
 
         var mediaSource = await _mediaSourceManager.GetMediaSource(item, mediaSourceId, null, false, CancellationToken.None).ConfigureAwait(false);
 
@@ -405,7 +417,11 @@ public class SubtitleController : BaseJellyfinApiController
         [FromRoute, Required] Guid itemId,
         [FromBody, Required] UploadSubtitleDto body)
     {
-        var video = (Video)_libraryManager.GetItemById(itemId);
+        var item = _libraryManager.GetItemById<Video>(itemId, User.GetUserId());
+        if (item is null)
+        {
+            return NotFound();
+        }
 
         var bytes = Encoding.UTF8.GetBytes(body.Data);
         var memoryStream = new MemoryStream(bytes, 0, bytes.Length, false, true);
@@ -416,7 +432,7 @@ public class SubtitleController : BaseJellyfinApiController
             await using (stream.ConfigureAwait(false))
             {
                 await _subtitleManager.UploadSubtitle(
-                    video,
+                    item,
                     new SubtitleResponse
                     {
                         Format = body.Format,
@@ -425,7 +441,7 @@ public class SubtitleController : BaseJellyfinApiController
                         IsHearingImpaired = body.IsHearingImpaired,
                         Stream = stream
                     }).ConfigureAwait(false);
-                _providerManager.QueueRefresh(video.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.High);
+                _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.High);
 
                 return NoContent();
             }
