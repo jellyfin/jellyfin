@@ -2208,10 +2208,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                     return false;
                 }
 
-                // DOVIWithHDR10 should be compatible with HDR10 supporting players. Same goes with HLG. So allow copy of those formats
+                // DOVIWithHDR10 should be compatible with HDR10 supporting players. Same goes with HLG and of course SDR. So allow copy of those formats
                 if (!requestedRangeTypes.Contains(videoStream.VideoRangeType.ToString(), StringComparison.OrdinalIgnoreCase)
                      && !((requestedRangeTypes.Contains("HDR10", StringComparison.OrdinalIgnoreCase) && videoStream.VideoRangeType == VideoRangeType.DOVIWithHDR10)
-                            || (requestedRangeTypes.Contains("HLG", StringComparison.OrdinalIgnoreCase) && videoStream.VideoRangeType == VideoRangeType.DOVIWithHLG)))
+                            || (requestedRangeTypes.Contains("HLG", StringComparison.OrdinalIgnoreCase) && videoStream.VideoRangeType == VideoRangeType.DOVIWithHLG)
+                            || (requestedRangeTypes.Contains("SDR", StringComparison.OrdinalIgnoreCase) && videoStream.VideoRangeType == VideoRangeType.DOVIWithSDR)))
                 {
                     return false;
                 }
