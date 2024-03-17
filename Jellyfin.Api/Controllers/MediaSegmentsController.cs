@@ -2,10 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
+using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Models.MediaSegmentsDtos;
 using Jellyfin.Data.Enums.MediaSegmentType;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Api;
+using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.MediaSegments;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -19,16 +22,24 @@ namespace Jellyfin.Api.Controllers;
 [Authorize]
 public class MediaSegmentsController : BaseJellyfinApiController
 {
+    private readonly IUserManager _userManager;
     private readonly IMediaSegmentsManager _mediaSegmentManager;
+    private readonly ILibraryManager _libraryManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MediaSegmentsController"/> class.
     /// </summary>
     /// <param name="mediaSegmentManager">Instance of the <see cref="IMediaSegmentsManager"/> interface.</param>
+    /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
+    /// <param name="libraryManager">The library manager.</param>
     public MediaSegmentsController(
-        IMediaSegmentsManager mediaSegmentManager)
+        IMediaSegmentsManager mediaSegmentManager,
+        IUserManager userManager,
+        ILibraryManager libraryManager)
     {
+        _userManager = userManager;
         _mediaSegmentManager = mediaSegmentManager;
+        _libraryManager = libraryManager;
     }
 
     /// <summary>
@@ -40,16 +51,35 @@ public class MediaSegmentsController : BaseJellyfinApiController
     /// <param name="typeIndex">All segments with typeIndex.</param>
     /// <response code="200">Segments returned.</response>
     /// <response code="404">itemId doesn't exist.</response>
+    /// <response code="401">User is not authorized to access the requested item.</response>
     /// <returns>An <see cref="OkResult"/>containing the found segments.</returns>
     [HttpGet("{itemId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<IReadOnlyList<MediaSegmentDto>>> GetSegments(
         [FromRoute, Required] Guid itemId,
         [FromQuery] int? streamIndex,
         [FromQuery] MediaSegmentType? type,
         [FromQuery] int? typeIndex)
     {
+        var isApiKey = User.GetIsApiKey();
+        var userId = User.GetUserId();
+        var user = !isApiKey && !userId.IsEmpty()
+            ? _userManager.GetUserById(userId) ?? throw new ResourceNotFoundException()
+            : null;
+
+        var item = _libraryManager.GetItemById(itemId);
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        if (!isApiKey && !item.IsVisible(user))
+        {
+            return Unauthorized();
+        }
+
         var list = await _mediaSegmentManager.GetAllMediaSegments(itemId, streamIndex, typeIndex, type).ConfigureAwait(false);
         return Ok(list.ConvertAll(MediaSegmentDto.FromMediaSegment));
     }
@@ -61,18 +91,36 @@ public class MediaSegmentsController : BaseJellyfinApiController
     /// <param name="segments">All segments that should be added.</param>
     /// <response code="200">Segments returned.</response>
     /// <response code="400">Invalid segments.</response>
+    /// <response code="401">User is not authorized to access the requested item.</response>
     /// <returns>An <see cref="OkResult"/>containing the created/updated segments.</returns>
     [HttpPost("{itemId}")]
     [Authorize(Policy = Policies.MediaSegmentsManagement)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<IReadOnlyList<MediaSegmentDto>>> CreateSegments(
         [FromRoute, Required] Guid itemId,
         [FromBody, Required] IReadOnlyList<MediaSegmentDto> segments)
     {
+        var isApiKey = User.GetIsApiKey();
+        var userId = User.GetUserId();
+        var user = !isApiKey && !userId.IsEmpty()
+            ? _userManager.GetUserById(userId) ?? throw new ResourceNotFoundException()
+            : null;
+
+        var item = _libraryManager.GetItemById(itemId);
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        if (!isApiKey && !item.IsVisible(user))
+        {
+            return Unauthorized();
+        }
+
         var segmentsToAdd = segments.ConvertAll(s => s.ToMediaSegment());
         var addedSegments = await _mediaSegmentManager.CreateMediaSegments(itemId, segmentsToAdd).ConfigureAwait(false);
-
         return Ok(addedSegments.ConvertAll(MediaSegmentDto.FromMediaSegment));
     }
 
@@ -85,17 +133,37 @@ public class MediaSegmentsController : BaseJellyfinApiController
     /// <param name="typeIndex">All segments with typeIndex.</param>
     /// <response code="200">Segments deleted.</response>
     /// <response code="404">Segments not found.</response>
+    /// <response code="401">User is not authorized to access the requested item.</response>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     [HttpDelete("{itemId}")]
     [Authorize(Policy = Policies.MediaSegmentsManagement)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task DeleteSegments(
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> DeleteSegments(
         [FromRoute, Required] Guid itemId,
         [FromQuery] int? streamIndex,
         [FromQuery] MediaSegmentType? type,
         [FromQuery] int? typeIndex)
     {
+        var isApiKey = User.GetIsApiKey();
+        var userId = User.GetUserId();
+        var user = !isApiKey && !userId.IsEmpty()
+            ? _userManager.GetUserById(userId) ?? throw new ResourceNotFoundException()
+            : null;
+
+        var item = _libraryManager.GetItemById(itemId);
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        if (!isApiKey && !item.IsVisible(user))
+        {
+            return Unauthorized();
+        }
+
         await _mediaSegmentManager.DeleteSegments(itemId, streamIndex, typeIndex, type).ConfigureAwait(false);
+        return Ok();
     }
 }

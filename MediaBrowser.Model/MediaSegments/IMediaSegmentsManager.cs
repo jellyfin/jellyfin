@@ -23,6 +23,7 @@ public interface IMediaSegmentsManager
     /// <param name="itemId">The item to create segments for.</param>
     /// <param name="segments">List of segments.</param>
     /// <returns>New or updated MediaSegments.</returns>
+    /// <exception cref="InvalidOperationException">Will be thrown when an non existing item is requested.</exception>
     Task<IReadOnlyList<MediaSegment>> CreateMediaSegments(Guid itemId, IReadOnlyList<MediaSegment> segments);
 
     /// <summary>
@@ -33,6 +34,7 @@ public interface IMediaSegmentsManager
     /// <param name="typeIndex">Optional: The typeIndex.</param>
     /// <param name="type">Optional: The segment type.</param>
     /// <returns>List of MediaSegment.</returns>
+    /// <exception cref="InvalidOperationException">Will be thrown when an non existing item is requested.</exception>
     public Task<IReadOnlyList<MediaSegment>> GetAllMediaSegments(Guid itemId, int? streamIndex = null, int? typeIndex = null, MediaSegmentType? type = null);
 
     /// <summary>
@@ -43,5 +45,6 @@ public interface IMediaSegmentsManager
     /// <param name="typeIndex">Optional: The typeIndex.</param>
     /// <param name="type">Optional: The segment type.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentException">Will be thrown when a empty Guid is requested.</exception>
     public Task DeleteSegments(Guid itemId, int? streamIndex = null, int? typeIndex = null, MediaSegmentType? type = null);
 }
