@@ -729,7 +729,7 @@ namespace MediaBrowser.Model.Entities
                     {
                         1 => (VideoRange.HDR, VideoRangeType.DOVIWithHDR10),
                         4 => (VideoRange.HDR, VideoRangeType.DOVIWithHLG),
-                        2 => (VideoRange.HDR, VideoRangeType.DOVIWithSDR),
+                        2 => (VideoRange.SDR, VideoRangeType.DOVIWithSDR),
                         // There is no other case to handle here as per Dolby Spec. Default case included for completeness and linting purposes
                         _ => (VideoRange.SDR, VideoRangeType.SDR)
                     },
