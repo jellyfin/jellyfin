@@ -156,7 +156,7 @@ public class TranscodingSegmentCleaner : IDisposable
             }
             catch (IOException ex)
             {
-                (exs ??= new List<Exception>(4)).Add(ex);
+                (exs ??= new List<Exception>()).Add(ex);
                 _logger.LogDebug(ex, "Error deleting HLS segment file {Path}", file);
             }
         }
