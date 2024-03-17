@@ -6,7 +6,7 @@ using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
-using Jellyfin.Api.Extensions;
+using Jellyfin.Api.Helpers;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Controller.Entities.Audio;
@@ -68,35 +68,13 @@ public class LyricsController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<LyricDto>> GetLyrics([FromRoute, Required] Guid itemId)
     {
-        var isApiKey = User.GetIsApiKey();
-        var userId = User.GetUserId();
-        if (!isApiKey && userId.IsEmpty())
+        var (item, _, statusResult) = RequestHelpers.AssessItemAccess<Audio>(Request.HttpContext, itemId, _libraryManager, null, _userManager);
+        if (statusResult is not null || item is null)
         {
-            return BadRequest();
+            return statusResult ?? BadRequest();
         }
 
-        var audio = _libraryManager.GetItemById<Audio>(itemId);
-        if (audio is null)
-        {
-            return NotFound();
-        }
-
-        if (!isApiKey)
-        {
-            var user = _userManager.GetUserById(userId);
-            if (user is null)
-            {
-                return NotFound();
-            }
-
-            // Check the item is visible for the user
-            if (!audio.IsVisible(user))
-            {
-                return Unauthorized($"{user.Username} is not permitted to access item {audio.Name}.");
-            }
-        }
-
-        var result = await _lyricManager.GetLyricsAsync(audio, CancellationToken.None).ConfigureAwait(false);
+        var result = await _lyricManager.GetLyricsAsync(item, CancellationToken.None).ConfigureAwait(false);
         if (result is not null)
         {
             return Ok(result);
@@ -124,10 +102,10 @@ public class LyricsController : BaseJellyfinApiController
         [FromRoute, Required] Guid itemId,
         [FromQuery, Required] string fileName)
     {
-        var audio = _libraryManager.GetItemById<Audio>(itemId);
-        if (audio is null)
+        var (item, _, statusResult) = RequestHelpers.AssessItemAccess<Audio>(Request.HttpContext, itemId, _libraryManager, null, _userManager);
+        if (statusResult is not null || item is null)
         {
-            return NotFound();
+            return statusResult ?? BadRequest();
         }
 
         if (Request.ContentLength.GetValueOrDefault(0) == 0)
@@ -147,7 +125,7 @@ public class LyricsController : BaseJellyfinApiController
         {
             await Request.Body.CopyToAsync(stream).ConfigureAwait(false);
             var uploadedLyric = await _lyricManager.SaveLyricAsync(
-                    audio,
+                    item,
                     format,
                     stream)
                 .ConfigureAwait(false);
@@ -157,7 +135,7 @@ public class LyricsController : BaseJellyfinApiController
                 return BadRequest();
             }
 
-            _providerManager.QueueRefresh(audio.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.High);
+            _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.High);
             return Ok(uploadedLyric);
         }
     }
@@ -176,13 +154,13 @@ public class LyricsController : BaseJellyfinApiController
     public async Task<ActionResult> DeleteLyrics(
         [FromRoute, Required] Guid itemId)
     {
-        var audio = _libraryManager.GetItemById<Audio>(itemId);
-        if (audio is null)
+        var (item, _, statusResult) = RequestHelpers.AssessItemAccess<Audio>(Request.HttpContext, itemId, _libraryManager, null, _userManager);
+        if (statusResult is not null || item is null)
         {
-            return NotFound();
+            return statusResult ?? BadRequest();
         }
 
-        await _lyricManager.DeleteLyricsAsync(audio).ConfigureAwait(false);
+        await _lyricManager.DeleteLyricsAsync(item).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -199,13 +177,13 @@ public class LyricsController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<IReadOnlyList<RemoteLyricInfoDto>>> SearchRemoteLyrics([FromRoute, Required] Guid itemId)
     {
-        var audio = _libraryManager.GetItemById<Audio>(itemId);
-        if (audio is null)
+        var (item, _, statusResult) = RequestHelpers.AssessItemAccess<Audio>(Request.HttpContext, itemId, _libraryManager, null, _userManager);
+        if (statusResult is not null || item is null)
         {
-            return NotFound();
+            return statusResult ?? BadRequest();
         }
 
-        var results = await _lyricManager.SearchLyricsAsync(audio, false, CancellationToken.None).ConfigureAwait(false);
+        var results = await _lyricManager.SearchLyricsAsync(item, false, CancellationToken.None).ConfigureAwait(false);
         return Ok(results);
     }
 
@@ -225,19 +203,19 @@ public class LyricsController : BaseJellyfinApiController
         [FromRoute, Required] Guid itemId,
         [FromRoute, Required] string lyricId)
     {
-        var audio = _libraryManager.GetItemById<Audio>(itemId);
-        if (audio is null)
+        var (item, _, statusResult) = RequestHelpers.AssessItemAccess<Audio>(Request.HttpContext, itemId, _libraryManager, null, _userManager);
+        if (statusResult is not null || item is null)
         {
-            return NotFound();
+            return statusResult ?? BadRequest();
         }
 
-        var downloadedLyrics = await _lyricManager.DownloadLyricsAsync(audio, lyricId, CancellationToken.None).ConfigureAwait(false);
+        var downloadedLyrics = await _lyricManager.DownloadLyricsAsync(item, lyricId, CancellationToken.None).ConfigureAwait(false);
         if (downloadedLyrics is null)
         {
             return NotFound();
         }
 
-        _providerManager.QueueRefresh(audio.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.High);
+        _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.High);
         return Ok(downloadedLyrics);
     }
 

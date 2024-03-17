@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.LibraryStructureDto;
 using MediaBrowser.Common.Api;
@@ -317,9 +318,13 @@ public class LibraryStructureController : BaseJellyfinApiController
     public ActionResult UpdateLibraryOptions(
         [FromBody] UpdateLibraryOptionsDto request)
     {
-        var collectionFolder = (CollectionFolder)_libraryManager.GetItemById(request.Id);
+        var (item, _, statusResult) = RequestHelpers.AssessItemAccess<CollectionFolder>(Request.HttpContext, request.Id, _libraryManager);
+        if (statusResult is not null || item is null)
+        {
+            return statusResult ?? BadRequest();
+        }
 
-        collectionFolder.UpdateLibraryOptions(request.LibraryOptions);
+        item.UpdateLibraryOptions(request.LibraryOptions);
         return NoContent();
     }
 }

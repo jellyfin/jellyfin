@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
+using Jellyfin.Api.Helpers;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Controller.Configuration;
@@ -72,10 +73,10 @@ public class ItemUpdateController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> UpdateItem([FromRoute, Required] Guid itemId, [FromBody, Required] BaseItemDto request)
     {
-        var item = _libraryManager.GetItemById(itemId);
-        if (item is null)
+        var (item, _, statusResult) = RequestHelpers.AssessItemAccess(Request.HttpContext, itemId, _libraryManager);
+        if (statusResult is not null || item is null)
         {
-            return NotFound();
+            return statusResult ?? BadRequest();
         }
 
         var newLockData = request.LockData ?? false;
@@ -145,7 +146,11 @@ public class ItemUpdateController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<MetadataEditorInfo> GetMetadataEditorInfo([FromRoute, Required] Guid itemId)
     {
-        var item = _libraryManager.GetItemById(itemId);
+        var (item, _, statusResult) = RequestHelpers.AssessItemAccess(Request.HttpContext, itemId, _libraryManager);
+        if (statusResult is not null || item is null)
+        {
+            return statusResult ?? BadRequest();
+        }
 
         var info = new MetadataEditorInfo
         {
@@ -197,10 +202,10 @@ public class ItemUpdateController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult UpdateItemContentType([FromRoute, Required] Guid itemId, [FromQuery] string? contentType)
     {
-        var item = _libraryManager.GetItemById(itemId);
-        if (item is null)
+        var (item, _, statusResult) = RequestHelpers.AssessItemAccess(Request.HttpContext, itemId, _libraryManager);
+        if (statusResult is not null || item is null)
         {
-            return NotFound();
+            return statusResult ?? BadRequest();
         }
 
         var path = item.ContainingFolderPath;

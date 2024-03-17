@@ -76,20 +76,13 @@ public class PlaystateController : BaseJellyfinApiController
         [FromRoute, Required] Guid itemId,
         [FromQuery, ModelBinder(typeof(LegacyDateTimeModelBinder))] DateTime? datePlayed)
     {
-        var requestUserId = RequestHelpers.GetUserId(User, userId);
-        var user = _userManager.GetUserById(requestUserId);
-        if (user is null)
+        var (item, user, statusResult) = RequestHelpers.AssessItemAccess(Request.HttpContext, itemId, _libraryManager, userId, _userManager);
+        if (statusResult is not null || item is null || user is null)
         {
-            return NotFound();
+            return statusResult ?? BadRequest();
         }
 
         var session = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
-
-        var item = _libraryManager.GetItemById(itemId);
-        if (item is null)
-        {
-            return NotFound();
-        }
 
         var dto = UpdatePlayedStatus(user, item, true, datePlayed);
         foreach (var additionalUserInfo in session.AdditionalUsers)
@@ -141,20 +134,13 @@ public class PlaystateController : BaseJellyfinApiController
         [FromQuery] Guid? userId,
         [FromRoute, Required] Guid itemId)
     {
-        var requestUserId = RequestHelpers.GetUserId(User, userId);
-        var user = _userManager.GetUserById(requestUserId);
-        if (user is null)
+        var (item, user, statusResult) = RequestHelpers.AssessItemAccess(Request.HttpContext, itemId, _libraryManager, userId, _userManager);
+        if (statusResult is not null || item is null || user is null)
         {
-            return NotFound();
+            return statusResult ?? BadRequest();
         }
 
         var session = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
-        var item = _libraryManager.GetItemById(itemId);
-
-        if (item is null)
-        {
-            return NotFound();
-        }
 
         var dto = UpdatePlayedStatus(user, item, false, null);
         foreach (var additionalUserInfo in session.AdditionalUsers)

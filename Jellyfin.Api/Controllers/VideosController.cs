@@ -7,11 +7,9 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
-using Jellyfin.Extensions;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
@@ -96,16 +94,11 @@ public class VideosController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<QueryResult<BaseItemDto>> GetAdditionalPart([FromRoute, Required] Guid itemId, [FromQuery] Guid? userId)
     {
-        userId = RequestHelpers.GetUserId(User, userId);
-        var user = userId.IsNullOrEmpty()
-            ? null
-            : _userManager.GetUserById(userId.Value);
-
-        var item = itemId.IsEmpty()
-            ? (userId.IsNullOrEmpty()
-                ? _libraryManager.RootFolder
-                : _libraryManager.GetUserRootFolder())
-            : _libraryManager.GetItemById(itemId);
+        var (item, user, statusResult) = RequestHelpers.AssessItemAccess(Request.HttpContext, itemId, _libraryManager, userId, _userManager);
+        if (statusResult is not null || item is null)
+        {
+            return statusResult ?? BadRequest();
+        }
 
         var dtoOptions = new DtoOptions();
         dtoOptions = dtoOptions.AddClientFields(User);
@@ -139,24 +132,23 @@ public class VideosController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> DeleteAlternateSources([FromRoute, Required] Guid itemId)
     {
-        var video = (Video)_libraryManager.GetItemById(itemId);
-
-        if (video is null)
+        var (item, _, statusResult) = RequestHelpers.AssessItemAccess<Video>(Request.HttpContext, itemId, _libraryManager, null, _userManager);
+        if (statusResult is not null || item is null)
         {
-            return NotFound("The video either does not exist or the id does not belong to a video.");
+            return statusResult ?? BadRequest();
         }
 
-        if (video.LinkedAlternateVersions.Length == 0)
+        if (item.LinkedAlternateVersions.Length == 0)
         {
-            video = (Video?)_libraryManager.GetItemById(video.PrimaryVersionId);
+            item = (Video?)_libraryManager.GetItemById(item.PrimaryVersionId);
         }
 
-        if (video is null)
+        if (item is null)
         {
             return NotFound();
         }
 
-        foreach (var link in video.GetLinkedAlternateVersions())
+        foreach (var link in item.GetLinkedAlternateVersions())
         {
             link.SetPrimaryVersionId(null);
             link.LinkedAlternateVersions = Array.Empty<LinkedChild>();
@@ -164,9 +156,9 @@ public class VideosController : BaseJellyfinApiController
             await link.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
         }
 
-        video.LinkedAlternateVersions = Array.Empty<LinkedChild>();
-        video.SetPrimaryVersionId(null);
-        await video.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+        item.LinkedAlternateVersions = Array.Empty<LinkedChild>();
+        item.SetPrimaryVersionId(null);
+        await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
         return NoContent();
     }

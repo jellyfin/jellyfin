@@ -966,10 +966,13 @@ public class ItemsController : BaseJellyfinApiController
             return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to view this item user data.");
         }
 
-        var user = _userManager.GetUserById(requestUserId) ?? throw new ResourceNotFoundException();
-        var item = _libraryManager.GetItemById(itemId);
+        var (item, user, statusResult) = RequestHelpers.AssessItemAccess(Request.HttpContext, itemId, _libraryManager, userId, _userManager);
+        if (statusResult is not null || item is null)
+        {
+            return statusResult ?? BadRequest();
+        }
 
-        return (item == null) ? NotFound() : _userDataRepository.GetUserDataDto(item, user);
+        return _userDataRepository.GetUserDataDto(item, user);
     }
 
     /// <summary>
@@ -1013,11 +1016,10 @@ public class ItemsController : BaseJellyfinApiController
             return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update this item user data.");
         }
 
-        var user = _userManager.GetUserById(requestUserId) ?? throw new ResourceNotFoundException();
-        var item = _libraryManager.GetItemById(itemId);
-        if (item == null)
+        var (item, user, statusResult) = RequestHelpers.AssessItemAccess(Request.HttpContext, itemId, _libraryManager, userId, _userManager);
+        if (statusResult is not null || item is null)
         {
-            return NotFound();
+            return statusResult ?? BadRequest();
         }
 
         _userDataRepository.SaveUserData(user, item, userDataDto, UserDataSaveReason.UpdateUserData);
