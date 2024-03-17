@@ -23,7 +23,6 @@ public class TranscodingSegmentCleaner : IDisposable
     private readonly IMediaEncoder _mediaEncoder;
     private Timer? _timer;
     private int _segmentLength;
-    private List<string>? _excludeFilePaths;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TranscodingSegmentCleaner"/> class.
@@ -42,7 +41,6 @@ public class TranscodingSegmentCleaner : IDisposable
         _fileSystem = fileSystem;
         _mediaEncoder = mediaEncoder;
         _segmentLength = segmentLength;
-        _excludeFilePaths = null;
     }
 
     /// <summary>
@@ -133,7 +131,7 @@ public class TranscodingSegmentCleaner : IDisposable
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting segment file(s) {Path}", path);
+            _logger.LogDebug(ex, "Error deleting segment file(s) {Path}", path);
         }
     }
 
@@ -145,8 +143,7 @@ public class TranscodingSegmentCleaner : IDisposable
         var name = Path.GetFileNameWithoutExtension(outputFilePath);
 
         var filesToDelete = _fileSystem.GetFilePaths(directory)
-            .Where(f => (!_excludeFilePaths?.Contains(f) ?? true)
-                        && long.TryParse(Path.GetFileNameWithoutExtension(f).Replace(name, string.Empty, StringComparison.Ordinal), out var idx)
+            .Where(f => long.TryParse(Path.GetFileNameWithoutExtension(f).Replace(name, string.Empty, StringComparison.Ordinal), out var idx)
                         && (idx >= idxMin && idx <= idxMax));
 
         List<Exception>? exs = null;
@@ -160,8 +157,7 @@ public class TranscodingSegmentCleaner : IDisposable
             catch (IOException ex)
             {
                 (exs ??= new List<Exception>(4)).Add(ex);
-                (_excludeFilePaths ??= new List<string>()).Add(file);
-                _logger.LogError(ex, "Error deleting HLS segment file {Path}", file);
+                _logger.LogDebug(ex, "Error deleting HLS segment file {Path}", file);
             }
         }
 
