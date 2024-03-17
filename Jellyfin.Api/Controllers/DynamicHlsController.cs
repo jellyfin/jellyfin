@@ -1604,7 +1604,7 @@ public class DynamicHlsController : BaseJellyfinApiController
                 Path.GetFileNameWithoutExtension(outputPath));
         }
 
-        var hlsArguments = string.Format(CultureInfo.InvariantCulture, "-hls_playlist_type {0} -hls_list_size 0", isEventPlaylist ? "event" : "vod");
+        var hlsArguments = $"-hls_playlist_type {(isEventPlaylist ? "event" : "vod")} -hls_list_size 0"; 
 
         return string.Format(
             CultureInfo.InvariantCulture,
