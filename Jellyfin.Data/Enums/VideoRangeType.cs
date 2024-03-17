@@ -39,6 +39,7 @@ public enum VideoRangeType
     /// Dolby Vision with HLG video range fallback (10bit).
     /// </summary>
     DOVIWithHLG,
+
     /// <summary>
     /// Dolby Vision with HLG video range fallback (10bit).
     /// </summary>
