@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <PackageReference Include="Diacritics" />
+    <PackageReference Include="ICU4N.Transliterator" />
   </ItemGroup>
 
 </Project>

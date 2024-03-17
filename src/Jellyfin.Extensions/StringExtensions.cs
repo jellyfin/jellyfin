@@ -1,5 +1,6 @@
 using System;
 using System.Text.RegularExpressions;
+using ICU4N.Text;
 
 namespace Jellyfin.Extensions
 {
@@ -8,6 +9,9 @@ namespace Jellyfin.Extensions
     /// </summary>
     public static partial class StringExtensions
     {
+        private static readonly Lazy<Transliterator> _transliterator = new(() => Transliterator.GetInstance(
+            "Any-Latin; Latin-Ascii; Lower; NFD; [:Nonspacing Mark:] Remove; [:Punctuation:] Remove;"));
+
         // Matches non-conforming unicode chars
         // https://mnaoumov.wordpress.com/2014/06/14/stripping-invalid-characters-from-utf-16-strings/
 
@@ -95,6 +99,16 @@ namespace Jellyfin.Extensions
             }
 
             return haystack[(pos + 1)..];
+        }
+
+        /// <summary>
+        /// Returns a transliterated string which only contain ascii characters.
+        /// </summary>
+        /// <param name="text">The string to act on.</param>
+        /// <returns>The transliterated string.</returns>
+        public static string Transliterated(this string text)
+        {
+            return _transliterator.Value.Transliterate(text);
         }
     }
 }
