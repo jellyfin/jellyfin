@@ -180,6 +180,7 @@
  _ [Barasingha](https://github.com/MaVdbussche)
  - [Gauvino](https://github.com/Gauvino)
  - [felix920506](https://github.com/felix920506)
+ - [btopherjohnson](https://github.com/btopherjohnson)
 
 # Emby Contributors
 

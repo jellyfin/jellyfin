@@ -27,6 +27,8 @@ namespace MediaBrowser.Model.Configuration
             SeasonZeroDisplayName = "Specials";
         }
 
+        public bool Enabled { get; set; } = true;
+
         public bool EnablePhotos { get; set; }
 
         public bool EnableRealtimeMonitor { get; set; }
