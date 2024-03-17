@@ -21,7 +21,8 @@ jobs:
       - name: install python packages
         run: pip install -r main-repo-triage/requirements.txt
       - name: check and comment issue
-        run: cd main-repo-triage/; python3 single_issue_gha.py
+        working-directory: ./main-repo-triage
+        run: python3 single_issue_gha.py
         env:
           GH_TOKEN: ${{ secrets.JF_BOT_TOKEN }}
           GH_REPO: ${{ github.repository }}
