@@ -51,7 +51,6 @@ namespace MediaBrowser.Controller.MediaEncoding
         private readonly Version _minFFmpegOclCuTonemapMode = new Version(5, 1, 3);
         private readonly Version _minFFmpegSvtAv1Params = new Version(5, 1);
         private readonly Version _minFFmpegVaapiH26xEncA53CcSei = new Version(6, 0);
-        private readonly Version _minFFmpegAutoscaleOption = new Version(4, 4);
         private readonly Version _minFFmpegReadrateOption = new Version(5, 0);
 
         private static readonly string[] _videoProfilesH264 = new[]
@@ -1223,7 +1222,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             // Disable auto inserted SW scaler for HW decoders in case of changed resolution.
             var isSwDecoder = string.IsNullOrEmpty(GetHardwareVideoDecoder(state, options));
-            if (!isSwDecoder && _mediaEncoder.EncoderVersion >= _minFFmpegAutoscaleOption)
+            if (!isSwDecoder)
             {
                 arg.Append(" -noautoscale");
             }
