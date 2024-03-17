@@ -2210,8 +2210,8 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 // DOVIWithHDR10 should be compatible with HDR10 supporting players. Same goes with HLG. So allow copy of those formats
                 if (!requestedRangeTypes.Contains(videoStream.VideoRangeType.ToString(), StringComparison.OrdinalIgnoreCase)
-                     && !((requestedRangeTypes.Contains("HDR10", StringComparison.OrdinalIgnoreCase) && string.Equals(videoStream.VideoRangeType.ToString(), "DOVIWithHDR10", StringComparison.OrdinalIgnoreCase))
-                            || (requestedRangeTypes.Contains("HLG", StringComparison.OrdinalIgnoreCase) && string.Equals(videoStream.VideoRangeType.ToString(), "DOVIWithHLG", StringComparison.OrdinalIgnoreCase))))
+                     && !((requestedRangeTypes.Contains("HDR10", StringComparison.OrdinalIgnoreCase) && videoStream.VideoRangeType == VideoRangeType.DOVIWithHDR10)
+                            || (requestedRangeTypes.Contains("HLG", StringComparison.OrdinalIgnoreCase) && videoStream.VideoRangeType == VideoRangeType.DOVIWithHLG)))
                 {
                     return false;
                 }
