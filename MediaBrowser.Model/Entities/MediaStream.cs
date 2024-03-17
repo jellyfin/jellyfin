@@ -714,7 +714,7 @@ namespace MediaBrowser.Model.Entities
             var dvBlCompatId = DvBlSignalCompatibilityId;
 
             var isDoViHDRProfile = dvProfile == 5 || dvProfile == 7 || dvProfile == 8;
-            var isDoViHDRFlag = rpuPresentFlag && blPresentFlag && (dvBlCompatId == 0 || dvBlCompatId == 1 || dvBlCompatId == 4);
+            var isDoViHDRFlag = rpuPresentFlag && blPresentFlag && (dvBlCompatId == 0 || dvBlCompatId == 1 || dvBlCompatId == 4 || dvBlCompatId == 2 || dvBlCompatId == 6);
 
             if ((isDoViHDRProfile && isDoViHDRFlag)
                 || string.Equals(codecTag, "dovi", StringComparison.OrdinalIgnoreCase)
