@@ -331,8 +331,25 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        private static bool IsLibraryFolderAccessible(IDirectoryService directoryService, BaseItem item)
+        {
+            // For top parents i.e. Library folders, skip the validation if it's empty or inaccessible
+            if (item.IsTopParent && !directoryService.IsAccessible(item.ContainingFolderPath))
+            {
+                Logger.LogWarning("Library folder {LibraryFolderPath} is inaccessible or empty, skipping", item.ContainingFolderPath);
+                return false;
+            }
+
+            return true;
+        }
+
         private async Task ValidateChildrenInternal2(IProgress<double> progress, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
+            if (!IsLibraryFolderAccessible(directoryService, this))
+            {
+                return;
+            }
+
             cancellationToken.ThrowIfCancellationRequested();
 
             var validChildren = new List<BaseItem>();
@@ -369,6 +386,11 @@ namespace MediaBrowser.Controller.Entities
 
                 foreach (var child in nonCachedChildren)
                 {
+                    if (!IsLibraryFolderAccessible(directoryService, child))
+                    {
+                        continue;
+                    }
+
                     if (currentChildren.TryGetValue(child.Id, out BaseItem currentChild))
                     {
                         validChildren.Add(currentChild);
@@ -392,8 +414,8 @@ namespace MediaBrowser.Controller.Entities
                     validChildren.Add(child);
                 }
 
-                // If any items were added or removed....
-                if (newItems.Count > 0 || currentChildren.Count != validChildren.Count)
+                // If it's an AggregateFolder, don't remove
+                if (!IsRoot && currentChildren.Count != validChildren.Count)
                 {
                     // That's all the new and changed ones - now see if there are any that are missing
                     var itemsRemoved = currentChildren.Values.Except(validChildren).ToList();
@@ -408,7 +430,10 @@ namespace MediaBrowser.Controller.Entities
                             LibraryManager.DeleteItem(item, new DeleteOptions { DeleteFileLocation = false }, this, false);
                         }
                     }
+                }
 
+                if (newItems.Count > 0)
+                {
                     LibraryManager.CreateItems(newItems, this, cancellationToken);
                 }
             }
