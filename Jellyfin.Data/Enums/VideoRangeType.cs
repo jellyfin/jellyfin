@@ -26,7 +26,7 @@ public enum VideoRangeType
     HLG,
 
     /// <summary>
-    /// Dolby Vision video range type (10bit).
+    /// Dolby Vision video range type (10bit encoded / 12bit remapped).
     /// </summary>
     DOVI,
 
