@@ -2209,10 +2209,15 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
 
                 // DOVIWithHDR10 should be compatible with HDR10 supporting players. Same goes with HLG and of course SDR. So allow copy of those formats
+
+                var requestHasHDR10 = requestedRangeTypes.Contains(VideoRangeType.HDR10.ToString(), StringComparison.OrdinalIgnoreCase);
+                var requestHasHLG = requestedRangeTypes.Contains(VideoRangeType.HLG.ToString(), StringComparison.OrdinalIgnoreCase);
+                var requestHasSDR = requestedRangeTypes.Contains(VideoRangeType.SDR.ToString(), StringComparison.OrdinalIgnoreCase);
+
                 if (!requestedRangeTypes.Contains(videoStream.VideoRangeType.ToString(), StringComparison.OrdinalIgnoreCase)
-                     && !((requestedRangeTypes.Contains("HDR10", StringComparison.OrdinalIgnoreCase) && videoStream.VideoRangeType == VideoRangeType.DOVIWithHDR10)
-                            || (requestedRangeTypes.Contains("HLG", StringComparison.OrdinalIgnoreCase) && videoStream.VideoRangeType == VideoRangeType.DOVIWithHLG)
-                            || (requestedRangeTypes.Contains("SDR", StringComparison.OrdinalIgnoreCase) && videoStream.VideoRangeType == VideoRangeType.DOVIWithSDR)))
+                     && !((requestHasHDR10 && videoStream.VideoRangeType == VideoRangeType.DOVIWithHDR10)
+                            || (requestHasHLG && videoStream.VideoRangeType == VideoRangeType.DOVIWithHLG)
+                            || (requestHasSDR && videoStream.VideoRangeType == VideoRangeType.DOVIWithSDR)))
                 {
                     return false;
                 }
