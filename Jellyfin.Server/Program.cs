@@ -12,6 +12,7 @@ using Jellyfin.Server.Helpers;
 using Jellyfin.Server.Implementations;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -139,7 +140,15 @@ namespace Jellyfin.Server
                 host = Host.CreateDefaultBuilder()
                     .UseConsoleLifetime()
                     .ConfigureServices(services => appHost.Init(services))
-                    .ConfigureWebHostDefaults(webHostBuilder => webHostBuilder.ConfigureWebHostBuilder(appHost, startupConfig, appPaths, _logger))
+                    .ConfigureWebHostDefaults(webHostBuilder =>
+                    {
+                        webHostBuilder.ConfigureWebHostBuilder(appHost, startupConfig, appPaths, _logger);
+                        if (bool.TryParse(Environment.GetEnvironmentVariable("JELLYFIN_ENABLE_IIS"), out var iisEnabled) && iisEnabled)
+                        {
+                            _logger.LogCritical("UNSUPPORTED HOSTING ENVIRONMENT Microsoft Internet Information Services. The option to run Jellyfin on IIS is an unsupported and untested feature. Only use at your own discretion.");
+                            webHostBuilder.UseIIS();
+                        }
+                    })
                     .ConfigureAppConfiguration(config => config.ConfigureAppConfiguration(options, appPaths, startupConfig))
                     .UseSerilog()
                     .Build();
