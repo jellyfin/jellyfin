@@ -1604,7 +1604,7 @@ public class DynamicHlsController : BaseJellyfinApiController
                 Path.GetFileNameWithoutExtension(outputPath));
         }
 
-        var hlsArguments = GetHlsArguments(isEventPlaylist, state.SegmentLength);
+        var hlsArguments = $"-hls_playlist_type {(isEventPlaylist ? "event" : "vod")} -hls_list_size 0";
 
         return string.Format(
             CultureInfo.InvariantCulture,
@@ -1623,33 +1623,6 @@ public class DynamicHlsController : BaseJellyfinApiController
             EncodingUtils.NormalizePath(outputTsArg),
             hlsArguments,
             EncodingUtils.NormalizePath(outputPath)).Trim();
-    }
-
-    /// <summary>
-    /// Gets the HLS arguments for transcoding.
-    /// </summary>
-    /// <returns>The command line arguments for HLS transcoding.</returns>
-    private string GetHlsArguments(bool isEventPlaylist, int segmentLength)
-    {
-        var enableThrottling = _encodingOptions.EnableThrottling;
-        var enableSegmentDeletion = _encodingOptions.EnableSegmentDeletion;
-
-        // Only enable segment deletion when throttling is enabled
-        if (enableThrottling && enableSegmentDeletion)
-        {
-            // Store enough segments for configured seconds of playback; this needs to be above throttling settings
-            var segmentCount = _encodingOptions.SegmentKeepSeconds / segmentLength;
-
-            _logger.LogDebug("Using throttling and segment deletion, keeping {0} segments", segmentCount);
-
-            return string.Format(CultureInfo.InvariantCulture, "-hls_list_size {0} -hls_flags delete_segments", segmentCount.ToString(CultureInfo.InvariantCulture));
-        }
-        else
-        {
-            _logger.LogDebug("Using normal playback, is event playlist? {0}", isEventPlaylist);
-
-            return string.Format(CultureInfo.InvariantCulture, "-hls_playlist_type {0} -hls_list_size 0", isEventPlaylist ? "event" : "vod");
-        }
     }
 
     /// <summary>
