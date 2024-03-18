@@ -140,6 +140,7 @@ jobs:
         run: pip install -r rename/requirements.txt
       - name: run rename script
         run: python3 rename.py
+        working-directory: ./rename
         env:
           GH_TOKEN: ${{ secrets.JF_BOT_TOKEN }}
           GH_REPO: ${{ github.repository }}
