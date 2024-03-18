@@ -57,7 +57,7 @@ public class MediaSegmentsController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<IReadOnlyList<MediaSegmentDto>>> GetSegments(
+    public async Task<ActionResult<IReadOnlyList<MediaSegmentDto>>> CreateSegments(
         [FromRoute, Required] Guid itemId,
         [FromQuery] int? streamIndex,
         [FromQuery] MediaSegmentType? type,
