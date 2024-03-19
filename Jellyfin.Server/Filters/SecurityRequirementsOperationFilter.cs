@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Jellyfin.Api.Auth.DefaultAuthorizationPolicy;
 using Jellyfin.Api.Constants;
+using Jellyfin.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -15,6 +17,17 @@ public class SecurityRequirementsOperationFilter : IOperationFilter
 {
     private const string DefaultAuthPolicy = "DefaultAuthorization";
     private static readonly Type _attributeType = typeof(AuthorizeAttribute);
+
+    private readonly IAuthorizationPolicyProvider _authorizationPolicyProvider;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SecurityRequirementsOperationFilter"/> class.
+    /// </summary>
+    /// <param name="authorizationPolicyProvider">The authorization policy provider.</param>
+    public SecurityRequirementsOperationFilter(IAuthorizationPolicyProvider authorizationPolicyProvider)
+    {
+        _authorizationPolicyProvider = authorizationPolicyProvider;
+    }
 
     /// <inheritdoc />
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
@@ -71,6 +84,21 @@ public class SecurityRequirementsOperationFilter : IOperationFilter
                 Id = AuthenticationSchemes.CustomAuthentication
             },
         };
+
+        // Add DefaultAuthorization scope to any endpoint that has a policy with a requirement that is a subset of DefaultAuthorization.
+        if (!requiredScopes.Contains(DefaultAuthPolicy.AsSpan(), StringComparison.Ordinal))
+        {
+            foreach (var scope in requiredScopes)
+            {
+                var authorizationPolicy = _authorizationPolicyProvider.GetPolicyAsync(scope).GetAwaiter().GetResult();
+                if (authorizationPolicy is not null
+                    && authorizationPolicy.Requirements.Any(r => r is DefaultAuthorizationRequirement))
+                {
+                    requiredScopes.Add(DefaultAuthPolicy);
+                    break;
+                }
+            }
+        }
 
         operation.Security = [new OpenApiSecurityRequirement { [scheme] = requiredScopes }];
     }
