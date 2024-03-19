@@ -16,6 +16,7 @@ namespace Jellyfin.Api.WebSocketListeners;
 public class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnumerable<SessionInfo>, WebSocketListenerState>
 {
     private readonly ISessionManager _sessionManager;
+    private bool _disposed;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SessionInfoWebSocketListener"/> class.
@@ -55,9 +56,9 @@ public class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnume
     }
 
     /// <inheritdoc />
-    protected override void Dispose(bool dispose)
+    protected override async ValueTask DisposeAsyncCore()
     {
-        if (dispose)
+        if (!_disposed)
         {
             _sessionManager.SessionStarted -= OnSessionManagerSessionStarted;
             _sessionManager.SessionEnded -= OnSessionManagerSessionEnded;
@@ -66,9 +67,10 @@ public class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnume
             _sessionManager.PlaybackProgress -= OnSessionManagerPlaybackProgress;
             _sessionManager.CapabilitiesChanged -= OnSessionManagerCapabilitiesChanged;
             _sessionManager.SessionActivity -= OnSessionManagerSessionActivity;
+            _disposed = true;
         }
 
-        base.Dispose(dispose);
+        await base.DisposeAsyncCore().ConfigureAwait(false);
     }
 
     /// <summary>
@@ -85,38 +87,38 @@ public class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnume
         base.Start(message);
     }
 
-    private async void OnSessionManagerSessionActivity(object? sender, SessionEventArgs e)
+    private void OnSessionManagerSessionActivity(object? sender, SessionEventArgs e)
     {
-        await SendData(false).ConfigureAwait(false);
+        SendData(false);
     }
 
-    private async void OnSessionManagerCapabilitiesChanged(object? sender, SessionEventArgs e)
+    private void OnSessionManagerCapabilitiesChanged(object? sender, SessionEventArgs e)
     {
-        await SendData(true).ConfigureAwait(false);
+        SendData(true);
     }
 
-    private async void OnSessionManagerPlaybackProgress(object? sender, PlaybackProgressEventArgs e)
+    private void OnSessionManagerPlaybackProgress(object? sender, PlaybackProgressEventArgs e)
     {
-        await SendData(!e.IsAutomated).ConfigureAwait(false);
+        SendData(!e.IsAutomated);
     }
 
-    private async void OnSessionManagerPlaybackStopped(object? sender, PlaybackStopEventArgs e)
+    private void OnSessionManagerPlaybackStopped(object? sender, PlaybackStopEventArgs e)
     {
-        await SendData(true).ConfigureAwait(false);
+        SendData(true);
     }
 
-    private async void OnSessionManagerPlaybackStart(object? sender, PlaybackProgressEventArgs e)
+    private void OnSessionManagerPlaybackStart(object? sender, PlaybackProgressEventArgs e)
     {
-        await SendData(true).ConfigureAwait(false);
+        SendData(true);
     }
 
-    private async void OnSessionManagerSessionEnded(object? sender, SessionEventArgs e)
+    private void OnSessionManagerSessionEnded(object? sender, SessionEventArgs e)
     {
-        await SendData(true).ConfigureAwait(false);
+        SendData(true);
     }
 
-    private async void OnSessionManagerSessionStarted(object? sender, SessionEventArgs e)
+    private void OnSessionManagerSessionStarted(object? sender, SessionEventArgs e)
     {
-        await SendData(true).ConfigureAwait(false);
+        SendData(true);
     }
 }

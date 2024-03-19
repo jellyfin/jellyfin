@@ -1,4 +1,3 @@
-#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -31,7 +30,7 @@ namespace MediaBrowser.Model.Search
         /// Gets or sets the search term.
         /// </summary>
         /// <value>The search term.</value>
-        public string SearchTerm { get; set; }
+        public required string SearchTerm { get; set; }
 
         /// <summary>
         /// Gets or sets the start index. Used for paging.

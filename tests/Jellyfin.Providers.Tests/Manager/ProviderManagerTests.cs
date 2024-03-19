@@ -11,11 +11,13 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Providers.Manager;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -570,7 +572,9 @@ namespace Jellyfin.Providers.Tests.Manager
                 Mock.Of<IFileSystem>(),
                 Mock.Of<IServerApplicationPaths>(),
                 libraryManager.Object,
-                baseItemManager!);
+                baseItemManager!,
+                Mock.Of<ILyricManager>(),
+                Mock.Of<IMemoryCache>());
 
             return providerManager;
         }

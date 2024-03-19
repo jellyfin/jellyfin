@@ -6,14 +6,12 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
 using Jellyfin.LiveTv.Configuration;
-using Jellyfin.LiveTv.Guide;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -27,7 +25,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.LiveTv
@@ -43,12 +40,11 @@ namespace Jellyfin.LiveTv
         private readonly IDtoService _dtoService;
         private readonly IUserDataManager _userDataManager;
         private readonly ILibraryManager _libraryManager;
-        private readonly ITaskManager _taskManager;
         private readonly ILocalizationManager _localization;
         private readonly IChannelManager _channelManager;
+        private readonly IRecordingsManager _recordingsManager;
         private readonly LiveTvDtoService _tvDtoService;
         private readonly ILiveTvService[] _services;
-        private readonly IListingsProvider[] _listingProviders;
 
         public LiveTvManager(
             IServerConfigurationManager config,
@@ -57,27 +53,25 @@ namespace Jellyfin.LiveTv
             IDtoService dtoService,
             IUserManager userManager,
             ILibraryManager libraryManager,
-            ITaskManager taskManager,
             ILocalizationManager localization,
             IChannelManager channelManager,
+            IRecordingsManager recordingsManager,
             LiveTvDtoService liveTvDtoService,
-            IEnumerable<ILiveTvService> services,
-            IEnumerable<IListingsProvider> listingProviders)
+            IEnumerable<ILiveTvService> services)
         {
             _config = config;
             _logger = logger;
             _userManager = userManager;
             _libraryManager = libraryManager;
-            _taskManager = taskManager;
             _localization = localization;
             _dtoService = dtoService;
             _userDataManager = userDataManager;
             _channelManager = channelManager;
             _tvDtoService = liveTvDtoService;
+            _recordingsManager = recordingsManager;
             _services = services.ToArray();
-            _listingProviders = listingProviders.ToArray();
 
-            var defaultService = _services.OfType<EmbyTV.EmbyTV>().First();
+            var defaultService = _services.OfType<DefaultLiveTvService>().First();
             defaultService.TimerCreated += OnEmbyTvTimerCreated;
             defaultService.TimerCancelled += OnEmbyTvTimerCancelled;
         }
@@ -95,13 +89,6 @@ namespace Jellyfin.LiveTv
         /// </summary>
         /// <value>The services.</value>
         public IReadOnlyList<ILiveTvService> Services => _services;
-
-        public IReadOnlyList<IListingsProvider> ListingProviders => _listingProviders;
-
-        public string GetEmbyTvActiveRecordingPath(string id)
-        {
-            return EmbyTV.EmbyTV.Current.GetActiveRecordingPath(id);
-        }
 
         private void OnEmbyTvTimerCancelled(object sender, GenericEventArgs<string> e)
         {
@@ -164,73 +151,6 @@ namespace Jellyfin.LiveTv
             return _libraryManager.GetItemsResult(internalQuery);
         }
 
-        public async Task<Tuple<MediaSourceInfo, ILiveStream>> GetChannelStream(string id, string mediaSourceId, List<ILiveStream> currentLiveStreams, CancellationToken cancellationToken)
-        {
-            if (string.Equals(id, mediaSourceId, StringComparison.OrdinalIgnoreCase))
-            {
-                mediaSourceId = null;
-            }
-
-            var channel = (LiveTvChannel)_libraryManager.GetItemById(id);
-
-            bool isVideo = channel.ChannelType == ChannelType.TV;
-            var service = GetService(channel);
-            _logger.LogInformation("Opening channel stream from {0}, external channel Id: {1}", service.Name, channel.ExternalId);
-
-            MediaSourceInfo info;
-#pragma warning disable CA1859 // TODO: Analyzer bug?
-            ILiveStream liveStream;
-#pragma warning restore CA1859
-            if (service is ISupportsDirectStreamProvider supportsManagedStream)
-            {
-                liveStream = await supportsManagedStream.GetChannelStreamWithDirectStreamProvider(channel.ExternalId, mediaSourceId, currentLiveStreams, cancellationToken).ConfigureAwait(false);
-                info = liveStream.MediaSource;
-            }
-            else
-            {
-                info = await service.GetChannelStream(channel.ExternalId, mediaSourceId, cancellationToken).ConfigureAwait(false);
-                var openedId = info.Id;
-                Func<Task> closeFn = () => service.CloseLiveStream(openedId, CancellationToken.None);
-
-                liveStream = new ExclusiveLiveStream(info, closeFn);
-
-                var startTime = DateTime.UtcNow;
-                await liveStream.Open(cancellationToken).ConfigureAwait(false);
-                var endTime = DateTime.UtcNow;
-                _logger.LogInformation("Live stream opened after {0}ms", (endTime - startTime).TotalMilliseconds);
-            }
-
-            info.RequiresClosing = true;
-
-            var idPrefix = service.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture) + "_";
-
-            info.LiveStreamId = idPrefix + info.Id;
-
-            Normalize(info, service, isVideo);
-
-            return new Tuple<MediaSourceInfo, ILiveStream>(info, liveStream);
-        }
-
-        public async Task<IEnumerable<MediaSourceInfo>> GetChannelMediaSources(BaseItem item, CancellationToken cancellationToken)
-        {
-            var baseItem = (LiveTvChannel)item;
-            var service = GetService(baseItem);
-
-            var sources = await service.GetChannelStreamMediaSources(baseItem.ExternalId, cancellationToken).ConfigureAwait(false);
-
-            if (sources.Count == 0)
-            {
-                throw new NotImplementedException();
-            }
-
-            foreach (var source in sources)
-            {
-                Normalize(source, service, baseItem.ChannelType == ChannelType.TV);
-            }
-
-            return sources;
-        }
-
         private ILiveTvService GetService(LiveTvChannel item)
         {
             var name = item.ServiceName;
@@ -251,127 +171,6 @@ namespace Jellyfin.LiveTv
                         CultureInfo.InvariantCulture,
                         "No service with the name '{0}' can be found.",
                         name));
-
-        private static void Normalize(MediaSourceInfo mediaSource, ILiveTvService service, bool isVideo)
-        {
-            // Not all of the plugins are setting this
-            mediaSource.IsInfiniteStream = true;
-
-            if (mediaSource.MediaStreams.Count == 0)
-            {
-                if (isVideo)
-                {
-                    mediaSource.MediaStreams = new MediaStream[]
-                    {
-                        new MediaStream
-                        {
-                            Type = MediaStreamType.Video,
-                            // Set the index to -1 because we don't know the exact index of the video stream within the container
-                            Index = -1,
-
-                            // Set to true if unknown to enable deinterlacing
-                            IsInterlaced = true
-                        },
-                        new MediaStream
-                        {
-                            Type = MediaStreamType.Audio,
-                            // Set the index to -1 because we don't know the exact index of the audio stream within the container
-                            Index = -1
-                        }
-                    };
-                }
-                else
-                {
-                    mediaSource.MediaStreams = new MediaStream[]
-                    {
-                        new MediaStream
-                        {
-                            Type = MediaStreamType.Audio,
-                            // Set the index to -1 because we don't know the exact index of the audio stream within the container
-                            Index = -1
-                        }
-                    };
-                }
-            }
-
-            // Clean some bad data coming from providers
-            foreach (var stream in mediaSource.MediaStreams)
-            {
-                if (stream.BitRate.HasValue && stream.BitRate <= 0)
-                {
-                    stream.BitRate = null;
-                }
-
-                if (stream.Channels.HasValue && stream.Channels <= 0)
-                {
-                    stream.Channels = null;
-                }
-
-                if (stream.AverageFrameRate.HasValue && stream.AverageFrameRate <= 0)
-                {
-                    stream.AverageFrameRate = null;
-                }
-
-                if (stream.RealFrameRate.HasValue && stream.RealFrameRate <= 0)
-                {
-                    stream.RealFrameRate = null;
-                }
-
-                if (stream.Width.HasValue && stream.Width <= 0)
-                {
-                    stream.Width = null;
-                }
-
-                if (stream.Height.HasValue && stream.Height <= 0)
-                {
-                    stream.Height = null;
-                }
-
-                if (stream.SampleRate.HasValue && stream.SampleRate <= 0)
-                {
-                    stream.SampleRate = null;
-                }
-
-                if (stream.Level.HasValue && stream.Level <= 0)
-                {
-                    stream.Level = null;
-                }
-            }
-
-            var indexes = mediaSource.MediaStreams.Select(i => i.Index).Distinct().ToList();
-
-            // If there are duplicate stream indexes, set them all to unknown
-            if (indexes.Count != mediaSource.MediaStreams.Count)
-            {
-                foreach (var stream in mediaSource.MediaStreams)
-                {
-                    stream.Index = -1;
-                }
-            }
-
-            // Set the total bitrate if not already supplied
-            mediaSource.InferTotalBitrate();
-
-            if (service is not EmbyTV.EmbyTV)
-            {
-                // We can't trust that we'll be able to direct stream it through emby server, no matter what the provider says
-                // mediaSource.SupportsDirectPlay = false;
-                // mediaSource.SupportsDirectStream = false;
-                mediaSource.SupportsTranscoding = true;
-                foreach (var stream in mediaSource.MediaStreams)
-                {
-                    if (stream.Type == MediaStreamType.Video && string.IsNullOrWhiteSpace(stream.NalLengthSize))
-                    {
-                        stream.NalLengthSize = "0";
-                    }
-
-                    if (stream.Type == MediaStreamType.Video)
-                    {
-                        stream.IsInterlaced = true;
-                    }
-                }
-            }
-        }
 
         public async Task<BaseItemDto> GetProgram(string id, CancellationToken cancellationToken, User user = null)
         {
@@ -775,18 +574,13 @@ namespace Jellyfin.LiveTv
             return AddRecordingInfo(programTuples, CancellationToken.None);
         }
 
-        public ActiveRecordingInfo GetActiveRecordingInfo(string path)
-        {
-            return EmbyTV.EmbyTV.Current.GetActiveRecordingInfo(path);
-        }
-
         public void AddInfoToRecordingDto(BaseItem item, BaseItemDto dto, ActiveRecordingInfo activeRecordingInfo, User user = null)
         {
-            var service = EmbyTV.EmbyTV.Current;
-
             var info = activeRecordingInfo.Timer;
 
-            var channel = string.IsNullOrWhiteSpace(info.ChannelId) ? null : _libraryManager.GetItemById(_tvDtoService.GetInternalChannelId(service.Name, info.ChannelId));
+            var channel = string.IsNullOrWhiteSpace(info.ChannelId)
+                ? null
+                : _libraryManager.GetItemById(_tvDtoService.GetInternalChannelId(DefaultLiveTvService.ServiceName, info.ChannelId));
 
             dto.SeriesTimerId = string.IsNullOrEmpty(info.SeriesTimerId)
                 ? null
@@ -1022,7 +816,7 @@ namespace Jellyfin.LiveTv
 
             await service.CancelTimerAsync(timer.ExternalId, CancellationToken.None).ConfigureAwait(false);
 
-            if (service is not EmbyTV.EmbyTV)
+            if (service is not DefaultLiveTvService)
             {
                 TimerCancelled?.Invoke(this, new GenericEventArgs<TimerEventInfo>(new TimerEventInfo(id)));
             }
@@ -1331,7 +1125,7 @@ namespace Jellyfin.LiveTv
 
             _logger.LogInformation("New recording scheduled");
 
-            if (service is not EmbyTV.EmbyTV)
+            if (service is not DefaultLiveTvService)
             {
                 TimerCreated?.Invoke(this, new GenericEventArgs<TimerEventInfo>(
                     new TimerEventInfo(newTimerId)
@@ -1465,168 +1259,13 @@ namespace Jellyfin.LiveTv
             return _libraryManager.GetNamedView(name, CollectionType.livetv, name);
         }
 
-        public async Task<ListingsProviderInfo> SaveListingProvider(ListingsProviderInfo info, bool validateLogin, bool validateListings)
-        {
-            // Hack to make the object a pure ListingsProviderInfo instead of an AddListingProvider
-            // ServerConfiguration.SaveConfiguration crashes during xml serialization for AddListingProvider
-            info = JsonSerializer.Deserialize<ListingsProviderInfo>(JsonSerializer.SerializeToUtf8Bytes(info));
-
-            var provider = _listingProviders.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase));
-
-            if (provider is null)
-            {
-                throw new ResourceNotFoundException(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "Couldn't find provider of type: '{0}'",
-                        info.Type));
-            }
-
-            await provider.Validate(info, validateLogin, validateListings).ConfigureAwait(false);
-
-            var config = _config.GetLiveTvConfiguration();
-
-            var list = config.ListingProviders.ToList();
-            int index = list.FindIndex(i => string.Equals(i.Id, info.Id, StringComparison.OrdinalIgnoreCase));
-
-            if (index == -1 || string.IsNullOrWhiteSpace(info.Id))
-            {
-                info.Id = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
-                list.Add(info);
-                config.ListingProviders = list.ToArray();
-            }
-            else
-            {
-                config.ListingProviders[index] = info;
-            }
-
-            _config.SaveConfiguration("livetv", config);
-
-            _taskManager.CancelIfRunningAndQueue<RefreshGuideScheduledTask>();
-
-            return info;
-        }
-
-        public void DeleteListingsProvider(string id)
-        {
-            var config = _config.GetLiveTvConfiguration();
-
-            config.ListingProviders = config.ListingProviders.Where(i => !string.Equals(id, i.Id, StringComparison.OrdinalIgnoreCase)).ToArray();
-
-            _config.SaveConfiguration("livetv", config);
-            _taskManager.CancelIfRunningAndQueue<RefreshGuideScheduledTask>();
-        }
-
-        public async Task<TunerChannelMapping> SetChannelMapping(string providerId, string tunerChannelNumber, string providerChannelNumber)
-        {
-            var config = _config.GetLiveTvConfiguration();
-
-            var listingsProviderInfo = config.ListingProviders.First(i => string.Equals(providerId, i.Id, StringComparison.OrdinalIgnoreCase));
-            listingsProviderInfo.ChannelMappings = listingsProviderInfo.ChannelMappings.Where(i => !string.Equals(i.Name, tunerChannelNumber, StringComparison.OrdinalIgnoreCase)).ToArray();
-
-            if (!string.Equals(tunerChannelNumber, providerChannelNumber, StringComparison.OrdinalIgnoreCase))
-            {
-                var list = listingsProviderInfo.ChannelMappings.ToList();
-                list.Add(new NameValuePair
-                {
-                    Name = tunerChannelNumber,
-                    Value = providerChannelNumber
-                });
-                listingsProviderInfo.ChannelMappings = list.ToArray();
-            }
-
-            _config.SaveConfiguration("livetv", config);
-
-            var tunerChannels = await GetChannelsForListingsProvider(providerId, CancellationToken.None)
-                        .ConfigureAwait(false);
-
-            var providerChannels = await GetChannelsFromListingsProviderData(providerId, CancellationToken.None)
-                     .ConfigureAwait(false);
-
-            var mappings = listingsProviderInfo.ChannelMappings;
-
-            var tunerChannelMappings =
-                tunerChannels.Select(i => GetTunerChannelMapping(i, mappings, providerChannels)).ToList();
-
-            _taskManager.CancelIfRunningAndQueue<RefreshGuideScheduledTask>();
-
-            return tunerChannelMappings.First(i => string.Equals(i.Id, tunerChannelNumber, StringComparison.OrdinalIgnoreCase));
-        }
-
-        public TunerChannelMapping GetTunerChannelMapping(ChannelInfo tunerChannel, NameValuePair[] mappings, List<ChannelInfo> providerChannels)
-        {
-            var result = new TunerChannelMapping
-            {
-                Name = tunerChannel.Name,
-                Id = tunerChannel.Id
-            };
-
-            if (!string.IsNullOrWhiteSpace(tunerChannel.Number))
-            {
-                result.Name = tunerChannel.Number + " " + result.Name;
-            }
-
-            var providerChannel = EmbyTV.EmbyTV.Current.GetEpgChannelFromTunerChannel(mappings, tunerChannel, providerChannels);
-
-            if (providerChannel is not null)
-            {
-                result.ProviderChannelName = providerChannel.Name;
-                result.ProviderChannelId = providerChannel.Id;
-            }
-
-            return result;
-        }
-
-        public Task<List<NameIdPair>> GetLineups(string providerType, string providerId, string country, string location)
-        {
-            var config = _config.GetLiveTvConfiguration();
-
-            if (string.IsNullOrWhiteSpace(providerId))
-            {
-                var provider = _listingProviders.FirstOrDefault(i => string.Equals(providerType, i.Type, StringComparison.OrdinalIgnoreCase));
-
-                if (provider is null)
-                {
-                    throw new ResourceNotFoundException();
-                }
-
-                return provider.GetLineups(null, country, location);
-            }
-            else
-            {
-                var info = config.ListingProviders.FirstOrDefault(i => string.Equals(i.Id, providerId, StringComparison.OrdinalIgnoreCase));
-
-                var provider = _listingProviders.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase));
-
-                if (provider is null)
-                {
-                    throw new ResourceNotFoundException();
-                }
-
-                return provider.GetLineups(info, country, location);
-            }
-        }
-
-        public Task<List<ChannelInfo>> GetChannelsForListingsProvider(string id, CancellationToken cancellationToken)
-        {
-            var info = _config.GetLiveTvConfiguration().ListingProviders.First(i => string.Equals(i.Id, id, StringComparison.OrdinalIgnoreCase));
-            return EmbyTV.EmbyTV.Current.GetChannelsForListingsProvider(info, cancellationToken);
-        }
-
-        public Task<List<ChannelInfo>> GetChannelsFromListingsProviderData(string id, CancellationToken cancellationToken)
-        {
-            var info = _config.GetLiveTvConfiguration().ListingProviders.First(i => string.Equals(i.Id, id, StringComparison.OrdinalIgnoreCase));
-            var provider = _listingProviders.First(i => string.Equals(i.Type, info.Type, StringComparison.OrdinalIgnoreCase));
-            return provider.GetChannels(info, cancellationToken);
-        }
-
         /// <inheritdoc />
         public Task<BaseItem[]> GetRecordingFoldersAsync(User user)
             => GetRecordingFoldersAsync(user, false);
 
         private async Task<BaseItem[]> GetRecordingFoldersAsync(User user, bool refreshChannels)
         {
-            var folders = EmbyTV.EmbyTV.Current.GetRecordingFolders()
+            var folders = _recordingsManager.GetRecordingFolders()
                 .SelectMany(i => i.Locations)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Select(i => _libraryManager.FindByPath(i, true))

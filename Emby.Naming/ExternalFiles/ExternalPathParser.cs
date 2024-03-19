@@ -45,7 +45,8 @@ namespace Emby.Naming.ExternalFiles
 
             var extension = Path.GetExtension(path.AsSpan());
             if (!(_type == DlnaProfileType.Subtitle && _namingOptions.SubtitleFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
-                && !(_type == DlnaProfileType.Audio && _namingOptions.AudioFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase)))
+                && !(_type == DlnaProfileType.Audio && _namingOptions.AudioFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
+                && !(_type == DlnaProfileType.Lyric && _namingOptions.LyricFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase)))
             {
                 return null;
             }

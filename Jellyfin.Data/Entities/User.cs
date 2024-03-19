@@ -506,6 +506,7 @@ namespace Jellyfin.Data.Entities
             Permissions.Add(new Permission(PermissionKind.EnableRemoteControlOfOtherUsers, false));
             Permissions.Add(new Permission(PermissionKind.EnableCollectionManagement, false));
             Permissions.Add(new Permission(PermissionKind.EnableSubtitleManagement, false));
+            Permissions.Add(new Permission(PermissionKind.EnableLyricManagement, false));
         }
 
         /// <summary>

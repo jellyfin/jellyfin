@@ -22,7 +22,7 @@ public class GetProgramsDto
     /// <summary>
     /// Gets or sets optional. Filter by user id.
     /// </summary>
-    public Guid UserId { get; set; }
+    public Guid? UserId { get; set; }
 
     /// <summary>
     /// Gets or sets the minimum premiere start date.

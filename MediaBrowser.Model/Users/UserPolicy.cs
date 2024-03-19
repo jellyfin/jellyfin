@@ -93,6 +93,12 @@ namespace MediaBrowser.Model.Users
         public bool EnableSubtitleManagement { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this user can manage lyrics.
+        /// </summary>
+        [DefaultValue(false)]
+        public bool EnableLyricManagement { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this instance is disabled.
         /// </summary>
         /// <value><c>true</c> if this instance is disabled; otherwise, <c>false</c>.</value>

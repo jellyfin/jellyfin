@@ -913,6 +913,7 @@ public class LibraryController : BaseJellyfinApiController
                 User.GetUserId())
             {
                 ShortOverview = string.Format(CultureInfo.InvariantCulture, _localization.GetLocalizedString("AppDeviceValues"), User.GetClient(), User.GetDevice()),
+                ItemId = item.Id.ToString("N", CultureInfo.InvariantCulture)
             }).ConfigureAwait(false);
         }
         catch

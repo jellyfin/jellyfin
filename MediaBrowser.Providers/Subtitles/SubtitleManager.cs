@@ -74,7 +74,7 @@ namespace MediaBrowser.Providers.Subtitles
                 .Where(i => i.SupportedMediaTypes.Contains(contentType) && !request.DisabledSubtitleFetchers.Contains(i.Name, StringComparison.OrdinalIgnoreCase))
                 .OrderBy(i =>
                 {
-                    var index = request.SubtitleFetcherOrder.ToList().IndexOf(i.Name);
+                    var index = request.SubtitleFetcherOrder.IndexOf(i.Name);
                     return index == -1 ? int.MaxValue : index;
                 })
                 .ToArray();

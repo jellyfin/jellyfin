@@ -31,7 +31,7 @@
     "VersionNumber": "Versioon {0}",
     "ValueSpecialEpisodeName": "Eriepisood - {0}",
     "ValueHasBeenAddedToLibrary": "{0} lisati meediakogusse",
-    "UserStartedPlayingItemWithValues": "{0} taasesitab {1} serveris {2}",
+    "UserStartedPlayingItemWithValues": "{0} taasesitab {1} seadmes {2}",
     "UserPasswordChangedWithName": "Kasutaja {0} parool muudeti",
     "UserLockedOutWithName": "Kasutaja {0} lukustati",
     "UserDeletedWithName": "Kasutaja {0} kustutati",

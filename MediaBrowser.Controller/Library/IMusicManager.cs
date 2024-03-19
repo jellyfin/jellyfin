@@ -1,5 +1,3 @@
-#nullable disable
-
 #pragma warning disable CA1002, CS1591
 
 using System.Collections.Generic;
@@ -19,7 +17,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="user">The user to use.</param>
         /// <param name="dtoOptions">The options to use.</param>
         /// <returns>List of items.</returns>
-        List<BaseItem> GetInstantMixFromItem(BaseItem item, User user, DtoOptions dtoOptions);
+        List<BaseItem> GetInstantMixFromItem(BaseItem item, User? user, DtoOptions dtoOptions);
 
         /// <summary>
         /// Gets the instant mix from artist.
@@ -28,7 +26,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="user">The user to use.</param>
         /// <param name="dtoOptions">The options to use.</param>
         /// <returns>List of items.</returns>
-        List<BaseItem> GetInstantMixFromArtist(MusicArtist artist, User user, DtoOptions dtoOptions);
+        List<BaseItem> GetInstantMixFromArtist(MusicArtist artist, User? user, DtoOptions dtoOptions);
 
         /// <summary>
         /// Gets the instant mix from genre.
@@ -37,6 +35,6 @@ namespace MediaBrowser.Controller.Library
         /// <param name="user">The user to use.</param>
         /// <param name="dtoOptions">The options to use.</param>
         /// <returns>List of items.</returns>
-        List<BaseItem> GetInstantMixFromGenres(IEnumerable<string> genres, User user, DtoOptions dtoOptions);
+        List<BaseItem> GetInstantMixFromGenres(IEnumerable<string> genres, User? user, DtoOptions dtoOptions);
     }
 }

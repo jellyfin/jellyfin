@@ -12,10 +12,15 @@
     <ServerGarbageCollection>false</ServerGarbageCollection>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <ApplicationIcon>Jellyfin.Server.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="..\SharedVersion.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Jellyfin.Server.ico" />
   </ItemGroup>
 
   <ItemGroup>

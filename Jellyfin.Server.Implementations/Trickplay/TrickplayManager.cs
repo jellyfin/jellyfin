@@ -382,7 +382,7 @@ public class TrickplayManager : ITrickplayManager
 
             if (trickplayInfo.ThumbnailCount > 0)
             {
-                const string urlFormat = "Trickplay/{0}/{1}.jpg?MediaSourceId={2}&api_key={3}";
+                const string urlFormat = "{0}.jpg?MediaSourceId={1}&api_key={2}";
                 const string decimalFormat = "{0:0.###}";
 
                 var resolution = $"{trickplayInfo.Width}x{trickplayInfo.Height}";
@@ -431,7 +431,6 @@ public class TrickplayManager : ITrickplayManager
                         .AppendFormat(
                             CultureInfo.InvariantCulture,
                             urlFormat,
-                            width.ToString(CultureInfo.InvariantCulture),
                             i.ToString(CultureInfo.InvariantCulture),
                             itemId.ToString("N"),
                             apiKey)

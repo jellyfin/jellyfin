@@ -1,5 +1,5 @@
 using MediaBrowser.Controller.Resolvers;
-using MediaBrowser.Providers.Lyric;
+using MediaBrowser.Model.Lyrics;
 
 namespace MediaBrowser.Controller.Lyrics;
 
@@ -24,5 +24,5 @@ public interface ILyricParser
     /// </summary>
     /// <param name="lyrics">The raw lyrics content.</param>
     /// <returns>The parsed lyrics or null if invalid.</returns>
-    LyricResponse? ParseLyrics(LyricFile lyrics);
+    LyricDto? ParseLyrics(LyricFile lyrics);
 }

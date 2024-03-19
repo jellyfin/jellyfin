@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Security;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.IO;
@@ -643,7 +644,15 @@ namespace Emby.Server.Implementations.IO
         /// <inheritdoc />
         public virtual IEnumerable<string> GetFileSystemEntryPaths(string path, bool recursive = false)
         {
-            return Directory.EnumerateFileSystemEntries(path, "*", GetEnumerationOptions(recursive));
+            try
+            {
+                return Directory.EnumerateFileSystemEntries(path, "*", GetEnumerationOptions(recursive));
+            }
+            catch (Exception ex) when (ex is UnauthorizedAccessException or DirectoryNotFoundException or SecurityException)
+            {
+                _logger.LogError(ex, "Failed to enumerate path {Path}", path);
+                return Enumerable.Empty<string>();
+            }
         }
 
         /// <inheritdoc />

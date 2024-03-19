@@ -28,6 +28,7 @@ public class EncodingOptions
         VaapiDevice = "/dev/dri/renderD128";
         EnableTonemapping = false;
         EnableVppTonemapping = false;
+        EnableVideoToolboxTonemapping = false;
         TonemappingAlgorithm = "bt2390";
         TonemappingMode = "auto";
         TonemappingRange = "auto";
@@ -145,6 +146,11 @@ public class EncodingOptions
     /// Gets or sets a value indicating whether VPP tonemapping is enabled.
     /// </summary>
     public bool EnableVppTonemapping { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether videotoolbox tonemapping is enabled.
+    /// </summary>
+    public bool EnableVideoToolboxTonemapping { get; set; }
 
     /// <summary>
     /// Gets or sets the tone-mapping algorithm.

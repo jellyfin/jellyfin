@@ -27,7 +27,7 @@ public static class ImageFormatExtensionsTests
     [InlineData((ImageFormat)int.MinValue)]
     [InlineData((ImageFormat)int.MaxValue)]
     [InlineData((ImageFormat)(-1))]
-    [InlineData((ImageFormat)5)]
+    [InlineData((ImageFormat)6)]
     public static void GetMimeType_Valid_ThrowsInvalidEnumArgumentException(ImageFormat format)
         => Assert.Throws<InvalidEnumArgumentException>(() => format.GetMimeType());
 
@@ -40,7 +40,7 @@ public static class ImageFormatExtensionsTests
     [InlineData((ImageFormat)int.MinValue)]
     [InlineData((ImageFormat)int.MaxValue)]
     [InlineData((ImageFormat)(-1))]
-    [InlineData((ImageFormat)5)]
+    [InlineData((ImageFormat)6)]
     public static void GetExtension_Valid_ThrowsInvalidEnumArgumentException(ImageFormat format)
         => Assert.Throws<InvalidEnumArgumentException>(() => format.GetExtension());
 }

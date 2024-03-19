@@ -1,5 +1,3 @@
-#nullable disable
-
 #pragma warning disable CS1591
 
 using System;
@@ -29,7 +27,7 @@ namespace Emby.Server.Implementations.Library
 
         public QueryResult<SearchHintInfo> GetSearchHints(SearchQuery query)
         {
-            User user = null;
+            User? user = null;
             if (!query.UserId.IsEmpty())
             {
                 user = _userManager.GetUserById(query.UserId);
@@ -69,7 +67,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="user">The user.</param>
         /// <returns>IEnumerable{SearchHintResult}.</returns>
         /// <exception cref="ArgumentException"><c>query.SearchTerm</c> is <c>null</c> or empty.</exception>
-        private List<SearchHintInfo> GetSearchHints(SearchQuery query, User user)
+        private List<SearchHintInfo> GetSearchHints(SearchQuery query, User? user)
         {
             var searchTerm = query.SearchTerm;
 
@@ -78,7 +76,7 @@ namespace Emby.Server.Implementations.Library
             searchTerm = searchTerm.Trim().RemoveDiacritics();
 
             var excludeItemTypes = query.ExcludeItemTypes.ToList();
-            var includeItemTypes = (query.IncludeItemTypes ?? Array.Empty<BaseItemKind>()).ToList();
+            var includeItemTypes = query.IncludeItemTypes.ToList();
 
             excludeItemTypes.Add(BaseItemKind.Year);
             excludeItemTypes.Add(BaseItemKind.Folder);
@@ -179,7 +177,7 @@ namespace Emby.Server.Implementations.Library
             {
                 if (!searchQuery.ParentId.IsEmpty())
                 {
-                    searchQuery.AncestorIds = new[] { searchQuery.ParentId };
+                    searchQuery.AncestorIds = [searchQuery.ParentId];
                     searchQuery.ParentId = Guid.Empty;
                 }
 

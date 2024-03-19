@@ -15,10 +15,7 @@ namespace Jellyfin.Extensions.Json.Converters
         /// <inheritdoc />
         public override TStruct? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            // Token is empty string.
-            if (reader.TokenType == JsonTokenType.String
-                && ((reader.HasValueSequence && reader.ValueSequence.IsEmpty)
-                    || (!reader.HasValueSequence && reader.ValueSpan.IsEmpty)))
+            if (reader.IsEmptyString())
             {
                 return null;
             }

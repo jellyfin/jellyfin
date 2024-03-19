@@ -394,6 +394,7 @@ namespace Emby.Server.Implementations.Session
             session.PlayState.SubtitleStreamIndex = info.SubtitleStreamIndex;
             session.PlayState.PlayMethod = info.PlayMethod;
             session.PlayState.RepeatMode = info.RepeatMode;
+            session.PlayState.PlaybackOrder = info.PlaybackOrder;
             session.PlaylistItemId = info.PlaylistItemId;
 
             var nowPlayingQueue = info.NowPlayingQueue;
@@ -455,8 +456,8 @@ namespace Emby.Server.Implementations.Session
 
             if (!_activeConnections.TryGetValue(key, out var sessionInfo))
             {
-                _activeConnections[key] = await CreateSession(key, appName, appVersion, deviceId, deviceName, remoteEndPoint, user).ConfigureAwait(false);
-                sessionInfo = _activeConnections[key];
+                sessionInfo = await CreateSession(key, appName, appVersion, deviceId, deviceName, remoteEndPoint, user).ConfigureAwait(false);
+                _activeConnections[key] = sessionInfo;
             }
 
             sessionInfo.UserId = user?.Id ?? Guid.Empty;
@@ -613,9 +614,6 @@ namespace Emby.Server.Implementations.Session
                         _logger.LogDebug(ex, "Error calling OnPlaybackStopped");
                     }
                 }
-
-                playingSessions = Sessions.Where(i => i.NowPlayingItem is not null)
-                    .ToList();
             }
             else
             {

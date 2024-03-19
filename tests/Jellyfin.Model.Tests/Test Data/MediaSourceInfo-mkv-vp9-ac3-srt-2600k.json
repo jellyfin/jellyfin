@@ -1,7 +1,7 @@
 {
     "Id": "a766d122b58e45d9492d17af66748bf5",
     "Path": "/Media/MyVideo-720p.mkv",
-    "Container": "mkv,webm",
+    "Container": "mkv",
     "Size": 835317696,
     "Name": "MyVideo-1080p",
     "ETag": "579a34c6d5dfb23f61539a51220b6a23",

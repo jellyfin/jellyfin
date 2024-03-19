@@ -126,5 +126,5 @@
     "External": "Extern",
     "HearingImpaired": "Slechthorend",
     "TaskRefreshTrickplayImages": "Trickplay-afbeeldingen genereren",
-    "TaskRefreshTrickplayImagesDescription": "Genereert trickplay-afbeeldingen voor video's in bibliotheken waarvoor dit is ingeschakeld."
+    "TaskRefreshTrickplayImagesDescription": "Creëert trickplay-voorvertoningen voor video's in bibliotheken waarvoor dit is ingeschakeld."
 }

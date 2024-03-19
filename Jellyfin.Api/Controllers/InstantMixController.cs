@@ -53,7 +53,7 @@ public class InstantMixController : BaseJellyfinApiController
     /// <summary>
     /// Creates an instant playlist based on a given song.
     /// </summary>
-    /// <param name="id">The item id.</param>
+    /// <param name="itemId">The item id.</param>
     /// <param name="userId">Optional. Filter by user id, and attach user data.</param>
     /// <param name="limit">Optional. The maximum number of records to return.</param>
     /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
@@ -63,10 +63,10 @@ public class InstantMixController : BaseJellyfinApiController
     /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
     /// <response code="200">Instant playlist returned.</response>
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the playlist items.</returns>
-    [HttpGet("Songs/{id}/InstantMix")]
+    [HttpGet("Songs/{itemId}/InstantMix")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromSong(
-        [FromRoute, Required] Guid id,
+        [FromRoute, Required] Guid itemId,
         [FromQuery] Guid? userId,
         [FromQuery] int? limit,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
@@ -75,7 +75,7 @@ public class InstantMixController : BaseJellyfinApiController
         [FromQuery] int? imageTypeLimit,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
     {
-        var item = _libraryManager.GetItemById(id);
+        var item = _libraryManager.GetItemById(itemId);
         userId = RequestHelpers.GetUserId(User, userId);
         var user = userId.IsNullOrEmpty()
             ? null
@@ -90,7 +90,7 @@ public class InstantMixController : BaseJellyfinApiController
     /// <summary>
     /// Creates an instant playlist based on a given album.
     /// </summary>
-    /// <param name="id">The item id.</param>
+    /// <param name="itemId">The item id.</param>
     /// <param name="userId">Optional. Filter by user id, and attach user data.</param>
     /// <param name="limit">Optional. The maximum number of records to return.</param>
     /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
@@ -100,10 +100,10 @@ public class InstantMixController : BaseJellyfinApiController
     /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
     /// <response code="200">Instant playlist returned.</response>
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the playlist items.</returns>
-    [HttpGet("Albums/{id}/InstantMix")]
+    [HttpGet("Albums/{itemId}/InstantMix")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromAlbum(
-        [FromRoute, Required] Guid id,
+        [FromRoute, Required] Guid itemId,
         [FromQuery] Guid? userId,
         [FromQuery] int? limit,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
@@ -112,7 +112,7 @@ public class InstantMixController : BaseJellyfinApiController
         [FromQuery] int? imageTypeLimit,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
     {
-        var album = _libraryManager.GetItemById(id);
+        var album = _libraryManager.GetItemById(itemId);
         userId = RequestHelpers.GetUserId(User, userId);
         var user = userId.IsNullOrEmpty()
             ? null
@@ -127,7 +127,7 @@ public class InstantMixController : BaseJellyfinApiController
     /// <summary>
     /// Creates an instant playlist based on a given playlist.
     /// </summary>
-    /// <param name="id">The item id.</param>
+    /// <param name="itemId">The item id.</param>
     /// <param name="userId">Optional. Filter by user id, and attach user data.</param>
     /// <param name="limit">Optional. The maximum number of records to return.</param>
     /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
@@ -137,10 +137,10 @@ public class InstantMixController : BaseJellyfinApiController
     /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
     /// <response code="200">Instant playlist returned.</response>
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the playlist items.</returns>
-    [HttpGet("Playlists/{id}/InstantMix")]
+    [HttpGet("Playlists/{itemId}/InstantMix")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromPlaylist(
-        [FromRoute, Required] Guid id,
+        [FromRoute, Required] Guid itemId,
         [FromQuery] Guid? userId,
         [FromQuery] int? limit,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
@@ -149,7 +149,7 @@ public class InstantMixController : BaseJellyfinApiController
         [FromQuery] int? imageTypeLimit,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
     {
-        var playlist = (Playlist)_libraryManager.GetItemById(id);
+        var playlist = (Playlist)_libraryManager.GetItemById(itemId);
         userId = RequestHelpers.GetUserId(User, userId);
         var user = userId.IsNullOrEmpty()
             ? null
@@ -200,7 +200,7 @@ public class InstantMixController : BaseJellyfinApiController
     /// <summary>
     /// Creates an instant playlist based on a given artist.
     /// </summary>
-    /// <param name="id">The item id.</param>
+    /// <param name="itemId">The item id.</param>
     /// <param name="userId">Optional. Filter by user id, and attach user data.</param>
     /// <param name="limit">Optional. The maximum number of records to return.</param>
     /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
@@ -210,10 +210,10 @@ public class InstantMixController : BaseJellyfinApiController
     /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
     /// <response code="200">Instant playlist returned.</response>
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the playlist items.</returns>
-    [HttpGet("Artists/{id}/InstantMix")]
+    [HttpGet("Artists/{itemId}/InstantMix")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromArtists(
-        [FromRoute, Required] Guid id,
+        [FromRoute, Required] Guid itemId,
         [FromQuery] Guid? userId,
         [FromQuery] int? limit,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
@@ -222,7 +222,7 @@ public class InstantMixController : BaseJellyfinApiController
         [FromQuery] int? imageTypeLimit,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
     {
-        var item = _libraryManager.GetItemById(id);
+        var item = _libraryManager.GetItemById(itemId);
         userId = RequestHelpers.GetUserId(User, userId);
         var user = userId.IsNullOrEmpty()
             ? null
@@ -237,7 +237,7 @@ public class InstantMixController : BaseJellyfinApiController
     /// <summary>
     /// Creates an instant playlist based on a given item.
     /// </summary>
-    /// <param name="id">The item id.</param>
+    /// <param name="itemId">The item id.</param>
     /// <param name="userId">Optional. Filter by user id, and attach user data.</param>
     /// <param name="limit">Optional. The maximum number of records to return.</param>
     /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
@@ -247,10 +247,10 @@ public class InstantMixController : BaseJellyfinApiController
     /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
     /// <response code="200">Instant playlist returned.</response>
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the playlist items.</returns>
-    [HttpGet("Items/{id}/InstantMix")]
+    [HttpGet("Items/{itemId}/InstantMix")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromItem(
-        [FromRoute, Required] Guid id,
+        [FromRoute, Required] Guid itemId,
         [FromQuery] Guid? userId,
         [FromQuery] int? limit,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
@@ -259,7 +259,7 @@ public class InstantMixController : BaseJellyfinApiController
         [FromQuery] int? imageTypeLimit,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
     {
-        var item = _libraryManager.GetItemById(id);
+        var item = _libraryManager.GetItemById(itemId);
         userId = RequestHelpers.GetUserId(User, userId);
         var user = userId.IsNullOrEmpty()
             ? null

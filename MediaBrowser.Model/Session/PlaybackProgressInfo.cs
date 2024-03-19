@@ -107,6 +107,12 @@ namespace MediaBrowser.Model.Session
         /// <value>The repeat mode.</value>
         public RepeatMode RepeatMode { get; set; }
 
+        /// <summary>
+        /// Gets or sets the playback order.
+        /// </summary>
+        /// <value>The playback order.</value>
+        public PlaybackOrder PlaybackOrder { get; set; }
+
         public QueueItem[] NowPlayingQueue { get; set; }
 
         public string PlaylistItemId { get; set; }
