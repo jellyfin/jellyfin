@@ -13,7 +13,7 @@ namespace Jellyfin.Server.Filters;
 /// </summary>
 public class SecurityRequirementsOperationFilter : IOperationFilter
 {
-    private const string DefaultAuthPolicy = "Default";
+    private const string DefaultAuthPolicy = "DefaultAuthorization";
     private static readonly Type _attributeType = typeof(AuthorizeAttribute);
 
     /// <inheritdoc />
