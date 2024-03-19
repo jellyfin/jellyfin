@@ -122,7 +122,7 @@
     "TaskOptimizeDatabaseDescription": "Comprimeert de database en trimt vrije ruimte. Het uitvoeren van deze taak kan de prestaties verbeteren, na het scannen van de bibliotheek of andere aanpassingen die invloed hebben op de database.",
     "TaskOptimizeDatabase": "Database optimaliseren",
     "TaskKeyframeExtractorDescription": "Haalt keyframes uit videobestanden om preciezere HLS-afspeellijsten te maken. Deze taak kan lang duren.",
-    "TaskKeyframeExtractor": "Keyframe-uitpakker",
+    "TaskKeyframeExtractor": "Keyframes extraheren",
     "External": "Extern",
     "HearingImpaired": "Slechthorend",
     "TaskRefreshTrickplayImages": "Trickplay-afbeeldingen genereren",
