@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using BlurHashSharp.SkiaSharp;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
@@ -69,8 +71,8 @@ public class SkiaEncoder : IImageEncoder
     public bool SupportsImageEncoding => true;
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<string> SupportedInputFormats =>
-        new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    public IReadOnlyCollection<string> SupportedInputFormats { get; } =
+        new[]
         {
             "jpeg",
             "jpg",
@@ -91,7 +93,7 @@ public class SkiaEncoder : IImageEncoder
             "nef",
             "arw",
             SvgFormat
-        };
+        }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
     /// <inheritdoc/>
     public IReadOnlyCollection<ImageFormat> SupportedOutputFormats
@@ -187,8 +189,8 @@ public class SkiaEncoder : IImageEncoder
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
 
-        var extension = Path.GetExtension(path.AsSpan()).TrimStart('.');
-        if (!SupportedInputFormats.Contains(extension, StringComparison.OrdinalIgnoreCase)
+        var extension = Path.GetExtension(path.AsSpan()).TrimStart('.').ToString();
+        if (!SupportedInputFormats.Contains(extension)
             || extension.Equals(SvgFormat, StringComparison.OrdinalIgnoreCase))
         {
             _logger.LogDebug("Unable to compute blur hash due to unsupported format: {ImagePath}", path);
@@ -427,8 +429,8 @@ public class SkiaEncoder : IImageEncoder
         ArgumentException.ThrowIfNullOrEmpty(inputPath);
         ArgumentException.ThrowIfNullOrEmpty(outputPath);
 
-        var inputFormat = Path.GetExtension(inputPath.AsSpan()).TrimStart('.');
-        if (!SupportedInputFormats.Contains(inputFormat, StringComparison.OrdinalIgnoreCase))
+        var inputFormat = Path.GetExtension(inputPath.AsSpan()).TrimStart('.').ToString();
+        if (!SupportedInputFormats.Contains(inputFormat))
         {
             _logger.LogDebug("Unable to encode image due to unsupported format: {ImagePath}", inputPath);
             return inputPath;

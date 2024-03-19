@@ -16,7 +16,7 @@ public static class EnumerableExtensions
     /// <param name="stringComparison">The string comparison.</param>
     /// <returns>A value indicating whether the value is contained in the collection.</returns>
     /// <exception cref="ArgumentNullException">The source is null.</exception>
-    public static bool Contains(this IEnumerable<string> source, ReadOnlySpan<char> value, StringComparison stringComparison)
+    public static bool Contains(this IReadOnlyList<string> source, ReadOnlySpan<char> value, StringComparison stringComparison)
     {
         ArgumentNullException.ThrowIfNull(source);
 
