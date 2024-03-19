@@ -11,7 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using Jellyfin.Data.Enums;
-using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -1005,7 +1004,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                         var name = reader.Name;
 
                         if (!_commonTags.Contains(name)
-                            && !xmlTagsUsed.Contains(name, StringComparison.OrdinalIgnoreCase))
+                            && !xmlTagsUsed.Contains(name, StringComparer.OrdinalIgnoreCase))
                         {
                             writer.WriteNode(reader, false);
                         }
