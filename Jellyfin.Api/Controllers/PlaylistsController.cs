@@ -184,8 +184,7 @@ public class PlaylistsController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
     {
         userId = RequestHelpers.GetUserId(User, userId);
-        var playlist = (Playlist)_libraryManager.GetItemById(playlistId);
-        if (playlist is null)
+        if (_libraryManager.GetItemById(playlistId) is not Playlist playlist)
         {
             return NotFound();
         }

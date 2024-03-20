@@ -64,6 +64,11 @@ namespace Emby.Server.Implementations.Library.Validators
                 try
                 {
                     var item = _libraryManager.GetPerson(person);
+                    if (item is null)
+                    {
+                        _logger.LogWarning("Failed to get person: {Name}", person);
+                        continue;
+                    }
 
                     var options = new MetadataRefreshOptions(new DirectoryService(_fileSystem))
                     {
@@ -92,7 +97,7 @@ namespace Emby.Server.Implementations.Library.Validators
 
             var deadEntities = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new[] { BaseItemKind.Person },
+                IncludeItemTypes = [BaseItemKind.Person],
                 IsDeadPerson = true,
                 IsLocked = false
             });

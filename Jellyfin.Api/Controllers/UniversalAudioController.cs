@@ -106,6 +106,13 @@ public class UniversalAudioController : BaseJellyfinApiController
         [FromQuery] bool breakOnNonKeyFrames = false,
         [FromQuery] bool enableRedirection = true)
     {
+        // set device specific data
+        var item = _libraryManager.GetItemById(itemId);
+        if (item is null)
+        {
+            return NotFound();
+        }
+
         var deviceProfile = GetDeviceProfile(container, transcodingContainer, audioCodec, transcodingProtocol, breakOnNonKeyFrames, transcodingAudioChannels, maxAudioSampleRate, maxAudioBitDepth, maxAudioChannels);
         userId = RequestHelpers.GetUserId(User, userId);
 
@@ -116,9 +123,6 @@ public class UniversalAudioController : BaseJellyfinApiController
                 userId,
                 mediaSourceId)
             .ConfigureAwait(false);
-
-        // set device specific data
-        var item = _libraryManager.GetItemById(itemId);
 
         foreach (var sourceInfo in info.MediaSources)
         {

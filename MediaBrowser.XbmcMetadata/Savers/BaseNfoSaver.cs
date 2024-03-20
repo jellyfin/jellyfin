@@ -947,7 +947,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 if (saveImagePath)
                 {
                     var personEntity = libraryManager.GetPerson(person.Name);
-                    var image = personEntity.GetImageInfo(ImageType.Primary, 0);
+                    var image = personEntity?.GetImageInfo(ImageType.Primary, 0);
 
                     if (image is not null)
                     {

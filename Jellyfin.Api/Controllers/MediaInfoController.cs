@@ -164,6 +164,10 @@ public class MediaInfoController : BaseJellyfinApiController
         {
             // set device specific data
             var item = _libraryManager.GetItemById(itemId);
+            if (item is null)
+            {
+                return NotFound();
+            }
 
             foreach (var mediaSource in info.MediaSources)
             {
