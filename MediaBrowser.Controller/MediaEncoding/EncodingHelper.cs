@@ -4998,7 +4998,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isVtFullSupported = isMacOS && IsVideoToolboxFullSupported();
 
             // legacy videotoolbox pipeline (disable hw filters)
-            if (!isVtEncoder || !_mediaEncoder.SupportsFilter("alphasrc"))
+            if (!isVtEncoder
+                || !isVtFullSupported
+                || !_mediaEncoder.SupportsFilter("alphasrc"))
             {
                 return GetSwVidFilterChain(state, options, vidEncoder);
             }
