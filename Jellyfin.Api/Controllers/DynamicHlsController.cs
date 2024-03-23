@@ -1775,11 +1775,17 @@ public class DynamicHlsController : BaseJellyfinApiController
             || string.Equals(codec, "h265", StringComparison.OrdinalIgnoreCase)
             || string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase))
         {
+            var requestedRange = state.GetRequestedRangeTypes(codec);
+            var requestHasDOVI = requestedRange.Contains(VideoRangeType.DOVI.ToString(), StringComparison.OrdinalIgnoreCase);
+            var requestHasDOVIWithHDR10 = requestedRange.Contains(VideoRangeType.DOVIWithHDR10.ToString(), StringComparison.OrdinalIgnoreCase);
+            var requestHasDOVIWithHLG = requestedRange.Contains(VideoRangeType.DOVIWithHLG.ToString(), StringComparison.OrdinalIgnoreCase);
+            var requestHasDOVIWithSDR = requestedRange.Contains(VideoRangeType.DOVIWithSDR.ToString(), StringComparison.OrdinalIgnoreCase);
+
             if (EncodingHelper.IsCopyCodec(codec)
-                && (state.VideoStream.VideoRangeType == VideoRangeType.DOVI
-                    || string.Equals(state.VideoStream.CodecTag, "dovi", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(state.VideoStream.CodecTag, "dvh1", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(state.VideoStream.CodecTag, "dvhe", StringComparison.OrdinalIgnoreCase)))
+                && ((state.VideoStream.VideoRangeType == VideoRangeType.DOVI && requestHasDOVI)
+                    || (state.VideoStream.VideoRangeType == VideoRangeType.DOVIWithHDR10 && requestHasDOVIWithHDR10)
+                    || (state.VideoStream.VideoRangeType == VideoRangeType.DOVIWithHLG && requestHasDOVIWithHLG)
+                    || (state.VideoStream.VideoRangeType == VideoRangeType.DOVIWithSDR && requestHasDOVIWithSDR)))
             {
                 // Prefer dvh1 to dvhe
                 args += " -tag:v:0 dvh1 -strict -2";

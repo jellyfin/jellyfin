@@ -707,34 +707,46 @@ namespace MediaBrowser.Model.Entities
                 return (VideoRange.Unknown, VideoRangeType.Unknown);
             }
 
-            var colorTransfer = ColorTransfer;
-
-            if (string.Equals(colorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase))
-            {
-                return (VideoRange.HDR, VideoRangeType.HDR10);
-            }
-
-            if (string.Equals(colorTransfer, "arib-std-b67", StringComparison.OrdinalIgnoreCase))
-            {
-                return (VideoRange.HDR, VideoRangeType.HLG);
-            }
-
             var codecTag = CodecTag;
             var dvProfile = DvProfile;
             var rpuPresentFlag = RpuPresentFlag == 1;
             var blPresentFlag = BlPresentFlag == 1;
             var dvBlCompatId = DvBlSignalCompatibilityId;
 
-            var isDoViHDRProfile = dvProfile == 5 || dvProfile == 7 || dvProfile == 8;
-            var isDoViHDRFlag = rpuPresentFlag && blPresentFlag && (dvBlCompatId == 0 || dvBlCompatId == 1 || dvBlCompatId == 4);
+            var isDoViProfile = dvProfile == 5 || dvProfile == 7 || dvProfile == 8;
+            var isDoViFlag = rpuPresentFlag && blPresentFlag && (dvBlCompatId == 0 || dvBlCompatId == 1 || dvBlCompatId == 4 || dvBlCompatId == 2 || dvBlCompatId == 6);
 
-            if ((isDoViHDRProfile && isDoViHDRFlag)
+            if ((isDoViProfile && isDoViFlag)
                 || string.Equals(codecTag, "dovi", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codecTag, "dvh1", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codecTag, "dvhe", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codecTag, "dav1", StringComparison.OrdinalIgnoreCase))
             {
-                return (VideoRange.HDR, VideoRangeType.DOVI);
+                return dvProfile switch
+                {
+                    5 => (VideoRange.HDR, VideoRangeType.DOVI),
+                    8 => dvBlCompatId switch
+                    {
+                        1 => (VideoRange.HDR, VideoRangeType.DOVIWithHDR10),
+                        4 => (VideoRange.HDR, VideoRangeType.DOVIWithHLG),
+                        2 => (VideoRange.SDR, VideoRangeType.DOVIWithSDR),
+                        // There is no other case to handle here as per Dolby Spec. Default case included for completeness and linting purposes
+                        _ => (VideoRange.SDR, VideoRangeType.SDR)
+                    },
+                    7 => (VideoRange.HDR, VideoRangeType.HDR10),
+                    _ => (VideoRange.SDR, VideoRangeType.SDR)
+                };
+            }
+
+            var colorTransfer = ColorTransfer;
+
+            if (string.Equals(colorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase))
+            {
+                return (VideoRange.HDR, VideoRangeType.HDR10);
+            }
+            else if (string.Equals(colorTransfer, "arib-std-b67", StringComparison.OrdinalIgnoreCase))
+            {
+                return (VideoRange.HDR, VideoRangeType.HLG);
             }
 
             return (VideoRange.SDR, VideoRangeType.SDR);

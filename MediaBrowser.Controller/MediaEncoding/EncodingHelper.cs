@@ -287,7 +287,9 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             return state.VideoStream.VideoRange == VideoRange.HDR
                    && (state.VideoStream.VideoRangeType == VideoRangeType.HDR10
-                       || state.VideoStream.VideoRangeType == VideoRangeType.HLG);
+                       || state.VideoStream.VideoRangeType == VideoRangeType.HLG
+                       || state.VideoStream.VideoRangeType == VideoRangeType.DOVIWithHDR10
+                       || state.VideoStream.VideoRangeType == VideoRangeType.DOVIWithHLG);
         }
 
         private bool IsVulkanHwTonemapAvailable(EncodingJobInfo state, EncodingOptions options)
@@ -315,7 +317,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             // Native VPP tonemapping may come to QSV in the future.
 
             return state.VideoStream.VideoRange == VideoRange.HDR
-                   && state.VideoStream.VideoRangeType == VideoRangeType.HDR10;
+                   && (state.VideoStream.VideoRangeType == VideoRangeType.HDR10
+                       || state.VideoStream.VideoRangeType == VideoRangeType.DOVIWithHDR10);
         }
 
         private bool IsVideoToolboxTonemapAvailable(EncodingJobInfo state, EncodingOptions options)
@@ -330,7 +333,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             // Certain DV profile 5 video works in Safari with direct playing, but the VideoToolBox does not produce correct mapping results with transcoding.
             // All other HDR formats working.
             return state.VideoStream.VideoRange == VideoRange.HDR
-                   && state.VideoStream.VideoRangeType is VideoRangeType.HDR10 or VideoRangeType.HLG or VideoRangeType.HDR10Plus;
+                   && state.VideoStream.VideoRangeType is VideoRangeType.HDR10 or VideoRangeType.HLG or VideoRangeType.HDR10Plus or VideoRangeType.DOVIWithHDR10 or VideoRangeType.DOVIWithHLG;
         }
 
         /// <summary>
@@ -2206,7 +2209,16 @@ namespace MediaBrowser.Controller.MediaEncoding
                     return false;
                 }
 
-                if (!requestedRangeTypes.Contains(videoStream.VideoRangeType.ToString(), StringComparison.OrdinalIgnoreCase))
+                // DOVIWithHDR10 should be compatible with HDR10 supporting players. Same goes with HLG and of course SDR. So allow copy of those formats
+
+                var requestHasHDR10 = requestedRangeTypes.Contains(VideoRangeType.HDR10.ToString(), StringComparison.OrdinalIgnoreCase);
+                var requestHasHLG = requestedRangeTypes.Contains(VideoRangeType.HLG.ToString(), StringComparison.OrdinalIgnoreCase);
+                var requestHasSDR = requestedRangeTypes.Contains(VideoRangeType.SDR.ToString(), StringComparison.OrdinalIgnoreCase);
+
+                if (!requestedRangeTypes.Contains(videoStream.VideoRangeType.ToString(), StringComparison.OrdinalIgnoreCase)
+                     && !((requestHasHDR10 && videoStream.VideoRangeType == VideoRangeType.DOVIWithHDR10)
+                            || (requestHasHLG && videoStream.VideoRangeType == VideoRangeType.DOVIWithHLG)
+                            || (requestHasSDR && videoStream.VideoRangeType == VideoRangeType.DOVIWithSDR)))
                 {
                     return false;
                 }
@@ -6119,7 +6131,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                                     && state.VideoStream.VideoRange == VideoRange.HDR
                                     && (state.VideoStream.VideoRangeType == VideoRangeType.HDR10
                                         || state.VideoStream.VideoRangeType == VideoRangeType.HLG
-                                        || (state.VideoStream.VideoRangeType == VideoRangeType.DOVI
+                                        || ((state.VideoStream.VideoRangeType == VideoRangeType.DOVI
+                                            || state.VideoStream.VideoRangeType == VideoRangeType.DOVIWithHDR10
+                                            || state.VideoStream.VideoRangeType == VideoRangeType.DOVIWithHLG)
                                             && string.Equals(state.VideoStream.Codec, "hevc", StringComparison.OrdinalIgnoreCase)));
 
             var useHwSurface = useOclToneMapping && IsVideoToolboxFullSupported() && _mediaEncoder.SupportsFilter("alphasrc");
