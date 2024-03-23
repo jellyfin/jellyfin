@@ -1377,6 +1377,14 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return FormattableString.Invariant($" -rc_mode VBR -b:v {bitrate} -maxrate {bitrate} -bufsize {bufsize}");
             }
 
+            if (string.Equals(videoCodec, "h264_videotoolbox", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(videoCodec, "hevc_videotoolbox", StringComparison.OrdinalIgnoreCase))
+            {
+                // The `maxrate` and `bufsize` options can potentially lead to performance regression
+                // and even encoder hangs, especially when the value is very high.
+                return FormattableString.Invariant($" -b:v {bitrate}");
+            }
+
             return FormattableString.Invariant($" -b:v {bitrate} -maxrate {bitrate} -bufsize {bufsize}");
         }
 
