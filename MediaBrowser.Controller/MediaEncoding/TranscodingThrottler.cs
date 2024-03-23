@@ -115,7 +115,7 @@ public class TranscodingThrottler : IDisposable
 
         var options = GetOptions();
 
-        if (options.EnableThrottling && IsThrottleAllowed(_job, options.ThrottleDelaySeconds))
+        if (options.EnableThrottling && IsThrottleAllowed(_job, Math.Max(options.ThrottleDelaySeconds, 60)))
         {
             await PauseTranscoding().ConfigureAwait(false);
         }

@@ -321,7 +321,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
             }
             catch (IOException ex)
             {
-                (exs ??= new List<Exception>(4)).Add(ex);
+                (exs ??= new List<Exception>()).Add(ex);
                 _logger.LogError(ex, "Error deleting HLS file {Path}", file);
             }
         }
@@ -546,6 +546,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         if (!transcodingJob.HasExited)
         {
             StartThrottler(state, transcodingJob);
+            StartSegmentCleaner(state, transcodingJob);
         }
         else if (transcodingJob.ExitCode != 0)
         {
@@ -572,6 +573,22 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
            && state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks
            && state.IsInputVideo
            && state.VideoType == VideoType.VideoFile;
+
+    private void StartSegmentCleaner(StreamState state, TranscodingJob transcodingJob)
+    {
+        if (EnableSegmentCleaning(state))
+        {
+            transcodingJob.TranscodingSegmentCleaner = new TranscodingSegmentCleaner(transcodingJob, _loggerFactory.CreateLogger<TranscodingSegmentCleaner>(), _serverConfigurationManager, _fileSystem, _mediaEncoder, state.SegmentLength);
+            transcodingJob.TranscodingSegmentCleaner.Start();
+        }
+    }
+
+    private static bool EnableSegmentCleaning(StreamState state)
+        => state.InputProtocol is MediaProtocol.File or MediaProtocol.Http
+           && state.IsInputVideo
+           && state.TranscodingType == TranscodingJobType.Hls
+           && state.RunTimeTicks.HasValue
+           && state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks;
 
     private TranscodingJob OnTranscodeBeginning(
         string path,
@@ -724,7 +741,14 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
 
         foreach (var file in _fileSystem.GetFilePaths(path, true))
         {
-            _fileSystem.DeleteFile(file);
+            try
+            {
+                _fileSystem.DeleteFile(file);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting encoded media cache file {Path}", path);
+            }
         }
     }
 

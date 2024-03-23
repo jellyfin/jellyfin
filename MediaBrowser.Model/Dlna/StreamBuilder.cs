@@ -345,7 +345,7 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="profile">The <see cref="DeviceProfile"/>.</param>
         /// <param name="type">The <see cref="DlnaProfileType"/>.</param>
         /// <param name="playProfile">The <see cref="DirectPlayProfile"/> object to get the video stream from.</param>
-        /// <returns>The the normalized input container.</returns>
+        /// <returns>The normalized input container.</returns>
         public static string? NormalizeMediaSourceFormatIntoSingleContainer(string inputContainer, DeviceProfile? profile, DlnaProfileType type, DirectPlayProfile? playProfile = null)
         {
             if (string.IsNullOrEmpty(inputContainer))
@@ -557,7 +557,7 @@ namespace MediaBrowser.Model.Dlna
         private static void SetStreamInfoOptionsFromDirectPlayProfile(MediaOptions options, MediaSourceInfo item, StreamInfo playlistItem, DirectPlayProfile? directPlayProfile)
         {
             var container = NormalizeMediaSourceFormatIntoSingleContainer(item.Container, options.Profile, DlnaProfileType.Video, directPlayProfile);
-            var protocol = "http";
+            var protocol = MediaStreamProtocol.http;
 
             item.TranscodingContainer = container;
             item.TranscodingSubProtocol = protocol;
@@ -648,7 +648,7 @@ namespace MediaBrowser.Model.Dlna
 
                     if (directPlay == PlayMethod.DirectPlay)
                     {
-                        playlistItem.SubProtocol = "http";
+                        playlistItem.SubProtocol = MediaStreamProtocol.http;
 
                         var audioStreamIndex = directPlayInfo.AudioStreamIndex ?? audioStream?.Index;
                         if (audioStreamIndex.HasValue)
@@ -803,7 +803,7 @@ namespace MediaBrowser.Model.Dlna
             var videoCodecs = ContainerProfile.SplitValue(videoCodec);
 
             // Enforce HLS video codec restrictions
-            if (string.Equals(playlistItem.SubProtocol, "hls", StringComparison.OrdinalIgnoreCase))
+            if (playlistItem.SubProtocol == MediaStreamProtocol.hls)
             {
                 videoCodecs = videoCodecs.Where(codec => _supportedHlsVideoCodecs.Contains(codec)).ToArray();
             }
@@ -840,7 +840,7 @@ namespace MediaBrowser.Model.Dlna
             var audioCodecs = ContainerProfile.SplitValue(audioCodec);
 
             // Enforce HLS audio codec restrictions
-            if (string.Equals(playlistItem.SubProtocol, "hls", StringComparison.OrdinalIgnoreCase))
+            if (playlistItem.SubProtocol == MediaStreamProtocol.hls)
             {
                 if (string.Equals(playlistItem.Container, "mp4", StringComparison.OrdinalIgnoreCase))
                 {
@@ -1350,7 +1350,7 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="transcoderSupport">The <see cref="ITranscoderSupport"/>.</param>
         /// <param name="outputContainer">The output container.</param>
         /// <param name="transcodingSubProtocol">The subtitle transoding protocol.</param>
-        /// <returns>The the normalized input container.</returns>
+        /// <returns>The normalized input container.</returns>
         public static SubtitleProfile GetSubtitleProfile(
             MediaSourceInfo mediaSource,
             MediaStream subtitleStream,
@@ -1358,9 +1358,9 @@ namespace MediaBrowser.Model.Dlna
             PlayMethod playMethod,
             ITranscoderSupport transcoderSupport,
             string? outputContainer,
-            string? transcodingSubProtocol)
+            MediaStreamProtocol? transcodingSubProtocol)
         {
-            if (!subtitleStream.IsExternal && (playMethod != PlayMethod.Transcode || !string.Equals(transcodingSubProtocol, "hls", StringComparison.OrdinalIgnoreCase)))
+            if (!subtitleStream.IsExternal && (playMethod != PlayMethod.Transcode || transcodingSubProtocol != MediaStreamProtocol.hls))
             {
                 // Look for supported embedded subs of the same format
                 foreach (var profile in subtitleProfiles)

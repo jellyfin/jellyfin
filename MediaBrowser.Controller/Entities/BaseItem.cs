@@ -62,7 +62,9 @@ namespace MediaBrowser.Controller.Entities
             ".edl",
             ".bif",
             ".smi",
-            ".ttml"
+            ".ttml",
+            ".lrc",
+            ".elrc"
         };
 
         /// <summary>
@@ -962,7 +964,13 @@ namespace MediaBrowser.Controller.Entities
             AppendChunk(builder, isDigitChunk, name.Slice(chunkStart));
 
             // logger.LogDebug("ModifySortChunks Start: {0} End: {1}", name, builder.ToString());
-            return builder.ToString().RemoveDiacritics();
+            var result = builder.ToString().RemoveDiacritics();
+            if (!result.All(char.IsAscii))
+            {
+                result = result.Transliterated();
+            }
+
+            return result;
         }
 
         public BaseItem GetParent()

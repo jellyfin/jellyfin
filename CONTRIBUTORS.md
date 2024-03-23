@@ -179,8 +179,12 @@
  - [Çağrı Sakaoğlu](https://github.com/ilovepilav)
  - [TheMelmacian](https://github.com/TheMelmacian)
  _ [Barasingha](https://github.com/MaVdbussche)
+ - [Barasingha](https://github.com/MaVdbussche)
  - [Gauvino](https://github.com/Gauvino)
  - [felix920506](https://github.com/felix920506)
+ - [btopherjohnson](https://github.com/btopherjohnson)
+ - [GeorgeH005](https://github.com/GeorgeH005)
+ - [Vedant](https://github.com/viktory36/)
 
 # Emby Contributors
 

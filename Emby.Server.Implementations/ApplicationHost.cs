@@ -146,7 +146,7 @@ namespace Emby.Server.Implementations
             _startupConfig = startupConfig;
 
             Logger = LoggerFactory.CreateLogger<ApplicationHost>();
-            _deviceId = new DeviceId(ApplicationPaths, LoggerFactory);
+            _deviceId = new DeviceId(ApplicationPaths, LoggerFactory.CreateLogger<DeviceId>());
 
             ApplicationVersion = typeof(ApplicationHost).Assembly.GetName().Version;
             ApplicationVersionString = ApplicationVersion.ToString(3);

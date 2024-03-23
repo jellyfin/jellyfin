@@ -188,7 +188,8 @@ public class SkiaEncoder : IImageEncoder
         ArgumentException.ThrowIfNullOrEmpty(path);
 
         var extension = Path.GetExtension(path.AsSpan()).TrimStart('.');
-        if (!SupportedInputFormats.Contains(extension, StringComparison.OrdinalIgnoreCase))
+        if (!SupportedInputFormats.Contains(extension, StringComparison.OrdinalIgnoreCase)
+            || extension.Equals(SvgFormat, StringComparison.OrdinalIgnoreCase))
         {
             _logger.LogDebug("Unable to compute blur hash due to unsupported format: {ImagePath}", path);
             return string.Empty;
