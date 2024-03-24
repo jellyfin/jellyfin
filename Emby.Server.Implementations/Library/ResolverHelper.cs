@@ -39,7 +39,7 @@ namespace Emby.Server.Implementations.Library
                 item.GetParents().Any(i => i.IsLocked);
 
             // Make sure DateCreated and DateModified have values
-            var fileInfo = directoryService.GetFile(item.Path);
+            var fileInfo = directoryService.GetFileSystemEntry(item.Path);
             if (fileInfo is null)
             {
                 return false;
