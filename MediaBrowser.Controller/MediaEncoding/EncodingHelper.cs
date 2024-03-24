@@ -1846,6 +1846,31 @@ namespace MediaBrowser.Controller.MediaEncoding
                     param += " -gops_per_idr 1";
                 }
             }
+            else if (string.Equals(videoEncoder, "h264_videotoolbox", StringComparison.OrdinalIgnoreCase) // h264 (h264_videotoolbox)
+                     || string.Equals(videoEncoder, "hevc_videotoolbox", StringComparison.OrdinalIgnoreCase)) // hevc (hevc_videotoolbox)
+            {
+                switch (encodingOptions.EncoderPreset)
+                {
+                    case "veryslow":
+                    case "slower":
+                    case "slow":
+                    case "medium":
+                        param += " -prio_speed 0";
+                        break;
+
+                    case "fast":
+                    case "faster":
+                    case "veryfast":
+                    case "superfast":
+                    case "ultrafast":
+                        param += " -prio_speed 1";
+                        break;
+
+                    default:
+                        param += " -prio_speed 1";
+                        break;
+                }
+            }
             else if (string.Equals(videoEncoder, "libvpx", StringComparison.OrdinalIgnoreCase)) // vp8
             {
                 // Values 0-3, 0 being highest quality but slower
