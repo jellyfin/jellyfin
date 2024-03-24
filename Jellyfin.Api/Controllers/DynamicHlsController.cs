@@ -1775,7 +1775,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             || string.Equals(codec, "h265", StringComparison.OrdinalIgnoreCase)
             || string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase))
         {
-            var requestedRange = state.GetRequestedRangeTypes(codec);
+            var requestedRange = state.GetRequestedRangeTypes(state.ActualOutputVideoCodec);
             var requestHasDOVI = requestedRange.Contains(VideoRangeType.DOVI.ToString(), StringComparison.OrdinalIgnoreCase);
             var requestHasDOVIWithHDR10 = requestedRange.Contains(VideoRangeType.DOVIWithHDR10.ToString(), StringComparison.OrdinalIgnoreCase);
             var requestHasDOVIWithHLG = requestedRange.Contains(VideoRangeType.DOVIWithHLG.ToString(), StringComparison.OrdinalIgnoreCase);
