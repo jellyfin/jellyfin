@@ -77,7 +77,7 @@ namespace MediaBrowser.Controller.Providers
             if (!_fileCache.TryGetValue(path, out var result))
             {
                 var file = _fileSystem.GetFileSystemInfo(path);
-                if (file.Exists)
+                if (file?.Exists ?? false)
                 {
                     result = file;
                     _fileCache.TryAdd(path, result);
