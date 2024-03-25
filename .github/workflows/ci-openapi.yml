@@ -175,7 +175,7 @@ jobs:
           script_stop: false
           script: |
             TGT_DIR="/srv/repository/main/openapi"
-            LAST_SPEC="$( ls -lt ${TGT_DIR} | grep 'jellyfin-openapi' | head -1 | awk '{ print $NF }' )"
+            LAST_SPEC="$( ls -lt ${TGT_DIR}/unstable/ | grep 'jellyfin-openapi' | head -1 | awk '{ print $NF }' )"
             if ! diff /srv/incoming/openapi/unstable/jellyfin-openapi-${{ env.JELLYFIN_VERSION }}.json ${TGT_DIR}/unstable/${LAST_SPEC} &>/dev/null; then
                 exit 0
             fi
