@@ -177,6 +177,7 @@ jobs:
             TGT_DIR="/srv/repository/main/openapi"
             LAST_SPEC="$( ls -lt ${TGT_DIR}/unstable/ | grep 'jellyfin-openapi' | head -1 | awk '{ print $NF }' )"
             if ! diff /srv/incoming/openapi/unstable/jellyfin-openapi-${{ env.JELLYFIN_VERSION }}.json ${TGT_DIR}/unstable/${LAST_SPEC} &>/dev/null; then
+                rm /srv/incoming/openapi/unstable/jellyfin-openapi-${{ env.JELLYFIN_VERSION }}.json
                 exit 0
             fi
             sudo mv /srv/incoming/openapi/unstable/jellyfin-openapi-${{ env.JELLYFIN_VERSION }}.json ${TGT_DIR}/unstable/jellyfin-openapi-${{ env.JELLYFIN_VERSION }}.json
