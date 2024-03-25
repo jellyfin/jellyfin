@@ -164,7 +164,7 @@ jobs:
           key: "${{ secrets.REPO_KEY }}"
           source: openapi-head/openapi.json
           strip_components: 1
-          target: "/srv/incoming/openapi/unstable/jellyfin-openapi-${{ env.JELLYFIN_VERSION }}.json"
+          target: "/srv/incoming/openapi/unstable/jellyfin-openapi-${{ env.JELLYFIN_VERSION }}"
       - name: Move openapi.json (unstable) into place
         uses: appleboy/ssh-action@029f5b4aeeeb58fdfe1410a5d17f967dacf36262 # v1.0.3
         with:
@@ -177,12 +177,12 @@ jobs:
             TGT_DIR="/srv/repository/main/openapi"
             LAST_SPEC="$( ls -lt ${TGT_DIR}/unstable/ | grep 'jellyfin-openapi' | head -1 | awk '{ print $NF }' )"
             # If new and previous spec don't differ (diff retcode 0), remove incoming and finish
-            if diff /srv/incoming/openapi/unstable/jellyfin-openapi-${{ env.JELLYFIN_VERSION }}.json ${TGT_DIR}/unstable/${LAST_SPEC} &>/dev/null; then
-                rm /srv/incoming/openapi/unstable/jellyfin-openapi-${{ env.JELLYFIN_VERSION }}.json
+            if diff /srv/incoming/openapi/unstable/jellyfin-openapi-${{ env.JELLYFIN_VERSION }}/openapi.json ${TGT_DIR}/unstable/${LAST_SPEC} &>/dev/null; then
+                rm -r /srv/incoming/openapi/unstable/jellyfin-openapi-${{ env.JELLYFIN_VERSION }}
                 exit 0
             fi
             # Move new spec into place
-            sudo mv /srv/incoming/openapi/unstable/jellyfin-openapi-${{ env.JELLYFIN_VERSION }}.json ${TGT_DIR}/unstable/jellyfin-openapi-${{ env.JELLYFIN_VERSION }}.json
+            sudo mv /srv/incoming/openapi/unstable/jellyfin-openapi-${{ env.JELLYFIN_VERSION }}/openapi.json ${TGT_DIR}/unstable/jellyfin-openapi-${{ env.JELLYFIN_VERSION }}.json
             # Delete previous jellyfin-openapi-unstable_previous.json
             sudo rm ${TGT_DIR}/jellyfin-openapi-unstable_previous.json
             # Move current jellyfin-openapi-unstable.json symlink to jellyfin-openapi-unstable_previous.json
