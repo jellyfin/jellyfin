@@ -176,7 +176,7 @@ jobs:
           script: |
             TGT_DIR="/srv/repository/main/openapi"
             LAST_SPEC="$( ls -lt ${TGT_DIR} | grep 'jellyfin-openapi' | head -1 | awk '{ print $NF }' )"
-            sudo mv /srv/incoming/openapi/unstable/jellyfin-openapi-${{ env.JELLYFIN_VERSION }}.json ${TGT_DIR}/unstable/ jellyfin-openapi-${{ env.JELLYFIN_VERSION }}.json
+            sudo mv /srv/incoming/openapi/unstable/jellyfin-openapi-${{ env.JELLYFIN_VERSION }}.json ${TGT_DIR}/unstable/jellyfin-openapi-${{ env.JELLYFIN_VERSION }}.json
             # Delete previous jellyfin-openapi-unstable_previous.json
             sudo rm ${TGT_DIR}/jellyfin-openapi-unstable_previous.json
             # Move current jellyfin-openapi-unstable.json symlink to jellyfin-openapi-unstable_previous.json
