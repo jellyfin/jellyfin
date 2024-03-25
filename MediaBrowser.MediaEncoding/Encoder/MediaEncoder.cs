@@ -691,7 +691,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 Video3DFormat.HalfTopAndBottom => @"crop=iw:ih/2:0:0,scale=(iw*2):ih),setdar=dar=a,crop=min(iw\,ih*dar):min(ih\,iw/dar):(iw-min(iw\,iw*sar))/2:(ih - min (ih\,ih/sar))/2,setsar=sar=1",
                 // ftab crop height in half, set the display aspect,crop out any black bars we may have made
                 Video3DFormat.FullTopAndBottom => @"crop=iw:ih/2:0:0,setdar=dar=a,crop=min(iw\,ih*dar):min(ih\,iw/dar):(iw-min(iw\,iw*sar))/2:(ih - min (ih\,ih/sar))/2,setsar=sar=1",
-                _ => "scale=round(iw*dar/2)*2:round(ih/2)*2"
+                _ => "scale=round(iw*sar/2)*2:round(ih/2)*2"
             };
 
             filters.Add(scaler);
