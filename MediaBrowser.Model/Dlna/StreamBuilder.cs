@@ -1237,7 +1237,7 @@ namespace MediaBrowser.Model.Dlna
 
                     // Check audio codec
                     MediaStream? selectedAudioStream = null;
-                    if (candidateAudioStreams.Any())
+                    if (candidateAudioStreams.Count != 0)
                     {
                         selectedAudioStream = candidateAudioStreams.FirstOrDefault(audioStream => directPlayProfile.SupportsAudioCodec(audioStream.Codec));
                         if (selectedAudioStream is null)
