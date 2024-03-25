@@ -140,9 +140,9 @@ jobs:
 
   publish:
     name: OpenAPI - Publish Unstable Spec
-    if:
-      - github.event_name != 'pull_request'
-      - contains(github.repository_owner, 'jellyfin')
+    if: |
+      github.event_name != 'pull_request' && 
+      contains(github.repository_owner, 'jellyfin')
     runs-on: ubuntu-latest
     needs:
       - openapi-head
