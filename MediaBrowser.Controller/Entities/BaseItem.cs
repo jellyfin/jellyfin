@@ -1586,18 +1586,24 @@ namespace MediaBrowser.Controller.Entities
                 list.AddRange(parent.Tags);
             }
 
+            foreach (var folder in LibraryManager.GetCollectionFolders(this))
+            {
+                list.AddRange(folder.Tags);
+            }
+
             return list.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         }
 
         private bool IsVisibleViaTags(User user)
         {
-            if (user.GetPreference(PreferenceKind.BlockedTags).Any(i => Tags.Contains(i, StringComparison.OrdinalIgnoreCase)))
+            var allTags = GetInheritedTags();
+            if (user.GetPreference(PreferenceKind.BlockedTags).Any(i => allTags.Contains(i, StringComparison.OrdinalIgnoreCase)))
             {
                 return false;
             }
 
             var allowedTagsPreference = user.GetPreference(PreferenceKind.AllowedTags);
-            if (allowedTagsPreference.Any() && !allowedTagsPreference.Any(i => Tags.Contains(i, StringComparison.OrdinalIgnoreCase)))
+            if (allowedTagsPreference.Length != 0 && !allowedTagsPreference.Any(i => allTags.Contains(i, StringComparison.OrdinalIgnoreCase)))
             {
                 return false;
             }
