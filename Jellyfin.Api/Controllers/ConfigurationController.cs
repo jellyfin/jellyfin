@@ -126,6 +126,7 @@ public class ConfigurationController : BaseJellyfinApiController
     /// <response code="204">Media encoder path updated.</response>
     /// <returns>Status.</returns>
     [Obsolete("This endpoint is obsolete.")]
+    [ApiExplorerSettings(IgnoreApi = true)]
     [HttpPost("MediaEncoder/Path")]
     [Authorize(Policy = Policies.FirstTimeSetupOrElevated)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
