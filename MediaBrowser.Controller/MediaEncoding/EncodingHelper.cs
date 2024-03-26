@@ -1100,7 +1100,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     return string.Empty;
                 }
 
-                // no videotoolbox hw filter.
+                // videotoolbox hw filter does not require device selection
                 args.Append(GetVideoToolboxDeviceArgs(VideotoolboxAlias));
             }
             else if (string.Equals(optHwaccelType, "rkmpp", StringComparison.OrdinalIgnoreCase))
@@ -6164,14 +6164,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                     return GetHwaccelType(state, options, "h264", bitDepth, UseHwSurface);
                 }
 
-                if (string.Equals("mpeg2video", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals("vp8", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
                 {
-                    return GetHwaccelType(state, options, "mpeg2video", bitDepth, UseHwSurface);
-                }
-
-                if (string.Equals("mpeg4", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
-                {
-                    return GetHwaccelType(state, options, "mpeg4", bitDepth, UseHwSurface);
+                    return GetHwaccelType(state, options, "vp8", bitDepth, UseHwSurface);
                 }
             }
 
