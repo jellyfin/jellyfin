@@ -92,7 +92,9 @@ public class PlaylistsController : BaseJellyfinApiController
             Name = name ?? createPlaylistRequest?.Name,
             ItemIdList = ids,
             UserId = userId.Value,
-            MediaType = mediaType ?? createPlaylistRequest?.MediaType
+            MediaType = mediaType ?? createPlaylistRequest?.MediaType,
+            Shares = createPlaylistRequest?.Shares.ToArray(),
+            OpenAccess = createPlaylistRequest?.OpenAccess
         }).ConfigureAwait(false);
 
         return result;

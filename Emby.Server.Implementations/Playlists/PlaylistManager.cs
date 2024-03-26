@@ -85,12 +85,7 @@ namespace Emby.Server.Implementations.Playlists
             {
                 foreach (var itemId in options.ItemIdList)
                 {
-                    var item = _libraryManager.GetItemById(itemId);
-                    if (item is null)
-                    {
-                        throw new ArgumentException("No item exists with the supplied Id");
-                    }
-
+                    var item = _libraryManager.GetItemById(itemId) ?? throw new ArgumentException("No item exists with the supplied Id");
                     if (item.MediaType != MediaType.Unknown)
                     {
                         options.MediaType = item.MediaType;
@@ -139,7 +134,8 @@ namespace Emby.Server.Implementations.Playlists
                     Name = name,
                     Path = path,
                     OwnerUserId = options.UserId,
-                    Shares = options.Shares ?? Array.Empty<Share>()
+                    Shares = options.Shares ?? [],
+                    OpenAccess = options.OpenAccess ?? false
                 };
 
                 playlist.SetMediaType(options.MediaType);

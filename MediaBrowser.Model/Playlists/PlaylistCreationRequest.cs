@@ -33,5 +33,10 @@ public class PlaylistCreationRequest
     /// <summary>
     /// Gets or sets the shares.
     /// </summary>
-    public Share[]? Shares { get; set; }
+    public IReadOnlyList<Share>? Shares { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether open access is enabled.
+    /// </summary>
+    public bool? OpenAccess { get; set; }
 }
