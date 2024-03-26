@@ -154,12 +154,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         public void SetFFmpegPath()
         {
-            // 1) Custom path stored in config/encoding xml file under tag <EncoderAppPath> takes precedence
-            var ffmpegPath = _configurationManager.GetEncodingOptions().EncoderAppPath;
+            // 1) Check if the --ffmpeg CLI switch has been given
+            var ffmpegPath = _startupOptionFFmpegPath;
             if (string.IsNullOrEmpty(ffmpegPath))
             {
-                // 2) Check if the --ffmpeg CLI switch has been given
-                ffmpegPath = _startupOptionFFmpegPath;
+                // 2) Custom path stored in config/encoding xml file under tag <EncoderAppPath> should be used as a fallback
+                ffmpegPath = _configurationManager.GetEncodingOptions().EncoderAppPath;
                 if (string.IsNullOrEmpty(ffmpegPath))
                 {
                     // 3) Check "ffmpeg"
