@@ -99,6 +99,128 @@ public class PlaylistsController : BaseJellyfinApiController
     }
 
     /// <summary>
+    /// Get a playlist's shares.
+    /// </summary>
+    /// <param name="playlistId">The playlist id.</param>
+    /// <returns>
+    /// A list of <see cref="Share"/> objects.
+    /// </returns>
+    [HttpGet("{playlistId}/Shares")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public IReadOnlyList<Share> GetPlaylistShares(
+        [FromRoute, Required] Guid playlistId)
+    {
+        var userId = RequestHelpers.GetUserId(User, default);
+
+        var playlist = _playlistManager.GetPlaylist(userId, playlistId);
+        var isPermitted = playlist.OwnerUserId.Equals(userId)
+            || playlist.Shares.Any(s => s.CanEdit && (s.UserId?.Equals(userId) ?? false));
+
+        return isPermitted ? playlist.Shares : new List<Share>();
+    }
+
+    /// <summary>
+    /// Toggles OpenAccess of a playlist.
+    /// </summary>
+    /// <param name="playlistId">The playlist id.</param>
+    /// <returns>
+    /// A <see cref="Task" /> that represents the asynchronous operation to toggle OpenAccess of a playlist.
+    /// The task result contains an <see cref="OkResult"/> indicating success.
+    /// </returns>
+    [HttpPost("{playlistId}/ToggleOpenAccess")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult> ToggleopenAccess(
+        [FromRoute, Required] Guid playlistId)
+    {
+        var callingUserId = RequestHelpers.GetUserId(User, default);
+
+        var playlist = _playlistManager.GetPlaylist(callingUserId, playlistId);
+        var isPermitted = playlist.OwnerUserId.Equals(callingUserId)
+            || playlist.Shares.Any(s => s.CanEdit && (s.UserId?.Equals(callingUserId) ?? false));
+
+        if (!isPermitted)
+        {
+            return Unauthorized("Unauthorized access");
+        }
+
+        await _playlistManager.ToggleOpenAccess(playlistId, callingUserId).ConfigureAwait(false);
+
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Adds shares to a playlist's shares.
+    /// </summary>
+    /// <param name="playlistId">The playlist id.</param>
+    /// <param name="shares">The shares.</param>
+    /// <returns>
+    /// A <see cref="Task" /> that represents the asynchronous operation to add shares to a playlist.
+    /// The task result contains an <see cref="OkResult"/> indicating success.
+    /// </returns>
+    [HttpPost("{playlistId}/Shares")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult> AddUserToPlaylistShares(
+        [FromRoute, Required] Guid playlistId,
+        [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Disallow)] Share[] shares)
+    {
+        var callingUserId = RequestHelpers.GetUserId(User, default);
+
+        var playlist = _playlistManager.GetPlaylist(callingUserId, playlistId);
+        var isPermitted = playlist.OwnerUserId.Equals(callingUserId)
+            || playlist.Shares.Any(s => s.CanEdit && (s.UserId?.Equals(callingUserId) ?? false));
+
+        if (!isPermitted)
+        {
+            return Unauthorized("Unauthorized access");
+        }
+
+        foreach (var share in shares)
+        {
+            await _playlistManager.AddToShares(playlistId, callingUserId, share).ConfigureAwait(false);
+        }
+
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Remove a user from a playlist's shares.
+    /// </summary>
+    /// <param name="playlistId">The playlist id.</param>
+    /// <param name="userId">The user id.</param>
+    /// <returns>
+    /// A <see cref="Task" /> that represents the asynchronous operation to delete a user from a playlist's shares.
+    /// The task result contains an <see cref="OkResult"/> indicating success.
+    /// </returns>
+    [HttpDelete("{playlistId}/Shares")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult> RemoveUserFromPlaylistShares(
+        [FromRoute, Required] Guid playlistId,
+        [FromBody] Guid userId)
+    {
+        var callingUserId = RequestHelpers.GetUserId(User, default);
+
+        var playlist = _playlistManager.GetPlaylist(callingUserId, playlistId);
+        var isPermitted = playlist.OwnerUserId.Equals(callingUserId)
+            || playlist.Shares.Any(s => s.CanEdit && (s.UserId?.Equals(callingUserId) ?? false));
+
+        if (!isPermitted)
+        {
+            return Unauthorized("Unauthorized access");
+        }
+
+        var share = playlist.Shares.FirstOrDefault(s => s.UserId?.Equals(userId) ?? false);
+
+        if (share is null)
+        {
+            return NotFound();
+        }
+
+        await _playlistManager.RemoveFromShares(playlistId, callingUserId, share).ConfigureAwait(false);
+
+        return NoContent();
+    }
+
+    /// <summary>
     /// Adds items to a playlist.
     /// </summary>
     /// <param name="playlistId">The playlist id.</param>

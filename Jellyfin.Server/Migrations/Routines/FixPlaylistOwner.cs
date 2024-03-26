@@ -54,7 +54,7 @@ internal class FixPlaylistOwner : IMigrationRoutine
             foreach (var playlist in playlists)
             {
                 var shares = playlist.Shares;
-                if (shares.Length > 0)
+                if (shares.Count > 0)
                 {
                     var firstEditShare = shares.First(x => x.CanEdit);
                     if (firstEditShare is not null && Guid.TryParse(firstEditShare.UserId, out var guid))

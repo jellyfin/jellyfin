@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Playlists;
 
 namespace MediaBrowser.Controller.Playlists
@@ -11,11 +12,45 @@ namespace MediaBrowser.Controller.Playlists
     public interface IPlaylistManager
     {
         /// <summary>
+        /// Gets the playlist.
+        /// </summary>
+        /// <param name="userId">The user identifier.</param>
+        /// <param name="playlistId">The playlist identifier.</param>
+        /// <returns>Playlist.</returns>
+        Playlist GetPlaylist(Guid userId, Guid playlistId);
+
+        /// <summary>
         /// Gets the playlists.
         /// </summary>
         /// <param name="userId">The user identifier.</param>
         /// <returns>IEnumerable&lt;Playlist&gt;.</returns>
         IEnumerable<Playlist> GetPlaylists(Guid userId);
+
+        /// <summary>
+        /// Toggle OpenAccess policy of the playlist.
+        /// </summary>
+        /// <param name="playlistId">The playlist identifier.</param>
+        /// <param name="userId">The user identifier.</param>
+        /// <returns>Task.</returns>
+        Task ToggleOpenAccess(Guid playlistId, Guid userId);
+
+        /// <summary>
+        /// Adds a share to the playlist.
+        /// </summary>
+        /// <param name="playlistId">The playlist identifier.</param>
+        /// <param name="userId">The user identifier.</param>
+        /// <param name="share">The share.</param>
+        /// <returns>Task.</returns>
+        Task AddToShares(Guid playlistId, Guid userId, Share share);
+
+        /// <summary>
+        /// Rremoves a share from the playlist.
+        /// </summary>
+        /// <param name="playlistId">The playlist identifier.</param>
+        /// <param name="userId">The user identifier.</param>
+        /// <param name="share">The share.</param>
+        /// <returns>Task.</returns>
+        Task RemoveFromShares(Guid playlistId, Guid userId, Share share);
 
         /// <summary>
         /// Creates the playlist.

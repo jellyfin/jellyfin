@@ -16,20 +16,19 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Playlists
 {
     public class Playlist : Folder, IHasShares
     {
-        public static readonly IReadOnlyList<string> SupportedExtensions = new[]
-        {
+        public static readonly IReadOnlyList<string> SupportedExtensions =
+        [
             ".m3u",
             ".m3u8",
             ".pls",
             ".wpl",
             ".zpl"
-        };
+        ];
 
         public Playlist()
         {
@@ -41,7 +40,7 @@ namespace MediaBrowser.Controller.Playlists
 
         public bool OpenAccess { get; set; }
 
-        public Share[] Shares { get; set; }
+        public IReadOnlyList<Share> Shares { get; set; }
 
         [JsonIgnore]
         public bool IsFile => IsPlaylistFile(Path);
@@ -192,9 +191,9 @@ namespace MediaBrowser.Controller.Playlists
                 return LibraryManager.GetItemList(new InternalItemsQuery(user)
                 {
                     Recursive = true,
-                    IncludeItemTypes = new[] { BaseItemKind.Audio },
-                    GenreIds = new[] { musicGenre.Id },
-                    OrderBy = new[] { (ItemSortBy.AlbumArtist, SortOrder.Ascending), (ItemSortBy.Album, SortOrder.Ascending), (ItemSortBy.SortName, SortOrder.Ascending) },
+                    IncludeItemTypes = [BaseItemKind.Audio],
+                    GenreIds = [musicGenre.Id],
+                    OrderBy = [(ItemSortBy.AlbumArtist, SortOrder.Ascending), (ItemSortBy.Album, SortOrder.Ascending), (ItemSortBy.SortName, SortOrder.Ascending)],
                     DtoOptions = options
                 });
             }
@@ -204,9 +203,9 @@ namespace MediaBrowser.Controller.Playlists
                 return LibraryManager.GetItemList(new InternalItemsQuery(user)
                 {
                     Recursive = true,
-                    IncludeItemTypes = new[] { BaseItemKind.Audio },
-                    ArtistIds = new[] { musicArtist.Id },
-                    OrderBy = new[] { (ItemSortBy.AlbumArtist, SortOrder.Ascending), (ItemSortBy.Album, SortOrder.Ascending), (ItemSortBy.SortName, SortOrder.Ascending) },
+                    IncludeItemTypes = [BaseItemKind.Audio],
+                    ArtistIds = [musicArtist.Id],
+                    OrderBy = [(ItemSortBy.AlbumArtist, SortOrder.Ascending), (ItemSortBy.Album, SortOrder.Ascending), (ItemSortBy.SortName, SortOrder.Ascending)],
                     DtoOptions = options
                 });
             }
@@ -217,8 +216,8 @@ namespace MediaBrowser.Controller.Playlists
                 {
                     Recursive = true,
                     IsFolder = false,
-                    OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) },
-                    MediaTypes = new[] { mediaType },
+                    OrderBy = [(ItemSortBy.SortName, SortOrder.Ascending)],
+                    MediaTypes = [mediaType],
                     EnableTotalRecordCount = false,
                     DtoOptions = options
                 };
@@ -226,7 +225,7 @@ namespace MediaBrowser.Controller.Playlists
                 return folder.GetItemList(query);
             }
 
-            return new[] { item };
+            return [item];
         }
 
         public override bool IsVisible(User user)
@@ -248,7 +247,7 @@ namespace MediaBrowser.Controller.Playlists
             }
 
             var shares = Shares;
-            if (shares.Length == 0)
+            if (shares.Count == 0)
             {
                 return false;
             }
