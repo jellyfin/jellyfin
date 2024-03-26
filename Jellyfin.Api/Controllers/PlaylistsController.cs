@@ -93,32 +93,32 @@ public class PlaylistsController : BaseJellyfinApiController
             ItemIdList = ids,
             UserId = userId.Value,
             MediaType = mediaType ?? createPlaylistRequest?.MediaType,
-            Shares = createPlaylistRequest?.Shares.ToArray(),
-            OpenAccess = createPlaylistRequest?.OpenAccess
+            Users = createPlaylistRequest?.Users.ToArray() ?? [],
+            Public = createPlaylistRequest?.Public
         }).ConfigureAwait(false);
 
         return result;
     }
 
     /// <summary>
-    /// Get a playlist's shares.
+    /// Get a playlist's users.
     /// </summary>
     /// <param name="playlistId">The playlist id.</param>
     /// <returns>
-    /// A list of <see cref="Share"/> objects.
+    /// A list of <see cref="UserPermissions"/> objects.
     /// </returns>
-    [HttpGet("{playlistId}/Shares")]
+    [HttpGet("{playlistId}/User")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public IReadOnlyList<Share> GetPlaylistShares(
+    public IReadOnlyList<UserPermissions> GetPlaylistUsers(
         [FromRoute, Required] Guid playlistId)
     {
         var userId = RequestHelpers.GetUserId(User, default);
 
         var playlist = _playlistManager.GetPlaylist(userId, playlistId);
         var isPermitted = playlist.OwnerUserId.Equals(userId)
-            || playlist.Shares.Any(s => s.CanEdit && (s.UserId?.Equals(userId) ?? false));
+            || playlist.Shares.Any(s => s.CanEdit && s.UserId.Equals(userId));
 
-        return isPermitted ? playlist.Shares : new List<Share>();
+        return isPermitted ? playlist.Shares : [];
     }
 
     /// <summary>
@@ -131,14 +131,14 @@ public class PlaylistsController : BaseJellyfinApiController
     /// </returns>
     [HttpPost("{playlistId}/ToggleOpenAccess")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult> ToggleopenAccess(
+    public async Task<ActionResult> ToggleOpenAccess(
         [FromRoute, Required] Guid playlistId)
     {
         var callingUserId = RequestHelpers.GetUserId(User, default);
 
         var playlist = _playlistManager.GetPlaylist(callingUserId, playlistId);
         var isPermitted = playlist.OwnerUserId.Equals(callingUserId)
-            || playlist.Shares.Any(s => s.CanEdit && (s.UserId?.Equals(callingUserId) ?? false));
+            || playlist.Shares.Any(s => s.CanEdit && s.UserId.Equals(callingUserId));
 
         if (!isPermitted)
         {
@@ -151,35 +151,34 @@ public class PlaylistsController : BaseJellyfinApiController
     }
 
     /// <summary>
-    /// Adds shares to a playlist's shares.
+    /// Upsert a user to a playlist's users.
     /// </summary>
     /// <param name="playlistId">The playlist id.</param>
-    /// <param name="shares">The shares.</param>
+    /// <param name="userId">The user id.</param>
+    /// <param name="canEdit">Edit permission.</param>
     /// <returns>
-    /// A <see cref="Task" /> that represents the asynchronous operation to add shares to a playlist.
+    /// A <see cref="Task" /> that represents the asynchronous operation to upsert an user to a playlist.
     /// The task result contains an <see cref="OkResult"/> indicating success.
     /// </returns>
-    [HttpPost("{playlistId}/Shares")]
+    [HttpPost("{playlistId}/User/{userId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult> AddUserToPlaylistShares(
+    public async Task<ActionResult> AddUserToPlaylist(
         [FromRoute, Required] Guid playlistId,
-        [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Disallow)] Share[] shares)
+        [FromRoute, Required] Guid userId,
+        [FromBody] bool canEdit)
     {
         var callingUserId = RequestHelpers.GetUserId(User, default);
 
         var playlist = _playlistManager.GetPlaylist(callingUserId, playlistId);
         var isPermitted = playlist.OwnerUserId.Equals(callingUserId)
-            || playlist.Shares.Any(s => s.CanEdit && (s.UserId?.Equals(callingUserId) ?? false));
+            || playlist.Shares.Any(s => s.CanEdit && s.UserId.Equals(callingUserId));
 
         if (!isPermitted)
         {
             return Unauthorized("Unauthorized access");
         }
 
-        foreach (var share in shares)
-        {
-            await _playlistManager.AddToShares(playlistId, callingUserId, share).ConfigureAwait(false);
-        }
+        await _playlistManager.AddToShares(playlistId, callingUserId, new UserPermissions(userId.ToString(), canEdit)).ConfigureAwait(false);
 
         return NoContent();
     }
@@ -193,24 +192,24 @@ public class PlaylistsController : BaseJellyfinApiController
     /// A <see cref="Task" /> that represents the asynchronous operation to delete a user from a playlist's shares.
     /// The task result contains an <see cref="OkResult"/> indicating success.
     /// </returns>
-    [HttpDelete("{playlistId}/Shares")]
+    [HttpDelete("{playlistId}/User/{userId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult> RemoveUserFromPlaylistShares(
+    public async Task<ActionResult> RemoveUserFromPlaylist(
         [FromRoute, Required] Guid playlistId,
-        [FromBody] Guid userId)
+        [FromRoute, Required] Guid userId)
     {
         var callingUserId = RequestHelpers.GetUserId(User, default);
 
         var playlist = _playlistManager.GetPlaylist(callingUserId, playlistId);
         var isPermitted = playlist.OwnerUserId.Equals(callingUserId)
-            || playlist.Shares.Any(s => s.CanEdit && (s.UserId?.Equals(callingUserId) ?? false));
+            || playlist.Shares.Any(s => s.CanEdit && s.UserId.Equals(callingUserId));
 
         if (!isPermitted)
         {
             return Unauthorized("Unauthorized access");
         }
 
-        var share = playlist.Shares.FirstOrDefault(s => s.UserId?.Equals(userId) ?? false);
+        var share = playlist.Shares.FirstOrDefault(s => s.UserId.Equals(userId));
 
         if (share is null)
         {

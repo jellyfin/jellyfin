@@ -18,7 +18,7 @@ public class PlaylistCreationRequest
     /// <summary>
     /// Gets or sets the list of items.
     /// </summary>
-    public IReadOnlyList<Guid> ItemIdList { get; set; } = Array.Empty<Guid>();
+    public IReadOnlyList<Guid> ItemIdList { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the media type.
@@ -31,12 +31,12 @@ public class PlaylistCreationRequest
     public Guid UserId { get; set; }
 
     /// <summary>
-    /// Gets or sets the shares.
+    /// Gets or sets the user permissions.
     /// </summary>
-    public IReadOnlyList<Share>? Shares { get; set; }
+    public IReadOnlyList<UserPermissions> Users { get; set; } = [];
 
     /// <summary>
-    /// Gets or sets a value indicating whether open access is enabled.
+    /// Gets or sets a value indicating whether the playlist is public.
     /// </summary>
-    public bool? OpenAccess { get; set; }
+    public bool? Public { get; set; } = true;
 }

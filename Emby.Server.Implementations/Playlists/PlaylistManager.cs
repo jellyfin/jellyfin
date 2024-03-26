@@ -134,8 +134,8 @@ namespace Emby.Server.Implementations.Playlists
                     Name = name,
                     Path = path,
                     OwnerUserId = options.UserId,
-                    Shares = options.Shares ?? [],
-                    OpenAccess = options.OpenAccess ?? false
+                    Shares = options.Users ?? [],
+                    OpenAccess = options.Public ?? false
                 };
 
                 playlist.SetMediaType(options.MediaType);
@@ -171,9 +171,9 @@ namespace Emby.Server.Implementations.Playlists
             return path;
         }
 
-        private List<BaseItem> GetPlaylistItems(IEnumerable<Guid> itemIds, MediaType playlistMediaType, User user, DtoOptions options)
+        private IReadOnlyList<BaseItem> GetPlaylistItems(IEnumerable<Guid> itemIds, MediaType playlistMediaType, User user, DtoOptions options)
         {
-            var items = itemIds.Select(i => _libraryManager.GetItemById(i)).Where(i => i is not null);
+            var items = itemIds.Select(_libraryManager.GetItemById).Where(i => i is not null);
 
             return Playlist.GetPlaylistItems(playlistMediaType, items, user, options);
         }
@@ -556,11 +556,11 @@ namespace Emby.Server.Implementations.Playlists
             await UpdatePlaylist(playlist).ConfigureAwait(false);
         }
 
-        public async Task AddToShares(Guid playlistId, Guid userId, Share share)
+        public async Task AddToShares(Guid playlistId, Guid userId, UserPermissions share)
         {
             var playlist = GetPlaylist(userId, playlistId);
             var shares = playlist.Shares.ToList();
-            var existingUserShare = shares.FirstOrDefault(s => s.UserId?.Equals(share.UserId, StringComparison.OrdinalIgnoreCase) ?? false);
+            var existingUserShare = shares.FirstOrDefault(s => s.UserId.Equals(share.UserId, StringComparison.OrdinalIgnoreCase));
             if (existingUserShare is not null)
             {
                 shares.Remove(existingUserShare);
@@ -571,7 +571,7 @@ namespace Emby.Server.Implementations.Playlists
             await UpdatePlaylist(playlist).ConfigureAwait(false);
         }
 
-        public async Task RemoveFromShares(Guid playlistId, Guid userId, Share share)
+        public async Task RemoveFromShares(Guid playlistId, Guid userId, UserPermissions share)
         {
             var playlist = GetPlaylist(userId, playlistId);
             var shares = playlist.Shares.ToList();

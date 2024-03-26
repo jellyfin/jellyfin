@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Entities;
 
@@ -10,5 +10,5 @@ public interface IHasShares
     /// <summary>
     /// Gets or sets the shares.
     /// </summary>
-    IReadOnlyList<Share> Shares { get; set; }
+    IReadOnlyList<UserPermissions> Shares { get; set; }
 }

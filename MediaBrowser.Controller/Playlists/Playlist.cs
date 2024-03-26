@@ -32,7 +32,7 @@ namespace MediaBrowser.Controller.Playlists
 
         public Playlist()
         {
-            Shares = Array.Empty<Share>();
+            Shares = [];
             OpenAccess = false;
         }
 
@@ -40,7 +40,7 @@ namespace MediaBrowser.Controller.Playlists
 
         public bool OpenAccess { get; set; }
 
-        public IReadOnlyList<Share> Shares { get; set; }
+        public IReadOnlyList<UserPermissions> Shares { get; set; }
 
         [JsonIgnore]
         public bool IsFile => IsPlaylistFile(Path);
@@ -129,7 +129,7 @@ namespace MediaBrowser.Controller.Playlists
         protected override List<BaseItem> LoadChildren()
         {
             // Save a trip to the database
-            return new List<BaseItem>();
+            return [];
         }
 
         protected override Task ValidateChildrenInternal(IProgress<double> progress, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService, CancellationToken cancellationToken)
@@ -144,7 +144,7 @@ namespace MediaBrowser.Controller.Playlists
 
         protected override IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
         {
-            return new List<BaseItem>();
+            return [];
         }
 
         public override IEnumerable<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)
@@ -166,7 +166,7 @@ namespace MediaBrowser.Controller.Playlists
             return base.GetChildren(user, true, query);
         }
 
-        public static List<BaseItem> GetPlaylistItems(MediaType playlistMediaType, IEnumerable<BaseItem> inputItems, User user, DtoOptions options)
+        public static IReadOnlyList<BaseItem> GetPlaylistItems(MediaType playlistMediaType, IEnumerable<BaseItem> inputItems, User user, DtoOptions options)
         {
             if (user is not null)
             {

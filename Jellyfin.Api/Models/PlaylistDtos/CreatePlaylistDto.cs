@@ -15,7 +15,7 @@ public class CreatePlaylistDto
     /// <summary>
     /// Gets or sets the name of the new playlist.
     /// </summary>
-    public string? Name { get; set; }
+    public required string Name { get; set; }
 
     /// <summary>
     /// Gets or sets item ids to add to the playlist.
@@ -34,12 +34,12 @@ public class CreatePlaylistDto
     public MediaType? MediaType { get; set; }
 
     /// <summary>
-    /// Gets or sets the shares.
+    /// Gets or sets the playlist users.
     /// </summary>
-    public IReadOnlyList<Share> Shares { get; set; } = [];
+    public IReadOnlyList<UserPermissions> Users { get; set; } = [];
 
     /// <summary>
-    /// Gets or sets a value indicating whether open access is enabled.
+    /// Gets or sets a value indicating whether the playlist is public.
     /// </summary>
-    public bool OpenAccess { get; set; }
+    public bool Public { get; set; } = true;
 }

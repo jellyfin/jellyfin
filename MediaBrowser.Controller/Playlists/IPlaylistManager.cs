@@ -41,7 +41,7 @@ namespace MediaBrowser.Controller.Playlists
         /// <param name="userId">The user identifier.</param>
         /// <param name="share">The share.</param>
         /// <returns>Task.</returns>
-        Task AddToShares(Guid playlistId, Guid userId, Share share);
+        Task AddToShares(Guid playlistId, Guid userId, UserPermissions share);
 
         /// <summary>
         /// Rremoves a share from the playlist.
@@ -50,7 +50,7 @@ namespace MediaBrowser.Controller.Playlists
         /// <param name="userId">The user identifier.</param>
         /// <param name="share">The share.</param>
         /// <returns>Task.</returns>
-        Task RemoveFromShares(Guid playlistId, Guid userId, Share share);
+        Task RemoveFromShares(Guid playlistId, Guid userId, UserPermissions share);
 
         /// <summary>
         /// Creates the playlist.
