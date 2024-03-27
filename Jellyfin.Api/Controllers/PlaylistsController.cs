@@ -104,39 +104,58 @@ public class PlaylistsController : BaseJellyfinApiController
     /// Get a playlist's users.
     /// </summary>
     /// <param name="playlistId">The playlist id.</param>
+    /// <response code="200">Found shares.</response>
+    /// <response code="401">Unauthorized access.</response>
+    /// <response code="404">Playlist not found.</response>
     /// <returns>
     /// A list of <see cref="UserPermissions"/> objects.
     /// </returns>
     [HttpGet("{playlistId}/User")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public IReadOnlyList<UserPermissions> GetPlaylistUsers(
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public ActionResult<IReadOnlyList<UserPermissions>> GetPlaylistUsers(
         [FromRoute, Required] Guid playlistId)
     {
-        var userId = RequestHelpers.GetUserId(User, default);
+        var userId = User.GetUserId();
 
         var playlist = _playlistManager.GetPlaylist(userId, playlistId);
+        if (playlist is null)
+        {
+            return NotFound("Playlist not found");
+        }
+
         var isPermitted = playlist.OwnerUserId.Equals(userId)
             || playlist.Shares.Any(s => s.CanEdit && s.UserId.Equals(userId));
 
-        return isPermitted ? playlist.Shares : [];
+        return isPermitted ? playlist.Shares.ToList() : Unauthorized("Unauthorized Access");
     }
 
     /// <summary>
-    /// Toggles OpenAccess of a playlist.
+    /// Toggles public access of a playlist.
     /// </summary>
     /// <param name="playlistId">The playlist id.</param>
+    /// <response code="204">Public access toggled.</response>
+    /// <response code="401">Unauthorized access.</response>
+    /// <response code="404">Playlist not found.</response>
     /// <returns>
-    /// A <see cref="Task" /> that represents the asynchronous operation to toggle OpenAccess of a playlist.
+    /// A <see cref="Task" /> that represents the asynchronous operation to toggle public access of a playlist.
     /// The task result contains an <see cref="OkResult"/> indicating success.
     /// </returns>
-    [HttpPost("{playlistId}/ToggleOpenAccess")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult> ToggleOpenAccess(
+    [HttpPost("{playlistId}/TogglePublic")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult> TogglePublicAccess(
         [FromRoute, Required] Guid playlistId)
     {
-        var callingUserId = RequestHelpers.GetUserId(User, default);
+        var callingUserId = User.GetUserId();
 
         var playlist = _playlistManager.GetPlaylist(callingUserId, playlistId);
+        if (playlist is null)
+        {
+            return NotFound("Playlist not found");
+        }
+
         var isPermitted = playlist.OwnerUserId.Equals(callingUserId)
             || playlist.Shares.Any(s => s.CanEdit && s.UserId.Equals(callingUserId));
 
@@ -151,25 +170,34 @@ public class PlaylistsController : BaseJellyfinApiController
     }
 
     /// <summary>
-    /// Upsert a user to a playlist's users.
+    /// Modify a user to a playlist's users.
     /// </summary>
     /// <param name="playlistId">The playlist id.</param>
     /// <param name="userId">The user id.</param>
     /// <param name="canEdit">Edit permission.</param>
+    /// <response code="204">User's permissions modified.</response>
+    /// <response code="401">Unauthorized access.</response>
+    /// <response code="404">Playlist not found.</response>
     /// <returns>
-    /// A <see cref="Task" /> that represents the asynchronous operation to upsert an user to a playlist.
+    /// A <see cref="Task" /> that represents the asynchronous operation to modify an user's playlist permissions.
     /// The task result contains an <see cref="OkResult"/> indicating success.
     /// </returns>
     [HttpPost("{playlistId}/User/{userId}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult> AddUserToPlaylist(
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult> ModifyPlaylistUserPermissions(
         [FromRoute, Required] Guid playlistId,
         [FromRoute, Required] Guid userId,
         [FromBody] bool canEdit)
     {
-        var callingUserId = RequestHelpers.GetUserId(User, default);
+        var callingUserId = User.GetUserId();
 
         var playlist = _playlistManager.GetPlaylist(callingUserId, playlistId);
+        if (playlist is null)
+        {
+            return NotFound("Playlist not found");
+        }
+
         var isPermitted = playlist.OwnerUserId.Equals(callingUserId)
             || playlist.Shares.Any(s => s.CanEdit && s.UserId.Equals(callingUserId));
 
@@ -188,19 +216,29 @@ public class PlaylistsController : BaseJellyfinApiController
     /// </summary>
     /// <param name="playlistId">The playlist id.</param>
     /// <param name="userId">The user id.</param>
+    /// <response code="204">User permissions removed from playlist.</response>
+    /// <response code="401">Unauthorized access.</response>
+    /// <response code="404">No playlist or user permissions found.</response>
     /// <returns>
     /// A <see cref="Task" /> that represents the asynchronous operation to delete a user from a playlist's shares.
     /// The task result contains an <see cref="OkResult"/> indicating success.
     /// </returns>
     [HttpDelete("{playlistId}/User/{userId}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> RemoveUserFromPlaylist(
         [FromRoute, Required] Guid playlistId,
         [FromRoute, Required] Guid userId)
     {
-        var callingUserId = RequestHelpers.GetUserId(User, default);
+        var callingUserId = User.GetUserId();
 
         var playlist = _playlistManager.GetPlaylist(callingUserId, playlistId);
+        if (playlist is null)
+        {
+            return NotFound("Playlist not found");
+        }
+
         var isPermitted = playlist.OwnerUserId.Equals(callingUserId)
             || playlist.Shares.Any(s => s.CanEdit && s.UserId.Equals(callingUserId));
 
@@ -210,10 +248,9 @@ public class PlaylistsController : BaseJellyfinApiController
         }
 
         var share = playlist.Shares.FirstOrDefault(s => s.UserId.Equals(userId));
-
         if (share is null)
         {
-            return NotFound();
+            return NotFound("User permissions not found");
         }
 
         await _playlistManager.RemoveFromShares(playlistId, callingUserId, share).ConfigureAwait(false);
