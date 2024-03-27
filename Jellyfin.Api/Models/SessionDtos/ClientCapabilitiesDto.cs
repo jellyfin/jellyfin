@@ -55,12 +55,12 @@ public class ClientCapabilitiesDto
     // TODO: Remove after 10.9
     [Obsolete("Unused")]
     [DefaultValue(false)]
-    public bool? SupportsContentUploading { get; set; }
+    public bool? SupportsContentUploading { get; set; } = false;
 
     // TODO: Remove after 10.9
     [Obsolete("Unused")]
     [DefaultValue(false)]
-    public bool? SupportsSync { get; set; }
+    public bool? SupportsSync { get; set; } = false;
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
     /// <summary>

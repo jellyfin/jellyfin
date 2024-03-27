@@ -35,11 +35,11 @@ namespace MediaBrowser.Model.Session
         // TODO: Remove after 10.9
         [Obsolete("Unused")]
         [DefaultValue(false)]
-        public bool? SupportsContentUploading { get; set; }
+        public bool? SupportsContentUploading { get; set; } = false;
 
         // TODO: Remove after 10.9
         [Obsolete("Unused")]
         [DefaultValue(false)]
-        public bool? SupportsSync { get; set; }
+        public bool? SupportsSync { get; set; } = false;
     }
 }
