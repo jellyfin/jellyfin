@@ -205,7 +205,7 @@ namespace Emby.Server.Implementations.Data
         private static readonly string _mediaAttachmentSaveColumnsSelectQuery =
             $"select {string.Join(',', _mediaAttachmentSaveColumns)} from mediaattachments where ItemId=@ItemId";
 
-        private static readonly string _mediaAttachmentInsertPrefix;
+        private static readonly string _mediaAttachmentInsertPrefix = BuildMediaAttachmentInsertPrefix();
 
         private static readonly BaseItemKind[] _programTypes = new[]
         {
@@ -295,21 +295,6 @@ namespace Emby.Server.Implementations.Data
             { BaseItemKind.Video, typeof(Video).FullName },
             { BaseItemKind.Year, typeof(Year).FullName }
         };
-
-        static SqliteItemRepository()
-        {
-            var queryPrefixText = new StringBuilder();
-            queryPrefixText.Append("insert into mediaattachments (");
-            foreach (var column in _mediaAttachmentSaveColumns)
-            {
-                queryPrefixText.Append(column)
-                    .Append(',');
-            }
-
-            queryPrefixText.Length -= 1;
-            queryPrefixText.Append(") values ");
-            _mediaAttachmentInsertPrefix = queryPrefixText.ToString();
-        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -5877,6 +5862,21 @@ AND Type = @InternalPersonType)");
             }
 
             return item;
+        }
+
+        private static string BuildMediaAttachmentInsertPrefix()
+        {
+            var queryPrefixText = new StringBuilder();
+            queryPrefixText.Append("insert into mediaattachments (");
+            foreach (var column in _mediaAttachmentSaveColumns)
+            {
+                queryPrefixText.Append(column)
+                    .Append(',');
+            }
+
+            queryPrefixText.Length -= 1;
+            queryPrefixText.Append(") values ");
+            return queryPrefixText.ToString();
         }
 
 #nullable enable
