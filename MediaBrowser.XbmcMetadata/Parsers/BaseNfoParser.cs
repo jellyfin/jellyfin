@@ -460,10 +460,28 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     var trailer = reader.ReadNormalizedString();
                     if (!string.IsNullOrEmpty(trailer))
                     {
-                        item.AddTrailerUrl(trailer.Replace(
-                            "plugin://plugin.video.youtube/?action=play_video&videoid=",
-                            BaseNfoSaver.YouTubeWatchUrl,
-                            StringComparison.OrdinalIgnoreCase));
+                        if (trailer.StartsWith("plugin://plugin.video.youtube/?action=play_video&videoid=", StringComparison.OrdinalIgnoreCase))
+                        {
+                            // Deprecated format
+                            item.AddTrailerUrl(trailer.Replace(
+                                "plugin://plugin.video.youtube/?action=play_video&videoid=",
+                                BaseNfoSaver.YouTubeWatchUrl,
+                                StringComparison.OrdinalIgnoreCase));
+
+                            var suggestedUrl = trailer.Replace(
+                                "plugin://plugin.video.youtube/?action=play_video&videoid=",
+                                "plugin://plugin.video.youtube/play/?video_id=",
+                                StringComparison.OrdinalIgnoreCase);
+                            Logger.LogWarning("Trailer URL uses a deprecated format : {Url}. Using {NewUrl} instead is advised.", trailer, suggestedUrl);
+                        }
+                        else if (trailer.StartsWith("plugin://plugin.video.youtube/play/?video_id=", StringComparison.OrdinalIgnoreCase))
+                        {
+                            // Proper format
+                            item.AddTrailerUrl(trailer.Replace(
+                                "plugin://plugin.video.youtube/play/?video_id=",
+                                BaseNfoSaver.YouTubeWatchUrl,
+                                StringComparison.OrdinalIgnoreCase));
+                        }
                     }
 
                     break;

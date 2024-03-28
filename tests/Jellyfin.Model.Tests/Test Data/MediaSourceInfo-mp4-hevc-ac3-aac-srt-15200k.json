@@ -59,7 +59,7 @@
             "BitRate": 164741,
             "Channels": 2,
             "SampleRate": 48000,
-            "IsDefault": true,
+            "IsDefault": false,
             "Profile": "LC",
             "Index": 2,
             "Score": 203

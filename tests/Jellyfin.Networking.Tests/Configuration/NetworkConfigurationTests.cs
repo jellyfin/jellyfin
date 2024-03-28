@@ -6,7 +6,6 @@ namespace Jellyfin.Networking.Tests.Configuration;
 public static class NetworkConfigurationTests
 {
     [Theory]
-    [InlineData("", null)]
     [InlineData("", "")]
     [InlineData("/Test", "/Test")]
     [InlineData("/Test", "Test")]

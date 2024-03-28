@@ -125,5 +125,6 @@
     "TaskKeyframeExtractor": "Извличане на ключови кадри",
     "External": "Външен",
     "HearingImpaired": "Увреден слух",
-    "TaskRefreshTrickplayImages": "Генерирай изображение"
+    "TaskRefreshTrickplayImages": "Генерирай изображение",
+    "TaskRefreshTrickplayImagesDescription": "Създава прегледи на Trickplay за видеа в активирани библиотеки."
 }

@@ -24,22 +24,22 @@ public class HlsSegmentController : BaseJellyfinApiController
 {
     private readonly IFileSystem _fileSystem;
     private readonly IServerConfigurationManager _serverConfigurationManager;
-    private readonly TranscodingJobHelper _transcodingJobHelper;
+    private readonly ITranscodeManager _transcodeManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HlsSegmentController"/> class.
     /// </summary>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
-    /// <param name="transcodingJobHelper">Initialized instance of the <see cref="TranscodingJobHelper"/>.</param>
+    /// <param name="transcodeManager">Instance of the <see cref="ITranscodeManager"/> interface.</param>
     public HlsSegmentController(
         IFileSystem fileSystem,
         IServerConfigurationManager serverConfigurationManager,
-        TranscodingJobHelper transcodingJobHelper)
+        ITranscodeManager transcodeManager)
     {
         _fileSystem = fileSystem;
         _serverConfigurationManager = serverConfigurationManager;
-        _transcodingJobHelper = transcodingJobHelper;
+        _transcodeManager = transcodeManager;
     }
 
     /// <summary>
@@ -112,7 +112,7 @@ public class HlsSegmentController : BaseJellyfinApiController
         [FromQuery, Required] string deviceId,
         [FromQuery, Required] string playSessionId)
     {
-        _transcodingJobHelper.KillTranscodingJobs(deviceId, playSessionId, path => true);
+        _transcodeManager.KillTranscodingJobs(deviceId, playSessionId, _ => true);
         return NoContent();
     }
 
@@ -174,13 +174,13 @@ public class HlsSegmentController : BaseJellyfinApiController
 
     private ActionResult GetFileResult(string path, string playlistPath)
     {
-        var transcodingJob = _transcodingJobHelper.OnTranscodeBeginRequest(playlistPath, TranscodingJobType.Hls);
+        var transcodingJob = _transcodeManager.OnTranscodeBeginRequest(playlistPath, TranscodingJobType.Hls);
 
         Response.OnCompleted(() =>
         {
             if (transcodingJob is not null)
             {
-                _transcodingJobHelper.OnTranscodeEndRequest(transcodingJob);
+                _transcodeManager.OnTranscodeEndRequest(transcodingJob);
             }
 
             return Task.CompletedTask;

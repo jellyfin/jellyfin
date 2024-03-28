@@ -125,5 +125,6 @@
     "TaskKeyframeExtractor": "مستخرج الإطار الرئيسي",
     "External": "خارجي",
     "HearingImpaired": "ضعاف السمع",
-    "TaskRefreshTrickplayImages": "توليد صور Trickplay"
+    "TaskRefreshTrickplayImages": "توليد صور Trickplay",
+    "TaskRefreshTrickplayImagesDescription": "يُنشئ معاينات Trickplay لمقاطع الفيديو في المكتبات المُمكّنة."
 }

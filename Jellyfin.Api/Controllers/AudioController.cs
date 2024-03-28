@@ -6,6 +6,7 @@ using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.StreamingDtos;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model.Dlna;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,7 +16,6 @@ namespace Jellyfin.Api.Controllers;
 /// <summary>
 /// The audio controller.
 /// </summary>
-// TODO: In order to authenticate this in the future, Dlna playback will require updating
 public class AudioController : BaseJellyfinApiController
 {
     private readonly AudioHelper _audioHelper;
@@ -91,18 +91,18 @@ public class AudioController : BaseJellyfinApiController
     [ProducesAudioFile]
     public async Task<ActionResult> GetAudioStream(
         [FromRoute, Required] Guid itemId,
-        [FromQuery] string? container,
+        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? container,
         [FromQuery] bool? @static,
         [FromQuery] string? @params,
         [FromQuery] string? tag,
-        [FromQuery] string? deviceProfileId,
+        [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
-        [FromQuery] string? segmentContainer,
+        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? segmentContainer,
         [FromQuery] int? segmentLength,
         [FromQuery] int? minSegments,
         [FromQuery] string? mediaSourceId,
         [FromQuery] string? deviceId,
-        [FromQuery] string? audioCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? audioCodec,
         [FromQuery] bool? enableAutoStreamCopy,
         [FromQuery] bool? allowVideoStreamCopy,
         [FromQuery] bool? allowAudioStreamCopy,
@@ -132,8 +132,8 @@ public class AudioController : BaseJellyfinApiController
         [FromQuery] int? cpuCoreLimit,
         [FromQuery] string? liveStreamId,
         [FromQuery] bool? enableMpegtsM2TsMode,
-        [FromQuery] string? videoCodec,
-        [FromQuery] string? subtitleCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? videoCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? subtitleCodec,
         [FromQuery] string? transcodeReasons,
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
@@ -147,7 +147,6 @@ public class AudioController : BaseJellyfinApiController
             Static = @static ?? false,
             Params = @params,
             Tag = tag,
-            DeviceProfileId = deviceProfileId,
             PlaySessionId = playSessionId,
             SegmentContainer = segmentContainer,
             SegmentLength = segmentLength,
@@ -260,14 +259,14 @@ public class AudioController : BaseJellyfinApiController
         [FromQuery] bool? @static,
         [FromQuery] string? @params,
         [FromQuery] string? tag,
-        [FromQuery] string? deviceProfileId,
+        [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
-        [FromQuery] string? segmentContainer,
+        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? segmentContainer,
         [FromQuery] int? segmentLength,
         [FromQuery] int? minSegments,
         [FromQuery] string? mediaSourceId,
         [FromQuery] string? deviceId,
-        [FromQuery] string? audioCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? audioCodec,
         [FromQuery] bool? enableAutoStreamCopy,
         [FromQuery] bool? allowVideoStreamCopy,
         [FromQuery] bool? allowAudioStreamCopy,
@@ -297,8 +296,8 @@ public class AudioController : BaseJellyfinApiController
         [FromQuery] int? cpuCoreLimit,
         [FromQuery] string? liveStreamId,
         [FromQuery] bool? enableMpegtsM2TsMode,
-        [FromQuery] string? videoCodec,
-        [FromQuery] string? subtitleCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? videoCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? subtitleCodec,
         [FromQuery] string? transcodeReasons,
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
@@ -312,7 +311,6 @@ public class AudioController : BaseJellyfinApiController
             Static = @static ?? false,
             Params = @params,
             Tag = tag,
-            DeviceProfileId = deviceProfileId,
             PlaySessionId = playSessionId,
             SegmentContainer = segmentContainer,
             SegmentLength = segmentLength,

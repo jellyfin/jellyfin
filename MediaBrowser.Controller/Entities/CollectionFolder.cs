@@ -11,6 +11,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Controller.IO;
@@ -93,6 +94,16 @@ namespace MediaBrowser.Controller.Entities
         public LibraryOptions GetLibraryOptions()
         {
             return GetLibraryOptions(Path);
+        }
+
+        public override bool IsVisible(User user)
+        {
+            if (GetLibraryOptions().Enabled)
+            {
+                return base.IsVisible(user);
+            }
+
+            return false;
         }
 
         private static LibraryOptions LoadLibraryOptions(string path)

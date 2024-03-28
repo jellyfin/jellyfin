@@ -773,7 +773,8 @@ namespace MediaBrowser.Providers.Manager
                             MergeData(metadata, temp, Array.Empty<MetadataField>(), false, false);
                         }
 
-                        MergeData(temp, metadata, item.LockedFields, true, false);
+                        // Will always replace all metadata when Scan for new and updated files is used. Else, follow the options.
+                        MergeData(temp, metadata, item.LockedFields, options.MetadataRefreshMode == MetadataRefreshMode.Default || options.ReplaceAllMetadata, false);
                     }
                 }
             }

@@ -1,0 +1,29 @@
+name: Check Issue Template
+on:
+  issues:
+    types:
+      - opened
+jobs:
+  check_issue:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: pull in script
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          repository: jellyfin/jellyfin-triage-script
+      - name: install python
+        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d # v5.1.0
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+      - name: install python packages
+        run: pip install -r main-repo-triage/requirements.txt
+      - name: check and comment issue
+        working-directory: ./main-repo-triage
+        run: python3 single_issue_gha.py
+        env:
+          GH_TOKEN: ${{ secrets.JF_BOT_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          ISSUE: ${{ github.event.issue.number }}

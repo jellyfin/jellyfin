@@ -88,6 +88,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         public string Level { get; set; }
 
         /// <summary>
+        /// Gets or sets the codec tag.
+        /// </summary>
+        /// <value>The codec tag.</value>
+        public string CodecTag { get; set; }
+
+        /// <summary>
         /// Gets or sets the framerate.
         /// </summary>
         /// <value>The framerate.</value>

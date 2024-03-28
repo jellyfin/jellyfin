@@ -1,3 +1,4 @@
+#pragma warning disable SA1300 // The name of a C# element does not begin with an upper-case letter. - disabled due to legacy requirement.
 using Jellyfin.Data.Attributes;
 
 namespace Jellyfin.Data.Enums;
@@ -10,155 +11,155 @@ public enum CollectionType
     /// <summary>
     /// Unknown collection.
     /// </summary>
-    Unknown = 0,
+    unknown = 0,
 
     /// <summary>
     /// Movies collection.
     /// </summary>
-    Movies = 1,
+    movies = 1,
 
     /// <summary>
     /// Tv shows collection.
     /// </summary>
-    TvShows = 2,
+    tvshows = 2,
 
     /// <summary>
     /// Music collection.
     /// </summary>
-    Music = 3,
+    music = 3,
 
     /// <summary>
     /// Music videos collection.
     /// </summary>
-    MusicVideos = 4,
+    musicvideos = 4,
 
     /// <summary>
     /// Trailers collection.
     /// </summary>
-    Trailers = 5,
+    trailers = 5,
 
     /// <summary>
     /// Home videos collection.
     /// </summary>
-    HomeVideos = 6,
+    homevideos = 6,
 
     /// <summary>
     /// Box sets collection.
     /// </summary>
-    BoxSets = 7,
+    boxsets = 7,
 
     /// <summary>
     /// Books collection.
     /// </summary>
-    Books = 8,
+    books = 8,
 
     /// <summary>
     /// Photos collection.
     /// </summary>
-    Photos = 9,
+    photos = 9,
 
     /// <summary>
     /// Live tv collection.
     /// </summary>
-    LiveTv = 10,
+    livetv = 10,
 
     /// <summary>
     /// Playlists collection.
     /// </summary>
-    Playlists = 11,
+    playlists = 11,
 
     /// <summary>
     /// Folders collection.
     /// </summary>
-    Folders = 12,
+    folders = 12,
 
     /// <summary>
     /// Tv show series collection.
     /// </summary>
     [OpenApiIgnoreEnum]
-    TvShowSeries = 101,
+    tvshowseries = 101,
 
     /// <summary>
     /// Tv genres collection.
     /// </summary>
     [OpenApiIgnoreEnum]
-    TvGenres = 102,
+    tvgenres = 102,
 
     /// <summary>
     /// Tv genre collection.
     /// </summary>
     [OpenApiIgnoreEnum]
-    TvGenre = 103,
+    tvgenre = 103,
 
     /// <summary>
     /// Tv latest collection.
     /// </summary>
     [OpenApiIgnoreEnum]
-    TvLatest = 104,
+    tvlatest = 104,
 
     /// <summary>
     /// Tv next up collection.
     /// </summary>
     [OpenApiIgnoreEnum]
-    TvNextUp = 105,
+    tvnextup = 105,
 
     /// <summary>
     /// Tv resume collection.
     /// </summary>
     [OpenApiIgnoreEnum]
-    TvResume = 106,
+    tvresume = 106,
 
     /// <summary>
     /// Tv favorite series collection.
     /// </summary>
     [OpenApiIgnoreEnum]
-    TvFavoriteSeries = 107,
+    tvfavoriteseries = 107,
 
     /// <summary>
     /// Tv favorite episodes collection.
     /// </summary>
     [OpenApiIgnoreEnum]
-    TvFavoriteEpisodes = 108,
+    tvfavoriteepisodes = 108,
 
     /// <summary>
     /// Latest movies collection.
     /// </summary>
     [OpenApiIgnoreEnum]
-    MovieLatest = 109,
+    movielatest = 109,
 
     /// <summary>
     /// Movies to resume collection.
     /// </summary>
     [OpenApiIgnoreEnum]
-    MovieResume = 110,
+    movieresume = 110,
 
     /// <summary>
     /// Movie movie collection.
     /// </summary>
     [OpenApiIgnoreEnum]
-    MovieMovies = 111,
+    moviemovies = 111,
 
     /// <summary>
     /// Movie collections collection.
     /// </summary>
     [OpenApiIgnoreEnum]
-    MovieCollections = 112,
+    moviecollection = 112,
 
     /// <summary>
     /// Movie favorites collection.
     /// </summary>
     [OpenApiIgnoreEnum]
-    MovieFavorites = 113,
+    moviefavorites = 113,
 
     /// <summary>
     /// Movie genres collection.
     /// </summary>
     [OpenApiIgnoreEnum]
-    MovieGenres = 114,
+    moviegenres = 114,
 
     /// <summary>
     /// Movie genre collection.
     /// </summary>
     [OpenApiIgnoreEnum]
-    MovieGenre = 115
+    moviegenre = 115
 }

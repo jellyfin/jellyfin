@@ -123,5 +123,7 @@
     "TaskKeyframeExtractor": "Trích Xuất Khung Hình",
     "TaskKeyframeExtractorDescription": "Trích xuất khung hình chính từ các tệp video để tạo danh sách phát HLS chính xác hơn. Tác vụ này có thể chạy trong một thời gian dài.",
     "External": "Bên ngoài",
-    "HearingImpaired": "Khiếm Thính"
+    "HearingImpaired": "Khiếm Thính",
+    "TaskRefreshTrickplayImages": "Tạo Ảnh Xem Trước Trickplay",
+    "TaskRefreshTrickplayImagesDescription": "Tạo bản xem trước trịckplay cho video trong thư viện đã bật."
 }

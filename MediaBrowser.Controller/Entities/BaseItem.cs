@@ -62,7 +62,9 @@ namespace MediaBrowser.Controller.Entities
             ".edl",
             ".bif",
             ".smi",
-            ".ttml"
+            ".ttml",
+            ".lrc",
+            ".elrc"
         };
 
         /// <summary>
@@ -240,7 +242,7 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                if (!ChannelId.Equals(default))
+                if (!ChannelId.IsEmpty())
                 {
                     return SourceType.Channel;
                 }
@@ -530,7 +532,7 @@ namespace MediaBrowser.Controller.Entities
             get
             {
                 var id = DisplayParentId;
-                if (id.Equals(default))
+                if (id.IsEmpty())
                 {
                     return null;
                 }
@@ -724,7 +726,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (this is IHasCollectionType view)
                 {
-                    if (view.CollectionType == CollectionType.LiveTv)
+                    if (view.CollectionType == CollectionType.livetv)
                     {
                         return true;
                     }
@@ -746,7 +748,7 @@ namespace MediaBrowser.Controller.Entities
         public virtual bool StopRefreshIfLocalMetadataFound => true;
 
         [JsonIgnore]
-        protected virtual bool SupportsOwnedItems => !ParentId.Equals(default) && IsFileProtocol;
+        protected virtual bool SupportsOwnedItems => !ParentId.IsEmpty() && IsFileProtocol;
 
         [JsonIgnore]
         public virtual bool SupportsPeople => false;
@@ -772,8 +774,6 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The remote trailers.</value>
         public IReadOnlyList<MediaUrl> RemoteTrailers { get; set; }
-
-        public virtual bool SupportsExternalTransfer => false;
 
         public virtual double GetDefaultPrimaryImageAspectRatio()
         {
@@ -825,7 +825,7 @@ namespace MediaBrowser.Controller.Entities
         public BaseItem GetOwner()
         {
             var ownerId = OwnerId;
-            return ownerId.Equals(default) ? null : LibraryManager.GetItemById(ownerId);
+            return ownerId.IsEmpty() ? null : LibraryManager.GetItemById(ownerId);
         }
 
         public bool CanDelete(User user, List<Folder> allCollectionFolders)
@@ -964,13 +964,19 @@ namespace MediaBrowser.Controller.Entities
             AppendChunk(builder, isDigitChunk, name.Slice(chunkStart));
 
             // logger.LogDebug("ModifySortChunks Start: {0} End: {1}", name, builder.ToString());
-            return builder.ToString().RemoveDiacritics();
+            var result = builder.ToString().RemoveDiacritics();
+            if (!result.All(char.IsAscii))
+            {
+                result = result.Transliterated();
+            }
+
+            return result;
         }
 
         public BaseItem GetParent()
         {
             var parentId = ParentId;
-            if (parentId.Equals(default))
+            if (parentId.IsEmpty())
             {
                 return null;
             }
@@ -1363,7 +1369,7 @@ namespace MediaBrowser.Controller.Entities
             var tasks = extras.Select(i =>
             {
                 var subOptions = new MetadataRefreshOptions(options);
-                if (!i.OwnerId.Equals(ownerId) || !i.ParentId.Equals(default))
+                if (!i.OwnerId.Equals(ownerId) || !i.ParentId.IsEmpty())
                 {
                     i.OwnerId = ownerId;
                     i.ParentId = Guid.Empty;
@@ -1580,18 +1586,24 @@ namespace MediaBrowser.Controller.Entities
                 list.AddRange(parent.Tags);
             }
 
+            foreach (var folder in LibraryManager.GetCollectionFolders(this))
+            {
+                list.AddRange(folder.Tags);
+            }
+
             return list.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         }
 
         private bool IsVisibleViaTags(User user)
         {
-            if (user.GetPreference(PreferenceKind.BlockedTags).Any(i => Tags.Contains(i, StringComparison.OrdinalIgnoreCase)))
+            var allTags = GetInheritedTags();
+            if (user.GetPreference(PreferenceKind.BlockedTags).Any(i => allTags.Contains(i, StringComparison.OrdinalIgnoreCase)))
             {
                 return false;
             }
 
             var allowedTagsPreference = user.GetPreference(PreferenceKind.AllowedTags);
-            if (allowedTagsPreference.Any() && !allowedTagsPreference.Any(i => Tags.Contains(i, StringComparison.OrdinalIgnoreCase)))
+            if (allowedTagsPreference.Length != 0 && !allowedTagsPreference.Any(i => allTags.Contains(i, StringComparison.OrdinalIgnoreCase)))
             {
                 return false;
             }
@@ -1675,7 +1687,7 @@ namespace MediaBrowser.Controller.Entities
             // First get using the cached Id
             if (info.ItemId.HasValue)
             {
-                if (info.ItemId.Value.Equals(default))
+                if (info.ItemId.Value.IsEmpty())
                 {
                     return null;
                 }
@@ -2441,7 +2453,7 @@ namespace MediaBrowser.Controller.Entities
                 return Task.FromResult(true);
             }
 
-            if (video.OwnerId.Equals(default))
+            if (video.OwnerId.IsEmpty())
             {
                 video.OwnerId = this.Id;
             }

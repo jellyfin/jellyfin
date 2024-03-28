@@ -5,6 +5,7 @@ using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -34,6 +35,7 @@ public class ItemsController : BaseJellyfinApiController
     private readonly IDtoService _dtoService;
     private readonly ILogger<ItemsController> _logger;
     private readonly ISessionManager _sessionManager;
+    private readonly IUserDataManager _userDataRepository;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ItemsController"/> class.
@@ -44,13 +46,15 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
     /// <param name="sessionManager">Instance of the <see cref="ISessionManager"/> interface.</param>
+    /// <param name="userDataRepository">Instance of the <see cref="IUserDataManager"/> interface.</param>
     public ItemsController(
         IUserManager userManager,
         ILibraryManager libraryManager,
         ILocalizationManager localization,
         IDtoService dtoService,
         ILogger<ItemsController> logger,
-        ISessionManager sessionManager)
+        ISessionManager sessionManager,
+        IUserDataManager userDataRepository)
     {
         _userManager = userManager;
         _libraryManager = libraryManager;
@@ -58,6 +62,7 @@ public class ItemsController : BaseJellyfinApiController
         _dtoService = dtoService;
         _logger = logger;
         _sessionManager = sessionManager;
+        _userDataRepository = userDataRepository;
     }
 
     /// <summary>
@@ -241,7 +246,7 @@ public class ItemsController : BaseJellyfinApiController
         var isApiKey = User.GetIsApiKey();
         // if api key is used (auth.IsApiKey == true), then `user` will be null throughout this method
         userId = RequestHelpers.GetUserId(User, userId);
-        var user = !isApiKey && !userId.Value.Equals(default)
+        var user = !isApiKey && !userId.IsNullOrEmpty()
             ? _userManager.GetUserById(userId.Value) ?? throw new ResourceNotFoundException()
             : null;
 
@@ -275,7 +280,7 @@ public class ItemsController : BaseJellyfinApiController
             collectionType = hasCollectionType.CollectionType;
         }
 
-        if (collectionType == CollectionType.Playlists)
+        if (collectionType == CollectionType.playlists)
         {
             recursive = true;
             includeItemTypes = new[] { BaseItemKind.Playlist };
@@ -607,8 +612,10 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="enableImages">Optional, include image information in output.</param>
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the items.</returns>
     [HttpGet("Users/{userId}/Items")]
+    [Obsolete("Kept for backwards compatibility")]
+    [ApiExplorerSettings(IgnoreApi = true)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<QueryResult<BaseItemDto>> GetItemsByUserId(
+    public ActionResult<QueryResult<BaseItemDto>> GetItemsByUserIdLegacy(
         [FromRoute] Guid userId,
         [FromQuery] string? maxOfficialRating,
         [FromQuery] bool? hasThemeSong,
@@ -694,8 +701,7 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] genreIds,
         [FromQuery] bool enableTotalRecordCount = true,
         [FromQuery] bool? enableImages = true)
-    {
-        return GetItems(
+        => GetItems(
             userId,
             maxOfficialRating,
             hasThemeSong,
@@ -781,7 +787,6 @@ public class ItemsController : BaseJellyfinApiController
             genreIds,
             enableTotalRecordCount,
             enableImages);
-    }
 
     /// <summary>
     /// Gets items based on a query.
@@ -803,10 +808,10 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="excludeActiveSessions">Optional. Whether to exclude the currently active sessions.</param>
     /// <response code="200">Items returned.</response>
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the items that are resumable.</returns>
-    [HttpGet("Users/{userId}/Items/Resume")]
+    [HttpGet("UserItems/Resume")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<QueryResult<BaseItemDto>> GetResumeItems(
-        [FromRoute, Required] Guid userId,
+        [FromQuery] Guid? userId,
         [FromQuery] int? startIndex,
         [FromQuery] int? limit,
         [FromQuery] string? searchTerm,
@@ -822,7 +827,8 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery] bool? enableImages = true,
         [FromQuery] bool excludeActiveSessions = false)
     {
-        var user = _userManager.GetUserById(userId);
+        var requestUserId = RequestHelpers.GetUserId(User, userId);
+        var user = _userManager.GetUserById(requestUserId);
         if (user is null)
         {
             return NotFound();
@@ -836,7 +842,7 @@ public class ItemsController : BaseJellyfinApiController
         var ancestorIds = Array.Empty<Guid>();
 
         var excludeFolderIds = user.GetPreferenceValues<Guid>(PreferenceKind.LatestItemExcludes);
-        if (parentIdGuid.Equals(default) && excludeFolderIds.Length > 0)
+        if (parentIdGuid.IsEmpty() && excludeFolderIds.Length > 0)
         {
             ancestorIds = _libraryManager.GetUserRootFolder().GetChildren(user, true)
                 .Where(i => i is Folder)
@@ -849,7 +855,7 @@ public class ItemsController : BaseJellyfinApiController
         if (excludeActiveSessions)
         {
             excludeItemIds = _sessionManager.Sessions
-                .Where(s => s.UserId.Equals(userId) && s.NowPlayingItem is not null)
+                .Where(s => s.UserId.Equals(requestUserId) && s.NowPlayingItem is not null)
                 .Select(s => s.NowPlayingItem.Id)
                 .ToArray();
         }
@@ -881,4 +887,161 @@ public class ItemsController : BaseJellyfinApiController
             itemsResult.TotalRecordCount,
             returnItems);
     }
+
+    /// <summary>
+    /// Gets items based on a query.
+    /// </summary>
+    /// <param name="userId">The user id.</param>
+    /// <param name="startIndex">The start index.</param>
+    /// <param name="limit">The item limit.</param>
+    /// <param name="searchTerm">The search term.</param>
+    /// <param name="parentId">Specify this to localize the search to a specific item or folder. Omit to use the root.</param>
+    /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
+    /// <param name="mediaTypes">Optional. Filter by MediaType. Allows multiple, comma delimited.</param>
+    /// <param name="enableUserData">Optional. Include user data.</param>
+    /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
+    /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
+    /// <param name="excludeItemTypes">Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimited.</param>
+    /// <param name="includeItemTypes">Optional. If specified, results will be filtered based on the item type. This allows multiple, comma delimited.</param>
+    /// <param name="enableTotalRecordCount">Optional. Enable the total record count.</param>
+    /// <param name="enableImages">Optional. Include image information in output.</param>
+    /// <param name="excludeActiveSessions">Optional. Whether to exclude the currently active sessions.</param>
+    /// <response code="200">Items returned.</response>
+    /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the items that are resumable.</returns>
+    [HttpGet("Users/{userId}/Items/Resume")]
+    [Obsolete("Kept for backwards compatibility")]
+    [ApiExplorerSettings(IgnoreApi = true)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public ActionResult<QueryResult<BaseItemDto>> GetResumeItemsLegacy(
+        [FromRoute, Required] Guid userId,
+        [FromQuery] int? startIndex,
+        [FromQuery] int? limit,
+        [FromQuery] string? searchTerm,
+        [FromQuery] Guid? parentId,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] MediaType[] mediaTypes,
+        [FromQuery] bool? enableUserData,
+        [FromQuery] int? imageTypeLimit,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] excludeItemTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
+        [FromQuery] bool enableTotalRecordCount = true,
+        [FromQuery] bool? enableImages = true,
+        [FromQuery] bool excludeActiveSessions = false)
+    => GetResumeItems(
+        userId,
+        startIndex,
+        limit,
+        searchTerm,
+        parentId,
+        fields,
+        mediaTypes,
+        enableUserData,
+        imageTypeLimit,
+        enableImageTypes,
+        excludeItemTypes,
+        includeItemTypes,
+        enableTotalRecordCount,
+        enableImages,
+        excludeActiveSessions);
+
+    /// <summary>
+    /// Get Item User Data.
+    /// </summary>
+    /// <param name="userId">The user id.</param>
+    /// <param name="itemId">The item id.</param>
+    /// <response code="200">return item user data.</response>
+    /// <response code="404">Item is not found.</response>
+    /// <returns>Return <see cref="UserItemDataDto"/>.</returns>
+    [HttpGet("UserItems/{itemId}/UserData")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public ActionResult<UserItemDataDto> GetItemUserData(
+        [FromQuery] Guid? userId,
+        [FromRoute, Required] Guid itemId)
+    {
+        var requestUserId = RequestHelpers.GetUserId(User, userId);
+        if (!RequestHelpers.AssertCanUpdateUser(_userManager, User, requestUserId, true))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to view this item user data.");
+        }
+
+        var user = _userManager.GetUserById(requestUserId) ?? throw new ResourceNotFoundException();
+        var item = _libraryManager.GetItemById(itemId);
+
+        return (item == null) ? NotFound() : _userDataRepository.GetUserDataDto(item, user);
+    }
+
+    /// <summary>
+    /// Get Item User Data.
+    /// </summary>
+    /// <param name="userId">The user id.</param>
+    /// <param name="itemId">The item id.</param>
+    /// <response code="200">return item user data.</response>
+    /// <response code="404">Item is not found.</response>
+    /// <returns>Return <see cref="UserItemDataDto"/>.</returns>
+    [HttpGet("Users/{userId}/Items/{itemId}/UserData")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Obsolete("Kept for backwards compatibility")]
+    [ApiExplorerSettings(IgnoreApi = true)]
+    public ActionResult<UserItemDataDto> GetItemUserDataLegacy(
+        [FromRoute, Required] Guid userId,
+        [FromRoute, Required] Guid itemId)
+        => GetItemUserData(userId, itemId);
+
+    /// <summary>
+    /// Update Item User Data.
+    /// </summary>
+    /// <param name="userId">The user id.</param>
+    /// <param name="itemId">The item id.</param>
+    /// <param name="userDataDto">New user data object.</param>
+    /// <response code="200">return updated user item data.</response>
+    /// <response code="404">Item is not found.</response>
+    /// <returns>Return <see cref="UserItemDataDto"/>.</returns>
+    [HttpPost("UserItems/{itemId}/UserData")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public ActionResult<UserItemDataDto> UpdateItemUserData(
+        [FromQuery] Guid? userId,
+        [FromRoute, Required] Guid itemId,
+        [FromBody, Required] UpdateUserItemDataDto userDataDto)
+    {
+        var requestUserId = RequestHelpers.GetUserId(User, userId);
+        if (!RequestHelpers.AssertCanUpdateUser(_userManager, User, requestUserId, true))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update this item user data.");
+        }
+
+        var user = _userManager.GetUserById(requestUserId) ?? throw new ResourceNotFoundException();
+        var item = _libraryManager.GetItemById(itemId);
+        if (item == null)
+        {
+            return NotFound();
+        }
+
+        _userDataRepository.SaveUserData(user, item, userDataDto, UserDataSaveReason.UpdateUserData);
+
+        return _userDataRepository.GetUserDataDto(item, user);
+    }
+
+    /// <summary>
+    /// Update Item User Data.
+    /// </summary>
+    /// <param name="userId">The user id.</param>
+    /// <param name="itemId">The item id.</param>
+    /// <param name="userDataDto">New user data object.</param>
+    /// <response code="200">return updated user item data.</response>
+    /// <response code="404">Item is not found.</response>
+    /// <returns>Return <see cref="UserItemDataDto"/>.</returns>
+    [HttpPost("Users/{userId}/Items/{itemId}/UserData")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Obsolete("Kept for backwards compatibility")]
+    [ApiExplorerSettings(IgnoreApi = true)]
+    public ActionResult<UserItemDataDto> UpdateItemUserDataLegacy(
+        [FromRoute, Required] Guid userId,
+        [FromRoute, Required] Guid itemId,
+        [FromBody, Required] UpdateUserItemDataDto userDataDto)
+        => UpdateItemUserData(userId, itemId, userDataDto);
 }

@@ -12,6 +12,7 @@ using MediaBrowser.Controller.Events.Authentication;
 using MediaBrowser.Controller.Events.Session;
 using MediaBrowser.Controller.Events.Updates;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,6 +31,7 @@ namespace Jellyfin.Server.Implementations.Events
         public static void AddEventServices(this IServiceCollection collection)
         {
             // Library consumers
+            collection.AddScoped<IEventConsumer<LyricDownloadFailureEventArgs>, LyricDownloadFailureLogger>();
             collection.AddScoped<IEventConsumer<SubtitleDownloadFailureEventArgs>, SubtitleDownloadFailureLogger>();
 
             // Security consumers

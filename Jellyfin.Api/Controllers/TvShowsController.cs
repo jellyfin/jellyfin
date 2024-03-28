@@ -111,7 +111,7 @@ public class TvShowsController : BaseJellyfinApiController
             },
             options);
 
-        var user = userId.Value.Equals(default)
+        var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -150,7 +150,7 @@ public class TvShowsController : BaseJellyfinApiController
         [FromQuery] bool? enableUserData)
     {
         userId = RequestHelpers.GetUserId(User, userId);
-        var user = userId.Value.Equals(default)
+        var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -222,7 +222,7 @@ public class TvShowsController : BaseJellyfinApiController
         [FromQuery] ItemSortBy? sortBy)
     {
         userId = RequestHelpers.GetUserId(User, userId);
-        var user = userId.Value.Equals(default)
+        var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -284,7 +284,7 @@ public class TvShowsController : BaseJellyfinApiController
         }
 
         // This must be the last filter
-        if (adjacentTo.HasValue && !adjacentTo.Value.Equals(default))
+        if (!adjacentTo.IsNullOrEmpty())
         {
             episodes = UserViewBuilder.FilterForAdjacency(episodes, adjacentTo.Value).ToList();
         }
@@ -339,7 +339,7 @@ public class TvShowsController : BaseJellyfinApiController
         [FromQuery] bool? enableUserData)
     {
         userId = RequestHelpers.GetUserId(User, userId);
-        var user = userId.Value.Equals(default)
+        var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
 

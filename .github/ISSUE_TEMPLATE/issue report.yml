@@ -6,7 +6,11 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to fill out this bug report! Please provide as much detail as necessary, most questions may not be applicable to you. If you need real-time help, join us on [Matrix](https://matrix.to/#/#jellyfin-troubleshooting:matrix.org) or [Discord](https://discord.gg/zHBxVSXdBV).
+        Thanks for taking the time to report an issue. Before submitting a report, please do the following:
+        1. Please head to our forum or chat rooms and troubleshoot with volunteers if you haven't already. Links can be found here: https://jellyfin.org/contact/
+        2. Please search the bug tracker for similar issues. If you do find one, please comment there instead of opening a new bug report.
+        3. If you decide to open a new report, please provide as much detail as possible.
+        4. Please **ONLY** report **ONE** issue per report. If you are experiencing multiple issues, please open multiple reports.
   - type: textarea
     id: what-happened
     attributes:
@@ -14,14 +18,18 @@ body:
       description: Also tell us, what did you expect to happen?
       placeholder: |
         The more information that you are able to provide, the better. Did you do anything before this happened? Did you upgrade or change anything? Any screenshots or logs you can provide will be helpful.
-
-        This is my issue.
-
-        Steps to Reproduce
-          1. In this environment...
-          2. With this config...
-          3. Run '...'
-          4. See error...
+        If you are using an old release of Jellyfin, please also explain why.
+    validations:
+      required: true
+  - type: textarea
+    id: repro-steps
+    attributes:
+      label: Reproduction Steps
+      placeholder: |
+        1. In this environment...
+        2. With this config...
+        3. Run '...'
+        4. See error...
     validations:
       required: true
   - type: dropdown
@@ -30,11 +38,10 @@ body:
       label: Jellyfin Version
       description: What version of Jellyfin are you running?
       options:
-        - 10.8.z
-        - 10.8.9
-        - 10.7.7
-        - 10.6.4
-        - Other
+        - 10.8.13
+        - 10.8.12
+        - 10.8.11 or older (please specify)
+        - Unstable (master branch)
     validations:
       required: true
   - type: input
@@ -77,6 +84,18 @@ body:
         - Networking:
         - Storage:
       render: markdown
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: |
+        When providing logs, please keep the following things in mind.
+        1. **DO NOT** use external paste services.
+        2. Please provide complete logs.
+          - For server logs, include everything you think is important plus *10 lines before and after*
+          - For ffmpeg logs, please provide the entire file unmodified.
+        3. Please do not run logs through any translation program. Especially beware if your browser translates pages by default.
+        4. Please do not include logs as screenshots, with the only exception being client logs in browsers.
   - type: textarea
     id: logs
     attributes:
@@ -84,6 +103,8 @@ body:
       description: Please copy and paste any relevant log output. This can be found in Dashboard > Logs.
       placeholder: For playback issues, browser/client and FFmpeg logs may be more useful.
       render: shell
+    validations:
+      required: true
   - type: textarea
     id: ffmpeg-logs
     attributes:

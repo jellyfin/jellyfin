@@ -4,9 +4,12 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text;
-using Emby.Dlna.Extensions;
+using Emby.Server.Implementations.EntryPoints;
 using Jellyfin.Api.Middleware;
+using Jellyfin.LiveTv.Extensions;
+using Jellyfin.LiveTv.Recordings;
 using Jellyfin.MediaEncoding.Hls.Extensions;
+using Jellyfin.Networking;
 using Jellyfin.Networking.HappyEyeballs;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.HealthChecks;
@@ -14,9 +17,9 @@ using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Extensions;
 using Jellyfin.Server.Infrastructure;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Extensions;
+using MediaBrowser.XbmcMetadata;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -122,7 +125,15 @@ namespace Jellyfin.Server
                 .AddCheck<DbContextFactoryHealthCheck<JellyfinDbContext>>(nameof(JellyfinDbContext));
 
             services.AddHlsPlaylistGenerator();
-            services.AddDlnaServices(_serverApplicationHost);
+            services.AddLiveTvServices();
+
+            services.AddHostedService<RecordingsHost>();
+            services.AddHostedService<AutoDiscoveryHost>();
+            services.AddHostedService<PortForwardingHost>();
+            services.AddHostedService<NfoUserDataSaver>();
+            services.AddHostedService<LibraryChangedNotifier>();
+            services.AddHostedService<UserDataChangeNotifier>();
+            services.AddHostedService<RecordingNotifier>();
         }
 
         /// <summary>

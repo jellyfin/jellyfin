@@ -6,6 +6,7 @@ using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -95,7 +96,7 @@ public class GenresController : BaseJellyfinApiController
             .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, false, imageTypeLimit, enableImageTypes);
 
-        User? user = userId.Value.Equals(default)
+        User? user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -131,8 +132,8 @@ public class GenresController : BaseJellyfinApiController
 
         QueryResult<(BaseItem, ItemCounts)> result;
         if (parentItem is ICollectionFolder parentCollectionFolder
-            && (parentCollectionFolder.CollectionType == CollectionType.Music
-                || parentCollectionFolder.CollectionType == CollectionType.MusicVideos))
+            && (parentCollectionFolder.CollectionType == CollectionType.music
+                || parentCollectionFolder.CollectionType == CollectionType.musicvideos))
         {
             result = _libraryManager.GetMusicGenres(query);
         }
@@ -172,7 +173,7 @@ public class GenresController : BaseJellyfinApiController
 
         item ??= new Genre();
 
-        var user = userId.Value.Equals(default)
+        var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
 

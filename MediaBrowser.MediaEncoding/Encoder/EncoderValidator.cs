@@ -45,7 +45,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "mpeg4_cuvid",
             "vp8_cuvid",
             "vp9_cuvid",
-            "av1_cuvid"
+            "av1_cuvid",
+            "h264_rkmpp",
+            "hevc_rkmpp",
+            "mpeg1_rkmpp",
+            "mpeg2_rkmpp",
+            "mpeg4_rkmpp",
+            "vp8_rkmpp",
+            "vp9_rkmpp",
+            "av1_rkmpp"
         };
 
         private static readonly string[] _requiredEncoders = new[]
@@ -82,7 +90,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "av1_vaapi",
             "h264_v4l2m2m",
             "h264_videotoolbox",
-            "hevc_videotoolbox"
+            "hevc_videotoolbox",
+            "h264_rkmpp",
+            "hevc_rkmpp"
         };
 
         private static readonly string[] _requiredFilters = new[]
@@ -116,9 +126,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "libplacebo",
             "scale_vulkan",
             "overlay_vulkan",
-            "hwupload_vaapi",
             // videotoolbox
-            "yadif_videotoolbox"
+            "yadif_videotoolbox",
+            "scale_vt",
+            "overlay_videotoolbox",
+            "tonemap_videotoolbox",
+            // rkrga
+            "scale_rkrga",
+            "vpp_rkrga",
+            "overlay_rkrga"
         };
 
         private static readonly Dictionary<int, string[]> _filterOptionsDict = new Dictionary<int, string[]>
@@ -131,17 +147,18 @@ namespace MediaBrowser.MediaEncoding.Encoder
             { 5, new string[] { "overlay_vulkan", "Action to take when encountering EOF from secondary input" } }
         };
 
-        // These are the library versions that corresponds to our minimum ffmpeg version 4.x according to the version table below
+        // These are the library versions that corresponds to our minimum ffmpeg version 4.4 according to the version table below
+        // Refers to the versions in https://ffmpeg.org/download.html
         private static readonly Dictionary<string, Version> _ffmpegMinimumLibraryVersions = new Dictionary<string, Version>
         {
-            { "libavutil", new Version(56, 14) },
-            { "libavcodec", new Version(58, 18) },
-            { "libavformat", new Version(58, 12) },
-            { "libavdevice", new Version(58, 3) },
-            { "libavfilter", new Version(7, 16) },
-            { "libswscale", new Version(5, 1) },
-            { "libswresample", new Version(3, 1) },
-            { "libpostproc", new Version(55, 1) }
+            { "libavutil", new Version(56, 70) },
+            { "libavcodec", new Version(58, 134) },
+            { "libavformat", new Version(58, 76) },
+            { "libavdevice", new Version(58, 13) },
+            { "libavfilter", new Version(7, 110) },
+            { "libswscale", new Version(5, 9) },
+            { "libswresample", new Version(3, 9) },
+            { "libpostproc", new Version(55, 9) }
         };
 
         private readonly ILogger _logger;
@@ -161,7 +178,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         }
 
         // When changing this, also change the minimum library versions in _ffmpegMinimumLibraryVersions
-        public static Version MinVersion { get; } = new Version(4, 0);
+        public static Version MinVersion { get; } = new Version(4, 4);
 
         public static Version? MaxVersion { get; } = null;
 

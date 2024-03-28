@@ -124,5 +124,7 @@
     "TaskKeyframeExtractorDescription": "Udtrækker billeder fra videofiler for at lave mere præcise HLS-playlister. Denne opgave kan tage lang tid.",
     "TaskKeyframeExtractor": "Udtræk af nøglebillede",
     "External": "Ekstern",
-    "HearingImpaired": "Hørehæmmet"
+    "HearingImpaired": "Hørehæmmet",
+    "TaskRefreshTrickplayImages": "Generér Trickplay Billeder",
+    "TaskRefreshTrickplayImagesDescription": "Laver trickplay forhåndsvisninger for videoer i aktiverede biblioteker."
 }

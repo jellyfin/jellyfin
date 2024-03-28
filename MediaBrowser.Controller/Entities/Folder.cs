@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
-using MediaBrowser.Common.Progress;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Configuration;
@@ -198,7 +198,7 @@ namespace MediaBrowser.Controller.Entities
         {
             item.SetParent(this);
 
-            if (item.Id.Equals(default))
+            if (item.Id.IsEmpty())
             {
                 item.Id = LibraryManager.GetNewItemId(item.Path, item.GetType());
             }
@@ -331,8 +331,25 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        private static bool IsLibraryFolderAccessible(IDirectoryService directoryService, BaseItem item)
+        {
+            // For top parents i.e. Library folders, skip the validation if it's empty or inaccessible
+            if (item.IsTopParent && !directoryService.IsAccessible(item.ContainingFolderPath))
+            {
+                Logger.LogWarning("Library folder {LibraryFolderPath} is inaccessible or empty, skipping", item.ContainingFolderPath);
+                return false;
+            }
+
+            return true;
+        }
+
         private async Task ValidateChildrenInternal2(IProgress<double> progress, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
+            if (!IsLibraryFolderAccessible(directoryService, this))
+            {
+                return;
+            }
+
             cancellationToken.ThrowIfCancellationRequested();
 
             var validChildren = new List<BaseItem>();
@@ -369,6 +386,11 @@ namespace MediaBrowser.Controller.Entities
 
                 foreach (var child in nonCachedChildren)
                 {
+                    if (!IsLibraryFolderAccessible(directoryService, child))
+                    {
+                        continue;
+                    }
+
                     if (currentChildren.TryGetValue(child.Id, out BaseItem currentChild))
                     {
                         validChildren.Add(currentChild);
@@ -392,8 +414,8 @@ namespace MediaBrowser.Controller.Entities
                     validChildren.Add(child);
                 }
 
-                // If any items were added or removed....
-                if (newItems.Count > 0 || currentChildren.Count != validChildren.Count)
+                // If it's an AggregateFolder, don't remove
+                if (!IsRoot && currentChildren.Count != validChildren.Count)
                 {
                     // That's all the new and changed ones - now see if there are any that are missing
                     var itemsRemoved = currentChildren.Values.Except(validChildren).ToList();
@@ -408,7 +430,10 @@ namespace MediaBrowser.Controller.Entities
                             LibraryManager.DeleteItem(item, new DeleteOptions { DeleteFileLocation = false }, this, false);
                         }
                     }
+                }
 
+                if (newItems.Count > 0)
+                {
                     LibraryManager.CreateItems(newItems, this, cancellationToken);
                 }
             }
@@ -428,16 +453,22 @@ namespace MediaBrowser.Controller.Entities
 
             if (recursive)
             {
-                var innerProgress = new ActionableProgress<double>();
-
                 var folder = this;
-                innerProgress.RegisterAction(innerPercent =>
+                var innerProgress = new Progress<double>(innerPercent =>
                 {
                     var percent = ProgressHelpers.GetProgress(ProgressHelpers.UpdatedChildItems, ProgressHelpers.ScannedSubfolders, innerPercent);
 
                     progress.Report(percent);
 
-                    ProviderManager.OnRefreshProgress(folder, percent);
+                    // TODO: this is sometimes being called after the refresh has completed.
+                    try
+                    {
+                        ProviderManager.OnRefreshProgress(folder, percent);
+                    }
+                    catch (InvalidOperationException e)
+                    {
+                        Logger.LogError(e, "Error refreshing folder");
+                    }
                 });
 
                 if (validChildrenNeedGeneration)
@@ -460,10 +491,8 @@ namespace MediaBrowser.Controller.Entities
 
                 var container = this as IMetadataContainer;
 
-                var innerProgress = new ActionableProgress<double>();
-
                 var folder = this;
-                innerProgress.RegisterAction(innerPercent =>
+                var innerProgress = new Progress<double>(innerPercent =>
                 {
                     var percent = ProgressHelpers.GetProgress(ProgressHelpers.ScannedSubfolders, ProgressHelpers.RefreshedMetadata, innerPercent);
 
@@ -471,7 +500,15 @@ namespace MediaBrowser.Controller.Entities
 
                     if (recursive)
                     {
-                        ProviderManager.OnRefreshProgress(folder, percent);
+                        // TODO: this is sometimes being called after the refresh has completed.
+                        try
+                        {
+                            ProviderManager.OnRefreshProgress(folder, percent);
+                        }
+                        catch (InvalidOperationException e)
+                        {
+                            Logger.LogError(e, "Error refreshing folder");
+                        }
                     }
                 });
 
@@ -571,9 +608,7 @@ namespace MediaBrowser.Controller.Entities
             var actionBlock = new ActionBlock<int>(
                 async i =>
                 {
-                    var innerProgress = new ActionableProgress<double>();
-
-                    innerProgress.RegisterAction(innerPercent =>
+                    var innerProgress = new Progress<double>(innerPercent =>
                     {
                         // round the percent and only update progress if it changed to prevent excessive UpdateProgress calls
                         var innerPercentRounded = Math.Round(innerPercent);
@@ -697,7 +732,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (this is not UserRootFolder
                 && this is not AggregateFolder
-                && query.ParentId.Equals(default))
+                && query.ParentId.IsEmpty())
             {
                 query.Parent = this;
             }
@@ -840,7 +875,7 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            if (query.AdjacentTo.HasValue && !query.AdjacentTo.Value.Equals(default))
+            if (!query.AdjacentTo.IsNullOrEmpty())
             {
                 Logger.LogDebug("Query requires post-filtering due to AdjacentTo");
                 return true;
@@ -921,7 +956,7 @@ namespace MediaBrowser.Controller.Entities
                     query.ChannelIds = new[] { ChannelId };
 
                     // Don't blow up here because it could cause parent screens with other content to fail
-                    return ChannelManager.GetChannelItemsInternal(query, new SimpleProgress<double>(), CancellationToken.None).GetAwaiter().GetResult();
+                    return ChannelManager.GetChannelItemsInternal(query, new Progress<double>(), CancellationToken.None).GetAwaiter().GetResult();
                 }
                 catch
                 {
@@ -987,7 +1022,7 @@ namespace MediaBrowser.Controller.Entities
             #pragma warning restore CA1309
 
             // This must be the last filter
-            if (query.AdjacentTo.HasValue && !query.AdjacentTo.Value.Equals(default))
+            if (!query.AdjacentTo.IsNullOrEmpty())
             {
                 items = UserViewBuilder.FilterForAdjacency(items.ToList(), query.AdjacentTo.Value);
             }

@@ -11,6 +11,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Events;
+using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
@@ -227,7 +228,7 @@ namespace Emby.Server.Implementations.Updates
                 availablePackages = availablePackages.Where(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
             }
 
-            if (!id.Equals(default))
+            if (!id.IsEmpty())
             {
                 availablePackages = availablePackages.Where(x => x.Id.Equals(id));
             }
@@ -321,9 +322,15 @@ namespace Emby.Server.Implementations.Updates
                 }
 
                 _completedInstallationsInternal.Add(package);
-                await _eventManager.PublishAsync(isUpdate
-                    ? (GenericEventArgs<InstallationInfo>)new PluginUpdatedEventArgs(package)
-                    : new PluginInstalledEventArgs(package)).ConfigureAwait(false);
+
+                if (isUpdate)
+                {
+                    await _eventManager.PublishAsync(new PluginUpdatedEventArgs(package)).ConfigureAwait(false);
+                }
+                else
+                {
+                    await _eventManager.PublishAsync(new PluginInstalledEventArgs(package)).ConfigureAwait(false);
+                }
 
                 _applicationHost.NotifyPendingRestart();
             }
