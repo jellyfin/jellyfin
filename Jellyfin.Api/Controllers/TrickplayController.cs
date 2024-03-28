@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Extensions;
+using Jellyfin.Extensions;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Trickplay;
 using MediaBrowser.Model;
@@ -23,18 +25,22 @@ public class TrickplayController : BaseJellyfinApiController
 {
     private readonly ILibraryManager _libraryManager;
     private readonly ITrickplayManager _trickplayManager;
+    private readonly IUserManager _userManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TrickplayController"/> class.
     /// </summary>
     /// <param name="libraryManager">Instance of <see cref="ILibraryManager"/>.</param>
     /// <param name="trickplayManager">Instance of <see cref="ITrickplayManager"/>.</param>
+    /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
     public TrickplayController(
         ILibraryManager libraryManager,
-        ITrickplayManager trickplayManager)
+        ITrickplayManager trickplayManager,
+        IUserManager userManager)
     {
         _libraryManager = libraryManager;
         _trickplayManager = trickplayManager;
+        _userManager = userManager;
     }
 
     /// <summary>
@@ -44,6 +50,7 @@ public class TrickplayController : BaseJellyfinApiController
     /// <param name="width">The width of a single tile.</param>
     /// <param name="mediaSourceId">The media version id, if using an alternate version.</param>
     /// <response code="200">Tiles playlist returned.</response>
+    /// <response code="404">Requested item not found.</response>
     /// <returns>A <see cref="FileResult"/> containing the trickplay playlist file.</returns>
     [HttpGet("Videos/{itemId}/Trickplay/{width}/tiles.m3u8")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -54,7 +61,13 @@ public class TrickplayController : BaseJellyfinApiController
         [FromRoute, Required] int width,
         [FromQuery] Guid? mediaSourceId)
     {
-        string? playlist = await _trickplayManager.GetHlsPlaylist(mediaSourceId ?? itemId, width, User.GetToken()).ConfigureAwait(false);
+        var isApiKey = User.GetIsApiKey();
+        var userId = User.GetUserId();
+        var user = !isApiKey && !userId.IsEmpty()
+            ? _userManager.GetUserById(userId) ?? throw new ResourceNotFoundException()
+            : null;
+
+        string? playlist = await _trickplayManager.GetHlsPlaylist(mediaSourceId ?? itemId, width, user, User.GetToken()).ConfigureAwait(false);
 
         if (string.IsNullOrEmpty(playlist))
         {
@@ -84,8 +97,19 @@ public class TrickplayController : BaseJellyfinApiController
         [FromRoute, Required] int index,
         [FromQuery] Guid? mediaSourceId)
     {
+        var isApiKey = User.GetIsApiKey();
+        var userId = User.GetUserId();
+        var user = !isApiKey && !userId.IsEmpty()
+            ? _userManager.GetUserById(userId) ?? throw new ResourceNotFoundException()
+            : null;
+
         var item = _libraryManager.GetItemById(mediaSourceId ?? itemId);
         if (item is null)
+        {
+            return NotFound();
+        }
+
+        if (!isApiKey && !item.IsVisible(user))
         {
             return NotFound();
         }
