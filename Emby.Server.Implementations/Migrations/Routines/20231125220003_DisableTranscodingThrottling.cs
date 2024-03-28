@@ -30,7 +30,7 @@ namespace Emby.Server.Implementations.Migrations.Routines
         public string Name => "DisableTranscodingThrottling";
 
         /// <inheritdoc />
-        public string Timestamp => "20231125220003";
+        public long Timestamp => 20231125220003L;
 
         /// <inheritdoc/>
         public bool PerformOnNewInstall => false;

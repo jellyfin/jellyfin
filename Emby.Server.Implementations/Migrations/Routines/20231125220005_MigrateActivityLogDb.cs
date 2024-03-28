@@ -42,7 +42,7 @@ namespace Emby.Server.Implementations.Migrations.Routines
         public string Name => "MigrateActivityLogDatabase";
 
         /// <inheritdoc />
-        public string Timestamp => "20231125220005";
+        public long Timestamp => 20231125220005L;
 
         /// <inheritdoc/>
         public bool PerformOnNewInstall => false;

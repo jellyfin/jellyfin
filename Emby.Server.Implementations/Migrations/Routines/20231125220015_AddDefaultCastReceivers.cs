@@ -27,7 +27,7 @@ public partial class AddDefaultCastReceivers : IPostStartupMigrationRoutine
     public string Name => "AddDefaultCastReceivers";
 
     /// <inheritdoc />
-    public string Timestamp => "20231125220015";
+    public long Timestamp => 20231125220015L;
 
     /// <inheritdoc />
     public bool PerformOnNewInstall => true;

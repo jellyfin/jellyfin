@@ -58,7 +58,7 @@ namespace Emby.Server.Implementations.Migrations.Routines
         public string Name => "MigrateDisplayPreferencesDatabase";
 
         /// <inheritdoc />
-        public string Timestamp => "20231125220010";
+        public long Timestamp => 20231125220010L;
 
         /// <inheritdoc />
         public bool PerformOnNewInstall => false;

@@ -31,7 +31,7 @@ namespace Emby.Server.Implementations.Migrations.Routines
         public string Name => "RemoveDownloadImagesInAdvance";
 
         /// <inheritdoc />
-        public string Timestamp => "20231125220011";
+        public long Timestamp => 20231125220011L;
 
         /// <inheritdoc/>
         public bool PerformOnNewInstall => false;

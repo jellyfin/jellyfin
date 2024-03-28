@@ -50,7 +50,7 @@ namespace Emby.Server.Implementations.Migrations.Routines
         public string Name => "MigrateAuthenticationDatabase";
 
         /// <inheritdoc />
-        public string Timestamp => "20231125220012";
+        public long Timestamp => 20231125220012L;
 
         /// <inheritdoc />
         public bool PerformOnNewInstall => false;

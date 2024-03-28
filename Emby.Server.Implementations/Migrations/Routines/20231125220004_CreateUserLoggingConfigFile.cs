@@ -53,7 +53,7 @@ namespace Emby.Server.Implementations.Migrations.Routines
         public string Name => "CreateLoggingConfigHeirarchy";
 
         /// <inheritdoc />
-        public string Timestamp => "20231125220004";
+        public long Timestamp => 20231125220004L;
 
         /// <inheritdoc/>
         public bool PerformOnNewInstall => false;

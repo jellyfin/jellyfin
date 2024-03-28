@@ -33,7 +33,7 @@ namespace Emby.Server.Implementations.Migrations.Routines
         public string Name => "ReaddDefaultPluginRepository";
 
         /// <inheritdoc />
-        public string Timestamp => "20231125220009";
+        public long Timestamp => 20231125220009L;
 
         /// <inheritdoc/>
         public bool PerformOnNewInstall => true;

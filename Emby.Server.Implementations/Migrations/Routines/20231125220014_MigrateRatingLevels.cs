@@ -42,7 +42,7 @@ namespace Emby.Server.Implementations.Migrations.Routines
         public string Name => "MigrateRatingLevels";
 
         /// <inheritdoc />
-        public string Timestamp => "20231125220014";
+        public long Timestamp => 20231125220014L;
 
         /// <inheritdoc/>
         public bool PerformOnNewInstall => false;

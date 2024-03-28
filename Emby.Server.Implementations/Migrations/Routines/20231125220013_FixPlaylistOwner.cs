@@ -42,7 +42,7 @@ public partial class FixPlaylistOwner : IPostStartupMigrationRoutine
     public string Name => "FixPlaylistOwner";
 
     /// <inheritdoc />
-    public string Timestamp => "20231125220013";
+    public long Timestamp => 20231125220013L;
 
     /// <inheritdoc/>
     public bool PerformOnNewInstall => false;

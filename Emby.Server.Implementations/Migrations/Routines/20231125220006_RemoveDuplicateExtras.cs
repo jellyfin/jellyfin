@@ -36,7 +36,7 @@ namespace Emby.Server.Implementations.Migrations.Routines
         public string Name => "RemoveDuplicateExtras";
 
         /// <inheritdoc />
-        public string Timestamp => "20231125220006";
+        public long Timestamp => 20231125220006L;
 
         /// <inheritdoc/>
         public bool PerformOnNewInstall => false;

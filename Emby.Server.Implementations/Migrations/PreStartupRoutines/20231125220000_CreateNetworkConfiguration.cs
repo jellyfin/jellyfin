@@ -30,7 +30,7 @@ public partial class CreateNetworkConfiguration : IPreStartupMigrationRoutine
     public string Name => nameof(CreateNetworkConfiguration);
 
     /// <inheritdoc />
-    public string Timestamp => "20231125220000";
+    public long Timestamp => 20231125220000L;
 
     /// <inheritdoc />
     public bool PerformOnNewInstall => false;

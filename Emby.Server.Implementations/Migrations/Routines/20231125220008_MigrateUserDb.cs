@@ -56,7 +56,7 @@ namespace Emby.Server.Implementations.Migrations.Routines
         public string Name => "MigrateUserDatabase";
 
         /// <inheritdoc />
-        public string Timestamp => "20231125220008";
+        public long Timestamp => 20231125220008L;
 
         /// <inheritdoc/>
         public bool PerformOnNewInstall => false;

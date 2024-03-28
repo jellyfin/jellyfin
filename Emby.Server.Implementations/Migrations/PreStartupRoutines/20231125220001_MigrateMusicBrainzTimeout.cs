@@ -31,7 +31,7 @@ public partial class MigrateMusicBrainzTimeout : IPreStartupMigrationRoutine
     public string Name => nameof(MigrateMusicBrainzTimeout);
 
     /// <inheritdoc />
-    public string Timestamp => "20231125220001";
+    public long Timestamp => 20231125220001L;
 
     /// <inheritdoc />
     public bool PerformOnNewInstall => false;

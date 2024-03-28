@@ -33,7 +33,7 @@ namespace Emby.Server.Implementations.Migrations.Routines
         public string Name => "AddDefaultPluginRepository";
 
         /// <inheritdoc />
-        public string Timestamp => "20231125220007";
+        public long Timestamp => 20231125220007L;
 
         /// <inheritdoc/>
         public bool PerformOnNewInstall => true;

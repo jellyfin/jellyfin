@@ -30,7 +30,7 @@ public partial class UpdateDefaultPluginRepository : IPostStartupMigrationRoutin
     public string Name => "UpdateDefaultPluginRepository10.9";
 
     /// <inheritdoc />
-    public string Timestamp => "20240328170000";
+    public long Timestamp => 20240328170000L;
 
     /// <inheritdoc />
     public bool PerformOnNewInstall => true;

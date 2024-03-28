@@ -20,7 +20,7 @@ namespace Emby.Server.Implementations.Migrations
         /// <summary>
         /// Gets the timestamp from when this migration was written.
         /// </summary>
-        public string Timestamp { get; }
+        public long Timestamp { get; }
 
         /// <summary>
         /// Gets a value indicating whether to perform migration on a new install.

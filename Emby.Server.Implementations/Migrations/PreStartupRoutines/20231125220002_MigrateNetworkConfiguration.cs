@@ -31,7 +31,7 @@ public partial class MigrateNetworkConfiguration : IPreStartupMigrationRoutine
     public string Name => nameof(MigrateNetworkConfiguration);
 
     /// <inheritdoc />
-    public string Timestamp => "20231125220002";
+    public long Timestamp => 20231125220002L;
 
     /// <inheritdoc />
     public bool PerformOnNewInstall => false;
