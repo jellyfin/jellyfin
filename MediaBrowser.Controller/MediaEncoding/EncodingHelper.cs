@@ -1,6 +1,8 @@
 #nullable disable
 
 #pragma warning disable CS1591
+// We need lowercase normalized string for ffmpeg
+#pragma warning disable CA1308
 
 using System;
 using System.Collections.Generic;
@@ -26,6 +28,14 @@ namespace MediaBrowser.Controller.MediaEncoding
 {
     public partial class EncodingHelper
     {
+        /// <summary>
+        /// The codec validation regex.
+        /// This regular expression matches strings that consist of alphanumeric characters, hyphens,
+        /// periods, underscores, commas, and vertical bars, with a length between 0 and 40 characters.
+        /// This should matches all common valid codecs.
+        /// </summary>
+        public const string ValidationRegex = @"^[a-zA-Z0-9\-\._,|]{0,40}$";
+
         private const string QsvAlias = "qs";
         private const string VaapiAlias = "va";
         private const string D3d11vaAlias = "dx11";
@@ -52,6 +62,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         private readonly Version _minFFmpegSvtAv1Params = new Version(5, 1);
         private readonly Version _minFFmpegVaapiH26xEncA53CcSei = new Version(6, 0);
         private readonly Version _minFFmpegReadrateOption = new Version(5, 0);
+
+        private static readonly Regex _validationRegex = new(ValidationRegex, RegexOptions.Compiled);
 
         private static readonly string[] _videoProfilesH264 = new[]
         {
@@ -391,7 +403,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                     return "libtheora";
                 }
 
-                return codec.ToLowerInvariant();
+                if (_validationRegex.IsMatch(codec))
+                {
+                    return codec.ToLowerInvariant();
+                }
             }
 
             return "copy";
@@ -429,7 +444,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public static string GetInputFormat(string container)
         {
-            if (string.IsNullOrEmpty(container))
+            if (string.IsNullOrEmpty(container) || !_validationRegex.IsMatch(container))
             {
                 return null;
             }
@@ -684,6 +699,11 @@ namespace MediaBrowser.Controller.MediaEncoding
         public string GetAudioEncoder(EncodingJobInfo state)
         {
             var codec = state.OutputAudioCodec;
+
+            if (!_validationRegex.IsMatch(codec))
+            {
+                codec = "aac";
+            }
 
             if (string.Equals(codec, "aac", StringComparison.OrdinalIgnoreCase))
             {
