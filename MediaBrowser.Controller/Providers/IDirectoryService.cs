@@ -9,9 +9,15 @@ namespace MediaBrowser.Controller.Providers
     {
         FileSystemMetadata[] GetFileSystemEntries(string path);
 
+        FileSystemMetadata? GetFileSystemEntry(string path);
+
         List<FileSystemMetadata> GetFiles(string path);
 
         FileSystemMetadata? GetFile(string path);
+
+        List<FileSystemMetadata> GetDirectories(string path);
+
+        FileSystemMetadata? GetDirectory(string path);
 
         IReadOnlyList<string> GetFilePaths(string path);
 
