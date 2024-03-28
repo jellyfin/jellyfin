@@ -5096,13 +5096,16 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return (null, null, null);
             }
 
-            /* Make main filters for video stream */
-            var mainFilters = new List<string>();
-
             // INPUT videotoolbox/memory surface(vram/uma)
             // this will pass-through automatically if in/out format matches.
-            mainFilters.Add("format=nv12|p010le|videotoolbox_vld");
-            mainFilters.Add("hwupload=derive_device=videotoolbox");
+            var hwuploadFilters = new List<string>
+            {
+                "format=nv12|p010le|videotoolbox_vld",
+                "hwupload=derive_device=videotoolbox"
+            };
+
+            /* Make main filters for video stream */
+            var mainFilters = new List<string>();
 
             // hw deint
             if (doDeintH2645)
@@ -5157,6 +5160,16 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 subFilters.Add("hwupload=derive_device=videotoolbox");
                 overlayFilters.Add("overlay_videotoolbox=eof_action=pass:repeatlast=0");
+            }
+
+            var needFiltering = mainFilters.Any(f => !string.IsNullOrEmpty(f)) ||
+                                subFilters.Any(f => !string.IsNullOrEmpty(f)) ||
+                                overlayFilters.Any(f => !string.IsNullOrEmpty(f));
+
+            if (needFiltering)
+            {
+                hwuploadFilters.AddRange(mainFilters);
+                mainFilters = hwuploadFilters;
             }
 
             return (mainFilters, subFilters, overlayFilters);
