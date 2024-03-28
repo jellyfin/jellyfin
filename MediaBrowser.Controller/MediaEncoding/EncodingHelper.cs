@@ -6650,7 +6650,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             while (shiftAudioCodecs.Contains(audioCodecs[0], StringComparison.OrdinalIgnoreCase))
             {
-                var removed = shiftAudioCodecs[0];
+                var removed = audioCodecs[0];
                 audioCodecs.RemoveAt(0);
                 audioCodecs.Add(removed);
             }
@@ -6684,7 +6684,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             while (shiftVideoCodecs.Contains(videoCodecs[0], StringComparison.OrdinalIgnoreCase))
             {
-                var removed = shiftVideoCodecs[0];
+                var removed = videoCodecs[0];
                 videoCodecs.RemoveAt(0);
                 videoCodecs.Add(removed);
             }
