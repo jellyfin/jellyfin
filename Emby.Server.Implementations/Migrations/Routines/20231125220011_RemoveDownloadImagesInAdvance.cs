@@ -3,16 +3,21 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Server.Migrations.Routines
+namespace Emby.Server.Implementations.Migrations.Routines
 {
     /// <summary>
     /// Removes the old 'RemoveDownloadImagesInAdvance' from library options.
     /// </summary>
-    internal class RemoveDownloadImagesInAdvance : IMigrationRoutine
+    public partial class RemoveDownloadImagesInAdvance : IPostStartupMigrationRoutine
     {
         private readonly ILogger<RemoveDownloadImagesInAdvance> _logger;
         private readonly ILibraryManager _libraryManager;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RemoveDownloadImagesInAdvance"/> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="libraryManager">The library manager.</param>
         public RemoveDownloadImagesInAdvance(ILogger<RemoveDownloadImagesInAdvance> logger, ILibraryManager libraryManager)
         {
             _logger = logger;
@@ -24,6 +29,9 @@ namespace Jellyfin.Server.Migrations.Routines
 
         /// <inheritdoc/>
         public string Name => "RemoveDownloadImagesInAdvance";
+
+        /// <inheritdoc />
+        public long Timestamp => 20231125220011L;
 
         /// <inheritdoc/>
         public bool PerformOnNewInstall => false;

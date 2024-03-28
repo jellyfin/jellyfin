@@ -9,12 +9,12 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Server.Migrations.Routines
+namespace Emby.Server.Implementations.Migrations.Routines
 {
     /// <summary>
     /// The migration routine for migrating the activity log database to EF Core.
     /// </summary>
-    public class MigrateActivityLogDb : IMigrationRoutine
+    public partial class MigrateActivityLogDb : IPostStartupMigrationRoutine
     {
         private const string DbFilename = "activitylog.db";
 
@@ -40,6 +40,9 @@ namespace Jellyfin.Server.Migrations.Routines
 
         /// <inheritdoc/>
         public string Name => "MigrateActivityLogDatabase";
+
+        /// <inheritdoc />
+        public long Timestamp => 20231125220005L;
 
         /// <inheritdoc/>
         public bool PerformOnNewInstall => false;

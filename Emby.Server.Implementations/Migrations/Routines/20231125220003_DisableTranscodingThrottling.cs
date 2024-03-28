@@ -2,16 +2,21 @@ using System;
 using MediaBrowser.Common.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Server.Migrations.Routines
+namespace Emby.Server.Implementations.Migrations.Routines
 {
     /// <summary>
     /// Disable transcode throttling for all installations since it is currently broken for certain video formats.
     /// </summary>
-    internal class DisableTranscodingThrottling : IMigrationRoutine
+    public partial class DisableTranscodingThrottling : IPostStartupMigrationRoutine
     {
         private readonly ILogger<DisableTranscodingThrottling> _logger;
         private readonly IConfigurationManager _configManager;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DisableTranscodingThrottling"/> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="configManager">The application paths.</param>
         public DisableTranscodingThrottling(ILogger<DisableTranscodingThrottling> logger, IConfigurationManager configManager)
         {
             _logger = logger;
@@ -23,6 +28,9 @@ namespace Jellyfin.Server.Migrations.Routines
 
         /// <inheritdoc/>
         public string Name => "DisableTranscodingThrottling";
+
+        /// <inheritdoc />
+        public long Timestamp => 20231125220003L;
 
         /// <inheritdoc/>
         public bool PerformOnNewInstall => false;

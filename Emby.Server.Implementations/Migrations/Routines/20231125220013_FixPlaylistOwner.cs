@@ -8,17 +8,23 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Server.Migrations.Routines;
+namespace Emby.Server.Implementations.Migrations.Routines;
 
 /// <summary>
 /// Properly set playlist owner.
 /// </summary>
-internal class FixPlaylistOwner : IMigrationRoutine
+public partial class FixPlaylistOwner : IPostStartupMigrationRoutine
 {
     private readonly ILogger<RemoveDuplicateExtras> _logger;
     private readonly ILibraryManager _libraryManager;
     private readonly IPlaylistManager _playlistManager;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="FixPlaylistOwner"/> class.
+    /// </summary>
+    /// <param name="logger">The logger.</param>
+    /// <param name="libraryManager">The library manager.</param>
+    /// <param name="playlistManager">The playlist manager.</param>
     public FixPlaylistOwner(
         ILogger<RemoveDuplicateExtras> logger,
         ILibraryManager libraryManager,
@@ -34,6 +40,9 @@ internal class FixPlaylistOwner : IMigrationRoutine
 
     /// <inheritdoc/>
     public string Name => "FixPlaylistOwner";
+
+    /// <inheritdoc />
+    public long Timestamp => 20231125220013L;
 
     /// <inheritdoc/>
     public bool PerformOnNewInstall => false;

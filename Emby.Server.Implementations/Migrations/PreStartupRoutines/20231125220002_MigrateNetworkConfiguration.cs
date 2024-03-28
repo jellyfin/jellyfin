@@ -2,14 +2,13 @@ using System;
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
-using Emby.Server.Implementations;
 using MediaBrowser.Common.Net;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Server.Migrations.PreStartupRoutines;
+namespace Emby.Server.Implementations.Migrations.PreStartupRoutines;
 
 /// <inheritdoc />
-public class MigrateNetworkConfiguration : IMigrationRoutine
+public partial class MigrateNetworkConfiguration : IPreStartupMigrationRoutine
 {
     private readonly ServerApplicationPaths _applicationPaths;
     private readonly ILogger<MigrateNetworkConfiguration> _logger;
@@ -30,6 +29,9 @@ public class MigrateNetworkConfiguration : IMigrationRoutine
 
     /// <inheritdoc />
     public string Name => nameof(MigrateNetworkConfiguration);
+
+    /// <inheritdoc />
+    public long Timestamp => 20231125220002L;
 
     /// <inheritdoc />
     public bool PerformOnNewInstall => false;

@@ -1,15 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
-using Emby.Server.Implementations;
+using Emby.Server.Implementations.Configuration;
 using Emby.Server.Implementations.Serialization;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Server.Migrations
+namespace Emby.Server.Implementations.Migrations
 {
     /// <summary>
     /// The class that knows which migrations to apply and how to apply them.
@@ -17,52 +18,34 @@ namespace Jellyfin.Server.Migrations
     public sealed class MigrationRunner
     {
         /// <summary>
-        /// The list of known pre-startup migrations, in order of applicability.
+        /// Gets types implementing migration routine interface.
         /// </summary>
-        private static readonly Type[] _preStartupMigrationTypes =
+        /// <param name="preStartupRoutines">Boolean, true when getting routines to be performed before server start.</param>
+        /// <returns>Enumerable of types.</returns>
+        public static IEnumerable<Type> GetMigrationTypes(bool preStartupRoutines)
         {
-            typeof(PreStartupRoutines.CreateNetworkConfiguration),
-            typeof(PreStartupRoutines.MigrateMusicBrainzTimeout),
-            typeof(PreStartupRoutines.MigrateNetworkConfiguration)
-        };
-
-        /// <summary>
-        /// The list of known migrations, in order of applicability.
-        /// </summary>
-        private static readonly Type[] _migrationTypes =
-        {
-            typeof(Routines.DisableTranscodingThrottling),
-            typeof(Routines.CreateUserLoggingConfigFile),
-            typeof(Routines.MigrateActivityLogDb),
-            typeof(Routines.RemoveDuplicateExtras),
-            typeof(Routines.AddDefaultPluginRepository),
-            typeof(Routines.MigrateUserDb),
-            typeof(Routines.ReaddDefaultPluginRepository),
-            typeof(Routines.MigrateDisplayPreferencesDb),
-            typeof(Routines.RemoveDownloadImagesInAdvance),
-            typeof(Routines.MigrateAuthenticationDb),
-            typeof(Routines.FixPlaylistOwner),
-            typeof(Routines.MigrateRatingLevels),
-            typeof(Routines.AddDefaultCastReceivers),
-            typeof(Routines.UpdateDefaultPluginRepository)
-        };
+            return AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(s => s.GetExportedTypes())
+                .Where(p => p.IsClass && !p.IsAbstract && p.IsAssignableTo(preStartupRoutines ? typeof(IPreStartupMigrationRoutine) : typeof(IPostStartupMigrationRoutine)));
+        }
 
         /// <summary>
         /// Run all needed migrations.
         /// </summary>
-        /// <param name="host">CoreAppHost that hosts current version.</param>
+        /// <param name="serviceProvider">ServiceProvider for dependency injection.</param>
+        /// <param name="configurationManager">ServerConfigurationManager for updating configuration.</param>
         /// <param name="loggerFactory">Factory for making the logger.</param>
-        public static void Run(CoreAppHost host, ILoggerFactory loggerFactory)
+        public static void Run(IServiceProvider serviceProvider, ServerConfigurationManager configurationManager, ILoggerFactory loggerFactory)
         {
             var logger = loggerFactory.CreateLogger<MigrationRunner>();
-            var migrations = _migrationTypes
-                .Select(m => ActivatorUtilities.CreateInstance(host.ServiceProvider, m))
+            var migrations = GetMigrationTypes(false)
+                .Select(m => ActivatorUtilities.CreateInstance(serviceProvider, m))
                 .OfType<IMigrationRoutine>()
+                .OrderBy(m => m.Timestamp)
                 .ToArray();
-
-            var migrationOptions = host.ConfigurationManager.GetConfiguration<MigrationOptions>(MigrationsListStore.StoreKey);
-            HandleStartupWizardCondition(migrations, migrationOptions, host.ConfigurationManager.Configuration.IsStartupWizardCompleted, logger);
-            PerformMigrations(migrations, migrationOptions, options => host.ConfigurationManager.SaveConfiguration(MigrationsListStore.StoreKey, options), logger);
+            var migrationOptions = configurationManager.GetConfiguration<MigrationOptions>(MigrationsListStore.StoreKey);
+            HandleStartupWizardCondition(migrations, migrationOptions, configurationManager.Configuration.IsStartupWizardCompleted, logger);
+            PerformMigrations(migrations, migrationOptions, options => configurationManager.SaveConfiguration(MigrationsListStore.StoreKey, options), logger);
         }
 
         /// <summary>
@@ -73,9 +56,10 @@ namespace Jellyfin.Server.Migrations
         public static void RunPreStartup(ServerApplicationPaths appPaths, ILoggerFactory loggerFactory)
         {
             var logger = loggerFactory.CreateLogger<MigrationRunner>();
-            var migrations = _preStartupMigrationTypes
+            var migrations = GetMigrationTypes(true)
                 .Select(m => Activator.CreateInstance(m, appPaths, loggerFactory))
                 .OfType<IMigrationRoutine>()
+                .OrderBy(m => m.Timestamp)
                 .ToArray();
 
             var xmlSerializer = new MyXmlSerializer();
@@ -102,7 +86,9 @@ namespace Jellyfin.Server.Migrations
 
             // If startup wizard is not finished, this is a fresh install.
             var onlyOldInstalls = migrations.Where(m => !m.PerformOnNewInstall).ToArray();
-            logger.LogInformation("Marking following migrations as applied because this is a fresh install: {@OnlyOldInstalls}", onlyOldInstalls.Select(m => m.Name));
+            logger.LogInformation(
+                "Marking following migrations as applied because this is a fresh install: {OnlyOldInstalls}",
+                onlyOldInstalls.Select(m => string.Format(CultureInfo.InvariantCulture, "{0} from {1}", m.Name, m.GetType().Namespace)));
             migrationOptions.Applied.AddRange(onlyOldInstalls.Select(m => (m.Id, m.Name)));
         }
 
@@ -117,11 +103,11 @@ namespace Jellyfin.Server.Migrations
                 var migrationRoutine = migrations[i];
                 if (appliedMigrationIds.Contains(migrationRoutine.Id))
                 {
-                    logger.LogDebug("Skipping migration '{Name}' since it is already applied", migrationRoutine.Name);
+                    logger.LogDebug("Skipping migration '{Name}' from '{Namespace}' since it is already applied", migrationRoutine.Name, migrationRoutine.GetType().Namespace);
                     continue;
                 }
 
-                logger.LogInformation("Applying migration '{Name}'", migrationRoutine.Name);
+                logger.LogInformation("Applying migration '{Name}' from '{Namespace}'", migrationRoutine.Name, migrationRoutine.GetType().Namespace);
 
                 try
                 {
@@ -129,15 +115,15 @@ namespace Jellyfin.Server.Migrations
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, "Could not apply migration '{Name}'", migrationRoutine.Name);
+                    logger.LogError(ex, "Could not apply migration '{Name}' from '{Namespace}'", migrationRoutine.Name, migrationRoutine.GetType().Namespace);
                     throw;
                 }
 
                 // Mark the migration as completed
-                logger.LogInformation("Migration '{Name}' applied successfully", migrationRoutine.Name);
+                logger.LogInformation("Migration '{Name}' from '{Namespace}' applied successfully", migrationRoutine.Name, migrationRoutine.GetType().Namespace);
                 migrationOptions.Applied.Add((migrationRoutine.Id, migrationRoutine.Name));
                 saveConfiguration(migrationOptions);
-                logger.LogDebug("Migration '{Name}' marked as applied in configuration.", migrationRoutine.Name);
+                logger.LogDebug("Migration '{Name}' from '{Namespace}' marked as applied in configuration.", migrationRoutine.Name, migrationRoutine.GetType().Namespace);
             }
         }
     }

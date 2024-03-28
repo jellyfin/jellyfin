@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Jellyfin.Server.Migrations
+namespace Emby.Server.Implementations.Migrations
 {
     /// <summary>
     /// Configuration part that holds all migrations that were applied.

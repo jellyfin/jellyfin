@@ -15,12 +15,12 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Server.Migrations.Routines
+namespace Emby.Server.Implementations.Migrations.Routines
 {
     /// <summary>
     /// The migration routine for migrating the display preferences database to EF Core.
     /// </summary>
-    public class MigrateDisplayPreferencesDb : IMigrationRoutine
+    public partial class MigrateDisplayPreferencesDb : IPostStartupMigrationRoutine
     {
         private const string DbFilename = "displaypreferences.db";
 
@@ -56,6 +56,9 @@ namespace Jellyfin.Server.Migrations.Routines
 
         /// <inheritdoc />
         public string Name => "MigrateDisplayPreferencesDatabase";
+
+        /// <inheritdoc />
+        public long Timestamp => 20231125220010L;
 
         /// <inheritdoc />
         public bool PerformOnNewInstall => false;
