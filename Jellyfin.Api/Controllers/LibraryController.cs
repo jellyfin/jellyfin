@@ -520,7 +520,11 @@ public class LibraryController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<QueryResult<BaseItemDto>> GetMediaFolders([FromQuery] bool? isHidden)
     {
-        var items = _libraryManager.GetUserRootFolder().Children.Concat(_libraryManager.RootFolder.VirtualChildren).OrderBy(i => i.SortName).ToList();
+        var items = _libraryManager.GetUserRootFolder().Children
+            .Concat(_libraryManager.RootFolder.VirtualChildren)
+            .Where(i => _libraryManager.GetLibraryOptions(i).Enabled)
+            .OrderBy(i => i.SortName)
+            .ToList();
 
         if (isHidden.HasValue)
         {
