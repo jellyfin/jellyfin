@@ -5166,6 +5166,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                                 subFilters.Any(f => !string.IsNullOrEmpty(f)) ||
                                 overlayFilters.Any(f => !string.IsNullOrEmpty(f));
 
+            // This is a workaround for ffmpeg's hwupload implementation
+            // For VideoToolbox encoders, a hwupload without a valid filter actually consuming its frame
+            // will cause the encoder to produce incorrect frames.
             if (needFiltering)
             {
                 hwuploadFilters.AddRange(mainFilters);
