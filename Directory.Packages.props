@@ -50,7 +50,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="8.0.2" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
-    <PackageVersion Include="MimeTypes" Version="2.4.0" />
+    <PackageVersion Include="MimeTypes" Version="2.5.2" />
     <PackageVersion Include="Mono.Nat" Version="3.0.4" />
     <PackageVersion Include="Moq" Version="4.18.4" />
     <PackageVersion Include="NEbml" Version="0.11.0" />
