@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Entities.MediaSegment;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
@@ -569,6 +570,12 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The trickplay manifest.</value>
         public Dictionary<string, Dictionary<int, TrickplayInfo>> Trickplay { get; set; }
+
+        /// <summary>
+        /// Gets or sets the media segments data.
+        /// </summary>
+        /// <value>The media segments.</value>
+        public IReadOnlyList<MediaSegment> MediaSegments { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the location.

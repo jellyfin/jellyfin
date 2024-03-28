@@ -689,6 +689,7 @@ namespace Jellyfin.Server.Implementations.Users
                 user.SetPermission(PermissionKind.EnableCollectionManagement, policy.EnableCollectionManagement);
                 user.SetPermission(PermissionKind.EnableSubtitleManagement, policy.EnableSubtitleManagement);
                 user.SetPermission(PermissionKind.EnableLyricManagement, policy.EnableLyricManagement);
+                user.SetPermission(PermissionKind.EnableMediaSegmentsManagement, policy.EnableMediaSegmentsManagement);
                 user.SetPermission(PermissionKind.ForceRemoteSourceTranscoding, policy.ForceRemoteSourceTranscoding);
                 user.SetPermission(PermissionKind.EnablePublicSharing, policy.EnablePublicSharing);
 
