@@ -838,12 +838,6 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            if (query.HasSubtitles.HasValue)
-            {
-                Logger.LogDebug("Query requires post-filtering due to HasSubtitles");
-                return true;
-            }
-
             if (query.HasTrailer.HasValue)
             {
                 Logger.LogDebug("Query requires post-filtering due to HasTrailer");

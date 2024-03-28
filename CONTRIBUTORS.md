@@ -177,6 +177,8 @@
  - [Chris-Codes-It](https://github.com/Chris-Codes-It)
  - [Pithaya](https://github.com/Pithaya)
  - [Çağrı Sakaoğlu](https://github.com/ilovepilav)
+ - [TheMelmacian](https://github.com/TheMelmacian)
+ _ [Barasingha](https://github.com/MaVdbussche)
  - [Barasingha](https://github.com/MaVdbussche)
  - [Gauvino](https://github.com/Gauvino)
  - [felix920506](https://github.com/felix920506)

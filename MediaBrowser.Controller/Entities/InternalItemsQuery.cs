@@ -51,6 +51,8 @@ namespace MediaBrowser.Controller.Entities
             TrailerTypes = Array.Empty<TrailerType>();
             VideoTypes = Array.Empty<VideoType>();
             Years = Array.Empty<int>();
+            AudioLanguage = Array.Empty<string>();
+            SubtitleLanguage = Array.Empty<string>();
         }
 
         public InternalItemsQuery(User? user)
@@ -357,6 +359,10 @@ namespace MediaBrowser.Controller.Entities
         public string? SearchTerm { get; set; }
 
         public string? SeriesTimerId { get; set; }
+
+        public string[] AudioLanguage { get; set; }
+
+        public string[] SubtitleLanguage { get; set; }
 
         public void SetUser(User user)
         {
