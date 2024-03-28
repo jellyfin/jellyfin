@@ -11,6 +11,7 @@ using System.Xml;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
@@ -531,42 +532,44 @@ namespace MediaBrowser.MediaEncoding.Probing
         private void ProcessPairs(string key, List<NameValuePair> pairs, MediaInfo info)
         {
             List<BaseItemPerson> peoples = new List<BaseItemPerson>();
+            var distinctPairs = pairs.Select(p => p.Value)
+                    .Where(i => !string.IsNullOrWhiteSpace(i))
+                    .Trimmed()
+                    .Distinct(StringComparer.OrdinalIgnoreCase);
+
             if (string.Equals(key, "studio", StringComparison.OrdinalIgnoreCase))
             {
-                info.Studios = pairs.Select(p => p.Value)
-                    .Where(i => !string.IsNullOrWhiteSpace(i))
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .ToArray();
+                info.Studios = distinctPairs.ToArray();
             }
             else if (string.Equals(key, "screenwriters", StringComparison.OrdinalIgnoreCase))
             {
-                foreach (var pair in pairs)
+                foreach (var pair in distinctPairs)
                 {
                     peoples.Add(new BaseItemPerson
                     {
-                        Name = pair.Value,
+                        Name = pair,
                         Type = PersonKind.Writer
                     });
                 }
             }
             else if (string.Equals(key, "producers", StringComparison.OrdinalIgnoreCase))
             {
-                foreach (var pair in pairs)
+                foreach (var pair in distinctPairs)
                 {
                     peoples.Add(new BaseItemPerson
                     {
-                        Name = pair.Value,
+                        Name = pair,
                         Type = PersonKind.Producer
                     });
                 }
             }
             else if (string.Equals(key, "directors", StringComparison.OrdinalIgnoreCase))
             {
-                foreach (var pair in pairs)
+                foreach (var pair in distinctPairs)
                 {
                     peoples.Add(new BaseItemPerson
                     {
-                        Name = pair.Value,
+                        Name = pair,
                         Type = PersonKind.Director
                     });
                 }
@@ -616,7 +619,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             return new NameValuePair
             {
                 Name = name,
-                Value = value
+                Value = value?.Trim()
             };
         }
 
@@ -1456,7 +1459,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                     continue;
                 }
 
-                genres.Add(genre);
+                genres.Add(genre.Trim());
             }
 
             info.Genres = genres

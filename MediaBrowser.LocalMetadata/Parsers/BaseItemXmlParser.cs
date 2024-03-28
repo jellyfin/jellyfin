@@ -258,7 +258,12 @@ namespace MediaBrowser.LocalMetadata.Parsers
                 case "Network":
                     foreach (var name in reader.GetStringArray())
                     {
-                        item.AddStudio(name);
+                        if (string.IsNullOrWhiteSpace(name))
+                        {
+                            continue;
+                        }
+
+                        item.AddStudio(name.Trim());
                     }
 
                     break;
@@ -294,7 +299,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     var trailer = reader.ReadNormalizedString();
                     if (!string.IsNullOrEmpty(trailer))
                     {
-                        item.AddTrailerUrl(trailer);
+                        item.AddTrailerUrl(trailer.Trim());
                     }
 
                     break;
@@ -302,7 +307,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     var displayOrder = reader.ReadNormalizedString();
                     if (!string.IsNullOrEmpty(displayOrder) && item is IHasDisplayOrder hasDisplayOrder)
                     {
-                        hasDisplayOrder.DisplayOrder = displayOrder;
+                        if (!string.IsNullOrWhiteSpace(displayOrder))
+                        {
+                            hasDisplayOrder.DisplayOrder = displayOrder.Trim();
+                        }
                     }
 
                     break;
@@ -655,7 +663,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                             var tag = reader.ReadNormalizedString();
                             if (!string.IsNullOrEmpty(tag))
                             {
-                                tags.Add(tag);
+                                tags.Add(tag.Trim());
                             }
 
                             break;
@@ -727,7 +735,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                             var trailer = reader.ReadNormalizedString();
                             if (!string.IsNullOrEmpty(trailer))
                             {
-                                item.AddTrailerUrl(trailer);
+                                item.AddTrailerUrl(trailer.Trim());
                             }
 
                             break;

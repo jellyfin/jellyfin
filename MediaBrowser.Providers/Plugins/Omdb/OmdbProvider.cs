@@ -424,7 +424,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             {
                 var person = new PersonInfo
                 {
-                    Name = result.Director,
+                    Name = result.Director.Trim(),
                     Type = PersonKind.Director
                 };
 
@@ -435,7 +435,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             {
                 var person = new PersonInfo
                 {
-                    Name = result.Writer,
+                    Name = result.Writer.Trim(),
                     Type = PersonKind.Writer
                 };
 
@@ -454,7 +454,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
                     var person = new PersonInfo
                     {
-                        Name = actor,
+                        Name = actor.Trim(),
                         Type = PersonKind.Actor
                     };
 

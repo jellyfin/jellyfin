@@ -88,7 +88,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     result.AddPerson(new PersonInfo
                     {
                         Name = cast[i].Name.Trim(),
-                        Role = cast[i].Character,
+                        Role = cast[i].Character.Trim(),
                         Type = PersonKind.Actor,
                         SortOrder = cast[i].Order
                     });
@@ -111,7 +111,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     result.AddPerson(new PersonInfo
                     {
                         Name = person.Name.Trim(),
-                        Role = person.Job,
+                        Role = person.Job?.Trim(),
                         Type = type
                     });
                 }

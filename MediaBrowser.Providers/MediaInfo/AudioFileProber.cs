@@ -14,6 +14,7 @@ using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -295,7 +296,7 @@ namespace MediaBrowser.Providers.MediaInfo
                         {
                             PeopleHelper.AddPerson(people, new PersonInfo
                             {
-                                Name = albumArtist,
+                                Name = albumArtist.Trim(),
                                 Type = PersonKind.AlbumArtist
                             });
                         }
@@ -308,7 +309,7 @@ namespace MediaBrowser.Providers.MediaInfo
                         {
                             PeopleHelper.AddPerson(people, new PersonInfo
                             {
-                                Name = performer,
+                                Name = performer.Trim(),
                                 Type = PersonKind.Artist
                             });
                         }
@@ -320,7 +321,7 @@ namespace MediaBrowser.Providers.MediaInfo
                         {
                             PeopleHelper.AddPerson(people, new PersonInfo
                             {
-                                Name = composer,
+                                Name = composer.Trim(),
                                 Type = PersonKind.Composer
                             });
                         }
@@ -351,18 +352,18 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 if (!audio.LockedFields.Contains(MetadataField.Name) && !string.IsNullOrEmpty(tags.Title))
                 {
-                    audio.Name = tags.Title;
+                    audio.Name = options.ReplaceAllMetadata || string.IsNullOrEmpty(audio.Name) ? tags.Title.Trim() : audio.Name;
                 }
 
                 if (options.ReplaceAllMetadata)
                 {
-                    audio.Album = tags.Album;
+                    audio.Album = tags.Album.Trim();
                     audio.IndexNumber = Convert.ToInt32(tags.Track);
                     audio.ParentIndexNumber = Convert.ToInt32(tags.Disc);
                 }
                 else
                 {
-                    audio.Album ??= tags.Album;
+                    audio.Album ??= tags.Album.Trim();
                     audio.IndexNumber ??= Convert.ToInt32(tags.Track);
                     audio.ParentIndexNumber ??= Convert.ToInt32(tags.Disc);
                 }
@@ -381,7 +382,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 if (!audio.LockedFields.Contains(MetadataField.Genres))
                 {
                     audio.Genres = options.ReplaceAllMetadata || audio.Genres == null || audio.Genres.Length == 0
-                        ? tags.Genres.Distinct(StringComparer.OrdinalIgnoreCase).ToArray()
+                        ? tags.Genres.Trimmed().Distinct(StringComparer.OrdinalIgnoreCase).ToArray()
                         : audio.Genres;
                 }
 
