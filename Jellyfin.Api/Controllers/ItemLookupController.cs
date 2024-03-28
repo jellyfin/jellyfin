@@ -247,6 +247,11 @@ public class ItemLookupController : BaseJellyfinApiController
         [FromQuery] bool replaceAllImages = true)
     {
         var item = _libraryManager.GetItemById(itemId);
+        if (item is null)
+        {
+            return NotFound();
+        }
+
         _logger.LogInformation(
             "Setting provider id's to item {ItemId}-{ItemName}: {@ProviderIds}",
             item.Id,

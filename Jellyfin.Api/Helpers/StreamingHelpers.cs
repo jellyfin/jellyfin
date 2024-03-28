@@ -18,6 +18,7 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Net.Http.Headers;
 
 namespace Jellyfin.Api.Helpers;
@@ -108,6 +109,10 @@ public static class StreamingHelpers
         }
 
         var item = libraryManager.GetItemById(streamingRequest.Id);
+        if (item is null)
+        {
+            throw new ResourceNotFoundException();
+        }
 
         state.IsInputVideo = item.MediaType == MediaType.Video;
 

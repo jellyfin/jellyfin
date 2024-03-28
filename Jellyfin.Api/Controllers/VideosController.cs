@@ -139,8 +139,7 @@ public class VideosController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> DeleteAlternateSources([FromRoute, Required] Guid itemId)
     {
-        var video = (Video)_libraryManager.GetItemById(itemId);
-
+        var video = _libraryManager.GetItemById(itemId) as Video;
         if (video is null)
         {
             return NotFound("The video either does not exist or the id does not belong to a video.");

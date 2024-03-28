@@ -146,6 +146,10 @@ public class ItemUpdateController : BaseJellyfinApiController
     public ActionResult<MetadataEditorInfo> GetMetadataEditorInfo([FromRoute, Required] Guid itemId)
     {
         var item = _libraryManager.GetItemById(itemId);
+        if (item is null)
+        {
+            return NotFound();
+        }
 
         var info = new MetadataEditorInfo
         {

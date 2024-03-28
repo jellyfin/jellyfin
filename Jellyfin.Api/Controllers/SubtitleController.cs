@@ -122,7 +122,10 @@ public class SubtitleController : BaseJellyfinApiController
         [FromRoute, Required] string language,
         [FromQuery] bool? isPerfectMatch)
     {
-        var video = (Video)_libraryManager.GetItemById(itemId);
+        if (_libraryManager.GetItemById(itemId) is not Video video)
+        {
+            return NotFound();
+        }
 
         return await _subtitleManager.SearchSubtitles(video, language, isPerfectMatch, false, CancellationToken.None).ConfigureAwait(false);
     }
@@ -141,7 +144,10 @@ public class SubtitleController : BaseJellyfinApiController
         [FromRoute, Required] Guid itemId,
         [FromRoute, Required] string subtitleId)
     {
-        var video = (Video)_libraryManager.GetItemById(itemId);
+        if (_libraryManager.GetItemById(itemId) is not Video video)
+        {
+            return NotFound();
+        }
 
         try
         {
@@ -223,7 +229,10 @@ public class SubtitleController : BaseJellyfinApiController
 
         if (string.IsNullOrEmpty(format))
         {
-            var item = (Video)_libraryManager.GetItemById(itemId.Value);
+            if (_libraryManager.GetItemById(itemId.Value) is not Video item)
+            {
+                return NotFound();
+            }
 
             var idString = itemId.Value.ToString("N", CultureInfo.InvariantCulture);
             var mediaSource = _mediaSourceManager.GetStaticMediaSources(item, false)
@@ -333,7 +342,10 @@ public class SubtitleController : BaseJellyfinApiController
         [FromRoute, Required] string mediaSourceId,
         [FromQuery, Required] int segmentLength)
     {
-        var item = (Video)_libraryManager.GetItemById(itemId);
+        if (_libraryManager.GetItemById(itemId) is not Video item)
+        {
+            return NotFound();
+        }
 
         var mediaSource = await _mediaSourceManager.GetMediaSource(item, mediaSourceId, null, false, CancellationToken.None).ConfigureAwait(false);
 
@@ -405,7 +417,10 @@ public class SubtitleController : BaseJellyfinApiController
         [FromRoute, Required] Guid itemId,
         [FromBody, Required] UploadSubtitleDto body)
     {
-        var video = (Video)_libraryManager.GetItemById(itemId);
+        if (_libraryManager.GetItemById(itemId) is not Video video)
+        {
+            return NotFound();
+        }
 
         var bytes = Encoding.UTF8.GetBytes(body.Data);
         var memoryStream = new MemoryStream(bytes, 0, bytes.Length, false, true);
