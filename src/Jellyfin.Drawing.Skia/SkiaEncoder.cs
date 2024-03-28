@@ -263,6 +263,11 @@ public class SkiaEncoder : IImageEncoder
                 return null;
             }
 
+            if (codec.FrameCount != 0)
+            {
+                throw new ArgumentException("Cannot decode images with multiple frames");
+            }
+
             // create the bitmap
             var bitmap = new SKBitmap(codec.Info.Width, codec.Info.Height, !requiresTransparencyHack);
 
