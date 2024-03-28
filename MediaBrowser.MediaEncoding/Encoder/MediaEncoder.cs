@@ -800,6 +800,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             int maxWidth,
             TimeSpan interval,
             bool allowHwAccel,
+            bool enableHwEncoding,
             int? threads,
             int? qualityScale,
             ProcessPriorityClass? priority,
@@ -828,7 +829,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 MediaPath = inputFile,
                 OutputVideoCodec = "mjpeg"
             };
-            var vidEncoder = options.AllowMjpegEncoding ? encodingHelper.GetVideoEncoder(jobState, options) : jobState.OutputVideoCodec;
+            var vidEncoder = enableHwEncoding ? encodingHelper.GetVideoEncoder(jobState, options) : jobState.OutputVideoCodec;
 
             // Get input and filter arguments
             var inputArg = encodingHelper.GetInputArgument(jobState, options, container).Trim();

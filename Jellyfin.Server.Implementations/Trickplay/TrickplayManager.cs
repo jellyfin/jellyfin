@@ -141,6 +141,7 @@ public class TrickplayManager : ITrickplayManager
                     width,
                     TimeSpan.FromMilliseconds(options.Interval),
                     options.EnableHwAcceleration,
+                    options.EnableHwEncoding,
                     options.ProcessThreads,
                     options.Qscale,
                     options.ProcessPriority,
