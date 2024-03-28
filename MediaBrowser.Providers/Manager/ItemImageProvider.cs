@@ -357,7 +357,12 @@ namespace MediaBrowser.Providers.Manager
             return true;
         }
 
-        private void PruneImages(BaseItem item, IReadOnlyList<ItemImageInfo> images)
+        /// <summary>
+        /// Delete images from an item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="images">The images.</param>
+        public void PruneImages(BaseItem item, IReadOnlyList<ItemImageInfo> images)
         {
             for (var i = 0; i < images.Count; i++)
             {
