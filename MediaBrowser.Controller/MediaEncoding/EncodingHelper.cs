@@ -5096,14 +5096,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return (null, null, null);
             }
 
-            // INPUT videotoolbox/memory surface(vram/uma)
-            // this will pass-through automatically if in/out format matches.
-            var hwuploadFilters = new List<string>
-            {
-                "format=nv12|p010le|videotoolbox_vld",
-                "hwupload=derive_device=videotoolbox"
-            };
-
             /* Make main filters for video stream */
             var mainFilters = new List<string>();
 
@@ -5171,8 +5163,10 @@ namespace MediaBrowser.Controller.MediaEncoding
             // will cause the encoder to produce incorrect frames.
             if (needFiltering)
             {
-                hwuploadFilters.AddRange(mainFilters);
-                mainFilters = hwuploadFilters;
+                // INPUT videotoolbox/memory surface(vram/uma)
+                // this will pass-through automatically if in/out format matches.
+                mainFilters.Insert(0, "format=nv12|p010le|videotoolbox_vld");
+                mainFilters.Insert(0, "hwupload=derive_device=videotoolbox");
             }
 
             return (mainFilters, subFilters, overlayFilters);
