@@ -183,18 +183,13 @@ public class PlaylistsController : BaseJellyfinApiController
         [FromQuery] int? imageTypeLimit,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
     {
-        userId = RequestHelpers.GetUserId(User, userId);
-        var playlist = (Playlist)_libraryManager.GetItemById(playlistId);
-        if (playlist is null)
+        var (item, user, statusResult) = RequestHelpers.AssessItemAccess<Playlist>(Request.HttpContext, playlistId, _libraryManager, userId, _userManager);
+        if (statusResult is not null || item is null)
         {
-            return NotFound();
+            return statusResult ?? BadRequest();
         }
 
-        var user = userId.IsNullOrEmpty()
-            ? null
-            : _userManager.GetUserById(userId.Value);
-
-        var items = playlist.GetManageableItems().ToArray();
+        var items = item.GetManageableItems().ToArray();
         var count = items.Length;
         if (startIndex.HasValue)
         {

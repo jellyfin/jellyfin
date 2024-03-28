@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
+using Jellyfin.Api.Helpers;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
@@ -68,10 +69,10 @@ public class RemoteImageController : BaseJellyfinApiController
         [FromQuery] string? providerName,
         [FromQuery] bool includeAllLanguages = false)
     {
-        var item = _libraryManager.GetItemById(itemId);
-        if (item is null)
+        var (item, _, statusResult) = RequestHelpers.AssessItemAccess(Request.HttpContext, itemId, _libraryManager);
+        if (statusResult is not null || item is null)
         {
-            return NotFound();
+            return statusResult ?? BadRequest();
         }
 
         var images = await _providerManager.GetAvailableRemoteImages(
@@ -127,10 +128,10 @@ public class RemoteImageController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<IEnumerable<ImageProviderInfo>> GetRemoteImageProviders([FromRoute, Required] Guid itemId)
     {
-        var item = _libraryManager.GetItemById(itemId);
-        if (item is null)
+        var (item, _, statusResult) = RequestHelpers.AssessItemAccess(Request.HttpContext, itemId, _libraryManager);
+        if (statusResult is not null || item is null)
         {
-            return NotFound();
+            return statusResult ?? BadRequest();
         }
 
         return Ok(_providerManager.GetRemoteImageProviderInfo(item));
@@ -154,10 +155,10 @@ public class RemoteImageController : BaseJellyfinApiController
         [FromQuery, Required] ImageType type,
         [FromQuery] string? imageUrl)
     {
-        var item = _libraryManager.GetItemById(itemId);
-        if (item is null)
+        var (item, _, statusResult) = RequestHelpers.AssessItemAccess(Request.HttpContext, itemId, _libraryManager);
+        if (statusResult is not null || item is null)
         {
-            return NotFound();
+            return statusResult ?? BadRequest();
         }
 
         await _providerManager.SaveImage(item, imageUrl, type, null, CancellationToken.None)

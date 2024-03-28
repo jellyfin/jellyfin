@@ -244,7 +244,8 @@ public class TvShowsController : BaseJellyfinApiController
         }
         else if (season.HasValue) // Season number was supplied. Get episodes by season number
         {
-            if (_libraryManager.GetItemById(seriesId) is not Series series)
+            var series = _libraryManager.GetItemById<Series>(seriesId);
+            if (series is null)
             {
                 return NotFound("Series not found");
             }
@@ -338,17 +339,13 @@ public class TvShowsController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
         [FromQuery] bool? enableUserData)
     {
-        userId = RequestHelpers.GetUserId(User, userId);
-        var user = userId.IsNullOrEmpty()
-            ? null
-            : _userManager.GetUserById(userId.Value);
-
-        if (_libraryManager.GetItemById(seriesId) is not Series series)
+        var (item, user, statusResult) = RequestHelpers.AssessItemAccess<Series>(Request.HttpContext, seriesId, _libraryManager, userId, _userManager);
+        if (statusResult is not null || item is null)
         {
-            return NotFound("Series not found");
+            return statusResult ?? BadRequest();
         }
 
-        var seasons = series.GetItemList(new InternalItemsQuery(user)
+        var seasons = item.GetItemList(new InternalItemsQuery(user)
         {
             IsMissing = isMissing,
             IsSpecialSeason = isSpecialSeason,

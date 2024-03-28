@@ -17,6 +17,8 @@ using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Jellyfin.Api.Helpers;
 
@@ -176,5 +178,113 @@ public static class RequestHelpers
             result.StartIndex,
             result.TotalRecordCount,
             dtos.ToArray());
+    }
+
+    /// <summary>
+    /// Assess the item's access for a user.
+    /// </summary>
+    /// <param name="httpContext">The http context.</param>
+    /// <param name="itemId">The item id.</param>
+    /// <param name="libraryManager">The library manager.</param>
+    /// <param name="userId">The user id. Defaults to authenticated user.</param>
+    /// <param name="userManager">The user manager.</param>
+    /// <typeparam name="T">The type of item to return.</typeparam>
+    /// <returns>
+    /// Item and user if success, otherwise status result.
+    /// </returns>
+    internal static (T? Item, User? User, ActionResult? Result) AssessItemAccess<T>(
+        HttpContext httpContext,
+        Guid itemId,
+        ILibraryManager? libraryManager,
+        Guid? userId = null,
+        IUserManager? userManager = null)
+        where T : BaseItem
+    {
+        var (item, user, statusResult) = AssessItemAccess(httpContext, itemId, libraryManager, userId, userManager);
+        T? typedItem = item as T;
+        if (typedItem is null)
+        {
+            statusResult ??= new BadRequestResult();
+        }
+
+        return (typedItem, user, statusResult);
+    }
+
+    /// <summary>
+    /// Assess the item's access for a user.
+    /// </summary>
+    /// <param name="httpContext">The http context.</param>
+    /// <param name="itemId">The item id.</param>
+    /// <param name="libraryManager">The library manager.</param>
+    /// <param name="userId">The user id. Defaults to authenticated user.</param>
+    /// <param name="userManager">The user manager.</param>
+    /// <returns>
+    /// Item and user if success, otherwise status result.
+    /// </returns>
+    internal static (BaseItem? Item, User? User, ActionResult? Result) AssessItemAccess(
+        HttpContext httpContext,
+        Guid itemId,
+        ILibraryManager? libraryManager,
+        Guid? userId = null,
+        IUserManager? userManager = null)
+    {
+        userManager ??= httpContext.RequestServices.GetRequiredService<IUserManager>();
+        libraryManager ??= httpContext.RequestServices.GetRequiredService<ILibraryManager>();
+
+        BaseItem? item;
+        ActionResult? statusResult;
+
+        if (httpContext.User.Identity?.IsAuthenticated != true || httpContext.User.GetIsApiKey())
+        {
+            /*
+             * If this is an unauthenticated or api key request,
+             * and the request doesn't contain a user id,
+             * then just return the item.
+             */
+            if (userId is null)
+            {
+                (item, statusResult) = GetItem(libraryManager, itemId, userId);
+                return (item, null, statusResult);
+            }
+        }
+        else
+        {
+            // Authenticated as user, get the request user id.
+            userId = GetUserId(httpContext.User, userId);
+        }
+
+        var user = userManager.GetUserById(userId.Value);
+        if (user is null)
+        {
+            // Invalid user id, so no item access.
+            return (null, null, new NotFoundResult());
+        }
+
+        (item, statusResult) = GetItem(libraryManager, itemId, userId);
+        if (item is null)
+        {
+            return (null, null, statusResult);
+        }
+
+        if (item is not UserRootFolder && !item.IsVisibleStandalone(user))
+        {
+            return (null, null, new UnauthorizedObjectResult($"{user.Username} is not permitted to access item {item.Name}."));
+        }
+
+        // All validations passed.
+        return (item, user, null);
+    }
+
+    private static (BaseItem? Item, ActionResult? StatusResult) GetItem(ILibraryManager libraryManager, Guid itemId, Guid? userId)
+    {
+        var item = itemId.IsEmpty()
+            ? (userId.IsNullOrEmpty()
+                ? libraryManager.RootFolder
+                : libraryManager.GetUserRootFolder())
+            : libraryManager.GetItemById(itemId);
+
+        return item is null
+            ? (null, new NotFoundResult())
+            : (item, null);
     }
 }

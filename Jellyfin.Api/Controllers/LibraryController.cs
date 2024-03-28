@@ -102,10 +102,10 @@ public class LibraryController : BaseJellyfinApiController
     [ProducesFile("video/*", "audio/*")]
     public ActionResult GetFile([FromRoute, Required] Guid itemId)
     {
-        var item = _libraryManager.GetItemById(itemId);
-        if (item is null)
+        var (item, _, statusResult) = RequestHelpers.AssessItemAccess(Request.HttpContext, itemId, _libraryManager, null, _userManager);
+        if (statusResult is not null || item is null)
         {
-            return NotFound();
+            return statusResult ?? BadRequest();
         }
 
         return PhysicalFile(item.Path, MimeTypes.GetMimeType(item.Path), true);
@@ -143,20 +143,10 @@ public class LibraryController : BaseJellyfinApiController
         [FromQuery] Guid? userId,
         [FromQuery] bool inheritFromParent = false)
     {
-        userId = RequestHelpers.GetUserId(User, userId);
-        var user = userId.IsNullOrEmpty()
-            ? null
-            : _userManager.GetUserById(userId.Value);
-
-        var item = itemId.IsEmpty()
-            ? (userId.IsNullOrEmpty()
-                ? _libraryManager.RootFolder
-                : _libraryManager.GetUserRootFolder())
-            : _libraryManager.GetItemById(itemId);
-
-        if (item is null)
+        var (item, user, statusResult) = RequestHelpers.AssessItemAccess(Request.HttpContext, itemId, _libraryManager, userId, _userManager);
+        if (statusResult is not null || item is null)
         {
-            return NotFound("Item not found.");
+            return statusResult ?? BadRequest();
         }
 
         IEnumerable<BaseItem> themeItems;
@@ -210,20 +200,10 @@ public class LibraryController : BaseJellyfinApiController
         [FromQuery] Guid? userId,
         [FromQuery] bool inheritFromParent = false)
     {
-        userId = RequestHelpers.GetUserId(User, userId);
-        var user = userId.IsNullOrEmpty()
-            ? null
-            : _userManager.GetUserById(userId.Value);
-
-        var item = itemId.IsEmpty()
-            ? (userId.IsNullOrEmpty()
-                ? _libraryManager.RootFolder
-                : _libraryManager.GetUserRootFolder())
-            : _libraryManager.GetItemById(itemId);
-
-        if (item is null)
+        var (item, user, statusResult) = RequestHelpers.AssessItemAccess(Request.HttpContext, itemId, _libraryManager, userId, _userManager);
+        if (statusResult is not null || item is null)
         {
-            return NotFound("Item not found.");
+            return statusResult ?? BadRequest();
         }
 
         IEnumerable<BaseItem> themeItems;
@@ -286,7 +266,8 @@ public class LibraryController : BaseJellyfinApiController
             userId,
             inheritFromParent);
 
-        if (themeSongs.Result is NotFoundObjectResult || themeVideos.Result is NotFoundObjectResult)
+        if (themeSongs.Result is StatusCodeResult { StatusCode: StatusCodes.Status404NotFound }
+            || themeVideos.Result is StatusCodeResult { StatusCode: StatusCodes.Status404NotFound })
         {
             return NotFound();
         }
@@ -335,20 +316,10 @@ public class LibraryController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult DeleteItem(Guid itemId)
     {
-        var isApiKey = User.GetIsApiKey();
-        var userId = User.GetUserId();
-        var user = !isApiKey && !userId.IsEmpty()
-            ? _userManager.GetUserById(userId) ?? throw new ResourceNotFoundException()
-            : null;
-        if (!isApiKey && user is null)
+        var (item, user, statusResult) = RequestHelpers.AssessItemAccess(Request.HttpContext, itemId, _libraryManager, null, _userManager);
+        if (statusResult is not null || item is null)
         {
-            return Unauthorized("Unauthorized access");
-        }
-
-        var item = _libraryManager.GetItemById(itemId);
-        if (item is null)
-        {
-            return NotFound();
+            return statusResult ?? BadRequest();
         }
 
         if (user is not null && !item.CanDelete(user))
@@ -459,19 +430,13 @@ public class LibraryController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<IEnumerable<BaseItemDto>> GetAncestors([FromRoute, Required] Guid itemId, [FromQuery] Guid? userId)
     {
-        var item = _libraryManager.GetItemById(itemId);
-        userId = RequestHelpers.GetUserId(User, userId);
-
-        if (item is null)
+        var (item, user, statusResult) = RequestHelpers.AssessItemAccess(Request.HttpContext, itemId, _libraryManager, userId, _userManager);
+        if (statusResult is not null || item is null)
         {
-            return NotFound("Item not found");
+            return statusResult ?? BadRequest();
         }
 
         var baseItemDtos = new List<BaseItemDto>();
-
-        var user = userId.IsNullOrEmpty()
-            ? null
-            : _userManager.GetUserById(userId.Value);
 
         var dtoOptions = new DtoOptions().AddClientFields(User);
         BaseItem? parent = item.GetParent();
@@ -640,13 +605,11 @@ public class LibraryController : BaseJellyfinApiController
     [ProducesFile("video/*", "audio/*")]
     public async Task<ActionResult> GetDownload([FromRoute, Required] Guid itemId)
     {
-        var item = _libraryManager.GetItemById(itemId);
-        if (item is null)
+        var (item, user, statusResult) = RequestHelpers.AssessItemAccess(Request.HttpContext, itemId, _libraryManager, null, _userManager);
+        if (statusResult is not null || item is null)
         {
-            return NotFound();
+            return statusResult ?? BadRequest();
         }
-
-        var user = _userManager.GetUserById(User.GetUserId());
 
         if (user is not null)
         {
@@ -699,16 +662,10 @@ public class LibraryController : BaseJellyfinApiController
         [FromQuery] int? limit,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields)
     {
-        userId = RequestHelpers.GetUserId(User, userId);
-        var item = itemId.IsEmpty()
-            ? (userId.IsNullOrEmpty()
-                ? _libraryManager.RootFolder
-                : _libraryManager.GetUserRootFolder())
-            : _libraryManager.GetItemById(itemId);
-
-        if (item is null)
+        var (item, user, statusResult) = RequestHelpers.AssessItemAccess(Request.HttpContext, itemId, _libraryManager, userId, _userManager);
+        if (statusResult is not null || item is null)
         {
-            return NotFound();
+            return statusResult ?? BadRequest();
         }
 
         if (item is Episode || (item is IItemByName && item is not MusicArtist))
@@ -716,9 +673,6 @@ public class LibraryController : BaseJellyfinApiController
             return new QueryResult<BaseItemDto>();
         }
 
-        var user = userId.IsNullOrEmpty()
-            ? null
-            : _userManager.GetUserById(userId.Value);
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddClientFields(User);
 

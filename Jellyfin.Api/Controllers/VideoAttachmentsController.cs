@@ -4,6 +4,7 @@ using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
+using Jellyfin.Api.Helpers;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
@@ -54,10 +55,10 @@ public class VideoAttachmentsController : BaseJellyfinApiController
     {
         try
         {
-            var item = _libraryManager.GetItemById(videoId);
-            if (item is null)
+            var (item, _, statusResult) = RequestHelpers.AssessItemAccess(Request.HttpContext, videoId, _libraryManager);
+            if (statusResult is not null || item is null)
             {
-                return NotFound();
+                return statusResult ?? BadRequest();
             }
 
             var (attachment, stream) = await _attachmentExtractor.GetAttachment(

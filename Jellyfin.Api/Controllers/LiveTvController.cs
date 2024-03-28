@@ -226,13 +226,11 @@ public class LiveTvController : BaseJellyfinApiController
     [Authorize(Policy = Policies.LiveTvAccess)]
     public ActionResult<BaseItemDto> GetChannel([FromRoute, Required] Guid channelId, [FromQuery] Guid? userId)
     {
-        userId = RequestHelpers.GetUserId(User, userId);
-        var user = userId.IsNullOrEmpty()
-            ? null
-            : _userManager.GetUserById(userId.Value);
-        var item = channelId.IsEmpty()
-            ? _libraryManager.GetUserRootFolder()
-            : _libraryManager.GetItemById(channelId);
+        var (item, user, statusResult) = RequestHelpers.AssessItemAccess(Request.HttpContext, channelId, _libraryManager, userId, _userManager);
+        if (statusResult is not null || item is null)
+        {
+            return statusResult ?? BadRequest();
+        }
 
         var dtoOptions = new DtoOptions()
             .AddClientFields(User);
@@ -422,11 +420,11 @@ public class LiveTvController : BaseJellyfinApiController
     [Authorize(Policy = Policies.LiveTvAccess)]
     public ActionResult<BaseItemDto> GetRecording([FromRoute, Required] Guid recordingId, [FromQuery] Guid? userId)
     {
-        userId = RequestHelpers.GetUserId(User, userId);
-        var user = userId.IsNullOrEmpty()
-            ? null
-            : _userManager.GetUserById(userId.Value);
-        var item = recordingId.IsEmpty() ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(recordingId);
+        var (item, user, statusResult) = RequestHelpers.AssessItemAccess(Request.HttpContext, recordingId, _libraryManager, userId, _userManager);
+        if (statusResult is not null || item is null)
+        {
+            return statusResult ?? BadRequest();
+        }
 
         var dtoOptions = new DtoOptions()
             .AddClientFields(User);
@@ -611,7 +609,8 @@ public class LiveTvController : BaseJellyfinApiController
         {
             query.IsSeries = true;
 
-            if (_libraryManager.GetItemById(librarySeriesId.Value) is Series series)
+            var series = _libraryManager.GetItemById<Series>(librarySeriesId.Value);
+            if (series is not null)
             {
                 query.Name = series.Name;
             }
@@ -665,7 +664,8 @@ public class LiveTvController : BaseJellyfinApiController
         {
             query.IsSeries = true;
 
-            if (_libraryManager.GetItemById(body.LibrarySeriesId) is Series series)
+            var series = _libraryManager.GetItemById<Series>(body.LibrarySeriesId);
+            if (series is not null)
             {
                 query.Name = series.Name;
             }
@@ -779,10 +779,10 @@ public class LiveTvController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult DeleteRecording([FromRoute, Required] Guid recordingId)
     {
-        var item = _libraryManager.GetItemById(recordingId);
-        if (item is null)
+        var (item, _, statusResult) = RequestHelpers.AssessItemAccess(Request.HttpContext, recordingId, _libraryManager, null, _userManager);
+        if (statusResult is not null || item is null)
         {
-            return NotFound();
+            return statusResult ?? BadRequest();
         }
 
         _libraryManager.DeleteItem(item, new DeleteOptions

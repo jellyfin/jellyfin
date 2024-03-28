@@ -66,11 +66,13 @@ public class MediaInfoController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<PlaybackInfoResponse>> GetPlaybackInfo([FromRoute, Required] Guid itemId, [FromQuery] Guid? userId)
     {
-        userId = RequestHelpers.GetUserId(User, userId);
-        return await _mediaInfoHelper.GetPlaybackInfo(
-                itemId,
-                userId)
-            .ConfigureAwait(false);
+        var (item, user, statusResult) = RequestHelpers.AssessItemAccess(Request.HttpContext, itemId, _libraryManager, userId);
+        if (statusResult is not null || item is null)
+        {
+            return statusResult ?? BadRequest();
+        }
+
+        return await _mediaInfoHelper.GetPlaybackInfo(item, user).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -148,9 +150,15 @@ public class MediaInfoController : BaseJellyfinApiController
         allowVideoStreamCopy ??= playbackInfoDto?.AllowVideoStreamCopy ?? true;
         allowAudioStreamCopy ??= playbackInfoDto?.AllowAudioStreamCopy ?? true;
 
+        var (item, user, statusResult) = RequestHelpers.AssessItemAccess(Request.HttpContext, itemId, _libraryManager, userId);
+        if (statusResult is not null || item is null)
+        {
+            return statusResult ?? BadRequest();
+        }
+
         var info = await _mediaInfoHelper.GetPlaybackInfo(
-                itemId,
-                userId,
+                item,
+                user,
                 mediaSourceId,
                 liveStreamId)
             .ConfigureAwait(false);
@@ -163,8 +171,6 @@ public class MediaInfoController : BaseJellyfinApiController
         if (profile is not null)
         {
             // set device specific data
-            var item = _libraryManager.GetItemById(itemId);
-
             foreach (var mediaSource in info.MediaSources)
             {
                 _mediaInfoHelper.SetDeviceSpecificData(
