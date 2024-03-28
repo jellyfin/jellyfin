@@ -92,10 +92,170 @@ public class PlaylistsController : BaseJellyfinApiController
             Name = name ?? createPlaylistRequest?.Name,
             ItemIdList = ids,
             UserId = userId.Value,
-            MediaType = mediaType ?? createPlaylistRequest?.MediaType
+            MediaType = mediaType ?? createPlaylistRequest?.MediaType,
+            Users = createPlaylistRequest?.Users.ToArray() ?? [],
+            Public = createPlaylistRequest?.Public
         }).ConfigureAwait(false);
 
         return result;
+    }
+
+    /// <summary>
+    /// Get a playlist's users.
+    /// </summary>
+    /// <param name="playlistId">The playlist id.</param>
+    /// <response code="200">Found shares.</response>
+    /// <response code="401">Unauthorized access.</response>
+    /// <response code="404">Playlist not found.</response>
+    /// <returns>
+    /// A list of <see cref="UserPermissions"/> objects.
+    /// </returns>
+    [HttpGet("{playlistId}/User")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public ActionResult<IReadOnlyList<UserPermissions>> GetPlaylistUsers(
+        [FromRoute, Required] Guid playlistId)
+    {
+        var userId = User.GetUserId();
+
+        var playlist = _playlistManager.GetPlaylist(userId, playlistId);
+        if (playlist is null)
+        {
+            return NotFound("Playlist not found");
+        }
+
+        var isPermitted = playlist.OwnerUserId.Equals(userId)
+            || playlist.Shares.Any(s => s.CanEdit && s.UserId.Equals(userId));
+
+        return isPermitted ? playlist.Shares.ToList() : Unauthorized("Unauthorized Access");
+    }
+
+    /// <summary>
+    /// Toggles public access of a playlist.
+    /// </summary>
+    /// <param name="playlistId">The playlist id.</param>
+    /// <response code="204">Public access toggled.</response>
+    /// <response code="401">Unauthorized access.</response>
+    /// <response code="404">Playlist not found.</response>
+    /// <returns>
+    /// A <see cref="Task" /> that represents the asynchronous operation to toggle public access of a playlist.
+    /// The task result contains an <see cref="OkResult"/> indicating success.
+    /// </returns>
+    [HttpPost("{playlistId}/TogglePublic")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult> TogglePublicAccess(
+        [FromRoute, Required] Guid playlistId)
+    {
+        var callingUserId = User.GetUserId();
+
+        var playlist = _playlistManager.GetPlaylist(callingUserId, playlistId);
+        if (playlist is null)
+        {
+            return NotFound("Playlist not found");
+        }
+
+        var isPermitted = playlist.OwnerUserId.Equals(callingUserId)
+            || playlist.Shares.Any(s => s.CanEdit && s.UserId.Equals(callingUserId));
+
+        if (!isPermitted)
+        {
+            return Unauthorized("Unauthorized access");
+        }
+
+        await _playlistManager.ToggleOpenAccess(playlistId, callingUserId).ConfigureAwait(false);
+
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Modify a user to a playlist's users.
+    /// </summary>
+    /// <param name="playlistId">The playlist id.</param>
+    /// <param name="userId">The user id.</param>
+    /// <param name="canEdit">Edit permission.</param>
+    /// <response code="204">User's permissions modified.</response>
+    /// <response code="401">Unauthorized access.</response>
+    /// <response code="404">Playlist not found.</response>
+    /// <returns>
+    /// A <see cref="Task" /> that represents the asynchronous operation to modify an user's playlist permissions.
+    /// The task result contains an <see cref="OkResult"/> indicating success.
+    /// </returns>
+    [HttpPost("{playlistId}/User/{userId}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult> ModifyPlaylistUserPermissions(
+        [FromRoute, Required] Guid playlistId,
+        [FromRoute, Required] Guid userId,
+        [FromBody] bool canEdit)
+    {
+        var callingUserId = User.GetUserId();
+
+        var playlist = _playlistManager.GetPlaylist(callingUserId, playlistId);
+        if (playlist is null)
+        {
+            return NotFound("Playlist not found");
+        }
+
+        var isPermitted = playlist.OwnerUserId.Equals(callingUserId)
+            || playlist.Shares.Any(s => s.CanEdit && s.UserId.Equals(callingUserId));
+
+        if (!isPermitted)
+        {
+            return Unauthorized("Unauthorized access");
+        }
+
+        await _playlistManager.AddToShares(playlistId, callingUserId, new UserPermissions(userId.ToString(), canEdit)).ConfigureAwait(false);
+
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Remove a user from a playlist's shares.
+    /// </summary>
+    /// <param name="playlistId">The playlist id.</param>
+    /// <param name="userId">The user id.</param>
+    /// <response code="204">User permissions removed from playlist.</response>
+    /// <response code="401">Unauthorized access.</response>
+    /// <response code="404">No playlist or user permissions found.</response>
+    /// <returns>
+    /// A <see cref="Task" /> that represents the asynchronous operation to delete a user from a playlist's shares.
+    /// The task result contains an <see cref="OkResult"/> indicating success.
+    /// </returns>
+    [HttpDelete("{playlistId}/User/{userId}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> RemoveUserFromPlaylist(
+        [FromRoute, Required] Guid playlistId,
+        [FromRoute, Required] Guid userId)
+    {
+        var callingUserId = User.GetUserId();
+
+        var playlist = _playlistManager.GetPlaylist(callingUserId, playlistId);
+        if (playlist is null)
+        {
+            return NotFound("Playlist not found");
+        }
+
+        var isPermitted = playlist.OwnerUserId.Equals(callingUserId)
+            || playlist.Shares.Any(s => s.CanEdit && s.UserId.Equals(callingUserId));
+
+        if (!isPermitted)
+        {
+            return Unauthorized("Unauthorized access");
+        }
+
+        var share = playlist.Shares.FirstOrDefault(s => s.UserId.Equals(userId));
+        if (share is null)
+        {
+            return NotFound("User permissions not found");
+        }
+
+        await _playlistManager.RemoveFromShares(playlistId, callingUserId, share).ConfigureAwait(false);
+
+        return NoContent();
     }
 
     /// <summary>
