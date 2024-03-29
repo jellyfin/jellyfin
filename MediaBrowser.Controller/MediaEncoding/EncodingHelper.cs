@@ -1899,6 +1899,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                         param += " -prio_speed 1";
                         break;
                 }
+
+                param += " -qmin -1";
+                param += " -qmax -1";
             }
             else if (string.Equals(videoEncoder, "libvpx", StringComparison.OrdinalIgnoreCase)) // vp8
             {
