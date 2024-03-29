@@ -1333,7 +1333,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             return ".ts";
         }
 
-        public string GetVideoBitrateParam(EncodingJobInfo state, string videoCodec)
+        private string GetVideoBitrateParam(EncodingJobInfo state, string videoCodec)
         {
             if (state.OutputVideoBitrate is null)
             {
@@ -1402,7 +1402,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 // The `maxrate` and `bufsize` options can potentially lead to performance regression
                 // and even encoder hangs, especially when the value is very high.
-                return FormattableString.Invariant($" -b:v {bitrate}");
+                return FormattableString.Invariant($" -b:v {bitrate}  -qmin -1  -qmax -1");
             }
 
             return FormattableString.Invariant($" -b:v {bitrate} -maxrate {bitrate} -bufsize {bufsize}");
@@ -1899,9 +1899,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                         param += " -prio_speed 1";
                         break;
                 }
-
-                param += " -qmin -1";
-                param += " -qmax -1";
             }
             else if (string.Equals(videoEncoder, "libvpx", StringComparison.OrdinalIgnoreCase)) // vp8
             {
