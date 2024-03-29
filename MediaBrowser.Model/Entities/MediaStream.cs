@@ -123,6 +123,12 @@ namespace MediaBrowser.Model.Entities
         public int? DvBlSignalCompatibilityId { get; set; }
 
         /// <summary>
+        /// Gets or sets the Rotation.
+        /// </summary>
+        /// <value>The video rotation.</value>
+        public int? Rotation { get; set; }
+
+        /// <summary>
         /// Gets or sets the comment.
         /// </summary>
         /// <value>The comment.</value>
