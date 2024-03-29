@@ -1402,7 +1402,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 // The `maxrate` and `bufsize` options can potentially lead to performance regression
                 // and even encoder hangs, especially when the value is very high.
-                return FormattableString.Invariant($" -b:v {bitrate}  -qmin -1  -qmax -1");
+                return FormattableString.Invariant($" -b:v {bitrate} -qmin -1 -qmax -1");
             }
 
             return FormattableString.Invariant($" -b:v {bitrate} -maxrate {bitrate} -bufsize {bufsize}");
