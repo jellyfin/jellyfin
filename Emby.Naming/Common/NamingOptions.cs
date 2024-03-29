@@ -540,6 +540,12 @@ namespace Emby.Naming.Common
                 new ExtraRule(
                     ExtraType.Unknown,
                     ExtraRuleType.DirectoryName,
+                    "extra",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Unknown,
+                    ExtraRuleType.DirectoryName,
                     "other",
                     MediaType.Video),
 
