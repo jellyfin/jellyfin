@@ -97,7 +97,7 @@ public class NetworkManager : INetworkManager, IDisposable
         _networkEventLock = new object();
         _remoteAddressFilter = new List<IPNetwork>();
 
-        var detectNetworkChange = startupConfig.GetValue<bool>(DetectNetworkChangeKey);
+        var detectNetworkChange = startupConfig[DetectNetworkChangeKey] == bool.TrueString;
 
         UpdateSettings(_configurationManager.GetNetworkConfiguration());
 
