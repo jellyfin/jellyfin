@@ -98,11 +98,11 @@ public sealed class AutoDiscoveryHost : BackgroundService
                 {
                     _logger.LogError(ex, "Failed to receive data from socket");
                 }
-                catch (OperationCanceledException)
-                {
-                    _logger.LogDebug("Broadcast socket operation cancelled");
-                }
             }
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogDebug("Broadcast socket operation cancelled");
         }
         catch (Exception ex)
         {
