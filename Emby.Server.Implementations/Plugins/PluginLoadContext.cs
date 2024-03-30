@@ -14,7 +14,7 @@ public class PluginLoadContext : AssemblyLoadContext
     /// Initializes a new instance of the <see cref="PluginLoadContext"/> class.
     /// </summary>
     /// <param name="path">The path of the plugin assembly.</param>
-    public PluginLoadContext(string path) : base(true)
+    public PluginLoadContext(string path) : base(false)
     {
         _resolver = new AssemblyDependencyResolver(path);
     }

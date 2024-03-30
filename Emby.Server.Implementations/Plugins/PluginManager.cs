@@ -442,10 +442,6 @@ namespace Emby.Server.Implementations.Plugins
         /// <inheritdoc />
         public void Dispose()
         {
-            foreach (var assemblyLoadContext in _assemblyLoadContexts)
-            {
-                assemblyLoadContext.Unload();
-            }
         }
 
         /// <summary>
