@@ -250,7 +250,7 @@ namespace MediaBrowser.Controller.Net
             Logger.LogDebug("WS {1} stop transmitting to {0}", connection.Connection.RemoteEndPoint, GetType().Name);
 
             // TODO disposing the connection seems to break websockets in subtle ways, so what is the purpose of this function really...
-            connection.Connection.Dispose();
+            // connection.Item1.Dispose();
 
             try
             {
