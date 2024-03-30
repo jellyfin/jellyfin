@@ -5119,11 +5119,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             /* Make main filters for video stream */
             var mainFilters = new List<string>();
 
-            // INPUT videotoolbox/memory surface(vram/uma)
-            // this will pass-through automatically if in/out format matches.
-            mainFilters.Add("format=nv12|p010le|videotoolbox_vld");
-            mainFilters.Add("hwupload=derive_device=videotoolbox");
-
             // hw deint
             if (doDeintH2645)
             {
@@ -5177,6 +5172,21 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 subFilters.Add("hwupload=derive_device=videotoolbox");
                 overlayFilters.Add("overlay_videotoolbox=eof_action=pass:repeatlast=0");
+            }
+
+            var needFiltering = mainFilters.Any(f => !string.IsNullOrEmpty(f)) ||
+                                subFilters.Any(f => !string.IsNullOrEmpty(f)) ||
+                                overlayFilters.Any(f => !string.IsNullOrEmpty(f));
+
+            // This is a workaround for ffmpeg's hwupload implementation
+            // For VideoToolbox encoders, a hwupload without a valid filter actually consuming its frame
+            // will cause the encoder to produce incorrect frames.
+            if (needFiltering)
+            {
+                // INPUT videotoolbox/memory surface(vram/uma)
+                // this will pass-through automatically if in/out format matches.
+                mainFilters.Insert(0, "format=nv12|p010le|videotoolbox_vld");
+                mainFilters.Insert(0, "hwupload=derive_device=videotoolbox");
             }
 
             return (mainFilters, subFilters, overlayFilters);
