@@ -97,10 +97,15 @@ public class NetworkManager : INetworkManager, IDisposable
         _networkEventLock = new object();
         _remoteAddressFilter = new List<IPNetwork>();
 
+        var detectNetworkChange = startupConfig.GetValue<bool>(DetectNetworkChangeKey);
+
         UpdateSettings(_configurationManager.GetNetworkConfiguration());
 
-        NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
-        NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
+        if (detectNetworkChange)
+        {
+            NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
+            NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
+        }
 
         _configurationManager.NamedConfigurationUpdated += ConfigurationUpdated;
     }

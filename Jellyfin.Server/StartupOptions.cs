@@ -68,6 +68,12 @@ namespace Jellyfin.Server
         public string? PublishedServerUrl { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the server should not host the web client.
+        /// </summary>
+        [Option("nonetchange", Required = false, HelpText = "Indicates that the server should not detect network status change.")]
+        public bool NoDetectNetworkChange { get; set; }
+
+        /// <summary>
         /// Gets the command line options as a dictionary that can be used in the .NET configuration system.
         /// </summary>
         /// <returns>The configuration dictionary.</returns>
@@ -88,6 +94,11 @@ namespace Jellyfin.Server
             if (FFmpegPath is not null)
             {
                 config.Add(FfmpegPathKey, FFmpegPath);
+            }
+
+            if (NoDetectNetworkChange)
+            {
+                config.Add(DetectNetworkChangeKey, bool.FalseString);
             }
 
             return config;

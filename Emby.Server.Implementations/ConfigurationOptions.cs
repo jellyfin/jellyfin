@@ -21,6 +21,8 @@ namespace Emby.Server.Implementations
             { BindToUnixSocketKey, bool.FalseString },
             { SqliteCacheSizeKey, "20000" },
             { FfmpegSkipValidationKey, bool.FalseString }
+            { SqliteCacheSizeKey, "20000" },
+            { DetectNetworkChangeKey, bool.TrueString }
         };
     }
 }
