@@ -134,6 +134,7 @@ namespace MediaBrowser.Controller.Session
         /// <value>The now playing item.</value>
         public BaseItemDto NowPlayingItem { get; set; }
 
+        [JsonIgnore]
         public BaseItem FullNowPlayingItem { get; set; }
 
         public BaseItemDto NowViewingItem { get; set; }
