@@ -2677,7 +2677,12 @@ namespace Emby.Server.Implementations.Library
                     extra = itemById;
                 }
 
-                extra.ExtraType = extraType;
+                // Only update extra type if it is more specific then the currently known extra type
+                if (extra.ExtraType is null or ExtraType.Unknown || extraType != ExtraType.Unknown)
+                {
+                    extra.ExtraType = extraType;
+                }
+
                 extra.ParentId = Guid.Empty;
                 extra.OwnerId = owner.Id;
                 return extra;
