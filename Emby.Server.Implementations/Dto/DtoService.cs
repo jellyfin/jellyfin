@@ -903,10 +903,7 @@ namespace Emby.Server.Implementations.Dto
             if (item is Audio audio)
             {
                 dto.Album = audio.Album;
-                if (audio.ExtraType.HasValue)
-                {
-                    dto.ExtraType = audio.ExtraType.Value.ToString();
-                }
+                dto.ExtraType = audio.ExtraType;
 
                 var albumParent = audio.AlbumEntity;
 
@@ -1058,10 +1055,7 @@ namespace Emby.Server.Implementations.Dto
                     dto.Trickplay = _trickplayManager.GetTrickplayManifest(item).GetAwaiter().GetResult();
                 }
 
-                if (video.ExtraType.HasValue)
-                {
-                    dto.ExtraType = video.ExtraType.Value.ToString();
-                }
+                dto.ExtraType = video.ExtraType;
             }
 
             if (options.ContainsField(ItemFields.MediaStreams))
