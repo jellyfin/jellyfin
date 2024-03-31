@@ -72,6 +72,10 @@ namespace Emby.Notifications
                 .ToArray();
 
             var title = request.Name;
+            if (string.IsNullOrEmpty(title) && relatedItem != null)
+            {
+                title = relatedItem.OriginalTitle;
+            }
             var description = request.Description;
 
             var tasks = _services.Where(i => IsEnabled(i, notificationType))
