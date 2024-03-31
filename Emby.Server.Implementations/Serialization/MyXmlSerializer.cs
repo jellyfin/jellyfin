@@ -32,7 +32,8 @@ namespace Emby.Server.Implementations.Serialization
                 throw new NotSupportedException($"It seems you are using the server's XML serializer in your plugin.\n" +
                                                 $"This serializer is only used by the server to handle the plugin's config file " +
                                                 $"and is not intended for the plugin to use directly.\n" +
-                                                $"Please create your own XML serializer instance to handle plugin specific files.");
+                                                $"Please create your own XML serializer instance to handle plugin specific files.",
+                                                e);
             }
         }
 
