@@ -24,7 +24,7 @@ namespace Emby.Server.Implementations.Serialization
                 static (_, t) => new XmlSerializer(t),
                 type);
 
-        private static void ThrowCollectibleException(Exception e)
+        private static void ThrowCollectibleException(NotSupportedException e)
         {
             var isCollectibleException = string.Equals(e.Message, "A non-collectible assembly may not reference a collectible assembly.", StringComparison.Ordinal);
             if (isCollectibleException)
