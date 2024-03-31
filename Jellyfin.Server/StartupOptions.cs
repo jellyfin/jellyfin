@@ -68,7 +68,7 @@ namespace Jellyfin.Server
         public string? PublishedServerUrl { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the server should not host the web client.
+        /// Gets or sets a value indicating whether the server should not detect network status change.
         /// </summary>
         [Option("nonetchange", Required = false, HelpText = "Indicates that the server should not detect network status change.")]
         public bool NoDetectNetworkChange { get; set; }
