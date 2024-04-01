@@ -10,5 +10,5 @@ public interface IHasShares
     /// <summary>
     /// Gets or sets the shares.
     /// </summary>
-    IReadOnlyList<UserPermissions> Shares { get; set; }
+    IReadOnlyList<PlaylistUserPermissions> Shares { get; set; }
 }

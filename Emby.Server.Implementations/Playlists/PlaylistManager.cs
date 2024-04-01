@@ -526,9 +526,9 @@ namespace Emby.Server.Implementations.Playlists
             {
                 // Update owner if shared
                 var rankedShares = playlist.Shares.OrderByDescending(x => x.CanEdit).ToArray();
-                if (rankedShares.Length > 0 && Guid.TryParse(rankedShares[0].UserId, out var guid))
+                if (rankedShares.Length > 0)
                 {
-                    playlist.OwnerUserId = guid;
+                    playlist.OwnerUserId = rankedShares[0].UserId;
                     playlist.Shares = rankedShares.Skip(1).ToArray();
                     await UpdatePlaylist(playlist).ConfigureAwait(false);
                 }
@@ -556,11 +556,11 @@ namespace Emby.Server.Implementations.Playlists
             await UpdatePlaylist(playlist).ConfigureAwait(false);
         }
 
-        public async Task AddToShares(Guid playlistId, Guid userId, UserPermissions share)
+        public async Task AddToShares(Guid playlistId, Guid userId, PlaylistUserPermissions share)
         {
             var playlist = GetPlaylist(userId, playlistId);
             var shares = playlist.Shares.ToList();
-            var existingUserShare = shares.FirstOrDefault(s => s.UserId.Equals(share.UserId, StringComparison.OrdinalIgnoreCase));
+            var existingUserShare = shares.FirstOrDefault(s => s.UserId.Equals(share.UserId));
             if (existingUserShare is not null)
             {
                 shares.Remove(existingUserShare);
@@ -571,7 +571,7 @@ namespace Emby.Server.Implementations.Playlists
             await UpdatePlaylist(playlist).ConfigureAwait(false);
         }
 
-        public async Task RemoveFromShares(Guid playlistId, Guid userId, UserPermissions share)
+        public async Task RemoveFromShares(Guid playlistId, Guid userId, PlaylistUserPermissions share)
         {
             var playlist = GetPlaylist(userId, playlistId);
             var shares = playlist.Shares.ToList();

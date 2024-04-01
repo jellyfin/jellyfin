@@ -1,16 +1,18 @@
+using System;
+
 namespace MediaBrowser.Model.Entities;
 
 /// <summary>
-/// Class to hold data on user permissions for lists.
+/// Class to hold data on user permissions for playlists.
 /// </summary>
-public class UserPermissions
+public class PlaylistUserPermissions
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="UserPermissions"/> class.
+    /// Initializes a new instance of the <see cref="PlaylistUserPermissions"/> class.
     /// </summary>
     /// <param name="userId">The user id.</param>
     /// <param name="canEdit">Edit permission.</param>
-    public UserPermissions(string userId, bool canEdit = false)
+    public PlaylistUserPermissions(Guid userId, bool canEdit = false)
     {
         UserId = userId;
         CanEdit = canEdit;
@@ -19,7 +21,7 @@ public class UserPermissions
     /// <summary>
     /// Gets or sets the user id.
     /// </summary>
-    public string UserId { get; set; }
+    public Guid UserId { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether the user has edit permissions.

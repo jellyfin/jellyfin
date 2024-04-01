@@ -108,13 +108,13 @@ public class PlaylistsController : BaseJellyfinApiController
     /// <response code="401">Unauthorized access.</response>
     /// <response code="404">Playlist not found.</response>
     /// <returns>
-    /// A list of <see cref="UserPermissions"/> objects.
+    /// A list of <see cref="PlaylistUserPermissions"/> objects.
     /// </returns>
     [HttpGet("{playlistId}/User")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult<IReadOnlyList<UserPermissions>> GetPlaylistUsers(
+    public ActionResult<IReadOnlyList<PlaylistUserPermissions>> GetPlaylistUsers(
         [FromRoute, Required] Guid playlistId)
     {
         var userId = User.GetUserId();
@@ -206,7 +206,7 @@ public class PlaylistsController : BaseJellyfinApiController
             return Unauthorized("Unauthorized access");
         }
 
-        await _playlistManager.AddToShares(playlistId, callingUserId, new UserPermissions(userId.ToString(), canEdit)).ConfigureAwait(false);
+        await _playlistManager.AddToShares(playlistId, callingUserId, new PlaylistUserPermissions(userId.ToString(), canEdit)).ConfigureAwait(false);
 
         return NoContent();
     }

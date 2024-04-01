@@ -40,7 +40,7 @@ namespace MediaBrowser.Controller.Playlists
 
         public bool OpenAccess { get; set; }
 
-        public IReadOnlyList<UserPermissions> Shares { get; set; }
+        public IReadOnlyList<PlaylistUserPermissions> Shares { get; set; }
 
         [JsonIgnore]
         public bool IsFile => IsPlaylistFile(Path);

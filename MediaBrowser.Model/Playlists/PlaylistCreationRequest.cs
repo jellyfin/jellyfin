@@ -33,7 +33,7 @@ public class PlaylistCreationRequest
     /// <summary>
     /// Gets or sets the user permissions.
     /// </summary>
-    public IReadOnlyList<UserPermissions> Users { get; set; } = [];
+    public IReadOnlyList<PlaylistUserPermissions> Users { get; set; } = [];
 
     /// <summary>
     /// Gets or sets a value indicating whether the playlist is public.

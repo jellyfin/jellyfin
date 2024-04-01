@@ -519,7 +519,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
         private void FetchFromSharesNode(XmlReader reader, IHasShares item)
         {
-            var list = new List<UserPermissions>();
+            var list = new List<PlaylistUserPermissions>();
 
             reader.MoveToContent();
             reader.Read();
@@ -830,7 +830,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
         /// </summary>
         /// <param name="reader">The xml reader.</param>
         /// <returns>The share.</returns>
-        protected UserPermissions? GetShare(XmlReader reader)
+        protected PlaylistUserPermissions? GetShare(XmlReader reader)
         {
             reader.MoveToContent();
             reader.Read();
@@ -864,7 +864,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
             // This is valid
             if (!string.IsNullOrWhiteSpace(userId))
             {
-                return new UserPermissions(userId, canEdit);
+                return new PlaylistUserPermissions(userId, canEdit);
             }
 
             return null;
