@@ -159,7 +159,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
             {
                 Locations = [customPath],
                 Name = "Recorded Movies",
-                CollectionType = CollectionTypeOptions.Movies
+                CollectionType = CollectionTypeOptions.movies
             };
         }
 
@@ -172,7 +172,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
             {
                 Locations = [customPath],
                 Name = "Recorded Shows",
-                CollectionType = CollectionTypeOptions.TvShows
+                CollectionType = CollectionTypeOptions.tvshows
             };
         }
     }
