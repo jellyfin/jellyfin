@@ -71,56 +71,56 @@ namespace Emby.Server.Implementations.Playlists
             return GetPlaylistsFolder(userId).GetChildren(user, true).OfType<Playlist>();
         }
 
-        public async Task<PlaylistCreationResult> CreatePlaylist(PlaylistCreationRequest options)
+        public async Task<PlaylistCreationResult> CreatePlaylist(PlaylistCreationRequest request)
         {
-            var name = options.Name;
+            var name = request.Name;
             var folderName = _fileSystem.GetValidFilename(name);
-            var parentFolder = GetPlaylistsFolder(options.UserId);
+            var parentFolder = GetPlaylistsFolder(request.UserId);
             if (parentFolder is null)
             {
                 throw new ArgumentException(nameof(parentFolder));
             }
 
-            if (options.MediaType is null || options.MediaType == MediaType.Unknown)
+            if (request.MediaType is null || request.MediaType == MediaType.Unknown)
             {
-                foreach (var itemId in options.ItemIdList)
+                foreach (var itemId in request.ItemIdList)
                 {
                     var item = _libraryManager.GetItemById(itemId) ?? throw new ArgumentException("No item exists with the supplied Id");
                     if (item.MediaType != MediaType.Unknown)
                     {
-                        options.MediaType = item.MediaType;
+                        request.MediaType = item.MediaType;
                     }
                     else if (item is MusicArtist || item is MusicAlbum || item is MusicGenre)
                     {
-                        options.MediaType = MediaType.Audio;
+                        request.MediaType = MediaType.Audio;
                     }
                     else if (item is Genre)
                     {
-                        options.MediaType = MediaType.Video;
+                        request.MediaType = MediaType.Video;
                     }
                     else
                     {
                         if (item is Folder folder)
                         {
-                            options.MediaType = folder.GetRecursiveChildren(i => !i.IsFolder && i.SupportsAddingToPlaylist)
+                            request.MediaType = folder.GetRecursiveChildren(i => !i.IsFolder && i.SupportsAddingToPlaylist)
                                 .Select(i => i.MediaType)
                                 .FirstOrDefault(i => i != MediaType.Unknown);
                         }
                     }
 
-                    if (options.MediaType is not null && options.MediaType != MediaType.Unknown)
+                    if (request.MediaType is not null && request.MediaType != MediaType.Unknown)
                     {
                         break;
                     }
                 }
             }
 
-            if (options.MediaType is null || options.MediaType == MediaType.Unknown)
+            if (request.MediaType is null || request.MediaType == MediaType.Unknown)
             {
-                options.MediaType = MediaType.Audio;
+                request.MediaType = MediaType.Audio;
             }
 
-            var user = _userManager.GetUserById(options.UserId);
+            var user = _userManager.GetUserById(request.UserId);
             var path = Path.Combine(parentFolder.Path, folderName);
             path = GetTargetPath(path);
 
@@ -133,20 +133,20 @@ namespace Emby.Server.Implementations.Playlists
                 {
                     Name = name,
                     Path = path,
-                    OwnerUserId = options.UserId,
-                    Shares = options.Users ?? [],
-                    OpenAccess = options.Public ?? false
+                    OwnerUserId = request.UserId,
+                    Shares = request.Users ?? [],
+                    OpenAccess = request.Public ?? false
                 };
 
-                playlist.SetMediaType(options.MediaType);
+                playlist.SetMediaType(request.MediaType);
                 parentFolder.AddChild(playlist);
 
                 await playlist.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(_fileSystem)) { ForceSave = true }, CancellationToken.None)
                     .ConfigureAwait(false);
 
-                if (options.ItemIdList.Count > 0)
+                if (request.ItemIdList.Count > 0)
                 {
-                    await AddToPlaylistInternal(playlist.Id, options.ItemIdList, user, new DtoOptions(false)
+                    await AddToPlaylistInternal(playlist.Id, request.ItemIdList, user, new DtoOptions(false)
                     {
                         EnableImages = true
                     }).ConfigureAwait(false);
@@ -233,7 +233,7 @@ namespace Emby.Server.Implementations.Playlists
             // Update the playlist in the repository
             playlist.LinkedChildren = newLinkedChildren;
 
-            await UpdatePlaylist(playlist).ConfigureAwait(false);
+            await UpdatePlaylistInternal(playlist).ConfigureAwait(false);
 
             // Refresh playlist metadata
             _providerManager.QueueRefresh(
@@ -262,7 +262,7 @@ namespace Emby.Server.Implementations.Playlists
                 .Select(i => i.Item1)
                 .ToArray();
 
-            await UpdatePlaylist(playlist).ConfigureAwait(false);
+            await UpdatePlaylistInternal(playlist).ConfigureAwait(false);
 
             _providerManager.QueueRefresh(
                 playlist.Id,
@@ -306,7 +306,7 @@ namespace Emby.Server.Implementations.Playlists
 
             playlist.LinkedChildren = [.. newList];
 
-            await UpdatePlaylist(playlist).ConfigureAwait(false);
+            await UpdatePlaylistInternal(playlist).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
@@ -530,7 +530,7 @@ namespace Emby.Server.Implementations.Playlists
                 {
                     playlist.OwnerUserId = rankedShares[0].UserId;
                     playlist.Shares = rankedShares.Skip(1).ToArray();
-                    await UpdatePlaylist(playlist).ConfigureAwait(false);
+                    await UpdatePlaylistInternal(playlist).ConfigureAwait(false);
                 }
                 else if (!playlist.OpenAccess)
                 {
@@ -548,12 +548,40 @@ namespace Emby.Server.Implementations.Playlists
             }
         }
 
-        public async Task ToggleOpenAccess(Guid playlistId, Guid userId)
+        public async Task UpdatePlaylist(PlaylistUpdateRequest request)
         {
-            var playlist = GetPlaylist(userId, playlistId);
-            playlist.OpenAccess = !playlist.OpenAccess;
+            var playlist = GetPlaylist(request.UserId, request.Id);
 
-            await UpdatePlaylist(playlist).ConfigureAwait(false);
+            if (request.Ids is not null)
+            {
+                playlist.LinkedChildren = [];
+                await UpdatePlaylistInternal(playlist).ConfigureAwait(false);
+
+                var user = _userManager.GetUserById(request.UserId);
+                await AddToPlaylistInternal(request.Id, request.Ids, user, new DtoOptions(false)
+                    {
+                        EnableImages = true
+                    }).ConfigureAwait(false);
+
+                playlist = GetPlaylist(request.UserId, request.Id);
+            }
+
+            if (request.Name is not null)
+            {
+                playlist.Name = request.Name;
+            }
+
+            if (request.Users is not null)
+            {
+                playlist.Shares = request.Users;
+            }
+
+            if (request.Public is not null)
+            {
+                playlist.OpenAccess = request.Public.Value;
+            }
+
+            await UpdatePlaylistInternal(playlist).ConfigureAwait(false);
         }
 
         public async Task AddToShares(Guid playlistId, Guid userId, PlaylistUserPermissions share)
@@ -568,7 +596,7 @@ namespace Emby.Server.Implementations.Playlists
 
             shares.Add(share);
             playlist.Shares = shares;
-            await UpdatePlaylist(playlist).ConfigureAwait(false);
+            await UpdatePlaylistInternal(playlist).ConfigureAwait(false);
         }
 
         public async Task RemoveFromShares(Guid playlistId, Guid userId, PlaylistUserPermissions share)
@@ -577,10 +605,10 @@ namespace Emby.Server.Implementations.Playlists
             var shares = playlist.Shares.ToList();
             shares.Remove(share);
             playlist.Shares = shares;
-            await UpdatePlaylist(playlist).ConfigureAwait(false);
+            await UpdatePlaylistInternal(playlist).ConfigureAwait(false);
         }
 
-        private async Task UpdatePlaylist(Playlist playlist)
+        private async Task UpdatePlaylistInternal(Playlist playlist)
         {
             await playlist.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 

@@ -20,19 +20,25 @@ namespace MediaBrowser.Controller.Playlists
         Playlist GetPlaylist(Guid userId, Guid playlistId);
 
         /// <summary>
+        /// Creates the playlist.
+        /// </summary>
+        /// <param name="request">The <see cref="PlaylistCreationRequest"/>.</param>
+        /// <returns>Task&lt;Playlist&gt;.</returns>
+        Task<PlaylistCreationResult> CreatePlaylist(PlaylistCreationRequest request);
+
+        /// <summary>
+        /// Updates a playlist.
+        /// </summary>
+        /// <param name="request">The <see cref="PlaylistUpdateRequest"/>.</param>
+        /// <returns>Task.</returns>
+        Task UpdatePlaylist(PlaylistUpdateRequest request);
+
+        /// <summary>
         /// Gets the playlists.
         /// </summary>
         /// <param name="userId">The user identifier.</param>
         /// <returns>IEnumerable&lt;Playlist&gt;.</returns>
         IEnumerable<Playlist> GetPlaylists(Guid userId);
-
-        /// <summary>
-        /// Toggle OpenAccess policy of the playlist.
-        /// </summary>
-        /// <param name="playlistId">The playlist identifier.</param>
-        /// <param name="userId">The user identifier.</param>
-        /// <returns>Task.</returns>
-        Task ToggleOpenAccess(Guid playlistId, Guid userId);
 
         /// <summary>
         /// Adds a share to the playlist.
@@ -51,13 +57,6 @@ namespace MediaBrowser.Controller.Playlists
         /// <param name="share">The share.</param>
         /// <returns>Task.</returns>
         Task RemoveFromShares(Guid playlistId, Guid userId, PlaylistUserPermissions share);
-
-        /// <summary>
-        /// Creates the playlist.
-        /// </summary>
-        /// <param name="options">The options.</param>
-        /// <returns>Task&lt;Playlist&gt;.</returns>
-        Task<PlaylistCreationResult> CreatePlaylist(PlaylistCreationRequest options);
 
         /// <summary>
         /// Adds to playlist.

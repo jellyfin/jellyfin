@@ -57,9 +57,9 @@ internal class FixPlaylistOwner : IMigrationRoutine
                 if (shares.Count > 0)
                 {
                     var firstEditShare = shares.First(x => x.CanEdit);
-                    if (firstEditShare is not null && Guid.TryParse(firstEditShare.UserId, out var guid))
+                    if (firstEditShare is not null)
                     {
-                        playlist.OwnerUserId = guid;
+                        playlist.OwnerUserId = firstEditShare.UserId;
                         playlist.Shares = shares.Where(x => x != firstEditShare).ToArray();
                         playlist.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).GetAwaiter().GetResult();
                         _playlistManager.SavePlaylistFile(playlist);

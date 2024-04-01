@@ -101,6 +101,54 @@ public class PlaylistsController : BaseJellyfinApiController
     }
 
     /// <summary>
+    /// Updates a playlist.
+    /// </summary>
+    /// <param name="playlistId">The playlist id.</param>
+    /// <param name="updatePlaylistRequest">The <see cref="UpdatePlaylistDto"/> id.</param>
+    /// <response code="204">Playlist updated.</response>
+    /// <response code="401">Unauthorized access.</response>
+    /// <response code="404">Playlist not found.</response>
+    /// <returns>
+    /// A <see cref="Task" /> that represents the asynchronous operation to update a playlist.
+    /// The task result contains an <see cref="OkResult"/> indicating success.
+    /// </returns>
+    [HttpPost("{playlistId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult> UpdatePlaylist(
+        [FromRoute, Required] Guid playlistId,
+        [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Disallow)] UpdatePlaylistDto updatePlaylistRequest)
+    {
+        var callingUserId = User.GetUserId();
+
+        var playlist = _playlistManager.GetPlaylist(callingUserId, playlistId);
+        if (playlist is null)
+        {
+            return NotFound("Playlist not found");
+        }
+
+        var isPermitted = playlist.OwnerUserId.Equals(callingUserId)
+            || playlist.Shares.Any(s => s.CanEdit && s.UserId.Equals(callingUserId));
+
+        if (!isPermitted)
+        {
+            return Unauthorized("Unauthorized access");
+        }
+
+        await _playlistManager.UpdatePlaylist(new PlaylistUpdateRequest
+        {
+            UserId = callingUserId,
+            Id = playlistId,
+            Name = updatePlaylistRequest.Name,
+            Ids = updatePlaylistRequest.Ids,
+            Users = updatePlaylistRequest.Users,
+            Public = updatePlaylistRequest.Public
+        }).ConfigureAwait(false);
+
+        return NoContent();
+    }
+
+    /// <summary>
     /// Get a playlist's users.
     /// </summary>
     /// <param name="playlistId">The playlist id.</param>
@@ -129,44 +177,6 @@ public class PlaylistsController : BaseJellyfinApiController
             || playlist.Shares.Any(s => s.CanEdit && s.UserId.Equals(userId));
 
         return isPermitted ? playlist.Shares.ToList() : Unauthorized("Unauthorized Access");
-    }
-
-    /// <summary>
-    /// Toggles public access of a playlist.
-    /// </summary>
-    /// <param name="playlistId">The playlist id.</param>
-    /// <response code="204">Public access toggled.</response>
-    /// <response code="401">Unauthorized access.</response>
-    /// <response code="404">Playlist not found.</response>
-    /// <returns>
-    /// A <see cref="Task" /> that represents the asynchronous operation to toggle public access of a playlist.
-    /// The task result contains an <see cref="OkResult"/> indicating success.
-    /// </returns>
-    [HttpPost("{playlistId}/TogglePublic")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult> TogglePublicAccess(
-        [FromRoute, Required] Guid playlistId)
-    {
-        var callingUserId = User.GetUserId();
-
-        var playlist = _playlistManager.GetPlaylist(callingUserId, playlistId);
-        if (playlist is null)
-        {
-            return NotFound("Playlist not found");
-        }
-
-        var isPermitted = playlist.OwnerUserId.Equals(callingUserId)
-            || playlist.Shares.Any(s => s.CanEdit && s.UserId.Equals(callingUserId));
-
-        if (!isPermitted)
-        {
-            return Unauthorized("Unauthorized access");
-        }
-
-        await _playlistManager.ToggleOpenAccess(playlistId, callingUserId).ConfigureAwait(false);
-
-        return NoContent();
     }
 
     /// <summary>
@@ -206,7 +216,7 @@ public class PlaylistsController : BaseJellyfinApiController
             return Unauthorized("Unauthorized access");
         }
 
-        await _playlistManager.AddToShares(playlistId, callingUserId, new PlaylistUserPermissions(userId.ToString(), canEdit)).ConfigureAwait(false);
+        await _playlistManager.AddToShares(playlistId, callingUserId, new PlaylistUserPermissions(userId, canEdit)).ConfigureAwait(false);
 
         return NoContent();
     }

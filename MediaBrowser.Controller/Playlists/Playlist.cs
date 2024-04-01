@@ -252,7 +252,7 @@ namespace MediaBrowser.Controller.Playlists
                 return false;
             }
 
-            return shares.Any(share => Guid.TryParse(share.UserId, out var id) && id.Equals(userId));
+            return shares.Any(s => s.UserId.Equals(userId));
         }
 
         public override bool IsVisibleStandalone(User user)

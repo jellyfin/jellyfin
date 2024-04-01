@@ -862,9 +862,9 @@ namespace MediaBrowser.LocalMetadata.Parsers
             }
 
             // This is valid
-            if (!string.IsNullOrWhiteSpace(userId))
+            if (!string.IsNullOrWhiteSpace(userId) && Guid.TryParse(userId, out var guid))
             {
-                return new PlaylistUserPermissions(userId, canEdit);
+                return new PlaylistUserPermissions(guid, canEdit);
             }
 
             return null;
