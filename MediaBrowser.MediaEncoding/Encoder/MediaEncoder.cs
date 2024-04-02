@@ -463,6 +463,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 extraArgs += " -user_agent " + userAgent;
             }
 
+            if (request.MediaSource.Protocol == MediaProtocol.Rtsp)
+            {
+                extraArgs += " -rtsp_transport tcp+udp -rtsp_flags prefer_tcp";
+            }
+
             return extraArgs;
         }
 
