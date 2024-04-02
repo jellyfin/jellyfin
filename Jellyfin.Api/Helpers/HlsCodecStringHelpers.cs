@@ -214,12 +214,14 @@ public static class HlsCodecStringHelpers
             result.Append(".0");
         }
 
-        if (level <= 0
-            || level > 31)
+        if (level is <= 0 or > 31)
         {
             // Default to the maximum defined level 6.3
             level = 19;
         }
+
+        // Needed to pad it two double digits; otherwise, browsers will reject the stream.
+        var levelString = level < 10 ? $"0{level}" : $"level";
 
         if (bitDepth != 8
             && bitDepth != 10
@@ -230,7 +232,7 @@ public static class HlsCodecStringHelpers
         }
 
         result.Append('.')
-            .Append(level)
+            .Append(levelString)
             .Append(tierFlag ? 'H' : 'M');
 
         string bitDepthD2 = bitDepth.ToString("D2", CultureInfo.InvariantCulture);
