@@ -192,7 +192,7 @@ public static class HlsCodecStringHelpers
     /// <returns>The AV1 codec string.</returns>
     public static string GetAv1String(string? profile, int level, bool tierFlag, int bitDepth)
     {
-        // https://aomedia.org/av1/specification/annex-a/
+        // https://aomediacodec.github.io/av1-isobmff/#codecsparam
         // FORMAT: [codecTag].[profile].[level][tier].[bitDepth]
         StringBuilder result = new StringBuilder("av01", 13);
 
