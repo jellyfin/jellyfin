@@ -221,7 +221,7 @@ public static class HlsCodecStringHelpers
         }
 
         // Needed to pad it two double digits; otherwise, browsers will reject the stream.
-        var levelString = level < 10 ? $"0{level}" : $"level";
+        var levelString = level < 10 ? $"0{level}" : $"{level}";
 
         if (bitDepth != 8
             && bitDepth != 10
