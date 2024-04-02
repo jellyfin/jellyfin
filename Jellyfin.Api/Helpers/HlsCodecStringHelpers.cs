@@ -230,7 +230,7 @@ public static class HlsCodecStringHelpers
 
         result.Append('.')
             // Needed to pad it double digits; otherwise, browsers will reject the stream.
-            .Append(CultureInfo.InvariantCulture, $"{level:D2}")
+            .AppendFormat(CultureInfo.InvariantCulture, "{0:D2}", level)
             .Append(tierFlag ? 'H' : 'M');
 
         string bitDepthD2 = bitDepth.ToString("D2", CultureInfo.InvariantCulture);
