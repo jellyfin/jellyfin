@@ -220,9 +220,6 @@ public static class HlsCodecStringHelpers
             level = 19;
         }
 
-        // Needed to pad it two double digits; otherwise, browsers will reject the stream.
-        var levelString = level < 10 ? $"0{level}" : $"{level}";
-
         if (bitDepth != 8
             && bitDepth != 10
             && bitDepth != 12)
@@ -232,7 +229,8 @@ public static class HlsCodecStringHelpers
         }
 
         result.Append('.')
-            .Append(levelString)
+            // Needed to pad it double digits; otherwise, browsers will reject the stream.
+            .Append(CultureInfo.InvariantCulture, $"{level:D2}")
             .Append(tierFlag ? 'H' : 'M');
 
         string bitDepthD2 = bitDepth.ToString("D2", CultureInfo.InvariantCulture);
