@@ -126,5 +126,7 @@
     "TaskKeyframeExtractor": "Ekstraktor klatek kluczowych",
     "HearingImpaired": "Niedosłyszący",
     "TaskRefreshTrickplayImages": "Generuj obrazy trickplay",
-    "TaskRefreshTrickplayImagesDescription": "Tworzy podglądy trickplay dla filmów we włączonych bibliotekach."
+    "TaskRefreshTrickplayImagesDescription": "Tworzy podglądy trickplay dla filmów we włączonych bibliotekach.",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Usuwa elementy z kolekcji i list odtwarzania, które już nie istnieją.",
+    "TaskCleanCollectionsAndPlaylists": "Oczyść kolekcje i listy odtwarzania"
 }
