@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Dlna;
 
@@ -30,5 +31,15 @@ namespace MediaBrowser.Model.Session
         public string AppStoreUrl { get; set; }
 
         public string IconUrl { get; set; }
+
+        // TODO: Remove after 10.9
+        [Obsolete("Unused")]
+        [DefaultValue(false)]
+        public bool? SupportsContentUploading { get; set; } = false;
+
+        // TODO: Remove after 10.9
+        [Obsolete("Unused")]
+        [DefaultValue(false)]
+        public bool? SupportsSync { get; set; } = false;
     }
 }

@@ -83,7 +83,7 @@
     "SubtitleDownloadFailureFromForItem": "Не вдалося завантажити субтитри з {0} для {1}",
     "StartupEmbyServerIsLoading": "Jellyfin Server завантажується. Будь ласка, спробуйте трішки пізніше.",
     "Songs": "Пісні",
-    "Shows": "Телепередачі",
+    "Shows": "Серіали",
     "ServerNameNeedsToBeRestarted": "{0} потрібно перезапустити",
     "ScheduledTaskStartedWithName": "{0} розпочато",
     "ScheduledTaskFailedWithName": "{0} незавершено, збій",
@@ -125,5 +125,7 @@
     "External": "Зовнішній",
     "HearingImpaired": "З порушеннями слуху",
     "TaskRefreshTrickplayImagesDescription": "Створює trickplay-зображення для відео у ввімкнених медіатеках.",
-    "TaskRefreshTrickplayImages": "Створення Trickplay-зображень"
+    "TaskRefreshTrickplayImages": "Створити Trickplay-зображення",
+    "TaskCleanCollectionsAndPlaylists": "Очистити колекції і списки відтворення",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Видаляє елементи з колекцій і списків відтворення, які більше не існують."
 }

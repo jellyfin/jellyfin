@@ -11,6 +11,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using AsyncKeyedLock;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using Jellyfin.Extensions.Json.Converters;
@@ -60,7 +61,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly IServerConfigurationManager _serverConfig;
         private readonly string _startupOptionFFmpegPath;
 
-        private readonly SemaphoreSlim _thumbnailResourcePool;
+        private readonly AsyncNonKeyedLocker _thumbnailResourcePool;
 
         private readonly object _runningProcessesLock = new object();
         private readonly List<ProcessWrapper> _runningProcesses = new List<ProcessWrapper>();
@@ -116,7 +117,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _jsonSerializerOptions.Converters.Add(new JsonBoolStringConverter());
 
             var semaphoreCount = 2 * Environment.ProcessorCount;
-            _thumbnailResourcePool = new SemaphoreSlim(semaphoreCount, semaphoreCount);
+            _thumbnailResourcePool = new(semaphoreCount);
         }
 
         /// <inheritdoc />
@@ -153,12 +154,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         public void SetFFmpegPath()
         {
-            // 1) Custom path stored in config/encoding xml file under tag <EncoderAppPath> takes precedence
-            var ffmpegPath = _configurationManager.GetEncodingOptions().EncoderAppPath;
+            // 1) Check if the --ffmpeg CLI switch has been given
+            var ffmpegPath = _startupOptionFFmpegPath;
             if (string.IsNullOrEmpty(ffmpegPath))
             {
-                // 2) Check if the --ffmpeg CLI switch has been given
-                ffmpegPath = _startupOptionFFmpegPath;
+                // 2) Custom path stored in config/encoding xml file under tag <EncoderAppPath> should be used as a fallback
+                ffmpegPath = _configurationManager.GetEncodingOptions().EncoderAppPath;
                 if (string.IsNullOrEmpty(ffmpegPath))
                 {
                     // 3) Check "ffmpeg"
@@ -462,6 +463,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 extraArgs += " -user_agent " + userAgent;
             }
 
+            if (request.MediaSource.Protocol == MediaProtocol.Rtsp)
+            {
+                extraArgs += " -rtsp_transport tcp+udp -rtsp_flags prefer_tcp";
+            }
+
             return extraArgs;
         }
 
@@ -690,7 +696,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 Video3DFormat.HalfTopAndBottom => @"crop=iw:ih/2:0:0,scale=(iw*2):ih),setdar=dar=a,crop=min(iw\,ih*dar):min(ih\,iw/dar):(iw-min(iw\,iw*sar))/2:(ih - min (ih\,ih/sar))/2,setsar=sar=1",
                 // ftab crop height in half, set the display aspect,crop out any black bars we may have made
                 Video3DFormat.FullTopAndBottom => @"crop=iw:ih/2:0:0,setdar=dar=a,crop=min(iw\,ih*dar):min(ih\,iw/dar):(iw-min(iw\,iw*sar))/2:(ih - min (ih\,ih/sar))/2,setsar=sar=1",
-                _ => "scale=trunc(iw*sar):ih"
+                _ => "scale=round(iw*sar/2)*2:round(ih/2)*2"
             };
 
             filters.Add(scaler);
@@ -754,8 +760,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 bool ranToCompletion;
 
-                await _thumbnailResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-                try
+                using (await _thumbnailResourcePool.LockAsync(cancellationToken).ConfigureAwait(false))
                 {
                     StartProcess(processWrapper);
 
@@ -775,10 +780,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                         process.Kill(true);
                         ranToCompletion = false;
                     }
-                }
-                finally
-                {
-                    _thumbnailResourcePool.Release();
                 }
 
                 var exitCode = ranToCompletion ? processWrapper.ExitCode ?? 0 : -1;
@@ -804,6 +805,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             int maxWidth,
             TimeSpan interval,
             bool allowHwAccel,
+            bool enableHwEncoding,
             int? threads,
             int? qualityScale,
             ProcessPriorityClass? priority,
@@ -832,7 +834,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 MediaPath = inputFile,
                 OutputVideoCodec = "mjpeg"
             };
-            var vidEncoder = options.AllowMjpegEncoding ? encodingHelper.GetVideoEncoder(jobState, options) : jobState.OutputVideoCodec;
+            var vidEncoder = enableHwEncoding ? encodingHelper.GetVideoEncoder(jobState, options) : jobState.OutputVideoCodec;
 
             // Get input and filter arguments
             var inputArg = encodingHelper.GetInputArgument(jobState, options, container).Trim();
@@ -908,8 +910,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 bool ranToCompletion = false;
 
-                await _thumbnailResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-                try
+                using (await _thumbnailResourcePool.LockAsync(cancellationToken).ConfigureAwait(false))
                 {
                     StartProcess(processWrapper);
 
@@ -962,10 +963,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                         _logger.LogInformation("Stopping trickplay extraction due to process inactivity.");
                         StopProcess(processWrapper, 1000);
                     }
-                }
-                finally
-                {
-                    _thumbnailResourcePool.Release();
                 }
 
                 var exitCode = ranToCompletion ? processWrapper.ExitCode ?? 0 : -1;
@@ -1120,6 +1117,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return allVobs
                 .Where(vob => titles.Contains(_fileSystem.GetFileNameWithoutExtension(vob).AsSpan().RightPart('_').ToString()))
                 .Select(i => i.FullName)
+                .Order()
                 .ToList();
         }
 
@@ -1136,6 +1134,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return directoryFiles
                 .Where(f => validPlaybackFiles.Contains(f.Name, StringComparer.OrdinalIgnoreCase))
                 .Select(f => f.FullName)
+                .Order()
                 .ToList();
         }
 
@@ -1159,31 +1158,29 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             // Generate concat configuration entries for each file and write to file
-            using (StreamWriter sw = new StreamWriter(concatFilePath))
+            using StreamWriter sw = new StreamWriter(concatFilePath);
+            foreach (var path in files)
             {
-                foreach (var path in files)
-                {
-                    var mediaInfoResult = GetMediaInfo(
-                        new MediaInfoRequest
+                var mediaInfoResult = GetMediaInfo(
+                    new MediaInfoRequest
+                    {
+                        MediaType = DlnaProfileType.Video,
+                        MediaSource = new MediaSourceInfo
                         {
-                            MediaType = DlnaProfileType.Video,
-                            MediaSource = new MediaSourceInfo
-                            {
-                                Path = path,
-                                Protocol = MediaProtocol.File,
-                                VideoType = videoType
-                            }
-                        },
-                        CancellationToken.None).GetAwaiter().GetResult();
+                            Path = path,
+                            Protocol = MediaProtocol.File,
+                            VideoType = videoType
+                        }
+                    },
+                    CancellationToken.None).GetAwaiter().GetResult();
 
-                    var duration = TimeSpan.FromTicks(mediaInfoResult.RunTimeTicks.Value).TotalSeconds;
+                var duration = TimeSpan.FromTicks(mediaInfoResult.RunTimeTicks.Value).TotalSeconds;
 
-                    // Add file path stanza to concat configuration
-                    sw.WriteLine("file '{0}'", path);
+                // Add file path stanza to concat configuration
+                sw.WriteLine("file '{0}'", path);
 
-                    // Add duration stanza to concat configuration
-                    sw.WriteLine("duration {0}", duration);
-                }
+                // Add duration stanza to concat configuration
+                sw.WriteLine("duration {0}", duration);
             }
         }
 

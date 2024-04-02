@@ -125,5 +125,7 @@
     "TaskDownloadMissingSubtitles": "Спампаваць адсутныя субтытры",
     "TaskKeyframeExtractorDescription": "Выдае ключавыя кадры з відэафайлаў для стварэння больш дакладных спісаў прайгравання HLS. Гэта задача можа працаваць у працягу доўгага часу.",
     "TaskRefreshTrickplayImages": "Стварыце выявы Trickplay",
-    "TaskRefreshTrickplayImagesDescription": "Стварае прагляд відэаролікаў для Trickplay у падключаных бібліятэках."
+    "TaskRefreshTrickplayImagesDescription": "Стварае прагляд відэаролікаў для Trickplay у падключаных бібліятэках.",
+    "TaskCleanCollectionsAndPlaylists": "Ачысціце калекцыі і спісы прайгравання",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Выдаляе элементы з калекцый і спісаў прайгравання, якія больш не існуюць."
 }

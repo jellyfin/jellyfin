@@ -8,12 +8,12 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using AsyncKeyedLock;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
@@ -50,7 +50,7 @@ namespace Jellyfin.LiveTv.Channels
         private readonly IFileSystem _fileSystem;
         private readonly IProviderManager _providerManager;
         private readonly IMemoryCache _memoryCache;
-        private readonly SemaphoreSlim _resourcePool = new SemaphoreSlim(1, 1);
+        private readonly AsyncNonKeyedLocker _resourcePool = new(1);
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
         private bool _disposed = false;
 
@@ -570,7 +570,6 @@ namespace Jellyfin.LiveTv.Channels
             return new ChannelFeatures(channel.Name, channel.Id)
             {
                 CanFilter = !features.MaxPageSize.HasValue,
-                CanSearch = provider is ISearchableChannel,
                 ContentTypes = features.ContentTypes.ToArray(),
                 DefaultSortFields = features.DefaultSortFields.ToArray(),
                 MaxPageSize = features.MaxPageSize,
@@ -667,7 +666,7 @@ namespace Jellyfin.LiveTv.Channels
                 ChannelIds = new Guid[] { internalChannel.Id }
             };
 
-            var result = await GetChannelItemsInternal(query, new SimpleProgress<double>(), cancellationToken).ConfigureAwait(false);
+            var result = await GetChannelItemsInternal(query, new Progress<double>(), cancellationToken).ConfigureAwait(false);
 
             foreach (var item in result.Items)
             {
@@ -680,7 +679,7 @@ namespace Jellyfin.LiveTv.Channels
                             EnableTotalRecordCount = false,
                             ChannelIds = new Guid[] { internalChannel.Id }
                         },
-                        new SimpleProgress<double>(),
+                        new Progress<double>(),
                         cancellationToken).ConfigureAwait(false);
                 }
             }
@@ -762,7 +761,7 @@ namespace Jellyfin.LiveTv.Channels
         /// <inheritdoc />
         public async Task<QueryResult<BaseItemDto>> GetChannelItems(InternalItemsQuery query, CancellationToken cancellationToken)
         {
-            var internalResult = await GetChannelItemsInternal(query, new SimpleProgress<double>(), cancellationToken).ConfigureAwait(false);
+            var internalResult = await GetChannelItemsInternal(query, new Progress<double>(), cancellationToken).ConfigureAwait(false);
 
             var returnItems = _dtoService.GetBaseItemDtos(internalResult.Items, query.DtoOptions, query.User);
 
@@ -811,9 +810,7 @@ namespace Jellyfin.LiveTv.Channels
             {
             }
 
-            await _resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
+            using (await _resourcePool.LockAsync(cancellationToken).ConfigureAwait(false))
             {
                 try
                 {
@@ -859,10 +856,6 @@ namespace Jellyfin.LiveTv.Channels
                 await CacheResponse(result, cachePath).ConfigureAwait(false);
 
                 return result;
-            }
-            finally
-            {
-                _resourcePool.Release();
             }
         }
 

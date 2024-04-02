@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions.Json.Converters;
@@ -49,6 +50,18 @@ public class ClientCapabilitiesDto
     /// Gets or sets the icon url.
     /// </summary>
     public string? IconUrl { get; set; }
+
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+    // TODO: Remove after 10.9
+    [Obsolete("Unused")]
+    [DefaultValue(false)]
+    public bool? SupportsContentUploading { get; set; } = false;
+
+    // TODO: Remove after 10.9
+    [Obsolete("Unused")]
+    [DefaultValue(false)]
+    public bool? SupportsSync { get; set; } = false;
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
     /// <summary>
     /// Convert the dto to the full <see cref="ClientCapabilities"/> model.

@@ -192,7 +192,7 @@ public static class HlsCodecStringHelpers
     /// <returns>The AV1 codec string.</returns>
     public static string GetAv1String(string? profile, int level, bool tierFlag, int bitDepth)
     {
-        // https://aomedia.org/av1/specification/annex-a/
+        // https://aomediacodec.github.io/av1-isobmff/#codecsparam
         // FORMAT: [codecTag].[profile].[level][tier].[bitDepth]
         StringBuilder result = new StringBuilder("av01", 13);
 
@@ -214,8 +214,7 @@ public static class HlsCodecStringHelpers
             result.Append(".0");
         }
 
-        if (level <= 0
-            || level > 31)
+        if (level is <= 0 or > 31)
         {
             // Default to the maximum defined level 6.3
             level = 19;
@@ -230,7 +229,8 @@ public static class HlsCodecStringHelpers
         }
 
         result.Append('.')
-            .Append(level)
+            // Needed to pad it double digits; otherwise, browsers will reject the stream.
+            .AppendFormat(CultureInfo.InvariantCulture, "{0:D2}", level)
             .Append(tierFlag ? 'H' : 'M');
 
         string bitDepthD2 = bitDepth.ToString("D2", CultureInfo.InvariantCulture);

@@ -30,6 +30,8 @@ namespace MediaBrowser.MediaEncoding.Probing
         private const string ArtistReplaceValue = " | ";
 
         private readonly char[] _nameDelimiters = { '/', '|', ';', '\\' };
+        private readonly string[] _webmVideoCodecs = { "av1", "vp8", "vp9" };
+        private readonly string[] _webmAudioCodecs = { "opus", "vorbis" };
 
         private readonly ILogger _logger;
         private readonly ILocalizationManager _localization;
@@ -77,6 +79,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             "5/8erl in Ehr'n",
             "Smith/Kotzen",
             "We;Na",
+            "LSR/CITY",
         };
 
         /// <summary>
@@ -114,7 +117,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             if (data.Format is not null)
             {
-                info.Container = NormalizeFormat(data.Format.FormatName);
+                info.Container = NormalizeFormat(data.Format.FormatName, info.MediaStreams);
 
                 if (int.TryParse(data.Format.BitRate, CultureInfo.InvariantCulture, out var value))
                 {
@@ -260,7 +263,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             return info;
         }
 
-        private string NormalizeFormat(string format)
+        private string NormalizeFormat(string format, IReadOnlyList<MediaStream> mediaStreams)
         {
             if (string.IsNullOrWhiteSpace(format))
             {
@@ -288,9 +291,20 @@ namespace MediaBrowser.MediaEncoding.Probing
                 {
                     splitFormat[i] = "mkv";
                 }
+
+                // Handle WebM
+                else if (string.Equals(splitFormat[i], "webm", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Limit WebM to supported codecs
+                    if (mediaStreams.Any(stream => (stream.Type == MediaStreamType.Video && !_webmVideoCodecs.Contains(stream.Codec, StringComparison.OrdinalIgnoreCase))
+                        || (stream.Type == MediaStreamType.Audio && !_webmAudioCodecs.Contains(stream.Codec, StringComparison.OrdinalIgnoreCase))))
+                    {
+                        splitFormat[i] = string.Empty;
+                    }
+                }
             }
 
-            return string.Join(',', splitFormat);
+            return string.Join(',', splitFormat.Where(s => !string.IsNullOrEmpty(s)));
         }
 
         private int? GetEstimatedAudioBitrate(string codec, int? channels)
@@ -741,6 +755,10 @@ namespace MediaBrowser.MediaEncoding.Probing
                 stream.LocalizedForced = _localization.GetLocalizedString("Forced");
                 stream.LocalizedExternal = _localization.GetLocalizedString("External");
                 stream.LocalizedHearingImpaired = _localization.GetLocalizedString("HearingImpaired");
+
+                // Graphical subtitle may have width and height info
+                stream.Width = streamInfo.Width;
+                stream.Height = streamInfo.Height;
 
                 if (string.IsNullOrEmpty(stream.Title))
                 {
