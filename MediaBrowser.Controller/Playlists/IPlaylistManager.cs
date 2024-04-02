@@ -14,10 +14,10 @@ namespace MediaBrowser.Controller.Playlists
         /// <summary>
         /// Gets the playlist.
         /// </summary>
-        /// <param name="userId">The user identifier.</param>
         /// <param name="playlistId">The playlist identifier.</param>
+        /// <param name="userId">The user identifier.</param>
         /// <returns>Playlist.</returns>
-        Playlist GetPlaylist(Guid userId, Guid playlistId);
+        Playlist GetPlaylistForUser(Guid playlistId, Guid userId);
 
         /// <summary>
         /// Creates the playlist.
@@ -43,20 +43,18 @@ namespace MediaBrowser.Controller.Playlists
         /// <summary>
         /// Adds a share to the playlist.
         /// </summary>
-        /// <param name="playlistId">The playlist identifier.</param>
-        /// <param name="userId">The user identifier.</param>
-        /// <param name="share">The share.</param>
+        /// <param name="request">The <see cref="PlaylistUserUpdateRequest"/>.</param>
         /// <returns>Task.</returns>
-        Task AddToShares(Guid playlistId, Guid userId, PlaylistUserPermissions share);
+        Task AddUserToShares(PlaylistUserUpdateRequest request);
 
         /// <summary>
-        /// Rremoves a share from the playlist.
+        /// Removes a share from the playlist.
         /// </summary>
         /// <param name="playlistId">The playlist identifier.</param>
         /// <param name="userId">The user identifier.</param>
         /// <param name="share">The share.</param>
         /// <returns>Task.</returns>
-        Task RemoveFromShares(Guid playlistId, Guid userId, PlaylistUserPermissions share);
+        Task RemoveUserFromShares(Guid playlistId, Guid userId, PlaylistUserPermissions share);
 
         /// <summary>
         /// Adds to playlist.
@@ -65,7 +63,7 @@ namespace MediaBrowser.Controller.Playlists
         /// <param name="itemIds">The item ids.</param>
         /// <param name="userId">The user identifier.</param>
         /// <returns>Task.</returns>
-        Task AddToPlaylistAsync(Guid playlistId, IReadOnlyCollection<Guid> itemIds, Guid userId);
+        Task AddItemToPlaylistAsync(Guid playlistId, IReadOnlyCollection<Guid> itemIds, Guid userId);
 
         /// <summary>
         /// Removes from playlist.
@@ -73,7 +71,7 @@ namespace MediaBrowser.Controller.Playlists
         /// <param name="playlistId">The playlist identifier.</param>
         /// <param name="entryIds">The entry ids.</param>
         /// <returns>Task.</returns>
-        Task RemoveFromPlaylistAsync(string playlistId, IEnumerable<string> entryIds);
+        Task RemoveItemFromPlaylistAsync(string playlistId, IEnumerable<string> entryIds);
 
         /// <summary>
         /// Gets the playlists folder.

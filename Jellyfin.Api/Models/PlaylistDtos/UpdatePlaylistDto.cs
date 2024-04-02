@@ -7,7 +7,7 @@ using MediaBrowser.Model.Entities;
 namespace Jellyfin.Api.Models.PlaylistDtos;
 
 /// <summary>
-/// Updateexisting playlist dto.
+/// Update existing playlist dto. Fields set to `null` will not be updated and keep their current values.
 /// </summary>
 public class UpdatePlaylistDto
 {

@@ -5,7 +5,7 @@ using MediaBrowser.Model.Entities;
 namespace MediaBrowser.Model.Playlists;
 
 /// <summary>
-/// A playlist creation request.
+/// A playlist update request.
 /// </summary>
 public class PlaylistUpdateRequest
 {

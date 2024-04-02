@@ -121,7 +121,7 @@ public class PlaylistsController : BaseJellyfinApiController
     {
         var callingUserId = User.GetUserId();
 
-        var playlist = _playlistManager.GetPlaylist(callingUserId, playlistId);
+        var playlist = _playlistManager.GetPlaylistForUser(playlistId, callingUserId);
         if (playlist is null)
         {
             return NotFound("Playlist not found");
@@ -167,7 +167,7 @@ public class PlaylistsController : BaseJellyfinApiController
     {
         var userId = User.GetUserId();
 
-        var playlist = _playlistManager.GetPlaylist(userId, playlistId);
+        var playlist = _playlistManager.GetPlaylistForUser(playlistId, userId);
         if (playlist is null)
         {
             return NotFound("Playlist not found");
@@ -184,7 +184,7 @@ public class PlaylistsController : BaseJellyfinApiController
     /// </summary>
     /// <param name="playlistId">The playlist id.</param>
     /// <param name="userId">The user id.</param>
-    /// <param name="canEdit">Edit permission.</param>
+    /// <param name="updatePlaylistUserRequest">The <see cref="UpdatePlaylistUserDto"/>.</param>
     /// <response code="204">User's permissions modified.</response>
     /// <response code="401">Unauthorized access.</response>
     /// <response code="404">Playlist not found.</response>
@@ -195,14 +195,14 @@ public class PlaylistsController : BaseJellyfinApiController
     [HttpPost("{playlistId}/User/{userId}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult> ModifyPlaylistUserPermissions(
+    public async Task<ActionResult> UpdatePlaylistUser(
         [FromRoute, Required] Guid playlistId,
         [FromRoute, Required] Guid userId,
-        [FromBody] bool canEdit)
+        [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] UpdatePlaylistUserDto updatePlaylistUserRequest)
     {
         var callingUserId = User.GetUserId();
 
-        var playlist = _playlistManager.GetPlaylist(callingUserId, playlistId);
+        var playlist = _playlistManager.GetPlaylistForUser(playlistId, callingUserId);
         if (playlist is null)
         {
             return NotFound("Playlist not found");
@@ -216,7 +216,12 @@ public class PlaylistsController : BaseJellyfinApiController
             return Unauthorized("Unauthorized access");
         }
 
-        await _playlistManager.AddToShares(playlistId, callingUserId, new PlaylistUserPermissions(userId, canEdit)).ConfigureAwait(false);
+        await _playlistManager.AddUserToShares(new PlaylistUserUpdateRequest
+        {
+            Id = playlistId,
+            UserId = userId,
+            CanEdit = updatePlaylistUserRequest.CanEdit
+        }).ConfigureAwait(false);
 
         return NoContent();
     }
@@ -243,7 +248,7 @@ public class PlaylistsController : BaseJellyfinApiController
     {
         var callingUserId = User.GetUserId();
 
-        var playlist = _playlistManager.GetPlaylist(callingUserId, playlistId);
+        var playlist = _playlistManager.GetPlaylistForUser(playlistId, callingUserId);
         if (playlist is null)
         {
             return NotFound("Playlist not found");
@@ -263,7 +268,7 @@ public class PlaylistsController : BaseJellyfinApiController
             return NotFound("User permissions not found");
         }
 
-        await _playlistManager.RemoveFromShares(playlistId, callingUserId, share).ConfigureAwait(false);
+        await _playlistManager.RemoveUserFromShares(playlistId, callingUserId, share).ConfigureAwait(false);
 
         return NoContent();
     }
@@ -278,13 +283,13 @@ public class PlaylistsController : BaseJellyfinApiController
     /// <returns>An <see cref="NoContentResult"/> on success.</returns>
     [HttpPost("{playlistId}/Items")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<ActionResult> AddToPlaylist(
+    public async Task<ActionResult> AddItemToPlaylist(
         [FromRoute, Required] Guid playlistId,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] ids,
         [FromQuery] Guid? userId)
     {
         userId = RequestHelpers.GetUserId(User, userId);
-        await _playlistManager.AddToPlaylistAsync(playlistId, ids, userId.Value).ConfigureAwait(false);
+        await _playlistManager.AddItemToPlaylistAsync(playlistId, ids, userId.Value).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -316,11 +321,11 @@ public class PlaylistsController : BaseJellyfinApiController
     /// <returns>An <see cref="NoContentResult"/> on success.</returns>
     [HttpDelete("{playlistId}/Items")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<ActionResult> RemoveFromPlaylist(
+    public async Task<ActionResult> RemoveItemFromPlaylist(
         [FromRoute, Required] string playlistId,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] entryIds)
     {
-        await _playlistManager.RemoveFromPlaylistAsync(playlistId, entryIds).ConfigureAwait(false);
+        await _playlistManager.RemoveItemFromPlaylistAsync(playlistId, entryIds).ConfigureAwait(false);
         return NoContent();
     }
 
