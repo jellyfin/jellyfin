@@ -23,7 +23,7 @@ namespace MediaBrowser.Controller.Playlists
         /// Creates the playlist.
         /// </summary>
         /// <param name="request">The <see cref="PlaylistCreationRequest"/>.</param>
-        /// <returns>Task&lt;Playlist&gt;.</returns>
+        /// <returns>The created playlist.</returns>
         Task<PlaylistCreationResult> CreatePlaylist(PlaylistCreationRequest request);
 
         /// <summary>
