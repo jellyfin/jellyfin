@@ -1263,23 +1263,23 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             var codec = stream.Codec ?? string.Empty;
 
-            return codec.IndexOf("264", StringComparison.OrdinalIgnoreCase) != -1
-                    || codec.IndexOf("avc", StringComparison.OrdinalIgnoreCase) != -1;
+            return codec.Contains("264", StringComparison.OrdinalIgnoreCase)
+                    || codec.Contains("avc", StringComparison.OrdinalIgnoreCase);
         }
 
         public static bool IsH265(MediaStream stream)
         {
             var codec = stream.Codec ?? string.Empty;
 
-            return codec.IndexOf("265", StringComparison.OrdinalIgnoreCase) != -1
-                || codec.IndexOf("hevc", StringComparison.OrdinalIgnoreCase) != -1;
+            return codec.Contains("265", StringComparison.OrdinalIgnoreCase)
+                || codec.Contains("hevc", StringComparison.OrdinalIgnoreCase);
         }
 
         public static bool IsAAC(MediaStream stream)
         {
             var codec = stream.Codec ?? string.Empty;
 
-            return codec.IndexOf("aac", StringComparison.OrdinalIgnoreCase) != -1;
+            return codec.Contains("aac", StringComparison.OrdinalIgnoreCase);
         }
 
         public static string GetBitStreamArgs(MediaStream stream)

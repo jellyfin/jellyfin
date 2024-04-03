@@ -109,13 +109,13 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// The disposable parts.
         /// </summary>
-        private readonly ConcurrentDictionary<IDisposable, byte> _disposableParts = new();
+        private readonly ConcurrentBag<IDisposable> _disposableParts = new();
         private readonly DeviceId _deviceId;
 
         private readonly IConfiguration _startupConfig;
         private readonly IXmlSerializer _xmlSerializer;
         private readonly IStartupOptions _startupOptions;
-        private readonly IPluginManager _pluginManager;
+        private readonly PluginManager _pluginManager;
 
         private List<Type> _creatingInstances;
 
@@ -161,7 +161,7 @@ namespace Emby.Server.Implementations
                 ApplicationPaths.PluginsPath,
                 ApplicationVersion);
 
-            _disposableParts.TryAdd((PluginManager)_pluginManager, byte.MinValue);
+            _disposableParts.Add(_pluginManager);
         }
 
         /// <summary>
@@ -360,7 +360,7 @@ namespace Emby.Server.Implementations
             {
                 foreach (var part in parts.OfType<IDisposable>())
                 {
-                    _disposableParts.TryAdd(part, byte.MinValue);
+                    _disposableParts.Add(part);
                 }
             }
 
@@ -381,7 +381,7 @@ namespace Emby.Server.Implementations
             {
                 foreach (var part in parts.OfType<IDisposable>())
                 {
-                    _disposableParts.TryAdd(part, byte.MinValue);
+                    _disposableParts.Add(part);
                 }
             }
 
@@ -457,7 +457,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IServerConfigurationManager>(ConfigurationManager);
             serviceCollection.AddSingleton<IConfigurationManager>(ConfigurationManager);
             serviceCollection.AddSingleton<IApplicationHost>(this);
-            serviceCollection.AddSingleton(_pluginManager);
+            serviceCollection.AddSingleton<IPluginManager>(_pluginManager);
             serviceCollection.AddSingleton<IApplicationPaths>(ApplicationPaths);
 
             serviceCollection.AddSingleton<IFileSystem, ManagedFileSystem>();
@@ -965,7 +965,7 @@ namespace Emby.Server.Implementations
 
                 Logger.LogInformation("Disposing {Type}", type.Name);
 
-                foreach (var (part, _) in _disposableParts)
+                foreach (var part in _disposableParts.ToArray())
                 {
                     var partType = part.GetType();
                     if (partType == type)
