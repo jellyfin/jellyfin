@@ -113,7 +113,7 @@ public class PlaylistsController : BaseJellyfinApiController
     /// The task result contains an <see cref="OkResult"/> indicating success.
     /// </returns>
     [HttpPost("{playlistId}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> UpdatePlaylist(
@@ -185,16 +185,12 @@ public class PlaylistsController : BaseJellyfinApiController
     /// <param name="playlistId">The playlist id.</param>
     /// <param name="userId">The user id.</param>
     /// <response code="200">User permission found.</response>
-    /// <response code="200">No user permission found but open access.</response>
-    /// <response code="403">Access forbidden.</response>
     /// <response code="404">Playlist not found.</response>
     /// <returns>
     /// <see cref="PlaylistUserPermissions"/>.
     /// </returns>
     [HttpGet("{playlistId}/Users/{userId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<PlaylistUserPermissions?> GetPlaylistUser(
         [FromRoute, Required] Guid playlistId,
@@ -213,7 +209,12 @@ public class PlaylistsController : BaseJellyfinApiController
             || playlist.Shares.Any(s => s.CanEdit && s.UserId.Equals(callingUserId))
             || userId.Equals(callingUserId);
 
-        return isPermitted ? userPermission is not null ? userPermission : NotFound("User permissions not found") : playlist.OpenAccess ? NoContent() : Forbid();
+        if (isPermitted && userPermission is not null)
+        {
+            return userPermission;
+        }
+
+        return NotFound("User permissions not found");
     }
 
     /// <summary>
