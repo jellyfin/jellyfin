@@ -184,7 +184,8 @@ public class PlaylistsController : BaseJellyfinApiController
     /// </summary>
     /// <param name="playlistId">The playlist id.</param>
     /// <param name="userId">The user id.</param>
-    /// <response code="200">Found shares.</response>
+    /// <response code="200">User permission found.</response>
+    /// <response code="200">No user permission found but open access.</response>
     /// <response code="403">Access forbidden.</response>
     /// <response code="404">Playlist not found.</response>
     /// <returns>
@@ -192,6 +193,7 @@ public class PlaylistsController : BaseJellyfinApiController
     /// </returns>
     [HttpGet("{playlistId}/User/{userId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<PlaylistUserPermissions?> GetPlaylistUser(
@@ -210,7 +212,7 @@ public class PlaylistsController : BaseJellyfinApiController
             || playlist.Shares.Any(s => s.CanEdit && s.UserId.Equals(callingUserId))
             || userId.Equals(callingUserId);
 
-        return isPermitted ? playlist.Shares.FirstOrDefault(s => s.UserId.Equals(userId)) : Forbid();
+        return isPermitted ? playlist.Shares.FirstOrDefault(s => s.UserId.Equals(userId)) : playlist.OpenAccess ? NoContent() : Forbid();
     }
 
     /// <summary>
