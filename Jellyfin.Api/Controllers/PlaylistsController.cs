@@ -180,6 +180,40 @@ public class PlaylistsController : BaseJellyfinApiController
     }
 
     /// <summary>
+    /// Get a playlist users.
+    /// </summary>
+    /// <param name="playlistId">The playlist id.</param>
+    /// <param name="userId">The user id.</param>
+    /// <response code="200">Found shares.</response>
+    /// <response code="403">Access forbidden.</response>
+    /// <response code="404">Playlist not found.</response>
+    /// <returns>
+    /// <see cref="PlaylistUserPermissions"/>.
+    /// </returns>
+    [HttpGet("{playlistId}/User/{userId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public ActionResult<PlaylistUserPermissions?> GetPlaylistUser(
+        [FromRoute, Required] Guid playlistId,
+        [FromRoute, Required] Guid userId)
+    {
+        var callingUserId = User.GetUserId();
+
+        var playlist = _playlistManager.GetPlaylistForUser(playlistId, callingUserId);
+        if (playlist is null)
+        {
+            return NotFound("Playlist not found");
+        }
+
+        var isPermitted = playlist.OwnerUserId.Equals(userId)
+            || playlist.Shares.Any(s => s.CanEdit && s.UserId.Equals(callingUserId))
+            || userId.Equals(callingUserId);
+
+        return isPermitted ? playlist.Shares.FirstOrDefault(s => s.UserId.Equals(userId)) : Forbid();
+    }
+
+    /// <summary>
     /// Modify a user to a playlist's users.
     /// </summary>
     /// <param name="playlistId">The playlist id.</param>
