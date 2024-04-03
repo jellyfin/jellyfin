@@ -208,7 +208,7 @@ public class PlaylistsController : BaseJellyfinApiController
             return NotFound("Playlist not found");
         }
 
-        var isPermitted = playlist.OwnerUserId.Equals(userId)
+        var isPermitted = playlist.OwnerUserId.Equals(callingUserId)
             || playlist.Shares.Any(s => s.CanEdit && s.UserId.Equals(callingUserId))
             || userId.Equals(callingUserId);
 
