@@ -94,7 +94,7 @@ public class PlaylistsController : BaseJellyfinApiController
             UserId = userId.Value,
             MediaType = mediaType ?? createPlaylistRequest?.MediaType,
             Users = createPlaylistRequest?.Users.ToArray() ?? [],
-            Public = createPlaylistRequest?.Public
+            Public = createPlaylistRequest?.IsPublic
         }).ConfigureAwait(false);
 
         return result;
@@ -143,7 +143,7 @@ public class PlaylistsController : BaseJellyfinApiController
             Name = updatePlaylistRequest.Name,
             Ids = updatePlaylistRequest.Ids,
             Users = updatePlaylistRequest.Users,
-            Public = updatePlaylistRequest.Public
+            Public = updatePlaylistRequest.IsPublic
         }).ConfigureAwait(false);
 
         return NoContent();
@@ -180,17 +180,19 @@ public class PlaylistsController : BaseJellyfinApiController
     }
 
     /// <summary>
-    /// Get a playlist users.
+    /// Get a playlist user.
     /// </summary>
     /// <param name="playlistId">The playlist id.</param>
     /// <param name="userId">The user id.</param>
     /// <response code="200">User permission found.</response>
+    /// <response code="200">Access forbidden.</response>
     /// <response code="404">Playlist not found.</response>
     /// <returns>
     /// <see cref="PlaylistUserPermissions"/>.
     /// </returns>
     [HttpGet("{playlistId}/Users/{userId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<PlaylistUserPermissions?> GetPlaylistUser(
         [FromRoute, Required] Guid playlistId,
@@ -209,7 +211,12 @@ public class PlaylistsController : BaseJellyfinApiController
             || playlist.Shares.Any(s => s.CanEdit && s.UserId.Equals(callingUserId))
             || userId.Equals(callingUserId);
 
-        if (isPermitted && userPermission is not null)
+        if (!isPermitted)
+        {
+            return Forbid();
+        }
+
+        if (userPermission is not null)
         {
             return userPermission;
         }
@@ -218,7 +225,7 @@ public class PlaylistsController : BaseJellyfinApiController
     }
 
     /// <summary>
-    /// Modify a user to a playlist's users.
+    /// Modify a user of a playlist's users.
     /// </summary>
     /// <param name="playlistId">The playlist id.</param>
     /// <param name="userId">The user id.</param>
@@ -237,7 +244,7 @@ public class PlaylistsController : BaseJellyfinApiController
     public async Task<ActionResult> UpdatePlaylistUser(
         [FromRoute, Required] Guid playlistId,
         [FromRoute, Required] Guid userId,
-        [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] UpdatePlaylistUserDto updatePlaylistUserRequest)
+        [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow), Required] UpdatePlaylistUserDto updatePlaylistUserRequest)
     {
         var callingUserId = User.GetUserId();
 
@@ -265,7 +272,7 @@ public class PlaylistsController : BaseJellyfinApiController
     }
 
     /// <summary>
-    /// Remove a user from a playlist's shares.
+    /// Remove a user from a playlist's users.
     /// </summary>
     /// <param name="playlistId">The playlist id.</param>
     /// <param name="userId">The user id.</param>

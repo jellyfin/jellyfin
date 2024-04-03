@@ -41,5 +41,5 @@ public class CreatePlaylistDto
     /// <summary>
     /// Gets or sets a value indicating whether the playlist is public.
     /// </summary>
-    public bool Public { get; set; } = true;
+    public bool IsPublic { get; set; } = true;
 }
