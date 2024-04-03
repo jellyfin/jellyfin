@@ -185,7 +185,7 @@ public class PlaylistsController : BaseJellyfinApiController
     /// <param name="playlistId">The playlist id.</param>
     /// <param name="userId">The user id.</param>
     /// <response code="200">User permission found.</response>
-    /// <response code="200">Access forbidden.</response>
+    /// <response code="403">Access forbidden.</response>
     /// <response code="404">Playlist not found.</response>
     /// <returns>
     /// <see cref="PlaylistUserPermissions"/>.
