@@ -159,7 +159,7 @@ public class PlaylistsController : BaseJellyfinApiController
     /// <returns>
     /// A list of <see cref="PlaylistUserPermissions"/> objects.
     /// </returns>
-    [HttpGet("{playlistId}/User")]
+    [HttpGet("{playlistId}/Users")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -191,7 +191,7 @@ public class PlaylistsController : BaseJellyfinApiController
     /// <returns>
     /// <see cref="PlaylistUserPermissions"/>.
     /// </returns>
-    [HttpGet("{playlistId}/User/{userId}")]
+    [HttpGet("{playlistId}/Users/{userId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -229,7 +229,7 @@ public class PlaylistsController : BaseJellyfinApiController
     /// A <see cref="Task" /> that represents the asynchronous operation to modify an user's playlist permissions.
     /// The task result contains an <see cref="OkResult"/> indicating success.
     /// </returns>
-    [HttpPost("{playlistId}/User/{userId}")]
+    [HttpPost("{playlistId}/Users/{userId}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -275,7 +275,7 @@ public class PlaylistsController : BaseJellyfinApiController
     /// A <see cref="Task" /> that represents the asynchronous operation to delete a user from a playlist's shares.
     /// The task result contains an <see cref="OkResult"/> indicating success.
     /// </returns>
-    [HttpDelete("{playlistId}/User/{userId}")]
+    [HttpDelete("{playlistId}/Users/{userId}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
