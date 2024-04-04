@@ -34,56 +34,40 @@ namespace Jellyfin.Api.Helpers;
 /// </summary>
 public class DynamicHlsHelper
 {
-    private readonly ILibraryManager _libraryManager;
-    private readonly IUserManager _userManager;
-    private readonly IMediaSourceManager _mediaSourceManager;
     private readonly IServerConfigurationManager _serverConfigurationManager;
-    private readonly IMediaEncoder _mediaEncoder;
-    private readonly ITranscodeManager _transcodeManager;
     private readonly INetworkManager _networkManager;
     private readonly ILogger<DynamicHlsHelper> _logger;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly EncodingHelper _encodingHelper;
     private readonly ITrickplayManager _trickplayManager;
+    private readonly IStreamingHelper _streamingHelper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DynamicHlsHelper"/> class.
     /// </summary>
-    /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
-    /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
-    /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
     /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
-    /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
-    /// <param name="transcodeManager">Instance of <see cref="ITranscodeManager"/>.</param>
     /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger{DynamicHlsHelper}"/> interface.</param>
     /// <param name="httpContextAccessor">Instance of the <see cref="IHttpContextAccessor"/> interface.</param>
     /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
     /// <param name="trickplayManager">Instance of <see cref="ITrickplayManager"/>.</param>
+    /// <param name="streamingHelper">Instance of <see cref="IStreamingHelper"/>.</param>
     public DynamicHlsHelper(
-        ILibraryManager libraryManager,
-        IUserManager userManager,
-        IMediaSourceManager mediaSourceManager,
         IServerConfigurationManager serverConfigurationManager,
-        IMediaEncoder mediaEncoder,
-        ITranscodeManager transcodeManager,
         INetworkManager networkManager,
         ILogger<DynamicHlsHelper> logger,
         IHttpContextAccessor httpContextAccessor,
         EncodingHelper encodingHelper,
-        ITrickplayManager trickplayManager)
+        ITrickplayManager trickplayManager,
+        IStreamingHelper streamingHelper)
     {
-        _libraryManager = libraryManager;
-        _userManager = userManager;
-        _mediaSourceManager = mediaSourceManager;
         _serverConfigurationManager = serverConfigurationManager;
-        _mediaEncoder = mediaEncoder;
-        _transcodeManager = transcodeManager;
         _networkManager = networkManager;
         _logger = logger;
         _httpContextAccessor = httpContextAccessor;
         _encodingHelper = encodingHelper;
         _trickplayManager = trickplayManager;
+        _streamingHelper = streamingHelper;
     }
 
     /// <summary>
@@ -121,16 +105,10 @@ public class DynamicHlsHelper
             throw new ResourceNotFoundException(nameof(_httpContextAccessor.HttpContext));
         }
 
-        using var state = await StreamingHelpers.GetStreamingState(
+        using var state = await _streamingHelper.GetStreamingState(
                 streamingRequest,
                 _httpContextAccessor.HttpContext,
-                _mediaSourceManager,
-                _userManager,
-                _libraryManager,
-                _serverConfigurationManager,
-                _mediaEncoder,
                 _encodingHelper,
-                _transcodeManager,
                 transcodingJobType,
                 cancellationTokenSource.Token)
             .ConfigureAwait(false);
