@@ -293,32 +293,35 @@ public class VideosController : BaseJellyfinApiController
             return File(liveStream, MimeTypes.GetMimeType("file.ts"));
         }
 
-        // Static remote stream
-        if (request.Static.HasValue && request.Static.Value && state.InputProtocol == MediaProtocol.Http)
+        if (request.Static.HasValue && request.Static.Value)
         {
-            var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
-            return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, httpClient, HttpContext).ConfigureAwait(false);
-        }
-
-        if (request.Static.HasValue && request.Static.Value && state.InputProtocol != MediaProtocol.File)
-        {
-            return BadRequest($"Input protocol {state.InputProtocol} cannot be streamed statically");
-        }
-
-        // Static stream
-        if (request.Static.HasValue && request.Static.Value && !(state.MediaSource.VideoType == VideoType.BluRay || state.MediaSource.VideoType == VideoType.Dvd))
-        {
-            var contentType = state.GetMimeType("." + state.OutputContainer, false) ?? state.GetMimeType(state.MediaPath);
-
-            if (state.MediaSource.IsInfiniteStream)
+            // Static remote stream
+            if (state.InputProtocol == MediaProtocol.Http)
             {
-                var liveStream = new ProgressiveFileStream(state.MediaPath, null, _transcodeManager);
-                return File(liveStream, contentType);
+                var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
+                return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, httpClient, HttpContext).ConfigureAwait(false);
             }
 
-            return FileStreamResponseHelpers.GetStaticFileResult(
-                state.MediaPath,
-                contentType);
+            if (state.InputProtocol != MediaProtocol.File)
+            {
+                return BadRequest($"Input protocol {state.InputProtocol} cannot be streamed statically");
+            }
+
+            // Static stream
+            if (!(state.MediaSource.VideoType == VideoType.BluRay || state.MediaSource.VideoType == VideoType.Dvd))
+            {
+                var contentType = state.GetMimeType("." + state.OutputContainer, false) ?? state.GetMimeType(state.MediaPath);
+
+                if (state.MediaSource.IsInfiniteStream)
+                {
+                    var liveStream = new ProgressiveFileStream(state.MediaPath, null, _transcodeManager);
+                    return File(liveStream, contentType);
+                }
+
+                return FileStreamResponseHelpers.GetStaticFileResult(
+                    state.MediaPath,
+                    contentType);
+            }
         }
 
         // Need to start ffmpeg (because media can't be returned directly)
