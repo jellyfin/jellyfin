@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,48 +21,40 @@ namespace Jellyfin.Api.Helpers;
 /// </summary>
 public class AudioHelper
 {
-    private readonly IUserManager _userManager;
-    private readonly ILibraryManager _libraryManager;
     private readonly IMediaSourceManager _mediaSourceManager;
     private readonly IServerConfigurationManager _serverConfigurationManager;
-    private readonly IMediaEncoder _mediaEncoder;
     private readonly ITranscodeManager _transcodeManager;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly EncodingHelper _encodingHelper;
+    private readonly IStreamingHelper _streamingHelper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AudioHelper"/> class.
     /// </summary>
-    /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
-    /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
     /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
-    /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
     /// <param name="transcodeManager">Instance of <see cref="ITranscodeManager"/> interface.</param>
     /// <param name="httpClientFactory">Instance of the <see cref="IHttpClientFactory"/> interface.</param>
     /// <param name="httpContextAccessor">Instance of the <see cref="IHttpContextAccessor"/> interface.</param>
     /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
+    /// <param name="streamingHelper">Instance of <see cref="IStreamingHelper"/>.</param>
     public AudioHelper(
-        IUserManager userManager,
-        ILibraryManager libraryManager,
         IMediaSourceManager mediaSourceManager,
         IServerConfigurationManager serverConfigurationManager,
-        IMediaEncoder mediaEncoder,
         ITranscodeManager transcodeManager,
         IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor,
-        EncodingHelper encodingHelper)
+        EncodingHelper encodingHelper,
+        IStreamingHelper streamingHelper)
     {
-        _userManager = userManager;
-        _libraryManager = libraryManager;
         _mediaSourceManager = mediaSourceManager;
         _serverConfigurationManager = serverConfigurationManager;
-        _mediaEncoder = mediaEncoder;
         _transcodeManager = transcodeManager;
         _httpClientFactory = httpClientFactory;
         _httpContextAccessor = httpContextAccessor;
         _encodingHelper = encodingHelper;
+        _streamingHelper = streamingHelper;
     }
 
     /// <summary>
@@ -85,16 +77,10 @@ public class AudioHelper
         // CTS lifecycle is managed internally.
         var cancellationTokenSource = new CancellationTokenSource();
 
-        using var state = await StreamingHelpers.GetStreamingState(
+        using var state = await _streamingHelper.GetStreamingState(
                 streamingRequest,
                 _httpContextAccessor.HttpContext,
-                _mediaSourceManager,
-                _userManager,
-                _libraryManager,
-                _serverConfigurationManager,
-                _mediaEncoder,
                 _encodingHelper,
-                _transcodeManager,
                 transcodingJobType,
                 cancellationTokenSource.Token)
             .ConfigureAwait(false);

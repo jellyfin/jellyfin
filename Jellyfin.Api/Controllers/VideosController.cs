@@ -41,10 +41,10 @@ public class VideosController : BaseJellyfinApiController
     private readonly IDtoService _dtoService;
     private readonly IMediaSourceManager _mediaSourceManager;
     private readonly IServerConfigurationManager _serverConfigurationManager;
-    private readonly IMediaEncoder _mediaEncoder;
     private readonly ITranscodeManager _transcodeManager;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly EncodingHelper _encodingHelper;
+    private readonly IStreamingHelper _streamingHelper;
 
     private readonly TranscodingJobType _transcodingJobType = TranscodingJobType.Progressive;
 
@@ -56,30 +56,30 @@ public class VideosController : BaseJellyfinApiController
     /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
     /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
     /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
-    /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
     /// <param name="transcodeManager">Instance of the <see cref="ITranscodeManager"/> interface.</param>
     /// <param name="httpClientFactory">Instance of the <see cref="IHttpClientFactory"/> interface.</param>
     /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
+    /// <param name="streamingHelper">Instance of <see cref="IStreamingHelper"/>.</param>
     public VideosController(
         ILibraryManager libraryManager,
         IUserManager userManager,
         IDtoService dtoService,
         IMediaSourceManager mediaSourceManager,
         IServerConfigurationManager serverConfigurationManager,
-        IMediaEncoder mediaEncoder,
         ITranscodeManager transcodeManager,
         IHttpClientFactory httpClientFactory,
-        EncodingHelper encodingHelper)
+        EncodingHelper encodingHelper,
+        IStreamingHelper streamingHelper)
     {
         _libraryManager = libraryManager;
         _userManager = userManager;
         _dtoService = dtoService;
         _mediaSourceManager = mediaSourceManager;
         _serverConfigurationManager = serverConfigurationManager;
-        _mediaEncoder = mediaEncoder;
         _transcodeManager = transcodeManager;
         _httpClientFactory = httpClientFactory;
         _encodingHelper = encodingHelper;
+        _streamingHelper = streamingHelper;
     }
 
     /// <summary>
@@ -266,16 +266,10 @@ public class VideosController : BaseJellyfinApiController
 
         var streamingRequest = request.ToDomain(itemId);
 
-        var state = await StreamingHelpers.GetStreamingState(
+        var state = await _streamingHelper.GetStreamingState(
                 streamingRequest,
                 HttpContext,
-                _mediaSourceManager,
-                _userManager,
-                _libraryManager,
-                _serverConfigurationManager,
-                _mediaEncoder,
                 _encodingHelper,
-                _transcodeManager,
                 _transcodingJobType,
                 cancellationTokenSource.Token)
             .ConfigureAwait(false);

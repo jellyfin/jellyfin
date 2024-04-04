@@ -16,7 +16,6 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
 
@@ -25,33 +24,21 @@ namespace Jellyfin.Api.Helpers;
 /// <summary>
 /// The streaming helpers.
 /// </summary>
-public static class StreamingHelpers
+public class StreamingHelper(IMediaSourceManager mediaSourceManager, IUserManager userManager, ILibraryManager libraryManager, IServerConfigurationManager serverConfigurationManager, IMediaEncoder mediaEncoder, ITranscodeManager transcodeManager) : IStreamingHelper
 {
     /// <summary>
     /// Gets the current streaming state.
     /// </summary>
     /// <param name="streamingRequest">The <see cref="StreamingRequestDto"/>.</param>
     /// <param name="httpContext">The <see cref="HttpContext"/>.</param>
-    /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
-    /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
-    /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
-    /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
-    /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
     /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
-    /// <param name="transcodeManager">Instance of the <see cref="ITranscodeManager"/> interface.</param>
     /// <param name="transcodingJobType">The <see cref="TranscodingJobType"/>.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
     /// <returns>A <see cref="Task"/> containing the current <see cref="StreamState"/>.</returns>
-    public static async Task<StreamState> GetStreamingState(
+    public async Task<StreamState> GetStreamingState(
         StreamingRequestDto streamingRequest,
         HttpContext httpContext,
-        IMediaSourceManager mediaSourceManager,
-        IUserManager userManager,
-        ILibraryManager libraryManager,
-        IServerConfigurationManager serverConfigurationManager,
-        IMediaEncoder mediaEncoder,
         EncodingHelper encodingHelper,
-        ITranscodeManager transcodeManager,
         TranscodingJobType transcodingJobType,
         CancellationToken cancellationToken)
     {
@@ -232,11 +219,6 @@ public static class StreamingHelpers
         return state;
     }
 
-    /// <summary>
-    /// Parses query parameters as StreamOptions.
-    /// </summary>
-    /// <param name="queryString">The query string.</param>
-    /// <returns>A <see cref="Dictionary{String,String}"/> containing the stream options.</returns>
     private static Dictionary<string, string?> ParseStreamOptions(IQueryCollection queryString)
     {
         Dictionary<string, string?> streamOptions = new Dictionary<string, string?>();
@@ -254,12 +236,6 @@ public static class StreamingHelpers
         return streamOptions;
     }
 
-    /// <summary>
-    /// Gets the output file extension.
-    /// </summary>
-    /// <param name="state">The state.</param>
-    /// <param name="mediaSource">The mediaSource.</param>
-    /// <returns>System.String.</returns>
     private static string GetOutputFileExtension(StreamState state, MediaSourceInfo? mediaSource)
     {
         var ext = Path.GetExtension(state.RequestedUrl);
@@ -337,15 +313,6 @@ public static class StreamingHelpers
         throw new InvalidOperationException("Failed to find an appropriate file extension");
     }
 
-    /// <summary>
-    /// Gets the output file path for transcoding.
-    /// </summary>
-    /// <param name="state">The current <see cref="StreamState"/>.</param>
-    /// <param name="outputFileExtension">The file extension of the output file.</param>
-    /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
-    /// <param name="deviceId">The device id.</param>
-    /// <param name="playSessionId">The play session id.</param>
-    /// <returns>The complete file path, including the folder, for the transcoding file.</returns>
     private static string GetOutputFilePath(StreamState state, string outputFileExtension, IServerConfigurationManager serverConfigurationManager, string? deviceId, string? playSessionId)
     {
         var data = $"{state.MediaPath}-{state.UserAgent}-{deviceId!}-{playSessionId!}";
@@ -357,10 +324,6 @@ public static class StreamingHelpers
         return Path.Combine(folder, filename + ext);
     }
 
-    /// <summary>
-    /// Parses the parameters.
-    /// </summary>
-    /// <param name="request">The request.</param>
     private static void ParseParams(StreamingRequestDto request)
     {
         if (string.IsNullOrEmpty(request.Params))
@@ -560,10 +523,6 @@ public static class StreamingHelpers
         }
     }
 
-    /// <summary>
-    /// Parses the container into its file extension.
-    /// </summary>
-    /// <param name="container">The container.</param>
     private static string? GetContainerFileExtension(string? container)
     {
         if (string.Equals(container, "mpegts", StringComparison.OrdinalIgnoreCase))
