@@ -274,21 +274,21 @@ public class VideosController : BaseJellyfinApiController
                 cancellationTokenSource.Token)
             .ConfigureAwait(false);
 
-        if (request.Static.HasValue && request.Static.Value && state.DirectStreamProvider is not null)
-        {
-            var liveStreamInfo = _mediaSourceManager.GetLiveStreamInfo(streamingRequest.LiveStreamId);
-            if (liveStreamInfo is null)
-            {
-                return NotFound();
-            }
-
-            var liveStream = new ProgressiveFileStream(liveStreamInfo.GetStream());
-            // TODO (moved from MediaBrowser.Api): Don't hardcode contentType
-            return File(liveStream, MimeTypes.GetMimeType("file.ts"));
-        }
-
         if (request.Static.HasValue && request.Static.Value)
         {
+            if (state.DirectStreamProvider is not null)
+            {
+                var liveStreamInfo = _mediaSourceManager.GetLiveStreamInfo(streamingRequest.LiveStreamId);
+                if (liveStreamInfo is null)
+                {
+                    return NotFound();
+                }
+
+                var liveStream = new ProgressiveFileStream(liveStreamInfo.GetStream());
+                // TODO (moved from MediaBrowser.Api): Don't hardcode contentType
+                return File(liveStream, MimeTypes.GetMimeType("file.ts"));
+            }
+
             // Static remote stream
             if (state.InputProtocol == MediaProtocol.Http)
             {
