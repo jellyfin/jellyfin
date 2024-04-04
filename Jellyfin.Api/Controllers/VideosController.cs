@@ -6,7 +6,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
@@ -21,10 +20,10 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Streaming;
+using MediaBrowser.Model;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -259,60 +258,6 @@ public class VideosController : BaseJellyfinApiController
     [HttpHead("{itemId}/stream", Name = "HeadVideoStream")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesVideoFile]
-<<<<<<< ours
-    public async Task<ActionResult> GetVideoStream(
-        [FromRoute, Required] Guid itemId,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? container,
-        [FromQuery] bool? @static,
-        [FromQuery] string? @params,
-        [FromQuery] string? tag,
-        [FromQuery, ParameterObsolete] string? deviceProfileId,
-        [FromQuery] string? playSessionId,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? segmentContainer,
-        [FromQuery] int? segmentLength,
-        [FromQuery] int? minSegments,
-        [FromQuery] string? mediaSourceId,
-        [FromQuery] string? deviceId,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? audioCodec,
-        [FromQuery] bool? enableAutoStreamCopy,
-        [FromQuery] bool? allowVideoStreamCopy,
-        [FromQuery] bool? allowAudioStreamCopy,
-        [FromQuery] bool? breakOnNonKeyFrames,
-        [FromQuery] int? audioSampleRate,
-        [FromQuery] int? maxAudioBitDepth,
-        [FromQuery] int? audioBitRate,
-        [FromQuery] int? audioChannels,
-        [FromQuery] int? maxAudioChannels,
-        [FromQuery] string? profile,
-        [FromQuery] string? level,
-        [FromQuery] float? framerate,
-        [FromQuery] float? maxFramerate,
-        [FromQuery] bool? copyTimestamps,
-        [FromQuery] long? startTimeTicks,
-        [FromQuery] int? width,
-        [FromQuery] int? height,
-        [FromQuery] int? maxWidth,
-        [FromQuery] int? maxHeight,
-        [FromQuery] int? videoBitRate,
-        [FromQuery] int? subtitleStreamIndex,
-        [FromQuery] SubtitleDeliveryMethod? subtitleMethod,
-        [FromQuery] int? maxRefFrames,
-        [FromQuery] int? maxVideoBitDepth,
-        [FromQuery] bool? requireAvc,
-        [FromQuery] bool? deInterlace,
-        [FromQuery] bool? requireNonAnamorphic,
-        [FromQuery] int? transcodingMaxAudioChannels,
-        [FromQuery] int? cpuCoreLimit,
-        [FromQuery] string? liveStreamId,
-        [FromQuery] bool? enableMpegtsM2TsMode,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? videoCodec,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? subtitleCodec,
-        [FromQuery] string? transcodeReasons,
-        [FromQuery] int? audioStreamIndex,
-        [FromQuery] int? videoStreamIndex,
-        [FromQuery] EncodingContext? context,
-        [FromQuery] Dictionary<string, string> streamOptions)
-=======
     public async Task<ActionResult> GetVideoStream([FromRoute][Required] Guid itemId, [FromQuery] VideoStreamRequest request)
     {
         var isHeadRequest = Request.Method == System.Net.WebRequestMethods.Http.Head;
@@ -400,62 +345,7 @@ public class VideosController : BaseJellyfinApiController
     [HttpHead("{itemId}/stream.{request.container}", Name = "HeadVideoStreamByContainer")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesVideoFile]
-    public Task<ActionResult> GetVideoStreamByContainer(
-<<<<<<< ours
-        [FromRoute, Required] Guid itemId,
-        [FromRoute, Required] string container,
-        [FromQuery] bool? @static,
-        [FromQuery] string? @params,
-        [FromQuery] string? tag,
-        [FromQuery] string? deviceProfileId,
-        [FromQuery] string? playSessionId,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? segmentContainer,
-        [FromQuery] int? segmentLength,
-        [FromQuery] int? minSegments,
-        [FromQuery] string? mediaSourceId,
-        [FromQuery] string? deviceId,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? audioCodec,
-        [FromQuery] bool? enableAutoStreamCopy,
-        [FromQuery] bool? allowVideoStreamCopy,
-        [FromQuery] bool? allowAudioStreamCopy,
-        [FromQuery] bool? breakOnNonKeyFrames,
-        [FromQuery] int? audioSampleRate,
-        [FromQuery] int? maxAudioBitDepth,
-        [FromQuery] int? audioBitRate,
-        [FromQuery] int? audioChannels,
-        [FromQuery] int? maxAudioChannels,
-        [FromQuery] string? profile,
-        [FromQuery] string? level,
-        [FromQuery] float? framerate,
-        [FromQuery] float? maxFramerate,
-        [FromQuery] bool? copyTimestamps,
-        [FromQuery] long? startTimeTicks,
-        [FromQuery] int? width,
-        [FromQuery] int? height,
-        [FromQuery] int? maxWidth,
-        [FromQuery] int? maxHeight,
-        [FromQuery] int? videoBitRate,
-        [FromQuery] int? subtitleStreamIndex,
-        [FromQuery] SubtitleDeliveryMethod? subtitleMethod,
-        [FromQuery] int? maxRefFrames,
-        [FromQuery] int? maxVideoBitDepth,
-        [FromQuery] bool? requireAvc,
-        [FromQuery] bool? deInterlace,
-        [FromQuery] bool? requireNonAnamorphic,
-        [FromQuery] int? transcodingMaxAudioChannels,
-        [FromQuery] int? cpuCoreLimit,
-        [FromQuery] string? liveStreamId,
-        [FromQuery] bool? enableMpegtsM2TsMode,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? videoCodec,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? subtitleCodec,
-        [FromQuery] string? transcodeReasons,
-        [FromQuery] int? audioStreamIndex,
-        [FromQuery] int? videoStreamIndex,
-        [FromQuery] EncodingContext? context,
-        [FromQuery] Dictionary<string, string> streamOptions)
-=======
-        [FromRoute, Required] Guid itemId, [FromQuery] VideoStreamRequest request)
->>>>>>> theirs
+    public Task<ActionResult> GetVideoStreamByContainer([FromRoute, Required] Guid itemId, [FromQuery] VideoStreamRequest request)
     {
         return GetVideoStream(itemId, request);
     }
