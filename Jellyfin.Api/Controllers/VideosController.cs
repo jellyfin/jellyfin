@@ -308,7 +308,7 @@ public class VideosController : BaseJellyfinApiController
             }
 
             // Static stream
-            if (!(state.MediaSource.VideoType == VideoType.BluRay || state.MediaSource.VideoType == VideoType.Dvd))
+            if (!state.MediaSource.IsDiscSource())
             {
                 var contentType = state.GetMimeType("." + state.OutputContainer, false) ?? state.GetMimeType(state.MediaPath);
 
