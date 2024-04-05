@@ -431,5 +431,20 @@ namespace MediaBrowser.Providers.MediaInfo
             audio.LyricFiles = externalLyricFiles.Select(i => i.Path).Distinct().ToArray();
             currentStreams.AddRange(externalLyricFiles);
         }
+
+        private async Task<Model.MediaInfo.MediaInfo> GetMediaInfo(BaseItem item, CancellationToken cancellationToken)
+        {
+            var request = new MediaInfoRequest
+            {
+                MediaType = DlnaProfileType.Audio,
+                MediaSource = new MediaSourceInfo
+                {
+                    Path = item.Path,
+                    Protocol = item.PathProtocol ?? MediaProtocol.File
+                }
+            };
+
+            return await _mediaEncoder.GetMediaInfo(request, cancellationToken).ConfigureAwait(false);
+        }
     }
 }
