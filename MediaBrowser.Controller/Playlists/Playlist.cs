@@ -255,6 +255,11 @@ namespace MediaBrowser.Controller.Playlists
             return shares.Any(s => s.UserId.Equals(userId));
         }
 
+        public override bool CanDelete(User user)
+        {
+            return user.HasPermission(PermissionKind.IsAdministrator) || user.Id.Equals(OwnerUserId);
+        }
+
         public override bool IsVisibleStandalone(User user)
         {
             if (!IsSharedItem)

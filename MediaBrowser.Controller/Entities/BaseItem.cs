@@ -833,7 +833,7 @@ namespace MediaBrowser.Controller.Entities
             return CanDelete() && IsAuthorizedToDelete(user, allCollectionFolders);
         }
 
-        public bool CanDelete(User user)
+        public virtual bool CanDelete(User user)
         {
             var allCollectionFolders = LibraryManager.GetUserRootFolder().Children.OfType<Folder>().ToList();
 
