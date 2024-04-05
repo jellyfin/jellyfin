@@ -408,6 +408,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 if (options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzTrack, out _))
                 {
                     // Fallback to ffprobe as TagLib incorrectly provides recording MBID in `tags.MusicBrainzTrackId`.
+                    // See https://github.com/mono/taglib-sharp/issues/304
                     var mediaInfo = await GetMediaInfo(audio, CancellationToken.None).ConfigureAwait(false);
                     var trackMbId = mediaInfo.GetProviderId(MetadataProvider.MusicBrainzTrack);
                     if (trackMbId is not null)
