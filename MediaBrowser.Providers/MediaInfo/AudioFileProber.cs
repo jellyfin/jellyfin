@@ -407,7 +407,13 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 if (options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzTrack, out _))
                 {
-                    audio.SetProviderId(MetadataProvider.MusicBrainzTrack, tags.MusicBrainzTrackId);
+                    // Fallback to ffprobe as TagLib incorrectly provides recording MBID in `tags.MusicBrainzTrackId`.
+                    var mediaInfo = await GetMediaInfo(audio, CancellationToken.None).ConfigureAwait(false);
+                    var trackMbId = mediaInfo.GetProviderId(MetadataProvider.MusicBrainzTrack);
+                    if (trackMbId is not null)
+                    {
+                        audio.SetProviderId(MetadataProvider.MusicBrainzTrack, trackMbId);
+                    }
                 }
 
                 // Save extracted lyrics if they exist,
