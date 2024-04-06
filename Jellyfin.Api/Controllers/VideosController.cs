@@ -2,7 +2,6 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
@@ -10,20 +9,14 @@ using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.Requests;
+using Jellyfin.Api.Services;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Api;
-using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Controller.Streaming;
-using MediaBrowser.Model;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -39,14 +32,7 @@ public class VideosController : BaseJellyfinApiController
     private readonly ILibraryManager _libraryManager;
     private readonly IUserManager _userManager;
     private readonly IDtoService _dtoService;
-    private readonly IMediaSourceManager _mediaSourceManager;
-    private readonly IServerConfigurationManager _serverConfigurationManager;
-    private readonly ITranscodeManager _transcodeManager;
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly EncodingHelper _encodingHelper;
-    private readonly IStreamingHelper _streamingHelper;
-
-    private readonly TranscodingJobType _transcodingJobType = TranscodingJobType.Progressive;
+    private readonly IVideoService _videoService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VideosController"/> class.
@@ -54,32 +40,13 @@ public class VideosController : BaseJellyfinApiController
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
     /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
-    /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
-    /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
-    /// <param name="transcodeManager">Instance of the <see cref="ITranscodeManager"/> interface.</param>
-    /// <param name="httpClientFactory">Instance of the <see cref="IHttpClientFactory"/> interface.</param>
-    /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
-    /// <param name="streamingHelper">Instance of <see cref="IStreamingHelper"/>.</param>
-    public VideosController(
-        ILibraryManager libraryManager,
-        IUserManager userManager,
-        IDtoService dtoService,
-        IMediaSourceManager mediaSourceManager,
-        IServerConfigurationManager serverConfigurationManager,
-        ITranscodeManager transcodeManager,
-        IHttpClientFactory httpClientFactory,
-        EncodingHelper encodingHelper,
-        IStreamingHelper streamingHelper)
+    /// <param name="videoService">Instance of the <see cref="IVideoService"/>.</param>
+    public VideosController(ILibraryManager libraryManager, IUserManager userManager, IDtoService dtoService, IVideoService videoService)
     {
         _libraryManager = libraryManager;
         _userManager = userManager;
         _dtoService = dtoService;
-        _mediaSourceManager = mediaSourceManager;
-        _serverConfigurationManager = serverConfigurationManager;
-        _transcodeManager = transcodeManager;
-        _httpClientFactory = httpClientFactory;
-        _encodingHelper = encodingHelper;
-        _streamingHelper = streamingHelper;
+        _videoService = videoService;
     }
 
     /// <summary>
@@ -260,75 +227,7 @@ public class VideosController : BaseJellyfinApiController
     [ProducesVideoFile]
     public async Task<ActionResult> GetVideoStream([FromRoute][Required] Guid itemId, [FromQuery] VideoStreamRequest request)
     {
-        var isHeadRequest = Request.Method == System.Net.WebRequestMethods.Http.Head;
-        // CTS lifecycle is managed internally.
-        var cancellationTokenSource = new CancellationTokenSource();
-
-        var streamingRequest = request.ToDomain(itemId);
-
-        var state = await _streamingHelper.GetStreamingState(
-                streamingRequest,
-                HttpContext,
-                _encodingHelper,
-                _transcodingJobType,
-                cancellationTokenSource.Token)
-            .ConfigureAwait(false);
-
-        if (request.Static.HasValue && request.Static.Value)
-        {
-            if (state.DirectStreamProvider is not null)
-            {
-                var liveStreamInfo = _mediaSourceManager.GetLiveStreamInfo(streamingRequest.LiveStreamId);
-                if (liveStreamInfo is null)
-                {
-                    return NotFound();
-                }
-
-                var liveStream = new ProgressiveFileStream(liveStreamInfo.GetStream());
-                // TODO (moved from MediaBrowser.Api): Don't hardcode contentType
-                return File(liveStream, MimeTypes.GetMimeType("file.ts"));
-            }
-
-            // Static remote stream
-            if (state.InputProtocol == MediaProtocol.Http)
-            {
-                var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
-                return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, httpClient, HttpContext).ConfigureAwait(false);
-            }
-
-            if (state.InputProtocol != MediaProtocol.File)
-            {
-                return BadRequest($"Input protocol {state.InputProtocol} cannot be streamed statically");
-            }
-
-            // Static stream
-            if (!state.MediaSource.IsDiscSource())
-            {
-                var contentType = state.GetMimeType("." + state.OutputContainer, false) ?? state.GetMimeType(state.MediaPath);
-
-                if (state.MediaSource.IsInfiniteStream)
-                {
-                    var liveStream = new ProgressiveFileStream(state.MediaPath, null, _transcodeManager);
-                    return File(liveStream, contentType);
-                }
-
-                return FileStreamResponseHelpers.GetStaticFileResult(
-                    state.MediaPath,
-                    contentType);
-            }
-        }
-
-        // Need to start ffmpeg (because media can't be returned directly)
-        var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
-        var ffmpegCommandLineArguments = _encodingHelper.GetProgressiveVideoFullCommandLine(state, encodingOptions, "superfast");
-        return await FileStreamResponseHelpers.GetTranscodedFile(
-            state,
-            isHeadRequest,
-            HttpContext,
-            _transcodeManager,
-            ffmpegCommandLineArguments,
-            _transcodingJobType,
-            cancellationTokenSource).ConfigureAwait(false);
+        return await _videoService.GetVideoStreamAsync(itemId, request, Request, HttpContext).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -342,8 +241,8 @@ public class VideosController : BaseJellyfinApiController
     [HttpHead("{itemId}/stream.{request.container}", Name = "HeadVideoStreamByContainer")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesVideoFile]
-    public Task<ActionResult> GetVideoStreamByContainer([FromRoute, Required] Guid itemId, [FromQuery] VideoStreamRequest request)
+    public async Task<ActionResult> GetVideoStreamByContainer([FromRoute, Required] Guid itemId, [FromQuery] VideoStreamRequest request)
     {
-        return GetVideoStream(itemId, request);
+        return await _videoService.GetVideoStreamAsync(itemId, request, Request, HttpContext).ConfigureAwait(false);
     }
 }

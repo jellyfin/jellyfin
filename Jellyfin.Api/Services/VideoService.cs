@@ -1,0 +1,114 @@
+using System;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using Jellyfin.Api.Extensions;
+using Jellyfin.Api.Helpers;
+using Jellyfin.Api.Models.Requests;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Streaming;
+using MediaBrowser.Model;
+using MediaBrowser.Model.MediaInfo;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Jellyfin.Api.Services;
+
+internal class VideoService : IVideoService
+{
+    private readonly IMediaSourceManager _mediaSourceManager;
+    private readonly IServerConfigurationManager _serverConfigurationManager;
+    private readonly ITranscodeManager _transcodeManager;
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly EncodingHelper _encodingHelper;
+    private readonly IStreamingHelper _streamingHelper;
+
+    private readonly TranscodingJobType _transcodingJobType = TranscodingJobType.Progressive;
+
+    public VideoService(IMediaSourceManager mediaSourceManager, IServerConfigurationManager serverConfigurationManager, ITranscodeManager transcodeManager, IHttpClientFactory httpClientFactory, EncodingHelper encodingHelper, IStreamingHelper streamingHelper)
+    {
+        _mediaSourceManager = mediaSourceManager;
+        _serverConfigurationManager = serverConfigurationManager;
+        _transcodeManager = transcodeManager;
+        _httpClientFactory = httpClientFactory;
+        _encodingHelper = encodingHelper;
+        _streamingHelper = streamingHelper;
+    }
+
+    public async Task<ActionResult> GetVideoStreamAsync(Guid itemId, VideoStreamRequest request, HttpRequest httpRequest, HttpContext httpContext)
+    {
+        var isHeadRequest = httpRequest.Method == System.Net.WebRequestMethods.Http.Head;
+        // CTS lifecycle is managed internally.
+        var cancellationTokenSource = new CancellationTokenSource();
+
+        var streamingRequest = request.ToDomain(itemId);
+        var state = await _streamingHelper.GetStreamingState(
+                streamingRequest,
+                httpContext,
+                _encodingHelper,
+                _transcodingJobType,
+                cancellationTokenSource.Token)
+            .ConfigureAwait(false);
+
+        if (request.Static.HasValue && request.Static.Value)
+        {
+            if (state.DirectStreamProvider is not null)
+            {
+                var liveStreamInfo = _mediaSourceManager.GetLiveStreamInfo(streamingRequest.LiveStreamId);
+                if (liveStreamInfo is null)
+                {
+                    return new NotFoundResult();
+                }
+
+                var liveStream = new ProgressiveFileStream(liveStreamInfo.GetStream());
+                // TODO (moved from MediaBrowser.Api): Don't hardcode contentType
+                return new FileStreamResult(liveStream, MimeTypes.GetMimeType("file.ts"));
+            }
+
+            // Static remote stream
+            if (state.InputProtocol == MediaProtocol.Http)
+            {
+                var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
+                return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, httpClient, httpContext).ConfigureAwait(false);
+            }
+
+            if (state.InputProtocol != MediaProtocol.File)
+            {
+                return new BadRequestObjectResult($"Input protocol {state.InputProtocol} cannot be streamed statically");
+            }
+
+            // Static stream
+            if (!state.MediaSource.IsDiscSource())
+            {
+                var contentType = state.GetMimeType("." + state.OutputContainer, false) ?? state.GetMimeType(state.MediaPath);
+
+                if (state.MediaSource.IsInfiniteStream)
+                {
+                    var liveStream = new ProgressiveFileStream(state.MediaPath, null, _transcodeManager);
+                    return new FileStreamResult(liveStream, contentType);
+                }
+
+                return FileStreamResponseHelpers.GetStaticFileResult(
+                    state.MediaPath,
+                    contentType);
+            }
+        }
+
+        // Need to start ffmpeg (because media can't be returned directly)
+        var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
+        var ffmpegCommandLineArguments = _encodingHelper.GetProgressiveVideoFullCommandLine(state, encodingOptions, "superfast");
+        return await FileStreamResponseHelpers.GetTranscodedFile(
+            state,
+            isHeadRequest,
+            httpContext,
+            _transcodeManager,
+            ffmpegCommandLineArguments,
+            _transcodingJobType,
+            cancellationTokenSource).ConfigureAwait(false);
+    }
+}
