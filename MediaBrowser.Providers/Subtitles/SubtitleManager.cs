@@ -48,9 +48,7 @@ namespace MediaBrowser.Providers.Subtitles
             _monitor = monitor;
             _mediaSourceManager = mediaSourceManager;
             _localization = localizationManager;
-            _subtitleProviders = subtitleProviders
-                .OrderBy(i => i is IHasOrder hasOrder ? hasOrder.Order : 0)
-                .ToArray();
+            _subtitleProviders = [.. subtitleProviders.OrderBy(i => i is IHasOrder hasOrder ? hasOrder.Order : 0)];
         }
 
         /// <inheritdoc />
@@ -117,7 +115,7 @@ namespace MediaBrowser.Providers.Subtitles
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error downloading subtitles from {0}", i.Name);
+                    _logger.LogError(ex, "Error downloading subtitles from {Name}", i.Name);
                     return Array.Empty<RemoteSubtitleInfo>();
                 }
             });
@@ -251,7 +249,7 @@ namespace MediaBrowser.Providers.Subtitles
                     Directory.CreateDirectory(Path.GetDirectoryName(savePath) ?? throw new InvalidOperationException("Path can't be a root directory."));
 
                     var fileOptions = AsyncFile.WriteOptions;
-                    fileOptions.Mode = FileMode.CreateNew;
+                    fileOptions.Mode = FileMode.Create;
                     fileOptions.PreallocationSize = stream.Length;
                     var fs = new FileStream(savePath, fileOptions);
                     await using (fs.ConfigureAwait(false))
@@ -263,10 +261,7 @@ namespace MediaBrowser.Providers.Subtitles
                 }
                 catch (Exception ex)
                 {
-// Bug in analyzer -- https://github.com/dotnet/roslyn-analyzers/issues/5160
-#pragma warning disable CA1508
-                    (exs ??= new List<Exception>()).Add(ex);
-#pragma warning restore CA1508
+                    (exs ??= []).Add(ex);
                 }
                 finally
                 {
