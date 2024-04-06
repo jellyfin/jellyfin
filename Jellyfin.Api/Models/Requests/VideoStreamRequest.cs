@@ -199,7 +199,7 @@ public class VideoStreamRequest
     /// gets or sets Optional. The index of the subtitle stream to use. If omitted no subtitles will be used.
     /// </summary>
     [FromQuery]
-    public int? SubtitleStremaIndex { get; set; }
+    public int? SubtitleStreamIndex { get; set; }
 
     /// <summary>
     /// gets or sets Optional. Specify the subtitle delivery method.

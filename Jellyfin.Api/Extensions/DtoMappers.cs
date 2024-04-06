@@ -43,7 +43,7 @@ internal static class DtoMappers
             MaxWidth = request.MaxWidth,
             MaxHeight = request.MaxHeight,
             VideoBitRate = request.VideoBitRate,
-            SubtitleStreamIndex = request.SubtitleStremaIndex,
+            SubtitleStreamIndex = request.SubtitleStreamIndex,
             SubtitleMethod = request.SubtitleDeliveryMethod ?? SubtitleDeliveryMethod.Encode,
             MaxRefFrames = request.MaxRefFrames,
             MaxVideoBitDepth = request.MaxVideoBitDepth,
