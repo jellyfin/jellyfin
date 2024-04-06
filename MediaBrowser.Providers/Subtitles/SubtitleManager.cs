@@ -203,8 +203,6 @@ namespace MediaBrowser.Providers.Subtitles
                     saveFileName += ".sdh";
                 }
 
-                saveFileName += "." + response.Format.ToLowerInvariant();
-
                 if (saveInMediaFolder)
                 {
                     var mediaFolderPath = Path.GetFullPath(Path.Combine(video.ContainingFolderPath, saveFileName));
@@ -225,7 +223,7 @@ namespace MediaBrowser.Providers.Subtitles
 
                 if (savePaths.Count > 0)
                 {
-                    await TrySaveToFiles(memoryStream, savePaths).ConfigureAwait(false);
+                    await TrySaveToFiles(memoryStream, savePaths, response.Format.ToLowerInvariant()).ConfigureAwait(false);
                 }
                 else
                 {
@@ -234,24 +232,34 @@ namespace MediaBrowser.Providers.Subtitles
             }
         }
 
-        private async Task TrySaveToFiles(Stream stream, List<string> savePaths)
+        private async Task TrySaveToFiles(Stream stream, List<string> savePaths, string extension)
         {
             List<Exception>? exs = null;
 
             foreach (var savePath in savePaths)
             {
-                _logger.LogInformation("Saving subtitles to {SavePath}", savePath);
-
-                _monitor.ReportFileSystemChangeBeginning(savePath);
-
+                var path = savePath;
                 try
                 {
-                    Directory.CreateDirectory(Path.GetDirectoryName(savePath) ?? throw new InvalidOperationException("Path can't be a root directory."));
+                    var fileExists = File.Exists(savePath + "." + extension);
+                    var counter = 0;
+
+                    while (fileExists)
+                    {
+                        counter++;
+                        path = string.Format(CultureInfo.InvariantCulture, "{0}.{1}.{2}", savePath, counter, extension);
+                        fileExists = File.Exists(path);
+                    }
+
+                    _logger.LogInformation("Saving subtitles to {SavePath}", path);
+                    _monitor.ReportFileSystemChangeBeginning(path);
+
+                    Directory.CreateDirectory(Path.GetDirectoryName(path) ?? throw new InvalidOperationException("Path can't be a root directory."));
 
                     var fileOptions = AsyncFile.WriteOptions;
                     fileOptions.Mode = FileMode.Create;
                     fileOptions.PreallocationSize = stream.Length;
-                    var fs = new FileStream(savePath, fileOptions);
+                    var fs = new FileStream(path, fileOptions);
                     await using (fs.ConfigureAwait(false))
                     {
                         await stream.CopyToAsync(fs).ConfigureAwait(false);
@@ -265,7 +273,7 @@ namespace MediaBrowser.Providers.Subtitles
                 }
                 finally
                 {
-                    _monitor.ReportFileSystemChangeComplete(savePath, false);
+                    _monitor.ReportFileSystemChangeComplete(path, false);
                 }
 
                 stream.Position = 0;
