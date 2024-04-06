@@ -257,7 +257,7 @@ namespace MediaBrowser.Providers.Subtitles
                     Directory.CreateDirectory(Path.GetDirectoryName(path) ?? throw new InvalidOperationException("Path can't be a root directory."));
 
                     var fileOptions = AsyncFile.WriteOptions;
-                    fileOptions.Mode = FileMode.Create;
+                    fileOptions.Mode = FileMode.CreateNew;
                     fileOptions.PreallocationSize = stream.Length;
                     var fs = new FileStream(path, fileOptions);
                     await using (fs.ConfigureAwait(false))
