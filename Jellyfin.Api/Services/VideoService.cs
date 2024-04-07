@@ -8,7 +8,6 @@ using Jellyfin.Api.Models.Requests;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Streaming;
@@ -19,7 +18,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Jellyfin.Api.Services;
 
-internal class VideoService : IVideoService
+/// <summary>
+/// Video Stream processing service.
+/// </summary>
+public class VideoService : IVideoService
 {
     private readonly IMediaSourceManager _mediaSourceManager;
     private readonly IServerConfigurationManager _serverConfigurationManager;
@@ -30,6 +32,15 @@ internal class VideoService : IVideoService
 
     private readonly TranscodingJobType _transcodingJobType = TranscodingJobType.Progressive;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="VideoService"/> class.
+    /// </summary>
+    /// <param name="mediaSourceManager">Instance of <see cref="IMediaSourceManager"/>.</param>
+    /// <param name="serverConfigurationManager">Instance of <see cref="IServerConfigurationManager"/>.</param>
+    /// <param name="transcodeManager">Instance of <see cref="ITranscodeManager"/>.</param>
+    /// <param name="httpClientFactory">Instance of <see cref="IHttpClientFactory"/>.</param>
+    /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
+    /// <param name="streamingHelper">Instance of <see cref="IStreamingHelper"/>.</param>
     public VideoService(IMediaSourceManager mediaSourceManager, IServerConfigurationManager serverConfigurationManager, ITranscodeManager transcodeManager, IHttpClientFactory httpClientFactory, EncodingHelper encodingHelper, IStreamingHelper streamingHelper)
     {
         _mediaSourceManager = mediaSourceManager;
@@ -40,6 +51,14 @@ internal class VideoService : IVideoService
         _streamingHelper = streamingHelper;
     }
 
+    /// <summary>
+    /// Gets the video stream to return.
+    /// </summary>
+    /// <param name="itemId">item id.</param>
+    /// <param name="request">the web request.</param>
+    /// <param name="httpRequest">the http request.</param>
+    /// <param name="httpContext">the http context.</param>
+    /// <returns>web response.</returns>
     public async Task<ActionResult> GetVideoStreamAsync(Guid itemId, VideoStreamRequest request, HttpRequest httpRequest, HttpContext httpContext)
     {
         var isHeadRequest = httpRequest.Method == System.Net.WebRequestMethods.Http.Head;
