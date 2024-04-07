@@ -9,7 +9,6 @@ using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
-using Jellyfin.Api.Models.Requests;
 using Jellyfin.Api.Services;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Api;
@@ -17,6 +16,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -330,13 +330,13 @@ public class VideosController : BaseJellyfinApiController
         [FromQuery] EncodingContext? context,
         [FromQuery] Dictionary<string, string> streamOptions)
     {
-        var request = new VideoStreamRequest()
+        VideoRequestDto streamingRequest = new VideoRequestDto
         {
+            Id = itemId,
             Container = container,
-            Static = @static,
+            Static = @static ?? false,
             Params = @params,
             Tag = tag,
-            DeviceProfileId = deviceProfileId,
             PlaySessionId = playSessionId,
             SegmentContainer = segmentContainer,
             SegmentLength = segmentLength,
@@ -344,47 +344,47 @@ public class VideosController : BaseJellyfinApiController
             MediaSourceId = mediaSourceId,
             DeviceId = deviceId,
             AudioCodec = audioCodec,
-            EnableAutoStreamCopy = enableAutoStreamCopy,
-            AllowVideoStreamCopy = allowVideoStreamCopy,
-            AllowAudioStreamCopy = allowAudioStreamCopy,
-            BreakOnNonKeyFrames = breakOnNonKeyFrames,
+            EnableAutoStreamCopy = enableAutoStreamCopy ?? true,
+            AllowAudioStreamCopy = allowAudioStreamCopy ?? true,
+            AllowVideoStreamCopy = allowVideoStreamCopy ?? true,
+            BreakOnNonKeyFrames = breakOnNonKeyFrames ?? false,
             AudioSampleRate = audioSampleRate,
-            AudioChannels = audioChannels,
             MaxAudioChannels = maxAudioChannels,
+            AudioBitRate = audioBitRate,
+            MaxAudioBitDepth = maxAudioBitDepth,
+            AudioChannels = audioChannels,
             Profile = profile,
             Level = level,
             Framerate = framerate,
             MaxFramerate = maxFramerate,
-            CopyTimestamps = copyTimestamps,
+            CopyTimestamps = copyTimestamps ?? false,
             StartTimeTicks = startTimeTicks,
             Width = width,
             Height = height,
-            MaxWidth = maxWidth,
-            MaxHeight = maxHeight,
             VideoBitRate = videoBitRate,
             SubtitleStreamIndex = subtitleStreamIndex,
-            SubtitleDeliveryMethod = subtitleMethod,
+            SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.Encode,
             MaxRefFrames = maxRefFrames,
             MaxVideoBitDepth = maxVideoBitDepth,
-            MaxAudioBitDepth = maxAudioBitDepth,
-            AudioBitRate = audioBitRate,
-            RequireAvc = requireAvc,
-            DeInterlace = deInterlace,
-            RequireNoAnamorphic = requireNonAnamorphic,
+            RequireAvc = requireAvc ?? false,
+            DeInterlace = deInterlace ?? false,
+            RequireNonAnamorphic = requireNonAnamorphic ?? false,
             TranscodingMaxAudioChannels = transcodingMaxAudioChannels,
             CpuCoreLimit = cpuCoreLimit,
             LiveStreamId = liveStreamId,
-            EnableMpegM2TsMode = enableMpegtsM2TsMode,
+            EnableMpegtsM2TsMode = enableMpegtsM2TsMode ?? false,
             VideoCodec = videoCodec,
             SubtitleCodec = subtitleCodec,
             TranscodeReasons = transcodeReasons,
             AudioStreamIndex = audioStreamIndex,
             VideoStreamIndex = videoStreamIndex,
-            Context = context,
+            Context = context ?? EncodingContext.Streaming,
             StreamOptions = streamOptions,
+            MaxHeight = maxHeight,
+            MaxWidth = maxWidth
         };
 
-        return await _videoService.GetVideoStreamAsync(itemId, request, Request, HttpContext).ConfigureAwait(false);
+        return await _videoService.GetVideoStreamAsync(streamingRequest, Request, HttpContext).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -500,13 +500,13 @@ public class VideosController : BaseJellyfinApiController
         [FromQuery] EncodingContext? context,
         [FromQuery] Dictionary<string, string> streamOptions)
     {
-        var request = new VideoStreamRequest()
+        VideoRequestDto streamingRequest = new VideoRequestDto
         {
+            Id = itemId,
             Container = container,
-            Static = @static,
+            Static = @static ?? false,
             Params = @params,
             Tag = tag,
-            DeviceProfileId = deviceProfileId,
             PlaySessionId = playSessionId,
             SegmentContainer = segmentContainer,
             SegmentLength = segmentLength,
@@ -514,46 +514,46 @@ public class VideosController : BaseJellyfinApiController
             MediaSourceId = mediaSourceId,
             DeviceId = deviceId,
             AudioCodec = audioCodec,
-            EnableAutoStreamCopy = enableAutoStreamCopy,
-            AllowVideoStreamCopy = allowVideoStreamCopy,
-            AllowAudioStreamCopy = allowAudioStreamCopy,
-            BreakOnNonKeyFrames = breakOnNonKeyFrames,
+            EnableAutoStreamCopy = enableAutoStreamCopy ?? true,
+            AllowAudioStreamCopy = allowAudioStreamCopy ?? true,
+            AllowVideoStreamCopy = allowVideoStreamCopy ?? true,
+            BreakOnNonKeyFrames = breakOnNonKeyFrames ?? false,
             AudioSampleRate = audioSampleRate,
-            AudioChannels = audioChannels,
             MaxAudioChannels = maxAudioChannels,
+            AudioBitRate = audioBitRate,
+            MaxAudioBitDepth = maxAudioBitDepth,
+            AudioChannels = audioChannels,
             Profile = profile,
             Level = level,
             Framerate = framerate,
             MaxFramerate = maxFramerate,
-            CopyTimestamps = copyTimestamps,
+            CopyTimestamps = copyTimestamps ?? false,
             StartTimeTicks = startTimeTicks,
             Width = width,
             Height = height,
-            MaxWidth = maxWidth,
-            MaxHeight = maxHeight,
             VideoBitRate = videoBitRate,
             SubtitleStreamIndex = subtitleStreamIndex,
-            SubtitleDeliveryMethod = subtitleMethod,
+            SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.Encode,
             MaxRefFrames = maxRefFrames,
             MaxVideoBitDepth = maxVideoBitDepth,
-            MaxAudioBitDepth = maxAudioBitDepth,
-            AudioBitRate = audioBitRate,
-            RequireAvc = requireAvc,
-            DeInterlace = deInterlace,
-            RequireNoAnamorphic = requireNonAnamorphic,
+            RequireAvc = requireAvc ?? false,
+            DeInterlace = deInterlace ?? false,
+            RequireNonAnamorphic = requireNonAnamorphic ?? false,
             TranscodingMaxAudioChannels = transcodingMaxAudioChannels,
             CpuCoreLimit = cpuCoreLimit,
             LiveStreamId = liveStreamId,
-            EnableMpegM2TsMode = enableMpegtsM2TsMode,
+            EnableMpegtsM2TsMode = enableMpegtsM2TsMode ?? false,
             VideoCodec = videoCodec,
             SubtitleCodec = subtitleCodec,
             TranscodeReasons = transcodeReasons,
             AudioStreamIndex = audioStreamIndex,
             VideoStreamIndex = videoStreamIndex,
-            Context = context,
+            Context = context ?? EncodingContext.Streaming,
             StreamOptions = streamOptions,
+            MaxHeight = maxHeight,
+            MaxWidth = maxWidth
         };
 
-        return await _videoService.GetVideoStreamAsync(itemId, request, Request, HttpContext).ConfigureAwait(false);
+        return await _videoService.GetVideoStreamAsync(streamingRequest, Request, HttpContext).ConfigureAwait(false);
     }
 }

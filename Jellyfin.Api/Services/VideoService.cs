@@ -1,10 +1,7 @@
-using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
-using Jellyfin.Api.Models.Requests;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -54,31 +51,29 @@ public class VideoService : IVideoService
     /// <summary>
     /// Gets the video stream to return.
     /// </summary>
-    /// <param name="itemId">item id.</param>
     /// <param name="request">the web request.</param>
     /// <param name="httpRequest">the http request.</param>
     /// <param name="httpContext">the http context.</param>
     /// <returns>web response.</returns>
-    public async Task<ActionResult> GetVideoStreamAsync(Guid itemId, VideoStreamRequest request, HttpRequest httpRequest, HttpContext httpContext)
+    public async Task<ActionResult> GetVideoStreamAsync(VideoRequestDto request, HttpRequest httpRequest, HttpContext httpContext)
     {
         var isHeadRequest = httpRequest.Method == System.Net.WebRequestMethods.Http.Head;
         // CTS lifecycle is managed internally.
         var cancellationTokenSource = new CancellationTokenSource();
 
-        var streamingRequest = request.ToDomain(itemId);
         var state = await _streamingHelper.GetStreamingState(
-                streamingRequest,
+                request,
                 httpContext,
                 _encodingHelper,
                 _transcodingJobType,
                 cancellationTokenSource.Token)
             .ConfigureAwait(false);
 
-        if (request.Static.HasValue && request.Static.Value)
+        if (request.Static)
         {
             if (state.DirectStreamProvider is not null)
             {
-                var liveStreamInfo = _mediaSourceManager.GetLiveStreamInfo(streamingRequest.LiveStreamId);
+                var liveStreamInfo = _mediaSourceManager.GetLiveStreamInfo(request.LiveStreamId);
                 if (liveStreamInfo is null)
                 {
                     return new NotFoundResult();
