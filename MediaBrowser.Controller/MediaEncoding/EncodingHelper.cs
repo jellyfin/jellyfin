@@ -107,7 +107,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             { "wmav2", 2 },
             { "libmp3lame", 2 },
             { "libfdk_aac", 6 },
-            { "aac_at", 6 },
             { "ac3", 6 },
             { "eac3", 6 },
             { "dca", 6 },
