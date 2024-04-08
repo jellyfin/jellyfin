@@ -165,7 +165,7 @@ public class SubtitleController : BaseJellyfinApiController
     /// <response code="200">File returned.</response>
     /// <returns>A <see cref="FileStreamResult"/> with the subtitle file.</returns>
     [HttpGet("Providers/Subtitles/Subtitles/{subtitleId}")]
-    [Authorize]
+    [Authorize(Policy = Policies.SubtitleManagement)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Produces(MediaTypeNames.Application.Octet)]
     [ProducesFile("text/*")]
