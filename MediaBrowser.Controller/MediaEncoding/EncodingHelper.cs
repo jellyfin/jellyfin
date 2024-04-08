@@ -107,7 +107,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             { "wmav2", 2 },
             { "libmp3lame", 2 },
             { "libfdk_aac", 6 },
-            { "aac_at", 6 },
             { "ac3", 6 },
             { "eac3", 6 },
             { "dca", 6 },
@@ -750,6 +749,15 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (string.Equals(codec, "dts", StringComparison.OrdinalIgnoreCase))
             {
                 return "dca";
+            }
+
+            if (string.Equals(codec, "alac", StringComparison.OrdinalIgnoreCase))
+            {
+                // The ffmpeg upstream breaks the AudioToolbox ALAC encoder in version 6.1 but fixes it in version 7.0.
+                // Since ALAC is lossless in quality and the AudioToolbox encoder is not faster,
+                // its only benefit is a smaller file size.
+                // To prevent problems, use the ffmpeg native encoder instead.
+                return "alac";
             }
 
             return codec.ToLowerInvariant();
