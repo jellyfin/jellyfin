@@ -1,4 +1,5 @@
 using System;
+using Emby.Server.Implementations.Migrations;
 using MediaBrowser.Controller.Configuration;
 
 namespace Jellyfin.Server.Migrations.Routines;
@@ -6,7 +7,7 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// Migration to update the default Jellyfin plugin repository.
 /// </summary>
-public class UpdateDefaultPluginRepository : IMigrationRoutine
+public partial class UpdateDefaultPluginRepository : IPostStartupMigrationRoutine
 {
     private const string NewRepositoryUrl = "https://repo.jellyfin.org/files/plugin/manifest.json";
     private const string OldRepositoryUrl = "https://repo.jellyfin.org/releases/plugin/manifest-stable.json";
@@ -27,6 +28,9 @@ public class UpdateDefaultPluginRepository : IMigrationRoutine
 
     /// <inheritdoc />
     public string Name => "UpdateDefaultPluginRepository10.9";
+
+    /// <inheritdoc />
+    public long Timestamp => 20240328170000L;
 
     /// <inheritdoc />
     public bool PerformOnNewInstall => true;

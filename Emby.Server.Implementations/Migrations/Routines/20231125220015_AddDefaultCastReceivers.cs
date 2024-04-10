@@ -2,12 +2,12 @@
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.System;
 
-namespace Jellyfin.Server.Migrations.Routines;
+namespace Emby.Server.Implementations.Migrations.Routines;
 
 /// <summary>
 /// Migration to add the default cast receivers to the system config.
 /// </summary>
-public class AddDefaultCastReceivers : IMigrationRoutine
+public partial class AddDefaultCastReceivers : IPostStartupMigrationRoutine
 {
     private readonly IServerConfigurationManager _serverConfigurationManager;
 
@@ -25,6 +25,9 @@ public class AddDefaultCastReceivers : IMigrationRoutine
 
     /// <inheritdoc />
     public string Name => "AddDefaultCastReceivers";
+
+    /// <inheritdoc />
+    public long Timestamp => 20231125220015L;
 
     /// <inheritdoc />
     public bool PerformOnNewInstall => true;

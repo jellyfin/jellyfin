@@ -5,14 +5,14 @@ using System.Linq;
 using MediaBrowser.Common.Configuration;
 using Newtonsoft.Json.Linq;
 
-namespace Jellyfin.Server.Migrations.Routines
+namespace Emby.Server.Implementations.Migrations.Routines
 {
     /// <summary>
     /// Migration to initialize the user logging configuration file "logging.user.json".
     /// If the deprecated logging.json file exists and has a custom config, it will be used as logging.user.json,
     /// otherwise a blank file will be created.
     /// </summary>
-    internal class CreateUserLoggingConfigFile : IMigrationRoutine
+    public partial class CreateUserLoggingConfigFile : IPostStartupMigrationRoutine
     {
         /// <summary>
         /// File history for logging.json as existed during this migration creation. The contents for each has been minified.
@@ -37,6 +37,10 @@ namespace Jellyfin.Server.Migrations.Routines
 
         private readonly IApplicationPaths _appPaths;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CreateUserLoggingConfigFile"/> class.
+        /// </summary>
+        /// <param name="appPaths">The application paths.</param>
         public CreateUserLoggingConfigFile(IApplicationPaths appPaths)
         {
             _appPaths = appPaths;
@@ -47,6 +51,9 @@ namespace Jellyfin.Server.Migrations.Routines
 
         /// <inheritdoc/>
         public string Name => "CreateLoggingConfigHeirarchy";
+
+        /// <inheritdoc />
+        public long Timestamp => 20231125220004L;
 
         /// <inheritdoc/>
         public bool PerformOnNewInstall => false;

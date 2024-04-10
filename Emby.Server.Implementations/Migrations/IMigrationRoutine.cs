@@ -1,6 +1,6 @@
 using System;
 
-namespace Jellyfin.Server.Migrations
+namespace Emby.Server.Implementations.Migrations
 {
     /// <summary>
     /// Interface that describes a migration routine.
@@ -16,6 +16,11 @@ namespace Jellyfin.Server.Migrations
         /// Gets the display name of the migration.
         /// </summary>
         public string Name { get; }
+
+        /// <summary>
+        /// Gets the timestamp from when this migration was written.
+        /// </summary>
+        public long Timestamp { get; }
 
         /// <summary>
         /// Gets a value indicating whether to perform migration on a new install.

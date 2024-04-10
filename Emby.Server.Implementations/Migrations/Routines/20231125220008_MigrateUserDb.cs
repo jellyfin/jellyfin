@@ -16,12 +16,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
-namespace Jellyfin.Server.Migrations.Routines
+namespace Emby.Server.Implementations.Migrations.Routines
 {
     /// <summary>
     /// The migration routine for migrating the user database to EF Core.
     /// </summary>
-    public class MigrateUserDb : IMigrationRoutine
+    public partial class MigrateUserDb : IPostStartupMigrationRoutine
     {
         private const string DbFilename = "users.db";
 
@@ -54,6 +54,9 @@ namespace Jellyfin.Server.Migrations.Routines
 
         /// <inheritdoc/>
         public string Name => "MigrateUserDatabase";
+
+        /// <inheritdoc />
+        public long Timestamp => 20231125220008L;
 
         /// <inheritdoc/>
         public bool PerformOnNewInstall => false;

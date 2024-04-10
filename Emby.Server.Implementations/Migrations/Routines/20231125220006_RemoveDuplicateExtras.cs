@@ -7,17 +7,22 @@ using MediaBrowser.Controller;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Server.Migrations.Routines
+namespace Emby.Server.Implementations.Migrations.Routines
 {
     /// <summary>
     /// Remove duplicate entries which were caused by a bug where a file was considered to be an "Extra" to itself.
     /// </summary>
-    internal class RemoveDuplicateExtras : IMigrationRoutine
+    public partial class RemoveDuplicateExtras : IPostStartupMigrationRoutine
     {
         private const string DbFilename = "library.db";
         private readonly ILogger<RemoveDuplicateExtras> _logger;
         private readonly IServerApplicationPaths _paths;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RemoveDuplicateExtras"/> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="paths">The application paths.</param>
         public RemoveDuplicateExtras(ILogger<RemoveDuplicateExtras> logger, IServerApplicationPaths paths)
         {
             _logger = logger;
@@ -29,6 +34,9 @@ namespace Jellyfin.Server.Migrations.Routines
 
         /// <inheritdoc/>
         public string Name => "RemoveDuplicateExtras";
+
+        /// <inheritdoc />
+        public long Timestamp => 20231125220006L;
 
         /// <inheritdoc/>
         public bool PerformOnNewInstall => false;

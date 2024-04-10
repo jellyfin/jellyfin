@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using CommandLine;
 using Emby.Server.Implementations;
+using Emby.Server.Implementations.Migrations;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Helpers;
 using Jellyfin.Server.Implementations;
@@ -113,7 +114,7 @@ namespace Jellyfin.Server
             }
 
             StartupHelpers.PerformStaticInitialization();
-            Migrations.MigrationRunner.RunPreStartup(appPaths, _loggerFactory);
+            MigrationRunner.RunPreStartup(appPaths, _loggerFactory);
 
             do
             {
@@ -157,7 +158,7 @@ namespace Jellyfin.Server
                 appHost.ServiceProvider = host.Services;
 
                 await appHost.InitializeServices().ConfigureAwait(false);
-                Migrations.MigrationRunner.Run(appHost, _loggerFactory);
+                MigrationRunner.Run(appHost.ServiceProvider, appHost.ConfigurationManager, _loggerFactory);
 
                 try
                 {
