@@ -969,7 +969,8 @@ namespace MediaBrowser.Providers.Manager
             _logger.LogDebug("OnRefreshProgress {Id:N} {Progress}", id, progress);
 
             if (!_activeRefreshes.TryGetValue(id, out var current)
-                || !_activeRefreshes.TryUpdate(id, progress, current))
+                || progress <= current
+                || (progress > current && !_activeRefreshes.TryUpdate(id, progress, current)))
             {
                 // Item isn't currently refreshing so don't trigger event.
                 return;
