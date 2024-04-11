@@ -972,7 +972,7 @@ namespace MediaBrowser.Providers.Manager
                 || progress <= current
                 || !_activeRefreshes.TryUpdate(id, progress, current))
             {
-                // Item isn't currently refreshing so don't trigger event.
+                // Item isn't currently refreshing, or update was received out-of-order, so don't trigger event.
                 return;
             }
 
