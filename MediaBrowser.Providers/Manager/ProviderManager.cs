@@ -968,16 +968,12 @@ namespace MediaBrowser.Providers.Manager
             var id = item.Id;
             _logger.LogDebug("OnRefreshProgress {Id:N} {Progress}", id, progress);
 
-            // TODO: Need to hunt down the conditions for this happening
-            _activeRefreshes.AddOrUpdate(
-                id,
-                _ => throw new InvalidOperationException(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "Cannot update refresh progress of item '{0}' ({1}) because a refresh for this item is not running",
-                        item.GetType().Name,
-                        item.Id.ToString("N", CultureInfo.InvariantCulture))),
-                (_, _) => progress);
+            if (!_activeRefreshes.TryGetValue(id, out var current)
+                || !_activeRefreshes.TryUpdate(id, progress, current))
+            {
+                // Item isn't currently refreshing so don't trigger event.
+                return;
+            }
 
             try
             {
