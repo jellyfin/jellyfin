@@ -970,7 +970,7 @@ namespace MediaBrowser.Providers.Manager
 
             if (!_activeRefreshes.TryGetValue(id, out var current)
                 || progress <= current
-                || (progress > current && !_activeRefreshes.TryUpdate(id, progress, current)))
+                || !_activeRefreshes.TryUpdate(id, progress, current))
             {
                 // Item isn't currently refreshing so don't trigger event.
                 return;
