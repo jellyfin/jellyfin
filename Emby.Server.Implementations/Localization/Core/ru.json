@@ -126,5 +126,7 @@
     "External": "Внешние",
     "HearingImpaired": "Для слабослышащих",
     "TaskRefreshTrickplayImages": "Сгенерировать изображения для Trickplay",
-    "TaskRefreshTrickplayImagesDescription": "Создает предпросмотры для Trickplay для видео в библиотеках, где эта функция включена."
+    "TaskRefreshTrickplayImagesDescription": "Создает предпросмотры для Trickplay для видео в библиотеках, где эта функция включена.",
+    "TaskCleanCollectionsAndPlaylists": "Очистка коллекций и списков воспроизведения",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Удаляет элементы из коллекций и списков воспроизведения, которые больше не существуют."
 }

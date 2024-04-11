@@ -126,5 +126,7 @@
     "External": "Extern",
     "HearingImpaired": "Slechthorend",
     "TaskRefreshTrickplayImages": "Trickplay-afbeeldingen genereren",
-    "TaskRefreshTrickplayImagesDescription": "Creëert trickplay-voorvertoningen voor video's in bibliotheken waarvoor dit is ingeschakeld."
+    "TaskRefreshTrickplayImagesDescription": "Creëert trickplay-voorvertoningen voor video's in bibliotheken waarvoor dit is ingeschakeld.",
+    "TaskCleanCollectionsAndPlaylists": "Collecties en afspeellijsten opruimen",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Verwijdert niet langer bestaande items uit collecties en afspeellijsten."
 }

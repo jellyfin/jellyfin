@@ -126,5 +126,7 @@
     "External": "Externé",
     "HearingImpaired": "Sluchovo postihnutí",
     "TaskRefreshTrickplayImages": "Generovanie obrázkov Trickplay",
-    "TaskRefreshTrickplayImagesDescription": "Vytvára trickplay náhľady pre videá v povolených knižniciach."
+    "TaskRefreshTrickplayImagesDescription": "Vytvára trickplay náhľady pre videá v povolených knižniciach.",
+    "TaskCleanCollectionsAndPlaylists": "Vyčistiť kolekcie a playlisty",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Odstráni položky z kolekcií a playlistov, ktoré už neexistujú."
 }

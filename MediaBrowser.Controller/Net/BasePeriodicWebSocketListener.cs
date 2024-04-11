@@ -33,7 +33,7 @@ namespace MediaBrowser.Controller.Net
             SingleWriter = false
         });
 
-        private readonly SemaphoreSlim _lock = new(1, 1);
+        private readonly object _activeConnectionsLock = new();
 
         /// <summary>
         /// The _active connections.
@@ -126,14 +126,9 @@ namespace MediaBrowser.Controller.Net
                 InitialDelayMs = dueTimeMs
             };
 
-            _lock.Wait();
-            try
+            lock (_activeConnectionsLock)
             {
                 _activeConnections.Add((message.Connection, cancellationTokenSource, state));
-            }
-            finally
-            {
-                _lock.Release();
             }
         }
 
@@ -153,8 +148,7 @@ namespace MediaBrowser.Controller.Net
                         (IWebSocketConnection Connection, CancellationTokenSource CancellationTokenSource, TStateType State)[] tuples;
 
                         var now = DateTime.UtcNow;
-                        await _lock.WaitAsync().ConfigureAwait(false);
-                        try
+                        lock (_activeConnectionsLock)
                         {
                             if (_activeConnections.Count == 0)
                             {
@@ -173,10 +167,6 @@ namespace MediaBrowser.Controller.Net
                                     return force || (now - state.DateLastSendUtc).TotalMilliseconds >= state.IntervalMs;
                                 })
                                 .ToArray();
-                        }
-                        finally
-                        {
-                            _lock.Release();
                         }
 
                         if (tuples.Length == 0)
@@ -240,8 +230,7 @@ namespace MediaBrowser.Controller.Net
         /// <param name="message">The message.</param>
         private void Stop(WebSocketMessageInfo message)
         {
-            _lock.Wait();
-            try
+            lock (_activeConnectionsLock)
             {
                 var connection = _activeConnections.FirstOrDefault(c => c.Connection == message.Connection);
 
@@ -249,10 +238,6 @@ namespace MediaBrowser.Controller.Net
                 {
                     DisposeConnection(connection);
                 }
-            }
-            finally
-            {
-                _lock.Release();
             }
         }
 
@@ -283,14 +268,9 @@ namespace MediaBrowser.Controller.Net
                 Logger.LogError(ex, "Error disposing websocket");
             }
 
-            _lock.Wait();
-            try
+            lock (_activeConnectionsLock)
             {
                 _activeConnections.Remove(connection);
-            }
-            finally
-            {
-                _lock.Release();
             }
         }
 
@@ -306,17 +286,12 @@ namespace MediaBrowser.Controller.Net
                 Logger.LogError(ex, "Disposing the message consumer failed");
             }
 
-            await _lock.WaitAsync().ConfigureAwait(false);
-            try
+            lock (_activeConnectionsLock)
             {
                 foreach (var connection in _activeConnections.ToArray())
                 {
                     DisposeConnection(connection);
                 }
-            }
-            finally
-            {
-                _lock.Release();
             }
         }
 

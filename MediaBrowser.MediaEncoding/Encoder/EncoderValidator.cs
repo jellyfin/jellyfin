@@ -69,6 +69,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "aac_at",
             "libfdk_aac",
             "ac3",
+            "alac",
             "dca",
             "libmp3lame",
             "libopus",

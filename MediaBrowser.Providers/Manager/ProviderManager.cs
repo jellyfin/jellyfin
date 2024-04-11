@@ -1106,7 +1106,8 @@ namespace MediaBrowser.Providers.Manager
 
             var musicArtists = albums
                 .Select(i => i.MusicArtist)
-                .Where(i => i is not null);
+                .Where(i => i is not null)
+                .Distinct();
 
             var musicArtistRefreshTasks = musicArtists.Select(i => i.ValidateChildren(new Progress<double>(), options, true, cancellationToken));
 

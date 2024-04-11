@@ -126,5 +126,7 @@
     "External": "Externo",
     "HearingImpaired": "Surdo",
     "TaskRefreshTrickplayImages": "Gerar imagens de truques",
-    "TaskRefreshTrickplayImagesDescription": "Cria vizualizações de truques para videos nas librarias ativas."
+    "TaskRefreshTrickplayImagesDescription": "Cria vizualizações de truques para videos nas librarias ativas.",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Remove itens de coleções e listas de reprodução que já não existem.",
+    "TaskCleanCollectionsAndPlaylists": "Limpar coleções e listas de reprodução"
 }

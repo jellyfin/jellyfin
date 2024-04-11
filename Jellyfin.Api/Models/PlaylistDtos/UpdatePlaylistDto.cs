@@ -1,45 +1,34 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using Jellyfin.Data.Enums;
 using Jellyfin.Extensions.Json.Converters;
 using MediaBrowser.Model.Entities;
 
 namespace Jellyfin.Api.Models.PlaylistDtos;
 
 /// <summary>
-/// Create new playlist dto.
+/// Update existing playlist dto. Fields set to `null` will not be updated and keep their current values.
 /// </summary>
-public class CreatePlaylistDto
+public class UpdatePlaylistDto
 {
     /// <summary>
     /// Gets or sets the name of the new playlist.
     /// </summary>
-    public required string Name { get; set; }
+    public string? Name { get; set; }
 
     /// <summary>
-    /// Gets or sets item ids to add to the playlist.
+    /// Gets or sets item ids of the playlist.
     /// </summary>
     [JsonConverter(typeof(JsonCommaDelimitedArrayConverterFactory))]
-    public IReadOnlyList<Guid> Ids { get; set; } = [];
-
-    /// <summary>
-    /// Gets or sets the user id.
-    /// </summary>
-    public Guid? UserId { get; set; }
-
-    /// <summary>
-    /// Gets or sets the media type.
-    /// </summary>
-    public MediaType? MediaType { get; set; }
+    public IReadOnlyList<Guid>? Ids { get; set; }
 
     /// <summary>
     /// Gets or sets the playlist users.
     /// </summary>
-    public IReadOnlyList<PlaylistUserPermissions> Users { get; set; } = [];
+    public IReadOnlyList<PlaylistUserPermissions>? Users { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether the playlist is public.
     /// </summary>
-    public bool IsPublic { get; set; } = true;
+    public bool? IsPublic { get; set; }
 }

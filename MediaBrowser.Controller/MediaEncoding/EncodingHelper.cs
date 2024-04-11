@@ -107,7 +107,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             { "wmav2", 2 },
             { "libmp3lame", 2 },
             { "libfdk_aac", 6 },
-            { "aac_at", 6 },
             { "ac3", 6 },
             { "eac3", 6 },
             { "dca", 6 },
@@ -752,6 +751,15 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return "dca";
             }
 
+            if (string.Equals(codec, "alac", StringComparison.OrdinalIgnoreCase))
+            {
+                // The ffmpeg upstream breaks the AudioToolbox ALAC encoder in version 6.1 but fixes it in version 7.0.
+                // Since ALAC is lossless in quality and the AudioToolbox encoder is not faster,
+                // its only benefit is a smaller file size.
+                // To prevent problems, use the ffmpeg native encoder instead.
+                return "alac";
+            }
+
             return codec.ToLowerInvariant();
         }
 
@@ -1333,7 +1341,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             return ".ts";
         }
 
-        public string GetVideoBitrateParam(EncodingJobInfo state, string videoCodec)
+        private string GetVideoBitrateParam(EncodingJobInfo state, string videoCodec)
         {
             if (state.OutputVideoBitrate is null)
             {
@@ -1402,7 +1410,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 // The `maxrate` and `bufsize` options can potentially lead to performance regression
                 // and even encoder hangs, especially when the value is very high.
-                return FormattableString.Invariant($" -b:v {bitrate}");
+                return FormattableString.Invariant($" -b:v {bitrate} -qmin -1 -qmax -1");
             }
 
             return FormattableString.Invariant($" -b:v {bitrate} -maxrate {bitrate} -bufsize {bufsize}");
@@ -5119,11 +5127,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             /* Make main filters for video stream */
             var mainFilters = new List<string>();
 
-            // INPUT videotoolbox/memory surface(vram/uma)
-            // this will pass-through automatically if in/out format matches.
-            mainFilters.Add("format=nv12|p010le|videotoolbox_vld");
-            mainFilters.Add("hwupload=derive_device=videotoolbox");
-
             // hw deint
             if (doDeintH2645)
             {
@@ -5177,6 +5180,21 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 subFilters.Add("hwupload=derive_device=videotoolbox");
                 overlayFilters.Add("overlay_videotoolbox=eof_action=pass:repeatlast=0");
+            }
+
+            var needFiltering = mainFilters.Any(f => !string.IsNullOrEmpty(f)) ||
+                                subFilters.Any(f => !string.IsNullOrEmpty(f)) ||
+                                overlayFilters.Any(f => !string.IsNullOrEmpty(f));
+
+            // This is a workaround for ffmpeg's hwupload implementation
+            // For VideoToolbox encoders, a hwupload without a valid filter actually consuming its frame
+            // will cause the encoder to produce incorrect frames.
+            if (needFiltering)
+            {
+                // INPUT videotoolbox/memory surface(vram/uma)
+                // this will pass-through automatically if in/out format matches.
+                mainFilters.Insert(0, "format=nv12|p010le|videotoolbox_vld");
+                mainFilters.Insert(0, "hwupload=derive_device=videotoolbox");
             }
 
             return (mainFilters, subFilters, overlayFilters);

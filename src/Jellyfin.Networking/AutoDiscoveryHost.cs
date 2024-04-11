@@ -78,28 +78,36 @@ public sealed class AutoDiscoveryHost : BackgroundService
 
     private async Task ListenForAutoDiscoveryMessage(IPAddress address, CancellationToken cancellationToken)
     {
-        using var udpClient = new UdpClient(new IPEndPoint(address, PortNumber));
-        udpClient.MulticastLoopback = false;
-
-        while (!cancellationToken.IsCancellationRequested)
+        try
         {
-            try
+            using var udpClient = new UdpClient(new IPEndPoint(address, PortNumber));
+            udpClient.MulticastLoopback = false;
+
+            while (!cancellationToken.IsCancellationRequested)
             {
-                var result = await udpClient.ReceiveAsync(cancellationToken).ConfigureAwait(false);
-                var text = Encoding.UTF8.GetString(result.Buffer);
-                if (text.Contains("who is JellyfinServer?", StringComparison.OrdinalIgnoreCase))
+                try
                 {
-                    await RespondToV2Message(udpClient, result.RemoteEndPoint, cancellationToken).ConfigureAwait(false);
+                    var result = await udpClient.ReceiveAsync(cancellationToken).ConfigureAwait(false);
+                    var text = Encoding.UTF8.GetString(result.Buffer);
+                    if (text.Contains("who is JellyfinServer?", StringComparison.OrdinalIgnoreCase))
+                    {
+                        await RespondToV2Message(udpClient, result.RemoteEndPoint, cancellationToken).ConfigureAwait(false);
+                    }
+                }
+                catch (SocketException ex)
+                {
+                    _logger.LogError(ex, "Failed to receive data from socket");
                 }
             }
-            catch (SocketException ex)
-            {
-                _logger.LogError(ex, "Failed to receive data from socket");
-            }
-            catch (OperationCanceledException)
-            {
-                _logger.LogDebug("Broadcast socket operation cancelled");
-            }
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogDebug("Broadcast socket operation cancelled");
+        }
+        catch (Exception ex)
+        {
+            // Exception in this function will prevent the background service from restarting in-process.
+            _logger.LogError(ex, "Unable to bind to {Address}:{Port}", address, PortNumber);
         }
     }
 
