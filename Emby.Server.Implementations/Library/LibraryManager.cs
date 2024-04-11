@@ -1229,20 +1229,6 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
-        public BaseItem GetItemById(Guid id, Guid userId)
-        {
-            var user = userId.IsEmpty() ? null : _userManager.GetUserById(userId);
-            return GetItemById(id, user);
-        }
-
-        /// <inheritdoc />
-        public BaseItem GetItemById(Guid id, User user)
-        {
-            var item = GetItemById(id);
-            return ItemIsVisible(item, user) ? item : null;
-        }
-
-        /// <inheritdoc />
         public T GetItemById<T>(Guid id)
          where T : BaseItem
         {

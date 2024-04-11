@@ -398,7 +398,7 @@ public class MediaInfoHelper
 
         if (profile is not null)
         {
-            var item = _libraryManager.GetItemById(request.ItemId);
+            var item = _libraryManager.GetItemById<BaseItem>(request.ItemId);
 
             SetDeviceSpecificData(
                 item,

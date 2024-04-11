@@ -102,7 +102,7 @@ public class LibraryController : BaseJellyfinApiController
     [ProducesFile("video/*", "audio/*")]
     public ActionResult GetFile([FromRoute, Required] Guid itemId)
     {
-        var item = _libraryManager.GetItemById(itemId, User.GetUserId());
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, User.GetUserId());
         if (item is null)
         {
             return NotFound();
@@ -152,7 +152,7 @@ public class LibraryController : BaseJellyfinApiController
             ? (userId.IsNullOrEmpty()
                 ? _libraryManager.RootFolder
                 : _libraryManager.GetUserRootFolder())
-            : _libraryManager.GetItemById(itemId, user);
+            : _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();
@@ -217,7 +217,7 @@ public class LibraryController : BaseJellyfinApiController
             ? (userId.IsNullOrEmpty()
                 ? _libraryManager.RootFolder
                 : _libraryManager.GetUserRootFolder())
-            : _libraryManager.GetItemById(itemId, user);
+            : _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();
@@ -325,6 +325,7 @@ public class LibraryController : BaseJellyfinApiController
     /// <param name="itemId">The item id.</param>
     /// <response code="204">Item deleted.</response>
     /// <response code="401">Unauthorized access.</response>
+    /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpDelete("Items/{itemId}")]
     [Authorize]
@@ -334,10 +335,17 @@ public class LibraryController : BaseJellyfinApiController
     public ActionResult DeleteItem(Guid itemId)
     {
         var userId = User.GetUserId();
-        var user = userId.IsEmpty()
+        var isApiKey = User.GetIsApiKey();
+        var user = userId.IsEmpty() && isApiKey
             ? null
             : _userManager.GetUserById(userId);
-        var item = _libraryManager.GetItemById(itemId, user);
+
+        if (user is null && !isApiKey)
+        {
+            return NotFound();
+        }
+
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();
@@ -383,7 +391,7 @@ public class LibraryController : BaseJellyfinApiController
 
         foreach (var i in ids)
         {
-            var item = _libraryManager.GetItemById(i, user);
+            var item = _libraryManager.GetItemById<BaseItem>(i, user);
             if (item is null)
             {
                 return NotFound();
@@ -455,7 +463,7 @@ public class LibraryController : BaseJellyfinApiController
         var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
-        var item = _libraryManager.GetItemById(itemId, user);
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();
@@ -638,7 +646,7 @@ public class LibraryController : BaseJellyfinApiController
         var user = userId.IsEmpty()
             ? null
             : _userManager.GetUserById(userId);
-        var item = _libraryManager.GetItemById(itemId, user);
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();
@@ -703,7 +711,7 @@ public class LibraryController : BaseJellyfinApiController
             ? (user is null
                 ? _libraryManager.RootFolder
                 : _libraryManager.GetUserRootFolder())
-            : _libraryManager.GetItemById(itemId, user);
+            : _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();

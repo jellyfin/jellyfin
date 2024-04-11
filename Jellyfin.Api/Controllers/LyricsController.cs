@@ -67,6 +67,7 @@ public class LyricsController : BaseJellyfinApiController
     [HttpGet("Audio/{itemId}/Lyrics")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<LyricDto>> GetLyrics([FromRoute, Required] Guid itemId)
     {
         var item = _libraryManager.GetItemById<Audio>(itemId, User.GetUserId());

@@ -66,7 +66,7 @@ public class ItemLookupController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<IEnumerable<ExternalIdInfo>> GetExternalIdInfos([FromRoute, Required] Guid itemId)
     {
-        var item = _libraryManager.GetItemById(itemId, User.GetUserId());
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, User.GetUserId());
         if (item is null)
         {
             return NotFound();
@@ -236,6 +236,7 @@ public class ItemLookupController : BaseJellyfinApiController
     /// <param name="searchResult">The remote search result.</param>
     /// <param name="replaceAllImages">Optional. Whether or not to replace all images. Default: True.</param>
     /// <response code="204">Item metadata refreshed.</response>
+    /// <response code="404">Item not found.</response>
     /// <returns>
     /// A <see cref="Task" /> that represents the asynchronous operation to get the remote search results.
     /// The task result contains an <see cref="NoContentResult"/>.
@@ -243,12 +244,13 @@ public class ItemLookupController : BaseJellyfinApiController
     [HttpPost("Items/RemoteSearch/Apply/{itemId}")]
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> ApplySearchCriteria(
         [FromRoute, Required] Guid itemId,
         [FromBody, Required] RemoteSearchResult searchResult,
         [FromQuery] bool replaceAllImages = true)
     {
-        var item = _libraryManager.GetItemById(itemId, User.GetUserId());
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, User.GetUserId());
         if (item is null)
         {
             return NotFound();

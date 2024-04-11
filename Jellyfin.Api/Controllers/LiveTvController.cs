@@ -220,9 +220,11 @@ public class LiveTvController : BaseJellyfinApiController
     /// <param name="channelId">Channel id.</param>
     /// <param name="userId">Optional. Attach user data.</param>
     /// <response code="200">Live tv channel returned.</response>
+    /// <response code="404">Item not found.</response>
     /// <returns>An <see cref="OkResult"/> containing the live tv channel.</returns>
     [HttpGet("Channels/{channelId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize(Policy = Policies.LiveTvAccess)]
     public ActionResult<BaseItemDto> GetChannel([FromRoute, Required] Guid channelId, [FromQuery] Guid? userId)
     {
@@ -232,7 +234,7 @@ public class LiveTvController : BaseJellyfinApiController
             : _userManager.GetUserById(userId.Value);
         var item = channelId.IsEmpty()
             ? _libraryManager.GetUserRootFolder()
-            : _libraryManager.GetItemById(channelId, user);
+            : _libraryManager.GetItemById<BaseItem>(channelId, user);
 
         if (item is null)
         {
@@ -421,9 +423,11 @@ public class LiveTvController : BaseJellyfinApiController
     /// <param name="recordingId">Recording id.</param>
     /// <param name="userId">Optional. Attach user data.</param>
     /// <response code="200">Recording returned.</response>
+    /// <response code="404">Item not found.</response>
     /// <returns>An <see cref="OkResult"/> containing the live tv recording.</returns>
     [HttpGet("Recordings/{recordingId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize(Policy = Policies.LiveTvAccess)]
     public ActionResult<BaseItemDto> GetRecording([FromRoute, Required] Guid recordingId, [FromQuery] Guid? userId)
     {
@@ -433,7 +437,7 @@ public class LiveTvController : BaseJellyfinApiController
             : _userManager.GetUserById(userId.Value);
         var item = recordingId.IsEmpty()
             ? _libraryManager.GetUserRootFolder()
-            : _libraryManager.GetItemById(recordingId, user);
+            : _libraryManager.GetItemById<BaseItem>(recordingId, user);
         if (item is null)
         {
             return NotFound();
@@ -792,7 +796,7 @@ public class LiveTvController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult DeleteRecording([FromRoute, Required] Guid recordingId)
     {
-        var item = _libraryManager.GetItemById(recordingId, User.GetUserId());
+        var item = _libraryManager.GetItemById<BaseItem>(recordingId, User.GetUserId());
         if (item is null)
         {
             return NotFound();

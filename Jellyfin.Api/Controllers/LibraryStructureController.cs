@@ -313,9 +313,11 @@ public class LibraryStructureController : BaseJellyfinApiController
     /// </summary>
     /// <param name="request">The library name and options.</param>
     /// <response code="204">Library updated.</response>
+    /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("LibraryOptions")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult UpdateLibraryOptions(
         [FromBody] UpdateLibraryOptionsDto request)
     {

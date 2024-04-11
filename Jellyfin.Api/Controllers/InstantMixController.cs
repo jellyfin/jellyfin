@@ -62,9 +62,11 @@ public class InstantMixController : BaseJellyfinApiController
     /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
     /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
     /// <response code="200">Instant playlist returned.</response>
+    /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the playlist items.</returns>
     [HttpGet("Songs/{itemId}/InstantMix")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromSong(
         [FromRoute, Required] Guid itemId,
         [FromQuery] Guid? userId,
@@ -79,7 +81,7 @@ public class InstantMixController : BaseJellyfinApiController
         var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
-        var item = _libraryManager.GetItemById(itemId, user);
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();
@@ -104,9 +106,11 @@ public class InstantMixController : BaseJellyfinApiController
     /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
     /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
     /// <response code="200">Instant playlist returned.</response>
+    /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the playlist items.</returns>
     [HttpGet("Albums/{itemId}/InstantMix")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromAlbum(
         [FromRoute, Required] Guid itemId,
         [FromQuery] Guid? userId,
@@ -121,7 +125,7 @@ public class InstantMixController : BaseJellyfinApiController
         var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
-        var item = _libraryManager.GetItemById(itemId, user);
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();
@@ -146,9 +150,11 @@ public class InstantMixController : BaseJellyfinApiController
     /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
     /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
     /// <response code="200">Instant playlist returned.</response>
+    /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the playlist items.</returns>
     [HttpGet("Playlists/{itemId}/InstantMix")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromPlaylist(
         [FromRoute, Required] Guid itemId,
         [FromQuery] Guid? userId,
@@ -224,9 +230,11 @@ public class InstantMixController : BaseJellyfinApiController
     /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
     /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
     /// <response code="200">Instant playlist returned.</response>
+    /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the playlist items.</returns>
     [HttpGet("Artists/{itemId}/InstantMix")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromArtists(
         [FromRoute, Required] Guid itemId,
         [FromQuery] Guid? userId,
@@ -241,7 +249,7 @@ public class InstantMixController : BaseJellyfinApiController
         var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
-        var item = _libraryManager.GetItemById(itemId, user);
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();
@@ -266,9 +274,11 @@ public class InstantMixController : BaseJellyfinApiController
     /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
     /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
     /// <response code="200">Instant playlist returned.</response>
+    /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the playlist items.</returns>
     [HttpGet("Items/{itemId}/InstantMix")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromItem(
         [FromRoute, Required] Guid itemId,
         [FromQuery] Guid? userId,
@@ -283,7 +293,7 @@ public class InstantMixController : BaseJellyfinApiController
         var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
-        var item = _libraryManager.GetItemById(itemId, user);
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();
@@ -308,9 +318,11 @@ public class InstantMixController : BaseJellyfinApiController
     /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
     /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
     /// <response code="200">Instant playlist returned.</response>
+    /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the playlist items.</returns>
     [HttpGet("Artists/InstantMix")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Obsolete("Use GetInstantMixFromArtists")]
     public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromArtists2(
         [FromQuery, Required] Guid id,
@@ -345,9 +357,11 @@ public class InstantMixController : BaseJellyfinApiController
     /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
     /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
     /// <response code="200">Instant playlist returned.</response>
+    /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the playlist items.</returns>
     [HttpGet("MusicGenres/InstantMix")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromMusicGenreById(
         [FromQuery, Required] Guid id,
         [FromQuery] Guid? userId,
@@ -362,7 +376,7 @@ public class InstantMixController : BaseJellyfinApiController
         var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
-        var item = _libraryManager.GetItemById(id, user);
+        var item = _libraryManager.GetItemById<BaseItem>(id, user);
         if (item is null)
         {
             return NotFound();

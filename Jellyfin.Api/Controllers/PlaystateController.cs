@@ -84,7 +84,7 @@ public class PlaystateController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var item = _libraryManager.GetItemById(itemId, user);
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();
@@ -149,7 +149,7 @@ public class PlaystateController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var item = _libraryManager.GetItemById(itemId, user);
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();

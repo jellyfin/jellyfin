@@ -11,6 +11,7 @@ using Jellyfin.Api.Models.MediaInfoDtos;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Devices;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.AspNetCore.Authorization;
@@ -66,16 +67,18 @@ public class MediaInfoController : BaseJellyfinApiController
     /// <param name="itemId">The item id.</param>
     /// <param name="userId">The user id.</param>
     /// <response code="200">Playback info returned.</response>
+    /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="Task"/> containing a <see cref="PlaybackInfoResponse"/> with the playback information.</returns>
     [HttpGet("Items/{itemId}/PlaybackInfo")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<PlaybackInfoResponse>> GetPlaybackInfo([FromRoute, Required] Guid itemId, [FromQuery] Guid? userId)
     {
         userId = RequestHelpers.GetUserId(User, userId);
         var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
-        var item = _libraryManager.GetItemById(itemId, user);
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();
@@ -108,9 +111,11 @@ public class MediaInfoController : BaseJellyfinApiController
     /// <param name="allowAudioStreamCopy">Whether to allow to copy the audio stream. Default: true.</param>
     /// <param name="playbackInfoDto">The playback info.</param>
     /// <response code="200">Playback info returned.</response>
+    /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="Task"/> containing a <see cref="PlaybackInfoResponse"/> with the playback info.</returns>
     [HttpPost("Items/{itemId}/PlaybackInfo")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<PlaybackInfoResponse>> GetPostedPlaybackInfo(
         [FromRoute, Required] Guid itemId,
         [FromQuery, ParameterObsolete] Guid? userId,
@@ -163,7 +168,7 @@ public class MediaInfoController : BaseJellyfinApiController
         var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
-        var item = _libraryManager.GetItemById(itemId, user);
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();

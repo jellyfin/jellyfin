@@ -86,7 +86,7 @@ public class UserLibraryController : BaseJellyfinApiController
 
         var item = itemId.IsEmpty()
             ? _libraryManager.GetUserRootFolder()
-            : _libraryManager.GetItemById(itemId, user);
+            : _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();
@@ -173,7 +173,7 @@ public class UserLibraryController : BaseJellyfinApiController
 
         var item = itemId.IsEmpty()
             ? _libraryManager.GetUserRootFolder()
-            : _libraryManager.GetItemById(itemId, user);
+            : _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();
@@ -224,7 +224,7 @@ public class UserLibraryController : BaseJellyfinApiController
 
         var item = itemId.IsEmpty()
             ? _libraryManager.GetUserRootFolder()
-            : _libraryManager.GetItemById(itemId, user);
+            : _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();
@@ -271,7 +271,7 @@ public class UserLibraryController : BaseJellyfinApiController
 
         var item = itemId.IsEmpty()
             ? _libraryManager.GetUserRootFolder()
-            : _libraryManager.GetItemById(itemId, user);
+            : _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();
@@ -318,7 +318,7 @@ public class UserLibraryController : BaseJellyfinApiController
 
         var item = itemId.IsEmpty()
             ? _libraryManager.GetUserRootFolder()
-            : _libraryManager.GetItemById(itemId, user);
+            : _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();
@@ -367,7 +367,7 @@ public class UserLibraryController : BaseJellyfinApiController
 
         var item = itemId.IsEmpty()
             ? _libraryManager.GetUserRootFolder()
-            : _libraryManager.GetItemById(itemId, user);
+            : _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();
@@ -416,7 +416,7 @@ public class UserLibraryController : BaseJellyfinApiController
 
         var item = itemId.IsEmpty()
             ? _libraryManager.GetUserRootFolder()
-            : _libraryManager.GetItemById(itemId, user);
+            : _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();
@@ -472,7 +472,7 @@ public class UserLibraryController : BaseJellyfinApiController
 
         var item = itemId.IsEmpty()
             ? _libraryManager.GetUserRootFolder()
-            : _libraryManager.GetItemById(itemId, user);
+            : _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();

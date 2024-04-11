@@ -104,7 +104,7 @@ public class VideosController : BaseJellyfinApiController
             ? (userId.IsNullOrEmpty()
                 ? _libraryManager.RootFolder
                 : _libraryManager.GetUserRootFolder())
-            : _libraryManager.GetItemById(itemId, user);
+            : _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();
@@ -150,7 +150,7 @@ public class VideosController : BaseJellyfinApiController
 
         if (item.LinkedAlternateVersions.Length == 0)
         {
-            item = (Video?)_libraryManager.GetItemById(item.PrimaryVersionId);
+            item = _libraryManager.GetItemById<Video>(Guid.Parse(item.PrimaryVersionId));
         }
 
         if (item is null)
@@ -188,7 +188,7 @@ public class VideosController : BaseJellyfinApiController
     {
         var userId = User.GetUserId();
         var items = ids
-            .Select(i => _libraryManager.GetItemById(i, userId))
+            .Select(i => _libraryManager.GetItemById<BaseItem>(i, userId))
             .OfType<Video>()
             .OrderBy(i => i.Id)
             .ToList();

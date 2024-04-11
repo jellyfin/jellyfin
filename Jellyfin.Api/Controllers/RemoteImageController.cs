@@ -10,6 +10,7 @@ using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -70,7 +71,7 @@ public class RemoteImageController : BaseJellyfinApiController
         [FromQuery] string? providerName,
         [FromQuery] bool includeAllLanguages = false)
     {
-        var item = _libraryManager.GetItemById(itemId, User.GetUserId());
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, User.GetUserId());
         if (item is null)
         {
             return NotFound();
@@ -129,7 +130,7 @@ public class RemoteImageController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<IEnumerable<ImageProviderInfo>> GetRemoteImageProviders([FromRoute, Required] Guid itemId)
     {
-        var item = _libraryManager.GetItemById(itemId, User.GetUserId());
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, User.GetUserId());
         if (item is null)
         {
             return NotFound();
@@ -156,7 +157,7 @@ public class RemoteImageController : BaseJellyfinApiController
         [FromQuery, Required] ImageType type,
         [FromQuery] string? imageUrl)
     {
-        var item = _libraryManager.GetItemById(itemId, User.GetUserId());
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, User.GetUserId());
         if (item is null)
         {
             return NotFound();

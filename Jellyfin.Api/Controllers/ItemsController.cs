@@ -967,7 +967,7 @@ public class ItemsController : BaseJellyfinApiController
         }
 
         var user = _userManager.GetUserById(requestUserId) ?? throw new ResourceNotFoundException();
-        var item = _libraryManager.GetItemById(itemId, user);
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();
@@ -1018,7 +1018,7 @@ public class ItemsController : BaseJellyfinApiController
         }
 
         var user = _userManager.GetUserById(requestUserId) ?? throw new ResourceNotFoundException();
-        var item = _libraryManager.GetItemById(itemId, user);
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();

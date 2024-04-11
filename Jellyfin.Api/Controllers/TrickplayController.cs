@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Trickplay;
 using MediaBrowser.Model;
@@ -85,7 +86,7 @@ public class TrickplayController : BaseJellyfinApiController
         [FromRoute, Required] int index,
         [FromQuery] Guid? mediaSourceId)
     {
-        var item = _libraryManager.GetItemById(itemId, User.GetUserId());
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, User.GetUserId());
         if (item is null)
         {
             return NotFound();

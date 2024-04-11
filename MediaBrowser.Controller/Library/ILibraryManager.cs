@@ -169,22 +169,6 @@ namespace MediaBrowser.Controller.Library
         BaseItem GetItemById(Guid id);
 
         /// <summary>
-        /// Gets the item by id, and validates user access.
-        /// </summary>
-        /// <param name="id">The item id.</param>
-        /// <param name="userId">The user id to validate against.</param>
-        /// <returns>The item if found.</returns>
-        BaseItem GetItemById(Guid id, Guid userId);
-
-        /// <summary>
-        /// Gets the item by id, and validates user access.
-        /// </summary>
-        /// <param name="id">The item id.</param>
-        /// <param name="user">The user to validate against.</param>
-        /// <returns>The item if found.</returns>
-        BaseItem GetItemById(Guid id, User user);
-
-        /// <summary>
         /// Gets the item by id, as T.
         /// </summary>
         /// <param name="id">The item id.</param>
