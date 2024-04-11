@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoMoq;
@@ -66,6 +67,17 @@ namespace Jellyfin.Api.Tests.Auth.FirstTimeSetupPolicy
 
             await _firstTimeSetupHandler.HandleAsync(context);
             Assert.Equal(shouldSucceed, context.HasSucceeded);
+        }
+
+        [Fact]
+        public async Task ShouldAllowAdminApiKeyIfStartupWizardComplete()
+        {
+            TestHelpers.SetupConfigurationManager(_configurationManagerMock, true);
+            var claims = new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.Role, UserRoles.Administrator)]));
+            var context = new AuthorizationHandlerContext(_requirements, claims, null);
+
+            await _firstTimeSetupHandler.HandleAsync(context);
+            Assert.True(context.HasSucceeded);
         }
     }
 }
