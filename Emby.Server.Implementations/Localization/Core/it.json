@@ -126,5 +126,7 @@
     "External": "Esterno",
     "HearingImpaired": "con problemi di udito",
     "TaskRefreshTrickplayImages": "Genera immagini Trickplay",
-    "TaskRefreshTrickplayImagesDescription": "Crea anteprime trickplay per i video nelle librerie abilitate."
+    "TaskRefreshTrickplayImagesDescription": "Crea anteprime trickplay per i video nelle librerie abilitate.",
+    "TaskCleanCollectionsAndPlaylists": "Ripulire le raccolte e le playlist",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Rimuove gli elementi dalle raccolte e dalle playlist che non esistono più."
 }
