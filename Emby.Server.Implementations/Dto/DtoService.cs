@@ -668,12 +668,13 @@ namespace Emby.Server.Implementations.Dto
             {
                 dto.ImageBlurHashes ??= new Dictionary<ImageType, Dictionary<string, string>>();
 
-                if (!dto.ImageBlurHashes.ContainsKey(image.Type))
+                if (!dto.ImageBlurHashes.TryGetValue(image.Type, out var value))
                 {
-                    dto.ImageBlurHashes[image.Type] = new Dictionary<string, string>();
+                    value = new Dictionary<string, string>();
+                    dto.ImageBlurHashes[image.Type] = value;
                 }
 
-                dto.ImageBlurHashes[image.Type][tag] = image.BlurHash;
+                value[tag] = image.BlurHash;
             }
 
             return tag;
