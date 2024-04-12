@@ -338,7 +338,7 @@ namespace Emby.Server.Implementations.Library
             if (item is LiveTvProgram)
             {
                 _logger.LogDebug(
-                    "Removing item, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
+                    "Removing item, Type: {Type}, Name: {Name}, Path: {Path}, Id: {Id}",
                     item.GetType().Name,
                     item.Name ?? "Unknown name",
                     item.Path ?? string.Empty,
@@ -347,7 +347,7 @@ namespace Emby.Server.Implementations.Library
             else
             {
                 _logger.LogInformation(
-                    "Removing item, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
+                    "Removing item, Type: {Type}, Name: {Name}, Path: {Path}, Id: {Id}",
                     item.GetType().Name,
                     item.Name ?? "Unknown name",
                     item.Path ?? string.Empty,
@@ -366,7 +366,7 @@ namespace Emby.Server.Implementations.Library
                 }
 
                 _logger.LogDebug(
-                    "Deleting metadata path, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
+                    "Deleting metadata path, Type: {Type}, Name: {Name}, Path: {Path}, Id: {Id}",
                     item.GetType().Name,
                     item.Name ?? "Unknown name",
                     metadataPath,
@@ -395,7 +395,7 @@ namespace Emby.Server.Implementations.Library
                         try
                         {
                             _logger.LogInformation(
-                                "Deleting item path, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
+                                "Deleting item path, Type: {Type}, Name: {Name}, Path: {Path}, Id: {Id}",
                                 item.GetType().Name,
                                 item.Name ?? "Unknown name",
                                 fileSystemInfo.FullName,
@@ -409,6 +409,24 @@ namespace Emby.Server.Implementations.Library
                             {
                                 File.Delete(fileSystemInfo.FullName);
                             }
+                        }
+                        catch (DirectoryNotFoundException)
+                        {
+                            _logger.LogInformation(
+                                "Directory not found, only removing from database, Type: {Type}, Name: {Name}, Path: {Path}, Id: {Id}",
+                                item.GetType().Name,
+                                item.Name ?? "Unknown name",
+                                fileSystemInfo.FullName,
+                                item.Id);
+                        }
+                        catch (FileNotFoundException)
+                        {
+                            _logger.LogInformation(
+                                "File not found, only removing from database, Type: {Type}, Name: {Name}, Path: {Path}, Id: {Id}",
+                                item.GetType().Name,
+                                item.Name ?? "Unknown name",
+                                fileSystemInfo.FullName,
+                                item.Id);
                         }
                         catch (IOException)
                         {
