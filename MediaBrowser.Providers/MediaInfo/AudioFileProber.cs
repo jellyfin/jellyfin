@@ -407,7 +407,14 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 if (options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzTrack, out _))
                 {
-                    audio.SetProviderId(MetadataProvider.MusicBrainzTrack, tags.MusicBrainzTrackId);
+                    // Fallback to ffprobe as TagLib incorrectly provides recording MBID in `tags.MusicBrainzTrackId`.
+                    // See https://github.com/mono/taglib-sharp/issues/304
+                    var mediaInfo = await GetMediaInfo(audio, CancellationToken.None).ConfigureAwait(false);
+                    var trackMbId = mediaInfo.GetProviderId(MetadataProvider.MusicBrainzTrack);
+                    if (trackMbId is not null)
+                    {
+                        audio.SetProviderId(MetadataProvider.MusicBrainzTrack, trackMbId);
+                    }
                 }
 
                 // Save extracted lyrics if they exist,
@@ -430,6 +437,21 @@ namespace MediaBrowser.Providers.MediaInfo
 
             audio.LyricFiles = externalLyricFiles.Select(i => i.Path).Distinct().ToArray();
             currentStreams.AddRange(externalLyricFiles);
+        }
+
+        private async Task<Model.MediaInfo.MediaInfo> GetMediaInfo(BaseItem item, CancellationToken cancellationToken)
+        {
+            var request = new MediaInfoRequest
+            {
+                MediaType = DlnaProfileType.Audio,
+                MediaSource = new MediaSourceInfo
+                {
+                    Path = item.Path,
+                    Protocol = item.PathProtocol ?? MediaProtocol.File
+                }
+            };
+
+            return await _mediaEncoder.GetMediaInfo(request, cancellationToken).ConfigureAwait(false);
         }
     }
 }
