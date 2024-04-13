@@ -1046,7 +1046,7 @@ namespace Emby.Server.Implementations.Library
 
             await GetUserRootFolder().RefreshMetadata(cancellationToken).ConfigureAwait(false);
 
-            // HACK: override IsRootHere for libraries to be removed
+            // HACK: override IsRoot here for libraries to be removed
             if (removeRoot) GetUserRootFolder().IsRoot = false;
             await GetUserRootFolder().ValidateChildren(
                 new Progress<double>(),
