@@ -1047,14 +1047,21 @@ namespace Emby.Server.Implementations.Library
             await GetUserRootFolder().RefreshMetadata(cancellationToken).ConfigureAwait(false);
 
             // HACK: override IsRoot here for libraries to be removed
-            if (removeRoot) GetUserRootFolder().IsRoot = false;
+            if (removeRoot)
+            {
+                GetUserRootFolder().IsRoot = false;
+            }
+
             await GetUserRootFolder().ValidateChildren(
                 new Progress<double>(),
                 new MetadataRefreshOptions(new DirectoryService(_fileSystem)),
                 recursive: false,
                 cancellationToken).ConfigureAwait(false);
             // HACK: restore IsRoot here after validation
-            if (removeRoot) GetUserRootFolder().IsRoot = true;
+            if (removeRoot)
+            {
+                GetUserRootFolder().IsRoot = true;
+            }
 
             // Quickly scan CollectionFolders for changes
             foreach (var folder in GetUserRootFolder().Children.OfType<Folder>())
