@@ -1033,7 +1033,7 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        private async Task ValidateTopLibraryFolders(CancellationToken cancellationToken)
+        private async Task ValidateTopLibraryFolders(CancellationToken cancellationToken, bool removeRoot = false)
         {
             await RootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
 
@@ -1046,11 +1046,15 @@ namespace Emby.Server.Implementations.Library
 
             await GetUserRootFolder().RefreshMetadata(cancellationToken).ConfigureAwait(false);
 
+            // HACK: override IsRootHere for libraries to be removed
+            if (removeRoot) GetUserRootFolder().IsRoot = false;
             await GetUserRootFolder().ValidateChildren(
                 new Progress<double>(),
                 new MetadataRefreshOptions(new DirectoryService(_fileSystem)),
                 recursive: false,
                 cancellationToken).ConfigureAwait(false);
+            // HACK: restore IsRoot here after validation
+            if (removeRoot) GetUserRootFolder().IsRoot = true;
 
             // Quickly scan CollectionFolders for changes
             foreach (var folder in GetUserRootFolder().Children.OfType<Folder>())
@@ -3118,7 +3122,7 @@ namespace Emby.Server.Implementations.Library
 
                 if (refreshLibrary)
                 {
-                    await ValidateTopLibraryFolders(CancellationToken.None).ConfigureAwait(false);
+                    await ValidateTopLibraryFolders(CancellationToken.None, true).ConfigureAwait(false);
 
                     StartScanInBackground();
                 }
