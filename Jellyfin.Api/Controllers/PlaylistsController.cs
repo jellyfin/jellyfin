@@ -482,8 +482,13 @@ public class PlaylistsController : BaseJellyfinApiController
         var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
+        var item = _libraryManager.GetItemById<Playlist>(playlistId, user);
+        if (item is null)
+        {
+            return NotFound();
+        }
 
-        var items = playlist.GetManageableItems().ToArray();
+        var items = item.GetManageableItems().ToArray();
         var count = items.Length;
         if (startIndex.HasValue)
         {

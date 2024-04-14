@@ -102,7 +102,7 @@ public class LibraryController : BaseJellyfinApiController
     [ProducesFile("video/*", "audio/*")]
     public ActionResult GetFile([FromRoute, Required] Guid itemId)
     {
-        var item = _libraryManager.GetItemById(itemId);
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, User.GetUserId());
         if (item is null)
         {
             return NotFound();
@@ -152,11 +152,10 @@ public class LibraryController : BaseJellyfinApiController
             ? (userId.IsNullOrEmpty()
                 ? _libraryManager.RootFolder
                 : _libraryManager.GetUserRootFolder())
-            : _libraryManager.GetItemById(itemId);
-
+            : _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
-            return NotFound("Item not found.");
+            return NotFound();
         }
 
         IEnumerable<BaseItem> themeItems;
@@ -214,16 +213,14 @@ public class LibraryController : BaseJellyfinApiController
         var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
-
         var item = itemId.IsEmpty()
             ? (userId.IsNullOrEmpty()
                 ? _libraryManager.RootFolder
                 : _libraryManager.GetUserRootFolder())
-            : _libraryManager.GetItemById(itemId);
-
+            : _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
-            return NotFound("Item not found.");
+            return NotFound();
         }
 
         IEnumerable<BaseItem> themeItems;
@@ -286,7 +283,8 @@ public class LibraryController : BaseJellyfinApiController
             userId,
             inheritFromParent);
 
-        if (themeSongs.Result is NotFoundObjectResult || themeVideos.Result is NotFoundObjectResult)
+        if (themeSongs.Result is StatusCodeResult { StatusCode: StatusCodes.Status404NotFound }
+            || themeVideos.Result is StatusCodeResult { StatusCode: StatusCodes.Status404NotFound })
         {
             return NotFound();
         }
@@ -327,6 +325,7 @@ public class LibraryController : BaseJellyfinApiController
     /// <param name="itemId">The item id.</param>
     /// <response code="204">Item deleted.</response>
     /// <response code="401">Unauthorized access.</response>
+    /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpDelete("Items/{itemId}")]
     [Authorize]
@@ -335,17 +334,18 @@ public class LibraryController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult DeleteItem(Guid itemId)
     {
-        var isApiKey = User.GetIsApiKey();
         var userId = User.GetUserId();
-        var user = !isApiKey && !userId.IsEmpty()
-            ? _userManager.GetUserById(userId) ?? throw new ResourceNotFoundException()
-            : null;
-        if (!isApiKey && user is null)
+        var isApiKey = User.GetIsApiKey();
+        var user = userId.IsEmpty() && isApiKey
+            ? null
+            : _userManager.GetUserById(userId);
+
+        if (user is null && !isApiKey)
         {
-            return Unauthorized("Unauthorized access");
+            return NotFound();
         }
 
-        var item = _libraryManager.GetItemById(itemId);
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();
@@ -391,7 +391,7 @@ public class LibraryController : BaseJellyfinApiController
 
         foreach (var i in ids)
         {
-            var item = _libraryManager.GetItemById(i);
+            var item = _libraryManager.GetItemById<BaseItem>(i, user);
             if (item is null)
             {
                 return NotFound();
@@ -459,19 +459,17 @@ public class LibraryController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<IEnumerable<BaseItemDto>> GetAncestors([FromRoute, Required] Guid itemId, [FromQuery] Guid? userId)
     {
-        var item = _libraryManager.GetItemById(itemId);
         userId = RequestHelpers.GetUserId(User, userId);
-
-        if (item is null)
-        {
-            return NotFound("Item not found");
-        }
-
-        var baseItemDtos = new List<BaseItemDto>();
-
         var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, user);
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        var baseItemDtos = new List<BaseItemDto>();
 
         var dtoOptions = new DtoOptions().AddClientFields(User);
         BaseItem? parent = item.GetParent();
@@ -644,13 +642,15 @@ public class LibraryController : BaseJellyfinApiController
     [ProducesFile("video/*", "audio/*")]
     public async Task<ActionResult> GetDownload([FromRoute, Required] Guid itemId)
     {
-        var item = _libraryManager.GetItemById(itemId);
+        var userId = User.GetUserId();
+        var user = userId.IsEmpty()
+            ? null
+            : _userManager.GetUserById(userId);
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();
         }
-
-        var user = _userManager.GetUserById(User.GetUserId());
 
         if (user is not null)
         {
@@ -704,12 +704,14 @@ public class LibraryController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields)
     {
         userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.IsNullOrEmpty()
+            ? null
+            : _userManager.GetUserById(userId.Value);
         var item = itemId.IsEmpty()
-            ? (userId.IsNullOrEmpty()
+            ? (user is null
                 ? _libraryManager.RootFolder
                 : _libraryManager.GetUserRootFolder())
-            : _libraryManager.GetItemById(itemId);
-
+            : _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();
@@ -720,9 +722,6 @@ public class LibraryController : BaseJellyfinApiController
             return new QueryResult<BaseItemDto>();
         }
 
-        var user = userId.IsNullOrEmpty()
-            ? null
-            : _userManager.GetUserById(userId.Value);
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddClientFields(User);
 

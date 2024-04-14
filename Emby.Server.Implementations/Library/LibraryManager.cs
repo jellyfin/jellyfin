@@ -46,6 +46,7 @@ using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
+using TMDbLib.Objects.Authentication;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 using EpisodeInfo = Emby.Naming.TV.EpisodeInfo;
 using Genre = MediaBrowser.Controller.Entities.Genre;
@@ -1222,12 +1223,7 @@ namespace Emby.Server.Implementations.Library
             return null;
         }
 
-        /// <summary>
-        /// Gets the item by id.
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns>BaseItem.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="id"/> is <c>null</c>.</exception>
+        /// <inheritdoc />
         public BaseItem GetItemById(Guid id)
         {
             if (id.IsEmpty())
@@ -1261,6 +1257,22 @@ namespace Emby.Server.Implementations.Library
             }
 
             return null;
+        }
+
+        /// <inheritdoc />
+        public T GetItemById<T>(Guid id, Guid userId)
+            where T : BaseItem
+        {
+            var user = userId.IsEmpty() ? null : _userManager.GetUserById(userId);
+            return GetItemById<T>(id, user);
+        }
+
+        /// <inheritdoc />
+        public T GetItemById<T>(Guid id, User user)
+            where T : BaseItem
+        {
+            var item = GetItemById<T>(id);
+            return ItemIsVisible(item, user) ? item : null;
         }
 
         public List<BaseItem> GetItemList(InternalItemsQuery query, bool allowExternalContent)
@@ -3190,6 +3202,21 @@ namespace Emby.Server.Implementations.Library
                 .ToArray();
 
             CollectionFolder.SaveLibraryOptions(virtualFolderPath, libraryOptions);
+        }
+
+        private static bool ItemIsVisible(BaseItem item, User user)
+        {
+            if (item is null)
+            {
+                return false;
+            }
+
+            if (user is null)
+            {
+                return true;
+            }
+
+            return item is UserRootFolder || item.IsVisibleStandalone(user);
         }
     }
 }
