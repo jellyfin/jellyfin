@@ -22,11 +22,9 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddEFSecondLevelCache(options =>
             options.UseMemoryCacheProvider()
                 .CacheAllQueries(CacheExpirationMode.Sliding, TimeSpan.FromMinutes(10))
-                .DisableLogging(true)
                 .UseCacheKeyPrefix("EF_")
                 // Don't cache null values. Remove this optional setting if it's not necessary.
-                .SkipCachingResults(result =>
-                    result.Value is null || (result.Value is EFTableRows rows && rows.RowsCount == 0)));
+                .SkipCachingResults(result => result.Value is null or EFTableRows { RowsCount: 0 }));
 
         serviceCollection.AddPooledDbContextFactory<JellyfinDbContext>((serviceProvider, opt) =>
         {
