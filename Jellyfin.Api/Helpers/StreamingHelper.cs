@@ -22,9 +22,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Jellyfin.Api.Helpers;
 
-/// <summary>
-/// The streaming helpers.
-/// </summary>
+/// <inheritdoc/>
 public class StreamingHelper : IStreamingHelper
 {
     private readonly IMediaSourceManager _mediaSourceManager;
@@ -53,15 +51,7 @@ public class StreamingHelper : IStreamingHelper
         _transcodeManager = transcodeManager;
     }
 
-    /// <summary>
-    /// Gets the current streaming state.
-    /// </summary>
-    /// <param name="streamingRequest">The <see cref="StreamingRequestDto"/>.</param>
-    /// <param name="httpContext">The <see cref="HttpContext"/>.</param>
-    /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
-    /// <param name="transcodingJobType">The <see cref="TranscodingJobType"/>.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
-    /// <returns>A <see cref="Task"/> containing the current <see cref="StreamState"/>.</returns>
+    /// <inheritdoc/>
     public async Task<StreamState> GetStreamingState(
         StreamingRequestDto streamingRequest,
         HttpContext httpContext,
