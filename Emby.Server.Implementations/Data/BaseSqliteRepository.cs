@@ -186,10 +186,7 @@ namespace Emby.Server.Implementations.Data
 
         protected void CheckDisposed()
         {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(GetType().Name, "Object has been disposed and cannot be accessed.");
-            }
+            ObjectDisposedException.ThrowIf(_disposed, this);
         }
 
         /// <inheritdoc />

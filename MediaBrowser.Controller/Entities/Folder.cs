@@ -460,15 +460,7 @@ namespace MediaBrowser.Controller.Entities
 
                     progress.Report(percent);
 
-                    // TODO: this is sometimes being called after the refresh has completed.
-                    try
-                    {
-                        ProviderManager.OnRefreshProgress(folder, percent);
-                    }
-                    catch (InvalidOperationException e)
-                    {
-                        Logger.LogError(e, "Error refreshing folder");
-                    }
+                    ProviderManager.OnRefreshProgress(folder, percent);
                 });
 
                 if (validChildrenNeedGeneration)
@@ -500,15 +492,7 @@ namespace MediaBrowser.Controller.Entities
 
                     if (recursive)
                     {
-                        // TODO: this is sometimes being called after the refresh has completed.
-                        try
-                        {
-                            ProviderManager.OnRefreshProgress(folder, percent);
-                        }
-                        catch (InvalidOperationException e)
-                        {
-                            Logger.LogError(e, "Error refreshing folder");
-                        }
+                        ProviderManager.OnRefreshProgress(folder, percent);
                     }
                 });
 

@@ -6,6 +6,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Extensions;
+using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.LibraryStructureDto;
 using MediaBrowser.Common.Api;
@@ -311,15 +313,21 @@ public class LibraryStructureController : BaseJellyfinApiController
     /// </summary>
     /// <param name="request">The library name and options.</param>
     /// <response code="204">Library updated.</response>
+    /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("LibraryOptions")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult UpdateLibraryOptions(
         [FromBody] UpdateLibraryOptionsDto request)
     {
-        var collectionFolder = (CollectionFolder)_libraryManager.GetItemById(request.Id);
+        var item = _libraryManager.GetItemById<CollectionFolder>(request.Id, User.GetUserId());
+        if (item is null)
+        {
+            return NotFound();
+        }
 
-        collectionFolder.UpdateLibraryOptions(request.LibraryOptions);
+        item.UpdateLibraryOptions(request.LibraryOptions);
         return NoContent();
     }
 }

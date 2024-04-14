@@ -178,6 +178,26 @@ namespace MediaBrowser.Controller.Library
             where T : BaseItem;
 
         /// <summary>
+        /// Gets the item by id, as T, and validates user access.
+        /// </summary>
+        /// <param name="id">The item id.</param>
+        /// <param name="userId">The user id to validate against.</param>
+        /// <typeparam name="T">The type of item.</typeparam>
+        /// <returns>The item if found.</returns>
+        public T GetItemById<T>(Guid id, Guid userId)
+            where T : BaseItem;
+
+        /// <summary>
+        /// Gets the item by id, as T, and validates user access.
+        /// </summary>
+        /// <param name="id">The item id.</param>
+        /// <param name="user">The user to validate against.</param>
+        /// <typeparam name="T">The type of item.</typeparam>
+        /// <returns>The item if found.</returns>
+        public T GetItemById<T>(Guid id, User user)
+            where T : BaseItem;
+
+        /// <summary>
         /// Gets the intros.
         /// </summary>
         /// <param name="item">The item.</param>

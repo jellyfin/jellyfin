@@ -46,6 +46,7 @@ using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
+using TMDbLib.Objects.Authentication;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 using EpisodeInfo = Emby.Naming.TV.EpisodeInfo;
 using Genre = MediaBrowser.Controller.Entities.Genre;
@@ -338,7 +339,7 @@ namespace Emby.Server.Implementations.Library
             if (item is LiveTvProgram)
             {
                 _logger.LogDebug(
-                    "Removing item, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
+                    "Removing item, Type: {Type}, Name: {Name}, Path: {Path}, Id: {Id}",
                     item.GetType().Name,
                     item.Name ?? "Unknown name",
                     item.Path ?? string.Empty,
@@ -347,7 +348,7 @@ namespace Emby.Server.Implementations.Library
             else
             {
                 _logger.LogInformation(
-                    "Removing item, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
+                    "Removing item, Type: {Type}, Name: {Name}, Path: {Path}, Id: {Id}",
                     item.GetType().Name,
                     item.Name ?? "Unknown name",
                     item.Path ?? string.Empty,
@@ -366,7 +367,7 @@ namespace Emby.Server.Implementations.Library
                 }
 
                 _logger.LogDebug(
-                    "Deleting metadata path, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
+                    "Deleting metadata path, Type: {Type}, Name: {Name}, Path: {Path}, Id: {Id}",
                     item.GetType().Name,
                     item.Name ?? "Unknown name",
                     metadataPath,
@@ -395,7 +396,7 @@ namespace Emby.Server.Implementations.Library
                         try
                         {
                             _logger.LogInformation(
-                                "Deleting item path, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
+                                "Deleting item path, Type: {Type}, Name: {Name}, Path: {Path}, Id: {Id}",
                                 item.GetType().Name,
                                 item.Name ?? "Unknown name",
                                 fileSystemInfo.FullName,
@@ -409,6 +410,24 @@ namespace Emby.Server.Implementations.Library
                             {
                                 File.Delete(fileSystemInfo.FullName);
                             }
+                        }
+                        catch (DirectoryNotFoundException)
+                        {
+                            _logger.LogInformation(
+                                "Directory not found, only removing from database, Type: {Type}, Name: {Name}, Path: {Path}, Id: {Id}",
+                                item.GetType().Name,
+                                item.Name ?? "Unknown name",
+                                fileSystemInfo.FullName,
+                                item.Id);
+                        }
+                        catch (FileNotFoundException)
+                        {
+                            _logger.LogInformation(
+                                "File not found, only removing from database, Type: {Type}, Name: {Name}, Path: {Path}, Id: {Id}",
+                                item.GetType().Name,
+                                item.Name ?? "Unknown name",
+                                fileSystemInfo.FullName,
+                                item.Id);
                         }
                         catch (IOException)
                         {
@@ -443,7 +462,7 @@ namespace Emby.Server.Implementations.Library
             ReportItemRemoved(item, parent);
         }
 
-        private static IEnumerable<string> GetMetadataPaths(BaseItem item, IEnumerable<BaseItem> children)
+        private static List<string> GetMetadataPaths(BaseItem item, IEnumerable<BaseItem> children)
         {
             var list = new List<string>
             {
@@ -1204,12 +1223,7 @@ namespace Emby.Server.Implementations.Library
             return null;
         }
 
-        /// <summary>
-        /// Gets the item by id.
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns>BaseItem.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="id"/> is <c>null</c>.</exception>
+        /// <inheritdoc />
         public BaseItem GetItemById(Guid id)
         {
             if (id.IsEmpty())
@@ -1243,6 +1257,22 @@ namespace Emby.Server.Implementations.Library
             }
 
             return null;
+        }
+
+        /// <inheritdoc />
+        public T GetItemById<T>(Guid id, Guid userId)
+            where T : BaseItem
+        {
+            var user = userId.IsEmpty() ? null : _userManager.GetUserById(userId);
+            return GetItemById<T>(id, user);
+        }
+
+        /// <inheritdoc />
+        public T GetItemById<T>(Guid id, User user)
+            where T : BaseItem
+        {
+            var item = GetItemById<T>(id);
+            return ItemIsVisible(item, user) ? item : null;
         }
 
         public List<BaseItem> GetItemList(InternalItemsQuery query, bool allowExternalContent)
@@ -3172,6 +3202,21 @@ namespace Emby.Server.Implementations.Library
                 .ToArray();
 
             CollectionFolder.SaveLibraryOptions(virtualFolderPath, libraryOptions);
+        }
+
+        private static bool ItemIsVisible(BaseItem item, User user)
+        {
+            if (item is null)
+            {
+                return false;
+            }
+
+            if (user is null)
+            {
+                return true;
+            }
+
+            return item is UserRootFolder || item.IsVisibleStandalone(user);
         }
     }
 }

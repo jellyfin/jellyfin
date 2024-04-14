@@ -159,10 +159,7 @@ namespace Emby.Server.Implementations.Session
 
         private void CheckDisposed()
         {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(GetType().Name);
-            }
+            ObjectDisposedException.ThrowIf(_disposed, this);
         }
 
         private void OnSessionStarted(SessionInfo info)

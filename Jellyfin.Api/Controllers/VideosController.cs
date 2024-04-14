@@ -73,7 +73,11 @@ public class VideosController : BaseJellyfinApiController
             ? (userId.IsNullOrEmpty()
                 ? _libraryManager.RootFolder
                 : _libraryManager.GetUserRootFolder())
-            : _libraryManager.GetItemById(itemId);
+            : _libraryManager.GetItemById<BaseItem>(itemId, user);
+        if (item is null)
+        {
+            return NotFound();
+        }
 
         var dtoOptions = new DtoOptions();
         dtoOptions = dtoOptions.AddClientFields(User);
@@ -107,24 +111,23 @@ public class VideosController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> DeleteAlternateSources([FromRoute, Required] Guid itemId)
     {
-        var video = (Video)_libraryManager.GetItemById(itemId);
-
-        if (video is null)
-        {
-            return NotFound("The video either does not exist or the id does not belong to a video.");
-        }
-
-        if (video.LinkedAlternateVersions.Length == 0)
-        {
-            video = (Video?)_libraryManager.GetItemById(video.PrimaryVersionId);
-        }
-
-        if (video is null)
+        var item = _libraryManager.GetItemById<Video>(itemId, User.GetUserId());
+        if (item is null)
         {
             return NotFound();
         }
 
-        foreach (var link in video.GetLinkedAlternateVersions())
+        if (item.LinkedAlternateVersions.Length == 0)
+        {
+            item = _libraryManager.GetItemById<Video>(Guid.Parse(item.PrimaryVersionId));
+        }
+
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        foreach (var link in item.GetLinkedAlternateVersions())
         {
             link.SetPrimaryVersionId(null);
             link.LinkedAlternateVersions = Array.Empty<LinkedChild>();
@@ -132,9 +135,9 @@ public class VideosController : BaseJellyfinApiController
             await link.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
         }
 
-        video.LinkedAlternateVersions = Array.Empty<LinkedChild>();
-        video.SetPrimaryVersionId(null);
-        await video.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+        item.LinkedAlternateVersions = Array.Empty<LinkedChild>();
+        item.SetPrimaryVersionId(null);
+        await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
         return NoContent();
     }
@@ -152,8 +155,9 @@ public class VideosController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult> MergeVersions([FromQuery, Required, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] ids)
     {
+        var userId = User.GetUserId();
         var items = ids
-            .Select(i => _libraryManager.GetItemById(i))
+            .Select(i => _libraryManager.GetItemById<BaseItem>(i, userId))
             .OfType<Video>()
             .OrderBy(i => i.Id)
             .ToList();

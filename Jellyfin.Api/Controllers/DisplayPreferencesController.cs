@@ -194,7 +194,7 @@ public class DisplayPreferencesController : BaseJellyfinApiController
 
         foreach (var key in displayPreferences.CustomPrefs.Keys.Where(key => key.StartsWith("landing-", StringComparison.OrdinalIgnoreCase)))
         {
-            if (!Enum.TryParse<ViewType>(displayPreferences.CustomPrefs[key], true, out var type))
+            if (!Enum.TryParse<ViewType>(displayPreferences.CustomPrefs[key], true, out _))
             {
                 _logger.LogError("Invalid ViewType: {LandingScreenOption}", displayPreferences.CustomPrefs[key]);
                 displayPreferences.CustomPrefs.Remove(key);

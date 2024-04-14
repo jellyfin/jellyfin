@@ -11,6 +11,7 @@ using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Streaming;
@@ -120,7 +121,7 @@ public class StreamingHelper : IStreamingHelper
                                           ?? state.SupportedSubtitleCodecs.FirstOrDefault();
         }
 
-        var item = _libraryManager.GetItemById(streamingRequest.Id);
+        var item = libraryManager.GetItemById<BaseItem>(streamingRequest.Id);
 
         state.IsInputVideo = item.MediaType == MediaType.Video;
 
@@ -138,7 +139,7 @@ public class StreamingHelper : IStreamingHelper
 
             if (mediaSource is null)
             {
-                var mediaSources = await _mediaSourceManager.GetPlaybackMediaSources(_libraryManager.GetItemById(streamingRequest.Id), null, false, false, cancellationToken).ConfigureAwait(false);
+                var mediaSources = await mediaSourceManager.GetPlaybackMediaSources(libraryManager.GetItemById<BaseItem>(streamingRequest.Id), null, false, false, cancellationToken).ConfigureAwait(false);
 
                 mediaSource = string.IsNullOrEmpty(streamingRequest.MediaSourceId)
                     ? mediaSources[0]

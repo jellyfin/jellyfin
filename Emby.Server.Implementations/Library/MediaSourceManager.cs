@@ -191,7 +191,7 @@ namespace Emby.Server.Implementations.Library
 
                 if (user is not null)
                 {
-                    SetDefaultAudioAndSubtitleStreamIndexes(item, source, user);
+                    SetDefaultAudioAndSubtitleStreamIndices(item, source, user);
 
                     if (item.MediaType == MediaType.Audio)
                     {
@@ -296,7 +296,7 @@ namespace Emby.Server.Implementations.Library
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting media sources");
-                return Enumerable.Empty<MediaSourceInfo>();
+                return [];
             }
         }
 
@@ -339,7 +339,7 @@ namespace Emby.Server.Implementations.Library
             {
                 foreach (var source in sources)
                 {
-                    SetDefaultAudioAndSubtitleStreamIndexes(item, source, user);
+                    SetDefaultAudioAndSubtitleStreamIndices(item, source, user);
 
                     if (item.MediaType == MediaType.Audio)
                     {
@@ -360,7 +360,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (string.IsNullOrEmpty(language))
             {
-                return Array.Empty<string>();
+                return [];
             }
 
             var culture = _localizationManager.FindLanguageInfo(language);
@@ -369,14 +369,15 @@ namespace Emby.Server.Implementations.Library
                 return culture.ThreeLetterISOLanguageNames;
             }
 
-            return new string[] { language };
+            return [language];
         }
 
         private void SetDefaultSubtitleStreamIndex(MediaSourceInfo source, UserItemData userData, User user, bool allowRememberingSelection)
         {
             if (userData.SubtitleStreamIndex.HasValue
                 && user.RememberSubtitleSelections
-                && user.SubtitleMode != SubtitlePlaybackMode.None && allowRememberingSelection)
+                && user.SubtitleMode != SubtitlePlaybackMode.None
+                && allowRememberingSelection)
             {
                 var index = userData.SubtitleStreamIndex.Value;
                 // Make sure the saved index is still valid
@@ -390,7 +391,7 @@ namespace Emby.Server.Implementations.Library
             var preferredSubs = NormalizeLanguage(user.SubtitleLanguagePreference);
 
             var defaultAudioIndex = source.DefaultAudioStreamIndex;
-            var audioLangage = defaultAudioIndex is null
+            var audioLanguage = defaultAudioIndex is null
                 ? null
                 : source.MediaStreams.Where(i => i.Type == MediaStreamType.Audio && i.Index == defaultAudioIndex).Select(i => i.Language).FirstOrDefault();
 
@@ -398,9 +399,9 @@ namespace Emby.Server.Implementations.Library
                 source.MediaStreams,
                 preferredSubs,
                 user.SubtitleMode,
-                audioLangage);
+                audioLanguage);
 
-            MediaStreamSelector.SetSubtitleStreamScores(source.MediaStreams, preferredSubs, user.SubtitleMode, audioLangage);
+            MediaStreamSelector.SetSubtitleStreamScores(source.MediaStreams, preferredSubs, user.SubtitleMode, audioLanguage);
         }
 
         private void SetDefaultAudioStreamIndex(MediaSourceInfo source, UserItemData userData, User user, bool allowRememberingSelection)
@@ -421,7 +422,7 @@ namespace Emby.Server.Implementations.Library
             source.DefaultAudioStreamIndex = MediaStreamSelector.GetDefaultAudioStreamIndex(source.MediaStreams, preferredAudio, user.PlayDefaultAudioTrack);
         }
 
-        public void SetDefaultAudioAndSubtitleStreamIndexes(BaseItem item, MediaSourceInfo source, User user)
+        public void SetDefaultAudioAndSubtitleStreamIndices(BaseItem item, MediaSourceInfo source, User user)
         {
             // Item would only be null if the app didn't supply ItemId as part of the live stream open request
             var mediaType = item?.MediaType ?? MediaType.Video;
@@ -526,7 +527,7 @@ namespace Emby.Server.Implementations.Library
                 var item = request.ItemId.IsEmpty()
                     ? null
                     : _libraryManager.GetItemById(request.ItemId);
-                SetDefaultAudioAndSubtitleStreamIndexes(item, clone, user);
+                SetDefaultAudioAndSubtitleStreamIndices(item, clone, user);
             }
 
             return new Tuple<LiveStreamResponse, IDirectStreamProvider>(new LiveStreamResponse(clone), liveStream as IDirectStreamProvider);

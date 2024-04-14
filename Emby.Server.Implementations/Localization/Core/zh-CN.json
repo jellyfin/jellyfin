@@ -126,5 +126,7 @@
     "External": "外部",
     "HearingImpaired": "听力障碍",
     "TaskRefreshTrickplayImages": "生成时间轴缩略图",
-    "TaskRefreshTrickplayImagesDescription": "为启用的媒体库中的视频生成时间轴缩略图。"
+    "TaskRefreshTrickplayImagesDescription": "为启用的媒体库中的视频生成时间轴缩略图。",
+    "TaskCleanCollectionsAndPlaylists": "清理合集和播放列表",
+    "TaskCleanCollectionsAndPlaylistsDescription": "清理合集和播放列表中已不存在的项目。"
 }
