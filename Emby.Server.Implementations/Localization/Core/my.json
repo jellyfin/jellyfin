@@ -48,7 +48,7 @@
     "Undefined": "သတ်မှတ်မထားသော",
     "TvShows": "တီဗီ ဇာတ်လမ်းတွဲများ",
     "System": "စနစ်",
-    "Sync": "ထပ်တူကျသည်။",
+    "Sync": "ချိန်ကိုက်မည်",
     "SubtitleDownloadFailureFromForItem": "{1} အတွက် {0} မှ စာတန်းထိုးများ ဒေါင်းလုဒ်လုပ်ခြင်း မအောင်မြင်ပါ",
     "StartupEmbyServerIsLoading": "Jellyfin ဆာဗာကို အသင့်ပြင်နေပါသည်။ ခဏနေ ထပ်စမ်းကြည့်ပါ။",
     "Songs": "သီချင်းများ",
@@ -104,7 +104,7 @@
     "HeaderFavoriteSongs": "အကြိုက်ဆုံးသီချင်းများ",
     "HeaderFavoriteShows": "အကြိုက်ဆုံး ဇာတ်လမ်းတွဲများ",
     "HeaderFavoriteEpisodes": "အကြိုက်ဆုံး ဇာတ်လမ်းအပိုင်းများ",
-    "HeaderFavoriteArtists": "အကြိုက်ဆုံးအနုပညာရှင်များ",
+    "HeaderFavoriteArtists": "အကြိုက်ဆုံး အနုပညာရှင်များ",
     "HeaderFavoriteAlbums": "အကြိုက်ဆုံး အယ်လ်ဘမ်များ",
     "HeaderContinueWatching": "ဆက်လက်ကြည့်ရှုပါ",
     "HeaderAlbumArtists": "အယ်လ်ဘမ်အနုပညာရှင်များ",
@@ -120,5 +120,11 @@
     "AuthenticationSucceededWithUserName": "{0} အောင်မြင်စွာ စစ်မှန်ကြောင်း အတည်ပြုပြီးပါပြီ",
     "Application": "အပလီကေးရှင်း",
     "AppDeviceValues": "အက်ပ်- {0}၊ စက်- {1}",
-    "External": "ပြင်ပ"
+    "External": "ပြင်ပ",
+    "TaskKeyframeExtractorDescription": "ပိုမိုတိကျသည့် အိတ်ချ်အယ်လ်အက်စ် အစဉ်လိုက်ပြသမှုများ ဖန်တီးနိုင်ရန်အတွက် ဗီဒီယိုဖိုင်များမှ ကီးဖရိန်များကို ထုတ်နှုတ်ယူမည် ဖြစ်သည်။ ဤလုပ်ဆောင်မှုသည် အချိန်ကြာရှည်နိုင်သည်။",
+    "TaskCleanCollectionsAndPlaylistsDescription": "စုစည်းမှုများနှင့် အစဉ်လိုက်ပြသမှုများမှ မရှိတော့သည်များကို ဖယ်ရှားမည်။",
+    "TaskRefreshTrickplayImages": "ထရစ်ခ်ပလေး ပုံများကို ထုတ်မည်",
+    "TaskKeyframeExtractor": "ကီးဖရိန်များကို ထုတ်နုတ်ခြင်း",
+    "TaskCleanCollectionsAndPlaylists": "စုစည်းမှုများနှင့် အစဉ်လိုက်ပြသမှုများကို ရှင်းလင်းမည်",
+    "HearingImpaired": "အကြားအာရုံ ချို့တဲ့သူ"
 }
