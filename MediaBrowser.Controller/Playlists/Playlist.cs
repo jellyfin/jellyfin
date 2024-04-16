@@ -216,7 +216,6 @@ namespace MediaBrowser.Controller.Playlists
                 {
                     Recursive = true,
                     IsFolder = false,
-                    OrderBy = [(ItemSortBy.SortName, SortOrder.Ascending)],
                     MediaTypes = [mediaType],
                     EnableTotalRecordCount = false,
                     DtoOptions = options
