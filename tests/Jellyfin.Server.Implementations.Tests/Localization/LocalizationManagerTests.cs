@@ -127,6 +127,22 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             Assert.Equal(expectedLevel, level!);
         }
 
+        [Theory]
+        [InlineData("0", 0)]
+        [InlineData("1", 1)]
+        [InlineData("6", 6)]
+        [InlineData("12", 12)]
+        [InlineData("42", 42)]
+        [InlineData("9999", 9999)]
+        public async Task GetRatingLevel_GivenValidAge_Success(string value, int expectedLevel)
+        {
+            var localizationManager = Setup(new ServerConfiguration { MetadataCountryCode = "nl" });
+            await localizationManager.LoadAll();
+            var level = localizationManager.GetRatingLevel(value);
+            Assert.NotNull(level);
+            Assert.Equal(expectedLevel, level);
+        }
+
         [Fact]
         public async Task GetRatingLevel_GivenUnratedString_Success()
         {
