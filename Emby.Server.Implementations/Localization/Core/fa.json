@@ -126,5 +126,7 @@
     "External": "خارجی",
     "HearingImpaired": "مشکل شنوایی",
     "TaskRefreshTrickplayImages": "تولید تصاویر Trickplay",
-    "TaskRefreshTrickplayImagesDescription": "تولید پیش‌نمایش های trickplay برای ویدیو های فعال شده در کتابخانه."
+    "TaskRefreshTrickplayImagesDescription": "تولید پیش‌نمایش های trickplay برای ویدیو های فعال شده در کتابخانه.",
+    "TaskCleanCollectionsAndPlaylists": "پاکسازی مجموعه ها و لیست پخش",
+    "TaskCleanCollectionsAndPlaylistsDescription": "موارد را از مجموعه ها و لیست پخش هایی که دیگر وجود ندارند حذف میکند."
 }
