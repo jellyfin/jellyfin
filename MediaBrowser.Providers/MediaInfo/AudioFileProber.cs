@@ -338,6 +338,12 @@ namespace MediaBrowser.Providers.MediaInfo
                         audio.Artists = performers;
                     }
 
+                    if (albumArtists.Length == 0)
+                    {
+                        // Album artists not provided, fall back to performers (artists).
+                        albumArtists = performers;
+                    }
+
                     if (options.ReplaceAllMetadata && albumArtists.Length != 0)
                     {
                         audio.AlbumArtists = albumArtists;
