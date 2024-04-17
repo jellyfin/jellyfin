@@ -1042,26 +1042,16 @@ namespace Emby.Server.Implementations.Library
                 new Progress<double>(),
                 new MetadataRefreshOptions(new DirectoryService(_fileSystem)),
                 recursive: false,
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken: cancellationToken).ConfigureAwait(false);
 
             await GetUserRootFolder().RefreshMetadata(cancellationToken).ConfigureAwait(false);
-
-            // HACK: override IsRoot here for libraries to be removed
-            if (removeRoot)
-            {
-                GetUserRootFolder().IsRoot = false;
-            }
 
             await GetUserRootFolder().ValidateChildren(
                 new Progress<double>(),
                 new MetadataRefreshOptions(new DirectoryService(_fileSystem)),
                 recursive: false,
-                cancellationToken).ConfigureAwait(false);
-            // HACK: restore IsRoot here after validation
-            if (removeRoot)
-            {
-                GetUserRootFolder().IsRoot = true;
-            }
+                allowRemoveRoot: removeRoot,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
 
             // Quickly scan CollectionFolders for changes
             foreach (var folder in GetUserRootFolder().Children.OfType<Folder>())
@@ -1079,7 +1069,7 @@ namespace Emby.Server.Implementations.Library
             var innerProgress = new Progress<double>(pct => progress.Report(pct * 0.96));
 
             // Validate the entire media library
-            await RootFolder.ValidateChildren(innerProgress, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), recursive: true, cancellationToken).ConfigureAwait(false);
+            await RootFolder.ValidateChildren(innerProgress, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), recursive: true, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             progress.Report(96);
 

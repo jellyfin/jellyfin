@@ -269,11 +269,12 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="progress">The progress.</param>
         /// <param name="metadataRefreshOptions">The metadata refresh options.</param>
         /// <param name="recursive">if set to <c>true</c> [recursive].</param>
+        /// <param name="allowRemoveRoot">remove item even this folder is root.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public Task ValidateChildren(IProgress<double> progress, MetadataRefreshOptions metadataRefreshOptions, bool recursive = true,  CancellationToken cancellationToken = default)
+        public Task ValidateChildren(IProgress<double> progress, MetadataRefreshOptions metadataRefreshOptions, bool recursive = true, bool allowRemoveRoot = false, CancellationToken cancellationToken = default)
         {
-            return ValidateChildrenInternal(progress, recursive, true, metadataRefreshOptions, metadataRefreshOptions.DirectoryService, cancellationToken);
+            return ValidateChildrenInternal(progress, recursive, true, false, metadataRefreshOptions, metadataRefreshOptions.DirectoryService, cancellationToken);
         }
 
         private Dictionary<Guid, BaseItem> GetActualChildrenDictionary()
@@ -307,11 +308,12 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="progress">The progress.</param>
         /// <param name="recursive">if set to <c>true</c> [recursive].</param>
         /// <param name="refreshChildMetadata">if set to <c>true</c> [refresh child metadata].</param>
+        /// <param name="allowRemoveRoot">remove item even this folder is root.</param>
         /// <param name="refreshOptions">The refresh options.</param>
         /// <param name="directoryService">The directory service.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        protected virtual async Task ValidateChildrenInternal(IProgress<double> progress, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService, CancellationToken cancellationToken)
+        protected virtual async Task ValidateChildrenInternal(IProgress<double> progress, bool recursive, bool refreshChildMetadata, bool allowRemoveRoot, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
             if (recursive)
             {
@@ -320,7 +322,7 @@ namespace MediaBrowser.Controller.Entities
 
             try
             {
-                await ValidateChildrenInternal2(progress, recursive, refreshChildMetadata, refreshOptions, directoryService, cancellationToken).ConfigureAwait(false);
+                await ValidateChildrenInternal2(progress, recursive, refreshChildMetadata, allowRemoveRoot, refreshOptions, directoryService, cancellationToken).ConfigureAwait(false);
             }
             finally
             {
@@ -343,7 +345,7 @@ namespace MediaBrowser.Controller.Entities
             return true;
         }
 
-        private async Task ValidateChildrenInternal2(IProgress<double> progress, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService, CancellationToken cancellationToken)
+        private async Task ValidateChildrenInternal2(IProgress<double> progress, bool recursive, bool refreshChildMetadata, bool allowRemoveRoot, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
             if (!IsLibraryFolderAccessible(directoryService, this))
             {
@@ -414,8 +416,9 @@ namespace MediaBrowser.Controller.Entities
                     validChildren.Add(child);
                 }
 
+                var shouldNotRemove = IsRoot && !allowRemoveRoot;
                 // If it's an AggregateFolder, don't remove
-                if (!IsRoot && currentChildren.Count != validChildren.Count)
+                if (shouldNotRemove && currentChildren.Count != validChildren.Count)
                 {
                     // That's all the new and changed ones - now see if there are any that are missing
                     var itemsRemoved = currentChildren.Values.Except(validChildren).ToList();
@@ -562,7 +565,7 @@ namespace MediaBrowser.Controller.Entities
         private Task ValidateSubFolders(IList<Folder> children, IDirectoryService directoryService, IProgress<double> progress, CancellationToken cancellationToken)
         {
             return RunTasks(
-                (folder, innerProgress) => folder.ValidateChildrenInternal(innerProgress, true, false, null, directoryService, cancellationToken),
+                (folder, innerProgress) => folder.ValidateChildrenInternal(innerProgress, true, false, false, null, directoryService, cancellationToken),
                 children,
                 progress,
                 cancellationToken);
