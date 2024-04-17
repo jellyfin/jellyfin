@@ -1255,7 +1255,6 @@ namespace Emby.Server.Implementations.Library
             return null;
         }
 
-        /// <inheritdoc />
         public T? GetItemById<T>(Guid id, Guid userId)
             where T : BaseItem
         {
@@ -1263,7 +1262,6 @@ namespace Emby.Server.Implementations.Library
             return GetItemById<T>(id, user);
         }
 
-        /// <inheritdoc />
         public T? GetItemById<T>(Guid id, User? user)
             where T : BaseItem
         {
