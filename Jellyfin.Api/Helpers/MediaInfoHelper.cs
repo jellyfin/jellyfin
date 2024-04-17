@@ -24,6 +24,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Api.Helpers;
@@ -398,7 +399,8 @@ public class MediaInfoHelper
 
         if (profile is not null)
         {
-            var item = _libraryManager.GetItemById<BaseItem>(request.ItemId);
+            var item = _libraryManager.GetItemById<BaseItem>(request.ItemId)
+                ?? throw new ResourceNotFoundException();
 
             SetDeviceSpecificData(
                 item,

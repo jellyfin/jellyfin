@@ -278,6 +278,13 @@ namespace Emby.Server.Implementations.Localization
                 return null;
             }
 
+            // Convert integers directly
+            // This may override some of the locale specific age ratings (but those always map to the same age)
+            if (int.TryParse(rating, out var ratingAge))
+            {
+                return ratingAge;
+            }
+
             // Fairly common for some users to have "Rated R" in their rating field
             rating = rating.Replace("Rated :", string.Empty, StringComparison.OrdinalIgnoreCase);
             rating = rating.Replace("Rated ", string.Empty, StringComparison.OrdinalIgnoreCase);
