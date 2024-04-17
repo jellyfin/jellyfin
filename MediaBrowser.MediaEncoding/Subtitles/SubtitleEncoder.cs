@@ -463,7 +463,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             try
             {
                 var subtitleStreams = mediaSource.MediaStreams
-                    .Where(stream => stream.IsTextSubtitleStream && stream.SupportsExternalStream);
+                    .Where(stream => stream is { IsTextSubtitleStream: true, SupportsExternalStream: true, IsExternal: false });
 
                 foreach (var subtitleStream in subtitleStreams)
                 {
