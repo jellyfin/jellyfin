@@ -75,7 +75,7 @@ public class LibraryStructureController : BaseJellyfinApiController
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> AddVirtualFolder(
-        [FromQuery] string? name,
+        [FromQuery] string name,
         [FromQuery] CollectionTypeOptions? collectionType,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] paths,
         [FromBody] AddVirtualFolderDto? libraryOptionsDto,
@@ -103,7 +103,7 @@ public class LibraryStructureController : BaseJellyfinApiController
     [HttpDelete]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> RemoveVirtualFolder(
-        [FromQuery] string? name,
+        [FromQuery] string name,
         [FromQuery] bool refreshLibrary = false)
     {
         await _libraryManager.RemoveVirtualFolder(name, refreshLibrary).ConfigureAwait(false);
@@ -267,18 +267,16 @@ public class LibraryStructureController : BaseJellyfinApiController
     /// <param name="refreshLibrary">Whether to refresh the library.</param>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     /// <response code="204">Media path removed.</response>
-    /// <exception cref="ArgumentNullException">The name of the library may not be empty.</exception>
+    /// <exception cref="ArgumentException">The name of the library and path may not be empty.</exception>
     [HttpDelete("Paths")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public ActionResult RemoveMediaPath(
-        [FromQuery] string? name,
-        [FromQuery] string? path,
+        [FromQuery] string name,
+        [FromQuery] string path,
         [FromQuery] bool refreshLibrary = false)
     {
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        ArgumentException.ThrowIfNullOrWhiteSpace(path);
 
         _libraryMonitor.Stop();
 
