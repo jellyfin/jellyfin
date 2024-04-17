@@ -112,7 +112,7 @@ public class StreamingHelper : IStreamingHelper
                                           ?? state.SupportedSubtitleCodecs.FirstOrDefault();
         }
 
-        var item = libraryManager.GetItemById<BaseItem>(streamingRequest.Id)
+        var item = _libraryManager.GetItemById<BaseItem>(streamingRequest.Id)
             ?? throw new ResourceNotFoundException();
 
         state.IsInputVideo = item.MediaType == MediaType.Video;
