@@ -274,7 +274,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Task.</returns>
         public Task ValidateChildren(IProgress<double> progress, MetadataRefreshOptions metadataRefreshOptions, bool recursive = true, bool allowRemoveRoot = false, CancellationToken cancellationToken = default)
         {
-            return ValidateChildrenInternal(progress, recursive, true, false, metadataRefreshOptions, metadataRefreshOptions.DirectoryService, cancellationToken);
+            return ValidateChildrenInternal(progress, recursive, true, allowRemoveRoot, metadataRefreshOptions, metadataRefreshOptions.DirectoryService, cancellationToken);
         }
 
         private Dictionary<Guid, BaseItem> GetActualChildrenDictionary()
@@ -416,9 +416,9 @@ namespace MediaBrowser.Controller.Entities
                     validChildren.Add(child);
                 }
 
-                var shouldNotRemove = IsRoot && !allowRemoveRoot;
+                var shouldRemove = !IsRoot || allowRemoveRoot;
                 // If it's an AggregateFolder, don't remove
-                if (shouldNotRemove && currentChildren.Count != validChildren.Count)
+                if (shouldRemove && currentChildren.Count != validChildren.Count)
                 {
                     // That's all the new and changed ones - now see if there are any that are missing
                     var itemsRemoved = currentChildren.Values.Except(validChildren).ToList();
