@@ -189,9 +189,9 @@ jobs:
             sudo rm ${TGT_DIR}/jellyfin-openapi-unstable_previous.json
             # Move current jellyfin-openapi-unstable.json symlink to jellyfin-openapi-unstable_previous.json
             sudo mv ${TGT_DIR}/jellyfin-openapi-unstable.json ${TGT_DIR}/jellyfin-openapi-unstable_previous.json
-            # Create new jellyfin-openapi-stable.json symlink
+            # Create new jellyfin-openapi-unstable.json symlink
             sudo ln -s unstable/jellyfin-openapi-${{ env.JELLYFIN_VERSION }}.json ${TGT_DIR}/jellyfin-openapi-unstable.json
-            # Check that the previous openapi spec is correct
+            # Check that the previous openapi unstable spec link is correct
             if [[ "$( readlink ${TGT_DIR}/jellyfin-openapi-unstable_previous.json )" != "unstable/${LAST_SPEC}" ]]; then
                 sudo rm ${TGT_DIR}/jellyfin-openapi-unstable_previous.json
                 sudo ln -s unstable/${LAST_SPEC} ${TGT_DIR}/jellyfin-openapi-unstable_previous.json
