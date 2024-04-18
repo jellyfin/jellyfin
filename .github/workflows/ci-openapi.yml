@@ -174,7 +174,10 @@ jobs:
           debug: false
           script_stop: false
           script: |
-            test -d /run/workflows || sudo mkdir -p /run/workflows
+            if ! test -d /run/workflows; then
+                sudo mkdir -p /run/workflows
+                sudo chown ${{ secrets.REPO_USER }} /run/workflows
+            fi
             (
             flock -x -w 300 200 || exit 1
             TGT_DIR="/srv/repository/main/openapi"
