@@ -196,4 +196,5 @@ jobs:
                 sudo rm ${TGT_DIR}/jellyfin-openapi-unstable_previous.json
                 sudo ln -s unstable/${LAST_SPEC} ${TGT_DIR}/jellyfin-openapi-unstable_previous.json
             fi
+            rm /run/openapi-unstable.lock
             ) 200>/run/openapi-unstable.lock
