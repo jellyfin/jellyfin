@@ -175,7 +175,7 @@ jobs:
           script_stop: false
           script: |
             (
-            flock -x -w 300 200
+            flock -x -w 300 200 || exit 1
             TGT_DIR="/srv/repository/main/openapi"
             LAST_SPEC="$( ls -lt ${TGT_DIR}/unstable/ | grep 'jellyfin-openapi' | head -1 | awk '{ print $NF }' )"
             # If new and previous spec don't differ (diff retcode 0), remove incoming and finish
