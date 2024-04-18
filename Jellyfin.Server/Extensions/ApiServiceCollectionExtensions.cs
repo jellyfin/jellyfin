@@ -268,38 +268,35 @@ namespace Jellyfin.Server.Extensions
         /// <returns>Updated Service Collection.</returns>
         public static IServiceCollection AddOTel(this IServiceCollection serviceCollection, OtelConfiguration config, string appVersion)
         {
-            serviceCollection
-                .AddOpenTelemetry()
-                .ConfigureResource(resourceBuilder => resourceBuilder.AddService("JellyFin", appVersion))
-                .WithMetrics(metrics =>
-                {
-                    metrics
-                    .AddMeter(config.Meters)
-                    .AddAspNetCoreInstrumentation()
-                    .AddRuntimeInstrumentation()
-                    .AddHttpClientInstrumentation();
-                    if (config.Enabled)
+            if (config.Enabled)
+            {
+                serviceCollection
+                    .AddOpenTelemetry()
+                    .ConfigureResource(resourceBuilder => resourceBuilder.AddService("JellyFin", appVersion))
+                    .WithMetrics(metrics =>
                     {
+                        metrics
+                        .AddMeter(config.Meters)
+                        .AddAspNetCoreInstrumentation()
+                        .AddRuntimeInstrumentation()
+                        .AddHttpClientInstrumentation();
                         metrics.AddOtlpExporter(exporter =>
-                         {
-                             exporter.Endpoint = new Uri(config.Endpoint);
-                         });
-                    }
-                })
-                .WithTracing(tracing =>
-                {
-                    tracing
-                    .AddSource(config.ActivitySources)
-                    .AddAspNetCoreInstrumentation()
-                    .AddHttpClientInstrumentation();
-                    if (config.Enabled)
+                        {
+                            exporter.Endpoint = new Uri(config.Endpoint);
+                        });
+                    })
+                    .WithTracing(tracing =>
                     {
+                        tracing
+                        .AddSource(config.ActivitySources)
+                        .AddAspNetCoreInstrumentation()
+                        .AddHttpClientInstrumentation();
                         tracing.AddOtlpExporter(exporter =>
                         {
                             exporter.Endpoint = new Uri(config.Endpoint);
                         });
-                    }
-                });
+                    });
+            }
 
             return serviceCollection;
         }
