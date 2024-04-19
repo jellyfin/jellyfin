@@ -284,6 +284,32 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
+        public UserItemData GetUserDataByPresentationUniqueKey(long userId, string key)
+        {
+            if (userId <= 0)
+            {
+                throw new ArgumentNullException(nameof(userId));
+            }
+
+            ArgumentException.ThrowIfNullOrEmpty(key);
+
+            using (var connection = GetConnection())
+            {
+                using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from UserDatas where REPLACE(Key, '-', '')=@Key and userId=@UserId"))
+                {
+                    statement.TryBind("@UserId", userId);
+                    statement.TryBind("@Key", key);
+
+                    foreach (var row in statement.ExecuteQuery())
+                    {
+                        return ReadRow(row);
+                    }
+                }
+
+                return null;
+            }
+        }
+
         public UserItemData GetUserData(long userId, List<string> keys)
         {
             ArgumentNullException.ThrowIfNull(keys);
