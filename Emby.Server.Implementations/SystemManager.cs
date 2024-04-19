@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
@@ -78,6 +79,7 @@ public class SystemManager : ISystemManager
         {
             Version = _applicationHost.ApplicationVersionString,
             ProductName = _applicationHost.Name,
+            OperatingSystem = GetServerOs(),
             Id = _applicationHost.SystemId,
             ServerName = _applicationHost.FriendlyName,
             LocalAddress = _applicationHost.GetSmartApiUrl(request),
@@ -99,5 +101,25 @@ public class SystemManager : ISystemManager
             _applicationHost.ShouldRestart = restart;
             _applicationLifetime.StopApplication();
         });
+    }
+
+    private static string GetServerOs()
+    {
+        if (OperatingSystem.IsLinux())
+        {
+            return "Linux";
+        }
+
+        if (OperatingSystem.IsWindows())
+        {
+            return "Windows";
+        }
+
+        if (OperatingSystem.IsMacOS())
+        {
+            return "macOS";
+        }
+
+        return "Others";
     }
 }

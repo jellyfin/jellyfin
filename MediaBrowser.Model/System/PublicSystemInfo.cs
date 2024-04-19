@@ -34,7 +34,6 @@ namespace MediaBrowser.Model.System
         /// Gets or sets the operating system.
         /// </summary>
         /// <value>The operating system.</value>
-        [Obsolete("This is no longer set")]
         public string OperatingSystem { get; set; } = string.Empty;
 
         /// <summary>
