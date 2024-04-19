@@ -38,6 +38,14 @@ namespace MediaBrowser.Controller.Persistence
         UserItemData GetUserData(long userId, List<string> keys);
 
         /// <summary>
+        /// Gets the user data.
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <param name="key">The key.</param>
+        /// <returns>The user data.</returns>
+        UserItemData GetUserDataByPresentationUniqueKey(long userId, string key);
+
+        /// <summary>
         /// Return all user data associated with the given user.
         /// </summary>
         /// <param name="userId">The user id.</param>
