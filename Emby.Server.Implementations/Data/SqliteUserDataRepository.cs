@@ -333,10 +333,10 @@ namespace Emby.Server.Implementations.Data
         /// <returns>The user item data.</returns>
         private UserItemData ReadRow(SqliteDataReader reader)
         {
-            var userData = new UserItemData();
-
-            userData.Key = reader[0].ToString();
-            // userData.UserId = reader[1].ReadGuidFromBlob();
+            var userData = new UserItemData
+            {
+                Key = reader.GetString(0)
+            };
 
             if (reader.TryGetDouble(2, out var rating))
             {
