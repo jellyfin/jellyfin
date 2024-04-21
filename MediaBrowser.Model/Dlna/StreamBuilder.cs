@@ -108,7 +108,7 @@ namespace MediaBrowser.Model.Dlna
             var inputAudioSampleRate = audioStream?.SampleRate;
             var inputAudioBitDepth = audioStream?.BitDepth;
 
-            if (directPlayMethod.HasValue)
+            if (directPlayMethod is PlayMethod.DirectPlay)
             {
                 var profile = options.Profile;
                 var audioFailureConditions = GetProfileConditionsForAudio(profile.CodecProfiles, item.Container, audioStream?.Codec, inputAudioChannels, inputAudioBitrate, inputAudioSampleRate, inputAudioBitDepth, true);
@@ -122,6 +122,41 @@ namespace MediaBrowser.Model.Dlna
 
                     return playlistItem;
                 }
+            }
+
+            if (directPlayMethod is PlayMethod.DirectStream)
+            {
+                var remuxContainer = item.TranscodingContainer ?? "ts";
+                bool codeIsSupported;
+                if (item.TranscodingSubProtocol == MediaStreamProtocol.hls)
+                {
+                    // Enforce HLS audio codec restrictions
+                    if (string.Equals(remuxContainer, "mp4", StringComparison.OrdinalIgnoreCase))
+                    {
+                        codeIsSupported = _supportedHlsAudioCodecsMp4.Contains(directPlayInfo.Profile?.AudioCodec ?? directPlayInfo.Profile?.Container);
+                    }
+                    else
+                    {
+                        codeIsSupported = _supportedHlsAudioCodecsTs.Contains(directPlayInfo.Profile?.AudioCodec ?? directPlayInfo.Profile?.Container);
+                    }
+                }
+                else
+                {
+                    // Let's assume the client has given a correct container for http
+                    codeIsSupported = true;
+                }
+
+                if (codeIsSupported)
+                {
+                    playlistItem.PlayMethod = directPlayMethod.Value;
+                    playlistItem.Container = remuxContainer;
+                    playlistItem.TranscodeReasons = transcodeReasons;
+                    playlistItem.SubProtocol = item.TranscodingSubProtocol;
+                    return playlistItem;
+                }
+
+                transcodeReasons |= TranscodeReason.AudioCodecNotSupported;
+                playlistItem.TranscodeReasons = transcodeReasons;
             }
 
             TranscodingProfile? transcodingProfile = null;
@@ -386,6 +421,14 @@ namespace MediaBrowser.Model.Dlna
                     options.Profile.Name ?? "Unknown Profile",
                     item.Path ?? "Unknown path",
                     audioStream.Codec ?? "Unknown codec");
+
+                var directStreamProfile = options.Profile.DirectPlayProfiles
+                    .FirstOrDefault(x => x.Type == DlnaProfileType.Audio && IsAudioDirectStreamSupported(x, item, audioStream));
+
+                if (directStreamProfile is not null)
+                {
+                    return (directStreamProfile, PlayMethod.DirectStream, TranscodeReason.ContainerNotSupported);
+                }
 
                 return (null, null, GetTranscodeReasonsFromDirectPlayProfile(item, null, audioStream, options.Profile.DirectPlayProfiles));
             }
@@ -2128,6 +2171,24 @@ namespace MediaBrowser.Model.Dlna
             }
 
             return true;
+        }
+
+        private static bool IsAudioDirectStreamSupported(DirectPlayProfile profile, MediaSourceInfo item, MediaStream audioStream)
+        {
+            // Check container type, this should NOT be supported
+            if (!profile.SupportsContainer(item.Container))
+            {
+                // Check audio codec, we cannot use the SupportsAudioCodec here
+                // Because that one assumes empty container supports all codec, which is just useless
+                string? audioCodec = audioStream?.Codec;
+                if (string.Equals(profile.AudioCodec, audioCodec, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(profile.Container, audioCodec, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

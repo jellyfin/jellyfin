@@ -479,6 +479,11 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
                 : "FFmpeg.DirectStream-";
         }
 
+        if (state.VideoRequest is null && EncodingHelper.IsCopyCodec(state.OutputAudioCodec))
+        {
+            logFilePrefix = "FFmpeg.Remux-";
+        }
+
         var logFilePath = Path.Combine(
             _serverConfigurationManager.ApplicationPaths.LogDirectoryPath,
             $"{logFilePrefix}{DateTime.Now:yyyy-MM-dd_HH-mm-ss}_{state.Request.MediaSourceId}_{Guid.NewGuid().ToString()[..8]}.log");

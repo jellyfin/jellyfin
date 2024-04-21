@@ -17,6 +17,7 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -137,6 +138,8 @@ public class UniversalAudioController : BaseJellyfinApiController
         // set device specific data
         foreach (var sourceInfo in info.MediaSources)
         {
+            sourceInfo.TranscodingContainer = transcodingContainer;
+            sourceInfo.TranscodingSubProtocol = transcodingProtocol ?? sourceInfo.TranscodingSubProtocol;
             _mediaInfoHelper.SetDeviceSpecificData(
                 item,
                 sourceInfo,
@@ -171,27 +174,30 @@ public class UniversalAudioController : BaseJellyfinApiController
             return Redirect(mediaSource.Path);
         }
 
+        // This one is currently very misleading as the SupportsDirectStream is always false
+        // The definition of DirectStream also seems changed during development
+        // It used to mean HTTP direct streaming, but now HLS is used even for DirectStream
         var isStatic = mediaSource.SupportsDirectStream;
-        if (!isStatic && mediaSource.TranscodingSubProtocol == MediaStreamProtocol.hls)
+        if (mediaSource.TranscodingSubProtocol == MediaStreamProtocol.hls)
         {
             // hls segment container can only be mpegts or fmp4 per ffmpeg documentation
             // ffmpeg option -> file extension
             //        mpegts -> ts
             //          fmp4 -> mp4
-            // TODO: remove this when we switch back to the segment muxer
             var supportedHlsContainers = new[] { "ts", "mp4" };
 
+            // fallback to mpegts if device reports some weird value unsupported by hls
+            var segmentContainer = Array.Exists(supportedHlsContainers, element => element == transcodingContainer) ? transcodingContainer : "ts";
             var dynamicHlsRequestDto = new HlsAudioRequestDto
             {
                 Id = itemId,
                 Container = ".m3u8",
                 Static = isStatic,
                 PlaySessionId = info.PlaySessionId,
-                // fallback to mpegts if device reports some weird value unsupported by hls
-                SegmentContainer = Array.Exists(supportedHlsContainers, element => element == transcodingContainer) ? transcodingContainer : "ts",
+                SegmentContainer = segmentContainer,
                 MediaSourceId = mediaSourceId,
                 DeviceId = deviceId,
-                AudioCodec = audioCodec,
+                AudioCodec = mediaSource.TranscodeReasons == TranscodeReason.ContainerNotSupported ? "copy" : audioCodec,
                 EnableAutoStreamCopy = true,
                 AllowAudioStreamCopy = true,
                 AllowVideoStreamCopy = true,

@@ -151,6 +151,14 @@ public class DynamicHlsHelper
 
         var queryString = _httpContextAccessor.HttpContext.Request.QueryString.ToString();
 
+        // from universal audio service, need to override the AudioCodec when the actual request differs from original query
+        if (!string.Equals(state.OutputAudioCodec, _httpContextAccessor.HttpContext.Request.Query["AudioCodec"].ToString(), StringComparison.OrdinalIgnoreCase))
+        {
+            var newQuery = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(_httpContextAccessor.HttpContext.Request.QueryString.ToString());
+            newQuery["AudioCodec"] = state.OutputAudioCodec;
+            queryString = Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString(string.Empty, newQuery);
+        }
+
         // from universal audio service
         if (!string.IsNullOrWhiteSpace(state.Request.SegmentContainer)
             && !queryString.Contains("SegmentContainer", StringComparison.OrdinalIgnoreCase))
