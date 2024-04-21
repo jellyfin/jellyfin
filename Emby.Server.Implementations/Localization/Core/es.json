@@ -126,5 +126,7 @@
     "External": "Externo",
     "HearingImpaired": "Discapacidad Auditiva",
     "TaskRefreshTrickplayImages": "Generar miniaturas de línea de tiempo",
-    "TaskRefreshTrickplayImagesDescription": "Crear miniaturas de tiempo para videos en las librerías habilitadas."
+    "TaskRefreshTrickplayImagesDescription": "Crear miniaturas de tiempo para videos en las librerías habilitadas.",
+    "TaskCleanCollectionsAndPlaylists": "Limpiar colecciones y listas de reproducción",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Elimina elementos de colecciones y listas de reproducción que ya no existen."
 }

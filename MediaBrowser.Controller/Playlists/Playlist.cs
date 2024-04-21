@@ -132,7 +132,7 @@ namespace MediaBrowser.Controller.Playlists
             return [];
         }
 
-        protected override Task ValidateChildrenInternal(IProgress<double> progress, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService, CancellationToken cancellationToken)
+        protected override Task ValidateChildrenInternal(IProgress<double> progress, bool recursive, bool refreshChildMetadata, bool allowRemoveRoot, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
         }
@@ -216,7 +216,6 @@ namespace MediaBrowser.Controller.Playlists
                 {
                     Recursive = true,
                     IsFolder = false,
-                    OrderBy = [(ItemSortBy.SortName, SortOrder.Ascending)],
                     MediaTypes = [mediaType],
                     EnableTotalRecordCount = false,
                     DtoOptions = options

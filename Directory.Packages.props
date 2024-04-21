@@ -4,7 +4,7 @@
   </PropertyGroup>
   <!-- Run "dotnet list package (dash,dash)outdated" to see the latest versions of each package.-->
   <ItemGroup Label="Package Dependencies">
-    <PackageVersion Include="AsyncKeyedLock" Version="6.3.4" />
+    <PackageVersion Include="AsyncKeyedLock" Version="6.4.1" />
     <PackageVersion Include="AutoFixture.AutoMoq" Version="4.18.1" />
     <PackageVersion Include="AutoFixture.Xunit2" Version="4.18.1" />
     <PackageVersion Include="AutoFixture" Version="4.18.1" />
@@ -16,7 +16,7 @@
     <PackageVersion Include="Diacritics" Version="3.3.27" />
     <PackageVersion Include="DiscUtils.Udf" Version="0.16.13" />
     <PackageVersion Include="DotNet.Glob" Version="3.1.3" />
-    <PackageVersion Include="EFCoreSecondLevelCacheInterceptor" Version="4.4.1" />
+    <PackageVersion Include="EFCoreSecondLevelCacheInterceptor" Version="4.4.2" />
     <PackageVersion Include="FsCheck.Xunit" Version="2.16.6" />
     <PackageVersion Include="HarfBuzzSharp.NativeAssets.Linux" Version="7.3.0.2" />
     <PackageVersion Include="ICU4N.Transliterator" Version="60.1.0-alpha.356" />
