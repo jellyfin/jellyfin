@@ -125,5 +125,7 @@
     "External": "外部",
     "HearingImpaired": "聽力障礙",
     "TaskRefreshTrickplayImages": "生成快轉縮圖",
-    "TaskRefreshTrickplayImagesDescription": "為啟用快轉縮圖的媒體庫生成快轉縮圖。"
+    "TaskRefreshTrickplayImagesDescription": "為啟用快轉縮圖的媒體庫生成快轉縮圖。",
+    "TaskCleanCollectionsAndPlaylists": "清理系列和播放清單",
+    "TaskCleanCollectionsAndPlaylistsDescription": "清理系列和播放清單中已不存在的項目。"
 }
