@@ -199,13 +199,20 @@ namespace Emby.Server.Implementations.HttpServer
             }
             else
             {
-                await OnReceive(
-                    new WebSocketMessageInfo
-                    {
-                        MessageType = stub.MessageType,
-                        Data = stub.Data?.ToString(), // Data can be null
-                        Connection = this
-                    }).ConfigureAwait(false);
+                try
+                {
+                    await OnReceive(
+                        new WebSocketMessageInfo
+                        {
+                            MessageType = stub.MessageType,
+                            Data = stub.Data?.ToString(), // Data can be null
+                            Connection = this
+                        }).ConfigureAwait(false);
+                }
+                catch (Exception exception)
+                {
+                    _logger.LogWarning(exception, "Failed to process WebSocket message");
+                }
             }
         }
 
