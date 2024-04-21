@@ -1602,6 +1602,12 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
+            var parent = GetParents().FirstOrDefault() ?? this;
+            if (parent is UserRootFolder)
+            {
+                return true;
+            }
+
             var allowedTagsPreference = user.GetPreference(PreferenceKind.AllowedTags);
             if (allowedTagsPreference.Length != 0 && !allowedTagsPreference.Any(i => allTags.Contains(i, StringComparison.OrdinalIgnoreCase)))
             {
