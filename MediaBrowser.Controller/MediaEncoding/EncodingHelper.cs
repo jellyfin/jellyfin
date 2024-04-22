@@ -2729,9 +2729,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                     {
                         resultChannels = 8;
                     }
-                    // For other weird layout, just downmix to stero for compatability
                     else
                     {
+                        // For other weird layout, just downmix to stero for compatability
                         resultChannels = 2;
                     }
                 }
