@@ -38,10 +38,11 @@ body:
       label: Jellyfin Version
       description: What version of Jellyfin are you running?
       options:
+        - 10.9.0
         - 10.8.13
-        - 10.8.12
-        - 10.8.11 or older (please specify)
-        - Unstable (master branch)
+        - 10.8.12 or older (please specify)
+        - Weekly unstable (please specify)
+        - Master branch
     validations:
       required: true
   - type: input
