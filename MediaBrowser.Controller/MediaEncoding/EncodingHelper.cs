@@ -2720,7 +2720,20 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (state.TranscodingType != TranscodingJobType.Progressive
                     && ((resultChannels > 2 && resultChannels < 6) || resultChannels == 7))
                 {
-                    resultChannels = 2;
+                    // We can really let FFMpeg to supply an extra LFE channel for 5ch and 7ch to make them 5.1 and 7.1
+                    if (resultChannels == 5)
+                    {
+                        resultChannels = 6;
+                    }
+                    else if (resultChannels == 7)
+                    {
+                        resultChannels = 8;
+                    }
+                    // For other weird layout, just downmix to stero for compatability
+                    else
+                    {
+                        resultChannels = 2;
+                    }
                 }
             }
 
