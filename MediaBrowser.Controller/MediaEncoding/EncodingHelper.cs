@@ -2627,7 +2627,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 && channels.Value == 2
                 && state.AudioStream is not null
                 && state.AudioStream.Channels.HasValue
-                && state.AudioStream.Channels.Value > 5)
+                && state.AudioStream.Channels.Value == 6)
             {
                 switch (encodingOptions.DownMixStereoAlgorithm)
                 {
@@ -6903,7 +6903,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var channels = state.OutputAudioChannels;
 
-            if (channels.HasValue && ((channels.Value != 2 && state.AudioStream.Channels <= 5) || encodingOptions.DownMixStereoAlgorithm == DownMixStereoAlgorithms.None))
+            if (channels.HasValue && ((channels.Value != 2 && state.AudioStream?.Channels != 6) || encodingOptions.DownMixStereoAlgorithm == DownMixStereoAlgorithms.None))
             {
                 args += " -ac " + channels.Value;
             }
