@@ -257,7 +257,7 @@ public class ItemsController : BaseJellyfinApiController
         }
 
         var fieldsList = fields.ToList();
-        if (user?.GetPreference(PreferenceKind.AllowedTags).Length != 0)
+        if (user is not null && user.GetPreference(PreferenceKind.AllowedTags).Length != 0)
         {
             fieldsList.Add(ItemFields.Tags);
         }
