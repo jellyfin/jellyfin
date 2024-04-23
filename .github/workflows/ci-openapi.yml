@@ -25,7 +25,7 @@ jobs:
       - name: Generate openapi.json
         run: dotnet test tests/Jellyfin.Server.Integration.Tests/Jellyfin.Server.Integration.Tests.csproj -c Release --filter "Jellyfin.Server.Integration.Tests.OpenApiSpecTests"
       - name: Upload openapi.json
-        uses: actions/upload-artifact@1746f4ab65b179e0ea60a494b83293b640dd5bba # v4.3.2
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         with:
           name: openapi-head
           retention-days: 14
@@ -59,7 +59,7 @@ jobs:
       - name: Generate openapi.json
         run: dotnet test tests/Jellyfin.Server.Integration.Tests/Jellyfin.Server.Integration.Tests.csproj -c Release --filter "Jellyfin.Server.Integration.Tests.OpenApiSpecTests"
       - name: Upload openapi.json
-        uses: actions/upload-artifact@1746f4ab65b179e0ea60a494b83293b640dd5bba # v4.3.2
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         with:
           name: openapi-base
           retention-days: 14
@@ -78,12 +78,12 @@ jobs:
       - openapi-base
     steps:
       - name: Download openapi-head
-        uses: actions/download-artifact@8caf195ad4b1dee92908e23f56eeb0696f1dd42d # v4.1.5
+        uses: actions/download-artifact@9c19ed7fe5d278cd354c7dfd5d3b88589c7e2395 # v4.1.6
         with:
           name: openapi-head
           path: openapi-head
       - name: Download openapi-base
-        uses: actions/download-artifact@8caf195ad4b1dee92908e23f56eeb0696f1dd42d # v4.1.5
+        uses: actions/download-artifact@9c19ed7fe5d278cd354c7dfd5d3b88589c7e2395 # v4.1.6
         with:
           name: openapi-base
           path: openapi-base
@@ -152,7 +152,7 @@ jobs:
         run: |-
           echo "JELLYFIN_VERSION=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
       - name: Download openapi-head
-        uses: actions/download-artifact@8caf195ad4b1dee92908e23f56eeb0696f1dd42d # v4.1.5
+        uses: actions/download-artifact@9c19ed7fe5d278cd354c7dfd5d3b88589c7e2395 # v4.1.6
         with:
           name: openapi-head
           path: openapi-head
