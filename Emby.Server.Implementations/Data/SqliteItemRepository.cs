@@ -4198,11 +4198,10 @@ namespace Emby.Server.Implementations.Data
                     // In addtion to the tags for the episodes themselves, we need to manually query its parent (the season)'s tags as well.
                     if (includeTypes.Length == 1 && includeTypes.FirstOrDefault() is BaseItemKind.Episode)
                     {
-                        whereClauses.Add("(" +
-                                         "(select CleanValue from ItemValues where ItemId=Guid and Type=6 and cleanvalue in (" + includedTags + ")) is not null" +
-                                         " OR " +
-                                         "(select CleanValue from ItemValues where ItemId=ParentId and Type=6 and cleanvalue in (" + includedTags + ")) is not null" +
-                                         ")");
+                        whereClauses.Add($"""
+                                          ((select CleanValue from ItemValues where ItemId=Guid and Type=6 and CleanValue in ({includedTags})) is not null
+                                          OR (select CleanValue from ItemValues where ItemId=ParentId and Type=6 and CleanValue in ({includedTags})) is not null)
+                                          """);
                     }
                     else
                     {
