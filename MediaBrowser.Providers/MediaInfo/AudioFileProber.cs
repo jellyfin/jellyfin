@@ -232,7 +232,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (!audio.IsLocked)
             {
-                await FetchDataFromTags(audio, options).ConfigureAwait(false);
+                await FetchDataFromTags(audio, mediaInfo, options).ConfigureAwait(false);
             }
 
             var mediaStreams = new List<MediaStream>(mediaInfo.MediaStreams);
@@ -247,8 +247,9 @@ namespace MediaBrowser.Providers.MediaInfo
         /// Fetches data from the tags.
         /// </summary>
         /// <param name="audio">The <see cref="Audio"/>.</param>
+        /// <param name="mediaInfo">The <see cref="Model.MediaInfo.MediaInfo"/>.</param>
         /// <param name="options">The <see cref="MetadataRefreshOptions"/>.</param>
-        private async Task FetchDataFromTags(Audio audio, MetadataRefreshOptions options)
+        private async Task FetchDataFromTags(Audio audio, Model.MediaInfo.MediaInfo mediaInfo, MetadataRefreshOptions options)
         {
             using var file = TagLib.File.Create(audio.Path);
             var tagTypes = file.TagTypesOnDisk;
@@ -415,7 +416,6 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     // Fallback to ffprobe as TagLib incorrectly provides recording MBID in `tags.MusicBrainzTrackId`.
                     // See https://github.com/mono/taglib-sharp/issues/304
-                    var mediaInfo = await GetMediaInfo(audio, CancellationToken.None).ConfigureAwait(false);
                     var trackMbId = mediaInfo.GetProviderId(MetadataProvider.MusicBrainzTrack);
                     if (trackMbId is not null)
                     {
@@ -443,21 +443,6 @@ namespace MediaBrowser.Providers.MediaInfo
 
             audio.LyricFiles = externalLyricFiles.Select(i => i.Path).Distinct().ToArray();
             currentStreams.AddRange(externalLyricFiles);
-        }
-
-        private async Task<Model.MediaInfo.MediaInfo> GetMediaInfo(BaseItem item, CancellationToken cancellationToken)
-        {
-            var request = new MediaInfoRequest
-            {
-                MediaType = DlnaProfileType.Audio,
-                MediaSource = new MediaSourceInfo
-                {
-                    Path = item.Path,
-                    Protocol = item.PathProtocol ?? MediaProtocol.File
-                }
-            };
-
-            return await _mediaEncoder.GetMediaInfo(request, cancellationToken).ConfigureAwait(false);
         }
     }
 }
