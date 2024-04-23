@@ -256,13 +256,14 @@ public class ItemsController : BaseJellyfinApiController
             return BadRequest("userId is required");
         }
 
-        var fieldsList = fields.ToList();
-        if (user is not null && user.GetPreference(PreferenceKind.AllowedTags).Length != 0)
+        if (user is not null
+            && user.GetPreference(PreferenceKind.AllowedTags).Length != 0
+            && !fields.Contains(ItemFields.Tags))
         {
-            fieldsList.Add(ItemFields.Tags);
+            fields = [..fields, ItemFields.Tags];
         }
 
-        var dtoOptions = new DtoOptions { Fields = fieldsList }
+        var dtoOptions = new DtoOptions { Fields = fields }
             .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
