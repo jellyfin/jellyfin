@@ -135,7 +135,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The LUFS Value.</value>
         [JsonIgnore]
-        public float LUFS { get; set; }
+        public float? LUFS { get; set; }
 
         /// <summary>
         /// Gets or sets the channel identifier.
