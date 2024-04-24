@@ -273,12 +273,12 @@ namespace Jellyfin.LiveTv.TunerHosts
                 var numberIndex = nameInExtInf.IndexOf(' ', StringComparison.Ordinal);
                 if (numberIndex > 0)
                 {
-                    var numberPart = nameInExtInf.Substring(0, numberIndex).Trim(new[] { ' ', '.' });
+                    var numberPart = nameInExtInf.AsSpan(0, numberIndex).Trim(new[] { ' ', '.' });
 
                     if (double.TryParse(numberPart, CultureInfo.InvariantCulture, out _))
                     {
                         // channel.Number = number.ToString();
-                        nameInExtInf = nameInExtInf.Substring(numberIndex + 1).Trim(new[] { ' ', '-' });
+                        nameInExtInf = nameInExtInf.AsSpan(numberIndex + 1).Trim(new[] { ' ', '-' }).ToString();
                     }
                 }
             }
