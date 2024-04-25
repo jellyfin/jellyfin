@@ -83,11 +83,13 @@ public class TrickplayManager : ITrickplayManager
         var options = _config.Configuration.TrickplayOptions;
         foreach (var width in options.WidthResolutions)
         {
+            // The width has to be even, otherwise a lot of filters will not be able to sample it.
+            var evenWidth = 2 * (width / 2);
             cancellationToken.ThrowIfCancellationRequested();
             await RefreshTrickplayDataInternal(
                 video,
                 replace,
-                width,
+                evenWidth,
                 options,
                 cancellationToken).ConfigureAwait(false);
         }
