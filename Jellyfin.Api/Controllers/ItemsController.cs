@@ -512,8 +512,15 @@ public class ItemsController : BaseJellyfinApiController
         }
         else
         {
-            var itemsArray = folder.GetChildren(user, true);
-            result = new QueryResult<BaseItem>(itemsArray);
+            if (folder is UserRootFolder)
+            {
+                result = new QueryResult<BaseItem>(folder.Children.ToList());
+            }
+            else
+            {
+                var itemsArray = folder.GetChildren(user, true);
+                result = new QueryResult<BaseItem>(itemsArray);
+            }
         }
 
         return new QueryResult<BaseItemDto>(
