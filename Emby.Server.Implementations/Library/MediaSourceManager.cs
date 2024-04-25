@@ -274,7 +274,7 @@ namespace Emby.Server.Implementations.Library
             var tasks = _providers.Select(i => GetDynamicMediaSources(item, i, cancellationToken));
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
-            return results.SelectMany(i => i.ToList());
+            return results.SelectMany(i => i);
         }
 
         private async Task<IEnumerable<MediaSourceInfo>> GetDynamicMediaSources(BaseItem item, IMediaSourceProvider provider, CancellationToken cancellationToken)
