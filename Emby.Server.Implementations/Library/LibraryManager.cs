@@ -1038,6 +1038,7 @@ namespace Emby.Server.Implementations.Library
                 new Progress<double>(),
                 new MetadataRefreshOptions(new DirectoryService(_fileSystem)),
                 recursive: false,
+                allowRemoveRoot: removeRoot,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
             await GetUserRootFolder().RefreshMetadata(cancellationToken).ConfigureAwait(false);

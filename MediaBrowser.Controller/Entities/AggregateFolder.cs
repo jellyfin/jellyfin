@@ -159,7 +159,7 @@ namespace MediaBrowser.Controller.Entities
         {
             ClearCache();
 
-            await base.ValidateChildrenInternal(progress, recursive, refreshChildMetadata, false, refreshOptions, directoryService, cancellationToken)
+            await base.ValidateChildrenInternal(progress, recursive, refreshChildMetadata, allowRemoveRoot, refreshOptions, directoryService, cancellationToken)
                 .ConfigureAwait(false);
 
             ClearCache();
