@@ -14,6 +14,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.AudioBooks;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
@@ -418,6 +419,7 @@ namespace MediaBrowser.Providers.Manager
                 item is MusicArtist ||
                 item is PhotoAlbum ||
                 item is Person ||
+                item is AudioBook ||
                 (saveLocally && _config.Configuration.ImageSavingConvention == ImageSavingConvention.Legacy) ?
                 "folder" :
                 "poster";
@@ -605,7 +607,7 @@ namespace MediaBrowser.Providers.Manager
                     return new[] { GetSavePathForItemInMixedFolder(item, type, string.Empty, extension) };
                 }
 
-                if (item is MusicAlbum || item is MusicArtist)
+                if (item is MusicAlbum || item is MusicArtist || item is AudioBook)
                 {
                     return new[] { Path.Combine(item.ContainingFolderPath, "folder" + extension) };
                 }

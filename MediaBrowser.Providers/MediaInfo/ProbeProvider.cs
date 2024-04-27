@@ -10,6 +10,7 @@ using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.AudioBooks;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -35,7 +36,7 @@ namespace MediaBrowser.Providers.MediaInfo
         ICustomMetadataProvider<Trailer>,
         ICustomMetadataProvider<Video>,
         ICustomMetadataProvider<Audio>,
-        ICustomMetadataProvider<AudioBook>,
+        ICustomMetadataProvider<AudioBookFile>,
         IHasOrder,
         IForcedProvider,
         IPreRefreshProvider,
@@ -211,7 +212,7 @@ namespace MediaBrowser.Providers.MediaInfo
         }
 
         /// <inheritdoc />
-        public Task<ItemUpdateType> FetchAsync(AudioBook item, MetadataRefreshOptions options, CancellationToken cancellationToken)
+        public Task<ItemUpdateType> FetchAsync(AudioBookFile item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             return FetchAudioInfo(item, options, cancellationToken);
         }

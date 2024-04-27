@@ -86,7 +86,7 @@ namespace MediaBrowser.Common
         void NotifyPendingRestart();
 
         /// <summary>
-        /// Gets the exports.
+        /// For given type T, find every class which implements T (usually T is an interface), create or retrieve an instance and return a collection.
         /// </summary>
         /// <typeparam name="T">The type.</typeparam>
         /// <param name="manageLifetime">If set to <c>true</c> [manage lifetime].</param>
@@ -103,7 +103,8 @@ namespace MediaBrowser.Common
         IReadOnlyCollection<T> GetExports<T>(CreationDelegateFactory defaultFunc, bool manageLifetime = true);
 
         /// <summary>
-        /// Gets the export types.
+        /// For the given type T, iterate over all concrete types available to the server and yield all types
+        /// which are sub-types of given type T.
         /// </summary>
         /// <typeparam name="T">The type.</typeparam>
         /// <returns>IEnumerable{Type}.</returns>

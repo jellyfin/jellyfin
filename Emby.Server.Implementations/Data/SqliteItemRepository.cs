@@ -22,6 +22,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.AudioBooks;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Extensions;
@@ -239,7 +240,6 @@ namespace Emby.Server.Implementations.Data
         private static readonly BaseItemKind[] _seriesTypes = new[]
         {
             BaseItemKind.Book,
-            BaseItemKind.AudioBook,
             BaseItemKind.Episode,
             BaseItemKind.Season
         };
@@ -264,6 +264,7 @@ namespace Emby.Server.Implementations.Data
             { BaseItemKind.AggregateFolder, typeof(AggregateFolder).FullName },
             { BaseItemKind.Audio, typeof(Audio).FullName },
             { BaseItemKind.AudioBook, typeof(AudioBook).FullName },
+            { BaseItemKind.AudioBookFile, typeof(AudioBookFile).FullName },
             { BaseItemKind.BasePluginFolder, typeof(BasePluginFolder).FullName },
             { BaseItemKind.Book, typeof(Book).FullName },
             { BaseItemKind.BoxSet, typeof(BoxSet).FullName },
@@ -1295,6 +1296,7 @@ namespace Emby.Server.Implementations.Data
                 && type != typeof(Book)
                 && type != typeof(LiveTvProgram)
                 && type != typeof(AudioBook)
+                && type != typeof(AudioBookFile)
                 && type != typeof(Audio)
                 && type != typeof(MusicAlbum);
         }
