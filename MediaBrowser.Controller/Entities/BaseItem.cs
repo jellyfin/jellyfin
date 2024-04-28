@@ -138,6 +138,13 @@ namespace MediaBrowser.Controller.Entities
         public float? LUFS { get; set; }
 
         /// <summary>
+        /// Gets or sets the gain required for audio normalization.
+        /// </summary>
+        /// <value>The gain required for audio normalization..</value>
+        [JsonIgnore]
+        public float? NormalizationGain { get; set; }
+
+        /// <summary>
         /// Gets or sets the channel identifier.
         /// </summary>
         /// <value>The channel identifier.</value>
