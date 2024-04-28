@@ -784,7 +784,7 @@ namespace MediaBrowser.Model.Dto
         /// <summary>
         /// Gets or sets the gain required for audio normalization.
         /// </summary>
-        /// <value>The gain required for audio normalization..</value>
+        /// <value>The gain required for audio normalization.</value>
         public float? NormalizationGain { get; set; }
 
         /// <summary>

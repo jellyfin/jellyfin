@@ -900,6 +900,7 @@ namespace Emby.Server.Implementations.Dto
 
             if (item.LUFS.HasValue)
             {
+                // -18 LUFS reference, same as ReplayGain 2.0, compatible with ReplayGain 1.0
                 dto.NormalizationGain = -18f - item.LUFS;
             }
             else if (item.NormalizationGain.HasValue)
