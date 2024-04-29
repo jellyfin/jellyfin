@@ -98,8 +98,9 @@ public partial class AudioNormalizationTask : IScheduledTask
                     continue;
                 }
 
+                // Skip albums that don't have multiple tracks, album gain is useless here
                 var albumTracks = ((MusicAlbum)a).Tracks.Where(x => x.IsFileProtocol).ToList();
-                if (albumTracks.Count == 0)
+                if (albumTracks.Count <= 1)
                 {
                     continue;
                 }
@@ -115,6 +116,7 @@ public partial class AudioNormalizationTask : IScheduledTask
 
             _itemRepository.SaveItems(albums, cancellationToken);
 
+            // Track gain
             var tracks = _libraryManager.GetItemList(new InternalItemsQuery
             {
                 MediaTypes = [MediaType.Audio],
