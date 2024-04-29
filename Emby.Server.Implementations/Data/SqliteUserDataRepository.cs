@@ -12,6 +12,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Data
@@ -23,8 +24,9 @@ namespace Emby.Server.Implementations.Data
         public SqliteUserDataRepository(
             ILogger<SqliteUserDataRepository> logger,
             IServerConfigurationManager config,
-            IUserManager userManager)
-            : base(logger)
+            IUserManager userManager,
+            IConfiguration configuration)
+            : base(logger, configuration)
         {
             _userManager = userManager;
 

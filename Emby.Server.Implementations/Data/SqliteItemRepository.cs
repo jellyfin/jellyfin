@@ -314,7 +314,7 @@ namespace Emby.Server.Implementations.Data
             ILocalizationManager localization,
             IImageProcessor imageProcessor,
             IConfiguration configuration)
-            : base(logger)
+            : base(logger, configuration)
         {
             _config = config;
             _appHost = appHost;
