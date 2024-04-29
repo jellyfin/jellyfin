@@ -65,7 +65,7 @@ namespace Emby.Server.Implementations.Data
         /// Gets the journal mode. <see href="https://www.sqlite.org/pragma.html#pragma_journal_mode" />.
         /// </summary>
         /// <value>The journal mode.</value>
-        protected virtual string JournalMode => _configuration.GetSqliteWalDisabled() ? "TRUNCATE" : "WAL";
+        protected virtual string JournalMode => _configuration.GetSqliteJournalMode();
 
         /// <summary>
         /// Gets the journal size limit. <see href="https://www.sqlite.org/pragma.html#pragma_journal_size_limit" />.

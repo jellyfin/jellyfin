@@ -65,9 +65,9 @@ namespace MediaBrowser.Controller.Extensions
         public const string SqliteCacheSizeKey = "sqlite:cacheSize";
 
         /// <summary>
-        /// Disable WAL journaling of sqlite.
+        /// SQLite journal mode.
         /// </summary>
-        public const string SqliteDisableWalKey = "sqlite:disableWal";
+        public const string SqliteJournalModeKey = "sqlite:journalMode";
 
         /// <summary>
         /// Gets a value indicating whether the application should host static web content from the <see cref="IConfiguration"/>.
@@ -135,24 +135,14 @@ namespace MediaBrowser.Controller.Extensions
             => configuration.GetValue<int?>(SqliteCacheSizeKey);
 
         /// <summary>
-        /// Gets whether WAL journaling disabled from the <see cref="IConfiguration" />.
+        /// Gets SQLite journal mode from the <see cref="IConfiguration" />.
         /// </summary>
         /// <param name="configuration">The configuration to read the setting from.</param>
-        /// <returns>Whether WAL journaling disabled.</returns>
-        public static bool GetSqliteWalDisabled(this IConfiguration configuration)
+        /// <returns>SQLite journal mode.</returns>
+        public static string GetSqliteJournalMode(this IConfiguration configuration)
         {
-            var disableSqliteWal = configuration.GetValue<string?>(SqliteDisableWalKey);
-            var disableWal = false;
-            if (disableSqliteWal is not null)
-            {
-                disableWal = disableSqliteWal.ToUpperInvariant() switch
-                {
-                    "FALSE" or "NO" or "0" => false,
-                    _ => true
-                };
-            }
-
-            return disableWal;
+            var journalMode = configuration.GetValue<string?>(SqliteJournalModeKey);
+            return journalMode is not null ? journalMode.ToUpperInvariant() : "WAL";
         }
     }
 }

@@ -20,7 +20,7 @@ namespace Emby.Server.Implementations
             { PlaylistsAllowDuplicatesKey, bool.FalseString },
             { BindToUnixSocketKey, bool.FalseString },
             { SqliteCacheSizeKey, "20000" },
-            { SqliteDisableWalKey, bool.FalseString }
+            { SqliteJournalModeKey, "WAL" }
         };
     }
 }
