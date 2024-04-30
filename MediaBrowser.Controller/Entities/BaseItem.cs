@@ -1610,7 +1610,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             var parent = GetParents().FirstOrDefault() ?? this;
-            if (parent is UserRootFolder)
+            if (parent is UserRootFolder or AggregateFolder)
             {
                 return true;
             }
