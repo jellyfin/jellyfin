@@ -108,6 +108,8 @@
     "TaskRefreshLibrary": "Scan Media Library",
     "TaskRefreshChapterImagesDescription": "Creates thumbnails for videos that have chapters.",
     "TaskRefreshChapterImages": "Extract Chapter Images",
+    "TaskCollectionDurationDescription": "Calculate the total duration of all collections.",
+    "TaskCollectionDuration": "Calculate collections duration",
     "TaskCleanCacheDescription": "Deletes cache files no longer needed by the system.",
     "TaskCleanCache": "Clean Cache Directory",
     "TasksChannelsCategory": "Internet Channels",

@@ -108,6 +108,8 @@
     "TaskRefreshLibrary": "Scan Librerie",
     "TaskRefreshChapterImagesDescription": "Crea le thumbnail per i video che hanno capitoli.",
     "TaskRefreshChapterImages": "Estrai immagini capitolo",
+    "TaskCollectionDurationDescription": "Calcola la durata totale di tutte le collezioni.",
+    "TaskCollectionDuration": "Calcola durata collezioni",
     "TaskCleanCacheDescription": "Cancella i file di cache non più necessari al sistema.",
     "TaskCleanCache": "Pulisci la directory della cache",
     "TasksChannelsCategory": "Canali su Internet",
