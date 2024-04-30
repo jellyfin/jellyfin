@@ -21,7 +21,7 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.ScheduledTasks.Tasks;
 
 /// <summary>
-/// The splashscreen post scan task.
+/// The audio normalization task.
 /// </summary>
 public partial class AudioNormalizationTask : IScheduledTask
 {
@@ -151,9 +151,6 @@ public partial class AudioNormalizationTask : IScheduledTask
             }
         ];
     }
-
-    private string EscapeFilename(string filename)
-        => filename;
 
     private async Task<float?> CalculateLUFSAsync(string inputArgs, CancellationToken cancellationToken)
     {
