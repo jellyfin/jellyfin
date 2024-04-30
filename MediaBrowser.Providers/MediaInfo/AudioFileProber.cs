@@ -1,9 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
@@ -18,7 +15,6 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
-using Microsoft.Extensions.Logging;
 using TagLib;
 
 namespace MediaBrowser.Providers.MediaInfo
@@ -26,12 +22,8 @@ namespace MediaBrowser.Providers.MediaInfo
     /// <summary>
     /// Probes audio files for metadata.
     /// </summary>
-    public partial class AudioFileProber
+    public class AudioFileProber
     {
-        // Default LUFS value for use with the web interface, at -18db gain will be 1(no db gain).
-        private const float DefaultLUFSValue = -18;
-
-        private readonly ILogger<AudioFileProber> _logger;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IItemRepository _itemRepo;
         private readonly ILibraryManager _libraryManager;
@@ -42,7 +34,6 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <summary>
         /// Initializes a new instance of the <see cref="AudioFileProber"/> class.
         /// </summary>
-        /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
         /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
         /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
         /// <param name="itemRepo">Instance of the <see cref="IItemRepository"/> interface.</param>
@@ -50,7 +41,6 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="lyricResolver">Instance of the <see cref="LyricResolver"/> interface.</param>
         /// <param name="lyricManager">Instance of the <see cref="ILyricManager"/> interface.</param>
         public AudioFileProber(
-            ILogger<AudioFileProber> logger,
             IMediaSourceManager mediaSourceManager,
             IMediaEncoder mediaEncoder,
             IItemRepository itemRepo,
@@ -58,7 +48,6 @@ namespace MediaBrowser.Providers.MediaInfo
             LyricResolver lyricResolver,
             ILyricManager lyricManager)
         {
-            _logger = logger;
             _mediaEncoder = mediaEncoder;
             _itemRepo = itemRepo;
             _libraryManager = libraryManager;
@@ -66,9 +55,6 @@ namespace MediaBrowser.Providers.MediaInfo
             _lyricResolver = lyricResolver;
             _lyricManager = lyricManager;
         }
-
-        [GeneratedRegex(@"I:\s+(.*?)\s+LUFS")]
-        private static partial Regex LUFSRegex();
 
         /// <summary>
         /// Probes the specified item for metadata.
@@ -111,45 +97,6 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 await FetchAsync(item, result, options, cancellationToken).ConfigureAwait(false);
             }
-
-            var libraryOptions = _libraryManager.GetLibraryOptions(item);
-            if (libraryOptions.EnableLUFSScan && item.LUFS is null)
-            {
-                using (var process = new Process()
-                {
-                    StartInfo = new ProcessStartInfo
-                    {
-                        FileName = _mediaEncoder.EncoderPath,
-                        Arguments = $"-hide_banner -i \"{path}\" -af ebur128=framelog=verbose -f null -",
-                        RedirectStandardOutput = false,
-                        RedirectStandardError = true
-                    },
-                })
-                {
-                    try
-                    {
-                        process.Start();
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error starting ffmpeg");
-
-                        throw;
-                    }
-
-                    using var reader = process.StandardError;
-                    var output = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
-                    cancellationToken.ThrowIfCancellationRequested();
-                    MatchCollection split = LUFSRegex().Matches(output);
-
-                    if (split.Count != 0)
-                    {
-                        item.LUFS = float.Parse(split[0].Groups[1].ValueSpan, CultureInfo.InvariantCulture.NumberFormat);
-                    }
-                }
-            }
-
-            _logger.LogDebug("LUFS for {ItemName} is {LUFS}.", item.Name, item.LUFS);
 
             return ItemUpdateType.MetadataImport;
         }
@@ -339,7 +286,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 if (!double.IsNaN(tags.ReplayGainTrackGain))
                 {
-                    audio.LUFS = DefaultLUFSValue - (float)tags.ReplayGainTrackGain;
+                    audio.NormalizationGain = (float)tags.ReplayGainTrackGain;
                 }
 
                 if (options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzArtist, out _))
