@@ -2984,8 +2984,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var scaleW = (double)maximumWidth / outputWidth;
                 var scaleH = (double)maximumHeight / outputHeight;
                 var scale = Math.Min(scaleW, scaleH);
-                outputWidth = Math.Min(maximumWidth, (int)(outputWidth * scale));
-                outputHeight = Math.Min(maximumHeight, (int)(outputHeight * scale));
+                outputWidth = Math.Min(maximumWidth, Convert.ToInt32(outputWidth * scale));
+                outputHeight = Math.Min(maximumHeight, Convert.ToInt32(outputHeight * scale));
             }
 
             outputWidth = 2 * (outputWidth / 2);
