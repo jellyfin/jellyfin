@@ -2323,14 +2323,7 @@ namespace Emby.Server.Implementations.Data
 
                 columns.Add(builder.ToString());
 
-                var oldLen = query.ExcludeItemIds.Length;
-                var newLen = oldLen + item.ExtraIds.Length + 1;
-                var excludeIds = new Guid[newLen];
-                query.ExcludeItemIds.CopyTo(excludeIds, 0);
-                excludeIds[oldLen] = item.Id;
-                item.ExtraIds.CopyTo(excludeIds, oldLen + 1);
-
-                query.ExcludeItemIds = excludeIds;
+                query.ExcludeItemIds = [..query.ExcludeItemIds, item.Id, ..item.ExtraIds];
                 query.ExcludeProviderIds = item.ProviderIds;
             }
 
@@ -2838,10 +2831,7 @@ namespace Emby.Server.Implementations.Data
                     prepend.Add((ItemSortBy.Random, SortOrder.Ascending));
                 }
 
-                var arr = new (ItemSortBy, SortOrder)[prepend.Count + orderBy.Count];
-                prepend.CopyTo(arr, 0);
-                orderBy.CopyTo(arr, prepend.Count);
-                orderBy = query.OrderBy = arr;
+                orderBy = query.OrderBy = [..prepend, ..orderBy];
             }
             else if (orderBy.Count == 0)
             {

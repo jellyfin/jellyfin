@@ -226,13 +226,8 @@ namespace Emby.Server.Implementations.Playlists
                 return;
             }
 
-            // Create a new array with the updated playlist items
-            var newLinkedChildren = new LinkedChild[playlist.LinkedChildren.Length + childrenToAdd.Count];
-            playlist.LinkedChildren.CopyTo(newLinkedChildren, 0);
-            childrenToAdd.CopyTo(newLinkedChildren, playlist.LinkedChildren.Length);
-
             // Update the playlist in the repository
-            playlist.LinkedChildren = newLinkedChildren;
+            playlist.LinkedChildren = [..playlist.LinkedChildren, ..childrenToAdd];
 
             await UpdatePlaylistInternal(playlist).ConfigureAwait(false);
 
@@ -526,8 +521,8 @@ namespace Emby.Server.Implementations.Playlists
             foreach (var playlist in playlists)
             {
                 // Update owner if shared
-                var rankedShares = playlist.Shares.OrderByDescending(x => x.CanEdit).ToArray();
-                if (rankedShares.Length > 0)
+                var rankedShares = playlist.Shares.OrderByDescending(x => x.CanEdit).ToList();
+                if (rankedShares.Count > 0)
                 {
                     playlist.OwnerUserId = rankedShares[0].UserId;
                     playlist.Shares = rankedShares.Skip(1).ToArray();
