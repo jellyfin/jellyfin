@@ -138,7 +138,7 @@ namespace MediaBrowser.Providers.Manager
             var result = new RefreshResult { UpdateType = ItemUpdateType.None };
 
             var typeName = item.GetType().Name;
-            var typeOptions = libraryOptions.GetTypeOptions(typeName) ?? new TypeOptions { Type = typeName };
+            var typeOptions = libraryOptions.GetTypeOption(typeName) ?? new TypeOptions { Type = typeName };
 
             // track library limits, adding buffer to allow lazy replacing of current images
             var backdropLimit = typeOptions.GetLimit(ImageType.Backdrop) + oldBackdropImages.Length;

@@ -1,19 +1,25 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace MediaBrowser.Model.Configuration
 {
     public class LibraryOptions
     {
+        private ICollection<TypeOptions> _typeOptions;
+        private ICollection<string>? _localMetadataReaderOrder = [];
+        private ICollection<MediaPathInfo> _pathInfos = [];
+
         public LibraryOptions()
         {
-            TypeOptions = Array.Empty<TypeOptions>();
-            DisabledSubtitleFetchers = Array.Empty<string>();
+            _typeOptions = Array.Empty<TypeOptions>();
+            DisabledSubtitleFetchers = [];
+            SubtitleDownloadLanguages = [];
             SubtitleFetcherOrder = Array.Empty<string>();
             DisabledLocalMetadataReaders = Array.Empty<string>();
-
+            MetadataSavers = [];
             SkipSubtitlesIfAudioTrackMatches = true;
             RequirePerfectSubtitleMatch = true;
             AllowEmbeddedSubtitles = EmbeddedSubtitleOptions.AllowAll;
@@ -22,7 +28,7 @@ namespace MediaBrowser.Model.Configuration
             EnablePhotos = true;
             SaveSubtitlesWithMedia = true;
             SaveLyricsWithMedia = true;
-            PathInfos = Array.Empty<MediaPathInfo>();
+            _pathInfos = Array.Empty<MediaPathInfo>();
             EnableAutomaticSeriesGrouping = true;
             SeasonZeroDisplayName = "Specials";
         }
@@ -43,7 +49,10 @@ namespace MediaBrowser.Model.Configuration
 
         public bool ExtractTrickplayImagesDuringLibraryScan { get; set; }
 
-        public MediaPathInfo[] PathInfos { get; set; }
+        public ICollection<MediaPathInfo> PathInfos
+        {
+            get => _pathInfos;
+        }
 
         public bool SaveLocalMetadata { get; set; }
 
@@ -74,21 +83,24 @@ namespace MediaBrowser.Model.Configuration
 
         public string SeasonZeroDisplayName { get; set; }
 
-        public string[]? MetadataSavers { get; set; }
+        public ICollection<string>? MetadataSavers { get;  }
 
-        public string[] DisabledLocalMetadataReaders { get; set; }
+        public ICollection<string> DisabledLocalMetadataReaders { get;  }
 
-        public string[]? LocalMetadataReaderOrder { get; set; }
+        public ICollection<string>? LocalMetadataReaderOrder
+        {
+            get => _localMetadataReaderOrder;
+        }
 
-        public string[] DisabledSubtitleFetchers { get; set; }
+        public ICollection<string> DisabledSubtitleFetchers { get;  }
 
-        public string[] SubtitleFetcherOrder { get; set; }
+        public ICollection<string> SubtitleFetcherOrder { get;  }
 
         public bool SkipSubtitlesIfEmbeddedSubtitlesPresent { get; set; }
 
         public bool SkipSubtitlesIfAudioTrackMatches { get; set; }
 
-        public string[]? SubtitleDownloadLanguages { get; set; }
+        public ICollection<string> SubtitleDownloadLanguages { get; }
 
         public bool RequirePerfectSubtitleMatch { get; set; }
 
@@ -101,9 +113,12 @@ namespace MediaBrowser.Model.Configuration
 
         public EmbeddedSubtitleOptions AllowEmbeddedSubtitles { get; set; }
 
-        public TypeOptions[] TypeOptions { get; set; }
+        public ICollection<TypeOptions> TypeOptions
+        {
+            get => _typeOptions;
+        }
 
-        public TypeOptions? GetTypeOptions(string type)
+        public TypeOptions? GetTypeOption(string type)
         {
             foreach (var options in TypeOptions)
             {
@@ -114,6 +129,21 @@ namespace MediaBrowser.Model.Configuration
             }
 
             return null;
+        }
+
+        public void SetTypeOptions(ICollection<TypeOptions> typeOptions)
+        {
+            _typeOptions = typeOptions;
+        }
+
+        public void SetLocalMetadataReaderOrder(string[]? localMetadataReaderOrder)
+        {
+            _localMetadataReaderOrder = localMetadataReaderOrder ?? [];
+        }
+
+        public void SetPathInfos(MediaPathInfo[] pathInfos)
+        {
+            _pathInfos = new List<MediaPathInfo>(pathInfos);
         }
     }
 }

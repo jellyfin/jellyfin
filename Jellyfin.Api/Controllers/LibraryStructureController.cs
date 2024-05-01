@@ -85,7 +85,7 @@ public class LibraryStructureController : BaseJellyfinApiController
 
         if (paths is not null && paths.Length > 0)
         {
-            libraryOptions.PathInfos = paths.Select(i => new MediaPathInfo(i)).ToArray();
+            libraryOptions.SetPathInfos(paths.Select(i => new MediaPathInfo(i)).ToArray());
         }
 
         await _libraryManager.AddVirtualFolder(name, collectionType, libraryOptions, refreshLibrary).ConfigureAwait(false);

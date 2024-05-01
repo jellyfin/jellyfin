@@ -495,10 +495,8 @@ namespace Jellyfin.Providers.Tests.Manager
             string[]? localMetadataReaderOrder = null,
             string[]? metadataFetcherOrder = null)
         {
-            var libraryOptions = new LibraryOptions
-            {
-                LocalMetadataReaderOrder = localMetadataReaderOrder
-            };
+            var libraryOptions = new LibraryOptions();
+            libraryOptions.SetLocalMetadataReaderOrder(localMetadataReaderOrder);
 
             // only create type options if populating it with something
             if (imageFetcherOrder is not null || metadataFetcherOrder is not null)
@@ -506,7 +504,7 @@ namespace Jellyfin.Providers.Tests.Manager
                 imageFetcherOrder ??= Array.Empty<string>();
                 metadataFetcherOrder ??= Array.Empty<string>();
 
-                libraryOptions.TypeOptions = new[]
+                libraryOptions.SetTypeOptions(new[]
                 {
                     new TypeOptions
                     {
@@ -514,7 +512,7 @@ namespace Jellyfin.Providers.Tests.Manager
                         ImageFetcherOrder = imageFetcherOrder,
                         MetadataFetcherOrder = metadataFetcherOrder
                     }
-                };
+                });
             }
 
             return libraryOptions;

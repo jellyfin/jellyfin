@@ -368,7 +368,7 @@ namespace MediaBrowser.Providers.Manager
 
         private IEnumerable<IImageProvider> GetImageProvidersInternal(BaseItem item, LibraryOptions libraryOptions, MetadataOptions options, ImageRefreshOptions refreshOptions, bool includeDisabled)
         {
-            var typeOptions = libraryOptions.GetTypeOptions(item.GetType().Name);
+            var typeOptions = libraryOptions.GetTypeOption(item.GetType().Name);
             var fetcherOrder = typeOptions?.ImageFetcherOrder ?? options.ImageFetcherOrder;
 
             return _imageProviders.Where(i => CanRefreshImages(i, item, typeOptions, refreshOptions, includeDisabled))
@@ -422,7 +422,7 @@ namespace MediaBrowser.Providers.Manager
             where T : BaseItem
         {
             var localMetadataReaderOrder = libraryOptions.LocalMetadataReaderOrder ?? globalMetadataOptions.LocalMetadataReaderOrder;
-            var typeOptions = libraryOptions.GetTypeOptions(item.GetType().Name);
+            var typeOptions = libraryOptions.GetTypeOption(item.GetType().Name);
             var metadataFetcherOrder = typeOptions?.MetadataFetcherOrder ?? globalMetadataOptions.MetadataFetcherOrder;
 
             return _metadataProviders.OfType<IMetadataProvider<T>>()
@@ -432,7 +432,7 @@ namespace MediaBrowser.Providers.Manager
                     // only relative order within a type matters: consumers of the list filter to one or the other
                     i switch
                     {
-                        ILocalMetadataProvider => GetConfiguredOrder(localMetadataReaderOrder, i.Name),
+                        ILocalMetadataProvider => GetConfiguredOrder(localMetadataReaderOrder.ToArray(), i.Name),
                         IRemoteMetadataProvider => GetConfiguredOrder(metadataFetcherOrder, i.Name),
                         // Default to end
                         _ => int.MaxValue
