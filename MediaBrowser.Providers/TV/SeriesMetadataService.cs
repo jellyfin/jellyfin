@@ -208,7 +208,7 @@ namespace MediaBrowser.Providers.TV
 
             foreach (var season in seasons)
             {
-                var hasUpdate = season.BeforeMetadataRefresh(false);
+                var hasUpdate = season.BeforeMetadataRefresh(replaceAllMetadata);
                 if (hasUpdate)
                 {
                     await season.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
