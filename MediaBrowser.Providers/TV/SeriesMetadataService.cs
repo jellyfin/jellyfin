@@ -224,7 +224,6 @@ namespace MediaBrowser.Providers.TV
             var seasonNames = series.SeasonNames;
             var seriesChildren = series.GetRecursiveChildren(i => i is Episode || i is Season);
             var seasons = seriesChildren.OfType<Season>().ToList();
-
             var uniqueSeasonNumbers = seriesChildren
                 .OfType<Episode>()
                 .Select(e => e.ParentIndexNumber >= 0 ? e.ParentIndexNumber : null)
