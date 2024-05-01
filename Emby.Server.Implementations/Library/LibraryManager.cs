@@ -3038,9 +3038,7 @@ namespace Emby.Server.Implementations.Library
             {
                 var libraryOptions = CollectionFolder.GetLibraryOptions(virtualFolderPath);
 
-                var list = libraryOptions.PathInfos.ToList();
-                list.Add(pathInfo);
-                libraryOptions.SetPathInfos(list.ToArray());
+                libraryOptions.PathInfos.Add(pathInfo);
 
                 SyncLibraryOptionsToLocations(virtualFolderPath, libraryOptions);
 
@@ -3067,8 +3065,6 @@ namespace Emby.Server.Implementations.Library
                     break;
                 }
             }
-
-            libraryOptions.SetPathInfos(list.ToArray());
 
             CollectionFolder.SaveLibraryOptions(virtualFolderPath, libraryOptions);
         }
