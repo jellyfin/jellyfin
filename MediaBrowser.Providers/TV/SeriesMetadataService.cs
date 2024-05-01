@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -35,6 +36,26 @@ namespace MediaBrowser.Providers.TV
             _localizationManager = localizationManager;
         }
 
+        public override async Task<ItemUpdateType> RefreshMetadata(BaseItem item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
+        {
+            if (item is Series series)
+            {
+                var seriesChildren = series.GetRecursiveChildren(i => i is Episode || i is Season);
+                var seasons = seriesChildren.OfType<Season>().ToList();
+
+                foreach (var season in seasons)
+                {
+                    var hasUpdate = refreshOptions != null && season.BeforeMetadataRefresh(refreshOptions.ReplaceAllMetadata);
+                    if (hasUpdate)
+                    {
+                        await season.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+                    }
+                }
+            }
+
+            return await base.RefreshMetadata(item, refreshOptions, cancellationToken).ConfigureAwait(false);
+        }
+
         /// <inheritdoc />
         protected override async Task AfterMetadataRefresh(Series item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
         {
@@ -42,7 +63,7 @@ namespace MediaBrowser.Providers.TV
 
             RemoveObsoleteEpisodes(item);
             RemoveObsoleteSeasons(item);
-            await UpdateAndCreateSeasonsAsync(item, refreshOptions.ReplaceAllMetadata, cancellationToken).ConfigureAwait(false);
+            await UpdateAndCreateSeasonsAsync(item, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
@@ -197,23 +218,13 @@ namespace MediaBrowser.Providers.TV
         /// Updates seasons names.
         /// </summary>
         /// <param name="series">The series.</param>
-        /// <param name="replaceAllMetadata">Should replace all metadata.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The async task.</returns>
-        private async Task UpdateAndCreateSeasonsAsync(Series series, bool replaceAllMetadata, CancellationToken cancellationToken)
+        private async Task UpdateAndCreateSeasonsAsync(Series series, CancellationToken cancellationToken)
         {
             var seasonNames = series.SeasonNames;
             var seriesChildren = series.GetRecursiveChildren(i => i is Episode || i is Season);
             var seasons = seriesChildren.OfType<Season>().ToList();
-
-            foreach (var season in seasons)
-            {
-                var hasUpdate = season.BeforeMetadataRefresh(replaceAllMetadata);
-                if (hasUpdate)
-                {
-                    await season.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
-                }
-            }
 
             var uniqueSeasonNumbers = seriesChildren
                 .OfType<Episode>()
