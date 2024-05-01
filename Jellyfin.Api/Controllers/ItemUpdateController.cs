@@ -264,7 +264,7 @@ public class ItemUpdateController : BaseJellyfinApiController
 
         if (request.Studios is not null)
         {
-            item.Studios = request.Studios.Select(x => x.Name).ToArray();
+            item.Studios = Array.ConvertAll(request.Studios, x => x.Name);
         }
 
         if (request.DateCreated.HasValue)
@@ -379,10 +379,7 @@ public class ItemUpdateController : BaseJellyfinApiController
         {
             if (item is IHasAlbumArtist hasAlbumArtists)
             {
-                hasAlbumArtists.AlbumArtists = request
-                    .AlbumArtists
-                    .Select(i => i.Name)
-                    .ToArray();
+                hasAlbumArtists.AlbumArtists = Array.ConvertAll(request.AlbumArtists, i => i.Name);
             }
         }
 
@@ -390,10 +387,7 @@ public class ItemUpdateController : BaseJellyfinApiController
         {
             if (item is IHasArtist hasArtists)
             {
-                hasArtists.Artists = request
-                    .ArtistItems
-                    .Select(i => i.Name)
-                    .ToArray();
+                hasArtists.Artists = Array.ConvertAll(request.ArtistItems, i => i.Name);
             }
         }
 

@@ -1481,7 +1481,7 @@ public class DynamicHlsController : BaseJellyfinApiController
 
                     if (currentTranscodingIndex.HasValue)
                     {
-                        DeleteLastFile(playlistPath, segmentExtension, 0);
+                        await DeleteLastFile(playlistPath, segmentExtension, 0).ConfigureAwait(false);
                     }
 
                     streamingRequest.StartTimeTicks = streamingRequest.CurrentRuntimeTicks;
@@ -2009,17 +2009,19 @@ public class DynamicHlsController : BaseJellyfinApiController
         }
     }
 
-    private void DeleteLastFile(string playlistPath, string segmentExtension, int retryCount)
+    private Task DeleteLastFile(string playlistPath, string segmentExtension, int retryCount)
     {
         var file = GetLastTranscodingFile(playlistPath, segmentExtension, _fileSystem);
 
-        if (file is not null)
+        if (file is null)
         {
-            DeleteFile(file.FullName, retryCount);
+            return Task.CompletedTask;
         }
+
+        return DeleteFile(file.FullName, retryCount);
     }
 
-    private void DeleteFile(string path, int retryCount)
+    private async Task DeleteFile(string path, int retryCount)
     {
         if (retryCount >= 5)
         {
@@ -2036,9 +2038,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         {
             _logger.LogError(ex, "Error deleting partial stream file(s) {Path}", path);
 
-            var task = Task.Delay(100);
-            task.Wait();
-            DeleteFile(path, retryCount + 1);
+            await Task.Delay(100).ConfigureAwait(false);
+            await DeleteFile(path, retryCount + 1).ConfigureAwait(false);
         }
         catch (Exception ex)
         {

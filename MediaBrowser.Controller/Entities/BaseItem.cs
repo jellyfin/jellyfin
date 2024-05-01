@@ -138,6 +138,13 @@ namespace MediaBrowser.Controller.Entities
         public float? LUFS { get; set; }
 
         /// <summary>
+        /// Gets or sets the gain required for audio normalization.
+        /// </summary>
+        /// <value>The gain required for audio normalization.</value>
+        [JsonIgnore]
+        public float? NormalizationGain { get; set; }
+
+        /// <summary>
         /// Gets or sets the channel identifier.
         /// </summary>
         /// <value>The channel identifier.</value>
@@ -1603,7 +1610,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             var parent = GetParents().FirstOrDefault() ?? this;
-            if (parent is UserRootFolder)
+            if (parent is UserRootFolder or AggregateFolder)
             {
                 return true;
             }
@@ -1772,14 +1779,11 @@ namespace MediaBrowser.Controller.Entities
                 int curLen = current.Length;
                 if (curLen == 0)
                 {
-                    Studios = new[] { name };
+                    Studios = [name];
                 }
                 else
                 {
-                    var newArr = new string[curLen + 1];
-                    current.CopyTo(newArr, 0);
-                    newArr[curLen] = name;
-                    Studios = newArr;
+                    Studios = [..current, name];
                 }
             }
         }
@@ -1801,9 +1805,7 @@ namespace MediaBrowser.Controller.Entities
             var genres = Genres;
             if (!genres.Contains(name, StringComparison.OrdinalIgnoreCase))
             {
-                var list = genres.ToList();
-                list.Add(name);
-                Genres = list.ToArray();
+                Genres = [..genres, name];
             }
         }
 
@@ -1973,12 +1975,7 @@ namespace MediaBrowser.Controller.Entities
 
         public void AddImage(ItemImageInfo image)
         {
-            var current = ImageInfos;
-            var currentCount = current.Length;
-            var newArr = new ItemImageInfo[currentCount + 1];
-            current.CopyTo(newArr, 0);
-            newArr[currentCount] = image;
-            ImageInfos = newArr;
+            ImageInfos = [..ImageInfos, image];
         }
 
         public virtual Task UpdateToRepositoryAsync(ItemUpdateType updateReason, CancellationToken cancellationToken)

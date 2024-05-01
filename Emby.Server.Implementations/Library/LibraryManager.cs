@@ -3059,8 +3059,7 @@ namespace Emby.Server.Implementations.Library
 
             SyncLibraryOptionsToLocations(virtualFolderPath, libraryOptions);
 
-            var list = libraryOptions.PathInfos.ToList();
-            foreach (var originalPathInfo in list)
+            foreach (var originalPathInfo in libraryOptions.PathInfos)
             {
                 if (string.Equals(mediaPath.Path, originalPathInfo.Path, StringComparison.Ordinal))
                 {
