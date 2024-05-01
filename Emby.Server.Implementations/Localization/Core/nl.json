@@ -128,5 +128,7 @@
     "TaskRefreshTrickplayImages": "Trickplay-afbeeldingen genereren",
     "TaskRefreshTrickplayImagesDescription": "Creëert trickplay-voorvertoningen voor video's in bibliotheken waarvoor dit is ingeschakeld.",
     "TaskCleanCollectionsAndPlaylists": "Collecties en afspeellijsten opruimen",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Verwijdert niet langer bestaande items uit collecties en afspeellijsten."
+    "TaskCleanCollectionsAndPlaylistsDescription": "Verwijdert niet langer bestaande items uit collecties en afspeellijsten.",
+    "TaskAudioNormalization": "Geluidsnormalisatie",
+    "TaskAudioNormalizationDescription": "Scant bestanden op gegevens voor geluidsnormalisatie."
 }
