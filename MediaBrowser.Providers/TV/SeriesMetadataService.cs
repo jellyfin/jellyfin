@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -42,7 +43,7 @@ namespace MediaBrowser.Providers.TV
 
             RemoveObsoleteEpisodes(item);
             RemoveObsoleteSeasons(item);
-            await UpdateAndCreateSeasonsAsync(item, cancellationToken).ConfigureAwait(false);
+            await UpdateAndCreateSeasonsAsync(item, refreshOptions.ReplaceAllMetadata, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
@@ -197,18 +198,17 @@ namespace MediaBrowser.Providers.TV
         /// Updates seasons names.
         /// </summary>
         /// <param name="series">The series.</param>
+        /// <param name="replaceAllMetadata">Should replace all metadata.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The async task.</returns>
-        private async Task UpdateAndCreateSeasonsAsync(Series series, CancellationToken cancellationToken)
+        private async Task UpdateAndCreateSeasonsAsync(Series series, bool replaceAllMetadata, CancellationToken cancellationToken)
         {
             var seasonNames = series.SeasonNames;
             var seriesChildren = series.GetRecursiveChildren(i => i is Episode || i is Season);
             var seasons = seriesChildren.OfType<Season>().ToList();
 
-            // Very old Jellyfin library will have a cursed DB that a season may have NULL index number
-            foreach (var season in seasons.Where(season => season.IndexNumber is null).Where(season => season.Name.Any(char.IsDigit)))
+            foreach (var season in from season in seasons let hasUpdate = season.BeforeMetadataRefresh(replaceAllMetadata) where hasUpdate select season)
             {
-                season.IndexNumber = int.Parse(new string(season.Name.Where(char.IsDigit).ToArray()), NumberStyles.Integer, CultureInfo.InvariantCulture);
                 await season.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
             }
 
