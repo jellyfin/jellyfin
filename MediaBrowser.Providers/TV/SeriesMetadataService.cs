@@ -40,8 +40,7 @@ namespace MediaBrowser.Providers.TV
         {
             if (item is Series series)
             {
-                var seriesChildren = series.GetRecursiveChildren(i => i is Episode || i is Season);
-                var seasons = seriesChildren.OfType<Season>().ToList();
+                var seasons = series.GetRecursiveChildren(i => i is Season).ToList();
 
                 foreach (var season in seasons)
                 {
