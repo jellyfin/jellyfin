@@ -206,9 +206,13 @@ namespace MediaBrowser.Providers.TV
             var seriesChildren = series.GetRecursiveChildren(i => i is Episode || i is Season);
             var seasons = seriesChildren.OfType<Season>().ToList();
 
-            foreach (var season in from season in seasons let hasUpdate = season.BeforeMetadataRefresh(replaceAllMetadata) where hasUpdate select season)
+            foreach (var season in seasons)
             {
-                await season.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+                var hasUpdate = season.BeforeMetadataRefresh(false);
+                if (hasUpdate)
+                {
+                    await season.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+                }
             }
 
             var uniqueSeasonNumbers = seriesChildren
