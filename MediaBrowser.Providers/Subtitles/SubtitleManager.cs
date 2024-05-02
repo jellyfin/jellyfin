@@ -48,7 +48,9 @@ namespace MediaBrowser.Providers.Subtitles
             _monitor = monitor;
             _mediaSourceManager = mediaSourceManager;
             _localization = localizationManager;
-            _subtitleProviders = [.. subtitleProviders.OrderBy(i => i is IHasOrder hasOrder ? hasOrder.Order : 0)];
+            _subtitleProviders = subtitleProviders
+                .OrderBy(i => i is IHasOrder hasOrder ? hasOrder.Order : 0)
+                .ToArray();
         }
 
         /// <inheritdoc />
