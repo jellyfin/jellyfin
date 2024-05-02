@@ -125,10 +125,11 @@ namespace MediaBrowser.Providers.MediaInfo
             // Add external lyrics first to prevent the lrc file get overwritten on first scan
             var mediaStreams = new List<MediaStream>(mediaInfo.MediaStreams);
             AddExternalLyrics(audio, mediaStreams, options);
+            var tryExtractEmbeddedLyrics = mediaStreams.All(s => s.Type != MediaStreamType.Lyric);
 
             if (!audio.IsLocked)
             {
-                await FetchDataFromTags(audio, mediaInfo, options, mediaStreams).ConfigureAwait(false);
+                await FetchDataFromTags(audio, mediaInfo, options, tryExtractEmbeddedLyrics).ConfigureAwait(false);
             }
 
             audio.HasLyrics = mediaStreams.Any(s => s.Type == MediaStreamType.Lyric);
@@ -142,8 +143,8 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="audio">The <see cref="Audio"/>.</param>
         /// <param name="mediaInfo">The <see cref="Model.MediaInfo.MediaInfo"/>.</param>
         /// <param name="options">The <see cref="MetadataRefreshOptions"/>.</param>
-        /// <param name="currentStreams"> Current audio streams. </param>
-        private async Task FetchDataFromTags(Audio audio, Model.MediaInfo.MediaInfo mediaInfo, MetadataRefreshOptions options, IEnumerable<MediaStream> currentStreams)
+        /// <param name="tryExtractEmbeddedLyrics">Whether to extract embedded lyrics to lrc file. </param>
+        private async Task FetchDataFromTags(Audio audio, Model.MediaInfo.MediaInfo mediaInfo, MetadataRefreshOptions options, bool tryExtractEmbeddedLyrics)
         {
             using var file = TagLib.File.Create(audio.Path);
             var tagTypes = file.TagTypesOnDisk;
@@ -325,7 +326,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 // Save extracted lyrics if they exist,
                 // and if the audio doesn't yet have lyrics.
                 if (!string.IsNullOrWhiteSpace(tags.Lyrics)
-                    && currentStreams.All(s => s.Type != MediaStreamType.Lyric))
+                    && tryExtractEmbeddedLyrics)
                 {
                     await _lyricManager.SaveLyricAsync(audio, "lrc", tags.Lyrics).ConfigureAwait(false);
                 }
