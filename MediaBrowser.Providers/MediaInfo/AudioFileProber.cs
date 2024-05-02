@@ -122,13 +122,14 @@ namespace MediaBrowser.Providers.MediaInfo
             audio.Size = mediaInfo.Size;
             audio.PremiereDate = mediaInfo.PremiereDate;
 
-            if (!audio.IsLocked)
-            {
-                await FetchDataFromTags(audio, mediaInfo, options).ConfigureAwait(false);
-            }
-
+            // Add external lyrics first to prevent the lrc file get overwritten on first scan
             var mediaStreams = new List<MediaStream>(mediaInfo.MediaStreams);
             AddExternalLyrics(audio, mediaStreams, options);
+
+            if (!audio.IsLocked)
+            {
+                await FetchDataFromTags(audio, mediaInfo, options, mediaStreams).ConfigureAwait(false);
+            }
 
             audio.HasLyrics = mediaStreams.Any(s => s.Type == MediaStreamType.Lyric);
 
@@ -141,7 +142,8 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="audio">The <see cref="Audio"/>.</param>
         /// <param name="mediaInfo">The <see cref="Model.MediaInfo.MediaInfo"/>.</param>
         /// <param name="options">The <see cref="MetadataRefreshOptions"/>.</param>
-        private async Task FetchDataFromTags(Audio audio, Model.MediaInfo.MediaInfo mediaInfo, MetadataRefreshOptions options)
+        /// <param name="currentStreams"> Current audio streams. </param>
+        private async Task FetchDataFromTags(Audio audio, Model.MediaInfo.MediaInfo mediaInfo, MetadataRefreshOptions options, IEnumerable<MediaStream> currentStreams)
         {
             using var file = TagLib.File.Create(audio.Path);
             var tagTypes = file.TagTypesOnDisk;
@@ -323,7 +325,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 // Save extracted lyrics if they exist,
                 // and if we are replacing all metadata or the audio doesn't yet have lyrics.
                 if (!string.IsNullOrWhiteSpace(tags.Lyrics)
-                    && (options.ReplaceAllMetadata || audio.GetMediaStreams().All(s => s.Type != MediaStreamType.Lyric)))
+                    && (options.ReplaceAllMetadata || currentStreams.All(s => s.Type != MediaStreamType.Lyric)))
                 {
                     await _lyricManager.SaveLyricAsync(audio, "lrc", tags.Lyrics).ConfigureAwait(false);
                 }
