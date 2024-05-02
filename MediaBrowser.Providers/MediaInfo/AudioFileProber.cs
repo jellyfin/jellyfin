@@ -323,9 +323,9 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
 
                 // Save extracted lyrics if they exist,
-                // and if we are replacing all metadata or the audio doesn't yet have lyrics.
+                // and if the audio doesn't yet have lyrics.
                 if (!string.IsNullOrWhiteSpace(tags.Lyrics)
-                    && (options.ReplaceAllMetadata || currentStreams.All(s => s.Type != MediaStreamType.Lyric)))
+                    && currentStreams.All(s => s.Type != MediaStreamType.Lyric))
                 {
                     await _lyricManager.SaveLyricAsync(audio, "lrc", tags.Lyrics).ConfigureAwait(false);
                 }
