@@ -208,33 +208,18 @@ namespace MediaBrowser.Providers.Subtitles
                 if (saveInMediaFolder)
                 {
                     var mediaFolderPath = Path.GetFullPath(Path.Combine(video.ContainingFolderPath, saveFileName));
-                    // TODO: Add some error handling to the API user: return BadRequest("Could not save subtitle, bad path.");
-                    if (mediaFolderPath.StartsWith(video.ContainingFolderPath, StringComparison.Ordinal))
-                    {
-                        savePaths.Add(mediaFolderPath);
-                    }
+                    savePaths.Add(mediaFolderPath);
                 }
 
                 var internalPath = Path.GetFullPath(Path.Combine(video.GetInternalMetadataPath(), saveFileName));
 
-                // TODO: Add some error to the user: return BadRequest("Could not save subtitle, bad path.");
-                if (internalPath.StartsWith(video.GetInternalMetadataPath(), StringComparison.Ordinal))
-                {
-                    savePaths.Add(internalPath);
-                }
+                savePaths.Add(internalPath);
 
-                if (savePaths.Count > 0)
-                {
-                    await TrySaveToFiles(memoryStream, savePaths, response.Format.ToLowerInvariant()).ConfigureAwait(false);
-                }
-                else
-                {
-                    _logger.LogError("An uploaded subtitle could not be saved because the resulting paths were invalid.");
-                }
+                await TrySaveToFiles(memoryStream, savePaths, video, response.Format.ToLowerInvariant()).ConfigureAwait(false);
             }
         }
 
-        private async Task TrySaveToFiles(Stream stream, List<string> savePaths, string extension)
+        private async Task TrySaveToFiles(Stream stream, List<string> savePaths, Video video, string extension)
         {
             List<Exception>? exs = null;
 
@@ -253,18 +238,27 @@ namespace MediaBrowser.Providers.Subtitles
                         fileExists = File.Exists(path);
                     }
 
-                    _logger.LogInformation("Saving subtitles to {SavePath}", path);
-                    _monitor.ReportFileSystemChangeBeginning(path);
-
-                    Directory.CreateDirectory(Path.GetDirectoryName(path) ?? throw new InvalidOperationException("Path can't be a root directory."));
-
-                    var fileOptions = AsyncFile.WriteOptions;
-                    fileOptions.Mode = FileMode.CreateNew;
-                    fileOptions.PreallocationSize = stream.Length;
-                    var fs = new FileStream(path, fileOptions);
-                    await using (fs.ConfigureAwait(false))
+                    if (path.StartsWith(video.ContainingFolderPath, StringComparison.Ordinal)
+                        || path.StartsWith(video.GetInternalMetadataPath(), StringComparison.Ordinal))
                     {
-                        await stream.CopyToAsync(fs).ConfigureAwait(false);
+                        _logger.LogInformation("Saving subtitles to {SavePath}", path);
+                        _monitor.ReportFileSystemChangeBeginning(path);
+
+                        Directory.CreateDirectory(Path.GetDirectoryName(path) ?? throw new InvalidOperationException("Path can't be a root directory."));
+
+                        var fileOptions = AsyncFile.WriteOptions;
+                        fileOptions.Mode = FileMode.CreateNew;
+                        fileOptions.PreallocationSize = stream.Length;
+                        var fs = new FileStream(path, fileOptions);
+                        await using (fs.ConfigureAwait(false))
+                        {
+                            await stream.CopyToAsync(fs).ConfigureAwait(false);
+                        }
+                    }
+                    else
+                    {
+                        // TODO: Add some error handling to the API user: return BadRequest("Could not save subtitle, bad path.");
+                        _logger.LogError("An uploaded subtitle could not be saved because the resulting path was invalid.");
                     }
 
                     return;
