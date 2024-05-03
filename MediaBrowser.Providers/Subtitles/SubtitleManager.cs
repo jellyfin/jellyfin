@@ -240,10 +240,10 @@ namespace MediaBrowser.Providers.Subtitles
 
             foreach (var savePath in savePaths)
             {
-                var path = savePath;
+                var path = savePath + "." + extension;
                 try
                 {
-                    var fileExists = File.Exists(savePath + "." + extension);
+                    var fileExists = File.Exists(path);
                     var counter = 0;
 
                     while (fileExists)
