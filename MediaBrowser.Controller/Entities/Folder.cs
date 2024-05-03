@@ -336,7 +336,7 @@ namespace MediaBrowser.Controller.Entities
         private static bool IsLibraryFolderAccessible(IDirectoryService directoryService, BaseItem item)
         {
             // For top parents i.e. Library folders, skip the validation if it's empty or inaccessible
-            if (item.IsTopParent && !directoryService.IsAccessible(item.ContainingFolderPath))
+            if (!item.IsTopParent && !directoryService.IsAccessible(item.ContainingFolderPath))
             {
                 Logger.LogWarning("Library folder {LibraryFolderPath} is inaccessible or empty, skipping", item.ContainingFolderPath);
                 return false;
