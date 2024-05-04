@@ -50,104 +50,118 @@ namespace MediaBrowser.Providers.Playlists
                 return Task.FromResult(ItemUpdateType.None);
             }
 
-            using (var stream = File.OpenRead(path))
-            {
-                var items = GetItems(stream, extension).ToArray();
+            var items = GetItems(path, extension).ToArray();
 
-                item.LinkedChildren = items;
-            }
+            item.LinkedChildren = items;
 
             return Task.FromResult(ItemUpdateType.None);
         }
 
-        private IEnumerable<LinkedChild> GetItems(Stream stream, string extension)
+        private IEnumerable<LinkedChild> GetItems(string path, string extension)
         {
-            if (string.Equals(".wpl", extension, StringComparison.OrdinalIgnoreCase))
+            using (var stream = File.OpenRead(path))
             {
-                return GetWplItems(stream);
-            }
+                if (string.Equals(".wpl", extension, StringComparison.OrdinalIgnoreCase))
+                {
+                    return GetWplItems(stream, path);
+                }
 
-            if (string.Equals(".zpl", extension, StringComparison.OrdinalIgnoreCase))
-            {
-                return GetZplItems(stream);
-            }
+                if (string.Equals(".zpl", extension, StringComparison.OrdinalIgnoreCase))
+                {
+                    return GetZplItems(stream, path);
+                }
 
-            if (string.Equals(".m3u", extension, StringComparison.OrdinalIgnoreCase))
-            {
-                return GetM3uItems(stream);
-            }
+                if (string.Equals(".m3u", extension, StringComparison.OrdinalIgnoreCase))
+                {
+                    return GetM3uItems(stream, path);
+                }
 
-            if (string.Equals(".m3u8", extension, StringComparison.OrdinalIgnoreCase))
-            {
-                return GetM3u8Items(stream);
-            }
+                if (string.Equals(".m3u8", extension, StringComparison.OrdinalIgnoreCase))
+                {
+                    return GetM3u8Items(stream, path);
+                }
 
-            if (string.Equals(".pls", extension, StringComparison.OrdinalIgnoreCase))
-            {
-                return GetPlsItems(stream);
+                if (string.Equals(".pls", extension, StringComparison.OrdinalIgnoreCase))
+                {
+                    return GetPlsItems(stream, path);
+                }
             }
 
             return Enumerable.Empty<LinkedChild>();
         }
 
-        private IEnumerable<LinkedChild> GetPlsItems(Stream stream)
+        private IEnumerable<LinkedChild> GetPlsItems(Stream stream, string path)
         {
             var content = new PlsContent();
             var playlist = content.GetFromStream(stream);
 
             return playlist.PlaylistEntries.Select(i => new LinkedChild
             {
-                Path = i.Path,
+                Path = GetPlaylistItemPath(i.Path, path),
                 Type = LinkedChildType.Manual
             });
         }
 
-        private IEnumerable<LinkedChild> GetM3u8Items(Stream stream)
+        private IEnumerable<LinkedChild> GetM3u8Items(Stream stream, string path)
         {
             var content = new M3uContent();
             var playlist = content.GetFromStream(stream);
 
             return playlist.PlaylistEntries.Select(i => new LinkedChild
             {
-                Path = i.Path,
+                Path = GetPlaylistItemPath(i.Path, path),
                 Type = LinkedChildType.Manual
             });
         }
 
-        private IEnumerable<LinkedChild> GetM3uItems(Stream stream)
+        private IEnumerable<LinkedChild> GetM3uItems(Stream stream, string path)
         {
             var content = new M3uContent();
             var playlist = content.GetFromStream(stream);
 
             return playlist.PlaylistEntries.Select(i => new LinkedChild
             {
-                Path = i.Path,
+                Path = GetPlaylistItemPath(i.Path, path),
                 Type = LinkedChildType.Manual
             });
         }
 
-        private IEnumerable<LinkedChild> GetZplItems(Stream stream)
+        private IEnumerable<LinkedChild> GetZplItems(Stream stream, string path)
         {
             var content = new ZplContent();
             var playlist = content.GetFromStream(stream);
 
             return playlist.PlaylistEntries.Select(i => new LinkedChild
             {
-                Path = i.Path,
+                Path = GetPlaylistItemPath(i.Path, path),
                 Type = LinkedChildType.Manual
             });
         }
 
-        private IEnumerable<LinkedChild> GetWplItems(Stream stream)
+        private IEnumerable<LinkedChild> GetWplItems(Stream stream, string path)
         {
             var content = new WplContent();
             var playlist = content.GetFromStream(stream);
 
             return playlist.PlaylistEntries.Select(i => new LinkedChild
             {
-                Path = i.Path,
+                Path = GetPlaylistItemPath(i.Path, path),
                 Type = LinkedChildType.Manual
             });
+        }
+
+        private string GetPlaylistItemPath(string itemPath, string containingPlaylistFolder)
+        {
+            if (!File.Exists(itemPath))
+            {
+                var path = Path.Combine(Path.GetDirectoryName(containingPlaylistFolder), itemPath);
+                if (File.Exists(path))
+                {
+                    return path;
+                }
+            }
+
+            return itemPath;
         }
 
         public bool HasChanged(BaseItem item, IDirectoryService directoryService)
@@ -159,7 +173,7 @@ namespace MediaBrowser.Providers.Playlists
                 var file = directoryService.GetFile(path);
                 if (file is not null && file.LastWriteTimeUtc != item.DateModified)
                 {
-                    _logger.LogDebug("Refreshing {0} due to date modified timestamp change.", path);
+                    _logger.LogDebug("Refreshing {Path} due to date modified timestamp change.", path);
                     return true;
                 }
             }
