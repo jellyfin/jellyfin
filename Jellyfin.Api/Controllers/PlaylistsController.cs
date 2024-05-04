@@ -221,6 +221,11 @@ public class PlaylistsController : BaseJellyfinApiController
             return userPermission;
         }
 
+        if (playlist.OwnerUserId.Equals(callingUserId))
+        {
+            return new PlaylistUserPermissions(callingUserId, true);
+        }
+
         return NotFound("User permissions not found");
     }
 
