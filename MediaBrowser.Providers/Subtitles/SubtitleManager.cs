@@ -228,19 +228,19 @@ namespace MediaBrowser.Providers.Subtitles
                 var path = savePath + "." + extension;
                 try
                 {
-                    var fileExists = File.Exists(path);
-                    var counter = 0;
-
-                    while (fileExists)
-                    {
-                        counter++;
-                        path = string.Format(CultureInfo.InvariantCulture, "{0}.{1}.{2}", savePath, counter, extension);
-                        fileExists = File.Exists(path);
-                    }
-
                     if (path.StartsWith(video.ContainingFolderPath, StringComparison.Ordinal)
-                        || path.StartsWith(video.GetInternalMetadataPath(), StringComparison.Ordinal))
+                            || path.StartsWith(video.GetInternalMetadataPath(), StringComparison.Ordinal))
                     {
+                        var fileExists = File.Exists(path);
+                        var counter = 0;
+
+                        while (fileExists)
+                        {
+                            path = string.Format(CultureInfo.InvariantCulture, "{0}.{1}.{2}", savePath, counter, extension);
+                            fileExists = File.Exists(path);
+                            counter++;
+                        }
+
                         _logger.LogInformation("Saving subtitles to {SavePath}", path);
                         _monitor.ReportFileSystemChangeBeginning(path);
 
@@ -254,14 +254,14 @@ namespace MediaBrowser.Providers.Subtitles
                         {
                             await stream.CopyToAsync(fs).ConfigureAwait(false);
                         }
+
+                        return;
                     }
                     else
                     {
                         // TODO: Add some error handling to the API user: return BadRequest("Could not save subtitle, bad path.");
                         _logger.LogError("An uploaded subtitle could not be saved because the resulting path was invalid.");
                     }
-
-                    return;
                 }
                 catch (Exception ex)
                 {
