@@ -212,8 +212,7 @@ public class PlaylistsController : BaseJellyfinApiController
         }
 
         var userPermission = playlist.Shares.FirstOrDefault(s => s.UserId.Equals(userId));
-        var isPermitted = playlist.OwnerUserId.Equals(callingUserId)
-            || playlist.Shares.Any(s => s.CanEdit && s.UserId.Equals(callingUserId))
+        var isPermitted = playlist.Shares.Any(s => s.CanEdit && s.UserId.Equals(callingUserId))
             || userId.Equals(callingUserId);
 
         if (!isPermitted)
