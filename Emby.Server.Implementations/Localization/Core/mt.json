@@ -1,1 +1,27 @@
-{}
+{
+    "Albums": "Albums",
+    "AppDeviceValues": "App: {0}, Apparat: {1}",
+    "Application": "Applikazzjoni",
+    "Artists": "Artisti",
+    "AuthenticationSucceededWithUserName": "{1} awtentikat b'suċċess",
+    "Books": "Kotba",
+    "CameraImageUploadedFrom": "Ttellgħet immaġni ġdida tal-kamera minn {1}",
+    "Channels": "Kanali",
+    "ChapterNameValue": "Kapitlu {0}",
+    "Collections": "Kollezzjonijiet",
+    "DeviceOfflineWithName": "{0} inqatgħa",
+    "DeviceOnlineWithName": "{0} qabad",
+    "External": "Estern",
+    "FailedLoginAttemptWithUserName": "Attentat t'aċċess fallut minn {0}",
+    "Favorites": "Favoriti",
+    "Forced": "Furzat",
+    "Genres": "Ġeneri",
+    "HeaderAlbumArtists": "Artisti tal-album",
+    "HeaderContinueWatching": "Kompli Segwi",
+    "HeaderFavoriteAlbums": "Albums Favoriti",
+    "HeaderFavoriteArtists": "Artisti Favoriti",
+    "HeaderFavoriteEpisodes": "Episodji Favoriti",
+    "HeaderFavoriteShows": "Xows Favoriti",
+    "HeaderFavoriteSongs": "Kanzunetti Favoriti",
+    "HeaderNextUp": "Li Jmiss"
+}
