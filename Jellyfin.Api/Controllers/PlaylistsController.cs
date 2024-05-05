@@ -206,6 +206,11 @@ public class PlaylistsController : BaseJellyfinApiController
             return NotFound("Playlist not found");
         }
 
+        if (playlist.OwnerUserId.Equals(callingUserId))
+        {
+            return new PlaylistUserPermissions(callingUserId, true);
+        }
+
         var userPermission = playlist.Shares.FirstOrDefault(s => s.UserId.Equals(userId));
         var isPermitted = playlist.OwnerUserId.Equals(callingUserId)
             || playlist.Shares.Any(s => s.CanEdit && s.UserId.Equals(callingUserId))
@@ -219,11 +224,6 @@ public class PlaylistsController : BaseJellyfinApiController
         if (userPermission is not null)
         {
             return userPermission;
-        }
-
-        if (playlist.OwnerUserId.Equals(callingUserId))
-        {
-            return new PlaylistUserPermissions(callingUserId, true);
         }
 
         return NotFound("User permissions not found");
