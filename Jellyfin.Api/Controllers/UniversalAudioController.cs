@@ -174,11 +174,10 @@ public class UniversalAudioController : BaseJellyfinApiController
             return Redirect(mediaSource.Path);
         }
 
-        // This one is currently very misleading as the SupportsDirectStream is always false
+        // This one is currently very misleading as the SupportsDirectStream actually means "can direct play"
         // The definition of DirectStream also seems changed during development
-        // It used to mean HTTP direct streaming, but now HLS is used even for DirectStream
         var isStatic = mediaSource.SupportsDirectStream;
-        if (mediaSource.TranscodingSubProtocol == MediaStreamProtocol.hls)
+        if (!isStatic && mediaSource.TranscodingSubProtocol == MediaStreamProtocol.hls)
         {
             // hls segment container can only be mpegts or fmp4 per ffmpeg documentation
             // ffmpeg option -> file extension
