@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -11,7 +10,6 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.ApiClient;
-using MediaBrowser.Model.Net;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -51,25 +49,6 @@ public sealed class AutoDiscoveryHost : BackgroundService
         _networkManager = networkManager;
     }
 
-    private static IPAddress GetBindAddress(IPData intf)
-    {
-        if (intf.AddressFamily == AddressFamily.InterNetwork)
-        {
-            if (OperatingSystem.IsLinux())
-            {
-                return NetworkUtils.GetBroadcastAddress(intf.Subnet);
-            }
-
-            if (OperatingSystem.IsMacOS())
-            {
-                // macOS kernel does not allow bind to 127:255:255:255
-                return IPAddress.IsLoopback(intf.Address) ? intf.Address : NetworkUtils.GetBroadcastAddress(intf.Subnet);
-            }
-        }
-
-        return intf.Address;
-    }
-
     /// <inheritdoc />
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -80,17 +59,7 @@ public sealed class AutoDiscoveryHost : BackgroundService
         }
 
         var udpServers = new List<Task>();
-        // Linux needs to bind to the broadcast addresses to receive broadcast traffic
-        if (OperatingSystem.IsLinux() && networkConfig.EnableIPv4)
-        {
-            udpServers.Add(ListenForAutoDiscoveryMessage(IPAddress.Broadcast, IPAddress.Broadcast, stoppingToken));
-        }
-
-        udpServers.AddRange(_networkManager.GetInternalBindAddresses()
-            .Select(intf => ListenForAutoDiscoveryMessage(
-                GetBindAddress(intf),
-                intf.Address,
-                stoppingToken)));
+        udpServers.Add(ListenForAutoDiscoveryMessage(IPAddress.Any, IPAddress.Any, stoppingToken));
 
         await Task.WhenAll(udpServers).ConfigureAwait(false);
     }
@@ -110,7 +79,7 @@ public sealed class AutoDiscoveryHost : BackgroundService
                     var text = Encoding.UTF8.GetString(result.Buffer);
                     if (text.Contains("who is JellyfinServer?", StringComparison.OrdinalIgnoreCase))
                     {
-                        await RespondToV2Message(respondAddress, result.RemoteEndPoint, cancellationToken).ConfigureAwait(false);
+                        await RespondToV2Message(respondAddress, result.RemoteEndPoint, udpClient, cancellationToken).ConfigureAwait(false);
                     }
                 }
                 catch (SocketException ex)
@@ -130,28 +99,48 @@ public sealed class AutoDiscoveryHost : BackgroundService
         }
     }
 
-    private async Task RespondToV2Message(IPAddress responderIp, IPEndPoint endpoint, CancellationToken cancellationToken)
+    private async Task RespondToV2Message(IPAddress responderIp, IPEndPoint endpoint, UdpClient broadCastUdpClient, CancellationToken cancellationToken)
     {
         var localUrl = _appHost.GetSmartApiUrl(endpoint.Address);
         if (string.IsNullOrEmpty(localUrl))
         {
-            _logger.LogWarning("Unable to respond to server discovery request because the local ip address could not be determined.");
+            _logger.LogWarning("Unable to respond to server discovery request because the local ip address could not be determined");
             return;
         }
 
         var response = new ServerDiscoveryInfo(localUrl, _appHost.SystemId, _appHost.FriendlyName);
+        var listenerEndpoint = (IPEndPoint?)broadCastUdpClient.Client.LocalEndPoint;
+        var listenerIp = listenerEndpoint?.Address;
 
-        using var responder = new UdpClient(new IPEndPoint(responderIp, PortNumber));
-        try
+        // Reuse the UdpClient if listener IP equals to responder, otherwise create a new one and respond with that
+        if (Equals(listenerIp, responderIp))
         {
-            _logger.LogDebug("Sending AutoDiscovery response");
-            await responder
-                .SendAsync(JsonSerializer.SerializeToUtf8Bytes(response).AsMemory(), endpoint, cancellationToken)
-                .ConfigureAwait(false);
+            try
+            {
+                _logger.LogDebug("Sending AutoDiscovery response");
+                await broadCastUdpClient
+                    .SendAsync(JsonSerializer.SerializeToUtf8Bytes(response).AsMemory(), endpoint, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            catch (SocketException ex)
+            {
+                _logger.LogError(ex, "Error sending response message");
+            }
         }
-        catch (SocketException ex)
+        else
         {
-            _logger.LogError(ex, "Error sending response message");
+            using var responder = new UdpClient(new IPEndPoint(responderIp, PortNumber));
+            try
+            {
+                _logger.LogDebug("Sending AutoDiscovery response");
+                await responder
+                    .SendAsync(JsonSerializer.SerializeToUtf8Bytes(response).AsMemory(), endpoint, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            catch (SocketException ex)
+            {
+                _logger.LogError(ex, "Error sending response message");
+            }
         }
     }
 }
