@@ -58,10 +58,7 @@ public sealed class AutoDiscoveryHost : BackgroundService
             return;
         }
 
-        var udpServers = new List<Task>();
-        udpServers.Add(ListenForAutoDiscoveryMessage(IPAddress.Any, IPAddress.Any, stoppingToken));
-
-        await Task.WhenAll(udpServers).ConfigureAwait(false);
+        await ListenForAutoDiscoveryMessage(IPAddress.Any, IPAddress.Any, stoppingToken).ConfigureAwait(false);
     }
 
     private async Task ListenForAutoDiscoveryMessage(IPAddress listenAddress, IPAddress respondAddress, CancellationToken cancellationToken)
@@ -109,38 +106,16 @@ public sealed class AutoDiscoveryHost : BackgroundService
         }
 
         var response = new ServerDiscoveryInfo(localUrl, _appHost.SystemId, _appHost.FriendlyName);
-        var listenerEndpoint = (IPEndPoint?)broadCastUdpClient.Client.LocalEndPoint;
-        var listenerIp = listenerEndpoint?.Address;
-
-        // Reuse the UdpClient if listener IP equals to responder, otherwise create a new one and respond with that
-        if (Equals(listenerIp, responderIp))
+        try
         {
-            try
-            {
-                _logger.LogDebug("Sending AutoDiscovery response");
-                await broadCastUdpClient
-                    .SendAsync(JsonSerializer.SerializeToUtf8Bytes(response).AsMemory(), endpoint, cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            catch (SocketException ex)
-            {
-                _logger.LogError(ex, "Error sending response message");
-            }
+            _logger.LogDebug("Sending AutoDiscovery response");
+            await broadCastUdpClient
+                .SendAsync(JsonSerializer.SerializeToUtf8Bytes(response).AsMemory(), endpoint, cancellationToken)
+                .ConfigureAwait(false);
         }
-        else
+        catch (SocketException ex)
         {
-            using var responder = new UdpClient(new IPEndPoint(responderIp, PortNumber));
-            try
-            {
-                _logger.LogDebug("Sending AutoDiscovery response");
-                await responder
-                    .SendAsync(JsonSerializer.SerializeToUtf8Bytes(response).AsMemory(), endpoint, cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            catch (SocketException ex)
-            {
-                _logger.LogError(ex, "Error sending response message");
-            }
+            _logger.LogError(ex, "Error sending response message");
         }
     }
 }
