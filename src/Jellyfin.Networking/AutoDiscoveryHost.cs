@@ -141,7 +141,9 @@ public sealed class AutoDiscoveryHost : BackgroundService
 
         var response = new ServerDiscoveryInfo(localUrl, _appHost.SystemId, _appHost.FriendlyName);
 
-        if (Equals(responderIp, IPAddress.Broadcast))
+        // On Windows, binding to the broadcast address automatically binds to the unicast equivalents and takes the addresses
+        // On Linux, anything send to 255.255.255.255 will also respond with 255.255.255.255
+        if (OperatingSystem.IsWindows() || Equals(responderIp, IPAddress.Broadcast))
         {
             try
             {
@@ -155,6 +157,8 @@ public sealed class AutoDiscoveryHost : BackgroundService
                 _logger.LogError(ex, "Error sending response message");
             }
         }
+        // On OSes not Windows, try to be explicit of which interface to respond
+        // macOS is extra restrictive about this. It does not allow UdpClient bind to broadcast address to respond to unicast endpoints
         else
         {
             using var responder = new UdpClient(new IPEndPoint(responderIp, PortNumber));
