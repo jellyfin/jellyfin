@@ -110,7 +110,15 @@ public sealed class AutoDiscoveryHost : BackgroundService
                     var text = Encoding.UTF8.GetString(result.Buffer);
                     if (text.Contains("who is JellyfinServer?", StringComparison.OrdinalIgnoreCase))
                     {
-                        await RespondToV2Message(respondAddress, result.RemoteEndPoint, cancellationToken).ConfigureAwait(false);
+                        if (respondAddress.Equals(listenAddress))
+                        {
+                            await RespondToV2Message(udpClient, result.RemoteEndPoint, cancellationToken).ConfigureAwait(false);
+                        }
+                        else
+                        {
+                            using var responseClient = new UdpClient(new IPEndPoint(respondAddress, PortNumber));
+                            await RespondToV2Message(responseClient, result.RemoteEndPoint, cancellationToken).ConfigureAwait(false);
+                        }
                     }
                 }
                 catch (SocketException ex)
@@ -130,7 +138,7 @@ public sealed class AutoDiscoveryHost : BackgroundService
         }
     }
 
-    private async Task RespondToV2Message(IPAddress responderIp, IPEndPoint endpoint, CancellationToken cancellationToken)
+    private async Task RespondToV2Message(UdpClient udpClient, IPEndPoint endpoint, CancellationToken cancellationToken)
     {
         var localUrl = _appHost.GetSmartApiUrl(endpoint.Address);
         if (string.IsNullOrEmpty(localUrl))
@@ -141,11 +149,10 @@ public sealed class AutoDiscoveryHost : BackgroundService
 
         var response = new ServerDiscoveryInfo(localUrl, _appHost.SystemId, _appHost.FriendlyName);
 
-        using var responder = new UdpClient(new IPEndPoint(responderIp, PortNumber));
         try
         {
             _logger.LogDebug("Sending AutoDiscovery response");
-            await responder
+            await udpClient
                 .SendAsync(JsonSerializer.SerializeToUtf8Bytes(response).AsMemory(), endpoint, cancellationToken)
                 .ConfigureAwait(false);
         }
