@@ -72,7 +72,7 @@ namespace MediaBrowser.Model.Dlna
 
         [DefaultValue(true)]
         [XmlAttribute("enableAudioVbrEncoding")]
-        public bool EnableAudioVbrEncoding { get; set; }
+        public bool EnableAudioVbrEncoding { get; set; } = true;
 
         public string[] GetAudioCodecs()
         {
