@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -58,10 +57,10 @@ public sealed class AutoDiscoveryHost : BackgroundService
             return;
         }
 
-        await ListenForAutoDiscoveryMessage(IPAddress.Any, IPAddress.Any, stoppingToken).ConfigureAwait(false);
+        await ListenForAutoDiscoveryMessage(IPAddress.Any, stoppingToken).ConfigureAwait(false);
     }
 
-    private async Task ListenForAutoDiscoveryMessage(IPAddress listenAddress, IPAddress respondAddress, CancellationToken cancellationToken)
+    private async Task ListenForAutoDiscoveryMessage(IPAddress listenAddress, CancellationToken cancellationToken)
     {
         try
         {
@@ -76,7 +75,7 @@ public sealed class AutoDiscoveryHost : BackgroundService
                     var text = Encoding.UTF8.GetString(result.Buffer);
                     if (text.Contains("who is JellyfinServer?", StringComparison.OrdinalIgnoreCase))
                     {
-                        await RespondToV2Message(respondAddress, result.RemoteEndPoint, udpClient, cancellationToken).ConfigureAwait(false);
+                        await RespondToV2Message(result.RemoteEndPoint, udpClient, cancellationToken).ConfigureAwait(false);
                     }
                 }
                 catch (SocketException ex)
@@ -96,7 +95,7 @@ public sealed class AutoDiscoveryHost : BackgroundService
         }
     }
 
-    private async Task RespondToV2Message(IPAddress responderIp, IPEndPoint endpoint, UdpClient broadCastUdpClient, CancellationToken cancellationToken)
+    private async Task RespondToV2Message(IPEndPoint endpoint, UdpClient broadCastUdpClient, CancellationToken cancellationToken)
     {
         var localUrl = _appHost.GetSmartApiUrl(endpoint.Address);
         if (string.IsNullOrEmpty(localUrl))
