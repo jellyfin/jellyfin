@@ -22,7 +22,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Playlists;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using PlaylistsNET.Content;
@@ -68,8 +67,14 @@ namespace Emby.Server.Implementations.Playlists
         public IEnumerable<Playlist> GetPlaylists(Guid userId)
         {
             var user = _userManager.GetUserById(userId);
-
-            return GetPlaylistsFolder(userId).GetChildren(user, true).OfType<Playlist>();
+            return _libraryManager.GetItemList(new InternalItemsQuery
+            {
+                IncludeItemTypes = [BaseItemKind.Playlist],
+                Recursive = true,
+                DtoOptions = new DtoOptions(false)
+            })
+            .Cast<Playlist>()
+            .Where(p => p.IsVisible(user));
         }
 
         public async Task<PlaylistCreationResult> CreatePlaylist(PlaylistCreationRequest request)
@@ -162,6 +167,13 @@ namespace Emby.Server.Implementations.Playlists
             }
         }
 
+        private List<Playlist> GetUserPlaylists(Guid userId)
+        {
+            var user = _userManager.GetUserById(userId);
+
+            return GetPlaylistsFolder(userId).GetChildren(user, true).OfType<Playlist>().ToList();
+        }
+
         private static string GetTargetPath(string path)
         {
             while (Directory.Exists(path))
@@ -227,7 +239,7 @@ namespace Emby.Server.Implementations.Playlists
             }
 
             // Update the playlist in the repository
-            playlist.LinkedChildren = [..playlist.LinkedChildren, ..childrenToAdd];
+            playlist.LinkedChildren = [.. playlist.LinkedChildren, .. childrenToAdd];
 
             await UpdatePlaylistInternal(playlist).ConfigureAwait(false);
 
@@ -501,11 +513,13 @@ namespace Emby.Server.Implementations.Playlists
             return relativePath;
         }
 
+        /// <inheritdoc />
         public Folder GetPlaylistsFolder()
         {
             return GetPlaylistsFolder(Guid.Empty);
         }
 
+        /// <inheritdoc />
         public Folder GetPlaylistsFolder(Guid userId)
         {
             const string TypeName = "PlaylistsFolder";
@@ -517,7 +531,7 @@ namespace Emby.Server.Implementations.Playlists
         /// <inheritdoc />
         public async Task RemovePlaylistsAsync(Guid userId)
         {
-            var playlists = GetPlaylists(userId);
+            var playlists = GetUserPlaylists(userId);
             foreach (var playlist in playlists)
             {
                 // Update owner if shared
@@ -555,9 +569,9 @@ namespace Emby.Server.Implementations.Playlists
 
                 var user = _userManager.GetUserById(request.UserId);
                 await AddToPlaylistInternal(request.Id, request.Ids, user, new DtoOptions(false)
-                    {
-                        EnableImages = true
-                    }).ConfigureAwait(false);
+                {
+                    EnableImages = true
+                }).ConfigureAwait(false);
 
                 playlist = GetPlaylistForUser(request.Id, request.UserId);
             }
