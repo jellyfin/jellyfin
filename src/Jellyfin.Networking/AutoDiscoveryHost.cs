@@ -110,7 +110,7 @@ public sealed class AutoDiscoveryHost : BackgroundService
                     var text = Encoding.UTF8.GetString(result.Buffer);
                     if (text.Contains("who is JellyfinServer?", StringComparison.OrdinalIgnoreCase))
                     {
-                        await RespondToV2Message(respondAddress, result.RemoteEndPoint, cancellationToken).ConfigureAwait(false);
+                        await RespondToV2Message(respondAddress, result.RemoteEndPoint, udpClient, cancellationToken).ConfigureAwait(false);
                     }
                 }
                 catch (SocketException ex)
@@ -130,7 +130,7 @@ public sealed class AutoDiscoveryHost : BackgroundService
         }
     }
 
-    private async Task RespondToV2Message(IPAddress responderIp, IPEndPoint endpoint, CancellationToken cancellationToken)
+    private async Task RespondToV2Message(IPAddress responderIp, IPEndPoint endpoint, UdpClient broadCastUdpClient, CancellationToken cancellationToken)
     {
         var localUrl = _appHost.GetSmartApiUrl(endpoint.Address);
         if (string.IsNullOrEmpty(localUrl))
@@ -141,17 +141,34 @@ public sealed class AutoDiscoveryHost : BackgroundService
 
         var response = new ServerDiscoveryInfo(localUrl, _appHost.SystemId, _appHost.FriendlyName);
 
-        using var responder = new UdpClient(new IPEndPoint(responderIp, PortNumber));
-        try
+        if (Equals(responderIp, IPAddress.Broadcast))
         {
-            _logger.LogDebug("Sending AutoDiscovery response");
-            await responder
-                .SendAsync(JsonSerializer.SerializeToUtf8Bytes(response).AsMemory(), endpoint, cancellationToken)
-                .ConfigureAwait(false);
+            try
+            {
+                _logger.LogDebug("Sending AutoDiscovery response");
+                await broadCastUdpClient
+                    .SendAsync(JsonSerializer.SerializeToUtf8Bytes(response).AsMemory(), endpoint, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            catch (SocketException ex)
+            {
+                _logger.LogError(ex, "Error sending response message");
+            }
         }
-        catch (SocketException ex)
+        else
         {
-            _logger.LogError(ex, "Error sending response message");
+            using var responder = new UdpClient(new IPEndPoint(responderIp, PortNumber));
+            try
+            {
+                _logger.LogDebug("Sending AutoDiscovery response");
+                await responder
+                    .SendAsync(JsonSerializer.SerializeToUtf8Bytes(response).AsMemory(), endpoint, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            catch (SocketException ex)
+            {
+                _logger.LogError(ex, "Error sending response message");
+            }
         }
     }
 }
