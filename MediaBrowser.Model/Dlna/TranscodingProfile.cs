@@ -70,6 +70,10 @@ namespace MediaBrowser.Model.Dlna
 
         public ProfileCondition[] Conditions { get; set; }
 
+        [DefaultValue(true)]
+        [XmlAttribute("enableAudioVbrEncoding")]
+        public bool EnableAudioVbrEncoding { get; set; }
+
         public string[] GetAudioCodecs()
         {
             return ContainerProfile.SplitValue(AudioCodec);

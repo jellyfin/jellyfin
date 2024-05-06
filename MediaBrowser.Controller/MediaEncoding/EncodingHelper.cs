@@ -6976,7 +6976,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (bitrate.HasValue && !LosslessAudioCodecs.Contains(codec, StringComparison.OrdinalIgnoreCase))
             {
                 var vbrParam = GetAudioVbrModeParam(codec, bitrate.Value, channels ?? 2);
-                if (encodingOptions.EnableAudioVbr && vbrParam is not null)
+                if (encodingOptions.EnableAudioVbr && state.EnableAudioVbrEncoding && vbrParam is not null)
                 {
                     args += vbrParam;
                 }
@@ -7007,7 +7007,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (bitrate.HasValue && !LosslessAudioCodecs.Contains(outputCodec, StringComparison.OrdinalIgnoreCase))
             {
                 var vbrParam = GetAudioVbrModeParam(GetAudioEncoder(state), bitrate.Value, channels ?? 2);
-                if (encodingOptions.EnableAudioVbr && vbrParam is not null)
+                if (encodingOptions.EnableAudioVbr && state.EnableAudioVbrEncoding && vbrParam is not null)
                 {
                     audioTranscodeParams.Add(vbrParam);
                 }
