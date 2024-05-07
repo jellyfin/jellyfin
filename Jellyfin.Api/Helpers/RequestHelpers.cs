@@ -120,7 +120,7 @@ public static class RequestHelpers
     internal static async Task<SessionInfo> GetSession(ISessionManager sessionManager, IUserManager userManager, HttpContext httpContext, Guid? userId = null)
     {
         userId ??= httpContext.User.GetUserId();
-        var user = userManager.GetUserById((Guid)userId);
+        var user = userManager.GetUserById(userId.Value);
         var session = await sessionManager.LogSessionActivity(
             httpContext.User.GetClient(),
             httpContext.User.GetVersion(),
