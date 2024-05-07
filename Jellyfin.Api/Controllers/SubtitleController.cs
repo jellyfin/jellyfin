@@ -89,7 +89,7 @@ public class SubtitleController : BaseJellyfinApiController
     /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpDelete("Videos/{itemId}/Subtitles/{index}")]
-    [Authorize(Policy = Policies.RequiresElevation)]
+    [Authorize(Policy = Policies.SubtitleManagement)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> DeleteSubtitle(
