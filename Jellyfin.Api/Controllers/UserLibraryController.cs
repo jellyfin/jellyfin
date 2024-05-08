@@ -516,7 +516,7 @@ public class UserLibraryController : BaseJellyfinApiController
     /// <param name="enableUserData">Optional. include user data.</param>
     /// <param name="limit">Return item limit.</param>
     /// <param name="groupItems">Whether or not to group items into a parent container.</param>
-    /// <param name="sortByDateAdded">Whether or not to sort by date added.</param>
+    /// <param name="sortByDateAdded">Whether or not to sort by date added or by premier date.</param>
     /// <response code="200">Latest media returned.</response>
     /// <returns>An <see cref="OkResult"/> containing the latest media.</returns>
     [HttpGet("Items/Latest")]
