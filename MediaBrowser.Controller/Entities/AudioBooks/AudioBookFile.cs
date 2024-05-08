@@ -160,17 +160,7 @@ namespace MediaBrowser.Controller.Entities.AudioBooks
 
         protected override IEnumerable<(BaseItem Item, MediaSourceType MediaSourceType)> GetAllItemsForMediaSources()
         {
-            var chapters = AudioBookEntity.Chapters;
-            var nextChapters = new List<(BaseItem Item, MediaSourceType MediaSourceType)>();
-            foreach (var chapter in chapters)
-            {
-                if (chapter.Chapter >= this.Chapter)
-                {
-                    nextChapters.Add((chapter, MediaSourceType.Default));
-                }
-            }
-
-            return nextChapters;
+            return [(this, MediaSourceType.Default)];
         }
     }
 }

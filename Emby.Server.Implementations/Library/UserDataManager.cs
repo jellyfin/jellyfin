@@ -289,15 +289,11 @@ namespace Emby.Server.Implementations.Library
             }
             else if (positionTicks > 0 && hasRuntime && item is AudioBookFile)
             {
-                var playbackPositionInMinutes = TimeSpan.FromTicks(positionTicks).TotalMinutes;
                 var remainingTimeInMinutes = TimeSpan.FromTicks(runtimeTicks - positionTicks).TotalMinutes;
+                data.Played = playedToCompletion = false;
 
-                if (playbackPositionInMinutes < _config.Configuration.MinAudiobookResume)
-                {
-                    // ignore progress during the beginning
-                    positionTicks = 0;
-                }
-                else if (remainingTimeInMinutes < _config.Configuration.MaxAudiobookResume || positionTicks >= runtimeTicks)
+                // TODO: Use percentage of total runtime ticks for completion comparison
+                if (remainingTimeInMinutes < _config.Configuration.MaxAudiobookResume || positionTicks >= runtimeTicks)
                 {
                     // mark as completed close to the end
                     positionTicks = 0;

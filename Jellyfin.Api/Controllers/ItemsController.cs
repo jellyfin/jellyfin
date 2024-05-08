@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Jellyfin.Api.Extensions;
@@ -9,6 +10,7 @@ using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.AudioBooks;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
@@ -516,10 +518,25 @@ public class ItemsController : BaseJellyfinApiController
             result = new QueryResult<BaseItem>(itemsArray);
         }
 
-        return new QueryResult<BaseItemDto>(
+        var queryResult = new QueryResult<BaseItemDto>(
             startIndex,
             result.TotalRecordCount,
             _dtoService.GetBaseItemDtos(result.Items, dtoOptions, user));
+
+        // TODO: Sort return items by chapter for audio book
+        if (item is AudioBook)
+        {
+            for (int i = 0; i < queryResult.Items.Count; i++)
+            {
+                if (!queryResult.Items[i].UserData.Played)
+                {
+                    queryResult.StartIndex = i;
+                    break;
+                }
+            }
+        }
+
+        return queryResult;
     }
 
     /// <summary>

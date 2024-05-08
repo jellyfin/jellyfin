@@ -150,13 +150,13 @@ public class ServerConfiguration : BaseApplicationConfiguration
     /// Gets or sets the minimum minutes of a book that must be played in order for playstate to be updated.
     /// </summary>
     /// <value>The min resume in minutes.</value>
-    public int MinAudiobookResume { get; set; } = 5;
+    public int MinAudiobookResume { get; set; } = 0;
 
     /// <summary>
     /// Gets or sets the remaining minutes of a book that can be played while still saving playstate. If this percentage is crossed playstate will be reset to the beginning and the item will be marked watched.
     /// </summary>
     /// <value>The remaining time in minutes.</value>
-    public int MaxAudiobookResume { get; set; } = 5;
+    public int MaxAudiobookResume { get; set; } = 1;
 
     /// <summary>
     /// Gets or sets the threshold in minutes after a inactive session gets closed automatically.

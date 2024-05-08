@@ -729,7 +729,9 @@ namespace Emby.Naming.Common
                 // Sometimes named as 0001_005 (chapter_part)
                 "(?<chapter>[0-9]+)_(?<part>[0-9]+)",
                 // Some audiobooks are ripped from cd's, and will be named by disk number.
-                @"dis(?:c|k)[\s_-]?(?<chapter>[0-9]+)"
+                @"dis(?:c|k)[\s_-]?(?<chapter>[0-9]+)",
+                // Use number at end of file name before extension
+                "[0-9]+$"
             };
 
             AudioBookNamesExpressions = new[]
