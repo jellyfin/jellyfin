@@ -884,6 +884,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 inputArg = "-threads " + threads + " " + inputArg; // HW accel args set a different input thread count, only set if disabled
             }
 
+            if (vidEncoder.Contains("videotoolbox", StringComparison.InvariantCultureIgnoreCase))
+            {
+                // VideoToolbox supports low priority decoding, which is useful for trickplay
+                inputArg = "-hwaccel_flags +low_priority " + inputArg;
+            }
+
             if (enableKeyFrameOnlyExtraction)
             {
                 inputArg = "-skip_frame nokey " + inputArg;
