@@ -58,6 +58,6 @@ namespace Jellyfin.Data.Enums
         /// <summary>
         /// Latest Premier.
         /// </summary>
-        LatestPremier = 10
+        NewReleases = 10
     }
 }
