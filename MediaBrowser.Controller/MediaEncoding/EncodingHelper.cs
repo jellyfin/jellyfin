@@ -3172,7 +3172,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             int? requestedMaxHeight)
         {
             var isV4l2 = string.Equals(videoEncoder, "h264_v4l2m2m", StringComparison.OrdinalIgnoreCase);
+            var isMjpeg = videoEncoder is not null && videoEncoder.Contains("mjpeg", StringComparison.OrdinalIgnoreCase);
             var scaleVal = isV4l2 ? 64 : 2;
+            var targetAr = isMjpeg ? "(a*sar)" : "a"; // manually calculate AR when using mjpeg encoder
 
             // If fixed dimensions were supplied
             if (requestedWidth.HasValue && requestedHeight.HasValue)
@@ -3201,10 +3203,11 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 return string.Format(
                     CultureInfo.InvariantCulture,
-                    @"scale=trunc(min(max(iw\,ih*a)\,min({0}\,{1}*a))/{2})*{2}:trunc(min(max(iw/a\,ih)\,min({0}/a\,{1}))/2)*2",
+                    @"scale=trunc(min(max(iw\,ih*{3})\,min({0}\,{1}*{3}))/{2})*{2}:trunc(min(max(iw/{3}\,ih)\,min({0}/{3}\,{1}))/2)*2",
                     maxWidthParam,
                     maxHeightParam,
-                    scaleVal);
+                    scaleVal,
+                    targetAr);
             }
 
             // If a fixed width was requested
@@ -3220,8 +3223,9 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 return string.Format(
                     CultureInfo.InvariantCulture,
-                    "scale={0}:trunc(ow/a/2)*2",
-                    widthParam);
+                    "scale={0}:trunc(ow/{1}/2)*2",
+                    widthParam,
+                    targetAr);
             }
 
             // If a fixed height was requested
@@ -3231,9 +3235,10 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 return string.Format(
                     CultureInfo.InvariantCulture,
-                    "scale=trunc(oh*a/{1})*{1}:{0}",
+                    "scale=trunc(oh*{2}/{1})*{1}:{0}",
                     heightParam,
-                    scaleVal);
+                    scaleVal,
+                    targetAr);
             }
 
             // If a max width was requested
@@ -3243,9 +3248,10 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 return string.Format(
                     CultureInfo.InvariantCulture,
-                    @"scale=trunc(min(max(iw\,ih*a)\,{0})/{1})*{1}:trunc(ow/a/2)*2",
+                    @"scale=trunc(min(max(iw\,ih*{2})\,{0})/{1})*{1}:trunc(ow/{2}/2)*2",
                     maxWidthParam,
-                    scaleVal);
+                    scaleVal,
+                    targetAr);
             }
 
             // If a max height was requested
@@ -3255,9 +3261,10 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 return string.Format(
                     CultureInfo.InvariantCulture,
-                    @"scale=trunc(oh*a/{1})*{1}:min(max(iw/a\,ih)\,{0})",
+                    @"scale=trunc(oh*{2}/{1})*{1}:min(max(iw/{2}\,ih)\,{0})",
                     maxHeightParam,
-                    scaleVal);
+                    scaleVal,
+                    targetAr);
             }
 
             return string.Empty;
