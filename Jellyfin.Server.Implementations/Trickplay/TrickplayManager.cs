@@ -168,6 +168,7 @@ public class TrickplayManager : ITrickplayManager
                     options.ProcessThreads,
                     options.Qscale,
                     options.ProcessPriority,
+                    options.EnableKeyFrameOnlyExtraction,
                     _encodingHelper,
                     cancellationToken).ConfigureAwait(false);
 
