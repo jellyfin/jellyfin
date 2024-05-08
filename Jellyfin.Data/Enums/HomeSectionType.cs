@@ -56,7 +56,7 @@ namespace Jellyfin.Data.Enums
         ResumeBook = 9,
 
         /// <summary>
-        /// Latest Premier.
+        /// New Releases.
         /// </summary>
         NewReleases = 10
     }
