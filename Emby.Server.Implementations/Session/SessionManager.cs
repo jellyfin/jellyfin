@@ -1045,6 +1045,12 @@ namespace Emby.Server.Implementations.Session
 
             _userDataManager.SaveUserData(user, item, data, UserDataSaveReason.PlaybackFinished, CancellationToken.None);
 
+            // Update played status for other AudioBook chapters
+            if (item is AudioBookFile audioBookFile)
+            {
+                audioBookFile.SetFilesPlayed(user, _userDataManager);
+            }
+
             return playedToCompletion;
         }
 

@@ -295,7 +295,7 @@ namespace Emby.Server.Implementations.Library
                     var pctIn = decimal.Divide(positionTicks, runtimeTicks) * 100;
 
                     // NOTE: The close we can get pctIn comparison value to 100 without bugs, the better
-                    if (pctIn < 98 || positionTicks >= runtimeTicks)
+                    if (pctIn > 98 || positionTicks >= runtimeTicks)
                     {
                         // mark as completed close to the end
                         positionTicks = 0;

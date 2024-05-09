@@ -177,7 +177,7 @@ namespace MediaBrowser.Controller.Entities.AudioBooks
             bool afterCurrent = false;
             foreach (var chapter in chapters)
             {
-                if (chapter == this)
+                if (chapter.Name == Name)
                 {
                     afterCurrent = true;
                     continue;
