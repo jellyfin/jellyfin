@@ -261,43 +261,46 @@ namespace Emby.Server.Implementations.Library
             var hasRuntime = runtimeTicks > 0;
 
             // If a position has been reported, and if we know the duration
-            if (positionTicks > 0 && hasRuntime && item is not AudioBook && item is not AudioBookFile && item is not Book)
+            if (positionTicks > 0 && hasRuntime)
             {
-                var pctIn = decimal.Divide(positionTicks, runtimeTicks) * 100;
+                if (item is not AudioBook && item is not AudioBookFile && item is not Book)
+                {
+                    var pctIn = decimal.Divide(positionTicks, runtimeTicks) * 100;
 
-                if (pctIn < _config.Configuration.MinResumePct)
-                {
-                    // ignore progress during the beginning
-                    positionTicks = 0;
-                }
-                else if (pctIn > _config.Configuration.MaxResumePct || positionTicks >= runtimeTicks)
-                {
-                    // mark as completed close to the end
-                    positionTicks = 0;
-                    data.Played = playedToCompletion = true;
-                }
-                else
-                {
-                    // Enforce MinResumeDuration
-                    var durationSeconds = TimeSpan.FromTicks(runtimeTicks).TotalSeconds;
-                    if (durationSeconds < _config.Configuration.MinResumeDurationSeconds)
+                    if (pctIn < _config.Configuration.MinResumePct)
                     {
+                        // ignore progress during the beginning
+                        positionTicks = 0;
+                    }
+                    else if (pctIn > _config.Configuration.MaxResumePct || positionTicks >= runtimeTicks)
+                    {
+                        // mark as completed close to the end
                         positionTicks = 0;
                         data.Played = playedToCompletion = true;
                     }
+                    else
+                    {
+                        // Enforce MinResumeDuration
+                        var durationSeconds = TimeSpan.FromTicks(runtimeTicks).TotalSeconds;
+                        if (durationSeconds < _config.Configuration.MinResumeDurationSeconds)
+                        {
+                            positionTicks = 0;
+                            data.Played = playedToCompletion = true;
+                        }
+                    }
                 }
-            }
-            else if (positionTicks > 0 && hasRuntime && item is AudioBookFile)
-            {
-                var remainingTimeInMinutes = TimeSpan.FromTicks(runtimeTicks - positionTicks).TotalMinutes;
-                data.Played = playedToCompletion = false;
-
-                // TODO: Use percentage of total runtime ticks for completion comparison
-                if (remainingTimeInMinutes < _config.Configuration.MaxAudiobookResume || positionTicks >= runtimeTicks)
+                else if (item is AudioBookFile)
                 {
-                    // mark as completed close to the end
-                    positionTicks = 0;
-                    data.Played = playedToCompletion = true;
+                    data.Played = playedToCompletion = false;
+                    var pctIn = decimal.Divide(positionTicks, runtimeTicks) * 100;
+
+                    // NOTE: The close we can get pctIn comparison value to 100 without bugs, the better
+                    if (pctIn < 98 || positionTicks >= runtimeTicks)
+                    {
+                        // mark as completed close to the end
+                        positionTicks = 0;
+                        data.Played = playedToCompletion = true;
+                    }
                 }
             }
             else if (!hasRuntime)

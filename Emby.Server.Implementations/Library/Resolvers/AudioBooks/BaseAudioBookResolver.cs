@@ -15,7 +15,7 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.Library.Resolvers.AudioBooks
 {
     /// <summary>
-    /// Resolves a Path into a Video or Video subclass.
+    /// Resolves a Path into an AudioBookFile.
     /// </summary>
     /// <typeparam name="T">The type of item to resolve.</typeparam>
     public abstract class BaseAudioBookResolver<T> : MediaBrowser.Controller.Resolvers.ItemResolver<T>
@@ -35,10 +35,10 @@ namespace Emby.Server.Implementations.Library.Resolvers.AudioBooks
         protected IDirectoryService DirectoryService { get; }
 
         /// <summary>
-        /// Resolves the specified args.
+        /// Abstract "Resolve" function used to redirect to specific, internal resolve function.
         /// </summary>
-        /// <param name="args">The args.</param>
-        /// <returns>`0.</returns>
+        /// <param name="args">Object containing what's currently known about the resolution target (usually just path).</param>
+        /// <returns>Populated instance of type T (AudioBookFile) resolved from args.Path.</returns>
         protected override T Resolve(ItemResolveArgs args)
         {
             return ResolveAudioBookFile<T>(args, false);
@@ -59,8 +59,14 @@ namespace Emby.Server.Implementations.Library.Resolvers.AudioBooks
                 Path = args.Path
             };
 
-            // Get AudioBookFileInfo
-            ResolveFileInfo(audioBookFile);
+            // Get AudioBookFile info
+            var extension = Path.GetExtension(args.Path);
+
+            audioBookFile.Container = extension.TrimStart('.');
+
+            audioBookFile.Chapter = ParseChapter(args.Path);
+
+            _logger.LogInformation("Chapter = {Chapter}", audioBookFile.Chapter);
 
             return audioBookFile;
         }
@@ -71,31 +77,18 @@ namespace Emby.Server.Implementations.Library.Resolvers.AudioBooks
             foreach (var expression in NamingOptions.AudioBookPartsExpressions)
             {
                 var match = Regex.Match(fileName, expression, RegexOptions.IgnoreCase);
-                if (match.Success)
+                while (match.Success)
                 {
-                    var value = match.Groups["chapter"];
-                    if (value.Success)
+                    if (int.TryParse(match.ValueSpan, NumberStyles.Integer, CultureInfo.InvariantCulture, out var intValue))
                     {
-                        if (int.TryParse(value.ValueSpan, NumberStyles.Integer, CultureInfo.InvariantCulture, out var intValue))
-                        {
-                            return intValue;
-                        }
+                        return intValue;
                     }
+
+                    match = match.NextMatch();
                 }
             }
 
             return 0;
-        }
-
-        private void ResolveFileInfo(AudioBookFile audioBookFile)
-        {
-            var path = audioBookFile.Path;
-
-            var extension = Path.GetExtension(path);
-
-            audioBookFile.Container = extension.TrimStart('.');
-
-            audioBookFile.Chapter = ParseChapter(path);
         }
     }
 }

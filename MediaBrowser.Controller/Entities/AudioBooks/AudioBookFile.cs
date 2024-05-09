@@ -7,9 +7,13 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
+using System.Threading;
+using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
 
@@ -161,6 +165,46 @@ namespace MediaBrowser.Controller.Entities.AudioBooks
         protected override IEnumerable<(BaseItem Item, MediaSourceType MediaSourceType)> GetAllItemsForMediaSources()
         {
             return [(this, MediaSourceType.Default)];
+        }
+
+        public void SetFilesPlayed(User user, IUserDataManager userDataManager)
+        {
+            // TEMP: Sort by name, mark played accoringly
+            // TODO: Mark played by chapter number
+            // TODO: Figure out why chapter is not stored/returned correctly
+            var chapters = AudioBookEntity.Chapters.OrderBy(s => s.Name);
+
+            bool afterCurrent = false;
+            foreach (var chapter in chapters)
+            {
+                if (chapter == this)
+                {
+                    afterCurrent = true;
+                    continue;
+                }
+
+                var changed = false;
+                var userData = userDataManager.GetUserData(user, chapter);
+
+                // TODO: DECISION: Should we leave PlaybackPositionTicks or set to 0?
+                if (afterCurrent && userData.Played)
+                {
+                    userData.Played = false;
+                    userData.PlaybackPositionTicks = 0;
+                    changed = true;
+                }
+                else if (!afterCurrent && !userData.Played)
+                {
+                    userData.Played = true;
+                    userData.PlaybackPositionTicks = 0;
+                    changed = true;
+                }
+
+                if (changed)
+                {
+                    userDataManager.SaveUserData(user, chapter, userData, UserDataSaveReason.PlaybackStart, CancellationToken.None);
+                }
+            }
         }
     }
 }

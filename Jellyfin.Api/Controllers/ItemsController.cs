@@ -897,6 +897,27 @@ public class ItemsController : BaseJellyfinApiController
             ExcludeItemIds = excludeItemIds
         });
 
+        // If there is an AudioBookFile in the array of result items, iterate over itemsResult.Items, for instances of
+        // "item is AudioBookFile" and replace with reference to parent AudioBook if the parent is not already in the list
+        if (itemsResult.Items.OfType<AudioBookFile>().Any())
+        {
+            var fileToBook = itemsResult.Items.ToList();
+            foreach (var queryItem in itemsResult.Items)
+            {
+                if (queryItem is AudioBookFile)
+                {
+                    fileToBook.Remove(queryItem);
+                    if (!fileToBook.Contains(queryItem.GetParent()))
+                    {
+                        fileToBook.Add(queryItem.GetParent());
+                    }
+                }
+            }
+
+            itemsResult.Items = fileToBook.ToArray();
+            itemsResult.TotalRecordCount = fileToBook.Count;
+        }
+
         var returnItems = _dtoService.GetBaseItemDtos(itemsResult.Items, dtoOptions, user);
 
         return new QueryResult<BaseItemDto>(
