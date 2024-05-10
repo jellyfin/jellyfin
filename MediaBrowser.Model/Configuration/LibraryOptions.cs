@@ -20,7 +20,7 @@ namespace MediaBrowser.Model.Configuration
 
             AutomaticallyAddToCollection = false;
             EnablePhotos = true;
-            SaveSubtitlesWithMedia = false;
+            SaveSubtitlesWithMedia = true;
             SaveLyricsWithMedia = false;
             PathInfos = Array.Empty<MediaPathInfo>();
             EnableAutomaticSeriesGrouping = true;
