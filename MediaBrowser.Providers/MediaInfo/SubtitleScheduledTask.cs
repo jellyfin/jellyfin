@@ -88,7 +88,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
                 else
                 {
-                    subtitleDownloadLanguages = libraryOptions.SubtitleDownloadLanguages;
+                    subtitleDownloadLanguages = libraryOptions.SubtitleDownloadLanguages.ToArray();
                     skipIfEmbeddedSubtitlesPresent = libraryOptions.SkipSubtitlesIfEmbeddedSubtitlesPresent;
                     skipIfAudioTrackMatches = libraryOptions.SkipSubtitlesIfAudioTrackMatches;
                 }
@@ -181,7 +181,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
             else
             {
-                subtitleDownloadLanguages = libraryOptions.SubtitleDownloadLanguages;
+                subtitleDownloadLanguages = libraryOptions.SubtitleDownloadLanguages.ToArray();
                 skipIfEmbeddedSubtitlesPresent = libraryOptions.SkipSubtitlesIfEmbeddedSubtitlesPresent;
                 skipIfAudioTrackMatches = libraryOptions.SkipSubtitlesIfAudioTrackMatches;
                 requirePerfectMatch = libraryOptions.RequirePerfectSubtitleMatch;
@@ -196,8 +196,8 @@ namespace MediaBrowser.Providers.MediaInfo
                     skipIfAudioTrackMatches,
                     requirePerfectMatch,
                     subtitleDownloadLanguages,
-                    libraryOptions.DisabledSubtitleFetchers,
-                    libraryOptions.SubtitleFetcherOrder,
+                    libraryOptions.DisabledSubtitleFetchers.ToArray(),
+                    libraryOptions.SubtitleFetcherOrder.ToArray(),
                     true,
                     cancellationToken).ConfigureAwait(false);
 

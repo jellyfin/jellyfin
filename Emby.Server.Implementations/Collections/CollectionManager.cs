@@ -95,11 +95,10 @@ namespace Emby.Server.Implementations.Collections
 
             var libraryOptions = new LibraryOptions
             {
-                PathInfos = new[] { new MediaPathInfo(path) },
                 EnableRealtimeMonitor = false,
                 SaveLocalMetadata = true
             };
-
+            libraryOptions.SetPathInfos(new[] { new MediaPathInfo(path) });
             var name = _localizationManager.GetLocalizedString("Collections");
 
             await _libraryManager.AddVirtualFolder(name, CollectionTypeOptions.boxsets, libraryOptions, true).ConfigureAwait(false);

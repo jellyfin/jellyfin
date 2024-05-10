@@ -201,10 +201,8 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
                 }
 
                 var mediaPathInfos = pathsToCreate.Select(i => new MediaPathInfo(i)).ToArray();
-                var libraryOptions = new LibraryOptions
-                {
-                    PathInfos = mediaPathInfos
-                };
+                var libraryOptions = new LibraryOptions();
+                libraryOptions.SetPathInfos(mediaPathInfos);
 
                 try
                 {

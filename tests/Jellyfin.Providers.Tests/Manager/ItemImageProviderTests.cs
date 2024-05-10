@@ -507,24 +507,9 @@ namespace Jellyfin.Providers.Tests.Manager
 
             var item = new Video();
 
-            var libraryOptions = new LibraryOptions
-            {
-                TypeOptions = new[]
-                {
-                    new TypeOptions
-                    {
-                        Type = item.GetType().Name,
-                        ImageOptions = new[]
-                        {
-                            new ImageOption
-                            {
-                                Type = imageType,
-                                MinWidth = 10
-                            }
-                        }
-                    }
-                }
-            };
+            var typeOptions = new[] { new TypeOptions { Type = item.GetType().Name, ImageOptions = new[] { new ImageOption { Type = imageType, MinWidth = 10 } } } };
+            var libraryOptions = new LibraryOptions();
+            libraryOptions.SetTypeOptions(typeOptions);
 
             var remoteProvider = new Mock<IRemoteImageProvider>(MockBehavior.Strict);
             remoteProvider.Setup(rp => rp.Name).Returns("MockRemoteProvider");
@@ -626,24 +611,10 @@ namespace Jellyfin.Providers.Tests.Manager
         /// </summary>
         private static LibraryOptions GetLibraryOptions(BaseItem item, ImageType type, int count)
         {
-            return new LibraryOptions
-            {
-                TypeOptions = new[]
-                {
-                    new TypeOptions
-                    {
-                        Type = item.GetType().Name,
-                        ImageOptions = new[]
-                        {
-                            new ImageOption
-                            {
-                                Type = type,
-                                Limit = count,
-                            }
-                        }
-                    }
-                }
-            };
+            var typeOptions = new[] { new TypeOptions { Type = item.GetType().Name, ImageOptions = new[] { new ImageOption { Type = type, Limit = count, } } } };
+            var lib = new LibraryOptions();
+            lib.SetTypeOptions(typeOptions.ToList());
+            return lib;
         }
     }
 }

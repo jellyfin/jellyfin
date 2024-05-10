@@ -3039,7 +3039,7 @@ namespace Emby.Server.Implementations.Library
             {
                 var libraryOptions = CollectionFolder.GetLibraryOptions(virtualFolderPath);
 
-                libraryOptions.PathInfos = [..libraryOptions.PathInfos, pathInfo];
+                libraryOptions.PathInfos.Add(pathInfo);
 
                 SyncLibraryOptionsToLocations(virtualFolderPath, libraryOptions);
 
@@ -3075,7 +3075,7 @@ namespace Emby.Server.Implementations.Library
             var topLibraryFolders = GetUserRootFolder().Children.ToList();
             var info = GetVirtualFolderInfo(virtualFolderPath, topLibraryFolders, null);
 
-            if (info.Locations.Length > 0 && info.Locations.Length != options.PathInfos.Length)
+            if (info.Locations.Length > 0 && info.Locations.Length != options.PathInfos.Count)
             {
                 var list = options.PathInfos.ToList();
 
@@ -3087,7 +3087,7 @@ namespace Emby.Server.Implementations.Library
                     }
                 }
 
-                options.PathInfos = list.ToArray();
+                options.SetPathInfos(list.ToArray());
             }
         }
 
@@ -3185,10 +3185,10 @@ namespace Emby.Server.Implementations.Library
 
             var libraryOptions = CollectionFolder.GetLibraryOptions(virtualFolderPath);
 
-            libraryOptions.PathInfos = libraryOptions
+            libraryOptions.SetPathInfos(libraryOptions
                 .PathInfos
                 .Where(i => !string.Equals(i.Path, mediaPath, StringComparison.Ordinal))
-                .ToArray();
+                .ToArray());
 
             CollectionFolder.SaveLibraryOptions(virtualFolderPath, libraryOptions);
         }
