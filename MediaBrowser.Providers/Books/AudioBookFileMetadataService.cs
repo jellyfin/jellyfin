@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Providers.Books
 {
     /// <summary>
-    /// The audio metadata service.
+    /// Class to register providers for individual AudioBook files.
     /// </summary>
     public class AudioBookFileMetadataService : MetadataService<AudioBookFile, AudioBookFileInfo>
     {
@@ -56,9 +56,9 @@ namespace MediaBrowser.Providers.Books
             var sourceItem = source.Item;
             var targetItem = target.Item;
 
-            if (replaceData || targetItem.Authors.Count == 0)
+            if (replaceData || targetItem.Artists.Count == 0)
             {
-                targetItem.Authors = sourceItem.Authors;
+                targetItem.Artists = sourceItem.Artists;
             }
 
             if (replaceData || string.IsNullOrEmpty(targetItem.Album))
@@ -67,6 +67,8 @@ namespace MediaBrowser.Providers.Books
             }
 
             // TODO: Create and register provider specific to book information and AudioBook information
+            // https://openlibrary.org/developers/api
+            // https://openlibrary.org/search.json?title=war&author=sebastian+junger
         }
     }
 }

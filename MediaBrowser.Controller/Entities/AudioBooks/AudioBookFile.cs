@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -17,7 +16,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
 
-// TODO: Use ChapterInfo?.
 namespace MediaBrowser.Controller.Entities.AudioBooks
 {
     /// <summary>
@@ -31,11 +29,12 @@ namespace MediaBrowser.Controller.Entities.AudioBooks
         [JsonIgnore]
         public override MediaType MediaType => MediaType.Audio;
 
-        public string BookTitle { get; set; }
+        // For audiobook file metadata, the title is often "[book title] - [chapter #]" and the album is the book title alone
+        public string BookTitle => Album;
 
-        public int Chapter { get; set; }
+        public int Chapter => IndexNumber.HasValue ? IndexNumber.Value : 0;
 
-        public IReadOnlyList<string> Authors { get; set; }
+        public IReadOnlyList<string> Authors => Artists;
 
         [JsonIgnore]
         public override bool SupportsPlayedStatus => true;
@@ -103,6 +102,7 @@ namespace MediaBrowser.Controller.Entities.AudioBooks
             return AudioBookEntity?.PresentationUniqueKey;
         }
 
+        // TODO: Behavior may be more consistent if we use "Album" metadata and push up to parent
         public string FindAudioBookName()
         {
             return AudioBookEntity is null ? "AudioBook Unknown" : AudioBookEntity.Name;
@@ -114,13 +114,13 @@ namespace MediaBrowser.Controller.Entities.AudioBooks
         }
 
         /// <summary>
-        /// Creates the name of the sort.
+        /// Creates the string by which this item will be sorted amongst other children. Logically, AudioBookFiles
+        /// must already be named in a unique, indexable way so we can just return the name.
         /// </summary>
         /// <returns>System.String.</returns>
         protected override string CreateSortName()
         {
-            return (ParentIndexNumber is not null ? ParentIndexNumber.Value.ToString("000 - ", CultureInfo.InvariantCulture) : string.Empty)
-                    + (IndexNumber is not null ? IndexNumber.Value.ToString("0000 - ", CultureInfo.InvariantCulture) : string.Empty) + Name;
+            return Name;
         }
 
         public override IEnumerable<FileSystemMetadata> GetDeletePaths()
@@ -135,13 +135,15 @@ namespace MediaBrowser.Controller.Entities.AudioBooks
             }.Concat(GetLocalMetadataFilesToDelete());
         }
 
+        // TODO: I'm still not sure where this fits into the larger framework.
         public new AudioBookFileInfo GetLookupInfo()
         {
             var id = GetItemLookupInfo<AudioBookFileInfo>();
 
-            id.BookTitle = BookTitle;
-            id.Authors = Authors;
+            id.BookTitle = Album;
+            id.Artists = Artists;
             id.Container = Container;
+            id.Chapter = (int)IndexNumber;
 
             return id;
         }
@@ -169,17 +171,10 @@ namespace MediaBrowser.Controller.Entities.AudioBooks
 
         public void SetFilesPlayed(User user, IUserDataManager userDataManager)
         {
-            // TEMP: Sort by name, mark played accoringly
-            // TODO: Mark played by chapter number
-            // TODO: Figure out why chapter is not stored/returned correctly
-            var chapters = AudioBookEntity.Chapters.OrderBy(s => s.Name);
-
-            bool afterCurrent = false;
-            foreach (var chapter in chapters)
+            foreach (var chapter in AudioBookEntity.Chapters)
             {
                 if (chapter.Name == Name)
                 {
-                    afterCurrent = true;
                     continue;
                 }
 
@@ -187,13 +182,13 @@ namespace MediaBrowser.Controller.Entities.AudioBooks
                 var userData = userDataManager.GetUserData(user, chapter);
 
                 // TODO: DECISION: Should we leave PlaybackPositionTicks or set to 0?
-                if (afterCurrent && userData.Played)
+                if (chapter.Chapter > Chapter && userData.Played)
                 {
                     userData.Played = false;
                     userData.PlaybackPositionTicks = 0;
                     changed = true;
                 }
-                else if (!afterCurrent && !userData.Played)
+                else if (!userData.Played)
                 {
                     userData.Played = true;
                     userData.PlaybackPositionTicks = 0;

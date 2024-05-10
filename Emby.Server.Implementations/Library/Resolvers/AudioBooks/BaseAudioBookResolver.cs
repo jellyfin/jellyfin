@@ -2,7 +2,6 @@
 
 #pragma warning disable CS1591
 
-using System;
 using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -64,9 +63,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.AudioBooks
 
             audioBookFile.Container = extension.TrimStart('.');
 
-            audioBookFile.Chapter = ParseChapter(args.Path);
-
-            _logger.LogInformation("Chapter = {Chapter}", audioBookFile.Chapter);
+            audioBookFile.IndexNumber = ParseChapter(args.Path);
 
             return audioBookFile;
         }

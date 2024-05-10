@@ -11,7 +11,7 @@ namespace MediaBrowser.Controller.Providers
     {
         public AudioBookFileInfo()
         {
-            Authors = Array.Empty<string>();
+            Artists = Array.Empty<string>();
         }
 
         public string BookTitle { get; set; }
@@ -20,6 +20,6 @@ namespace MediaBrowser.Controller.Providers
 
         public string Container { get; set; }
 
-        public IReadOnlyList<string> Authors { get; set; }
+        public IReadOnlyList<string> Artists { get; set; }
     }
 }

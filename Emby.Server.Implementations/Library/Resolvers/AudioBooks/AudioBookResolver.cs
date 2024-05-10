@@ -2,6 +2,8 @@
 
 #pragma warning disable CS1591
 
+using System;
+using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
 using Emby.Naming.Audio;
@@ -50,7 +52,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.AudioBooks
         protected override AudioBook Resolve(ItemResolveArgs args)
         {
             // We only care about audiobooks
-            // TODO: Change this to new CollectionType.audiobooks?
             if (args.GetCollectionType() != CollectionType.books)
             {
                 return null;
@@ -64,15 +65,15 @@ namespace Emby.Server.Implementations.Library.Resolvers.AudioBooks
 
             var audioBook = new AudioBook();
 
-            // TODO: Get title from path...
+            // TODO: Get title from path or from child file "Album" metadata
             var bookFileName = Path.GetFileNameWithoutExtension(args.Path);
             var name = MatchFor(bookFileName, "name");
-            if (name == null)
-            {
-                name = bookFileName;
-            }
+            name ??= bookFileName;
 
             var year = MatchFor(bookFileName, "year");
+
+            audioBook.Name = name;
+            audioBook.ProductionYear = Convert.ToInt16(year, CultureInfo.InvariantCulture);
 
             // Process directory to resolve single audio book
             if (args.IsDirectory)
@@ -80,10 +81,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.AudioBooks
                 // Majority children must be audio files
                 int audioFiles = 0;
                 int nonAudioFiles = 0;
-                // TODO: What's the fancy C# way to do this?
-                for (var i = 0; i < args.FileSystemChildren.Length; i++)
+                foreach (var child in args.FileSystemChildren)
                 {
-                    var child = args.FileSystemChildren[i];
                     if (AudioFileParser.IsAudioFile(child.FullName, _namingOptions))
                     {
                         audioFiles += 1;
@@ -121,8 +120,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.AudioBooks
                 var extension = Path.GetExtension(args.Path);
 
                 audioBookFile.Container = extension.TrimStart('.');
-                audioBookFile.Chapter = 0;
-                // audioBookFile.path = args.path; ?
+                audioBookFile.IndexNumber = 0;
+                audioBookFile.Path = args.Path;
 
                 return audioBook;
             }

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.AudioBooks;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.MediaEncoding;
@@ -309,7 +310,12 @@ namespace MediaBrowser.Providers.MediaInfo
                 if (options.ReplaceAllMetadata)
                 {
                     audio.Album = tags.Album;
-                    audio.IndexNumber = Convert.ToInt32(tags.Track);
+                    // We want to preserve the IndexNumber value parsed from AudioBookFile path if it exists
+                    if (audio.GetType() != typeof(AudioBookFile) || !audio.IndexNumber.HasValue)
+                    {
+                        audio.IndexNumber = Convert.ToInt32(tags.Track);
+                    }
+
                     audio.ParentIndexNumber = Convert.ToInt32(tags.Disc);
                 }
                 else
