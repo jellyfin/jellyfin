@@ -128,5 +128,7 @@
     "TaskRefreshTrickplayImages": "Generuj obrazy trickplay",
     "TaskRefreshTrickplayImagesDescription": "Tworzy podglądy trickplay dla filmów we włączonych bibliotekach.",
     "TaskCleanCollectionsAndPlaylistsDescription": "Usuwa elementy z kolekcji i list odtwarzania, które już nie istnieją.",
-    "TaskCleanCollectionsAndPlaylists": "Oczyść kolekcje i listy odtwarzania"
+    "TaskCleanCollectionsAndPlaylists": "Oczyść kolekcje i listy odtwarzania",
+    "TaskAudioNormalization": "Normalizacja dźwięku",
+    "TaskAudioNormalizationDescription": "Skanuje pliki w poszukiwaniu danych normalizacji dźwięku."
 }

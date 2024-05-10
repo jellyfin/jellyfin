@@ -32,24 +32,20 @@ public class AddDefaultCastReceivers : IMigrationRoutine
     /// <inheritdoc />
     public void Perform()
     {
-        // Only add if receiver list is empty.
-        if (_serverConfigurationManager.Configuration.CastReceiverApplications.Length == 0)
-        {
-            _serverConfigurationManager.Configuration.CastReceiverApplications = new CastReceiverApplication[]
+        _serverConfigurationManager.Configuration.CastReceiverApplications =
+        [
+            new()
             {
-                new()
-                {
-                    Id = "F007D354",
-                    Name = "Stable"
-                },
-                new()
-                {
-                    Id = "6F511C87",
-                    Name = "Unstable"
-                }
-            };
+                Id = "F007D354",
+                Name = "Stable"
+            },
+            new()
+            {
+                Id = "6F511C87",
+                Name = "Unstable"
+            }
+        ];
 
-            _serverConfigurationManager.SaveConfiguration();
-        }
+        _serverConfigurationManager.SaveConfiguration();
     }
 }

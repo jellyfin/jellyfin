@@ -117,9 +117,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     var artist = reader.ReadNormalizedString();
                     if (!string.IsNullOrEmpty(artist) && item is MusicVideo artistVideo)
                     {
-                        var list = artistVideo.Artists.ToList();
-                        list.Add(artist);
-                        artistVideo.Artists = list.ToArray();
+                        artistVideo.Artists = [..artistVideo.Artists, artist];
                     }
 
                     break;

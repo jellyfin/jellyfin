@@ -848,7 +848,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 inputArg = "-threads " + threads + " " + inputArg; // HW accel args set a different input thread count, only set if disabled
             }
 
-            var filterParam = encodingHelper.GetVideoProcessingFilterParam(jobState, options, jobState.OutputVideoCodec).Trim();
+            var filterParam = encodingHelper.GetVideoProcessingFilterParam(jobState, options, vidEncoder).Trim();
             if (string.IsNullOrWhiteSpace(filterParam))
             {
                 throw new InvalidOperationException("EncodingHelper returned empty or invalid filter parameters.");

@@ -128,5 +128,7 @@
     "TaskRefreshTrickplayImages": "Generovat obrázky pro Trickplay",
     "TaskRefreshTrickplayImagesDescription": "Obrázky Trickplay se používají k zobrazení náhledů u videí v knihovnách, kde je to povoleno.",
     "TaskCleanCollectionsAndPlaylists": "Pročistit kolekce a seznamy přehrávání",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Odstraní neexistující položky z kolekcí a seznamů přehrávání."
+    "TaskCleanCollectionsAndPlaylistsDescription": "Odstraní neexistující položky z kolekcí a seznamů přehrávání.",
+    "TaskAudioNormalization": "Normalizace zvuku",
+    "TaskAudioNormalizationDescription": "Skenovat soubory za účelem normalizace zvuku."
 }

@@ -1040,6 +1040,7 @@ namespace Emby.Server.Implementations.Library
                 new Progress<double>(),
                 new MetadataRefreshOptions(new DirectoryService(_fileSystem)),
                 recursive: false,
+                allowRemoveRoot: removeRoot,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
             await GetUserRootFolder().RefreshMetadata(cancellationToken).ConfigureAwait(false);
@@ -3040,9 +3041,7 @@ namespace Emby.Server.Implementations.Library
             {
                 var libraryOptions = CollectionFolder.GetLibraryOptions(virtualFolderPath);
 
-                var list = libraryOptions.PathInfos.ToList();
-                list.Add(pathInfo);
-                libraryOptions.PathInfos = list.ToArray();
+                libraryOptions.PathInfos = [..libraryOptions.PathInfos, pathInfo];
 
                 SyncLibraryOptionsToLocations(virtualFolderPath, libraryOptions);
 
@@ -3061,8 +3060,7 @@ namespace Emby.Server.Implementations.Library
 
             SyncLibraryOptionsToLocations(virtualFolderPath, libraryOptions);
 
-            var list = libraryOptions.PathInfos.ToList();
-            foreach (var originalPathInfo in list)
+            foreach (var originalPathInfo in libraryOptions.PathInfos)
             {
                 if (string.Equals(mediaPath.Path, originalPathInfo.Path, StringComparison.Ordinal))
                 {
@@ -3070,8 +3068,6 @@ namespace Emby.Server.Implementations.Library
                     break;
                 }
             }
-
-            libraryOptions.PathInfos = list.ToArray();
 
             CollectionFolder.SaveLibraryOptions(virtualFolderPath, libraryOptions);
         }
