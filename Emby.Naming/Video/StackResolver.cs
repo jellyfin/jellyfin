@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Emby.Naming.AudioBook;
 using Emby.Naming.Common;
 using MediaBrowser.Model.IO;
 
@@ -33,33 +32,6 @@ namespace Emby.Naming.Video
         public static IEnumerable<FileStack> ResolveFiles(IEnumerable<string> files, NamingOptions namingOptions)
         {
             return Resolve(files.Select(i => new FileSystemMetadata { FullName = i, IsDirectory = false }), namingOptions);
-        }
-
-        /// <summary>
-        /// Resolves audiobooks from paths.
-        /// </summary>
-        /// <param name="files">List of paths.</param>
-        /// <returns>Enumerable <see cref="FileStack"/> of directories.</returns>
-        public static IEnumerable<FileStack> ResolveAudioBooks(IEnumerable<AudioBookFileInfo> files)
-        {
-            var groupedDirectoryFiles = files.GroupBy(file => Path.GetDirectoryName(file.Path));
-
-            foreach (var directory in groupedDirectoryFiles)
-            {
-                if (string.IsNullOrEmpty(directory.Key))
-                {
-                    foreach (var file in directory)
-                    {
-                        var stack = new FileStack(Path.GetFileNameWithoutExtension(file.Path), false, new[] { file.Path });
-                        yield return stack;
-                    }
-                }
-                else
-                {
-                    var stack = new FileStack(Path.GetFileName(directory.Key), false, directory.Select(f => f.Path).ToArray());
-                    yield return stack;
-                }
-            }
         }
 
         /// <summary>
