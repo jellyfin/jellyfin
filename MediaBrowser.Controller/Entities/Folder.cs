@@ -421,13 +421,12 @@ namespace MediaBrowser.Controller.Entities
                     validChildren.Add(child);
                 }
 
+                // That's all the new and changed ones - now see if there are any that are missing
+                var itemsRemoved = currentChildren.Values.Except(validChildren).ToList();
                 var shouldRemove = !IsRoot || allowRemoveRoot;
                 // If it's an AggregateFolder, don't remove
-                if (shouldRemove && currentChildren.Count != validChildren.Count)
+                if (shouldRemove && itemsRemoved.Count > 0)
                 {
-                    // That's all the new and changed ones - now see if there are any that are missing
-                    var itemsRemoved = currentChildren.Values.Except(validChildren).ToList();
-
                     foreach (var item in itemsRemoved)
                     {
                         if (item.IsFileProtocol)
