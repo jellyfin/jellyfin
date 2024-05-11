@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Localization;
 using MediaBrowser.Controller.Configuration;
@@ -155,6 +156,20 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             Assert.Null(localizationManager.GetRatingLevel("unrated"));
             Assert.Null(localizationManager.GetRatingLevel("Not Rated"));
             Assert.Null(localizationManager.GetRatingLevel("n/a"));
+        }
+
+        [Theory]
+        [InlineData("-NO RATING SHOWN-")]
+        [InlineData(":NO RATING SHOWN:")]
+        public async Task GetRatingLevel_Split_Success(string value)
+        {
+            var localizationManager = Setup(new ServerConfiguration()
+            {
+                UICulture = "en-US"
+            });
+            await localizationManager.LoadAll();
+
+            Assert.Null(localizationManager.GetRatingLevel(value));
         }
 
         [Theory]
