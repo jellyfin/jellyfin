@@ -421,7 +421,7 @@ namespace MediaBrowser.Controller.Entities
                     validChildren.Add(child);
                 }
 
-                // That's all the new and changed ones - now see if there are any that are missing
+                // That's all the new and changed ones - now see if any have been removed and need cleanup
                 var itemsRemoved = currentChildren.Values.Except(validChildren).ToList();
                 var shouldRemove = !IsRoot || allowRemoveRoot;
                 // If it's an AggregateFolder, don't remove
