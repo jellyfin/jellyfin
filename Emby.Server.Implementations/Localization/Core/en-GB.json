@@ -128,5 +128,7 @@
     "TaskRefreshTrickplayImages": "Generate Trickplay Images",
     "TaskRefreshTrickplayImagesDescription": "Creates trickplay previews for videos in enabled libraries.",
     "TaskCleanCollectionsAndPlaylists": "Clean up collections and playlists",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Removes items from collections and playlists that no longer exist."
+    "TaskCleanCollectionsAndPlaylistsDescription": "Removes items from collections and playlists that no longer exist.",
+    "TaskAudioNormalization": "Audio Normalisation",
+    "TaskAudioNormalizationDescription": "Scans files for audio normalisation data."
 }

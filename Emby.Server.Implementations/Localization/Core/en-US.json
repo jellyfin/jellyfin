@@ -106,6 +106,8 @@
     "TaskCleanCacheDescription": "Deletes cache files no longer needed by the system.",
     "TaskRefreshChapterImages": "Extract Chapter Images",
     "TaskRefreshChapterImagesDescription": "Creates thumbnails for videos that have chapters.",
+    "TaskAudioNormalization": "Audio Normalization",
+    "TaskAudioNormalizationDescription": "Scans files for audio normalization data.",
     "TaskRefreshLibrary": "Scan Media Library",
     "TaskRefreshLibraryDescription": "Scans your media library for new files and refreshes metadata.",
     "TaskCleanLogs": "Clean Log Directory",

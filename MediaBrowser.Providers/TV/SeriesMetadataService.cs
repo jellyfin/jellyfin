@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -33,6 +34,25 @@ namespace MediaBrowser.Providers.TV
             : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
         {
             _localizationManager = localizationManager;
+        }
+
+        public override async Task<ItemUpdateType> RefreshMetadata(BaseItem item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
+        {
+            if (item is Series series)
+            {
+                var seasons = series.GetRecursiveChildren(i => i is Season).ToList();
+
+                foreach (var season in seasons)
+                {
+                    var hasUpdate = refreshOptions != null && season.BeforeMetadataRefresh(refreshOptions.ReplaceAllMetadata);
+                    if (hasUpdate)
+                    {
+                        await season.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+                    }
+                }
+            }
+
+            return await base.RefreshMetadata(item, refreshOptions, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />

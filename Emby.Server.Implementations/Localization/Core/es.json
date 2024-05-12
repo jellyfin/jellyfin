@@ -128,5 +128,7 @@
     "TaskRefreshTrickplayImages": "Generar miniaturas de línea de tiempo",
     "TaskRefreshTrickplayImagesDescription": "Crear miniaturas de tiempo para videos en las librerías habilitadas.",
     "TaskCleanCollectionsAndPlaylists": "Limpiar colecciones y listas de reproducción",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Elimina elementos de colecciones y listas de reproducción que ya no existen."
+    "TaskCleanCollectionsAndPlaylistsDescription": "Elimina elementos de colecciones y listas de reproducción que ya no existen.",
+    "TaskAudioNormalization": "Normalización de audio",
+    "TaskAudioNormalizationDescription": "Escanear archivos para obtener datos de normalización."
 }

@@ -125,5 +125,9 @@
     "External": "வெளி",
     "HearingImpaired": "செவித்திறன் குறைபாடுடையவர்",
     "TaskRefreshTrickplayImages": "முன்னோட்ட படங்களை உருவாக்கு",
-    "TaskRefreshTrickplayImagesDescription": "செயல்பாட்டில் உள்ள தொகுப்புகளுக்கு முன்னோட்ட படங்களை உருவாக்கும்."
+    "TaskRefreshTrickplayImagesDescription": "செயல்பாட்டில் உள்ள தொகுப்புகளுக்கு முன்னோட்ட படங்களை உருவாக்கும்.",
+    "TaskCleanCollectionsAndPlaylists": "சேகரிப்புகள் மற்றும் பிளேலிஸ்ட்களை சுத்தம் செய்யவும்",
+    "TaskCleanCollectionsAndPlaylistsDescription": "சேகரிப்புகள் மற்றும் பிளேலிஸ்ட்களில் இருந்து உருப்படிகளை நீக்குகிறது.",
+    "TaskAudioNormalization": "ஆடியோ இயல்பாக்கம்",
+    "TaskAudioNormalizationDescription": "ஆடியோ இயல்பாக்குதல் தரவுக்காக கோப்புகளை ஸ்கேன் செய்கிறது."
 }

@@ -127,5 +127,7 @@
     "TaskRefreshTrickplayImages": "Gerar miniaturas de vídeo",
     "TaskRefreshTrickplayImagesDescription": "Cria miniaturas de vídeo para vídeos nas bibliotecas definidas.",
     "TaskCleanCollectionsAndPlaylistsDescription": "Remove itens de coleções e listas de reprodução que já não existem.",
-    "TaskCleanCollectionsAndPlaylists": "Limpar coleções e listas de reprodução"
+    "TaskCleanCollectionsAndPlaylists": "Limpar coleções e listas de reprodução",
+    "TaskAudioNormalizationDescription": "Analisa os ficheiros para obter dados de normalização de áudio.",
+    "TaskAudioNormalization": "Normalização de áudio"
 }

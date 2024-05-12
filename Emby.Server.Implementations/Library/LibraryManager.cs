@@ -44,7 +44,6 @@ using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
-using TMDbLib.Objects.Authentication;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 using EpisodeInfo = Emby.Naming.TV.EpisodeInfo;
 using Genre = MediaBrowser.Controller.Entities.Genre;
@@ -1039,6 +1038,7 @@ namespace Emby.Server.Implementations.Library
                 new Progress<double>(),
                 new MetadataRefreshOptions(new DirectoryService(_fileSystem)),
                 recursive: false,
+                allowRemoveRoot: removeRoot,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
             await GetUserRootFolder().RefreshMetadata(cancellationToken).ConfigureAwait(false);
@@ -1612,14 +1612,18 @@ namespace Emby.Server.Implementations.Library
         /// <returns>IEnumerable{System.String}.</returns>
         public async Task<IEnumerable<Video>> GetIntros(BaseItem item, User user)
         {
+            if (IntroProviders.Length == 0)
+            {
+                return [];
+            }
+
             var tasks = IntroProviders
-                .Take(1)
                 .Select(i => GetIntros(i, item, user));
 
             var items = await Task.WhenAll(tasks).ConfigureAwait(false);
 
             return items
-                .SelectMany(i => i.ToArray())
+                .SelectMany(i => i)
                 .Select(ResolveIntro)
                 .Where(i => i is not null)!; // null values got filtered out
         }
@@ -3035,9 +3039,7 @@ namespace Emby.Server.Implementations.Library
             {
                 var libraryOptions = CollectionFolder.GetLibraryOptions(virtualFolderPath);
 
-                var list = libraryOptions.PathInfos.ToList();
-                list.Add(pathInfo);
-                libraryOptions.PathInfos = list.ToArray();
+                libraryOptions.PathInfos = [..libraryOptions.PathInfos, pathInfo];
 
                 SyncLibraryOptionsToLocations(virtualFolderPath, libraryOptions);
 
@@ -3056,8 +3058,7 @@ namespace Emby.Server.Implementations.Library
 
             SyncLibraryOptionsToLocations(virtualFolderPath, libraryOptions);
 
-            var list = libraryOptions.PathInfos.ToList();
-            foreach (var originalPathInfo in list)
+            foreach (var originalPathInfo in libraryOptions.PathInfos)
             {
                 if (string.Equals(mediaPath.Path, originalPathInfo.Path, StringComparison.Ordinal))
                 {
@@ -3065,8 +3066,6 @@ namespace Emby.Server.Implementations.Library
                     break;
                 }
             }
-
-            libraryOptions.PathInfos = list.ToArray();
 
             CollectionFolder.SaveLibraryOptions(virtualFolderPath, libraryOptions);
         }

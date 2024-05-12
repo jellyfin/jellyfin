@@ -256,8 +256,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         {
             get
             {
-                var triggers = InternalTriggers;
-                return triggers.Select(i => i.Item1).ToArray();
+                return Array.ConvertAll(InternalTriggers, i => i.Item1);
             }
 
             set
@@ -269,7 +268,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
                 SaveTriggers(triggerList);
 
-                InternalTriggers = triggerList.Select(i => new Tuple<TaskTriggerInfo, ITaskTrigger>(i, GetTrigger(i))).ToArray();
+                InternalTriggers = Array.ConvertAll(triggerList, i => new Tuple<TaskTriggerInfo, ITaskTrigger>(i, GetTrigger(i)));
             }
         }
 
@@ -503,7 +502,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         private Tuple<TaskTriggerInfo, ITaskTrigger>[] LoadTriggers()
         {
             // This null check is not great, but is needed to handle bad user input, or user mucking with the config file incorrectly
-            var settings = LoadTriggerSettings().Where(i => i is not null).ToArray();
+            var settings = LoadTriggerSettings().Where(i => i is not null);
 
             return settings.Select(i => new Tuple<TaskTriggerInfo, ITaskTrigger>(i, GetTrigger(i))).ToArray();
         }

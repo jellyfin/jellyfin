@@ -246,14 +246,21 @@ public class ItemsController : BaseJellyfinApiController
         var isApiKey = User.GetIsApiKey();
         // if api key is used (auth.IsApiKey == true), then `user` will be null throughout this method
         userId = RequestHelpers.GetUserId(User, userId);
-        var user = !isApiKey && !userId.IsNullOrEmpty()
-            ? _userManager.GetUserById(userId.Value) ?? throw new ResourceNotFoundException()
-            : null;
+        var user = userId.IsNullOrEmpty()
+            ? null
+            : _userManager.GetUserById(userId.Value) ?? throw new ResourceNotFoundException();
 
         // beyond this point, we're either using an api key or we have a valid user
         if (!isApiKey && user is null)
         {
             return BadRequest("userId is required");
+        }
+
+        if (user is not null
+            && user.GetPreference(PreferenceKind.AllowedTags).Length != 0
+            && !fields.Contains(ItemFields.Tags))
+        {
+            fields = [..fields, ItemFields.Tags];
         }
 
         var dtoOptions = new DtoOptions { Fields = fields }

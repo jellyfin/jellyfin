@@ -333,8 +333,13 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        private static bool IsLibraryFolderAccessible(IDirectoryService directoryService, BaseItem item)
+        private static bool IsLibraryFolderAccessible(IDirectoryService directoryService, BaseItem item, bool checkCollection)
         {
+            if (!checkCollection && (item is BoxSet || string.Equals(item.FileNameWithoutExtension, "collections", StringComparison.OrdinalIgnoreCase)))
+            {
+                return true;
+            }
+
             // For top parents i.e. Library folders, skip the validation if it's empty or inaccessible
             if (item.IsTopParent && !directoryService.IsAccessible(item.ContainingFolderPath))
             {
@@ -347,7 +352,7 @@ namespace MediaBrowser.Controller.Entities
 
         private async Task ValidateChildrenInternal2(IProgress<double> progress, bool recursive, bool refreshChildMetadata, bool allowRemoveRoot, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
-            if (!IsLibraryFolderAccessible(directoryService, this))
+            if (!IsLibraryFolderAccessible(directoryService, this, allowRemoveRoot))
             {
                 return;
             }
@@ -388,7 +393,7 @@ namespace MediaBrowser.Controller.Entities
 
                 foreach (var child in nonCachedChildren)
                 {
-                    if (!IsLibraryFolderAccessible(directoryService, child))
+                    if (!IsLibraryFolderAccessible(directoryService, child, allowRemoveRoot))
                     {
                         continue;
                     }
@@ -416,13 +421,12 @@ namespace MediaBrowser.Controller.Entities
                     validChildren.Add(child);
                 }
 
+                // That's all the new and changed ones - now see if any have been removed and need cleanup
+                var itemsRemoved = currentChildren.Values.Except(validChildren).ToList();
                 var shouldRemove = !IsRoot || allowRemoveRoot;
                 // If it's an AggregateFolder, don't remove
-                if (shouldRemove && currentChildren.Count != validChildren.Count)
+                if (shouldRemove && itemsRemoved.Count > 0)
                 {
-                    // That's all the new and changed ones - now see if there are any that are missing
-                    var itemsRemoved = currentChildren.Values.Except(validChildren).ToList();
-
                     foreach (var item in itemsRemoved)
                     {
                         if (item.IsFileProtocol)

@@ -270,9 +270,7 @@ namespace MediaBrowser.Controller.Session
 
         public void AddController(ISessionController controller)
         {
-            var controllers = SessionControllers.ToList();
-            controllers.Add(controller);
-            SessionControllers = controllers.ToArray();
+            SessionControllers = [..SessionControllers, controller];
         }
 
         public bool ContainsUser(Guid userId)

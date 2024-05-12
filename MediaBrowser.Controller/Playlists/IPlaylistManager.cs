@@ -34,7 +34,7 @@ namespace MediaBrowser.Controller.Playlists
         Task UpdatePlaylist(PlaylistUpdateRequest request);
 
         /// <summary>
-        /// Gets the playlists.
+        /// Gets all playlists a user has access to.
         /// </summary>
         /// <param name="userId">The user identifier.</param>
         /// <returns>IEnumerable&lt;Playlist&gt;.</returns>

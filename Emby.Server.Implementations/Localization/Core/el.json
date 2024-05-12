@@ -126,5 +126,9 @@
     "External": "Εξωτερικό",
     "HearingImpaired": "Με προβλήματα ακοής",
     "TaskRefreshTrickplayImages": "Δημιουργήστε εικόνες Trickplay",
-    "TaskRefreshTrickplayImagesDescription": "Δημιουργεί προεπισκοπήσεις trickplay για βίντεο σε ενεργοποιημένες βιβλιοθήκες."
+    "TaskRefreshTrickplayImagesDescription": "Δημιουργεί προεπισκοπήσεις trickplay για βίντεο σε ενεργοποιημένες βιβλιοθήκες.",
+    "TaskAudioNormalization": "Ομοιομορφία ήχου",
+    "TaskAudioNormalizationDescription": "Ανίχνευση αρχείων για δεδομένα ομοιομορφίας ήχου.",
+    "TaskCleanCollectionsAndPlaylists": "Καθαρισμός συλλογών και λιστών αναπαραγωγής",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Αφαιρούνται στοιχεία από τις συλλογές και τις λίστες αναπαραγωγής που δεν υπάρχουν πλέον."
 }

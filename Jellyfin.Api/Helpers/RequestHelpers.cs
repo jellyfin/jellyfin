@@ -117,10 +117,10 @@ public static class RequestHelpers
         return user.EnableUserPreferenceAccess;
     }
 
-    internal static async Task<SessionInfo> GetSession(ISessionManager sessionManager, IUserManager userManager, HttpContext httpContext)
+    internal static async Task<SessionInfo> GetSession(ISessionManager sessionManager, IUserManager userManager, HttpContext httpContext, Guid? userId = null)
     {
-        var userId = httpContext.User.GetUserId();
-        var user = userManager.GetUserById(userId);
+        userId ??= httpContext.User.GetUserId();
+        var user = userManager.GetUserById(userId.Value);
         var session = await sessionManager.LogSessionActivity(
             httpContext.User.GetClient(),
             httpContext.User.GetVersion(),
