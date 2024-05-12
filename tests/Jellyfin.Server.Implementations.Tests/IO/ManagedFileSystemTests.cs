@@ -20,7 +20,7 @@ namespace Jellyfin.Server.Implementations.Tests.IO
             _sut = _fixture.Create<ManagedFileSystem>();
         }
 
-        [Theory]
+        [SkippableTheory]
         [InlineData("/Volumes/Library/Sample/Music/Playlists/", "../Beethoven/Misc/Moonlight Sonata.mp3", "/Volumes/Library/Sample/Music/Beethoven/Misc/Moonlight Sonata.mp3")]
         [InlineData("/Volumes/Library/Sample/Music/Playlists/", "../../Beethoven/Misc/Moonlight Sonata.mp3", "/Volumes/Library/Sample/Beethoven/Misc/Moonlight Sonata.mp3")]
         [InlineData("/Volumes/Library/Sample/Music/Playlists/", "Beethoven/Misc/Moonlight Sonata.mp3", "/Volumes/Library/Sample/Music/Playlists/Beethoven/Misc/Moonlight Sonata.mp3")]
@@ -30,16 +30,13 @@ namespace Jellyfin.Server.Implementations.Tests.IO
             string filePath,
             string expectedAbsolutePath)
         {
-            if (OperatingSystem.IsWindows())
-            {
-                return;
-            }
+            Skip.If(OperatingSystem.IsWindows());
 
             var generatedPath = _sut.MakeAbsolutePath(folderPath, filePath);
             Assert.Equal(expectedAbsolutePath, generatedPath);
         }
 
-        [Theory]
+        [SkippableTheory]
         [InlineData(@"C:\\Volumes\Library\Sample\Music\Playlists\", @"..\Beethoven\Misc\Moonlight Sonata.mp3", @"C:\Volumes\Library\Sample\Music\Beethoven\Misc\Moonlight Sonata.mp3")]
         [InlineData(@"C:\\Volumes\Library\Sample\Music\Playlists\", @"..\..\Beethoven\Misc\Moonlight Sonata.mp3", @"C:\Volumes\Library\Sample\Beethoven\Misc\Moonlight Sonata.mp3")]
         [InlineData(@"C:\\Volumes\Library\Sample\Music\Playlists\", @"Beethoven\Misc\Moonlight Sonata.mp3", @"C:\Volumes\Library\Sample\Music\Playlists\Beethoven\Misc\Moonlight Sonata.mp3")]
@@ -49,10 +46,7 @@ namespace Jellyfin.Server.Implementations.Tests.IO
             string filePath,
             string expectedAbsolutePath)
         {
-            if (!OperatingSystem.IsWindows())
-            {
-                return;
-            }
+            Skip.If(!OperatingSystem.IsWindows());
 
             var generatedPath = _sut.MakeAbsolutePath(folderPath, filePath);
 
