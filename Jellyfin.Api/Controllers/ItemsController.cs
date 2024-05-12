@@ -903,7 +903,7 @@ public class ItemsController : BaseJellyfinApiController
 
                 var userData = _userDataRepository.GetUserDataByPresentationUniqueKey(user, item);
 
-                if (userData != null && userData.PlaybackPositionTicks > 0)
+                if (item != null && userData != null && userData.PlaybackPositionTicks > 0)
                 {
                     itemsResult.Items = itemsResult.Items.Append(item).ToList();
                 }
