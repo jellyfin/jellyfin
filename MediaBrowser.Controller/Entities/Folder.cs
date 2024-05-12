@@ -593,7 +593,8 @@ namespace MediaBrowser.Controller.Entities
                 progress.Report(childrenProgress.Average());
             }
 
-            var parallelism = Math.Max(ConfigurationManager.Configuration.LibraryScanFanoutConcurrency, 1);
+            var fanoutConcurrency = ConfigurationManager.Configuration.LibraryScanFanoutConcurrency;
+            var parallelism = fanoutConcurrency > 0 ? fanoutConcurrency : Environment.ProcessorCount;
 
             var actionBlock = new ActionBlock<int>(
                 async i =>
