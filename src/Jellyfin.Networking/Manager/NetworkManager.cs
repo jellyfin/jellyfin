@@ -412,7 +412,9 @@ public class NetworkManager : INetworkManager, IDisposable
                 interfaces.RemoveAll(x => x.AddressFamily == AddressFamily.InterNetworkV6);
             }
 
-            _interfaces = interfaces;
+            // Users may have complex networking configuration that multiple interfaces sharing the same IP address
+            // Only return one IP for binding, and let the OS handle the rest
+            _interfaces = interfaces.DistinctBy(iface => iface.Address).ToList();
         }
     }
 
@@ -739,9 +741,7 @@ public class NetworkManager : INetworkManager, IDisposable
     {
         if (_interfaces.Count > 0 || individualInterfaces)
         {
-            // Users may have complex networking configuration that multiple interfaces sharing the same IP address
-            // Only return one IP for binding, and let the OS handle the rest
-            return _interfaces.DistinctBy(iface => iface.Address).ToList();
+            return _interfaces;
         }
 
         // No bind address and no exclusions, so listen on all interfaces.
@@ -766,8 +766,6 @@ public class NetworkManager : INetworkManager, IDisposable
                 }
             }
         }
-
-        result = result.DistinctBy(iface => iface.Address).ToList();
 
         return result;
     }
