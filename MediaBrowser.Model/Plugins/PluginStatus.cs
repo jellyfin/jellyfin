@@ -34,9 +34,9 @@ namespace MediaBrowser.Model.Plugins
         Malfunctioned = -3,
 
         /// <summary>
-        /// This plugin has been superceded by another version.
+        /// This plugin has been superseded by another version.
         /// </summary>
-        Superceded = -4,
+        Superseded = -4,
 
         /// <summary>
         /// An attempt to remove this plugin from disk will happen at every restart.
