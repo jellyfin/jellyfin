@@ -1017,7 +1017,7 @@ public class NetworkManager : INetworkManager, IDisposable
         result = string.Empty;
 
         int count = _interfaces.Count;
-        if (count == 1 && (_interfaces[0].Equals(IPAddress.Any) || _interfaces[0].Equals(IPAddress.IPv6Any)))
+        if (count == 1 && (_interfaces[0].Address.Equals(IPAddress.Any) || _interfaces[0].Address.Equals(IPAddress.IPv6Any)))
         {
             // Ignore IPAny addresses.
             count = 0;
