@@ -412,7 +412,9 @@ public class NetworkManager : INetworkManager, IDisposable
                 interfaces.RemoveAll(x => x.AddressFamily == AddressFamily.InterNetworkV6);
             }
 
-            _interfaces = interfaces;
+            // Users may have complex networking configuration that multiple interfaces sharing the same IP address
+            // Only return one IP for binding, and let the OS handle the rest
+            _interfaces = interfaces.DistinctBy(iface => iface.Address).ToList();
         }
     }
 
@@ -1017,7 +1019,7 @@ public class NetworkManager : INetworkManager, IDisposable
         result = string.Empty;
 
         int count = _interfaces.Count;
-        if (count == 1 && (_interfaces[0].Equals(IPAddress.Any) || _interfaces[0].Equals(IPAddress.IPv6Any)))
+        if (count == 1 && (_interfaces[0].Address.Equals(IPAddress.Any) || _interfaces[0].Address.Equals(IPAddress.IPv6Any)))
         {
             // Ignore IPAny addresses.
             count = 0;
@@ -1049,7 +1051,7 @@ public class NetworkManager : INetworkManager, IDisposable
                 return true;
             }
 
-            _logger.LogWarning("{Source}: External request received, no matching external bind address found, trying internal addresses.", source);
+            _logger.LogDebug("{Source}: External request received, no matching external bind address found, trying internal addresses", source);
         }
         else
         {
@@ -1087,7 +1089,7 @@ public class NetworkManager : INetworkManager, IDisposable
         if (extResult.Length == 0)
         {
             result = string.Empty;
-            _logger.LogWarning("{Source}: External request received, but no external interface found. Need to route through internal network.", source);
+            _logger.LogDebug("{Source}: External request received, but no external interface found. Need to route through internal network", source);
             return false;
         }
 
