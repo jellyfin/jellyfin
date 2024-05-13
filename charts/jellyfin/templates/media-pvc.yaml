@@ -1,0 +1,25 @@
+
+{{- if and .Values.persistence.media.enabled (not .Values.persistence.media.existingClaim) }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ template "jellyfin.fullname" . }}-media
+  labels:
+    app.kubernetes.io/name: {{ include "jellyfin.name" . }}
+    helm.sh/chart: {{ include "jellyfin.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  accessModes:
+    - {{ .Values.persistence.media.accessMode | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.media.size | quote }}
+{{- if .Values.persistence.media.storageClass }}
+{{- if (eq "-" .Values.persistence.media.storageClass) }}
+  storageClassName: ""
+{{- else }}
+  storageClassName: "{{ .Values.persistence.media.storageClass }}"
+{{- end }}
+{{- end }}
+{{- end -}}
