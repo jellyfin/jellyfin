@@ -739,7 +739,9 @@ public class NetworkManager : INetworkManager, IDisposable
     {
         if (_interfaces.Count > 0 || individualInterfaces)
         {
-            return _interfaces;
+            // Users may have complex networking configuration that multiple interfaces sharing the same IP address
+            // Only return one IP for binding, and let the OS handle the rest
+            return _interfaces.DistinctBy(iface => iface.Address).ToList();
         }
 
         // No bind address and no exclusions, so listen on all interfaces.
@@ -764,6 +766,8 @@ public class NetworkManager : INetworkManager, IDisposable
                 }
             }
         }
+
+        result = result.DistinctBy(iface => iface.Address).ToList();
 
         return result;
     }
