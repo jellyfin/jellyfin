@@ -84,20 +84,34 @@ body:
     id: version
     attributes:
       label: Jellyfin Server version
-      description: What version of Jellyfin are you running?
+      description: What version of Jellyfin are you using?
       options:
         - 10.9.1
-        - Older (specify version below)
-        - Unstable (weekly unstable build)
-        - Master (specify commit below)
+        - Master
+        - Unstable
+        - Older*
       default: 0
     validations:
       required: true
   - type: input
+    id: version-master
+    attributes:
+      label: "Specify commit id"
+      description: Fill in this field in case the option 'master' is selected. Provide the commit id it was built on.
+      placeholder: |
+        610e56baafc3011e1bfa043bdabb567bda0c2ab0
+  - type: input
+    id: version-unstable
+    attributes:
+      label: "Specify unstable release number"
+      description: Fill in this field in case the option 'unstable' is selected. Provide the unstable release number.
+      placeholder: |
+        2024050906
+  - type: input
     id: version-older
     attributes:
-      label: "Specify older version"
-      description: In case the 'older' option is selected, please provide the version of your older Jellyfin installation.
+      label: "Specify version number"
+      description: Fill in this field in case the option 'older' is selected. Provide the version number.
       placeholder: |
         x.y.z
   - type: input
@@ -105,6 +119,8 @@ body:
     attributes:
       label: "Specify the build version"
       description: Please provide the build version that is shown in the dashboard.
+      placeholder: |
+        x.y.z
     validations:
       required: true
   - type: textarea
