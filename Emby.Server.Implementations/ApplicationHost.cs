@@ -25,6 +25,7 @@ using Emby.Server.Implementations.HttpServer.Security;
 using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Library;
 using Emby.Server.Implementations.Localization;
+using Emby.Server.Implementations.Metrics;
 using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.Plugins;
 using Emby.Server.Implementations.QuickConnect;
@@ -59,6 +60,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Metrics;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Playlists;
@@ -419,12 +421,6 @@ namespace Emby.Server.Implementations
 
             NetManager = new NetworkManager(ConfigurationManager, _startupConfig, LoggerFactory.CreateLogger<NetworkManager>());
 
-            // Initialize runtime stat collection
-            if (ConfigurationManager.Configuration.EnableMetrics)
-            {
-                DotNetRuntimeStatsBuilder.Default().StartCollecting();
-            }
-
             var networkConfiguration = ConfigurationManager.GetNetworkConfiguration();
             HttpPort = networkConfiguration.InternalHttpPort;
             HttpsPort = networkConfiguration.InternalHttpsPort;
@@ -552,6 +548,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddScoped<DynamicHlsHelper>();
             serviceCollection.AddScoped<IClientEventLogger, ClientEventLogger>();
             serviceCollection.AddSingleton<IDirectoryService, DirectoryService>();
+            serviceCollection.AddSingleton<IMetricsCollector, PrometheusMetricsCollector>();
         }
 
         /// <summary>
@@ -578,6 +575,16 @@ namespace Emby.Server.Implementations
             await localizationManager.LoadAll().ConfigureAwait(false);
 
             SetStaticProperties();
+
+
+            var userDataRepo = (SqliteUserDataRepository)Resolve<IUserDataRepository>();
+            ((SqliteItemRepository)Resolve<IItemRepository>()).Initialize(userDataRepo, Resolve<IUserManager>());
+
+            // Initialize runtime stat collection
+            if (ConfigurationManager.Configuration.EnableMetrics)
+            {
+                Resolve<IMetricsCollector>().Initialize();
+            }
 
             FindParts();
         }
