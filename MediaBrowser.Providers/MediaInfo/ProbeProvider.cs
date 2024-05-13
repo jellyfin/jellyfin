@@ -82,6 +82,9 @@ namespace MediaBrowser.Providers.MediaInfo
             NamingOptions namingOptions,
             ILyricManager lyricManager)
         {
+            // Set FFmpeg path before using it in custom provider
+            mediaEncoder?.SetFFmpegPath();
+
             _logger = loggerFactory.CreateLogger<ProbeProvider>();
             _audioResolver = new AudioResolver(loggerFactory.CreateLogger<AudioResolver>(), localization, mediaEncoder, fileSystem, namingOptions);
             _subtitleResolver = new SubtitleResolver(loggerFactory.CreateLogger<SubtitleResolver>(), localization, mediaEncoder, fileSystem, namingOptions);
