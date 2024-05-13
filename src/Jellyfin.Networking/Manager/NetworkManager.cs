@@ -1049,7 +1049,7 @@ public class NetworkManager : INetworkManager, IDisposable
                 return true;
             }
 
-            _logger.LogWarning("{Source}: External request received, no matching external bind address found, trying internal addresses.", source);
+            _logger.LogDebug("{Source}: External request received, no matching external bind address found, trying internal addresses", source);
         }
         else
         {
@@ -1087,7 +1087,7 @@ public class NetworkManager : INetworkManager, IDisposable
         if (extResult.Length == 0)
         {
             result = string.Empty;
-            _logger.LogWarning("{Source}: External request received, but no external interface found. Need to route through internal network.", source);
+            _logger.LogDebug("{Source}: External request received, but no external interface found. Need to route through internal network", source);
             return false;
         }
 
