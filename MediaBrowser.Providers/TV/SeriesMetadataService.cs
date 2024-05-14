@@ -88,18 +88,17 @@ namespace MediaBrowser.Providers.TV
 
             var sourceItem = source.Item;
             var targetItem = target.Item;
-            var sourceSeasonNames = sourceItem.SeasonNames;
-            var targetSeasonNames = targetItem.SeasonNames;
+            var sourceSeasonNames = sourceItem.GetSeasonNames();
+            var targetSeasonNames = targetItem.GetSeasonNames();
 
-            if (replaceData || targetSeasonNames.Count == 0)
-            {
-                targetItem.SeasonNames = sourceSeasonNames;
-            }
-            else if (targetSeasonNames.Count != sourceSeasonNames.Count || !sourceSeasonNames.Keys.All(targetSeasonNames.ContainsKey))
+            if (replaceData
+                || targetSeasonNames.Count == 0
+                || targetSeasonNames.Count != sourceSeasonNames.Count
+                || !sourceSeasonNames.Keys.All(targetSeasonNames.ContainsKey))
             {
                 foreach (var (number, name) in sourceSeasonNames)
                 {
-                    targetSeasonNames.TryAdd(number, name);
+                    target.Item.SetSeasonName(number, name);
                 }
             }
 
@@ -221,7 +220,7 @@ namespace MediaBrowser.Providers.TV
         /// <returns>The async task.</returns>
         private async Task UpdateAndCreateSeasonsAsync(Series series, CancellationToken cancellationToken)
         {
-            var seasonNames = series.SeasonNames;
+            var seasonNames = series.GetSeasonNames();
             var seriesChildren = series.GetRecursiveChildren(i => i is Episode || i is Season);
             var seasons = seriesChildren.OfType<Season>().ToList();
             var uniqueSeasonNumbers = seriesChildren

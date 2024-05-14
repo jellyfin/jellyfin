@@ -25,18 +25,17 @@ namespace MediaBrowser.Controller.Entities.TV
     /// </summary>
     public class Series : Folder, IHasTrailers, IHasDisplayOrder, IHasLookupInfo<SeriesInfo>, IMetadataContainer
     {
+        private readonly Dictionary<int, string> _seasonNames;
+
         public Series()
         {
             AirDays = Array.Empty<DayOfWeek>();
-            SeasonNames = new Dictionary<int, string>();
+            _seasonNames = new Dictionary<int, string>();
         }
 
         public DayOfWeek[] AirDays { get; set; }
 
         public string AirTime { get; set; }
-
-        [JsonIgnore]
-        public Dictionary<int, string> SeasonNames { get; set; }
 
         [JsonIgnore]
         public override bool SupportsAddingToPlaylist => true;
@@ -211,6 +210,24 @@ namespace MediaBrowser.Controller.Entities.TV
             SetSeasonQueryOptions(query, user);
 
             return LibraryManager.GetItemList(query);
+        }
+
+        public Dictionary<int, string> GetSeasonNames()
+        {
+            if (_seasonNames.Count > 0)
+            {
+                return _seasonNames;
+            }
+
+            return Children.OfType<Season>()
+                .Where(s => s.IndexNumber.HasValue)
+                .DistinctBy(s => s.IndexNumber)
+                .ToDictionary(s => s.IndexNumber.Value, s => s.Name);
+        }
+
+        public void SetSeasonName(int index, string name)
+        {
+            _seasonNames[index] = name;
         }
 
         private void SetSeasonQueryOptions(InternalItemsQuery query, User user)
