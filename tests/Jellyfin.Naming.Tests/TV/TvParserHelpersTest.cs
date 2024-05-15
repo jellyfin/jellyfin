@@ -2,27 +2,30 @@ using Emby.Naming.TV;
 using MediaBrowser.Model.Entities;
 using Xunit;
 
-namespace Jellyfin.Naming.Tests.TV
-{
-    public class TvParserHelpersTest
-    {
-        [Theory]
-        [InlineData("Ended", SeriesStatus.Ended, true)]
-        [InlineData("Cancelled", SeriesStatus.Ended, true)]
-        [InlineData("Continuing", SeriesStatus.Continuing, true)]
-        [InlineData("Returning", SeriesStatus.Continuing, true)]
-        [InlineData("Returning Series", SeriesStatus.Continuing, true)]
-        [InlineData("Unreleased", SeriesStatus.Unreleased, true)]
-        [InlineData("XXX", null, false)]
-        public void SeriesStatusParserTest(string statusString, SeriesStatus? status, bool success)
-        {
-            var successful = TvParserHelpers.TryParseSeriesStatus(statusString, out var parsered);
-            Assert.Equal(success, successful);
+namespace Jellyfin.Naming.Tests.TV;
 
-            if (success)
-            {
-                Assert.Equal(status, parsered);
-            }
-        }
+public class TvParserHelpersTest
+{
+    [Theory]
+    [InlineData("Ended", SeriesStatus.Ended)]
+    [InlineData("Cancelled", SeriesStatus.Ended)]
+    [InlineData("Continuing", SeriesStatus.Continuing)]
+    [InlineData("Returning", SeriesStatus.Continuing)]
+    [InlineData("Returning Series", SeriesStatus.Continuing)]
+    [InlineData("Unreleased", SeriesStatus.Unreleased)]
+    public void SeriesStatusParserTest_Valid(string statusString, SeriesStatus? status)
+    {
+        var successful = TvParserHelpers.TryParseSeriesStatus(statusString, out var parsered);
+        Assert.True(successful);
+        Assert.Equal(status, parsered);
+    }
+
+    [Theory]
+    [InlineData("XXX")]
+    public void SeriesStatusParserTest_InValid(string statusString)
+    {
+        var successful = TvParserHelpers.TryParseSeriesStatus(statusString, out var parsered);
+        Assert.False(successful);
+        Assert.Null(parsered);
     }
 }
