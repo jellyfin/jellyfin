@@ -76,7 +76,7 @@ namespace MediaBrowser.Controller.Entities
 
             var result = UserViewManager.GetUserViews(new UserViewQuery
             {
-                UserId = query.User.Id,
+                User = query.User,
                 PresetViews = query.PresetViews
             });
 
