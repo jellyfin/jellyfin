@@ -109,7 +109,7 @@ public class ImageController : BaseJellyfinApiController
             return NotFound();
         }
 
-        if (!RequestHelpers.AssertCanUpdateUser(_userManager, HttpContext.User, requestUserId, true))
+        if (!RequestHelpers.AssertCanUpdateUser(HttpContext.User, user, true))
         {
             return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update the image.");
         }
@@ -203,13 +203,18 @@ public class ImageController : BaseJellyfinApiController
         [FromQuery] Guid? userId)
     {
         var requestUserId = RequestHelpers.GetUserId(User, userId);
-        if (!RequestHelpers.AssertCanUpdateUser(_userManager, HttpContext.User, requestUserId, true))
+        var user = _userManager.GetUserById(requestUserId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        if (!RequestHelpers.AssertCanUpdateUser(HttpContext.User, user, true))
         {
             return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to delete the image.");
         }
 
-        var user = _userManager.GetUserById(requestUserId);
-        if (user?.ProfileImage is null)
+        if (user.ProfileImage is null)
         {
             return NoContent();
         }
