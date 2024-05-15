@@ -361,6 +361,14 @@ public class NetworkManager : INetworkManager, IDisposable
             // Respect explicit bind addresses
             var interfaces = _interfaces.ToList();
             var localNetworkAddresses = config.LocalNetworkAddresses;
+            if (localNetworkAddresses.Length == 0 || localNetworkAddresses.Any(ip => IPAddress.Parse(ip).Equals(IPAddress.Any) || IPAddress.Parse(ip).Equals(IPAddress.IPv6Any)))
+            {
+                // remove all interfaces when no bind addresses set, or user requested 0.0.0.0 or ::
+                _logger.LogInformation("Binding to any IP");
+                _interfaces = new List<IPData>();
+                return;
+            }
+
             if (localNetworkAddresses.Length > 0 && !string.IsNullOrWhiteSpace(localNetworkAddresses[0]))
             {
                 var bindAddresses = localNetworkAddresses.Select(p => NetworkUtils.TryParseToSubnet(p, out var network)
