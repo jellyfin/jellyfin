@@ -40,12 +40,13 @@ public static class WebHostBuilderExtensions
                 bool flagged = false;
                 foreach (var netAdd in addresses)
                 {
-                    logger.LogInformation("Kestrel is listening on {Address}", netAdd.Address);
+                    var address = netAdd.Address;
+                    logger.LogInformation("Kestrel is listening on {Address}", address.Equals(IPAddress.IPv6Any) ? "all interfaces" : address);
                     options.Listen(netAdd.Address, appHost.HttpPort);
                     if (appHost.ListenWithHttps)
                     {
                         options.Listen(
-                            netAdd.Address,
+                            address,
                             appHost.HttpsPort,
                             listenOptions => listenOptions.UseHttps(appHost.Certificate));
                     }
@@ -54,7 +55,7 @@ public static class WebHostBuilderExtensions
                         try
                         {
                             options.Listen(
-                                netAdd.Address,
+                                address,
                                 appHost.HttpsPort,
                                 listenOptions => listenOptions.UseHttps());
                         }
