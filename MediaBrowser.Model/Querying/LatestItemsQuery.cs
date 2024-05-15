@@ -2,6 +2,7 @@
 #pragma warning disable CS1591
 
 using System;
+using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Entities;
 
@@ -18,7 +19,7 @@ namespace MediaBrowser.Model.Querying
         /// Gets or sets the user to localize search results for.
         /// </summary>
         /// <value>The user id.</value>
-        public Guid UserId { get; set; }
+        public User User { get; set; }
 
         /// <summary>
         /// Gets or sets the parent id.

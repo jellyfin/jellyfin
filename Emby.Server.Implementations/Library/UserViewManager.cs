@@ -207,9 +207,7 @@ namespace Emby.Server.Implementations.Library
 
         public List<Tuple<BaseItem, List<BaseItem>>> GetLatestItems(LatestItemsQuery request, DtoOptions options)
         {
-            var user = _userManager.GetUserById(request.UserId);
-
-            var libraryItems = GetItemsForLatestItems(user, request, options);
+            var libraryItems = GetItemsForLatestItems(request.User, request, options);
 
             var list = new List<Tuple<BaseItem, List<BaseItem>>>();
 
