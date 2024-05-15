@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Model.Entities;
 
@@ -10,8 +9,8 @@ namespace Emby.Naming.TV;
 /// </summary>
 public static class TvParserHelpers
 {
-    private static readonly List<string> _continuingState = ["Pilot", "Returning Series", "Returning"];
-    private static readonly List<string> _endedState = ["Cancelled"];
+    private static readonly string[] _continuingState = ["Pilot", "Returning Series", "Returning"];
+    private static readonly string[] _endedState = ["Cancelled"];
 
     /// <summary>
     /// Tries to parse a string into <see cref="SeriesStatus"/>.
