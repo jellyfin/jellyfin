@@ -179,7 +179,7 @@ namespace Jellyfin.Server.Implementations.Devices
                     .SelectMany(d => dbContext.DeviceOptions.Where(o => o.DeviceId == d.DeviceId).DefaultIfEmpty(), (d, o) => new { Device = d, Options = o })
                     .AsAsyncEnumerable();
 
-                if (userId.HasValue)
+                if (!userId.IsNullOrEmpty())
                 {
                     var user = _userManager.GetUserById(userId.Value);
                     if (user is null)
