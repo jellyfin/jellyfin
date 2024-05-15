@@ -185,6 +185,7 @@ namespace Jellyfin.Server
             }
             catch (Exception ex)
             {
+                _restartOnShutdown = false;
                 _logger.LogCritical(ex, "Error while starting server");
             }
             finally

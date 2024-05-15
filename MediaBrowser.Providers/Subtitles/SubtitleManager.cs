@@ -117,7 +117,7 @@ namespace MediaBrowser.Providers.Subtitles
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error downloading subtitles from {0}", i.Name);
+                    _logger.LogError(ex, "Error downloading subtitles from {Name}", i.Name);
                     return Array.Empty<RemoteSubtitleInfo>();
                 }
             });
@@ -205,72 +205,71 @@ namespace MediaBrowser.Providers.Subtitles
                     saveFileName += ".sdh";
                 }
 
-                saveFileName += "." + response.Format.ToLowerInvariant();
-
                 if (saveInMediaFolder)
                 {
                     var mediaFolderPath = Path.GetFullPath(Path.Combine(video.ContainingFolderPath, saveFileName));
-                    // TODO: Add some error handling to the API user: return BadRequest("Could not save subtitle, bad path.");
-                    if (mediaFolderPath.StartsWith(video.ContainingFolderPath, StringComparison.Ordinal))
-                    {
-                        savePaths.Add(mediaFolderPath);
-                    }
+                    savePaths.Add(mediaFolderPath);
                 }
 
                 var internalPath = Path.GetFullPath(Path.Combine(video.GetInternalMetadataPath(), saveFileName));
 
-                // TODO: Add some error to the user: return BadRequest("Could not save subtitle, bad path.");
-                if (internalPath.StartsWith(video.GetInternalMetadataPath(), StringComparison.Ordinal))
-                {
-                    savePaths.Add(internalPath);
-                }
+                savePaths.Add(internalPath);
 
-                if (savePaths.Count > 0)
-                {
-                    await TrySaveToFiles(memoryStream, savePaths).ConfigureAwait(false);
-                }
-                else
-                {
-                    _logger.LogError("An uploaded subtitle could not be saved because the resulting paths were invalid.");
-                }
+                await TrySaveToFiles(memoryStream, savePaths, video, response.Format.ToLowerInvariant()).ConfigureAwait(false);
             }
         }
 
-        private async Task TrySaveToFiles(Stream stream, List<string> savePaths)
+        private async Task TrySaveToFiles(Stream stream, List<string> savePaths, Video video, string extension)
         {
             List<Exception>? exs = null;
 
             foreach (var savePath in savePaths)
             {
-                _logger.LogInformation("Saving subtitles to {SavePath}", savePath);
-
-                _monitor.ReportFileSystemChangeBeginning(savePath);
-
+                var path = savePath + "." + extension;
                 try
                 {
-                    Directory.CreateDirectory(Path.GetDirectoryName(savePath) ?? throw new InvalidOperationException("Path can't be a root directory."));
-
-                    var fileOptions = AsyncFile.WriteOptions;
-                    fileOptions.Mode = FileMode.CreateNew;
-                    fileOptions.PreallocationSize = stream.Length;
-                    var fs = new FileStream(savePath, fileOptions);
-                    await using (fs.ConfigureAwait(false))
+                    if (path.StartsWith(video.ContainingFolderPath, StringComparison.Ordinal)
+                            || path.StartsWith(video.GetInternalMetadataPath(), StringComparison.Ordinal))
                     {
-                        await stream.CopyToAsync(fs).ConfigureAwait(false);
-                    }
+                        var fileExists = File.Exists(path);
+                        var counter = 0;
 
-                    return;
+                        while (fileExists)
+                        {
+                            path = string.Format(CultureInfo.InvariantCulture, "{0}.{1}.{2}", savePath, counter, extension);
+                            fileExists = File.Exists(path);
+                            counter++;
+                        }
+
+                        _logger.LogInformation("Saving subtitles to {SavePath}", path);
+                        _monitor.ReportFileSystemChangeBeginning(path);
+
+                        Directory.CreateDirectory(Path.GetDirectoryName(path) ?? throw new InvalidOperationException("Path can't be a root directory."));
+
+                        var fileOptions = AsyncFile.WriteOptions;
+                        fileOptions.Mode = FileMode.CreateNew;
+                        fileOptions.PreallocationSize = stream.Length;
+                        var fs = new FileStream(path, fileOptions);
+                        await using (fs.ConfigureAwait(false))
+                        {
+                            await stream.CopyToAsync(fs).ConfigureAwait(false);
+                        }
+
+                        return;
+                    }
+                    else
+                    {
+                        // TODO: Add some error handling to the API user: return BadRequest("Could not save subtitle, bad path.");
+                        _logger.LogError("An uploaded subtitle could not be saved because the resulting path was invalid.");
+                    }
                 }
                 catch (Exception ex)
                 {
-// Bug in analyzer -- https://github.com/dotnet/roslyn-analyzers/issues/5160
-#pragma warning disable CA1508
-                    (exs ??= new List<Exception>()).Add(ex);
-#pragma warning restore CA1508
+                    (exs ??= []).Add(ex);
                 }
                 finally
                 {
-                    _monitor.ReportFileSystemChangeComplete(savePath, false);
+                    _monitor.ReportFileSystemChangeComplete(path, false);
                 }
 
                 stream.Position = 0;

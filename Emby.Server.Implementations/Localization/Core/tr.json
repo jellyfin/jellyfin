@@ -126,5 +126,9 @@
     "External": "Harici",
     "HearingImpaired": "Duyma Engelli",
     "TaskRefreshTrickplayImages": "Trickplay Görselleri Oluştur",
-    "TaskRefreshTrickplayImagesDescription": "Etkin kütüphanelerdeki videolar için trickplay önizlemeleri oluşturur."
+    "TaskRefreshTrickplayImagesDescription": "Etkin kütüphanelerdeki videolar için trickplay önizlemeleri oluşturur.",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Artık var olmayan koleksiyon ve çalma listelerindeki ögeleri kaldırır.",
+    "TaskCleanCollectionsAndPlaylists": "Koleksiyonları ve çalma listelerini temizleyin",
+    "TaskAudioNormalizationDescription": "Ses normalleştirme verileri için dosyaları tarar.",
+    "TaskAudioNormalization": "Ses Normalleştirme"
 }

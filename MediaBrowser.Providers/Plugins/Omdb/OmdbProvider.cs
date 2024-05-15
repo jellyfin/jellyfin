@@ -447,11 +447,6 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 var actorList = result.Actors.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
                 foreach (var actor in actorList)
                 {
-                    if (string.IsNullOrWhiteSpace(actor))
-                    {
-                        continue;
-                    }
-
                     var person = new PersonInfo
                     {
                         Name = actor,

@@ -463,6 +463,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 extraArgs += " -user_agent " + userAgent;
             }
 
+            if (request.MediaSource.Protocol == MediaProtocol.Rtsp)
+            {
+                extraArgs += " -rtsp_transport tcp+udp -rtsp_flags prefer_tcp";
+            }
+
             return extraArgs;
         }
 
@@ -800,6 +805,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             int maxWidth,
             TimeSpan interval,
             bool allowHwAccel,
+            bool enableHwEncoding,
             int? threads,
             int? qualityScale,
             ProcessPriorityClass? priority,
@@ -828,7 +834,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 MediaPath = inputFile,
                 OutputVideoCodec = "mjpeg"
             };
-            var vidEncoder = options.AllowMjpegEncoding ? encodingHelper.GetVideoEncoder(jobState, options) : jobState.OutputVideoCodec;
+            var vidEncoder = enableHwEncoding ? encodingHelper.GetVideoEncoder(jobState, options) : jobState.OutputVideoCodec;
 
             // Get input and filter arguments
             var inputArg = encodingHelper.GetInputArgument(jobState, options, container).Trim();
@@ -842,7 +848,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 inputArg = "-threads " + threads + " " + inputArg; // HW accel args set a different input thread count, only set if disabled
             }
 
-            var filterParam = encodingHelper.GetVideoProcessingFilterParam(jobState, options, jobState.OutputVideoCodec).Trim();
+            var filterParam = encodingHelper.GetVideoProcessingFilterParam(jobState, options, vidEncoder).Trim();
             if (string.IsNullOrWhiteSpace(filterParam))
             {
                 throw new InvalidOperationException("EncodingHelper returned empty or invalid filter parameters.");

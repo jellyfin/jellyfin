@@ -84,7 +84,8 @@ public class SessionController : BaseJellyfinApiController
 
             if (!user.HasPermission(PermissionKind.EnableRemoteControlOfOtherUsers))
             {
-                result = result.Where(i => i.UserId.IsEmpty() || i.ContainsUser(controllableByUserId.Value));
+                // User cannot control other user's sessions, validate user id.
+                result = result.Where(i => i.UserId.IsEmpty() || i.ContainsUser(RequestHelpers.GetUserId(User, controllableByUserId)));
             }
 
             if (!user.HasPermission(PermissionKind.EnableSharedDeviceControl))
@@ -104,6 +105,11 @@ public class SessionController : BaseJellyfinApiController
 
                 return true;
             });
+        }
+        else if (!User.IsInRole(UserRoles.Administrator))
+        {
+            // Request isn't from administrator, limit to "own" sessions.
+            result = result.Where(i => i.UserId.IsEmpty() || i.ContainsUser(User.GetUserId()));
         }
 
         if (activeWithinSeconds.HasValue && activeWithinSeconds.Value > 0)

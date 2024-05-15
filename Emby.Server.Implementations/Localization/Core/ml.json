@@ -123,5 +123,7 @@
     "HearingImpaired": "കേൾവി തകരാറുകൾ",
     "External": "പുറമേയുള്ള",
     "TaskKeyframeExtractorDescription": "കൂടുതൽ കൃത്യമായ HLS പ്ലേലിസ്റ്റുകൾ സൃഷ്‌ടിക്കുന്നതിന് വീഡിയോ ഫയലുകളിൽ നിന്ന് കീഫ്രെയിമുകൾ എക്‌സ്‌ട്രാക്‌റ്റ് ചെയ്യുന്നു. ഈ പ്രവർത്തനം പൂർത്തിയാവാൻ കുറച്ചധികം സമയം എടുത്തേക്കാം.",
-    "TaskKeyframeExtractor": "കീഫ്രെയിം എക്സ്ട്രാക്റ്റർ"
+    "TaskKeyframeExtractor": "കീഫ്രെയിം എക്സ്ട്രാക്റ്റർ",
+    "TaskCleanCollectionsAndPlaylistsDescription": "നിലവിലില്ലാത്ത ശേഖരങ്ങളിൽ നിന്നും പ്ലേലിസ്റ്റുകളിൽ നിന്നും ഇനങ്ങൾ നീക്കംചെയ്യുന്നു.",
+    "TaskCleanCollectionsAndPlaylists": "ശേഖരങ്ങളും പ്ലേലിസ്റ്റുകളും വൃത്തിയാക്കുക"
 }

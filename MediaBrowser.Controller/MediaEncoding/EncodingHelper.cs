@@ -1,6 +1,8 @@
 #nullable disable
 
 #pragma warning disable CS1591
+// We need lowercase normalized string for ffmpeg
+#pragma warning disable CA1308
 
 using System;
 using System.Collections.Generic;
@@ -26,6 +28,14 @@ namespace MediaBrowser.Controller.MediaEncoding
 {
     public partial class EncodingHelper
     {
+        /// <summary>
+        /// The codec validation regex.
+        /// This regular expression matches strings that consist of alphanumeric characters, hyphens,
+        /// periods, underscores, commas, and vertical bars, with a length between 0 and 40 characters.
+        /// This should matches all common valid codecs.
+        /// </summary>
+        public const string ValidationRegex = @"^[a-zA-Z0-9\-\._,|]{0,40}$";
+
         private const string QsvAlias = "qs";
         private const string VaapiAlias = "va";
         private const string D3d11vaAlias = "dx11";
@@ -52,6 +62,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         private readonly Version _minFFmpegSvtAv1Params = new Version(5, 1);
         private readonly Version _minFFmpegVaapiH26xEncA53CcSei = new Version(6, 0);
         private readonly Version _minFFmpegReadrateOption = new Version(5, 0);
+
+        private static readonly Regex _validationRegex = new(ValidationRegex, RegexOptions.Compiled);
 
         private static readonly string[] _videoProfilesH264 = new[]
         {
@@ -95,7 +107,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             { "wmav2", 2 },
             { "libmp3lame", 2 },
             { "libfdk_aac", 6 },
-            { "aac_at", 6 },
             { "ac3", 6 },
             { "eac3", 6 },
             { "dca", 6 },
@@ -391,7 +402,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                     return "libtheora";
                 }
 
-                return codec.ToLowerInvariant();
+                if (_validationRegex.IsMatch(codec))
+                {
+                    return codec.ToLowerInvariant();
+                }
             }
 
             return "copy";
@@ -429,7 +443,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public static string GetInputFormat(string container)
         {
-            if (string.IsNullOrEmpty(container))
+            if (string.IsNullOrEmpty(container) || !_validationRegex.IsMatch(container))
             {
                 return null;
             }
@@ -685,6 +699,11 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             var codec = state.OutputAudioCodec;
 
+            if (!_validationRegex.IsMatch(codec))
+            {
+                codec = "aac";
+            }
+
             if (string.Equals(codec, "aac", StringComparison.OrdinalIgnoreCase))
             {
                 // Use Apple's aac encoder if available as it provides best audio quality
@@ -730,6 +749,15 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (string.Equals(codec, "dts", StringComparison.OrdinalIgnoreCase))
             {
                 return "dca";
+            }
+
+            if (string.Equals(codec, "alac", StringComparison.OrdinalIgnoreCase))
+            {
+                // The ffmpeg upstream breaks the AudioToolbox ALAC encoder in version 6.1 but fixes it in version 7.0.
+                // Since ALAC is lossless in quality and the AudioToolbox encoder is not faster,
+                // its only benefit is a smaller file size.
+                // To prevent problems, use the ffmpeg native encoder instead.
+                return "alac";
             }
 
             return codec.ToLowerInvariant();
@@ -1243,23 +1271,23 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             var codec = stream.Codec ?? string.Empty;
 
-            return codec.IndexOf("264", StringComparison.OrdinalIgnoreCase) != -1
-                    || codec.IndexOf("avc", StringComparison.OrdinalIgnoreCase) != -1;
+            return codec.Contains("264", StringComparison.OrdinalIgnoreCase)
+                    || codec.Contains("avc", StringComparison.OrdinalIgnoreCase);
         }
 
         public static bool IsH265(MediaStream stream)
         {
             var codec = stream.Codec ?? string.Empty;
 
-            return codec.IndexOf("265", StringComparison.OrdinalIgnoreCase) != -1
-                || codec.IndexOf("hevc", StringComparison.OrdinalIgnoreCase) != -1;
+            return codec.Contains("265", StringComparison.OrdinalIgnoreCase)
+                || codec.Contains("hevc", StringComparison.OrdinalIgnoreCase);
         }
 
         public static bool IsAAC(MediaStream stream)
         {
             var codec = stream.Codec ?? string.Empty;
 
-            return codec.IndexOf("aac", StringComparison.OrdinalIgnoreCase) != -1;
+            return codec.Contains("aac", StringComparison.OrdinalIgnoreCase);
         }
 
         public static string GetBitStreamArgs(MediaStream stream)
@@ -1313,7 +1341,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             return ".ts";
         }
 
-        public string GetVideoBitrateParam(EncodingJobInfo state, string videoCodec)
+        private string GetVideoBitrateParam(EncodingJobInfo state, string videoCodec)
         {
             if (state.OutputVideoBitrate is null)
             {
@@ -1382,7 +1410,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 // The `maxrate` and `bufsize` options can potentially lead to performance regression
                 // and even encoder hangs, especially when the value is very high.
-                return FormattableString.Invariant($" -b:v {bitrate}");
+                return FormattableString.Invariant($" -b:v {bitrate} -qmin -1 -qmax -1");
             }
 
             return FormattableString.Invariant($" -b:v {bitrate} -maxrate {bitrate} -bufsize {bufsize}");
@@ -2599,7 +2627,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 && channels.Value == 2
                 && state.AudioStream is not null
                 && state.AudioStream.Channels.HasValue
-                && state.AudioStream.Channels.Value > 5)
+                && state.AudioStream.Channels.Value == 6)
             {
                 switch (encodingOptions.DownMixStereoAlgorithm)
                 {
@@ -2692,7 +2720,20 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (state.TranscodingType != TranscodingJobType.Progressive
                     && ((resultChannels > 2 && resultChannels < 6) || resultChannels == 7))
                 {
-                    resultChannels = 2;
+                    // We can let FFMpeg supply an extra LFE channel for 5ch and 7ch to make them 5.1 and 7.1
+                    if (resultChannels == 5)
+                    {
+                        resultChannels = 6;
+                    }
+                    else if (resultChannels == 7)
+                    {
+                        resultChannels = 8;
+                    }
+                    else
+                    {
+                        // For other weird layout, just downmix to stereo for compatibility
+                        resultChannels = 2;
+                    }
                 }
             }
 
@@ -2943,8 +2984,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var scaleW = (double)maximumWidth / outputWidth;
                 var scaleH = (double)maximumHeight / outputHeight;
                 var scale = Math.Min(scaleW, scaleH);
-                outputWidth = Math.Min(maximumWidth, (int)(outputWidth * scale));
-                outputHeight = Math.Min(maximumHeight, (int)(outputHeight * scale));
+                outputWidth = Math.Min(maximumWidth, Convert.ToInt32(outputWidth * scale));
+                outputHeight = Math.Min(maximumHeight, Convert.ToInt32(outputHeight * scale));
             }
 
             outputWidth = 2 * (outputWidth / 2);
@@ -5099,11 +5140,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             /* Make main filters for video stream */
             var mainFilters = new List<string>();
 
-            // INPUT videotoolbox/memory surface(vram/uma)
-            // this will pass-through automatically if in/out format matches.
-            mainFilters.Add("format=nv12|p010le|videotoolbox_vld");
-            mainFilters.Add("hwupload=derive_device=videotoolbox");
-
             // hw deint
             if (doDeintH2645)
             {
@@ -5157,6 +5193,21 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 subFilters.Add("hwupload=derive_device=videotoolbox");
                 overlayFilters.Add("overlay_videotoolbox=eof_action=pass:repeatlast=0");
+            }
+
+            var needFiltering = mainFilters.Any(f => !string.IsNullOrEmpty(f)) ||
+                                subFilters.Any(f => !string.IsNullOrEmpty(f)) ||
+                                overlayFilters.Any(f => !string.IsNullOrEmpty(f));
+
+            // This is a workaround for ffmpeg's hwupload implementation
+            // For VideoToolbox encoders, a hwupload without a valid filter actually consuming its frame
+            // will cause the encoder to produce incorrect frames.
+            if (needFiltering)
+            {
+                // INPUT videotoolbox/memory surface(vram/uma)
+                // this will pass-through automatically if in/out format matches.
+                mainFilters.Insert(0, "format=nv12|p010le|videotoolbox_vld");
+                mainFilters.Insert(0, "hwupload=derive_device=videotoolbox");
             }
 
             return (mainFilters, subFilters, overlayFilters);
@@ -6630,7 +6681,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             while (shiftAudioCodecs.Contains(audioCodecs[0], StringComparison.OrdinalIgnoreCase))
             {
-                var removed = shiftAudioCodecs[0];
+                var removed = audioCodecs[0];
                 audioCodecs.RemoveAt(0);
                 audioCodecs.Add(removed);
             }
@@ -6664,7 +6715,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             while (shiftVideoCodecs.Contains(videoCodecs[0], StringComparison.OrdinalIgnoreCase))
             {
-                var removed = shiftVideoCodecs[0];
+                var removed = videoCodecs[0];
                 videoCodecs.RemoveAt(0);
                 videoCodecs.Add(removed);
             }
@@ -6865,7 +6916,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var channels = state.OutputAudioChannels;
 
-            if (channels.HasValue && ((channels.Value != 2 && state.AudioStream.Channels <= 5) || encodingOptions.DownMixStereoAlgorithm == DownMixStereoAlgorithms.None))
+            if (channels.HasValue && ((channels.Value != 2 && state.AudioStream?.Channels != 6) || encodingOptions.DownMixStereoAlgorithm == DownMixStereoAlgorithms.None))
             {
                 args += " -ac " + channels.Value;
             }

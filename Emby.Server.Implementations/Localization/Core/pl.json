@@ -11,7 +11,7 @@
     "Collections": "Kolekcje",
     "DeviceOfflineWithName": "{0} został rozłączony",
     "DeviceOnlineWithName": "{0} połączył się",
-    "FailedLoginAttemptWithUserName": "Próba logowania przez {0} zakończona niepowodzeniem",
+    "FailedLoginAttemptWithUserName": "Nieudana próba logowania przez {0}",
     "Favorites": "Ulubione",
     "Folders": "Foldery",
     "Genres": "Gatunki",
@@ -126,5 +126,9 @@
     "TaskKeyframeExtractor": "Ekstraktor klatek kluczowych",
     "HearingImpaired": "Niedosłyszący",
     "TaskRefreshTrickplayImages": "Generuj obrazy trickplay",
-    "TaskRefreshTrickplayImagesDescription": "Tworzy podglądy trickplay dla filmów we włączonych bibliotekach."
+    "TaskRefreshTrickplayImagesDescription": "Tworzy podglądy trickplay dla filmów we włączonych bibliotekach.",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Usuwa elementy z kolekcji i list odtwarzania, które już nie istnieją.",
+    "TaskCleanCollectionsAndPlaylists": "Oczyść kolekcje i listy odtwarzania",
+    "TaskAudioNormalization": "Normalizacja dźwięku",
+    "TaskAudioNormalizationDescription": "Skanuje pliki w poszukiwaniu danych normalizacji dźwięku."
 }

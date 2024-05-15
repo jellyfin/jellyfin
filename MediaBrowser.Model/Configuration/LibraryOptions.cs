@@ -21,7 +21,7 @@ namespace MediaBrowser.Model.Configuration
             AutomaticallyAddToCollection = false;
             EnablePhotos = true;
             SaveSubtitlesWithMedia = true;
-            SaveLyricsWithMedia = true;
+            SaveLyricsWithMedia = false;
             PathInfos = Array.Empty<MediaPathInfo>();
             EnableAutomaticSeriesGrouping = true;
             SeasonZeroDisplayName = "Specials";
@@ -34,8 +34,6 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableRealtimeMonitor { get; set; }
 
         public bool EnableLUFSScan { get; set; }
-
-        public bool UseReplayGainTags { get; set; }
 
         public bool EnableChapterImageExtraction { get; set; }
 
@@ -96,7 +94,7 @@ namespace MediaBrowser.Model.Configuration
 
         public bool SaveSubtitlesWithMedia { get; set; }
 
-        [DefaultValue(true)]
+        [DefaultValue(false)]
         public bool SaveLyricsWithMedia { get; set; }
 
         public bool AutomaticallyAddToCollection { get; set; }

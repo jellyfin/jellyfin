@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Localization;
 using MediaBrowser.Controller.Configuration;
@@ -127,6 +128,22 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             Assert.Equal(expectedLevel, level!);
         }
 
+        [Theory]
+        [InlineData("0", 0)]
+        [InlineData("1", 1)]
+        [InlineData("6", 6)]
+        [InlineData("12", 12)]
+        [InlineData("42", 42)]
+        [InlineData("9999", 9999)]
+        public async Task GetRatingLevel_GivenValidAge_Success(string value, int expectedLevel)
+        {
+            var localizationManager = Setup(new ServerConfiguration { MetadataCountryCode = "nl" });
+            await localizationManager.LoadAll();
+            var level = localizationManager.GetRatingLevel(value);
+            Assert.NotNull(level);
+            Assert.Equal(expectedLevel, level);
+        }
+
         [Fact]
         public async Task GetRatingLevel_GivenUnratedString_Success()
         {
@@ -139,6 +156,20 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             Assert.Null(localizationManager.GetRatingLevel("unrated"));
             Assert.Null(localizationManager.GetRatingLevel("Not Rated"));
             Assert.Null(localizationManager.GetRatingLevel("n/a"));
+        }
+
+        [Theory]
+        [InlineData("-NO RATING SHOWN-")]
+        [InlineData(":NO RATING SHOWN:")]
+        public async Task GetRatingLevel_Split_Success(string value)
+        {
+            var localizationManager = Setup(new ServerConfiguration()
+            {
+                UICulture = "en-US"
+            });
+            await localizationManager.LoadAll();
+
+            Assert.Null(localizationManager.GetRatingLevel(value));
         }
 
         [Theory]

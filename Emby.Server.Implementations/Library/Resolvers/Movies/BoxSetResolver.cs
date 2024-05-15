@@ -33,7 +33,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                     return null;
                 }
 
-                if (filename.IndexOf("[boxset]", StringComparison.OrdinalIgnoreCase) != -1 || args.ContainsFileSystemEntryByName("collection.xml"))
+                if (filename.Contains("[boxset]", StringComparison.OrdinalIgnoreCase) || args.ContainsFileSystemEntryByName("collection.xml"))
                 {
                     return new BoxSet
                     {
