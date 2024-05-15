@@ -121,6 +121,13 @@ public class TrickplayManager : ITrickplayManager
                     return;
                 }
 
+                var mediaPath = mediaSource.Path;
+                if (!File.Exists(mediaPath))
+                {
+                    _logger.LogWarning("Media source {MediaSourceId} not found at {Path} for item {ItemID}", mediaSource.Id, mediaPath, video.Id);
+                    return;
+                }
+
                 // The width has to be even, otherwise a lot of filters will not be able to sample it
                 var actualWidth = 2 * (width / 2);
 
@@ -139,7 +146,6 @@ public class TrickplayManager : ITrickplayManager
                     return;
                 }
 
-                var mediaPath = mediaSource.Path;
                 var mediaStream = mediaSource.VideoStream;
                 var container = mediaSource.Container;
 
