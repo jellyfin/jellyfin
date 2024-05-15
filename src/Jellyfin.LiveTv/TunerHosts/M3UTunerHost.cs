@@ -123,7 +123,7 @@ namespace Jellyfin.LiveTv.TunerHosts
                         return new SharedHttpStream(mediaSource, tunerHost, streamId, FileSystem, _httpClientFactory, Logger, Config, _appHost, _streamHelper);
                     }
                 }
-                else if (response.StatusCode == HttpStatusCode.MethodNotAllowed || response.StatusCode == HttpStatusCode.NotImplemented)
+                else
                 {
                     // Fallback to check path extension when the server does not support HEAD method
                     // Use UriBuilder to remove all query string as GetExtension will include them when used directly
@@ -132,10 +132,6 @@ namespace Jellyfin.LiveTv.TunerHosts
                     {
                         return new SharedHttpStream(mediaSource, tunerHost, streamId, FileSystem, _httpClientFactory, Logger, Config, _appHost, _streamHelper);
                     }
-                }
-                else
-                {
-                    response.EnsureSuccessStatusCode();
                 }
             }
 
