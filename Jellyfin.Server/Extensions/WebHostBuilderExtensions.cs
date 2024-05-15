@@ -35,12 +35,12 @@ public static class WebHostBuilderExtensions
         return builder
             .UseKestrel((builderContext, options) =>
             {
-                var addresses = appHost.NetManager.GetAllBindInterfaces(true);
+                var addresses = appHost.NetManager.GetAllBindInterfaces(false);
 
                 bool flagged = false;
                 foreach (var netAdd in addresses)
                 {
-                    logger.LogInformation("Kestrel is listening on {Address}", IPAddress.IPv6Any.Equals(netAdd.Address) ? "All IPv6 addresses" : netAdd.Address);
+                    logger.LogInformation("Kestrel is listening on {Address}", netAdd.Address);
                     options.Listen(netAdd.Address, appHost.HttpPort);
                     if (appHost.ListenWithHttps)
                     {
