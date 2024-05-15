@@ -1842,7 +1842,7 @@ namespace MediaBrowser.Controller.Entities
             data.LastPlayedDate = datePlayed ?? data.LastPlayedDate ?? DateTime.UtcNow;
             data.Played = true;
 
-            UserDataManager.SaveUserData(user.Id, this, data, UserDataSaveReason.TogglePlayed, CancellationToken.None);
+            UserDataManager.SaveUserData(user, this, data, UserDataSaveReason.TogglePlayed, CancellationToken.None);
         }
 
         /// <summary>
@@ -1864,7 +1864,7 @@ namespace MediaBrowser.Controller.Entities
             data.LastPlayedDate = null;
             data.Played = false;
 
-            UserDataManager.SaveUserData(user.Id, this, data, UserDataSaveReason.TogglePlayed, CancellationToken.None);
+            UserDataManager.SaveUserData(user, this, data, UserDataSaveReason.TogglePlayed, CancellationToken.None);
         }
 
         /// <summary>
