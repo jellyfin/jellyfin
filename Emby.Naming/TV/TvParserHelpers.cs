@@ -1,19 +1,23 @@
 using System;
-using Emby.Naming.Common;
+using System.Collections.Generic;
+using System.Linq;
 using MediaBrowser.Model.Entities;
 
 namespace Emby.Naming.TV;
 
 /// <summary>
-/// Helper class for tv metadata parsing.
+/// Helper class for TV metadata parsing.
 /// </summary>
 public static class TvParserHelpers
 {
+    private static readonly List<string> _continuingState = ["Pilot", "Returning Series", "Returning"];
+    private static readonly List<string> _endedState = ["Cancelled"];
+
     /// <summary>
-    /// Parses a information about series from path.
+    /// Tries to parse a string into <see cref="SeriesStatus"/>.
     /// </summary>
     /// <param name="status">The status string.</param>
-    /// <param name="enumValue">The enum value.</param>
+    /// <param name="enumValue">The <see cref="SeriesStatus"/>.</param>
     /// <returns>Returns true if parsing was successful.</returns>
     public static bool TryParseSeriesStatus(string status, out SeriesStatus? enumValue)
     {
@@ -23,18 +27,19 @@ public static class TvParserHelpers
             return true;
         }
 
-        switch (status)
+        if (_continuingState.Contains(status, StringComparer.OrdinalIgnoreCase))
         {
-            case "Pilot":
-            case "Returning Series":
-                enumValue = SeriesStatus.Continuing;
-                return true;
-            case "Cancelled":
-                enumValue = SeriesStatus.Ended;
-                return true;
-            default:
-                enumValue = null;
-                return false;
+            enumValue = SeriesStatus.Continuing;
+            return true;
         }
+
+        if (_endedState.Contains(status, StringComparer.OrdinalIgnoreCase))
+        {
+            enumValue = SeriesStatus.Ended;
+            return true;
+        }
+
+        enumValue = null;
+        return false;
     }
 }
