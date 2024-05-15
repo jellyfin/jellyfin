@@ -2,6 +2,7 @@
 #pragma warning disable CS1591
 
 using System;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Querying
@@ -19,10 +20,10 @@ namespace MediaBrowser.Model.Querying
         }
 
         /// <summary>
-        /// Gets or sets the user id.
+        /// Gets or sets the user.
         /// </summary>
-        /// <value>The user id.</value>
-        public Guid UserId { get; set; }
+        /// <value>The user.</value>
+        public User User { get; set; }
 
         /// <summary>
         /// Gets or sets the parent identifier.
