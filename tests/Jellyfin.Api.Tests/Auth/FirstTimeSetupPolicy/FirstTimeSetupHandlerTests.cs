@@ -69,6 +69,27 @@ namespace Jellyfin.Api.Tests.Auth.FirstTimeSetupPolicy
             Assert.Equal(shouldSucceed, context.HasSucceeded);
         }
 
+        [Theory]
+        [InlineData(UserRoles.Administrator, true)]
+        [InlineData(UserRoles.Guest, false)]
+        [InlineData(UserRoles.User, true)]
+        public async Task ShouldRequireUserIfNotRequiresAdmin(string userRole, bool shouldSucceed)
+        {
+            TestHelpers.SetupConfigurationManager(_configurationManagerMock, true);
+            var claims = TestHelpers.SetupUser(
+                _userManagerMock,
+                _httpContextAccessor,
+                userRole);
+
+            var context = new AuthorizationHandlerContext(
+                new List<IAuthorizationRequirement> { new FirstTimeSetupRequirement(false, false) },
+                claims,
+                null);
+
+            await _firstTimeSetupHandler.HandleAsync(context);
+            Assert.Equal(shouldSucceed, context.HasSucceeded);
+        }
+
         [Fact]
         public async Task ShouldAllowAdminApiKeyIfStartupWizardComplete()
         {
