@@ -237,7 +237,7 @@ namespace MediaBrowser.Providers.TV
 
                 if (!seasonNumber.HasValue || !seasonNames.TryGetValue(seasonNumber.Value, out var seasonName))
                 {
-                    seasonName = GetValidSeasonNameForSeries(series, null, seasonNumber);
+                    seasonName = GetValidSeasonNameForSeries(series, existingSeason?.Name, seasonNumber);
                 }
 
                 if (existingSeason is null)
