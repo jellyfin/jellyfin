@@ -214,15 +214,19 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public Dictionary<int, string> GetSeasonNames()
         {
-            if (_seasonNames.Count > 0)
+            if (_seasonNames.Count == 0)
             {
-                return _seasonNames;
+                var childSeasons = Children.OfType<Season>()
+                    .Where(s => s.IndexNumber.HasValue)
+                    .DistinctBy(s => s.IndexNumber);
+
+                foreach (var season in childSeasons)
+                {
+                    _seasonNames[season.IndexNumber.Value] = season.Name;
+                }
             }
 
-            return Children.OfType<Season>()
-                .Where(s => s.IndexNumber.HasValue)
-                .DistinctBy(s => s.IndexNumber)
-                .ToDictionary(s => s.IndexNumber.Value, s => s.Name);
+            return _seasonNames;
         }
 
         public void SetSeasonName(int index, string name)
