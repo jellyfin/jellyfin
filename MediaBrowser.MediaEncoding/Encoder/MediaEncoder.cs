@@ -872,7 +872,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             float? encoderQuality = qualityScale;
-            if (vidEncoder.Contains("vaapi", StringComparison.InvariantCultureIgnoreCase))
+            if (vidEncoder.Contains("vaapi", StringComparison.OrdinalIgnoreCase))
             {
                 // vaapi's mjpeg encoder uses jpeg quality divided by QP2LAMBDA (118) as input, instead of ffmpeg defined qscale
                 // ffmpeg qscale is a value from 1-31, with 1 being best quality and 31 being worst
