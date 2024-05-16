@@ -78,7 +78,7 @@ namespace MediaBrowser.Providers.Playlists
 
                 if (string.Equals(".m3u8", extension, StringComparison.OrdinalIgnoreCase))
                 {
-                    return GetM3u8Items(stream, path);
+                    return GetM3uItems(stream, path);
                 }
 
                 if (string.Equals(".pls", extension, StringComparison.OrdinalIgnoreCase))
@@ -95,23 +95,9 @@ namespace MediaBrowser.Providers.Playlists
             var content = new PlsContent();
             var playlist = content.GetFromStream(stream);
 
-            return playlist.PlaylistEntries.Select(i => new LinkedChild
-            {
-                Path = GetPlaylistItemPath(i.Path, path),
-                Type = LinkedChildType.Manual
-            });
-        }
-
-        private IEnumerable<LinkedChild> GetM3u8Items(Stream stream, string path)
-        {
-            var content = new M3uContent();
-            var playlist = content.GetFromStream(stream);
-
-            return playlist.PlaylistEntries.Select(i => new LinkedChild
-            {
-                Path = GetPlaylistItemPath(i.Path, path),
-                Type = LinkedChildType.Manual
-            });
+            return playlist.PlaylistEntries
+                    .Select(i => GetLinkedChild(i.Path, path))
+                    .Where(i => i is not null);
         }
 
         private IEnumerable<LinkedChild> GetM3uItems(Stream stream, string path)
@@ -119,11 +105,9 @@ namespace MediaBrowser.Providers.Playlists
             var content = new M3uContent();
             var playlist = content.GetFromStream(stream);
 
-            return playlist.PlaylistEntries.Select(i => new LinkedChild
-            {
-                Path = GetPlaylistItemPath(i.Path, path),
-                Type = LinkedChildType.Manual
-            });
+            return playlist.PlaylistEntries
+                    .Select(i => GetLinkedChild(i.Path, path))
+                    .Where(i => i is not null);
         }
 
         private IEnumerable<LinkedChild> GetZplItems(Stream stream, string path)
@@ -131,11 +115,9 @@ namespace MediaBrowser.Providers.Playlists
             var content = new ZplContent();
             var playlist = content.GetFromStream(stream);
 
-            return playlist.PlaylistEntries.Select(i => new LinkedChild
-            {
-                Path = GetPlaylistItemPath(i.Path, path),
-                Type = LinkedChildType.Manual
-            });
+            return playlist.PlaylistEntries
+                    .Select(i => GetLinkedChild(i.Path, path))
+                    .Where(i => i is not null);
         }
 
         private IEnumerable<LinkedChild> GetWplItems(Stream stream, string path)
@@ -143,25 +125,45 @@ namespace MediaBrowser.Providers.Playlists
             var content = new WplContent();
             var playlist = content.GetFromStream(stream);
 
-            return playlist.PlaylistEntries.Select(i => new LinkedChild
-            {
-                Path = GetPlaylistItemPath(i.Path, path),
-                Type = LinkedChildType.Manual
-            });
+            return playlist.PlaylistEntries
+                    .Select(i => GetLinkedChild(i.Path, path))
+                    .Where(i => i is not null);
         }
 
-        private string GetPlaylistItemPath(string itemPath, string containingPlaylistFolder)
+        private LinkedChild GetLinkedChild(string itemPath, string playlistPath)
         {
-            if (!File.Exists(itemPath))
+            if (TryGetPlaylistItemPath(itemPath, playlistPath, out var parsedPath))
             {
-                var path = Path.Combine(Path.GetDirectoryName(containingPlaylistFolder), itemPath);
-                if (File.Exists(path))
+                return new LinkedChild
                 {
-                    return path;
-                }
+                    Path = parsedPath,
+                    Type = LinkedChildType.Manual
+                };
             }
 
-            return itemPath;
+            return null;
+        }
+
+        private bool TryGetPlaylistItemPath(string itemPath, string playlistPath, out string path)
+        {
+            path = null;
+            var baseFolder = Path.GetDirectoryName(playlistPath);
+
+            if (itemPath.StartsWith(baseFolder, StringComparison.OrdinalIgnoreCase) && File.Exists(itemPath))
+            {
+                path = itemPath;
+                return true;
+            }
+
+            var basePath = Path.Combine(baseFolder, itemPath);
+            var fullPath = Path.GetFullPath(basePath);
+            if (fullPath.StartsWith(baseFolder, StringComparison.OrdinalIgnoreCase) && File.Exists(fullPath))
+            {
+                path = fullPath;
+                return true;
+            }
+
+            return false;
         }
 
         public bool HasChanged(BaseItem item, IDirectoryService directoryService)
