@@ -91,14 +91,19 @@ namespace MediaBrowser.Providers.TV
             var sourceSeasonNames = sourceItem.GetSeasonNames();
             var targetSeasonNames = targetItem.GetSeasonNames();
 
-            if (replaceData
-                || targetSeasonNames.Count == 0
-                || targetSeasonNames.Count != sourceSeasonNames.Count
-                || !sourceSeasonNames.Keys.All(targetSeasonNames.ContainsKey))
+            if (replaceData)
             {
                 foreach (var (number, name) in sourceSeasonNames)
                 {
-                    target.Item.SetSeasonName(number, name);
+                    targetItem.SetSeasonName(number, name);
+                }
+            }
+            else if (!sourceSeasonNames.Keys.All(targetSeasonNames.ContainsKey))
+            {
+                var newSeasons = sourceSeasonNames.Where(s => !targetSeasonNames.ContainsKey(s.Key));
+                foreach (var (number, name) in newSeasons)
+                {
+                    targetItem.SetSeasonName(number, name);
                 }
             }
 
