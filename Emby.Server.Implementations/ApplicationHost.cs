@@ -423,7 +423,7 @@ namespace Emby.Server.Implementations
             // Initialize runtime stat collection
             if (ConfigurationManager.Configuration.EnableMetrics)
             {
-                DotNetRuntimeStatsBuilder.Default().StartCollecting();
+                _disposableParts.Add(DotNetRuntimeStatsBuilder.Default().StartCollecting());
             }
 
             var networkConfiguration = ConfigurationManager.GetNetworkConfiguration();
