@@ -103,7 +103,7 @@ namespace Emby.Server.Implementations.Library
             }
         };
 
-        private static readonly Glob[] _globs = _patterns.Select(p => Glob.Parse(p, _globOptions)).ToArray();
+        private static readonly Glob[] _globs = Array.ConvertAll(_patterns, p => Glob.Parse(p, _globOptions));
 
         /// <summary>
         /// Returns true if the supplied path should be ignored.

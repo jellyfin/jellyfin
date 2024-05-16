@@ -60,14 +60,13 @@ public class ListingsManager : IListingsManager
 
         var config = _config.GetLiveTvConfiguration();
 
-        var list = config.ListingProviders.ToList();
-        int index = list.FindIndex(i => string.Equals(i.Id, info.Id, StringComparison.OrdinalIgnoreCase));
+        var list = config.ListingProviders;
+        int index = Array.FindIndex(list, i => string.Equals(i.Id, info.Id, StringComparison.OrdinalIgnoreCase));
 
         if (index == -1 || string.IsNullOrWhiteSpace(info.Id))
         {
             info.Id = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
-            list.Add(info);
-            config.ListingProviders = list.ToArray();
+            config.ListingProviders = [..list, info];
         }
         else
         {
@@ -236,13 +235,12 @@ public class ListingsManager : IListingsManager
 
         if (!string.Equals(tunerChannelNumber, providerChannelNumber, StringComparison.OrdinalIgnoreCase))
         {
-            var list = listingsProviderInfo.ChannelMappings.ToList();
-            list.Add(new NameValuePair
+            var newItem = new NameValuePair
             {
                 Name = tunerChannelNumber,
                 Value = providerChannelNumber
-            });
-            listingsProviderInfo.ChannelMappings = list.ToArray();
+            };
+            listingsProviderInfo.ChannelMappings = [..listingsProviderInfo.ChannelMappings, newItem];
         }
 
         _config.SaveConfiguration("livetv", config);

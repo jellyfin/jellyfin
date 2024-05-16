@@ -158,13 +158,13 @@ public class LibraryController : BaseJellyfinApiController
             return NotFound();
         }
 
-        IEnumerable<BaseItem> themeItems;
+        IReadOnlyList<BaseItem> themeItems;
 
         while (true)
         {
             themeItems = item.GetThemeSongs();
 
-            if (themeItems.Any() || !inheritFromParent)
+            if (themeItems.Count > 0 || !inheritFromParent)
             {
                 break;
             }

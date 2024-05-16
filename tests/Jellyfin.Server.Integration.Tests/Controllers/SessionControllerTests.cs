@@ -21,7 +21,7 @@ public class SessionControllerTests : IClassFixture<JellyfinApplicationFactory>
         var client = _factory.CreateClient();
         client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
-        using var response = await client.GetAsync($"Session/Sessions?userId={Guid.NewGuid()}");
+        using var response = await client.GetAsync($"Sessions?controllableByUserId={Guid.NewGuid()}");
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 }

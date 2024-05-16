@@ -127,5 +127,7 @@
     "TaskRefreshTrickplayImagesDescription": "Створює trickplay-зображення для відео у ввімкнених медіатеках.",
     "TaskRefreshTrickplayImages": "Створити Trickplay-зображення",
     "TaskCleanCollectionsAndPlaylists": "Очистити колекції і списки відтворення",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Видаляє елементи з колекцій і списків відтворення, які більше не існують."
+    "TaskCleanCollectionsAndPlaylistsDescription": "Видаляє елементи з колекцій і списків відтворення, які більше не існують.",
+    "TaskAudioNormalizationDescription": "Сканує файли на наявність даних для нормалізації звуку.",
+    "TaskAudioNormalization": "Нормалізація аудіо"
 }

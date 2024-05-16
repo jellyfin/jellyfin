@@ -166,6 +166,9 @@ public static class StreamingHelpers
         }
 
         var outputAudioCodec = streamingRequest.AudioCodec;
+        state.OutputAudioCodec = outputAudioCodec;
+        state.OutputContainer = (containerInternal ?? string.Empty).TrimStart('.');
+        state.OutputAudioChannels = encodingHelper.GetNumAudioChannelsParam(state, state.AudioStream, state.OutputAudioCodec);
         if (EncodingHelper.LosslessAudioCodecs.Contains(outputAudioCodec))
         {
             state.OutputAudioBitrate = state.AudioStream.BitRate ?? 0;
@@ -179,10 +182,6 @@ public static class StreamingHelpers
         {
             containerInternal = ".pcm";
         }
-
-        state.OutputAudioCodec = outputAudioCodec;
-        state.OutputContainer = (containerInternal ?? string.Empty).TrimStart('.');
-        state.OutputAudioChannels = encodingHelper.GetNumAudioChannelsParam(state, state.AudioStream, state.OutputAudioCodec);
 
         if (state.VideoRequest is not null)
         {

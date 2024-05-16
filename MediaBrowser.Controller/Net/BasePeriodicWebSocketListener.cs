@@ -288,7 +288,7 @@ namespace MediaBrowser.Controller.Net
 
             lock (_activeConnectionsLock)
             {
-                foreach (var connection in _activeConnections.ToArray())
+                foreach (var connection in _activeConnections.ToList())
                 {
                     DisposeConnection(connection);
                 }

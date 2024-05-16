@@ -2627,7 +2627,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 && channels.Value == 2
                 && state.AudioStream is not null
                 && state.AudioStream.Channels.HasValue
-                && state.AudioStream.Channels.Value > 5)
+                && state.AudioStream.Channels.Value == 6)
             {
                 switch (encodingOptions.DownMixStereoAlgorithm)
                 {
@@ -2720,7 +2720,20 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (state.TranscodingType != TranscodingJobType.Progressive
                     && ((resultChannels > 2 && resultChannels < 6) || resultChannels == 7))
                 {
-                    resultChannels = 2;
+                    // We can let FFMpeg supply an extra LFE channel for 5ch and 7ch to make them 5.1 and 7.1
+                    if (resultChannels == 5)
+                    {
+                        resultChannels = 6;
+                    }
+                    else if (resultChannels == 7)
+                    {
+                        resultChannels = 8;
+                    }
+                    else
+                    {
+                        // For other weird layout, just downmix to stereo for compatibility
+                        resultChannels = 2;
+                    }
                 }
             }
 
@@ -2971,8 +2984,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var scaleW = (double)maximumWidth / outputWidth;
                 var scaleH = (double)maximumHeight / outputHeight;
                 var scale = Math.Min(scaleW, scaleH);
-                outputWidth = Math.Min(maximumWidth, (int)(outputWidth * scale));
-                outputHeight = Math.Min(maximumHeight, (int)(outputHeight * scale));
+                outputWidth = Math.Min(maximumWidth, Convert.ToInt32(outputWidth * scale));
+                outputHeight = Math.Min(maximumHeight, Convert.ToInt32(outputHeight * scale));
             }
 
             outputWidth = 2 * (outputWidth / 2);
@@ -6903,7 +6916,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var channels = state.OutputAudioChannels;
 
-            if (channels.HasValue && ((channels.Value != 2 && state.AudioStream.Channels <= 5) || encodingOptions.DownMixStereoAlgorithm == DownMixStereoAlgorithms.None))
+            if (channels.HasValue && ((channels.Value != 2 && state.AudioStream?.Channels != 6) || encodingOptions.DownMixStereoAlgorithm == DownMixStereoAlgorithms.None))
             {
                 args += " -ac " + channels.Value;
             }
