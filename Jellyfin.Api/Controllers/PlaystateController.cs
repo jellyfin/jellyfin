@@ -90,7 +90,7 @@ public class PlaystateController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var session = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var session = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext, userId).ConfigureAwait(false);
 
         var dto = UpdatePlayedStatus(user, item, true, datePlayed);
         foreach (var additionalUserInfo in session.AdditionalUsers)
@@ -155,7 +155,7 @@ public class PlaystateController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var session = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var session = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext, userId).ConfigureAwait(false);
 
         var dto = UpdatePlayedStatus(user, item, false, null);
         foreach (var additionalUserInfo in session.AdditionalUsers)

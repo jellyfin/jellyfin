@@ -111,7 +111,7 @@
     "TaskCleanCacheDescription": "Deletar arquivos temporários que não são mais necessários para o sistema.",
     "TaskCleanCache": "Limpar Arquivos Temporários",
     "TasksChannelsCategory": "Canais da Internet",
-    "TasksApplicationCategory": "Aplicativo",
+    "TasksApplicationCategory": "Aplicação",
     "TasksLibraryCategory": "Biblioteca",
     "TasksMaintenanceCategory": "Manutenção",
     "TaskCleanActivityLogDescription": "Apaga o registro de atividades mais antigo que a idade configurada.",
@@ -128,5 +128,7 @@
     "TaskRefreshTrickplayImages": "Gerar imagens Trickplay",
     "TaskRefreshTrickplayImagesDescription": "Cria prévias Trickplay para vídeos em bibliotecas em que o recurso está habilitado.",
     "TaskCleanCollectionsAndPlaylists": "Limpe coleções e playlists",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Remove itens de coleções e playlists que não existem mais."
+    "TaskCleanCollectionsAndPlaylistsDescription": "Remove itens de coleções e playlists que não existem mais.",
+    "TaskAudioNormalization": "Normalização de áudio",
+    "TaskAudioNormalizationDescription": "Examina os ficheiros em busca de dados de normalização de áudio."
 }
