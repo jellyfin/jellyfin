@@ -54,7 +54,7 @@ namespace MediaBrowser.Providers.Playlists
 
             item.LinkedChildren = items;
 
-            return Task.FromResult(ItemUpdateType.None);
+            return Task.FromResult(ItemUpdateType.MetadataImport);
         }
 
         private IEnumerable<LinkedChild> GetItems(string path, string extension)
