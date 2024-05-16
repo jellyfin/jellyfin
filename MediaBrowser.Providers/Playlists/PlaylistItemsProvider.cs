@@ -158,15 +158,27 @@ namespace MediaBrowser.Providers.Playlists
         private bool TryGetPlaylistItemPath(string itemPath, string playlistPath, List<string> libraryPaths, out string path)
         {
             path = null;
-            var baseFolder = Path.GetDirectoryName(playlistPath);
-            var basePath = Path.Combine(baseFolder, itemPath);
-            var fullPath = Path.GetFullPath(basePath);
+            string pathToCheck;
+            if (File.Exists(itemPath))
+            {
+                pathToCheck = itemPath;
+            }
+            else
+            {
+                var baseFolder = Path.GetDirectoryName(playlistPath);
+                var basePath = Path.Combine(baseFolder, itemPath);
+                pathToCheck = Path.GetFullPath(basePath);
+                if (!File.Exists(pathToCheck))
+                {
+                    return false;
+                }
+            }
 
             foreach (var libraryPath in libraryPaths)
             {
-                if (fullPath.StartsWith(libraryPath, StringComparison.OrdinalIgnoreCase) && File.Exists(fullPath))
+                if (pathToCheck.StartsWith(libraryPath, StringComparison.OrdinalIgnoreCase))
                 {
-                    path = fullPath;
+                    path = pathToCheck;
                     return true;
                 }
             }
