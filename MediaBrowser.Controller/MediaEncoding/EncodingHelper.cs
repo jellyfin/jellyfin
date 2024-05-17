@@ -2771,7 +2771,13 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (time > 0)
             {
-                seekParam += string.Format(CultureInfo.InvariantCulture, "-ss {0}", _mediaEncoder.GetTimeParameter(time));
+                // For direct streaming/remuxing, we seek at the exact position of the keyframe
+                // However, ffmpeg will seek to previous keyframe when the exact time is the input
+                // Workaround this by adding 0.5s offset to the seeking time to get the exact keyframe on most videos.
+                // This will help subtitle syncing.
+                var isHlsRemuxing = state.IsVideoRequest && state.TranscodingType is TranscodingJobType.Hls && IsCopyCodec(state.OutputVideoCodec);
+                var seekTick = isHlsRemuxing ? time + 5000000L : time;
+                seekParam += string.Format(CultureInfo.InvariantCulture, "-ss {0}", _mediaEncoder.GetTimeParameter(seekTick));
 
                 if (state.IsVideoRequest)
                 {
