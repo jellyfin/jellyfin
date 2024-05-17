@@ -929,11 +929,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (vidEncoder.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase))
             {
-                // videotoolbox's mjpeg encoder uses jpeg quality instead of ffmpeg defined qscale
+                // videotoolbox's mjpeg encoder uses jpeg quality scaled to QP2LAMBDA (118) instead of ffmpeg defined qscale
                 // ffmpeg qscale is a value from 1-31, with 1 being best quality and 31 being worst
                 // jpeg quality is a value from 0-100, with 0 being worst quality and 100 being best
-                // This mapping is just an estimation, with bias towards higher quality
-                encoderQuality = 100 - ((qualityScale - 1) * 3);
+                encoderQuality = 118 - ((qualityScale - 1) * (118 / 30));
             }
 
             // Output arguments
