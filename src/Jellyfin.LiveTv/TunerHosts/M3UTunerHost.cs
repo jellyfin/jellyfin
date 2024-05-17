@@ -32,6 +32,8 @@ namespace Jellyfin.LiveTv.TunerHosts
     {
         private static readonly string[] _disallowedMimeTypes =
         {
+            "text/plain",
+            "text/html",
             "video/x-matroska",
             "video/mp4",
             "application/vnd.apple.mpegurl",
@@ -118,7 +120,7 @@ namespace Jellyfin.LiveTv.TunerHosts
 
                 if (response.IsSuccessStatusCode)
                 {
-                    if (!_disallowedMimeTypes.Contains(response.Content.Headers.ContentType?.ToString(), StringComparison.OrdinalIgnoreCase))
+                    if (!_disallowedMimeTypes.Contains(response.Content.Headers.ContentType?.MediaType, StringComparison.OrdinalIgnoreCase))
                     {
                         return new SharedHttpStream(mediaSource, tunerHost, streamId, FileSystem, _httpClientFactory, Logger, Config, _appHost, _streamHelper);
                     }
