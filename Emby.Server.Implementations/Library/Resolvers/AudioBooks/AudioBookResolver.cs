@@ -35,12 +35,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.AudioBooks
             _directoryService = directoryService;
         }
 
-        // <summary>
-        // Gets the priority.
-        // </summary>
-        // <value>The priority.</value>
-        // public override ResolverPriority Priority => ResolverPriority.Fourth;
-
         /// <summary>
         /// Attempt to resolve a single audio book from args.Path.
         /// Expected cases:

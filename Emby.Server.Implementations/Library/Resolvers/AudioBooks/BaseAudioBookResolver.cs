@@ -46,9 +46,9 @@ namespace Emby.Server.Implementations.Library.Resolvers.AudioBooks
         /// <summary>
         /// Resolves the video.
         /// </summary>
-        /// <typeparam name="TAudioBookType">The type of the T video type.</typeparam>
-        /// <param name="args">The args.</param>
-        /// <param name="parseName">if set to <c>true</c> [parse name].</param>
+        /// <typeparam name="TAudioBookType">Abstract return type - only supports AudioBookFile.</typeparam>
+        /// <param name="args">Object containing what's currently known about the resolution target (usually just path).</param>
+        /// <param name="parseName">Ignored.</param>
         /// <returns>``0.</returns>
         protected virtual TAudioBookType ResolveAudioBookFile<TAudioBookType>(ItemResolveArgs args, bool parseName)
               where TAudioBookType : AudioBookFile, new()

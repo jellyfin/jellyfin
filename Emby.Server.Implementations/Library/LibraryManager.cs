@@ -472,9 +472,9 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Iterate over list of resolvers attempting to resolve for file system entity
-        /// described by args, using the first result of the resolver that is not null or the default
-        /// (folder?) if all results are null.
+        /// Iterate over list of resolvers attempting to resolve the file system entity
+        /// described by args, using the first resolver's result that is not null or the default
+        /// (folder) if all results are null.
         /// </summary>
         /// <param name="args">The args.</param>
         /// <param name="resolvers">The resolvers.</param>
@@ -1061,7 +1061,7 @@ namespace Emby.Server.Implementations.Library
 
         private async Task PerformLibraryValidation(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("PerformLibraryValidation");
+            _logger.LogInformation("Validating media library");
 
             await ValidateTopLibraryFolders(cancellationToken).ConfigureAwait(false);
 

@@ -407,7 +407,6 @@ namespace Emby.Server.Implementations.Dto
             }
             else
             {
-                // TODO: Why is this here? Seems redundant
                 if (options.EnableUserData)
                 {
                     dto.UserData = _userDataRepository.GetUserDataDto(item, user);
