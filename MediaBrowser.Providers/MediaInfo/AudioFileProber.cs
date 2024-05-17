@@ -15,6 +15,7 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
+using Microsoft.Extensions.Logging;
 using TagLib;
 
 namespace MediaBrowser.Providers.MediaInfo
@@ -27,6 +28,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IItemRepository _itemRepo;
         private readonly ILibraryManager _libraryManager;
+        private readonly ILogger<AudioFileProber> _logger;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly LyricResolver _lyricResolver;
         private readonly ILyricManager _lyricManager;
@@ -34,6 +36,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <summary>
         /// Initializes a new instance of the <see cref="AudioFileProber"/> class.
         /// </summary>
+        /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
         /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
         /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
         /// <param name="itemRepo">Instance of the <see cref="IItemRepository"/> interface.</param>
@@ -41,6 +44,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="lyricResolver">Instance of the <see cref="LyricResolver"/> interface.</param>
         /// <param name="lyricManager">Instance of the <see cref="ILyricManager"/> interface.</param>
         public AudioFileProber(
+            ILogger<AudioFileProber> logger,
             IMediaSourceManager mediaSourceManager,
             IMediaEncoder mediaEncoder,
             IItemRepository itemRepo,
@@ -51,6 +55,7 @@ namespace MediaBrowser.Providers.MediaInfo
             _mediaEncoder = mediaEncoder;
             _itemRepo = itemRepo;
             _libraryManager = libraryManager;
+            _logger = logger;
             _mediaSourceManager = mediaSourceManager;
             _lyricResolver = lyricResolver;
             _lyricManager = lyricManager;
@@ -276,7 +281,14 @@ namespace MediaBrowser.Providers.MediaInfo
 
                     if (!audio.PremiereDate.HasValue)
                     {
-                        audio.PremiereDate = new DateTime(year, 01, 01);
+                        try
+                        {
+                            audio.PremiereDate = new DateTime(year, 01, 01);
+                        }
+                        catch (ArgumentOutOfRangeException ex)
+                        {
+                            _logger.LogError(ex, "Error parsing YEAR tag in {File}. '{TagValue}' is an invalid year.", audio.Path, tags.Year);
+                        }
                     }
                 }
 

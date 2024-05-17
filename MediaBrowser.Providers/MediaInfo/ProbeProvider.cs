@@ -103,6 +103,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 _subtitleResolver);
 
             _audioProber = new AudioFileProber(
+                loggerFactory.CreateLogger<AudioFileProber>(),
                 mediaSourceManager,
                 mediaEncoder,
                 itemRepo,
