@@ -32,6 +32,10 @@ namespace Jellyfin.Api.Auth.FirstTimeSetupPolicy
             {
                 context.Fail();
             }
+            else if (!requirement.RequireAdmin && context.User.IsInRole(UserRoles.Guest))
+            {
+                context.Fail();
+            }
             else
             {
                 // Any user-specific checks are handled in the DefaultAuthorizationHandler.
