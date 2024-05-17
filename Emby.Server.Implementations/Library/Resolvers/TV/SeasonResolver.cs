@@ -83,7 +83,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                     var seasonNumber = season.IndexNumber.Value;
                     if (string.IsNullOrEmpty(season.Name))
                     {
-                        var seasonNames = series.SeasonNames;
+                        var seasonNames = series.GetSeasonNames();
                         if (seasonNames.TryGetValue(seasonNumber, out var seasonName))
                         {
                             season.Name = seasonName;

@@ -107,7 +107,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(name) && parsed)
                         {
-                            item.SeasonNames[seasonNumber] = name;
+                            item.SetSeasonName(seasonNumber, name);
                         }
 
                         break;
