@@ -14,6 +14,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
 using PlaylistsNET.Content;
 
@@ -25,14 +26,16 @@ namespace MediaBrowser.Providers.Playlists
         IPreRefreshProvider,
         IHasItemChangeMonitor
     {
-        private readonly ILogger<PlaylistItemsProvider> _logger;
+        private readonly IFileSystem _fileSystem;
         private readonly ILibraryManager _libraryManager;
+        private readonly ILogger<PlaylistItemsProvider> _logger;
         private readonly CollectionType[] _ignoredCollections = [CollectionType.livetv, CollectionType.boxsets, CollectionType.playlists];
 
-        public PlaylistItemsProvider(ILogger<PlaylistItemsProvider> logger, ILibraryManager libraryManager)
+        public PlaylistItemsProvider(ILogger<PlaylistItemsProvider> logger, ILibraryManager libraryManager, IFileSystem fileSystem)
         {
             _logger = logger;
             _libraryManager = libraryManager;
+            _fileSystem = fileSystem;
         }
 
         public string Name => "Playlist Reader";
@@ -158,20 +161,10 @@ namespace MediaBrowser.Providers.Playlists
         private bool TryGetPlaylistItemPath(string itemPath, string playlistPath, List<string> libraryPaths, out string path)
         {
             path = null;
-            string pathToCheck;
-            if (File.Exists(itemPath))
+            string pathToCheck = _fileSystem.MakeAbsolutePath(Path.GetDirectoryName(playlistPath), itemPath);
+            if (!File.Exists(pathToCheck))
             {
-                pathToCheck = itemPath;
-            }
-            else
-            {
-                var baseFolder = Path.GetDirectoryName(playlistPath);
-                var basePath = Path.Combine(baseFolder, itemPath);
-                pathToCheck = Path.GetFullPath(basePath);
-                if (!File.Exists(pathToCheck))
-                {
-                    return false;
-                }
+                return false;
             }
 
             foreach (var libraryPath in libraryPaths)
