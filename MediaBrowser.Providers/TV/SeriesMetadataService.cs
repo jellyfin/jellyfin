@@ -98,7 +98,7 @@ namespace MediaBrowser.Providers.TV
                     targetItem.SetSeasonName(number, name);
                 }
             }
-            else if (!sourceSeasonNames.Keys.All(targetSeasonNames.ContainsKey))
+            else
             {
                 var newSeasons = sourceSeasonNames.Where(s => !targetSeasonNames.ContainsKey(s.Key));
                 foreach (var (number, name) in newSeasons)
