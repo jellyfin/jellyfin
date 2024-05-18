@@ -142,6 +142,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <inheritdoc />
         public bool IsVaapiDeviceSupportVulkanDrmInterop => _isVaapiDeviceSupportVulkanDrmInterop;
 
+        /// <inheritdoc />
+        public bool IsJellyfinFfmpeg => SupportsFilter("alphasrc");
+
         [GeneratedRegex(@"[^\/\\]+?(\.[^\/\\\n.]+)?$")]
         private static partial Regex FfprobePathRegex();
 
@@ -884,7 +887,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 inputArg = "-threads " + threads + " " + inputArg; // HW accel args set a different input thread count, only set if disabled
             }
 
-            if (vidEncoder.Contains("videotoolbox", StringComparison.InvariantCultureIgnoreCase))
+            if (options.HardwareAccelerationType.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase) && IsJellyfinFfmpeg)
             {
                 // VideoToolbox supports low priority decoding, which is useful for trickplay
                 inputArg = "-hwaccel_flags +low_priority " + inputArg;
