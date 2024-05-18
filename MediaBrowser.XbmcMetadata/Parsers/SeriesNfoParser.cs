@@ -100,19 +100,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
+                // Season names are processed by SeasonFromSeriesNfoParser
                 case "namedseason":
-                    {
-                        var parsed = int.TryParse(reader.GetAttribute("number"), NumberStyles.Integer, CultureInfo.InvariantCulture, out var seasonNumber);
-                        var name = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(name) && parsed)
-                        {
-                            item.SetSeasonName(seasonNumber, name);
-                        }
-
-                        break;
-                    }
-
                 default:
                     base.FetchDataFromXmlNode(reader, itemResult);
                     break;
