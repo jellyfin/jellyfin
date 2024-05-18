@@ -102,6 +102,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 // Season names are processed by SeasonFromSeriesNfoParser
                 case "namedseason":
+                    break;
                 default:
                     base.FetchDataFromXmlNode(reader, itemResult);
                     break;
