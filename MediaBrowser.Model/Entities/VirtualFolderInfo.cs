@@ -37,7 +37,6 @@ namespace MediaBrowser.Model.Entities
         /// Gets or sets the type of the collection.
         /// </summary>
         /// <value>The type of the collection.</value>
-        [JsonConverter(typeof(JsonLowerCaseConverter<CollectionTypeOptions?>))]
         public CollectionTypeOptions? CollectionType { get; set; }
 
         public LibraryOptions LibraryOptions { get; set; }

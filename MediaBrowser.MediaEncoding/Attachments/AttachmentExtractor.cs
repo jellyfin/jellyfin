@@ -247,7 +247,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
             MediaSourceInfo mediaSource,
             CancellationToken cancellationToken)
         {
-            var outputFileLocks = new List<AsyncKeyedLockReleaser<string>>();
+            var outputFileLocks = new List<IDisposable>();
             var extractableAttachmentIds = new List<int>();
 
             try
@@ -256,16 +256,15 @@ namespace MediaBrowser.MediaEncoding.Attachments
                 {
                     var outputPath = GetAttachmentCachePath(mediaPath, mediaSource, attachment.Index);
 
-                    var @outputFileLock = _semaphoreLocks.GetOrAdd(outputPath);
-                    await @outputFileLock.SemaphoreSlim.WaitAsync(cancellationToken).ConfigureAwait(false);
+                    var releaser = await _semaphoreLocks.LockAsync(outputPath, cancellationToken).ConfigureAwait(false);
 
                     if (File.Exists(outputPath))
                     {
-                        @outputFileLock.Dispose();
+                        releaser.Dispose();
                         continue;
                     }
 
-                    outputFileLocks.Add(@outputFileLock);
+                    outputFileLocks.Add(releaser);
                     extractableAttachmentIds.Add(attachment.Index);
                 }
 
@@ -280,10 +279,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
             }
             finally
             {
-                foreach (var @outputFileLock in outputFileLocks)
-                {
-                    @outputFileLock.Dispose();
-                }
+                outputFileLocks.ForEach(x => x.Dispose());
             }
         }
 

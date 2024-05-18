@@ -149,6 +149,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="maxWidth">The maximum width.</param>
         /// <param name="interval">The interval.</param>
         /// <param name="allowHwAccel">Allow for hardware acceleration.</param>
+        /// <param name="enableHwEncoding">Use hardware mjpeg encoder.</param>
         /// <param name="threads">The input/output thread count for ffmpeg.</param>
         /// <param name="qualityScale">The qscale value for ffmpeg.</param>
         /// <param name="priority">The process priority for the ffmpeg process.</param>
@@ -163,6 +164,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             int maxWidth,
             TimeSpan interval,
             bool allowHwAccel,
+            bool enableHwEncoding,
             int? threads,
             int? qualityScale,
             ProcessPriorityClass? priority,

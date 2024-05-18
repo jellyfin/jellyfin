@@ -124,5 +124,6 @@
     "TaskKeyframeExtractorDescription": "비디오 파일에서 키프레임을 추출하여 더 정확한 HLS 재생 목록을 만듭니다. 이 작업은 오랫동안 진행될 수 있습니다.",
     "TaskKeyframeExtractor": "키프레임 추출",
     "External": "외부",
-    "HearingImpaired": "청각 장애"
+    "HearingImpaired": "청각 장애",
+    "TaskCleanCollectionsAndPlaylists": "컬렉션과 재생목록 정리"
 }

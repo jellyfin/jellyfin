@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -33,6 +34,25 @@ namespace MediaBrowser.Providers.TV
             : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
         {
             _localizationManager = localizationManager;
+        }
+
+        public override async Task<ItemUpdateType> RefreshMetadata(BaseItem item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
+        {
+            if (item is Series series)
+            {
+                var seasons = series.GetRecursiveChildren(i => i is Season).ToList();
+
+                foreach (var season in seasons)
+                {
+                    var hasUpdate = refreshOptions != null && season.BeforeMetadataRefresh(refreshOptions.ReplaceAllMetadata);
+                    if (hasUpdate)
+                    {
+                        await season.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+                    }
+                }
+            }
+
+            return await base.RefreshMetadata(item, refreshOptions, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
@@ -68,18 +88,22 @@ namespace MediaBrowser.Providers.TV
 
             var sourceItem = source.Item;
             var targetItem = target.Item;
-            var sourceSeasonNames = sourceItem.SeasonNames;
-            var targetSeasonNames = targetItem.SeasonNames;
+            var sourceSeasonNames = sourceItem.GetSeasonNames();
+            var targetSeasonNames = targetItem.GetSeasonNames();
 
-            if (replaceData || targetSeasonNames.Count == 0)
-            {
-                targetItem.SeasonNames = sourceSeasonNames;
-            }
-            else if (targetSeasonNames.Count != sourceSeasonNames.Count || !sourceSeasonNames.Keys.All(targetSeasonNames.ContainsKey))
+            if (replaceData)
             {
                 foreach (var (number, name) in sourceSeasonNames)
                 {
-                    targetSeasonNames.TryAdd(number, name);
+                    targetItem.SetSeasonName(number, name);
+                }
+            }
+            else if (!sourceSeasonNames.Keys.All(targetSeasonNames.ContainsKey))
+            {
+                var newSeasons = sourceSeasonNames.Where(s => !targetSeasonNames.ContainsKey(s.Key));
+                foreach (var (number, name) in newSeasons)
+                {
+                    targetItem.SetSeasonName(number, name);
                 }
             }
 
@@ -201,7 +225,7 @@ namespace MediaBrowser.Providers.TV
         /// <returns>The async task.</returns>
         private async Task UpdateAndCreateSeasonsAsync(Series series, CancellationToken cancellationToken)
         {
-            var seasonNames = series.SeasonNames;
+            var seasonNames = series.GetSeasonNames();
             var seriesChildren = series.GetRecursiveChildren(i => i is Episode || i is Season);
             var seasons = seriesChildren.OfType<Season>().ToList();
             var uniqueSeasonNumbers = seriesChildren
@@ -225,7 +249,7 @@ namespace MediaBrowser.Providers.TV
                     var season = await CreateSeasonAsync(series, seasonName, seasonNumber, cancellationToken).ConfigureAwait(false);
                     series.AddChild(season);
                 }
-                else if (!string.Equals(existingSeason.Name, seasonName, StringComparison.Ordinal))
+                else if (!existingSeason.LockedFields.Contains(MetadataField.Name) && !string.Equals(existingSeason.Name, seasonName, StringComparison.Ordinal))
                 {
                     existingSeason.Name = seasonName;
                     await existingSeason.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);

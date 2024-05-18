@@ -24,6 +24,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Api.Helpers;
@@ -76,21 +77,17 @@ public class MediaInfoHelper
     /// <summary>
     /// Get playback info.
     /// </summary>
-    /// <param name="id">Item id.</param>
-    /// <param name="userId">User Id.</param>
+    /// <param name="item">The item.</param>
+    /// <param name="user">The user.</param>
     /// <param name="mediaSourceId">Media source id.</param>
     /// <param name="liveStreamId">Live stream id.</param>
     /// <returns>A <see cref="Task"/> containing the <see cref="PlaybackInfoResponse"/>.</returns>
     public async Task<PlaybackInfoResponse> GetPlaybackInfo(
-        Guid id,
-        Guid? userId,
+        BaseItem item,
+        User? user,
         string? mediaSourceId = null,
         string? liveStreamId = null)
     {
-        var user = userId.IsNullOrEmpty()
-            ? null
-            : _userManager.GetUserById(userId.Value);
-        var item = _libraryManager.GetItemById(id);
         var result = new PlaybackInfoResponse();
 
         MediaSourceInfo[] mediaSources;
@@ -402,7 +399,8 @@ public class MediaInfoHelper
 
         if (profile is not null)
         {
-            var item = _libraryManager.GetItemById(request.ItemId);
+            var item = _libraryManager.GetItemById<BaseItem>(request.ItemId)
+                ?? throw new ResourceNotFoundException();
 
             SetDeviceSpecificData(
                 item,

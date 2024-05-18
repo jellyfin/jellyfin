@@ -124,16 +124,16 @@ namespace Emby.Server.Implementations.Library
             }
             else if (mode == SubtitlePlaybackMode.Always)
             {
-                // always load the most suitable full subtitles
+                // Always load the most suitable full subtitles
                 filteredStreams = sortedStreams.Where(s => !s.IsForced).ToList();
             }
             else if (mode == SubtitlePlaybackMode.OnlyForced)
             {
-                // always load the most suitable full subtitles
+                // Always load the most suitable full subtitles
                 filteredStreams = sortedStreams.Where(s => s.IsForced).ToList();
             }
 
-            // load forced subs if we have found no suitable full subtitles
+            // Load forced subs if we have found no suitable full subtitles
             var iterStreams = filteredStreams is null || filteredStreams.Count == 0
                 ? sortedStreams.Where(s => s.IsForced && string.Equals(s.Language, audioTrackLanguage, StringComparison.OrdinalIgnoreCase))
                 : filteredStreams;

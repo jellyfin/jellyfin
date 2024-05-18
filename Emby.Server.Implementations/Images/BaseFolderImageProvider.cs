@@ -11,7 +11,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Querying;
 
 namespace Emby.Server.Implementations.Images
 {
@@ -33,12 +32,12 @@ namespace Emby.Server.Implementations.Images
                 Parent = item,
                 Recursive = true,
                 DtoOptions = new DtoOptions(true),
-                ImageTypes = new ImageType[] { ImageType.Primary },
-                OrderBy = new (ItemSortBy, SortOrder)[]
-                {
+                ImageTypes = [ImageType.Primary],
+                OrderBy =
+                [
                     (ItemSortBy.IsFolder, SortOrder.Ascending),
                     (ItemSortBy.SortName, SortOrder.Ascending)
-                },
+                ],
                 Limit = 1
             });
         }

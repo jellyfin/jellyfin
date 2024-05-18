@@ -11,7 +11,7 @@
     "Collections": "合集",
     "DeviceOfflineWithName": "{0} 已断开",
     "DeviceOnlineWithName": "{0} 已连接",
-    "FailedLoginAttemptWithUserName": "从 {0} 尝试登录失败",
+    "FailedLoginAttemptWithUserName": "来自 {0} 的登录尝试失败",
     "Favorites": "我的最爱",
     "Folders": "文件夹",
     "Genres": "类型",
@@ -126,5 +126,9 @@
     "External": "外部",
     "HearingImpaired": "听力障碍",
     "TaskRefreshTrickplayImages": "生成时间轴缩略图",
-    "TaskRefreshTrickplayImagesDescription": "为启用的媒体库中的视频生成时间轴缩略图。"
+    "TaskRefreshTrickplayImagesDescription": "为启用的媒体库中的视频生成时间轴缩略图。",
+    "TaskCleanCollectionsAndPlaylists": "清理合集和播放列表",
+    "TaskCleanCollectionsAndPlaylistsDescription": "清理合集和播放列表中已不存在的项目。",
+    "TaskAudioNormalization": "音频标准化",
+    "TaskAudioNormalizationDescription": "扫描文件以寻找音频标准化数据。"
 }

@@ -24,7 +24,7 @@ jobs:
           reactions: '+1'
 
       - name: Checkout the latest code
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
         with:
           token: ${{ secrets.JF_BOT_TOKEN }}
           fetch-depth: 0
@@ -51,7 +51,7 @@ jobs:
           reactions: eyes
 
       - name: Checkout the latest code
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
         with:
           token: ${{ secrets.JF_BOT_TOKEN }}
           fetch-depth: 0
@@ -121,3 +121,28 @@ jobs:
 
             ${{ steps.run_tests.outputs.output }}
           reactions: confused
+
+  rename:
+    name: Rename
+    if: contains(github.event.comment.body, '@jellyfin-bot rename') && github.event.comment.author_association == 'MEMBER'
+    runs-on: ubuntu-latest
+    steps:
+      - name: pull in script
+        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+        with:
+          repository: jellyfin/jellyfin-triage-script
+      - name: install python
+        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d # v5.1.0
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+      - name: install python packages
+        run: pip install -r rename/requirements.txt
+      - name: run rename script
+        run: python3 rename.py
+        working-directory: ./rename
+        env:
+          GH_TOKEN: ${{ secrets.JF_BOT_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          ISSUE: ${{ github.event.issue.number }}
+          COMMENT_ID: ${{ github.event.comment.id }}

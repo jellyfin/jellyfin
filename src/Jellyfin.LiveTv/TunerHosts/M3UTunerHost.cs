@@ -5,7 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,12 +32,22 @@ namespace Jellyfin.LiveTv.TunerHosts
     {
         private static readonly string[] _disallowedMimeTypes =
         {
+            "text/plain",
+            "text/html",
             "video/x-matroska",
             "video/mp4",
             "application/vnd.apple.mpegurl",
             "application/mpegurl",
             "application/x-mpegurl",
             "video/vnd.mpeg.dash.mpd"
+        };
+
+        private static readonly string[] _disallowedSharedStreamExtensions =
+        {
+            ".mkv",
+            ".mp4",
+            ".m3u8",
+            ".mpd"
         };
 
         private readonly IHttpClientFactory _httpClientFactory;
@@ -106,11 +118,22 @@ namespace Jellyfin.LiveTv.TunerHosts
                     .SendAsync(message, cancellationToken)
                     .ConfigureAwait(false);
 
-                response.EnsureSuccessStatusCode();
-
-                if (!_disallowedMimeTypes.Contains(response.Content.Headers.ContentType?.ToString(), StringComparison.OrdinalIgnoreCase))
+                if (response.IsSuccessStatusCode)
                 {
-                    return new SharedHttpStream(mediaSource, tunerHost, streamId, FileSystem, _httpClientFactory, Logger, Config, _appHost, _streamHelper);
+                    if (!_disallowedMimeTypes.Contains(response.Content.Headers.ContentType?.MediaType, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return new SharedHttpStream(mediaSource, tunerHost, streamId, FileSystem, _httpClientFactory, Logger, Config, _appHost, _streamHelper);
+                    }
+                }
+                else
+                {
+                    // Fallback to check path extension when the server does not support HEAD method
+                    // Use UriBuilder to remove all query string as GetExtension will include them when used directly
+                    var extension = Path.GetExtension(new UriBuilder(mediaSource.Path).Path);
+                    if (!_disallowedSharedStreamExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return new SharedHttpStream(mediaSource, tunerHost, streamId, FileSystem, _httpClientFactory, Logger, Config, _appHost, _streamHelper);
+                    }
                 }
             }
 

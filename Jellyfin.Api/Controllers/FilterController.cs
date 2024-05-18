@@ -180,7 +180,7 @@ public class FilterController : BaseJellyfinApiController
         }
         else if (parentId.HasValue)
         {
-            parentItem = _libraryManager.GetItemById(parentId.Value);
+            parentItem = _libraryManager.GetItemById<BaseItem>(parentId.Value);
         }
 
         var filters = new QueryFilters();

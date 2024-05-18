@@ -303,8 +303,8 @@ namespace Emby.Server.Implementations.Library
             {
                 // Handle situations with the grouping setting, e.g. movies showing up in tv, etc.
                 // Thanks to mixed content libraries included in the UserView
-                var hasCollectionType = parents.OfType<UserView>().ToArray();
-                if (hasCollectionType.Length > 0)
+                var hasCollectionType = parents.OfType<UserView>().ToList();
+                if (hasCollectionType.Count > 0)
                 {
                     if (hasCollectionType.All(i => i.CollectionType == CollectionType.movies))
                     {

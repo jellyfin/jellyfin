@@ -77,8 +77,8 @@ public class UserLibraryController : BaseJellyfinApiController
         [FromQuery] Guid? userId,
         [FromRoute, Required] Guid itemId)
     {
-        var requestUserId = RequestHelpers.GetUserId(User, userId);
-        var user = _userManager.GetUserById(requestUserId);
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = _userManager.GetUserById(userId.Value);
         if (user is null)
         {
             return NotFound();
@@ -86,18 +86,10 @@ public class UserLibraryController : BaseJellyfinApiController
 
         var item = itemId.IsEmpty()
             ? _libraryManager.GetUserRootFolder()
-            : _libraryManager.GetItemById(itemId);
-
+            : _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();
-        }
-
-        if (item is not UserRootFolder
-            // Check the item is visible for the user
-            && !item.IsVisible(user))
-        {
-            return Unauthorized($"{user.Username} is not permitted to access item {item.Name}.");
         }
 
         await RefreshItemOnDemandIfNeeded(item).ConfigureAwait(false);
@@ -133,8 +125,8 @@ public class UserLibraryController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<BaseItemDto> GetRootFolder([FromQuery] Guid? userId)
     {
-        var requestUserId = RequestHelpers.GetUserId(User, userId);
-        var user = _userManager.GetUserById(requestUserId);
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = _userManager.GetUserById(userId.Value);
         if (user is null)
         {
             return NotFound();
@@ -172,8 +164,8 @@ public class UserLibraryController : BaseJellyfinApiController
         [FromQuery] Guid? userId,
         [FromRoute, Required] Guid itemId)
     {
-        var requestUserId = RequestHelpers.GetUserId(User, userId);
-        var user = _userManager.GetUserById(requestUserId);
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = _userManager.GetUserById(userId.Value);
         if (user is null)
         {
             return NotFound();
@@ -181,18 +173,10 @@ public class UserLibraryController : BaseJellyfinApiController
 
         var item = itemId.IsEmpty()
             ? _libraryManager.GetUserRootFolder()
-            : _libraryManager.GetItemById(itemId);
-
+            : _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();
-        }
-
-        if (item is not UserRootFolder
-            // Check the item is visible for the user
-            && !item.IsVisible(user))
-        {
-            return Unauthorized($"{user.Username} is not permitted to access item {item.Name}.");
         }
 
         var items = await _libraryManager.GetIntros(item, user).ConfigureAwait(false);
@@ -231,8 +215,8 @@ public class UserLibraryController : BaseJellyfinApiController
         [FromQuery] Guid? userId,
         [FromRoute, Required] Guid itemId)
     {
-        var requestUserId = RequestHelpers.GetUserId(User, userId);
-        var user = _userManager.GetUserById(requestUserId);
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = _userManager.GetUserById(userId.Value);
         if (user is null)
         {
             return NotFound();
@@ -240,18 +224,10 @@ public class UserLibraryController : BaseJellyfinApiController
 
         var item = itemId.IsEmpty()
             ? _libraryManager.GetUserRootFolder()
-            : _libraryManager.GetItemById(itemId);
-
+            : _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();
-        }
-
-        if (item is not UserRootFolder
-            // Check the item is visible for the user
-            && !item.IsVisible(user))
-        {
-            return Unauthorized($"{user.Username} is not permitted to access item {item.Name}.");
         }
 
         return MarkFavorite(user, item, true);
@@ -286,8 +262,8 @@ public class UserLibraryController : BaseJellyfinApiController
         [FromQuery] Guid? userId,
         [FromRoute, Required] Guid itemId)
     {
-        var requestUserId = RequestHelpers.GetUserId(User, userId);
-        var user = _userManager.GetUserById(requestUserId);
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = _userManager.GetUserById(userId.Value);
         if (user is null)
         {
             return NotFound();
@@ -295,18 +271,10 @@ public class UserLibraryController : BaseJellyfinApiController
 
         var item = itemId.IsEmpty()
             ? _libraryManager.GetUserRootFolder()
-            : _libraryManager.GetItemById(itemId);
-
+            : _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();
-        }
-
-        if (item is not UserRootFolder
-            // Check the item is visible for the user
-            && !item.IsVisible(user))
-        {
-            return Unauthorized($"{user.Username} is not permitted to access item {item.Name}.");
         }
 
         return MarkFavorite(user, item, false);
@@ -341,8 +309,8 @@ public class UserLibraryController : BaseJellyfinApiController
         [FromQuery] Guid? userId,
         [FromRoute, Required] Guid itemId)
     {
-        var requestUserId = RequestHelpers.GetUserId(User, userId);
-        var user = _userManager.GetUserById(requestUserId);
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = _userManager.GetUserById(userId.Value);
         if (user is null)
         {
             return NotFound();
@@ -350,18 +318,10 @@ public class UserLibraryController : BaseJellyfinApiController
 
         var item = itemId.IsEmpty()
             ? _libraryManager.GetUserRootFolder()
-            : _libraryManager.GetItemById(itemId);
-
+            : _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();
-        }
-
-        if (item is not UserRootFolder
-            // Check the item is visible for the user
-            && !item.IsVisible(user))
-        {
-            return Unauthorized($"{user.Username} is not permitted to access item {item.Name}.");
         }
 
         return UpdateUserItemRatingInternal(user, item, null);
@@ -398,8 +358,8 @@ public class UserLibraryController : BaseJellyfinApiController
         [FromRoute, Required] Guid itemId,
         [FromQuery] bool? likes)
     {
-        var requestUserId = RequestHelpers.GetUserId(User, userId);
-        var user = _userManager.GetUserById(requestUserId);
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = _userManager.GetUserById(userId.Value);
         if (user is null)
         {
             return NotFound();
@@ -407,18 +367,10 @@ public class UserLibraryController : BaseJellyfinApiController
 
         var item = itemId.IsEmpty()
             ? _libraryManager.GetUserRootFolder()
-            : _libraryManager.GetItemById(itemId);
-
+            : _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();
-        }
-
-        if (item is not UserRootFolder
-            // Check the item is visible for the user
-            && !item.IsVisible(user))
-        {
-            return Unauthorized($"{user.Username} is not permitted to access item {item.Name}.");
         }
 
         return UpdateUserItemRatingInternal(user, item, likes);
@@ -455,8 +407,8 @@ public class UserLibraryController : BaseJellyfinApiController
         [FromQuery] Guid? userId,
         [FromRoute, Required] Guid itemId)
     {
-        var requestUserId = RequestHelpers.GetUserId(User, userId);
-        var user = _userManager.GetUserById(requestUserId);
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = _userManager.GetUserById(userId.Value);
         if (user is null)
         {
             return NotFound();
@@ -464,18 +416,10 @@ public class UserLibraryController : BaseJellyfinApiController
 
         var item = itemId.IsEmpty()
             ? _libraryManager.GetUserRootFolder()
-            : _libraryManager.GetItemById(itemId);
-
+            : _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();
-        }
-
-        if (item is not UserRootFolder
-            // Check the item is visible for the user
-            && !item.IsVisible(user))
-        {
-            return Unauthorized($"{user.Username} is not permitted to access item {item.Name}.");
         }
 
         var dtoOptions = new DtoOptions().AddClientFields(User);
@@ -519,8 +463,8 @@ public class UserLibraryController : BaseJellyfinApiController
         [FromQuery] Guid? userId,
         [FromRoute, Required] Guid itemId)
     {
-        var requestUserId = RequestHelpers.GetUserId(User, userId);
-        var user = _userManager.GetUserById(requestUserId);
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = _userManager.GetUserById(userId.Value);
         if (user is null)
         {
             return NotFound();
@@ -528,18 +472,10 @@ public class UserLibraryController : BaseJellyfinApiController
 
         var item = itemId.IsEmpty()
             ? _libraryManager.GetUserRootFolder()
-            : _libraryManager.GetItemById(itemId);
-
+            : _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();
-        }
-
-        if (item is not UserRootFolder
-            // Check the item is visible for the user
-            && !item.IsVisible(user))
-        {
-            return Unauthorized($"{user.Username} is not permitted to access item {item.Name}.");
         }
 
         var dtoOptions = new DtoOptions().AddClientFields(User);

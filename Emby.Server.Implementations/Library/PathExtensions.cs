@@ -31,8 +31,9 @@ namespace Emby.Server.Implementations.Library
 
             var attributeIndex = str.IndexOf(attribute, StringComparison.OrdinalIgnoreCase);
 
-            // Must be at least 3 characters after the attribute =, ], any character.
-            var maxIndex = str.Length - attribute.Length - 3;
+            // Must be at least 3 characters after the attribute =, ], any character,
+            // then we offset it by 1, because we want the index and not length.
+            var maxIndex = str.Length - attribute.Length - 2;
             while (attributeIndex > -1 && attributeIndex < maxIndex)
             {
                 var attributeEnd = attributeIndex + attribute.Length;

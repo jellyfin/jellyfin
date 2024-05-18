@@ -178,7 +178,6 @@
  - [Pithaya](https://github.com/Pithaya)
  - [Çağrı Sakaoğlu](https://github.com/ilovepilav)
  - [TheMelmacian](https://github.com/TheMelmacian)
- _ [Barasingha](https://github.com/MaVdbussche)
  - [Barasingha](https://github.com/MaVdbussche)
  - [Gauvino](https://github.com/Gauvino)
  - [felix920506](https://github.com/felix920506)
@@ -257,3 +256,4 @@
  - [JPUC1143](https://github.com/Jpuc1143/)
  - [0x25CBFC4F](https://github.com/0x25CBFC4F)
  - [Robert Lützner](https://github.com/rluetzner)
+ - [Nathan McCrina](https://github.com/nfmccrina)

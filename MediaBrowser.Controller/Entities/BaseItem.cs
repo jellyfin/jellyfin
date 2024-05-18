@@ -135,7 +135,14 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The LUFS Value.</value>
         [JsonIgnore]
-        public float LUFS { get; set; }
+        public float? LUFS { get; set; }
+
+        /// <summary>
+        /// Gets or sets the gain required for audio normalization.
+        /// </summary>
+        /// <value>The gain required for audio normalization.</value>
+        [JsonIgnore]
+        public float? NormalizationGain { get; set; }
 
         /// <summary>
         /// Gets or sets the channel identifier.
@@ -833,7 +840,7 @@ namespace MediaBrowser.Controller.Entities
             return CanDelete() && IsAuthorizedToDelete(user, allCollectionFolders);
         }
 
-        public bool CanDelete(User user)
+        public virtual bool CanDelete(User user)
         {
             var allCollectionFolders = LibraryManager.GetUserRootFolder().Children.OfType<Folder>().ToList();
 
@@ -1586,18 +1593,30 @@ namespace MediaBrowser.Controller.Entities
                 list.AddRange(parent.Tags);
             }
 
+            foreach (var folder in LibraryManager.GetCollectionFolders(this))
+            {
+                list.AddRange(folder.Tags);
+            }
+
             return list.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         }
 
         private bool IsVisibleViaTags(User user)
         {
-            if (user.GetPreference(PreferenceKind.BlockedTags).Any(i => Tags.Contains(i, StringComparison.OrdinalIgnoreCase)))
+            var allTags = GetInheritedTags();
+            if (user.GetPreference(PreferenceKind.BlockedTags).Any(i => allTags.Contains(i, StringComparison.OrdinalIgnoreCase)))
             {
                 return false;
             }
 
+            var parent = GetParents().FirstOrDefault() ?? this;
+            if (parent is UserRootFolder or AggregateFolder)
+            {
+                return true;
+            }
+
             var allowedTagsPreference = user.GetPreference(PreferenceKind.AllowedTags);
-            if (allowedTagsPreference.Any() && !allowedTagsPreference.Any(i => Tags.Contains(i, StringComparison.OrdinalIgnoreCase)))
+            if (allowedTagsPreference.Length != 0 && !allowedTagsPreference.Any(i => allTags.Contains(i, StringComparison.OrdinalIgnoreCase)))
             {
                 return false;
             }
@@ -1760,14 +1779,11 @@ namespace MediaBrowser.Controller.Entities
                 int curLen = current.Length;
                 if (curLen == 0)
                 {
-                    Studios = new[] { name };
+                    Studios = [name];
                 }
                 else
                 {
-                    var newArr = new string[curLen + 1];
-                    current.CopyTo(newArr, 0);
-                    newArr[curLen] = name;
-                    Studios = newArr;
+                    Studios = [..current, name];
                 }
             }
         }
@@ -1789,9 +1805,7 @@ namespace MediaBrowser.Controller.Entities
             var genres = Genres;
             if (!genres.Contains(name, StringComparison.OrdinalIgnoreCase))
             {
-                var list = genres.ToList();
-                list.Add(name);
-                Genres = list.ToArray();
+                Genres = [..genres, name];
             }
         }
 
@@ -1961,12 +1975,7 @@ namespace MediaBrowser.Controller.Entities
 
         public void AddImage(ItemImageInfo image)
         {
-            var current = ImageInfos;
-            var currentCount = current.Length;
-            var newArr = new ItemImageInfo[currentCount + 1];
-            current.CopyTo(newArr, 0);
-            newArr[currentCount] = image;
-            ImageInfos = newArr;
+            ImageInfos = [..ImageInfos, image];
         }
 
         public virtual Task UpdateToRepositoryAsync(ItemUpdateType updateReason, CancellationToken cancellationToken)

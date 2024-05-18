@@ -126,5 +126,6 @@
     "External": "Extern",
     "HearingImpaired": "Hörselskadad",
     "TaskRefreshTrickplayImages": "Generera Trickplay-bilder",
-    "TaskRefreshTrickplayImagesDescription": "Skapar trickplay-förhandsvisningar för videor i aktiverade bibliotek."
+    "TaskRefreshTrickplayImagesDescription": "Skapar trickplay-förhandsvisningar för videor i aktiverade bibliotek.",
+    "TaskCleanCollectionsAndPlaylists": "Rensa samlingar och spellistor"
 }

@@ -154,12 +154,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         public void SetFFmpegPath()
         {
-            // 1) Custom path stored in config/encoding xml file under tag <EncoderAppPath> takes precedence
-            var ffmpegPath = _configurationManager.GetEncodingOptions().EncoderAppPath;
+            // 1) Check if the --ffmpeg CLI switch has been given
+            var ffmpegPath = _startupOptionFFmpegPath;
             if (string.IsNullOrEmpty(ffmpegPath))
             {
-                // 2) Check if the --ffmpeg CLI switch has been given
-                ffmpegPath = _startupOptionFFmpegPath;
+                // 2) Custom path stored in config/encoding xml file under tag <EncoderAppPath> should be used as a fallback
+                ffmpegPath = _configurationManager.GetEncodingOptions().EncoderAppPath;
                 if (string.IsNullOrEmpty(ffmpegPath))
                 {
                     // 3) Check "ffmpeg"
@@ -463,6 +463,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 extraArgs += " -user_agent " + userAgent;
             }
 
+            if (request.MediaSource.Protocol == MediaProtocol.Rtsp)
+            {
+                extraArgs += " -rtsp_transport tcp+udp -rtsp_flags prefer_tcp";
+            }
+
             return extraArgs;
         }
 
@@ -691,7 +696,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 Video3DFormat.HalfTopAndBottom => @"crop=iw:ih/2:0:0,scale=(iw*2):ih),setdar=dar=a,crop=min(iw\,ih*dar):min(ih\,iw/dar):(iw-min(iw\,iw*sar))/2:(ih - min (ih\,ih/sar))/2,setsar=sar=1",
                 // ftab crop height in half, set the display aspect,crop out any black bars we may have made
                 Video3DFormat.FullTopAndBottom => @"crop=iw:ih/2:0:0,setdar=dar=a,crop=min(iw\,ih*dar):min(ih\,iw/dar):(iw-min(iw\,iw*sar))/2:(ih - min (ih\,ih/sar))/2,setsar=sar=1",
-                _ => "scale=round(iw*dar/2)*2:round(ih/2)*2"
+                _ => "scale=round(iw*sar/2)*2:round(ih/2)*2"
             };
 
             filters.Add(scaler);
@@ -800,6 +805,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             int maxWidth,
             TimeSpan interval,
             bool allowHwAccel,
+            bool enableHwEncoding,
             int? threads,
             int? qualityScale,
             ProcessPriorityClass? priority,
@@ -828,7 +834,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 MediaPath = inputFile,
                 OutputVideoCodec = "mjpeg"
             };
-            var vidEncoder = options.AllowMjpegEncoding ? encodingHelper.GetVideoEncoder(jobState, options) : jobState.OutputVideoCodec;
+            var vidEncoder = enableHwEncoding ? encodingHelper.GetVideoEncoder(jobState, options) : jobState.OutputVideoCodec;
 
             // Get input and filter arguments
             var inputArg = encodingHelper.GetInputArgument(jobState, options, container).Trim();
@@ -842,7 +848,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 inputArg = "-threads " + threads + " " + inputArg; // HW accel args set a different input thread count, only set if disabled
             }
 
-            var filterParam = encodingHelper.GetVideoProcessingFilterParam(jobState, options, jobState.OutputVideoCodec).Trim();
+            var filterParam = encodingHelper.GetVideoProcessingFilterParam(jobState, options, vidEncoder).Trim();
             if (string.IsNullOrWhiteSpace(filterParam))
             {
                 throw new InvalidOperationException("EncodingHelper returned empty or invalid filter parameters.");
@@ -865,6 +871,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 throw new InvalidOperationException("Empty or invalid input argument.");
             }
 
+            float? encoderQuality = qualityScale;
+            if (vidEncoder.Contains("vaapi", StringComparison.OrdinalIgnoreCase))
+            {
+                // vaapi's mjpeg encoder uses jpeg quality divided by QP2LAMBDA (118) as input, instead of ffmpeg defined qscale
+                // ffmpeg qscale is a value from 1-31, with 1 being best quality and 31 being worst
+                // jpeg quality is a value from 0-100, with 0 being worst quality and 100 being best
+                encoderQuality = (100 - ((qualityScale - 1) * (100 / 30))) / 118;
+            }
+
             // Output arguments
             var targetDirectory = Path.Combine(_configurationManager.ApplicationPaths.TempDirectory, Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(targetDirectory);
@@ -878,7 +893,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 filterParam,
                 outputThreads.GetValueOrDefault(_threads),
                 vidEncoder,
-                qualityScale.HasValue ? "-qscale:v " + qualityScale.Value.ToString(CultureInfo.InvariantCulture) + " " : string.Empty,
+                qualityScale.HasValue ? "-qscale:v " + encoderQuality.Value.ToString(CultureInfo.InvariantCulture) + " " : string.Empty,
                 "image2",
                 outputPath);
 

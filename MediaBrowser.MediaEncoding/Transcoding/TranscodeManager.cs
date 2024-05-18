@@ -492,12 +492,11 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
             IODefaults.FileStreamBufferSize,
             FileOptions.Asynchronous);
 
-        var commandLineLogMessage = process.StartInfo.FileName + " " + process.StartInfo.Arguments;
+        await JsonSerializer.SerializeAsync(logStream, state.MediaSource, cancellationToken: cancellationTokenSource.Token).ConfigureAwait(false);
         var commandLineLogMessageBytes = Encoding.UTF8.GetBytes(
-            JsonSerializer.Serialize(state.MediaSource)
+            Environment.NewLine
             + Environment.NewLine
-            + Environment.NewLine
-            + commandLineLogMessage
+            + process.StartInfo.FileName + " " + process.StartInfo.Arguments
             + Environment.NewLine
             + Environment.NewLine);
 

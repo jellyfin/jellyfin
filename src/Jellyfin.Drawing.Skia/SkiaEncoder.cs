@@ -263,6 +263,11 @@ public class SkiaEncoder : IImageEncoder
                 return null;
             }
 
+            if (codec.FrameCount != 0)
+            {
+                throw new ArgumentException("Cannot decode images with multiple frames");
+            }
+
             // create the bitmap
             var bitmap = new SKBitmap(codec.Info.Width, codec.Info.Height, !requiresTransparencyHack);
 
@@ -554,9 +559,13 @@ public class SkiaEncoder : IImageEncoder
     /// <inheritdoc />
     public void CreateSplashscreen(IReadOnlyList<string> posters, IReadOnlyList<string> backdrops)
     {
-        var splashBuilder = new SplashscreenBuilder(this);
-        var outputPath = Path.Combine(_appPaths.DataPath, "splashscreen.png");
-        splashBuilder.GenerateSplash(posters, backdrops, outputPath);
+        // Only generate the splash screen if we have at least one poster and at least one backdrop/thumbnail.
+        if (posters.Count > 0 && backdrops.Count > 0)
+        {
+            var splashBuilder = new SplashscreenBuilder(this);
+            var outputPath = Path.Combine(_appPaths.DataPath, "splashscreen.png");
+            splashBuilder.GenerateSplash(posters, backdrops, outputPath);
+        }
     }
 
     /// <inheritdoc />

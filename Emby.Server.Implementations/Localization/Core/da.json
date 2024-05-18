@@ -126,5 +126,7 @@
     "External": "Ekstern",
     "HearingImpaired": "Hørehæmmet",
     "TaskRefreshTrickplayImages": "Generér Trickplay Billeder",
-    "TaskRefreshTrickplayImagesDescription": "Laver trickplay forhåndsvisninger for videoer i aktiverede biblioteker."
+    "TaskRefreshTrickplayImagesDescription": "Laver trickplay forhåndsvisninger for videoer i aktiverede biblioteker.",
+    "TaskCleanCollectionsAndPlaylists": "Ryd op i samlinger og afspilningslister",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Fjerner enheder fra samlinger og afspilningslister der ikke eksisterer længere."
 }
