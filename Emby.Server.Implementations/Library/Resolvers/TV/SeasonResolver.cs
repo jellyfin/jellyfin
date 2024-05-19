@@ -78,7 +78,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                     }
                 }
 
-                if (season.IndexNumber.HasValue)
+                if (season.IndexNumber.HasValue && string.IsNullOrEmpty(season.Name))
                 {
                     var seasonNumber = season.IndexNumber.Value;
                     season.Name = seasonNumber == 0 ?
