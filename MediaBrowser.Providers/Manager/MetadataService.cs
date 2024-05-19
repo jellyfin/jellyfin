@@ -663,7 +663,7 @@ namespace MediaBrowser.Providers.Manager
             // If replacing all metadata, run internet providers first
             if (options.ReplaceAllMetadata)
             {
-                var remoteResult = await ExecuteRemoteProviders(temp, logName, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
+                var remoteResult = await ExecuteRemoteProviders(temp, logName, true, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
                     .ConfigureAwait(false);
 
                 refreshResult.UpdateType |= remoteResult.UpdateType;
@@ -749,7 +749,7 @@ namespace MediaBrowser.Providers.Manager
             // Local metadata is king - if any is found don't run remote providers
             if (!options.ReplaceAllMetadata && (!hasLocalMetadata || options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh || !item.StopRefreshIfLocalMetadataFound))
             {
-                var remoteResult = await ExecuteRemoteProviders(temp, logName, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
+                var remoteResult = await ExecuteRemoteProviders(temp, logName, false, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
                     .ConfigureAwait(false);
 
                 refreshResult.UpdateType |= remoteResult.UpdateType;
@@ -820,7 +820,7 @@ namespace MediaBrowser.Providers.Manager
             return new TItemType();
         }
 
-        private async Task<RefreshResult> ExecuteRemoteProviders(MetadataResult<TItemType> temp, string logName, TIdType id, IEnumerable<IRemoteMetadataProvider<TItemType, TIdType>> providers, CancellationToken cancellationToken)
+        private async Task<RefreshResult> ExecuteRemoteProviders(MetadataResult<TItemType> temp, string logName, bool replaceData, TIdType id, IEnumerable<IRemoteMetadataProvider<TItemType, TIdType>> providers, CancellationToken cancellationToken)
         {
             var refreshResult = new RefreshResult();
 
@@ -845,7 +845,7 @@ namespace MediaBrowser.Providers.Manager
                     {
                         result.Provider = provider.Name;
 
-                        MergeData(result, temp, Array.Empty<MetadataField>(), false, false);
+                        MergeData(result, temp, Array.Empty<MetadataField>(), replaceData, false);
                         MergeNewData(temp.Item, id);
 
                         refreshResult.UpdateType |= ItemUpdateType.MetadataDownload;
