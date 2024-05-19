@@ -54,7 +54,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                 {
                     IndexNumber = seasonParserResult.SeasonNumber,
                     SeriesId = series.Id,
-                    SeriesName = series.Name
+                    SeriesName = series.Name,
+                    Path = seasonParserResult.IsSeasonFolder ? path : args.Parent.Path
                 };
 
                 if (!season.IndexNumber.HasValue || !seasonParserResult.IsSeasonFolder)
