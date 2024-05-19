@@ -63,6 +63,16 @@ namespace MediaBrowser.XbmcMetadata.Providers
         /// <inheritdoc />
         protected override FileSystemMetadata? GetXmlFile(ItemInfo info, IDirectoryService directoryService)
         {
+            var seasonPath = info.Path;
+            if (seasonPath is not null)
+            {
+                var path = Path.Combine(seasonPath, "tvshow.nfo");
+                if (Path.Exists(path))
+                {
+                    return directoryService.GetFile(path);
+                }
+            }
+
             var seriesPath = _libraryManager.GetItemById(info.ParentId)?.Path;
             if (seriesPath is not null)
             {
