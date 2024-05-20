@@ -246,6 +246,21 @@ namespace MediaBrowser.Controller.MediaEncoding
         IReadOnlyList<string> GetPrimaryPlaylistM2tsFiles(string path);
 
         /// <summary>
+        /// Gets the input path argument from <see cref="EncodingJobInfo"/>.
+        /// </summary>
+        /// <param name="state">The <see cref="EncodingJobInfo"/>.</param>
+        /// <returns>The input path argument.</returns>
+        string GetInputPathArgument(EncodingJobInfo state);
+
+        /// <summary>
+        /// Gets the input path argument.
+        /// </summary>
+        /// <param name="path">The item path.</param>
+        /// <param name="mediaSource">The <see cref="MediaSourceInfo"/>.</param>
+        /// <returns>The input path argument.</returns>
+        string GetInputPathArgument(string path, MediaSourceInfo mediaSource);
+
+        /// <summary>
         /// Generates a FFmpeg concat config for the source.
         /// </summary>
         /// <param name="source">The <see cref="MediaSourceInfo"/>.</param>
