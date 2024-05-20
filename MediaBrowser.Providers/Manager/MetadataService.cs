@@ -1102,7 +1102,12 @@ namespace MediaBrowser.Providers.Manager
 
             if (mergeMetadataSettings)
             {
-                if (replaceData || target.LockedFields.Length == 0)
+                if (replaceData || !target.IsLocked)
+                {
+                    target.IsLocked = target.IsLocked || source.IsLocked;
+                }
+
+                if (target.LockedFields.Length == 0)
                 {
                     target.LockedFields = source.LockedFields;
                 }
@@ -1111,19 +1116,9 @@ namespace MediaBrowser.Providers.Manager
                     target.LockedFields = target.LockedFields.Concat(source.LockedFields).Distinct().ToArray();
                 }
 
-                if (replaceData)
-                {
-                    target.IsLocked = source.IsLocked;
-                }
-
                 if (source.DateCreated != default)
                 {
                     target.DateCreated = source.DateCreated;
-                }
-
-                if (replaceData)
-                {
-                    target.IsLocked = source.IsLocked;
                 }
 
                 if (replaceData || string.IsNullOrEmpty(target.PreferredMetadataCountryCode))
