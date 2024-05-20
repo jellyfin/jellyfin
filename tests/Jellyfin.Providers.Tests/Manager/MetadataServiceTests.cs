@@ -77,7 +77,7 @@ namespace Jellyfin.Providers.Tests.Manager
 
         [Theory]
         [InlineData("Name", MetadataField.Name, false)]
-        [InlineData("OriginalTitle", null, false)]
+        [InlineData("OriginalTitle", null)]
         [InlineData("OfficialRating", MetadataField.OfficialRating)]
         [InlineData("CustomRating")]
         [InlineData("Tagline")]

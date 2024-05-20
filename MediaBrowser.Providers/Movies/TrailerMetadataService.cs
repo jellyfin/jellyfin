@@ -1,5 +1,6 @@
 #pragma warning disable CS1591
 
+using System.Linq;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -24,7 +25,7 @@ namespace MediaBrowser.Providers.Movies
         }
 
         /// <inheritdoc />
-        protected override bool IsFullLocalMetadata(Trailer item)
+        protected override bool HasBaseMetadata(Trailer item)
         {
             if (string.IsNullOrWhiteSpace(item.Overview))
             {
@@ -36,7 +37,7 @@ namespace MediaBrowser.Providers.Movies
                 return false;
             }
 
-            return base.IsFullLocalMetadata(item);
+            return base.HasBaseMetadata(item);
         }
 
         /// <inheritdoc />
@@ -47,6 +48,10 @@ namespace MediaBrowser.Providers.Movies
             if (replaceData || target.Item.TrailerTypes.Length == 0)
             {
                 target.Item.TrailerTypes = source.Item.TrailerTypes;
+            }
+            else
+            {
+                target.Item.TrailerTypes = target.Item.TrailerTypes.Concat(source.Item.TrailerTypes).Distinct().ToArray();
             }
         }
     }

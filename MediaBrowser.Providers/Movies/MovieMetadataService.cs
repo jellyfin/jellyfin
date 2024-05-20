@@ -24,7 +24,7 @@ namespace MediaBrowser.Providers.Movies
         }
 
         /// <inheritdoc />
-        protected override bool IsFullLocalMetadata(Movie item)
+        protected override bool HasBaseMetadata(Movie item)
         {
             if (string.IsNullOrWhiteSpace(item.Overview))
             {
@@ -36,7 +36,7 @@ namespace MediaBrowser.Providers.Movies
                 return false;
             }
 
-            return base.IsFullLocalMetadata(item);
+            return base.HasBaseMetadata(item);
         }
 
         /// <inheritdoc />

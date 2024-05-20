@@ -654,139 +654,123 @@ namespace MediaBrowser.Providers.Manager
                 await RunCustomProvider(provider, item, logName, options, refreshResult, cancellationToken).ConfigureAwait(false);
             }
 
-            var temp = new MetadataResult<TItemType>
+            if (!item.IsLocked)
             {
-                Item = CreateNew()
-            };
-            temp.Item.Path = item.Path;
-
-            // If replacing all metadata, run internet providers first
-            if (options.ReplaceAllMetadata)
-            {
-                var remoteResult = await ExecuteRemoteProviders(temp, logName, true, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
-                    .ConfigureAwait(false);
-
-                refreshResult.UpdateType |= remoteResult.UpdateType;
-                refreshResult.ErrorMessage = remoteResult.ErrorMessage;
-                refreshResult.Failures += remoteResult.Failures;
-            }
-
-            var hasLocalMetadata = false;
-            var foundImageTypes = new List<ImageType>();
-
-            foreach (var provider in providers.OfType<ILocalMetadataProvider<TItemType>>())
-            {
-                var providerName = provider.GetType().Name;
-                Logger.LogDebug("Running {Provider} for {Item}", providerName, logName);
-
-                var itemInfo = new ItemInfo(item);
-
-                try
+                var temp = new MetadataResult<TItemType>
                 {
-                    var localItem = await provider.GetMetadata(itemInfo, options.DirectoryService, cancellationToken).ConfigureAwait(false);
+                    Item = CreateNew()
+                };
+                temp.Item.Path = item.Path;
+                temp.Item.Id = item.Id;
 
-                    if (localItem.HasMetadata)
+                var hasLocalBaseMetadataOrLocked = false;
+                var foundImageTypes = new List<ImageType>();
+
+                foreach (var provider in providers.OfType<ILocalMetadataProvider<TItemType>>())
+                {
+                    var providerName = provider.GetType().Name;
+                    Logger.LogDebug("Running {Provider} for {Item}", providerName, logName);
+
+                    var itemInfo = new ItemInfo(item);
+
+                    try
                     {
-                        foreach (var remoteImage in localItem.RemoteImages)
+                        var localItem = await provider.GetMetadata(itemInfo, options.DirectoryService, cancellationToken).ConfigureAwait(false);
+
+                        if (localItem.HasMetadata)
                         {
-                            try
+                            foreach (var remoteImage in localItem.RemoteImages)
                             {
-                                if (item.ImageInfos.Any(x => x.Type == remoteImage.Type)
-                                    && !options.IsReplacingImage(remoteImage.Type))
+                                try
                                 {
-                                    continue;
+                                    if (item.ImageInfos.Any(x => x.Type == remoteImage.Type)
+                                        && !options.IsReplacingImage(remoteImage.Type))
+                                    {
+                                        continue;
+                                    }
+
+                                    await ProviderManager.SaveImage(item, remoteImage.Url, remoteImage.Type, null, cancellationToken).ConfigureAwait(false);
+                                    refreshResult.UpdateType |= ItemUpdateType.ImageUpdate;
+
+                                    // remember imagetype that has just been downloaded
+                                    foundImageTypes.Add(remoteImage.Type);
                                 }
-
-                                await ProviderManager.SaveImage(item, remoteImage.Url, remoteImage.Type, null, cancellationToken).ConfigureAwait(false);
-                                refreshResult.UpdateType |= ItemUpdateType.ImageUpdate;
-
-                                // remember imagetype that has just been downloaded
-                                foundImageTypes.Add(remoteImage.Type);
+                                catch (HttpRequestException ex)
+                                {
+                                    Logger.LogError(ex, "Could not save {ImageType} image: {Url}", Enum.GetName(remoteImage.Type), remoteImage.Url);
+                                }
                             }
-                            catch (HttpRequestException ex)
+
+                            if (foundImageTypes.Count > 0)
                             {
-                                Logger.LogError(ex, "Could not save {ImageType} image: {Url}", Enum.GetName(remoteImage.Type), remoteImage.Url);
+                                imageService.UpdateReplaceImages(options, foundImageTypes);
                             }
+
+                            if (imageService.MergeImages(item, localItem.Images, options))
+                            {
+                                refreshResult.UpdateType |= ItemUpdateType.ImageUpdate;
+                            }
+
+                            MergeData(localItem, temp, Array.Empty<MetadataField>(), false, true);
+                            refreshResult.UpdateType |= ItemUpdateType.MetadataImport;
+
+                            // Only one local provider allowed per item
+                            if (item.IsLocked || localItem.Item.IsLocked || HasBaseMetadata(localItem.Item))
+                            {
+                                hasLocalBaseMetadataOrLocked = true;
+                            }
+
+                            break;
                         }
 
-                        if (foundImageTypes.Count > 0)
-                        {
-                            imageService.UpdateReplaceImages(options, foundImageTypes);
-                        }
-
-                        if (imageService.MergeImages(item, localItem.Images, options))
-                        {
-                            refreshResult.UpdateType |= ItemUpdateType.ImageUpdate;
-                        }
-
-                        MergeData(localItem, temp, Array.Empty<MetadataField>(), options.ReplaceAllMetadata, true);
-                        refreshResult.UpdateType |= ItemUpdateType.MetadataImport;
-
-                        // Only one local provider allowed per item
-                        if (item.IsLocked || localItem.Item.IsLocked || IsFullLocalMetadata(localItem.Item))
-                        {
-                            hasLocalMetadata = true;
-                        }
-
-                        break;
+                        Logger.LogDebug("{Provider} returned no metadata for {Item}", providerName, logName);
                     }
-
-                    Logger.LogDebug("{Provider} returned no metadata for {Item}", providerName, logName);
-                }
-                catch (OperationCanceledException)
-                {
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, "Error in {Provider}", provider.Name);
-
-                    // If a local provider fails, consider that a failure
-                    refreshResult.ErrorMessage = ex.Message;
-                }
-            }
-
-            // Local metadata is king - if any is found don't run remote providers
-            if (!options.ReplaceAllMetadata && (!hasLocalMetadata || options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh || !item.StopRefreshIfLocalMetadataFound))
-            {
-                var remoteResult = await ExecuteRemoteProviders(temp, logName, false, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
-                    .ConfigureAwait(false);
-
-                refreshResult.UpdateType |= remoteResult.UpdateType;
-                refreshResult.ErrorMessage = remoteResult.ErrorMessage;
-                refreshResult.Failures += remoteResult.Failures;
-            }
-
-            if (providers.Any(i => i is not ICustomMetadataProvider))
-            {
-                if (refreshResult.UpdateType > ItemUpdateType.None)
-                {
-                    if (hasLocalMetadata)
+                    catch (OperationCanceledException)
                     {
-                        MergeData(temp, metadata, item.LockedFields, true, true);
+                        throw;
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        if (!options.RemoveOldMetadata)
-                        {
-                            MergeData(metadata, temp, Array.Empty<MetadataField>(), false, false);
-                        }
+                        Logger.LogError(ex, "Error in {Provider}", provider.Name);
 
-                        // Will always replace all metadata when Scan for new and updated files is used. Else, follow the options.
-                        MergeData(temp, metadata, item.LockedFields, options.MetadataRefreshMode == MetadataRefreshMode.Default || options.ReplaceAllMetadata, false);
+                        // If a local provider fails, consider that a failure
+                        refreshResult.ErrorMessage = ex.Message;
                     }
                 }
-            }
 
-            foreach (var provider in customProviders.Where(i => i is not IPreRefreshProvider))
-            {
-                await RunCustomProvider(provider, item, logName, options, refreshResult, cancellationToken).ConfigureAwait(false);
+                if (options.ReplaceAllMetadata || !(hasLocalBaseMetadataOrLocked && item.StopRefreshIfLocalMetadataFound) || options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh)
+                {
+                    var remoteResult = await ExecuteRemoteProviders(temp, logName, false, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
+                        .ConfigureAwait(false);
+
+                    refreshResult.UpdateType |= remoteResult.UpdateType;
+                    refreshResult.ErrorMessage = remoteResult.ErrorMessage;
+                    refreshResult.Failures += remoteResult.Failures;
+                }
+
+                if (providers.Any(i => i is not ICustomMetadataProvider))
+                {
+                    if (refreshResult.UpdateType > ItemUpdateType.None)
+                    {
+                        if (options.RemoveOldMetadata)
+                        {
+                            MergeData(metadata, temp, Array.Empty<MetadataField>(), true, true);
+                        }
+
+                        MergeData(temp, metadata, item.LockedFields, options.MetadataRefreshMode >= MetadataRefreshMode.Default || options.ReplaceAllMetadata, true);
+                    }
+                }
+
+                foreach (var provider in customProviders.Where(i => i is not IPreRefreshProvider))
+                {
+                    await RunCustomProvider(provider, item, logName, options, refreshResult, cancellationToken).ConfigureAwait(false);
+                }
             }
 
             return refreshResult;
         }
 
-        protected virtual bool IsFullLocalMetadata(TItemType item)
+        protected virtual bool HasBaseMetadata(TItemType item)
         {
             if (string.IsNullOrWhiteSpace(item.Name))
             {
@@ -948,11 +932,7 @@ namespace MediaBrowser.Providers.Manager
 
             if (replaceData || string.IsNullOrEmpty(target.OriginalTitle))
             {
-                // Safeguard against incoming data having an empty name
-                if (!string.IsNullOrWhiteSpace(source.OriginalTitle))
-                {
-                    target.OriginalTitle = source.OriginalTitle;
-                }
+                target.OriginalTitle = source.OriginalTitle;
             }
 
             if (replaceData || !target.CommunityRating.HasValue)
@@ -1015,7 +995,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     targetResult.People = sourceResult.People;
                 }
-                else if (targetResult.People is not null && sourceResult.People is not null)
+                else if (sourceResult.People is not null && sourceResult.People.Count >= 0)
                 {
                     MergePeople(sourceResult.People, targetResult.People);
                 }
@@ -1048,6 +1028,10 @@ namespace MediaBrowser.Providers.Manager
                 {
                     target.Studios = source.Studios;
                 }
+                else if (source.Studios.Length >= 0)
+                {
+                    target.Studios = target.Studios.Concat(source.Studios).Distinct().ToArray();
+                }
             }
 
             if (!lockedFields.Contains(MetadataField.Tags))
@@ -1056,6 +1040,10 @@ namespace MediaBrowser.Providers.Manager
                 {
                     target.Tags = source.Tags;
                 }
+                else if (source.Tags.Length >= 0)
+                {
+                    target.Tags = target.Tags.Concat(source.Tags).Distinct().ToArray();
+                }
             }
 
             if (!lockedFields.Contains(MetadataField.ProductionLocations))
@@ -1063,6 +1051,10 @@ namespace MediaBrowser.Providers.Manager
                 if (replaceData || target.ProductionLocations.Length == 0)
                 {
                     target.ProductionLocations = source.ProductionLocations;
+                }
+                else if (source.ProductionLocations.Length >= 0)
+                {
+                    target.Tags = target.ProductionLocations.Concat(source.ProductionLocations).Distinct().ToArray();
                 }
             }
 
@@ -1081,17 +1073,28 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
+            if (replaceData || !target.CriticRating.HasValue)
+            {
+                target.CriticRating = source.CriticRating;
+            }
+
+            if (replaceData || target.RemoteTrailers.Count == 0)
+            {
+                target.RemoteTrailers = source.RemoteTrailers;
+            }
+            else if (source.CriticRating.HasValue)
+            {
+                target.RemoteTrailers = target.RemoteTrailers.Concat(source.RemoteTrailers).Distinct().ToArray();
+            }
+
             MergeAlbumArtist(source, target, replaceData);
-            MergeCriticRating(source, target, replaceData);
-            MergeTrailers(source, target, replaceData);
             MergeVideoInfo(source, target, replaceData);
             MergeDisplayOrder(source, target, replaceData);
 
             if (replaceData || string.IsNullOrEmpty(target.ForcedSortName))
             {
                 var forcedSortName = source.ForcedSortName;
-
-                if (!string.IsNullOrWhiteSpace(forcedSortName))
+                if (!string.IsNullOrEmpty(forcedSortName))
                 {
                     target.ForcedSortName = forcedSortName;
                 }
@@ -1099,22 +1102,49 @@ namespace MediaBrowser.Providers.Manager
 
             if (mergeMetadataSettings)
             {
-                target.LockedFields = source.LockedFields;
-                target.IsLocked = source.IsLocked;
+                if (replaceData || target.LockedFields.Length == 0)
+                {
+                    target.LockedFields = source.LockedFields;
+                }
+                else
+                {
+                    target.LockedFields = target.LockedFields.Concat(source.LockedFields).Distinct().ToArray();
+                }
 
-                // Grab the value if it's there, but if not then don't overwrite with the default
+                if (replaceData)
+                {
+                    target.IsLocked = source.IsLocked;
+                }
+
                 if (source.DateCreated != default)
                 {
                     target.DateCreated = source.DateCreated;
                 }
 
-                target.PreferredMetadataCountryCode = source.PreferredMetadataCountryCode;
-                target.PreferredMetadataLanguage = source.PreferredMetadataLanguage;
+                if (replaceData)
+                {
+                    target.IsLocked = source.IsLocked;
+                }
+
+                if (replaceData || string.IsNullOrEmpty(target.PreferredMetadataCountryCode))
+                {
+                    target.PreferredMetadataCountryCode = source.PreferredMetadataCountryCode;
+                }
+
+                if (replaceData || string.IsNullOrEmpty(target.PreferredMetadataLanguage))
+                {
+                    target.PreferredMetadataLanguage = source.PreferredMetadataLanguage;
+                }
             }
         }
 
         private static void MergePeople(List<PersonInfo> source, List<PersonInfo> target)
         {
+            if (target is null)
+            {
+                target = new List<PersonInfo>();
+            }
+
             foreach (var person in target)
             {
                 var normalizedName = person.Name.RemoveDiacritics();
@@ -1143,7 +1173,6 @@ namespace MediaBrowser.Providers.Manager
                 if (replaceData || string.IsNullOrEmpty(targetHasDisplayOrder.DisplayOrder))
                 {
                     var displayOrder = sourceHasDisplayOrder.DisplayOrder;
-
                     if (!string.IsNullOrWhiteSpace(displayOrder))
                     {
                         targetHasDisplayOrder.DisplayOrder = displayOrder;
@@ -1161,22 +1190,10 @@ namespace MediaBrowser.Providers.Manager
                 {
                     targetHasAlbumArtist.AlbumArtists = sourceHasAlbumArtist.AlbumArtists;
                 }
-            }
-        }
-
-        private static void MergeCriticRating(BaseItem source, BaseItem target, bool replaceData)
-        {
-            if (replaceData || !target.CriticRating.HasValue)
-            {
-                target.CriticRating = source.CriticRating;
-            }
-        }
-
-        private static void MergeTrailers(BaseItem source, BaseItem target, bool replaceData)
-        {
-            if (replaceData || target.RemoteTrailers.Count == 0)
-            {
-                target.RemoteTrailers = source.RemoteTrailers;
+                else if (sourceHasAlbumArtist.AlbumArtists.Count >= 0)
+                {
+                    targetHasAlbumArtist.AlbumArtists = targetHasAlbumArtist.AlbumArtists.Concat(sourceHasAlbumArtist.AlbumArtists).Distinct().ToArray();
+                }
             }
         }
 
@@ -1184,7 +1201,7 @@ namespace MediaBrowser.Providers.Manager
         {
             if (source is Video sourceCast && target is Video targetCast)
             {
-                if (replaceData || targetCast.Video3DFormat is null)
+                if (replaceData || !targetCast.Video3DFormat.HasValue)
                 {
                     targetCast.Video3DFormat = sourceCast.Video3DFormat;
                 }

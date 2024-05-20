@@ -66,7 +66,7 @@ namespace MediaBrowser.Providers.TV
         }
 
         /// <inheritdoc />
-        protected override bool IsFullLocalMetadata(Series item)
+        protected override bool HasBaseMetadata(Series item)
         {
             if (string.IsNullOrWhiteSpace(item.Overview))
             {
@@ -78,7 +78,7 @@ namespace MediaBrowser.Providers.TV
                 return false;
             }
 
-            return base.IsFullLocalMetadata(item);
+            return base.HasBaseMetadata(item);
         }
 
         /// <inheritdoc />
