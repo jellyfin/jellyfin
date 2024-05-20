@@ -100,7 +100,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
-                // Season names are processed by SeasonFromSeriesNfoParser
+                // Season names are processed by SeriesNfoSeasonParser
                 case "namedseason":
                     reader.Skip();
                     break;

@@ -13,9 +13,9 @@ namespace MediaBrowser.XbmcMetadata.Providers
     /// <summary>
     /// NFO provider for seasons based on series NFO.
     /// </summary>
-    public class SeasonFromSeriesNfoProvider : BaseNfoProvider<Season>
+    public class SeriesNfoSeasonProvider : BaseNfoProvider<Season>
     {
-        private readonly ILogger<SeasonFromSeriesNfoProvider> _logger;
+        private readonly ILogger<SeriesNfoSeasonProvider> _logger;
         private readonly IConfigurationManager _config;
         private readonly IProviderManager _providerManager;
         private readonly IUserManager _userManager;
@@ -24,7 +24,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
         private readonly ILibraryManager _libraryManager;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SeasonFromSeriesNfoProvider"/> class.
+        /// Initializes a new instance of the <see cref="SeriesNfoSeasonProvider"/> class.
         /// </summary>
         /// <param name="logger">Instance of the <see cref="ILogger{SeasonFromSeriesNfoProvider}"/> interface.</param>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
@@ -34,8 +34,8 @@ namespace MediaBrowser.XbmcMetadata.Providers
         /// <param name="userDataManager">Instance of the <see cref="IUserDataManager"/> interface.</param>
         /// <param name="directoryService">Instance of the <see cref="IDirectoryService"/> interface.</param>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
-        public SeasonFromSeriesNfoProvider(
-            ILogger<SeasonFromSeriesNfoProvider> logger,
+        public SeriesNfoSeasonProvider(
+            ILogger<SeriesNfoSeasonProvider> logger,
             IFileSystem fileSystem,
             IConfigurationManager config,
             IProviderManager providerManager,
@@ -57,7 +57,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
         /// <inheritdoc />
         protected override void Fetch(MetadataResult<Season> result, string path, CancellationToken cancellationToken)
         {
-            new SeasonFromSeriesNfoParser(_logger, _config, _providerManager, _userManager, _userDataManager, _directoryService).Fetch(result, path, cancellationToken);
+            new SeriesNfoSeasonParser(_logger, _config, _providerManager, _userManager, _userDataManager, _directoryService).Fetch(result, path, cancellationToken);
         }
 
         /// <inheritdoc />

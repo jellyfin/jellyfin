@@ -11,10 +11,10 @@ namespace MediaBrowser.XbmcMetadata.Parsers
     /// <summary>
     /// NFO parser for seasons based on series NFO.
     /// </summary>
-    public class SeasonFromSeriesNfoParser : BaseNfoParser<Season>
+    public class SeriesNfoSeasonParser : BaseNfoParser<Season>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="SeasonFromSeriesNfoParser"/> class.
+        /// Initializes a new instance of the <see cref="SeriesNfoSeasonParser"/> class.
         /// </summary>
         /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
         /// <param name="config">Instance of the <see cref="IConfigurationManager"/> interface.</param>
@@ -22,7 +22,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="userDataManager">Instance of the <see cref="IUserDataManager"/> interface.</param>
         /// <param name="directoryService">Instance of the <see cref="IDirectoryService"/> interface.</param>
-        public SeasonFromSeriesNfoParser(
+        public SeriesNfoSeasonParser(
             ILogger logger,
             IConfigurationManager config,
             IProviderManager providerManager,
