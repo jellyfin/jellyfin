@@ -746,20 +746,20 @@ namespace MediaBrowser.Providers.Manager
                 {
                     if (refreshResult.UpdateType > ItemUpdateType.None)
                     {
+                        if (!options.RemoveOldMetadata)
+                        {
+                            // Add existing metadata to provider result if it does not exist there
+                            MergeData(temp, metadata, Array.Empty<MetadataField>(), false, false);
+                        }
+
                         if (isLocalLocked)
                         {
                             MergeData(temp, metadata, item.LockedFields, true, true);
                         }
                         else
                         {
-                            if (!options.RemoveOldMetadata)
-                            {
-                                // Add existing metadata to provider result if it does not exist there
-                                MergeData(temp, metadata, Array.Empty<MetadataField>(), false, false);
-                            }
-
                             var shouldReplace = options.MetadataRefreshMode >= MetadataRefreshMode.Default || options.ReplaceAllMetadata;
-                            MergeData(temp, metadata, item.LockedFields, shouldReplace, true);
+                            MergeData(temp, metadata, item.LockedFields, shouldReplace, false);
                         }
                     }
                 }
