@@ -911,7 +911,7 @@ public class NetworkManager : INetworkManager, IDisposable
     public bool IsLinkLocalAddress(IPAddress address)
     {
         ArgumentNullException.ThrowIfNull(address);
-        return IPNetwork.Parse("169.254.0.0/16").Contains(address) || address.IsIPv6LinkLocal;
+        return NetworkConstants.IPv4RFC3927LinkLocal.Contains(address) || address.IsIPv6LinkLocal;
     }
 
     /// <inheritdoc/>
