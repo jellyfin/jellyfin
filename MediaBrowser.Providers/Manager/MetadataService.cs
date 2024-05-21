@@ -164,7 +164,7 @@ namespace MediaBrowser.Providers.Manager
             }
 
             // Next run remote image providers, but only if local image providers didn't throw an exception
-            if (!localImagesFailed && refreshOptions.ImageRefreshMode != MetadataRefreshMode.ValidationOnly)
+            if (!localImagesFailed && refreshOptions.ImageRefreshMode > MetadataRefreshMode.ValidationOnly)
             {
                 var providers = GetNonLocalImageProviders(item, allImageProviders, refreshOptions).ToList();
 
@@ -242,7 +242,7 @@ namespace MediaBrowser.Providers.Manager
 
         protected async Task SaveItemAsync(MetadataResult<TItemType> result, ItemUpdateType reason, CancellationToken cancellationToken)
         {
-            if (result.Item.SupportsPeople && result.People is not null)
+            if (result.Item.SupportsPeople)
             {
                 var baseItem = result.Item;
 
@@ -752,9 +752,10 @@ namespace MediaBrowser.Providers.Manager
                 {
                     if (refreshResult.UpdateType > ItemUpdateType.None)
                     {
-                        if (options.RemoveOldMetadata)
+                        if (!options.RemoveOldMetadata)
                         {
-                            MergeData(metadata, temp, Array.Empty<MetadataField>(), true, true);
+                            // Add existing metadata to provider result if it does not exist there
+                            MergeData(temp, metadata, Array.Empty<MetadataField>(), false, false);
                         }
 
                         MergeData(temp, metadata, item.LockedFields, options.MetadataRefreshMode >= MetadataRefreshMode.Default || options.ReplaceAllMetadata, true);
