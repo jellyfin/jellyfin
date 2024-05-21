@@ -124,7 +124,7 @@ public class TrickplayManager : ITrickplayManager
                 var mediaPath = mediaSource.Path;
                 if (!File.Exists(mediaPath))
                 {
-                    _logger.LogWarning("Media source {MediaSourceId} not found at {Path} for item {ItemID}", mediaSource.Id, mediaPath, video.Id);
+                    _logger.LogWarning("Media not found at {Path} for item {ItemID}", mediaPath, video.Id);
                     return;
                 }
 
