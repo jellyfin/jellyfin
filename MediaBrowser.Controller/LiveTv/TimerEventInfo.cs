@@ -6,12 +6,12 @@ namespace MediaBrowser.Controller.LiveTv
 {
     public class TimerEventInfo
     {
-        public TimerEventInfo(string id)
+        public TimerEventInfo(Guid? id)
         {
             Id = id;
         }
 
-        public string Id { get; }
+        public Guid? Id { get; }
 
         public Guid? ProgramId { get; set; }
     }

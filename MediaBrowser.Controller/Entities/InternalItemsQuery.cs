@@ -356,7 +356,7 @@ namespace MediaBrowser.Controller.Entities
 
         public string? SearchTerm { get; set; }
 
-        public string? SeriesTimerId { get; set; }
+        public Guid? SeriesTimerId { get; set; }
 
         public void SetUser(User user)
         {
