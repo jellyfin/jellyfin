@@ -2083,6 +2083,18 @@ namespace MediaBrowser.Controller.MediaEncoding
                 profile = "constrained_high";
             }
 
+            if (string.Equals(videoEncoder, "h264_videotoolbox", StringComparison.OrdinalIgnoreCase)
+                && profile.Contains("constrainedbaseline", StringComparison.OrdinalIgnoreCase))
+            {
+                profile = "constrained_baseline";
+            }
+
+            if (string.Equals(videoEncoder, "h264_videotoolbox", StringComparison.OrdinalIgnoreCase)
+                && profile.Contains("constrainedhigh", StringComparison.OrdinalIgnoreCase))
+            {
+                profile = "constrained_high";
+            }
+
             if (!string.IsNullOrEmpty(profile))
             {
                 // Currently there's no profile option in av1_nvenc encoder
