@@ -103,13 +103,10 @@ jobs:
         run: |
           # Read and fix markdown
           body=$(cat openapi-changes.md)
-          body="${body//'%'/'%25'}"
-          body="${body//$'\n'/'%0A'}"
-          body="${body//$'\r'/'%0D'}"
           # Write to workflow summary
           echo $body >> $GITHUB_STEP_SUMMARY
           # Set ApiChanged var
-          if [ $body != '' ]; then
+          if [ "$body" != '' ]; then
             echo "ApiChanged=1" >> "$GITHUB_OUTPUT"
           else
             echo "ApiChanged=0" >> "$GITHUB_OUTPUT"
