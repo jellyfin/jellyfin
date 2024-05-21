@@ -30,12 +30,12 @@ namespace MediaBrowser.Controller.LiveTv
         /// <summary>
         /// Gets or sets the id of the recording.
         /// </summary>
-        public string Id { get; set; }
+        public Guid Id { get; set; }
 
         /// <summary>
         /// Gets or sets the series timer identifier.
         /// </summary>
-        public string SeriesTimerId { get; set; }
+        public Guid? SeriesTimerId { get; set; }
 
         /// <summary>
         /// Gets or sets the channelId of the recording.

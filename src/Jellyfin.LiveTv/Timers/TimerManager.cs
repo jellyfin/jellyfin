@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using Jellyfin.Data.Events;
-using Jellyfin.LiveTv.Recordings;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.LiveTv;
@@ -17,13 +16,13 @@ namespace Jellyfin.LiveTv.Timers
 {
     public class TimerManager : ItemDataProvider<TimerInfo>
     {
-        private readonly ConcurrentDictionary<string, Timer> _timers = new(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<Guid, Timer> _timers = new();
 
         public TimerManager(ILogger<TimerManager> logger, IConfigurationManager config)
             : base(
                 logger,
                 Path.Combine(config.CommonApplicationPaths.DataPath, "livetv/timers.json"),
-                (r1, r2) => string.Equals(r1.Id, r2.Id, StringComparison.OrdinalIgnoreCase))
+                (r1, r2) => r1.Id.Equals(r2.Id))
         {
         }
 
@@ -80,7 +79,7 @@ namespace Jellyfin.LiveTv.Timers
 
         public override void Add(TimerInfo item)
         {
-            ArgumentException.ThrowIfNullOrEmpty(item.Id);
+            ArgumentNullException.ThrowIfNull(item.Id);
 
             base.Add(item);
             AddOrUpdateSystemTimer(item);
@@ -154,17 +153,17 @@ namespace Jellyfin.LiveTv.Timers
 
         private void TimerCallback(object? state)
         {
-            var timerId = (string?)state ?? throw new ArgumentNullException(nameof(state));
+            var timerId = (Guid?)state ?? throw new ArgumentNullException(nameof(state));
 
-            var timer = GetAll().FirstOrDefault(i => string.Equals(i.Id, timerId, StringComparison.OrdinalIgnoreCase));
+            var timer = GetAll().FirstOrDefault(i => i.Id.Equals(timerId));
             if (timer is not null)
             {
                 TimerFired?.Invoke(this, new GenericEventArgs<TimerInfo>(timer));
             }
         }
 
-        public TimerInfo? GetTimer(string id)
-            => GetAll().FirstOrDefault(r => string.Equals(r.Id, id, StringComparison.OrdinalIgnoreCase));
+        public TimerInfo? GetTimer(Guid id)
+            => GetAll().FirstOrDefault(r => r.Id.Equals(id));
 
         public TimerInfo? GetTimerByProgramId(string programId)
             => GetAll().FirstOrDefault(r => string.Equals(r.ProgramId, programId, StringComparison.OrdinalIgnoreCase));

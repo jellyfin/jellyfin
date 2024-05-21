@@ -14,14 +14,14 @@ namespace Jellyfin.LiveTv.Timers
             : base(
                 logger,
                 Path.Combine(config.CommonApplicationPaths.DataPath, "livetv/seriestimers.json"),
-                (r1, r2) => string.Equals(r1.Id, r2.Id, StringComparison.OrdinalIgnoreCase))
+                (r1, r2) => r1.Id is not null && r2.Id is not null && r1.Id.Value.Equals(r2.Id.Value))
         {
         }
 
         /// <inheritdoc />
         public override void Add(SeriesTimerInfo item)
         {
-            ArgumentException.ThrowIfNullOrEmpty(item.Id);
+            ArgumentNullException.ThrowIfNull(item.Id);
 
             base.Add(item);
         }

@@ -161,7 +161,7 @@ public class GetProgramsDto
     /// Gets or sets filter by series timer id.
     /// Optional.
     /// </summary>
-    public string? SeriesTimerId { get; set; }
+    public Guid? SeriesTimerId { get; set; }
 
     /// <summary>
     /// Gets or sets filter by library series id.

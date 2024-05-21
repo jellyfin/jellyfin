@@ -2,13 +2,14 @@
 
 #pragma warning disable CS1591
 
+using System;
 using System.Threading;
 
 namespace MediaBrowser.Controller.LiveTv
 {
     public class ActiveRecordingInfo
     {
-        public string Id { get; set; }
+        public Guid Id { get; set; }
 
         public string Path { get; set; }
 

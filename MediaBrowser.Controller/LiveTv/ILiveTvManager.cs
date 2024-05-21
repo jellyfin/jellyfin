@@ -55,14 +55,14 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <returns>Task.</returns>
-        Task CancelTimer(string id);
+        Task CancelTimer(Guid id);
 
         /// <summary>
         /// Cancels the series timer.
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <returns>Task.</returns>
-        Task CancelSeriesTimer(string id);
+        Task CancelSeriesTimer(Guid id);
 
         /// <summary>
         /// Gets the timer.
@@ -70,7 +70,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="id">The identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{TimerInfoDto}.</returns>
-        Task<TimerInfoDto> GetTimer(string id, CancellationToken cancellationToken);
+        Task<TimerInfoDto> GetTimer(Guid id, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the series timer.
@@ -78,7 +78,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="id">The identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{TimerInfoDto}.</returns>
-        Task<SeriesTimerInfoDto> GetSeriesTimer(string id, CancellationToken cancellationToken);
+        Task<SeriesTimerInfoDto> GetSeriesTimer(Guid id, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the recordings.
