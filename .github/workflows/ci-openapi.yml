@@ -101,11 +101,25 @@ jobs:
       - id: read-diff
         name: Read openapi-diff output
         run: |
+          # Read and fix markdown
           body=$(cat openapi-changes.md)
           body="${body//'%'/'%25'}"
           body="${body//$'\n'/'%0A'}"
           body="${body//$'\r'/'%0D'}"
-          echo ::set-output name=body::$body
+          # Write to workflow summary
+          echo $body >> $GITHUB_STEP_SUMMARY
+          # Set ApiChanged var
+          if [ $body != '' ]; then
+            echo "ApiChanged=1" >> "$GITHUB_OUTPUT"
+          else
+            echo "ApiChanged=0" >> "$GITHUB_OUTPUT"
+          fi
+          # Add header/footer for diff comment
+          echo '<!--openapi-diff-workflow-comment-->' > openapi-changes-reply.md
+          echo "<details>" >> openapi-changes-reply.md
+          echo "<summary>Changes in OpenAPI specification found. Expand to see details.</summary>" >> openapi-changes-reply.md
+          echo "$body" >> openapi-changes-reply.md
+          echo "</details>" >> openapi-changes-reply.md
       - name: Find difference comment
         uses: peter-evans/find-comment@3eae4d37986fb5a8592848f6a574fdf654e61f9e # v3.1.0
         id: find-comment
@@ -115,22 +129,15 @@ jobs:
           body-includes: openapi-diff-workflow-comment
       - name: Reply or edit difference comment (changed)
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
-        if: ${{ steps.read-diff.outputs.body != '' }}
+        if: ${{ steps.read-diff.outputs.ApiChanged == '1' }}
         with:
           issue-number: ${{ github.event.pull_request.number }}
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           edit-mode: replace
-          body: |
-            <!--openapi-diff-workflow-comment-->
-            <details>
-            <summary>Changes in OpenAPI specification found. Expand to see details.</summary>
-
-            ${{ steps.read-diff.outputs.body }}
-
-            </details>
+          body-path: openapi-changes-reply.md
       - name: Edit difference comment (unchanged)
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
-        if: ${{ steps.read-diff.outputs.body == '' && steps.find-comment.outputs.comment-id != '' }}
+        if: ${{ steps.read-diff.outputs.ApiChanged == '0' && steps.find-comment.outputs.comment-id != '' }}
         with:
           issue-number: ${{ github.event.pull_request.number }}
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
