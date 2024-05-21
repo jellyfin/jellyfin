@@ -2641,10 +2641,14 @@ namespace MediaBrowser.Controller.MediaEncoding
                 && state.AudioStream.Channels.HasValue
                 && state.AudioStream.Channels.Value == 6)
             {
+                if (!encodingOptions.DownMixAudioBoost.Equals(1))
+                {
+                    filters.Add("volume=" + encodingOptions.DownMixAudioBoost.ToString(CultureInfo.InvariantCulture));
+                }
+
                 switch (encodingOptions.DownMixStereoAlgorithm)
                 {
                     case DownMixStereoAlgorithms.Dave750:
-                        filters.Add("volume=4.25");
                         filters.Add("pan=stereo|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3");
                         break;
                     case DownMixStereoAlgorithms.NightmodeDialogue:
@@ -2652,11 +2656,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                         break;
                     case DownMixStereoAlgorithms.None:
                     default:
-                        if (!encodingOptions.DownMixAudioBoost.Equals(1))
-                        {
-                            filters.Add("volume=" + encodingOptions.DownMixAudioBoost.ToString(CultureInfo.InvariantCulture));
-                        }
-
                         break;
                 }
             }
