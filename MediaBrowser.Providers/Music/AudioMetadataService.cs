@@ -50,6 +50,27 @@ namespace MediaBrowser.Providers.Music
         }
 
         /// <inheritdoc />
+        protected override bool HasBaseMetadata(Audio item)
+        {
+            if (item.IndexNumber is null)
+            {
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(item.Album))
+            {
+                return false;
+            }
+
+            if (item.AlbumArtists.Count == 0 && item.Artists.Count == 0)
+            {
+                return false;
+            }
+
+            return base.HasBaseMetadata(item);
+        }
+
+        /// <inheritdoc />
         protected override void MergeData(MetadataResult<Audio> source, MetadataResult<Audio> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             base.MergeData(source, target, lockedFields, replaceData, mergeMetadataSettings);
