@@ -104,7 +104,7 @@ jobs:
           # Read and fix markdown
           body=$(cat openapi-changes.md)
           # Write to workflow summary
-          echo $body >> $GITHUB_STEP_SUMMARY
+          echo "$body" >> $GITHUB_STEP_SUMMARY
           # Set ApiChanged var
           if [ "$body" != '' ]; then
             echo "ApiChanged=1" >> "$GITHUB_OUTPUT"
@@ -115,7 +115,9 @@ jobs:
           echo '<!--openapi-diff-workflow-comment-->' > openapi-changes-reply.md
           echo "<details>" >> openapi-changes-reply.md
           echo "<summary>Changes in OpenAPI specification found. Expand to see details.</summary>" >> openapi-changes-reply.md
+          echo "" >> openapi-changes-reply.md
           echo "$body" >> openapi-changes-reply.md
+          echo "" >> openapi-changes-reply.md
           echo "</details>" >> openapi-changes-reply.md
       - name: Find difference comment
         uses: peter-evans/find-comment@3eae4d37986fb5a8592848f6a574fdf654e61f9e # v3.1.0
