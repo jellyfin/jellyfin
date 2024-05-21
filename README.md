@@ -153,20 +153,20 @@ API documentation can be viewed at `http://localhost:8096/api-docs/swagger/index
 
 As Jellyfin will run on a container on a github hosted server, JF needs to handle some things differently.
 
-**NOTE:** Depending on the selected configuration (if you just click 'create codespace' it will create a default configuration one) it might take 20-30 secounds to load all extensions and prepare the enviorment while vscode is already open. Just give it some time and wait until you see `Downloading .NET version(s) 7.0.15~x64 ...... Done!` in the output tab.
+**NOTE:** Depending on the selected configuration (if you just click 'create codespace' it will create a default configuration one) it might take 20-30 seconds to load all extensions and prepare the environment while VSCode is already open. Just give it some time and wait until you see `Downloading .NET version(s) 7.0.15~x64 ...... Done!` in the output tab.
 
-**NOTE:** If you want to access the JF instance from outside, like with a WebClient on another PC, remember to set the "ports" in the lower VsCode window to public.
+**NOTE:** If you want to access the JF instance from outside, like with a WebClient on another PC, remember to set the "ports" in the lower VSCode window to public.
 
-**NOTE:** When first opening the server instance with any WebUI, you will be send to the login instead of the setup page. Refresh the login page once and you should be redirected to the Setup.
+**NOTE:** When first opening the server instance with any WebUI, you will be sent to the login instead of the setup page. Refresh the login page once and you should be redirected to the Setup.
 
-There are two configurations for you to chose from.
+There are two configurations for you to choose from.
 #### Default - Development Jellyfin Server
-This creates a container that has everything to run and debug the Jellyfin Media server but does not setup anything else. Each time you create a new container you have to run though the whole setup again. There is also no ffmpeg, webclient or media preloaded. Use the `.NET Launch (nowebclient)` lunch config to start the server.
+This creates a container that has everything to run and debug the Jellyfin Media server but does not setup anything else. Each time you create a new container you have to run through the whole setup again. There is also no ffmpeg, webclient or media preloaded. Use the `.NET Launch (nowebclient)` launch config to start the server.
 
-> Keep in mind that as this has no web client you have to connect to it via an extenal client. This can be just another codespace container running the WebUI. vuejs does not work from the getgo as it does not support the setup steps.
+> Keep in mind that as this has no web client you have to connect to it via an external client. This can be just another codespace container running the WebUI. vuejs does not work from the get-go as it does not support the setup steps.
 
 #### Development Jellyfin Server ffmpeg
-this extens the default server with an default installation of ffmpeg6 though the means described here: https://jellyfin.org/docs/general/installation/linux#repository-manual
+this extends the default server with a default installation of ffmpeg6 though the means described here: https://jellyfin.org/docs/general/installation/linux#repository-manual
 If you want to install a specific ffmpeg version, follow the comments embedded in the `.devcontainer/Dev - Server Ffmpeg/install.ffmpeg.sh` file.
 
 Use the `ghcs .NET Launch (nowebclient, ffmpeg)` launch config to run with the jellyfin-ffmpeg enabled.
