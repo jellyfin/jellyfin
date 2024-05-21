@@ -663,9 +663,7 @@ namespace MediaBrowser.Providers.Manager
                 temp.Item.Path = item.Path;
                 temp.Item.Id = item.Id;
 
-                var hasLocalBaseMetadataOrLocked = false;
                 var foundImageTypes = new List<ImageType>();
-
                 foreach (var provider in providers.OfType<ILocalMetadataProvider<TItemType>>())
                 {
                     var providerName = provider.GetType().Name;
@@ -714,12 +712,6 @@ namespace MediaBrowser.Providers.Manager
                             MergeData(localItem, temp, Array.Empty<MetadataField>(), false, true);
                             refreshResult.UpdateType |= ItemUpdateType.MetadataImport;
 
-                            // Only one local provider allowed per item
-                            if (item.IsLocked || localItem.Item.IsLocked || HasBaseMetadata(localItem.Item))
-                            {
-                                hasLocalBaseMetadataOrLocked = true;
-                            }
-
                             break;
                         }
 
@@ -738,7 +730,9 @@ namespace MediaBrowser.Providers.Manager
                     }
                 }
 
-                if (options.ReplaceAllMetadata || !(hasLocalBaseMetadataOrLocked && item.StopRefreshIfLocalMetadataFound) || options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh)
+                var hasLocalBaseMetadata = HasBaseMetadata(temp.Item);
+                var isLocalLocked = temp.Item.IsLocked;
+                if (!isLocalLocked && !(hasLocalBaseMetadata && item.StopRefreshIfLocalMetadataFound) && (options.ReplaceAllMetadata || options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh))
                 {
                     var remoteResult = await ExecuteRemoteProviders(temp, logName, false, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
                         .ConfigureAwait(false);
@@ -752,13 +746,21 @@ namespace MediaBrowser.Providers.Manager
                 {
                     if (refreshResult.UpdateType > ItemUpdateType.None)
                     {
-                        if (!options.RemoveOldMetadata)
+                        if (isLocalLocked)
                         {
-                            // Add existing metadata to provider result if it does not exist there
-                            MergeData(temp, metadata, Array.Empty<MetadataField>(), false, false);
+                            MergeData(temp, metadata, item.LockedFields, true, true);
                         }
+                        else
+                        {
+                            if (!options.RemoveOldMetadata)
+                            {
+                                // Add existing metadata to provider result if it does not exist there
+                                MergeData(temp, metadata, Array.Empty<MetadataField>(), false, false);
+                            }
 
-                        MergeData(temp, metadata, item.LockedFields, options.MetadataRefreshMode >= MetadataRefreshMode.Default || options.ReplaceAllMetadata, true);
+                            var shouldReplace = options.MetadataRefreshMode >= MetadataRefreshMode.Default || options.ReplaceAllMetadata;
+                            MergeData(temp, metadata, item.LockedFields, shouldReplace, true);
+                        }
                     }
                 }
 
