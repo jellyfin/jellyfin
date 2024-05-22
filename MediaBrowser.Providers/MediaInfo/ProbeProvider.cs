@@ -141,18 +141,18 @@ namespace MediaBrowser.Providers.MediaInfo
                 && item.SupportsLocalMetadata
                 && !video.IsPlaceHolder)
             {
-                if (!video.SubtitleFiles.SequenceEqual(
+                if (!video.SubtitleFiles.Order().SequenceEqual(
                         _subtitleResolver.GetExternalFiles(video, directoryService, false)
-                            .Select(info => info.Path).ToList(),
+                            .Select(info => info.Path).Distinct().Order().ToList(),
                         StringComparer.Ordinal))
                 {
                     _logger.LogDebug("Refreshing {ItemPath} due to external subtitles change.", item.Path);
                     return true;
                 }
 
-                if (!video.AudioFiles.SequenceEqual(
+                if (!video.AudioFiles.Order().SequenceEqual(
                         _audioResolver.GetExternalFiles(video, directoryService, false)
-                            .Select(info => info.Path).ToList(),
+                            .Select(info => info.Path).Distinct().Order().ToList(),
                         StringComparer.Ordinal))
                 {
                     _logger.LogDebug("Refreshing {ItemPath} due to external audio change.", item.Path);
@@ -162,9 +162,9 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (item is Audio audio
                 && item.SupportsLocalMetadata
-                && !audio.LyricFiles.SequenceEqual(
+                && !audio.LyricFiles.Order().SequenceEqual(
                     _lyricResolver.GetExternalFiles(audio, directoryService, false)
-                        .Select(info => info.Path).ToList(),
+                        .Select(info => info.Path).Distinct().Order().ToList(),
                     StringComparer.Ordinal))
             {
                 _logger.LogDebug("Refreshing {ItemPath} due to external lyrics change.", item.Path);
