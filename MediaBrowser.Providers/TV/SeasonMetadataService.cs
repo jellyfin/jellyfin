@@ -99,21 +99,5 @@ namespace MediaBrowser.Providers.TV
 
             return ItemUpdateType.None;
         }
-
-        /// <inheritdoc />
-        protected override bool HasBaseMetadata(Season item)
-        {
-            if (string.IsNullOrWhiteSpace(item.Overview))
-            {
-                return false;
-            }
-
-            if (item.IndexNumber is null)
-            {
-                return false;
-            }
-
-            return base.HasBaseMetadata(item);
-        }
     }
 }
