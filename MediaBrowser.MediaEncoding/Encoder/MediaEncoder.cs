@@ -959,17 +959,33 @@ namespace MediaBrowser.MediaEncoding.Encoder
                             // We don't actually expect the process to be finished in one timeout span, just that one image has been generated.
                         }
 
-                        cancellationToken.ThrowIfCancellationRequested();
+                        // Handles cancellationToken
+                        try
+                        {
+                            cancellationToken.ThrowIfCancellationRequested();
 
-                        var jpegCount = _fileSystem.GetFilePaths(targetDirectory).Count();
+                            var jpegCount = _fileSystem.GetFilePaths(targetDirectory).Count();
 
-                        isResponsive = jpegCount > lastCount;
-                        lastCount = jpegCount;
+                            isResponsive = jpegCount > lastCount;
+                            lastCount = jpegCount;
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            ranToCompletion = false;
+                            break;
+                        }
+
+
                     }
 
                     if (!ranToCompletion)
                     {
-                        _logger.LogInformation("Stopping trickplay extraction due to process inactivity.");
+                        if (!isResponsive)
+                        {
+                            _logger.LogInformation("Trickplay process unresponsive.");
+                        }
+
+                        _logger.LogInformation("Stopping trickplay extraction.");
                         StopProcess(processWrapper, 1000);
                     }
                 }
