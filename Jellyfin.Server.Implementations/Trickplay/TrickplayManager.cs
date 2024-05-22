@@ -273,7 +273,7 @@ public class TrickplayManager : ITrickplayManager
             }
 
             // Update bitrate
-            var bitrate = (int)Math.Ceiling((decimal)new FileInfo(tilePath).Length * 8 / trickplayInfo.TileWidth / trickplayInfo.TileHeight / ((decimal)trickplayInfo.Interval / 1000));
+            var bitrate = (int)Math.Ceiling(new FileInfo(tilePath).Length * 8m / trickplayInfo.TileWidth / trickplayInfo.TileHeight / (trickplayInfo.Interval / 1000m));
             trickplayInfo.Bandwidth = Math.Max(trickplayInfo.Bandwidth, bitrate);
         }
 
