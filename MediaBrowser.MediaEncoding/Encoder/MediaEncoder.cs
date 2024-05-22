@@ -945,7 +945,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     var timeoutMs = _configurationManager.Configuration.ImageExtractionTimeoutMs;
                     timeoutMs = timeoutMs <= 0 ? DefaultHdrImageExtractionTimeout : timeoutMs;
 
-                    while (isResponsive)
+                    while (isResponsive && !cancellationToken.IsCancellationRequested)
                     {
                         try
                         {
@@ -959,21 +959,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
                             // We don't actually expect the process to be finished in one timeout span, just that one image has been generated.
                         }
 
-                        try
-                        {
-                        cancellationToken.ThrowIfCancellationRequested();
-
                         var jpegCount = _fileSystem.GetFilePaths(targetDirectory).Count();
 
                         isResponsive = jpegCount > lastCount;
                         lastCount = jpegCount;
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            ranToCompletion = false;
-                            break;
-                        }
-
                     }
 
                     if (!ranToCompletion)
