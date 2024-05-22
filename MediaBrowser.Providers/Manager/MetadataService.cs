@@ -748,7 +748,7 @@ namespace MediaBrowser.Providers.Manager
                         if (!options.RemoveOldMetadata)
                         {
                             // Add existing metadata to provider result if it does not exist there
-                            MergeData(temp, metadata, Array.Empty<MetadataField>(), false, false);
+                            MergeData(metadata, temp, Array.Empty<MetadataField>(), false, false);
                         }
 
                         if (isLocalLocked)
