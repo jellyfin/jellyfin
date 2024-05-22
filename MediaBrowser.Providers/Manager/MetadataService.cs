@@ -731,7 +731,7 @@ namespace MediaBrowser.Providers.Manager
                 }
 
                 var isLocalLocked = temp.Item.IsLocked;
-                if (!isLocalLocked && (options.ReplaceAllMetadata || options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh))
+                if (!isLocalLocked && (options.ReplaceAllMetadata || options.MetadataRefreshMode > MetadataRefreshMode.ValidationOnly))
                 {
                     var remoteResult = await ExecuteRemoteProviders(temp, logName, false, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
                         .ConfigureAwait(false);
@@ -757,7 +757,7 @@ namespace MediaBrowser.Providers.Manager
                         }
                         else
                         {
-                            var shouldReplace = options.MetadataRefreshMode >= MetadataRefreshMode.Default || options.ReplaceAllMetadata;
+                            var shouldReplace = options.MetadataRefreshMode > MetadataRefreshMode.ValidationOnly || options.ReplaceAllMetadata;
                             MergeData(temp, metadata, item.LockedFields, shouldReplace, false);
                         }
                     }
