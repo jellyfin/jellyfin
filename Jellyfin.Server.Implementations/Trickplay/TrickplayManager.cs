@@ -81,6 +81,12 @@ public class TrickplayManager : ITrickplayManager
         _logger.LogDebug("Trickplay refresh for {ItemId} (replace existing: {Replace})", video.Id, replace);
 
         var options = _config.Configuration.TrickplayOptions;
+        if (options.Interval < 1000)
+        {
+            _logger.LogWarning("Trickplay image interval {Interval} is too small, reset to the minimum valid value of 1000", options.Interval);
+            options.Interval = 1000;
+        }
+
         foreach (var width in options.WidthResolutions)
         {
             cancellationToken.ThrowIfCancellationRequested();
