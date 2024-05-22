@@ -730,9 +730,8 @@ namespace MediaBrowser.Providers.Manager
                     }
                 }
 
-                var hasLocalBaseMetadata = HasBaseMetadata(temp.Item);
                 var isLocalLocked = temp.Item.IsLocked;
-                if (!isLocalLocked && !(hasLocalBaseMetadata && item.StopRefreshIfLocalMetadataFound) && (options.ReplaceAllMetadata || options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh))
+                if (!isLocalLocked && (options.ReplaceAllMetadata || options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh))
                 {
                     var remoteResult = await ExecuteRemoteProviders(temp, logName, false, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
                         .ConfigureAwait(false);
@@ -771,16 +770,6 @@ namespace MediaBrowser.Providers.Manager
             }
 
             return refreshResult;
-        }
-
-        protected virtual bool HasBaseMetadata(TItemType item)
-        {
-            if (string.IsNullOrWhiteSpace(item.Name))
-            {
-                return false;
-            }
-
-            return true;
         }
 
         private async Task RunCustomProvider(ICustomMetadataProvider<TItemType> provider, TItemType item, string logName, MetadataRefreshOptions options, RefreshResult refreshResult, CancellationToken cancellationToken)

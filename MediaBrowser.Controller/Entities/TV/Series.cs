@@ -72,9 +72,6 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <value>The status.</value>
         public SeriesStatus? Status { get; set; }
 
-        [JsonIgnore]
-        public override bool StopRefreshIfLocalMetadataFound => false;
-
         public override double GetDefaultPrimaryImageAspectRatio()
         {
             double value = 2;

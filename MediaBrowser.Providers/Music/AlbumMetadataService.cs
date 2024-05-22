@@ -209,27 +209,6 @@ namespace MediaBrowser.Providers.Music
         }
 
         /// <inheritdoc />
-        protected override bool HasBaseMetadata(MusicAlbum item)
-        {
-            if (string.IsNullOrWhiteSpace(item.Album))
-            {
-                return false;
-            }
-
-            if (item.AlbumArtists.Count == 0 && item.Artists.Count == 0)
-            {
-                return false;
-            }
-
-            if (!item.ProductionYear.HasValue)
-            {
-                return false;
-            }
-
-            return base.HasBaseMetadata(item);
-        }
-
-        /// <inheritdoc />
         protected override void MergeData(
             MetadataResult<MusicAlbum> source,
             MetadataResult<MusicAlbum> target,

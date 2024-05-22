@@ -24,22 +24,6 @@ namespace MediaBrowser.Providers.Movies
         }
 
         /// <inheritdoc />
-        protected override bool HasBaseMetadata(Movie item)
-        {
-            if (string.IsNullOrWhiteSpace(item.Overview))
-            {
-                return false;
-            }
-
-            if (!item.ProductionYear.HasValue)
-            {
-                return false;
-            }
-
-            return base.HasBaseMetadata(item);
-        }
-
-        /// <inheritdoc />
         protected override void MergeData(MetadataResult<Movie> source, MetadataResult<Movie> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             base.MergeData(source, target, lockedFields, replaceData, mergeMetadataSettings);

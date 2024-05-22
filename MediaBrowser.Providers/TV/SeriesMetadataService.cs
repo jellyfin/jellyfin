@@ -66,22 +66,6 @@ namespace MediaBrowser.Providers.TV
         }
 
         /// <inheritdoc />
-        protected override bool HasBaseMetadata(Series item)
-        {
-            if (string.IsNullOrWhiteSpace(item.Overview))
-            {
-                return false;
-            }
-
-            if (!item.ProductionYear.HasValue)
-            {
-                return false;
-            }
-
-            return base.HasBaseMetadata(item);
-        }
-
-        /// <inheritdoc />
         protected override void MergeData(MetadataResult<Series> source, MetadataResult<Series> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             base.MergeData(source, target, lockedFields, replaceData, mergeMetadataSettings);
