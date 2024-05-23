@@ -286,10 +286,11 @@ namespace MediaBrowser.Controller.Entities.TV
                 SeriesPresentationUniqueKey = seriesKey,
                 IncludeItemTypes = new[] { BaseItemKind.Episode, BaseItemKind.Season },
                 OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) },
-                DtoOptions = options
+                DtoOptions = options,
+                IsMissing = true
             };
 
-            if (user is null || !user.DisplayMissingEpisodes)
+            if (user is not null && !user.DisplayMissingEpisodes)
             {
                 query.IsMissing = false;
             }
