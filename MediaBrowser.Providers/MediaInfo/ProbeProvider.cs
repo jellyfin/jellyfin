@@ -143,14 +143,14 @@ namespace MediaBrowser.Providers.MediaInfo
                 && !video.IsPlaceHolder)
             {
                 var externalFiles = new HashSet<string>(_subtitleResolver.GetExternalFiles(video, directoryService, false).Select(info => info.Path), StringComparer.OrdinalIgnoreCase);
-                if (!new HashSet<string>(video.SubtitleFiles, StringComparer.OrdinalIgnoreCase).SetEquals(externalFiles))
+                if (!new HashSet<string>(video.SubtitleFiles, StringComparer.Ordinal).SetEquals(externalFiles))
                 {
                     _logger.LogDebug("Refreshing {ItemPath} due to external subtitles change.", item.Path);
                     return true;
                 }
 
                 externalFiles = new HashSet<string>(_audioResolver.GetExternalFiles(video, directoryService, false).Select(info => info.Path), StringComparer.OrdinalIgnoreCase);
-                if (!new HashSet<string>(video.AudioFiles, StringComparer.OrdinalIgnoreCase).SetEquals(externalFiles))
+                if (!new HashSet<string>(video.AudioFiles, StringComparer.Ordinal).SetEquals(externalFiles))
                 {
                     _logger.LogDebug("Refreshing {ItemPath} due to external audio change.", item.Path);
                     return true;
@@ -161,7 +161,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 && item.SupportsLocalMetadata)
             {
                 var externalFiles = new HashSet<string>(_lyricResolver.GetExternalFiles(audio, directoryService, false).Select(info => info.Path), StringComparer.OrdinalIgnoreCase);
-                if (!new HashSet<string>(audio.LyricFiles, StringComparer.OrdinalIgnoreCase).SetEquals(externalFiles))
+                if (!new HashSet<string>(audio.LyricFiles, StringComparer.Ordinal).SetEquals(externalFiles))
                 {
                     _logger.LogDebug("Refreshing {ItemPath} due to external lyrics change.", item.Path);
                     return true;
