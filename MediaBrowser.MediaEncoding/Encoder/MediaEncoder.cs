@@ -824,7 +824,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 options.EnableTonemapping = false;
             }
 
-            if (imageStream.Width is not null && imageStream.Height is not null)
+            if (imageStream.Width is not null && imageStream.Height is not null && !string.IsNullOrEmpty(imageStream.AspectRatio))
             {
                 // For hardware trickplay encoders, we need to re-calculate the size because they used fixed scale dimensions
                 var darParts = imageStream.AspectRatio.Split(':');
