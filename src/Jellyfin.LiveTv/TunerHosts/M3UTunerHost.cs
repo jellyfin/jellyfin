@@ -115,7 +115,7 @@ namespace Jellyfin.LiveTv.TunerHosts
                             }
                         }
                     }
-                    catch (HttpRequestException)
+                    catch (Exception)
                     {
                         Logger.LogWarning("HEAD request to check MIME type failed, shared stream disabled");
                     }
