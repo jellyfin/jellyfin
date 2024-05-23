@@ -395,9 +395,7 @@ public class MediaInfoHelper
             // Remove all fmp4 transcoding profiles, because it causes playback error and/or A/V sync issues
             // Notably: Some channels won't play on FireFox and LG webOs
             // Some channels from HDHomerun will experience A/V sync issues
-            var profileForCompatibility = request.DeviceProfile.TranscodingProfiles.ToList();
-            profileForCompatibility.RemoveAll(p => p.Container == "mp4");
-            request.DeviceProfile.TranscodingProfiles = profileForCompatibility!.ToArray();
+            request.DeviceProfile.TranscodingProfiles = request.DeviceProfile.TranscodingProfiles.Where(p => !string.Equals(p.Container, "mp4", StringComparison.OrdinalIgnoreCase)).ToArray();
         }
 
         var result = await _mediaSourceManager.OpenLiveStream(request, CancellationToken.None).ConfigureAwait(false);
