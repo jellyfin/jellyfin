@@ -827,7 +827,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             if (imageStream.Width is not null && imageStream.Height is not null)
             {
                 // For hardware trickplay encoders, we need to re-calculate the size because they used fixed scale dimensions
-                var darParts = imageStream.AspectRatio.Split(":");
+                var darParts = imageStream.AspectRatio.Split(':');
                 var (wa, ha) = (double.Parse(darParts[0], CultureInfo.InvariantCulture), double.Parse(darParts[1], CultureInfo.InvariantCulture));
                 // When dimension / DAR does not equal to 1:1, then the frames are most likely stored stretched.
                 // Note: this might be incorrect for 3D videos as the SAR stored might be per eye instead of per video, but we really can do little about it.
