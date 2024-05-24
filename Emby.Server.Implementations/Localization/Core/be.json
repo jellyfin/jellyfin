@@ -127,5 +127,7 @@
     "TaskRefreshTrickplayImages": "Стварыце выявы Trickplay",
     "TaskRefreshTrickplayImagesDescription": "Стварае прагляд відэаролікаў для Trickplay у падключаных бібліятэках.",
     "TaskCleanCollectionsAndPlaylists": "Ачысціце калекцыі і спісы прайгравання",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Выдаляе элементы з калекцый і спісаў прайгравання, якія больш не існуюць."
+    "TaskCleanCollectionsAndPlaylistsDescription": "Выдаляе элементы з калекцый і спісаў прайгравання, якія больш не існуюць.",
+    "TaskAudioNormalizationDescription": "Сканіруе файлы на прадмет нармалізацыі гуку.",
+    "TaskAudioNormalization": "Нармалізацыя гуку"
 }
