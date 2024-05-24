@@ -822,6 +822,22 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 options.EnableTonemapping = false;
             }
 
+            if (imageStream.Width is not null && imageStream.Height is not null && !string.IsNullOrEmpty(imageStream.AspectRatio))
+            {
+                // For hardware trickplay encoders, we need to re-calculate the size because they used fixed scale dimensions
+                var darParts = imageStream.AspectRatio.Split(':');
+                var (wa, ha) = (double.Parse(darParts[0], CultureInfo.InvariantCulture), double.Parse(darParts[1], CultureInfo.InvariantCulture));
+                // When dimension / DAR does not equal to 1:1, then the frames are most likely stored stretched.
+                // Note: this might be incorrect for 3D videos as the SAR stored might be per eye instead of per video, but we really can do little about it.
+                var shouldResetHeight = Math.Abs((imageStream.Width.Value * ha) - (imageStream.Height.Value * wa)) > .05;
+                if (shouldResetHeight)
+                {
+                    // SAR = DAR * Height / Width
+                    // RealHeight = Height / SAR = Height / (DAR * Height / Width) = Width / DAR
+                    imageStream.Height = Convert.ToInt32(imageStream.Width.Value * ha / wa);
+                }
+            }
+
             var baseRequest = new BaseEncodingJobOptions { MaxWidth = maxWidth, MaxFramerate = (float)(1.0 / interval.TotalSeconds) };
             var jobState = new EncodingJobInfo(TranscodingJobType.Progressive)
             {
