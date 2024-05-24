@@ -267,13 +267,13 @@ namespace MediaBrowser.Model.Entities
                             attributes.Add(StringHelper.FirstToUpper(fullLanguage ?? Language));
                         }
 
-                        if (!string.IsNullOrEmpty(Codec) && !string.Equals(Codec, "dca", StringComparison.OrdinalIgnoreCase) && !string.Equals(Codec, "dts", StringComparison.OrdinalIgnoreCase))
-                        {
-                            attributes.Add(AudioCodec.GetFriendlyName(Codec));
-                        }
-                        else if (!string.IsNullOrEmpty(Profile) && !string.Equals(Profile, "lc", StringComparison.OrdinalIgnoreCase))
+                        if (!string.IsNullOrEmpty(Profile) && !string.Equals(Profile, "lc", StringComparison.OrdinalIgnoreCase))
                         {
                             attributes.Add(Profile);
+                        }
+                        else if (!string.IsNullOrEmpty(Codec))
+                        {
+                            attributes.Add(AudioCodec.GetFriendlyName(Codec));
                         }
 
                         if (!string.IsNullOrEmpty(ChannelLayout))
