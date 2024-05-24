@@ -85,6 +85,6 @@ public static class WebHostBuilderExtensions
                     logger.LogInformation("Kestrel listening to unix socket {SocketPath}", socketPath);
                 }
             })
-            .UseStartup(_ => new Startup(appHost));
+            .UseStartup(_ => new Startup(appHost, startupConfig));
     }
 }
