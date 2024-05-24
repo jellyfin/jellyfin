@@ -4301,6 +4301,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     // map from qsv to vaapi.
                     mainFilters.Add("hwmap=derive_device=vaapi");
+                    mainFilters.Add("format=vaapi");
                 }
 
                 var tonemapFilter = GetHwTonemapFilter(options, "vaapi", "nv12");
@@ -4310,6 +4311,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     // map from vaapi to qsv.
                     mainFilters.Add("hwmap=derive_device=qsv");
+                    mainFilters.Add("format=qsv");
                 }
             }
 
