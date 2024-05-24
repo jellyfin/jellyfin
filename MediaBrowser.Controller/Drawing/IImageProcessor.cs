@@ -58,6 +58,13 @@ namespace MediaBrowser.Controller.Drawing
         string GetImageBlurHash(string path, ImageDimensions imageDimensions);
 
         /// <summary>
+        /// Gets the file hash of the image.
+        /// </summary>
+        /// <param name="path">Path to the image file.</param>
+        /// <returns>FileHash.</returns>
+        string GetImageFileHash(string path);
+
+        /// <summary>
         /// Gets the image cache tag.
         /// </summary>
         /// <param name="item">The item.</param>
