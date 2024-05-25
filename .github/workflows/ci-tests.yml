@@ -19,7 +19,7 @@ jobs:
 
     runs-on: "${{ matrix.os }}"
     steps:
-      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
+      - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
 
       - uses: actions/setup-dotnet@4d6c8fcf3c8f7a60068d26b594648e99df24cee3 # v4.0.0
         with:
@@ -34,7 +34,7 @@ jobs:
           --verbosity minimal
 
       - name: Merge code coverage results
-        uses: danielpalme/ReportGenerator-GitHub-Action@2a2d60ea1c7e811f54684179af6ac1ae8c1ce69a # 5.2.5
+        uses: danielpalme/ReportGenerator-GitHub-Action@6b06171d1a131e7fd85121120a1c00c1ed03e033 # 5.3.0
         with:
           reports: "**/coverage.cobertura.xml"
           targetdir: "merged/"
