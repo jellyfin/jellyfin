@@ -152,7 +152,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
             var processArgs = string.Format(
                 CultureInfo.InvariantCulture,
-                "-dump_attachment:t \"\" -y {0} -i {1} -t 0 -f null null",
+                "-dump_attachment:t \"\" -y {0} -skip_estimate_duration_from_pts 1 -i {1} -t 0 -f null null",
                 inputPath.EndsWith(".concat\"", StringComparison.OrdinalIgnoreCase) ? "-f concat -safe 0" : string.Empty,
                 inputPath);
 

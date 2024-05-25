@@ -479,7 +479,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public string GetInputArgument(string inputFile, MediaSourceInfo mediaSource)
         {
             var prefix = "file";
-            if (mediaSource.IsoType == IsoType.BluRay)
+            if (mediaSource.VideoType == VideoType.BluRay || mediaSource.IsoType == IsoType.BluRay)
             {
                 prefix = "bluray";
             }
@@ -722,7 +722,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var vf = string.Join(',', filters);
             var mapArg = imageStreamIndex.HasValue ? (" -map 0:" + imageStreamIndex.Value.ToString(CultureInfo.InvariantCulture)) : string.Empty;
-            var args = string.Format(CultureInfo.InvariantCulture, "-i {0}{3} -threads {4} -v quiet -vframes 1 -vf {2}{5} -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg, _threads, GetImageResolutionParameter());
+            var args = string.Format(CultureInfo.InvariantCulture, "-skip_estimate_duration_from_pts 1 -i {0}{3} -threads {4} -v quiet -vframes 1 -vf {2}{5} -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg, _threads, GetImageResolutionParameter());
 
             if (offset.HasValue)
             {
@@ -1172,7 +1172,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return mediaSource.VideoType switch
             {
                 VideoType.Dvd => GetInputArgument(GetPrimaryPlaylistVobFiles(path, null).ToList(), mediaSource),
-                VideoType.BluRay => GetInputArgument(GetPrimaryPlaylistM2tsFiles(path).ToList(), mediaSource),
                 _ => GetInputArgument(path, mediaSource)
             };
         }
@@ -1186,10 +1185,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             if (videoType == VideoType.Dvd)
             {
                 files = GetPrimaryPlaylistVobFiles(source.Path, null);
-            }
-            else if (videoType == VideoType.BluRay)
-            {
-                files = GetPrimaryPlaylistM2tsFiles(source.Path);
             }
             else
             {
