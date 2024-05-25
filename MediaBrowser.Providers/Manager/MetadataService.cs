@@ -398,7 +398,8 @@ namespace MediaBrowser.Providers.Manager
 
                 foreach (var child in children)
                 {
-                    if (!child.IsFolder)
+                    // Exclude any folders and virtual items since they are only placeholders
+                    if (!child.IsFolder && !child.IsVirtualItem)
                     {
                         var childDateCreated = child.DateCreated;
                         if (childDateCreated > dateLastMediaAdded)
