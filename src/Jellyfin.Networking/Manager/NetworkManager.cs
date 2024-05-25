@@ -903,6 +903,17 @@ public class NetworkManager : INetworkManager, IDisposable
         return false;
     }
 
+    /// <summary>
+    ///  Get if the IPAddress is Link-local.
+    /// </summary>
+    /// <param name="address">The IP Address.</param>
+    /// <returns>Bool indicates if the address is link-local.</returns>
+    public bool IsLinkLocalAddress(IPAddress address)
+    {
+        ArgumentNullException.ThrowIfNull(address);
+        return NetworkConstants.IPv4RFC3927LinkLocal.Contains(address) || address.IsIPv6LinkLocal;
+    }
+
     /// <inheritdoc/>
     public bool IsInLocalNetwork(IPAddress address)
     {
@@ -1084,7 +1095,11 @@ public class NetworkManager : INetworkManager, IDisposable
     private bool MatchesExternalInterface(IPAddress source, out string result)
     {
         // Get the first external interface address that isn't a loopback.
-        var extResult = _interfaces.Where(p => !IsInLocalNetwork(p.Address)).OrderBy(x => x.Index).ToArray();
+        var extResult = _interfaces
+            .Where(p => !IsInLocalNetwork(p.Address))
+            .Where(p => p.Address.AddressFamily.Equals(source.AddressFamily))
+            .Where(p => !IsLinkLocalAddress(p.Address))
+            .OrderBy(x => x.Index).ToArray();
 
         // No external interface found
         if (extResult.Length == 0)
