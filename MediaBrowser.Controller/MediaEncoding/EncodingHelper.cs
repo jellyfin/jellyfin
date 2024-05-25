@@ -680,16 +680,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             return -1;
         }
 
-        public string GetInputPathArgument(EncodingJobInfo state)
-        {
-            return state.MediaSource.VideoType switch
-            {
-                VideoType.Dvd => _mediaEncoder.GetInputArgument(_mediaEncoder.GetPrimaryPlaylistVobFiles(state.MediaPath, null).ToList(), state.MediaSource),
-                VideoType.BluRay => _mediaEncoder.GetInputArgument(_mediaEncoder.GetPrimaryPlaylistM2tsFiles(state.MediaPath).ToList(), state.MediaSource),
-                _ => _mediaEncoder.GetInputArgument(state.MediaPath, state.MediaSource)
-            };
-        }
-
         /// <summary>
         /// Gets the audio encoder.
         /// </summary>
@@ -1203,7 +1193,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             else
             {
                 arg.Append(" -i ")
-                    .Append(GetInputPathArgument(state));
+                    .Append(_mediaEncoder.GetInputPathArgument(state));
             }
 
             // sub2video for external graphical subtitles

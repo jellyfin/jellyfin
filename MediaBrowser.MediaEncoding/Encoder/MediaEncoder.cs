@@ -30,10 +30,8 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using static Nikse.SubtitleEdit.Core.Common.IfoParser;
 
 namespace MediaBrowser.MediaEncoding.Encoder
 {
@@ -621,7 +619,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             ImageFormat? targetFormat,
             CancellationToken cancellationToken)
         {
-            var inputArgument = GetInputArgument(inputFile, mediaSource);
+            var inputArgument = GetInputPathArgument(inputFile, mediaSource);
 
             if (!isAudio)
             {
@@ -1145,6 +1143,21 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 .Select(f => f.FullName)
                 .Order()
                 .ToList();
+        }
+
+        /// <inheritdoc />
+        public string GetInputPathArgument(EncodingJobInfo state)
+            => GetInputPathArgument(state.MediaPath, state.MediaSource);
+
+        /// <inheritdoc />
+        public string GetInputPathArgument(string path, MediaSourceInfo mediaSource)
+        {
+            return mediaSource.VideoType switch
+            {
+                VideoType.Dvd => GetInputArgument(GetPrimaryPlaylistVobFiles(path, null).ToList(), mediaSource),
+                VideoType.BluRay => GetInputArgument(GetPrimaryPlaylistM2tsFiles(path).ToList(), mediaSource),
+                _ => GetInputArgument(path, mediaSource)
+            };
         }
 
         /// <inheritdoc />
