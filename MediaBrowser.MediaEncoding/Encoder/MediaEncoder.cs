@@ -1135,13 +1135,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var validPlaybackFiles = _blurayExaminer.GetDiscInfo(path).Files;
 
             // Get all files from the BDMV/STREAMING directory
-            var directoryFiles = _fileSystem.GetFiles(Path.Join(path, "BDMV", "STREAM"));
-
             // Only return playable local .m2ts files
-            return directoryFiles
-                .Where(f => validPlaybackFiles.Contains(f.Name, StringComparer.OrdinalIgnoreCase))
+            return validPlaybackFiles
+                .Select(f => _fileSystem.GetFileInfo(Path.Join(path, "BDMV", "STREAM", f)))
+                .Where(f => f.Exists)
                 .Select(f => f.FullName)
-                .Order()
                 .ToList();
         }
 
