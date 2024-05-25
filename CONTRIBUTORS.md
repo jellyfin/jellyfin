@@ -183,6 +183,7 @@
  - [btopherjohnson](https://github.com/btopherjohnson)
  - [GeorgeH005](https://github.com/GeorgeH005)
  - [Vedant](https://github.com/viktory36/)
+ - [NotSaifA](https://github.com/NotSaifA)
 
 # Emby Contributors
 
