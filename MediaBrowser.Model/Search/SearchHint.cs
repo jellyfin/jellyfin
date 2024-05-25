@@ -43,7 +43,7 @@ namespace MediaBrowser.Model.Search
         /// Gets or sets the matched term.
         /// </summary>
         /// <value>The matched term.</value>
-        public string MatchedTerm { get; set; }
+        public string? MatchedTerm { get; set; }
 
         /// <summary>
         /// Gets or sets the index number.
