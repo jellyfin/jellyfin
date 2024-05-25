@@ -1250,7 +1250,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 arg.Append(canvasArgs);
             }
 
-            if (state.MediaSource.VideoType == VideoType.Dvd || state.MediaSource.VideoType == VideoType.BluRay)
+            if (state.MediaSource.VideoType == VideoType.Dvd)
             {
                 var concatFilePath = Path.Join(_configurationManager.CommonApplicationPaths.CachePath, "concat", state.MediaSource.Id + ".concat");
                 if (!File.Exists(concatFilePath))
@@ -1330,6 +1330,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (!isSwDecoder)
             {
                 arg.Append(" -noautoscale");
+            }
+
+            if (state.MediaSource.VideoType == VideoType.BluRay)
+            {
+                arg.Insert(0, "-skip_estimate_duration_from_pts 1 ");
             }
 
             return arg.ToString();
