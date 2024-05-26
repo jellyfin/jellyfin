@@ -141,18 +141,7 @@ namespace MediaBrowser.Controller.Extensions
         /// <returns>Whether second level cache disabled.</returns>
         public static bool GetSqliteSecondLevelCacheDisabled(this IConfiguration configuration)
         {
-            var disableSecondLevelCacheConfig = configuration.GetValue<string?>(SqliteDisableSecondLevelCacheKey);
-            var disableSecondLevelCache = false;
-            if (disableSecondLevelCacheConfig is not null)
-            {
-                disableSecondLevelCache = disableSecondLevelCacheConfig.ToUpperInvariant() switch
-                {
-                    "FALSE" or "NO" or "0" => false,
-                    _ => true
-                };
-            }
-
-            return disableSecondLevelCache;
+            return configuration.GetValue<bool>(SqliteDisableSecondLevelCacheKey);
         }
     }
 }
