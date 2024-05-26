@@ -231,7 +231,7 @@ public class TvShowsController : BaseJellyfinApiController
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
-        var shouldIncludeMissingEpisodes = (user is not null && !user.DisplayMissingEpisodes) || User.GetIsApiKey();
+        var shouldIncludeMissingEpisodes = (user is not null && user.DisplayMissingEpisodes) || User.GetIsApiKey();
 
         if (seasonId.HasValue) // Season id was supplied. Get episodes by season id.
         {
