@@ -456,9 +456,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 extraArgs += " -probesize " + ffmpegProbeSize;
             }
 
-            if (request.MediaSource.RequiredHttpHeaders.TryGetValue("user_agent", out var userAgent))
+            if (request.MediaSource.RequiredHttpHeaders.TryGetValue("User-Agent", out var userAgent))
             {
-                extraArgs += " -user_agent " + userAgent;
+                extraArgs += $" -user_agent \"{userAgent}\"";
             }
 
             if (request.MediaSource.Protocol == MediaProtocol.Rtsp)
