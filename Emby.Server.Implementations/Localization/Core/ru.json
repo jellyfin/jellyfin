@@ -11,7 +11,7 @@
     "Collections": "Коллекции",
     "DeviceOfflineWithName": "{0} - отключено",
     "DeviceOnlineWithName": "{0} - подключено",
-    "FailedLoginAttemptWithUserName": "{0} - попытка входа неудачна",
+    "FailedLoginAttemptWithUserName": "Неудачная попытка входа с {0}",
     "Favorites": "Избранное",
     "Folders": "Папки",
     "Genres": "Жанры",
@@ -128,5 +128,7 @@
     "TaskRefreshTrickplayImages": "Сгенерировать изображения для Trickplay",
     "TaskRefreshTrickplayImagesDescription": "Создает предпросмотры для Trickplay для видео в библиотеках, где эта функция включена.",
     "TaskCleanCollectionsAndPlaylists": "Очистка коллекций и списков воспроизведения",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Удаляет элементы из коллекций и списков воспроизведения, которые больше не существуют."
+    "TaskCleanCollectionsAndPlaylistsDescription": "Удаляет элементы из коллекций и списков воспроизведения, которые больше не существуют.",
+    "TaskAudioNormalization": "Нормализация звука",
+    "TaskAudioNormalizationDescription": "Сканирует файлы на наличие данных о нормализации звука."
 }

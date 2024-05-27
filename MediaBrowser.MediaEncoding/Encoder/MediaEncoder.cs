@@ -30,10 +30,8 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using static Nikse.SubtitleEdit.Core.Common.IfoParser;
 
 namespace MediaBrowser.MediaEncoding.Encoder
 {
@@ -621,7 +619,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             ImageFormat? targetFormat,
             CancellationToken cancellationToken)
         {
-            var inputArgument = GetInputArgument(inputFile, mediaSource);
+            var inputArgument = GetInputPathArgument(inputFile, mediaSource);
 
             if (!isAudio)
             {
@@ -824,6 +822,22 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 options.EnableTonemapping = false;
             }
 
+            if (imageStream.Width is not null && imageStream.Height is not null && !string.IsNullOrEmpty(imageStream.AspectRatio))
+            {
+                // For hardware trickplay encoders, we need to re-calculate the size because they used fixed scale dimensions
+                var darParts = imageStream.AspectRatio.Split(':');
+                var (wa, ha) = (double.Parse(darParts[0], CultureInfo.InvariantCulture), double.Parse(darParts[1], CultureInfo.InvariantCulture));
+                // When dimension / DAR does not equal to 1:1, then the frames are most likely stored stretched.
+                // Note: this might be incorrect for 3D videos as the SAR stored might be per eye instead of per video, but we really can do little about it.
+                var shouldResetHeight = Math.Abs((imageStream.Width.Value * ha) - (imageStream.Height.Value * wa)) > .05;
+                if (shouldResetHeight)
+                {
+                    // SAR = DAR * Height / Width
+                    // RealHeight = Height / SAR = Height / (DAR * Height / Width) = Width / DAR
+                    imageStream.Height = Convert.ToInt32(imageStream.Width.Value * ha / wa);
+                }
+            }
+
             var baseRequest = new BaseEncodingJobOptions { MaxWidth = maxWidth, MaxFramerate = (float)(1.0 / interval.TotalSeconds) };
             var jobState = new EncodingJobInfo(TranscodingJobType.Progressive)
             {
@@ -871,6 +885,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 throw new InvalidOperationException("Empty or invalid input argument.");
             }
 
+            float? encoderQuality = qualityScale;
+            if (vidEncoder.Contains("vaapi", StringComparison.OrdinalIgnoreCase))
+            {
+                // vaapi's mjpeg encoder uses jpeg quality divided by QP2LAMBDA (118) as input, instead of ffmpeg defined qscale
+                // ffmpeg qscale is a value from 1-31, with 1 being best quality and 31 being worst
+                // jpeg quality is a value from 0-100, with 0 being worst quality and 100 being best
+                encoderQuality = (100 - ((qualityScale - 1) * (100 / 30))) / 118;
+            }
+
             // Output arguments
             var targetDirectory = Path.Combine(_configurationManager.ApplicationPaths.TempDirectory, Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(targetDirectory);
@@ -884,7 +907,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 filterParam,
                 outputThreads.GetValueOrDefault(_threads),
                 vidEncoder,
-                qualityScale.HasValue ? "-qscale:v " + qualityScale.Value.ToString(CultureInfo.InvariantCulture) + " " : string.Empty,
+                qualityScale.HasValue ? "-qscale:v " + encoderQuality.Value.ToString(CultureInfo.InvariantCulture) + " " : string.Empty,
                 "image2",
                 outputPath);
 
@@ -936,7 +959,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     var timeoutMs = _configurationManager.Configuration.ImageExtractionTimeoutMs;
                     timeoutMs = timeoutMs <= 0 ? DefaultHdrImageExtractionTimeout : timeoutMs;
 
-                    while (isResponsive)
+                    while (isResponsive && !cancellationToken.IsCancellationRequested)
                     {
                         try
                         {
@@ -950,8 +973,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                             // We don't actually expect the process to be finished in one timeout span, just that one image has been generated.
                         }
 
-                        cancellationToken.ThrowIfCancellationRequested();
-
                         var jpegCount = _fileSystem.GetFilePaths(targetDirectory).Count();
 
                         isResponsive = jpegCount > lastCount;
@@ -960,7 +981,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                     if (!ranToCompletion)
                     {
-                        _logger.LogInformation("Stopping trickplay extraction due to process inactivity.");
+                        if (!isResponsive)
+                        {
+                            _logger.LogInformation("Trickplay process unresponsive.");
+                        }
+
+                        _logger.LogInformation("Stopping trickplay extraction.");
                         StopProcess(processWrapper, 1000);
                     }
                 }
@@ -1128,14 +1154,27 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var validPlaybackFiles = _blurayExaminer.GetDiscInfo(path).Files;
 
             // Get all files from the BDMV/STREAMING directory
-            var directoryFiles = _fileSystem.GetFiles(Path.Join(path, "BDMV", "STREAM"));
-
             // Only return playable local .m2ts files
-            return directoryFiles
-                .Where(f => validPlaybackFiles.Contains(f.Name, StringComparer.OrdinalIgnoreCase))
+            return validPlaybackFiles
+                .Select(f => _fileSystem.GetFileInfo(Path.Join(path, "BDMV", "STREAM", f)))
+                .Where(f => f.Exists)
                 .Select(f => f.FullName)
-                .Order()
                 .ToList();
+        }
+
+        /// <inheritdoc />
+        public string GetInputPathArgument(EncodingJobInfo state)
+            => GetInputPathArgument(state.MediaPath, state.MediaSource);
+
+        /// <inheritdoc />
+        public string GetInputPathArgument(string path, MediaSourceInfo mediaSource)
+        {
+            return mediaSource.VideoType switch
+            {
+                VideoType.Dvd => GetInputArgument(GetPrimaryPlaylistVobFiles(path, null).ToList(), mediaSource),
+                VideoType.BluRay => GetInputArgument(GetPrimaryPlaylistM2tsFiles(path).ToList(), mediaSource),
+                _ => GetInputArgument(path, mediaSource)
+            };
         }
 
         /// <inheritdoc />

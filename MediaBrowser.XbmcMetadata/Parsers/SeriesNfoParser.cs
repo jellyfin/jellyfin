@@ -1,6 +1,6 @@
-using System;
 using System.Globalization;
 using System.Xml;
+using Emby.Naming.TV;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Extensions;
@@ -87,7 +87,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(status))
                         {
-                            if (Enum.TryParse(status, true, out SeriesStatus seriesStatus))
+                            if (TvParserHelpers.TryParseSeriesStatus(status, out var seriesStatus))
                             {
                                 item.Status = seriesStatus;
                             }
@@ -107,7 +107,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(name) && parsed)
                         {
-                            item.SeasonNames[seasonNumber] = name;
+                            item.SetSeasonName(seasonNumber, name);
                         }
 
                         break;

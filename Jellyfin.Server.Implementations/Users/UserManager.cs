@@ -1,7 +1,7 @@
 ﻿#pragma warning disable CA1307
-#pragma warning disable CA1309 // Use ordinal string comparison - EF can't translate this
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -47,6 +47,8 @@ namespace Jellyfin.Server.Implementations.Users
         private readonly DefaultPasswordResetProvider _defaultPasswordResetProvider;
         private readonly IServerConfigurationManager _serverConfigurationManager;
 
+        private readonly IDictionary<Guid, User> _users;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UserManager"/> class.
         /// </summary>
@@ -84,30 +86,29 @@ namespace Jellyfin.Server.Implementations.Users
             _invalidAuthProvider = _authenticationProviders.OfType<InvalidAuthProvider>().First();
             _defaultAuthenticationProvider = _authenticationProviders.OfType<DefaultAuthenticationProvider>().First();
             _defaultPasswordResetProvider = _passwordResetProviders.OfType<DefaultPasswordResetProvider>().First();
+
+            _users = new ConcurrentDictionary<Guid, User>();
+            using var dbContext = _dbProvider.CreateDbContext();
+            foreach (var user in dbContext.Users
+                .AsSplitQuery()
+                .Include(user => user.Permissions)
+                .Include(user => user.Preferences)
+                .Include(user => user.AccessSchedules)
+                .Include(user => user.ProfileImage)
+                .AsEnumerable())
+            {
+                _users.Add(user.Id, user);
+            }
         }
 
         /// <inheritdoc/>
         public event EventHandler<GenericEventArgs<User>>? OnUserUpdated;
 
         /// <inheritdoc/>
-        public IEnumerable<User> Users
-        {
-            get
-            {
-                using var dbContext = _dbProvider.CreateDbContext();
-                return GetUsersInternal(dbContext).ToList();
-            }
-        }
+        public IEnumerable<User> Users => _users.Values;
 
         /// <inheritdoc/>
-        public IEnumerable<Guid> UsersIds
-        {
-            get
-            {
-                using var dbContext = _dbProvider.CreateDbContext();
-                return dbContext.Users.Select(u => u.Id).ToList();
-            }
-        }
+        public IEnumerable<Guid> UsersIds => _users.Keys;
 
         // This is some regex that matches only on unicode "word" characters, as well as -, _ and @
         // In theory this will cut out most if not all 'control' characters which should help minimize any weirdness
@@ -123,8 +124,8 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentException("Guid can't be empty", nameof(id));
             }
 
-            using var dbContext = _dbProvider.CreateDbContext();
-            return GetUsersInternal(dbContext).FirstOrDefault(u => u.Id.Equals(id));
+            _users.TryGetValue(id, out var user);
+            return user;
         }
 
         /// <inheritdoc/>
@@ -135,9 +136,7 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentException("Invalid username", nameof(name));
             }
 
-            using var dbContext = _dbProvider.CreateDbContext();
-            return GetUsersInternal(dbContext)
-                .FirstOrDefault(u => string.Equals(u.Username, name));
+            return _users.Values.FirstOrDefault(u => string.Equals(u.Username, name, StringComparison.OrdinalIgnoreCase));
         }
 
         /// <inheritdoc/>
@@ -202,6 +201,8 @@ namespace Jellyfin.Server.Implementations.Users
             user.AddDefaultPermissions();
             user.AddDefaultPreferences();
 
+            _users.Add(user.Id, user);
+
             return user;
         }
 
@@ -236,46 +237,40 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public async Task DeleteUserAsync(Guid userId)
         {
-            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+            if (!_users.TryGetValue(userId, out var user))
+            {
+                throw new ResourceNotFoundException(nameof(userId));
+            }
 
+            if (_users.Count == 1)
+            {
+                throw new InvalidOperationException(string.Format(
+                    CultureInfo.InvariantCulture,
+                    "The user '{0}' cannot be deleted because there must be at least one user in the system.",
+                    user.Username));
+            }
+
+            if (user.HasPermission(PermissionKind.IsAdministrator)
+                && Users.Count(i => i.HasPermission(PermissionKind.IsAdministrator)) == 1)
+            {
+                throw new ArgumentException(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "The user '{0}' cannot be deleted because there must be at least one admin user in the system.",
+                        user.Username),
+                    nameof(userId));
+            }
+
+            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
-                var user = await dbContext.Users
-                    .AsSingleQuery()
-                    .Include(u => u.Permissions)
-                    .FirstOrDefaultAsync(u => u.Id.Equals(userId))
-                    .ConfigureAwait(false);
-                if (user is null)
-                {
-                    throw new ResourceNotFoundException(nameof(userId));
-                }
-
-                if (await dbContext.Users.CountAsync().ConfigureAwait(false) == 1)
-                {
-                    throw new InvalidOperationException(string.Format(
-                        CultureInfo.InvariantCulture,
-                        "The user '{0}' cannot be deleted because there must be at least one user in the system.",
-                        user.Username));
-                }
-
-                if (user.HasPermission(PermissionKind.IsAdministrator)
-                    && await dbContext.Users
-                        .CountAsync(u => u.Permissions.Any(p => p.Kind == PermissionKind.IsAdministrator && p.Value))
-                        .ConfigureAwait(false) == 1)
-                {
-                    throw new ArgumentException(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "The user '{0}' cannot be deleted because there must be at least one admin user in the system.",
-                            user.Username),
-                        nameof(userId));
-                }
-
                 dbContext.Users.Remove(user);
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
-
-                await _eventManager.PublishAsync(new UserDeletedEventArgs(user)).ConfigureAwait(false);
             }
+
+            _users.Remove(userId);
+
+            await _eventManager.PublishAsync(new UserDeletedEventArgs(user)).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -542,23 +537,23 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc />
         public async Task InitializeAsync()
         {
+            // TODO: Refactor the startup wizard so that it doesn't require a user to already exist.
+            if (_users.Any())
+            {
+                return;
+            }
+
+            var defaultName = Environment.UserName;
+            if (string.IsNullOrWhiteSpace(defaultName) || !ValidUsernameRegex().IsMatch(defaultName))
+            {
+                defaultName = "MyJellyfinUser";
+            }
+
+            _logger.LogWarning("No users, creating one with username {UserName}", defaultName);
+
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
-                // TODO: Refactor the startup wizard so that it doesn't require a user to already exist.
-                if (await dbContext.Users.AnyAsync().ConfigureAwait(false))
-                {
-                    return;
-                }
-
-                var defaultName = Environment.UserName;
-                if (string.IsNullOrWhiteSpace(defaultName) || !ValidUsernameRegex().IsMatch(defaultName))
-                {
-                    defaultName = "MyJellyfinUser";
-                }
-
-                _logger.LogWarning("No users, creating one with username {UserName}", defaultName);
-
                 var newUser = await CreateUserInternalAsync(defaultName, dbContext).ConfigureAwait(false);
                 newUser.SetPermission(PermissionKind.IsAdministrator, true);
                 newUser.SetPermission(PermissionKind.EnableContentDeletion, true);
@@ -605,9 +600,12 @@ namespace Jellyfin.Server.Implementations.Users
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
-                var user = await GetUsersInternal(dbContext)
-                    .FirstOrDefaultAsync(u => u.Id.Equals(userId))
-                    .ConfigureAwait(false)
+                var user = dbContext.Users
+                               .Include(u => u.Permissions)
+                               .Include(u => u.Preferences)
+                               .Include(u => u.AccessSchedules)
+                               .Include(u => u.ProfileImage)
+                               .FirstOrDefault(u => u.Id.Equals(userId))
                            ?? throw new ArgumentException("No user exists with given Id!");
 
                 user.SubtitleMode = config.SubtitleMode;
@@ -635,6 +633,7 @@ namespace Jellyfin.Server.Implementations.Users
                 user.SetPreference(PreferenceKind.LatestItemExcludes, config.LatestItemsExcludes);
 
                 dbContext.Update(user);
+                _users[user.Id] = user;
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
             }
         }
@@ -645,9 +644,12 @@ namespace Jellyfin.Server.Implementations.Users
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
-                var user = await GetUsersInternal(dbContext)
-                    .FirstOrDefaultAsync(u => u.Id.Equals(userId))
-                    .ConfigureAwait(false)
+                var user = dbContext.Users
+                               .Include(u => u.Permissions)
+                               .Include(u => u.Preferences)
+                               .Include(u => u.AccessSchedules)
+                               .Include(u => u.ProfileImage)
+                               .FirstOrDefault(u => u.Id.Equals(userId))
                            ?? throw new ArgumentException("No user exists with given Id!");
 
                 // The default number of login attempts is 3, but for some god forsaken reason it's sent to the server as "0"
@@ -708,6 +710,7 @@ namespace Jellyfin.Server.Implementations.Users
                 user.SetPreference(PreferenceKind.EnableContentDeletionFromFolders, policy.EnableContentDeletionFromFolders);
 
                 dbContext.Update(user);
+                _users[user.Id] = user;
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
             }
         }
@@ -728,6 +731,7 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             user.ProfileImage = null;
+            _users[user.Id] = user;
         }
 
         internal static void ThrowIfInvalidUsername(string name)
@@ -874,15 +878,8 @@ namespace Jellyfin.Server.Implementations.Users
         private async Task UpdateUserInternalAsync(JellyfinDbContext dbContext, User user)
         {
             dbContext.Users.Update(user);
+            _users[user.Id] = user;
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
-
-        private IQueryable<User> GetUsersInternal(JellyfinDbContext dbContext)
-            => dbContext.Users
-                .AsSplitQuery()
-                .Include(user => user.Permissions)
-                .Include(user => user.Preferences)
-                .Include(user => user.AccessSchedules)
-                .Include(user => user.ProfileImage);
     }
 }

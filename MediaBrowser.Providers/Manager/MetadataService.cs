@@ -8,7 +8,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -399,7 +398,8 @@ namespace MediaBrowser.Providers.Manager
 
                 foreach (var child in children)
                 {
-                    if (!child.IsFolder)
+                    // Exclude any folders and virtual items since they are only placeholders
+                    if (!child.IsFolder && !child.IsVirtualItem)
                     {
                         var childDateCreated = child.DateCreated;
                         if (childDateCreated > dateLastMediaAdded)

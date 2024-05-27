@@ -2325,7 +2325,7 @@ namespace Emby.Server.Implementations.Data
 
                 columns.Add(builder.ToString());
 
-                query.ExcludeItemIds = [..query.ExcludeItemIds, item.Id, ..item.ExtraIds];
+                query.ExcludeItemIds = [.. query.ExcludeItemIds, item.Id, .. item.ExtraIds];
                 query.ExcludeProviderIds = item.ProviderIds;
             }
 
@@ -2833,7 +2833,7 @@ namespace Emby.Server.Implementations.Data
                     prepend.Add((ItemSortBy.Random, SortOrder.Ascending));
                 }
 
-                orderBy = query.OrderBy = [..prepend, ..orderBy];
+                orderBy = query.OrderBy = [.. prepend, .. orderBy];
             }
             else if (orderBy.Count == 0)
             {
@@ -5146,7 +5146,7 @@ AND Type = @InternalPersonType)");
             list.AddRange(inheritedTags.Select(i => (6, i)));
 
             // Remove all invalid values.
-            list.RemoveAll(i => string.IsNullOrEmpty(i.Item2));
+            list.RemoveAll(i => string.IsNullOrWhiteSpace(i.Item2));
 
             return list;
         }
@@ -5203,12 +5203,6 @@ AND Type = @InternalPersonType)");
                         var currentValueInfo = values[i];
 
                         var itemValue = currentValueInfo.Value;
-
-                        // Don't save if invalid
-                        if (string.IsNullOrWhiteSpace(itemValue))
-                        {
-                            continue;
-                        }
 
                         statement.TryBind("@Type" + index, currentValueInfo.MagicNumber);
                         statement.TryBind("@Value" + index, itemValue);

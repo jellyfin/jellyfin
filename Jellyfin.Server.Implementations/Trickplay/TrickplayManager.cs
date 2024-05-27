@@ -81,6 +81,12 @@ public class TrickplayManager : ITrickplayManager
         _logger.LogDebug("Trickplay refresh for {ItemId} (replace existing: {Replace})", video.Id, replace);
 
         var options = _config.Configuration.TrickplayOptions;
+        if (options.Interval < 1000)
+        {
+            _logger.LogWarning("Trickplay image interval {Interval} is too small, reset to the minimum valid value of 1000", options.Interval);
+            options.Interval = 1000;
+        }
+
         foreach (var width in options.WidthResolutions)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -121,6 +127,13 @@ public class TrickplayManager : ITrickplayManager
                     return;
                 }
 
+                var mediaPath = mediaSource.Path;
+                if (!File.Exists(mediaPath))
+                {
+                    _logger.LogWarning("Media not found at {Path} for item {ItemID}", mediaPath, video.Id);
+                    return;
+                }
+
                 // The width has to be even, otherwise a lot of filters will not be able to sample it
                 var actualWidth = 2 * (width / 2);
 
@@ -139,7 +152,6 @@ public class TrickplayManager : ITrickplayManager
                     return;
                 }
 
-                var mediaPath = mediaSource.Path;
                 var mediaStream = mediaSource.VideoStream;
                 var container = mediaSource.Container;
 
@@ -261,7 +273,7 @@ public class TrickplayManager : ITrickplayManager
             }
 
             // Update bitrate
-            var bitrate = (int)Math.Ceiling((decimal)new FileInfo(tilePath).Length * 8 / trickplayInfo.TileWidth / trickplayInfo.TileHeight / (trickplayInfo.Interval / 1000));
+            var bitrate = (int)Math.Ceiling(new FileInfo(tilePath).Length * 8m / trickplayInfo.TileWidth / trickplayInfo.TileHeight / (trickplayInfo.Interval / 1000m));
             trickplayInfo.Bandwidth = Math.Max(trickplayInfo.Bandwidth, bitrate);
         }
 
