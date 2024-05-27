@@ -121,7 +121,8 @@ namespace MediaBrowser.Providers.Manager
 
             var metadataResult = new MetadataResult<TItemType>
             {
-                Item = itemOfType
+                Item = itemOfType,
+                People = LibraryManager.GetPeople(item)
             };
 
             bool hasRefreshedMetadata = true;
