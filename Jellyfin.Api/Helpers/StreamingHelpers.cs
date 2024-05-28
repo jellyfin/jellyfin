@@ -143,7 +143,7 @@ public static class StreamingHelpers
         else
         {
             // Enforce more restrictive transcoding profile for LiveTV due to compatability reasons
-            // Cap the MaxStreamingBitrate to 20Mbps, because we are unable to reliably probe source bitrate,
+            // Cap the MaxStreamingBitrate to 30Mbps, because we are unable to reliably probe source bitrate,
             // which will cause the client to request extremely high bitrate that may fail the player/encoder
             streamingRequest.VideoBitRate = streamingRequest.VideoBitRate > 30000000 ? 30000000 : streamingRequest.VideoBitRate;
 
