@@ -191,18 +191,16 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 _logger.LogWarning(e, "TagLib-Sharp does not support this audio");
             }
-            finally
-            {
-                tags ??= new TagLib.Id3v2.Tag();
-                tags.AlbumArtists ??= mediaInfo.AlbumArtists;
-                tags.Album ??= mediaInfo.Album;
-                tags.Title ??= mediaInfo.Name;
-                tags.Year = tags.Year == 0U ? Convert.ToUInt32(mediaInfo.ProductionYear, CultureInfo.InvariantCulture) : tags.Year;
-                tags.Performers ??= mediaInfo.Artists;
-                tags.Genres ??= mediaInfo.Genres;
-                tags.Track = tags.Track == 0U ? Convert.ToUInt32(mediaInfo.IndexNumber, CultureInfo.InvariantCulture) : tags.Track;
-                tags.Disc = tags.Disc == 0U ? Convert.ToUInt32(mediaInfo.ParentIndexNumber, CultureInfo.InvariantCulture) : tags.Disc;
-            }
+
+            tags ??= new TagLib.Id3v2.Tag();
+            tags.AlbumArtists ??= mediaInfo.AlbumArtists;
+            tags.Album ??= mediaInfo.Album;
+            tags.Title ??= mediaInfo.Name;
+            tags.Year = tags.Year == 0U ? Convert.ToUInt32(mediaInfo.ProductionYear, CultureInfo.InvariantCulture) : tags.Year;
+            tags.Performers ??= mediaInfo.Artists;
+            tags.Genres ??= mediaInfo.Genres;
+            tags.Track = tags.Track == 0U ? Convert.ToUInt32(mediaInfo.IndexNumber, CultureInfo.InvariantCulture) : tags.Track;
+            tags.Disc = tags.Disc == 0U ? Convert.ToUInt32(mediaInfo.ParentIndexNumber, CultureInfo.InvariantCulture) : tags.Disc;
 
             if (audio.SupportsPeople && !audio.LockedFields.Contains(MetadataField.Cast))
             {
