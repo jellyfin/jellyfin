@@ -189,7 +189,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
             catch (Exception e)
             {
-                _logger.LogWarning("TagLib-Sharp does not support this audio: {Exception}", e);
+                _logger.LogWarning(e, "TagLib-Sharp does not support this audio");
             }
             finally
             {
