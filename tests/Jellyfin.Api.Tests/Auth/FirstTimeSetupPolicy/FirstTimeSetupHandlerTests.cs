@@ -52,10 +52,10 @@ namespace Jellyfin.Api.Tests.Auth.FirstTimeSetupPolicy
         }
 
         [Theory]
-        [InlineData(UserRoles.Administrator, true)]
-        [InlineData(UserRoles.Guest, false)]
-        [InlineData(UserRoles.User, false)]
-        public async Task ShouldRequireAdministratorIfStartupWizardComplete(string userRole, bool shouldSucceed)
+        [InlineData(UserRoles.Administrator, false)]
+        [InlineData(UserRoles.Guest, true)]
+        [InlineData(UserRoles.User, true)]
+        public async Task ShouldRequireAdministratorIfStartupWizardComplete(string userRole, bool shouldFail)
         {
             TestHelpers.SetupConfigurationManager(_configurationManagerMock, true);
             var claims = TestHelpers.SetupUser(
@@ -66,14 +66,14 @@ namespace Jellyfin.Api.Tests.Auth.FirstTimeSetupPolicy
             var context = new AuthorizationHandlerContext(_requirements, claims, null);
 
             await _firstTimeSetupHandler.HandleAsync(context);
-            Assert.Equal(shouldSucceed, context.HasSucceeded);
+            Assert.Equal(shouldFail, context.HasFailed);
         }
 
         [Theory]
-        [InlineData(UserRoles.Administrator, true)]
-        [InlineData(UserRoles.Guest, false)]
-        [InlineData(UserRoles.User, true)]
-        public async Task ShouldRequireUserIfNotRequiresAdmin(string userRole, bool shouldSucceed)
+        [InlineData(UserRoles.Administrator)]
+        [InlineData(UserRoles.Guest)]
+        [InlineData(UserRoles.User)]
+        public async Task ShouldDeferIfNotRequiresAdmin(string userRole)
         {
             TestHelpers.SetupConfigurationManager(_configurationManagerMock, true);
             var claims = TestHelpers.SetupUser(
@@ -87,7 +87,8 @@ namespace Jellyfin.Api.Tests.Auth.FirstTimeSetupPolicy
                 null);
 
             await _firstTimeSetupHandler.HandleAsync(context);
-            Assert.Equal(shouldSucceed, context.HasSucceeded);
+            Assert.False(context.HasSucceeded);
+            Assert.False(context.HasFailed);
         }
 
         [Fact]
