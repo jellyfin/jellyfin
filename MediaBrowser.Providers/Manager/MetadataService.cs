@@ -655,119 +655,121 @@ namespace MediaBrowser.Providers.Manager
                 await RunCustomProvider(provider, item, logName, options, refreshResult, cancellationToken).ConfigureAwait(false);
             }
 
-            if (!item.IsLocked)
+            if (item.IsLocked)
             {
-                var temp = new MetadataResult<TItemType>
+                return refreshResult;
+            }
+
+            var temp = new MetadataResult<TItemType>
+            {
+                Item = CreateNew()
+            };
+            temp.Item.Path = item.Path;
+            temp.Item.Id = item.Id;
+
+            var foundImageTypes = new List<ImageType>();
+            foreach (var provider in providers.OfType<ILocalMetadataProvider<TItemType>>())
+            {
+                var providerName = provider.GetType().Name;
+                Logger.LogDebug("Running {Provider} for {Item}", providerName, logName);
+
+                var itemInfo = new ItemInfo(item);
+
+                try
                 {
-                    Item = CreateNew()
-                };
-                temp.Item.Path = item.Path;
-                temp.Item.Id = item.Id;
+                    var localItem = await provider.GetMetadata(itemInfo, options.DirectoryService, cancellationToken).ConfigureAwait(false);
 
-                var foundImageTypes = new List<ImageType>();
-                foreach (var provider in providers.OfType<ILocalMetadataProvider<TItemType>>())
-                {
-                    var providerName = provider.GetType().Name;
-                    Logger.LogDebug("Running {Provider} for {Item}", providerName, logName);
-
-                    var itemInfo = new ItemInfo(item);
-
-                    try
+                    if (localItem.HasMetadata)
                     {
-                        var localItem = await provider.GetMetadata(itemInfo, options.DirectoryService, cancellationToken).ConfigureAwait(false);
-
-                        if (localItem.HasMetadata)
+                        foreach (var remoteImage in localItem.RemoteImages)
                         {
-                            foreach (var remoteImage in localItem.RemoteImages)
+                            try
                             {
-                                try
+                                if (item.ImageInfos.Any(x => x.Type == remoteImage.Type)
+                                    && !options.IsReplacingImage(remoteImage.Type))
                                 {
-                                    if (item.ImageInfos.Any(x => x.Type == remoteImage.Type)
-                                        && !options.IsReplacingImage(remoteImage.Type))
-                                    {
-                                        continue;
-                                    }
-
-                                    await ProviderManager.SaveImage(item, remoteImage.Url, remoteImage.Type, null, cancellationToken).ConfigureAwait(false);
-                                    refreshResult.UpdateType |= ItemUpdateType.ImageUpdate;
-
-                                    // remember imagetype that has just been downloaded
-                                    foundImageTypes.Add(remoteImage.Type);
+                                    continue;
                                 }
-                                catch (HttpRequestException ex)
-                                {
-                                    Logger.LogError(ex, "Could not save {ImageType} image: {Url}", Enum.GetName(remoteImage.Type), remoteImage.Url);
-                                }
-                            }
 
-                            if (foundImageTypes.Count > 0)
-                            {
-                                imageService.UpdateReplaceImages(options, foundImageTypes);
-                            }
-
-                            if (imageService.MergeImages(item, localItem.Images, options))
-                            {
+                                await ProviderManager.SaveImage(item, remoteImage.Url, remoteImage.Type, null, cancellationToken).ConfigureAwait(false);
                                 refreshResult.UpdateType |= ItemUpdateType.ImageUpdate;
+
+                                // remember imagetype that has just been downloaded
+                                foundImageTypes.Add(remoteImage.Type);
                             }
-
-                            MergeData(localItem, temp, Array.Empty<MetadataField>(), false, true);
-                            refreshResult.UpdateType |= ItemUpdateType.MetadataImport;
-
-                            break;
+                            catch (HttpRequestException ex)
+                            {
+                                Logger.LogError(ex, "Could not save {ImageType} image: {Url}", Enum.GetName(remoteImage.Type), remoteImage.Url);
+                            }
                         }
 
-                        Logger.LogDebug("{Provider} returned no metadata for {Item}", providerName, logName);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        throw;
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError(ex, "Error in {Provider}", provider.Name);
-
-                        // If a local provider fails, consider that a failure
-                        refreshResult.ErrorMessage = ex.Message;
-                    }
-                }
-
-                var isLocalLocked = temp.Item.IsLocked;
-                if (!isLocalLocked && (options.ReplaceAllMetadata || options.MetadataRefreshMode > MetadataRefreshMode.ValidationOnly))
-                {
-                    var remoteResult = await ExecuteRemoteProviders(temp, logName, false, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
-                        .ConfigureAwait(false);
-
-                    refreshResult.UpdateType |= remoteResult.UpdateType;
-                    refreshResult.ErrorMessage = remoteResult.ErrorMessage;
-                    refreshResult.Failures += remoteResult.Failures;
-                }
-
-                if (providers.Any(i => i is not ICustomMetadataProvider))
-                {
-                    if (refreshResult.UpdateType > ItemUpdateType.None)
-                    {
-                        if (!options.RemoveOldMetadata)
+                        if (foundImageTypes.Count > 0)
                         {
-                            // Add existing metadata to provider result if it does not exist there
-                            MergeData(metadata, temp, Array.Empty<MetadataField>(), false, false);
+                            imageService.UpdateReplaceImages(options, foundImageTypes);
                         }
 
-                        if (isLocalLocked)
+                        if (imageService.MergeImages(item, localItem.Images, options))
                         {
-                            MergeData(temp, metadata, item.LockedFields, true, true);
+                            refreshResult.UpdateType |= ItemUpdateType.ImageUpdate;
                         }
-                        else
-                        {
-                            var shouldReplace = options.MetadataRefreshMode > MetadataRefreshMode.ValidationOnly || options.ReplaceAllMetadata;
-                            MergeData(temp, metadata, item.LockedFields, shouldReplace, false);
-                        }
+
+                        MergeData(localItem, temp, Array.Empty<MetadataField>(), false, true);
+                        refreshResult.UpdateType |= ItemUpdateType.MetadataImport;
+
+                        break;
+                    }
+
+                    Logger.LogDebug("{Provider} returned no metadata for {Item}", providerName, logName);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "Error in {Provider}", provider.Name);
+
+                    // If a local provider fails, consider that a failure
+                    refreshResult.ErrorMessage = ex.Message;
+                }
+            }
+
+            var isLocalLocked = temp.Item.IsLocked;
+            if (!isLocalLocked && (options.ReplaceAllMetadata || options.MetadataRefreshMode > MetadataRefreshMode.ValidationOnly))
+            {
+                var remoteResult = await ExecuteRemoteProviders(temp, logName, false, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
+                    .ConfigureAwait(false);
+
+                refreshResult.UpdateType |= remoteResult.UpdateType;
+                refreshResult.ErrorMessage = remoteResult.ErrorMessage;
+                refreshResult.Failures += remoteResult.Failures;
+            }
+
+            if (providers.Any(i => i is not ICustomMetadataProvider))
+            {
+                if (refreshResult.UpdateType > ItemUpdateType.None)
+                {
+                    if (!options.RemoveOldMetadata)
+                    {
+                        // Add existing metadata to provider result if it does not exist there
+                        MergeData(metadata, temp, Array.Empty<MetadataField>(), false, false);
+                    }
+
+                    if (isLocalLocked)
+                    {
+                        MergeData(temp, metadata, item.LockedFields, true, true);
+                    }
+                    else
+                    {
+                        var shouldReplace = options.MetadataRefreshMode > MetadataRefreshMode.ValidationOnly || options.ReplaceAllMetadata;
+                        MergeData(temp, metadata, item.LockedFields, shouldReplace, false);
                     }
                 }
+            }
 
-                foreach (var provider in customProviders.Where(i => i is not IPreRefreshProvider))
-                {
-                    await RunCustomProvider(provider, item, logName, options, refreshResult, cancellationToken).ConfigureAwait(false);
-                }
+            foreach (var provider in customProviders.Where(i => i is not IPreRefreshProvider))
+            {
+                await RunCustomProvider(provider, item, logName, options, refreshResult, cancellationToken).ConfigureAwait(false);
             }
 
             return refreshResult;
