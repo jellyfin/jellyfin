@@ -319,7 +319,7 @@ public class LibraryStructureController : BaseJellyfinApiController
     public ActionResult UpdateLibraryOptions(
         [FromBody] UpdateLibraryOptionsDto request)
     {
-        var item = _libraryManager.GetItemById<CollectionFolder>(request.Id, User.GetUserId());
+        var item = _libraryManager.GetItemById<CollectionFolder>(request.Id);
         if (item is null)
         {
             return NotFound();
