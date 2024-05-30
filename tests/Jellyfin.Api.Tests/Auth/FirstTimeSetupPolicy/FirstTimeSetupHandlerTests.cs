@@ -95,7 +95,7 @@ namespace Jellyfin.Api.Tests.Auth.FirstTimeSetupPolicy
         public async Task ShouldAllowAdminApiKeyIfStartupWizardComplete()
         {
             TestHelpers.SetupConfigurationManager(_configurationManagerMock, true);
-            var claims = new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.Role, UserRoles.Administrator)]));
+            var claims = new ClaimsPrincipal(new ClaimsIdentity([new Claim(InternalClaimTypes.IsApiKey, bool.TrueString)]));
             var context = new AuthorizationHandlerContext(_requirements, claims, null);
 
             await _firstTimeSetupHandler.HandleAsync(context);

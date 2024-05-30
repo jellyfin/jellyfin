@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
+using Jellyfin.Api.Extensions;
 using MediaBrowser.Common.Configuration;
 using Microsoft.AspNetCore.Authorization;
 
@@ -25,6 +26,10 @@ namespace Jellyfin.Api.Auth.FirstTimeSetupPolicy
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, FirstTimeSetupRequirement requirement)
         {
             if (!_configurationManager.CommonConfiguration.IsStartupWizardCompleted)
+            {
+                context.Succeed(requirement);
+            }
+            else if (context.User.GetIsApiKey())
             {
                 context.Succeed(requirement);
             }
