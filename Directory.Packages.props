@@ -16,7 +16,7 @@
     <PackageVersion Include="Diacritics" Version="3.3.29" />
     <PackageVersion Include="DiscUtils.Udf" Version="0.16.13" />
     <PackageVersion Include="DotNet.Glob" Version="3.1.3" />
-    <PackageVersion Include="EFCoreSecondLevelCacheInterceptor" Version="4.4.3" />
+    <PackageVersion Include="EFCoreSecondLevelCacheInterceptor" Version="4.5.0" />
     <PackageVersion Include="FsCheck.Xunit" Version="2.16.6" />
     <PackageVersion Include="HarfBuzzSharp.NativeAssets.Linux" Version="7.3.0.2" />
     <PackageVersion Include="ICU4N.Transliterator" Version="60.1.0-alpha.356" />
@@ -25,15 +25,15 @@
     <PackageVersion Include="libse" Version="4.0.5" />
     <PackageVersion Include="LrcParser" Version="2023.524.0" />
     <PackageVersion Include="MetaBrainz.MusicBrainz" Version="6.1.0" />
-    <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="8.0.4" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="8.0.6" />
     <PackageVersion Include="Microsoft.AspNetCore.HttpOverrides" Version="2.2.0" />
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.4" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.6" />
     <PackageVersion Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.4" />
-    <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.4" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.4" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.4" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.4" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.4" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.6" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.6" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.6" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.6" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.6" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
@@ -42,14 +42,14 @@
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="8.0.4" />
-    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="8.0.4" />
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="8.0.6" />
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="8.0.6" />
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="8.0.2" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
     <PackageVersion Include="MimeTypes" Version="2.4.0" />
     <PackageVersion Include="Mono.Nat" Version="3.0.4" />
     <PackageVersion Include="Moq" Version="4.18.4" />
@@ -74,7 +74,7 @@
     <PackageVersion Include="SmartAnalyzers.MultithreadingAnalyzer" Version="1.1.31" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.556" />
     <PackageVersion Include="Svg.Skia" Version="1.0.0.18" />
-    <PackageVersion Include="Swashbuckle.AspNetCore.ReDoc" Version="6.5.0" />
+    <PackageVersion Include="Swashbuckle.AspNetCore.ReDoc" Version="6.6.2" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.2.3" />
     <PackageVersion Include="System.Globalization" Version="4.3.0" />
     <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
@@ -85,8 +85,8 @@
     <PackageVersion Include="TMDbLib" Version="2.2.0" />
     <PackageVersion Include="UTF.Unknown" Version="2.5.1" />
     <PackageVersion Include="Xunit.Priority" Version="1.1.6" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.8" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.1" />
     <PackageVersion Include="Xunit.SkippableFact" Version="1.4.13" />
-    <PackageVersion Include="xunit" Version="2.7.1" />
+    <PackageVersion Include="xunit" Version="2.8.1" />
   </ItemGroup>
 </Project>
