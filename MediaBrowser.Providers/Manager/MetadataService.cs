@@ -1023,7 +1023,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     target.Studios = source.Studios;
                 }
-                else if (source.Studios.Length >= 0)
+                else
                 {
                     target.Studios = target.Studios.Concat(source.Studios).Distinct().ToArray();
                 }
@@ -1035,7 +1035,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     target.Tags = source.Tags;
                 }
-                else if (source.Tags.Length >= 0)
+                else
                 {
                     target.Tags = target.Tags.Concat(source.Tags).Distinct().ToArray();
                 }
@@ -1047,7 +1047,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     target.ProductionLocations = source.ProductionLocations;
                 }
-                else if (source.ProductionLocations.Length >= 0)
+                else
                 {
                     target.Tags = target.ProductionLocations.Concat(source.ProductionLocations).Distinct().ToArray();
                 }
@@ -1077,7 +1077,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 target.RemoteTrailers = source.RemoteTrailers;
             }
-            else if (source.CriticRating.HasValue)
+            else
             {
                 target.RemoteTrailers = target.RemoteTrailers.Concat(source.RemoteTrailers).Distinct().ToArray();
             }
