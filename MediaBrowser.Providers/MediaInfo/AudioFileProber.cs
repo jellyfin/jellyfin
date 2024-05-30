@@ -159,8 +159,13 @@ namespace MediaBrowser.Providers.MediaInfo
             ATL.Settings.DisplayValueSeparator = '\u001F';
             Track track = new Track(audio.Path);
 
+            // ATL will fall back to filename as title when it does not understand the metadata
+            if (track.MetadataFormats.All(mf => mf.Equals(ATL.Factory.UNKNOWN_FORMAT)))
+            {
+                track.Title = mediaInfo.Name;
+            }
+
             track.Album = string.IsNullOrEmpty(track.Album) ? mediaInfo.Album : track.Album;
-            track.Title = string.IsNullOrEmpty(track.Title) ? mediaInfo.Name : track.Title;
             track.Year ??= mediaInfo.ProductionYear;
             track.TrackNumber ??= mediaInfo.IndexNumber;
             track.DiscNumber ??= mediaInfo.ParentIndexNumber;
