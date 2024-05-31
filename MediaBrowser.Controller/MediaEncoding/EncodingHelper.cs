@@ -1191,7 +1191,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 _mediaEncoder.GenerateConcatConfig(state.MediaSource, tmpConcatPath);
                 arg.Append(" -f concat -safe 0 -i \"")
                     .Append(tmpConcatPath)
-                    .Append('"');
+                    .Append("\" ");
             }
             else
             {
