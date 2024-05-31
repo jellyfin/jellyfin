@@ -31,20 +31,20 @@ namespace Jellyfin.Api.Auth.FirstTimeSetupPolicy
                 context.Succeed(requirement);
             }
 
-            // Succeed if user is admin or api key
-            else if (context.User.GetIsApiKey() || context.User.IsInRole(UserRoles.Administrator))
+            // Succeed if user is admin
+            else if (context.User.IsInRole(UserRoles.Administrator))
             {
                 context.Succeed(requirement);
             }
 
             // Fail if admin is required and user is not admin
-            else if (requirement.RequireAdmin && !context.User.IsInRole(UserRoles.Administrator))
+            else if (requirement.RequireAdmin)
             {
                 context.Fail();
             }
 
             // Succeed if admin is not required and user is not guest
-            else if (!requirement.RequireAdmin && context.User.IsInRole(UserRoles.User))
+            else if (context.User.IsInRole(UserRoles.User))
             {
                 context.Succeed(requirement);
             }

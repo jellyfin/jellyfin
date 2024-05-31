@@ -107,16 +107,6 @@ namespace Jellyfin.Api.Tests.Auth.FirstTimeSetupPolicy
         }
 
         [Fact]
-        public async Task ShouldAllowAdminApiKeyIfStartupWizardComplete()
-        {
-            TestHelpers.SetupConfigurationManager(_configurationManagerMock, true);
-            var claims = new ClaimsPrincipal(new ClaimsIdentity([new Claim(InternalClaimTypes.IsApiKey, bool.TrueString)]));
-
-            var allowed = await _authorizationService.AuthorizeAsync(claims, "FirstTime");
-            Assert.True(allowed.Succeeded);
-        }
-
-        [Fact]
         public async Task ShouldDisallowUserIfOutsideSchedule()
         {
             AccessSchedule[] accessSchedules = { new AccessSchedule(DynamicDayOfWeek.Everyday, 0, 0, Guid.Empty) };
