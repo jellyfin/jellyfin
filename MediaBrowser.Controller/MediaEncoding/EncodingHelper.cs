@@ -2321,7 +2321,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (request.VideoBitRate.HasValue
                 && (!videoStream.BitRate.HasValue || videoStream.BitRate.Value > request.VideoBitRate.Value))
             {
-                return false;
+                // For LiveTV that has no bitrate, let's try copy if other conditions are met
+                if (string.IsNullOrWhiteSpace(request.LiveStreamId) || videoStream.BitRate.HasValue)
+                {
+                    return false;
+                }
             }
 
             var maxBitDepth = state.GetRequestedVideoBitDepth(videoStream.Codec);

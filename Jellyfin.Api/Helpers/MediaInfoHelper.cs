@@ -385,19 +385,6 @@ public class MediaInfoHelper
     /// <returns>A <see cref="Task"/> containing the <see cref="LiveStreamResponse"/>.</returns>
     public async Task<LiveStreamResponse> OpenMediaSource(HttpContext httpContext, LiveStreamRequest request)
     {
-        // Enforce more restrictive transcoding profile for LiveTV due to compatability reasons
-        // Cap the MaxStreamingBitrate to 20Mbps, because we are unable to reliably probe source bitrate,
-        // which will cause the client to request extremely high bitrate that may fail the player/encoder
-        request.MaxStreamingBitrate = request.MaxStreamingBitrate > 20000000 ? 20000000 : request.MaxStreamingBitrate;
-
-        if (request.DeviceProfile is not null)
-        {
-            // Remove all fmp4 transcoding profiles, because it causes playback error and/or A/V sync issues
-            // Notably: Some channels won't play on FireFox and LG webOs
-            // Some channels from HDHomerun will experience A/V sync issues
-            request.DeviceProfile.TranscodingProfiles = request.DeviceProfile.TranscodingProfiles.Where(p => !string.Equals(p.Container, "mp4", StringComparison.OrdinalIgnoreCase)).ToArray();
-        }
-
         var result = await _mediaSourceManager.OpenLiveStream(request, CancellationToken.None).ConfigureAwait(false);
 
         var profile = request.DeviceProfile;
