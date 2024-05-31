@@ -29,7 +29,7 @@ namespace Jellyfin.Api.Auth.FirstTimeSetupPolicy
             {
                 context.Succeed(requirement);
             }
-            else if (context.User.GetIsApiKey())
+            else if (context.User.IsInRole(UserRoles.Administrator))
             {
                 context.Succeed(requirement);
             }
