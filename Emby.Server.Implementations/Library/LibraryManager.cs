@@ -472,7 +472,9 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Resolves the item.
+        /// Iterate over list of resolvers attempting to resolve the file system entity
+        /// described by args, using the first resolver's result that is not null or the default
+        /// (folder) if all results are null.
         /// </summary>
         /// <param name="args">The args.</param>
         /// <param name="resolvers">The resolvers.</param>

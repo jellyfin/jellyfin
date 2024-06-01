@@ -24,6 +24,7 @@ using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.AudioBooks;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Events.Authentication;
 using MediaBrowser.Controller.Events.Session;
@@ -738,8 +739,8 @@ namespace Emby.Server.Implementations.Session
         /// <summary>
         /// Called when [playback start].
         /// </summary>
-        /// <param name="user">The user object.</param>
-        /// <param name="item">The item.</param>
+        /// <param name="user">Object representing the user who initiated playback.</param>
+        /// <param name="item">The item which has been played by the user.</param>
         private void OnPlaybackStart(User user, BaseItem item)
         {
             var data = _userDataManager.GetUserData(user, item);
@@ -754,6 +755,13 @@ namespace Emby.Server.Implementations.Session
             else
             {
                 data.Played = false;
+            }
+
+            // When we start playing an AudioBookFile, mark all previous chapters as played, and
+            // all subsequent chapters as not played
+            if (item is AudioBookFile audioBookFile)
+            {
+                audioBookFile.SetFilesPlayed(user, _userDataManager);
             }
 
             _userDataManager.SaveUserData(user, item, data, UserDataSaveReason.PlaybackStart, CancellationToken.None);
@@ -1036,6 +1044,12 @@ namespace Emby.Server.Implementations.Session
             }
 
             _userDataManager.SaveUserData(user, item, data, UserDataSaveReason.PlaybackFinished, CancellationToken.None);
+
+            // Update played status for other AudioBook chapters
+            if (item is AudioBookFile audioBookFile)
+            {
+                audioBookFile.SetFilesPlayed(user, _userDataManager);
+            }
 
             return playedToCompletion;
         }

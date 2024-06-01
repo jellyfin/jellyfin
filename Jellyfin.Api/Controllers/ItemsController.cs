@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Jellyfin.Api.Extensions;
@@ -9,6 +10,7 @@ using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.AudioBooks;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
@@ -523,10 +525,25 @@ public class ItemsController : BaseJellyfinApiController
             result = new QueryResult<BaseItem>(itemsArray);
         }
 
-        return new QueryResult<BaseItemDto>(
+        var queryResult = new QueryResult<BaseItemDto>(
             startIndex,
             result.TotalRecordCount,
             _dtoService.GetBaseItemDtos(result.Items, dtoOptions, user));
+
+        // TODO: Sort return items by chapter for audio book
+        if (item is AudioBook)
+        {
+            for (int i = 0; i < queryResult.Items.Count; i++)
+            {
+                if (!queryResult.Items[i].UserData.Played)
+                {
+                    queryResult.StartIndex = i;
+                    break;
+                }
+            }
+        }
+
+        return queryResult;
     }
 
     /// <summary>
@@ -886,6 +903,27 @@ public class ItemsController : BaseJellyfinApiController
             SearchTerm = searchTerm,
             ExcludeItemIds = excludeItemIds
         });
+
+        // If there is an AudioBookFile in the array of result items, iterate over itemsResult.Items, for instances of
+        // "item is AudioBookFile" and replace with reference to parent AudioBook if the parent is not already in the list
+        if (itemsResult.Items.OfType<AudioBookFile>().Any())
+        {
+            var fileToBook = itemsResult.Items.ToList();
+            foreach (var queryItem in itemsResult.Items)
+            {
+                if (queryItem is AudioBookFile)
+                {
+                    fileToBook.Remove(queryItem);
+                    if (!fileToBook.Contains(queryItem.GetParent()))
+                    {
+                        fileToBook.Add(queryItem.GetParent());
+                    }
+                }
+            }
+
+            itemsResult.Items = fileToBook.ToArray();
+            itemsResult.TotalRecordCount = fileToBook.Count;
+        }
 
         var returnItems = _dtoService.GetBaseItemDtos(itemsResult.Items, dtoOptions, user);
 

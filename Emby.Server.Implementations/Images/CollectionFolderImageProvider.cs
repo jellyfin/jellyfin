@@ -45,7 +45,7 @@ namespace Emby.Server.Implementations.Images
                     includeItemTypes = new[] { BaseItemKind.MusicVideo };
                     break;
                 case CollectionType.books:
-                    includeItemTypes = new[] { BaseItemKind.Book, BaseItemKind.AudioBook };
+                    includeItemTypes = new[] { BaseItemKind.Book, BaseItemKind.AudioBook, BaseItemKind.AudioBookFile };
                     break;
                 case CollectionType.boxsets:
                     includeItemTypes = new[] { BaseItemKind.BoxSet };

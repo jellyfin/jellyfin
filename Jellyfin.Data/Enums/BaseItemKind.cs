@@ -24,6 +24,11 @@
         AudioBook,
 
         /// <summary>
+        /// Item is an audio file component of an AudioBook.
+        /// </summary>
+        AudioBookFile,
+
+        /// <summary>
         /// Item is base plugin folder.
         /// </summary>
         BasePluginFolder,
