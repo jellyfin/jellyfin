@@ -54,7 +54,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                 {
                     IndexNumber = seasonParserResult.SeasonNumber,
                     SeriesId = series.Id,
-                    SeriesName = series.Name
+                    SeriesName = series.Name,
+                    Path = seasonParserResult.IsSeasonFolder ? path : args.Parent.Path
                 };
 
                 if (!season.IndexNumber.HasValue || !seasonParserResult.IsSeasonFolder)
@@ -78,27 +79,16 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                     }
                 }
 
-                if (season.IndexNumber.HasValue)
+                if (season.IndexNumber.HasValue && string.IsNullOrEmpty(season.Name))
                 {
                     var seasonNumber = season.IndexNumber.Value;
-                    if (string.IsNullOrEmpty(season.Name))
-                    {
-                        var seasonNames = series.GetSeasonNames();
-                        if (seasonNames.TryGetValue(seasonNumber, out var seasonName))
-                        {
-                            season.Name = seasonName;
-                        }
-                        else
-                        {
-                            season.Name = seasonNumber == 0 ?
-                                args.LibraryOptions.SeasonZeroDisplayName :
-                                string.Format(
-                                    CultureInfo.InvariantCulture,
-                                    _localization.GetLocalizedString("NameSeasonNumber"),
-                                    seasonNumber,
-                                    args.LibraryOptions.PreferredMetadataLanguage);
-                        }
-                    }
+                    season.Name = seasonNumber == 0 ?
+                        args.LibraryOptions.SeasonZeroDisplayName :
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            _localization.GetLocalizedString("NameSeasonNumber"),
+                            seasonNumber,
+                            args.LibraryOptions.PreferredMetadataLanguage);
                 }
 
                 return season;
