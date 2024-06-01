@@ -128,7 +128,7 @@ namespace MediaBrowser.Providers.TV
 
         private void RemoveObsoleteEpisodes(Series series)
         {
-            var episodes = series.GetEpisodes(null, new DtoOptions()).OfType<Episode>().ToList();
+            var episodes = series.GetEpisodes(null, new DtoOptions(), true).OfType<Episode>().ToList();
             var numberOfEpisodes = episodes.Count;
             // TODO: O(n^2), but can it be done faster without overcomplicating it?
             for (var i = 0; i < numberOfEpisodes; i++)

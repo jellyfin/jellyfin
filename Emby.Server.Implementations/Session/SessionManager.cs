@@ -1202,7 +1202,8 @@ namespace Emby.Server.Implementations.Session
                             new DtoOptions(false)
                             {
                                 EnableImages = false
-                            })
+                            },
+                            user.DisplayMissingEpisodes)
                         .Where(i => !i.IsVirtualItem)
                         .SkipWhile(i => !i.Id.Equals(episode.Id))
                         .ToList();
