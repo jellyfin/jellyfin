@@ -248,5 +248,10 @@ namespace MediaBrowser.Model.Dto
 
             return null;
         }
+
+        public bool IsDiscSource()
+        {
+            return VideoType == Entities.VideoType.BluRay || VideoType == Entities.VideoType.Dvd;
+        }
     }
 }

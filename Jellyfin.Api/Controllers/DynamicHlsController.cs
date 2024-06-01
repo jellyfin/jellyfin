@@ -46,10 +46,6 @@ public class DynamicHlsController : BaseJellyfinApiController
 
     private readonly Version _minFFmpegFlacInMp4 = new Version(6, 0);
 
-    private readonly ILibraryManager _libraryManager;
-    private readonly IUserManager _userManager;
-    private readonly IMediaSourceManager _mediaSourceManager;
-    private readonly IServerConfigurationManager _serverConfigurationManager;
     private readonly IMediaEncoder _mediaEncoder;
     private readonly IFileSystem _fileSystem;
     private readonly ITranscodeManager _transcodeManager;
@@ -58,13 +54,11 @@ public class DynamicHlsController : BaseJellyfinApiController
     private readonly IDynamicHlsPlaylistGenerator _dynamicHlsPlaylistGenerator;
     private readonly DynamicHlsHelper _dynamicHlsHelper;
     private readonly EncodingOptions _encodingOptions;
+    private readonly IStreamingHelper _streamingHelper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DynamicHlsController"/> class.
     /// </summary>
-    /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
-    /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
-    /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
     /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
     /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
@@ -73,10 +67,8 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="dynamicHlsHelper">Instance of <see cref="DynamicHlsHelper"/>.</param>
     /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
     /// <param name="dynamicHlsPlaylistGenerator">Instance of <see cref="IDynamicHlsPlaylistGenerator"/>.</param>
+    /// <param name="streamingHelper">Instance of <see cref="IStreamingHelper"/>.</param>
     public DynamicHlsController(
-        ILibraryManager libraryManager,
-        IUserManager userManager,
-        IMediaSourceManager mediaSourceManager,
         IServerConfigurationManager serverConfigurationManager,
         IMediaEncoder mediaEncoder,
         IFileSystem fileSystem,
@@ -84,12 +76,9 @@ public class DynamicHlsController : BaseJellyfinApiController
         ILogger<DynamicHlsController> logger,
         DynamicHlsHelper dynamicHlsHelper,
         EncodingHelper encodingHelper,
-        IDynamicHlsPlaylistGenerator dynamicHlsPlaylistGenerator)
+        IDynamicHlsPlaylistGenerator dynamicHlsPlaylistGenerator,
+        IStreamingHelper streamingHelper)
     {
-        _libraryManager = libraryManager;
-        _userManager = userManager;
-        _mediaSourceManager = mediaSourceManager;
-        _serverConfigurationManager = serverConfigurationManager;
         _mediaEncoder = mediaEncoder;
         _fileSystem = fileSystem;
         _transcodeManager = transcodeManager;
@@ -99,6 +88,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         _dynamicHlsPlaylistGenerator = dynamicHlsPlaylistGenerator;
 
         _encodingOptions = serverConfigurationManager.GetEncodingOptions();
+        _streamingHelper = streamingHelper;
     }
 
     /// <summary>
@@ -163,18 +153,18 @@ public class DynamicHlsController : BaseJellyfinApiController
     [ProducesPlaylistFile]
     public async Task<ActionResult> GetLiveHlsStream(
         [FromRoute, Required] Guid itemId,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? container,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? container,
         [FromQuery] bool? @static,
         [FromQuery] string? @params,
         [FromQuery] string? tag,
         [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? segmentContainer,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? segmentContainer,
         [FromQuery] int? segmentLength,
         [FromQuery] int? minSegments,
         [FromQuery] string? mediaSourceId,
         [FromQuery] string? deviceId,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? audioCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? audioCodec,
         [FromQuery] bool? enableAutoStreamCopy,
         [FromQuery] bool? allowVideoStreamCopy,
         [FromQuery] bool? allowAudioStreamCopy,
@@ -204,8 +194,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? cpuCoreLimit,
         [FromQuery] string? liveStreamId,
         [FromQuery] bool? enableMpegtsM2TsMode,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? videoCodec,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? subtitleCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? videoCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? subtitleCodec,
         [FromQuery] string? transcodeReasons,
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
@@ -275,16 +265,10 @@ public class DynamicHlsController : BaseJellyfinApiController
         // Due to CTS.Token calling ThrowIfDisposed (https://github.com/dotnet/runtime/issues/29970) we have to "cache" the token
         // since it gets disposed when ffmpeg exits
         var cancellationToken = cancellationTokenSource.Token;
-        var state = await StreamingHelpers.GetStreamingState(
+        var state = await _streamingHelper.GetStreamingState(
                 streamingRequest,
                 HttpContext,
-                _mediaSourceManager,
-                _userManager,
-                _libraryManager,
-                _serverConfigurationManager,
-                _mediaEncoder,
                 _encodingHelper,
-                _transcodeManager,
                 TranscodingJobType,
                 cancellationToken)
             .ConfigureAwait(false);
@@ -406,12 +390,12 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] string? tag,
         [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? segmentContainer,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? segmentContainer,
         [FromQuery] int? segmentLength,
         [FromQuery] int? minSegments,
         [FromQuery, Required] string mediaSourceId,
         [FromQuery] string? deviceId,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? audioCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? audioCodec,
         [FromQuery] bool? enableAutoStreamCopy,
         [FromQuery] bool? allowVideoStreamCopy,
         [FromQuery] bool? allowAudioStreamCopy,
@@ -443,8 +427,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? cpuCoreLimit,
         [FromQuery] string? liveStreamId,
         [FromQuery] bool? enableMpegtsM2TsMode,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? videoCodec,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? subtitleCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? videoCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? subtitleCodec,
         [FromQuery] string? transcodeReasons,
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
@@ -577,12 +561,12 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] string? tag,
         [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? segmentContainer,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? segmentContainer,
         [FromQuery] int? segmentLength,
         [FromQuery] int? minSegments,
         [FromQuery, Required] string mediaSourceId,
         [FromQuery] string? deviceId,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? audioCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? audioCodec,
         [FromQuery] bool? enableAutoStreamCopy,
         [FromQuery] bool? allowVideoStreamCopy,
         [FromQuery] bool? allowAudioStreamCopy,
@@ -613,8 +597,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? cpuCoreLimit,
         [FromQuery] string? liveStreamId,
         [FromQuery] bool? enableMpegtsM2TsMode,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? videoCodec,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? subtitleCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? videoCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? subtitleCodec,
         [FromQuery] string? transcodeReasons,
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
@@ -742,12 +726,12 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] string? tag,
         [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? segmentContainer,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? segmentContainer,
         [FromQuery] int? segmentLength,
         [FromQuery] int? minSegments,
         [FromQuery] string? mediaSourceId,
         [FromQuery] string? deviceId,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? audioCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? audioCodec,
         [FromQuery] bool? enableAutoStreamCopy,
         [FromQuery] bool? allowVideoStreamCopy,
         [FromQuery] bool? allowAudioStreamCopy,
@@ -779,8 +763,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? cpuCoreLimit,
         [FromQuery] string? liveStreamId,
         [FromQuery] bool? enableMpegtsM2TsMode,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? videoCodec,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? subtitleCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? videoCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? subtitleCodec,
         [FromQuery] string? transcodeReasons,
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
@@ -909,12 +893,12 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] string? tag,
         [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? segmentContainer,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? segmentContainer,
         [FromQuery] int? segmentLength,
         [FromQuery] int? minSegments,
         [FromQuery] string? mediaSourceId,
         [FromQuery] string? deviceId,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? audioCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? audioCodec,
         [FromQuery] bool? enableAutoStreamCopy,
         [FromQuery] bool? allowVideoStreamCopy,
         [FromQuery] bool? allowAudioStreamCopy,
@@ -945,8 +929,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? cpuCoreLimit,
         [FromQuery] string? liveStreamId,
         [FromQuery] bool? enableMpegtsM2TsMode,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? videoCodec,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? subtitleCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? videoCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? subtitleCodec,
         [FromQuery] string? transcodeReasons,
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
@@ -1085,12 +1069,12 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] string? tag,
         [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? segmentContainer,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? segmentContainer,
         [FromQuery] int? segmentLength,
         [FromQuery] int? minSegments,
         [FromQuery] string? mediaSourceId,
         [FromQuery] string? deviceId,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? audioCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? audioCodec,
         [FromQuery] bool? enableAutoStreamCopy,
         [FromQuery] bool? allowVideoStreamCopy,
         [FromQuery] bool? allowAudioStreamCopy,
@@ -1122,8 +1106,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? cpuCoreLimit,
         [FromQuery] string? liveStreamId,
         [FromQuery] bool? enableMpegtsM2TsMode,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? videoCodec,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? subtitleCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? videoCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? subtitleCodec,
         [FromQuery] string? transcodeReasons,
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
@@ -1265,12 +1249,12 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] string? tag,
         [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? segmentContainer,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? segmentContainer,
         [FromQuery] int? segmentLength,
         [FromQuery] int? minSegments,
         [FromQuery] string? mediaSourceId,
         [FromQuery] string? deviceId,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? audioCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? audioCodec,
         [FromQuery] bool? enableAutoStreamCopy,
         [FromQuery] bool? allowVideoStreamCopy,
         [FromQuery] bool? allowAudioStreamCopy,
@@ -1301,8 +1285,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? cpuCoreLimit,
         [FromQuery] string? liveStreamId,
         [FromQuery] bool? enableMpegtsM2TsMode,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? videoCodec,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? subtitleCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? videoCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? subtitleCodec,
         [FromQuery] string? transcodeReasons,
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
@@ -1369,16 +1353,10 @@ public class DynamicHlsController : BaseJellyfinApiController
 
     private async Task<ActionResult> GetVariantPlaylistInternal(StreamingRequestDto streamingRequest, CancellationTokenSource cancellationTokenSource)
     {
-        using var state = await StreamingHelpers.GetStreamingState(
+        using var state = await _streamingHelper.GetStreamingState(
                 streamingRequest,
                 HttpContext,
-                _mediaSourceManager,
-                _userManager,
-                _libraryManager,
-                _serverConfigurationManager,
-                _mediaEncoder,
                 _encodingHelper,
-                _transcodeManager,
                 TranscodingJobType,
                 cancellationTokenSource.Token)
             .ConfigureAwait(false);
@@ -1407,16 +1385,10 @@ public class DynamicHlsController : BaseJellyfinApiController
         var cancellationTokenSource = new CancellationTokenSource();
         var cancellationToken = cancellationTokenSource.Token;
 
-        var state = await StreamingHelpers.GetStreamingState(
+        var state = await _streamingHelper.GetStreamingState(
                 streamingRequest,
                 HttpContext,
-                _mediaSourceManager,
-                _userManager,
-                _libraryManager,
-                _serverConfigurationManager,
-                _mediaEncoder,
                 _encodingHelper,
-                _transcodeManager,
                 TranscodingJobType,
                 cancellationToken)
             .ConfigureAwait(false);

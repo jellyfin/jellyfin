@@ -35,6 +35,7 @@ using Emby.Server.Implementations.SyncPlay;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Api.Services;
 using Jellyfin.Drawing;
 using Jellyfin.MediaEncoding.Hls.Playlist;
 using Jellyfin.Networking.Manager;
@@ -548,7 +549,10 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<ITranscodeManager, TranscodeManager>();
             serviceCollection.AddScoped<MediaInfoHelper>();
-            serviceCollection.AddScoped<AudioHelper>();
+            serviceCollection
+                .AddSingleton<IStreamingHelper, StreamingHelper>()
+                .AddSingleton<IVideoService, VideoService>()
+                .AddScoped<AudioHelper>();
             serviceCollection.AddScoped<DynamicHlsHelper>();
             serviceCollection.AddScoped<IClientEventLogger, ClientEventLogger>();
             serviceCollection.AddSingleton<IDirectoryService, DirectoryService>();
