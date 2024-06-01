@@ -69,9 +69,6 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <value>The status.</value>
         public SeriesStatus? Status { get; set; }
 
-        [JsonIgnore]
-        public override bool StopRefreshIfLocalMetadataFound => false;
-
         public override double GetDefaultPrimaryImageAspectRatio()
         {
             double value = 2;
@@ -288,8 +285,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public async Task RefreshAllMetadata(MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
         {
-            // Refresh bottom up, children first, then the boxset
-            // By then hopefully the  movies within will have Tmdb collection values
+            // Refresh bottom up, seasons and episodes first, then the series
             var items = GetRecursiveChildren();
 
             var totalItems = items.Count;

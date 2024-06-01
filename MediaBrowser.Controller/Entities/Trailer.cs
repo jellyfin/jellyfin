@@ -23,9 +23,6 @@ namespace MediaBrowser.Controller.Entities
             TrailerTypes = Array.Empty<TrailerType>();
         }
 
-        [JsonIgnore]
-        public override bool StopRefreshIfLocalMetadataFound => false;
-
         public TrailerType[] TrailerTypes { get; set; }
 
         public override double GetDefaultPrimaryImageAspectRatio()

@@ -5222,19 +5222,20 @@ AND Type = @InternalPersonType)");
                 throw new ArgumentNullException(nameof(itemId));
             }
 
-            ArgumentNullException.ThrowIfNull(people);
-
             CheckDisposed();
 
             using var connection = GetConnection();
             using var transaction = connection.BeginTransaction();
-            // First delete chapters
+            // Delete all existing people first
             using var command = connection.CreateCommand();
             command.CommandText = "delete from People where ItemId=@ItemId";
             command.TryBind("@ItemId", itemId);
             command.ExecuteNonQuery();
 
-            InsertPeople(itemId, people, connection);
+            if (people is not null)
+            {
+                InsertPeople(itemId, people, connection);
+            }
 
             transaction.Commit();
         }

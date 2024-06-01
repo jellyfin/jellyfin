@@ -2812,8 +2812,10 @@ namespace Emby.Server.Implementations.Library
             }
 
             _itemRepository.UpdatePeople(item.Id, people);
-
-            await SavePeopleMetadataAsync(people, cancellationToken).ConfigureAwait(false);
+            if (people is not null)
+            {
+                await SavePeopleMetadataAsync(people, cancellationToken).ConfigureAwait(false);
+            }
         }
 
         public async Task<ItemImageInfo> ConvertImageToLocal(BaseItem item, ItemImageInfo image, int imageIndex, bool removeOnFailure)
