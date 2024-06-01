@@ -44,25 +44,27 @@ namespace MediaBrowser.Controller.Devices
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <returns>DeviceInfo.</returns>
-        Task<DeviceInfo> GetDevice(string id);
+        DeviceInfo GetDevice(string id);
 
         /// <summary>
         /// Gets devices based on the provided query.
         /// </summary>
         /// <param name="query">The device query.</param>
         /// <returns>A <see cref="Task{QueryResult}"/> representing the retrieval of the devices.</returns>
-        Task<QueryResult<Device>> GetDevices(DeviceQuery query);
+        QueryResult<Device> GetDevices(DeviceQuery query);
 
-        Task<QueryResult<DeviceInfo>> GetDeviceInfos(DeviceQuery query);
+        QueryResult<DeviceInfo> GetDeviceInfos(DeviceQuery query);
 
         /// <summary>
         /// Gets the devices.
         /// </summary>
         /// <param name="userId">The user's id, or <c>null</c>.</param>
         /// <returns>IEnumerable&lt;DeviceInfo&gt;.</returns>
-        Task<QueryResult<DeviceInfo>> GetDevicesForUser(Guid? userId);
+        QueryResult<DeviceInfo> GetDevicesForUser(Guid? userId);
 
         Task DeleteDevice(Device device);
+
+        Task UpdateDevice(Device device);
 
         /// <summary>
         /// Determines whether this instance [can access device] the specified user identifier.
@@ -74,6 +76,6 @@ namespace MediaBrowser.Controller.Devices
 
         Task UpdateDeviceOptions(string deviceId, string deviceName);
 
-        Task<DeviceOptions> GetDeviceOptions(string deviceId);
+        DeviceOptions GetDeviceOptions(string deviceId);
     }
 }

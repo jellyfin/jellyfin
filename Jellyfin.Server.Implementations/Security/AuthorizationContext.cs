@@ -4,7 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
+using Jellyfin.Data.Queries;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using Microsoft.AspNetCore.Http;
@@ -17,15 +20,18 @@ namespace Jellyfin.Server.Implementations.Security
     {
         private readonly IDbContextFactory<JellyfinDbContext> _jellyfinDbProvider;
         private readonly IUserManager _userManager;
+        private readonly IDeviceManager _deviceManager;
         private readonly IServerApplicationHost _serverApplicationHost;
 
         public AuthorizationContext(
             IDbContextFactory<JellyfinDbContext> jellyfinDb,
             IUserManager userManager,
+            IDeviceManager deviceManager,
             IServerApplicationHost serverApplicationHost)
         {
             _jellyfinDbProvider = jellyfinDb;
             _userManager = userManager;
+            _deviceManager = deviceManager;
             _serverApplicationHost = serverApplicationHost;
         }
 
@@ -121,7 +127,11 @@ namespace Jellyfin.Server.Implementations.Security
             var dbContext = await _jellyfinDbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
-                var device = await dbContext.Devices.FirstOrDefaultAsync(d => d.AccessToken == token).ConfigureAwait(false);
+                var device = _deviceManager.GetDevices(
+                    new DeviceQuery
+                    {
+                        AccessToken = token
+                    }).Items.FirstOrDefault();
 
                 if (device is not null)
                 {
@@ -178,8 +188,7 @@ namespace Jellyfin.Server.Implementations.Security
 
                     if (updateToken)
                     {
-                        dbContext.Devices.Update(device);
-                        await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                        await _deviceManager.UpdateDevice(device).ConfigureAwait(false);
                     }
                 }
                 else
