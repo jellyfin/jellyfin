@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -151,197 +152,211 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="tryExtractEmbeddedLyrics">Whether to extract embedded lyrics to lrc file. </param>
         private async Task FetchDataFromTags(Audio audio, Model.MediaInfo.MediaInfo mediaInfo, MetadataRefreshOptions options, bool tryExtractEmbeddedLyrics)
         {
-            using var file = TagLib.File.Create(audio.Path);
-            var tagTypes = file.TagTypesOnDisk;
             Tag? tags = null;
+            try
+            {
+                using var file = TagLib.File.Create(audio.Path);
+                var tagTypes = file.TagTypesOnDisk;
 
-            if (tagTypes.HasFlag(TagTypes.Id3v2))
-            {
-                tags = file.GetTag(TagTypes.Id3v2);
-            }
-            else if (tagTypes.HasFlag(TagTypes.Ape))
-            {
-                tags = file.GetTag(TagTypes.Ape);
-            }
-            else if (tagTypes.HasFlag(TagTypes.FlacMetadata))
-            {
-                tags = file.GetTag(TagTypes.FlacMetadata);
-            }
-            else if (tagTypes.HasFlag(TagTypes.Apple))
-            {
-                tags = file.GetTag(TagTypes.Apple);
-            }
-            else if (tagTypes.HasFlag(TagTypes.Xiph))
-            {
-                tags = file.GetTag(TagTypes.Xiph);
-            }
-            else if (tagTypes.HasFlag(TagTypes.AudibleMetadata))
-            {
-                tags = file.GetTag(TagTypes.AudibleMetadata);
-            }
-            else if (tagTypes.HasFlag(TagTypes.Id3v1))
-            {
-                tags = file.GetTag(TagTypes.Id3v1);
-            }
-
-            if (tags is not null)
-            {
-                if (audio.SupportsPeople && !audio.LockedFields.Contains(MetadataField.Cast))
+                if (tagTypes.HasFlag(TagTypes.Id3v2))
                 {
-                    var people = new List<PersonInfo>();
-                    var albumArtists = tags.AlbumArtists;
-                    foreach (var albumArtist in albumArtists)
+                    tags = file.GetTag(TagTypes.Id3v2);
+                }
+                else if (tagTypes.HasFlag(TagTypes.Ape))
+                {
+                    tags = file.GetTag(TagTypes.Ape);
+                }
+                else if (tagTypes.HasFlag(TagTypes.FlacMetadata))
+                {
+                    tags = file.GetTag(TagTypes.FlacMetadata);
+                }
+                else if (tagTypes.HasFlag(TagTypes.Apple))
+                {
+                    tags = file.GetTag(TagTypes.Apple);
+                }
+                else if (tagTypes.HasFlag(TagTypes.Xiph))
+                {
+                    tags = file.GetTag(TagTypes.Xiph);
+                }
+                else if (tagTypes.HasFlag(TagTypes.AudibleMetadata))
+                {
+                    tags = file.GetTag(TagTypes.AudibleMetadata);
+                }
+                else if (tagTypes.HasFlag(TagTypes.Id3v1))
+                {
+                    tags = file.GetTag(TagTypes.Id3v1);
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogWarning(e, "TagLib-Sharp does not support this audio");
+            }
+
+            tags ??= new TagLib.Id3v2.Tag();
+            tags.AlbumArtists ??= mediaInfo.AlbumArtists;
+            tags.Album ??= mediaInfo.Album;
+            tags.Title ??= mediaInfo.Name;
+            tags.Year = tags.Year == 0U ? Convert.ToUInt32(mediaInfo.ProductionYear, CultureInfo.InvariantCulture) : tags.Year;
+            tags.Performers ??= mediaInfo.Artists;
+            tags.Genres ??= mediaInfo.Genres;
+            tags.Track = tags.Track == 0U ? Convert.ToUInt32(mediaInfo.IndexNumber, CultureInfo.InvariantCulture) : tags.Track;
+            tags.Disc = tags.Disc == 0U ? Convert.ToUInt32(mediaInfo.ParentIndexNumber, CultureInfo.InvariantCulture) : tags.Disc;
+
+            if (audio.SupportsPeople && !audio.LockedFields.Contains(MetadataField.Cast))
+            {
+                var people = new List<PersonInfo>();
+                var albumArtists = tags.AlbumArtists;
+                foreach (var albumArtist in albumArtists)
+                {
+                    if (!string.IsNullOrEmpty(albumArtist))
                     {
-                        if (!string.IsNullOrEmpty(albumArtist))
+                        PeopleHelper.AddPerson(people, new PersonInfo
                         {
-                            PeopleHelper.AddPerson(people, new PersonInfo
-                            {
-                                Name = albumArtist,
-                                Type = PersonKind.AlbumArtist
-                            });
-                        }
+                            Name = albumArtist,
+                            Type = PersonKind.AlbumArtist
+                        });
                     }
+                }
 
-                    var performers = tags.Performers;
-                    foreach (var performer in performers)
+                var performers = tags.Performers;
+                foreach (var performer in performers)
+                {
+                    if (!string.IsNullOrEmpty(performer))
                     {
-                        if (!string.IsNullOrEmpty(performer))
+                        PeopleHelper.AddPerson(people, new PersonInfo
                         {
-                            PeopleHelper.AddPerson(people, new PersonInfo
-                            {
-                                Name = performer,
-                                Type = PersonKind.Artist
-                            });
-                        }
+                            Name = performer,
+                            Type = PersonKind.Artist
+                        });
                     }
+                }
 
-                    foreach (var composer in tags.Composers)
+                foreach (var composer in tags.Composers)
+                {
+                    if (!string.IsNullOrEmpty(composer))
                     {
-                        if (!string.IsNullOrEmpty(composer))
+                        PeopleHelper.AddPerson(people, new PersonInfo
                         {
-                            PeopleHelper.AddPerson(people, new PersonInfo
-                            {
-                                Name = composer,
-                                Type = PersonKind.Composer
-                            });
-                        }
+                            Name = composer,
+                            Type = PersonKind.Composer
+                        });
                     }
+                }
 
-                    _libraryManager.UpdatePeople(audio, people);
+                _libraryManager.UpdatePeople(audio, people);
 
-                    if (options.ReplaceAllMetadata && performers.Length != 0)
+                if (options.ReplaceAllMetadata && performers.Length != 0)
+                {
+                    audio.Artists = performers;
+                }
+                else if (!options.ReplaceAllMetadata
+                         && (audio.Artists is null || audio.Artists.Count == 0))
+                {
+                    audio.Artists = performers;
+                }
+
+                if (albumArtists.Length == 0)
+                {
+                    // Album artists not provided, fall back to performers (artists).
+                    albumArtists = performers;
+                }
+
+                if (options.ReplaceAllMetadata && albumArtists.Length != 0)
+                {
+                    audio.AlbumArtists = albumArtists;
+                }
+                else if (!options.ReplaceAllMetadata
+                         && (audio.AlbumArtists is null || audio.AlbumArtists.Count == 0))
+                {
+                    audio.AlbumArtists = albumArtists;
+                }
+            }
+
+            if (!audio.LockedFields.Contains(MetadataField.Name) && !string.IsNullOrEmpty(tags.Title))
+            {
+                audio.Name = tags.Title;
+            }
+
+            if (options.ReplaceAllMetadata)
+            {
+                audio.Album = tags.Album;
+                audio.IndexNumber = Convert.ToInt32(tags.Track);
+                audio.ParentIndexNumber = Convert.ToInt32(tags.Disc);
+            }
+            else
+            {
+                audio.Album ??= tags.Album;
+                audio.IndexNumber ??= Convert.ToInt32(tags.Track);
+                audio.ParentIndexNumber ??= Convert.ToInt32(tags.Disc);
+            }
+
+            if (tags.Year != 0)
+            {
+                var year = Convert.ToInt32(tags.Year);
+                audio.ProductionYear = year;
+
+                if (!audio.PremiereDate.HasValue)
+                {
+                    try
                     {
-                        audio.Artists = performers;
+                        audio.PremiereDate = new DateTime(year, 01, 01);
                     }
-                    else if (!options.ReplaceAllMetadata
-                             && (audio.Artists is null || audio.Artists.Count == 0))
+                    catch (ArgumentOutOfRangeException ex)
                     {
-                        audio.Artists = performers;
-                    }
-
-                    if (albumArtists.Length == 0)
-                    {
-                        // Album artists not provided, fall back to performers (artists).
-                        albumArtists = performers;
-                    }
-
-                    if (options.ReplaceAllMetadata && albumArtists.Length != 0)
-                    {
-                        audio.AlbumArtists = albumArtists;
-                    }
-                    else if (!options.ReplaceAllMetadata
-                             && (audio.AlbumArtists is null || audio.AlbumArtists.Count == 0))
-                    {
-                        audio.AlbumArtists = albumArtists;
+                        _logger.LogError(ex, "Error parsing YEAR tag in {File}. '{TagValue}' is an invalid year", audio.Path, tags.Year);
                     }
                 }
+            }
 
-                if (!audio.LockedFields.Contains(MetadataField.Name) && !string.IsNullOrEmpty(tags.Title))
-                {
-                    audio.Name = tags.Title;
-                }
+            if (!audio.LockedFields.Contains(MetadataField.Genres))
+            {
+                audio.Genres = options.ReplaceAllMetadata || audio.Genres == null || audio.Genres.Length == 0
+                    ? tags.Genres.Distinct(StringComparer.OrdinalIgnoreCase).ToArray()
+                    : audio.Genres;
+            }
 
-                if (options.ReplaceAllMetadata)
-                {
-                    audio.Album = tags.Album;
-                    audio.IndexNumber = Convert.ToInt32(tags.Track);
-                    audio.ParentIndexNumber = Convert.ToInt32(tags.Disc);
-                }
-                else
-                {
-                    audio.Album ??= tags.Album;
-                    audio.IndexNumber ??= Convert.ToInt32(tags.Track);
-                    audio.ParentIndexNumber ??= Convert.ToInt32(tags.Disc);
-                }
+            if (!double.IsNaN(tags.ReplayGainTrackGain))
+            {
+                audio.NormalizationGain = (float)tags.ReplayGainTrackGain;
+            }
 
-                if (tags.Year != 0)
-                {
-                    var year = Convert.ToInt32(tags.Year);
-                    audio.ProductionYear = year;
+            if (options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzArtist, out _))
+            {
+                audio.SetProviderId(MetadataProvider.MusicBrainzArtist, tags.MusicBrainzArtistId);
+            }
 
-                    if (!audio.PremiereDate.HasValue)
-                    {
-                        try
-                        {
-                            audio.PremiereDate = new DateTime(year, 01, 01);
-                        }
-                        catch (ArgumentOutOfRangeException ex)
-                        {
-                            _logger.LogError(ex, "Error parsing YEAR tag in {File}. '{TagValue}' is an invalid year.", audio.Path, tags.Year);
-                        }
-                    }
-                }
+            if (options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzAlbumArtist, out _))
+            {
+                audio.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, tags.MusicBrainzReleaseArtistId);
+            }
 
-                if (!audio.LockedFields.Contains(MetadataField.Genres))
-                {
-                    audio.Genres = options.ReplaceAllMetadata || audio.Genres == null || audio.Genres.Length == 0
-                        ? tags.Genres.Distinct(StringComparer.OrdinalIgnoreCase).ToArray()
-                        : audio.Genres;
-                }
+            if (options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzAlbum, out _))
+            {
+                audio.SetProviderId(MetadataProvider.MusicBrainzAlbum, tags.MusicBrainzReleaseId);
+            }
 
-                if (!double.IsNaN(tags.ReplayGainTrackGain))
-                {
-                    audio.NormalizationGain = (float)tags.ReplayGainTrackGain;
-                }
+            if (options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzReleaseGroup, out _))
+            {
+                audio.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, tags.MusicBrainzReleaseGroupId);
+            }
 
-                if (options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzArtist, out _))
+            if (options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzTrack, out _))
+            {
+                // Fallback to ffprobe as TagLib incorrectly provides recording MBID in `tags.MusicBrainzTrackId`.
+                // See https://github.com/mono/taglib-sharp/issues/304
+                var trackMbId = mediaInfo.GetProviderId(MetadataProvider.MusicBrainzTrack);
+                if (trackMbId is not null)
                 {
-                    audio.SetProviderId(MetadataProvider.MusicBrainzArtist, tags.MusicBrainzArtistId);
+                    audio.SetProviderId(MetadataProvider.MusicBrainzTrack, trackMbId);
                 }
+            }
 
-                if (options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzAlbumArtist, out _))
-                {
-                    audio.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, tags.MusicBrainzReleaseArtistId);
-                }
-
-                if (options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzAlbum, out _))
-                {
-                    audio.SetProviderId(MetadataProvider.MusicBrainzAlbum, tags.MusicBrainzReleaseId);
-                }
-
-                if (options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzReleaseGroup, out _))
-                {
-                    audio.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, tags.MusicBrainzReleaseGroupId);
-                }
-
-                if (options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzTrack, out _))
-                {
-                    // Fallback to ffprobe as TagLib incorrectly provides recording MBID in `tags.MusicBrainzTrackId`.
-                    // See https://github.com/mono/taglib-sharp/issues/304
-                    var trackMbId = mediaInfo.GetProviderId(MetadataProvider.MusicBrainzTrack);
-                    if (trackMbId is not null)
-                    {
-                        audio.SetProviderId(MetadataProvider.MusicBrainzTrack, trackMbId);
-                    }
-                }
-
-                // Save extracted lyrics if they exist,
-                // and if the audio doesn't yet have lyrics.
-                if (!string.IsNullOrWhiteSpace(tags.Lyrics)
-                    && tryExtractEmbeddedLyrics)
-                {
-                    await _lyricManager.SaveLyricAsync(audio, "lrc", tags.Lyrics).ConfigureAwait(false);
-                }
+            // Save extracted lyrics if they exist,
+            // and if the audio doesn't yet have lyrics.
+            if (!string.IsNullOrWhiteSpace(tags.Lyrics)
+                && tryExtractEmbeddedLyrics)
+            {
+                await _lyricManager.SaveLyricAsync(audio, "lrc", tags.Lyrics).ConfigureAwait(false);
             }
         }
 
