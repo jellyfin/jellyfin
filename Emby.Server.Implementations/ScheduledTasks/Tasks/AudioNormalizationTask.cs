@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -69,7 +70,7 @@ public partial class AudioNormalizationTask : IScheduledTask
     /// <inheritdoc />
     public string Key => "AudioNormalization";
 
-    [GeneratedRegex(@"I:\s+(.*?)\s+LUFS")]
+    [GeneratedRegex(@"^\s+I:\s+(.*?)\s+LUFS")]
     private static partial Regex LUFSRegex();
 
     /// <inheritdoc />
@@ -179,16 +180,17 @@ public partial class AudioNormalizationTask : IScheduledTask
             }
 
             using var reader = process.StandardError;
-            var output = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
-            cancellationToken.ThrowIfCancellationRequested();
-            MatchCollection split = LUFSRegex().Matches(output);
-
-            if (split.Count != 0)
+            await foreach (var line in reader.ReadAllLinesAsync(cancellationToken))
             {
-                return float.Parse(split[0].Groups[1].ValueSpan, CultureInfo.InvariantCulture.NumberFormat);
+                Match match = LUFSRegex().Match(line);
+
+                if (match.Success)
+                {
+                    return float.Parse(match.Groups[1].ValueSpan, CultureInfo.InvariantCulture.NumberFormat);
+                }
             }
 
-            _logger.LogError("Failed to find LUFS value in output:\n{Output}", output);
+            _logger.LogError("Failed to find LUFS value in output");
             return null;
         }
     }
