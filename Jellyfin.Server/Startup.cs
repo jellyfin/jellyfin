@@ -40,15 +40,18 @@ namespace Jellyfin.Server
     {
         private readonly CoreAppHost _serverApplicationHost;
         private readonly IServerConfigurationManager _serverConfigurationManager;
+        private readonly IConfiguration _startupConfig;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Startup" /> class.
         /// </summary>
         /// <param name="appHost">The server application host.</param>
-        public Startup(CoreAppHost appHost)
+        /// <param name="startupConfig">The server startupConfig.</param>
+        public Startup(CoreAppHost appHost, IConfiguration startupConfig)
         {
             _serverApplicationHost = appHost;
             _serverConfigurationManager = appHost.ConfigurationManager;
+            _startupConfig = startupConfig;
         }
 
         /// <summary>
@@ -67,7 +70,7 @@ namespace Jellyfin.Server
             // TODO remove once this is fixed upstream https://github.com/dotnet/aspnetcore/issues/34371
             services.AddSingleton<IActionResultExecutor<PhysicalFileResult>, SymlinkFollowingPhysicalFileResultExecutor>();
             services.AddJellyfinApi(_serverApplicationHost.GetApiPluginAssemblies(), _serverConfigurationManager.GetNetworkConfiguration());
-            services.AddJellyfinDbContext();
+            services.AddJellyfinDbContext(_startupConfig.GetSqliteSecondLevelCacheDisabled());
             services.AddJellyfinApiSwagger();
 
             // configure custom legacy authentication
