@@ -261,8 +261,12 @@ namespace MediaBrowser.Controller.Entities.TV
                 IncludeItemTypes = new[] { BaseItemKind.Episode, BaseItemKind.Season },
                 OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) },
                 DtoOptions = options,
-                IsMissing = shouldIncludeMissingEpisodes
             };
+
+            if (!shouldIncludeMissingEpisodes)
+            {
+                query.IsMissing = false;
+            }
 
             var allItems = LibraryManager.GetItemList(query);
 
@@ -359,9 +363,13 @@ namespace MediaBrowser.Controller.Entities.TV
                 SeriesPresentationUniqueKey = queryFromSeries ? seriesKey : null,
                 IncludeItemTypes = new[] { BaseItemKind.Episode },
                 OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) },
-                DtoOptions = options,
-                IsMissing = shouldIncludeMissingEpisodes
+                DtoOptions = options
             };
+
+            if (!shouldIncludeMissingEpisodes)
+            {
+                query.IsMissing = false;
+            }
 
             var allItems = LibraryManager.GetItemList(query);
 
