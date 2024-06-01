@@ -1298,16 +1298,15 @@ namespace Emby.Server.Implementations.Data
                 && type != typeof(Book)
                 && type != typeof(LiveTvProgram)
                 && type != typeof(AudioBook)
-                && type != typeof(Audio)
                 && type != typeof(MusicAlbum);
         }
 
         private BaseItem GetItem(SqliteDataReader reader, InternalItemsQuery query)
         {
-            return GetItem(reader, query, HasProgramAttributes(query), HasEpisodeAttributes(query), HasServiceName(query), HasStartDate(query), HasTrailerTypes(query), HasArtistFields(query), HasSeriesFields(query));
+            return GetItem(reader, query, HasProgramAttributes(query), HasEpisodeAttributes(query), HasServiceName(query), HasStartDate(query), HasTrailerTypes(query), HasArtistFields(query), HasSeriesFields(query), false);
         }
 
-        private BaseItem GetItem(SqliteDataReader reader, InternalItemsQuery query, bool enableProgramAttributes, bool hasEpisodeAttributes, bool hasServiceName, bool queryHasStartDate, bool hasTrailerTypes, bool hasArtistFields, bool hasSeriesFields)
+        private BaseItem GetItem(SqliteDataReader reader, InternalItemsQuery query, bool enableProgramAttributes, bool hasEpisodeAttributes, bool hasServiceName, bool queryHasStartDate, bool hasTrailerTypes, bool hasArtistFields, bool hasSeriesFields, bool skipDeserialization)
         {
             var typeString = reader.GetString(0);
 
@@ -1320,7 +1319,7 @@ namespace Emby.Server.Implementations.Data
 
             BaseItem item = null;
 
-            if (TypeRequiresDeserialization(type))
+            if (TypeRequiresDeserialization(type) && !skipDeserialization)
             {
                 try
                 {
@@ -2562,7 +2561,7 @@ namespace Emby.Server.Implementations.Data
 
                 foreach (var row in statement.ExecuteQuery())
                 {
-                    var item = GetItem(row, query, hasProgramAttributes, hasEpisodeAttributes, hasServiceName, hasStartDate, hasTrailerTypes, hasArtistFields, hasSeriesFields);
+                    var item = GetItem(row, query, hasProgramAttributes, hasEpisodeAttributes, hasServiceName, hasStartDate, hasTrailerTypes, hasArtistFields, hasSeriesFields, query.SkipDeserialization);
                     if (item is not null)
                     {
                         items.Add(item);
@@ -2774,7 +2773,7 @@ namespace Emby.Server.Implementations.Data
 
                     foreach (var row in statement.ExecuteQuery())
                     {
-                        var item = GetItem(row, query, hasProgramAttributes, hasEpisodeAttributes, hasServiceName, hasStartDate, hasTrailerTypes, hasArtistFields, hasSeriesFields);
+                        var item = GetItem(row, query, hasProgramAttributes, hasEpisodeAttributes, hasServiceName, hasStartDate, hasTrailerTypes, hasArtistFields, hasSeriesFields, false);
                         if (item is not null)
                         {
                             list.Add(item);
@@ -5021,7 +5020,7 @@ AND Type = @InternalPersonType)");
 
                         foreach (var row in statement.ExecuteQuery())
                         {
-                            var item = GetItem(row, query, hasProgramAttributes, hasEpisodeAttributes, hasServiceName, hasStartDate, hasTrailerTypes, hasArtistFields, hasSeriesFields);
+                            var item = GetItem(row, query, hasProgramAttributes, hasEpisodeAttributes, hasServiceName, hasStartDate, hasTrailerTypes, hasArtistFields, hasSeriesFields, false);
                             if (item is not null)
                             {
                                 var countStartColumn = columns.Count - 1;
