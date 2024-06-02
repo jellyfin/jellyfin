@@ -763,7 +763,7 @@ namespace MediaBrowser.Providers.Manager
                     else
                     {
                         var shouldReplace = options.MetadataRefreshMode > MetadataRefreshMode.ValidationOnly || options.ReplaceAllMetadata;
-                        MergeData(temp, metadata, item.LockedFields, shouldReplace, false);
+                        MergeData(temp, metadata, item.LockedFields, shouldReplace, true);
                     }
                 }
             }
@@ -1103,7 +1103,7 @@ namespace MediaBrowser.Providers.Manager
                     target.IsLocked = target.IsLocked || source.IsLocked;
                 }
 
-                if (target.LockedFields.Length == 0)
+                if (replaceData || target.LockedFields.Length == 0)
                 {
                     target.LockedFields = source.LockedFields;
                 }
