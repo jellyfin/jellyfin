@@ -27,8 +27,8 @@ namespace Jellyfin.Server.Implementations.Devices
         private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
         private readonly IUserManager _userManager;
         private readonly ConcurrentDictionary<string, ClientCapabilities> _capabilitiesMap = new();
-        private readonly IDictionary<int, Device> _devices;
-        private readonly IDictionary<string, DeviceOptions> _deviceOptions;
+        private readonly ConcurrentDictionary<int, Device> _devices;
+        private readonly ConcurrentDictionary<string, DeviceOptions> _deviceOptions;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeviceManager"/> class.
@@ -48,14 +48,14 @@ namespace Jellyfin.Server.Implementations.Devices
                          .OrderBy(d => d.Id)
                          .AsEnumerable())
             {
-                _devices.Add(device.Id, device);
+                _devices.TryAdd(device.Id, device);
             }
 
             foreach (var deviceOption in dbContext.DeviceOptions
                          .OrderBy(d => d.Id)
                          .AsEnumerable())
             {
-                _deviceOptions.Add(deviceOption.DeviceId, deviceOption);
+                _deviceOptions.TryAdd(deviceOption.DeviceId, deviceOption);
             }
         }
 
@@ -104,7 +104,7 @@ namespace Jellyfin.Server.Implementations.Devices
                     .Include(d => d.User)
                     .FirstOrDefaultAsync(d => d.Id == device.Id)
                     .ConfigureAwait(false);
-                _devices.Add(device.Id, newDevice!);
+                _devices.TryAdd(device.Id, newDevice!);
             }
 
             return device;
@@ -205,7 +205,7 @@ namespace Jellyfin.Server.Implementations.Devices
         public async Task DeleteDevice(Device device)
         {
             var id = _devices.FirstOrDefault(x => x.Value.Equals(device)).Key;
-            _devices.Remove(id);
+            _devices.TryRemove(id, out _);
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
