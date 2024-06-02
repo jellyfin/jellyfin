@@ -19,8 +19,7 @@ namespace Emby.Server.Implementations
             { FfmpegAnalyzeDurationKey, "200M" },
             { PlaylistsAllowDuplicatesKey, bool.FalseString },
             { BindToUnixSocketKey, bool.FalseString },
-            { SqliteCacheSizeKey, "20000" },
-            { SqliteDisableSecondLevelCacheKey, bool.FalseString }
+            { SqliteCacheSizeKey, "20000" }
         };
     }
 }

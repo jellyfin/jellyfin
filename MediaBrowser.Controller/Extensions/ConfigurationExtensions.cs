@@ -65,11 +65,6 @@ namespace MediaBrowser.Controller.Extensions
         public const string SqliteCacheSizeKey = "sqlite:cacheSize";
 
         /// <summary>
-        /// Disable second level cache of sqlite.
-        /// </summary>
-        public const string SqliteDisableSecondLevelCacheKey = "sqlite:disableSecondLevelCache";
-
-        /// <summary>
         /// Gets a value indicating whether the application should host static web content from the <see cref="IConfiguration"/>.
         /// </summary>
         /// <param name="configuration">The configuration to retrieve the value from.</param>
@@ -133,15 +128,5 @@ namespace MediaBrowser.Controller.Extensions
         /// <returns>The sqlite cache size.</returns>
         public static int? GetSqliteCacheSize(this IConfiguration configuration)
             => configuration.GetValue<int?>(SqliteCacheSizeKey);
-
-        /// <summary>
-        /// Gets whether second level cache disabled from the <see cref="IConfiguration" />.
-        /// </summary>
-        /// <param name="configuration">The configuration to read the setting from.</param>
-        /// <returns>Whether second level cache disabled.</returns>
-        public static bool GetSqliteSecondLevelCacheDisabled(this IConfiguration configuration)
-        {
-            return configuration.GetValue<bool>(SqliteDisableSecondLevelCacheKey);
-        }
     }
 }
