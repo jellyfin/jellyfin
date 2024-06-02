@@ -1115,7 +1115,7 @@ namespace MediaBrowser.Providers.Manager
                     target.IsLocked = target.IsLocked || source.IsLocked;
                 }
 
-                if (target.LockedFields.Length == 0)
+                if (replaceData || target.LockedFields.Length == 0)
                 {
                     target.LockedFields = source.LockedFields;
                 }
