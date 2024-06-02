@@ -28,6 +28,22 @@ namespace MediaBrowser.Controller.Providers
             return _cache.GetOrAdd(path, static (p, fileSystem) => fileSystem.GetFileSystemEntries(p).ToArray(), _fileSystem);
         }
 
+        public List<FileSystemMetadata> GetDirectories(string path)
+        {
+            var list = new List<FileSystemMetadata>();
+            var items = GetFileSystemEntries(path);
+            for (var i = 0; i < items.Length; i++)
+            {
+                var item = items[i];
+                if (item.IsDirectory)
+                {
+                    list.Add(item);
+                }
+            }
+
+            return list;
+        }
+
         public List<FileSystemMetadata> GetFiles(string path)
         {
             var list = new List<FileSystemMetadata>();

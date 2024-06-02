@@ -371,11 +371,20 @@ namespace MediaBrowser.Providers.Manager
                     }
                     catch (FileNotFoundException)
                     {
-                        // nothing to do, already gone
+                        // Nothing to do, already gone
                     }
                     catch (UnauthorizedAccessException ex)
                     {
                         _logger.LogWarning(ex, "Unable to delete {Image}", image.Path);
+                    }
+                    finally
+                    {
+                        // Always remove empty parent folder
+                        var folder = Path.GetDirectoryName(image.Path);
+                        if (!_fileSystem.GetFiles(folder).Any())
+                        {
+                            Directory.Delete(folder);
+                        }
                     }
                 }
             }

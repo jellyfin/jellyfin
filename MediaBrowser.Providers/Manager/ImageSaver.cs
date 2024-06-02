@@ -126,7 +126,7 @@ namespace MediaBrowser.Providers.Manager
 
             var paths = GetSavePaths(item, type, imageIndex, mimeType, saveLocally);
 
-            var retryPaths = GetSavePaths(item, type, imageIndex, mimeType, false);
+            var retryPaths = GetSavePaths(item, type, imageIndex, mimeType, !saveLocally);
 
             // If there are more than one output paths, the stream will need to be seekable
             if (paths.Length > 1 && !source.CanSeek)
@@ -183,6 +183,13 @@ namespace MediaBrowser.Providers.Manager
                 try
                 {
                     _fileSystem.DeleteFile(currentPath);
+
+                    // Remove containing directory if empty
+                    var folder = Path.GetDirectoryName(currentPath);
+                    if (!_fileSystem.GetFiles(folder).Any())
+                    {
+                        Directory.Delete(folder);
+                    }
                 }
                 catch (FileNotFoundException)
                 {
@@ -460,7 +467,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 if (type == ImageType.Primary && item is Episode)
                 {
-                    path = Path.Combine(Path.GetDirectoryName(item.Path), "metadata", filename + extension);
+                    path = Path.Combine(Path.GetDirectoryName(item.Path), filename + "-thumb" + extension);
                 }
                 else if (item.IsInMixedFolder)
                 {
