@@ -143,11 +143,7 @@ namespace Jellyfin.Server.Implementations.Devices
                 .Where(device => !query.UserId.HasValue || device.UserId.Equals(query.UserId.Value))
                 .Where(device => query.DeviceId == null || device.DeviceId == query.DeviceId)
                 .Where(device => query.AccessToken == null || device.AccessToken == query.AccessToken);
-            var canGetCountDirectly = devices.TryGetNonEnumeratedCount(out var count);
-            if (!canGetCountDirectly)
-            {
-                count = devices.Count();
-            }
+            var count = devices.Count();
 
             if (query.Skip.HasValue)
             {
