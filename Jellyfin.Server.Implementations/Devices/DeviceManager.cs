@@ -172,10 +172,9 @@ namespace Jellyfin.Server.Implementations.Devices
         /// <inheritdoc />
         public QueryResult<DeviceInfo> GetDevicesForUser(Guid? userId)
         {
-            var devices = _devices.Values
+            IEnumerable<Device> devices = _devices.Values
                 .OrderByDescending(d => d.DateLastActivity)
-                .ThenBy(d => d.DeviceId)
-                .AsEnumerable();
+                .ThenBy(d => d.DeviceId);
 
             if (!userId.IsNullOrEmpty())
             {
