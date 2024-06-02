@@ -1080,7 +1080,7 @@ namespace MediaBrowser.Providers.Manager
             }
             else
             {
-                target.RemoteTrailers = target.RemoteTrailers.Concat(source.RemoteTrailers).Distinct().ToArray();
+                target.RemoteTrailers = target.RemoteTrailers.Concat(source.RemoteTrailers).DistinctBy(t => t.Url).ToArray();
             }
 
             MergeAlbumArtist(source, target, replaceData);
