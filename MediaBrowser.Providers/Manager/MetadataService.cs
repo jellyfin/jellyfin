@@ -669,69 +669,74 @@ namespace MediaBrowser.Providers.Manager
             temp.Item.Id = item.Id;
 
             var foundImageTypes = new List<ImageType>();
-            foreach (var provider in providers.OfType<ILocalMetadataProvider<TItemType>>())
+
+            // Only execute local providers if we are not identifying
+            if (options.SearchResult is null)
             {
-                var providerName = provider.GetType().Name;
-                Logger.LogDebug("Running {Provider} for {Item}", providerName, logName);
-
-                var itemInfo = new ItemInfo(item);
-
-                try
+                foreach (var provider in providers.OfType<ILocalMetadataProvider<TItemType>>())
                 {
-                    var localItem = await provider.GetMetadata(itemInfo, options.DirectoryService, cancellationToken).ConfigureAwait(false);
+                    var providerName = provider.GetType().Name;
+                    Logger.LogDebug("Running {Provider} for {Item}", providerName, logName);
 
-                    if (localItem.HasMetadata)
+                    var itemInfo = new ItemInfo(item);
+
+                    try
                     {
-                        foreach (var remoteImage in localItem.RemoteImages)
+                        var localItem = await provider.GetMetadata(itemInfo, options.DirectoryService, cancellationToken).ConfigureAwait(false);
+
+                        if (localItem.HasMetadata)
                         {
-                            try
+                            foreach (var remoteImage in localItem.RemoteImages)
                             {
-                                if (item.ImageInfos.Any(x => x.Type == remoteImage.Type)
-                                    && !options.IsReplacingImage(remoteImage.Type))
+                                try
                                 {
-                                    continue;
+                                    if (item.ImageInfos.Any(x => x.Type == remoteImage.Type)
+                                        && !options.IsReplacingImage(remoteImage.Type))
+                                    {
+                                        continue;
+                                    }
+
+                                    await ProviderManager.SaveImage(item, remoteImage.Url, remoteImage.Type, null, cancellationToken).ConfigureAwait(false);
+                                    refreshResult.UpdateType |= ItemUpdateType.ImageUpdate;
+
+                                    // remember imagetype that has just been downloaded
+                                    foundImageTypes.Add(remoteImage.Type);
                                 }
-
-                                await ProviderManager.SaveImage(item, remoteImage.Url, remoteImage.Type, null, cancellationToken).ConfigureAwait(false);
-                                refreshResult.UpdateType |= ItemUpdateType.ImageUpdate;
-
-                                // remember imagetype that has just been downloaded
-                                foundImageTypes.Add(remoteImage.Type);
+                                catch (HttpRequestException ex)
+                                {
+                                    Logger.LogError(ex, "Could not save {ImageType} image: {Url}", Enum.GetName(remoteImage.Type), remoteImage.Url);
+                                }
                             }
-                            catch (HttpRequestException ex)
+
+                            if (foundImageTypes.Count > 0)
                             {
-                                Logger.LogError(ex, "Could not save {ImageType} image: {Url}", Enum.GetName(remoteImage.Type), remoteImage.Url);
+                                imageService.UpdateReplaceImages(options, foundImageTypes);
                             }
+
+                            if (imageService.MergeImages(item, localItem.Images, options))
+                            {
+                                refreshResult.UpdateType |= ItemUpdateType.ImageUpdate;
+                            }
+
+                            MergeData(localItem, temp, Array.Empty<MetadataField>(), false, true);
+                            refreshResult.UpdateType |= ItemUpdateType.MetadataImport;
+
+                            break;
                         }
 
-                        if (foundImageTypes.Count > 0)
-                        {
-                            imageService.UpdateReplaceImages(options, foundImageTypes);
-                        }
-
-                        if (imageService.MergeImages(item, localItem.Images, options))
-                        {
-                            refreshResult.UpdateType |= ItemUpdateType.ImageUpdate;
-                        }
-
-                        MergeData(localItem, temp, Array.Empty<MetadataField>(), false, true);
-                        refreshResult.UpdateType |= ItemUpdateType.MetadataImport;
-
-                        break;
+                        Logger.LogDebug("{Provider} returned no metadata for {Item}", providerName, logName);
                     }
+                    catch (OperationCanceledException)
+                    {
+                        throw;
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError(ex, "Error in {Provider}", provider.Name);
 
-                    Logger.LogDebug("{Provider} returned no metadata for {Item}", providerName, logName);
-                }
-                catch (OperationCanceledException)
-                {
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, "Error in {Provider}", provider.Name);
-
-                    // If a local provider fails, consider that a failure
-                    refreshResult.ErrorMessage = ex.Message;
+                        // If a local provider fails, consider that a failure
+                        refreshResult.ErrorMessage = ex.Message;
+                    }
                 }
             }
 
