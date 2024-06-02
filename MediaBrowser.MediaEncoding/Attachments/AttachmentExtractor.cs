@@ -89,15 +89,28 @@ namespace MediaBrowser.MediaEncoding.Attachments
             string outputPath,
             CancellationToken cancellationToken)
         {
-            using (await _semaphoreLocks.LockAsync(outputPath, cancellationToken).ConfigureAwait(false))
+            var shouldExtractOneByOne = mediaSource.MediaAttachments.Any(a => a.FileName.Contains('/', StringComparison.OrdinalIgnoreCase) || a.FileName.Contains('\\', StringComparison.OrdinalIgnoreCase));
+            if (shouldExtractOneByOne)
             {
-                if (!Directory.Exists(outputPath))
+                var attachmentIndexes = mediaSource.MediaAttachments.Select(a => a.Index);
+                foreach (var i in attachmentIndexes)
                 {
-                    await ExtractAllAttachmentsInternal(
-                        _mediaEncoder.GetInputArgument(inputFile, mediaSource),
-                        outputPath,
-                        false,
-                        cancellationToken).ConfigureAwait(false);
+                    var newName = Path.Join(outputPath, i.ToString(CultureInfo.InvariantCulture));
+                    await ExtractAttachment(inputFile, mediaSource, i, newName, cancellationToken).ConfigureAwait(false);
+                }
+            }
+            else
+            {
+                using (await _semaphoreLocks.LockAsync(outputPath, cancellationToken).ConfigureAwait(false))
+                {
+                    if (!Directory.Exists(outputPath))
+                    {
+                        await ExtractAllAttachmentsInternal(
+                            _mediaEncoder.GetInputArgument(inputFile, mediaSource),
+                            outputPath,
+                            false,
+                            cancellationToken).ConfigureAwait(false);
+                    }
                 }
             }
         }

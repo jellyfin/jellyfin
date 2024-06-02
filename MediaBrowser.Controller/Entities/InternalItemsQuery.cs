@@ -51,6 +51,7 @@ namespace MediaBrowser.Controller.Entities
             TrailerTypes = Array.Empty<TrailerType>();
             VideoTypes = Array.Empty<VideoType>();
             Years = Array.Empty<int>();
+            SkipDeserialization = false;
             AudioLanguage = Array.Empty<string>();
             SubtitleLanguage = Array.Empty<string>();
         }
@@ -359,6 +360,8 @@ namespace MediaBrowser.Controller.Entities
         public string? SearchTerm { get; set; }
 
         public string? SeriesTimerId { get; set; }
+
+        public bool SkipDeserialization { get; set; }
 
         public string[] AudioLanguage { get; set; }
 

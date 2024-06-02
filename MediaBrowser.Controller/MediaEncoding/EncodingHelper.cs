@@ -55,6 +55,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         private readonly Version _minKerneli915Hang = new Version(5, 18);
         private readonly Version _maxKerneli915Hang = new Version(6, 1, 3);
         private readonly Version _minFixedKernel60i915Hang = new Version(6, 0, 18);
+        private readonly Version _minKernelVersionAmdVkFmtModifier = new Version(5, 15);
 
         private readonly Version _minFFmpegImplictHwaccel = new Version(6, 0);
         private readonly Version _minFFmpegHwaUnsafeOutput = new Version(6, 0);
@@ -680,16 +681,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             return -1;
         }
 
-        public string GetInputPathArgument(EncodingJobInfo state)
-        {
-            return state.MediaSource.VideoType switch
-            {
-                VideoType.Dvd => _mediaEncoder.GetInputArgument(_mediaEncoder.GetPrimaryPlaylistVobFiles(state.MediaPath, null).ToList(), state.MediaSource),
-                VideoType.BluRay => _mediaEncoder.GetInputArgument(_mediaEncoder.GetPrimaryPlaylistM2tsFiles(state.MediaPath).ToList(), state.MediaSource),
-                _ => _mediaEncoder.GetInputArgument(state.MediaPath, state.MediaSource)
-            };
-        }
-
         /// <summary>
         /// Gets the audio encoder.
         /// </summary>
@@ -1005,7 +996,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                     Environment.SetEnvironmentVariable("AMD_DEBUG", "noefc");
 
                     if (IsVulkanFullSupported()
-                        && _mediaEncoder.IsVaapiDeviceSupportVulkanDrmInterop)
+                        && _mediaEncoder.IsVaapiDeviceSupportVulkanDrmInterop
+                        && Environment.OSVersion.Version >= _minKernelVersionAmdVkFmtModifier)
                     {
                         args.Append(GetDrmDeviceArgs(options.VaapiDevice, DrmAlias));
                         args.Append(GetVaapiDeviceArgs(null, null, null, DrmAlias, VaapiAlias));
@@ -1197,13 +1189,14 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 var tmpConcatPath = Path.Join(_configurationManager.GetTranscodePath(), state.MediaSource.Id + ".concat");
                 _mediaEncoder.GenerateConcatConfig(state.MediaSource, tmpConcatPath);
-                arg.Append(" -f concat -safe 0 -i ")
-                    .Append(tmpConcatPath);
+                arg.Append(" -f concat -safe 0 -i \"")
+                    .Append(tmpConcatPath)
+                    .Append("\" ");
             }
             else
             {
                 arg.Append(" -i ")
-                    .Append(GetInputPathArgument(state));
+                    .Append(_mediaEncoder.GetInputPathArgument(state));
             }
 
             // sub2video for external graphical subtitles
@@ -2083,6 +2076,18 @@ namespace MediaBrowser.Controller.MediaEncoding
                 profile = "constrained_high";
             }
 
+            if (string.Equals(videoEncoder, "h264_videotoolbox", StringComparison.OrdinalIgnoreCase)
+                && profile.Contains("constrainedbaseline", StringComparison.OrdinalIgnoreCase))
+            {
+                profile = "constrained_baseline";
+            }
+
+            if (string.Equals(videoEncoder, "h264_videotoolbox", StringComparison.OrdinalIgnoreCase)
+                && profile.Contains("constrainedhigh", StringComparison.OrdinalIgnoreCase))
+            {
+                profile = "constrained_high";
+            }
+
             if (!string.IsNullOrEmpty(profile))
             {
                 // Currently there's no profile option in av1_nvenc encoder
@@ -2316,7 +2321,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (request.VideoBitRate.HasValue
                 && (!videoStream.BitRate.HasValue || videoStream.BitRate.Value > request.VideoBitRate.Value))
             {
-                return false;
+                // For LiveTV that has no bitrate, let's try copy if other conditions are met
+                if (string.IsNullOrWhiteSpace(request.LiveStreamId) || videoStream.BitRate.HasValue)
+                {
+                    return false;
+                }
             }
 
             var maxBitDepth = state.GetRequestedVideoBitDepth(videoStream.Codec);
@@ -2629,10 +2638,14 @@ namespace MediaBrowser.Controller.MediaEncoding
                 && state.AudioStream.Channels.HasValue
                 && state.AudioStream.Channels.Value == 6)
             {
+                if (!encodingOptions.DownMixAudioBoost.Equals(1))
+                {
+                    filters.Add("volume=" + encodingOptions.DownMixAudioBoost.ToString(CultureInfo.InvariantCulture));
+                }
+
                 switch (encodingOptions.DownMixStereoAlgorithm)
                 {
                     case DownMixStereoAlgorithms.Dave750:
-                        filters.Add("volume=4.25");
                         filters.Add("pan=stereo|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3");
                         break;
                     case DownMixStereoAlgorithms.NightmodeDialogue:
@@ -2640,11 +2653,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                         break;
                     case DownMixStereoAlgorithms.None:
                     default:
-                        if (!encodingOptions.DownMixAudioBoost.Equals(1))
-                        {
-                            filters.Add("volume=" + encodingOptions.DownMixAudioBoost.ToString(CultureInfo.InvariantCulture));
-                        }
-
                         break;
                 }
             }
@@ -3161,7 +3169,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             int? requestedMaxHeight)
         {
             var isV4l2 = string.Equals(videoEncoder, "h264_v4l2m2m", StringComparison.OrdinalIgnoreCase);
+            var isMjpeg = videoEncoder is not null && videoEncoder.Contains("mjpeg", StringComparison.OrdinalIgnoreCase);
             var scaleVal = isV4l2 ? 64 : 2;
+            var targetAr = isMjpeg ? "(a*sar)" : "a"; // manually calculate AR when using mjpeg encoder
 
             // If fixed dimensions were supplied
             if (requestedWidth.HasValue && requestedHeight.HasValue)
@@ -3190,10 +3200,11 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 return string.Format(
                     CultureInfo.InvariantCulture,
-                    @"scale=trunc(min(max(iw\,ih*a)\,min({0}\,{1}*a))/{2})*{2}:trunc(min(max(iw/a\,ih)\,min({0}/a\,{1}))/2)*2",
+                    @"scale=trunc(min(max(iw\,ih*{3})\,min({0}\,{1}*{3}))/{2})*{2}:trunc(min(max(iw/{3}\,ih)\,min({0}/{3}\,{1}))/2)*2",
                     maxWidthParam,
                     maxHeightParam,
-                    scaleVal);
+                    scaleVal,
+                    targetAr);
             }
 
             // If a fixed width was requested
@@ -3209,8 +3220,9 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 return string.Format(
                     CultureInfo.InvariantCulture,
-                    "scale={0}:trunc(ow/a/2)*2",
-                    widthParam);
+                    "scale={0}:trunc(ow/{1}/2)*2",
+                    widthParam,
+                    targetAr);
             }
 
             // If a fixed height was requested
@@ -3220,9 +3232,10 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 return string.Format(
                     CultureInfo.InvariantCulture,
-                    "scale=trunc(oh*a/{1})*{1}:{0}",
+                    "scale=trunc(oh*{2}/{1})*{1}:{0}",
                     heightParam,
-                    scaleVal);
+                    scaleVal,
+                    targetAr);
             }
 
             // If a max width was requested
@@ -3232,9 +3245,10 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 return string.Format(
                     CultureInfo.InvariantCulture,
-                    @"scale=trunc(min(max(iw\,ih*a)\,{0})/{1})*{1}:trunc(ow/a/2)*2",
+                    @"scale=trunc(min(max(iw\,ih*{2})\,{0})/{1})*{1}:trunc(ow/{2}/2)*2",
                     maxWidthParam,
-                    scaleVal);
+                    scaleVal,
+                    targetAr);
             }
 
             // If a max height was requested
@@ -3244,9 +3258,10 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 return string.Format(
                     CultureInfo.InvariantCulture,
-                    @"scale=trunc(oh*a/{1})*{1}:min(max(iw/a\,ih)\,{0})",
+                    @"scale=trunc(oh*{2}/{1})*{1}:min(max(iw/{2}\,ih)\,{0})",
                     maxHeightParam,
-                    scaleVal);
+                    scaleVal,
+                    targetAr);
             }
 
             return string.Empty;
@@ -4291,6 +4306,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     // map from qsv to vaapi.
                     mainFilters.Add("hwmap=derive_device=vaapi");
+                    mainFilters.Add("format=vaapi");
                 }
 
                 var tonemapFilter = GetHwTonemapFilter(options, "vaapi", "nv12");
@@ -4300,6 +4316,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     // map from vaapi to qsv.
                     mainFilters.Add("hwmap=derive_device=qsv");
+                    mainFilters.Add("format=qsv");
                 }
             }
 
@@ -4474,7 +4491,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             // prefered vaapi + vulkan filters pipeline
             if (_mediaEncoder.IsVaapiDeviceAmd
                 && isVaapiVkSupported
-                && _mediaEncoder.IsVaapiDeviceSupportVulkanDrmInterop)
+                && _mediaEncoder.IsVaapiDeviceSupportVulkanDrmInterop
+                && Environment.OSVersion.Version >= _minKernelVersionAmdVkFmtModifier)
             {
                 // AMD radeonsi path(targeting Polaris/gfx8+), with extra vulkan tonemap and overlay support.
                 return GetAmdVaapiFullVidFiltersPrefered(state, options, vidDecoder, vidEncoder);

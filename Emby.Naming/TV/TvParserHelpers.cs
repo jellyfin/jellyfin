@@ -10,7 +10,7 @@ namespace Emby.Naming.TV;
 public static class TvParserHelpers
 {
     private static readonly string[] _continuingState = ["Pilot", "Returning Series", "Returning"];
-    private static readonly string[] _endedState = ["Cancelled"];
+    private static readonly string[] _endedState = ["Cancelled", "Canceled"];
 
     /// <summary>
     /// Tries to parse a string into <see cref="SeriesStatus"/>.

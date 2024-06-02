@@ -752,9 +752,6 @@ namespace MediaBrowser.Controller.Entities
         public virtual bool SupportsAncestors => true;
 
         [JsonIgnore]
-        public virtual bool StopRefreshIfLocalMetadataFound => true;
-
-        [JsonIgnore]
         protected virtual bool SupportsOwnedItems => !ParentId.IsEmpty() && IsFileProtocol;
 
         [JsonIgnore]

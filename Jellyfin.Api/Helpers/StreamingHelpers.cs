@@ -142,6 +142,20 @@ public static class StreamingHelpers
         }
         else
         {
+            // Enforce more restrictive transcoding profile for LiveTV due to compatability reasons
+            // Cap the MaxStreamingBitrate to 30Mbps, because we are unable to reliably probe source bitrate,
+            // which will cause the client to request extremely high bitrate that may fail the player/encoder
+            streamingRequest.VideoBitRate = streamingRequest.VideoBitRate > 30000000 ? 30000000 : streamingRequest.VideoBitRate;
+
+            if (streamingRequest.SegmentContainer is not null)
+            {
+                // Remove all fmp4 transcoding profiles, because it causes playback error and/or A/V sync issues
+                // Notably: Some channels won't play on FireFox and LG webOS
+                // Some channels from HDHomerun will experience A/V sync issues
+                streamingRequest.SegmentContainer = "ts";
+                streamingRequest.VideoCodec = "h264";
+            }
+
             var liveStreamInfo = await mediaSourceManager.GetLiveStreamWithDirectStreamProvider(streamingRequest.LiveStreamId, cancellationToken).ConfigureAwait(false);
             mediaSource = liveStreamInfo.Item1;
             state.DirectStreamProvider = liveStreamInfo.Item2;

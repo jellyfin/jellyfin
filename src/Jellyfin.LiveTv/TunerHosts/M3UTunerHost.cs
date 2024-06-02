@@ -30,25 +30,8 @@ namespace Jellyfin.LiveTv.TunerHosts
 {
     public class M3UTunerHost : BaseTunerHost, ITunerHost, IConfigurableTunerHost
     {
-        private static readonly string[] _disallowedMimeTypes =
-        {
-            "text/plain",
-            "text/html",
-            "video/x-matroska",
-            "video/mp4",
-            "application/vnd.apple.mpegurl",
-            "application/mpegurl",
-            "application/x-mpegurl",
-            "video/vnd.mpeg.dash.mpd"
-        };
-
-        private static readonly string[] _disallowedSharedStreamExtensions =
-        {
-            ".mkv",
-            ".mp4",
-            ".m3u8",
-            ".mpd"
-        };
+        private static readonly string[] _mimeTypesCanShareHttpStream = ["video/MP2T"];
+        private static readonly string[] _extensionsCanShareHttpStream = [".ts", ".tsv", ".m2t"];
 
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IServerApplicationHost _appHost;
@@ -113,27 +96,33 @@ namespace Jellyfin.LiveTv.TunerHosts
 
             if (mediaSource.Protocol == MediaProtocol.Http && !mediaSource.RequiresLooping)
             {
-                using var message = new HttpRequestMessage(HttpMethod.Head, mediaSource.Path);
-                using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
-                    .SendAsync(message, cancellationToken)
-                    .ConfigureAwait(false);
+                var extension = Path.GetExtension(new UriBuilder(mediaSource.Path).Path);
 
-                if (response.IsSuccessStatusCode)
+                if (string.IsNullOrEmpty(extension))
                 {
-                    if (!_disallowedMimeTypes.Contains(response.Content.Headers.ContentType?.MediaType, StringComparison.OrdinalIgnoreCase))
+                    try
                     {
-                        return new SharedHttpStream(mediaSource, tunerHost, streamId, FileSystem, _httpClientFactory, Logger, Config, _appHost, _streamHelper);
+                        using var message = new HttpRequestMessage(HttpMethod.Head, mediaSource.Path);
+                        using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
+                            .SendAsync(message, cancellationToken)
+                            .ConfigureAwait(false);
+
+                        if (response.IsSuccessStatusCode)
+                        {
+                            if (_mimeTypesCanShareHttpStream.Contains(response.Content.Headers.ContentType?.MediaType, StringComparison.OrdinalIgnoreCase))
+                            {
+                                return new SharedHttpStream(mediaSource, tunerHost, streamId, FileSystem, _httpClientFactory, Logger, Config, _appHost, _streamHelper);
+                            }
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        Logger.LogWarning("HEAD request to check MIME type failed, shared stream disabled");
                     }
                 }
-                else
+                else if (_extensionsCanShareHttpStream.Contains(extension, StringComparison.OrdinalIgnoreCase))
                 {
-                    // Fallback to check path extension when the server does not support HEAD method
-                    // Use UriBuilder to remove all query string as GetExtension will include them when used directly
-                    var extension = Path.GetExtension(new UriBuilder(mediaSource.Path).Path);
-                    if (!_disallowedSharedStreamExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return new SharedHttpStream(mediaSource, tunerHost, streamId, FileSystem, _httpClientFactory, Logger, Config, _appHost, _streamHelper);
-                    }
+                    return new SharedHttpStream(mediaSource, tunerHost, streamId, FileSystem, _httpClientFactory, Logger, Config, _appHost, _streamHelper);
                 }
             }
 
