@@ -18,7 +18,7 @@ public interface IMediaSegmentsManager
     public event EventHandler<GenericEventArgs<Guid>>? SegmentsAddedOrUpdated;
 
     /// <summary>
-    /// Create or update multiple media segments.
+    /// Create or update multiple media segments. All fields can be updated expect Id.
     /// </summary>
     /// <param name="itemId">The item to create segments for.</param>
     /// <param name="segments">List of segments.</param>

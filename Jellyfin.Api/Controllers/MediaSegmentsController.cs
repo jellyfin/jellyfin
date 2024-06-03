@@ -85,10 +85,10 @@ public class MediaSegmentsController : BaseJellyfinApiController
     }
 
     /// <summary>
-    /// Create or update multiple media segments.
+    /// Create or update multiple media segments. All fields are updateable except Id.
     /// </summary>
     /// <param name="itemId">The item the segments belong to.</param>
-    /// <param name="segments">All segments that should be added.</param>
+    /// <param name="segments">All segments that should be added or updated.</param>
     /// <response code="200">Segments returned.</response>
     /// <response code="400">Invalid segments.</response>
     /// <response code="401">User is not authorized to access the requested item.</response>
@@ -125,7 +125,7 @@ public class MediaSegmentsController : BaseJellyfinApiController
     }
 
     /// <summary>
-    /// Delete media segments. All query parameters can be freely defined.
+    /// Delete media segments.
     /// </summary>
     /// <param name="itemId">The item id.</param>
     /// <param name="streamIndex">Segment is associated with MediaStreamIndex.</param>

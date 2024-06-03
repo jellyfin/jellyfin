@@ -11,7 +11,7 @@ namespace Jellyfin.Api.Models.MediaSegmentsDtos;
 public class MediaSegmentDto
 {
     /// <summary>
-    /// Gets or sets the unique segment id. Set to update a segment.
+    /// Gets or sets the unique segment id. Database generated. Required to update an entry.
     /// </summary>
     /// <value>The id.</value>
     public Guid Id { get; set; }
@@ -35,7 +35,7 @@ public class MediaSegmentDto
     public MediaSegmentType Type { get; set; }
 
     /// <summary>
-    /// Gets or sets the associated MediaSourceId.
+    /// Gets or sets the associated ItemId.
     /// </summary>
     /// <value>The id.</value>
     public Guid ItemId { get; set; }
@@ -47,15 +47,15 @@ public class MediaSegmentDto
     public int StreamIndex { get; set; }
 
     /// <summary>
-    /// Gets or sets the creator recommended action. Can be overwritten with user defined action.
+    /// Gets or sets the action.
     /// </summary>
     /// <value>The media segment action.</value>
     public MediaSegmentAction Action { get; set; }
 
     /// <summary>
-    /// Gets or sets a comment.
+    /// Gets or sets a comment. The user provided value to be displayed when the <see cref="MediaSegment.Type"/> is a <see cref="MediaSegmentType.Annotation" />.
     /// </summary>
-    /// <value>The user provided value to be displayed when the <see cref="MediaSegmentDto.Type"/> is a <see cref="MediaSegmentType.Annotation" />.</value>
+    /// <value>The comment.</value>
     public string? Comment { get; set; }
 
     /// <summary>
