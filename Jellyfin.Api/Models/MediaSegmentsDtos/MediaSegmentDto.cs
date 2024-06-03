@@ -11,6 +11,12 @@ namespace Jellyfin.Api.Models.MediaSegmentsDtos;
 public class MediaSegmentDto
 {
     /// <summary>
+    /// Gets or sets the unique segment id. Set to update a segment.
+    /// </summary>
+    /// <value>The id.</value>
+    public Guid Id { get; set; }
+
+    /// <summary>
     /// Gets or sets the start position in Ticks.
     /// </summary>
     /// <value>The start position.</value>
@@ -27,12 +33,6 @@ public class MediaSegmentDto
     /// </summary>
     /// <value>The media segment type.</value>
     public MediaSegmentType Type { get; set; }
-
-    /// <summary>
-    /// Gets or sets the TypeIndex which relates to the type.
-    /// </summary>
-    /// <value>The type index.</value>
-    public int TypeIndex { get; set; }
 
     /// <summary>
     /// Gets or sets the associated MediaSourceId.
@@ -66,10 +66,10 @@ public class MediaSegmentDto
     {
         return new MediaSegment
         {
+            Id = Id,
             StartTicks = StartTicks,
             EndTicks = EndTicks,
             Type = Type,
-            TypeIndex = TypeIndex,
             ItemId = ItemId,
             StreamIndex = StreamIndex,
             Action = Action,
@@ -86,10 +86,10 @@ public class MediaSegmentDto
     {
         return new MediaSegmentDto
         {
+            Id = seg.Id,
             StartTicks = seg.StartTicks,
             EndTicks = seg.EndTicks,
             Type = seg.Type,
-            TypeIndex = seg.TypeIndex,
             ItemId = seg.ItemId,
             StreamIndex = seg.StreamIndex,
             Action = seg.Action,

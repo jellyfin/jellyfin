@@ -22,9 +22,6 @@ namespace Jellyfin.Server.Implementations.ModelConfiguration.MediaSegmentConfigu
                 .Property(s => s.Type)
                 .IsRequired();
             builder
-                .Property(s => s.TypeIndex)
-                .IsRequired();
-            builder
                 .Property(s => s.ItemId)
                 .IsRequired();
             builder
@@ -34,7 +31,7 @@ namespace Jellyfin.Server.Implementations.ModelConfiguration.MediaSegmentConfigu
                 .Property(s => s.Action)
                 .IsRequired();
             builder
-                .HasKey(s => new { s.ItemId, s.StreamIndex, s.Type, s.TypeIndex });
+                .HasKey(s => s.Id);
             builder
                 .HasIndex(s => s.ItemId);
         }

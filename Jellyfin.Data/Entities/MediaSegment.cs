@@ -10,6 +10,12 @@ namespace Jellyfin.Data.Entities.MediaSegment
     public class MediaSegment
     {
         /// <summary>
+        /// Gets or sets the unique segment id.
+        /// </summary>
+        /// <value>The id.</value>
+        public Guid Id { get; set; }
+
+        /// <summary>
         /// Gets or sets the start position in Ticks.
         /// </summary>
         /// <value>The start position.</value>
@@ -26,12 +32,6 @@ namespace Jellyfin.Data.Entities.MediaSegment
         /// </summary>
         /// <value>The media segment type.</value>
         public MediaSegmentType Type { get; set; }
-
-        /// <summary>
-        /// Gets or sets the TypeIndex which relates to the type.
-        /// </summary>
-        /// <value>The type index.</value>
-        public int TypeIndex { get; set; }
 
         /// <summary>
         /// Gets or sets the associated MediaSourceId.

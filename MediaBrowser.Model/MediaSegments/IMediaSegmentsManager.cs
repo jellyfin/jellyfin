@@ -31,20 +31,20 @@ public interface IMediaSegmentsManager
     /// </summary>
     /// <param name="itemId">Optional: Just segments with itemId.</param>
     /// <param name="streamIndex">Optional: Just segments with MediaStreamIndex.</param>
-    /// <param name="typeIndex">Optional: The typeIndex.</param>
     /// <param name="type">Optional: The segment type.</param>
+    /// <param name="id">Optional: The unique id.</param>
     /// <returns>List of MediaSegment.</returns>
     /// <exception cref="InvalidOperationException">Will be thrown when an non existing item is requested.</exception>
-    public Task<IReadOnlyList<MediaSegment>> GetAllMediaSegments(Guid itemId, int? streamIndex = null, int? typeIndex = null, MediaSegmentType? type = null);
+    public Task<IReadOnlyList<MediaSegment>> GetAllMediaSegments(Guid itemId, int? streamIndex = null, MediaSegmentType? type = null, Guid? id = null);
 
     /// <summary>
     /// Delete Media Segments.
     /// </summary>
     /// <param name="itemId">Required: The itemId.</param>
     /// <param name="streamIndex">Optional: Just segments with MediaStreamIndex.</param>
-    /// <param name="typeIndex">Optional: The typeIndex.</param>
     /// <param name="type">Optional: The segment type.</param>
+    /// <param name="id">Optional: The unique id.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     /// <exception cref="ArgumentException">Will be thrown when a empty Guid is requested.</exception>
-    public Task DeleteSegments(Guid itemId, int? streamIndex = null, int? typeIndex = null, MediaSegmentType? type = null);
+    public Task DeleteSegments(Guid itemId, int? streamIndex = null, MediaSegmentType? type = null, Guid? id = null);
 }

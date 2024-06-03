@@ -48,7 +48,7 @@ public class MediaSegmentsController : BaseJellyfinApiController
     /// <param name="itemId">The item id.</param>
     /// <param name="streamIndex">Just segments with MediaStreamIndex.</param>
     /// <param name="type">All segments of type.</param>
-    /// <param name="typeIndex">All segments with typeIndex.</param>
+    /// <param name="id">Unique id of segment.</param>
     /// <response code="200">Segments returned.</response>
     /// <response code="404">itemId doesn't exist.</response>
     /// <response code="401">User is not authorized to access the requested item.</response>
@@ -61,7 +61,7 @@ public class MediaSegmentsController : BaseJellyfinApiController
         [FromRoute, Required] Guid itemId,
         [FromQuery] int? streamIndex,
         [FromQuery] MediaSegmentType? type,
-        [FromQuery] int? typeIndex)
+        [FromQuery] Guid? id)
     {
         var isApiKey = User.GetIsApiKey();
         var userId = User.GetUserId();
@@ -80,7 +80,7 @@ public class MediaSegmentsController : BaseJellyfinApiController
             return Unauthorized();
         }
 
-        var list = await _mediaSegmentManager.GetAllMediaSegments(itemId, streamIndex, typeIndex, type).ConfigureAwait(false);
+        var list = await _mediaSegmentManager.GetAllMediaSegments(itemId, streamIndex, type, id).ConfigureAwait(false);
         return list.Count > 0 ? Ok(list.ConvertAll(MediaSegmentDto.FromMediaSegment)) : NotFound();
     }
 
@@ -130,7 +130,7 @@ public class MediaSegmentsController : BaseJellyfinApiController
     /// <param name="itemId">The item id.</param>
     /// <param name="streamIndex">Segment is associated with MediaStreamIndex.</param>
     /// <param name="type">All segments of type.</param>
-    /// <param name="typeIndex">All segments with typeIndex.</param>
+    /// <param name="id">Unique id of segment.</param>
     /// <response code="200">Segments deleted.</response>
     /// <response code="404">Segments not found.</response>
     /// <response code="401">User is not authorized to access the requested item.</response>
@@ -144,7 +144,7 @@ public class MediaSegmentsController : BaseJellyfinApiController
         [FromRoute, Required] Guid itemId,
         [FromQuery] int? streamIndex,
         [FromQuery] MediaSegmentType? type,
-        [FromQuery] int? typeIndex)
+        [FromQuery] Guid? id)
     {
         var isApiKey = User.GetIsApiKey();
         var userId = User.GetUserId();
@@ -163,7 +163,7 @@ public class MediaSegmentsController : BaseJellyfinApiController
             return Unauthorized();
         }
 
-        await _mediaSegmentManager.DeleteSegments(itemId, streamIndex, typeIndex, type).ConfigureAwait(false);
+        await _mediaSegmentManager.DeleteSegments(itemId, streamIndex, type, id).ConfigureAwait(false);
         return Ok();
     }
 }

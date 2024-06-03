@@ -54,10 +54,7 @@ public sealed class MediaSegmentsManager : IMediaSegmentsManager, IDisposable
                 segment.ItemId = itemId;
                 ValidateSegment(segment);
 
-                var found = await dbContext.Segments.FirstOrDefaultAsync(s => s.ItemId.Equals(segment.ItemId)
-                && s.StreamIndex == segment.StreamIndex
-                && s.Type == segment.Type
-                && s.TypeIndex == segment.TypeIndex)
+                var found = await dbContext.Segments.FirstOrDefaultAsync(s => s.Id.Equals(segment.Id))
                 .ConfigureAwait(false);
 
                 AddOrUpdateSegment(dbContext, segment, found);
@@ -72,7 +69,7 @@ public sealed class MediaSegmentsManager : IMediaSegmentsManager, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyList<MediaSegment>> GetAllMediaSegments(Guid itemId, int? streamIndex = null, int? typeIndex = null, MediaSegmentType? type = null)
+    public async Task<IReadOnlyList<MediaSegment>> GetAllMediaSegments(Guid itemId, int? streamIndex = null, MediaSegmentType? type = null, Guid? id = null)
     {
         var item = _libraryManager.GetItemById(itemId);
         if (item is null)
@@ -95,9 +92,9 @@ public sealed class MediaSegmentsManager : IMediaSegmentsManager, IDisposable
                 queryable = queryable.Where(s => s.Type == type.Value);
             }
 
-            if (!typeIndex.Equals(null))
+            if (!id.Equals(null))
             {
-                queryable = queryable.Where(s => s.TypeIndex == typeIndex.Value);
+                queryable = queryable.Where(s => s.Id.Equals(id.Value));
             }
 
             return await queryable.AsNoTracking().ToListAsync().ConfigureAwait(false);
@@ -133,10 +130,10 @@ public sealed class MediaSegmentsManager : IMediaSegmentsManager, IDisposable
     {
         if (segment.ItemId.IsEmpty())
         {
-            throw new ArgumentException($"itemId is default: itemId={segment.ItemId} for segment with type '{segment.Type}.{segment.TypeIndex}'");
+            throw new ArgumentException($"itemId is default: itemId={segment.ItemId} for segment with type '{segment.Type}.{segment.Id}'");
         }
 
-        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(segment.StartTicks, segment.EndTicks, $"itemId '{segment.ItemId}' with type '{segment.Type}.{segment.TypeIndex}'");
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(segment.StartTicks, segment.EndTicks, $"itemId '{segment.ItemId}' with type '{segment.Type}.{segment.Id}'");
     }
 
     /// <summary>
@@ -150,7 +147,7 @@ public sealed class MediaSegmentsManager : IMediaSegmentsManager, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task DeleteSegments(Guid itemId, int? streamIndex = null, int? typeIndex = null, MediaSegmentType? type = null)
+    public async Task DeleteSegments(Guid itemId, int? streamIndex = null, MediaSegmentType? type = null, Guid? id = null)
     {
         if (itemId.IsEmpty())
         {
@@ -172,9 +169,9 @@ public sealed class MediaSegmentsManager : IMediaSegmentsManager, IDisposable
                 queryable = queryable.Where(s => s.Type == type);
             }
 
-            if (typeIndex is not null)
+            if (id is not null)
             {
-                queryable = queryable.Where(s => s.TypeIndex == typeIndex);
+                queryable = queryable.Where(s => s.Id.Equals(id.Value));
             }
 
             await queryable.ExecuteDeleteAsync().ConfigureAwait(false);
