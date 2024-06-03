@@ -113,6 +113,9 @@ public sealed class MediaSegmentsManager : IMediaSegmentsManager, IDisposable
         {
             found.StartTicks = segment.StartTicks;
             found.EndTicks = segment.EndTicks;
+            found.Type = segment.Type;
+            found.ItemId = segment.ItemId;
+            found.StreamIndex = segment.StreamIndex;
             found.Action = segment.Action;
             found.Comment = segment.Comment;
         }
