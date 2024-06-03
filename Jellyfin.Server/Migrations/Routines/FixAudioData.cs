@@ -80,7 +80,7 @@ namespace Jellyfin.Server.Migrations.Routines
                 {
                     IncludeItemTypes = [BaseItemKind.Audio],
                     StartIndex = startIndex,
-                    Limit = 100,
+                    Limit = 5000,
                     SkipDeserialization = true
                 })
                 .Cast<Audio>()
