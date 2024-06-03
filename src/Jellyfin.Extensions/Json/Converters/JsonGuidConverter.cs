@@ -12,7 +12,7 @@ namespace Jellyfin.Extensions.Json.Converters
     {
         /// <inheritdoc />
         public override Guid Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-            => reader.TokenType == JsonTokenType.Null
+            => reader.IsNull()
                 ? Guid.Empty
                 : ReadInternal(ref reader);
 

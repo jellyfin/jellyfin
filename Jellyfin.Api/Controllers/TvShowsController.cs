@@ -231,20 +231,22 @@ public class TvShowsController : BaseJellyfinApiController
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
+        var shouldIncludeMissingEpisodes = (user is not null && user.DisplayMissingEpisodes) || User.GetIsApiKey();
 
         if (seasonId.HasValue) // Season id was supplied. Get episodes by season id.
         {
-            var item = _libraryManager.GetItemById(seasonId.Value);
+            var item = _libraryManager.GetItemById<BaseItem>(seasonId.Value);
             if (item is not Season seasonItem)
             {
                 return NotFound("No season exists with Id " + seasonId);
             }
 
-            episodes = seasonItem.GetEpisodes(user, dtoOptions);
+            episodes = seasonItem.GetEpisodes(user, dtoOptions, shouldIncludeMissingEpisodes);
         }
         else if (season.HasValue) // Season number was supplied. Get episodes by season number
         {
-            if (_libraryManager.GetItemById(seriesId) is not Series series)
+            var series = _libraryManager.GetItemById<Series>(seriesId);
+            if (series is null)
             {
                 return NotFound("Series not found");
             }
@@ -255,16 +257,16 @@ public class TvShowsController : BaseJellyfinApiController
 
             episodes = seasonItem is null ?
                 new List<BaseItem>()
-                : ((Season)seasonItem).GetEpisodes(user, dtoOptions);
+                : ((Season)seasonItem).GetEpisodes(user, dtoOptions, shouldIncludeMissingEpisodes);
         }
         else // No season number or season id was supplied. Returning all episodes.
         {
-            if (_libraryManager.GetItemById(seriesId) is not Series series)
+            if (_libraryManager.GetItemById<BaseItem>(seriesId) is not Series series)
             {
                 return NotFound("Series not found");
             }
 
-            episodes = series.GetEpisodes(user, dtoOptions).ToList();
+            episodes = series.GetEpisodes(user, dtoOptions, shouldIncludeMissingEpisodes).ToList();
         }
 
         // Filter after the fact in case the ui doesn't want them
@@ -342,13 +344,13 @@ public class TvShowsController : BaseJellyfinApiController
         var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
-
-        if (_libraryManager.GetItemById(seriesId) is not Series series)
+        var item = _libraryManager.GetItemById<Series>(seriesId, user);
+        if (item is null)
         {
-            return NotFound("Series not found");
+            return NotFound();
         }
 
-        var seasons = series.GetItemList(new InternalItemsQuery(user)
+        var seasons = item.GetItemList(new InternalItemsQuery(user)
         {
             IsMissing = isMissing,
             IsSpecialSeason = isSpecialSeason,

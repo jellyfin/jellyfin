@@ -1,6 +1,6 @@
-using System;
 using System.Globalization;
 using System.Xml;
+using Emby.Naming.TV;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Extensions;
@@ -87,7 +87,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(status))
                         {
-                            if (Enum.TryParse(status, true, out SeriesStatus seriesStatus))
+                            if (TvParserHelpers.TryParseSeriesStatus(status, out var seriesStatus))
                             {
                                 item.Status = seriesStatus;
                             }
@@ -100,19 +100,10 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
+                // Season names are processed by SeriesNfoSeasonParser
                 case "namedseason":
-                    {
-                        var parsed = int.TryParse(reader.GetAttribute("number"), NumberStyles.Integer, CultureInfo.InvariantCulture, out var seasonNumber);
-                        var name = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(name) && parsed)
-                        {
-                            item.SeasonNames[seasonNumber] = name;
-                        }
-
-                        break;
-                    }
-
+                    reader.Skip();
+                    break;
                 default:
                     base.FetchDataFromXmlNode(reader, itemResult);
                     break;

@@ -66,7 +66,7 @@ namespace MediaBrowser.Model.Dto
 
         public DateTime? DateLastMediaAdded { get; set; }
 
-        public string ExtraType { get; set; }
+        public ExtraType? ExtraType { get; set; }
 
         public int? AirsBeforeSeasonNumber { get; set; }
 
@@ -789,10 +789,10 @@ namespace MediaBrowser.Model.Dto
         public string TimerId { get; set; }
 
         /// <summary>
-        /// Gets or sets the LUFS value.
+        /// Gets or sets the gain required for audio normalization.
         /// </summary>
-        /// <value>The LUFS Value.</value>
-        public float? LUFS { get; set; }
+        /// <value>The gain required for audio normalization.</value>
+        public float? NormalizationGain { get; set; }
 
         /// <summary>
         /// Gets or sets the current program.

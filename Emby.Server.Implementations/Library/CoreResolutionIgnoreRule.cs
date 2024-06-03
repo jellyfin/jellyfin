@@ -29,7 +29,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
-        public bool ShouldIgnore(FileSystemMetadata fileInfo, BaseItem parent)
+        public bool ShouldIgnore(FileSystemMetadata fileInfo, BaseItem? parent)
         {
             // Don't ignore application folders
             if (fileInfo.FullName.Contains(_serverApplicationPaths.RootFolderPath, StringComparison.InvariantCulture))

@@ -673,12 +673,13 @@ namespace Emby.Server.Implementations.Dto
             {
                 dto.ImageBlurHashes ??= new Dictionary<ImageType, Dictionary<string, string>>();
 
-                if (!dto.ImageBlurHashes.ContainsKey(image.Type))
+                if (!dto.ImageBlurHashes.TryGetValue(image.Type, out var value))
                 {
-                    dto.ImageBlurHashes[image.Type] = new Dictionary<string, string>();
+                    value = new Dictionary<string, string>();
+                    dto.ImageBlurHashes[image.Type] = value;
                 }
 
-                dto.ImageBlurHashes[image.Type][tag] = image.BlurHash;
+                value[tag] = image.BlurHash;
             }
 
             return tag;
@@ -902,16 +903,21 @@ namespace Emby.Server.Implementations.Dto
                 dto.IsPlaceHolder = supportsPlaceHolders.IsPlaceHolder;
             }
 
-            dto.LUFS = item.LUFS;
+            if (item.LUFS.HasValue)
+            {
+                // -18 LUFS reference, same as ReplayGain 2.0, compatible with ReplayGain 1.0
+                dto.NormalizationGain = -18f - item.LUFS;
+            }
+            else if (item.NormalizationGain.HasValue)
+            {
+                dto.NormalizationGain = item.NormalizationGain;
+            }
 
             // Add audio info
             if (item is Audio audio)
             {
                 dto.Album = audio.Album;
-                if (audio.ExtraType.HasValue)
-                {
-                    dto.ExtraType = audio.ExtraType.Value.ToString();
-                }
+                dto.ExtraType = audio.ExtraType;
 
                 var albumParent = audio.AlbumEntity;
 
@@ -1063,10 +1069,7 @@ namespace Emby.Server.Implementations.Dto
                     dto.Trickplay = _trickplayManager.GetTrickplayManifest(item).GetAwaiter().GetResult();
                 }
 
-                if (video.ExtraType.HasValue)
-                {
-                    dto.ExtraType = video.ExtraType.Value.ToString();
-                }
+                dto.ExtraType = video.ExtraType;
             }
 
             // Add MediaSegments for all media sources

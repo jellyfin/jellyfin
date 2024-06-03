@@ -1,7 +1,7 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AsyncKeyedLock;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Entities;
@@ -88,15 +89,28 @@ namespace MediaBrowser.MediaEncoding.Attachments
             string outputPath,
             CancellationToken cancellationToken)
         {
-            using (await _semaphoreLocks.LockAsync(outputPath, cancellationToken).ConfigureAwait(false))
+            var shouldExtractOneByOne = mediaSource.MediaAttachments.Any(a => a.FileName.Contains('/', StringComparison.OrdinalIgnoreCase) || a.FileName.Contains('\\', StringComparison.OrdinalIgnoreCase));
+            if (shouldExtractOneByOne)
             {
-                if (!Directory.Exists(outputPath))
+                var attachmentIndexes = mediaSource.MediaAttachments.Select(a => a.Index);
+                foreach (var i in attachmentIndexes)
                 {
-                    await ExtractAllAttachmentsInternal(
-                        _mediaEncoder.GetInputArgument(inputFile, mediaSource),
-                        outputPath,
-                        false,
-                        cancellationToken).ConfigureAwait(false);
+                    var newName = Path.Join(outputPath, i.ToString(CultureInfo.InvariantCulture));
+                    await ExtractAttachment(inputFile, mediaSource, i, newName, cancellationToken).ConfigureAwait(false);
+                }
+            }
+            else
+            {
+                using (await _semaphoreLocks.LockAsync(outputPath, cancellationToken).ConfigureAwait(false))
+                {
+                    if (!Directory.Exists(outputPath))
+                    {
+                        await ExtractAllAttachmentsInternal(
+                            _mediaEncoder.GetInputArgument(inputFile, mediaSource),
+                            outputPath,
+                            false,
+                            cancellationToken).ConfigureAwait(false);
+                    }
                 }
             }
         }
@@ -138,7 +152,8 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
             var processArgs = string.Format(
                 CultureInfo.InvariantCulture,
-                "-dump_attachment:t \"\" -y -i {0} -t 0 -f null null",
+                "-dump_attachment:t \"\" -y {0} -i {1} -t 0 -f null null",
+                inputPath.EndsWith(".concat\"", StringComparison.OrdinalIgnoreCase) ? "-f concat -safe 0" : string.Empty,
                 inputPath);
 
             int exitCode;
@@ -230,11 +245,162 @@ namespace MediaBrowser.MediaEncoding.Attachments
             MediaAttachment mediaAttachment,
             CancellationToken cancellationToken)
         {
+            await CacheAllAttachments(mediaPath, inputFile, mediaSource, cancellationToken).ConfigureAwait(false);
+
             var outputPath = GetAttachmentCachePath(mediaPath, mediaSource, mediaAttachment.Index);
             await ExtractAttachment(inputFile, mediaSource, mediaAttachment.Index, outputPath, cancellationToken)
                 .ConfigureAwait(false);
 
             return outputPath;
+        }
+
+        private async Task CacheAllAttachments(
+            string mediaPath,
+            string inputFile,
+            MediaSourceInfo mediaSource,
+            CancellationToken cancellationToken)
+        {
+            var outputFileLocks = new List<IDisposable>();
+            var extractableAttachmentIds = new List<int>();
+
+            try
+            {
+                foreach (var attachment in mediaSource.MediaAttachments)
+                {
+                    var outputPath = GetAttachmentCachePath(mediaPath, mediaSource, attachment.Index);
+
+                    var releaser = await _semaphoreLocks.LockAsync(outputPath, cancellationToken).ConfigureAwait(false);
+
+                    if (File.Exists(outputPath))
+                    {
+                        releaser.Dispose();
+                        continue;
+                    }
+
+                    outputFileLocks.Add(releaser);
+                    extractableAttachmentIds.Add(attachment.Index);
+                }
+
+                if (extractableAttachmentIds.Count > 0)
+                {
+                    await CacheAllAttachmentsInternal(mediaPath, inputFile, mediaSource, extractableAttachmentIds, cancellationToken).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Unable to cache media attachments for File:{File}", mediaPath);
+            }
+            finally
+            {
+                outputFileLocks.ForEach(x => x.Dispose());
+            }
+        }
+
+        private async Task CacheAllAttachmentsInternal(
+            string mediaPath,
+            string inputFile,
+            MediaSourceInfo mediaSource,
+            List<int> extractableAttachmentIds,
+            CancellationToken cancellationToken)
+        {
+            var outputPaths = new List<string>();
+            var processArgs = string.Empty;
+
+            foreach (var attachmentId in extractableAttachmentIds)
+            {
+                var outputPath = GetAttachmentCachePath(mediaPath, mediaSource, attachmentId);
+
+                Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? throw new FileNotFoundException($"Calculated path ({outputPath}) is not valid."));
+
+                outputPaths.Add(outputPath);
+                processArgs += string.Format(
+                    CultureInfo.InvariantCulture,
+                    " -dump_attachment:{0} \"{1}\"",
+                    attachmentId,
+                    EncodingUtils.NormalizePath(outputPath));
+            }
+
+            processArgs += string.Format(
+                CultureInfo.InvariantCulture,
+                " -i \"{0}\" -t 0 -f null null",
+                inputFile);
+
+            int exitCode;
+
+            using (var process = new Process
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        Arguments = processArgs,
+                        FileName = _mediaEncoder.EncoderPath,
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                        WindowStyle = ProcessWindowStyle.Hidden,
+                        ErrorDialog = false
+                    },
+                    EnableRaisingEvents = true
+                })
+            {
+                _logger.LogInformation("{File} {Arguments}", process.StartInfo.FileName, process.StartInfo.Arguments);
+
+                process.Start();
+
+                try
+                {
+                    await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
+                    exitCode = process.ExitCode;
+                }
+                catch (OperationCanceledException)
+                {
+                    process.Kill(true);
+                    exitCode = -1;
+                }
+            }
+
+            var failed = false;
+
+            if (exitCode == -1)
+            {
+                failed = true;
+
+                foreach (var outputPath in outputPaths)
+                {
+                    try
+                    {
+                        _logger.LogWarning("Deleting extracted media attachment due to failure: {Path}", outputPath);
+                        _fileSystem.DeleteFile(outputPath);
+                    }
+                    catch (FileNotFoundException)
+                    {
+                        // ffmpeg failed, so it is normal that one or more expected output files do not exist.
+                        // There is no need to log anything for the user here.
+                    }
+                    catch (IOException ex)
+                    {
+                        _logger.LogError(ex, "Error deleting extracted media attachment {Path}", outputPath);
+                    }
+                }
+            }
+            else
+            {
+                foreach (var outputPath in outputPaths)
+                {
+                    if (!File.Exists(outputPath))
+                    {
+                        _logger.LogError("ffmpeg media attachment extraction failed for {InputPath} to {OutputPath}", inputFile, outputPath);
+                        failed = true;
+                        continue;
+                    }
+
+                    _logger.LogInformation("ffmpeg media attachment extraction completed for {InputPath} to {OutputPath}", inputFile, outputPath);
+                }
+            }
+
+            if (failed)
+            {
+                throw new FfmpegException(
+                    string.Format(CultureInfo.InvariantCulture, "ffmpeg media attachment extraction failed for {0}", inputFile));
+            }
         }
 
         private async Task ExtractAttachment(

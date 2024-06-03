@@ -45,9 +45,6 @@ namespace MediaBrowser.Controller.Entities.Movies
             set => TmdbCollectionName = value;
         }
 
-        [JsonIgnore]
-        public override bool StopRefreshIfLocalMetadataFound => false;
-
         public override double GetDefaultPrimaryImageAspectRatio()
         {
             // hack for tv plugins

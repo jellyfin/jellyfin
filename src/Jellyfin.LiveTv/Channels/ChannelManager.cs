@@ -570,7 +570,6 @@ namespace Jellyfin.LiveTv.Channels
             return new ChannelFeatures(channel.Name, channel.Id)
             {
                 CanFilter = !features.MaxPageSize.HasValue,
-                CanSearch = provider is ISearchableChannel,
                 ContentTypes = features.ContentTypes.ToArray(),
                 DefaultSortFields = features.DefaultSortFields.ToArray(),
                 MaxPageSize = features.MaxPageSize,
@@ -1131,7 +1130,7 @@ namespace Jellyfin.LiveTv.Channels
             {
                 if (!item.Tags.Contains("livestream", StringComparison.OrdinalIgnoreCase))
                 {
-                    item.Tags = item.Tags.Concat(new[] { "livestream" }).ToArray();
+                    item.Tags = [..item.Tags, "livestream"];
                     _logger.LogDebug("Forcing update due to Tags {0}", item.Name);
                     forceUpdate = true;
                 }

@@ -115,11 +115,7 @@ namespace Jellyfin.LiveTv.Timers
                     throw new ArgumentException("item already exists", nameof(item));
                 }
 
-                int oldLen = _items.Length;
-                var newList = new T[oldLen + 1];
-                _items.CopyTo(newList, 0);
-                newList[oldLen] = item;
-                _items = newList;
+                _items = [.._items, item];
 
                 SaveList();
             }
@@ -134,11 +130,7 @@ namespace Jellyfin.LiveTv.Timers
                 int index = Array.FindIndex(_items, i => EqualityComparer(i, item));
                 if (index == -1)
                 {
-                    int oldLen = _items.Length;
-                    var newList = new T[oldLen + 1];
-                    _items.CopyTo(newList, 0);
-                    newList[oldLen] = item;
-                    _items = newList;
+                    _items = [.._items, item];
                 }
                 else
                 {

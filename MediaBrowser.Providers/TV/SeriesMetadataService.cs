@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -35,6 +36,25 @@ namespace MediaBrowser.Providers.TV
             _localizationManager = localizationManager;
         }
 
+        public override async Task<ItemUpdateType> RefreshMetadata(BaseItem item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
+        {
+            if (item is Series series)
+            {
+                var seasons = series.GetRecursiveChildren(i => i is Season).ToList();
+
+                foreach (var season in seasons)
+                {
+                    var hasUpdate = refreshOptions != null && season.BeforeMetadataRefresh(refreshOptions.ReplaceAllMetadata);
+                    if (hasUpdate)
+                    {
+                        await season.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+                    }
+                }
+            }
+
+            return await base.RefreshMetadata(item, refreshOptions, cancellationToken).ConfigureAwait(false);
+        }
+
         /// <inheritdoc />
         protected override async Task AfterMetadataRefresh(Series item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
         {
@@ -42,23 +62,7 @@ namespace MediaBrowser.Providers.TV
 
             RemoveObsoleteEpisodes(item);
             RemoveObsoleteSeasons(item);
-            await UpdateAndCreateSeasonsAsync(item, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <inheritdoc />
-        protected override bool IsFullLocalMetadata(Series item)
-        {
-            if (string.IsNullOrWhiteSpace(item.Overview))
-            {
-                return false;
-            }
-
-            if (!item.ProductionYear.HasValue)
-            {
-                return false;
-            }
-
-            return base.IsFullLocalMetadata(item);
+            await CreateSeasonsAsync(item, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
@@ -68,20 +72,6 @@ namespace MediaBrowser.Providers.TV
 
             var sourceItem = source.Item;
             var targetItem = target.Item;
-            var sourceSeasonNames = sourceItem.SeasonNames;
-            var targetSeasonNames = targetItem.SeasonNames;
-
-            if (replaceData || targetSeasonNames.Count == 0)
-            {
-                targetItem.SeasonNames = sourceSeasonNames;
-            }
-            else if (targetSeasonNames.Count != sourceSeasonNames.Count || !sourceSeasonNames.Keys.All(targetSeasonNames.ContainsKey))
-            {
-                foreach (var (number, name) in sourceSeasonNames)
-                {
-                    targetSeasonNames.TryAdd(number, name);
-                }
-            }
 
             if (replaceData || string.IsNullOrEmpty(targetItem.AirTime))
             {
@@ -138,7 +128,7 @@ namespace MediaBrowser.Providers.TV
 
         private void RemoveObsoleteEpisodes(Series series)
         {
-            var episodes = series.GetEpisodes(null, new DtoOptions()).OfType<Episode>().ToList();
+            var episodes = series.GetEpisodes(null, new DtoOptions(), true).OfType<Episode>().ToList();
             var numberOfEpisodes = episodes.Count;
             // TODO: O(n^2), but can it be done faster without overcomplicating it?
             for (var i = 0; i < numberOfEpisodes; i++)
@@ -194,14 +184,12 @@ namespace MediaBrowser.Providers.TV
         /// <summary>
         /// Creates seasons for all episodes if they don't exist.
         /// If no season number can be determined, a dummy season will be created.
-        /// Updates seasons names.
         /// </summary>
         /// <param name="series">The series.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The async task.</returns>
-        private async Task UpdateAndCreateSeasonsAsync(Series series, CancellationToken cancellationToken)
+        private async Task CreateSeasonsAsync(Series series, CancellationToken cancellationToken)
         {
-            var seasonNames = series.SeasonNames;
             var seriesChildren = series.GetRecursiveChildren(i => i is Episode || i is Season);
             var seasons = seriesChildren.OfType<Season>().ToList();
             var uniqueSeasonNumbers = seriesChildren
@@ -213,22 +201,11 @@ namespace MediaBrowser.Providers.TV
             foreach (var seasonNumber in uniqueSeasonNumbers)
             {
                 // Null season numbers will have a 'dummy' season created because seasons are always required.
-                var existingSeason = seasons.FirstOrDefault(i => i.IndexNumber == seasonNumber);
-
-                if (!seasonNumber.HasValue || !seasonNames.TryGetValue(seasonNumber.Value, out var seasonName))
+                if (!seasons.Any(i => i.IndexNumber == seasonNumber))
                 {
-                    seasonName = GetValidSeasonNameForSeries(series, null, seasonNumber);
-                }
-
-                if (existingSeason is null)
-                {
+                    var seasonName = GetValidSeasonNameForSeries(series, null, seasonNumber);
                     var season = await CreateSeasonAsync(series, seasonName, seasonNumber, cancellationToken).ConfigureAwait(false);
                     series.AddChild(season);
-                }
-                else if (!string.Equals(existingSeason.Name, seasonName, StringComparison.Ordinal))
-                {
-                    existingSeason.Name = seasonName;
-                    await existingSeason.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
                 }
             }
         }

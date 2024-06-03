@@ -11,6 +11,7 @@ using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Streaming;
@@ -18,6 +19,7 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Net.Http.Headers;
 
 namespace Jellyfin.Api.Helpers;
@@ -107,7 +109,8 @@ public static class StreamingHelpers
                                           ?? state.SupportedSubtitleCodecs.FirstOrDefault();
         }
 
-        var item = libraryManager.GetItemById(streamingRequest.Id);
+        var item = libraryManager.GetItemById<BaseItem>(streamingRequest.Id)
+            ?? throw new ResourceNotFoundException();
 
         state.IsInputVideo = item.MediaType == MediaType.Video;
 
@@ -125,7 +128,7 @@ public static class StreamingHelpers
 
             if (mediaSource is null)
             {
-                var mediaSources = await mediaSourceManager.GetPlaybackMediaSources(libraryManager.GetItemById(streamingRequest.Id), null, false, false, cancellationToken).ConfigureAwait(false);
+                var mediaSources = await mediaSourceManager.GetPlaybackMediaSources(libraryManager.GetItemById<BaseItem>(streamingRequest.Id), null, false, false, cancellationToken).ConfigureAwait(false);
 
                 mediaSource = string.IsNullOrEmpty(streamingRequest.MediaSourceId)
                     ? mediaSources[0]
@@ -139,6 +142,20 @@ public static class StreamingHelpers
         }
         else
         {
+            // Enforce more restrictive transcoding profile for LiveTV due to compatability reasons
+            // Cap the MaxStreamingBitrate to 30Mbps, because we are unable to reliably probe source bitrate,
+            // which will cause the client to request extremely high bitrate that may fail the player/encoder
+            streamingRequest.VideoBitRate = streamingRequest.VideoBitRate > 30000000 ? 30000000 : streamingRequest.VideoBitRate;
+
+            if (streamingRequest.SegmentContainer is not null)
+            {
+                // Remove all fmp4 transcoding profiles, because it causes playback error and/or A/V sync issues
+                // Notably: Some channels won't play on FireFox and LG webOS
+                // Some channels from HDHomerun will experience A/V sync issues
+                streamingRequest.SegmentContainer = "ts";
+                streamingRequest.VideoCodec = "h264";
+            }
+
             var liveStreamInfo = await mediaSourceManager.GetLiveStreamWithDirectStreamProvider(streamingRequest.LiveStreamId, cancellationToken).ConfigureAwait(false);
             mediaSource = liveStreamInfo.Item1;
             state.DirectStreamProvider = liveStreamInfo.Item2;
@@ -163,6 +180,9 @@ public static class StreamingHelpers
         }
 
         var outputAudioCodec = streamingRequest.AudioCodec;
+        state.OutputAudioCodec = outputAudioCodec;
+        state.OutputContainer = (containerInternal ?? string.Empty).TrimStart('.');
+        state.OutputAudioChannels = encodingHelper.GetNumAudioChannelsParam(state, state.AudioStream, state.OutputAudioCodec);
         if (EncodingHelper.LosslessAudioCodecs.Contains(outputAudioCodec))
         {
             state.OutputAudioBitrate = state.AudioStream.BitRate ?? 0;
@@ -176,10 +196,6 @@ public static class StreamingHelpers
         {
             containerInternal = ".pcm";
         }
-
-        state.OutputAudioCodec = outputAudioCodec;
-        state.OutputContainer = (containerInternal ?? string.Empty).TrimStart('.');
-        state.OutputAudioChannels = encodingHelper.GetNumAudioChannelsParam(state, state.AudioStream, state.OutputAudioCodec);
 
         if (state.VideoRequest is not null)
         {

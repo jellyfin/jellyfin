@@ -159,10 +159,7 @@ namespace Emby.Server.Implementations.Session
 
         private void CheckDisposed()
         {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(GetType().Name);
-            }
+            ObjectDisposedException.ThrowIf(_disposed, this);
         }
 
         private void OnSessionStarted(SessionInfo info)
@@ -403,7 +400,7 @@ namespace Emby.Server.Implementations.Session
             {
                 session.NowPlayingQueue = nowPlayingQueue;
 
-                var itemIds = nowPlayingQueue.Select(queue => queue.Id).ToArray();
+                var itemIds = Array.ConvertAll(nowPlayingQueue, queue => queue.Id);
                 session.NowPlayingQueueFullItems = _dtoService.GetBaseItemDtos(
                     _libraryManager.GetItemList(new InternalItemsQuery { ItemIds = itemIds }),
                     new DtoOptions(true));
@@ -456,8 +453,8 @@ namespace Emby.Server.Implementations.Session
 
             if (!_activeConnections.TryGetValue(key, out var sessionInfo))
             {
-                _activeConnections[key] = await CreateSession(key, appName, appVersion, deviceId, deviceName, remoteEndPoint, user).ConfigureAwait(false);
-                sessionInfo = _activeConnections[key];
+                sessionInfo = await CreateSession(key, appName, appVersion, deviceId, deviceName, remoteEndPoint, user).ConfigureAwait(false);
+                _activeConnections[key] = sessionInfo;
             }
 
             sessionInfo.UserId = user?.Id ?? Guid.Empty;
@@ -614,9 +611,6 @@ namespace Emby.Server.Implementations.Session
                         _logger.LogDebug(ex, "Error calling OnPlaybackStopped");
                     }
                 }
-
-                playingSessions = Sessions.Where(i => i.NowPlayingItem is not null)
-                    .ToList();
             }
             else
             {
@@ -1208,7 +1202,8 @@ namespace Emby.Server.Implementations.Session
                             new DtoOptions(false)
                             {
                                 EnableImages = false
-                            })
+                            },
+                            user.DisplayMissingEpisodes)
                         .Where(i => !i.IsVirtualItem)
                         .SkipWhile(i => !i.Id.Equals(episode.Id))
                         .ToList();
@@ -1392,16 +1387,13 @@ namespace Emby.Server.Implementations.Session
             if (session.AdditionalUsers.All(i => !i.UserId.Equals(userId)))
             {
                 var user = _userManager.GetUserById(userId);
-
-                var list = session.AdditionalUsers.ToList();
-
-                list.Add(new SessionUserInfo
+                var newUser = new SessionUserInfo
                 {
                     UserId = userId,
                     UserName = user.Username
-                });
+                };
 
-                session.AdditionalUsers = list.ToArray();
+                session.AdditionalUsers = [..session.AdditionalUsers, newUser];
             }
         }
 

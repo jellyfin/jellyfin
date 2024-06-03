@@ -278,6 +278,13 @@ namespace Emby.Server.Implementations.Localization
                 return null;
             }
 
+            // Convert integers directly
+            // This may override some of the locale specific age ratings (but those always map to the same age)
+            if (int.TryParse(rating, out var ratingAge))
+            {
+                return ratingAge;
+            }
+
             // Fairly common for some users to have "Rated R" in their rating field
             rating = rating.Replace("Rated :", string.Empty, StringComparison.OrdinalIgnoreCase);
             rating = rating.Replace("Rated ", string.Empty, StringComparison.OrdinalIgnoreCase);
@@ -314,7 +321,11 @@ namespace Emby.Server.Implementations.Localization
             // Try splitting by : to handle "Germany: FSK-18"
             if (rating.Contains(':', StringComparison.OrdinalIgnoreCase))
             {
-                return GetRatingLevel(rating.AsSpan().RightPart(':').ToString());
+                var ratingLevelRightPart = rating.AsSpan().RightPart(':');
+                if (ratingLevelRightPart.Length != 0)
+                {
+                    return GetRatingLevel(ratingLevelRightPart.ToString());
+                }
             }
 
             // Handle prefix country code to handle "DE-18"
@@ -325,8 +336,12 @@ namespace Emby.Server.Implementations.Localization
                 // Extract culture from country prefix
                 var culture = FindLanguageInfo(ratingSpan.LeftPart('-').ToString());
 
-                // Check rating system of culture
-                return GetRatingLevel(ratingSpan.RightPart('-').ToString(), culture?.TwoLetterISOLanguageName);
+                var ratingLevelRightPart = ratingSpan.RightPart('-');
+                if (ratingLevelRightPart.Length != 0)
+                {
+                    // Check rating system of culture
+                    return GetRatingLevel(ratingLevelRightPart.ToString(), culture?.TwoLetterISOLanguageName);
+                }
             }
 
             return null;

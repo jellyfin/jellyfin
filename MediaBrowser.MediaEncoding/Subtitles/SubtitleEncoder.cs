@@ -457,28 +457,27 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// <returns>Task.</returns>
         private async Task ExtractAllTextSubtitles(MediaSourceInfo mediaSource, CancellationToken cancellationToken)
         {
-            var locks = new List<AsyncKeyedLockReleaser<string>>();
+            var locks = new List<IDisposable>();
             var extractableStreams = new List<MediaStream>();
 
             try
             {
                 var subtitleStreams = mediaSource.MediaStreams
-                    .Where(stream => stream.IsTextSubtitleStream && stream.SupportsExternalStream);
+                    .Where(stream => stream is { IsTextSubtitleStream: true, SupportsExternalStream: true, IsExternal: false });
 
                 foreach (var subtitleStream in subtitleStreams)
                 {
                     var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + GetTextSubtitleFormat(subtitleStream));
 
-                    var @lock = _semaphoreLocks.GetOrAdd(outputPath);
-                    await @lock.SemaphoreSlim.WaitAsync(cancellationToken).ConfigureAwait(false);
+                    var releaser = await _semaphoreLocks.LockAsync(outputPath, cancellationToken).ConfigureAwait(false);
 
                     if (File.Exists(outputPath))
                     {
-                        @lock.Dispose();
+                        releaser.Dispose();
                         continue;
                     }
 
-                    locks.Add(@lock);
+                    locks.Add(releaser);
                     extractableStreams.Add(subtitleStream);
                 }
 
@@ -493,10 +492,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
             finally
             {
-                foreach (var @lock in locks)
-                {
-                    @lock.Dispose();
-                }
+                locks.ForEach(x => x.Dispose());
             }
         }
 

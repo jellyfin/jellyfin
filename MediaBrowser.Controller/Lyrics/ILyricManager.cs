@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
@@ -69,12 +70,22 @@ public interface ILyricManager
         CancellationToken cancellationToken);
 
     /// <summary>
-    /// Upload new lyrics.
+    /// Saves new lyrics.
     /// </summary>
     /// <param name="audio">The audio file the lyrics belong to.</param>
-    /// <param name="lyricResponse">The lyric response.</param>
+    /// <param name="format">The lyrics format.</param>
+    /// <param name="lyrics">The lyrics.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    Task<LyricDto?> UploadLyricAsync(Audio audio, LyricResponse lyricResponse);
+    Task<LyricDto?> SaveLyricAsync(Audio audio, string format, string lyrics);
+
+    /// <summary>
+    /// Saves new lyrics.
+    /// </summary>
+    /// <param name="audio">The audio file the lyrics belong to.</param>
+    /// <param name="format">The lyrics format.</param>
+    /// <param name="lyrics">The lyrics.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    Task<LyricDto?> SaveLyricAsync(Audio audio, string format, Stream lyrics);
 
     /// <summary>
     /// Get the remote lyrics.

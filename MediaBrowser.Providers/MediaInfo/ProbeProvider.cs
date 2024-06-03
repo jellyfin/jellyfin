@@ -1,6 +1,7 @@
 #nullable disable
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -13,6 +14,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
@@ -64,6 +66,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="loggerFactory">Instance of the <see cref="ILoggerFactory"/>.</param>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
         /// <param name="namingOptions">The <see cref="NamingOptions"/>.</param>
+        /// <param name="lyricManager">Instance of the <see cref="ILyricManager"/> interface.</param>
         public ProbeProvider(
             IMediaSourceManager mediaSourceManager,
             IMediaEncoder mediaEncoder,
@@ -77,7 +80,8 @@ namespace MediaBrowser.Providers.MediaInfo
             ILibraryManager libraryManager,
             IFileSystem fileSystem,
             ILoggerFactory loggerFactory,
-            NamingOptions namingOptions)
+            NamingOptions namingOptions,
+            ILyricManager lyricManager)
         {
             _logger = loggerFactory.CreateLogger<ProbeProvider>();
             _audioResolver = new AudioResolver(loggerFactory.CreateLogger<AudioResolver>(), localization, mediaEncoder, fileSystem, namingOptions);
@@ -105,7 +109,8 @@ namespace MediaBrowser.Providers.MediaInfo
                 mediaEncoder,
                 itemRepo,
                 libraryManager,
-                _lyricResolver);
+                _lyricResolver,
+                lyricManager);
         }
 
         /// <inheritdoc />
@@ -137,19 +142,15 @@ namespace MediaBrowser.Providers.MediaInfo
                 && item.SupportsLocalMetadata
                 && !video.IsPlaceHolder)
             {
-                if (!video.SubtitleFiles.SequenceEqual(
-                        _subtitleResolver.GetExternalFiles(video, directoryService, false)
-                            .Select(info => info.Path).ToList(),
-                        StringComparer.Ordinal))
+                var externalFiles = new HashSet<string>(_subtitleResolver.GetExternalFiles(video, directoryService, false).Select(info => info.Path), StringComparer.OrdinalIgnoreCase);
+                if (!new HashSet<string>(video.SubtitleFiles, StringComparer.Ordinal).SetEquals(externalFiles))
                 {
                     _logger.LogDebug("Refreshing {ItemPath} due to external subtitles change.", item.Path);
                     return true;
                 }
 
-                if (!video.AudioFiles.SequenceEqual(
-                        _audioResolver.GetExternalFiles(video, directoryService, false)
-                            .Select(info => info.Path).ToList(),
-                        StringComparer.Ordinal))
+                externalFiles = new HashSet<string>(_audioResolver.GetExternalFiles(video, directoryService, false).Select(info => info.Path), StringComparer.OrdinalIgnoreCase);
+                if (!new HashSet<string>(video.AudioFiles, StringComparer.Ordinal).SetEquals(externalFiles))
                 {
                     _logger.LogDebug("Refreshing {ItemPath} due to external audio change.", item.Path);
                     return true;
@@ -157,14 +158,14 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             if (item is Audio audio
-                && item.SupportsLocalMetadata
-                && !audio.LyricFiles.SequenceEqual(
-                    _lyricResolver.GetExternalFiles(audio, directoryService, false)
-                        .Select(info => info.Path).ToList(),
-                    StringComparer.Ordinal))
+                && item.SupportsLocalMetadata)
             {
-                _logger.LogDebug("Refreshing {ItemPath} due to external lyrics change.", item.Path);
-                return true;
+                var externalFiles = new HashSet<string>(_lyricResolver.GetExternalFiles(audio, directoryService, false).Select(info => info.Path), StringComparer.OrdinalIgnoreCase);
+                if (!new HashSet<string>(audio.LyricFiles, StringComparer.Ordinal).SetEquals(externalFiles))
+                {
+                    _logger.LogDebug("Refreshing {ItemPath} due to external lyrics change.", item.Path);
+                    return true;
+                }
             }
 
             return false;

@@ -69,6 +69,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "aac_at",
             "libfdk_aac",
             "ac3",
+            "alac",
             "dca",
             "libmp3lame",
             "libopus",
@@ -81,6 +82,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "av1_amf",
             "h264_qsv",
             "hevc_qsv",
+            "mjpeg_qsv",
             "av1_qsv",
             "h264_nvenc",
             "hevc_nvenc",
@@ -88,6 +90,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "h264_vaapi",
             "hevc_vaapi",
             "av1_vaapi",
+            "mjpeg_vaapi",
             "h264_v4l2m2m",
             "h264_videotoolbox",
             "hevc_videotoolbox",
@@ -128,6 +131,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "overlay_vulkan",
             // videotoolbox
             "yadif_videotoolbox",
+            "scale_vt",
+            "overlay_videotoolbox",
+            "tonemap_videotoolbox",
             // rkrga
             "scale_rkrga",
             "vpp_rkrga",
@@ -144,17 +150,18 @@ namespace MediaBrowser.MediaEncoding.Encoder
             { 5, new string[] { "overlay_vulkan", "Action to take when encountering EOF from secondary input" } }
         };
 
-        // These are the library versions that corresponds to our minimum ffmpeg version 4.x according to the version table below
+        // These are the library versions that corresponds to our minimum ffmpeg version 4.4 according to the version table below
+        // Refers to the versions in https://ffmpeg.org/download.html
         private static readonly Dictionary<string, Version> _ffmpegMinimumLibraryVersions = new Dictionary<string, Version>
         {
-            { "libavutil", new Version(56, 14) },
-            { "libavcodec", new Version(58, 18) },
-            { "libavformat", new Version(58, 12) },
-            { "libavdevice", new Version(58, 3) },
-            { "libavfilter", new Version(7, 16) },
-            { "libswscale", new Version(5, 1) },
-            { "libswresample", new Version(3, 1) },
-            { "libpostproc", new Version(55, 1) }
+            { "libavutil", new Version(56, 70) },
+            { "libavcodec", new Version(58, 134) },
+            { "libavformat", new Version(58, 76) },
+            { "libavdevice", new Version(58, 13) },
+            { "libavfilter", new Version(7, 110) },
+            { "libswscale", new Version(5, 9) },
+            { "libswresample", new Version(3, 9) },
+            { "libpostproc", new Version(55, 9) }
         };
 
         private readonly ILogger _logger;
@@ -174,7 +181,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         }
 
         // When changing this, also change the minimum library versions in _ffmpegMinimumLibraryVersions
-        public static Version MinVersion { get; } = new Version(4, 0);
+        public static Version MinVersion { get; } = new Version(4, 4);
 
         public static Version? MaxVersion { get; } = null;
 

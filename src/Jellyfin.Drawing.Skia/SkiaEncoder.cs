@@ -19,8 +19,8 @@ namespace Jellyfin.Drawing.Skia;
 /// </summary>
 public class SkiaEncoder : IImageEncoder
 {
+    private const string SvgFormat = "svg";
     private static readonly HashSet<string> _transparentImageTypes = new(StringComparer.OrdinalIgnoreCase) { ".png", ".gif", ".webp" };
-
     private readonly ILogger<SkiaEncoder> _logger;
     private readonly IApplicationPaths _appPaths;
     private static readonly SKImageFilter _imageFilter;
@@ -89,12 +89,13 @@ public class SkiaEncoder : IImageEncoder
             // working on windows at least
             "cr2",
             "nef",
-            "arw"
+            "arw",
+            SvgFormat
         };
 
     /// <inheritdoc/>
     public IReadOnlyCollection<ImageFormat> SupportedOutputFormats
-        => new HashSet<ImageFormat> { ImageFormat.Webp, ImageFormat.Jpg, ImageFormat.Png };
+        => new HashSet<ImageFormat> { ImageFormat.Webp, ImageFormat.Jpg, ImageFormat.Png, ImageFormat.Svg };
 
     /// <summary>
     /// Check if the native lib is available.
@@ -187,7 +188,8 @@ public class SkiaEncoder : IImageEncoder
         ArgumentException.ThrowIfNullOrEmpty(path);
 
         var extension = Path.GetExtension(path.AsSpan()).TrimStart('.');
-        if (!SupportedInputFormats.Contains(extension, StringComparison.OrdinalIgnoreCase))
+        if (!SupportedInputFormats.Contains(extension, StringComparison.OrdinalIgnoreCase)
+            || extension.Equals(SvgFormat, StringComparison.OrdinalIgnoreCase))
         {
             _logger.LogDebug("Unable to compute blur hash due to unsupported format: {ImagePath}", path);
             return string.Empty;
@@ -261,6 +263,11 @@ public class SkiaEncoder : IImageEncoder
                 return null;
             }
 
+            if (codec.FrameCount != 0)
+            {
+                throw new ArgumentException("Cannot decode images with multiple frames");
+            }
+
             // create the bitmap
             var bitmap = new SKBitmap(codec.Info.Width, codec.Info.Height, !requiresTransparencyHack);
 
@@ -310,6 +317,31 @@ public class SkiaEncoder : IImageEncoder
         }
 
         return Decode(path, false, orientation, out _);
+    }
+
+    private SKBitmap? GetBitmapFromSvg(string path)
+    {
+        if (!File.Exists(path))
+        {
+            throw new FileNotFoundException("File not found", path);
+        }
+
+        using var svg = SKSvg.CreateFromFile(path);
+        if (svg.Drawable is null)
+        {
+            return null;
+        }
+
+        var width = (int)Math.Round(svg.Drawable.Bounds.Width);
+        var height = (int)Math.Round(svg.Drawable.Bounds.Height);
+
+        var bitmap = new SKBitmap(width, height);
+        using var canvas = new SKCanvas(bitmap);
+        canvas.DrawPicture(svg.Picture);
+        canvas.Flush();
+        canvas.Save();
+
+        return bitmap;
     }
 
     private SKBitmap OrientImage(SKBitmap bitmap, SKEncodedOrigin origin)
@@ -402,6 +434,12 @@ public class SkiaEncoder : IImageEncoder
             return inputPath;
         }
 
+        if (outputFormat == ImageFormat.Svg
+            && !inputFormat.Equals(SvgFormat, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException($"Requested svg output from {inputFormat} input");
+        }
+
         var skiaOutputFormat = GetImageFormat(outputFormat);
 
         var hasBackgroundColor = !string.IsNullOrWhiteSpace(options.BackgroundColor);
@@ -409,7 +447,10 @@ public class SkiaEncoder : IImageEncoder
         var blur = options.Blur ?? 0;
         var hasIndicator = options.UnplayedCount.HasValue || !options.PercentPlayed.Equals(0);
 
-        using var bitmap = GetBitmap(inputPath, autoOrient, orientation);
+        using var bitmap = inputFormat.Equals(SvgFormat, StringComparison.OrdinalIgnoreCase)
+            ? GetBitmapFromSvg(inputPath)
+            : GetBitmap(inputPath, autoOrient, orientation);
+
         if (bitmap is null)
         {
             throw new InvalidDataException($"Skia unable to read image {inputPath}");
@@ -518,9 +559,13 @@ public class SkiaEncoder : IImageEncoder
     /// <inheritdoc />
     public void CreateSplashscreen(IReadOnlyList<string> posters, IReadOnlyList<string> backdrops)
     {
-        var splashBuilder = new SplashscreenBuilder(this);
-        var outputPath = Path.Combine(_appPaths.DataPath, "splashscreen.png");
-        splashBuilder.GenerateSplash(posters, backdrops, outputPath);
+        // Only generate the splash screen if we have at least one poster and at least one backdrop/thumbnail.
+        if (posters.Count > 0 && backdrops.Count > 0)
+        {
+            var splashBuilder = new SplashscreenBuilder(this);
+            var outputPath = Path.Combine(_appPaths.DataPath, "splashscreen.png");
+            splashBuilder.GenerateSplash(posters, backdrops, outputPath);
+        }
     }
 
     /// <inheritdoc />

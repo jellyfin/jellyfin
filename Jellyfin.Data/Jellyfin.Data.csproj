@@ -18,7 +18,7 @@
   <PropertyGroup>
     <Authors>Jellyfin Contributors</Authors>
     <PackageId>Jellyfin.Data</PackageId>
-    <VersionPrefix>10.9.0</VersionPrefix>
+    <VersionPrefix>10.10.0</VersionPrefix>
     <RepositoryUrl>https://github.com/jellyfin/jellyfin</RepositoryUrl>
     <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
   </PropertyGroup>

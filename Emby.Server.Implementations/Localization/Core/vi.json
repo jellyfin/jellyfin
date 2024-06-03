@@ -103,7 +103,7 @@
     "HeaderFavoriteEpisodes": "Tập Phim Yêu Thích",
     "HeaderFavoriteArtists": "Nghệ Sĩ Yêu Thích",
     "HeaderFavoriteAlbums": "Album Ưa Thích",
-    "FailedLoginAttemptWithUserName": "Đăng nhập không thành công thử từ {0}",
+    "FailedLoginAttemptWithUserName": "Nỗ lực đăng nhập không thành công từ {0}",
     "DeviceOnlineWithName": "{0} đã kết nối",
     "DeviceOfflineWithName": "{0} đã ngắt kết nối",
     "ChapterNameValue": "Phân Cảnh {0}",
@@ -125,5 +125,9 @@
     "External": "Bên ngoài",
     "HearingImpaired": "Khiếm Thính",
     "TaskRefreshTrickplayImages": "Tạo Ảnh Xem Trước Trickplay",
-    "TaskRefreshTrickplayImagesDescription": "Tạo bản xem trước trịckplay cho video trong thư viện đã bật."
+    "TaskRefreshTrickplayImagesDescription": "Tạo bản xem trước trịckplay cho video trong thư viện đã bật.",
+    "TaskCleanCollectionsAndPlaylists": "Dọn dẹp bộ sưu tập và danh sách phát",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Xóa các mục khỏi bộ sưu tập và danh sách phát không còn tồn tại.",
+    "TaskAudioNormalization": "Chuẩn Hóa Âm Thanh",
+    "TaskAudioNormalizationDescription": "Quét tập tin để tìm dữ liệu chuẩn hóa âm thanh."
 }
