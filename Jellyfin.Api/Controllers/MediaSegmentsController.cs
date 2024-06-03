@@ -81,7 +81,7 @@ public class MediaSegmentsController : BaseJellyfinApiController
         }
 
         var list = await _mediaSegmentManager.GetAllMediaSegments(itemId, streamIndex, typeIndex, type).ConfigureAwait(false);
-        return Ok(list.ConvertAll(MediaSegmentDto.FromMediaSegment));
+        return list.Count > 0 ? Ok(list.ConvertAll(MediaSegmentDto.FromMediaSegment)) : NotFound();
     }
 
     /// <summary>
