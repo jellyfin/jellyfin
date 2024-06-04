@@ -145,7 +145,7 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="libraryOptions">The library options.</param>
-        /// <returns>The metadata providers.</returns>
+        /// <returns>The metadata savers.</returns>
         IEnumerable<IMetadataSaver> GetMetadataSavers(BaseItem item, LibraryOptions libraryOptions);
 
         /// <summary>
