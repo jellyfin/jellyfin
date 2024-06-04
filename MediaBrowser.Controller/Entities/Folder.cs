@@ -364,7 +364,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (IsFileProtocol)
             {
-                IEnumerable<BaseItem> nonCachedChildren;
+                IEnumerable<BaseItem> nonCachedChildren = [];
 
                 try
                 {
@@ -373,7 +373,6 @@ namespace MediaBrowser.Controller.Entities
                 catch (Exception ex)
                 {
                     Logger.LogError(ex, "Error retrieving children folder");
-                    return;
                 }
 
                 progress.Report(ProgressHelpers.RetrievedChildren);
