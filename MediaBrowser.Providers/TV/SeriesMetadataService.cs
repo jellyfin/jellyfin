@@ -119,7 +119,8 @@ namespace MediaBrowser.Providers.TV
                         virtualSeason,
                         new DeleteOptions
                         {
-                            DeleteFileLocation = true
+                            // Internal metadata paths are removed regardless of this.
+                            DeleteFileLocation = false
                         },
                         false);
                 }
@@ -176,7 +177,8 @@ namespace MediaBrowser.Providers.TV
                 episode,
                 new DeleteOptions
                 {
-                    DeleteFileLocation = true
+                    // Internal metadata paths are removed regardless of this.
+                    DeleteFileLocation = false
                 },
                 false);
         }
