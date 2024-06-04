@@ -575,18 +575,22 @@ namespace Jellyfin.Providers.Tests.Manager
             // Has to exist for querying DateModified time on file, results stored but not checked so not populating
             BaseItem.FileSystem ??= Mock.Of<IFileSystem>();
 
-            var item = new Video();
+            var item = new Mock<Video>
+            {
+                CallBase = true
+            };
+            item.Setup(m => m.IsSaveLocalMetadataEnabled()).Returns(false);
 
             var path = validPaths ? _testDataImagePath.Format : "invalid path {0}";
             for (int i = 0; i < count; i++)
             {
-                item.SetImagePath(type, i, new FileSystemMetadata
+                item.Object.SetImagePath(type, i, new FileSystemMetadata
                 {
                     FullName = string.Format(CultureInfo.InvariantCulture, path, i),
                 });
             }
 
-            return item;
+            return item.Object;
         }
 
         private static ILocalImageProvider GetImageProvider(ImageType type, int count, bool validPaths)
