@@ -418,6 +418,12 @@ namespace MediaBrowser.Providers.Manager
             return GetMetadataProvidersInternal<T>(item, libraryOptions, globalMetadataOptions, false, false);
         }
 
+        /// <inheritdoc />
+        public IEnumerable<IMetadataSaver> GetMetadataSavers(BaseItem item, LibraryOptions libraryOptions)
+        {
+            return _savers.Where(i => IsSaverEnabledForItem(i, item, libraryOptions, ItemUpdateType.MetadataEdit, false));
+        }
+
         private IEnumerable<IMetadataProvider<T>> GetMetadataProvidersInternal<T>(BaseItem item, LibraryOptions libraryOptions, MetadataOptions globalMetadataOptions, bool includeDisabled, bool forceEnableInternetMetadata)
             where T : BaseItem
         {

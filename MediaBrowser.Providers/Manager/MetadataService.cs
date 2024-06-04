@@ -154,7 +154,8 @@ namespace MediaBrowser.Providers.Manager
 
                     id.IsAutomated = refreshOptions.IsAutomated;
 
-                    var result = await RefreshWithProviders(metadataResult, id, refreshOptions, providers, ImageProvider, cancellationToken).ConfigureAwait(false);
+                    var hasMetadataSavers = ProviderManager.GetMetadataSavers(item, libraryOptions).Any();
+                    var result = await RefreshWithProviders(metadataResult, id, refreshOptions, providers, ImageProvider, hasMetadataSavers, cancellationToken).ConfigureAwait(false);
 
                     updateType |= result.UpdateType;
                     if (result.Failures > 0)
@@ -639,6 +640,7 @@ namespace MediaBrowser.Providers.Manager
             MetadataRefreshOptions options,
             ICollection<IMetadataProvider> providers,
             ItemImageProvider imageService,
+            bool isSavingMetadata,
             CancellationToken cancellationToken)
         {
             var refreshResult = new RefreshResult
@@ -670,8 +672,8 @@ namespace MediaBrowser.Providers.Manager
 
             var foundImageTypes = new List<ImageType>();
 
-            // Do not execute local providers if we are identifying or replacing with NFO saving enabled
-            if (options.SearchResult is null && !(item.IsSaveLocalMetadataEnabled() && options.ReplaceAllMetadata))
+            // Do not execute local providers if we are identifying or replacing with local metadata saving enabled
+            if (options.SearchResult is null && !(isSavingMetadata && options.ReplaceAllMetadata))
             {
                 foreach (var provider in providers.OfType<ILocalMetadataProvider<TItemType>>())
                 {
