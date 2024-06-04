@@ -670,8 +670,8 @@ namespace MediaBrowser.Providers.Manager
 
             var foundImageTypes = new List<ImageType>();
 
-            // Only execute local providers if we are not identifying
-            if (options.SearchResult is null)
+            // Do not execute local providers if we are identifying or replacing with NFO saving enabled
+            if (options.SearchResult is null && !(item.IsSaveLocalMetadataEnabled() && options.ReplaceAllMetadata))
             {
                 foreach (var provider in providers.OfType<ILocalMetadataProvider<TItemType>>())
                 {
