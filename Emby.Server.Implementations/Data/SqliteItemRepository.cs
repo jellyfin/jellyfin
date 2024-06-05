@@ -327,7 +327,6 @@ namespace Emby.Server.Implementations.Data
             DbFilePath = Path.Combine(_config.ApplicationPaths.DataPath, "library.db");
 
             CacheSize = configuration.GetSqliteCacheSize();
-            ReadConnectionsCount = Environment.ProcessorCount * 2;
         }
 
         /// <inheritdoc />

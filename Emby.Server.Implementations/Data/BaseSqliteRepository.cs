@@ -29,17 +29,6 @@ namespace Emby.Server.Implementations.Data
         protected string DbFilePath { get; set; }
 
         /// <summary>
-        /// Gets or sets the number of write connections to create.
-        /// </summary>
-        /// <value>Path to the DB file.</value>
-        protected int WriteConnectionsCount { get; set; } = 1;
-
-        /// <summary>
-        /// Gets or sets the number of read connections to create.
-        /// </summary>
-        protected int ReadConnectionsCount { get; set; } = 1;
-
-        /// <summary>
         /// Gets the logger.
         /// </summary>
         /// <value>The logger.</value>
