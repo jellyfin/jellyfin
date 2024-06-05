@@ -1261,7 +1261,7 @@ namespace Emby.Server.Implementations.Data
 
             CheckDisposed();
 
-            using (var connection = GetConnection())
+            using (var connection = GetConnection(true))
             using (var statement = PrepareStatement(connection, _retrieveItemColumnsSelectQuery))
             {
                 statement.TryBind("@guid", id);
@@ -1887,7 +1887,7 @@ namespace Emby.Server.Implementations.Data
             CheckDisposed();
 
             var chapters = new List<ChapterInfo>();
-            using (var connection = GetConnection())
+            using (var connection = GetConnection(true))
             using (var statement = PrepareStatement(connection, "select StartPositionTicks,Name,ImagePath,ImageDateModified from " + ChaptersTableName + " where ItemId = @ItemId order by ChapterIndex asc"))
             {
                 statement.TryBind("@ItemId", item.Id);
@@ -1906,7 +1906,7 @@ namespace Emby.Server.Implementations.Data
         {
             CheckDisposed();
 
-            using (var connection = GetConnection())
+            using (var connection = GetConnection(true))
             using (var statement = PrepareStatement(connection, "select StartPositionTicks,Name,ImagePath,ImageDateModified from " + ChaptersTableName + " where ItemId = @ItemId and ChapterIndex=@ChapterIndex"))
             {
                 statement.TryBind("@ItemId", item.Id);
@@ -2469,7 +2469,7 @@ namespace Emby.Server.Implementations.Data
             var commandText = commandTextBuilder.ToString();
 
             using (new QueryTimeLogger(Logger, commandText))
-            using (var connection = GetConnection())
+            using (var connection = GetConnection(true))
             using (var statement = PrepareStatement(connection, commandText))
             {
                 if (EnableJoinUserData(query))
@@ -2537,7 +2537,7 @@ namespace Emby.Server.Implementations.Data
             var commandText = commandTextBuilder.ToString();
             var items = new List<BaseItem>();
             using (new QueryTimeLogger(Logger, commandText))
-            using (var connection = GetConnection())
+            using (var connection = GetConnection(true))
             using (var statement = PrepareStatement(connection, commandText))
             {
                 if (EnableJoinUserData(query))
@@ -2745,7 +2745,7 @@ namespace Emby.Server.Implementations.Data
 
             var list = new List<BaseItem>();
             var result = new QueryResult<BaseItem>();
-            using var connection = GetConnection();
+            using var connection = GetConnection(true);
             using var transaction = connection.BeginTransaction();
             if (!isReturningZeroItems)
             {
@@ -2927,7 +2927,7 @@ namespace Emby.Server.Implementations.Data
             var commandText = commandTextBuilder.ToString();
             var list = new List<Guid>();
             using (new QueryTimeLogger(Logger, commandText))
-            using (var connection = GetConnection())
+            using (var connection = GetConnection(true))
             using (var statement = PrepareStatement(connection, commandText))
             {
                 if (EnableJoinUserData(query))
@@ -4509,7 +4509,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             }
 
             var list = new List<string>();
-            using (var connection = GetConnection())
+            using (var connection = GetConnection(true))
             using (var statement = PrepareStatement(connection, commandText.ToString()))
             {
                 // Run this again to bind the params
@@ -4547,7 +4547,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             }
 
             var list = new List<PersonInfo>();
-            using (var connection = GetConnection())
+            using (var connection = GetConnection(true))
             using (var statement = PrepareStatement(connection, commandText.ToString()))
             {
                 // Run this again to bind the params
@@ -4787,7 +4787,7 @@ AND Type = @InternalPersonType)");
 
             var list = new List<string>();
             using (new QueryTimeLogger(Logger, commandText))
-            using (var connection = GetConnection())
+            using (var connection = GetConnection(true))
             using (var statement = PrepareStatement(connection, commandText))
             {
                 foreach (var row in statement.ExecuteQuery())
@@ -4987,8 +4987,8 @@ AND Type = @InternalPersonType)");
             var list = new List<(BaseItem, ItemCounts)>();
             var result = new QueryResult<(BaseItem, ItemCounts)>();
             using (new QueryTimeLogger(Logger, commandText))
-            using (var connection = GetConnection())
-            using (var transaction = connection.BeginTransaction(deferred: true))
+            using (var connection = GetConnection(true))
+            using (var transaction = connection.BeginTransaction())
             {
                 if (!isReturningZeroItems)
                 {
@@ -5335,7 +5335,7 @@ AND Type = @InternalPersonType)");
 
             cmdText += " order by StreamIndex ASC";
 
-            using (var connection = GetConnection())
+            using (var connection = GetConnection(true))
             {
                 var list = new List<MediaStream>();
 
@@ -5722,7 +5722,7 @@ AND Type = @InternalPersonType)");
             cmdText += " order by AttachmentIndex ASC";
 
             var list = new List<MediaAttachment>();
-            using (var connection = GetConnection())
+            using (var connection = GetConnection(true))
             using (var statement = PrepareStatement(connection, cmdText))
             {
                 statement.TryBind("@ItemId", query.ItemId);
