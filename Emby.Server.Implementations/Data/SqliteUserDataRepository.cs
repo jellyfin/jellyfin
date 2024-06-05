@@ -267,7 +267,7 @@ namespace Emby.Server.Implementations.Data
 
             ArgumentException.ThrowIfNullOrEmpty(key);
 
-            using (var connection = GetConnection())
+            using (var connection = GetConnection(true))
             {
                 using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from UserDatas where key =@Key and userId=@UserId"))
                 {
