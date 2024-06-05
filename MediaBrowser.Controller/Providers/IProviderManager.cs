@@ -141,6 +141,14 @@ namespace MediaBrowser.Controller.Providers
             where T : BaseItem;
 
         /// <summary>
+        /// Gets the metadata savers for the provided item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="libraryOptions">The library options.</param>
+        /// <returns>The metadata savers.</returns>
+        IEnumerable<IMetadataSaver> GetMetadataSavers(BaseItem item, LibraryOptions libraryOptions);
+
+        /// <summary>
         /// Gets all metadata plugins.
         /// </summary>
         /// <returns>IEnumerable{MetadataPlugin}.</returns>

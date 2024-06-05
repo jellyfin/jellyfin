@@ -428,7 +428,8 @@ namespace MediaBrowser.Providers.Manager
                 var type = _singularImages[i];
                 var image = GetFirstLocalImageInfoByType(images, type);
 
-                if (image is not null)
+                // Only use local images if we are not replacing and saving
+                if (image is not null && !(item.IsSaveLocalMetadataEnabled() && refreshOptions.ReplaceAllImages))
                 {
                     var currentImage = item.GetImageInfo(type, 0);
                     // if image file is stored with media, don't replace that later
