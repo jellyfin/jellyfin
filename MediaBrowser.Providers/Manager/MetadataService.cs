@@ -682,6 +682,12 @@ namespace MediaBrowser.Providers.Manager
 
                     if (localItem.HasMetadata)
                     {
+                        var oldBackdropImages = Array.Empty<ItemImageInfo>();
+                        if (options.IsReplacingImage(ImageType.Backdrop))
+                        {
+                            oldBackdropImages = item.GetImages(ImageType.Backdrop).ToArray();
+                        }
+
                         foreach (var remoteImage in localItem.RemoteImages)
                         {
                             try
@@ -702,6 +708,12 @@ namespace MediaBrowser.Providers.Manager
                             {
                                 Logger.LogError(ex, "Could not save {ImageType} image: {Url}", Enum.GetName(remoteImage.Type), remoteImage.Url);
                             }
+                        }
+
+                        // only delete existing multi-images if new ones were added
+                        if (oldBackdropImages.Length > 0 && oldBackdropImages.Length < item.GetImages(ImageType.Backdrop).Count())
+                        {
+                            imageService.PruneImages(item, oldBackdropImages);
                         }
 
                         if (foundImageTypes.Count > 0)
