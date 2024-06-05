@@ -180,7 +180,21 @@ public class LibraryStructureController : BaseJellyfinApiController
                 // No need to start if scanning the library because it will handle it
                 if (refreshLibrary)
                 {
-                    await _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None).ConfigureAwait(false);
+                    await _libraryManager.ValidateTopLibraryFolders(CancellationToken.None, true).ConfigureAwait(false);
+                    var newLib = _libraryManager.GetUserRootFolder().Children.FirstOrDefault(f => f.Path.Equals(newPath, StringComparison.OrdinalIgnoreCase));
+                    if (newLib is CollectionFolder folder)
+                    {
+                        foreach (var child in folder.GetPhysicalFolders())
+                        {
+                            await child.RefreshMetadata(CancellationToken.None).ConfigureAwait(false);
+                            await child.ValidateChildren(new Progress<double>(), CancellationToken.None).ConfigureAwait(false);
+                        }
+                    }
+                    else
+                    {
+                        // We don't know if this one can be validated individually, trigger a new validation
+                        await _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None).ConfigureAwait(false);
+                    }
                 }
                 else
                 {
