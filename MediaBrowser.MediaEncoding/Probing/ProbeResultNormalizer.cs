@@ -29,7 +29,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private const string ArtistReplaceValue = " | ";
 
-        private readonly char[] _nameDelimiters = { '/', '|', ';', '\\' };
+        private readonly char[] _nameDelimiters = { '/', '|', ';', '\\', '，' };
         private readonly string[] _webmVideoCodecs = { "av1", "vp8", "vp9" };
         private readonly string[] _webmAudioCodecs = { "opus", "vorbis" };
 
