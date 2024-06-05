@@ -100,8 +100,8 @@ namespace MediaBrowser.Providers.Manager
             {
                 saveLocally = false;
 
-                // If season is virtual under a physical series, save locally if using compatible convention
-                if (item is Season season && _config.Configuration.ImageSavingConvention == ImageSavingConvention.Compatible)
+                // If season is virtual under a physical series, save locally
+                if (item is Season season)
                 {
                     var series = season.Series;
 
@@ -126,7 +126,7 @@ namespace MediaBrowser.Providers.Manager
 
             var paths = GetSavePaths(item, type, imageIndex, mimeType, saveLocally);
 
-            var retryPaths = GetSavePaths(item, type, imageIndex, mimeType, false);
+            var retryPaths = GetSavePaths(item, type, imageIndex, mimeType, !saveLocally);
 
             // If there are more than one output paths, the stream will need to be seekable
             if (paths.Length > 1 && !source.CanSeek)
@@ -183,6 +183,13 @@ namespace MediaBrowser.Providers.Manager
                 try
                 {
                     _fileSystem.DeleteFile(currentPath);
+
+                    // Remove containing directory if empty
+                    var folder = Path.GetDirectoryName(currentPath);
+                    if (!_fileSystem.GetFiles(folder).Any())
+                    {
+                        Directory.Delete(folder);
+                    }
                 }
                 catch (FileNotFoundException)
                 {
@@ -374,6 +381,45 @@ namespace MediaBrowser.Providers.Manager
                 throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "Unable to determine image file extension from mime type {0}", mimeType));
             }
 
+            if (string.Equals(extension, ".jpeg", StringComparison.OrdinalIgnoreCase))
+            {
+                extension = ".jpg";
+            }
+
+            extension = extension.ToLowerInvariant();
+
+            if (type == ImageType.Primary && saveLocally)
+            {
+                if (season is not null && season.IndexNumber.HasValue)
+                {
+                    var seriesFolder = season.SeriesPath;
+
+                    var seasonMarker = season.IndexNumber.Value == 0
+                                           ? "-specials"
+                                           : season.IndexNumber.Value.ToString("00", CultureInfo.InvariantCulture);
+
+                    var imageFilename = "season" + seasonMarker + "-poster" + extension;
+
+                    return Path.Combine(seriesFolder, imageFilename);
+                }
+            }
+
+            if (type == ImageType.Backdrop && saveLocally)
+            {
+                if (season is not null && season.IndexNumber.HasValue)
+                {
+                    var seriesFolder = season.SeriesPath;
+
+                    var seasonMarker = season.IndexNumber.Value == 0
+                                           ? "-specials"
+                                           : season.IndexNumber.Value.ToString("00", CultureInfo.InvariantCulture);
+
+                    var imageFilename = "season" + seasonMarker + "-fanart" + extension;
+
+                    return Path.Combine(seriesFolder, imageFilename);
+                }
+            }
+
             if (type == ImageType.Thumb && saveLocally)
             {
                 if (season is not null && season.IndexNumber.HasValue)
@@ -447,20 +493,12 @@ namespace MediaBrowser.Providers.Manager
                     break;
             }
 
-            if (string.Equals(extension, ".jpeg", StringComparison.OrdinalIgnoreCase))
-            {
-                extension = ".jpg";
-            }
-
-            extension = extension.ToLowerInvariant();
-
             string path = null;
-
             if (saveLocally)
             {
                 if (type == ImageType.Primary && item is Episode)
                 {
-                    path = Path.Combine(Path.GetDirectoryName(item.Path), "metadata", filename + extension);
+                    path = Path.Combine(Path.GetDirectoryName(item.Path), filename + "-thumb" + extension);
                 }
                 else if (item.IsInMixedFolder)
                 {
