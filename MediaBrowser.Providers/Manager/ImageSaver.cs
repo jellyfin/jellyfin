@@ -126,7 +126,11 @@ namespace MediaBrowser.Providers.Manager
 
             var paths = GetSavePaths(item, type, imageIndex, mimeType, saveLocally);
 
-            var retryPaths = GetSavePaths(item, type, imageIndex, mimeType, !saveLocally);
+            string[] retryPaths = [];
+            if (saveLocally)
+            {
+                retryPaths = GetSavePaths(item, type, imageIndex, mimeType, false);
+            }
 
             // If there are more than one output paths, the stream will need to be seekable
             if (paths.Length > 1 && !source.CanSeek)
