@@ -45,27 +45,24 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         internal static IEnumerable<string> GetMovieSavePaths(ItemInfo item)
         {
+            var path = item.ContainingFolderPath;
             if (item.VideoType == VideoType.Dvd && !item.IsPlaceHolder)
             {
-                var path = item.ContainingFolderPath;
-
                 yield return Path.Combine(path, "VIDEO_TS", "VIDEO_TS.nfo");
+            }
+
+            // only allow movie object to read movie.nfo, not owned videos (which will be itemtype video, not movie)
+            if (!item.IsInMixedFolder && item.ItemType == typeof(Movie))
+            {
+                yield return Path.Combine(path, "movie.nfo");
             }
 
             if (!item.IsPlaceHolder && (item.VideoType == VideoType.Dvd || item.VideoType == VideoType.BluRay))
             {
-                var path = item.ContainingFolderPath;
-
                 yield return Path.Combine(path, Path.GetFileName(path) + ".nfo");
             }
             else
             {
-                // only allow movie object to read movie.nfo, not owned videos (which will be itemtype video, not movie)
-                if (!item.IsInMixedFolder && item.ItemType == typeof(Movie))
-                {
-                    yield return Path.Combine(item.ContainingFolderPath, "movie.nfo");
-                }
-
                 yield return Path.ChangeExtension(item.Path, ".nfo");
             }
         }
