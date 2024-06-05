@@ -16,9 +16,6 @@
 <a href="https://translate.jellyfin.org/projects/jellyfin/jellyfin-core/?utm_source=widget">
 <img alt="Translation Status" src="https://translate.jellyfin.org/widgets/jellyfin/-/jellyfin-core/svg-badge.svg"/>
 </a>
-<a href="https://dev.azure.com/jellyfin-project/jellyfin/_build?definitionId=29">
-<img alt="Azure Builds" src="https://dev.azure.com/jellyfin-project/jellyfin/_apis/build/status/Jellyfin%20Server"/>
-</a>
 <a href="https://hub.docker.com/r/jellyfin/jellyfin">
 <img alt="Docker Pull Count" src="https://img.shields.io/docker/pulls/jellyfin/jellyfin.svg"/>
 </a>
@@ -30,10 +27,7 @@
 <img alt="Submit Feature Requests" src="https://img.shields.io/badge/fider-vote%20on%20features-success.svg"/>
 </a>
 <a href="https://matrix.to/#/#jellyfinorg:matrix.org">
-<img alt="Chat on Matrix" src="https://img.shields.io/matrix/jellyfin:matrix.org.svg?logo=matrix"/>
-</a>
-<a href="https://www.reddit.com/r/jellyfin">
-<img alt="Join our Subreddit" src="https://img.shields.io/badge/reddit-r%2Fjellyfin-%23FF5700.svg"/>
+<img alt="Chat on Matrix" src="https://img.shields.io/matrix/jellyfinorg:matrix.org.svg?logo=matrix"/>
 </a>
 <a href="https://github.com/jellyfin/jellyfin/releases.atom">
 <img alt="Release RSS Feed" src="https://img.shields.io/badge/rss-releases-ffa500?logo=rss" />
