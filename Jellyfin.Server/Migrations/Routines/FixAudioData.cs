@@ -55,8 +55,9 @@ namespace Jellyfin.Server.Migrations.Routines
                 {
                     try
                     {
+                        _logger.LogInformation("Backing up {Library} to {BackupPath}", DbFilename, bakPath);
                         File.Copy(dbPath, bakPath);
-                        _logger.LogInformation("Library database backed up to {BackupPath}", bakPath);
+                        _logger.LogInformation("{Library} backed up to {BackupPath}", DbFilename, bakPath);
                         break;
                     }
                     catch (Exception ex)
@@ -80,7 +81,7 @@ namespace Jellyfin.Server.Migrations.Routines
                 {
                     IncludeItemTypes = [BaseItemKind.Audio],
                     StartIndex = startIndex,
-                    Limit = 100,
+                    Limit = 5000,
                     SkipDeserialization = true
                 })
                 .Cast<Audio>()
@@ -97,7 +98,8 @@ namespace Jellyfin.Server.Migrations.Routines
                 }
 
                 _itemRepository.SaveItems(results, CancellationToken.None);
-                startIndex += 100;
+                startIndex += results.Count;
+                _logger.LogInformation("Backfilled data for {UpdatedRecords} of {TotalRecords} audio records", startIndex, records);
             }
         }
     }
