@@ -55,6 +55,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Location
                 movie.Path = movie.Path.Replace('/', '\\');
                 path1 = path1.Replace('/', '\\');
                 path2 = path2.Replace('/', '\\');
+                path3 = path3.Replace('/', '\\');
             }
 
             var paths = MovieNfoSaver.GetMovieSavePaths(new ItemInfo(movie)).ToArray();
