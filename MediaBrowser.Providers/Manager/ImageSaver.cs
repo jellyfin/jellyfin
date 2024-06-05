@@ -100,8 +100,8 @@ namespace MediaBrowser.Providers.Manager
             {
                 saveLocally = false;
 
-                // If season is virtual under a physical series, save locally if using compatible convention
-                if (item is Season season && _config.Configuration.ImageSavingConvention == ImageSavingConvention.Compatible)
+                // If season is virtual under a physical series, save locally
+                if (item is Season season)
                 {
                     var series = season.Series;
 
@@ -381,6 +381,45 @@ namespace MediaBrowser.Providers.Manager
                 throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "Unable to determine image file extension from mime type {0}", mimeType));
             }
 
+            if (string.Equals(extension, ".jpeg", StringComparison.OrdinalIgnoreCase))
+            {
+                extension = ".jpg";
+            }
+
+            extension = extension.ToLowerInvariant();
+
+            if (type == ImageType.Primary && saveLocally)
+            {
+                if (season is not null && season.IndexNumber.HasValue)
+                {
+                    var seriesFolder = season.SeriesPath;
+
+                    var seasonMarker = season.IndexNumber.Value == 0
+                                           ? "-specials"
+                                           : season.IndexNumber.Value.ToString("00", CultureInfo.InvariantCulture);
+
+                    var imageFilename = "season" + seasonMarker + "-poster" + extension;
+
+                    return Path.Combine(seriesFolder, imageFilename);
+                }
+            }
+
+            if (type == ImageType.Backdrop && saveLocally)
+            {
+                if (season is not null && season.IndexNumber.HasValue)
+                {
+                    var seriesFolder = season.SeriesPath;
+
+                    var seasonMarker = season.IndexNumber.Value == 0
+                                           ? "-specials"
+                                           : season.IndexNumber.Value.ToString("00", CultureInfo.InvariantCulture);
+
+                    var imageFilename = "season" + seasonMarker + "-fanart" + extension;
+
+                    return Path.Combine(seriesFolder, imageFilename);
+                }
+            }
+
             if (type == ImageType.Thumb && saveLocally)
             {
                 if (season is not null && season.IndexNumber.HasValue)
@@ -454,15 +493,7 @@ namespace MediaBrowser.Providers.Manager
                     break;
             }
 
-            if (string.Equals(extension, ".jpeg", StringComparison.OrdinalIgnoreCase))
-            {
-                extension = ".jpg";
-            }
-
-            extension = extension.ToLowerInvariant();
-
             string path = null;
-
             if (saveLocally)
             {
                 if (type == ImageType.Primary && item is Episode)
