@@ -601,7 +601,7 @@ namespace Emby.Server.Implementations.Data
             transaction.Commit();
         }
 
-        private void SaveItemsInTransaction(SqliteConnection db, IEnumerable<(BaseItem Item, List<Guid> AncestorIds, BaseItem TopParent, string UserDataKey, List<string> InheritedTags)> tuples)
+        private void SaveItemsInTransaction(ManagedConnection db, IEnumerable<(BaseItem Item, List<Guid> AncestorIds, BaseItem TopParent, string UserDataKey, List<string> InheritedTags)> tuples)
         {
             using (var saveItemStatement = PrepareStatement(db, SaveItemCommandText))
             using (var deleteAncestorsStatement = PrepareStatement(db, "delete from AncestorIds where ItemId=@ItemId"))
@@ -1980,7 +1980,7 @@ namespace Emby.Server.Implementations.Data
             transaction.Commit();
         }
 
-        private void InsertChapters(Guid idBlob, IReadOnlyList<ChapterInfo> chapters, SqliteConnection db)
+        private void InsertChapters(Guid idBlob, IReadOnlyList<ChapterInfo> chapters, ManagedConnection db)
         {
             var startIndex = 0;
             var limit = 100;
@@ -4476,7 +4476,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             transaction.Commit();
         }
 
-        private void ExecuteWithSingleParam(SqliteConnection db, string query, Guid value)
+        private void ExecuteWithSingleParam(ManagedConnection db, string query, Guid value)
         {
             using (var statement = PrepareStatement(db, query))
             {
@@ -4632,7 +4632,7 @@ AND Type = @InternalPersonType)");
             return whereClauses;
         }
 
-        private void UpdateAncestors(Guid itemId, List<Guid> ancestorIds, SqliteConnection db, SqliteCommand deleteAncestorsStatement)
+        private void UpdateAncestors(Guid itemId, List<Guid> ancestorIds, ManagedConnection db, SqliteCommand deleteAncestorsStatement)
         {
             if (itemId.IsEmpty())
             {
@@ -5148,7 +5148,7 @@ AND Type = @InternalPersonType)");
             return list;
         }
 
-        private void UpdateItemValues(Guid itemId, List<(int MagicNumber, string Value)> values, SqliteConnection db)
+        private void UpdateItemValues(Guid itemId, List<(int MagicNumber, string Value)> values, ManagedConnection db)
         {
             if (itemId.IsEmpty())
             {
@@ -5167,7 +5167,7 @@ AND Type = @InternalPersonType)");
             InsertItemValues(itemId, values, db);
         }
 
-        private void InsertItemValues(Guid id, List<(int MagicNumber, string Value)> values, SqliteConnection db)
+        private void InsertItemValues(Guid id, List<(int MagicNumber, string Value)> values, ManagedConnection db)
         {
             const int Limit = 100;
             var startIndex = 0;
@@ -5239,7 +5239,7 @@ AND Type = @InternalPersonType)");
             transaction.Commit();
         }
 
-        private void InsertPeople(Guid id, List<PersonInfo> people, SqliteConnection db)
+        private void InsertPeople(Guid id, List<PersonInfo> people, ManagedConnection db)
         {
             const int Limit = 100;
             var startIndex = 0;
@@ -5388,7 +5388,7 @@ AND Type = @InternalPersonType)");
             transaction.Commit();
         }
 
-        private void InsertMediaStreams(Guid id, IReadOnlyList<MediaStream> streams, SqliteConnection db)
+        private void InsertMediaStreams(Guid id, IReadOnlyList<MediaStream> streams, ManagedConnection db)
         {
             const int Limit = 10;
             var startIndex = 0;
@@ -5772,7 +5772,7 @@ AND Type = @InternalPersonType)");
         private void InsertMediaAttachments(
             Guid id,
             IReadOnlyList<MediaAttachment> attachments,
-            SqliteConnection db,
+            ManagedConnection db,
             CancellationToken cancellationToken)
         {
             const int InsertAtOnce = 10;
