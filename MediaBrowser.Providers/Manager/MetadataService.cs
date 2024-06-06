@@ -1057,7 +1057,7 @@ namespace MediaBrowser.Providers.Manager
                 }
                 else
                 {
-                    target.Tags = target.ProductionLocations.Concat(source.ProductionLocations).Distinct().ToArray();
+                    target.ProductionLocations = target.ProductionLocations.Concat(source.ProductionLocations).Distinct().ToArray();
                 }
             }
 
