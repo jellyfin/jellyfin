@@ -50,6 +50,8 @@ public sealed class ManagedConnection : IDisposable
         }
         else
         {
+            // Write lock is managed by BaseSqliteRepository
+            // Don't dispose here
             _writeLock.Release();
         }
 
