@@ -125,7 +125,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             if (string.Equals(DisplayOrder, "PremiereDate", StringComparison.OrdinalIgnoreCase))
             {
                 // Sort by release date
-                return LibraryManager.Sort(children, user, new[] { ItemSortBy.ProductionYear, ItemSortBy.PremiereDate, ItemSortBy.SortName }, SortOrder.Descending).ToList();
+                return LibraryManager.Sort(children, user, new[] { ItemSortBy.ProductionYear, ItemSortBy.PremiereDate, ItemSortBy.SortName }, SortOrder.Ascending).ToList();
             }
 
             // Default sorting
