@@ -193,11 +193,11 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             tags ??= new TagLib.Id3v2.Tag();
-            tags.AlbumArtists ??= mediaInfo.AlbumArtists;
+            tags.AlbumArtists = tags.AlbumArtists.Length == 0 ? mediaInfo.AlbumArtists : tags.AlbumArtists;
             tags.Album ??= mediaInfo.Album;
             tags.Title ??= mediaInfo.Name;
             tags.Year = tags.Year == 0U ? Convert.ToUInt32(mediaInfo.ProductionYear, CultureInfo.InvariantCulture) : tags.Year;
-            tags.Performers ??= mediaInfo.Artists;
+            tags.Performers = tags.Performers.Length == 0 ? mediaInfo.Artists : tags.Performers;
             tags.Genres ??= mediaInfo.Genres;
             tags.Track = tags.Track == 0U ? Convert.ToUInt32(mediaInfo.IndexNumber, CultureInfo.InvariantCulture) : tags.Track;
             tags.Disc = tags.Disc == 0U ? Convert.ToUInt32(mediaInfo.ParentIndexNumber, CultureInfo.InvariantCulture) : tags.Disc;
