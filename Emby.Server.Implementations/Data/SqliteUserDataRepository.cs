@@ -86,7 +86,7 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        private void ImportUserIds(SqliteConnection db, IEnumerable<User> users)
+        private void ImportUserIds(ManagedConnection db, IEnumerable<User> users)
         {
             var userIdsWithUserData = GetAllUserIdsWithUserData(db);
 
@@ -107,7 +107,7 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        private List<Guid> GetAllUserIdsWithUserData(SqliteConnection db)
+        private List<Guid> GetAllUserIdsWithUserData(ManagedConnection db)
         {
             var list = new List<Guid>();
 
@@ -176,7 +176,7 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        private static void SaveUserData(SqliteConnection db, long internalUserId, string key, UserItemData userData)
+        private static void SaveUserData(ManagedConnection db, long internalUserId, string key, UserItemData userData)
         {
             using (var statement = db.PrepareStatement("replace into UserDatas (key, userId, rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex) values (@key, @userId, @rating,@played,@playCount,@isFavorite,@playbackPositionTicks,@lastPlayedDate,@AudioStreamIndex,@SubtitleStreamIndex)"))
             {
