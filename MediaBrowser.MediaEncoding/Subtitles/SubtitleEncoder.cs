@@ -215,6 +215,20 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             var currentFormat = (Path.GetExtension(subtitleStream.Path) ?? subtitleStream.Codec)
                 .TrimStart('.');
 
+            // Handle PGS subtitles as raw streams for the client to render
+            if (string.Equals(currentFormat, "sub", StringComparison.OrdinalIgnoreCase)
+               || string.Equals(currentFormat, "sup", StringComparison.OrdinalIgnoreCase)
+               || string.Equals(currentFormat, "pgs", StringComparison.OrdinalIgnoreCase))
+            {
+                return new SubtitleInfo()
+                {
+                    Path = subtitleStream.Path,
+                    Protocol = _mediaSourceManager.GetPathProtocol(subtitleStream.Path),
+                    Format = "pgssub",
+                    IsExternal = true
+                };
+            }
+
             // Fallback to ffmpeg conversion
             if (!_subtitleParser.SupportsFileExtension(currentFormat))
             {
