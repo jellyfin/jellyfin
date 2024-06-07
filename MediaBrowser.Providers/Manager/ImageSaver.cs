@@ -192,6 +192,10 @@ namespace MediaBrowser.Providers.Manager
                     // Remove containing directory if empty
                     var folder = Path.GetDirectoryName(currentPath);
                     FileSystemHelper.DeleteEmptyFolders(_fileSystem, folder, _logger);
+                    if (!_fileSystem.GetFiles(folder).Any())
+                    {
+                        Directory.Delete(folder);
+                    }
                 }
                 catch (FileNotFoundException)
                 {

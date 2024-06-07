@@ -383,6 +383,10 @@ namespace MediaBrowser.Providers.Manager
                         // Always remove empty parent folder
                         var folder = Path.GetDirectoryName(image.Path);
                         FileSystemHelper.DeleteEmptyFolders(_fileSystem, folder, _logger);
+                        if (!_fileSystem.GetFiles(folder).Any())
+                        {
+                            Directory.Delete(folder);
+                        }
                     }
                 }
             }
