@@ -190,9 +190,9 @@ namespace MediaBrowser.Providers.Manager
 
                     // Remove containing directory if empty
                     var folder = Path.GetDirectoryName(currentPath);
-                    if (!_fileSystem.GetFiles(folder).Any())
+                    if (Directory.Exists(folder) && !_fileSystem.GetFiles(folder, true).Any())
                     {
-                        Directory.Delete(folder);
+                        Directory.Delete(folder, true);
                     }
                 }
                 catch (FileNotFoundException)

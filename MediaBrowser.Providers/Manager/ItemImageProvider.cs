@@ -381,9 +381,9 @@ namespace MediaBrowser.Providers.Manager
                     {
                         // Always remove empty parent folder
                         var folder = Path.GetDirectoryName(image.Path);
-                        if (Directory.Exists(folder) && !_fileSystem.GetFiles(folder).Any())
+                        if (Directory.Exists(folder) && !_fileSystem.GetFiles(folder, true).Any())
                         {
-                            Directory.Delete(folder);
+                            Directory.Delete(folder, true);
                         }
                     }
                 }
