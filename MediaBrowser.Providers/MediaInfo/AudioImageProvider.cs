@@ -116,9 +116,10 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 if (item.AlbumArtists.Count > 0
                     && !string.IsNullOrWhiteSpace(item.Album)
-                    && !string.IsNullOrWhiteSpace(item.AlbumArtists[0]))
+                    && !string.IsNullOrWhiteSpace(item.AlbumArtists[0])
+                    && item.PremiereDate.HasValue)
                 {
-                    filename = (item.Album + "-" + item.AlbumArtists[0]).GetMD5().ToString("N", CultureInfo.InvariantCulture);
+                    filename = (item.Album + "-" + item.PremiereDate + "-" + item.AlbumArtists[0]).GetMD5().ToString("N", CultureInfo.InvariantCulture);
                 }
                 else
                 {
