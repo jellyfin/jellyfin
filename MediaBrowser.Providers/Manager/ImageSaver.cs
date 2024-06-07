@@ -14,6 +14,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
@@ -190,10 +191,7 @@ namespace MediaBrowser.Providers.Manager
 
                     // Remove containing directory if empty
                     var folder = Path.GetDirectoryName(currentPath);
-                    if (Directory.Exists(folder) && !_fileSystem.GetFiles(folder, true).Any())
-                    {
-                        Directory.Delete(folder, true);
-                    }
+                    FileSystemHelper.DeleteEmptyFolders(_fileSystem, folder, _logger);
                 }
                 catch (FileNotFoundException)
                 {

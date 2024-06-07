@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
@@ -381,10 +382,7 @@ namespace MediaBrowser.Providers.Manager
                     {
                         // Always remove empty parent folder
                         var folder = Path.GetDirectoryName(image.Path);
-                        if (Directory.Exists(folder) && !_fileSystem.GetFiles(folder, true).Any())
-                        {
-                            Directory.Delete(folder, true);
-                        }
+                        FileSystemHelper.DeleteEmptyFolders(_fileSystem, folder, _logger);
                     }
                 }
             }
