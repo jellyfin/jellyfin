@@ -92,10 +92,6 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            var localImagesFailed = false;
-
-            var allImageProviders = ProviderManager.GetImageProviders(item, refreshOptions).ToList();
-
             if (refreshOptions.RemoveOldMetadata && refreshOptions.ReplaceAllImages)
             {
                 if (ImageProvider.RemoveImages(item))
@@ -105,6 +101,8 @@ namespace MediaBrowser.Providers.Manager
             }
 
             // Start by validating images
+            var localImagesFailed = false;
+            var allImageProviders = ProviderManager.GetImageProviders(item, refreshOptions).ToList();
             try
             {
                 // Always validate images and check for new locally stored ones.
@@ -811,18 +809,15 @@ namespace MediaBrowser.Providers.Manager
         {
             var refreshResult = new RefreshResult();
 
-            var tmpDataMerged = false;
+            if (id is not null)
+            {
+                MergeNewData(temp.Item, id);
+            }
 
             foreach (var provider in providers)
             {
                 var providerName = provider.GetType().Name;
                 Logger.LogDebug("Running {Provider} for {Item}", providerName, logName);
-
-                if (id is not null && !tmpDataMerged)
-                {
-                    MergeNewData(temp.Item, id);
-                    tmpDataMerged = true;
-                }
 
                 try
                 {

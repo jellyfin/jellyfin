@@ -189,12 +189,27 @@ namespace MediaBrowser.Providers.Manager
                 {
                     _fileSystem.DeleteFile(currentPath);
 
-                    // Remove containing directory if empty
-                    var folder = Path.GetDirectoryName(currentPath);
-                    FileSystemHelper.DeleteEmptyFolders(_fileSystem, folder, _logger);
-                    if (!_fileSystem.GetFiles(folder).Any())
+                    // Remove local episode metadata directory if it exists and is empty
+                    var directory = Path.GetDirectoryName(currentPath);
+                    if (item is Episode && directory.Equals("metadata", StringComparison.Ordinal))
                     {
-                        Directory.Delete(folder);
+                        var parentDirectoryPath = Directory.GetParent(currentPath).FullName;
+                        if (!_fileSystem.GetFiles(parentDirectoryPath).Any())
+                        {
+                            try
+                            {
+                                _logger.LogInformation("Deleting empty local metadata folder {Folder}", parentDirectoryPath);
+                                Directory.Delete(parentDirectoryPath);
+                            }
+                            catch (UnauthorizedAccessException ex)
+                            {
+                                _logger.LogError(ex, "Error deleting directory {Path}", parentDirectoryPath);
+                            }
+                            catch (IOException ex)
+                            {
+                                _logger.LogError(ex, "Error deleting directory {Path}", parentDirectoryPath);
+                            }
+                        }
                     }
                 }
                 catch (FileNotFoundException)
