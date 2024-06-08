@@ -55,6 +55,7 @@ namespace MediaBrowser.LocalMetadata.Images
         private List<LocalImageInfo> GetImageFilesFromFolder(ReadOnlySpan<char> filenameWithoutExtension, List<FileSystemMetadata> filePaths)
         {
             var list = new List<LocalImageInfo>(1);
+            var thumbName = string.Concat(filenameWithoutExtension, "-thumb");
 
             foreach (var i in filePaths)
             {
@@ -66,7 +67,6 @@ namespace MediaBrowser.LocalMetadata.Images
                 if (BaseItem.SupportedImageExtensions.Contains(i.Extension.AsSpan(), StringComparison.OrdinalIgnoreCase))
                 {
                     var currentNameWithoutExtension = Path.GetFileNameWithoutExtension(i.FullName.AsSpan());
-                    var thumbName = string.Concat(filenameWithoutExtension, "-thumb");
 
                     if (filenameWithoutExtension.Equals(currentNameWithoutExtension, StringComparison.OrdinalIgnoreCase))
                     {
