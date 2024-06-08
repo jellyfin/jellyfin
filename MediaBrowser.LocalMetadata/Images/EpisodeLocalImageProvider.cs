@@ -67,7 +67,6 @@ namespace MediaBrowser.LocalMetadata.Images
                 if (BaseItem.SupportedImageExtensions.Contains(i.Extension.AsSpan(), StringComparison.OrdinalIgnoreCase))
                 {
                     var currentNameWithoutExtension = Path.GetFileNameWithoutExtension(i.FullName.AsSpan());
-                    var thumbName = string.Concat(filenameWithoutExtension, "-thumb");
 
                     if (filenameWithoutExtension.Equals(currentNameWithoutExtension, StringComparison.OrdinalIgnoreCase))
                     {
