@@ -585,6 +585,31 @@ namespace MediaBrowser.Model.Entities
             }
         }
 
+        public bool IsPgsSubtitleStream
+        {
+            get
+            {
+                if (Type != MediaStreamType.Subtitle)
+                {
+                    return false;
+                }
+
+                if (string.IsNullOrEmpty(Codec) && !IsExternal)
+                {
+                    return false;
+                }
+
+                return IsPgsFormat(Codec);
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this is a subtitle steam that is extractable by ffmpeg.
+        /// All text-based and pgs subtitles can be extracted.
+        /// </summary>
+        /// <value><c>true</c> if this is a extractable subtitle steam otherwise, <c>false</c>.</value>
+        public bool IsExtractableSubtitleStream => IsTextSubtitleStream || IsPgsSubtitleStream;
+
         /// <summary>
         /// Gets or sets a value indicating whether [supports external stream].
         /// </summary>
@@ -664,6 +689,14 @@ namespace MediaBrowser.Model.Entities
                    && !string.Equals(codec, "sub", StringComparison.OrdinalIgnoreCase)
                    && !string.Equals(codec, "sup", StringComparison.OrdinalIgnoreCase)
                    && !string.Equals(codec, "dvb_subtitle", StringComparison.OrdinalIgnoreCase);
+        }
+
+        public static bool IsPgsFormat(string format)
+        {
+            string codec = format ?? string.Empty;
+
+            return codec.Contains("pgs", StringComparison.OrdinalIgnoreCase)
+                   || string.Equals(codec, "sup", StringComparison.OrdinalIgnoreCase);
         }
 
         public bool SupportsSubtitleConversionTo(string toCodec)
