@@ -158,8 +158,8 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            // only delete existing multi-images if new ones were added
-            if (oldBackdropImages.Length > 0 && oldBackdropImages.Length < item.GetImages(ImageType.Backdrop).Count())
+            // Only delete existing multi-images if new ones were added or replacing
+            if (oldBackdropImages.Length > 0 && (refreshOptions.ReplaceAllImages || oldBackdropImages.Length < item.GetImages(ImageType.Backdrop).Count()))
             {
                 PruneImages(item, oldBackdropImages);
             }
@@ -422,14 +422,11 @@ namespace MediaBrowser.Providers.Manager
         {
             var changed = item.ValidateImages();
             var foundImageTypes = new List<ImageType>();
-
             for (var i = 0; i < _singularImages.Length; i++)
             {
                 var type = _singularImages[i];
                 var image = GetFirstLocalImageInfoByType(images, type);
-
-                // Only use local images if we are not replacing and saving
-                if (image is not null && !(item.IsSaveLocalMetadataEnabled() && refreshOptions.ReplaceAllImages))
+                if (image is not null)
                 {
                     var currentImage = item.GetImageInfo(type, 0);
                     // if image file is stored with media, don't replace that later
