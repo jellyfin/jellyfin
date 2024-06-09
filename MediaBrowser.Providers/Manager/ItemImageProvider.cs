@@ -384,7 +384,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 var oldLocalMetadataDirectory = Path.Combine(item.ContainingFolderPath, "metadata");
                 var localImages = images.Where(i => i.Path.StartsWith(oldLocalMetadataDirectory, StringComparison.Ordinal)).ToList();
-                if (!_fileSystem.GetFiles(oldLocalMetadataDirectory).Any())
+                if (_fileSystem.DirectoryExists(oldLocalMetadataDirectory) && !_fileSystem.GetFiles(oldLocalMetadataDirectory).Any())
                 {
                     Directory.Delete(oldLocalMetadataDirectory);
                 }

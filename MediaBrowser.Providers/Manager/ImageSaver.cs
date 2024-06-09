@@ -194,7 +194,7 @@ namespace MediaBrowser.Providers.Manager
                     if (item is Episode && directory.Equals("metadata", StringComparison.Ordinal))
                     {
                         var parentDirectoryPath = Directory.GetParent(currentPath).FullName;
-                        if (!_fileSystem.GetFiles(parentDirectoryPath).Any())
+                        if (_fileSystem.DirectoryExists(parentDirectoryPath) && !_fileSystem.GetFiles(parentDirectoryPath).Any())
                         {
                             try
                             {
