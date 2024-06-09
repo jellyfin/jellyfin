@@ -91,7 +91,7 @@ namespace MediaBrowser.Providers.TV
 
         private void RemoveObsoleteSeasons(Series series)
         {
-            // TODO Legacy. It's not really "physical" seasons as any virtual seasons are always converted to non-virtual in UpdateAndCreateSeasonsAsync.
+            // TODO Legacy. It's not really "physical" seasons as any virtual seasons are always converted to non-virtual in CreateSeasonsAsync.
             var physicalSeasonNumbers = new HashSet<int>();
             var virtualSeasons = new List<Season>();
             foreach (var existingSeason in series.Children.OfType<Season>())
@@ -203,11 +203,16 @@ namespace MediaBrowser.Providers.TV
             foreach (var seasonNumber in uniqueSeasonNumbers)
             {
                 // Null season numbers will have a 'dummy' season created because seasons are always required.
-                if (!seasons.Any(i => i.IndexNumber == seasonNumber))
+                var existingSeason = seasons.FirstOrDefault(i => i.IndexNumber == seasonNumber);
+                if (existingSeason is null)
                 {
                     var seasonName = GetValidSeasonNameForSeries(series, null, seasonNumber);
-                    var season = await CreateSeasonAsync(series, seasonName, seasonNumber, cancellationToken).ConfigureAwait(false);
-                    series.AddChild(season);
+                    await CreateSeasonAsync(series, seasonName, seasonNumber, cancellationToken).ConfigureAwait(false);
+                }
+                else if (existingSeason.IsVirtualItem)
+                {
+                    existingSeason.IsVirtualItem = false;
+                    await existingSeason.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
                 }
             }
         }
@@ -220,7 +225,7 @@ namespace MediaBrowser.Providers.TV
         /// <param name="seasonNumber">The season number.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The newly created season.</returns>
-        private async Task<Season> CreateSeasonAsync(
+        private async Task CreateSeasonAsync(
             Series series,
             string? seasonName,
             int? seasonNumber,
@@ -236,15 +241,10 @@ namespace MediaBrowser.Providers.TV
                     series.Id + (seasonNumber ?? -1).ToString(CultureInfo.InvariantCulture) + seasonName,
                     typeof(Season)),
                 IsVirtualItem = false,
-                SeriesId = series.Id,
-                SeriesName = series.Name
             };
 
             series.AddChild(season);
-
             await season.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(FileSystem)), cancellationToken).ConfigureAwait(false);
-
-            return season;
         }
 
         private string GetValidSeasonNameForSeries(Series series, string? seasonName, int? seasonNumber)

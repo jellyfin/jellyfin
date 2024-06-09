@@ -265,5 +265,20 @@ namespace MediaBrowser.Controller.Entities.TV
 
             return hasChanges;
         }
+
+        /// <inheritdoc />
+        public override void AddChild(BaseItem item)
+        {
+            if (item is Episode episode)
+            {
+                episode.SeriesPresentationUniqueKey = SeriesPresentationUniqueKey;
+                episode.SeriesId = SeriesId;
+                episode.SeriesName = SeriesName;
+                episode.SeasonId = Id;
+                episode.SeasonName = Name;
+            }
+
+            base.AddChild(item);
+        }
     }
 }
