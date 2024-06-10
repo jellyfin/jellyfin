@@ -160,7 +160,14 @@ namespace MediaBrowser.Providers.Manager
         }
 
         /// <inheritdoc/>
-        public async Task SaveImage(BaseItem item, string url, ImageType type, int? imageIndex, CancellationToken cancellationToken)
+        public Task SaveImage(BaseItem item, string url, ImageType type, int? imageIndex, CancellationToken cancellationToken)
+            => SaveImageInternal(item, null, url, type, imageIndex, cancellationToken);
+
+        /// <inheritdoc/>
+        public Task SaveImage(BaseItem item, IRemoteImageProvider provider, string url, ImageType type, int? imageIndex, CancellationToken cancellationToken)
+            => SaveImageInternal(item, provider, url, type, imageIndex, cancellationToken);
+
+        private async Task SaveImageInternal(BaseItem item, IRemoteImageProvider? provider, string url, ImageType type, int? imageIndex, CancellationToken cancellationToken)
         {
             using (await _imageSaveLock.LockAsync(url, cancellationToken).ConfigureAwait(false))
             {
@@ -182,8 +189,10 @@ namespace MediaBrowser.Providers.Manager
                     }
                 }
 
-                var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
-                using var response = await httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
+                using var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
+                using var response = provider is not null
+                    ? await provider.GetImageResponse(url, cancellationToken).ConfigureAwait(false)
+                    : await httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
 
                 response.EnsureSuccessStatusCode();
 

@@ -14,6 +14,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -30,6 +31,7 @@ public class RemoteImageController : BaseJellyfinApiController
     private readonly IProviderManager _providerManager;
     private readonly IServerApplicationPaths _applicationPaths;
     private readonly ILibraryManager _libraryManager;
+    private readonly IFileSystem _fileSystem;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RemoteImageController"/> class.
@@ -37,14 +39,17 @@ public class RemoteImageController : BaseJellyfinApiController
     /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
     /// <param name="applicationPaths">Instance of the <see cref="IServerApplicationPaths"/> interface.</param>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
+    /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     public RemoteImageController(
         IProviderManager providerManager,
         IServerApplicationPaths applicationPaths,
-        ILibraryManager libraryManager)
+        ILibraryManager libraryManager,
+        IFileSystem fileSystem)
     {
         _providerManager = providerManager;
         _applicationPaths = applicationPaths;
         _libraryManager = libraryManager;
+        _fileSystem = fileSystem;
     }
 
     /// <summary>
@@ -144,6 +149,7 @@ public class RemoteImageController : BaseJellyfinApiController
     /// </summary>
     /// <param name="itemId">Item Id.</param>
     /// <param name="type">The image type.</param>
+    /// <param name="providerName">The provider name.</param>
     /// <param name="imageUrl">The image url.</param>
     /// <response code="204">Remote image downloaded.</response>
     /// <response code="404">Remote image not found.</response>
@@ -155,6 +161,7 @@ public class RemoteImageController : BaseJellyfinApiController
     public async Task<ActionResult> DownloadRemoteImage(
         [FromRoute, Required] Guid itemId,
         [FromQuery, Required] ImageType type,
+        [FromQuery] string? providerName,
         [FromQuery] string? imageUrl)
     {
         var item = _libraryManager.GetItemById<BaseItem>(itemId, User.GetUserId());
@@ -163,8 +170,24 @@ public class RemoteImageController : BaseJellyfinApiController
             return NotFound();
         }
 
-        await _providerManager.SaveImage(item, imageUrl, type, null, CancellationToken.None)
-            .ConfigureAwait(false);
+        if (!string.IsNullOrEmpty(providerName))
+        {
+            var provider = _providerManager.GetImageProviders(item, new(new DirectoryService(_fileSystem)))
+                .OfType<IRemoteImageProvider>()
+                .FirstOrDefault(provider => string.Equals(provider.Name, providerName, StringComparison.Ordinal));
+            if (provider is null)
+            {
+                return BadRequest();
+            }
+
+            await _providerManager.SaveImage(item, provider, imageUrl, type, null, CancellationToken.None)
+                .ConfigureAwait(false);
+        }
+        else
+        {
+            await _providerManager.SaveImage(item, imageUrl, type, null, CancellationToken.None)
+                .ConfigureAwait(false);
+        }
 
         await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
         return NoContent();

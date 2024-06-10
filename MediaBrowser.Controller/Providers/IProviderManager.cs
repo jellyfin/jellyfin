@@ -68,6 +68,18 @@ namespace MediaBrowser.Controller.Providers
         /// Saves the image.
         /// </summary>
         /// <param name="item">The item.</param>
+        /// <param name="provider">Remote image provider to resolve the URL for us.</param>
+        /// <param name="url">The URL.</param>
+        /// <param name="type">The type.</param>
+        /// <param name="imageIndex">Index of the image.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task SaveImage(BaseItem item, IRemoteImageProvider provider, string url, ImageType type, int? imageIndex, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Saves the image.
+        /// </summary>
+        /// <param name="item">The item.</param>
         /// <param name="source">The source.</param>
         /// <param name="mimeType">Type of the MIME.</param>
         /// <param name="type">The type.</param>
