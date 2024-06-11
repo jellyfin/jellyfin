@@ -195,7 +195,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="item">The item.</param>
         /// <exception cref="InvalidOperationException">Unable to add  + item.Name.</exception>
-        public virtual void AddChild(BaseItem item)
+        public void AddChild(BaseItem item)
         {
             item.SetParent(this);
 
