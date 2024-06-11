@@ -7,11 +7,14 @@ namespace MediaBrowser.Model.Dlna
     /// </summary>
     public enum SubtitleDeliveryMethod
     {
+        
+        // only use burning method with some check button
         /// <summary>
         /// Burn the subtitles in the video track.
         /// </summary>
         Encode = 0,
 
+        // some if statement that disables other methods
         /// <summary>
         /// Embed the subtitles in the file or stream.
         /// </summary>
