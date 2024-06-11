@@ -180,6 +180,12 @@ public class RemoteImageController : BaseJellyfinApiController
                 return BadRequest();
             }
 
+            var images = await provider.GetImages(item, CancellationToken.None);
+            if (!images.Any(image => string.Equals(image.Url, imageUrl, StringComparison.Ordinal)))
+            {
+                return BadRequest();
+            }
+
             await _providerManager.SaveImage(item, provider, imageUrl, type, null, CancellationToken.None)
                 .ConfigureAwait(false);
         }
