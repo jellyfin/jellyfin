@@ -499,18 +499,5 @@ namespace MediaBrowser.Controller.Entities.TV
 
             return list;
         }
-
-        /// <inheritdoc />
-        public override void AddChild(BaseItem item)
-        {
-            if (item is IHasSeries typedItem)
-            {
-                typedItem.SeriesId = Id;
-                typedItem.SeriesName = Name;
-                typedItem.SeriesPresentationUniqueKey = PresentationUniqueKey;
-            }
-
-            base.AddChild(item);
-        }
     }
 }

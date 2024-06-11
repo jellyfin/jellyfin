@@ -241,6 +241,9 @@ namespace MediaBrowser.Providers.TV
                     series.Id + (seasonNumber ?? -1).ToString(CultureInfo.InvariantCulture) + seasonName,
                     typeof(Season)),
                 IsVirtualItem = false,
+                SeriesId = series.Id,
+                SeriesName = series.Name,
+                SeriesPresentationUniqueKey = series.GetPresentationUniqueKey()
             };
 
             series.AddChild(season);
