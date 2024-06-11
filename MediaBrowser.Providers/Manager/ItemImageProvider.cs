@@ -158,8 +158,8 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            // Only delete existing multi-images if new ones were added or replacing
-            if (oldBackdropImages.Length > 0 && (refreshOptions.ReplaceAllImages || oldBackdropImages.Length < item.GetImages(ImageType.Backdrop).Count()))
+            // Only delete existing multi-images if new ones were added
+            if (oldBackdropImages.Length > 0 && oldBackdropImages.Length < item.GetImages(ImageType.Backdrop).Count())
             {
                 PruneImages(item, oldBackdropImages);
             }
