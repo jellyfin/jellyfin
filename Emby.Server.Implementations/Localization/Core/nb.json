@@ -126,5 +126,9 @@
     "External": "Ekstern",
     "HearingImpaired": "Hørselshemmet",
     "TaskRefreshTrickplayImages": "Generer Trickplay bilder",
-    "TaskRefreshTrickplayImagesDescription": "Oppretter trickplay-forhåndsvisninger for videoer i aktiverte biblioteker."
+    "TaskRefreshTrickplayImagesDescription": "Oppretter trickplay-forhåndsvisninger for videoer i aktiverte biblioteker.",
+    "TaskCleanCollectionsAndPlaylists": "Rydd kolleksjoner og spillelister",
+    "TaskAudioNormalization": "Lyd Normalisering",
+    "TaskAudioNormalizationDescription": "Skan filer for lyd normaliserende data",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Fjerner elementer fra kolleksjoner og spillelister som ikke lengere finnes"
 }
