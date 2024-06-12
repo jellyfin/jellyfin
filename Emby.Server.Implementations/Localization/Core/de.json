@@ -126,7 +126,7 @@
     "External": "Extern",
     "HearingImpaired": "Hörgeschädigt",
     "TaskRefreshTrickplayImages": "Trickplay-Bilder generieren",
-    "TaskRefreshTrickplayImagesDescription": "Erstellt eine Trickplay-Vorschau für Videos in aktivierten Bibliotheken.",
+    "TaskRefreshTrickplayImagesDescription": "Erstellt ein Trickplay-Vorschauen für Videos in aktivierten Bibliotheken.",
     "TaskCleanCollectionsAndPlaylists": "Sammlungen und Playlisten aufräumen",
     "TaskCleanCollectionsAndPlaylistsDescription": "Lösche nicht mehr vorhandene Einträge aus den Sammlungen und Playlisten.",
     "TaskAudioNormalization": "Audio Normalisierung",
