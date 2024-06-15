@@ -998,7 +998,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     targetResult.People = sourceResult.People;
                 }
-                else if (sourceResult.People is not null && sourceResult.People.Count >= 0)
+                else if (sourceResult.People is not null && sourceResult.People.Count > 0)
                 {
                     MergePeople(sourceResult.People, targetResult.People);
                 }
@@ -1188,7 +1188,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     targetHasAlbumArtist.AlbumArtists = sourceHasAlbumArtist.AlbumArtists;
                 }
-                else if (sourceHasAlbumArtist.AlbumArtists.Count >= 0)
+                else if (sourceHasAlbumArtist.AlbumArtists.Count > 0)
                 {
                     targetHasAlbumArtist.AlbumArtists = targetHasAlbumArtist.AlbumArtists.Concat(sourceHasAlbumArtist.AlbumArtists).Distinct().ToArray();
                 }
