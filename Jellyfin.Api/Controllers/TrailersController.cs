@@ -215,6 +215,7 @@ public class TrailersController : BaseJellyfinApiController
                 hasSpecialFeature,
                 hasTrailer,
                 adjacentTo,
+                null,
                 parentIndexNumber,
                 hasParentalRating,
                 isHd,
