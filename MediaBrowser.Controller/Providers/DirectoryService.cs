@@ -63,13 +63,13 @@ namespace MediaBrowser.Controller.Providers
         public FileSystemMetadata? GetFile(string path)
         {
             var entry = GetFileSystemEntry(path);
-            return entry != null && !entry.IsDirectory ? entry : null;
+            return entry is not null && !entry.IsDirectory ? entry : null;
         }
 
         public FileSystemMetadata? GetDirectory(string path)
         {
             var entry = GetFileSystemEntry(path);
-            return entry != null && entry.IsDirectory ? entry : null;
+            return entry is not null && entry.IsDirectory ? entry : null;
         }
 
         public FileSystemMetadata? GetFileSystemEntry(string path)
