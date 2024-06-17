@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -5704,16 +5705,29 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 var bitDepth = GetVideoColorBitDepth(state);
 
-                // Only HEVC, VP9 and AV1 formats have 10-bit hardware decoder support now.
+                // Only HEVC, VP9 and AV1 formats have 10-bit hardware decoder support for most platforms
                 if (bitDepth == 10
                     && !(string.Equals(videoStream.Codec, "hevc", StringComparison.OrdinalIgnoreCase)
                          || string.Equals(videoStream.Codec, "h265", StringComparison.OrdinalIgnoreCase)
                          || string.Equals(videoStream.Codec, "vp9", StringComparison.OrdinalIgnoreCase)
                          || string.Equals(videoStream.Codec, "av1", StringComparison.OrdinalIgnoreCase)))
                 {
-                    // One exception is that RKMPP decoder can handle H.264 High 10.
-                    if (!(string.Equals(options.HardwareAccelerationType, "rkmpp", StringComparison.OrdinalIgnoreCase)
-                          && string.Equals(videoStream.Codec, "h264", StringComparison.OrdinalIgnoreCase)))
+                    // RKMPP has H.264 Hi10P decoder
+                    bool hasHardwareHi10P = string.Equals(options.HardwareAccelerationType, "rkmpp", StringComparison.OrdinalIgnoreCase);
+
+                    // VideoToolbox on Apple Silicon has H.264 Hi10P mode enabled after macOS 14.6
+                    if (string.Equals(options.HardwareAccelerationType, "videotoolbox", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var ver = Environment.OSVersion.Version;
+                        var arch = RuntimeInformation.OSArchitecture;
+                        if (arch.Equals(Architecture.Arm64) && ver >= new Version(14, 6))
+                        {
+                            hasHardwareHi10P = true;
+                        }
+                    }
+
+                    if (!hasHardwareHi10P
+                        && string.Equals(videoStream.Codec, "h264", StringComparison.OrdinalIgnoreCase))
                     {
                         return null;
                     }
