@@ -518,13 +518,10 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 case "releasedate":
                     if (reader.TryReadDateTimeExact(nfoConfiguration.ReleaseDateFormat, out var releaseDate))
                     {
-                        // Production year could already be set by the year tag
-                        if (item.ProductionYear is null)
-                        {
-                            item.ProductionYear = releaseDate.Year;
-                        }
-
                         item.PremiereDate = releaseDate;
+
+                        // Production year can already be set by the year tag
+                        item.ProductionYear ??= releaseDate.Year;
                     }
 
                     break;
