@@ -127,5 +127,7 @@
     "TaskRefreshTrickplayImages": "生成快轉縮圖",
     "TaskRefreshTrickplayImagesDescription": "為啟用快轉縮圖的媒體庫生成快轉縮圖。",
     "TaskCleanCollectionsAndPlaylists": "清理系列和播放清單",
-    "TaskCleanCollectionsAndPlaylistsDescription": "清理系列和播放清單中已不存在的項目。"
+    "TaskCleanCollectionsAndPlaylistsDescription": "清理系列和播放清單中已不存在的項目。",
+    "TaskAudioNormalization": "音量標準化",
+    "TaskAudioNormalizationDescription": "掃描文件以找出音量標準化資料。"
 }
