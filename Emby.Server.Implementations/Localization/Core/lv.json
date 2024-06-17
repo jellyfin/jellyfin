@@ -125,5 +125,9 @@
     "TaskKeyframeExtractor": "Atslēgkadru ekstraktors",
     "TaskKeyframeExtractorDescription": "Ekstraktē atslēgkadrus no video failiem lai izveidotu precīzākus HLS atskaņošanas sarakstus. Šis process var būt ilgs.",
     "TaskRefreshTrickplayImages": "Ģenerēt partīšanas attēlus",
-    "TaskRefreshTrickplayImagesDescription": "Izveido priekšskatījumus videoklipu pārtīšanai iespējotajās bibliotēkās."
+    "TaskRefreshTrickplayImagesDescription": "Izveido priekšskatījumus videoklipu pārtīšanai iespējotajās bibliotēkās.",
+    "TaskAudioNormalization": "Audio normalizācija",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Noņem elemēntus no kolekcijām un playlistiem, kuri vairs neeksistē.",
+    "TaskAudioNormalizationDescription": "Skanē failus priekš audio normālizācijas informācijas.",
+    "TaskCleanCollectionsAndPlaylists": "Notīrīt kolekcijas un playlistus"
 }
