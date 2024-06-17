@@ -161,7 +161,7 @@ public class RemoteImageController : BaseJellyfinApiController
     public async Task<ActionResult> DownloadRemoteImage(
         [FromRoute, Required] Guid itemId,
         [FromQuery, Required] ImageType type,
-        [FromQuery] string? providerName,
+        [FromQuery, Required] string providerName,
         [FromQuery] string? imageUrl)
     {
         var item = _libraryManager.GetItemById<BaseItem>(itemId, User.GetUserId());
@@ -170,30 +170,22 @@ public class RemoteImageController : BaseJellyfinApiController
             return NotFound();
         }
 
-        if (!string.IsNullOrEmpty(providerName))
+        var provider = _providerManager.GetImageProviders(item, new(new DirectoryService(_fileSystem)))
+            .OfType<IRemoteImageProvider>()
+            .FirstOrDefault(provider => string.Equals(provider.Name, providerName, StringComparison.Ordinal));
+        if (provider is null)
         {
-            var provider = _providerManager.GetImageProviders(item, new(new DirectoryService(_fileSystem)))
-                .OfType<IRemoteImageProvider>()
-                .FirstOrDefault(provider => string.Equals(provider.Name, providerName, StringComparison.Ordinal));
-            if (provider is null)
-            {
-                return BadRequest();
-            }
-
-            var images = await provider.GetImages(item, CancellationToken.None);
-            if (!images.Any(image => string.Equals(image.Url, imageUrl, StringComparison.Ordinal)))
-            {
-                return BadRequest();
-            }
-
-            await _providerManager.SaveImage(item, provider, imageUrl, type, null, CancellationToken.None)
-                .ConfigureAwait(false);
+            return BadRequest();
         }
-        else
+
+        var images = await provider.GetImages(item, CancellationToken.None);
+        if (!images.Any(image => string.Equals(image.Url, imageUrl, StringComparison.Ordinal)))
         {
-            await _providerManager.SaveImage(item, imageUrl, type, null, CancellationToken.None)
-                .ConfigureAwait(false);
+            return BadRequest();
         }
+
+        await _providerManager.SaveImage(item, provider, imageUrl, type, null, CancellationToken.None)
+            .ConfigureAwait(false);
 
         await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
         return NoContent();
