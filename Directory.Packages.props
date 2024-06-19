@@ -20,7 +20,7 @@
     <PackageVersion Include="FsCheck.Xunit" Version="2.16.6" />
     <PackageVersion Include="HarfBuzzSharp.NativeAssets.Linux" Version="7.3.0.2" />
     <PackageVersion Include="ICU4N.Transliterator" Version="60.1.0-alpha.356" />
-    <PackageVersion Include="IDisposableAnalyzers" Version="4.0.7" />
+    <PackageVersion Include="IDisposableAnalyzers" Version="4.0.8" />
     <PackageVersion Include="Jellyfin.XmlTv" Version="10.8.0" />
     <PackageVersion Include="libse" Version="4.0.5" />
     <PackageVersion Include="LrcParser" Version="2023.524.0" />
