@@ -1,0 +1,12 @@
+global using System;
+global using System.Collections.Generic;
+global using System.Threading;
+global using System.Threading.Tasks;
+global using MediaBrowser.Common.Configuration;
+global using MediaBrowser.Controller.Library;
+global using MediaBrowser.Controller.Providers;
+global using MediaBrowser.Model.Configuration;
+global using MediaBrowser.XbmcMetadata.Configuration;
+global using MediaBrowser.XbmcMetadata.Savers;
+global using Microsoft.Extensions.Hosting;
+global using Microsoft.Extensions.Logging;

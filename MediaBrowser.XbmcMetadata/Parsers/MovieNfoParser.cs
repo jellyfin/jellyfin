@@ -1,8 +1,6 @@
 using System;
 using System.IO;
-using System.Linq;
 using System.Xml;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Extensions;

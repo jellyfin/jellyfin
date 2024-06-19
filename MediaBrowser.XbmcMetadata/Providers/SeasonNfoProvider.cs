@@ -1,12 +1,7 @@
 using System.IO;
-using System.Threading;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
 using MediaBrowser.XbmcMetadata.Parsers;
-using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.XbmcMetadata.Providers
 {
