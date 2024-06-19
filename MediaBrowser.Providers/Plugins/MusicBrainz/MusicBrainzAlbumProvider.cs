@@ -250,7 +250,7 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
         // If we have a release ID but not a release group ID, lookup the release group
         if (!string.IsNullOrWhiteSpace(releaseId) && string.IsNullOrWhiteSpace(releaseGroupId))
         {
-            var release = await _musicBrainzQuery.LookupReleaseAsync(new Guid(releaseId), Include.Releases, cancellationToken).ConfigureAwait(false);
+            var release = await _musicBrainzQuery.LookupReleaseAsync(new Guid(releaseId), Include.ReleaseGroups, cancellationToken).ConfigureAwait(false);
             releaseGroupId = release.ReleaseGroup?.Id.ToString();
             result.HasMetadata = true;
         }

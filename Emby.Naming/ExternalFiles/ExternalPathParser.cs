@@ -107,7 +107,7 @@ namespace Emby.Naming.ExternalFiles
                         pathInfo.Language = culture.ThreeLetterISOLanguageName;
                         extraString = extraString.Replace(currentSlice, string.Empty, StringComparison.OrdinalIgnoreCase);
                     }
-                    else if (_namingOptions.MediaHearingImpairedFlags.Any(s => currentSliceWithoutSeparator.Contains(s, StringComparison.OrdinalIgnoreCase)))
+                    else if (_namingOptions.MediaHearingImpairedFlags.Any(s => currentSliceWithoutSeparator.Equals(s, StringComparison.OrdinalIgnoreCase)))
                     {
                         pathInfo.IsHearingImpaired = true;
                         extraString = extraString.Replace(currentSlice, string.Empty, StringComparison.OrdinalIgnoreCase);
