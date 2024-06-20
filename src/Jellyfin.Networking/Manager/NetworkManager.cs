@@ -919,10 +919,14 @@ public class NetworkManager : INetworkManager, IDisposable
     {
         ArgumentNullException.ThrowIfNull(address);
 
-        // See conversation at https://github.com/jellyfin/jellyfin/pull/3515.
+        // Map IPv6 mapped IPv4 back to IPv4 (happens if Kestrel runs in dual-socket mode)
+        if (address.IsIPv4MappedToIPv6)
+        {
+            address = address.MapToIPv4();
+        }
+
         if ((TrustAllIPv6Interfaces && address.AddressFamily == AddressFamily.InterNetworkV6)
-            || address.Equals(IPAddress.Loopback)
-            || address.Equals(IPAddress.IPv6Loopback))
+            || IPAddress.IsLoopback(address))
         {
             return true;
         }
