@@ -1208,8 +1208,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var subtitlePath = state.SubtitleStream.Path;
                 var subtitleExtension = Path.GetExtension(subtitlePath.AsSpan());
 
-                if (subtitleExtension.Equals(".sub", StringComparison.OrdinalIgnoreCase)
-                    || subtitleExtension.Equals(".sup", StringComparison.OrdinalIgnoreCase))
+                // dvdsub/vobsub graphical subtitles use .sub+.idx pairs
+                if (subtitleExtension.Equals(".sub", StringComparison.OrdinalIgnoreCase))
                 {
                     var idxFile = Path.ChangeExtension(subtitlePath, ".idx");
                     if (File.Exists(idxFile))

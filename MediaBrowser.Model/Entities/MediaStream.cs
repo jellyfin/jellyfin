@@ -656,14 +656,14 @@ namespace MediaBrowser.Model.Entities
         {
             string codec = format ?? string.Empty;
 
-            // sub = external .sub file
+            // microdvd and dvdsub/vobsub share the ".sub" file extension, but it's text-based.
 
-            return !codec.Contains("pgs", StringComparison.OrdinalIgnoreCase)
-                   && !codec.Contains("dvd", StringComparison.OrdinalIgnoreCase)
-                   && !codec.Contains("dvbsub", StringComparison.OrdinalIgnoreCase)
-                   && !string.Equals(codec, "sub", StringComparison.OrdinalIgnoreCase)
-                   && !string.Equals(codec, "sup", StringComparison.OrdinalIgnoreCase)
-                   && !string.Equals(codec, "dvb_subtitle", StringComparison.OrdinalIgnoreCase);
+            return codec.Contains("microdvd", StringComparison.OrdinalIgnoreCase)
+                   || (!codec.Contains("pgs", StringComparison.OrdinalIgnoreCase)
+                       && !codec.Contains("dvdsub", StringComparison.OrdinalIgnoreCase)
+                       && !codec.Contains("dvbsub", StringComparison.OrdinalIgnoreCase)
+                       && !string.Equals(codec, "sup", StringComparison.OrdinalIgnoreCase)
+                       && !string.Equals(codec, "sub", StringComparison.OrdinalIgnoreCase));
         }
 
         public bool SupportsSubtitleConversionTo(string toCodec)
