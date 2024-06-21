@@ -38,6 +38,7 @@ body:
         3. Keep everything readable and structured. Nobody enjoys reading poorly written reports that are difficult to understand.
         4. Keep an eye on your report as long as it is open, your involvement might be requested at a later moment.
         5. Keep the title short and descriptive. The title is not the place to write down a full description of the issue.
+        6. When deciding to leave out information in a field, leave it blank and empty. Avoid writing things such as `n/a` for empty fields.
   - type: textarea
     id: bug-description
     attributes:
@@ -86,7 +87,7 @@ body:
       label: Jellyfin Server version
       description: What version of Jellyfin are you using?
       options:
-        - 10.9.1
+        - 10.9.6
         - Master
         - Unstable
         - Older*
