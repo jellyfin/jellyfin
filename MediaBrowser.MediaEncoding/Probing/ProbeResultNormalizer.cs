@@ -624,15 +624,19 @@ namespace MediaBrowser.MediaEncoding.Probing
         {
             if (string.Equals(codec, "dvb_subtitle", StringComparison.OrdinalIgnoreCase))
             {
-                codec = "dvbsub";
+                codec = "DVBSUB";
             }
-            else if ((codec ?? string.Empty).Contains("PGS", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(codec, "dvb_teletext", StringComparison.OrdinalIgnoreCase))
             {
-                codec = "PGSSUB";
+                codec = "DVBTXT";
             }
-            else if ((codec ?? string.Empty).Contains("DVD", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(codec, "dvd_subtitle", StringComparison.OrdinalIgnoreCase))
             {
-                codec = "DVDSUB";
+                codec = "DVDSUB"; // .sub+.idx
+            }
+            else if (string.Equals(codec, "hdmv_pgs_subtitle", StringComparison.OrdinalIgnoreCase))
+            {
+                codec = "PGSSUB"; // .sup
             }
 
             return codec;
