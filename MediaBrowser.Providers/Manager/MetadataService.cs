@@ -1090,6 +1090,11 @@ namespace MediaBrowser.Providers.Manager
                 target.RemoteTrailers = target.RemoteTrailers.Concat(source.RemoteTrailers).DistinctBy(t => t.Url).ToArray();
             }
 
+            if (source is Folder sourceFolder && target is Folder targetFolder)
+            {
+                targetFolder.LinkedChildren = sourceFolder.LinkedChildren;
+            }
+
             MergeAlbumArtist(source, target, replaceData);
             MergeVideoInfo(source, target, replaceData);
             MergeDisplayOrder(source, target, replaceData);
