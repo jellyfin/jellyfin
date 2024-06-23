@@ -170,8 +170,13 @@ namespace Emby.Server.Implementations.Playlists
         private List<Playlist> GetUserPlaylists(Guid userId)
         {
             var user = _userManager.GetUserById(userId);
+            var playlistsFolder = GetPlaylistsFolder(userId);
+            if (playlistsFolder is null)
+            {
+                return [];
+            }
 
-            return GetPlaylistsFolder(userId).GetChildren(user, true).OfType<Playlist>().ToList();
+            return playlistsFolder.GetChildren(user, true).OfType<Playlist>().ToList();
         }
 
         private static string GetTargetPath(string path)
