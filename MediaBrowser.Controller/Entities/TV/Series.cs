@@ -350,17 +350,10 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public List<BaseItem> GetSeasonEpisodes(Season parentSeason, User user, DtoOptions options, bool shouldIncludeMissingEpisodes)
         {
-            var queryFromSeries = ConfigurationManager.Configuration.DisplaySpecialsWithinSeasons;
-
-            // add optimization when this setting is not enabled
-            var seriesKey = queryFromSeries ?
-                GetUniqueSeriesKey(this) :
-                GetUniqueSeriesKey(parentSeason);
-
             var query = new InternalItemsQuery(user)
             {
-                AncestorWithPresentationUniqueKey = queryFromSeries ? null : seriesKey,
-                SeriesPresentationUniqueKey = queryFromSeries ? seriesKey : null,
+                AncestorWithPresentationUniqueKey = null,
+                SeriesPresentationUniqueKey = GetUniqueSeriesKey(this),
                 IncludeItemTypes = new[] { BaseItemKind.Episode },
                 OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) },
                 DtoOptions = options
