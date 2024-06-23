@@ -669,6 +669,8 @@ namespace MediaBrowser.Providers.Manager
             };
             temp.Item.Path = item.Path;
             temp.Item.Id = item.Id;
+            temp.Item.PreferredMetadataCountryCode = item.PreferredMetadataCountryCode;
+            temp.Item.PreferredMetadataLanguage = item.PreferredMetadataLanguage;
 
             var foundImageTypes = new List<ImageType>();
 
