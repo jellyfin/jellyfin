@@ -280,8 +280,8 @@ namespace MediaBrowser.MediaEncoding.Probing
                     splitFormat[i] = "mpeg";
                 }
 
-                // Handle MPEG-2 container
-                else if (string.Equals(splitFormat[i], "mpeg", StringComparison.OrdinalIgnoreCase))
+                // Handle MPEG-TS container
+                else if (string.Equals(splitFormat[i], "mpegts", StringComparison.OrdinalIgnoreCase))
                 {
                     splitFormat[i] = "ts";
                 }
