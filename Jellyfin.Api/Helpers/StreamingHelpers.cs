@@ -154,6 +154,11 @@ public static class StreamingHelpers
                 // Some channels from HDHomerun will experience A/V sync issues
                 streamingRequest.SegmentContainer = "ts";
                 streamingRequest.VideoCodec = "h264";
+                streamingRequest.AudioCodec = "aac";
+                state.SupportedVideoCodecs = ["h264"];
+                state.Request.VideoCodec = "h264";
+                state.SupportedAudioCodecs = ["aac"];
+                state.Request.AudioCodec = "aac";
             }
 
             var liveStreamInfo = await mediaSourceManager.GetLiveStreamWithDirectStreamProvider(streamingRequest.LiveStreamId, cancellationToken).ConfigureAwait(false);
