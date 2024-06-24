@@ -379,18 +379,17 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
+            item.RemoveImages(images);
+
             // Cleanup old metadata directory for episodes if empty
             if (item is Episode)
             {
                 var oldLocalMetadataDirectory = Path.Combine(item.ContainingFolderPath, "metadata");
-                var localImages = images.Where(i => i.Path.StartsWith(oldLocalMetadataDirectory, StringComparison.Ordinal)).ToList();
                 if (_fileSystem.DirectoryExists(oldLocalMetadataDirectory) && !_fileSystem.GetFiles(oldLocalMetadataDirectory).Any())
                 {
                     Directory.Delete(oldLocalMetadataDirectory);
                 }
             }
-
-            item.RemoveImages(images);
         }
 
         /// <summary>
