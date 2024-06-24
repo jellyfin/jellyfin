@@ -270,11 +270,11 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             }
 
             var videoInfos = files
-                .Select(i => VideoResolver.Resolve(i.FullName, i.IsDirectory, NamingOptions, parseName))
+                .Select(i => VideoResolver.Resolve(i.FullName, i.IsDirectory, NamingOptions, parseName, parent.ContainingFolderPath))
                 .Where(f => f is not null)
                 .ToList();
 
-            var resolverResult = VideoListResolver.Resolve(videoInfos, NamingOptions, supportMultiEditions, parseName);
+            var resolverResult = VideoListResolver.Resolve(videoInfos, NamingOptions, supportMultiEditions, parseName, parent.ContainingFolderPath);
 
             var result = new MultiItemResolverResult
             {
