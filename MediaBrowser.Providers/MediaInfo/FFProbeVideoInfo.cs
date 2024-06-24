@@ -358,6 +358,10 @@ namespace MediaBrowser.Providers.MediaInfo
                 blurayVideoStream.BitRate = blurayVideoStream.BitRate.GetValueOrDefault() == 0 ? ffmpegVideoStream.BitRate : blurayVideoStream.BitRate;
                 blurayVideoStream.Width = blurayVideoStream.Width.GetValueOrDefault() == 0 ? ffmpegVideoStream.Width : blurayVideoStream.Width;
                 blurayVideoStream.Height = blurayVideoStream.Height.GetValueOrDefault() == 0 ? ffmpegVideoStream.Width : blurayVideoStream.Height;
+                blurayVideoStream.ColorRange = ffmpegVideoStream.ColorRange;
+                blurayVideoStream.ColorSpace = ffmpegVideoStream.ColorSpace;
+                blurayVideoStream.ColorTransfer = ffmpegVideoStream.ColorTransfer;
+                blurayVideoStream.ColorPrimaries = ffmpegVideoStream.ColorPrimaries;
             }
         }
 
