@@ -127,15 +127,8 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
         {
             _logger.LogDebug("Updating {FolderName}", folder.Name);
             folder.LinkedChildren = folder.LinkedChildren.Except(itemsToRemove).ToArray();
+            _providerManager.SaveMetadataAsync(folder, ItemUpdateType.MetadataEdit);
             folder.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken);
-
-            _providerManager.QueueRefresh(
-                folder.Id,
-                new MetadataRefreshOptions(new DirectoryService(_fileSystem))
-                {
-                    ForceSave = true
-                },
-                RefreshPriority.High);
         }
     }
 

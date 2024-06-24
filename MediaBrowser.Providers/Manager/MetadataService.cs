@@ -675,6 +675,8 @@ namespace MediaBrowser.Providers.Manager
             };
             temp.Item.Path = item.Path;
             temp.Item.Id = item.Id;
+            temp.Item.PreferredMetadataCountryCode = item.PreferredMetadataCountryCode;
+            temp.Item.PreferredMetadataLanguage = item.PreferredMetadataLanguage;
 
             var foundImageTypes = new List<ImageType>();
 
@@ -817,18 +819,15 @@ namespace MediaBrowser.Providers.Manager
         {
             var refreshResult = new RefreshResult();
 
-            var tmpDataMerged = false;
+            if (id is not null)
+            {
+                MergeNewData(temp.Item, id);
+            }
 
             foreach (var provider in providers)
             {
                 var providerName = provider.GetType().Name;
                 Logger.LogDebug("Running {Provider} for {Item}", providerName, logName);
-
-                if (id is not null && !tmpDataMerged)
-                {
-                    MergeNewData(temp.Item, id);
-                    tmpDataMerged = true;
-                }
 
                 try
                 {

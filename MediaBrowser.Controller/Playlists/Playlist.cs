@@ -166,7 +166,7 @@ namespace MediaBrowser.Controller.Playlists
             return base.GetChildren(user, true, query);
         }
 
-        public static IReadOnlyList<BaseItem> GetPlaylistItems(MediaType playlistMediaType, IEnumerable<BaseItem> inputItems, User user, DtoOptions options)
+        public static IReadOnlyList<BaseItem> GetPlaylistItems(IEnumerable<BaseItem> inputItems, User user, DtoOptions options)
         {
             if (user is not null)
             {
@@ -177,14 +177,14 @@ namespace MediaBrowser.Controller.Playlists
 
             foreach (var item in inputItems)
             {
-                var playlistItems = GetPlaylistItems(item, user, playlistMediaType, options);
+                var playlistItems = GetPlaylistItems(item, user, options);
                 list.AddRange(playlistItems);
             }
 
             return list;
         }
 
-        private static IEnumerable<BaseItem> GetPlaylistItems(BaseItem item, User user, MediaType mediaType, DtoOptions options)
+        private static IEnumerable<BaseItem> GetPlaylistItems(BaseItem item, User user, DtoOptions options)
         {
             if (item is MusicGenre musicGenre)
             {
@@ -216,7 +216,7 @@ namespace MediaBrowser.Controller.Playlists
                 {
                     Recursive = true,
                     IsFolder = false,
-                    MediaTypes = [mediaType],
+                    MediaTypes = [MediaType.Audio, MediaType.Video],
                     EnableTotalRecordCount = false,
                     DtoOptions = options
                 };

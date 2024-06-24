@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
@@ -96,7 +97,7 @@ namespace MediaBrowser.Providers.Manager
         public bool ValidateImages(BaseItem item, IEnumerable<IImageProvider> providers, ImageRefreshOptions refreshOptions)
         {
             var hasChanges = false;
-            IDirectoryService directoryService = refreshOptions?.DirectoryService;
+            var directoryService = refreshOptions?.DirectoryService;
 
             if (item is not Photo)
             {
@@ -359,10 +360,8 @@ namespace MediaBrowser.Providers.Manager
 
         private void PruneImages(BaseItem item, IReadOnlyList<ItemImageInfo> images)
         {
-            for (var i = 0; i < images.Count; i++)
+            foreach (var image in images)
             {
-                var image = images[i];
-
                 if (image.IsLocalFile)
                 {
                     try
@@ -377,19 +376,20 @@ namespace MediaBrowser.Providers.Manager
                     {
                         _logger.LogWarning(ex, "Unable to delete {Image}", image.Path);
                     }
-                    finally
-                    {
-                        // Always remove empty parent folder
-                        var folder = Path.GetDirectoryName(image.Path);
-                        if (Directory.Exists(folder) && !_fileSystem.GetFiles(folder).Any())
-                        {
-                            Directory.Delete(folder);
-                        }
-                    }
                 }
             }
 
             item.RemoveImages(images);
+
+            // Cleanup old metadata directory for episodes if empty
+            if (item is Episode)
+            {
+                var oldLocalMetadataDirectory = Path.Combine(item.ContainingFolderPath, "metadata");
+                if (_fileSystem.DirectoryExists(oldLocalMetadataDirectory) && !_fileSystem.GetFiles(oldLocalMetadataDirectory).Any())
+                {
+                    Directory.Delete(oldLocalMetadataDirectory);
+                }
+            }
         }
 
         /// <summary>
