@@ -355,6 +355,12 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
+            if (options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzRecording, out _))
+            {
+                // As mentioned above, `tags.MusicBrainzTrackId` provides the recording MBID.
+                audio.SetProviderId(MetadataProvider.MusicBrainzRecording, tags.MusicBrainzTrackId);
+            }
+
             // Save extracted lyrics if they exist,
             // and if the audio doesn't yet have lyrics.
             var lyrics = track.Lyrics.SynchronizedLyrics.Count > 0 ? track.Lyrics.FormatSynchToLRC() : track.Lyrics.UnsynchronizedLyrics;
