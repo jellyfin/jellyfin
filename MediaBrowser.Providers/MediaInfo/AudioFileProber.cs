@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
@@ -136,6 +137,10 @@ namespace MediaBrowser.Providers.MediaInfo
             if (!audio.IsLocked)
             {
                 await FetchDataFromTags(audio, mediaInfo, options, tryExtractEmbeddedLyrics).ConfigureAwait(false);
+                if (tryExtractEmbeddedLyrics)
+                {
+                    AddExternalLyrics(audio, mediaStreams, options);
+                }
             }
 
             audio.HasLyrics = mediaStreams.Any(s => s.Type == MediaStreamType.Lyric);
@@ -369,7 +374,10 @@ namespace MediaBrowser.Providers.MediaInfo
             var externalLyricFiles = _lyricResolver.GetExternalStreams(audio, startIndex, options.DirectoryService, false);
 
             audio.LyricFiles = externalLyricFiles.Select(i => i.Path).Distinct().ToArray();
-            currentStreams.AddRange(externalLyricFiles);
+            if (externalLyricFiles.Count > 0)
+            {
+                currentStreams.Add(externalLyricFiles[0]);
+            }
         }
     }
 }
