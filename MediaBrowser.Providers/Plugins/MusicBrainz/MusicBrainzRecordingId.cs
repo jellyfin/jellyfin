@@ -17,7 +17,7 @@ public class MusicBrainzRecordingId : IExternalId
     public string Key => MetadataProvider.MusicBrainzRecording.ToString();
 
     /// <inheritdoc />
-    public ExternalIdMediaType? Type => ExternalIdMediaType.Track;
+    public ExternalIdMediaType? Type => ExternalIdMediaType.Recording;
 
     /// <inheritdoc />
     public string UrlFormatString => Plugin.Instance!.Configuration.Server + "/recording/{0}";
