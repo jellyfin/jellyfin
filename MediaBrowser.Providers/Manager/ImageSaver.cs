@@ -427,13 +427,15 @@ namespace MediaBrowser.Providers.Manager
 
             if (type == ImageType.Backdrop && saveLocally)
             {
-                if (season is not null && season.IndexNumber.HasValue)
+                if (season is not null
+                    && season.IndexNumber.HasValue
+                    && (imageIndex is null || imageIndex == 0))
                 {
                     var seriesFolder = season.SeriesPath;
 
                     var seasonMarker = season.IndexNumber.Value == 0
-                                           ? "-specials"
-                                           : season.IndexNumber.Value.ToString("00", CultureInfo.InvariantCulture);
+                                        ? "-specials"
+                                        : season.IndexNumber.Value.ToString("00", CultureInfo.InvariantCulture);
 
                     var imageFilename = "season" + seasonMarker + "-fanart" + extension;
 
