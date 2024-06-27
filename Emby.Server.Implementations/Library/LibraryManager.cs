@@ -1716,10 +1716,9 @@ namespace Emby.Server.Implementations.Library
 
             foreach (var orderBy in sortBy.Select(o => GetComparer(o, user)).Where(c => c is not null))
             {
-                if (orderBy?.GetType() == typeof(RandomComparer))
+                if (orderBy is RandomComparer)
                 {
-                    BaseItem[]? randomItems = null;
-                    randomItems = items.ToArray();
+                    var randomItems = items.ToArray();
                     Random.Shared.Shuffle(randomItems);
                     items = randomItems;
                     // Items are no longer ordered at this point, so set orderedItems back to null
