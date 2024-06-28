@@ -1754,10 +1754,9 @@ namespace Emby.Server.Implementations.Library
                     continue;
                 }
 
-                if (comparer.GetType() == typeof(RandomComparer))
+                if (comparer is RandomComparer)
                 {
-                    BaseItem[]? randomItems = null;
-                    randomItems = items.ToArray();
+                    var randomItems = items.ToArray();
                     Random.Shared.Shuffle(randomItems);
                     items = randomItems;
                     // Items are no longer ordered at this point, so set orderedItems back to null
