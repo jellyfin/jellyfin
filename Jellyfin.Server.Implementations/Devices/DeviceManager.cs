@@ -100,9 +100,9 @@ namespace Jellyfin.Server.Implementations.Devices
 
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
                 var newDevice = await dbContext.Devices
-                    .FirstOrDefaultAsync(d => d.Id == device.Id)
+                    .FirstAsync(d => d.Id == device.Id)
                     .ConfigureAwait(false);
-                _devices.TryAdd(device.Id, newDevice!);
+                _devices.TryAdd(device.Id, newDevice);
             }
 
             return device;
