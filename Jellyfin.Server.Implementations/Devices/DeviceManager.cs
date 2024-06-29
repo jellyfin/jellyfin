@@ -44,7 +44,6 @@ namespace Jellyfin.Server.Implementations.Devices
 
             using var dbContext = _dbProvider.CreateDbContext();
             foreach (var device in dbContext.Devices
-                         .Include(d => d.User)
                          .OrderBy(d => d.Id)
                          .AsEnumerable())
             {
@@ -101,7 +100,6 @@ namespace Jellyfin.Server.Implementations.Devices
 
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
                 var newDevice = await dbContext.Devices
-                    .Include(d => d.User)
                     .FirstOrDefaultAsync(d => d.Id == device.Id)
                     .ConfigureAwait(false);
                 _devices.TryAdd(device.Id, newDevice!);
@@ -239,6 +237,11 @@ namespace Jellyfin.Server.Implementations.Devices
         private DeviceInfo ToDeviceInfo(Device authInfo, DeviceOptions? options = null)
         {
             var caps = GetCapabilities(authInfo.DeviceId);
+            var user = _userManager.GetUserById(authInfo.UserId);
+            if (user is null)
+            {
+                throw new ResourceNotFoundException();
+            }
 
             return new DeviceInfo
             {
@@ -246,7 +249,7 @@ namespace Jellyfin.Server.Implementations.Devices
                 AppVersion = authInfo.AppVersion,
                 Id = authInfo.DeviceId,
                 LastUserId = authInfo.UserId,
-                LastUserName = authInfo.User.Username,
+                LastUserName = user.Username,
                 Name = authInfo.DeviceName,
                 DateLastActivity = authInfo.DateLastActivity,
                 IconUrl = caps.IconUrl,
