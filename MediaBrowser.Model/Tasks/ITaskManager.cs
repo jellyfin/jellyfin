@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Jellyfin.Data.Events;
 
@@ -17,7 +18,7 @@ namespace MediaBrowser.Model.Tasks
         /// Gets the list of Scheduled Tasks.
         /// </summary>
         /// <value>The scheduled tasks.</value>
-        IScheduledTaskWorker[] ScheduledTasks { get; }
+        ImmutableList<IScheduledTaskWorker> ScheduledTasks { get; }
 
         /// <summary>
         /// Cancels if running and queue.

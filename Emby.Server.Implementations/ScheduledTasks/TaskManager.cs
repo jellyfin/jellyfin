@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Data.Events;
@@ -20,8 +21,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <summary>
         /// The _task queue.
         /// </summary>
-        private readonly ConcurrentQueue<Tuple<Type, TaskOptions>> _taskQueue =
-            new ConcurrentQueue<Tuple<Type, TaskOptions>>();
+        private readonly ConcurrentQueue<Tuple<Type, TaskOptions>> _taskQueue = new();
 
         private readonly IApplicationPaths _applicationPaths;
         private readonly ILogger<TaskManager> _logger;
@@ -38,7 +38,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             _applicationPaths = applicationPaths;
             _logger = logger;
 
-            ScheduledTasks = Array.Empty<IScheduledTaskWorker>();
+            ScheduledTasks = [];
         }
 
         public event EventHandler<GenericEventArgs<IScheduledTaskWorker>>? TaskExecuting;
@@ -49,7 +49,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// Gets the list of Scheduled Tasks.
         /// </summary>
         /// <value>The scheduled tasks.</value>
-        public IScheduledTaskWorker[] ScheduledTasks { get; private set; }
+        public ImmutableList<IScheduledTaskWorker> ScheduledTasks { get; private set; }
 
         /// <summary>
         /// Cancels if running and queue.
@@ -94,7 +94,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
             if (scheduledTask is null)
             {
-                _logger.LogError("Unable to find scheduled task of type {0} in QueueScheduledTask.", typeof(T).Name);
+                _logger.LogError("Unable to find scheduled task of type {TypeName} in QueueScheduledTask", typeof(T).Name);
             }
             else
             {
@@ -126,13 +126,13 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
             if (scheduledTask is null)
             {
-                _logger.LogError("Unable to find scheduled task of type {0} in Execute.", typeof(T).Name);
+                _logger.LogError("Unable to find scheduled task of type {TypeName} in Execute", typeof(T).Name);
             }
             else
             {
                 var type = scheduledTask.ScheduledTask.GetType();
 
-                _logger.LogDebug("Queuing task {0}", type.Name);
+                _logger.LogDebug("Queuing task {TypeName}", type.Name);
 
                 lock (_taskQueue)
                 {
@@ -155,7 +155,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
             if (scheduledTask is null)
             {
-                _logger.LogError("Unable to find scheduled task of type {0} in QueueScheduledTask.", task.GetType().Name);
+                _logger.LogError("Unable to find scheduled task of type {TypeName} in QueueScheduledTask", task.GetType().Name);
             }
             else
             {
@@ -172,7 +172,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         {
             var type = task.ScheduledTask.GetType();
 
-            _logger.LogDebug("Queuing task {0}", type.Name);
+            _logger.LogDebug("Queuing task {TypeName}", type.Name);
 
             lock (_taskQueue)
             {
@@ -194,7 +194,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         {
             var list = tasks.Select(t => new ScheduledTaskWorker(t, _applicationPaths, this, _logger));
 
-            ScheduledTasks = ScheduledTasks.Concat(list).ToArray();
+            ScheduledTasks = ScheduledTasks.Concat(list).ToImmutableList();
         }
 
         /// <summary>
