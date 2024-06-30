@@ -283,4 +283,9 @@ public class ServerConfiguration : BaseApplicationConfiguration
     /// </summary>
     /// <value>The trickplay options.</value>
     public TrickplayOptions TrickplayOptions { get; set; } = new TrickplayOptions();
+
+    /// <summary>
+    /// Gets or sets the otel config.
+    /// </summary>
+    public OtelConfiguration OtelConfiguration { get; set; } = new OtelConfiguration();
 }
