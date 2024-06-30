@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Entities.MediaSegment;
 using Jellyfin.Data.Entities.Security;
 using Jellyfin.Data.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -82,6 +83,11 @@ public class JellyfinDbContext : DbContext
     /// Gets the <see cref="DbSet{TEntity}"/> containing the trickplay metadata.
     /// </summary>
     public DbSet<TrickplayInfo> TrickplayInfos => Set<TrickplayInfo>();
+
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the media segments.
+    /// </summary>
+    public DbSet<MediaSegment> Segments => Set<MediaSegment>();
 
     /*public DbSet<Artwork> Artwork => Set<Artwork>();
 

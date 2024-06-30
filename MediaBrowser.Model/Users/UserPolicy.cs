@@ -99,6 +99,12 @@ namespace MediaBrowser.Model.Users
         public bool EnableLyricManagement { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this user can manage media segments.
+        /// </summary>
+        [DefaultValue(false)]
+        public bool EnableMediaSegmentsManagement { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this instance is disabled.
         /// </summary>
         /// <value><c>true</c> if this instance is disabled; otherwise, <c>false</c>.</value>

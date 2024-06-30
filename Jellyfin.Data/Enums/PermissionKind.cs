@@ -124,5 +124,10 @@ namespace Jellyfin.Data.Enums
         /// Whether the user can edit lyrics.
         /// </summary>
         EnableLyricManagement = 23,
+
+        /// <summary>
+        /// Whether the user can media segments.
+        /// </summary>
+        EnableMediaSegmentsManagement = 24,
     }
 }
