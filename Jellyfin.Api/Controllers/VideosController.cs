@@ -310,6 +310,7 @@ public class VideosController : BaseJellyfinApiController
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
     [HttpGet("{itemId}/stream")]
     [HttpHead("{itemId}/stream", Name = "HeadVideoStream")]
+    [Authorize(Policy = Policies.Playback)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesVideoFile]
     public async Task<ActionResult> GetVideoStream(
@@ -548,6 +549,7 @@ public class VideosController : BaseJellyfinApiController
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
     [HttpGet("{itemId}/stream.{container}")]
     [HttpHead("{itemId}/stream.{container}", Name = "HeadVideoStreamByContainer")]
+    [Authorize(Policy = Policies.Playback)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesVideoFile]
     public Task<ActionResult> GetVideoStreamByContainer(
