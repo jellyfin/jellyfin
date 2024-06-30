@@ -19,6 +19,12 @@ public class TrickplayOptions
     public bool EnableHwEncoding { get; set; } = false;
 
     /// <summary>
+    /// Gets or sets a value indicating whether to only extract key frames.
+    /// Significantly faster, but is not compatible with all decoders and/or video files.
+    /// </summary>
+    public bool EnableKeyFrameOnlyExtraction { get; set; } = false;
+
+    /// <summary>
     /// Gets or sets the behavior used by trickplay provider on library scan/update.
     /// </summary>
     public TrickplayScanBehavior ScanBehavior { get; set; } = TrickplayScanBehavior.NonBlocking;
