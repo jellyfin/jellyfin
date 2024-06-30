@@ -169,24 +169,26 @@ namespace Jellyfin.Server.Implementations.Devices
         /// <inheritdoc />
         public async Task<QueryResult<DeviceInfo>> GetDevicesForUser(Guid? userId)
         {
+            User? user = null;
+            if (!userId.IsNullOrEmpty())
+            {
+                user = _userManager.GetUserById(userId.Value)
+                    ?? throw new ResourceNotFoundException();
+            }
+
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
                 var sessions = dbContext.Devices
+                    .AsNoTracking()
                     .Include(d => d.User)
                     .OrderByDescending(d => d.DateLastActivity)
                     .ThenBy(d => d.DeviceId)
                     .SelectMany(d => dbContext.DeviceOptions.Where(o => o.DeviceId == d.DeviceId).DefaultIfEmpty(), (d, o) => new { Device = d, Options = o })
                     .AsAsyncEnumerable();
 
-                if (!userId.IsNullOrEmpty())
+                if (user is not null)
                 {
-                    var user = _userManager.GetUserById(userId.Value);
-                    if (user is null)
-                    {
-                        throw new ResourceNotFoundException();
-                    }
-
                     sessions = sessions.Where(i => CanAccessDevice(user, i.Device.DeviceId));
                 }
 
