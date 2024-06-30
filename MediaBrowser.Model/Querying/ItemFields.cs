@@ -39,6 +39,11 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         Trickplay,
 
+        /// <summary>
+        /// The MediaSegments data.
+        /// </summary>
+        MediaSegments,
+
         ChildCount,
 
         /// <summary>
