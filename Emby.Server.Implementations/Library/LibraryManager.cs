@@ -1842,7 +1842,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (image.Path is not null && image.IsLocalFile)
             {
-                if (image.Width == 0 || image.Height == 0 || string.IsNullOrEmpty(image.BlurHash))
+                if (image.Width == 0 || image.Height == 0 || string.IsNullOrEmpty(image.BlurHash) || string.IsNullOrEmpty(image.FileHash))
                 {
                     return true;
                 }
@@ -1866,9 +1866,11 @@ namespace Emby.Server.Implementations.Library
         {
             ArgumentNullException.ThrowIfNull(item);
 
+            var imagesWithPaths = item.ImageInfos.Where(i => i.Path is not null).ToArray();
             var outdated = forceUpdate
-                ? item.ImageInfos.Where(i => i.Path is not null).ToArray()
+                ? imagesWithPaths
                 : item.ImageInfos.Where(ImageNeedsRefresh).ToArray();
+
             // Skip image processing if current or live tv source
             if (outdated.Length == 0 || item.SourceType != SourceType.Library)
             {
@@ -1930,11 +1932,41 @@ namespace Emby.Server.Implementations.Library
 
                 try
                 {
+                    image.FileHash = _imageProcessor.GetImageFileHash(image.Path);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Cannot compute file hash for {ImagePath}", image.Path);
+                    image.FileHash = string.Empty;
+                }
+
+                try
+                {
                     image.DateModified = _fileSystem.GetLastWriteTimeUtc(image.Path);
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Cannot update DateModified for {ImagePath}", image.Path);
+                }
+            }
+
+            // Remove duplicate images
+            var metadataPath = item.GetInternalMetadataPath();
+            var distinctImages = imagesWithPaths
+                                    // Prefer extermal images
+                                    .OrderBy(i => !i.Path.StartsWith(metadataPath, StringComparison.Ordinal))
+                                    .DistinctBy(i => i.FileHash);
+            var imagesToRemove = imagesWithPaths.Where(i => !string.IsNullOrEmpty(i.FileHash)).Except(distinctImages).ToList();
+            if (imagesToRemove.Count > 0)
+            {
+                foreach (var image in imagesToRemove)
+                {
+                    _logger.LogDebug("Removing {ImagePath} due to duplication", image.Path);
+                    item.RemoveImage(image);
+                    if (image.IsLocalFile)
+                    {
+                        _fileSystem.DeleteFile(image.Path);
+                    }
                 }
             }
 
