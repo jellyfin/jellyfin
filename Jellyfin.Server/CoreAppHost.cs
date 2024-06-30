@@ -7,6 +7,7 @@ using Jellyfin.Api.WebSocketListeners;
 using Jellyfin.Drawing;
 using Jellyfin.Drawing.Skia;
 using Jellyfin.LiveTv;
+using Jellyfin.Server.Helpers;
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Activity;
 using Jellyfin.Server.Implementations.Devices;
@@ -26,10 +27,10 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Trickplay;
 using MediaBrowser.Model.Activity;
-using MediaBrowser.Providers.Lyric;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Scrutor;
 
 namespace Jellyfin.Server
 {
@@ -74,15 +75,29 @@ namespace Jellyfin.Server
                 Logger.LogWarning("Skia not available. Will fallback to {ImageEncoder}.", nameof(NullImageEncoder));
             }
 
+            serviceCollection.Scan(scan =>
+            {
+                var selector = scan.FromAssemblies(AppDomain.CurrentDomain.GetAssemblies());
+                AsSingleton<IAuthenticationProvider>(selector);
+                AsSingleton<IPasswordResetProvider>(selector);
+                AsSingleton<ILyricProvider>(selector);
+                AsSingleton<ILyricParser>(selector);
+
+                return;
+
+                static void AsSingleton<T>(IImplementationTypeSelector selector)
+                    => selector.AddClasses(c => c.AssignableTo<T>())
+                        .UsingRegistrationStrategy(DistinctRegistrationStrategy.Instance)
+                        .AsImplementedInterfaces()
+                        .WithSingletonLifetime();
+            });
+
             serviceCollection.AddEventServices();
             serviceCollection.AddSingleton<IBaseItemManager, BaseItemManager>();
             serviceCollection.AddSingleton<IEventManager, EventManager>();
 
             serviceCollection.AddSingleton<IActivityManager, ActivityManager>();
             serviceCollection.AddSingleton<IUserManager, UserManager>();
-            serviceCollection.AddSingleton<IAuthenticationProvider, DefaultAuthenticationProvider>();
-            serviceCollection.AddSingleton<IAuthenticationProvider, InvalidAuthProvider>();
-            serviceCollection.AddSingleton<IPasswordResetProvider, DefaultPasswordResetProvider>();
             serviceCollection.AddScoped<IDisplayPreferencesManager, DisplayPreferencesManager>();
             serviceCollection.AddSingleton<IDeviceManager, DeviceManager>();
             serviceCollection.AddSingleton<ITrickplayManager, TrickplayManager>();
@@ -96,16 +111,6 @@ namespace Jellyfin.Server
             serviceCollection.AddSingleton<IAuthorizationContext, AuthorizationContext>();
 
             serviceCollection.AddScoped<IAuthenticationManager, AuthenticationManager>();
-
-            foreach (var type in GetExportTypes<ILyricProvider>())
-            {
-                serviceCollection.AddSingleton(typeof(ILyricProvider), type);
-            }
-
-            foreach (var type in GetExportTypes<ILyricParser>())
-            {
-                serviceCollection.AddSingleton(typeof(ILyricParser), type);
-            }
 
             base.RegisterServices(serviceCollection);
         }
