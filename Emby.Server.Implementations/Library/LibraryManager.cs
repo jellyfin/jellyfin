@@ -1152,11 +1152,11 @@ namespace Emby.Server.Implementations.Library
             var refreshQueue = includeRefreshState ? ProviderManager.GetRefreshQueue() : null;
 
             return _fileSystem.GetDirectoryPaths(_configurationManager.ApplicationPaths.DefaultUserViewsPath)
-                .Select(dir => GetVirtualFolderInfo(dir, topLibraryFolders, refreshQueue))
+                .Select(dir => GetVirtualFolderInfo(dir, topLibraryFolders, refreshQueue, true))
                 .ToList();
         }
 
-        private VirtualFolderInfo GetVirtualFolderInfo(string dir, List<BaseItem> allCollectionFolders, HashSet<Guid>? refreshQueue)
+        private VirtualFolderInfo GetVirtualFolderInfo(string dir, List<BaseItem> allCollectionFolders, HashSet<Guid>? refreshQueue, bool allowAbsolutePathMismatch = false)
         {
             var info = new VirtualFolderInfo
             {
@@ -1184,6 +1184,12 @@ namespace Emby.Server.Implementations.Library
             };
 
             var libraryFolder = allCollectionFolders.FirstOrDefault(i => string.Equals(i.Path, dir, StringComparison.OrdinalIgnoreCase));
+            if (libraryFolder is null && allowAbsolutePathMismatch)
+            {
+                _logger.LogWarning("Absolute path does not match any virtual folder, guessing from folder name");
+                libraryFolder = allCollectionFolders.FirstOrDefault(i => string.Equals(Path.GetDirectoryName(i.Path), Path.GetDirectoryName(dir), StringComparison.OrdinalIgnoreCase));
+            }
+
             if (libraryFolder is not null)
             {
                 var libraryFolderId = libraryFolder.Id.ToString("N", CultureInfo.InvariantCulture);
