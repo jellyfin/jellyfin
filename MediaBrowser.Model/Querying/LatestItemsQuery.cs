@@ -80,5 +80,11 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         /// <value>The enable image types.</value>
         public ImageType[] EnableImageTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets sorting method.
+        /// </summary>
+        /// <value>ItemSortBy types.</value>
+        public ItemSortBy SortBy { get; set; }
     }
 }

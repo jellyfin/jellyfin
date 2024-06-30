@@ -1,4 +1,4 @@
-﻿namespace Jellyfin.Data.Enums
+namespace Jellyfin.Data.Enums
 {
     /// <summary>
     /// An enum representing the different options for the home screen sections.
@@ -53,6 +53,11 @@
         /// <summary>
         /// Continue Reading.
         /// </summary>
-        ResumeBook = 9
+        ResumeBook = 9,
+
+        /// <summary>
+        /// New Releases.
+        /// </summary>
+        NewReleases = 10
     }
 }
