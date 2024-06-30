@@ -184,6 +184,7 @@
  - [GeorgeH005](https://github.com/GeorgeH005)
  - [Vedant](https://github.com/viktory36/)
  - [NotSaifA](https://github.com/NotSaifA)
+ - [ItsAllAboutTheCode](https://github.com/ItsAllAboutTheCode)
 
 # Emby Contributors
 
