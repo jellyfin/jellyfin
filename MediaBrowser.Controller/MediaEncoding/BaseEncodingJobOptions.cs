@@ -191,6 +191,8 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public Dictionary<string, string> StreamOptions { get; set; }
 
+        public bool EnableAudioVbrEncoding { get; set; }
+
         public string GetOption(string qualifier, string name)
         {
             var value = GetOption(qualifier + "-" + name);
