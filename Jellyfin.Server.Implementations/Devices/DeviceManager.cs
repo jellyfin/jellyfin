@@ -241,7 +241,7 @@ namespace Jellyfin.Server.Implementations.Devices
             var user = _userManager.GetUserById(authInfo.UserId);
             if (user is null)
             {
-                throw new ResourceNotFoundException();
+                throw new ResourceNotFoundException("User with UserId " + authInfo.UserId + " not found");
             }
 
             return new DeviceInfo
