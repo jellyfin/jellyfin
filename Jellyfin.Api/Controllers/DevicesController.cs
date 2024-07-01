@@ -47,10 +47,10 @@ public class DevicesController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing the list of devices.</returns>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<QueryResult<DeviceInfo>>> GetDevices([FromQuery] Guid? userId)
+    public ActionResult<QueryResult<DeviceInfo>> GetDevices([FromQuery] Guid? userId)
     {
         userId = RequestHelpers.GetUserId(User, userId);
-        return await _deviceManager.GetDevicesForUser(userId).ConfigureAwait(false);
+        return _deviceManager.GetDevicesForUser(userId);
     }
 
     /// <summary>
@@ -63,9 +63,9 @@ public class DevicesController : BaseJellyfinApiController
     [HttpGet("Info")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<DeviceInfo>> GetDeviceInfo([FromQuery, Required] string id)
+    public ActionResult<DeviceInfo> GetDeviceInfo([FromQuery, Required] string id)
     {
-        var deviceInfo = await _deviceManager.GetDevice(id).ConfigureAwait(false);
+        var deviceInfo = _deviceManager.GetDevice(id);
         if (deviceInfo is null)
         {
             return NotFound();
@@ -84,9 +84,9 @@ public class DevicesController : BaseJellyfinApiController
     [HttpGet("Options")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<DeviceOptions>> GetDeviceOptions([FromQuery, Required] string id)
+    public ActionResult<DeviceOptions> GetDeviceOptions([FromQuery, Required] string id)
     {
-        var deviceInfo = await _deviceManager.GetDeviceOptions(id).ConfigureAwait(false);
+        var deviceInfo = _deviceManager.GetDeviceOptions(id);
         if (deviceInfo is null)
         {
             return NotFound();
@@ -124,13 +124,13 @@ public class DevicesController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> DeleteDevice([FromQuery, Required] string id)
     {
-        var existingDevice = await _deviceManager.GetDevice(id).ConfigureAwait(false);
+        var existingDevice = _deviceManager.GetDevice(id);
         if (existingDevice is null)
         {
             return NotFound();
         }
 
-        var sessions = await _deviceManager.GetDevices(new DeviceQuery { DeviceId = id }).ConfigureAwait(false);
+        var sessions = _deviceManager.GetDevices(new DeviceQuery { DeviceId = id });
 
         foreach (var session in sessions.Items)
         {
