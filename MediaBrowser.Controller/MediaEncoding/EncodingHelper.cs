@@ -3564,13 +3564,12 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             // sw scale
             mainFilters.Add(swScaleFilter);
-            mainFilters.Add("format=" + outFormat);
 
             // sw tonemap <= TODO: finish dovi tone mapping
 
             if (doToneMap)
             {
-                var tonemapArgs = $"tonemapx=tonemap={options.TonemappingAlgorithm}:desat={options.TonemappingDesat}:peak={options.TonemappingPeak}:t=bt709:m=bt709:p=bt709:format=yuv420p";
+                var tonemapArgs = $"tonemapx=tonemap={options.TonemappingAlgorithm}:desat={options.TonemappingDesat}:peak={options.TonemappingPeak}:t=bt709:m=bt709:p=bt709:format={outFormat}";
 
                 if (options.TonemappingParam != 0)
                 {
@@ -3585,8 +3584,11 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 mainFilters.Add(tonemapArgs);
             }
-
-            // OUTPUT yuv420p/nv12 surface(memory)
+            else
+            {
+                // OUTPUT yuv420p/nv12 surface(memory)
+                mainFilters.Add("format=" + outFormat);
+            }
 
             /* Make sub and overlay filters for subtitle stream */
             var subFilters = new List<string>();
