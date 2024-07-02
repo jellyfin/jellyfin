@@ -27,6 +27,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "msmpeg4",
             "dca",
             "ac3",
+            "ac4",
             "aac",
             "mp3",
             "flac",
