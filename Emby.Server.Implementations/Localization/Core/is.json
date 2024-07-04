@@ -17,7 +17,7 @@
     "Genres": "Stefnur",
     "Folders": "Möppur",
     "Favorites": "Uppáhalds",
-    "FailedLoginAttemptWithUserName": "{0} reyndi að auðkenna sig",
+    "FailedLoginAttemptWithUserName": "{0} mistókst að auðkenna sig",
     "DeviceOnlineWithName": "{0} hefur tengst",
     "DeviceOfflineWithName": "{0} hefur aftengst",
     "Collections": "Söfn",
@@ -123,5 +123,11 @@
     "TaskRefreshChapterImages": "Plokka kafla-myndir",
     "TaskCleanActivityLogDescription": "Eyðir virkniskráningarfærslum sem hafa náð settum hámarksaldri.",
     "Forced": "Þvingað",
-    "External": "Útvær"
+    "External": "Útvær",
+    "TaskRefreshTrickplayImagesDescription": "Býr til hraðspilunarmyndir fyrir myndbönd í virkum söfnum.",
+    "TaskRefreshTrickplayImages": "Búa til hraðspilunarmyndir",
+    "TaskAudioNormalization": "Hljóðstöðlun",
+    "TaskAudioNormalizationDescription": "Leitar að hljóðstöðlunargögnum í skrám.",
+    "TaskCleanCollectionsAndPlaylists": "Hreinsa söfn og spilunarlista",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Fjarlægir hluti úr söfnum og spilalistum sem eru ekki lengur til."
 }
