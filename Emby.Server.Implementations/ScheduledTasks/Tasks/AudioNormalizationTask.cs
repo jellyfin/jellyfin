@@ -29,7 +29,7 @@ public partial class AudioNormalizationTask : IScheduledTask
     private readonly IItemRepository _itemRepository;
     private readonly ILibraryManager _libraryManager;
     private readonly IMediaEncoder _mediaEncoder;
-    private readonly IConfigurationManager _configurationManager;
+    private readonly IApplicationPaths _applicationPaths;
     private readonly ILocalizationManager _localization;
     private readonly ILogger<AudioNormalizationTask> _logger;
 
@@ -39,21 +39,21 @@ public partial class AudioNormalizationTask : IScheduledTask
     /// <param name="itemRepository">Instance of the <see cref="IItemRepository"/> interface.</param>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
-    /// <param name="configurationManager">Instance of the <see cref="IConfigurationManager"/> interface.</param>
+    /// <param name="applicationPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
     /// <param name="localizationManager">Instance of the <see cref="ILocalizationManager"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger{AudioNormalizationTask}"/> interface.</param>
     public AudioNormalizationTask(
         IItemRepository itemRepository,
         ILibraryManager libraryManager,
         IMediaEncoder mediaEncoder,
-        IConfigurationManager configurationManager,
+        IApplicationPaths applicationPaths,
         ILocalizationManager localizationManager,
         ILogger<AudioNormalizationTask> logger)
     {
         _itemRepository = itemRepository;
         _libraryManager = libraryManager;
         _mediaEncoder = mediaEncoder;
-        _configurationManager = configurationManager;
+        _applicationPaths = applicationPaths;
         _localization = localizationManager;
         _logger = logger;
     }
@@ -107,7 +107,9 @@ public partial class AudioNormalizationTask : IScheduledTask
                 }
 
                 _logger.LogInformation("Calculating LUFS for album: {Album} with id: {Id}", a.Name, a.Id);
-                var tempFile = Path.Join(_configurationManager.GetTranscodePath(), a.Id + ".concat");
+                var tempDir = _applicationPaths.TempDirectory;
+                Directory.CreateDirectory(tempDir);
+                var tempFile = Path.Join(tempDir, a.Id + ".concat");
                 var inputLines = albumTracks.Select(x => string.Format(CultureInfo.InvariantCulture, "file '{0}'", x.Path.Replace("'", @"'\''", StringComparison.Ordinal)));
                 await File.WriteAllLinesAsync(tempFile, inputLines, cancellationToken).ConfigureAwait(false);
                 try
