@@ -1961,7 +1961,19 @@ public class ImageController : BaseJellyfinApiController
 
         if (!imageInfo.IsLocalFile && item is not null)
         {
-            imageInfo = await _libraryManager.ConvertImageToLocal(item, imageInfo, imageIndex ?? 0).ConfigureAwait(false);
+            try
+            {
+                imageInfo = await _libraryManager.ConvertImageToLocal(item, imageInfo, imageIndex ?? 0).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception. Adjust the logging mechanism based on your application's logging setup.
+                _logger.LogError(ex, "Failed to convert image to local for item {ItemId} and imageIndex {ImageIndex}", item.Id, imageIndex);
+
+                // Fallback action: return a default image or an error response.
+                // This example returns a NotFound result. Replace this with your chosen fallback action.
+                return NotFound("Failed to convert image to local. A default image is not available.");
+            }
         }
 
         var options = new ImageProcessingOptions

@@ -2834,19 +2834,34 @@ namespace Emby.Server.Implementations.Library
                 }
                 catch (HttpRequestException ex)
                 {
-                    if (ex.StatusCode.HasValue
-                        && (ex.StatusCode.Value == HttpStatusCode.NotFound || ex.StatusCode.Value == HttpStatusCode.Forbidden))
+                    if (ex.StatusCode is not (HttpStatusCode.NotFound or HttpStatusCode.Forbidden))
                     {
-                        _logger.LogDebug(ex, "Error downloading image {Url}", url);
-                        continue;
+                        throw;
                     }
 
-                    throw;
+                    switch (ex.StatusCode.Value)
+                    {
+                        case HttpStatusCode.NotFound:
+                            _logger.LogDebug(ex, "Image {Url} not found: {HttpStatusCode}", url, ex.StatusCode.Value);
+                            break;
+                        case HttpStatusCode.Forbidden:
+                            _logger.LogDebug(ex, "Forbidden to access image: {HttpStausCode} {URL}", ex.StatusCode.Value, url);
+                            break;
+                        default:
+                            _logger.LogDebug(ex, "The requestes to get the image failed: {HttpStausCode} {URL}", ex.StatusCode.Value, url);
+                            throw;
+                    }
                 }
-            }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error converting image to local: {Url}", url);
+                }
 
-            if (removeOnFailure)
-            {
+                if (!removeOnFailure)
+                {
+                    continue;
+                }
+
                 // Remove this image to prevent it from retrying over and over
                 item.RemoveImage(image);
                 await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);

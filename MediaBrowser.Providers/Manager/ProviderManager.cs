@@ -216,6 +216,27 @@ namespace MediaBrowser.Providers.Manager
                     contentType = MimeTypes.GetMimeType(new Uri(url).GetLeftPart(UriPartial.Path));
                 }
 
+                // Need to handle application/octet-stream as well as some providers, especially MENA providers use Blob storage like Azure
+                // and the content type is not set correctly on the blob properties. So you end up with the default application/octet-stream
+                // https://learn.microsoft.com/en-us/rest/api/storageservices/put-blob?tabs=microsoft-entra-id#request-headers-all-blob-types
+                if (contentType.StartsWith("application/octet-stream", StringComparison.OrdinalIgnoreCase))
+                {
+                    var extension = Path.GetExtension(url).ToLowerInvariant();
+                    contentType = extension switch
+                    {
+                        ".png" => MediaTypeNames.Image.Png,
+                        ".jpg" or ".jpeg" => MediaTypeNames.Image.Jpeg,
+                        ".gif" => MediaTypeNames.Image.Gif,
+                        ".bmp" => MediaTypeNames.Image.Bmp,
+                        ".webp" => "image/webp",
+                        ".svg" => "image/svg+xml",
+                        ".tiff" or ".tif" => "image/tiff",
+                        ".heif" or ".heic" => "image/heif",
+                        ".ico" => "image/x-icon",
+                        _ => throw new HttpRequestException("Invalid image received: contentType not set.", null, response.StatusCode)
+                    };
+                }
+
                 if (!contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
                 {
                     throw new HttpRequestException($"Request returned {contentType} instead of an image type", null, HttpStatusCode.NotFound);
