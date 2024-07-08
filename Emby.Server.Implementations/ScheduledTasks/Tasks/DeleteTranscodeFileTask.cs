@@ -62,14 +62,15 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         /// <inheritdoc />
         public bool IsLogged => true;
 
-        /// <summary>
-        /// Creates the triggers that define when the task will run.
-        /// </summary>
-        /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
+        /// <inheritdoc />
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
             return new[]
             {
+                new TaskTriggerInfo
+                {
+                    Type = TaskTriggerInfo.TriggerStartup
+                },
                 new TaskTriggerInfo
                 {
                     Type = TaskTriggerInfo.TriggerInterval,
