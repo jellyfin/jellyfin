@@ -1967,11 +1967,7 @@ public class ImageController : BaseJellyfinApiController
             }
             catch (Exception ex)
             {
-                // Log the exception. Adjust the logging mechanism based on your application's logging setup.
-                _logger.LogError(ex, "Failed to convert image to local for item {ItemId} and imageIndex {ImageIndex}", item.Id, imageIndex);
-
-                // Fallback action: return a default image or an error response.
-                // This example returns a NotFound result. Replace this with your chosen fallback action.
+                _logger.LogWarning(ex, "Failed to convert image to local for item {ItemId} and imageIndex {ImageIndex}", item.Id, imageIndex);
                 return NotFound("Failed to convert image to local. A default image is not available.");
             }
         }

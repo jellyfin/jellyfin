@@ -2834,27 +2834,22 @@ namespace Emby.Server.Implementations.Library
                 }
                 catch (HttpRequestException ex)
                 {
-                    if (ex.StatusCode is not (HttpStatusCode.NotFound or HttpStatusCode.Forbidden))
-                    {
-                        throw;
-                    }
-
-                    switch (ex.StatusCode.Value)
+                    switch (ex.StatusCode)
                     {
                         case HttpStatusCode.NotFound:
-                            _logger.LogDebug(ex, "Image {Url} not found: {HttpStatusCode}", url, ex.StatusCode.Value);
+                            _logger.LogWarning(ex, "Image not found response received: {HttpStausCode} {URL}", ex.StatusCode, url);
                             break;
                         case HttpStatusCode.Forbidden:
-                            _logger.LogDebug(ex, "Forbidden to access image: {HttpStausCode} {URL}", ex.StatusCode.Value, url);
+                            _logger.LogWarning(ex, "Forbidden response received for image: {HttpStausCode} {URL}", ex.StatusCode, url);
                             break;
                         default:
-                            _logger.LogDebug(ex, "The requestes to get the image failed: {HttpStausCode} {URL}", ex.StatusCode.Value, url);
-                            throw;
+                            _logger.LogWarning(ex, "Image download failed: {HttpStausCode} {URL}", ex.StatusCode, url);
+                            break;
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error converting image to local: {Url}", url);
+                    _logger.LogWarning(ex, "Error converting image to local: {Url}", url);
                 }
 
                 if (!removeOnFailure)
@@ -2862,7 +2857,6 @@ namespace Emby.Server.Implementations.Library
                     continue;
                 }
 
-                // Remove this image to prevent it from retrying over and over
                 item.RemoveImage(image);
                 await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
             }
