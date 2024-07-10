@@ -23,22 +23,32 @@ namespace Jellyfin.Server.Implementations.Tests.Sorting
             public PremiereDateTestData()
             {
                 // Both have premier date
+                // Expected: x listed first
                 Add(
                     new Movie { PremiereDate = new DateTime(2021, 1, 1) },
                     new Movie { PremiereDate = new DateTime(2021, 1, 3) },
-                    0);
+                    -1);
 
-                // Only x has premiere date
+                // Only x has premiere date, with earlier year than y
+                // Expected: x listed first
                 Add(
                     new Movie { PremiereDate = new DateTime(2021, 1, 1) },
                     new Movie { ProductionYear = 2022 },
-                    1);
+                    -1);
 
                 // Only x has premiere date, with same year as y
+                // Expected: y listed first
+                Add(
+                    new Movie { PremiereDate = new DateTime(2021, 1, 2) },
+                    new Movie { ProductionYear = 2021 },
+                    1);
+
+                // Only x has a premiere date, with later year than y
+                // Expected: y listed first
                 Add(
                     new Movie { PremiereDate = new DateTime(2021, 3, 1) },
-                    new Movie { ProductionYear = 2021 },
-                    2);
+                    new Movie { ProductionYear = 2020 },
+                    1);
             }
         }
     }
