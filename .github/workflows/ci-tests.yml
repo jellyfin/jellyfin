@@ -21,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
-      - uses: actions/setup-dotnet@4d6c8fcf3c8f7a60068d26b594648e99df24cee3 # v4.0.0
+      - uses: actions/setup-dotnet@6bd8b7f7774af54e05809fcc5431931b3eb1ddee # v4.0.1
         with:
           dotnet-version: ${{ env.SDK_VERSION }}
 
@@ -34,7 +34,7 @@ jobs:
           --verbosity minimal
 
       - name: Merge code coverage results
-        uses: danielpalme/ReportGenerator-GitHub-Action@4924a48df5dbcdfbcbaef0cc1ad7d65d5aade7dd # 5.3.6
+        uses: danielpalme/ReportGenerator-GitHub-Action@345a7c3866622fe946263314218ad2c12c388b8b # 5.3.7
         with:
           reports: "**/coverage.cobertura.xml"
           targetdir: "merged/"

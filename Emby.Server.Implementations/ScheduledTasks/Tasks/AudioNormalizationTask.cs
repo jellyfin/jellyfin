@@ -106,13 +106,20 @@ public partial class AudioNormalizationTask : IScheduledTask
                     continue;
                 }
 
-                var tempFile = Path.Join(_configurationManager.GetTranscodePath(), Guid.NewGuid() + ".concat");
+                _logger.LogInformation("Calculating LUFS for album: {Album} with id: {Id}", a.Name, a.Id);
+                var tempFile = Path.Join(_configurationManager.GetTranscodePath(), a.Id + ".concat");
                 var inputLines = albumTracks.Select(x => string.Format(CultureInfo.InvariantCulture, "file '{0}'", x.Path.Replace("'", @"'\''", StringComparison.Ordinal)));
                 await File.WriteAllLinesAsync(tempFile, inputLines, cancellationToken).ConfigureAwait(false);
-                a.LUFS = await CalculateLUFSAsync(
-                    string.Format(CultureInfo.InvariantCulture, "-f concat -safe 0 -i \"{0}\"", tempFile),
-                    cancellationToken).ConfigureAwait(false);
-                File.Delete(tempFile);
+                try
+                {
+                    a.LUFS = await CalculateLUFSAsync(
+                        string.Format(CultureInfo.InvariantCulture, "-f concat -safe 0 -i \"{0}\"", tempFile),
+                        cancellationToken).ConfigureAwait(false);
+                }
+                finally
+                {
+                    File.Delete(tempFile);
+                }
             }
 
             _itemRepository.SaveItems(albums, cancellationToken);

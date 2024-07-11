@@ -92,10 +92,6 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            var localImagesFailed = false;
-
-            var allImageProviders = ProviderManager.GetImageProviders(item, refreshOptions).ToList();
-
             if (refreshOptions.RemoveOldMetadata && refreshOptions.ReplaceAllImages)
             {
                 if (ImageProvider.RemoveImages(item))
@@ -104,19 +100,29 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            // Start by validating images
-            try
+            var localImagesFailed = false;
+            var allImageProviders = ProviderManager.GetImageProviders(item, refreshOptions).ToList();
+
+            // Only validate already registered images if we are replacing and saving locally
+            if (item.IsSaveLocalMetadataEnabled() && refreshOptions.ReplaceAllImages)
             {
-                // Always validate images and check for new locally stored ones.
-                if (ImageProvider.ValidateImages(item, allImageProviders.OfType<ILocalImageProvider>(), refreshOptions))
-                {
-                    updateType |= ItemUpdateType.ImageUpdate;
-                }
+                item.ValidateImages();
             }
-            catch (Exception ex)
+            else
             {
-                localImagesFailed = true;
-                Logger.LogError(ex, "Error validating images for {Item}", item.Path ?? item.Name ?? "Unknown name");
+                // Run full image validation and register new local images
+                try
+                {
+                    if (ImageProvider.ValidateImages(item, allImageProviders.OfType<ILocalImageProvider>(), refreshOptions))
+                    {
+                        updateType |= ItemUpdateType.ImageUpdate;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    localImagesFailed = true;
+                    Logger.LogError(ex, "Error validating images for {Item}", item.Path ?? item.Name ?? "Unknown name");
+                }
             }
 
             var metadataResult = new MetadataResult<TItemType>
@@ -813,18 +819,15 @@ namespace MediaBrowser.Providers.Manager
         {
             var refreshResult = new RefreshResult();
 
-            var tmpDataMerged = false;
+            if (id is not null)
+            {
+                MergeNewData(temp.Item, id);
+            }
 
             foreach (var provider in providers)
             {
                 var providerName = provider.GetType().Name;
                 Logger.LogDebug("Running {Provider} for {Item}", providerName, logName);
-
-                if (id is not null && !tmpDataMerged)
-                {
-                    MergeNewData(temp.Item, id);
-                    tmpDataMerged = true;
-                }
 
                 try
                 {

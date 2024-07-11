@@ -14,6 +14,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
@@ -188,11 +189,27 @@ namespace MediaBrowser.Providers.Manager
                 {
                     _fileSystem.DeleteFile(currentPath);
 
-                    // Remove containing directory if empty
-                    var folder = Path.GetDirectoryName(currentPath);
-                    if (!_fileSystem.GetFiles(folder).Any())
+                    // Remove local episode metadata directory if it exists and is empty
+                    var directory = Path.GetDirectoryName(currentPath);
+                    if (item is Episode && directory.Equals("metadata", StringComparison.Ordinal))
                     {
-                        Directory.Delete(folder);
+                        var parentDirectoryPath = Directory.GetParent(currentPath).FullName;
+                        if (_fileSystem.DirectoryExists(parentDirectoryPath) && !_fileSystem.GetFiles(parentDirectoryPath).Any())
+                        {
+                            try
+                            {
+                                _logger.LogInformation("Deleting empty local metadata folder {Folder}", parentDirectoryPath);
+                                Directory.Delete(parentDirectoryPath);
+                            }
+                            catch (UnauthorizedAccessException ex)
+                            {
+                                _logger.LogError(ex, "Error deleting directory {Path}", parentDirectoryPath);
+                            }
+                            catch (IOException ex)
+                            {
+                                _logger.LogError(ex, "Error deleting directory {Path}", parentDirectoryPath);
+                            }
+                        }
                     }
                 }
                 catch (FileNotFoundException)
@@ -410,13 +427,15 @@ namespace MediaBrowser.Providers.Manager
 
             if (type == ImageType.Backdrop && saveLocally)
             {
-                if (season is not null && season.IndexNumber.HasValue)
+                if (season is not null
+                    && season.IndexNumber.HasValue
+                    && (imageIndex is null || imageIndex == 0))
                 {
                     var seriesFolder = season.SeriesPath;
 
                     var seasonMarker = season.IndexNumber.Value == 0
-                                           ? "-specials"
-                                           : season.IndexNumber.Value.ToString("00", CultureInfo.InvariantCulture);
+                                        ? "-specials"
+                                        : season.IndexNumber.Value.ToString("00", CultureInfo.InvariantCulture);
 
                     var imageFilename = "season" + seasonMarker + "-fanart" + extension;
 
