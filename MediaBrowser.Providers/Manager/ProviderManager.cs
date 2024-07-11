@@ -222,19 +222,7 @@ namespace MediaBrowser.Providers.Manager
                 if (contentType.StartsWith("application/octet-stream", StringComparison.OrdinalIgnoreCase))
                 {
                     var extension = Path.GetExtension(url).ToLowerInvariant();
-                    contentType = extension switch
-                    {
-                        ".png" => MediaTypeNames.Image.Png,
-                        ".jpg" or ".jpeg" => MediaTypeNames.Image.Jpeg,
-                        ".gif" => MediaTypeNames.Image.Gif,
-                        ".bmp" => MediaTypeNames.Image.Bmp,
-                        ".webp" => "image/webp",
-                        ".svg" => "image/svg+xml",
-                        ".tiff" or ".tif" => "image/tiff",
-                        ".heif" or ".heic" => "image/heif",
-                        ".ico" => "image/x-icon",
-                        _ => throw new HttpRequestException("Invalid image received: contentType not set.", null, response.StatusCode)
-                    };
+                    contentType = MimeTypes.GetMimeType(extension);
                 }
 
                 if (!contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
