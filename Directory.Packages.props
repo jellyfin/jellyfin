@@ -60,7 +60,7 @@
     <PackageVersion Include="prometheus-net" Version="8.2.1" />
     <PackageVersion Include="Serilog.AspNetCore" Version="8.0.1" />
     <PackageVersion Include="Serilog.Enrichers.Thread" Version="4.0.0" />
-    <PackageVersion Include="Serilog.Settings.Configuration" Version="8.0.1" />
+    <PackageVersion Include="Serilog.Settings.Configuration" Version="8.0.2" />
     <PackageVersion Include="Serilog.Sinks.Async" Version="2.0.0" />
     <PackageVersion Include="Serilog.Sinks.Console" Version="6.0.0" />
     <PackageVersion Include="Serilog.Sinks.File" Version="6.0.0" />
