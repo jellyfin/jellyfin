@@ -1,6 +1,5 @@
 name: Issue Report
 description: File an issue report
-title: ""
 labels: [bug, triage]
 body:
   - type: markdown
