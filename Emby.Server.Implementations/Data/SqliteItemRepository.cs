@@ -1046,9 +1046,10 @@ namespace Emby.Server.Implementations.Data
             foreach (var part in value.SpanSplit('|'))
             {
                 var providerDelimiterIndex = part.IndexOf('=');
-                if (providerDelimiterIndex != -1 && providerDelimiterIndex == part.LastIndexOf('='))
+                // Don't let empty values through
+                if (providerDelimiterIndex != -1 && part.Length != providerDelimiterIndex + 1)
                 {
-                    item.SetProviderId(part.Slice(0, providerDelimiterIndex).ToString(), part.Slice(providerDelimiterIndex + 1).ToString());
+                    item.SetProviderId(part[..providerDelimiterIndex].ToString(), part[(providerDelimiterIndex + 1)..].ToString());
                 }
             }
         }

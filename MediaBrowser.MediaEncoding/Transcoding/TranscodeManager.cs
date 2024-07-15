@@ -235,15 +235,6 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         if (delete(job.Path!))
         {
             await DeletePartialStreamFiles(job.Path!, job.Type, 0, 1500).ConfigureAwait(false);
-            if (job.MediaSource?.VideoType == VideoType.Dvd || job.MediaSource?.VideoType == VideoType.BluRay)
-            {
-                var concatFilePath = Path.Join(_serverConfigurationManager.GetTranscodePath(), job.MediaSource.Id + ".concat");
-                if (File.Exists(concatFilePath))
-                {
-                    _logger.LogInformation("Deleting ffmpeg concat configuration at {Path}", concatFilePath);
-                    File.Delete(concatFilePath);
-                }
-            }
         }
 
         if (closeLiveStream && !string.IsNullOrWhiteSpace(job.LiveStreamId))
@@ -419,7 +410,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
             var attachmentPath = Path.Combine(_appPaths.CachePath, "attachments", state.MediaSource.Id);
             if (state.MediaSource.VideoType == VideoType.Dvd || state.MediaSource.VideoType == VideoType.BluRay)
             {
-                var concatPath = Path.Join(_serverConfigurationManager.GetTranscodePath(), state.MediaSource.Id + ".concat");
+                var concatPath = Path.Join(_appPaths.CachePath, "concat", state.MediaSource.Id + ".concat");
                 await _attachmentExtractor.ExtractAllAttachments(concatPath, state.MediaSource, attachmentPath, cancellationTokenSource.Token).ConfigureAwait(false);
             }
             else

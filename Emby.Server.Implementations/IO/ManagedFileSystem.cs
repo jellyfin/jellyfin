@@ -466,7 +466,7 @@ namespace Emby.Server.Implementations.IO
             File.Copy(file1, temp1, true);
 
             File.Copy(file2, file1, true);
-            File.Copy(temp1, file2, true);
+            File.Move(temp1, file2, true);
         }
 
         /// <inheritdoc />

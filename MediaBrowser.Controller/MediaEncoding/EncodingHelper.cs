@@ -276,6 +276,21 @@ namespace MediaBrowser.Controller.MediaEncoding
                 && _mediaEncoder.SupportsFilter("scale_vt");
         }
 
+        private bool IsSwTonemapAvailable(EncodingJobInfo state, EncodingOptions options)
+        {
+            if (state.VideoStream is null
+                || !options.EnableTonemapping
+                || GetVideoColorBitDepth(state) != 10
+                || !_mediaEncoder.SupportsFilter("tonemapx")
+                || !(string.Equals(state.VideoStream?.ColorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase) || string.Equals(state.VideoStream?.ColorTransfer, "arib-std-b67", StringComparison.OrdinalIgnoreCase)))
+            {
+                return false;
+            }
+
+            return state.VideoStream.VideoRange == VideoRange.HDR
+                   && state.VideoStream.VideoRangeType is VideoRangeType.HDR10 or VideoRangeType.HLG or VideoRangeType.DOVIWithHDR10 or VideoRangeType.DOVIWithHLG;
+        }
+
         private bool IsHwTonemapAvailable(EncodingJobInfo state, EncodingOptions options)
         {
             if (state.VideoStream is null
@@ -1188,10 +1203,14 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (state.MediaSource.VideoType == VideoType.Dvd || state.MediaSource.VideoType == VideoType.BluRay)
             {
-                var tmpConcatPath = Path.Join(_configurationManager.GetTranscodePath(), state.MediaSource.Id + ".concat");
-                _mediaEncoder.GenerateConcatConfig(state.MediaSource, tmpConcatPath);
+                var concatFilePath = Path.Join(_configurationManager.CommonApplicationPaths.CachePath, "concat", state.MediaSource.Id + ".concat");
+                if (!File.Exists(concatFilePath))
+                {
+                    _mediaEncoder.GenerateConcatConfig(state.MediaSource, concatFilePath);
+                }
+
                 arg.Append(" -f concat -safe 0 -i \"")
-                    .Append(tmpConcatPath)
+                    .Append(concatFilePath)
                     .Append("\" ");
             }
             else
@@ -3517,6 +3536,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var doDeintH264 = state.DeInterlace("h264", true) || state.DeInterlace("avc", true);
             var doDeintHevc = state.DeInterlace("h265", true) || state.DeInterlace("hevc", true);
             var doDeintH2645 = doDeintH264 || doDeintHevc;
+            var doToneMap = IsSwTonemapAvailable(state, options);
 
             var hasSubs = state.SubtitleStream is not null && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
             var hasTextSubs = hasSubs && state.SubtitleStream.IsTextSubtitleStream;
@@ -3525,7 +3545,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             /* Make main filters for video stream */
             var mainFilters = new List<string>();
 
-            mainFilters.Add(GetOverwriteColorPropertiesParam(state, false));
+            mainFilters.Add(GetOverwriteColorPropertiesParam(state, doToneMap));
 
             // INPUT sw surface(memory/copy-back from vram)
             // sw deint
@@ -3548,11 +3568,31 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             // sw scale
             mainFilters.Add(swScaleFilter);
-            mainFilters.Add("format=" + outFormat);
 
-            // sw tonemap <= TODO: finsh the fast tonemap filter
+            // sw tonemap <= TODO: finish dovi tone mapping
 
-            // OUTPUT yuv420p/nv12 surface(memory)
+            if (doToneMap)
+            {
+                var tonemapArgs = $"tonemapx=tonemap={options.TonemappingAlgorithm}:desat={options.TonemappingDesat}:peak={options.TonemappingPeak}:t=bt709:m=bt709:p=bt709:format={outFormat}";
+
+                if (options.TonemappingParam != 0)
+                {
+                    tonemapArgs += $":param={options.TonemappingParam}";
+                }
+
+                if (string.Equals(options.TonemappingRange, "tv", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(options.TonemappingRange, "pc", StringComparison.OrdinalIgnoreCase))
+                {
+                    tonemapArgs += $":range={options.TonemappingRange}";
+                }
+
+                mainFilters.Add(tonemapArgs);
+            }
+            else
+            {
+                // OUTPUT yuv420p/nv12 surface(memory)
+                mainFilters.Add("format=" + outFormat);
+            }
 
             /* Make sub and overlay filters for subtitle stream */
             var subFilters = new List<string>();

@@ -186,6 +186,7 @@
  - [NotSaifA](https://github.com/NotSaifA)
  - [HonestlyWhoKnows](https://github.com/honestlywhoknows)
  - [TheMelmacian](https://github.com/TheMelmacian)
+ - [ItsAllAboutTheCode](https://github.com/ItsAllAboutTheCode)
 
 # Emby Contributors
 

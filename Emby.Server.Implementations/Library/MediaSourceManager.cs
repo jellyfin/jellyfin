@@ -113,6 +113,11 @@ namespace Emby.Server.Implementations.Library
                 return true;
             }
 
+            if (stream.IsPgsSubtitleStream)
+            {
+                return true;
+            }
+
             return false;
         }
 

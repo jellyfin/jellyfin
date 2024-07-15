@@ -219,7 +219,7 @@ public class SkiaEncoder : IImageEncoder
             return path;
         }
 
-        var tempPath = Path.Combine(_appPaths.TempDirectory, string.Concat(Guid.NewGuid().ToString(), Path.GetExtension(path.AsSpan())));
+        var tempPath = Path.Join(_appPaths.TempDirectory, string.Concat("skia_", Guid.NewGuid().ToString(), Path.GetExtension(path.AsSpan())));
         var directory = Path.GetDirectoryName(tempPath) ?? throw new ResourceNotFoundException($"Provided path ({tempPath}) is not valid.");
         Directory.CreateDirectory(directory);
         File.Copy(path, tempPath, true);

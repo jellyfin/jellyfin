@@ -103,6 +103,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // sw
             "alphasrc",
             "zscale",
+            "tonemapx",
             // qsv
             "scale_qsv",
             "vpp_qsv",
