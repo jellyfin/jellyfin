@@ -79,8 +79,15 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     // Extract episode details from additional episodedetails block
                     ReadEpisodeDetailsFromXml(additionalEpisode, xml, settings, cancellationToken);
 
-                    name.Append(" / ").Append(additionalEpisode.Item.Name);
-                    overview.Append(" / ").Append(additionalEpisode.Item.Overview);
+                    if (!string.IsNullOrEmpty(additionalEpisode.Item.Name))
+                    {
+                        name.Append(" / ").Append(additionalEpisode.Item.Name);
+                    }
+
+                    if (!string.IsNullOrEmpty(additionalEpisode.Item.Overview))
+                    {
+                        overview.Append(" / ").Append(additionalEpisode.Item.Overview);
+                    }
 
                     if (additionalEpisode.Item.IndexNumber != null)
                     {
