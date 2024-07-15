@@ -198,10 +198,11 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             if (!subtitleStream.IsExternal || subtitleStream.Path.EndsWith(".mks", StringComparison.OrdinalIgnoreCase))
             {
-                await ExtractAllTextSubtitles(mediaSource, cancellationToken).ConfigureAwait(false);
+                await ExtractAllExtractableSubtitles(mediaSource, cancellationToken).ConfigureAwait(false);
 
-                var outputFormat = GetTextSubtitleFormat(subtitleStream);
-                var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + outputFormat);
+                var outputFileExtension = GetExtractableSubtitleFileExtension(subtitleStream);
+                var outputFormat = GetExtractableSubtitleFormat(subtitleStream);
+                var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + outputFileExtension);
 
                 return new SubtitleInfo()
                 {
@@ -214,6 +215,18 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             var currentFormat = (Path.GetExtension(subtitleStream.Path) ?? subtitleStream.Codec)
                 .TrimStart('.');
+
+            // Handle PGS subtitles as raw streams for the client to render
+            if (MediaStream.IsPgsFormat(currentFormat))
+            {
+                return new SubtitleInfo()
+                {
+                    Path = subtitleStream.Path,
+                    Protocol = _mediaSourceManager.GetPathProtocol(subtitleStream.Path),
+                    Format = "pgssub",
+                    IsExternal = true
+                };
+            }
 
             // Fallback to ffmpeg conversion
             if (!_subtitleParser.SupportsFileExtension(currentFormat))
@@ -428,10 +441,11 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             _logger.LogInformation("ffmpeg subtitle conversion succeeded for {Path}", inputPath);
         }
 
-        private string GetTextSubtitleFormat(MediaStream subtitleStream)
+        private string GetExtractableSubtitleFormat(MediaStream subtitleStream)
         {
             if (string.Equals(subtitleStream.Codec, "ass", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(subtitleStream.Codec, "ssa", StringComparison.OrdinalIgnoreCase))
+                || string.Equals(subtitleStream.Codec, "ssa", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(subtitleStream.Codec, "pgssub", StringComparison.OrdinalIgnoreCase))
             {
                 return subtitleStream.Codec;
             }
@@ -441,21 +455,35 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
         }
 
+        private string GetExtractableSubtitleFileExtension(MediaStream subtitleStream)
+        {
+            // Using .pgssub as file extension is not allowed by ffmpeg. The file extension for pgs subtitles is .sup.
+            if (string.Equals(subtitleStream.Codec, "pgssub", StringComparison.OrdinalIgnoreCase))
+            {
+                return "sup";
+            }
+            else
+            {
+                return GetExtractableSubtitleFormat(subtitleStream);
+            }
+        }
+
         private bool IsCodecCopyable(string codec)
         {
             return string.Equals(codec, "ass", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codec, "ssa", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codec, "srt", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(codec, "subrip", StringComparison.OrdinalIgnoreCase);
+                || string.Equals(codec, "subrip", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(codec, "pgssub", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
-        /// Extracts all text subtitles.
+        /// Extracts all extractable subtitles (text and pgs).
         /// </summary>
         /// <param name="mediaSource">The mediaSource.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private async Task ExtractAllTextSubtitles(MediaSourceInfo mediaSource, CancellationToken cancellationToken)
+        private async Task ExtractAllExtractableSubtitles(MediaSourceInfo mediaSource, CancellationToken cancellationToken)
         {
             var locks = new List<IDisposable>();
             var extractableStreams = new List<MediaStream>();
@@ -463,11 +491,11 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             try
             {
                 var subtitleStreams = mediaSource.MediaStreams
-                    .Where(stream => stream is { IsTextSubtitleStream: true, SupportsExternalStream: true, IsExternal: false });
+                    .Where(stream => stream is { IsExtractableSubtitleStream: true, SupportsExternalStream: true, IsExternal: false });
 
                 foreach (var subtitleStream in subtitleStreams)
                 {
-                    var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + GetTextSubtitleFormat(subtitleStream));
+                    var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + GetExtractableSubtitleFileExtension(subtitleStream));
 
                     var releaser = await _semaphoreLocks.LockAsync(outputPath, cancellationToken).ConfigureAwait(false);
 
@@ -483,7 +511,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 if (extractableStreams.Count > 0)
                 {
-                    await ExtractAllTextSubtitlesInternal(mediaSource, extractableStreams, cancellationToken).ConfigureAwait(false);
+                    await ExtractAllExtractableSubtitlesInternal(mediaSource, extractableStreams, cancellationToken).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
@@ -496,7 +524,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
         }
 
-        private async Task ExtractAllTextSubtitlesInternal(
+        private async Task ExtractAllExtractableSubtitlesInternal(
             MediaSourceInfo mediaSource,
             List<MediaStream> subtitleStreams,
             CancellationToken cancellationToken)
@@ -510,7 +538,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             foreach (var subtitleStream in subtitleStreams)
             {
-                var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + GetTextSubtitleFormat(subtitleStream));
+                var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + GetExtractableSubtitleFileExtension(subtitleStream));
                 var outputCodec = IsCodecCopyable(subtitleStream.Codec) ? "copy" : "srt";
                 var streamIndex = EncodingHelper.FindIndex(mediaSource.MediaStreams, subtitleStream);
 
