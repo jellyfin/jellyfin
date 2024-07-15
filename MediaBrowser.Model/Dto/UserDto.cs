@@ -63,13 +63,6 @@ namespace MediaBrowser.Model.Dto
         public bool HasConfiguredPassword { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance has configured easy password.
-        /// </summary>
-        /// <value><c>true</c> if this instance has configured easy password; otherwise, <c>false</c>.</value>
-        [Obsolete("Easy Password has been replaced with Quick Connect")]
-        public bool HasConfiguredEasyPassword { get; set; }
-
-        /// <summary>
         /// Gets or sets whether async login is enabled or not.
         /// </summary>
         public bool? EnableAutoLogin { get; set; }

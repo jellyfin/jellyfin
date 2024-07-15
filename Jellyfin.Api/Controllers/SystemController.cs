@@ -212,20 +212,4 @@ public class SystemController : BaseJellyfinApiController
         FileStream stream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, fileShare, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
         return File(stream, "text/plain; charset=utf-8");
     }
-
-    /// <summary>
-    /// Gets wake on lan information.
-    /// </summary>
-    /// <response code="200">Information retrieved.</response>
-    /// <returns>An <see cref="IEnumerable{WakeOnLanInfo}"/> with the WakeOnLan infos.</returns>
-    [HttpGet("WakeOnLanInfo")]
-    [Authorize]
-    [Obsolete("This endpoint is obsolete.")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<IEnumerable<WakeOnLanInfo>> GetWakeOnLanInfo()
-    {
-        var result = _networkManager.GetMacAddresses()
-            .Select(i => new WakeOnLanInfo(i));
-        return Ok(result);
-    }
 }

@@ -324,78 +324,6 @@ public class LiveTvController : BaseJellyfinApiController
     }
 
     /// <summary>
-    /// Gets live tv recording series.
-    /// </summary>
-    /// <param name="channelId">Optional. Filter by channel id.</param>
-    /// <param name="userId">Optional. Filter by user and attach user data.</param>
-    /// <param name="groupId">Optional. Filter by recording group.</param>
-    /// <param name="startIndex">Optional. The record index to start at. All items with a lower index will be dropped from the results.</param>
-    /// <param name="limit">Optional. The maximum number of records to return.</param>
-    /// <param name="status">Optional. Filter by recording status.</param>
-    /// <param name="isInProgress">Optional. Filter by recordings that are in progress, or not.</param>
-    /// <param name="seriesTimerId">Optional. Filter by recordings belonging to a series timer.</param>
-    /// <param name="enableImages">Optional. Include image information in output.</param>
-    /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
-    /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
-    /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
-    /// <param name="enableUserData">Optional. Include user data.</param>
-    /// <param name="enableTotalRecordCount">Optional. Return total record count.</param>
-    /// <response code="200">Live tv recordings returned.</response>
-    /// <returns>An <see cref="OkResult"/> containing the live tv recordings.</returns>
-    [HttpGet("Recordings/Series")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [Authorize(Policy = Policies.LiveTvAccess)]
-    [Obsolete("This endpoint is obsolete.")]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "channelId", Justification = "Imported from ServiceStack")]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "Imported from ServiceStack")]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "groupId", Justification = "Imported from ServiceStack")]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "startIndex", Justification = "Imported from ServiceStack")]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "limit", Justification = "Imported from ServiceStack")]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "status", Justification = "Imported from ServiceStack")]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "isInProgress", Justification = "Imported from ServiceStack")]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "seriesTimerId", Justification = "Imported from ServiceStack")]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "enableImages", Justification = "Imported from ServiceStack")]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "imageTypeLimit", Justification = "Imported from ServiceStack")]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "enableImageTypes", Justification = "Imported from ServiceStack")]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "fields", Justification = "Imported from ServiceStack")]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "enableUserData", Justification = "Imported from ServiceStack")]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "enableTotalRecordCount", Justification = "Imported from ServiceStack")]
-    public ActionResult<QueryResult<BaseItemDto>> GetRecordingsSeries(
-        [FromQuery] string? channelId,
-        [FromQuery] Guid? userId,
-        [FromQuery] string? groupId,
-        [FromQuery] int? startIndex,
-        [FromQuery] int? limit,
-        [FromQuery] RecordingStatus? status,
-        [FromQuery] bool? isInProgress,
-        [FromQuery] string? seriesTimerId,
-        [FromQuery] bool? enableImages,
-        [FromQuery] int? imageTypeLimit,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
-        [FromQuery] bool? enableUserData,
-        [FromQuery] bool enableTotalRecordCount = true)
-    {
-        return new QueryResult<BaseItemDto>();
-    }
-
-    /// <summary>
-    /// Gets live tv recording groups.
-    /// </summary>
-    /// <param name="userId">Optional. Filter by user and attach user data.</param>
-    /// <response code="200">Recording groups returned.</response>
-    /// <returns>An <see cref="OkResult"/> containing the recording groups.</returns>
-    [HttpGet("Recordings/Groups")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [Authorize(Policy = Policies.LiveTvAccess)]
-    [Obsolete("This endpoint is obsolete.")]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "Imported from ServiceStack")]
-    public ActionResult<QueryResult<BaseItemDto>> GetRecordingGroups([FromQuery] Guid? userId)
-    {
-        return new QueryResult<BaseItemDto>();
-    }
-
-    /// <summary>
     /// Gets recording folders.
     /// </summary>
     /// <param name="userId">Optional. Filter by user and attach user data.</param>
@@ -945,20 +873,6 @@ public class LiveTvController : BaseJellyfinApiController
     {
         await _liveTvManager.CreateSeriesTimer(seriesTimerInfo, CancellationToken.None).ConfigureAwait(false);
         return NoContent();
-    }
-
-    /// <summary>
-    /// Get recording group.
-    /// </summary>
-    /// <param name="groupId">Group id.</param>
-    /// <returns>A <see cref="NotFoundResult"/>.</returns>
-    [HttpGet("Recordings/Groups/{groupId}")]
-    [Authorize(Policy = Policies.LiveTvAccess)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [Obsolete("This endpoint is obsolete.")]
-    public ActionResult<BaseItemDto> GetRecordingGroup([FromRoute, Required] Guid groupId)
-    {
-        return NotFound();
     }
 
     /// <summary>

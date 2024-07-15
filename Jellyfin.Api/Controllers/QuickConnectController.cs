@@ -66,16 +66,6 @@ public class QuickConnectController : BaseJellyfinApiController
     }
 
     /// <summary>
-    /// Old version of <see cref="InitiateQuickConnect" /> using a GET method.
-    /// Still available to avoid breaking compatibility.
-    /// </summary>
-    /// <returns>The result of <see cref="InitiateQuickConnect" />.</returns>
-    [Obsolete("Use POST request instead")]
-    [HttpGet("Initiate")]
-    [ApiExplorerSettings(IgnoreApi = true)]
-    public Task<ActionResult<QuickConnectResult>> InitiateQuickConnectLegacy() => InitiateQuickConnect();
-
-    /// <summary>
     /// Attempts to retrieve authentication information.
     /// </summary>
     /// <param name="secret">Secret previously returned from the Initiate endpoint.</param>
