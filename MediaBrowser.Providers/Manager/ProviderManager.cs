@@ -69,11 +69,12 @@ namespace MediaBrowser.Providers.Manager
             o.PoolInitialFill = 1;
         });
 
-        private IImageProvider[] _imageProviders = Array.Empty<IImageProvider>();
-        private IMetadataService[] _metadataServices = Array.Empty<IMetadataService>();
-        private IMetadataProvider[] _metadataProviders = Array.Empty<IMetadataProvider>();
-        private IMetadataSaver[] _savers = Array.Empty<IMetadataSaver>();
-        private IExternalId[] _externalIds = Array.Empty<IExternalId>();
+        private IImageProvider[] _imageProviders = [];
+        private IMetadataService[] _metadataServices = [];
+        private IMetadataProvider[] _metadataProviders = [];
+        private IMetadataSaver[] _savers = [];
+        private IExternalId[] _externalIds = [];
+        private IExternalUrlProvider[] _externalUrlProviders = [];
         private bool _isProcessingRefreshQueue;
         private bool _disposed;
 
@@ -132,12 +133,14 @@ namespace MediaBrowser.Providers.Manager
             IEnumerable<IMetadataService> metadataServices,
             IEnumerable<IMetadataProvider> metadataProviders,
             IEnumerable<IMetadataSaver> metadataSavers,
-            IEnumerable<IExternalId> externalIds)
+            IEnumerable<IExternalId> externalIds,
+            IEnumerable<IExternalUrlProvider> externalUrlProviders)
         {
             _imageProviders = imageProviders.ToArray();
             _metadataServices = metadataServices.OrderBy(i => i.Order).ToArray();
             _metadataProviders = metadataProviders.ToArray();
             _externalIds = externalIds.OrderBy(i => i.ProviderName).ToArray();
+            _externalUrlProviders = externalUrlProviders.OrderBy(i => i.Name).ToArray();
 
             _savers = metadataSavers.ToArray();
         }
@@ -879,29 +882,33 @@ namespace MediaBrowser.Providers.Manager
         {
             return GetExternalIds(item)
                 .Select(i =>
-            {
-                if (string.IsNullOrEmpty(i.UrlFormatString))
                 {
-                    return null;
-                }
+                    if (string.IsNullOrEmpty(i.UrlFormatString))
+                    {
+                        return null;
+                    }
 
-                var value = item.GetProviderId(i.Key);
+                    var value = item.GetProviderId(i.Key);
 
-                if (string.IsNullOrEmpty(value))
-                {
-                    return null;
-                }
+                    if (string.IsNullOrEmpty(value))
+                    {
+                        return null;
+                    }
 
-                return new ExternalUrl
-                {
-                    Name = i.ProviderName,
-                    Url = string.Format(
-                        CultureInfo.InvariantCulture,
-                        i.UrlFormatString,
-                        value)
-                };
-            }).Where(i => i is not null)
-                .Concat(item.GetRelatedUrls())!; // We just filtered out all the nulls
+                    return new ExternalUrl
+                    {
+                        Name = i.ProviderName,
+                        Url = string.Format(
+                            CultureInfo.InvariantCulture,
+                            i.UrlFormatString,
+                            value)
+                    };
+                })
+                .Where(i => i is not null)
+                .Concat(_externalUrlProviders
+                    .SelectMany(p => p
+                        .GetExternalUrls(item)
+                        .Select(externalUrl => new ExternalUrl { Name = p.Name, Url = externalUrl })))!;
         }
 
         /// <inheritdoc/>
