@@ -62,9 +62,10 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 ReadEpisodeDetailsFromXml(item, xml, settings, cancellationToken);
 
                 // Extract the last episode number from nfo
-                // Retrieves all additional episodedetails blocks from the rest of the nfo and concatenates the name and overview tags with the first episode
+                // Retrieves all additional episodedetails blocks from the rest of the nfo and concatenates the name, originalTitle and overview tags with the first episode
                 // This is needed because XBMC metadata uses multiple episodedetails blocks instead of episodenumberend tag
                 var name = new StringBuilder(item.Item.Name);
+                var originalTitle = new StringBuilder(item.Item.OriginalTitle);
                 var overview = new StringBuilder(item.Item.Overview);
                 while ((index = xmlFile.IndexOf(srch, StringComparison.OrdinalIgnoreCase)) != -1)
                 {
@@ -89,6 +90,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         overview.Append(" / ").Append(additionalEpisode.Item.Overview);
                     }
 
+                    if (!string.IsNullOrEmpty(additionalEpisode.Item.OriginalTitle))
+                    {
+                        originalTitle.Append(" / ").Append(additionalEpisode.Item.OriginalTitle);
+                    }
+
                     if (additionalEpisode.Item.IndexNumber != null)
                     {
                         item.Item.IndexNumberEnd = Math.Max((int)additionalEpisode.Item.IndexNumber, item.Item.IndexNumberEnd ?? (int)additionalEpisode.Item.IndexNumber);
@@ -96,6 +102,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 }
 
                 item.Item.Name = name.ToString();
+                item.Item.OriginalTitle = originalTitle.ToString();
                 item.Item.Overview = overview.ToString();
             }
             catch (XmlException)
