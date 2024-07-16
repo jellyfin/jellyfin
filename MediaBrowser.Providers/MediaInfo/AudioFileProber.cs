@@ -294,7 +294,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (trackGainTag is not null)
             {
-                if (trackGainTag.ToLower(CultureInfo.InvariantCulture).EndsWith("db", StringComparison.OrdinalIgnoreCase))
+                if (trackGainTag.EndsWith("db", StringComparison.OrdinalIgnoreCase))
                 {
                     trackGainTag = trackGainTag[..^2].Trim();
                 }
@@ -313,13 +313,9 @@ namespace MediaBrowser.Providers.MediaInfo
             if ((options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzArtist, out _))
                 && !string.IsNullOrEmpty(tags.MusicBrainzArtistId))
             {
-                track.AdditionalFields.TryGetValue("MUSICBRAINZ_ARTISTID", out var musicBrainzArtistTag);
-                if (musicBrainzArtistTag is null)
-                {
-                    track.AdditionalFields.TryGetValue("MusicBrainz Artist Id", out musicBrainzArtistTag);
-                }
-
-                if (musicBrainzArtistTag is not null)
+                if ((track.AdditionalFields.TryGetValue("MUSICBRAINZ_ARTISTID", out var musicBrainzArtistTag)
+                     || track.AdditionalFields.TryGetValue("MusicBrainz Artist Id", out musicBrainzArtistTag))
+                    && !string.IsNullOrEmpty(musicBrainzArtistTag))
                 {
                     audio.TrySetProviderId(MetadataProvider.MusicBrainzArtist, musicBrainzArtistTag);
                 }
@@ -328,13 +324,9 @@ namespace MediaBrowser.Providers.MediaInfo
             if ((options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzAlbumArtist, out _))
                 && !string.IsNullOrEmpty(tags.MusicBrainzReleaseArtistId))
             {
-                track.AdditionalFields.TryGetValue("MUSICBRAINZ_ALBUMARTISTID", out var musicBrainzReleaseArtistIdTag);
-                if (musicBrainzReleaseArtistIdTag is null)
-                {
-                    track.AdditionalFields.TryGetValue("MusicBrainz Album Artist Id", out musicBrainzReleaseArtistIdTag);
-                }
-
-                if (musicBrainzReleaseArtistIdTag is not null)
+                if ((track.AdditionalFields.TryGetValue("MUSICBRAINZ_ALBUMARTISTID", out var musicBrainzReleaseArtistIdTag)
+                     || track.AdditionalFields.TryGetValue("MusicBrainz Album Artist Id", out musicBrainzReleaseArtistIdTag))
+                    && !string.IsNullOrEmpty(musicBrainzReleaseArtistIdTag))
                 {
                     audio.TrySetProviderId(MetadataProvider.MusicBrainzAlbumArtist, musicBrainzReleaseArtistIdTag);
                 }
@@ -343,13 +335,9 @@ namespace MediaBrowser.Providers.MediaInfo
             if ((options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzAlbum, out _))
                 && !string.IsNullOrEmpty(tags.MusicBrainzReleaseId))
             {
-                track.AdditionalFields.TryGetValue("MUSICBRAINZ_ALBUMID", out var musicBrainzReleaseIdTag);
-                if (musicBrainzReleaseIdTag is null)
-                {
-                    track.AdditionalFields.TryGetValue("MusicBrainz Album Id", out musicBrainzReleaseIdTag);
-                }
-
-                if (musicBrainzReleaseIdTag is not null)
+                if ((track.AdditionalFields.TryGetValue("MUSICBRAINZ_ALBUMID", out var musicBrainzReleaseIdTag)
+                     || track.AdditionalFields.TryGetValue("MusicBrainz Album Id", out musicBrainzReleaseIdTag))
+                    && !string.IsNullOrEmpty(musicBrainzReleaseIdTag))
                 {
                     audio.TrySetProviderId(MetadataProvider.MusicBrainzAlbum, musicBrainzReleaseIdTag);
                 }
@@ -358,13 +346,9 @@ namespace MediaBrowser.Providers.MediaInfo
             if ((options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzReleaseGroup, out _))
                 && !string.IsNullOrEmpty(tags.MusicBrainzReleaseGroupId))
             {
-                track.AdditionalFields.TryGetValue("MUSICBRAINZ_RELEASEGROUPID", out var musicBrainzReleaseGroupIdTag);
-                if (musicBrainzReleaseGroupIdTag is null)
-                {
-                    track.AdditionalFields.TryGetValue("MusicBrainz Release Group Id", out musicBrainzReleaseGroupIdTag);
-                }
-
-                if (musicBrainzReleaseGroupIdTag is not null)
+                if ((track.AdditionalFields.TryGetValue("MUSICBRAINZ_RELEASEGROUPID", out var musicBrainzReleaseGroupIdTag)
+                     || track.AdditionalFields.TryGetValue("MusicBrainz Release Group Id", out musicBrainzReleaseGroupIdTag))
+                    && !string.IsNullOrEmpty(musicBrainzReleaseGroupIdTag))
                 {
                     audio.TrySetProviderId(MetadataProvider.MusicBrainzReleaseGroup, musicBrainzReleaseGroupIdTag);
                 }
@@ -372,12 +356,12 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzTrack, out _))
             {
-                track.AdditionalFields.TryGetValue("MUSICBRAINZ_RELEASETRACKID", out var trackMbId);
-                if (trackMbId is null)
+                if ((track.AdditionalFields.TryGetValue("MUSICBRAINZ_RELEASETRACKID", out var trackMbId)
+                     || track.AdditionalFields.TryGetValue("MusicBrainz Release Track Id", out trackMbId))
+                    && !string.IsNullOrEmpty(trackMbId))
                 {
-                    track.AdditionalFields.TryGetValue("MusicBrainz Release Track Id", out trackMbId);
+                    audio.SetProviderId(MetadataProvider.MusicBrainzTrack, trackMbId);
                 }
-
                 if (trackMbId is not null)
                 {
                     audio.TrySetProviderId(MetadataProvider.MusicBrainzTrack, trackMbId);
