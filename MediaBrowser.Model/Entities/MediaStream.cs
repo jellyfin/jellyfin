@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Model.Dlna;
@@ -585,6 +586,7 @@ namespace MediaBrowser.Model.Entities
             }
         }
 
+        [JsonIgnore]
         public bool IsPgsSubtitleStream
         {
             get
@@ -608,6 +610,7 @@ namespace MediaBrowser.Model.Entities
         /// All text-based and pgs subtitles can be extracted.
         /// </summary>
         /// <value><c>true</c> if this is a extractable subtitle steam otherwise, <c>false</c>.</value>
+        [JsonIgnore]
         public bool IsExtractableSubtitleStream => IsTextSubtitleStream || IsPgsSubtitleStream;
 
         /// <summary>
