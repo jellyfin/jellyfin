@@ -142,7 +142,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <inheritdoc />
         public bool IsVaapiDeviceSupportVulkanDrmInterop => _isVaapiDeviceSupportVulkanDrmInterop;
 
-        public bool IsJellyfinFfmpeg => SupportsFilter("alphasrc");
+        /// <summary>
+        /// Gets a value indicating whether the ffmpeg in use is likely Jellyfin FFmpeg.
+        /// Assume the FFmpeg currently using is Jellyfin ffmpeg if it supports alphasrc filter.
+        /// The alphasrc filter is only included in Jellyfin's own fork and is almost useless
+        /// on its own.
+        /// </summary>
+        public bool LikelyToBeJellyfinFfmpeg => SupportsFilter("alphasrc");
 
         [GeneratedRegex(@"[^\/\\]+?(\.[^\/\\\n.]+)?$")]
         private static partial Regex FfprobePathRegex();
@@ -886,7 +892,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 inputArg = "-threads " + threads + " " + inputArg; // HW accel args set a different input thread count, only set if disabled
             }
 
-            if (options.HardwareAccelerationType.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase) && IsJellyfinFfmpeg)
+            if (options.HardwareAccelerationType.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase) && LikelyToBeJellyfinFfmpeg)
             {
                 // VideoToolbox supports low priority decoding, which is useful for trickplay
                 inputArg = "-hwaccel_flags +low_priority " + inputArg;
