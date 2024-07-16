@@ -34,6 +34,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly LyricResolver _lyricResolver;
         private readonly ILyricManager _lyricManager;
+        private readonly bool _forceFfprobe;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AudioFileProber"/> class.
@@ -61,6 +62,7 @@ namespace MediaBrowser.Providers.MediaInfo
             _mediaSourceManager = mediaSourceManager;
             _lyricResolver = lyricResolver;
             _lyricManager = lyricManager;
+            _forceFfprobe = bool.TryParse(Environment.GetEnvironmentVariable("JELLYFIN_USE_LEGACY_AUDIO_PROBER"), out var forceFfprobe) && forceFfprobe;
         }
 
         /// <summary>
@@ -158,43 +160,46 @@ namespace MediaBrowser.Providers.MediaInfo
         private async Task FetchDataFromTags(Audio audio, Model.MediaInfo.MediaInfo mediaInfo, MetadataRefreshOptions options, bool tryExtractEmbeddedLyrics)
         {
             Tag? tags = null;
-            try
+            if (!_forceFfprobe)
             {
-                using var file = TagLib.File.Create(audio.Path);
-                var tagTypes = file.TagTypesOnDisk;
+                try
+                {
+                    using var file = TagLib.File.Create(audio.Path);
+                    var tagTypes = file.TagTypesOnDisk;
 
-                if (tagTypes.HasFlag(TagTypes.Id3v2))
-                {
-                    tags = file.GetTag(TagTypes.Id3v2);
+                    if (tagTypes.HasFlag(TagTypes.Id3v2))
+                    {
+                        tags = file.GetTag(TagTypes.Id3v2);
+                    }
+                    else if (tagTypes.HasFlag(TagTypes.Ape))
+                    {
+                        tags = file.GetTag(TagTypes.Ape);
+                    }
+                    else if (tagTypes.HasFlag(TagTypes.FlacMetadata))
+                    {
+                        tags = file.GetTag(TagTypes.FlacMetadata);
+                    }
+                    else if (tagTypes.HasFlag(TagTypes.Apple))
+                    {
+                        tags = file.GetTag(TagTypes.Apple);
+                    }
+                    else if (tagTypes.HasFlag(TagTypes.Xiph))
+                    {
+                        tags = file.GetTag(TagTypes.Xiph);
+                    }
+                    else if (tagTypes.HasFlag(TagTypes.AudibleMetadata))
+                    {
+                        tags = file.GetTag(TagTypes.AudibleMetadata);
+                    }
+                    else if (tagTypes.HasFlag(TagTypes.Id3v1))
+                    {
+                        tags = file.GetTag(TagTypes.Id3v1);
+                    }
                 }
-                else if (tagTypes.HasFlag(TagTypes.Ape))
+                catch (Exception e)
                 {
-                    tags = file.GetTag(TagTypes.Ape);
+                    _logger.LogWarning(e, "TagLib-Sharp does not support this audio");
                 }
-                else if (tagTypes.HasFlag(TagTypes.FlacMetadata))
-                {
-                    tags = file.GetTag(TagTypes.FlacMetadata);
-                }
-                else if (tagTypes.HasFlag(TagTypes.Apple))
-                {
-                    tags = file.GetTag(TagTypes.Apple);
-                }
-                else if (tagTypes.HasFlag(TagTypes.Xiph))
-                {
-                    tags = file.GetTag(TagTypes.Xiph);
-                }
-                else if (tagTypes.HasFlag(TagTypes.AudibleMetadata))
-                {
-                    tags = file.GetTag(TagTypes.AudibleMetadata);
-                }
-                else if (tagTypes.HasFlag(TagTypes.Id3v1))
-                {
-                    tags = file.GetTag(TagTypes.Id3v1);
-                }
-            }
-            catch (Exception e)
-            {
-                _logger.LogWarning(e, "TagLib-Sharp does not support this audio");
             }
 
             tags ??= new TagLib.Id3v2.Tag();
