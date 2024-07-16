@@ -721,6 +721,8 @@ namespace MediaBrowser.MediaEncoding.Probing
             if (streamInfo.CodecType == CodecType.Audio)
             {
                 stream.Type = MediaStreamType.Audio;
+                stream.LocalizedDefault = _localization.GetLocalizedString("Default");
+                stream.LocalizedExternal = _localization.GetLocalizedString("External");
 
                 stream.Channels = streamInfo.Channels;
 
