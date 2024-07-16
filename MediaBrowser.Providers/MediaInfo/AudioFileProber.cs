@@ -360,10 +360,6 @@ namespace MediaBrowser.Providers.MediaInfo
                      || track.AdditionalFields.TryGetValue("MusicBrainz Release Track Id", out trackMbId))
                     && !string.IsNullOrEmpty(trackMbId))
                 {
-                    audio.SetProviderId(MetadataProvider.MusicBrainzTrack, trackMbId);
-                }
-                if (trackMbId is not null)
-                {
                     audio.TrySetProviderId(MetadataProvider.MusicBrainzTrack, trackMbId);
                 }
             }
