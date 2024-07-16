@@ -27,6 +27,7 @@ namespace MediaBrowser.Providers.MediaInfo
     /// </summary>
     public class AudioFileProber
     {
+        private const char InternalValueSeparator = '\u001F';
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IItemRepository _itemRepo;
         private readonly ILibraryManager _libraryManager;
@@ -61,6 +62,7 @@ namespace MediaBrowser.Providers.MediaInfo
             _mediaSourceManager = mediaSourceManager;
             _lyricResolver = lyricResolver;
             _lyricManager = lyricManager;
+            ATL.Settings.DisplayValueSeparator = InternalValueSeparator;
         }
 
         /// <summary>
@@ -156,7 +158,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="tryExtractEmbeddedLyrics">Whether to extract embedded lyrics to lrc file. </param>
         private async Task FetchDataFromTags(Audio audio, Model.MediaInfo.MediaInfo mediaInfo, MetadataRefreshOptions options, bool tryExtractEmbeddedLyrics)
         {
-            ATL.Settings.DisplayValueSeparator = '\u001F';
+            var test = ATL.Settings.DisplayValueSeparator;
             Track track = new Track(audio.Path);
 
             // ATL will fall back to filename as title when it does not understand the metadata
@@ -173,7 +175,7 @@ namespace MediaBrowser.Providers.MediaInfo
             if (audio.SupportsPeople && !audio.LockedFields.Contains(MetadataField.Cast))
             {
                 var people = new List<PersonInfo>();
-                var albumArtists = string.IsNullOrEmpty(track.AlbumArtist) ? mediaInfo.AlbumArtists : track.AlbumArtist.Split('\u001F');
+                var albumArtists = string.IsNullOrEmpty(track.AlbumArtist) ? mediaInfo.AlbumArtists : track.AlbumArtist.Split(InternalValueSeparator);
                 foreach (var albumArtist in albumArtists)
                 {
                     if (!string.IsNullOrEmpty(albumArtist))
@@ -186,7 +188,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     }
                 }
 
-                var performers = string.IsNullOrEmpty(track.Artist) ? mediaInfo.Artists : track.Artist.Split('\u001F');
+                var performers = string.IsNullOrEmpty(track.Artist) ? mediaInfo.Artists : track.Artist.Split(InternalValueSeparator);
                 foreach (var performer in performers)
                 {
                     if (!string.IsNullOrEmpty(performer))
@@ -199,7 +201,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     }
                 }
 
-                foreach (var composer in track.Composer.Split('\u001F'))
+                foreach (var composer in track.Composer.Split(InternalValueSeparator))
                 {
                     if (!string.IsNullOrEmpty(composer))
                     {
@@ -283,7 +285,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (!audio.LockedFields.Contains(MetadataField.Genres))
             {
-                var genres = string.IsNullOrEmpty(track.Genre) ? mediaInfo.Genres : track.Genre.Split('\u001F').Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+                var genres = string.IsNullOrEmpty(track.Genre) ? mediaInfo.Genres : track.Genre.Split(InternalValueSeparator).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
                 audio.Genres = options.ReplaceAllMetadata || audio.Genres == null || audio.Genres.Length == 0
                     ? genres
                     : audio.Genres;
