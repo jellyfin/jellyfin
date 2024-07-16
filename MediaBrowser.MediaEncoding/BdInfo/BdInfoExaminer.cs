@@ -86,7 +86,7 @@ public class BdInfoExaminer : IBlurayExaminer
         if (playlist.StreamClips is not null && playlist.StreamClips.Count > 0)
         {
             // Get the files in the playlist
-            outputStream.Files = playlist.StreamClips.Select(i => i.StreamFile.Name).ToArray();
+            outputStream.Files = playlist.StreamClips.Select(i => i.StreamFile.FileInfo.FullName).ToArray();
         }
 
         return outputStream;

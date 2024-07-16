@@ -1155,18 +1155,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         /// <inheritdoc />
         public IReadOnlyList<string> GetPrimaryPlaylistM2tsFiles(string path)
-        {
-            // Get all playable .m2ts files
-            var validPlaybackFiles = _blurayExaminer.GetDiscInfo(path).Files;
-
-            // Get all files from the BDMV/STREAMING directory
-            // Only return playable local .m2ts files
-            var files = _fileSystem.GetFiles(Path.Join(path, "BDMV", "STREAM")).ToList();
-            return validPlaybackFiles
-                .Select(validFile => files.FirstOrDefault(f => Path.GetFileName(f.FullName.AsSpan()).Equals(validFile, StringComparison.OrdinalIgnoreCase))?.FullName)
-                .Where(f => f is not null)
-                .ToList();
-        }
+            => _blurayExaminer.GetDiscInfo(path).Files;
 
         /// <inheritdoc />
         public string GetInputPathArgument(EncodingJobInfo state)
@@ -1177,8 +1166,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             return mediaSource.VideoType switch
             {
-                VideoType.Dvd => GetInputArgument(GetPrimaryPlaylistVobFiles(path, null).ToList(), mediaSource),
-                VideoType.BluRay => GetInputArgument(GetPrimaryPlaylistM2tsFiles(path).ToList(), mediaSource),
+                VideoType.Dvd => GetInputArgument(GetPrimaryPlaylistVobFiles(path, null), mediaSource),
+                VideoType.BluRay => GetInputArgument(GetPrimaryPlaylistM2tsFiles(path), mediaSource),
                 _ => GetInputArgument(path, mediaSource)
             };
         }
