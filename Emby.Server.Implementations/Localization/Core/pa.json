@@ -104,7 +104,7 @@
     "Forced": "ਮਜਬੂਰ",
     "Folders": "ਫੋਲਡਰ",
     "Favorites": "ਮਨਪਸੰਦ",
-    "FailedLoginAttemptWithUserName": "{0} ਤੋਂ ਲਾਗਇਨ ਕੋਸ਼ਿਸ਼ ਫੇਲ ਹੋਈ",
+    "FailedLoginAttemptWithUserName": "{0} ਤੋਂ ਲਾਗਇਨ ਦੀ ਕੋਸ਼ਿਸ਼ ਫੇਲ ਹੋਈ",
     "DeviceOnlineWithName": "{0} ਜੁੜਿਆ ਹੋਇਆ ਹੈ",
     "DeviceOfflineWithName": "{0} ਡਿਸਕਨੈਕਟ ਹੋ ਗਿਆ ਹੈ",
     "Default": "ਡਿਫੌਲਟ",
@@ -119,5 +119,6 @@
     "AppDeviceValues": "ਐਪ: {0}, ਜੰਤਰ: {1}",
     "Albums": "ਐਲਬਮਾਂ",
     "TaskOptimizeDatabase": "ਡਾਟਾਬੇਸ ਅਨੁਕੂਲ ਬਣਾਓ",
-    "External": "ਬਾਹਰੀ"
+    "External": "ਬਾਹਰੀ",
+    "HearingImpaired": "ਸੁਨਣ ਵਿਚ ਕਮਜ਼ੋਰ"
 }
