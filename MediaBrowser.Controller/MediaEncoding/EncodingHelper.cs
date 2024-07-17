@@ -120,7 +120,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         private static readonly Dictionary<string, string> _mjpegCodecMap = new(StringComparer.OrdinalIgnoreCase)
         {
             { "vaapi", _defaultMjpegEncoder + "_vaapi" },
-            { "qsv", _defaultMjpegEncoder + "_qsv" }
+            { "qsv", _defaultMjpegEncoder + "_qsv" },
+            { "videotoolbox", _defaultMjpegEncoder + "_videotoolbox" }
         };
 
         public static readonly string[] LosslessAudioCodecs = new string[]

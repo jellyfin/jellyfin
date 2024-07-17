@@ -74,6 +74,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private IDictionary<int, bool> _filtersWithOption = new Dictionary<int, bool>();
 
         private bool _isPkeyPauseSupported = false;
+        private bool _isLowPriorityHwDecodeSupported = false;
 
         private bool _isVaapiDeviceAmd = false;
         private bool _isVaapiDeviceInteliHD = false;
@@ -194,6 +195,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 _threads = EncodingHelper.GetNumberOfThreads(null, options, null);
 
                 _isPkeyPauseSupported = validator.CheckSupportedRuntimeKey("p      pause transcoding");
+                _isLowPriorityHwDecodeSupported = validator.CheckSupportedHwaccelFlag("low_priority");
 
                 // Check the Vaapi device vendor
                 if (OperatingSystem.IsLinux()
@@ -884,6 +886,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 inputArg = "-threads " + threads + " " + inputArg; // HW accel args set a different input thread count, only set if disabled
             }
 
+            if (options.HardwareAccelerationType.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase) && _isLowPriorityHwDecodeSupported)
+            {
+                // VideoToolbox supports low priority decoding, which is useful for trickplay
+                inputArg = "-hwaccel_flags +low_priority " + inputArg;
+            }
+
             if (enableKeyFrameOnlyExtraction)
             {
                 inputArg = "-skip_frame nokey " + inputArg;
@@ -921,6 +929,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 encoderQuality = (100 - ((qualityScale - 1) * (100 / 30))) / 118;
             }
 
+            if (vidEncoder.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase))
+            {
+                // videotoolbox's mjpeg encoder uses jpeg quality scaled to QP2LAMBDA (118) instead of ffmpeg defined qscale
+                // ffmpeg qscale is a value from 1-31, with 1 being best quality and 31 being worst
+                // jpeg quality is a value from 0-100, with 0 being worst quality and 100 being best
+                encoderQuality = 118 - ((qualityScale - 1) * (118 / 30));
+            }
+
             // Output arguments
             var targetDirectory = Path.Combine(_configurationManager.ApplicationPaths.TempDirectory, Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(targetDirectory);
@@ -929,12 +945,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // Final command arguments
             var args = string.Format(
                 CultureInfo.InvariantCulture,
-                "-loglevel error {0} -an -sn {1} -threads {2} -c:v {3} {4}-f {5} \"{6}\"",
+                "-loglevel error {0} -an -sn {1} -threads {2} -c:v {3} {4}{5}-f {6} \"{7}\"",
                 inputArg,
                 filterParam,
                 outputThreads.GetValueOrDefault(_threads),
                 vidEncoder,
                 qualityScale.HasValue ? "-qscale:v " + encoderQuality.Value.ToString(CultureInfo.InvariantCulture) + " " : string.Empty,
+                vidEncoder.Contains("videotoolbox", StringComparison.InvariantCultureIgnoreCase) ? "-allow_sw 1 " : string.Empty, // allow_sw fallback for some intel macs
                 "image2",
                 outputPath);
 
