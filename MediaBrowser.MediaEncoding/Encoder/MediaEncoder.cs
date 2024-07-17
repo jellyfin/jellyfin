@@ -143,14 +143,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <inheritdoc />
         public bool IsVaapiDeviceSupportVulkanDrmInterop => _isVaapiDeviceSupportVulkanDrmInterop;
 
-        /// <summary>
-        /// Gets a value indicating whether the ffmpeg in use is likely Jellyfin FFmpeg.
-        /// Assume the FFmpeg currently using is Jellyfin ffmpeg if it supports alphasrc filter.
-        /// The alphasrc filter is only included in Jellyfin's own fork and is almost useless
-        /// on its own.
-        /// </summary>
-        public bool LikelyToBeJellyfinFfmpeg => SupportsFilter("alphasrc");
-
         [GeneratedRegex(@"[^\/\\]+?(\.[^\/\\\n.]+)?$")]
         private static partial Regex FfprobePathRegex();
 
