@@ -291,7 +291,6 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             track.AdditionalFields.TryGetValue("REPLAYGAIN_TRACK_GAIN", out var trackGainTag);
-            float trackGain = float.NaN;
 
             if (trackGainTag is not null)
             {
@@ -302,17 +301,11 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 if (float.TryParse(trackGainTag, NumberStyles.Float, CultureInfo.InvariantCulture, out var value))
                 {
-                    trackGain = value;
+                    audio.NormalizationGain = value;
                 }
             }
 
-            if (!float.IsNaN(trackGain))
-            {
-                audio.NormalizationGain = trackGain;
-            }
-
-            if ((options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzArtist, out _))
-                && !string.IsNullOrEmpty(tags.MusicBrainzArtistId))
+            if (options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzArtist, out _))
             {
                 if ((track.AdditionalFields.TryGetValue("MUSICBRAINZ_ARTISTID", out var musicBrainzArtistTag)
                      || track.AdditionalFields.TryGetValue("MusicBrainz Artist Id", out musicBrainzArtistTag))
@@ -322,8 +315,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            if ((options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzAlbumArtist, out _))
-                && !string.IsNullOrEmpty(tags.MusicBrainzReleaseArtistId))
+            if (options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzAlbumArtist, out _))
             {
                 if ((track.AdditionalFields.TryGetValue("MUSICBRAINZ_ALBUMARTISTID", out var musicBrainzReleaseArtistIdTag)
                      || track.AdditionalFields.TryGetValue("MusicBrainz Album Artist Id", out musicBrainzReleaseArtistIdTag))
@@ -333,8 +325,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            if ((options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzAlbum, out _))
-                && !string.IsNullOrEmpty(tags.MusicBrainzReleaseId))
+            if (options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzAlbum, out _))
             {
                 if ((track.AdditionalFields.TryGetValue("MUSICBRAINZ_ALBUMID", out var musicBrainzReleaseIdTag)
                      || track.AdditionalFields.TryGetValue("MusicBrainz Album Id", out musicBrainzReleaseIdTag))
@@ -344,8 +335,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            if ((options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzReleaseGroup, out _))
-                && !string.IsNullOrEmpty(tags.MusicBrainzReleaseGroupId))
+            if (options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzReleaseGroup, out _))
             {
                 if ((track.AdditionalFields.TryGetValue("MUSICBRAINZ_RELEASEGROUPID", out var musicBrainzReleaseGroupIdTag)
                      || track.AdditionalFields.TryGetValue("MusicBrainz Release Group Id", out musicBrainzReleaseGroupIdTag))
