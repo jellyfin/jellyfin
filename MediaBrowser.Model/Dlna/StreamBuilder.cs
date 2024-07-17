@@ -419,6 +419,7 @@ namespace MediaBrowser.Model.Dlna
             var directPlayProfile = options.Profile.DirectPlayProfiles
                 .FirstOrDefault(x => x.Type == DlnaProfileType.Audio && IsAudioDirectPlaySupported(x, item, audioStream));
 
+            TranscodeReason transcodeReasons = 0;
             if (directPlayProfile is null)
             {
                 _logger.LogDebug(
@@ -432,17 +433,20 @@ namespace MediaBrowser.Model.Dlna
 
                 if (directStreamProfile is not null)
                 {
-                    return (directStreamProfile, PlayMethod.DirectStream, TranscodeReason.ContainerNotSupported);
+                    directPlayProfile = directStreamProfile;
+                    transcodeReasons |= TranscodeReason.ContainerNotSupported;
                 }
-
-                return (null, null, GetTranscodeReasonsFromDirectPlayProfile(item, null, audioStream, options.Profile.DirectPlayProfiles));
+                else
+                {
+                    return (null, null, GetTranscodeReasonsFromDirectPlayProfile(item, null, audioStream, options.Profile.DirectPlayProfiles));
+                }
             }
-
-            TranscodeReason transcodeReasons = 0;
 
             // The profile describes what the device supports
             // If device requirements are satisfied then allow both direct stream and direct play
-            if (item.SupportsDirectPlay)
+            // Note: As of 10.10 codebase, SupportsDirectPlay is always true because the MediaSourceInfo initializes this key as true
+            // Need to check additionally for current transcode reasons
+            if (item.SupportsDirectPlay && transcodeReasons == 0)
             {
                 if (!IsBitrateLimitExceeded(item, options.GetMaxBitrate(true) ?? 0))
                 {
