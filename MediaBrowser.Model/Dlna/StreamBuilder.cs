@@ -2185,6 +2185,7 @@ namespace MediaBrowser.Model.Dlna
         private static bool IsAudioDirectStreamSupported(DirectPlayProfile profile, MediaSourceInfo item, MediaStream audioStream)
         {
             // Check container type, this should NOT be supported
+            // If the container is supported, the file should be directly played
             if (!profile.SupportsContainer(item.Container))
             {
                 // Check audio codec, we cannot use the SupportsAudioCodec here
