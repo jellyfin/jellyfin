@@ -817,7 +817,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             if (allowHwAccel && enableKeyFrameOnlyExtraction)
             {
                 var supportsKeyFrameOnly = (string.Equals(options.HardwareAccelerationType, "nvenc", StringComparison.OrdinalIgnoreCase) && options.EnableEnhancedNvdecDecoder)
-                                           || (string.Equals(options.HardwareAccelerationType, "amf", StringComparison.OrdinalIgnoreCase) && OperatingSystem.IsWindows() && options.PreferSystemNativeHwDecoder)
+                                           || (string.Equals(options.HardwareAccelerationType, "amf", StringComparison.OrdinalIgnoreCase) && OperatingSystem.IsWindows())
                                            || (string.Equals(options.HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase) && options.PreferSystemNativeHwDecoder)
                                            || string.Equals(options.HardwareAccelerationType, "vaapi", StringComparison.OrdinalIgnoreCase)
                                            || string.Equals(options.HardwareAccelerationType, "videotoolbox", StringComparison.OrdinalIgnoreCase);
