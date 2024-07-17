@@ -158,7 +158,6 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="tryExtractEmbeddedLyrics">Whether to extract embedded lyrics to lrc file. </param>
         private async Task FetchDataFromTags(Audio audio, Model.MediaInfo.MediaInfo mediaInfo, MetadataRefreshOptions options, bool tryExtractEmbeddedLyrics)
         {
-            var test = ATL.Settings.DisplayValueSeparator;
             Track track = new Track(audio.Path);
 
             // ATL will fall back to filename as title when it does not understand the metadata
