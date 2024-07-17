@@ -153,6 +153,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="threads">The input/output thread count for ffmpeg.</param>
         /// <param name="qualityScale">The qscale value for ffmpeg.</param>
         /// <param name="priority">The process priority for the ffmpeg process.</param>
+        /// <param name="enableKeyFrameOnlyExtraction">Whether to only extract key frames.</param>
         /// <param name="encodingHelper">EncodingHelper instance.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Directory where images where extracted. A given image made before another will always be named with a lower number.</returns>
@@ -168,6 +169,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             int? threads,
             int? qualityScale,
             ProcessPriorityClass? priority,
+            bool enableKeyFrameOnlyExtraction,
             EncodingHelper encodingHelper,
             CancellationToken cancellationToken);
 
