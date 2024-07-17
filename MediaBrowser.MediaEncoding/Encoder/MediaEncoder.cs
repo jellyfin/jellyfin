@@ -1216,7 +1216,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 var duration = TimeSpan.FromTicks(mediaInfoResult.RunTimeTicks.Value).TotalSeconds;
 
                 // Add file path stanza to concat configuration
-                sw.WriteLine("file '{0}'", path);
+                sw.WriteLine("file '{0}'", path.Replace("'", @"'\''", StringComparison.Ordinal));
 
                 // Add duration stanza to concat configuration
                 sw.WriteLine("duration {0}", duration);
