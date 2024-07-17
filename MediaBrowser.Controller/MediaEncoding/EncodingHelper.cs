@@ -2588,7 +2588,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public string GetAudioVbrModeParam(string encoder, int bitrate, int channels)
         {
-            var bitratePerChannel = bitrate / channels;
+            var bitratePerChannel = bitrate / Math.Max(channels, 1);
             if (string.Equals(encoder, "libfdk_aac", StringComparison.OrdinalIgnoreCase))
             {
                 return " -vbr:a " + bitratePerChannel switch
