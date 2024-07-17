@@ -124,11 +124,8 @@ namespace MediaBrowser.Providers.MediaInfo
                     // Get BD disc information
                     blurayDiscInfo = GetBDInfo(item.Path);
 
-                    // Get playable .m2ts files
-                    var m2ts = _mediaEncoder.GetPrimaryPlaylistM2tsFiles(item.Path);
-
                     // Return if no playable .m2ts files are found
-                    if (blurayDiscInfo is null || blurayDiscInfo.Files.Length == 0 || m2ts.Count == 0)
+                    if (blurayDiscInfo is null || blurayDiscInfo.Files.Length == 0)
                     {
                         _logger.LogError("No playable .m2ts files found in Blu-ray structure, skipping FFprobe.");
                         return ItemUpdateType.MetadataImport;
@@ -138,7 +135,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     mediaInfoResult = await GetMediaInfo(
                         new Video
                         {
-                            Path = m2ts[0]
+                            Path = blurayDiscInfo.Files[0]
                         },
                         cancellationToken).ConfigureAwait(false);
                 }
@@ -358,6 +355,10 @@ namespace MediaBrowser.Providers.MediaInfo
                 blurayVideoStream.BitRate = blurayVideoStream.BitRate.GetValueOrDefault() == 0 ? ffmpegVideoStream.BitRate : blurayVideoStream.BitRate;
                 blurayVideoStream.Width = blurayVideoStream.Width.GetValueOrDefault() == 0 ? ffmpegVideoStream.Width : blurayVideoStream.Width;
                 blurayVideoStream.Height = blurayVideoStream.Height.GetValueOrDefault() == 0 ? ffmpegVideoStream.Width : blurayVideoStream.Height;
+                blurayVideoStream.ColorRange = ffmpegVideoStream.ColorRange;
+                blurayVideoStream.ColorSpace = ffmpegVideoStream.ColorSpace;
+                blurayVideoStream.ColorTransfer = ffmpegVideoStream.ColorTransfer;
+                blurayVideoStream.ColorPrimaries = ffmpegVideoStream.ColorPrimaries;
             }
         }
 

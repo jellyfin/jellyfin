@@ -6,7 +6,7 @@
     "ChapterNameValue": "അധ്യായം {0}",
     "DeviceOfflineWithName": "{0} വിച്ഛേദിച്ചു",
     "DeviceOnlineWithName": "{0} ബന്ധിപ്പിച്ചു",
-    "FailedLoginAttemptWithUserName": "{0} - എന്നതിൽ നിന്നുള്ള പ്രവേശന ശ്രമം പരാജയപ്പെട്ടു",
+    "FailedLoginAttemptWithUserName": "{0}ൽ നിന്നുള്ള പ്രവേശന ശ്രമം പരാജയപ്പെട്ടു",
     "Forced": "നിർബന്ധിച്ചു",
     "HeaderFavoriteAlbums": "പ്രിയപ്പെട്ട ആൽബങ്ങൾ",
     "HeaderFavoriteArtists": "പ്രിയപ്പെട്ട കലാകാരന്മാർ",
@@ -125,5 +125,9 @@
     "TaskKeyframeExtractorDescription": "കൂടുതൽ കൃത്യമായ HLS പ്ലേലിസ്റ്റുകൾ സൃഷ്‌ടിക്കുന്നതിന് വീഡിയോ ഫയലുകളിൽ നിന്ന് കീഫ്രെയിമുകൾ എക്‌സ്‌ട്രാക്‌റ്റ് ചെയ്യുന്നു. ഈ പ്രവർത്തനം പൂർത്തിയാവാൻ കുറച്ചധികം സമയം എടുത്തേക്കാം.",
     "TaskKeyframeExtractor": "കീഫ്രെയിം എക്സ്ട്രാക്റ്റർ",
     "TaskCleanCollectionsAndPlaylistsDescription": "നിലവിലില്ലാത്ത ശേഖരങ്ങളിൽ നിന്നും പ്ലേലിസ്റ്റുകളിൽ നിന്നും ഇനങ്ങൾ നീക്കംചെയ്യുന്നു.",
-    "TaskCleanCollectionsAndPlaylists": "ശേഖരങ്ങളും പ്ലേലിസ്റ്റുകളും വൃത്തിയാക്കുക"
+    "TaskCleanCollectionsAndPlaylists": "ശേഖരങ്ങളും പ്ലേലിസ്റ്റുകളും വൃത്തിയാക്കുക",
+    "TaskAudioNormalization": "സാധാരണ ശബ്ദ നിലയിലെത്തിലെത്തിക്കുക",
+    "TaskAudioNormalizationDescription": "സാധാരണ ശബ്ദ നിലയിലെത്തിലെത്തിക്കുന്ന ഡാറ്റയ്ക്കായി ഫയലുകൾ സ്കാൻ ചെയ്യുക.",
+    "TaskRefreshTrickplayImages": "ട്രിക്ക് പ്ലേ ചിത്രങ്ങൾ സൃഷ്ടിക്കുക",
+    "TaskRefreshTrickplayImagesDescription": "പ്രവർത്തനക്ഷമമാക്കിയ ലൈബ്രറികളിൽ വീഡിയോകൾക്കായി ട്രിക്ക്പ്ലേ പ്രിവ്യൂകൾ സൃഷ്ടിക്കുന്നു."
 }

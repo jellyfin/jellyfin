@@ -76,6 +76,7 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="hasSpecialFeature">Optional filter by items with special features.</param>
     /// <param name="hasTrailer">Optional filter by items with trailers.</param>
     /// <param name="adjacentTo">Optional. Return items that are siblings of a supplied item.</param>
+    /// <param name="indexNumber">Optional filter by index number.</param>
     /// <param name="parentIndexNumber">Optional filter by parent index number.</param>
     /// <param name="hasParentalRating">Optional filter by items that have or do not have a parental rating.</param>
     /// <param name="isHd">Optional filter by items that are HD or not.</param>
@@ -165,6 +166,7 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery] bool? hasSpecialFeature,
         [FromQuery] bool? hasTrailer,
         [FromQuery] Guid? adjacentTo,
+        [FromQuery] int? indexNumber,
         [FromQuery] int? parentIndexNumber,
         [FromQuery] bool? hasParentalRating,
         [FromQuery] bool? isHd,
@@ -366,6 +368,7 @@ public class ItemsController : BaseJellyfinApiController
                 MinCommunityRating = minCommunityRating,
                 MinCriticRating = minCriticRating,
                 ParentId = parentId ?? Guid.Empty,
+                IndexNumber = indexNumber,
                 ParentIndexNumber = parentIndexNumber,
                 EnableTotalRecordCount = enableTotalRecordCount,
                 ExcludeItemIds = excludeItemIds,
@@ -717,6 +720,7 @@ public class ItemsController : BaseJellyfinApiController
             hasSpecialFeature,
             hasTrailer,
             adjacentTo,
+            null,
             parentIndexNumber,
             hasParentalRating,
             isHd,

@@ -51,6 +51,7 @@ namespace MediaBrowser.Controller.Entities
             TrailerTypes = Array.Empty<TrailerType>();
             VideoTypes = Array.Empty<VideoType>();
             Years = Array.Empty<int>();
+            SkipDeserialization = false;
         }
 
         public InternalItemsQuery(User? user)
@@ -357,6 +358,8 @@ namespace MediaBrowser.Controller.Entities
         public string? SearchTerm { get; set; }
 
         public string? SeriesTimerId { get; set; }
+
+        public bool SkipDeserialization { get; set; }
 
         public void SetUser(User user)
         {

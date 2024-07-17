@@ -61,24 +61,8 @@ namespace MediaBrowser.Providers.TV
             await base.AfterMetadataRefresh(item, refreshOptions, cancellationToken).ConfigureAwait(false);
 
             RemoveObsoleteEpisodes(item);
+            await CreateSeasonsAsync(item, cancellationToken).ConfigureAwait(false);
             RemoveObsoleteSeasons(item);
-            await UpdateAndCreateSeasonsAsync(item, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <inheritdoc />
-        protected override bool IsFullLocalMetadata(Series item)
-        {
-            if (string.IsNullOrWhiteSpace(item.Overview))
-            {
-                return false;
-            }
-
-            if (!item.ProductionYear.HasValue)
-            {
-                return false;
-            }
-
-            return base.IsFullLocalMetadata(item);
         }
 
         /// <inheritdoc />
@@ -88,20 +72,6 @@ namespace MediaBrowser.Providers.TV
 
             var sourceItem = source.Item;
             var targetItem = target.Item;
-            var sourceSeasonNames = sourceItem.SeasonNames;
-            var targetSeasonNames = targetItem.SeasonNames;
-
-            if (replaceData || targetSeasonNames.Count == 0)
-            {
-                targetItem.SeasonNames = sourceSeasonNames;
-            }
-            else if (targetSeasonNames.Count != sourceSeasonNames.Count || !sourceSeasonNames.Keys.All(targetSeasonNames.ContainsKey))
-            {
-                foreach (var (number, name) in sourceSeasonNames)
-                {
-                    targetSeasonNames.TryAdd(number, name);
-                }
-            }
 
             if (replaceData || string.IsNullOrEmpty(targetItem.AirTime))
             {
@@ -121,7 +91,7 @@ namespace MediaBrowser.Providers.TV
 
         private void RemoveObsoleteSeasons(Series series)
         {
-            // TODO Legacy. It's not really "physical" seasons as any virtual seasons are always converted to non-virtual in UpdateAndCreateSeasonsAsync.
+            // TODO Legacy. It's not really "physical" seasons as any virtual seasons are always converted to non-virtual in CreateSeasonsAsync.
             var physicalSeasonNumbers = new HashSet<int>();
             var virtualSeasons = new List<Season>();
             foreach (var existingSeason in series.Children.OfType<Season>())
@@ -149,7 +119,8 @@ namespace MediaBrowser.Providers.TV
                         virtualSeason,
                         new DeleteOptions
                         {
-                            DeleteFileLocation = true
+                            // Internal metadata paths are removed regardless of this.
+                            DeleteFileLocation = false
                         },
                         false);
                 }
@@ -158,7 +129,7 @@ namespace MediaBrowser.Providers.TV
 
         private void RemoveObsoleteEpisodes(Series series)
         {
-            var episodes = series.GetEpisodes(null, new DtoOptions()).OfType<Episode>().ToList();
+            var episodes = series.GetEpisodes(null, new DtoOptions(), true).OfType<Episode>().ToList();
             var numberOfEpisodes = episodes.Count;
             // TODO: O(n^2), but can it be done faster without overcomplicating it?
             for (var i = 0; i < numberOfEpisodes; i++)
@@ -206,7 +177,8 @@ namespace MediaBrowser.Providers.TV
                 episode,
                 new DeleteOptions
                 {
-                    DeleteFileLocation = true
+                    // Internal metadata paths are removed regardless of this.
+                    DeleteFileLocation = false
                 },
                 false);
         }
@@ -214,14 +186,12 @@ namespace MediaBrowser.Providers.TV
         /// <summary>
         /// Creates seasons for all episodes if they don't exist.
         /// If no season number can be determined, a dummy season will be created.
-        /// Updates seasons names.
         /// </summary>
         /// <param name="series">The series.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The async task.</returns>
-        private async Task UpdateAndCreateSeasonsAsync(Series series, CancellationToken cancellationToken)
+        private async Task CreateSeasonsAsync(Series series, CancellationToken cancellationToken)
         {
-            var seasonNames = series.SeasonNames;
             var seriesChildren = series.GetRecursiveChildren(i => i is Episode || i is Season);
             var seasons = seriesChildren.OfType<Season>().ToList();
             var uniqueSeasonNumbers = seriesChildren
@@ -234,20 +204,14 @@ namespace MediaBrowser.Providers.TV
             {
                 // Null season numbers will have a 'dummy' season created because seasons are always required.
                 var existingSeason = seasons.FirstOrDefault(i => i.IndexNumber == seasonNumber);
-
-                if (!seasonNumber.HasValue || !seasonNames.TryGetValue(seasonNumber.Value, out var seasonName))
-                {
-                    seasonName = GetValidSeasonNameForSeries(series, null, seasonNumber);
-                }
-
                 if (existingSeason is null)
                 {
-                    var season = await CreateSeasonAsync(series, seasonName, seasonNumber, cancellationToken).ConfigureAwait(false);
-                    series.AddChild(season);
+                    var seasonName = GetValidSeasonNameForSeries(series, null, seasonNumber);
+                    await CreateSeasonAsync(series, seasonName, seasonNumber, cancellationToken).ConfigureAwait(false);
                 }
-                else if (!string.Equals(existingSeason.Name, seasonName, StringComparison.Ordinal))
+                else if (existingSeason.IsVirtualItem)
                 {
-                    existingSeason.Name = seasonName;
+                    existingSeason.IsVirtualItem = false;
                     await existingSeason.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
                 }
             }
@@ -261,7 +225,7 @@ namespace MediaBrowser.Providers.TV
         /// <param name="seasonNumber">The season number.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The newly created season.</returns>
-        private async Task<Season> CreateSeasonAsync(
+        private async Task CreateSeasonAsync(
             Series series,
             string? seasonName,
             int? seasonNumber,
@@ -278,14 +242,12 @@ namespace MediaBrowser.Providers.TV
                     typeof(Season)),
                 IsVirtualItem = false,
                 SeriesId = series.Id,
-                SeriesName = series.Name
+                SeriesName = series.Name,
+                SeriesPresentationUniqueKey = series.GetPresentationUniqueKey()
             };
 
             series.AddChild(season);
-
             await season.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(FileSystem)), cancellationToken).ConfigureAwait(false);
-
-            return season;
         }
 
         private string GetValidSeasonNameForSeries(Series series, string? seasonName, int? seasonNumber)

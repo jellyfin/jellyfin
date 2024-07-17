@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 
 using System.Collections.Generic;
+using System.Linq;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -49,8 +50,24 @@ namespace MediaBrowser.Providers.Playlists
             if (mergeMetadataSettings)
             {
                 targetItem.PlaylistMediaType = sourceItem.PlaylistMediaType;
-                targetItem.LinkedChildren = sourceItem.LinkedChildren;
-                targetItem.Shares = sourceItem.Shares;
+
+                if (replaceData || targetItem.LinkedChildren.Length == 0)
+                {
+                    targetItem.LinkedChildren = sourceItem.LinkedChildren;
+                }
+                else
+                {
+                    targetItem.LinkedChildren = sourceItem.LinkedChildren.Concat(targetItem.LinkedChildren).Distinct().ToArray();
+                }
+
+                if (replaceData || targetItem.Shares.Count == 0)
+                {
+                    targetItem.Shares = sourceItem.Shares;
+                }
+                else
+                {
+                    targetItem.Shares = sourceItem.Shares.Concat(targetItem.Shares).DistinctBy(s => s.UserId).ToArray();
+                }
             }
         }
     }

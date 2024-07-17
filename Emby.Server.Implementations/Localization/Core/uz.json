@@ -8,5 +8,20 @@
     "Channels": "Kanallar",
     "Books": "Kitoblar",
     "Artists": "Ijrochilar",
-    "Albums": "Albomlar"
+    "Albums": "Albomlar",
+    "AuthenticationSucceededWithUserName": "{0} muvaffaqiyatli tasdiqlandi",
+    "AppDeviceValues": "Ilova: {0}, Qurilma: {1}",
+    "Application": "Ilova",
+    "CameraImageUploadedFrom": "{0}dan yangi kamera rasmi yuklandi",
+    "DeviceOnlineWithName": "{0} ulangan",
+    "ItemRemovedWithName": "{0} kutbxonadan o'chirildi",
+    "External": "Tashqi",
+    "FailedLoginAttemptWithUserName": "Muvafaqiyatsiz kirishlar soni {0}",
+    "Forced": "Majburiy",
+    "ChapterNameValue": "{0}chi bo'lim",
+    "DeviceOfflineWithName": "{0} aloqa uzildi",
+    "HeaderLiveTV": "Jonli TV",
+    "HeaderNextUp": "Keyingisi",
+    "ItemAddedWithName": "{0} kutbxonaga qo'shildi",
+    "LabelIpAddressValue": "IP manzil: {0}"
 }

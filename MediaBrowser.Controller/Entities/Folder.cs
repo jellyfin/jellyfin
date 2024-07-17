@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -364,15 +365,23 @@ namespace MediaBrowser.Controller.Entities
 
             if (IsFileProtocol)
             {
-                IEnumerable<BaseItem> nonCachedChildren;
+                IEnumerable<BaseItem> nonCachedChildren = [];
 
                 try
                 {
                     nonCachedChildren = GetNonCachedChildren(directoryService);
                 }
+                catch (IOException ex)
+                {
+                    Logger.LogError(ex, "Error retrieving children from file system");
+                }
+                catch (SecurityException ex)
+                {
+                    Logger.LogError(ex, "Error retrieving children from file system");
+                }
                 catch (Exception ex)
                 {
-                    Logger.LogError(ex, "Error retrieving children folder");
+                    Logger.LogError(ex, "Error retrieving children");
                     return;
                 }
 

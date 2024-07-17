@@ -278,17 +278,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             series.RunTimeTicks = seriesResult.EpisodeRunTime.Select(i => TimeSpan.FromMinutes(i).Ticks).FirstOrDefault();
 
-            if (string.Equals(seriesResult.Status, "Ended", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(seriesResult.Status, "Canceled", StringComparison.OrdinalIgnoreCase))
+            if (Emby.Naming.TV.TvParserHelpers.TryParseSeriesStatus(seriesResult.Status, out var seriesStatus))
             {
-                series.Status = SeriesStatus.Ended;
-                series.EndDate = seriesResult.LastAirDate;
-            }
-            else
-            {
-                series.Status = SeriesStatus.Continuing;
+                series.Status = seriesStatus;
             }
 
+            series.EndDate = seriesResult.LastAirDate;
             series.PremiereDate = seriesResult.FirstAirDate;
 
             var ids = seriesResult.ExternalIds;

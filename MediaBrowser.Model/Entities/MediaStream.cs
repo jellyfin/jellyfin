@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Model.Dlna;
@@ -267,13 +268,13 @@ namespace MediaBrowser.Model.Entities
                             attributes.Add(StringHelper.FirstToUpper(fullLanguage ?? Language));
                         }
 
-                        if (!string.IsNullOrEmpty(Codec) && !string.Equals(Codec, "dca", StringComparison.OrdinalIgnoreCase) && !string.Equals(Codec, "dts", StringComparison.OrdinalIgnoreCase))
-                        {
-                            attributes.Add(AudioCodec.GetFriendlyName(Codec));
-                        }
-                        else if (!string.IsNullOrEmpty(Profile) && !string.Equals(Profile, "lc", StringComparison.OrdinalIgnoreCase))
+                        if (!string.IsNullOrEmpty(Profile) && !string.Equals(Profile, "lc", StringComparison.OrdinalIgnoreCase))
                         {
                             attributes.Add(Profile);
+                        }
+                        else if (!string.IsNullOrEmpty(Codec))
+                        {
+                            attributes.Add(AudioCodec.GetFriendlyName(Codec));
                         }
 
                         if (!string.IsNullOrEmpty(ChannelLayout))
@@ -585,6 +586,33 @@ namespace MediaBrowser.Model.Entities
             }
         }
 
+        [JsonIgnore]
+        public bool IsPgsSubtitleStream
+        {
+            get
+            {
+                if (Type != MediaStreamType.Subtitle)
+                {
+                    return false;
+                }
+
+                if (string.IsNullOrEmpty(Codec) && !IsExternal)
+                {
+                    return false;
+                }
+
+                return IsPgsFormat(Codec);
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this is a subtitle steam that is extractable by ffmpeg.
+        /// All text-based and pgs subtitles can be extracted.
+        /// </summary>
+        /// <value><c>true</c> if this is a extractable subtitle steam otherwise, <c>false</c>.</value>
+        [JsonIgnore]
+        public bool IsExtractableSubtitleStream => IsTextSubtitleStream || IsPgsSubtitleStream;
+
         /// <summary>
         /// Gets or sets a value indicating whether [supports external stream].
         /// </summary>
@@ -656,14 +684,22 @@ namespace MediaBrowser.Model.Entities
         {
             string codec = format ?? string.Empty;
 
-            // sub = external .sub file
+            // microdvd and dvdsub/vobsub share the ".sub" file extension, but it's text-based.
 
-            return !codec.Contains("pgs", StringComparison.OrdinalIgnoreCase)
-                   && !codec.Contains("dvd", StringComparison.OrdinalIgnoreCase)
-                   && !codec.Contains("dvbsub", StringComparison.OrdinalIgnoreCase)
-                   && !string.Equals(codec, "sub", StringComparison.OrdinalIgnoreCase)
-                   && !string.Equals(codec, "sup", StringComparison.OrdinalIgnoreCase)
-                   && !string.Equals(codec, "dvb_subtitle", StringComparison.OrdinalIgnoreCase);
+            return codec.Contains("microdvd", StringComparison.OrdinalIgnoreCase)
+                   || (!codec.Contains("pgs", StringComparison.OrdinalIgnoreCase)
+                       && !codec.Contains("dvdsub", StringComparison.OrdinalIgnoreCase)
+                       && !codec.Contains("dvbsub", StringComparison.OrdinalIgnoreCase)
+                       && !string.Equals(codec, "sup", StringComparison.OrdinalIgnoreCase)
+                       && !string.Equals(codec, "sub", StringComparison.OrdinalIgnoreCase));
+        }
+
+        public static bool IsPgsFormat(string format)
+        {
+            string codec = format ?? string.Empty;
+
+            return codec.Contains("pgs", StringComparison.OrdinalIgnoreCase)
+                   || string.Equals(codec, "sup", StringComparison.OrdinalIgnoreCase);
         }
 
         public bool SupportsSubtitleConversionTo(string toCodec)

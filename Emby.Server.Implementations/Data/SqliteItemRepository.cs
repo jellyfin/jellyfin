@@ -327,7 +327,6 @@ namespace Emby.Server.Implementations.Data
             DbFilePath = Path.Combine(_config.ApplicationPaths.DataPath, "library.db");
 
             CacheSize = configuration.GetSqliteCacheSize();
-            ReadConnectionsCount = Environment.ProcessorCount * 2;
         }
 
         /// <inheritdoc />
@@ -601,7 +600,7 @@ namespace Emby.Server.Implementations.Data
             transaction.Commit();
         }
 
-        private void SaveItemsInTransaction(SqliteConnection db, IEnumerable<(BaseItem Item, List<Guid> AncestorIds, BaseItem TopParent, string UserDataKey, List<string> InheritedTags)> tuples)
+        private void SaveItemsInTransaction(ManagedConnection db, IEnumerable<(BaseItem Item, List<Guid> AncestorIds, BaseItem TopParent, string UserDataKey, List<string> InheritedTags)> tuples)
         {
             using (var saveItemStatement = PrepareStatement(db, SaveItemCommandText))
             using (var deleteAncestorsStatement = PrepareStatement(db, "delete from AncestorIds where ItemId=@ItemId"))
@@ -1047,9 +1046,10 @@ namespace Emby.Server.Implementations.Data
             foreach (var part in value.SpanSplit('|'))
             {
                 var providerDelimiterIndex = part.IndexOf('=');
-                if (providerDelimiterIndex != -1 && providerDelimiterIndex == part.LastIndexOf('='))
+                // Don't let empty values through
+                if (providerDelimiterIndex != -1 && part.Length != providerDelimiterIndex + 1)
                 {
-                    item.SetProviderId(part.Slice(0, providerDelimiterIndex).ToString(), part.Slice(providerDelimiterIndex + 1).ToString());
+                    item.SetProviderId(part[..providerDelimiterIndex].ToString(), part[(providerDelimiterIndex + 1)..].ToString());
                 }
             }
         }
@@ -1261,7 +1261,7 @@ namespace Emby.Server.Implementations.Data
 
             CheckDisposed();
 
-            using (var connection = GetConnection())
+            using (var connection = GetConnection(true))
             using (var statement = PrepareStatement(connection, _retrieveItemColumnsSelectQuery))
             {
                 statement.TryBind("@guid", id);
@@ -1298,16 +1298,15 @@ namespace Emby.Server.Implementations.Data
                 && type != typeof(Book)
                 && type != typeof(LiveTvProgram)
                 && type != typeof(AudioBook)
-                && type != typeof(Audio)
                 && type != typeof(MusicAlbum);
         }
 
         private BaseItem GetItem(SqliteDataReader reader, InternalItemsQuery query)
         {
-            return GetItem(reader, query, HasProgramAttributes(query), HasEpisodeAttributes(query), HasServiceName(query), HasStartDate(query), HasTrailerTypes(query), HasArtistFields(query), HasSeriesFields(query));
+            return GetItem(reader, query, HasProgramAttributes(query), HasEpisodeAttributes(query), HasServiceName(query), HasStartDate(query), HasTrailerTypes(query), HasArtistFields(query), HasSeriesFields(query), false);
         }
 
-        private BaseItem GetItem(SqliteDataReader reader, InternalItemsQuery query, bool enableProgramAttributes, bool hasEpisodeAttributes, bool hasServiceName, bool queryHasStartDate, bool hasTrailerTypes, bool hasArtistFields, bool hasSeriesFields)
+        private BaseItem GetItem(SqliteDataReader reader, InternalItemsQuery query, bool enableProgramAttributes, bool hasEpisodeAttributes, bool hasServiceName, bool queryHasStartDate, bool hasTrailerTypes, bool hasArtistFields, bool hasSeriesFields, bool skipDeserialization)
         {
             var typeString = reader.GetString(0);
 
@@ -1320,7 +1319,7 @@ namespace Emby.Server.Implementations.Data
 
             BaseItem item = null;
 
-            if (TypeRequiresDeserialization(type))
+            if (TypeRequiresDeserialization(type) && !skipDeserialization)
             {
                 try
                 {
@@ -1888,7 +1887,7 @@ namespace Emby.Server.Implementations.Data
             CheckDisposed();
 
             var chapters = new List<ChapterInfo>();
-            using (var connection = GetConnection())
+            using (var connection = GetConnection(true))
             using (var statement = PrepareStatement(connection, "select StartPositionTicks,Name,ImagePath,ImageDateModified from " + ChaptersTableName + " where ItemId = @ItemId order by ChapterIndex asc"))
             {
                 statement.TryBind("@ItemId", item.Id);
@@ -1907,7 +1906,7 @@ namespace Emby.Server.Implementations.Data
         {
             CheckDisposed();
 
-            using (var connection = GetConnection())
+            using (var connection = GetConnection(true))
             using (var statement = PrepareStatement(connection, "select StartPositionTicks,Name,ImagePath,ImageDateModified from " + ChaptersTableName + " where ItemId = @ItemId and ChapterIndex=@ChapterIndex"))
             {
                 statement.TryBind("@ItemId", item.Id);
@@ -1981,7 +1980,7 @@ namespace Emby.Server.Implementations.Data
             transaction.Commit();
         }
 
-        private void InsertChapters(Guid idBlob, IReadOnlyList<ChapterInfo> chapters, SqliteConnection db)
+        private void InsertChapters(Guid idBlob, IReadOnlyList<ChapterInfo> chapters, ManagedConnection db)
         {
             var startIndex = 0;
             var limit = 100;
@@ -2323,7 +2322,7 @@ namespace Emby.Server.Implementations.Data
 
                 columns.Add(builder.ToString());
 
-                query.ExcludeItemIds = [..query.ExcludeItemIds, item.Id, ..item.ExtraIds];
+                query.ExcludeItemIds = [.. query.ExcludeItemIds, item.Id, .. item.ExtraIds];
                 query.ExcludeProviderIds = item.ProviderIds;
             }
 
@@ -2470,7 +2469,7 @@ namespace Emby.Server.Implementations.Data
             var commandText = commandTextBuilder.ToString();
 
             using (new QueryTimeLogger(Logger, commandText))
-            using (var connection = GetConnection())
+            using (var connection = GetConnection(true))
             using (var statement = PrepareStatement(connection, commandText))
             {
                 if (EnableJoinUserData(query))
@@ -2538,7 +2537,7 @@ namespace Emby.Server.Implementations.Data
             var commandText = commandTextBuilder.ToString();
             var items = new List<BaseItem>();
             using (new QueryTimeLogger(Logger, commandText))
-            using (var connection = GetConnection())
+            using (var connection = GetConnection(true))
             using (var statement = PrepareStatement(connection, commandText))
             {
                 if (EnableJoinUserData(query))
@@ -2562,7 +2561,7 @@ namespace Emby.Server.Implementations.Data
 
                 foreach (var row in statement.ExecuteQuery())
                 {
-                    var item = GetItem(row, query, hasProgramAttributes, hasEpisodeAttributes, hasServiceName, hasStartDate, hasTrailerTypes, hasArtistFields, hasSeriesFields);
+                    var item = GetItem(row, query, hasProgramAttributes, hasEpisodeAttributes, hasServiceName, hasStartDate, hasTrailerTypes, hasArtistFields, hasSeriesFields, query.SkipDeserialization);
                     if (item is not null)
                     {
                         items.Add(item);
@@ -2746,7 +2745,7 @@ namespace Emby.Server.Implementations.Data
 
             var list = new List<BaseItem>();
             var result = new QueryResult<BaseItem>();
-            using var connection = GetConnection();
+            using var connection = GetConnection(true);
             using var transaction = connection.BeginTransaction();
             if (!isReturningZeroItems)
             {
@@ -2774,7 +2773,7 @@ namespace Emby.Server.Implementations.Data
 
                     foreach (var row in statement.ExecuteQuery())
                     {
-                        var item = GetItem(row, query, hasProgramAttributes, hasEpisodeAttributes, hasServiceName, hasStartDate, hasTrailerTypes, hasArtistFields, hasSeriesFields);
+                        var item = GetItem(row, query, hasProgramAttributes, hasEpisodeAttributes, hasServiceName, hasStartDate, hasTrailerTypes, hasArtistFields, hasSeriesFields, false);
                         if (item is not null)
                         {
                             list.Add(item);
@@ -2831,7 +2830,7 @@ namespace Emby.Server.Implementations.Data
                     prepend.Add((ItemSortBy.Random, SortOrder.Ascending));
                 }
 
-                orderBy = query.OrderBy = [..prepend, ..orderBy];
+                orderBy = query.OrderBy = [.. prepend, .. orderBy];
             }
             else if (orderBy.Count == 0)
             {
@@ -2928,7 +2927,7 @@ namespace Emby.Server.Implementations.Data
             var commandText = commandTextBuilder.ToString();
             var list = new List<Guid>();
             using (new QueryTimeLogger(Logger, commandText))
-            using (var connection = GetConnection())
+            using (var connection = GetConnection(true))
             using (var statement = PrepareStatement(connection, commandText))
             {
                 if (EnableJoinUserData(query))
@@ -4477,7 +4476,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             transaction.Commit();
         }
 
-        private void ExecuteWithSingleParam(SqliteConnection db, string query, Guid value)
+        private void ExecuteWithSingleParam(ManagedConnection db, string query, Guid value)
         {
             using (var statement = PrepareStatement(db, query))
             {
@@ -4510,7 +4509,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             }
 
             var list = new List<string>();
-            using (var connection = GetConnection())
+            using (var connection = GetConnection(true))
             using (var statement = PrepareStatement(connection, commandText.ToString()))
             {
                 // Run this again to bind the params
@@ -4548,7 +4547,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             }
 
             var list = new List<PersonInfo>();
-            using (var connection = GetConnection())
+            using (var connection = GetConnection(true))
             using (var statement = PrepareStatement(connection, commandText.ToString()))
             {
                 // Run this again to bind the params
@@ -4633,7 +4632,7 @@ AND Type = @InternalPersonType)");
             return whereClauses;
         }
 
-        private void UpdateAncestors(Guid itemId, List<Guid> ancestorIds, SqliteConnection db, SqliteCommand deleteAncestorsStatement)
+        private void UpdateAncestors(Guid itemId, List<Guid> ancestorIds, ManagedConnection db, SqliteCommand deleteAncestorsStatement)
         {
             if (itemId.IsEmpty())
             {
@@ -4788,7 +4787,7 @@ AND Type = @InternalPersonType)");
 
             var list = new List<string>();
             using (new QueryTimeLogger(Logger, commandText))
-            using (var connection = GetConnection())
+            using (var connection = GetConnection(true))
             using (var statement = PrepareStatement(connection, commandText))
             {
                 foreach (var row in statement.ExecuteQuery())
@@ -4988,8 +4987,8 @@ AND Type = @InternalPersonType)");
             var list = new List<(BaseItem, ItemCounts)>();
             var result = new QueryResult<(BaseItem, ItemCounts)>();
             using (new QueryTimeLogger(Logger, commandText))
-            using (var connection = GetConnection())
-            using (var transaction = connection.BeginTransaction(deferred: true))
+            using (var connection = GetConnection(true))
+            using (var transaction = connection.BeginTransaction())
             {
                 if (!isReturningZeroItems)
                 {
@@ -5021,7 +5020,7 @@ AND Type = @InternalPersonType)");
 
                         foreach (var row in statement.ExecuteQuery())
                         {
-                            var item = GetItem(row, query, hasProgramAttributes, hasEpisodeAttributes, hasServiceName, hasStartDate, hasTrailerTypes, hasArtistFields, hasSeriesFields);
+                            var item = GetItem(row, query, hasProgramAttributes, hasEpisodeAttributes, hasServiceName, hasStartDate, hasTrailerTypes, hasArtistFields, hasSeriesFields, false);
                             if (item is not null)
                             {
                                 var countStartColumn = columns.Count - 1;
@@ -5144,12 +5143,12 @@ AND Type = @InternalPersonType)");
             list.AddRange(inheritedTags.Select(i => (6, i)));
 
             // Remove all invalid values.
-            list.RemoveAll(i => string.IsNullOrEmpty(i.Item2));
+            list.RemoveAll(i => string.IsNullOrWhiteSpace(i.Item2));
 
             return list;
         }
 
-        private void UpdateItemValues(Guid itemId, List<(int MagicNumber, string Value)> values, SqliteConnection db)
+        private void UpdateItemValues(Guid itemId, List<(int MagicNumber, string Value)> values, ManagedConnection db)
         {
             if (itemId.IsEmpty())
             {
@@ -5168,7 +5167,7 @@ AND Type = @InternalPersonType)");
             InsertItemValues(itemId, values, db);
         }
 
-        private void InsertItemValues(Guid id, List<(int MagicNumber, string Value)> values, SqliteConnection db)
+        private void InsertItemValues(Guid id, List<(int MagicNumber, string Value)> values, ManagedConnection db)
         {
             const int Limit = 100;
             var startIndex = 0;
@@ -5202,12 +5201,6 @@ AND Type = @InternalPersonType)");
 
                         var itemValue = currentValueInfo.Value;
 
-                        // Don't save if invalid
-                        if (string.IsNullOrWhiteSpace(itemValue))
-                        {
-                            continue;
-                        }
-
                         statement.TryBind("@Type" + index, currentValueInfo.MagicNumber);
                         statement.TryBind("@Value" + index, itemValue);
                         statement.TryBind("@CleanValue" + index, GetCleanValue(itemValue));
@@ -5228,24 +5221,25 @@ AND Type = @InternalPersonType)");
                 throw new ArgumentNullException(nameof(itemId));
             }
 
-            ArgumentNullException.ThrowIfNull(people);
-
             CheckDisposed();
 
             using var connection = GetConnection();
             using var transaction = connection.BeginTransaction();
-            // First delete chapters
+            // Delete all existing people first
             using var command = connection.CreateCommand();
             command.CommandText = "delete from People where ItemId=@ItemId";
             command.TryBind("@ItemId", itemId);
             command.ExecuteNonQuery();
 
-            InsertPeople(itemId, people, connection);
+            if (people is not null)
+            {
+                InsertPeople(itemId, people, connection);
+            }
 
             transaction.Commit();
         }
 
-        private void InsertPeople(Guid id, List<PersonInfo> people, SqliteConnection db)
+        private void InsertPeople(Guid id, List<PersonInfo> people, ManagedConnection db)
         {
             const int Limit = 100;
             var startIndex = 0;
@@ -5341,7 +5335,7 @@ AND Type = @InternalPersonType)");
 
             cmdText += " order by StreamIndex ASC";
 
-            using (var connection = GetConnection())
+            using (var connection = GetConnection(true))
             {
                 var list = new List<MediaStream>();
 
@@ -5394,7 +5388,7 @@ AND Type = @InternalPersonType)");
             transaction.Commit();
         }
 
-        private void InsertMediaStreams(Guid id, IReadOnlyList<MediaStream> streams, SqliteConnection db)
+        private void InsertMediaStreams(Guid id, IReadOnlyList<MediaStream> streams, ManagedConnection db)
         {
             const int Limit = 10;
             var startIndex = 0;
@@ -5728,7 +5722,7 @@ AND Type = @InternalPersonType)");
             cmdText += " order by AttachmentIndex ASC";
 
             var list = new List<MediaAttachment>();
-            using (var connection = GetConnection())
+            using (var connection = GetConnection(true))
             using (var statement = PrepareStatement(connection, cmdText))
             {
                 statement.TryBind("@ItemId", query.ItemId);
@@ -5778,7 +5772,7 @@ AND Type = @InternalPersonType)");
         private void InsertMediaAttachments(
             Guid id,
             IReadOnlyList<MediaAttachment> attachments,
-            SqliteConnection db,
+            ManagedConnection db,
             CancellationToken cancellationToken)
         {
             const int InsertAtOnce = 10;

@@ -183,6 +183,9 @@
  - [btopherjohnson](https://github.com/btopherjohnson)
  - [GeorgeH005](https://github.com/GeorgeH005)
  - [Vedant](https://github.com/viktory36/)
+ - [NotSaifA](https://github.com/NotSaifA)
+ - [HonestlyWhoKnows](https://github.com/honestlywhoknows)
+ - [ItsAllAboutTheCode](https://github.com/ItsAllAboutTheCode)
 
 # Emby Contributors
 
@@ -255,3 +258,4 @@
  - [JPUC1143](https://github.com/Jpuc1143/)
  - [0x25CBFC4F](https://github.com/0x25CBFC4F)
  - [Robert Lützner](https://github.com/rluetzner)
+ - [Nathan McCrina](https://github.com/nfmccrina)

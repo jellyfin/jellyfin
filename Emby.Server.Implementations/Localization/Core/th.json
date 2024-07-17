@@ -123,5 +123,7 @@
     "External": "ภายนอก",
     "HearingImpaired": "บกพร่องทางการได้ยิน",
     "TaskKeyframeExtractor": "ตัวแยกคีย์เฟรม",
-    "TaskKeyframeExtractorDescription": "แยกคีย์เฟรมจากไฟล์วีดีโอเพื่อสร้างรายการ HLS ให้ถูกต้อง. กระบวนการนี้อาจใช้ระยะเวลานาน"
+    "TaskKeyframeExtractorDescription": "แยกคีย์เฟรมจากไฟล์วีดีโอเพื่อสร้างรายการ HLS ให้ถูกต้อง. กระบวนการนี้อาจใช้ระยะเวลานาน",
+    "TaskRefreshTrickplayImages": "สร้างไฟล์รูปภาพสำหรับ Trickplay",
+    "TaskRefreshTrickplayImagesDescription": "สร้างภาพตัวอย่างของวีดีโอในคลังที่เปิดใช้งาน Trickplay"
 }

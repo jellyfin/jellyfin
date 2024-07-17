@@ -145,7 +145,7 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
             }
 
             _activeTuner = -1;
-            throw new LiveTvConflictException();
+            throw new LiveTvConflictException("No tuners available");
         }
 
         public async Task ChangeChannel(IHdHomerunChannelCommands commands, CancellationToken cancellationToken)

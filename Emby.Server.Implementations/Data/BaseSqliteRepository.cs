@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Jellyfin.Extensions;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;
@@ -13,6 +14,8 @@ namespace Emby.Server.Implementations.Data
     public abstract class BaseSqliteRepository : IDisposable
     {
         private bool _disposed = false;
+        private SemaphoreSlim _writeLock = new SemaphoreSlim(1, 1);
+        private SqliteConnection _writeConnection;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseSqliteRepository"/> class.
@@ -27,17 +30,6 @@ namespace Emby.Server.Implementations.Data
         /// Gets or sets the path to the DB file.
         /// </summary>
         protected string DbFilePath { get; set; }
-
-        /// <summary>
-        /// Gets or sets the number of write connections to create.
-        /// </summary>
-        /// <value>Path to the DB file.</value>
-        protected int WriteConnectionsCount { get; set; } = 1;
-
-        /// <summary>
-        /// Gets or sets the number of read connections to create.
-        /// </summary>
-        protected int ReadConnectionsCount { get; set; } = 1;
 
         /// <summary>
         /// Gets the logger.
@@ -98,9 +90,55 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        protected SqliteConnection GetConnection()
+        protected ManagedConnection GetConnection(bool readOnly = false)
         {
-            var connection = new SqliteConnection($"Filename={DbFilePath}");
+            if (!readOnly)
+            {
+                _writeLock.Wait();
+                if (_writeConnection is not null)
+                {
+                    return new ManagedConnection(_writeConnection, _writeLock);
+                }
+
+                var writeConnection = new SqliteConnection($"Filename={DbFilePath};Pooling=False");
+                writeConnection.Open();
+
+                if (CacheSize.HasValue)
+                {
+                    writeConnection.Execute("PRAGMA cache_size=" + CacheSize.Value);
+                }
+
+                if (!string.IsNullOrWhiteSpace(LockingMode))
+                {
+                    writeConnection.Execute("PRAGMA locking_mode=" + LockingMode);
+                }
+
+                if (!string.IsNullOrWhiteSpace(JournalMode))
+                {
+                    writeConnection.Execute("PRAGMA journal_mode=" + JournalMode);
+                }
+
+                if (JournalSizeLimit.HasValue)
+                {
+                    writeConnection.Execute("PRAGMA journal_size_limit=" + JournalSizeLimit.Value);
+                }
+
+                if (Synchronous.HasValue)
+                {
+                    writeConnection.Execute("PRAGMA synchronous=" + (int)Synchronous.Value);
+                }
+
+                if (PageSize.HasValue)
+                {
+                    writeConnection.Execute("PRAGMA page_size=" + PageSize.Value);
+                }
+
+                writeConnection.Execute("PRAGMA temp_store=" + (int)TempStore);
+
+                return new ManagedConnection(_writeConnection = writeConnection, _writeLock);
+            }
+
+            var connection = new SqliteConnection($"Filename={DbFilePath};Mode=ReadOnly");
             connection.Open();
 
             if (CacheSize.HasValue)
@@ -135,17 +173,17 @@ namespace Emby.Server.Implementations.Data
 
             connection.Execute("PRAGMA temp_store=" + (int)TempStore);
 
-            return connection;
+            return new ManagedConnection(connection, null);
         }
 
-        public SqliteCommand PrepareStatement(SqliteConnection connection, string sql)
+        public SqliteCommand PrepareStatement(ManagedConnection connection, string sql)
         {
             var command = connection.CreateCommand();
             command.CommandText = sql;
             return command;
         }
 
-        protected bool TableExists(SqliteConnection connection, string name)
+        protected bool TableExists(ManagedConnection connection, string name)
         {
             using var statement = PrepareStatement(connection, "select DISTINCT tbl_name from sqlite_master");
             foreach (var row in statement.ExecuteQuery())
@@ -159,7 +197,7 @@ namespace Emby.Server.Implementations.Data
             return false;
         }
 
-        protected List<string> GetColumnNames(SqliteConnection connection, string table)
+        protected List<string> GetColumnNames(ManagedConnection connection, string table)
         {
             var columnNames = new List<string>();
 
@@ -174,7 +212,7 @@ namespace Emby.Server.Implementations.Data
             return columnNames;
         }
 
-        protected void AddColumn(SqliteConnection connection, string table, string columnName, string type, List<string> existingColumnNames)
+        protected void AddColumn(ManagedConnection connection, string table, string columnName, string type, List<string> existingColumnNames)
         {
             if (existingColumnNames.Contains(columnName, StringComparison.OrdinalIgnoreCase))
             {
@@ -206,6 +244,24 @@ namespace Emby.Server.Implementations.Data
             {
                 return;
             }
+
+            if (dispose)
+            {
+                _writeLock.Wait();
+                try
+                {
+                    _writeConnection.Dispose();
+                }
+                finally
+                {
+                    _writeLock.Release();
+                }
+
+                _writeLock.Dispose();
+            }
+
+            _writeConnection = null;
+            _writeLock = null;
 
             _disposed = true;
         }

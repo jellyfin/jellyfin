@@ -127,5 +127,8 @@
     "HearingImpaired": "Hörselskadad",
     "TaskRefreshTrickplayImages": "Generera Trickplay-bilder",
     "TaskRefreshTrickplayImagesDescription": "Skapar trickplay-förhandsvisningar för videor i aktiverade bibliotek.",
-    "TaskCleanCollectionsAndPlaylists": "Rensa samlingar och spellistor"
+    "TaskCleanCollectionsAndPlaylists": "Rensa upp samlingar och spellistor",
+    "TaskAudioNormalization": "Ljudnormalisering",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Tar bort objekt från samlingar och spellistor som inte längre finns.",
+    "TaskAudioNormalizationDescription": "Skannar filer för ljudnormaliseringsdata."
 }

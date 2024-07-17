@@ -225,6 +225,10 @@ namespace MediaBrowser.Providers.Music
             {
                 targetItem.Artists = sourceItem.Artists;
             }
+            else
+            {
+                targetItem.Artists = targetItem.Artists.Concat(sourceItem.Artists).Distinct().ToArray();
+            }
 
             if (replaceData || string.IsNullOrEmpty(targetItem.GetProviderId(MetadataProvider.MusicBrainzAlbumArtist)))
             {
