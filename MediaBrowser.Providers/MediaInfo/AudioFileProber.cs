@@ -325,39 +325,32 @@ namespace MediaBrowser.Providers.MediaInfo
                 audio.NormalizationGain = (float)tags.ReplayGainTrackGain;
             }
 
-            if ((options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzArtist, out _))
-                && !string.IsNullOrEmpty(tags.MusicBrainzArtistId))
+            if (options.ReplaceAllMetadata || !audio.HasProviderId(MetadataProvider.MusicBrainzArtist))
             {
-                audio.SetProviderId(MetadataProvider.MusicBrainzArtist, tags.MusicBrainzArtistId);
+                audio.TrySetProviderId(MetadataProvider.MusicBrainzArtist, tags.MusicBrainzArtistId);
             }
 
-            if ((options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzAlbumArtist, out _))
-                && !string.IsNullOrEmpty(tags.MusicBrainzReleaseArtistId))
+            if (options.ReplaceAllMetadata || !audio.HasProviderId(MetadataProvider.MusicBrainzAlbumArtist))
             {
-                audio.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, tags.MusicBrainzReleaseArtistId);
+                audio.TrySetProviderId(MetadataProvider.MusicBrainzAlbumArtist, tags.MusicBrainzReleaseArtistId);
             }
 
-            if ((options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzAlbum, out _))
-                && !string.IsNullOrEmpty(tags.MusicBrainzReleaseId))
+            if (options.ReplaceAllMetadata || !audio.HasProviderId(MetadataProvider.MusicBrainzAlbum))
             {
-                audio.SetProviderId(MetadataProvider.MusicBrainzAlbum, tags.MusicBrainzReleaseId);
+                audio.TrySetProviderId(MetadataProvider.MusicBrainzAlbum, tags.MusicBrainzReleaseId);
             }
 
-            if ((options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzReleaseGroup, out _))
-                && !string.IsNullOrEmpty(tags.MusicBrainzReleaseGroupId))
+            if (options.ReplaceAllMetadata || !audio.HasProviderId(MetadataProvider.MusicBrainzReleaseGroup))
             {
-                audio.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, tags.MusicBrainzReleaseGroupId);
+                audio.TrySetProviderId(MetadataProvider.MusicBrainzReleaseGroup, tags.MusicBrainzReleaseGroupId);
             }
 
-            if (options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzTrack, out _))
+            if (options.ReplaceAllMetadata || !audio.HasProviderId(MetadataProvider.MusicBrainzTrack))
             {
                 // Fallback to ffprobe as TagLib incorrectly provides recording MBID in `tags.MusicBrainzTrackId`.
                 // See https://github.com/mono/taglib-sharp/issues/304
                 var trackMbId = mediaInfo.GetProviderId(MetadataProvider.MusicBrainzTrack);
-                if (trackMbId is not null)
-                {
-                    audio.SetProviderId(MetadataProvider.MusicBrainzTrack, trackMbId);
-                }
+                audio.TrySetProviderId(MetadataProvider.MusicBrainzTrack, trackMbId);
             }
 
             // Save extracted lyrics if they exist,

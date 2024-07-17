@@ -572,10 +572,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                     var provider = reader.GetAttribute("type");
                     var providerId = reader.ReadElementContentAsString();
-                    if (!string.IsNullOrWhiteSpace(provider) && !string.IsNullOrWhiteSpace(providerId))
-                    {
-                        item.SetProviderId(provider, providerId);
-                    }
+                    item.TrySetProviderId(provider, providerId);
 
                     break;
                 case "thumb":
@@ -604,10 +601,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     if (_validProviderIds.TryGetValue(readerName, out string? providerIdValue))
                     {
                         var id = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(providerIdValue) && !string.IsNullOrWhiteSpace(id))
-                        {
-                            item.SetProviderId(providerIdValue, id);
-                        }
+                        item.TrySetProviderId(providerIdValue, id);
                     }
                     else
                     {

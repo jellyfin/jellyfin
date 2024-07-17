@@ -68,11 +68,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             var justName = Path.GetFileName(item.Path.AsSpan());
 
             var id = justName.GetAttributeValue("tmdbid");
-
-            if (!string.IsNullOrEmpty(id))
-            {
-                item.SetProviderId(MetadataProvider.Tmdb, id);
-            }
+            item.TrySetProviderId(MetadataProvider.Tmdb, id);
         }
     }
 }
