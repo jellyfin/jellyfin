@@ -74,6 +74,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private IDictionary<int, bool> _filtersWithOption = new Dictionary<int, bool>();
 
         private bool _isPkeyPauseSupported = false;
+        private bool _isLowPriorityHwDecodeSupported = false;
 
         private bool _isVaapiDeviceAmd = false;
         private bool _isVaapiDeviceInteliHD = false;
@@ -202,6 +203,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 _threads = EncodingHelper.GetNumberOfThreads(null, options, null);
 
                 _isPkeyPauseSupported = validator.CheckSupportedRuntimeKey("p      pause transcoding");
+                _isLowPriorityHwDecodeSupported = validator.CheckSupportedHwaccelFlag("low_priority");
 
                 // Check the Vaapi device vendor
                 if (OperatingSystem.IsLinux()
@@ -892,7 +894,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 inputArg = "-threads " + threads + " " + inputArg; // HW accel args set a different input thread count, only set if disabled
             }
 
-            if (options.HardwareAccelerationType.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase) && LikelyToBeJellyfinFfmpeg)
+            if (options.HardwareAccelerationType.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase) && _isLowPriorityHwDecodeSupported)
             {
                 // VideoToolbox supports low priority decoding, which is useful for trickplay
                 inputArg = "-hwaccel_flags +low_priority " + inputArg;
