@@ -112,7 +112,7 @@ public class UniversalAudioController : BaseJellyfinApiController
         [FromQuery] int? maxAudioSampleRate,
         [FromQuery] int? maxAudioBitDepth,
         [FromQuery] bool? enableRemoteMedia,
-        [FromQuery] bool? enableAudioVbrEncoding,
+        [FromQuery] bool enableAudioVbrEncoding = true,
         [FromQuery] bool breakOnNonKeyFrames = false,
         [FromQuery] bool enableRedirection = true)
     {
@@ -212,7 +212,7 @@ public class UniversalAudioController : BaseJellyfinApiController
                 Context = EncodingContext.Static,
                 StreamOptions = new Dictionary<string, string>(),
                 EnableAdaptiveBitrateStreaming = true,
-                EnableAudioVbrEncoding = enableAudioVbrEncoding ?? true
+                EnableAudioVbrEncoding = enableAudioVbrEncoding
             };
 
             return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType.Hls, dynamicHlsRequestDto, true)

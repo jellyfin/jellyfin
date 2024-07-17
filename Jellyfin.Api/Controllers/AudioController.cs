@@ -307,7 +307,7 @@ public class AudioController : BaseJellyfinApiController
         [FromQuery] int? videoStreamIndex,
         [FromQuery] EncodingContext? context,
         [FromQuery] Dictionary<string, string>? streamOptions,
-        [FromQuery] bool? enableAudioVbrEncoding)
+        [FromQuery] bool enableAudioVbrEncoding = true)
     {
         StreamingRequestDto streamingRequest = new StreamingRequestDto
         {
@@ -359,7 +359,7 @@ public class AudioController : BaseJellyfinApiController
             VideoStreamIndex = videoStreamIndex,
             Context = context ?? EncodingContext.Static,
             StreamOptions = streamOptions,
-            EnableAudioVbrEncoding = enableAudioVbrEncoding ?? true
+            EnableAudioVbrEncoding = enableAudioVbrEncoding
         };
 
         return await _audioHelper.GetAudioStream(_transcodingJobType, streamingRequest).ConfigureAwait(false);

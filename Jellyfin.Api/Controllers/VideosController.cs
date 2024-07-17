@@ -365,7 +365,7 @@ public class VideosController : BaseJellyfinApiController
         [FromQuery] int? videoStreamIndex,
         [FromQuery] EncodingContext? context,
         [FromQuery] Dictionary<string, string> streamOptions,
-        [FromQuery] bool? enableAudioVbrEncoding)
+        [FromQuery] bool enableAudioVbrEncoding = true)
     {
         var isHeadRequest = Request.Method == System.Net.WebRequestMethods.Http.Head;
         // CTS lifecycle is managed internally.
@@ -422,7 +422,7 @@ public class VideosController : BaseJellyfinApiController
             VideoStreamIndex = videoStreamIndex,
             Context = context ?? EncodingContext.Streaming,
             StreamOptions = streamOptions,
-            EnableAudioVbrEncoding = enableAudioVbrEncoding ?? true
+            EnableAudioVbrEncoding = enableAudioVbrEncoding
         };
 
         var state = await StreamingHelpers.GetStreamingState(
@@ -606,7 +606,7 @@ public class VideosController : BaseJellyfinApiController
         [FromQuery] int? videoStreamIndex,
         [FromQuery] EncodingContext? context,
         [FromQuery] Dictionary<string, string> streamOptions,
-        [FromQuery] bool? enableAudioVbrEncoding)
+        [FromQuery] bool enableAudioVbrEncoding = true)
     {
         return GetVideoStream(
             itemId,

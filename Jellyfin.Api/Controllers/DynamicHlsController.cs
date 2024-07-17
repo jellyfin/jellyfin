@@ -215,7 +215,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? maxWidth,
         [FromQuery] int? maxHeight,
         [FromQuery] bool? enableSubtitlesInManifest,
-        [FromQuery] bool? enableAudioVbrEncoding)
+        [FromQuery] bool enableAudioVbrEncoding = true)
     {
         VideoRequestDto streamingRequest = new VideoRequestDto
         {
@@ -270,7 +270,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             MaxHeight = maxHeight,
             MaxWidth = maxWidth,
             EnableSubtitlesInManifest = enableSubtitlesInManifest ?? true,
-            EnableAudioVbrEncoding = enableAudioVbrEncoding ?? true
+            EnableAudioVbrEncoding = enableAudioVbrEncoding
         };
 
         // CTS lifecycle is managed internally.
@@ -796,7 +796,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? videoStreamIndex,
         [FromQuery] EncodingContext? context,
         [FromQuery] Dictionary<string, string> streamOptions,
-        [FromQuery] bool? enableAudioVbrEncoding)
+        [FromQuery] bool enableAudioVbrEncoding = true)
     {
         using var cancellationTokenSource = new CancellationTokenSource();
         var streamingRequest = new VideoRequestDto
@@ -850,7 +850,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             VideoStreamIndex = videoStreamIndex,
             Context = context ?? EncodingContext.Streaming,
             StreamOptions = streamOptions,
-            EnableAudioVbrEncoding = enableAudioVbrEncoding ?? true
+            EnableAudioVbrEncoding = enableAudioVbrEncoding
         };
 
         return await GetVariantPlaylistInternal(streamingRequest, cancellationTokenSource)
@@ -965,7 +965,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? videoStreamIndex,
         [FromQuery] EncodingContext? context,
         [FromQuery] Dictionary<string, string> streamOptions,
-        [FromQuery] bool? enableAudioVbrEncoding)
+        [FromQuery] bool enableAudioVbrEncoding = true)
     {
         using var cancellationTokenSource = new CancellationTokenSource();
         var streamingRequest = new StreamingRequestDto
@@ -1017,7 +1017,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             VideoStreamIndex = videoStreamIndex,
             Context = context ?? EncodingContext.Streaming,
             StreamOptions = streamOptions,
-            EnableAudioVbrEncoding = enableAudioVbrEncoding ?? true
+            EnableAudioVbrEncoding = enableAudioVbrEncoding
         };
 
         return await GetVariantPlaylistInternal(streamingRequest, cancellationTokenSource)
@@ -1145,7 +1145,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? videoStreamIndex,
         [FromQuery] EncodingContext? context,
         [FromQuery] Dictionary<string, string> streamOptions,
-        [FromQuery] bool? enableAudioVbrEncoding)
+        [FromQuery] bool enableAudioVbrEncoding = true)
     {
         var streamingRequest = new VideoRequestDto
         {
@@ -1201,7 +1201,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             VideoStreamIndex = videoStreamIndex,
             Context = context ?? EncodingContext.Streaming,
             StreamOptions = streamOptions,
-            EnableAudioVbrEncoding = enableAudioVbrEncoding ?? true
+            EnableAudioVbrEncoding = enableAudioVbrEncoding
         };
 
         return await GetDynamicSegment(streamingRequest, segmentId)
@@ -1327,7 +1327,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? videoStreamIndex,
         [FromQuery] EncodingContext? context,
         [FromQuery] Dictionary<string, string> streamOptions,
-        [FromQuery] bool? enableAudioVbrEncoding)
+        [FromQuery] bool enableAudioVbrEncoding = true)
     {
         var streamingRequest = new StreamingRequestDto
         {
@@ -1381,7 +1381,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             VideoStreamIndex = videoStreamIndex,
             Context = context ?? EncodingContext.Streaming,
             StreamOptions = streamOptions,
-            EnableAudioVbrEncoding = enableAudioVbrEncoding ?? true
+            EnableAudioVbrEncoding = enableAudioVbrEncoding
         };
 
         return await GetDynamicSegment(streamingRequest, segmentId)
