@@ -508,13 +508,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
         }
 
-        public bool EnableAudioVbrEncoding
-        {
-            get
-            {
-                return BaseRequest.EnableAudioVbrEncoding;
-            }
-        }
+        public bool EnableAudioVbrEncoding => BaseRequest.EnableAudioVbrEncoding;
 
         public int HlsListSize => 0;
 
