@@ -1319,23 +1319,38 @@ namespace MediaBrowser.MediaEncoding.Probing
             // These support multiple values, but for now we only store the first.
             var mb = GetMultipleMusicBrainzId(tags.GetValueOrDefault("MusicBrainz Album Artist Id"))
                 ?? GetMultipleMusicBrainzId(tags.GetValueOrDefault("MUSICBRAINZ_ALBUMARTISTID"));
-            audio.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, mb);
+            if (!string.IsNullOrEmpty(mb))
+            {
+                audio.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, mb);
+            }
 
             mb = GetMultipleMusicBrainzId(tags.GetValueOrDefault("MusicBrainz Artist Id"))
                 ?? GetMultipleMusicBrainzId(tags.GetValueOrDefault("MUSICBRAINZ_ARTISTID"));
-            audio.SetProviderId(MetadataProvider.MusicBrainzArtist, mb);
+            if (!string.IsNullOrEmpty(mb))
+            {
+                audio.SetProviderId(MetadataProvider.MusicBrainzArtist, mb);
+            }
 
             mb = GetMultipleMusicBrainzId(tags.GetValueOrDefault("MusicBrainz Album Id"))
                 ?? GetMultipleMusicBrainzId(tags.GetValueOrDefault("MUSICBRAINZ_ALBUMID"));
-            audio.SetProviderId(MetadataProvider.MusicBrainzAlbum, mb);
+            if (!string.IsNullOrEmpty(mb))
+            {
+                audio.SetProviderId(MetadataProvider.MusicBrainzAlbum, mb);
+            }
 
             mb = GetMultipleMusicBrainzId(tags.GetValueOrDefault("MusicBrainz Release Group Id"))
                  ?? GetMultipleMusicBrainzId(tags.GetValueOrDefault("MUSICBRAINZ_RELEASEGROUPID"));
-            audio.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, mb);
+            if (!string.IsNullOrEmpty(mb))
+            {
+                audio.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, mb);
+            }
 
             mb = GetMultipleMusicBrainzId(tags.GetValueOrDefault("MusicBrainz Release Track Id"))
                  ?? GetMultipleMusicBrainzId(tags.GetValueOrDefault("MUSICBRAINZ_RELEASETRACKID"));
-            audio.SetProviderId(MetadataProvider.MusicBrainzTrack, mb);
+            if (!string.IsNullOrEmpty(mb))
+            {
+                audio.SetProviderId(MetadataProvider.MusicBrainzTrack, mb);
+            }
         }
 
         private string GetMultipleMusicBrainzId(string value)
