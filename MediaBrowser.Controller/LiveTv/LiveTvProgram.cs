@@ -254,25 +254,5 @@ namespace MediaBrowser.Controller.LiveTv
 
             return name;
         }
-
-        public override List<ExternalUrl> GetRelatedUrls()
-        {
-            var list = base.GetRelatedUrls();
-
-            var imdbId = this.GetProviderId(MetadataProvider.Imdb);
-            if (!string.IsNullOrEmpty(imdbId))
-            {
-                if (IsMovie)
-                {
-                    list.Add(new ExternalUrl
-                    {
-                        Name = "Trakt",
-                        Url = string.Format(CultureInfo.InvariantCulture, "https://trakt.tv/movies/{0}", imdbId)
-                    });
-                }
-            }
-
-            return list;
-        }
     }
 }
