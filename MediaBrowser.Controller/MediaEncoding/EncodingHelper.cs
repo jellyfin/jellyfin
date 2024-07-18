@@ -2752,7 +2752,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         switch (encodingOptions.DownMixStereoAlgorithm)
                         {
                             case DownMixStereoAlgorithms.Rfc7845:
-                                filters.Add("pan=stereo|c0=0.321953*c2+0.455310*c0+0.394310*c5+0.227655*c6+278819*c4+0.321953*c3|c1=0.321953*c2+0.455310*c1+0.394310*c6+0.227655*c5+278819*c4+0.321953*c3");
+                                filters.Add("pan=stereo|c0=0.321953*c2+0.455310*c0+0.394310*c5+0.227655*c6+0.278819*c4+0.321953*c3|c1=0.321953*c2+0.455310*c1+0.394310*c6+0.227655*c5+0.278819*c4+0.321953*c3");
                                 break;
                             case DownMixStereoAlgorithms.Dave750:
                             case DownMixStereoAlgorithms.NightmodeDialogue:
