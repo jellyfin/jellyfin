@@ -104,6 +104,6 @@ namespace Emby.Server.Implementations.AppBase
         /// Gets the folder path to the temp directory within the cache folder.
         /// </summary>
         /// <value>The temp directory.</value>
-        public string TempDirectory => Path.Combine(CachePath, "temp");
+        public string TempDirectory => Path.Join(Path.GetTempPath(), "jellyfin");
     }
 }

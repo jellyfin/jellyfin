@@ -25,7 +25,7 @@ namespace MediaBrowser.Model.Dlna
 
         private readonly ILogger _logger;
         private readonly ITranscoderSupport _transcoderSupport;
-        private static readonly string[] _supportedHlsVideoCodecs = new string[] { "h264", "hevc", "av1" };
+        private static readonly string[] _supportedHlsVideoCodecs = new string[] { "h264", "hevc", "vp9", "av1" };
         private static readonly string[] _supportedHlsAudioCodecsTs = new string[] { "aac", "ac3", "eac3", "mp3" };
         private static readonly string[] _supportedHlsAudioCodecsMp4 = new string[] { "aac", "ac3", "eac3", "mp3", "alac", "flac", "opus", "dca", "truehd" };
 

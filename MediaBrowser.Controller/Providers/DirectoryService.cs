@@ -62,10 +62,22 @@ namespace MediaBrowser.Controller.Providers
 
         public FileSystemMetadata? GetFile(string path)
         {
+            var entry = GetFileSystemEntry(path);
+            return entry is not null && !entry.IsDirectory ? entry : null;
+        }
+
+        public FileSystemMetadata? GetDirectory(string path)
+        {
+            var entry = GetFileSystemEntry(path);
+            return entry is not null && entry.IsDirectory ? entry : null;
+        }
+
+        public FileSystemMetadata? GetFileSystemEntry(string path)
+        {
             if (!_fileCache.TryGetValue(path, out var result))
             {
-                var file = _fileSystem.GetFileInfo(path);
-                if (file.Exists)
+                var file = _fileSystem.GetFileSystemInfo(path);
+                if (file?.Exists ?? false)
                 {
                     result = file;
                     _fileCache.TryAdd(path, result);

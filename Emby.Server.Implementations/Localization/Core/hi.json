@@ -14,7 +14,7 @@
     "Forced": "बलपूर्वक",
     "Folders": "फ़ोल्डर",
     "Favorites": "पसंदीदा",
-    "FailedLoginAttemptWithUserName": "{0} से लॉगिन असफल हुआ",
+    "FailedLoginAttemptWithUserName": "{0} से संप्रवेश असफल हुआ",
     "DeviceOnlineWithName": "{0} कनेक्ट हो गया है",
     "DeviceOfflineWithName": "{0} डिस्कनेक्ट हो गया है",
     "Default": "प्राथमिक",
@@ -125,5 +125,7 @@
     "TaskDownloadMissingSubtitlesDescription": "मेटाडेटा कॉन्फ़िगरेशन के आधार पर लापता उपशीर्षक के लिए इंटरनेट खोजता है।",
     "TaskKeyframeExtractorDescription": "अधिक सटीक एचएलएस प्लेलिस्ट बनाने के लिए वीडियो फ़ाइलों से मुख्य-फ़्रेम निकालता है। यह कार्य लंबे समय तक चल सकता है।",
     "TaskRefreshTrickplayImages": "ट्रिकप्लै चित्रों को सृजन करे",
-    "TaskRefreshTrickplayImagesDescription": "नियत संग्रहों में चलचित्रों का ट्रीकप्लै दर्शनों को सृजन करे."
+    "TaskRefreshTrickplayImagesDescription": "नियत संग्रहों में चलचित्रों का ट्रीकप्लै दर्शनों को सृजन करे.",
+    "TaskAudioNormalization": "श्रव्य सामान्यीकरण",
+    "TaskAudioNormalizationDescription": "श्रव्य सामान्यीकरण के लिए फाइलें अन्वेषण करें"
 }

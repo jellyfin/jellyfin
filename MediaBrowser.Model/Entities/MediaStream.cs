@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Model.Dlna;
@@ -585,6 +586,33 @@ namespace MediaBrowser.Model.Entities
             }
         }
 
+        [JsonIgnore]
+        public bool IsPgsSubtitleStream
+        {
+            get
+            {
+                if (Type != MediaStreamType.Subtitle)
+                {
+                    return false;
+                }
+
+                if (string.IsNullOrEmpty(Codec) && !IsExternal)
+                {
+                    return false;
+                }
+
+                return IsPgsFormat(Codec);
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this is a subtitle steam that is extractable by ffmpeg.
+        /// All text-based and pgs subtitles can be extracted.
+        /// </summary>
+        /// <value><c>true</c> if this is a extractable subtitle steam otherwise, <c>false</c>.</value>
+        [JsonIgnore]
+        public bool IsExtractableSubtitleStream => IsTextSubtitleStream || IsPgsSubtitleStream;
+
         /// <summary>
         /// Gets or sets a value indicating whether [supports external stream].
         /// </summary>
@@ -664,6 +692,14 @@ namespace MediaBrowser.Model.Entities
                        && !codec.Contains("dvbsub", StringComparison.OrdinalIgnoreCase)
                        && !string.Equals(codec, "sup", StringComparison.OrdinalIgnoreCase)
                        && !string.Equals(codec, "sub", StringComparison.OrdinalIgnoreCase));
+        }
+
+        public static bool IsPgsFormat(string format)
+        {
+            string codec = format ?? string.Empty;
+
+            return codec.Contains("pgs", StringComparison.OrdinalIgnoreCase)
+                   || string.Equals(codec, "sup", StringComparison.OrdinalIgnoreCase);
         }
 
         public bool SupportsSubtitleConversionTo(string toCodec)

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
@@ -136,6 +137,10 @@ namespace MediaBrowser.Providers.MediaInfo
             if (!audio.IsLocked)
             {
                 await FetchDataFromTags(audio, mediaInfo, options, tryExtractEmbeddedLyrics).ConfigureAwait(false);
+                if (tryExtractEmbeddedLyrics)
+                {
+                    AddExternalLyrics(audio, mediaStreams, options);
+                }
             }
 
             audio.HasLyrics = mediaStreams.Any(s => s.Type == MediaStreamType.Lyric);
@@ -320,22 +325,26 @@ namespace MediaBrowser.Providers.MediaInfo
                 audio.NormalizationGain = (float)tags.ReplayGainTrackGain;
             }
 
-            if (options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzArtist, out _))
+            if ((options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzArtist, out _))
+                && !string.IsNullOrEmpty(tags.MusicBrainzArtistId))
             {
                 audio.SetProviderId(MetadataProvider.MusicBrainzArtist, tags.MusicBrainzArtistId);
             }
 
-            if (options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzAlbumArtist, out _))
+            if ((options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzAlbumArtist, out _))
+                && !string.IsNullOrEmpty(tags.MusicBrainzReleaseArtistId))
             {
                 audio.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, tags.MusicBrainzReleaseArtistId);
             }
 
-            if (options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzAlbum, out _))
+            if ((options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzAlbum, out _))
+                && !string.IsNullOrEmpty(tags.MusicBrainzReleaseId))
             {
                 audio.SetProviderId(MetadataProvider.MusicBrainzAlbum, tags.MusicBrainzReleaseId);
             }
 
-            if (options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzReleaseGroup, out _))
+            if ((options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzReleaseGroup, out _))
+                && !string.IsNullOrEmpty(tags.MusicBrainzReleaseGroupId))
             {
                 audio.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, tags.MusicBrainzReleaseGroupId);
             }
@@ -369,7 +378,10 @@ namespace MediaBrowser.Providers.MediaInfo
             var externalLyricFiles = _lyricResolver.GetExternalStreams(audio, startIndex, options.DirectoryService, false);
 
             audio.LyricFiles = externalLyricFiles.Select(i => i.Path).Distinct().ToArray();
-            currentStreams.AddRange(externalLyricFiles);
+            if (externalLyricFiles.Count > 0)
+            {
+                currentStreams.Add(externalLyricFiles[0]);
+            }
         }
     }
 }

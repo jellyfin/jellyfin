@@ -74,6 +74,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private IDictionary<int, bool> _filtersWithOption = new Dictionary<int, bool>();
 
         private bool _isPkeyPauseSupported = false;
+        private bool _isLowPriorityHwDecodeSupported = false;
 
         private bool _isVaapiDeviceAmd = false;
         private bool _isVaapiDeviceInteliHD = false;
@@ -194,6 +195,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 _threads = EncodingHelper.GetNumberOfThreads(null, options, null);
 
                 _isPkeyPauseSupported = validator.CheckSupportedRuntimeKey("p      pause transcoding");
+                _isLowPriorityHwDecodeSupported = validator.CheckSupportedHwaccelFlag("low_priority");
 
                 // Check the Vaapi device vendor
                 if (OperatingSystem.IsLinux()
@@ -708,16 +710,22 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 filters.Add("thumbnail=n=" + (useLargerBatchSize ? "50" : "24"));
             }
 
-            // Use SW tonemap on HDR10/HLG video stream only when the zscale filter is available.
+            // Use SW tonemap on HDR10/HLG video stream only when the zscale or tonemapx filter is available.
             var enableHdrExtraction = false;
 
-            if ((string.Equals(videoStream?.ColorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase)
+            if (string.Equals(videoStream?.ColorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(videoStream?.ColorTransfer, "arib-std-b67", StringComparison.OrdinalIgnoreCase))
-                && SupportsFilter("zscale"))
             {
-                enableHdrExtraction = true;
-
-                filters.Add("zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0:peak=100,zscale=t=bt709:m=bt709,format=yuv420p");
+                if (SupportsFilter("tonemapx"))
+                {
+                    enableHdrExtraction = true;
+                    filters.Add("tonemapx=tonemap=bt2390:desat=0:peak=100:t=bt709:m=bt709:p=bt709:format=yuv420p");
+                }
+                else if (SupportsFilter("zscale"))
+                {
+                    enableHdrExtraction = true;
+                    filters.Add("zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0:peak=100,zscale=t=bt709:m=bt709,format=yuv420p");
+                }
             }
 
             var vf = string.Join(',', filters);
@@ -807,11 +815,27 @@ namespace MediaBrowser.MediaEncoding.Encoder
             int? threads,
             int? qualityScale,
             ProcessPriorityClass? priority,
+            bool enableKeyFrameOnlyExtraction,
             EncodingHelper encodingHelper,
             CancellationToken cancellationToken)
         {
             var options = allowHwAccel ? _configurationManager.GetEncodingOptions() : new EncodingOptions();
             threads ??= _threads;
+
+            if (allowHwAccel && enableKeyFrameOnlyExtraction)
+            {
+                var supportsKeyFrameOnly = (string.Equals(options.HardwareAccelerationType, "nvenc", StringComparison.OrdinalIgnoreCase) && options.EnableEnhancedNvdecDecoder)
+                                           || (string.Equals(options.HardwareAccelerationType, "amf", StringComparison.OrdinalIgnoreCase) && OperatingSystem.IsWindows())
+                                           || (string.Equals(options.HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase) && options.PreferSystemNativeHwDecoder)
+                                           || string.Equals(options.HardwareAccelerationType, "vaapi", StringComparison.OrdinalIgnoreCase)
+                                           || string.Equals(options.HardwareAccelerationType, "videotoolbox", StringComparison.OrdinalIgnoreCase);
+                if (!supportsKeyFrameOnly)
+                {
+                    // Disable hardware acceleration when the hardware decoder does not support keyframe only mode.
+                    allowHwAccel = false;
+                    options = new EncodingOptions();
+                }
+            }
 
             // A new EncodingOptions instance must be used as to not disable HW acceleration for all of Jellyfin.
             // Additionally, we must set a few fields without defaults to prevent null pointer exceptions.
@@ -862,6 +886,17 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 inputArg = "-threads " + threads + " " + inputArg; // HW accel args set a different input thread count, only set if disabled
             }
 
+            if (options.HardwareAccelerationType.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase) && _isLowPriorityHwDecodeSupported)
+            {
+                // VideoToolbox supports low priority decoding, which is useful for trickplay
+                inputArg = "-hwaccel_flags +low_priority " + inputArg;
+            }
+
+            if (enableKeyFrameOnlyExtraction)
+            {
+                inputArg = "-skip_frame nokey " + inputArg;
+            }
+
             var filterParam = encodingHelper.GetVideoProcessingFilterParam(jobState, options, vidEncoder).Trim();
             if (string.IsNullOrWhiteSpace(filterParam))
             {
@@ -894,6 +929,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 encoderQuality = (100 - ((qualityScale - 1) * (100 / 30))) / 118;
             }
 
+            if (vidEncoder.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase))
+            {
+                // videotoolbox's mjpeg encoder uses jpeg quality scaled to QP2LAMBDA (118) instead of ffmpeg defined qscale
+                // ffmpeg qscale is a value from 1-31, with 1 being best quality and 31 being worst
+                // jpeg quality is a value from 0-100, with 0 being worst quality and 100 being best
+                encoderQuality = 118 - ((qualityScale - 1) * (118 / 30));
+            }
+
             // Output arguments
             var targetDirectory = Path.Combine(_configurationManager.ApplicationPaths.TempDirectory, Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(targetDirectory);
@@ -902,12 +945,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // Final command arguments
             var args = string.Format(
                 CultureInfo.InvariantCulture,
-                "-loglevel error {0} -an -sn {1} -threads {2} -c:v {3} {4}-f {5} \"{6}\"",
+                "-loglevel error {0} -an -sn {1} -threads {2} -c:v {3} {4}{5}-f {6} \"{7}\"",
                 inputArg,
                 filterParam,
                 outputThreads.GetValueOrDefault(_threads),
                 vidEncoder,
                 qualityScale.HasValue ? "-qscale:v " + encoderQuality.Value.ToString(CultureInfo.InvariantCulture) + " " : string.Empty,
+                vidEncoder.Contains("videotoolbox", StringComparison.InvariantCultureIgnoreCase) ? "-allow_sw 1 " : string.Empty, // allow_sw fallback for some intel macs
                 "image2",
                 outputPath);
 
@@ -1149,18 +1193,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         /// <inheritdoc />
         public IReadOnlyList<string> GetPrimaryPlaylistM2tsFiles(string path)
-        {
-            // Get all playable .m2ts files
-            var validPlaybackFiles = _blurayExaminer.GetDiscInfo(path).Files;
-
-            // Get all files from the BDMV/STREAMING directory
-            // Only return playable local .m2ts files
-            var files = _fileSystem.GetFiles(Path.Join(path, "BDMV", "STREAM")).ToList();
-            return validPlaybackFiles
-                .Select(validFile => files.FirstOrDefault(f => Path.GetFileName(f.FullName.AsSpan()).Equals(validFile, StringComparison.OrdinalIgnoreCase))?.FullName)
-                .Where(f => f is not null)
-                .ToList();
-        }
+            => _blurayExaminer.GetDiscInfo(path).Files;
 
         /// <inheritdoc />
         public string GetInputPathArgument(EncodingJobInfo state)
@@ -1171,8 +1204,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             return mediaSource.VideoType switch
             {
-                VideoType.Dvd => GetInputArgument(GetPrimaryPlaylistVobFiles(path, null).ToList(), mediaSource),
-                VideoType.BluRay => GetInputArgument(GetPrimaryPlaylistM2tsFiles(path).ToList(), mediaSource),
+                VideoType.Dvd => GetInputArgument(GetPrimaryPlaylistVobFiles(path, null), mediaSource),
+                VideoType.BluRay => GetInputArgument(GetPrimaryPlaylistM2tsFiles(path), mediaSource),
                 _ => GetInputArgument(path, mediaSource)
             };
         }
@@ -1197,6 +1230,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             // Generate concat configuration entries for each file and write to file
+            Directory.CreateDirectory(Path.GetDirectoryName(concatFilePath));
             using StreamWriter sw = new StreamWriter(concatFilePath);
             foreach (var path in files)
             {

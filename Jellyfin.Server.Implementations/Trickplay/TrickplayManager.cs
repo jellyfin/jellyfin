@@ -168,6 +168,7 @@ public class TrickplayManager : ITrickplayManager
                     options.ProcessThreads,
                     options.Qscale,
                     options.ProcessPriority,
+                    options.EnableKeyFrameOnlyExtraction,
                     _encodingHelper,
                     cancellationToken).ConfigureAwait(false);
 
@@ -230,7 +231,7 @@ public class TrickplayManager : ITrickplayManager
             throw new ArgumentException("Can't create trickplay from 0 images.");
         }
 
-        var workDir = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid().ToString("N"));
+        var workDir = Path.Combine(_appPaths.TempDirectory, "trickplay_" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(workDir);
 
         var trickplayInfo = new TrickplayInfo

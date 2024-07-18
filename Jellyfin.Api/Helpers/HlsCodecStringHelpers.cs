@@ -183,6 +183,68 @@ public static class HlsCodecStringHelpers
     }
 
     /// <summary>
+    /// Gets a VP9 codec string.
+    /// </summary>
+    /// <param name="width">Video width.</param>
+    /// <param name="height">Video height.</param>
+    /// <param name="pixelFormat">Video pixel format.</param>
+    /// <param name="framerate">Video framerate.</param>
+    /// <param name="bitDepth">Video bitDepth.</param>
+    /// <returns>The VP9 codec string.</returns>
+    public static string GetVp9String(int width, int height, string pixelFormat, float framerate, int bitDepth)
+    {
+        // refer: https://www.webmproject.org/vp9/mp4/
+        StringBuilder result = new StringBuilder("vp09", 13);
+
+        var profileString = pixelFormat switch
+        {
+            "yuv420p" => "00",
+            "yuvj420p" => "00",
+            "yuv422p" => "01",
+            "yuv444p" => "01",
+            "yuv420p10le" => "02",
+            "yuv420p12le" => "02",
+            "yuv422p10le" => "03",
+            "yuv422p12le" => "03",
+            "yuv444p10le" => "03",
+            "yuv444p12le" => "03",
+            _ => "00"
+        };
+
+        var lumaPictureSize = width * height;
+        var lumaSampleRate = lumaPictureSize * framerate;
+        var levelString = lumaPictureSize switch
+        {
+            <= 0 => "00",
+            <= 36864 => "10",
+            <= 73728 => "11",
+            <= 122880 => "20",
+            <= 245760 => "21",
+            <= 552960 => "30",
+            <= 983040 => "31",
+            <= 2228224 => lumaSampleRate <= 83558400 ? "40" : "41",
+            <= 8912896 => lumaSampleRate <= 311951360 ? "50" : (lumaSampleRate <= 588251136 ? "51" : "52"),
+            <= 35651584 => lumaSampleRate <= 1176502272 ? "60" : (lumaSampleRate <= 4706009088 ? "61" : "62"),
+            _ => "00" // This should not happen
+        };
+
+        if (bitDepth != 8
+            && bitDepth != 10
+            && bitDepth != 12)
+        {
+            // Default to 8 bits
+            bitDepth = 8;
+        }
+
+        result.Append('.').Append(profileString).Append('.').Append(levelString);
+        var bitDepthD2 = bitDepth.ToString("D2", CultureInfo.InvariantCulture);
+        result.Append('.')
+            .Append(bitDepthD2);
+
+        return result.ToString();
+    }
+
+    /// <summary>
     /// Gets an AV1 codec string.
     /// </summary>
     /// <param name="profile">AV1 profile.</param>

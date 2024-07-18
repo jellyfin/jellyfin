@@ -1,3 +1,4 @@
+using System;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 
@@ -33,6 +34,7 @@ namespace MediaBrowser.Controller.Providers
         /// <summary>
         /// Gets the URL format string for this id.
         /// </summary>
+        [Obsolete("Obsolete in 10.10, to be removed in 10.11")]
         string? UrlFormatString { get; }
 
         /// <summary>

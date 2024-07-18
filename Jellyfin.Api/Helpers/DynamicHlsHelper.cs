@@ -714,6 +714,21 @@ public class DynamicHlsHelper
             return HlsCodecStringHelpers.GetAv1String(profile, level, false, bitDepth);
         }
 
+        // VP9 HLS is for video remuxing only, everything is probed from the original video
+        if (string.Equals(codec, "vp9", StringComparison.OrdinalIgnoreCase))
+        {
+            var width = state.VideoStream.Width ?? 0;
+            var height = state.VideoStream.Height ?? 0;
+            var framerate = state.VideoStream.AverageFrameRate ?? 30;
+            var bitDepth = state.VideoStream.BitDepth ?? 8;
+            return HlsCodecStringHelpers.GetVp9String(
+                width,
+                height,
+                state.VideoStream.PixelFormat,
+                framerate,
+                bitDepth);
+        }
+
         return string.Empty;
     }
 

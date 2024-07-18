@@ -60,6 +60,7 @@ public static class StartupHelpers
         logger.LogInformation("Log directory path: {LogDirectoryPath}", appPaths.LogDirectoryPath);
         logger.LogInformation("Config directory path: {ConfigurationDirectoryPath}", appPaths.ConfigurationDirectoryPath);
         logger.LogInformation("Cache path: {CachePath}", appPaths.CachePath);
+        logger.LogInformation("Temp directory path: {TempDirPath}", appPaths.TempDirectory);
         logger.LogInformation("Web resources path: {WebPath}", appPaths.WebPath);
         logger.LogInformation("Application directory: {ApplicationPath}", appPaths.ProgramSystemPath);
     }
