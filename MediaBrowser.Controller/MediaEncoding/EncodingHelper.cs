@@ -2680,7 +2680,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         switch (encodingOptions.DownMixStereoAlgorithm)
                         {
                             case DownMixStereoAlgorithms.Rfc7845:
-                                filters.Add("pan=stereo|FL=0.414214*FC+0.585786*FL|FR=0.414214*FC+0.585786*FR");
+                                filters.Add("pan=stereo|c0=0.414214*c2+0.585786*c0|c1=0.414214*c2+0.585786*c1");
                                 break;
                             case DownMixStereoAlgorithms.Dave750:
                             case DownMixStereoAlgorithms.NightmodeDialogue:
@@ -2697,7 +2697,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         switch (encodingOptions.DownMixStereoAlgorithm)
                         {
                             case DownMixStereoAlgorithms.Rfc7845:
-                                filters.Add("pan=stereo|FL=0.460186*FC+0.650802*FL+0.563611*BL+0.325401*BR|FR=0.460186*FC+0.650802*FR+0.563611*BR+0.325401*BL");
+                                filters.Add("pan=stereo|c0=0.422650*c0+0.366025*c2+0.211325*c3|c1=0.422650*c1+0.366025*c3+0.211325*c2");
                                 break;
                             case DownMixStereoAlgorithms.Dave750:
                             case DownMixStereoAlgorithms.NightmodeDialogue:
@@ -2714,7 +2714,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         switch (encodingOptions.DownMixStereoAlgorithm)
                         {
                             case DownMixStereoAlgorithms.Rfc7845:
-                                filters.Add("pan=stereo|FL=0.460186*FC+0.650802*FL+0.563611*BL+0.325401*BR|FR=0.460186*FC+0.650802*FR+0.563611*BR+0.325401*BL");
+                                filters.Add("pan=stereo|c0=0.460186*c2+0.650802*c0+0.563611*c3+0.325401*c4|c1=0.460186*c2+0.650802*c1+0.563611*c4+0.325401*c3");
                                 break;
                             case DownMixStereoAlgorithms.Dave750:
                             case DownMixStereoAlgorithms.NightmodeDialogue:
@@ -2737,7 +2737,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                                 filters.Add("pan=stereo|c0=c2+0.30*c0+0.30*c4|c1=c2+0.30*c1+0.30*c5");
                                 break;
                             case DownMixStereoAlgorithms.Rfc7845:
-                                filters.Add("pan=stereo|FL=0.374107*FC+0.529067*FL+0.458186*BL+0.264534*BR+0.374107*LFE|FR=0.374107*FC+0.529067*FR+0.458186*BR+0.264534*BL+0.374107*LFE");
+                                filters.Add("pan=stereo|c0=0.374107*c2+0.529067*c0+0.458186*c4+0.264534*c5+0.374107*c3|c1=0.374107*c2+0.529067*c1+0.458186*c5+0.264534*c4+0.374107*c3");
                                 break;
                             case DownMixStereoAlgorithms.None:
                             default:
@@ -2752,7 +2752,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         switch (encodingOptions.DownMixStereoAlgorithm)
                         {
                             case DownMixStereoAlgorithms.Rfc7845:
-                                filters.Add("pan=stereo|FL=0.321953*FC+0.455310*FL+0.394310*SL+0.227655*SR+278819*BC+0.321953*LFE|FR=0.321953*FC+0.455310*FR+0.394310*SR+0.227655*SL+278819*BC+0.321953*LFE");
+                                filters.Add("pan=stereo|c0=0.321953*c2+0.455310*c0+0.394310*c5+0.227655*c6+278819*c4+0.321953*c3|c1=0.321953*c2+0.455310*c1+0.394310*c6+0.227655*c5+278819*c4+0.321953*c3");
                                 break;
                             case DownMixStereoAlgorithms.Dave750:
                             case DownMixStereoAlgorithms.NightmodeDialogue:
@@ -2769,7 +2769,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         switch (encodingOptions.DownMixStereoAlgorithm)
                         {
                             case DownMixStereoAlgorithms.Rfc7845:
-                                filters.Add("pan=stereo|FL=0.274804*FC+0.388631*FL+0.336565*SL+0.194316*SR+0.336565*BL+0.194316*BR+0.274804*LFE|FR=0.274804*FC+0.388631*FR+0.336565*SR+0.194316*SL+0.336565*BR+0.194316*BL+0.274804*LFE");
+                                filters.Add("pan=stereo|c0=0.274804*c2+0.388631*c0+0.336565*c6+0.194316*c7+0.336565*c4+0.194316*c5+0.274804*c3|c1=0.274804*c2+0.388631*c1+0.336565*c7+0.194316*c6+0.336565*c5+0.194316*c4+0.274804*c3");
                                 break;
                             case DownMixStereoAlgorithms.Dave750:
                             case DownMixStereoAlgorithms.NightmodeDialogue:
