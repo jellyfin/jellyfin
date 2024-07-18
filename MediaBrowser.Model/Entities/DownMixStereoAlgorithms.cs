@@ -19,5 +19,10 @@ public enum DownMixStereoAlgorithms
     /// <summary>
     /// Nightmode Dialogue algorithm.
     /// </summary>
-    NightmodeDialogue = 2
+    NightmodeDialogue = 2,
+
+    /// <summary>
+    /// RFC7845 Section 5.1.1.5 defined algorithm.
+    /// </summary>
+    Rfc7845 = 3
 }

@@ -2666,26 +2666,121 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var filters = new List<string>();
 
-            if (channels.HasValue
-                && channels.Value == 2
-                && state.AudioStream is not null
-                && state.AudioStream.Channels.HasValue
-                && state.AudioStream.Channels.Value == 6)
+            if (channels is 2 && state.AudioStream?.Channels is > 2)
             {
                 if (!encodingOptions.DownMixAudioBoost.Equals(1))
                 {
                     filters.Add("volume=" + encodingOptions.DownMixAudioBoost.ToString(CultureInfo.InvariantCulture));
                 }
 
-                switch (encodingOptions.DownMixStereoAlgorithm)
+                switch (state.AudioStream.Channels.Value)
                 {
-                    case DownMixStereoAlgorithms.Dave750:
-                        filters.Add("pan=stereo|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3");
+                    case 3:
+                    {
+                        switch (encodingOptions.DownMixStereoAlgorithm)
+                        {
+                            case DownMixStereoAlgorithms.Rfc7845:
+                                filters.Add("pan=stereo|FL=0.414214*FC+0.585786*FL|FR =0.414214*FC+0.585786*FR");
+                                break;
+                            case DownMixStereoAlgorithms.Dave750:
+                            case DownMixStereoAlgorithms.NightmodeDialogue:
+                            case DownMixStereoAlgorithms.None:
+                            default:
+                                break;
+                        }
+
                         break;
-                    case DownMixStereoAlgorithms.NightmodeDialogue:
-                        filters.Add("pan=stereo|c0=c2+0.30*c0+0.30*c4|c1=c2+0.30*c1+0.30*c5");
+                    }
+
+                    case 4:
+                    {
+                        switch (encodingOptions.DownMixStereoAlgorithm)
+                        {
+                            case DownMixStereoAlgorithms.Rfc7845:
+                                filters.Add("pan=stereo|FL=0.460186*FC+0.650802*FL+0.563611*BL+0.325401*BR|FR=0.460186*FC+0.650802*FR+0.563611*BR+0.325401*BL");
+                                break;
+                            case DownMixStereoAlgorithms.Dave750:
+                            case DownMixStereoAlgorithms.NightmodeDialogue:
+                            case DownMixStereoAlgorithms.None:
+                            default:
+                                break;
+                        }
+
                         break;
-                    case DownMixStereoAlgorithms.None:
+                    }
+
+                    case 5:
+                    {
+                        switch (encodingOptions.DownMixStereoAlgorithm)
+                        {
+                            case DownMixStereoAlgorithms.Rfc7845:
+                                filters.Add("pan=stereo|FL=0.460186*FC+0.650802*FL+0.563611*BL+0.325401*BR|FR=0.460186*FC+0.650802*FR+0.563611*BR+0.325401*BL");
+                                break;
+                            case DownMixStereoAlgorithms.Dave750:
+                            case DownMixStereoAlgorithms.NightmodeDialogue:
+                            case DownMixStereoAlgorithms.None:
+                            default:
+                                break;
+                        }
+
+                        break;
+                    }
+
+                    case 6:
+                    {
+                        switch (encodingOptions.DownMixStereoAlgorithm)
+                        {
+                            case DownMixStereoAlgorithms.Dave750:
+                                filters.Add("pan=stereo|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3");
+                                break;
+                            case DownMixStereoAlgorithms.NightmodeDialogue:
+                                filters.Add("pan=stereo|c0=c2+0.30*c0+0.30*c4|c1=c2+0.30*c1+0.30*c5");
+                                break;
+                            case DownMixStereoAlgorithms.Rfc7845:
+                                filters.Add("pan=stereo|FL=0.374107*FC+0.529067*FL+0.458186*BL+0.264534*BR+0.374107*LFE|FR=0.374107*FC+0.529067*FR+0.458186*BR+0.264534*BL+0.374107*LFE");
+                                break;
+                            case DownMixStereoAlgorithms.None:
+                            default:
+                                break;
+                        }
+
+                        break;
+                    }
+
+                    case 7:
+                    {
+                        switch (encodingOptions.DownMixStereoAlgorithm)
+                        {
+                            case DownMixStereoAlgorithms.Rfc7845:
+                                filters.Add("pan=stereo|FL=0.321953*FC+0.455310*FL+0.394310*SL+0.227655*SR+278819*BC+0.321953*LFE|FR=0.321953*FC+0.455310*FR+0.394310*SR+0.227655*SL+278819*BC+0.321953*LFE");
+                                break;
+                            case DownMixStereoAlgorithms.Dave750:
+                            case DownMixStereoAlgorithms.NightmodeDialogue:
+                            case DownMixStereoAlgorithms.None:
+                            default:
+                                break;
+                        }
+
+                        break;
+                    }
+
+                    case 8:
+                    {
+                        switch (encodingOptions.DownMixStereoAlgorithm)
+                        {
+                            case DownMixStereoAlgorithms.Rfc7845:
+                                filters.Add("pan=stereo|FL=0.274804*FC+0.388631*FL+0.336565*SL+0.194316*SR+0.336565*BL+0.194316*BR+0.274804*LFE|FR=0.274804*FC+0.388631*FR+0.336565*SR+0.194316*SL+0.336565*BR+0.194316*BL+0.274804*LFE");
+                                break;
+                            case DownMixStereoAlgorithms.Dave750:
+                            case DownMixStereoAlgorithms.NightmodeDialogue:
+                            case DownMixStereoAlgorithms.None:
+                            default:
+                                break;
+                        }
+
+                        break;
+                    }
+
                     default:
                         break;
                 }
@@ -7008,7 +7103,10 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var channels = state.OutputAudioChannels;
 
-            if (channels.HasValue && ((channels.Value != 2 && state.AudioStream?.Channels != 6) || encodingOptions.DownMixStereoAlgorithm == DownMixStereoAlgorithms.None))
+            var useDownMixAlgorithm = (state.AudioStream?.Channels is > 2 && encodingOptions.DownMixStereoAlgorithm == DownMixStereoAlgorithms.Rfc7845)
+                                      || (state.AudioStream?.Channels is 6 && encodingOptions.DownMixStereoAlgorithm != DownMixStereoAlgorithms.None);
+
+            if (channels.HasValue && !useDownMixAlgorithm)
             {
                 args += " -ac " + channels.Value;
             }
