@@ -2563,7 +2563,7 @@ namespace MediaBrowser.Controller.Entities
             return GetThemeVideos(user, Array.Empty<(ItemSortBy, SortOrder)>());
         }
 
-        public IReadOnlyList<BaseItem> GetThemeVideos(User user = null, IEnumerable<(ItemSortBy SortBy, SortOrder SortOrder)> orderBy = null)
+        public IReadOnlyList<BaseItem> GetThemeVideos(User user, IEnumerable<(ItemSortBy SortBy, SortOrder SortOrder)> orderBy)
         {
             return LibraryManager.Sort(GetExtras().Where(e => e.ExtraType == Model.Entities.ExtraType.ThemeVideo), user, orderBy).ToArray();
         }
