@@ -1735,16 +1735,15 @@ public class DynamicHlsController : BaseJellyfinApiController
             }
         }
 
-        if (state.AudioStream is not null && state.AudioStream.CodecTag.Equals("ac-4", StringComparison.Ordinal))
+        if (state.OutputAudioSampleRate.HasValue)
+        {
+            args += " -ar " + state.OutputAudioSampleRate.Value.ToString(CultureInfo.InvariantCulture);
+        }
+        else if (state.AudioStream?.CodecTag is not null && state.AudioStream.CodecTag.Equals("ac-4", StringComparison.Ordinal))
         {
             // ac-4 audio tends to hava a super weird sample rate that will fail most encoders
             // force resample it to 48KHz
             args += " -ar 48000";
-        }
-
-        if (state.OutputAudioSampleRate.HasValue)
-        {
-            args += " -ar " + state.OutputAudioSampleRate.Value.ToString(CultureInfo.InvariantCulture);
         }
 
         args += _encodingHelper.GetAudioFilterParam(state, _encodingOptions);
