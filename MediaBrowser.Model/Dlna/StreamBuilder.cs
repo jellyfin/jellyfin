@@ -130,7 +130,7 @@ namespace MediaBrowser.Model.Dlna
                 var supportedHlsContainers = new[] { "ts", "mp4" };
                 // If the container specified for the profile is an HLS supported container, use that container instead, overriding the preference
                 // The client should be responsible to ensure this container is compatible
-                remuxContainer = Array.Exists(supportedHlsContainers, element => element == directPlayInfo.Profile?.Container) ? directPlayInfo.Profile?.Container : remuxContainer;
+                remuxContainer = Array.Exists(supportedHlsContainers, element => string.Equals(element, directPlayInfo.Profile?.Container, StringComparison.OrdinalIgnoreCase)) ? directPlayInfo.Profile?.Container : remuxContainer;
                 bool codeIsSupported;
                 if (item.TranscodingSubProtocol == MediaStreamProtocol.hls)
                 {
