@@ -175,8 +175,8 @@ public class BdInfoExaminer : IBlurayExaminer
             TSStreamType.MPEG1_VIDEO => "mpeg1video",
             TSStreamType.MPEG2_VIDEO => "mpeg2video",
             TSStreamType.VC1_VIDEO => "vc1",
-            TSStreamType.AC3_PLUS_AUDIO | TSStreamType.AC3_PLUS_SECONDARY_AUDIO => "eac3",
-            TSStreamType.DTS_AUDIO | TSStreamType.DTS_HD_AUDIO | TSStreamType.DTS_HD_MASTER_AUDIO | TSStreamType.DTS_HD_MASTER_AUDIO => "dts",
+            TSStreamType.AC3_PLUS_AUDIO or TSStreamType.AC3_PLUS_SECONDARY_AUDIO => "eac3",
+            TSStreamType.DTS_AUDIO or TSStreamType.DTS_HD_AUDIO or TSStreamType.DTS_HD_MASTER_AUDIO or TSStreamType.DTS_HD_SECONDARY_AUDIO => "dts",
             TSStreamType.PRESENTATION_GRAPHICS => "pgssub",
             _ => stream.CodecShortName
         };
