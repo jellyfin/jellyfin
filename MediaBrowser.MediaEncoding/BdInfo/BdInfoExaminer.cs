@@ -60,21 +60,20 @@ public class BdInfoExaminer : IBlurayExaminer
         var sortedStreams = playlist.SortedStreams;
         var mediaStreams = new List<MediaStream>(sortedStreams.Count);
 
-        foreach (var stream in sortedStreams)
+        for (int i = 0; i < sortedStreams.Count; i++)
         {
+            var stream = sortedStreams[i];
             switch (stream)
             {
                 case TSVideoStream videoStream:
-                    AddVideoStream(mediaStreams, videoStream);
+                    AddVideoStream(mediaStreams, i, videoStream);
                     break;
                 case TSAudioStream audioStream:
-                    AddAudioStream(mediaStreams, audioStream);
+                    AddAudioStream(mediaStreams, i, audioStream);
                     break;
-                case TSTextStream textStream:
-                    AddSubtitleStream(mediaStreams, textStream);
-                    break;
-                case TSGraphicsStream graphicStream:
-                    AddSubtitleStream(mediaStreams, graphicStream);
+                case TSTextStream:
+                case TSGraphicsStream:
+                    AddSubtitleStream(mediaStreams, i, stream);
                     break;
             }
         }
@@ -96,8 +95,9 @@ public class BdInfoExaminer : IBlurayExaminer
     /// Adds the video stream.
     /// </summary>
     /// <param name="streams">The streams.</param>
+    /// <param name="index">The stream index.</param>
     /// <param name="videoStream">The video stream.</param>
-    private void AddVideoStream(List<MediaStream> streams, TSVideoStream videoStream)
+    private void AddVideoStream(List<MediaStream> streams, int index, TSVideoStream videoStream)
     {
         var mediaStream = new MediaStream
         {
@@ -107,7 +107,7 @@ public class BdInfoExaminer : IBlurayExaminer
             Codec = videoStream.CodecShortName,
             IsInterlaced = videoStream.IsInterlaced,
             Type = MediaStreamType.Video,
-            Index = streams.Count
+            Index = index
         };
 
         if (videoStream.FrameRateDenominator > 0)
@@ -125,8 +125,9 @@ public class BdInfoExaminer : IBlurayExaminer
     /// Adds the audio stream.
     /// </summary>
     /// <param name="streams">The streams.</param>
+    /// <param name="index">The stream index.</param>
     /// <param name="audioStream">The audio stream.</param>
-    private void AddAudioStream(List<MediaStream> streams, TSAudioStream audioStream)
+    private void AddAudioStream(List<MediaStream> streams, int index, TSAudioStream audioStream)
     {
         var stream = new MediaStream
         {
@@ -135,7 +136,7 @@ public class BdInfoExaminer : IBlurayExaminer
             Channels = audioStream.ChannelCount,
             SampleRate = audioStream.SampleRate,
             Type = MediaStreamType.Audio,
-            Index = streams.Count
+            Index = index
         };
 
         var bitrate = Convert.ToInt32(audioStream.BitRate);
@@ -157,31 +158,25 @@ public class BdInfoExaminer : IBlurayExaminer
     /// Adds the subtitle stream.
     /// </summary>
     /// <param name="streams">The streams.</param>
-    /// <param name="textStream">The text stream.</param>
-    private void AddSubtitleStream(List<MediaStream> streams, TSTextStream textStream)
+    /// <param name="index">The stream index.</param>
+    /// <param name="textStream">The stream.</param>
+    private void AddSubtitleStream(List<MediaStream> streams, int index, TSStream textStream)
     {
         streams.Add(new MediaStream
         {
             Language = textStream.LanguageCode,
-            Codec = textStream.CodecShortName,
+            Codec = NormalizeSubtitleCodec(textStream.StreamType),
             Type = MediaStreamType.Subtitle,
-            Index = streams.Count
+            Index = index
         });
     }
 
-    /// <summary>
-    /// Adds the subtitle stream.
-    /// </summary>
-    /// <param name="streams">The streams.</param>
-    /// <param name="textStream">The text stream.</param>
-    private void AddSubtitleStream(List<MediaStream> streams, TSGraphicsStream textStream)
-    {
-        streams.Add(new MediaStream
+    private string NormalizeSubtitleCodec(TSStreamType codec)
+        => codec switch
         {
-            Language = textStream.LanguageCode,
-            Codec = textStream.CodecShortName,
-            Type = MediaStreamType.Subtitle,
-            Index = streams.Count
-        });
-    }
+            TSStreamType.INTERACTIVE_GRAPHICS => "igs",
+            TSStreamType.PRESENTATION_GRAPHICS => "pgssub",
+            TSStreamType.SUBTITLE => "sub",
+            _ => throw new ArgumentOutOfRangeException(nameof(codec), $"Invalid stream type for subtitle: {codec}")
+        };
 }
