@@ -133,10 +133,11 @@ namespace Jellyfin.Server.Implementations.Devices
         /// <inheritdoc />
         public QueryResult<Device> GetDevices(DeviceQuery query)
         {
-            IEnumerable<Device> devices = _devices.Values.OrderBy(d => d.Id)
+            IEnumerable<Device> devices = _devices.Values
                 .Where(device => !query.UserId.HasValue || device.UserId.Equals(query.UserId.Value))
                 .Where(device => query.DeviceId == null || device.DeviceId == query.DeviceId)
                 .Where(device => query.AccessToken == null || device.AccessToken == query.AccessToken)
+                .OrderBy(d => d.Id)
                 .ToList();
             var count = devices.Count();
 
