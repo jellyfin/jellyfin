@@ -123,7 +123,7 @@ namespace Jellyfin.Server.Implementations.Devices
         /// <inheritdoc />
         public DeviceInfo? GetDevice(string id)
         {
-            var device = _devices.Values.OrderByDescending(d => d.DateLastActivity).FirstOrDefault(d => d.DeviceId == id);
+            var device = _devices.Values.Where(d => d.DeviceId == id).OrderByDescending(d => d.DateLastActivity).FirstOrDefault();
             _deviceOptions.TryGetValue(id, out var deviceOption);
 
             var deviceInfo = device is null ? null : ToDeviceInfo(device, deviceOption);
