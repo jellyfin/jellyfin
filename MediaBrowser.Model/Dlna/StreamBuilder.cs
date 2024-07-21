@@ -908,7 +908,10 @@ namespace MediaBrowser.Model.Dlna
                 }
             }
 
-            var directAudioStream = candidateAudioStreams.FirstOrDefault(stream => ContainerProfile.ContainsContainer(audioCodecs, stream.Codec));
+            var directAudioStream = candidateAudioStreams.FirstOrDefault(stream => ContainerProfile.ContainsContainer(audioCodecs, stream.Codec)
+                                                                                   && stream.Channels is not null
+                                                                                   && stream.Channels.Value <= playlistItem.TranscodingMaxAudioChannels);
+
             playlistItem.AudioCodecs = audioCodecs;
             if (directAudioStream is not null)
             {
