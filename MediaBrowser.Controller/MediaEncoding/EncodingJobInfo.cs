@@ -508,6 +508,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
         }
 
+        public bool EnableAudioVbrEncoding => BaseRequest.EnableAudioVbrEncoding;
+
         public int HlsListSize => 0;
 
         public bool EnableBreakOnNonKeyFrames(string videoCodec)

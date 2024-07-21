@@ -108,6 +108,8 @@ namespace MediaBrowser.Model.Dlna
 
         public string? MediaSourceId => MediaSource?.Id;
 
+        public bool EnableAudioVbrEncoding { get; set; }
+
         public bool IsDirectStream => MediaSource?.VideoType is not (VideoType.Dvd or VideoType.BluRay)
             && PlayMethod is PlayMethod.DirectStream or PlayMethod.DirectPlay;
 
@@ -768,6 +770,8 @@ namespace MediaBrowser.Model.Dlna
                 }
 
                 list.Add(new NameValuePair("RequireAvc", item.RequireAvc.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()));
+
+                list.Add(new NameValuePair("EnableAudioVbrEncoding", item.EnableAudioVbrEncoding.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()));
             }
 
             list.Add(new NameValuePair("Tag", item.MediaSource?.ETag ?? string.Empty));
