@@ -209,6 +209,21 @@ public class UserController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<AuthenticationResult>> AuthenticateUserByName([FromBody, Required] AuthenticateUserByName request)
     {
+        try
+        {
+            var user = _userManager.GetUserByName(request.Username!);
+            if (user is null)
+            {
+                var userToBeCreated = new CreateUserByName { Name = request.Username! };
+                var createdUser = await CreateUserByName(userToBeCreated).ConfigureAwait(false);
+                _logger.LogInformation("New user created with name {Name}", createdUser.Value);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Exception while creating new user {Ex}", ex.Message);
+        }
+
         var auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
 
         try
