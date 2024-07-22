@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -65,12 +65,12 @@ namespace Jellyfin.Server.Migrations.Routines
         {
             HomeSectionType[] defaults =
             {
-                HomeSectionType.SmallLibraryTiles,
                 HomeSectionType.Resume,
-                HomeSectionType.ResumeAudio,
-                HomeSectionType.LiveTv,
-                HomeSectionType.NextUp,
                 HomeSectionType.LatestMedia,
+                HomeSectionType.SmallLibraryTiles,
+                HomeSectionType.NextUp,
+                HomeSectionType.LiveTv,
+                HomeSectionType.ResumeAudio,
                 HomeSectionType.None,
             };
 
@@ -158,6 +158,7 @@ namespace Jellyfin.Server.Migrations.Routines
                         });
 
                         dto.CustomPrefs.Remove(key);
+                        _logger.LogCritical("Section {Sec}    Order {Ord}", defaults[i], i);
                     }
 
                     var defaultLibraryPrefs = new ItemDisplayPreferences(displayPreferences.UserId, Guid.Empty, displayPreferences.Client)

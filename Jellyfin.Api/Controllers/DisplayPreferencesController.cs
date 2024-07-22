@@ -80,6 +80,7 @@ public class DisplayPreferencesController : BaseJellyfinApiController
         foreach (var homeSection in displayPreferences.HomeSections)
         {
             dto.CustomPrefs["homesection" + homeSection.Order] = homeSection.Type.ToString().ToLowerInvariant();
+            
         }
 
         dto.CustomPrefs["chromecastVersion"] = displayPreferences.ChromecastVersion.ToString().ToLowerInvariant();
@@ -124,13 +125,12 @@ public class DisplayPreferencesController : BaseJellyfinApiController
 
         HomeSectionType[] defaults =
         {
-            HomeSectionType.SmallLibraryTiles,
             HomeSectionType.Resume,
-            HomeSectionType.ResumeAudio,
-            HomeSectionType.ResumeBook,
-            HomeSectionType.LiveTv,
-            HomeSectionType.NextUp,
             HomeSectionType.LatestMedia,
+            HomeSectionType.SmallLibraryTiles,
+            HomeSectionType.NextUp,
+            HomeSectionType.LiveTv,
+            HomeSectionType.ResumeAudio,
             HomeSectionType.None,
         };
 

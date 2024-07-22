@@ -1,4 +1,4 @@
-﻿namespace Jellyfin.Data.Enums
+namespace Jellyfin.Data.Enums
 {
     /// <summary>
     /// An enum representing the different options for the home screen sections.
@@ -13,12 +13,12 @@
         /// <summary>
         /// My Media.
         /// </summary>
-        SmallLibraryTiles = 1,
+        SmallLibraryTiles = 2,
 
         /// <summary>
         /// My Media Small.
         /// </summary>
-        LibraryButtons = 2,
+        LibraryButtons = 7,
 
         /// <summary>
         /// Active Recordings.
@@ -28,7 +28,7 @@
         /// <summary>
         /// Continue Watching.
         /// </summary>
-        Resume = 4,
+        Resume = 0,
 
         /// <summary>
         /// Continue Listening.
@@ -38,21 +38,21 @@
         /// <summary>
         /// Latest Media.
         /// </summary>
-        LatestMedia = 6,
+        LatestMedia = 1,
 
         /// <summary>
         /// Next Up.
         /// </summary>
-        NextUp = 7,
+        NextUp = 3,
 
         /// <summary>
         /// Live TV.
         /// </summary>
-        LiveTv = 8,
+        LiveTv = 4,
 
         /// <summary>
         /// Continue Reading.
         /// </summary>
-        ResumeBook = 9
+        ResumeBook = 6
     }
 }
