@@ -908,9 +908,17 @@ namespace MediaBrowser.Model.Dlna
                 }
             }
 
-            var directAudioStream = candidateAudioStreams.FirstOrDefault(stream => ContainerProfile.ContainsContainer(audioCodecs, stream.Codec)
-                                                                                   && stream.Channels is not null
-                                                                                   && stream.Channels.Value <= (playlistItem.TranscodingMaxAudioChannels ?? int.MaxValue));
+            var audioStreamWithSupportedCodec = candidateAudioStreams.Where(stream => ContainerProfile.ContainsContainer(audioCodecs, stream.Codec)).ToList();
+
+            var directAudioStream = audioStreamWithSupportedCodec.FirstOrDefault(stream => stream.Channels is not null
+                                                                                           && stream.Channels.Value <= (playlistItem.TranscodingMaxAudioChannels ?? int.MaxValue));
+
+            var channelsWithinLimit = directAudioStream == audioStreamWithSupportedCodec.FirstOrDefault();
+            if (!channelsWithinLimit && playlistItem.TargetAudioStream is not null)
+            {
+                playlistItem.TranscodeReasons |= TranscodeReason.AudioChannelsNotSupported;
+                playlistItem.TargetAudioStream.Channels = playlistItem.TranscodingMaxAudioChannels;
+            }
 
             playlistItem.AudioCodecs = audioCodecs;
             if (directAudioStream is not null)
@@ -974,7 +982,7 @@ namespace MediaBrowser.Model.Dlna
             }
 
             // Honor requested max channels
-            playlistItem.GlobalMaxAudioChannels = options.MaxAudioChannels;
+            playlistItem.GlobalMaxAudioChannels = channelsWithinLimit ? options.MaxAudioChannels : playlistItem.TranscodingMaxAudioChannels;
 
             int audioBitrate = GetAudioBitrate(options.GetMaxBitrate(true) ?? 0, playlistItem.TargetAudioCodec, audioStream, playlistItem);
             playlistItem.AudioBitrate = Math.Min(playlistItem.AudioBitrate ?? audioBitrate, audioBitrate);
