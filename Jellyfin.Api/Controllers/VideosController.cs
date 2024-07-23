@@ -275,6 +275,7 @@ public class VideosController : BaseJellyfinApiController
     /// <param name="videoStreamIndex">Optional. The index of the video stream to use. If omitted the first video stream will be used.</param>
     /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
     /// <param name="streamOptions">Optional. The streaming options.</param>
+    /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
     [HttpGet("{itemId}/stream")]
@@ -332,7 +333,8 @@ public class VideosController : BaseJellyfinApiController
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
         [FromQuery] EncodingContext? context,
-        [FromQuery] Dictionary<string, string> streamOptions)
+        [FromQuery] Dictionary<string, string> streamOptions,
+        [FromQuery] bool enableAudioVbrEncoding = true)
     {
         VideoRequestDto streamingRequest = new VideoRequestDto
         {
@@ -384,6 +386,7 @@ public class VideosController : BaseJellyfinApiController
             VideoStreamIndex = videoStreamIndex,
             Context = context ?? EncodingContext.Streaming,
             StreamOptions = streamOptions,
+            EnableAudioVbrEncoding = enableAudioVbrEncoding,
             MaxHeight = maxHeight,
             MaxWidth = maxWidth
         };
@@ -445,6 +448,7 @@ public class VideosController : BaseJellyfinApiController
     /// <param name="videoStreamIndex">Optional. The index of the video stream to use. If omitted the first video stream will be used.</param>
     /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
     /// <param name="streamOptions">Optional. The streaming options.</param>
+    /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
     [HttpGet("{itemId}/stream.{container}")]
@@ -502,7 +506,8 @@ public class VideosController : BaseJellyfinApiController
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
         [FromQuery] EncodingContext? context,
-        [FromQuery] Dictionary<string, string> streamOptions)
+        [FromQuery] Dictionary<string, string> streamOptions,
+        [FromQuery] bool enableAudioVbrEncoding = true)
     {
         VideoRequestDto streamingRequest = new VideoRequestDto
         {
@@ -555,7 +560,8 @@ public class VideosController : BaseJellyfinApiController
             Context = context ?? EncodingContext.Streaming,
             StreamOptions = streamOptions,
             MaxHeight = maxHeight,
-            MaxWidth = maxWidth
+            MaxWidth = maxWidth,
+            EnableAudioVbrEncoding = enableAudioVbrEncoding
         };
 
         return await _videoService.GetVideoStreamAsync(streamingRequest, Request, HttpContext).ConfigureAwait(false);
