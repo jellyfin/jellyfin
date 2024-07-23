@@ -112,7 +112,7 @@
     "CameraImageUploadedFrom": "Una nueva imagen de cámara ha sido subida desde {0}",
     "AuthenticationSucceededWithUserName": "{0} autenticado con éxito",
     "Application": "Aplicación",
-    "AppDeviceValues": "App: {0}, Dispositivo: {1}",
+    "AppDeviceValues": "Aplicación: {0}, Dispositivo: {1}",
     "TaskCleanActivityLogDescription": "Elimina las entradas del registro de actividad anteriores al periodo configurado.",
     "TaskCleanActivityLog": "Limpiar registro de actividades",
     "Undefined": "Sin definir",
@@ -125,5 +125,9 @@
     "TaskKeyframeExtractor": "Extractor de Fotogramas Clave",
     "HearingImpaired": "Discapacidad auditiva",
     "TaskRefreshTrickplayImagesDescription": "Crea previsualizaciones para la barra de reproducción en las bibliotecas habilitadas.",
-    "TaskRefreshTrickplayImages": "Generar imágenes de la barra de reproducción"
+    "TaskRefreshTrickplayImages": "Generar imágenes de la barra de reproducción",
+    "TaskAudioNormalization": "Normalización de audio",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Quita elementos que ya no existen de colecciones y listas de reproducción.",
+    "TaskAudioNormalizationDescription": "Analiza los archivos para normalizar el audio.",
+    "TaskCleanCollectionsAndPlaylists": "Limpieza de colecciones y listas de reproducción"
 }

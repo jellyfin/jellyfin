@@ -42,7 +42,7 @@ namespace Jellyfin.Server.Migrations.Routines
                 }
 
                 var libraryOptions = virtualFolder.LibraryOptions;
-                var collectionFolder = (CollectionFolder)_libraryManager.GetItemById(folderId);
+                var collectionFolder = _libraryManager.GetItemById<CollectionFolder>(folderId) ?? throw new InvalidOperationException("Failed to find CollectionFolder");
                 // The property no longer exists in LibraryOptions, so we just re-save the options to get old data removed.
                 collectionFolder.UpdateLibraryOptions(libraryOptions);
                 _logger.LogInformation("Removed from '{VirtualFolder}'", virtualFolder.Name);

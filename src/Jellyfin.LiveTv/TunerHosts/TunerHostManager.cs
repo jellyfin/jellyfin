@@ -76,14 +76,13 @@ public class TunerHostManager : ITunerHostManager
 
         var config = _config.GetLiveTvConfiguration();
 
-        var list = config.TunerHosts.ToList();
-        var index = list.FindIndex(i => string.Equals(i.Id, info.Id, StringComparison.OrdinalIgnoreCase));
+        var list = config.TunerHosts;
+        var index = Array.FindIndex(list, i => string.Equals(i.Id, info.Id, StringComparison.OrdinalIgnoreCase));
 
         if (index == -1 || string.IsNullOrWhiteSpace(info.Id))
         {
             info.Id = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
-            list.Add(info);
-            config.TunerHosts = list.ToArray();
+            config.TunerHosts = [..list, info];
         }
         else
         {

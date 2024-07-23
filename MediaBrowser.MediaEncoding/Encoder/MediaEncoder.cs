@@ -30,10 +30,8 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using static Nikse.SubtitleEdit.Core.Common.IfoParser;
 
 namespace MediaBrowser.MediaEncoding.Encoder
 {
@@ -76,6 +74,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private IDictionary<int, bool> _filtersWithOption = new Dictionary<int, bool>();
 
         private bool _isPkeyPauseSupported = false;
+        private bool _isLowPriorityHwDecodeSupported = false;
 
         private bool _isVaapiDeviceAmd = false;
         private bool _isVaapiDeviceInteliHD = false;
@@ -196,6 +195,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 _threads = EncodingHelper.GetNumberOfThreads(null, options, null);
 
                 _isPkeyPauseSupported = validator.CheckSupportedRuntimeKey("p      pause transcoding");
+                _isLowPriorityHwDecodeSupported = validator.CheckSupportedHwaccelFlag("low_priority");
 
                 // Check the Vaapi device vendor
                 if (OperatingSystem.IsLinux()
@@ -458,9 +458,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 extraArgs += " -probesize " + ffmpegProbeSize;
             }
 
-            if (request.MediaSource.RequiredHttpHeaders.TryGetValue("user_agent", out var userAgent))
+            if (request.MediaSource.RequiredHttpHeaders.TryGetValue("User-Agent", out var userAgent))
             {
-                extraArgs += " -user_agent " + userAgent;
+                extraArgs += $" -user_agent \"{userAgent}\"";
+            }
+
+            if (request.MediaSource.Protocol == MediaProtocol.Rtsp)
+            {
+                extraArgs += " -rtsp_transport tcp+udp -rtsp_flags prefer_tcp";
             }
 
             return extraArgs;
@@ -616,7 +621,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             ImageFormat? targetFormat,
             CancellationToken cancellationToken)
         {
-            var inputArgument = GetInputArgument(inputFile, mediaSource);
+            var inputArgument = GetInputPathArgument(inputFile, mediaSource);
 
             if (!isAudio)
             {
@@ -705,16 +710,22 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 filters.Add("thumbnail=n=" + (useLargerBatchSize ? "50" : "24"));
             }
 
-            // Use SW tonemap on HDR10/HLG video stream only when the zscale filter is available.
+            // Use SW tonemap on HDR10/HLG video stream only when the zscale or tonemapx filter is available.
             var enableHdrExtraction = false;
 
-            if ((string.Equals(videoStream?.ColorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase)
+            if (string.Equals(videoStream?.ColorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(videoStream?.ColorTransfer, "arib-std-b67", StringComparison.OrdinalIgnoreCase))
-                && SupportsFilter("zscale"))
             {
-                enableHdrExtraction = true;
-
-                filters.Add("zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0:peak=100,zscale=t=bt709:m=bt709,format=yuv420p");
+                if (SupportsFilter("tonemapx"))
+                {
+                    enableHdrExtraction = true;
+                    filters.Add("tonemapx=tonemap=bt2390:desat=0:peak=100:t=bt709:m=bt709:p=bt709:format=yuv420p");
+                }
+                else if (SupportsFilter("zscale"))
+                {
+                    enableHdrExtraction = true;
+                    filters.Add("zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0:peak=100,zscale=t=bt709:m=bt709,format=yuv420p");
+                }
             }
 
             var vf = string.Join(',', filters);
@@ -804,11 +815,27 @@ namespace MediaBrowser.MediaEncoding.Encoder
             int? threads,
             int? qualityScale,
             ProcessPriorityClass? priority,
+            bool enableKeyFrameOnlyExtraction,
             EncodingHelper encodingHelper,
             CancellationToken cancellationToken)
         {
             var options = allowHwAccel ? _configurationManager.GetEncodingOptions() : new EncodingOptions();
             threads ??= _threads;
+
+            if (allowHwAccel && enableKeyFrameOnlyExtraction)
+            {
+                var supportsKeyFrameOnly = (string.Equals(options.HardwareAccelerationType, "nvenc", StringComparison.OrdinalIgnoreCase) && options.EnableEnhancedNvdecDecoder)
+                                           || (string.Equals(options.HardwareAccelerationType, "amf", StringComparison.OrdinalIgnoreCase) && OperatingSystem.IsWindows())
+                                           || (string.Equals(options.HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase) && options.PreferSystemNativeHwDecoder)
+                                           || string.Equals(options.HardwareAccelerationType, "vaapi", StringComparison.OrdinalIgnoreCase)
+                                           || string.Equals(options.HardwareAccelerationType, "videotoolbox", StringComparison.OrdinalIgnoreCase);
+                if (!supportsKeyFrameOnly)
+                {
+                    // Disable hardware acceleration when the hardware decoder does not support keyframe only mode.
+                    allowHwAccel = false;
+                    options = new EncodingOptions();
+                }
+            }
 
             // A new EncodingOptions instance must be used as to not disable HW acceleration for all of Jellyfin.
             // Additionally, we must set a few fields without defaults to prevent null pointer exceptions.
@@ -817,6 +844,22 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 options.EnableHardwareEncoding = false;
                 options.HardwareAccelerationType = string.Empty;
                 options.EnableTonemapping = false;
+            }
+
+            if (imageStream.Width is not null && imageStream.Height is not null && !string.IsNullOrEmpty(imageStream.AspectRatio))
+            {
+                // For hardware trickplay encoders, we need to re-calculate the size because they used fixed scale dimensions
+                var darParts = imageStream.AspectRatio.Split(':');
+                var (wa, ha) = (double.Parse(darParts[0], CultureInfo.InvariantCulture), double.Parse(darParts[1], CultureInfo.InvariantCulture));
+                // When dimension / DAR does not equal to 1:1, then the frames are most likely stored stretched.
+                // Note: this might be incorrect for 3D videos as the SAR stored might be per eye instead of per video, but we really can do little about it.
+                var shouldResetHeight = Math.Abs((imageStream.Width.Value * ha) - (imageStream.Height.Value * wa)) > .05;
+                if (shouldResetHeight)
+                {
+                    // SAR = DAR * Height / Width
+                    // RealHeight = Height / SAR = Height / (DAR * Height / Width) = Width / DAR
+                    imageStream.Height = Convert.ToInt32(imageStream.Width.Value * ha / wa);
+                }
             }
 
             var baseRequest = new BaseEncodingJobOptions { MaxWidth = maxWidth, MaxFramerate = (float)(1.0 / interval.TotalSeconds) };
@@ -843,7 +886,18 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 inputArg = "-threads " + threads + " " + inputArg; // HW accel args set a different input thread count, only set if disabled
             }
 
-            var filterParam = encodingHelper.GetVideoProcessingFilterParam(jobState, options, jobState.OutputVideoCodec).Trim();
+            if (options.HardwareAccelerationType.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase) && _isLowPriorityHwDecodeSupported)
+            {
+                // VideoToolbox supports low priority decoding, which is useful for trickplay
+                inputArg = "-hwaccel_flags +low_priority " + inputArg;
+            }
+
+            if (enableKeyFrameOnlyExtraction)
+            {
+                inputArg = "-skip_frame nokey " + inputArg;
+            }
+
+            var filterParam = encodingHelper.GetVideoProcessingFilterParam(jobState, options, vidEncoder).Trim();
             if (string.IsNullOrWhiteSpace(filterParam))
             {
                 throw new InvalidOperationException("EncodingHelper returned empty or invalid filter parameters.");
@@ -866,6 +920,23 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 throw new InvalidOperationException("Empty or invalid input argument.");
             }
 
+            float? encoderQuality = qualityScale;
+            if (vidEncoder.Contains("vaapi", StringComparison.OrdinalIgnoreCase))
+            {
+                // vaapi's mjpeg encoder uses jpeg quality divided by QP2LAMBDA (118) as input, instead of ffmpeg defined qscale
+                // ffmpeg qscale is a value from 1-31, with 1 being best quality and 31 being worst
+                // jpeg quality is a value from 0-100, with 0 being worst quality and 100 being best
+                encoderQuality = (100 - ((qualityScale - 1) * (100 / 30))) / 118;
+            }
+
+            if (vidEncoder.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase))
+            {
+                // videotoolbox's mjpeg encoder uses jpeg quality scaled to QP2LAMBDA (118) instead of ffmpeg defined qscale
+                // ffmpeg qscale is a value from 1-31, with 1 being best quality and 31 being worst
+                // jpeg quality is a value from 0-100, with 0 being worst quality and 100 being best
+                encoderQuality = 118 - ((qualityScale - 1) * (118 / 30));
+            }
+
             // Output arguments
             var targetDirectory = Path.Combine(_configurationManager.ApplicationPaths.TempDirectory, Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(targetDirectory);
@@ -874,12 +945,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // Final command arguments
             var args = string.Format(
                 CultureInfo.InvariantCulture,
-                "-loglevel error {0} -an -sn {1} -threads {2} -c:v {3} {4}-f {5} \"{6}\"",
+                "-loglevel error {0} -an -sn {1} -threads {2} -c:v {3} {4}{5}-f {6} \"{7}\"",
                 inputArg,
                 filterParam,
                 outputThreads.GetValueOrDefault(_threads),
                 vidEncoder,
-                qualityScale.HasValue ? "-qscale:v " + qualityScale.Value.ToString(CultureInfo.InvariantCulture) + " " : string.Empty,
+                qualityScale.HasValue ? "-qscale:v " + encoderQuality.Value.ToString(CultureInfo.InvariantCulture) + " " : string.Empty,
+                vidEncoder.Contains("videotoolbox", StringComparison.InvariantCultureIgnoreCase) ? "-allow_sw 1 " : string.Empty, // allow_sw fallback for some intel macs
                 "image2",
                 outputPath);
 
@@ -931,7 +1003,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     var timeoutMs = _configurationManager.Configuration.ImageExtractionTimeoutMs;
                     timeoutMs = timeoutMs <= 0 ? DefaultHdrImageExtractionTimeout : timeoutMs;
 
-                    while (isResponsive)
+                    while (isResponsive && !cancellationToken.IsCancellationRequested)
                     {
                         try
                         {
@@ -945,8 +1017,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                             // We don't actually expect the process to be finished in one timeout span, just that one image has been generated.
                         }
 
-                        cancellationToken.ThrowIfCancellationRequested();
-
                         var jpegCount = _fileSystem.GetFilePaths(targetDirectory).Count();
 
                         isResponsive = jpegCount > lastCount;
@@ -955,7 +1025,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                     if (!ranToCompletion)
                     {
-                        _logger.LogInformation("Stopping trickplay extraction due to process inactivity.");
+                        if (!isResponsive)
+                        {
+                            _logger.LogInformation("Trickplay process unresponsive.");
+                        }
+
+                        _logger.LogInformation("Stopping trickplay extraction.");
                         StopProcess(processWrapper, 1000);
                     }
                 }
@@ -1118,19 +1193,21 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         /// <inheritdoc />
         public IReadOnlyList<string> GetPrimaryPlaylistM2tsFiles(string path)
+            => _blurayExaminer.GetDiscInfo(path).Files;
+
+        /// <inheritdoc />
+        public string GetInputPathArgument(EncodingJobInfo state)
+            => GetInputPathArgument(state.MediaPath, state.MediaSource);
+
+        /// <inheritdoc />
+        public string GetInputPathArgument(string path, MediaSourceInfo mediaSource)
         {
-            // Get all playable .m2ts files
-            var validPlaybackFiles = _blurayExaminer.GetDiscInfo(path).Files;
-
-            // Get all files from the BDMV/STREAMING directory
-            var directoryFiles = _fileSystem.GetFiles(Path.Join(path, "BDMV", "STREAM"));
-
-            // Only return playable local .m2ts files
-            return directoryFiles
-                .Where(f => validPlaybackFiles.Contains(f.Name, StringComparer.OrdinalIgnoreCase))
-                .Select(f => f.FullName)
-                .Order()
-                .ToList();
+            return mediaSource.VideoType switch
+            {
+                VideoType.Dvd => GetInputArgument(GetPrimaryPlaylistVobFiles(path, null), mediaSource),
+                VideoType.BluRay => GetInputArgument(GetPrimaryPlaylistM2tsFiles(path), mediaSource),
+                _ => GetInputArgument(path, mediaSource)
+            };
         }
 
         /// <inheritdoc />
@@ -1153,6 +1230,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             // Generate concat configuration entries for each file and write to file
+            Directory.CreateDirectory(Path.GetDirectoryName(concatFilePath));
             using StreamWriter sw = new StreamWriter(concatFilePath);
             foreach (var path in files)
             {
@@ -1172,7 +1250,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 var duration = TimeSpan.FromTicks(mediaInfoResult.RunTimeTicks.Value).TotalSeconds;
 
                 // Add file path stanza to concat configuration
-                sw.WriteLine("file '{0}'", path);
+                sw.WriteLine("file '{0}'", path.Replace("'", @"'\''", StringComparison.Ordinal));
 
                 // Add duration stanza to concat configuration
                 sw.WriteLine("duration {0}", duration);

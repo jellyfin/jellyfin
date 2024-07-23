@@ -27,6 +27,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "msmpeg4",
             "dca",
             "ac3",
+            "ac4",
             "aac",
             "mp3",
             "flac",
@@ -69,6 +70,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "aac_at",
             "libfdk_aac",
             "ac3",
+            "alac",
             "dca",
             "libmp3lame",
             "libopus",
@@ -81,6 +83,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "av1_amf",
             "h264_qsv",
             "hevc_qsv",
+            "mjpeg_qsv",
             "av1_qsv",
             "h264_nvenc",
             "hevc_nvenc",
@@ -88,9 +91,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "h264_vaapi",
             "hevc_vaapi",
             "av1_vaapi",
+            "mjpeg_vaapi",
             "h264_v4l2m2m",
             "h264_videotoolbox",
             "hevc_videotoolbox",
+            "mjpeg_videotoolbox",
             "h264_rkmpp",
             "hevc_rkmpp"
         };
@@ -100,6 +105,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // sw
             "alphasrc",
             "zscale",
+            "tonemapx",
             // qsv
             "scale_qsv",
             "vpp_qsv",
@@ -502,6 +508,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return output.Contains(keyDesc, StringComparison.Ordinal);
         }
 
+        public bool CheckSupportedHwaccelFlag(string flag)
+        {
+            return !string.IsNullOrEmpty(flag) && GetProcessExitCode(_encoderPath, $"-loglevel quiet -hwaccel_flags +{flag} -hide_banner -f lavfi -i nullsrc=s=1x1:d=100 -f null -");
+        }
+
         private IEnumerable<string> GetCodecs(Codec codec)
         {
             string codecstr = codec == Codec.Encoder ? "encoders" : "decoders";
@@ -604,6 +615,31 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 using var reader = readStdErr ? process.StandardError : process.StandardOutput;
                 return reader.ReadToEnd();
+            }
+        }
+
+        private bool GetProcessExitCode(string path, string arguments)
+        {
+            using var process = new Process();
+            process.StartInfo = new ProcessStartInfo(path, arguments)
+            {
+                CreateNoWindow = true,
+                UseShellExecute = false,
+                WindowStyle = ProcessWindowStyle.Hidden,
+                ErrorDialog = false
+            };
+            _logger.LogDebug("Running {Path} {Arguments}", path, arguments);
+
+            try
+            {
+                process.Start();
+                process.WaitForExit();
+                return process.ExitCode == 0;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Running {Path} {Arguments} failed with exception {Exception}", path, arguments, ex.Message);
+                return false;
             }
         }
 

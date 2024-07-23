@@ -3,6 +3,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Emby.Naming.Audio;
 using Emby.Naming.Common;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities.Audio;
@@ -85,6 +86,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
             }
 
             var albumResolver = new MusicAlbumResolver(_logger, _namingOptions, _directoryService);
+            var albumParser = new AlbumParser(_namingOptions);
 
             var directories = args.FileSystemChildren.Where(i => i.IsDirectory);
 
@@ -98,6 +100,12 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                         // Stop once we see an artist subfolder
                         state.Stop();
                     }
+                }
+
+                // If the folder is a multi-disc folder, then it is not an artist folder
+                if (albumParser.IsMultiPart(fileSystemInfo.FullName))
+                {
+                    return;
                 }
 
                 // If we contain a music album assume we are an artist folder

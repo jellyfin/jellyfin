@@ -101,7 +101,7 @@ public class TrickplayProvider : ICustomMetadataProvider<Episode>,
         bool? enableDuringScan = libraryOptions?.ExtractTrickplayImagesDuringLibraryScan;
         bool replace = options.ReplaceAllImages;
 
-        if (options.IsAutomated && !enableDuringScan.GetValueOrDefault(false))
+        if (!enableDuringScan.GetValueOrDefault(false))
         {
             return ItemUpdateType.None;
         }

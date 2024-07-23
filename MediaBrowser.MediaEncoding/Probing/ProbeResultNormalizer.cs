@@ -280,8 +280,8 @@ namespace MediaBrowser.MediaEncoding.Probing
                     splitFormat[i] = "mpeg";
                 }
 
-                // Handle MPEG-2 container
-                else if (string.Equals(splitFormat[i], "mpeg", StringComparison.OrdinalIgnoreCase))
+                // Handle MPEG-TS container
+                else if (string.Equals(splitFormat[i], "mpegts", StringComparison.OrdinalIgnoreCase))
                 {
                     splitFormat[i] = "ts";
                 }
@@ -624,15 +624,19 @@ namespace MediaBrowser.MediaEncoding.Probing
         {
             if (string.Equals(codec, "dvb_subtitle", StringComparison.OrdinalIgnoreCase))
             {
-                codec = "dvbsub";
+                codec = "DVBSUB";
             }
-            else if ((codec ?? string.Empty).Contains("PGS", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(codec, "dvb_teletext", StringComparison.OrdinalIgnoreCase))
             {
-                codec = "PGSSUB";
+                codec = "DVBTXT";
             }
-            else if ((codec ?? string.Empty).Contains("DVD", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(codec, "dvd_subtitle", StringComparison.OrdinalIgnoreCase))
             {
-                codec = "DVDSUB";
+                codec = "DVDSUB"; // .sub+.idx
+            }
+            else if (string.Equals(codec, "hdmv_pgs_subtitle", StringComparison.OrdinalIgnoreCase))
+            {
+                codec = "PGSSUB"; // .sup
             }
 
             return codec;
@@ -717,6 +721,8 @@ namespace MediaBrowser.MediaEncoding.Probing
             if (streamInfo.CodecType == CodecType.Audio)
             {
                 stream.Type = MediaStreamType.Audio;
+                stream.LocalizedDefault = _localization.GetLocalizedString("Default");
+                stream.LocalizedExternal = _localization.GetLocalizedString("External");
 
                 stream.Channels = streamInfo.Channels;
 
@@ -779,11 +785,10 @@ namespace MediaBrowser.MediaEncoding.Probing
                     && !string.Equals(streamInfo.FieldOrder, "progressive", StringComparison.OrdinalIgnoreCase);
 
                 if (isAudio
-                    && (string.Equals(stream.Codec, "bmp", StringComparison.OrdinalIgnoreCase)
-                        || string.Equals(stream.Codec, "gif", StringComparison.OrdinalIgnoreCase)
-                        || string.Equals(stream.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase)
-                        || string.Equals(stream.Codec, "png", StringComparison.OrdinalIgnoreCase)
-                        || string.Equals(stream.Codec, "webp", StringComparison.OrdinalIgnoreCase)))
+                    || string.Equals(stream.Codec, "bmp", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(stream.Codec, "gif", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(stream.Codec, "png", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(stream.Codec, "webp", StringComparison.OrdinalIgnoreCase))
                 {
                     stream.Type = MediaStreamType.EmbeddedImage;
                 }
@@ -1320,23 +1325,38 @@ namespace MediaBrowser.MediaEncoding.Probing
             // These support multiple values, but for now we only store the first.
             var mb = GetMultipleMusicBrainzId(tags.GetValueOrDefault("MusicBrainz Album Artist Id"))
                 ?? GetMultipleMusicBrainzId(tags.GetValueOrDefault("MUSICBRAINZ_ALBUMARTISTID"));
-            audio.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, mb);
+            if (!string.IsNullOrEmpty(mb))
+            {
+                audio.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, mb);
+            }
 
             mb = GetMultipleMusicBrainzId(tags.GetValueOrDefault("MusicBrainz Artist Id"))
                 ?? GetMultipleMusicBrainzId(tags.GetValueOrDefault("MUSICBRAINZ_ARTISTID"));
-            audio.SetProviderId(MetadataProvider.MusicBrainzArtist, mb);
+            if (!string.IsNullOrEmpty(mb))
+            {
+                audio.SetProviderId(MetadataProvider.MusicBrainzArtist, mb);
+            }
 
             mb = GetMultipleMusicBrainzId(tags.GetValueOrDefault("MusicBrainz Album Id"))
                 ?? GetMultipleMusicBrainzId(tags.GetValueOrDefault("MUSICBRAINZ_ALBUMID"));
-            audio.SetProviderId(MetadataProvider.MusicBrainzAlbum, mb);
+            if (!string.IsNullOrEmpty(mb))
+            {
+                audio.SetProviderId(MetadataProvider.MusicBrainzAlbum, mb);
+            }
 
             mb = GetMultipleMusicBrainzId(tags.GetValueOrDefault("MusicBrainz Release Group Id"))
                  ?? GetMultipleMusicBrainzId(tags.GetValueOrDefault("MUSICBRAINZ_RELEASEGROUPID"));
-            audio.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, mb);
+            if (!string.IsNullOrEmpty(mb))
+            {
+                audio.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, mb);
+            }
 
             mb = GetMultipleMusicBrainzId(tags.GetValueOrDefault("MusicBrainz Release Track Id"))
                  ?? GetMultipleMusicBrainzId(tags.GetValueOrDefault("MUSICBRAINZ_RELEASETRACKID"));
-            audio.SetProviderId(MetadataProvider.MusicBrainzTrack, mb);
+            if (!string.IsNullOrEmpty(mb))
+            {
+                audio.SetProviderId(MetadataProvider.MusicBrainzTrack, mb);
+            }
         }
 
         private string GetMultipleMusicBrainzId(string value)
@@ -1346,9 +1366,8 @@ namespace MediaBrowser.MediaEncoding.Probing
                 return null;
             }
 
-            return value.Split('/', StringSplitOptions.RemoveEmptyEntries)
-                .Select(i => i.Trim())
-                .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
+            return value.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .FirstOrDefault();
         }
 
         /// <summary>
@@ -1357,17 +1376,13 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// <param name="val">The val.</param>
         /// <param name="allowCommaDelimiter">if set to <c>true</c> [allow comma delimiter].</param>
         /// <returns>System.String[][].</returns>
-        private IEnumerable<string> Split(string val, bool allowCommaDelimiter)
+        private string[] Split(string val, bool allowCommaDelimiter)
         {
             // Only use the comma as a delimiter if there are no slashes or pipes.
             // We want to be careful not to split names that have commas in them
-            var delimiter = !allowCommaDelimiter || _nameDelimiters.Any(i => val.Contains(i, StringComparison.Ordinal)) ?
-                _nameDelimiters :
-                new[] { ',' };
-
-            return val.Split(delimiter, StringSplitOptions.RemoveEmptyEntries)
-                .Where(i => !string.IsNullOrWhiteSpace(i))
-                .Select(i => i.Trim());
+            return !allowCommaDelimiter || _nameDelimiters.Any(i => val.Contains(i, StringComparison.Ordinal)) ?
+                val.Split(_nameDelimiters, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) :
+                val.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         }
 
         private IEnumerable<string> SplitDistinctArtists(string val, char[] delimiters, bool splitFeaturing)
@@ -1391,9 +1406,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 }
             }
 
-            var artists = val.Split(delimiters, StringSplitOptions.RemoveEmptyEntries)
-                .Where(i => !string.IsNullOrWhiteSpace(i))
-                .Select(i => i.Trim());
+            var artists = val.Split(delimiters, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
             artistsFound.AddRange(artists);
             return artistsFound.DistinctNames();
@@ -1518,15 +1531,12 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             if (tags.TryGetValue("WM/Genre", out var genres) && !string.IsNullOrWhiteSpace(genres))
             {
-                var genreList = genres.Split(new[] { ';', '/', ',' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Where(i => !string.IsNullOrWhiteSpace(i))
-                    .Select(i => i.Trim())
-                    .ToList();
+                var genreList = genres.Split(new[] { ';', '/', ',' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
                 // If this is empty then don't overwrite genres that might have been fetched earlier
-                if (genreList.Count > 0)
+                if (genreList.Length > 0)
                 {
-                    video.Genres = genreList.ToArray();
+                    video.Genres = genreList;
                 }
             }
 
@@ -1537,10 +1547,9 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             if (tags.TryGetValue("WM/MediaCredits", out var people) && !string.IsNullOrEmpty(people))
             {
-                video.People = people.Split(new[] { ';', '/' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Where(i => !string.IsNullOrWhiteSpace(i))
-                    .Select(i => new BaseItemPerson { Name = i.Trim(), Type = PersonKind.Actor })
-                    .ToArray();
+                video.People = Array.ConvertAll(
+                    people.Split(new[] { ';', '/' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
+                    i => new BaseItemPerson { Name = i, Type = PersonKind.Actor });
             }
 
             if (tags.TryGetValue("WM/OriginalReleaseTime", out var year) && int.TryParse(year, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedYear))

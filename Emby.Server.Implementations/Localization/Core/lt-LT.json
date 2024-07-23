@@ -126,5 +126,7 @@
     "External": "Išorinis",
     "HearingImpaired": "Su klausos sutrikimais",
     "TaskRefreshTrickplayImages": "Generuoti Trickplay atvaizdus",
-    "TaskRefreshTrickplayImagesDescription": "Sukuria trickplay peržiūras vaizdo įrašams įgalintose bibliotekose."
+    "TaskRefreshTrickplayImagesDescription": "Sukuria trickplay peržiūras vaizdo įrašams įgalintose bibliotekose.",
+    "TaskCleanCollectionsAndPlaylists": "Sutvarko duomenis jūsų kolekcijose ir grojaraščiuose.",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Pašalina nebeegzistuojančius elementus iš kolekcijų ir grojaraščių."
 }

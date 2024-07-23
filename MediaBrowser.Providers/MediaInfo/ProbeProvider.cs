@@ -1,6 +1,7 @@
 #nullable disable
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -141,19 +142,15 @@ namespace MediaBrowser.Providers.MediaInfo
                 && item.SupportsLocalMetadata
                 && !video.IsPlaceHolder)
             {
-                if (!video.SubtitleFiles.SequenceEqual(
-                        _subtitleResolver.GetExternalFiles(video, directoryService, false)
-                            .Select(info => info.Path).ToList(),
-                        StringComparer.Ordinal))
+                var externalFiles = new HashSet<string>(_subtitleResolver.GetExternalFiles(video, directoryService, false).Select(info => info.Path), StringComparer.OrdinalIgnoreCase);
+                if (!new HashSet<string>(video.SubtitleFiles, StringComparer.Ordinal).SetEquals(externalFiles))
                 {
                     _logger.LogDebug("Refreshing {ItemPath} due to external subtitles change.", item.Path);
                     return true;
                 }
 
-                if (!video.AudioFiles.SequenceEqual(
-                        _audioResolver.GetExternalFiles(video, directoryService, false)
-                            .Select(info => info.Path).ToList(),
-                        StringComparer.Ordinal))
+                externalFiles = new HashSet<string>(_audioResolver.GetExternalFiles(video, directoryService, false).Select(info => info.Path), StringComparer.OrdinalIgnoreCase);
+                if (!new HashSet<string>(video.AudioFiles, StringComparer.Ordinal).SetEquals(externalFiles))
                 {
                     _logger.LogDebug("Refreshing {ItemPath} due to external audio change.", item.Path);
                     return true;
@@ -161,14 +158,14 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             if (item is Audio audio
-                && item.SupportsLocalMetadata
-                && !audio.LyricFiles.SequenceEqual(
-                    _lyricResolver.GetExternalFiles(audio, directoryService, false)
-                        .Select(info => info.Path).ToList(),
-                    StringComparer.Ordinal))
+                && item.SupportsLocalMetadata)
             {
-                _logger.LogDebug("Refreshing {ItemPath} due to external lyrics change.", item.Path);
-                return true;
+                var externalFiles = new HashSet<string>(_lyricResolver.GetExternalFiles(audio, directoryService, false).Select(info => info.Path), StringComparer.OrdinalIgnoreCase);
+                if (!new HashSet<string>(audio.LyricFiles, StringComparer.Ordinal).SetEquals(externalFiles))
+                {
+                    _logger.LogDebug("Refreshing {ItemPath} due to external lyrics change.", item.Path);
+                    return true;
+                }
             }
 
             return false;

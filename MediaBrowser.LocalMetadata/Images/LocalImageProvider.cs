@@ -32,6 +32,7 @@ namespace MediaBrowser.LocalMetadata.Images
             "folder",
             "poster",
             "cover",
+            "jacket",
             "default"
         };
 

@@ -939,7 +939,7 @@ namespace Jellyfin.LiveTv
                     {
                         var internalChannelId = _tvDtoService.GetInternalChannelId(i.Item2.Name, i.Item1.ChannelId);
                         var channel = _libraryManager.GetItemById(internalChannelId);
-                        channelName = channel is null ? null : channel.Name;
+                        channelName = channel?.Name;
                     }
 
                     return _tvDtoService.GetSeriesTimerInfoDto(i.Item1, i.Item2, channelName);

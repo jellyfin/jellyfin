@@ -420,19 +420,16 @@ namespace MediaBrowser.LocalMetadata.Savers
 
             foreach (var share in item.Shares)
             {
-                if (share.UserId is not null)
-                {
-                    await writer.WriteStartElementAsync(null, "Share", null).ConfigureAwait(false);
+                await writer.WriteStartElementAsync(null, "Share", null).ConfigureAwait(false);
 
-                    await writer.WriteElementStringAsync(null, "UserId", null, share.UserId).ConfigureAwait(false);
-                    await writer.WriteElementStringAsync(
-                        null,
-                        "CanEdit",
-                        null,
-                        share.CanEdit.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()).ConfigureAwait(false);
+                await writer.WriteElementStringAsync(null, "UserId", null, share.UserId.ToString()).ConfigureAwait(false);
+                await writer.WriteElementStringAsync(
+                    null,
+                    "CanEdit",
+                    null,
+                    share.CanEdit.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()).ConfigureAwait(false);
 
-                    await writer.WriteEndElementAsync().ConfigureAwait(false);
-                }
+                await writer.WriteEndElementAsync().ConfigureAwait(false);
             }
 
             await writer.WriteEndElementAsync().ConfigureAwait(false);

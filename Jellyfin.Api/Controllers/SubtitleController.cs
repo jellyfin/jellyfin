@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Extensions;
+using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.SubtitleDtos;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
@@ -95,8 +96,7 @@ public class SubtitleController : BaseJellyfinApiController
         [FromRoute, Required] Guid itemId,
         [FromRoute, Required] int index)
     {
-        var item = _libraryManager.GetItemById(itemId);
-
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, User.GetUserId());
         if (item is null)
         {
             return NotFound();
@@ -113,18 +113,24 @@ public class SubtitleController : BaseJellyfinApiController
     /// <param name="language">The language of the subtitles.</param>
     /// <param name="isPerfectMatch">Optional. Only show subtitles which are a perfect match.</param>
     /// <response code="200">Subtitles retrieved.</response>
+    /// <response code="404">Item not found.</response>
     /// <returns>An array of <see cref="RemoteSubtitleInfo"/>.</returns>
     [HttpGet("Items/{itemId}/RemoteSearch/Subtitles/{language}")]
     [Authorize(Policy = Policies.SubtitleManagement)]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<IEnumerable<RemoteSubtitleInfo>>> SearchRemoteSubtitles(
         [FromRoute, Required] Guid itemId,
         [FromRoute, Required] string language,
         [FromQuery] bool? isPerfectMatch)
     {
-        var video = (Video)_libraryManager.GetItemById(itemId);
+        var item = _libraryManager.GetItemById<Video>(itemId, User.GetUserId());
+        if (item is null)
+        {
+            return NotFound();
+        }
 
-        return await _subtitleManager.SearchSubtitles(video, language, isPerfectMatch, false, CancellationToken.None).ConfigureAwait(false);
+        return await _subtitleManager.SearchSubtitles(item, language, isPerfectMatch, false, CancellationToken.None).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -133,22 +139,28 @@ public class SubtitleController : BaseJellyfinApiController
     /// <param name="itemId">The item id.</param>
     /// <param name="subtitleId">The subtitle id.</param>
     /// <response code="204">Subtitle downloaded.</response>
+    /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("Items/{itemId}/RemoteSearch/Subtitles/{subtitleId}")]
     [Authorize(Policy = Policies.SubtitleManagement)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> DownloadRemoteSubtitles(
         [FromRoute, Required] Guid itemId,
         [FromRoute, Required] string subtitleId)
     {
-        var video = (Video)_libraryManager.GetItemById(itemId);
+        var item = _libraryManager.GetItemById<Video>(itemId, User.GetUserId());
+        if (item is null)
+        {
+            return NotFound();
+        }
 
         try
         {
-            await _subtitleManager.DownloadSubtitles(video, subtitleId, CancellationToken.None)
+            await _subtitleManager.DownloadSubtitles(item, subtitleId, CancellationToken.None)
                 .ConfigureAwait(false);
 
-            _providerManager.QueueRefresh(video.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.High);
+            _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.High);
         }
         catch (Exception ex)
         {
@@ -165,7 +177,7 @@ public class SubtitleController : BaseJellyfinApiController
     /// <response code="200">File returned.</response>
     /// <returns>A <see cref="FileStreamResult"/> with the subtitle file.</returns>
     [HttpGet("Providers/Subtitles/Subtitles/{subtitleId}")]
-    [Authorize]
+    [Authorize(Policy = Policies.SubtitleManagement)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Produces(MediaTypeNames.Application.Octet)]
     [ProducesFile("text/*")]
@@ -223,7 +235,7 @@ public class SubtitleController : BaseJellyfinApiController
 
         if (string.IsNullOrEmpty(format))
         {
-            var item = (Video)_libraryManager.GetItemById(itemId.Value);
+            var item = _libraryManager.GetItemById<Video>(itemId.Value);
 
             var idString = itemId.Value.ToString("N", CultureInfo.InvariantCulture);
             var mediaSource = _mediaSourceManager.GetStaticMediaSources(item, false)
@@ -321,10 +333,12 @@ public class SubtitleController : BaseJellyfinApiController
     /// <param name="mediaSourceId">The media source id.</param>
     /// <param name="segmentLength">The subtitle segment length.</param>
     /// <response code="200">Subtitle playlist retrieved.</response>
+    /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="FileContentResult"/> with the HLS subtitle playlist.</returns>
     [HttpGet("Videos/{itemId}/{mediaSourceId}/Subtitles/{index}/subtitles.m3u8")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesPlaylistFile]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
     public async Task<ActionResult> GetSubtitlePlaylist(
@@ -333,7 +347,11 @@ public class SubtitleController : BaseJellyfinApiController
         [FromRoute, Required] string mediaSourceId,
         [FromQuery, Required] int segmentLength)
     {
-        var item = (Video)_libraryManager.GetItemById(itemId);
+        var item = _libraryManager.GetItemById<Video>(itemId, User.GetUserId());
+        if (item is null)
+        {
+            return NotFound();
+        }
 
         var mediaSource = await _mediaSourceManager.GetMediaSource(item, mediaSourceId, null, false, CancellationToken.None).ConfigureAwait(false);
 
@@ -397,15 +415,21 @@ public class SubtitleController : BaseJellyfinApiController
     /// <param name="itemId">The item the subtitle belongs to.</param>
     /// <param name="body">The request body.</param>
     /// <response code="204">Subtitle uploaded.</response>
+    /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("Videos/{itemId}/Subtitles")]
     [Authorize(Policy = Policies.SubtitleManagement)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> UploadSubtitle(
         [FromRoute, Required] Guid itemId,
         [FromBody, Required] UploadSubtitleDto body)
     {
-        var video = (Video)_libraryManager.GetItemById(itemId);
+        var item = _libraryManager.GetItemById<Video>(itemId, User.GetUserId());
+        if (item is null)
+        {
+            return NotFound();
+        }
 
         var bytes = Encoding.UTF8.GetBytes(body.Data);
         var memoryStream = new MemoryStream(bytes, 0, bytes.Length, false, true);
@@ -416,7 +440,7 @@ public class SubtitleController : BaseJellyfinApiController
             await using (stream.ConfigureAwait(false))
             {
                 await _subtitleManager.UploadSubtitle(
-                    video,
+                    item,
                     new SubtitleResponse
                     {
                         Format = body.Format,
@@ -425,7 +449,7 @@ public class SubtitleController : BaseJellyfinApiController
                         IsHearingImpaired = body.IsHearingImpaired,
                         Stream = stream
                     }).ConfigureAwait(false);
-                _providerManager.QueueRefresh(video.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.High);
+                _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.High);
 
                 return NoContent();
             }
@@ -452,7 +476,7 @@ public class SubtitleController : BaseJellyfinApiController
         long? endPositionTicks,
         bool copyTimestamps)
     {
-        var item = _libraryManager.GetItemById(id);
+        var item = _libraryManager.GetItemById<BaseItem>(id);
 
         return _subtitleEncoder.GetSubtitles(
             item,

@@ -18,7 +18,7 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
     public class ProbeResultNormalizerTests
     {
         private readonly JsonSerializerOptions _jsonOptions;
-        private readonly ProbeResultNormalizer _probeResultNormalizer = new ProbeResultNormalizer(new NullLogger<EncoderValidatorTests>(), null);
+        private readonly ProbeResultNormalizer _probeResultNormalizer = new ProbeResultNormalizer(new NullLogger<EncoderValidatorTests>(), new Mock<ILocalizationManager>().Object);
 
         public ProbeResultNormalizerTests()
         {

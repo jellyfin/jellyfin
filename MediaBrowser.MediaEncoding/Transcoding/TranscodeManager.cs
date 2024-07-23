@@ -235,15 +235,6 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         if (delete(job.Path!))
         {
             await DeletePartialStreamFiles(job.Path!, job.Type, 0, 1500).ConfigureAwait(false);
-            if (job.MediaSource?.VideoType == VideoType.Dvd || job.MediaSource?.VideoType == VideoType.BluRay)
-            {
-                var concatFilePath = Path.Join(_serverConfigurationManager.GetTranscodePath(), job.MediaSource.Id + ".concat");
-                if (File.Exists(concatFilePath))
-                {
-                    _logger.LogInformation("Deleting ffmpeg concat configuration at {Path}", concatFilePath);
-                    File.Delete(concatFilePath);
-                }
-            }
         }
 
         if (closeLiveStream && !string.IsNullOrWhiteSpace(job.LiveStreamId))
@@ -419,7 +410,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
             var attachmentPath = Path.Combine(_appPaths.CachePath, "attachments", state.MediaSource.Id);
             if (state.MediaSource.VideoType == VideoType.Dvd || state.MediaSource.VideoType == VideoType.BluRay)
             {
-                var concatPath = Path.Join(_serverConfigurationManager.GetTranscodePath(), state.MediaSource.Id + ".concat");
+                var concatPath = Path.Join(_appPaths.CachePath, "concat", state.MediaSource.Id + ".concat");
                 await _attachmentExtractor.ExtractAllAttachments(concatPath, state.MediaSource, attachmentPath, cancellationTokenSource.Token).ConfigureAwait(false);
             }
             else
@@ -479,6 +470,11 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
                 : "FFmpeg.DirectStream-";
         }
 
+        if (state.VideoRequest is null && EncodingHelper.IsCopyCodec(state.OutputAudioCodec))
+        {
+            logFilePrefix = "FFmpeg.Remux-";
+        }
+
         var logFilePath = Path.Combine(
             _serverConfigurationManager.ApplicationPaths.LogDirectoryPath,
             $"{logFilePrefix}{DateTime.Now:yyyy-MM-dd_HH-mm-ss}_{state.Request.MediaSourceId}_{Guid.NewGuid().ToString()[..8]}.log");
@@ -492,12 +488,11 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
             IODefaults.FileStreamBufferSize,
             FileOptions.Asynchronous);
 
-        var commandLineLogMessage = process.StartInfo.FileName + " " + process.StartInfo.Arguments;
+        await JsonSerializer.SerializeAsync(logStream, state.MediaSource, cancellationToken: cancellationTokenSource.Token).ConfigureAwait(false);
         var commandLineLogMessageBytes = Encoding.UTF8.GetBytes(
-            JsonSerializer.Serialize(state.MediaSource)
+            Environment.NewLine
             + Environment.NewLine
-            + Environment.NewLine
-            + commandLineLogMessage
+            + process.StartInfo.FileName + " " + process.StartInfo.Arguments
             + Environment.NewLine
             + Environment.NewLine);
 

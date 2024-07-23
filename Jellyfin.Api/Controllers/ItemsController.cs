@@ -76,6 +76,7 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="hasSpecialFeature">Optional filter by items with special features.</param>
     /// <param name="hasTrailer">Optional filter by items with trailers.</param>
     /// <param name="adjacentTo">Optional. Return items that are siblings of a supplied item.</param>
+    /// <param name="indexNumber">Optional filter by index number.</param>
     /// <param name="parentIndexNumber">Optional filter by parent index number.</param>
     /// <param name="hasParentalRating">Optional filter by items that have or do not have a parental rating.</param>
     /// <param name="isHd">Optional filter by items that are HD or not.</param>
@@ -165,6 +166,7 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery] bool? hasSpecialFeature,
         [FromQuery] bool? hasTrailer,
         [FromQuery] Guid? adjacentTo,
+        [FromQuery] int? indexNumber,
         [FromQuery] int? parentIndexNumber,
         [FromQuery] bool? hasParentalRating,
         [FromQuery] bool? isHd,
@@ -246,14 +248,21 @@ public class ItemsController : BaseJellyfinApiController
         var isApiKey = User.GetIsApiKey();
         // if api key is used (auth.IsApiKey == true), then `user` will be null throughout this method
         userId = RequestHelpers.GetUserId(User, userId);
-        var user = !isApiKey && !userId.IsNullOrEmpty()
-            ? _userManager.GetUserById(userId.Value) ?? throw new ResourceNotFoundException()
-            : null;
+        var user = userId.IsNullOrEmpty()
+            ? null
+            : _userManager.GetUserById(userId.Value) ?? throw new ResourceNotFoundException();
 
         // beyond this point, we're either using an api key or we have a valid user
         if (!isApiKey && user is null)
         {
             return BadRequest("userId is required");
+        }
+
+        if (user is not null
+            && user.GetPreference(PreferenceKind.AllowedTags).Length != 0
+            && !fields.Contains(ItemFields.Tags))
+        {
+            fields = [..fields, ItemFields.Tags];
         }
 
         var dtoOptions = new DtoOptions { Fields = fields }
@@ -359,6 +368,7 @@ public class ItemsController : BaseJellyfinApiController
                 MinCommunityRating = minCommunityRating,
                 MinCriticRating = minCriticRating,
                 ParentId = parentId ?? Guid.Empty,
+                IndexNumber = indexNumber,
                 ParentIndexNumber = parentIndexNumber,
                 EnableTotalRecordCount = enableTotalRecordCount,
                 ExcludeItemIds = excludeItemIds,
@@ -710,6 +720,7 @@ public class ItemsController : BaseJellyfinApiController
             hasSpecialFeature,
             hasTrailer,
             adjacentTo,
+            null,
             parentIndexNumber,
             hasParentalRating,
             isHd,
@@ -967,9 +978,13 @@ public class ItemsController : BaseJellyfinApiController
         }
 
         var user = _userManager.GetUserById(requestUserId) ?? throw new ResourceNotFoundException();
-        var item = _libraryManager.GetItemById(itemId);
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, user);
+        if (item is null)
+        {
+            return NotFound();
+        }
 
-        return (item == null) ? NotFound() : _userDataRepository.GetUserDataDto(item, user);
+        return _userDataRepository.GetUserDataDto(item, user);
     }
 
     /// <summary>
@@ -1014,8 +1029,8 @@ public class ItemsController : BaseJellyfinApiController
         }
 
         var user = _userManager.GetUserById(requestUserId) ?? throw new ResourceNotFoundException();
-        var item = _libraryManager.GetItemById(itemId);
-        if (item == null)
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, user);
+        if (item is null)
         {
             return NotFound();
         }

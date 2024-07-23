@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
@@ -19,7 +20,7 @@ namespace Jellyfin.Providers.Tests.Manager
         [InlineData(true, true)]
         public void MergeBaseItemData_MergeMetadataSettings_MergesWhenSet(bool mergeMetadataSettings, bool defaultDate)
         {
-            var newLocked = new[] { MetadataField.Cast };
+            var newLocked = new[] { MetadataField.Genres, MetadataField.Cast };
             var newString = "new";
             var newDate = DateTime.Now;
 
@@ -77,7 +78,7 @@ namespace Jellyfin.Providers.Tests.Manager
 
         [Theory]
         [InlineData("Name", MetadataField.Name, false)]
-        [InlineData("OriginalTitle", null, false)]
+        [InlineData("OriginalTitle", null)]
         [InlineData("OfficialRating", MetadataField.OfficialRating)]
         [InlineData("CustomRating")]
         [InlineData("Tagline")]

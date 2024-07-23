@@ -126,5 +126,9 @@
     "External": "חיצוני",
     "HearingImpaired": "לקוי שמיעה",
     "TaskRefreshTrickplayImages": "יצירת תמונות המחשה",
-    "TaskRefreshTrickplayImagesDescription": "יוצר תמונות המחשה לסרטונים שפעילים בספריות."
+    "TaskRefreshTrickplayImagesDescription": "יוצר תמונות המחשה לסרטונים שפעילים בספריות.",
+    "TaskAudioNormalization": "נרמול שמע",
+    "TaskCleanCollectionsAndPlaylistsDescription": "מנקה פריטים לא קיימים מאוספים ורשימות השמעה.",
+    "TaskAudioNormalizationDescription": "מחפש קבצי נורמליזציה של שמע.",
+    "TaskCleanCollectionsAndPlaylists": "מנקה אוספים ורשימות השמעה"
 }

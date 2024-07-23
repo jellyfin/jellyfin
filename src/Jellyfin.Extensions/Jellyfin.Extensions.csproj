@@ -8,12 +8,14 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <!-- ICU4N.Transliterator only has prerelease versions -->
+    <NoWarn>NU5104</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
     <Authors>Jellyfin Contributors</Authors>
     <PackageId>Jellyfin.Extensions</PackageId>
-    <VersionPrefix>10.9.0</VersionPrefix>
+    <VersionPrefix>10.10.0</VersionPrefix>
     <RepositoryUrl>https://github.com/jellyfin/jellyfin</RepositoryUrl>
     <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
   </PropertyGroup>

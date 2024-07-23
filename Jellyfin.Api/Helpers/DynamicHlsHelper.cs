@@ -151,6 +151,14 @@ public class DynamicHlsHelper
 
         var queryString = _httpContextAccessor.HttpContext.Request.QueryString.ToString();
 
+        // from universal audio service, need to override the AudioCodec when the actual request differs from original query
+        if (!string.Equals(state.OutputAudioCodec, _httpContextAccessor.HttpContext.Request.Query["AudioCodec"].ToString(), StringComparison.OrdinalIgnoreCase))
+        {
+            var newQuery = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(_httpContextAccessor.HttpContext.Request.QueryString.ToString());
+            newQuery["AudioCodec"] = state.OutputAudioCodec;
+            queryString = Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString(string.Empty, newQuery);
+        }
+
         // from universal audio service
         if (!string.IsNullOrWhiteSpace(state.Request.SegmentContainer)
             && !queryString.Contains("SegmentContainer", StringComparison.OrdinalIgnoreCase))
@@ -723,6 +731,21 @@ public class DynamicHlsHelper
             }
 
             return HlsCodecStringHelpers.GetAv1String(profile, level, false, bitDepth);
+        }
+
+        // VP9 HLS is for video remuxing only, everything is probed from the original video
+        if (string.Equals(codec, "vp9", StringComparison.OrdinalIgnoreCase))
+        {
+            var width = state.VideoStream.Width ?? 0;
+            var height = state.VideoStream.Height ?? 0;
+            var framerate = state.VideoStream.AverageFrameRate ?? 30;
+            var bitDepth = state.VideoStream.BitDepth ?? 8;
+            return HlsCodecStringHelpers.GetVp9String(
+                width,
+                height,
+                state.VideoStream.PixelFormat,
+                framerate,
+                bitDepth);
         }
 
         return string.Empty;

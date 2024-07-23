@@ -156,6 +156,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="maxWidth">Optional. The max width.</param>
     /// <param name="maxHeight">Optional. The max height.</param>
     /// <param name="enableSubtitlesInManifest">Optional. Whether to enable subtitles in the manifest.</param>
+    /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
     /// <response code="200">Hls live stream retrieved.</response>
     /// <returns>A <see cref="FileResult"/> containing the hls file.</returns>
     [HttpGet("Videos/{itemId}/live.m3u8")]
@@ -213,7 +214,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] Dictionary<string, string> streamOptions,
         [FromQuery] int? maxWidth,
         [FromQuery] int? maxHeight,
-        [FromQuery] bool? enableSubtitlesInManifest)
+        [FromQuery] bool? enableSubtitlesInManifest,
+        [FromQuery] bool enableAudioVbrEncoding = true)
     {
         VideoRequestDto streamingRequest = new VideoRequestDto
         {
@@ -267,7 +269,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             StreamOptions = streamOptions,
             MaxHeight = maxHeight,
             MaxWidth = maxWidth,
-            EnableSubtitlesInManifest = enableSubtitlesInManifest ?? true
+            EnableSubtitlesInManifest = enableSubtitlesInManifest ?? true,
+            EnableAudioVbrEncoding = enableAudioVbrEncoding
         };
 
         // CTS lifecycle is managed internally.
@@ -393,6 +396,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="streamOptions">Optional. The streaming options.</param>
     /// <param name="enableAdaptiveBitrateStreaming">Enable adaptive bitrate streaming.</param>
     /// <param name="enableTrickplay">Enable trickplay image playlists being added to master playlist.</param>
+    /// <param name="enableAudioVbrEncoding">Whether to enable Audio Encoding.</param>
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the playlist file.</returns>
     [HttpGet("Videos/{itemId}/master.m3u8")]
@@ -451,7 +455,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] EncodingContext? context,
         [FromQuery] Dictionary<string, string> streamOptions,
         [FromQuery] bool enableAdaptiveBitrateStreaming = true,
-        [FromQuery] bool enableTrickplay = true)
+        [FromQuery] bool enableTrickplay = true,
+        [FromQuery] bool enableAudioVbrEncoding = true)
     {
         var streamingRequest = new HlsVideoRequestDto
         {
@@ -505,7 +510,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             Context = context ?? EncodingContext.Streaming,
             StreamOptions = streamOptions,
             EnableAdaptiveBitrateStreaming = enableAdaptiveBitrateStreaming,
-            EnableTrickplay = enableTrickplay
+            EnableTrickplay = enableTrickplay,
+            EnableAudioVbrEncoding = enableAudioVbrEncoding
         };
 
         return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
@@ -564,6 +570,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
     /// <param name="streamOptions">Optional. The streaming options.</param>
     /// <param name="enableAdaptiveBitrateStreaming">Enable adaptive bitrate streaming.</param>
+    /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
     /// <response code="200">Audio stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the playlist file.</returns>
     [HttpGet("Audio/{itemId}/master.m3u8")]
@@ -620,7 +627,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? videoStreamIndex,
         [FromQuery] EncodingContext? context,
         [FromQuery] Dictionary<string, string> streamOptions,
-        [FromQuery] bool enableAdaptiveBitrateStreaming = true)
+        [FromQuery] bool enableAdaptiveBitrateStreaming = true,
+        [FromQuery] bool enableAudioVbrEncoding = true)
     {
         var streamingRequest = new HlsAudioRequestDto
         {
@@ -671,7 +679,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             VideoStreamIndex = videoStreamIndex,
             Context = context ?? EncodingContext.Streaming,
             StreamOptions = streamOptions,
-            EnableAdaptiveBitrateStreaming = enableAdaptiveBitrateStreaming
+            EnableAdaptiveBitrateStreaming = enableAdaptiveBitrateStreaming,
+            EnableAudioVbrEncoding = enableAudioVbrEncoding
         };
 
         return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
@@ -730,6 +739,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="videoStreamIndex">Optional. The index of the video stream to use. If omitted the first video stream will be used.</param>
     /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
     /// <param name="streamOptions">Optional. The streaming options.</param>
+    /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
     [HttpGet("Videos/{itemId}/main.m3u8")]
@@ -785,7 +795,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
         [FromQuery] EncodingContext? context,
-        [FromQuery] Dictionary<string, string> streamOptions)
+        [FromQuery] Dictionary<string, string> streamOptions,
+        [FromQuery] bool enableAudioVbrEncoding = true)
     {
         using var cancellationTokenSource = new CancellationTokenSource();
         var streamingRequest = new VideoRequestDto
@@ -838,7 +849,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             AudioStreamIndex = audioStreamIndex,
             VideoStreamIndex = videoStreamIndex,
             Context = context ?? EncodingContext.Streaming,
-            StreamOptions = streamOptions
+            StreamOptions = streamOptions,
+            EnableAudioVbrEncoding = enableAudioVbrEncoding
         };
 
         return await GetVariantPlaylistInternal(streamingRequest, cancellationTokenSource)
@@ -897,6 +909,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="videoStreamIndex">Optional. The index of the video stream to use. If omitted the first video stream will be used.</param>
     /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
     /// <param name="streamOptions">Optional. The streaming options.</param>
+    /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
     /// <response code="200">Audio stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
     [HttpGet("Audio/{itemId}/main.m3u8")]
@@ -951,7 +964,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
         [FromQuery] EncodingContext? context,
-        [FromQuery] Dictionary<string, string> streamOptions)
+        [FromQuery] Dictionary<string, string> streamOptions,
+        [FromQuery] bool enableAudioVbrEncoding = true)
     {
         using var cancellationTokenSource = new CancellationTokenSource();
         var streamingRequest = new StreamingRequestDto
@@ -1002,7 +1016,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             AudioStreamIndex = audioStreamIndex,
             VideoStreamIndex = videoStreamIndex,
             Context = context ?? EncodingContext.Streaming,
-            StreamOptions = streamOptions
+            StreamOptions = streamOptions,
+            EnableAudioVbrEncoding = enableAudioVbrEncoding
         };
 
         return await GetVariantPlaylistInternal(streamingRequest, cancellationTokenSource)
@@ -1067,6 +1082,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="videoStreamIndex">Optional. The index of the video stream to use. If omitted the first video stream will be used.</param>
     /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
     /// <param name="streamOptions">Optional. The streaming options.</param>
+    /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
     [HttpGet("Videos/{itemId}/hls1/{playlistId}/{segmentId}.{container}")]
@@ -1128,7 +1144,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
         [FromQuery] EncodingContext? context,
-        [FromQuery] Dictionary<string, string> streamOptions)
+        [FromQuery] Dictionary<string, string> streamOptions,
+        [FromQuery] bool enableAudioVbrEncoding = true)
     {
         var streamingRequest = new VideoRequestDto
         {
@@ -1183,7 +1200,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             AudioStreamIndex = audioStreamIndex,
             VideoStreamIndex = videoStreamIndex,
             Context = context ?? EncodingContext.Streaming,
-            StreamOptions = streamOptions
+            StreamOptions = streamOptions,
+            EnableAudioVbrEncoding = enableAudioVbrEncoding
         };
 
         return await GetDynamicSegment(streamingRequest, segmentId)
@@ -1247,6 +1265,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="videoStreamIndex">Optional. The index of the video stream to use. If omitted the first video stream will be used.</param>
     /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
     /// <param name="streamOptions">Optional. The streaming options.</param>
+    /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
     [HttpGet("Audio/{itemId}/hls1/{playlistId}/{segmentId}.{container}")]
@@ -1307,7 +1326,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
         [FromQuery] EncodingContext? context,
-        [FromQuery] Dictionary<string, string> streamOptions)
+        [FromQuery] Dictionary<string, string> streamOptions,
+        [FromQuery] bool enableAudioVbrEncoding = true)
     {
         var streamingRequest = new StreamingRequestDto
         {
@@ -1360,7 +1380,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             AudioStreamIndex = audioStreamIndex,
             VideoStreamIndex = videoStreamIndex,
             Context = context ?? EncodingContext.Streaming,
-            StreamOptions = streamOptions
+            StreamOptions = streamOptions,
+            EnableAudioVbrEncoding = enableAudioVbrEncoding
         };
 
         return await GetDynamicSegment(streamingRequest, segmentId)
@@ -1481,7 +1502,7 @@ public class DynamicHlsController : BaseJellyfinApiController
 
                     if (currentTranscodingIndex.HasValue)
                     {
-                        DeleteLastFile(playlistPath, segmentExtension, 0);
+                        await DeleteLastFile(playlistPath, segmentExtension, 0).ConfigureAwait(false);
                     }
 
                     streamingRequest.StartTimeTicks = streamingRequest.CurrentRuntimeTicks;
@@ -1671,8 +1692,8 @@ public class DynamicHlsController : BaseJellyfinApiController
 
             if (audioBitrate.HasValue && !EncodingHelper.LosslessAudioCodecs.Contains(state.ActualOutputAudioCodec, StringComparison.OrdinalIgnoreCase))
             {
-                var vbrParam = _encodingHelper.GetAudioVbrModeParam(audioCodec, audioBitrate.Value / (audioChannels ?? 2));
-                if (_encodingOptions.EnableAudioVbr && vbrParam is not null)
+                var vbrParam = _encodingHelper.GetAudioVbrModeParam(audioCodec, audioBitrate.Value, audioChannels ?? 2);
+                if (_encodingOptions.EnableAudioVbr && state.EnableAudioVbrEncoding && vbrParam is not null)
                 {
                     audioTranscodeParams += vbrParam;
                 }
@@ -1712,12 +1733,11 @@ public class DynamicHlsController : BaseJellyfinApiController
 
         var channels = state.OutputAudioChannels;
 
+        var useDownMixAlgorithm = state.AudioStream.Channels is 6 && _encodingOptions.DownMixStereoAlgorithm != DownMixStereoAlgorithms.None;
+
         if (channels.HasValue
             && (channels.Value != 2
-                || (state.AudioStream is not null
-                    && state.AudioStream.Channels.HasValue
-                    && state.AudioStream.Channels.Value > 5
-                    && _encodingOptions.DownMixStereoAlgorithm == DownMixStereoAlgorithms.None)))
+                || (state.AudioStream?.Channels != null && !useDownMixAlgorithm)))
         {
             args += " -ac " + channels.Value;
         }
@@ -1725,8 +1745,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         var bitrate = state.OutputAudioBitrate;
         if (bitrate.HasValue && !EncodingHelper.LosslessAudioCodecs.Contains(actualOutputAudioCodec, StringComparison.OrdinalIgnoreCase))
         {
-            var vbrParam = _encodingHelper.GetAudioVbrModeParam(audioCodec, bitrate.Value / (channels ?? 2));
-            if (_encodingOptions.EnableAudioVbr && vbrParam is not null)
+            var vbrParam = _encodingHelper.GetAudioVbrModeParam(audioCodec, bitrate.Value, channels ?? 2);
+            if (_encodingOptions.EnableAudioVbr && state.EnableAudioVbrEncoding && vbrParam is not null)
             {
                 args += vbrParam;
             }
@@ -1739,6 +1759,12 @@ public class DynamicHlsController : BaseJellyfinApiController
         if (state.OutputAudioSampleRate.HasValue)
         {
             args += " -ar " + state.OutputAudioSampleRate.Value.ToString(CultureInfo.InvariantCulture);
+        }
+        else if (state.AudioStream?.CodecTag is not null && state.AudioStream.CodecTag.Equals("ac-4", StringComparison.Ordinal))
+        {
+            // ac-4 audio tends to hava a super weird sample rate that will fail most encoders
+            // force resample it to 48KHz
+            args += " -ar 48000";
         }
 
         args += _encodingHelper.GetAudioFilterParam(state, _encodingOptions);
@@ -2010,17 +2036,19 @@ public class DynamicHlsController : BaseJellyfinApiController
         }
     }
 
-    private void DeleteLastFile(string playlistPath, string segmentExtension, int retryCount)
+    private Task DeleteLastFile(string playlistPath, string segmentExtension, int retryCount)
     {
         var file = GetLastTranscodingFile(playlistPath, segmentExtension, _fileSystem);
 
-        if (file is not null)
+        if (file is null)
         {
-            DeleteFile(file.FullName, retryCount);
+            return Task.CompletedTask;
         }
+
+        return DeleteFile(file.FullName, retryCount);
     }
 
-    private void DeleteFile(string path, int retryCount)
+    private async Task DeleteFile(string path, int retryCount)
     {
         if (retryCount >= 5)
         {
@@ -2037,9 +2065,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         {
             _logger.LogError(ex, "Error deleting partial stream file(s) {Path}", path);
 
-            var task = Task.Delay(100);
-            task.Wait();
-            DeleteFile(path, retryCount + 1);
+            await Task.Delay(100).ConfigureAwait(false);
+            await DeleteFile(path, retryCount + 1).ConfigureAwait(false);
         }
         catch (Exception ex)
         {

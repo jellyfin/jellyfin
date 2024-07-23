@@ -111,31 +111,32 @@ namespace MediaBrowser.Model.Entities
         /// Sets a provider id.
         /// </summary>
         /// <param name="instance">The instance.</param>
-        /// <param name="name">The name.</param>
+        /// <param name="name">The name, this should not contain a '=' character.</param>
         /// <param name="value">The value.</param>
-        public static void SetProviderId(this IHasProviderIds instance, string name, string? value)
+        /// <remarks>Due to how deserialization from the database works the name can not contain '='.</remarks>
+        public static void SetProviderId(this IHasProviderIds instance, string name, string value)
         {
             ArgumentNullException.ThrowIfNull(instance);
+            ArgumentException.ThrowIfNullOrEmpty(name);
+            ArgumentException.ThrowIfNullOrEmpty(value);
 
-            // If it's null remove the key from the dictionary
-            if (string.IsNullOrEmpty(value))
+            // When name contains a '=' it can't be deserialized from the database
+            if (name.Contains('=', StringComparison.Ordinal))
             {
-                instance.ProviderIds?.Remove(name);
+                throw new ArgumentException("Provider id name cannot contain '='", nameof(name));
+            }
+
+            // Ensure it exists
+            instance.ProviderIds ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            // Match on internal MetadataProvider enum string values before adding arbitrary providers
+            if (_metadataProviderEnumDictionary.TryGetValue(name, out var enumValue))
+            {
+                instance.ProviderIds[enumValue] = value;
             }
             else
             {
-                // Ensure it exists
-                instance.ProviderIds ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-                // Match on internal MetadataProvider enum string values before adding arbitrary providers
-                if (_metadataProviderEnumDictionary.TryGetValue(name, out var enumValue))
-                {
-                    instance.ProviderIds[enumValue] = value;
-                }
-                else
-                {
-                    instance.ProviderIds[name] = value;
-                }
+                instance.ProviderIds[name] = value;
             }
         }
 
@@ -148,6 +149,31 @@ namespace MediaBrowser.Model.Entities
         public static void SetProviderId(this IHasProviderIds instance, MetadataProvider provider, string value)
         {
             instance.SetProviderId(provider.ToString(), value);
+        }
+
+        /// <summary>
+        /// Removes a provider id.
+        /// </summary>
+        /// <param name="instance">The instance.</param>
+        /// <param name="name">The name.</param>
+        public static void RemoveProviderId(this IHasProviderIds instance, string name)
+        {
+            ArgumentNullException.ThrowIfNull(instance);
+            ArgumentException.ThrowIfNullOrEmpty(name);
+
+            instance.ProviderIds?.Remove(name);
+        }
+
+        /// <summary>
+        /// Removes a provider id.
+        /// </summary>
+        /// <param name="instance">The instance.</param>
+        /// <param name="provider">The provider.</param>
+        public static void RemoveProviderId(this IHasProviderIds instance, MetadataProvider provider)
+        {
+            ArgumentNullException.ThrowIfNull(instance);
+
+            instance.ProviderIds?.Remove(provider.ToString());
         }
     }
 }

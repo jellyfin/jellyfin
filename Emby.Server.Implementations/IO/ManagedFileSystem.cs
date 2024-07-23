@@ -80,12 +80,14 @@ namespace Emby.Server.Implementations.IO
         public virtual string MakeAbsolutePath(string folderPath, string filePath)
         {
             // path is actually a stream
-            if (string.IsNullOrWhiteSpace(filePath) || filePath.Contains("://", StringComparison.Ordinal))
+            if (string.IsNullOrWhiteSpace(filePath))
             {
                 return filePath;
             }
 
-            if (filePath.Length > 3 && filePath[1] == ':' && filePath[2] == '/')
+            var isAbsolutePath = Path.IsPathRooted(filePath) && (!OperatingSystem.IsWindows() || filePath[0] != '\\');
+
+            if (isAbsolutePath)
             {
                 // absolute local path
                 return filePath;
@@ -97,17 +99,10 @@ namespace Emby.Server.Implementations.IO
                 return filePath;
             }
 
-            var firstChar = filePath[0];
-            if (firstChar == '/')
-            {
-                // for this we don't really know
-                return filePath;
-            }
-
             var filePathSpan = filePath.AsSpan();
 
-            // relative path
-            if (firstChar == '\\')
+            // relative path on windows
+            if (filePath[0] == '\\')
             {
                 filePathSpan = filePathSpan.Slice(1);
             }
@@ -394,7 +389,7 @@ namespace Emby.Server.Implementations.IO
             var info = new FileInfo(path);
 
             if (info.Exists &&
-                ((info.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden) != isHidden)
+                (info.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden != isHidden)
             {
                 if (isHidden)
                 {
@@ -422,8 +417,8 @@ namespace Emby.Server.Implementations.IO
                 return;
             }
 
-            if (((info.Attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly) == readOnly
-                && ((info.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden) == isHidden)
+            if ((info.Attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly == readOnly
+                && (info.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden == isHidden)
             {
                 return;
             }
@@ -471,7 +466,7 @@ namespace Emby.Server.Implementations.IO
             File.Copy(file1, temp1, true);
 
             File.Copy(file2, file1, true);
-            File.Copy(temp1, file2, true);
+            File.Move(temp1, file2, true);
         }
 
         /// <inheritdoc />

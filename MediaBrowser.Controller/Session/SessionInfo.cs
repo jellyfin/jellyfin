@@ -134,6 +134,7 @@ namespace MediaBrowser.Controller.Session
         /// <value>The now playing item.</value>
         public BaseItemDto NowPlayingItem { get; set; }
 
+        [JsonIgnore]
         public BaseItem FullNowPlayingItem { get; set; }
 
         public BaseItemDto NowViewingItem { get; set; }
@@ -269,9 +270,7 @@ namespace MediaBrowser.Controller.Session
 
         public void AddController(ISessionController controller)
         {
-            var controllers = SessionControllers.ToList();
-            controllers.Add(controller);
-            SessionControllers = controllers.ToArray();
+            SessionControllers = [..SessionControllers, controller];
         }
 
         public bool ContainsUser(Guid userId)

@@ -125,5 +125,9 @@
     "TaskKeyframeExtractorDescription": "Eraldab videofailidest võtmekaadreid, et luua täpsemaid HLS-i esitusloendeid. See ülesanne võib kesta pikka aega.",
     "TaskKeyframeExtractor": "Võtmekaadri ekstraktor",
     "TaskRefreshTrickplayImages": "Loo eelvaate pildid",
-    "TaskRefreshTrickplayImagesDescription": "Loob eelvaated videotele, kus lubatud."
+    "TaskRefreshTrickplayImagesDescription": "Loob eelvaated videotele, kus lubatud.",
+    "TaskAudioNormalization": "Heli Normaliseerimine",
+    "TaskAudioNormalizationDescription": "Skaneerib faile heli normaliseerimise andmete jaoks.",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Eemaldab kogumikest ja esitusloenditest asjad, mida enam ei eksisteeri.",
+    "TaskCleanCollectionsAndPlaylists": "Puhasta kogumikud ja esitusloendid"
 }

@@ -16,24 +16,23 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Playlists
 {
     public class Playlist : Folder, IHasShares
     {
-        public static readonly IReadOnlyList<string> SupportedExtensions = new[]
-        {
+        public static readonly IReadOnlyList<string> SupportedExtensions =
+        [
             ".m3u",
             ".m3u8",
             ".pls",
             ".wpl",
             ".zpl"
-        };
+        ];
 
         public Playlist()
         {
-            Shares = Array.Empty<Share>();
+            Shares = [];
             OpenAccess = false;
         }
 
@@ -41,7 +40,7 @@ namespace MediaBrowser.Controller.Playlists
 
         public bool OpenAccess { get; set; }
 
-        public Share[] Shares { get; set; }
+        public IReadOnlyList<PlaylistUserPermissions> Shares { get; set; }
 
         [JsonIgnore]
         public bool IsFile => IsPlaylistFile(Path);
@@ -130,10 +129,10 @@ namespace MediaBrowser.Controller.Playlists
         protected override List<BaseItem> LoadChildren()
         {
             // Save a trip to the database
-            return new List<BaseItem>();
+            return [];
         }
 
-        protected override Task ValidateChildrenInternal(IProgress<double> progress, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService, CancellationToken cancellationToken)
+        protected override Task ValidateChildrenInternal(IProgress<double> progress, bool recursive, bool refreshChildMetadata, bool allowRemoveRoot, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
         }
@@ -145,7 +144,7 @@ namespace MediaBrowser.Controller.Playlists
 
         protected override IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
         {
-            return new List<BaseItem>();
+            return [];
         }
 
         public override IEnumerable<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)
@@ -167,7 +166,7 @@ namespace MediaBrowser.Controller.Playlists
             return base.GetChildren(user, true, query);
         }
 
-        public static List<BaseItem> GetPlaylistItems(MediaType playlistMediaType, IEnumerable<BaseItem> inputItems, User user, DtoOptions options)
+        public static IReadOnlyList<BaseItem> GetPlaylistItems(IEnumerable<BaseItem> inputItems, User user, DtoOptions options)
         {
             if (user is not null)
             {
@@ -178,23 +177,23 @@ namespace MediaBrowser.Controller.Playlists
 
             foreach (var item in inputItems)
             {
-                var playlistItems = GetPlaylistItems(item, user, playlistMediaType, options);
+                var playlistItems = GetPlaylistItems(item, user, options);
                 list.AddRange(playlistItems);
             }
 
             return list;
         }
 
-        private static IEnumerable<BaseItem> GetPlaylistItems(BaseItem item, User user, MediaType mediaType, DtoOptions options)
+        private static IEnumerable<BaseItem> GetPlaylistItems(BaseItem item, User user, DtoOptions options)
         {
             if (item is MusicGenre musicGenre)
             {
                 return LibraryManager.GetItemList(new InternalItemsQuery(user)
                 {
                     Recursive = true,
-                    IncludeItemTypes = new[] { BaseItemKind.Audio },
-                    GenreIds = new[] { musicGenre.Id },
-                    OrderBy = new[] { (ItemSortBy.AlbumArtist, SortOrder.Ascending), (ItemSortBy.Album, SortOrder.Ascending), (ItemSortBy.SortName, SortOrder.Ascending) },
+                    IncludeItemTypes = [BaseItemKind.Audio],
+                    GenreIds = [musicGenre.Id],
+                    OrderBy = [(ItemSortBy.AlbumArtist, SortOrder.Ascending), (ItemSortBy.Album, SortOrder.Ascending), (ItemSortBy.SortName, SortOrder.Ascending)],
                     DtoOptions = options
                 });
             }
@@ -204,9 +203,9 @@ namespace MediaBrowser.Controller.Playlists
                 return LibraryManager.GetItemList(new InternalItemsQuery(user)
                 {
                     Recursive = true,
-                    IncludeItemTypes = new[] { BaseItemKind.Audio },
-                    ArtistIds = new[] { musicArtist.Id },
-                    OrderBy = new[] { (ItemSortBy.AlbumArtist, SortOrder.Ascending), (ItemSortBy.Album, SortOrder.Ascending), (ItemSortBy.SortName, SortOrder.Ascending) },
+                    IncludeItemTypes = [BaseItemKind.Audio],
+                    ArtistIds = [musicArtist.Id],
+                    OrderBy = [(ItemSortBy.AlbumArtist, SortOrder.Ascending), (ItemSortBy.Album, SortOrder.Ascending), (ItemSortBy.SortName, SortOrder.Ascending)],
                     DtoOptions = options
                 });
             }
@@ -217,8 +216,7 @@ namespace MediaBrowser.Controller.Playlists
                 {
                     Recursive = true,
                     IsFolder = false,
-                    OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) },
-                    MediaTypes = new[] { mediaType },
+                    MediaTypes = [MediaType.Audio, MediaType.Video],
                     EnableTotalRecordCount = false,
                     DtoOptions = options
                 };
@@ -226,7 +224,7 @@ namespace MediaBrowser.Controller.Playlists
                 return folder.GetItemList(query);
             }
 
-            return new[] { item };
+            return [item];
         }
 
         public override bool IsVisible(User user)
@@ -248,12 +246,17 @@ namespace MediaBrowser.Controller.Playlists
             }
 
             var shares = Shares;
-            if (shares.Length == 0)
+            if (shares.Count == 0)
             {
                 return false;
             }
 
-            return shares.Any(share => Guid.TryParse(share.UserId, out var id) && id.Equals(userId));
+            return shares.Any(s => s.UserId.Equals(userId));
+        }
+
+        public override bool CanDelete(User user)
+        {
+            return user.HasPermission(PermissionKind.IsAdministrator) || user.Id.Equals(OwnerUserId);
         }
 
         public override bool IsVisibleStandalone(User user)
