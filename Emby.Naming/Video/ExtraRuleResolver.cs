@@ -71,7 +71,8 @@ namespace Emby.Naming.Video
                 {
                     var directoryName = Path.GetFileName(Path.GetDirectoryName(pathSpan));
                     string fullDirectory = Path.GetDirectoryName(pathSpan).ToString();
-                    if (directoryName.Equals(rule.Token, StringComparison.OrdinalIgnoreCase) && fullDirectory != libraryRoot)
+                    if (directoryName.Equals(rule.Token, StringComparison.OrdinalIgnoreCase)
+                        && !string.Equals(fullDirectory, libraryRoot, StringComparison.OrdinalIgnoreCase))
                     {
                         result.ExtraType = rule.ExtraType;
                         result.Rule = rule;
