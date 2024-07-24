@@ -1,8 +1,6 @@
 using Emby.Naming.Common;
 using Emby.Naming.Video;
-
 using MediaBrowser.Model.Entities;
-
 using Xunit;
 
 using MediaType = Emby.Naming.Common.MediaType;
