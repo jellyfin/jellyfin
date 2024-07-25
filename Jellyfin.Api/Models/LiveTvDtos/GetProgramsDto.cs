@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions.Json.Converters;
@@ -121,6 +122,7 @@ public class GetProgramsDto
     /// <summary>
     /// Gets or sets a value indicating whether retrieve total record count.
     /// </summary>
+    [DefaultValue(true)]
     public bool EnableTotalRecordCount { get; set; } = true;
 
     /// <summary>
@@ -147,7 +149,7 @@ public class GetProgramsDto
     /// <summary>
     /// Gets or sets filter by library series id.
     /// </summary>
-    public Guid LibrarySeriesId { get; set; }
+    public Guid? LibrarySeriesId { get; set; }
 
     /// <summary>
     /// Gets or sets specify additional fields of information to return in the output.

@@ -677,11 +677,11 @@ public class LiveTvController : BaseJellyfinApiController
             GenreIds = body.GenreIds ?? []
         };
 
-        if (!body.LibrarySeriesId.IsEmpty())
+        if (!body.LibrarySeriesId.IsNullOrEmpty())
         {
             query.IsSeries = true;
 
-            var series = _libraryManager.GetItemById<Series>(body.LibrarySeriesId);
+            var series = _libraryManager.GetItemById<Series>(body.LibrarySeriesId.Value);
             if (series is not null)
             {
                 query.Name = series.Name;
