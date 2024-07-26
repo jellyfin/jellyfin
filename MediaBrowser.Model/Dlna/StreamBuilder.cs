@@ -908,12 +908,11 @@ namespace MediaBrowser.Model.Dlna
                 }
             }
 
-            var audioStreamWithSupportedCodec = candidateAudioStreams.Where(stream => ContainerProfile.ContainsContainer(audioCodecs, stream.Codec)).ToList();
+            var audioStreamWithSupportedCodec = candidateAudioStreams.Where(stream => ContainerProfile.ContainsContainer(audioCodecs, stream.Codec)).First();
 
-            var directAudioStream = audioStreamWithSupportedCodec.FirstOrDefault(stream => stream.Channels is not null
-                                                                                           && stream.Channels.Value <= (playlistItem.TranscodingMaxAudioChannels ?? int.MaxValue));
+            var directAudioStream = audioStreamWithSupportedCodec.Channels is not null && audioStreamWithSupportedCodec.Channels.Value <= (playlistItem.TranscodingMaxAudioChannels ?? int.MaxValue) ? audioStreamWithSupportedCodec : null;
 
-            var channelsWithinLimit = directAudioStream == audioStreamWithSupportedCodec.FirstOrDefault();
+            var channelsWithinLimit = directAudioStream is not null;
             if (!channelsWithinLimit && playlistItem.TargetAudioStream is not null)
             {
                 playlistItem.TranscodeReasons |= TranscodeReason.AudioChannelsNotSupported;
