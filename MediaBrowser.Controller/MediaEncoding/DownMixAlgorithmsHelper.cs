@@ -53,7 +53,7 @@ public static class DownMixAlgorithmsHelper
             5 => "5.0",
             6 => "5.1", // Could also be 6.0 or hexagonal, prefer 5.1
             7 => "6.1", // Could also be 7.0, prefer 6.1
-            8 => "7.1", // Could also be 8.0, prefer 6.1
+            8 => "7.1", // Could also be 8.0, prefer 7.1
             _ => string.Empty // Return empty string for not supported layout
         };
         return inferredLayout;
