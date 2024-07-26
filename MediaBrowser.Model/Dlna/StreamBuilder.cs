@@ -908,12 +908,13 @@ namespace MediaBrowser.Model.Dlna
                 }
             }
 
-            var audioStreamWithSupportedCodec = candidateAudioStreams.Where(stream => ContainerProfile.ContainsContainer(audioCodecs, stream.Codec)).First();
+            var audioStreamWithSupportedCodec = candidateAudioStreams.Where(stream => ContainerProfile.ContainsContainer(audioCodecs, stream.Codec)).FirstOrDefault();
 
-            var directAudioStream = audioStreamWithSupportedCodec.Channels is not null && audioStreamWithSupportedCodec.Channels.Value <= (playlistItem.TranscodingMaxAudioChannels ?? int.MaxValue) ? audioStreamWithSupportedCodec : null;
+            var directAudioStream = audioStreamWithSupportedCodec?.Channels is not null && audioStreamWithSupportedCodec.Channels.Value <= (playlistItem.TranscodingMaxAudioChannels ?? int.MaxValue) ? audioStreamWithSupportedCodec : null;
 
-            var channelsWithinLimit = directAudioStream is not null;
-            if (!channelsWithinLimit && playlistItem.TargetAudioStream is not null)
+            var channelsExceedsLimit = audioStreamWithSupportedCodec is not null && directAudioStream is null;
+
+            if (channelsExceedsLimit && playlistItem.TargetAudioStream is not null)
             {
                 playlistItem.TranscodeReasons |= TranscodeReason.AudioChannelsNotSupported;
                 playlistItem.TargetAudioStream.Channels = playlistItem.TranscodingMaxAudioChannels;
@@ -981,7 +982,7 @@ namespace MediaBrowser.Model.Dlna
             }
 
             // Honor requested max channels
-            playlistItem.GlobalMaxAudioChannels = channelsWithinLimit ? options.MaxAudioChannels : playlistItem.TranscodingMaxAudioChannels;
+            playlistItem.GlobalMaxAudioChannels = channelsExceedsLimit ? playlistItem.TranscodingMaxAudioChannels : options.MaxAudioChannels;
 
             int audioBitrate = GetAudioBitrate(options.GetMaxBitrate(true) ?? 0, playlistItem.TargetAudioCodec, audioStream, playlistItem);
             playlistItem.AudioBitrate = Math.Min(playlistItem.AudioBitrate ?? audioBitrate, audioBitrate);
