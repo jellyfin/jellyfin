@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
@@ -19,19 +19,18 @@ namespace Jellyfin.Api.Controllers;
 /// <summary>
 /// Media Segments api.
 /// </summary>
-[Route("")]
 [Authorize]
-public class MediaSegmentApiController : BaseJellyfinApiController
+public class MediaSegmentController : BaseJellyfinApiController
 {
     private readonly IMediaSegmentManager _mediaSegmentManager;
     private readonly ILibraryManager _libraryManager;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="MediaSegmentApiController"/> class.
+    /// Initializes a new instance of the <see cref="MediaSegmentController"/> class.
     /// </summary>
     /// <param name="mediaSegmentManager">MediaSegments Manager.</param>
     /// <param name="libraryManager">The Library manager.</param>
-    public MediaSegmentApiController(IMediaSegmentManager mediaSegmentManager, ILibraryManager libraryManager)
+    public MediaSegmentController(IMediaSegmentManager mediaSegmentManager, ILibraryManager libraryManager)
     {
         _mediaSegmentManager = mediaSegmentManager;
         _libraryManager = libraryManager;
