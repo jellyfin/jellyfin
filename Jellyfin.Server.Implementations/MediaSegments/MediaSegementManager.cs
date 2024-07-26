@@ -55,4 +55,11 @@ public class MediaSegementManager : IMediaSegmentManager
             yield return segment;
         }
     }
+
+    /// <inheritdoc />
+    public bool HasSegments(Guid itemId)
+    {
+        using var db = _dbProvider.CreateDbContext();
+        return db.MediaSegments.Any(e => e.ItemId.Equals(itemId));
+    }
 }

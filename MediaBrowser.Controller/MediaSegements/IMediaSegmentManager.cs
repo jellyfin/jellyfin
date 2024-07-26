@@ -15,7 +15,7 @@ public interface IMediaSegmentManager
     ///     Creates a new Media Segment associated with an Item.
     /// </summary>
     /// <param name="mediaSegment">The segment to create.</param>
-    /// <returns>The created Segment entity</returns>
+    /// <returns>The created Segment entity.</returns>
     Task<MediaSegment> CreateSegmentAsync(MediaSegment mediaSegment);
 
     /// <summary>
@@ -31,4 +31,12 @@ public interface IMediaSegmentManager
     /// <param name="itemId">The id of the <see cref="BaseItem"/>.</param>
     /// <returns>An enumerator of <see cref="MediaSegment"/>'s.</returns>
     IAsyncEnumerable<MediaSegment> GetSegmentsAsync(Guid itemId);
+
+    /// <summary>
+    ///     Gets information about any media segments stored for the given itemId.
+    /// </summary>
+    /// <param name="itemId">The id of the <see cref="BaseItem"/>.</param>
+    /// <returns>True if there are any segments stored for the item, otherwise false.</returns>
+    /// TODO: this should be async but as the only caller BaseItem.GetVersionInfo isn't async, this is also not. Venson.
+    bool HasSegments(Guid itemId);
 }

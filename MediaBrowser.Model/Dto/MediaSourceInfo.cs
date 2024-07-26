@@ -117,6 +117,8 @@ namespace MediaBrowser.Model.Dto
 
         public int? DefaultSubtitleStreamIndex { get; set; }
 
+        public bool HasSegments { get; set; }
+
         [JsonIgnore]
         public MediaStream VideoStream
         {
