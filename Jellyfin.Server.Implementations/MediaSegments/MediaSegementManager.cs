@@ -50,7 +50,10 @@ public class MediaSegementManager : IMediaSegmentManager
     public async IAsyncEnumerable<MediaSegment> GetSegmentsAsync(Guid itemId)
     {
         using var db = await _dbProvider.CreateDbContextAsync();
-        await foreach (var segment in db.MediaSegments.Where(e => e.ItemId.Equals(itemId)).AsAsyncEnumerable())
+        await foreach (var segment in db.MediaSegments
+            .Where(e => e.ItemId.Equals(itemId))
+            .OrderBy(e => e.StartTick)
+            .AsAsyncEnumerable())
         {
             yield return segment;
         }
