@@ -53,7 +53,7 @@ public static class DownMixAlgorithmsHelper
             1 => "mono",
             2 => "stereo",
             3 => "2.1", // Could also be 3.0, prefer 2.1
-            4 => "quad", // Could also be 4.0 (with front center and rear center) and 3.1 with LFE. prefer quad with back left and back right
+            4 => "4.0", // Could also be quad (with rear left and rear right) and 3.1 with LFE. prefer 4.0 with front center and back center
             5 => "5.0",
             6 => "5.1", // Could also be 6.0 or hexagonal, prefer 5.1
             7 => "6.1", // Could also be 7.0, prefer 6.1
