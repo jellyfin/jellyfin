@@ -32,24 +32,24 @@ public class MediaSegementManager : IMediaSegmentManager
             throw new InvalidOperationException($"A segments {nameof(MediaSegment.EndTick)} cannot be before its {nameof(MediaSegment.StartTick)}");
         }
 
-        using var db = await _dbProvider.CreateDbContextAsync();
+        using var db = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
         mediaSegment.Id = Guid.NewGuid();
         db.MediaSegments.Add(mediaSegment);
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync().ConfigureAwait(false);
         return mediaSegment;
     }
 
     /// <inheritdoc />
     public async Task DeleteSegmentAsync(Guid segmentId)
     {
-        using var db = await _dbProvider.CreateDbContextAsync();
-        await db.MediaSegments.Where(e => e.Id.Equals(segmentId)).ExecuteDeleteAsync();
+        using var db = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+        await db.MediaSegments.Where(e => e.Id.Equals(segmentId)).ExecuteDeleteAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc />
     public async IAsyncEnumerable<MediaSegment> GetSegmentsAsync(Guid itemId)
     {
-        using var db = await _dbProvider.CreateDbContextAsync();
+        using var db = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
         await foreach (var segment in db.MediaSegments
             .Where(e => e.ItemId.Equals(itemId))
             .OrderBy(e => e.StartTick)
