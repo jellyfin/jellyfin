@@ -34,6 +34,10 @@ public static class DownMixAlgorithmsHelper
     {
         if (!string.IsNullOrWhiteSpace(audioStream.ChannelLayout))
         {
+            // Note: BDMVs do not derive this string from ffmpeg, which would cause ambiguity with 4-channel audio
+            // "quad" => 2 front and 2 rear, "4.0" => 3 front and 1 rear
+            // BDMV will always use "4.0" in this case
+            // Because the quad layout is super rare in BDs, we will use "4.0" as is here
             return audioStream.ChannelLayout;
         }
 
