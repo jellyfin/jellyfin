@@ -38,8 +38,9 @@ public interface IMediaSegmentManager
     ///     Obtains all segments accociated with the itemId.
     /// </summary>
     /// <param name="itemId">The id of the <see cref="BaseItem"/>.</param>
+    /// <param name="typeFilter">filteres all media segments of the given type to be included.</param>
     /// <returns>An enumerator of <see cref="MediaSegmentDto"/>'s.</returns>
-    Task<IEnumerable<MediaSegmentDto>> GetSegmentsAsync(Guid itemId);
+    Task<IEnumerable<MediaSegmentDto>> GetSegmentsAsync(Guid itemId, IEnumerable<MediaSegmentType> typeFilter);
 
     /// <summary>
     ///     Gets information about any media segments stored for the given itemId.

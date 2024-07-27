@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Api.Extensions;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -39,11 +40,14 @@ public class MediaSegmentsController : BaseJellyfinApiController
     /// Gets all media segments based on an itemId.
     /// </summary>
     /// <param name="itemId">The ItemId.</param>
+    /// <param name="includeSegmentTypes">Optional filter of requested segmeent types</param>
     /// <returns>A list of media segement objects related to the requested itemId.</returns>
     [HttpGet("{itemId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<QueryResult<MediaSegmentDto>>> GetSegmentsAsync([FromRoute, Required] Guid itemId)
+    public async Task<ActionResult<QueryResult<MediaSegmentDto>>> GetSegmentsAsync(
+        [FromRoute, Required] Guid itemId,
+        [FromQuery] IEnumerable<MediaSegmentType>? includeSegmentTypes = null)
     {
         var item = _libraryManager.GetItemById<BaseItem>(itemId, User.GetUserId());
         if (item is null)
@@ -51,7 +55,7 @@ public class MediaSegmentsController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var items = await _mediaSegmentManager.GetSegmentsAsync(item.Id).ConfigureAwait(false);
+        var items = await _mediaSegmentManager.GetSegmentsAsync(item.Id, includeSegmentTypes ?? Enum.GetValues<MediaSegmentType>()).ConfigureAwait(false);
         return Ok(new QueryResult<MediaSegmentDto>(items.ToArray()));
     }
 }

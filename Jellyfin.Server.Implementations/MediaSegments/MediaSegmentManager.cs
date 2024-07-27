@@ -47,12 +47,13 @@ public class MediaSegmentManager : IMediaSegmentManager
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<MediaSegmentDto>> GetSegmentsAsync(Guid itemId)
+    public async Task<IEnumerable<MediaSegmentDto>> GetSegmentsAsync(Guid itemId, IEnumerable<MediaSegmentType> typeFilter)
     {
         using var db = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
 
         return db.MediaSegments
             .Where(e => e.ItemId.Equals(itemId))
+            .Where(e => typeFilter.Contains(e.Type))
             .OrderBy(e => e.StartTicks)
             .ToImmutableList()
             .Select(Map);
