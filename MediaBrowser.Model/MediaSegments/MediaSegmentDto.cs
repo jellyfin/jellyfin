@@ -32,6 +32,4 @@ public class MediaSegmentDto
     ///     Gets or sets the end of the segment.
     /// </summary>
     public long EndTicks { get; set; }
-
-
 }

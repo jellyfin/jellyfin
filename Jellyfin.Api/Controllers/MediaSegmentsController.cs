@@ -40,7 +40,7 @@ public class MediaSegmentsController : BaseJellyfinApiController
     /// Gets all media segments based on an itemId.
     /// </summary>
     /// <param name="itemId">The ItemId.</param>
-    /// <param name="includeSegmentTypes">Optional filter of requested segmeent types</param>
+    /// <param name="includeSegmentTypes">Optional filter of requested segmeent types.</param>
     /// <returns>A list of media segement objects related to the requested itemId.</returns>
     [HttpGet("{itemId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
