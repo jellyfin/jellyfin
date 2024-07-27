@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.MediaSegments;
 
 namespace MediaBrowser.Controller;
 
@@ -16,7 +17,7 @@ public interface IMediaSegmentManager
     /// </summary>
     /// <param name="mediaSegment">The segment to create.</param>
     /// <returns>The created Segment entity.</returns>
-    Task<MediaSegment> CreateSegmentAsync(MediaSegment mediaSegment);
+    Task<MediaSegmentModel> CreateSegmentAsync(MediaSegmentModel mediaSegment);
 
     /// <summary>
     ///     Deletes a single media segment.
@@ -29,8 +30,8 @@ public interface IMediaSegmentManager
     ///     Obtains all segments accociated with the itemId.
     /// </summary>
     /// <param name="itemId">The id of the <see cref="BaseItem"/>.</param>
-    /// <returns>An enumerator of <see cref="MediaSegment"/>'s.</returns>
-    IAsyncEnumerable<MediaSegment> GetSegmentsAsync(Guid itemId);
+    /// <returns>An enumerator of <see cref="MediaSegmentModel"/>'s.</returns>
+    IAsyncEnumerable<MediaSegmentModel> GetSegmentsAsync(Guid itemId);
 
     /// <summary>
     ///     Gets information about any media segments stored for the given itemId.

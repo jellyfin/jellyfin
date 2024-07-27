@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller;
+using MediaBrowser.Model.MediaSegments;
 using Microsoft.EntityFrameworkCore;
 
 namespace Jellyfin.Server.Implementations;
@@ -25,16 +26,13 @@ public class MediaSegementManager : IMediaSegmentManager
     }
 
     /// <inheritdoc />
-    public async Task<MediaSegment> CreateSegmentAsync(MediaSegment mediaSegment)
+    public async Task<MediaSegmentModel> CreateSegmentAsync(MediaSegmentModel mediaSegment)
     {
-        if (mediaSegment.EndTick < mediaSegment.StartTick)
-        {
-            throw new InvalidOperationException($"A segments {nameof(MediaSegment.EndTick)} cannot be before its {nameof(MediaSegment.StartTick)}");
-        }
+        ArgumentOutOfRangeException.ThrowIfLessThan(mediaSegment.EndTick, mediaSegment.StartTick);
 
         using var db = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
         mediaSegment.Id = Guid.NewGuid();
-        db.MediaSegments.Add(mediaSegment);
+        db.MediaSegments.Add(Map(mediaSegment));
         await db.SaveChangesAsync().ConfigureAwait(false);
         return mediaSegment;
     }
@@ -47,7 +45,7 @@ public class MediaSegementManager : IMediaSegmentManager
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<MediaSegment> GetSegmentsAsync(Guid itemId)
+    public async IAsyncEnumerable<MediaSegmentModel> GetSegmentsAsync(Guid itemId)
     {
         using var db = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
         await foreach (var segment in db.MediaSegments
@@ -55,8 +53,32 @@ public class MediaSegementManager : IMediaSegmentManager
             .OrderBy(e => e.StartTick)
             .AsAsyncEnumerable())
         {
-            yield return segment;
+            yield return Map(segment);
         }
+    }
+
+    private static MediaSegmentModel Map(MediaSegment segment)
+    {
+        return new MediaSegmentModel()
+        {
+            Id = segment.Id,
+            EndTick = segment.EndTick,
+            ItemId = segment.ItemId,
+            StartTick = segment.StartTick,
+            Type = (MediaSegmentTypeModel)segment.Type
+        };
+    }
+
+    private static MediaSegment Map(MediaSegmentModel segment)
+    {
+        return new MediaSegment()
+        {
+            Id = segment.Id,
+            EndTick = segment.EndTick,
+            ItemId = segment.ItemId,
+            StartTick = segment.StartTick,
+            Type = (MediaSegmentType)segment.Type
+        };
     }
 
     /// <inheritdoc />

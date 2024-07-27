@@ -1,23 +1,20 @@
-using System;
-using System.Text.Json.Serialization;
+﻿using System;
 
-namespace Jellyfin.Data.Entities;
+namespace MediaBrowser.Model.MediaSegments;
 
 /// <summary>
-///     An entity representing the metadata for a group of trickplay tiles.
+///     Api model for MediaSegment's.
 /// </summary>
-public class MediaSegment
+public class MediaSegmentModel
 {
     /// <summary>
     ///     Gets or sets the id of the media segment.
     /// </summary>
-    [JsonIgnore]
     public Guid Id { get; set; }
 
     /// <summary>
     ///     Gets or sets the id of the associated item.
     /// </summary>
-    [JsonIgnore]
     public Guid ItemId { get; set; }
 
     /// <summary>
@@ -33,5 +30,5 @@ public class MediaSegment
     /// <summary>
     ///     Gets or sets the Type of content this segment defines.
     /// </summary>
-    public MediaSegmentType Type { get; set; }
+    public MediaSegmentTypeModel Type { get; set; }
 }

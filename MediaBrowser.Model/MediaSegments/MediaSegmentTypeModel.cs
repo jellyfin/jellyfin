@@ -1,9 +1,9 @@
-namespace Jellyfin.Data.Entities;
+namespace MediaBrowser.Model.MediaSegments;
 
 /// <summary>
-///     Defines the types of content a individial <see cref="MediaSegment"/> represents.
+///     Defines the types of content a individial <see cref="MediaSegmentModel"/> represents.
 /// </summary>
-public enum MediaSegmentType
+public enum MediaSegmentTypeModel
 {
     /// <summary>
     ///     Default media type or custom one.

@@ -1,15 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
-using System.Threading.Tasks;
 using Jellyfin.Api.Extensions;
-using Jellyfin.Api.Helpers;
-using Jellyfin.Data.Entities;
-using Jellyfin.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.MediaSegments;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -44,7 +40,7 @@ public class MediaSegmentController : BaseJellyfinApiController
     [HttpGet("MediaSegments/{itemId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult<IAsyncEnumerable<MediaSegment>> GetSegmentsAsync([FromRoute, Required] Guid itemId)
+    public ActionResult<IAsyncEnumerable<MediaSegmentModel>> GetSegmentsAsync([FromRoute, Required] Guid itemId)
     {
         var item = _libraryManager.GetItemById<BaseItem>(itemId, User.GetUserId());
         if (item is null)
