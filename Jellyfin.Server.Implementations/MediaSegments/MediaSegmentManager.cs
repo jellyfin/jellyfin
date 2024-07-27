@@ -1,9 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.MediaSegments;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,23 +14,23 @@ namespace Jellyfin.Server.Implementations;
 /// <summary>
 ///     Manages media segments retrival and storage.
 /// </summary>
-public class MediaSegementManager : IMediaSegmentManager
+public class MediaSegmentManager : IMediaSegmentManager
 {
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="MediaSegementManager"/> class.
+    /// Initializes a new instance of the <see cref="MediaSegmentManager"/> class.
     /// </summary>
     /// <param name="dbProvider">EFCore Database factory.</param>
-    public MediaSegementManager(IDbContextFactory<JellyfinDbContext> dbProvider)
+    public MediaSegmentManager(IDbContextFactory<JellyfinDbContext> dbProvider)
     {
         _dbProvider = dbProvider;
     }
 
     /// <inheritdoc />
-    public async Task<MediaSegmentModel> CreateSegmentAsync(MediaSegmentModel mediaSegment)
+    public async Task<MediaSegmentDto> CreateSegmentAsync(MediaSegmentDto mediaSegment)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(mediaSegment.EndTick, mediaSegment.StartTick);
+        ArgumentOutOfRangeException.ThrowIfLessThan(mediaSegment.EndTicks, mediaSegment.StartTicks);
 
         using var db = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
         mediaSegment.Id = Guid.NewGuid();
@@ -45,39 +47,38 @@ public class MediaSegementManager : IMediaSegmentManager
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<MediaSegmentModel> GetSegmentsAsync(Guid itemId)
+    public async Task<IEnumerable<MediaSegmentDto>> GetSegmentsAsync(Guid itemId)
     {
         using var db = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-        await foreach (var segment in db.MediaSegments
+
+        return db.MediaSegments
             .Where(e => e.ItemId.Equals(itemId))
-            .OrderBy(e => e.StartTick)
-            .AsAsyncEnumerable())
-        {
-            yield return Map(segment);
-        }
+            .OrderBy(e => e.StartTicks)
+            .ToImmutableList()
+            .Select(Map);
     }
 
-    private static MediaSegmentModel Map(MediaSegment segment)
+    private static MediaSegmentDto Map(MediaSegment segment)
     {
-        return new MediaSegmentModel()
+        return new MediaSegmentDto()
         {
             Id = segment.Id,
-            EndTick = segment.EndTick,
+            EndTicks = segment.EndTicks,
             ItemId = segment.ItemId,
-            StartTick = segment.StartTick,
-            Type = (MediaSegmentTypeModel)segment.Type
+            StartTicks = segment.StartTicks,
+            Type = segment.Type
         };
     }
 
-    private static MediaSegment Map(MediaSegmentModel segment)
+    private static MediaSegment Map(MediaSegmentDto segment)
     {
         return new MediaSegment()
         {
             Id = segment.Id,
-            EndTick = segment.EndTick,
+            EndTicks = segment.EndTicks,
             ItemId = segment.ItemId,
-            StartTick = segment.StartTick,
-            Type = (MediaSegmentType)segment.Type
+            StartTicks = segment.StartTicks,
+            Type = segment.Type
         };
     }
 
@@ -86,5 +87,11 @@ public class MediaSegementManager : IMediaSegmentManager
     {
         using var db = _dbProvider.CreateDbContext();
         return db.MediaSegments.Any(e => e.ItemId.Equals(itemId));
+    }
+
+    /// <inheritdoc/>
+    public bool IsTypeSupported(BaseItem baseItem)
+    {
+        return baseItem.MediaType is Data.Enums.MediaType.Video or Data.Enums.MediaType.Audio;
     }
 }

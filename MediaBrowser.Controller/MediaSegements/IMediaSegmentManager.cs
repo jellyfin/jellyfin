@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.MediaSegments;
 
 namespace MediaBrowser.Controller;
@@ -13,11 +14,18 @@ namespace MediaBrowser.Controller;
 public interface IMediaSegmentManager
 {
     /// <summary>
+    ///     Returns if this item supports media segments.
+    /// </summary>
+    /// <param name="baseItem">The base Item to check.</param>
+    /// <returns>True if supported otherwise false.</returns>
+    bool IsTypeSupported(BaseItem baseItem);
+
+    /// <summary>
     ///     Creates a new Media Segment associated with an Item.
     /// </summary>
     /// <param name="mediaSegment">The segment to create.</param>
     /// <returns>The created Segment entity.</returns>
-    Task<MediaSegmentModel> CreateSegmentAsync(MediaSegmentModel mediaSegment);
+    Task<MediaSegmentDto> CreateSegmentAsync(MediaSegmentDto mediaSegment);
 
     /// <summary>
     ///     Deletes a single media segment.
@@ -30,8 +38,8 @@ public interface IMediaSegmentManager
     ///     Obtains all segments accociated with the itemId.
     /// </summary>
     /// <param name="itemId">The id of the <see cref="BaseItem"/>.</param>
-    /// <returns>An enumerator of <see cref="MediaSegmentModel"/>'s.</returns>
-    IAsyncEnumerable<MediaSegmentModel> GetSegmentsAsync(Guid itemId);
+    /// <returns>An enumerator of <see cref="MediaSegmentDto"/>'s.</returns>
+    Task<IEnumerable<MediaSegmentDto>> GetSegmentsAsync(Guid itemId);
 
     /// <summary>
     ///     Gets information about any media segments stored for the given itemId.

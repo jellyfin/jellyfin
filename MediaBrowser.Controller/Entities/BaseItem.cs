@@ -1119,7 +1119,9 @@ namespace MediaBrowser.Controller.Entities
                 Container = item.Container,
                 Size = item.Size,
                 Type = type,
-                HasSegments = item.MediaType is MediaType.Video && (protocol is null or MediaProtocol.File) && MediaSegmentManager.HasSegments(item.Id)
+                HasSegments = MediaSegmentManager.IsTypeSupported(item)
+                    && (protocol is null or MediaProtocol.File)
+                    && MediaSegmentManager.HasSegments(item.Id)
             };
 
             if (string.IsNullOrEmpty(info.Path))

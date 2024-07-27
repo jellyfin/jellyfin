@@ -1,11 +1,12 @@
-﻿using System;
+using System;
+using Jellyfin.Data.Entities;
 
 namespace MediaBrowser.Model.MediaSegments;
 
 /// <summary>
 ///     Api model for MediaSegment's.
 /// </summary>
-public class MediaSegmentModel
+public class MediaSegmentDto
 {
     /// <summary>
     ///     Gets or sets the id of the media segment.
@@ -18,17 +19,19 @@ public class MediaSegmentModel
     public Guid ItemId { get; set; }
 
     /// <summary>
+    ///     Gets or sets the Type of content this segment defines.
+    /// </summary>
+    public MediaSegmentType Type { get; set; }
+
+    /// <summary>
     ///     Gets or sets the start of the segment.
     /// </summary>
-    public int StartTick { get; set; }
+    public long StartTicks { get; set; }
 
     /// <summary>
     ///     Gets or sets the end of the segment.
     /// </summary>
-    public int EndTick { get; set; }
+    public long EndTicks { get; set; }
 
-    /// <summary>
-    ///     Gets or sets the Type of content this segment defines.
-    /// </summary>
-    public MediaSegmentTypeModel Type { get; set; }
+
 }
