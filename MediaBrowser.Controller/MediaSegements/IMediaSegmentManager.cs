@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.MediaSegments;
 
 namespace MediaBrowser.Controller;

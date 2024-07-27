@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Api.Extensions;
-using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -40,8 +40,8 @@ public class MediaSegmentsController : BaseJellyfinApiController
     /// Gets all media segments based on an itemId.
     /// </summary>
     /// <param name="itemId">The ItemId.</param>
-    /// <param name="includeSegmentTypes">Optional filter of requested segmeent types.</param>
-    /// <returns>A list of media segement objects related to the requested itemId.</returns>
+    /// <param name="includeSegmentTypes">Optional filter of requested segment types.</param>
+    /// <returns>A list of media segment objects related to the requested itemId.</returns>
     [HttpGet("{itemId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

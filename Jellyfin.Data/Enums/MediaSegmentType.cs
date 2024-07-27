@@ -1,7 +1,9 @@
-namespace Jellyfin.Data.Entities;
+using Jellyfin.Data.Entities;
+
+namespace Jellyfin.Data.Enums;
 
 /// <summary>
-///     Defines the types of content a individial <see cref="MediaSegment"/> represents.
+///     Defines the types of content an individual <see cref="MediaSegment"/> represents.
 /// </summary>
 public enum MediaSegmentType
 {

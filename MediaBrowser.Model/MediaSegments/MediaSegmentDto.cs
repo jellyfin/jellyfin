@@ -1,5 +1,5 @@
 using System;
-using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 
 namespace MediaBrowser.Model.MediaSegments;
 
@@ -19,7 +19,7 @@ public class MediaSegmentDto
     public Guid ItemId { get; set; }
 
     /// <summary>
-    ///     Gets or sets the Type of content this segment defines.
+    ///     Gets or sets the type of content this segment defines.
     /// </summary>
     public MediaSegmentType Type { get; set; }
 

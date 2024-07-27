@@ -1,4 +1,5 @@
 using System;
+using Jellyfin.Data.Enums;
 
 namespace Jellyfin.Data.Entities;
 
