@@ -77,6 +77,7 @@
     <PackageVersion Include="Svg.Skia" Version="3.4.1" />
     <PackageVersion Include="Swashbuckle.AspNetCore.ReDoc" Version="10.1.7" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="10.1.7" />
+    <PackageVersion Include="Swashbuckle.AspNetCore.Swagger" Version="10.1.7" />
     <PackageVersion Include="System.Text.Json" Version="10.0.5" />
     <PackageVersion Include="TagLibSharp" Version="2.3.0" />
     <PackageVersion Include="z440.atl.core" Version="7.12.0" />
