@@ -29,7 +29,7 @@ public enum DownMixStereoAlgorithms
 
     /// <summary>
     /// AC-4 standard algorithm with its default gain values.
-    /// Defined in ETSI TS 103 190 Section 6.2.17
+    /// Defined in ETSI TS 103 190 Section 6.2.17.
     /// </summary>
     Ac4 = 4
 }
