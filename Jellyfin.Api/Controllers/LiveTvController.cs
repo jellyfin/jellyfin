@@ -688,7 +688,7 @@ public class LiveTvController : BaseJellyfinApiController
             }
         }
 
-        var dtoOptions = new DtoOptions { Fields = body.Fields }
+        var dtoOptions = new DtoOptions { Fields = body.Fields ?? [] }
             .AddClientFields(User)
             .AddAdditionalDtoOptions(body.EnableImages, body.EnableUserData, body.ImageTypeLimit, body.EnableImageTypes ?? []);
         return await _liveTvManager.GetPrograms(query, dtoOptions, CancellationToken.None).ConfigureAwait(false);
