@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations.Schema;
 using Jellyfin.Data.Enums;
 
 namespace Jellyfin.Data.Entities;
@@ -11,6 +12,7 @@ public class MediaSegment
     /// <summary>
     ///     Gets or sets the id of the media segment.
     /// </summary>
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public Guid Id { get; set; }
 
     /// <summary>

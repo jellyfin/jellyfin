@@ -34,7 +34,6 @@ public class MediaSegmentManager : IMediaSegmentManager
         ArgumentOutOfRangeException.ThrowIfLessThan(mediaSegment.EndTicks, mediaSegment.StartTicks);
 
         using var db = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-        mediaSegment.Id = Guid.NewGuid();
         db.MediaSegments.Add(Map(mediaSegment));
         await db.SaveChangesAsync().ConfigureAwait(false);
         return mediaSegment;
@@ -48,13 +47,19 @@ public class MediaSegmentManager : IMediaSegmentManager
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<MediaSegmentDto>> GetSegmentsAsync(Guid itemId, IEnumerable<MediaSegmentType> typeFilter)
+    public async Task<IEnumerable<MediaSegmentDto>> GetSegmentsAsync(Guid itemId, IEnumerable<MediaSegmentType>? typeFilter)
     {
         using var db = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
 
-        return db.MediaSegments
-            .Where(e => e.ItemId.Equals(itemId))
-            .Where(e => typeFilter.Contains(e.Type))
+        var query = db.MediaSegments
+            .Where(e => e.ItemId.Equals(itemId));
+
+        if (typeFilter is not null)
+        {
+            query = query.Where(e => typeFilter.Contains(e.Type));
+        }
+
+        return query
             .OrderBy(e => e.StartTicks)
             .ToImmutableList()
             .Select(Map);

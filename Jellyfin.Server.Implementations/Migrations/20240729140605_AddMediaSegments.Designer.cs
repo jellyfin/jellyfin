@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Jellyfin.Server.Implementations.Migrations
 {
     [DbContext(typeof(JellyfinDbContext))]
-    [Migration("20240727110858_AddMediaSegments")]
+    [Migration("20240729140605_AddMediaSegments")]
     partial class AddMediaSegments
     {
         /// <inheritdoc />
