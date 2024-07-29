@@ -10,7 +10,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.MediaSegments;
 using Microsoft.EntityFrameworkCore;
 
-namespace Jellyfin.Server.Implementations;
+namespace Jellyfin.Server.Implementations.MediaSegments;
 
 /// <summary>
 ///     Manages media segments retrival and storage.
