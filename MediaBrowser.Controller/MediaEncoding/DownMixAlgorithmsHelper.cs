@@ -25,7 +25,9 @@ public static class DownMixAlgorithmsHelper
         { (DownMixStereoAlgorithms.Rfc7845, "6.1"), "pan=stereo|c0=0.321953*c2+0.455310*c0+0.394310*c5+0.227655*c6+0.278819*c4+0.321953*c3|c1=0.321953*c2+0.455310*c1+0.394310*c6+0.227655*c5+0.278819*c4+0.321953*c3" },
         { (DownMixStereoAlgorithms.Rfc7845, "7.1"), "pan=stereo|c0=0.274804*c2+0.388631*c0+0.336565*c6+0.194316*c7+0.336565*c4+0.194316*c5+0.274804*c3|c1=0.274804*c2+0.388631*c1+0.336565*c7+0.194316*c6+0.336565*c5+0.194316*c4+0.274804*c3" },
         { (DownMixStereoAlgorithms.Ac4, "3.0"), "pan=stereo|c0=c0+0.707*c2|c1=c1+0.707*c2"},
+        { (DownMixStereoAlgorithms.Ac4, "5.0"), "pan=stereo|c0=c0+0.707*c2+0.707*c3|c1=c1+0.707*c2+0.707*c4"},
         { (DownMixStereoAlgorithms.Ac4, "5.1"), "pan=stereo|c0=c0+0.707*c2+0.707*c4|c1=c1+0.707*c2+0.707*c5"},
+        { (DownMixStereoAlgorithms.Ac4, "7.0"), "pan=5.0(side)|c0=c0|c1=c1|c2=c2|c3=0.707*c3+0.707*c5|c4=0.707*c4+0.707*c6,pan=stereo|c0=c0+0.707*c2+0.707*c3|c1=c1+0.707*c2+0.707*c4"},
         { (DownMixStereoAlgorithms.Ac4, "7.1"), "pan=5.1(side)|c0=c0|c1=c1|c2=c2|c3=c3|c4=0.707*c4+0.707*c6|c5=0.707*c5+0.707*c7,pan=stereo|c0=c0+0.707*c2+0.707*c4|c1=c1+0.707*c2+0.707*c5"},
     };
 
