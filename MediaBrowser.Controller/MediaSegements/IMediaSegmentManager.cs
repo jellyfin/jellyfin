@@ -66,5 +66,5 @@ public interface IMediaSegmentManager
     /// </summary>
     /// <param name="item">The media item that should be tested for providers.</param>
     /// <returns>A list of all providers for the tested item.</returns>
-    IEnumerable<(string Name, string Id)> GetSupportedProviders(BaseItem item)
+    IEnumerable<(string Name, string Id)> GetSupportedProviders(BaseItem item);
 }

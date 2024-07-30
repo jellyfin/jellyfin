@@ -93,7 +93,7 @@ public class MediaSegmentManager : IMediaSegmentManager
                 foreach (var segment in segments)
                 {
                     segment.ItemId = baseItem.Id;
-                    await CreateSegmentAsync(segment).ConfigureAwait(false);
+                    await CreateSegmentAsync(segment, GetProviderId(provider.Name)).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)

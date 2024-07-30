@@ -7,5 +7,8 @@ namespace MediaBrowser.Model;
 /// </summary>
 public class MediaSegmentGenerationRequest
 {
-    public string MediaPath { get; set; }
+    /// <summary>
+    ///     Gets the path to the media the segments should be extracted from.
+    /// </summary>
+    public required string MediaPath { get; init; }
 }
