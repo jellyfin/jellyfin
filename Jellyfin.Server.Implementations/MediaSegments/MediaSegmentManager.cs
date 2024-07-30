@@ -29,12 +29,12 @@ public class MediaSegmentManager : IMediaSegmentManager
     }
 
     /// <inheritdoc />
-    public async Task<MediaSegmentDto> CreateSegmentAsync(MediaSegmentDto mediaSegment)
+    public async Task<MediaSegmentDto> CreateSegmentAsync(MediaSegmentDto mediaSegment, string segmentProviderId)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(mediaSegment.EndTicks, mediaSegment.StartTicks);
 
         using var db = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-        db.MediaSegments.Add(Map(mediaSegment));
+        db.MediaSegments.Add(Map(mediaSegment, segmentProviderId));
         await db.SaveChangesAsync().ConfigureAwait(false);
         return mediaSegment;
     }
@@ -77,7 +77,7 @@ public class MediaSegmentManager : IMediaSegmentManager
         };
     }
 
-    private static MediaSegment Map(MediaSegmentDto segment)
+    private static MediaSegment Map(MediaSegmentDto segment, string segmentProviderId)
     {
         return new MediaSegment()
         {
@@ -85,7 +85,8 @@ public class MediaSegmentManager : IMediaSegmentManager
             EndTicks = segment.EndTicks,
             ItemId = segment.ItemId,
             StartTicks = segment.StartTicks,
-            Type = segment.Type
+            Type = segment.Type,
+            SegmentProviderId = segmentProviderId
         };
     }
 
