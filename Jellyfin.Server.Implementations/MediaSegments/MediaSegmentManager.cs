@@ -3,17 +3,21 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using EFCoreSecondLevelCacheInterceptor;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.MediaSegments;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Implementations.MediaSegments;
 
@@ -22,23 +26,74 @@ namespace Jellyfin.Server.Implementations.MediaSegments;
 /// </summary>
 public class MediaSegmentManager : IMediaSegmentManager
 {
+    private readonly ILogger<MediaSegmentManager> _logger;
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
     private readonly IMediaSegmentProvider[] _segmentProviders;
+    private readonly ILibraryManager _libraryManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MediaSegmentManager"/> class.
     /// </summary>
+    /// <param name="logger">Logger.</param>
     /// <param name="dbProvider">EFCore Database factory.</param>
     /// <param name="segmentProviders">List of all media segment providers.</param>
+    /// <param name="libraryManager">Library manager.</param>
     public MediaSegmentManager(
+        ILogger<MediaSegmentManager> logger,
         IDbContextFactory<JellyfinDbContext> dbProvider,
-        IEnumerable<IMediaSegmentProvider> segmentProviders)
+        IEnumerable<IMediaSegmentProvider> segmentProviders,
+        ILibraryManager libraryManager)
     {
+        _logger = logger;
         _dbProvider = dbProvider;
 
         _segmentProviders = segmentProviders
             .OrderBy(i => i is IHasOrder hasOrder ? hasOrder.Order : 0)
             .ToArray();
+        _libraryManager = libraryManager;
+    }
+
+    /// <inheritdoc/>
+    public async Task RunSegmentPluginProviders(BaseItem baseItem)
+    {
+        var libraryOptions = _libraryManager.GetLibraryOptions(baseItem);
+        var providers = _segmentProviders
+            .Where(e => !libraryOptions.DisabledMediaSegmentProviders.Contains(GetProviderId(e.Name)))
+            .OrderBy(i =>
+                {
+                    var index = libraryOptions.MediaSegmentProvideOrder.IndexOf(i.Name);
+                    return index == -1 ? int.MaxValue : index;
+                })
+            .ToImmutableList();
+
+        _logger.LogInformation("Start media segment extraction from providers with {CountProviders} enabled.", providers.Count);
+        using var db = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+        _logger.LogInformation("Clear existing Segments for {MediaPath}.", baseItem.Path);
+
+        await db.MediaSegments.Where(e => e.ItemId.Equals(baseItem.Id)).ExecuteDeleteAsync().ConfigureAwait(false);
+
+        foreach (var provider in providers)
+        {
+            _logger.LogDebug("Run Media Segment provider {ProviderName}", provider.Name);
+            try
+            {
+                var segments = (await provider.GetMediaSegments(new() { MediaPath = baseItem.Path }, CancellationToken.None)
+                    .ConfigureAwait(false))
+                    .ToImmutableList();
+
+                _logger.LogInformation("Media Segment provider {ProviderName} found {CountSegments} for {MediaPath}", provider.Name, segments.Count, baseItem.Path);
+
+                foreach (var segment in segments)
+                {
+                    segment.ItemId = baseItem.Id;
+                    await CreateSegmentAsync(segment).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Provider {ProviderName} failed to extract segments from {MediaPath}.", provider.Name, baseItem.Path);
+            }
+        }
     }
 
     /// <inheritdoc />

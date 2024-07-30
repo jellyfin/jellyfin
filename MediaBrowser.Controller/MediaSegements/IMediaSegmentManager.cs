@@ -14,6 +14,13 @@ namespace MediaBrowser.Controller;
 public interface IMediaSegmentManager
 {
     /// <summary>
+    ///     Uses all segment providers enabled for the <see cref="BaseItem"/>'s library to get the Media Segments.
+    /// </summary>
+    /// <param name="baseItem">The Item to evaluate.</param>
+    /// <returns>A task that indicates the Operation is finished.</returns>
+    Task RunSegmentPluginProviders(BaseItem baseItem);
+
+    /// <summary>
     ///     Returns if this item supports media segments.
     /// </summary>
     /// <param name="baseItem">The base Item to check.</param>
