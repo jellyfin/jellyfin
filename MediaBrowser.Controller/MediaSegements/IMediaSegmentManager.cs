@@ -49,4 +49,11 @@ public interface IMediaSegmentManager
     /// <returns>True if there are any segments stored for the item, otherwise false.</returns>
     /// TODO: this should be async but as the only caller BaseItem.GetVersionInfo isn't async, this is also not. Venson.
     bool HasSegments(Guid itemId);
+
+    /// <summary>
+    ///     Gets a list of all registered Segment Providers and their IDs.
+    /// </summary>
+    /// <param name="item">The media item that should be tested for providers.</param>
+    /// <returns>A list of all providers for the tested item.</returns>
+    IEnumerable<(string Name, string Id)> GetSupportedProviders(BaseItem item)
 }

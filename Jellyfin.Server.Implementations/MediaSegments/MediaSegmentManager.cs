@@ -1,12 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using EFCoreSecondLevelCacheInterceptor;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.MediaSegments;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,14 +23,22 @@ namespace Jellyfin.Server.Implementations.MediaSegments;
 public class MediaSegmentManager : IMediaSegmentManager
 {
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
+    private readonly IMediaSegmentProvider[] _segmentProviders;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MediaSegmentManager"/> class.
     /// </summary>
     /// <param name="dbProvider">EFCore Database factory.</param>
-    public MediaSegmentManager(IDbContextFactory<JellyfinDbContext> dbProvider)
+    /// <param name="segmentProviders">List of all media segment providers.</param>
+    public MediaSegmentManager(
+        IDbContextFactory<JellyfinDbContext> dbProvider,
+        IEnumerable<IMediaSegmentProvider> segmentProviders)
     {
         _dbProvider = dbProvider;
+
+        _segmentProviders = segmentProviders
+            .OrderBy(i => i is IHasOrder hasOrder ? hasOrder.Order : 0)
+            .ToArray();
     }
 
     /// <inheritdoc />
@@ -101,4 +114,22 @@ public class MediaSegmentManager : IMediaSegmentManager
     {
         return baseItem.MediaType is Data.Enums.MediaType.Video or Data.Enums.MediaType.Audio;
     }
+
+    /// <inheritdoc/>
+    public IEnumerable<(string Name, string Id)> GetSupportedProviders(BaseItem item)
+    {
+        if (item is not (Video or Audio))
+        {
+            return [];
+        }
+
+        return _segmentProviders
+            .Select(p => (p.Name, GetProviderId(p.Name)))
+            .ToImmutableArray();
+    }
+
+    private string GetProviderId(string name)
+        => name.ToLowerInvariant()
+            .GetMD5()
+            .ToString("N", CultureInfo.InvariantCulture);
 }
