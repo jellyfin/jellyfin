@@ -54,7 +54,7 @@ public class MediaSegmentManager : IMediaSegmentManager
     }
 
     /// <inheritdoc/>
-    public async Task RunSegmentPluginProviders(BaseItem baseItem, CancellationToken stopToken)
+    public async Task RunSegmentPluginProviders(BaseItem baseItem, bool overwrite, CancellationToken cancellationToken)
     {
         var libraryOptions = _libraryManager.GetLibraryOptions(baseItem);
         var providers = _segmentProviders
@@ -67,17 +67,24 @@ public class MediaSegmentManager : IMediaSegmentManager
             .ToImmutableList();
 
         _logger.LogInformation("Start media segment extraction from providers with {CountProviders} enabled.", providers.Count);
-        using var db = await _dbProvider.CreateDbContextAsync(stopToken).ConfigureAwait(false);
+        using var db = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+
+        if (!overwrite && (await db.MediaSegments.AnyAsync(e => e.ItemId.Equals(baseItem.Id), cancellationToken).ConfigureAwait(false)))
+        {
+            _logger.LogInformation("Skip {MediaPath} as it already contains media segments.", baseItem.Path);
+            return;
+        }
+
         _logger.LogInformation("Clear existing Segments for {MediaPath}.", baseItem.Path);
 
-        await db.MediaSegments.Where(e => e.ItemId.Equals(baseItem.Id)).ExecuteDeleteAsync(stopToken).ConfigureAwait(false);
+        await db.MediaSegments.Where(e => e.ItemId.Equals(baseItem.Id)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
 
         foreach (var provider in providers)
         {
             _logger.LogDebug("Run Media Segment provider {ProviderName}", provider.Name);
             try
             {
-                var segments = (await provider.GetMediaSegments(new() { MediaPath = baseItem.Path }, stopToken)
+                var segments = (await provider.GetMediaSegments(new() { MediaPath = baseItem.Path }, cancellationToken)
                     .ConfigureAwait(false))
                     .ToImmutableList();
 

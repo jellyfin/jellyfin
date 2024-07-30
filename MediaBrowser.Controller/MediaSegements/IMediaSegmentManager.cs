@@ -18,9 +18,10 @@ public interface IMediaSegmentManager
     ///     Uses all segment providers enabled for the <see cref="BaseItem"/>'s library to get the Media Segments.
     /// </summary>
     /// <param name="baseItem">The Item to evaluate.</param>
+    /// <param name="overwrite">If set, will remove existing segments and replace it with new ones otherwise will check for existing segments and if found any, stops.</param>
     /// <param name="cancellationToken">stop request token.</param>
     /// <returns>A task that indicates the Operation is finished.</returns>
-    Task RunSegmentPluginProviders(BaseItem baseItem, CancellationToken cancellationToken);
+    Task RunSegmentPluginProviders(BaseItem baseItem, bool overwrite, CancellationToken cancellationToken);
 
     /// <summary>
     ///     Returns if this item supports media segments.

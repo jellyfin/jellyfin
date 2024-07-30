@@ -89,7 +89,7 @@ public class MediaSegmentExtractionTask : IScheduledTask
                 // Only local files supported
                 if (video.IsFileProtocol && File.Exists(video.Path))
                 {
-                    await _mediaSegmentManager.RunSegmentPluginProviders(video, cancellationToken).ConfigureAwait(false);
+                    await _mediaSegmentManager.RunSegmentPluginProviders(video, false, cancellationToken).ConfigureAwait(false);
                 }
 
                 // Update progress
