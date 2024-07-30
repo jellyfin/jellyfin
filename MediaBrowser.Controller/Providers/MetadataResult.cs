@@ -2,9 +2,7 @@
 
 #pragma warning disable CA1002, CA2227, CS1591
 
-using System;
 using System.Collections.Generic;
-using System.Globalization;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 
@@ -32,8 +30,6 @@ namespace MediaBrowser.Controller.Providers
             get => _remoteImages ??= new List<(string Url, ImageType Type)>();
             set => _remoteImages = value;
         }
-
-        public List<UserItemData> UserDataList { get; set; }
 
         public List<PersonInfo> People { get; set; }
 
@@ -67,33 +63,6 @@ namespace MediaBrowser.Controller.Providers
             {
                 People.Clear();
             }
-        }
-
-        public UserItemData GetOrAddUserData(string userId)
-        {
-            UserDataList ??= new List<UserItemData>();
-
-            UserItemData userData = null;
-
-            foreach (var i in UserDataList)
-            {
-                if (string.Equals(userId, i.UserId.ToString("N", CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase))
-                {
-                    userData = i;
-                }
-            }
-
-            if (userData is null)
-            {
-                userData = new UserItemData()
-                {
-                    UserId = new Guid(userId)
-                };
-
-                UserDataList.Add(userData);
-            }
-
-            return userData;
         }
     }
 }

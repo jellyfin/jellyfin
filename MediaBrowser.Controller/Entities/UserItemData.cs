@@ -1,5 +1,3 @@
-#nullable disable
-
 #pragma warning disable CS1591
 
 using System;
@@ -20,16 +18,10 @@ namespace MediaBrowser.Controller.Entities
         private double? _rating;
 
         /// <summary>
-        /// Gets or sets the user id.
-        /// </summary>
-        /// <value>The user id.</value>
-        public Guid UserId { get; set; }
-
-        /// <summary>
         /// Gets or sets the key.
         /// </summary>
         /// <value>The key.</value>
-        public string Key { get; set; }
+        public required string Key { get; set; }
 
         /// <summary>
         /// Gets or sets the users 0-10 rating.
