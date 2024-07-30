@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
@@ -17,8 +18,9 @@ public interface IMediaSegmentManager
     ///     Uses all segment providers enabled for the <see cref="BaseItem"/>'s library to get the Media Segments.
     /// </summary>
     /// <param name="baseItem">The Item to evaluate.</param>
+    /// <param name="cancellationToken">stop request token.</param>
     /// <returns>A task that indicates the Operation is finished.</returns>
-    Task RunSegmentPluginProviders(BaseItem baseItem);
+    Task RunSegmentPluginProviders(BaseItem baseItem, CancellationToken cancellationToken);
 
     /// <summary>
     ///     Returns if this item supports media segments.
