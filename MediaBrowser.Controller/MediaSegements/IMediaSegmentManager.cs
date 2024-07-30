@@ -34,8 +34,9 @@ public interface IMediaSegmentManager
     ///     Creates a new Media Segment associated with an Item.
     /// </summary>
     /// <param name="mediaSegment">The segment to create.</param>
+    /// <param name="segmentProviderId">The id of the Provider who created this segment.</param>
     /// <returns>The created Segment entity.</returns>
-    Task<MediaSegmentDto> CreateSegmentAsync(MediaSegmentDto mediaSegment);
+    Task<MediaSegmentDto> CreateSegmentAsync(MediaSegmentDto mediaSegment, string segmentProviderId);
 
     /// <summary>
     ///     Deletes a single media segment.

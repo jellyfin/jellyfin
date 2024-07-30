@@ -288,6 +288,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("SegmentProviderId")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
 
                     b.ToTable("MediaSegments");

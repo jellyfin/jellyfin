@@ -34,4 +34,9 @@ public class MediaSegment
     ///     Gets or sets the start of the segment.
     /// </summary>
     public long StartTicks { get; set; }
+
+    /// <summary>
+    ///     Gets or sets Id of the media segment provider this entry originates from.
+    /// </summary>
+    public required string SegmentProviderId { get; set; }
 }
