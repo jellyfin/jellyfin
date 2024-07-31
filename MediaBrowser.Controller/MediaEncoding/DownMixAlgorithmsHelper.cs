@@ -15,8 +15,10 @@ public static class DownMixAlgorithmsHelper
     public static readonly Dictionary<(DownMixStereoAlgorithms, string), string> AlgorithmFilterStrings = new()
     {
         { (DownMixStereoAlgorithms.Dave750, "5.1"), "pan=stereo|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3" },
+        // Use AC-4 algorithm to downmix 7.1 inputs to 5.1 first
         { (DownMixStereoAlgorithms.Dave750, "7.1"), "pan=5.1(side)|c0=c0|c1=c1|c2=c2|c3=c3|c4=0.707*c4+0.707*c6|c5=0.707*c5+0.707*c7,pan=stereo|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3" },
         { (DownMixStereoAlgorithms.NightmodeDialogue, "5.1"), "pan=stereo|c0=c2+0.30*c0+0.30*c4|c1=c2+0.30*c1+0.30*c5" },
+        // Use AC-4 algorithm to downmix 7.1 inputs to 5.1 first
         { (DownMixStereoAlgorithms.NightmodeDialogue, "7.1"), "pan=5.1(side)|c0=c0|c1=c1|c2=c2|c3=c3|c4=0.707*c4+0.707*c6|c5=0.707*c5+0.707*c7,pan=stereo|c0=c2+0.30*c0+0.30*c4|c1=c2+0.30*c1+0.30*c5" },
         { (DownMixStereoAlgorithms.Rfc7845, "3.0"), "pan=stereo|c0=0.414214*c2+0.585786*c0|c1=0.414214*c2+0.585786*c1" },
         { (DownMixStereoAlgorithms.Rfc7845, "quad"), "pan=stereo|c0=0.422650*c0+0.366025*c2+0.211325*c3|c1=0.422650*c1+0.366025*c3+0.211325*c2" },
