@@ -24,6 +24,8 @@ namespace Emby.Naming.TV
             "stagione"
         };
 
+        private static readonly char[] _splitChars = ['.', '_', ' ', '-'];
+
         /// <summary>
         /// Attempts to parse season number from path.
         /// </summary>
@@ -83,14 +85,9 @@ namespace Emby.Naming.TV
                 }
             }
 
-            if (filename.StartsWith("s", StringComparison.OrdinalIgnoreCase))
+            if (TryGetSeasonNumberFromPart(filename, out int seasonNumber))
             {
-                var testFilename = filename.AsSpan().Slice(1);
-
-                if (int.TryParse(testFilename, NumberStyles.Integer, CultureInfo.InvariantCulture, out var val))
-                {
-                    return (val, true);
-                }
+                return (seasonNumber, true);
             }
 
             // Look for one of the season folder names
@@ -108,10 +105,10 @@ namespace Emby.Naming.TV
                 }
             }
 
-            var parts = filename.Split(new[] { '.', '_', ' ', '-' }, StringSplitOptions.RemoveEmptyEntries);
+            var parts = filename.Split(_splitChars, StringSplitOptions.RemoveEmptyEntries);
             foreach (var part in parts)
             {
-                if (TryGetSeasonNumberFromPart(part, out int seasonNumber))
+                if (TryGetSeasonNumberFromPart(part, out seasonNumber))
                 {
                     return (seasonNumber, true);
                 }
