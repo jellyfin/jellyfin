@@ -2474,8 +2474,11 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
-        public int? GetSeasonNumberFromPath(string path)
-            => SeasonPathParser.Parse(path, true, true).SeasonNumber;
+        public int? GetSeasonNumberFromPath(string path, Guid? parentId)
+        {
+            var parentPath = parentId.HasValue ? GetItemById(parentId.Value)?.ContainingFolderPath : null;
+            return SeasonPathParser.Parse(path, parentPath, true, true).SeasonNumber;
+        }
 
         /// <inheritdoc />
         public bool FillMissingEpisodeNumbersFromPath(Episode episode, bool forceRefresh)
