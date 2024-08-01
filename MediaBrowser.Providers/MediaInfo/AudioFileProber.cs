@@ -357,8 +357,24 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzRecording, out _))
             {
-                // As mentioned above, `tags.MusicBrainzTrackId` provides the recording MBID.
-                audio.SetProviderId(MetadataProvider.MusicBrainzRecording, tags.MusicBrainzTrackId);
+                if ((track.AdditionalFields.TryGetValue("MUSICBRAINZ_TRACKID", out var recordingMbId)
+                     || track.AdditionalFields.TryGetValue("MusicBrainz Track Id", out recordingMbId))
+                    && !string.IsNullOrEmpty(recordingMbId))
+                {
+                    audio.TrySetProviderId(MetadataProvider.MusicBrainzTrack, recordingMbId);
+                }
+                else if (track.AdditionalFields.TryGetValue("UFID", out recordingMbId) && !string.IsNullOrEmpty(recordingMbId))
+                {
+                    // If tagged with MB Picard, the format is 'http://musicbrainz.org\0<recording MBID>
+                    if (recordingMbId.Contains("musicbrainz.org", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var parts = recordingMbId.Split('\0');
+                        if (parts.Length > 1)
+                        {
+                            audio.TrySetProviderId(MetadataProvider.MusicBrainzRecording, parts[1]);
+                        }
+                    }
+                }
             }
 
             // Save extracted lyrics if they exist,
