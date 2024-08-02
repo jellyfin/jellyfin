@@ -13,7 +13,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Jellyfin.Server.Implementations.MediaSegments;
 
 /// <summary>
-///     Manages media segments retrival and storage.
+/// Manages media segments retrival and storage.
 /// </summary>
 public class MediaSegmentManager : IMediaSegmentManager
 {
