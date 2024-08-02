@@ -9,7 +9,7 @@ using MediaBrowser.Model.MediaSegments;
 namespace MediaBrowser.Controller;
 
 /// <summary>
-///     Provides methods for Obtaining the Media Segments from an Item.
+/// Provides methods for Obtaining the Media Segments from an Item.
 /// </summary>
 public interface IMediaSegmentProvider
 {
@@ -19,7 +19,7 @@ public interface IMediaSegmentProvider
     string Name { get; }
 
     /// <summary>
-    ///     Enumerates all Media Segments from an Media Item.
+    /// Enumerates all Media Segments from an Media Item.
     /// </summary>
     /// <param name="request">Arguments to enumerate MediaSegments.</param>
     /// <param name="cancellationToken">Abort token.</param>

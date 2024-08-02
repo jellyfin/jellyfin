@@ -3,12 +3,12 @@
 namespace MediaBrowser.Model;
 
 /// <summary>
-///     Model containing the arguments for enumerating the requested media item.
+/// Model containing the arguments for enumerating the requested media item.
 /// </summary>
 public class MediaSegmentGenerationRequest
 {
     /// <summary>
-    ///     Gets the path to the media the segments should be extracted from.
+    /// Gets the path to the media the segments should be extracted from.
     /// </summary>
     public required string MediaPath { get; init; }
 }

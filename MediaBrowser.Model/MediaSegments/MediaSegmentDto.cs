@@ -4,32 +4,32 @@ using Jellyfin.Data.Enums;
 namespace MediaBrowser.Model.MediaSegments;
 
 /// <summary>
-///     Api model for MediaSegment's.
+/// Api model for MediaSegment's.
 /// </summary>
 public class MediaSegmentDto
 {
     /// <summary>
-    ///     Gets or sets the id of the media segment.
+    /// Gets or sets the id of the media segment.
     /// </summary>
     public Guid Id { get; set; }
 
     /// <summary>
-    ///     Gets or sets the id of the associated item.
+    /// Gets or sets the id of the associated item.
     /// </summary>
     public Guid ItemId { get; set; }
 
     /// <summary>
-    ///     Gets or sets the type of content this segment defines.
+    /// Gets or sets the type of content this segment defines.
     /// </summary>
     public MediaSegmentType Type { get; set; }
 
     /// <summary>
-    ///     Gets or sets the start of the segment.
+    /// Gets or sets the start of the segment.
     /// </summary>
     public long StartTicks { get; set; }
 
     /// <summary>
-    ///     Gets or sets the end of the segment.
+    /// Gets or sets the end of the segment.
     /// </summary>
     public long EndTicks { get; set; }
 }

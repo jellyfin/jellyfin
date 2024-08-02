@@ -14,7 +14,7 @@ using MediaBrowser.Model.Tasks;
 namespace Emby.Server.Implementations.ScheduledTasks.Tasks;
 
 /// <summary>
-///     Task to obtain media segments.
+/// Task to obtain media segments.
 /// </summary>
 public class MediaSegmentExtractionTask : IScheduledTask
 {

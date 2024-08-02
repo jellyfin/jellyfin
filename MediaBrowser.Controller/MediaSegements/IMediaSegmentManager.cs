@@ -10,12 +10,12 @@ using MediaBrowser.Model.MediaSegments;
 namespace MediaBrowser.Controller;
 
 /// <summary>
-///     Defines methods for interacting with media segments.
+/// Defines methods for interacting with media segments.
 /// </summary>
 public interface IMediaSegmentManager
 {
     /// <summary>
-    ///     Uses all segment providers enabled for the <see cref="BaseItem"/>'s library to get the Media Segments.
+    /// Uses all segment providers enabled for the <see cref="BaseItem"/>'s library to get the Media Segments.
     /// </summary>
     /// <param name="baseItem">The Item to evaluate.</param>
     /// <param name="overwrite">If set, will remove existing segments and replace it with new ones otherwise will check for existing segments and if found any, stops.</param>
@@ -24,14 +24,14 @@ public interface IMediaSegmentManager
     Task RunSegmentPluginProviders(BaseItem baseItem, bool overwrite, CancellationToken cancellationToken);
 
     /// <summary>
-    ///     Returns if this item supports media segments.
+    /// Returns if this item supports media segments.
     /// </summary>
     /// <param name="baseItem">The base Item to check.</param>
     /// <returns>True if supported otherwise false.</returns>
     bool IsTypeSupported(BaseItem baseItem);
 
     /// <summary>
-    ///     Creates a new Media Segment associated with an Item.
+    /// Creates a new Media Segment associated with an Item.
     /// </summary>
     /// <param name="mediaSegment">The segment to create.</param>
     /// <param name="segmentProviderId">The id of the Provider who created this segment.</param>
@@ -39,14 +39,14 @@ public interface IMediaSegmentManager
     Task<MediaSegmentDto> CreateSegmentAsync(MediaSegmentDto mediaSegment, string segmentProviderId);
 
     /// <summary>
-    ///     Deletes a single media segment.
+    /// Deletes a single media segment.
     /// </summary>
     /// <param name="segmentId">The <see cref="MediaSegment.Id"/> to delete.</param>
     /// <returns>a task.</returns>
     Task DeleteSegmentAsync(Guid segmentId);
 
     /// <summary>
-    ///     Obtains all segments accociated with the itemId.
+    /// Obtains all segments accociated with the itemId.
     /// </summary>
     /// <param name="itemId">The id of the <see cref="BaseItem"/>.</param>
     /// <param name="typeFilter">filteres all media segments of the given type to be included. If null all types are included.</param>
@@ -54,7 +54,7 @@ public interface IMediaSegmentManager
     Task<IEnumerable<MediaSegmentDto>> GetSegmentsAsync(Guid itemId, IEnumerable<MediaSegmentType>? typeFilter);
 
     /// <summary>
-    ///     Gets information about any media segments stored for the given itemId.
+    /// Gets information about any media segments stored for the given itemId.
     /// </summary>
     /// <param name="itemId">The id of the <see cref="BaseItem"/>.</param>
     /// <returns>True if there are any segments stored for the item, otherwise false.</returns>
@@ -62,7 +62,7 @@ public interface IMediaSegmentManager
     bool HasSegments(Guid itemId);
 
     /// <summary>
-    ///     Gets a list of all registered Segment Providers and their IDs.
+    /// Gets a list of all registered Segment Providers and their IDs.
     /// </summary>
     /// <param name="item">The media item that should be tested for providers.</param>
     /// <returns>A list of all providers for the tested item.</returns>
