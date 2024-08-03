@@ -1061,7 +1061,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     return string.Empty;
                 }
 
-                args.Append(GetQsvDeviceArgs(options.VaapiDevice, QsvAlias));
+                args.Append(GetQsvDeviceArgs(options.QsvDevice, QsvAlias));
                 var filterDevArgs = GetFilterHwDeviceArgs(QsvAlias);
                 // child device used by qsv.
                 if (_mediaEncoder.SupportsHwaccel("vaapi") || _mediaEncoder.SupportsHwaccel("d3d11va"))
