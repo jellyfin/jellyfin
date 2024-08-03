@@ -36,6 +36,19 @@
             "problemMatcher": "$msCompile"
         },
         {
+            "label": "build release",
+            "command": "dotnet",
+            "type": "process",
+            "hide": true,
+            "args": [
+                "build",
+                "${workspaceFolder}/Jellyfin.Server/Jellyfin.Server.csproj",
+                "-c",
+                "Release"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
             "label": "build",
             "command": "dotnet",
             "type": "process",
@@ -101,80 +114,22 @@
             "problemMatcher": "$msCompile"
         },
         {
-            "label": "openapi test",
+            "label": "openapi generate",
             "command": "dotnet",
             "type": "process",
-            "hide": true,
             "args": [
-                "test",
-                "${workspaceFolder}/tests/Jellyfin.Server.Integration.Tests/Jellyfin.Server.Integration.Tests.csproj",
-                "-c",
-                "Release",
-                "--filter",
-                "Jellyfin.Server.Integration.Tests.OpenApiSpecTests"
+                "swagger",
+                "tofile",
+                "--host",
+                "http://localhost",
+                "--output",
+                "${input:openapiJsonOutputDir}/openapi.json",
+                "${workspaceFolder}/Jellyfin.Server/bin/Release/net8.0/jellyfin.dll",
+                "api-docs",
             ],
-            "problemMatcher": "$msCompile"
+            "problemMatcher":"$eslint-compact",
+            "dependsOn": ["build release"]
         },
-        {
-            "label": "openapi generation",
-            "type": "shell",
-            "linux": {
-                "command": "cp",
-                "args": ["${workspaceFolder}/tests/Jellyfin.Server.Integration.Tests/bin/Release/net8.0/openapi.json", "${input:openapiJsonOutputDir}"],
-                "problemMatcher":{
-                    "owner": "shell",
-                    "source": "cp",
-                    "fileLocation": ["autoDetect", "${input:openapiJsonOutputDir}"],
-                    "pattern": [
-                        {
-                            "kind": "file",
-                            "regexp": "^([^:]*):\\s+cannot stat '([^']+)':\\s+(.*)$",
-                            "file": 2,
-                            "message": 3
-                        }
-                    ]
-                }
-            },
-            "osx": {
-                "command": "cp",
-                "args": ["${workspaceFolder}/tests/Jellyfin.Server.Integration.Tests/bin/Release/net8.0/openapi.json", "${input:openapiJsonOutputDir}"],
-                "problemMatcher":{
-                    "owner": "shell",
-                    "source": "cp",
-                    "fileLocation": ["autoDetect", "${input:openapiJsonOutputDir}"],
-                    "pattern": [
-                        {
-                            "kind": "file",
-                            "regexp": "^([^:]*):\\s+cannot stat '([^']+)':\\s+(.*)$",
-                            "file": 2,
-                            "message": 3
-                        }
-                    ]
-                }
-            },
-            "windows": {
-                "command": "xcopy",
-                "args": ["/y", "/i", "${workspaceFolder}/tests/Jellyfin.Server.Integration.Tests/bin/Release/net8.0/openapi.json", "${input:openapiJsonOutputDir}\\"],
-                "problemMatcher": {
-                    "owner": "shell",
-                    "source": "xcopy",
-                    "fileLocation": ["autoDetect", "${input:openapiJsonOutputDir}"],
-                    "pattern": [
-                        {
-                            "kind": "file",
-                            "regexp": "(^Copying of '([^']+)' to '([^']+)' failed with r/c \\d+$)",
-                            "file": 3
-                        },
-                        {
-                            "kind": "file",
-                            "regexp": "^(.+)$",
-                            "message": 0
-                        }
-                    ]
-                }
-            },
-            "dependsOn": ["openapi test"]
-        }
     ],
     "options": {
         "env": {
