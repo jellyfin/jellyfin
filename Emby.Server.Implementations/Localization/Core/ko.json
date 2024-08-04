@@ -125,5 +125,10 @@
     "TaskKeyframeExtractor": "키프레임 추출",
     "External": "외부",
     "HearingImpaired": "청각 장애",
-    "TaskCleanCollectionsAndPlaylists": "컬렉션과 재생목록 정리"
+    "TaskCleanCollectionsAndPlaylists": "컬렉션과 재생목록 정리",
+    "TaskAudioNormalization": "오디오의 볼륨 수준을 일정하게 조정",
+    "TaskAudioNormalizationDescription": "오디오의 볼륨 수준을 일정하게 조정하기 위해 파일을 스캔합니다.",
+    "TaskRefreshTrickplayImages": "비디오 탐색용 미리보기 썸네일 생성",
+    "TaskRefreshTrickplayImagesDescription": "활성화된 라이브러리에서 비디오의 트릭플레이 미리보기를 생성합니다.",
+    "TaskCleanCollectionsAndPlaylistsDescription": "더 이상 존재하지 않는 컬렉션 및 재생 목록에서 항목을 제거합니다."
 }

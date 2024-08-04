@@ -38,7 +38,7 @@ public static class FileStreamResponseHelpers
         }
 
         // Can't dispose the response as it's required up the call chain.
-        var response = await httpClient.GetAsync(new Uri(state.MediaPath), cancellationToken).ConfigureAwait(false);
+        var response = await httpClient.GetAsync(new Uri(state.MediaPath), HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
         var contentType = response.Content.Headers.ContentType?.ToString() ?? MediaTypeNames.Text.Plain;
 
         httpContext.Response.Headers[HeaderNames.AcceptRanges] = "none";

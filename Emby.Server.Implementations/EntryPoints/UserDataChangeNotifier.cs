@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -138,13 +137,13 @@ namespace Emby.Server.Implementations.EntryPoints
 
             return new UserDataChangeInfo
             {
-                UserId = userId.ToString("N", CultureInfo.InvariantCulture),
+                UserId = userId,
                 UserDataList = changedItems
                     .DistinctBy(x => x.Id)
                     .Select(i =>
                     {
                         var dto = _userDataManager.GetUserDataDto(i, user);
-                        dto.ItemId = i.Id.ToString("N", CultureInfo.InvariantCulture);
+                        dto.ItemId = i.Id;
                         return dto;
                     })
                     .ToArray()

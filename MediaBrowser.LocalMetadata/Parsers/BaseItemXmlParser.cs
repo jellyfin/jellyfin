@@ -365,10 +365,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     break;
                 case "CollectionNumber":
                     var tmdbCollection = reader.ReadNormalizedString();
-                    if (!string.IsNullOrEmpty(tmdbCollection))
-                    {
-                        item.SetProviderId(MetadataProvider.TmdbCollection, tmdbCollection);
-                    }
+                    item.TrySetProviderId(MetadataProvider.TmdbCollection, tmdbCollection);
 
                     break;
 
@@ -502,10 +499,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     if (_validProviderIds!.TryGetValue(readerName, out string? providerIdValue))
                     {
                         var id = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(id))
-                        {
-                            item.SetProviderId(providerIdValue, id);
-                        }
+                        item.TrySetProviderId(providerIdValue, id);
                     }
                     else
                     {
