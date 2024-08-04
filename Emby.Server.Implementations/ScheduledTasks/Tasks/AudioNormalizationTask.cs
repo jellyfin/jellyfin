@@ -116,6 +116,7 @@ public partial class AudioNormalizationTask : IScheduledTask
                 {
                     a.LUFS = await CalculateLUFSAsync(
                         string.Format(CultureInfo.InvariantCulture, "-f concat -safe 0 -i \"{0}\"", tempFile),
+                        true,
                         cancellationToken).ConfigureAwait(false);
                 }
                 finally
@@ -142,7 +143,7 @@ public partial class AudioNormalizationTask : IScheduledTask
                     continue;
                 }
 
-                t.LUFS = await CalculateLUFSAsync(string.Format(CultureInfo.InvariantCulture, "-i \"{0}\"", t.Path.Replace("\"", "\\\"", StringComparison.Ordinal)), cancellationToken);
+                t.LUFS = await CalculateLUFSAsync(string.Format(CultureInfo.InvariantCulture, "-i \"{0}\"", t.Path.Replace("\"", "\\\"", StringComparison.Ordinal)), false, cancellationToken);
             }
 
             _itemRepository.SaveItems(tracks, cancellationToken);
@@ -162,7 +163,7 @@ public partial class AudioNormalizationTask : IScheduledTask
         ];
     }
 
-    private async Task<float?> CalculateLUFSAsync(string inputArgs, CancellationToken cancellationToken)
+    private async Task<float?> CalculateLUFSAsync(string inputArgs, bool waitForProcessToFinish, CancellationToken cancellationToken)
     {
         var args = $"-hide_banner {inputArgs} -af ebur128=framelog=verbose -f null -";
 
@@ -195,7 +196,11 @@ public partial class AudioNormalizationTask : IScheduledTask
 
                 if (match.Success)
                 {
-                    await process.WaitForExitAsync(cancellationToken);
+                    if (waitForProcessToFinish)
+                    {
+                        await process.WaitForExitAsync(cancellationToken);
+                    }
+
                     return float.Parse(match.Groups[1].ValueSpan, CultureInfo.InvariantCulture.NumberFormat);
                 }
             }
