@@ -7,6 +7,8 @@ namespace MediaBrowser.Model.Configuration
 {
     public class LibraryOptions
     {
+        private static readonly char[] _defaultTagDelimiters = ['/', '|', ';', '\\'];
+
         public LibraryOptions()
         {
             TypeOptions = Array.Empty<TypeOptions>();
@@ -27,6 +29,11 @@ namespace MediaBrowser.Model.Configuration
             PathInfos = Array.Empty<MediaPathInfo>();
             EnableAutomaticSeriesGrouping = true;
             SeasonZeroDisplayName = "Specials";
+
+            PreferNonstandardArtistsTag = false;
+            UseCustomTagDelimiters = false;
+            CustomTagDelimiters = _defaultTagDelimiters;
+            DelimiterWhitelist = Array.Empty<string>();
         }
 
         public bool Enabled { get; set; } = true;
@@ -102,6 +109,17 @@ namespace MediaBrowser.Model.Configuration
         public string[] DisabledLyricFetchers { get; set; }
 
         public string[] LyricFetcherOrder { get; set; }
+
+        [DefaultValue(false)]
+        public bool PreferNonstandardArtistsTag { get; set; }
+
+        [DefaultValue(false)]
+        public bool UseCustomTagDelimiters { get; set; }
+
+        [DefaultValue(typeof(LibraryOptions), nameof(_defaultTagDelimiters))]
+        public char[] CustomTagDelimiters { get; set; }
+
+        public string[] DelimiterWhitelist { get; set; }
 
         public bool AutomaticallyAddToCollection { get; set; }
 
