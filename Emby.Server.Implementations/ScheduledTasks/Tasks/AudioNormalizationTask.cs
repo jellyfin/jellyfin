@@ -195,6 +195,7 @@ public partial class AudioNormalizationTask : IScheduledTask
 
                 if (match.Success)
                 {
+                    await process.WaitForExitAsync(cancellationToken);
                     return float.Parse(match.Groups[1].ValueSpan, CultureInfo.InvariantCulture.NumberFormat);
                 }
             }
