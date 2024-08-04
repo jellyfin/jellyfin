@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using ATL;
 using Jellyfin.Data.Enums;
-using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
@@ -158,6 +157,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="tryExtractEmbeddedLyrics">Whether to extract embedded lyrics to lrc file. </param>
         private async Task FetchDataFromTags(Audio audio, Model.MediaInfo.MediaInfo mediaInfo, MetadataRefreshOptions options, bool tryExtractEmbeddedLyrics)
         {
+            var libraryOptions = _libraryManager.GetLibraryOptions(audio);
             Track track = new Track(audio.Path);
 
             // ATL will fall back to filename as title when it does not understand the metadata
@@ -175,6 +175,12 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 var people = new List<PersonInfo>();
                 var albumArtists = string.IsNullOrEmpty(track.AlbumArtist) ? mediaInfo.AlbumArtists : track.AlbumArtist.Split(InternalValueSeparator);
+
+                if (libraryOptions.UseCustomTagDelimiters)
+                {
+                    albumArtists = albumArtists.SelectMany(a => SplitWithCustomDelimiter(a, libraryOptions.CustomTagDelimiters, libraryOptions.DelimiterWhitelist)).ToArray();
+                }
+
                 foreach (var albumArtist in albumArtists)
                 {
                     if (!string.IsNullOrEmpty(albumArtist))
@@ -187,7 +193,26 @@ namespace MediaBrowser.Providers.MediaInfo
                     }
                 }
 
-                var performers = string.IsNullOrEmpty(track.Artist) ? mediaInfo.Artists : track.Artist.Split(InternalValueSeparator);
+                string[]? performers = null;
+                if (libraryOptions.PreferNonstandardArtistsTag)
+                {
+                    track.AdditionalFields.TryGetValue("ARTISTS", out var artistsTagString);
+                    if (artistsTagString is not null)
+                    {
+                        performers = artistsTagString.Split(InternalValueSeparator);
+                    }
+                }
+
+                if (performers is null || performers.Length == 0)
+                {
+                    performers = string.IsNullOrEmpty(track.Artist) ? mediaInfo.Artists : track.Artist.Split(InternalValueSeparator);
+                }
+
+                if (libraryOptions.UseCustomTagDelimiters)
+                {
+                    performers = performers.SelectMany(p => SplitWithCustomDelimiter(p, libraryOptions.CustomTagDelimiters, libraryOptions.DelimiterWhitelist)).ToArray();
+                }
+
                 foreach (var performer in performers)
                 {
                     if (!string.IsNullOrEmpty(performer))
@@ -285,6 +310,12 @@ namespace MediaBrowser.Providers.MediaInfo
             if (!audio.LockedFields.Contains(MetadataField.Genres))
             {
                 var genres = string.IsNullOrEmpty(track.Genre) ? mediaInfo.Genres : track.Genre.Split(InternalValueSeparator).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+
+                if (libraryOptions.UseCustomTagDelimiters)
+                {
+                    genres = genres.SelectMany(g => SplitWithCustomDelimiter(g, libraryOptions.CustomTagDelimiters, libraryOptions.DelimiterWhitelist)).ToArray();
+                }
+
                 audio.Genres = options.ReplaceAllMetadata || audio.Genres == null || audio.Genres.Length == 0
                     ? genres
                     : audio.Genres;
@@ -378,6 +409,32 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 currentStreams.Add(externalLyricFiles[0]);
             }
+        }
+
+        private List<string> SplitWithCustomDelimiter(string val, char[] tagDelimiters, string[] whitelist)
+        {
+            var items = new List<string>();
+            var temp = val;
+            foreach (var whitelistItem in whitelist)
+            {
+                if (string.IsNullOrWhiteSpace(whitelistItem))
+                {
+                    continue;
+                }
+
+                var originalTemp = temp;
+                temp = temp.Replace(whitelistItem, string.Empty, StringComparison.OrdinalIgnoreCase);
+
+                if (!string.Equals(temp, originalTemp, StringComparison.OrdinalIgnoreCase))
+                {
+                    items.Add(whitelistItem);
+                }
+            }
+
+            var items2 = temp.Split(tagDelimiters, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).DistinctNames();
+            items.AddRange(items2);
+
+            return items;
         }
     }
 }
