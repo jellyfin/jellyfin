@@ -124,5 +124,11 @@
     "External": "Externo",
     "TaskKeyframeExtractorDescription": "Extrae Fotogramas Clave de los archivos de vídeo para crear Listas de Reprodución HLS más precisas. Esta tarea puede durar mucho tiempo.",
     "TaskKeyframeExtractor": "Extractor de Fotogramas Clave",
-    "HearingImpaired": "Discapacidad Auditiva"
+    "HearingImpaired": "Discapacidad Auditiva",
+    "TaskRefreshTrickplayImages": "Generar imágenes de Trickplay",
+    "TaskRefreshTrickplayImagesDescription": "Crea vistas previas de reproducción engañosa para videos en bibliotecas habilitadas.",
+    "TaskAudioNormalization": "Normalización de audio",
+    "TaskAudioNormalizationDescription": "Escanea archivos en busca de datos de normalización de audio.",
+    "TaskCleanCollectionsAndPlaylists": "Limpiar colecciones y listas de reproducción",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Elimina elementos de colecciones y listas de reproducción que ya no existen."
 }

@@ -5,7 +5,6 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using EFCoreSecondLevelCacheInterceptor;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
@@ -136,6 +135,7 @@ public class MediaSegmentManager : IMediaSegmentManager
 
         return query
             .OrderBy(e => e.StartTicks)
+            .AsNoTracking()
             .ToImmutableList()
             .Select(Map);
     }
