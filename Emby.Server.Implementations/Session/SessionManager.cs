@@ -237,7 +237,7 @@ namespace Emby.Server.Implementations.Session
             ArgumentException.ThrowIfNullOrEmpty(deviceId);
 
             var activityDate = DateTime.UtcNow;
-            var session = await GetSessionInfo(appName, appVersion, deviceId, deviceName, remoteEndPoint, user).ConfigureAwait(false);
+            var session = GetSessionInfo(appName, appVersion, deviceId, deviceName, remoteEndPoint, user);
             var lastActivityDate = session.LastActivityDate;
             session.LastActivityDate = activityDate;
 
@@ -435,7 +435,7 @@ namespace Emby.Server.Implementations.Session
         /// <param name="remoteEndPoint">The remote end point.</param>
         /// <param name="user">The user.</param>
         /// <returns>SessionInfo.</returns>
-        private async Task<SessionInfo> GetSessionInfo(
+        private SessionInfo GetSessionInfo(
             string appName,
             string appVersion,
             string deviceId,
@@ -453,7 +453,7 @@ namespace Emby.Server.Implementations.Session
 
             if (!_activeConnections.TryGetValue(key, out var sessionInfo))
             {
-                sessionInfo = await CreateSession(key, appName, appVersion, deviceId, deviceName, remoteEndPoint, user).ConfigureAwait(false);
+                sessionInfo = CreateSession(key, appName, appVersion, deviceId, deviceName, remoteEndPoint, user);
                 _activeConnections[key] = sessionInfo;
             }
 
@@ -478,7 +478,7 @@ namespace Emby.Server.Implementations.Session
             return sessionInfo;
         }
 
-        private async Task<SessionInfo> CreateSession(
+        private SessionInfo CreateSession(
             string key,
             string appName,
             string appVersion,
@@ -508,7 +508,7 @@ namespace Emby.Server.Implementations.Session
                 deviceName = "Network Device";
             }
 
-            var deviceOptions = await _deviceManager.GetDeviceOptions(deviceId).ConfigureAwait(false);
+            var deviceOptions = _deviceManager.GetDeviceOptions(deviceId);
             if (string.IsNullOrEmpty(deviceOptions.CustomName))
             {
                 sessionInfo.DeviceName = deviceName;
@@ -1297,7 +1297,7 @@ namespace Emby.Server.Implementations.Session
             return new[] { item };
         }
 
-        private IEnumerable<BaseItem> TranslateItemForInstantMix(Guid id, User user)
+        private List<BaseItem> TranslateItemForInstantMix(Guid id, User user)
         {
             var item = _libraryManager.GetItemById(id);
 
@@ -1307,7 +1307,7 @@ namespace Emby.Server.Implementations.Session
                 return new List<BaseItem>();
             }
 
-            return _musicManager.GetInstantMixFromItem(item, user, new DtoOptions(false) { EnableImages = false });
+            return _musicManager.GetInstantMixFromItem(item, user, new DtoOptions(false) { EnableImages = false }).ToList();
         }
 
         /// <inheritdoc />
@@ -1520,12 +1520,12 @@ namespace Emby.Server.Implementations.Session
             // This should be validated above, but if it isn't don't delete all tokens.
             ArgumentException.ThrowIfNullOrEmpty(deviceId);
 
-            var existing = (await _deviceManager.GetDevices(
+            var existing = _deviceManager.GetDevices(
                 new DeviceQuery
                 {
                     DeviceId = deviceId,
                     UserId = user.Id
-                }).ConfigureAwait(false)).Items;
+                }).Items;
 
             foreach (var auth in existing)
             {
@@ -1553,12 +1553,12 @@ namespace Emby.Server.Implementations.Session
 
             ArgumentException.ThrowIfNullOrEmpty(accessToken);
 
-            var existing = (await _deviceManager.GetDevices(
+            var existing = _deviceManager.GetDevices(
                 new DeviceQuery
                 {
                     Limit = 1,
                     AccessToken = accessToken
-                }).ConfigureAwait(false)).Items;
+                }).Items;
 
             if (existing.Count > 0)
             {
@@ -1597,10 +1597,10 @@ namespace Emby.Server.Implementations.Session
         {
             CheckDisposed();
 
-            var existing = await _deviceManager.GetDevices(new DeviceQuery
+            var existing = _deviceManager.GetDevices(new DeviceQuery
             {
                 UserId = userId
-            }).ConfigureAwait(false);
+            });
 
             foreach (var info in existing.Items)
             {
@@ -1787,11 +1787,11 @@ namespace Emby.Server.Implementations.Session
         /// <inheritdoc />
         public async Task<SessionInfo> GetSessionByAuthenticationToken(string token, string deviceId, string remoteEndpoint)
         {
-            var items = (await _deviceManager.GetDevices(new DeviceQuery
+            var items = _deviceManager.GetDevices(new DeviceQuery
             {
                 AccessToken = token,
                 Limit = 1
-            }).ConfigureAwait(false)).Items;
+            }).Items;
 
             if (items.Count == 0)
             {
