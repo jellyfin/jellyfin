@@ -635,6 +635,7 @@ namespace Emby.Server.Implementations
             UserView.TVSeriesManager = Resolve<ITVSeriesManager>();
             UserView.CollectionManager = Resolve<ICollectionManager>();
             BaseItem.MediaSourceManager = Resolve<IMediaSourceManager>();
+            BaseItem.MediaSegmentManager = Resolve<IMediaSegmentManager>();
             CollectionFolder.XmlSerializer = _xmlSerializer;
             CollectionFolder.ApplicationHost = this;
         }
