@@ -168,6 +168,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private readonly string _encoderPath;
 
+        private readonly Version _minFFmpegMultiThreadedCli = new Version(7, 0);
+
         public EncoderValidator(ILogger logger, string encoderPath)
         {
             _logger = logger;
@@ -476,8 +478,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             return false;
         }
-
-        private readonly Version _minFFmpegMultiThreadedCli = new Version(7, 0);
 
         public bool CheckSupportedRuntimeKey(string keyDesc, Version? ffmpegVersion)
         {
