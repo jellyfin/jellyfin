@@ -575,7 +575,7 @@ namespace MediaBrowser.Providers.Manager
                 Type = MetadataPluginType.LyricFetcher
             }));
 
-            // Lyric fetchers
+            // Media segment providers
             var mediaSegmentProviders = _mediaSegmentManager.GetSupportedProviders(dummy);
             pluginList.AddRange(mediaSegmentProviders.Select(i => new MetadataPlugin
             {

@@ -24,5 +24,5 @@ public interface IMediaSegmentProvider
     /// <param name="request">Arguments to enumerate MediaSegments.</param>
     /// <param name="cancellationToken">Abort token.</param>
     /// <returns>A list of all MediaSegments found from this provider.</returns>
-    Task<IEnumerable<MediaSegmentDto>> GetMediaSegments(MediaSegmentGenerationRequest request, CancellationToken cancellationToken);
+    Task<IReadOnlyList<MediaSegmentDto>> GetMediaSegments(MediaSegmentGenerationRequest request, CancellationToken cancellationToken);
 }
