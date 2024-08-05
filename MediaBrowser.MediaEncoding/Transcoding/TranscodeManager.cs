@@ -51,6 +51,8 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         o.PoolInitialFill = 1;
     });
 
+    private readonly Version _maxFFmpegCkeyPauseSupported = new Version(6, 1);
+
     /// <summary>
     /// Initializes a new instance of the <see cref="TranscodeManager"/> class.
     /// </summary>
@@ -559,7 +561,9 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
 
     private void StartThrottler(StreamState state, TranscodingJob transcodingJob)
     {
-        if (EnableThrottling(state))
+        if (EnableThrottling(state)
+            && (_mediaEncoder.IsPkeyPauseSupported
+                || _mediaEncoder.EncoderVersion <= _maxFFmpegCkeyPauseSupported))
         {
             transcodingJob.TranscodingThrottler = new TranscodingThrottler(transcodingJob, _loggerFactory.CreateLogger<TranscodingThrottler>(), _serverConfigurationManager, _fileSystem, _mediaEncoder);
             transcodingJob.TranscodingThrottler.Start();
