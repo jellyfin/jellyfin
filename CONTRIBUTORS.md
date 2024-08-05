@@ -65,6 +65,7 @@
  - [joshuaboniface](https://github.com/joshuaboniface)
  - [JustAMan](https://github.com/JustAMan)
  - [justinfenn](https://github.com/justinfenn)
+ - [JPVenson](https://github.com/JPVenson)
  - [KerryRJ](https://github.com/KerryRJ)
  - [Larvitar](https://github.com/Larvitar)
  - [LeoVerto](https://github.com/LeoVerto)
@@ -187,7 +188,6 @@
  - [HonestlyWhoKnows](https://github.com/honestlywhoknows)
  - [TheMelmacian](https://github.com/TheMelmacian)
  - [ItsAllAboutTheCode](https://github.com/ItsAllAboutTheCode)
- - [JPVenson](https://github.com/JPVenson)
 
 # Emby Contributors
 
