@@ -14,6 +14,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model;
 using MediaBrowser.Model.MediaSegments;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -78,21 +79,29 @@ public class MediaSegmentManager : IMediaSegmentManager
 
         await db.MediaSegments.Where(e => e.ItemId.Equals(baseItem.Id)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
 
+        // no need to recreate the request object every time.
+        var requestItem = new MediaSegmentGenerationRequest() { ItemId = baseItem.Id };
+
         foreach (var provider in providers)
         {
+            if (!await provider.Supports(baseItem).ConfigureAwait(false))
+            {
+                _logger.LogDebug("Media Segment provider {ProviderName} does not support item with path {Path}", provider.Name, baseItem.Path);
+                continue;
+            }
+
             _logger.LogDebug("Run Media Segment provider {ProviderName}", provider.Name);
             try
             {
-                var segments = (await provider.GetMediaSegments(new() { MediaPath = baseItem.Path }, cancellationToken)
-                    .ConfigureAwait(false))
-                    .ToImmutableList();
+                var segments = await provider.GetMediaSegments(requestItem, cancellationToken)
+                    .ConfigureAwait(false);
 
                 _logger.LogInformation("Media Segment provider {ProviderName} found {CountSegments} for {MediaPath}", provider.Name, segments.Count, baseItem.Path);
-
+                var providerId = GetProviderId(provider.Name);
                 foreach (var segment in segments)
                 {
                     segment.ItemId = baseItem.Id;
-                    await CreateSegmentAsync(segment, GetProviderId(provider.Name)).ConfigureAwait(false);
+                    await CreateSegmentAsync(segment, providerId).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)

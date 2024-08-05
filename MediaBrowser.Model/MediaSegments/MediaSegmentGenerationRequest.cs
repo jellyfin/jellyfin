@@ -5,10 +5,10 @@ namespace MediaBrowser.Model;
 /// <summary>
 /// Model containing the arguments for enumerating the requested media item.
 /// </summary>
-public class MediaSegmentGenerationRequest
+public record MediaSegmentGenerationRequest
 {
     /// <summary>
     /// Gets the path to the media the segments should be extracted from.
     /// </summary>
-    public required string MediaPath { get; init; }
+    public Guid ItemId { get; init; }
 }
