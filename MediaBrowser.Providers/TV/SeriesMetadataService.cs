@@ -61,8 +61,8 @@ namespace MediaBrowser.Providers.TV
             await base.AfterMetadataRefresh(item, refreshOptions, cancellationToken).ConfigureAwait(false);
 
             RemoveObsoleteEpisodes(item);
-            await CreateSeasonsAsync(item, cancellationToken).ConfigureAwait(false);
             RemoveObsoleteSeasons(item);
+            await CreateSeasonsAsync(item, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
