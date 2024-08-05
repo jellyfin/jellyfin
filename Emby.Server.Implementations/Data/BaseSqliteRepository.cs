@@ -6,13 +6,16 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Jellyfin.Extensions;
+using MediaBrowser.Controller.Extensions;
 using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Data
 {
     public abstract class BaseSqliteRepository : IDisposable
     {
+        private readonly IConfiguration _configuration;
         private bool _disposed = false;
         private SemaphoreSlim _writeLock = new SemaphoreSlim(1, 1);
         private SqliteConnection _writeConnection;
@@ -21,9 +24,11 @@ namespace Emby.Server.Implementations.Data
         /// Initializes a new instance of the <see cref="BaseSqliteRepository"/> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
-        protected BaseSqliteRepository(ILogger<BaseSqliteRepository> logger)
+        /// <param name="configuration">The configuration.</param>
+        protected BaseSqliteRepository(ILogger<BaseSqliteRepository> logger, IConfiguration configuration)
         {
             Logger = logger;
+            _configuration = configuration;
         }
 
         /// <summary>
@@ -63,7 +68,7 @@ namespace Emby.Server.Implementations.Data
         /// Gets the journal mode. <see href="https://www.sqlite.org/pragma.html#pragma_journal_mode" />.
         /// </summary>
         /// <value>The journal mode.</value>
-        protected virtual string JournalMode => "WAL";
+        protected virtual string JournalMode => _configuration.GetSqliteJournalMode();
 
         /// <summary>
         /// Gets the journal size limit. <see href="https://www.sqlite.org/pragma.html#pragma_journal_size_limit" />.

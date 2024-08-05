@@ -65,6 +65,11 @@ namespace MediaBrowser.Controller.Extensions
         public const string SqliteCacheSizeKey = "sqlite:cacheSize";
 
         /// <summary>
+        /// SQLite journal mode.
+        /// </summary>
+        public const string SqliteJournalModeKey = "sqlite:journalMode";
+
+        /// <summary>
         /// Gets a value indicating whether the application should host static web content from the <see cref="IConfiguration"/>.
         /// </summary>
         /// <param name="configuration">The configuration to retrieve the value from.</param>
@@ -128,5 +133,16 @@ namespace MediaBrowser.Controller.Extensions
         /// <returns>The sqlite cache size.</returns>
         public static int? GetSqliteCacheSize(this IConfiguration configuration)
             => configuration.GetValue<int?>(SqliteCacheSizeKey);
+
+        /// <summary>
+        /// Gets SQLite journal mode from the <see cref="IConfiguration" />.
+        /// </summary>
+        /// <param name="configuration">The configuration to read the setting from.</param>
+        /// <returns>SQLite journal mode.</returns>
+        public static string GetSqliteJournalMode(this IConfiguration configuration)
+        {
+            var journalMode = configuration.GetValue<string?>(SqliteJournalModeKey);
+            return journalMode is not null ? journalMode.ToUpperInvariant() : "WAL";
+        }
     }
 }
