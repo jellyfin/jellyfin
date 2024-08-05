@@ -99,7 +99,7 @@ jobs:
               compat_output=$(apicompat --left ./abi-base/${file} --right ./abi-head/${file})
               if [ "APICompat ran successfully without finding any breaking changes." != "$compat_output" ]; then
                 echo "${file}"
-                echo "$compat_output"    
+                echo "${compat_output}"
               fi
             done
             echo EOF
@@ -115,7 +115,7 @@ jobs:
 
       - name: Reply or edit difference comment (changed)
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
-        if: ${{ steps.diff.outputs.body != '' && steps.find-comment.outputs.comment-id != '' }}
+        if: ${{ steps.diff.outputs.body != '' }}
         with:
           issue-number: ${{ github.event.pull_request.number }}
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
@@ -127,5 +127,22 @@ jobs:
             <summary>ABI Difference</summary>
 
             ${{ steps.diff.outputs.body }}
+
+            </details>
+
+      - name: Reply or edit difference comment (unchanged)
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        if: ${{ steps.diff.outputs.body == '' && steps.find-comment.outputs.comment-id != '' }}
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          edit-mode: replace
+          token: ${{ secrets.JF_BOT_TOKEN }}
+          body: |
+            <!--abi-diff-workflow-comment-->
+            <details>
+            <summary>ABI Difference</summary>
+
+            No changes to the ABI found. See history of this comment for previous changes.
 
             </details>
