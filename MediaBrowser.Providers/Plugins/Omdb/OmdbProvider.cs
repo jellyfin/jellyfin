@@ -220,10 +220,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 item.HomePageUrl = result.Website;
             }
 
-            if (!string.IsNullOrWhiteSpace(result.imdbID))
-            {
-                item.SetProviderId(MetadataProvider.Imdb, result.imdbID);
-            }
+            item.TrySetProviderId(MetadataProvider.Imdb, result.imdbID);
 
             ParseAdditionalMetadata(itemResult, result, isEnglishRequested);
 

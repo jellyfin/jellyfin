@@ -59,80 +59,50 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             try
             {
                 // Extract episode details from the first episodedetails block
-                using (var stringReader = new StringReader(xml))
-                using (var reader = XmlReader.Create(stringReader, settings))
-                {
-                    reader.MoveToContent();
-                    reader.Read();
-
-                    // Loop through each element
-                    while (!reader.EOF && reader.ReadState == ReadState.Interactive)
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-
-                        if (reader.NodeType == XmlNodeType.Element)
-                        {
-                            FetchDataFromXmlNode(reader, item);
-                        }
-                        else
-                        {
-                            reader.Read();
-                        }
-                    }
-                }
+                ReadEpisodeDetailsFromXml(item, xml, settings, cancellationToken);
 
                 // Extract the last episode number from nfo
-                // Retrieves all title and plot tags from the rest of the nfo and concatenates them with the first episode
+                // Retrieves all additional episodedetails blocks from the rest of the nfo and concatenates the name, originalTitle and overview tags with the first episode
                 // This is needed because XBMC metadata uses multiple episodedetails blocks instead of episodenumberend tag
                 var name = new StringBuilder(item.Item.Name);
+                var originalTitle = new StringBuilder(item.Item.OriginalTitle);
                 var overview = new StringBuilder(item.Item.Overview);
                 while ((index = xmlFile.IndexOf(srch, StringComparison.OrdinalIgnoreCase)) != -1)
                 {
                     xml = xmlFile.Substring(0, index + srch.Length);
                     xmlFile = xmlFile.Substring(index + srch.Length);
 
-                    using (var stringReader = new StringReader(xml))
-                    using (var reader = XmlReader.Create(stringReader, settings))
+                    var additionalEpisode = new MetadataResult<Episode>()
                     {
-                        reader.MoveToContent();
+                        Item = new Episode()
+                    };
 
-                        while (!reader.EOF && reader.ReadState == ReadState.Interactive)
-                        {
-                            cancellationToken.ThrowIfCancellationRequested();
+                    // Extract episode details from additional episodedetails block
+                    ReadEpisodeDetailsFromXml(additionalEpisode, xml, settings, cancellationToken);
 
-                            if (reader.NodeType == XmlNodeType.Element)
-                            {
-                                switch (reader.Name)
-                                {
-                                    case "name":
-                                    case "title":
-                                    case "localtitle":
-                                        name.Append(" / ").Append(reader.ReadElementContentAsString());
-                                        break;
-                                    case "episode":
-                                        {
-                                            if (int.TryParse(reader.ReadElementContentAsString(), out var num))
-                                            {
-                                                item.Item.IndexNumberEnd = Math.Max(num, item.Item.IndexNumberEnd ?? num);
-                                            }
+                    if (!string.IsNullOrEmpty(additionalEpisode.Item.Name))
+                    {
+                        name.Append(" / ").Append(additionalEpisode.Item.Name);
+                    }
 
-                                            break;
-                                        }
+                    if (!string.IsNullOrEmpty(additionalEpisode.Item.Overview))
+                    {
+                        overview.Append(" / ").Append(additionalEpisode.Item.Overview);
+                    }
 
-                                    case "biography":
-                                    case "plot":
-                                    case "review":
-                                        overview.Append(" / ").Append(reader.ReadElementContentAsString());
-                                        break;
-                                }
-                            }
+                    if (!string.IsNullOrEmpty(additionalEpisode.Item.OriginalTitle))
+                    {
+                        originalTitle.Append(" / ").Append(additionalEpisode.Item.OriginalTitle);
+                    }
 
-                            reader.Read();
-                        }
+                    if (additionalEpisode.Item.IndexNumber != null)
+                    {
+                        item.Item.IndexNumberEnd = Math.Max((int)additionalEpisode.Item.IndexNumber, item.Item.IndexNumberEnd ?? (int)additionalEpisode.Item.IndexNumber);
                     }
                 }
 
                 item.Item.Name = name.ToString();
+                item.Item.OriginalTitle = originalTitle.ToString();
                 item.Item.Overview = overview.ToString();
             }
             catch (XmlException)
@@ -198,6 +168,34 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 default:
                     base.FetchDataFromXmlNode(reader, itemResult);
                     break;
+            }
+        }
+
+        /// <summary>
+        /// Reads the episode details from the given xml and saves the result in the provided result item.
+        /// </summary>
+        private void ReadEpisodeDetailsFromXml(MetadataResult<Episode> item, string xml, XmlReaderSettings settings, CancellationToken cancellationToken)
+        {
+            using (var stringReader = new StringReader(xml))
+            using (var reader = XmlReader.Create(stringReader, settings))
+            {
+                reader.MoveToContent();
+                reader.Read();
+
+                // Loop through each element
+                while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    if (reader.NodeType == XmlNodeType.Element)
+                    {
+                        FetchDataFromXmlNode(reader, item);
+                    }
+                    else
+                    {
+                        reader.Read();
+                    }
+                }
             }
         }
     }

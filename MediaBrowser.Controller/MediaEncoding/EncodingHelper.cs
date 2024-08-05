@@ -64,6 +64,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         private readonly Version _minFFmpegSvtAv1Params = new Version(5, 1);
         private readonly Version _minFFmpegVaapiH26xEncA53CcSei = new Version(6, 0);
         private readonly Version _minFFmpegReadrateOption = new Version(5, 0);
+        private readonly Version _minFFmpegWorkingVtHwSurface = new Version(7, 0, 1);
         private readonly Version _minFFmpegDisplayRotationOption = new Version(6, 0);
 
         private static readonly Regex _validationRegex = new(ValidationRegex, RegexOptions.Compiled);
@@ -2673,28 +2674,17 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var filters = new List<string>();
 
-            if (channels.HasValue
-                && channels.Value == 2
-                && state.AudioStream is not null
-                && state.AudioStream.Channels.HasValue
-                && state.AudioStream.Channels.Value == 6)
+            if (channels is 2 && state.AudioStream?.Channels is > 2)
             {
+                var hasDownMixFilter = DownMixAlgorithmsHelper.AlgorithmFilterStrings.TryGetValue((encodingOptions.DownMixStereoAlgorithm, DownMixAlgorithmsHelper.InferChannelLayout(state.AudioStream)), out var downMixFilterString);
+                if (hasDownMixFilter)
+                {
+                    filters.Add(downMixFilterString);
+                }
+
                 if (!encodingOptions.DownMixAudioBoost.Equals(1))
                 {
                     filters.Add("volume=" + encodingOptions.DownMixAudioBoost.ToString(CultureInfo.InvariantCulture));
-                }
-
-                switch (encodingOptions.DownMixStereoAlgorithm)
-                {
-                    case DownMixStereoAlgorithms.Dave750:
-                        filters.Add("pan=stereo|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3");
-                        break;
-                    case DownMixStereoAlgorithms.NightmodeDialogue:
-                        filters.Add("pan=stereo|c0=c2+0.30*c0+0.30*c4|c1=c2+0.30*c1+0.30*c5");
-                        break;
-                    case DownMixStereoAlgorithms.None:
-                    default:
-                        break;
                 }
             }
 
@@ -5300,6 +5290,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             string vidEncoder)
         {
             var isVtEncoder = vidEncoder.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase);
+            var isVtDecoder = vidDecoder.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase);
 
             if (!isVtEncoder)
             {
@@ -5320,6 +5311,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var doDeintH2645 = doDeintH264 || doDeintHevc;
             var doVtTonemap = IsVideoToolboxTonemapAvailable(state, options);
             var doMetalTonemap = !doVtTonemap && IsHwTonemapAvailable(state, options);
+            var usingHwSurface = isVtDecoder && (_mediaEncoder.EncoderVersion >= _minFFmpegWorkingVtHwSurface);
 
             var rotation = state.VideoStream?.Rotation ?? 0;
             var tranposeDir = rotation == 0 ? string.Empty : GetVideoTransposeDirection(state);
@@ -5414,23 +5406,25 @@ namespace MediaBrowser.Controller.MediaEncoding
                     subFilters.Add(subTextSubtitlesFilter);
                 }
 
-                subFilters.Add("hwupload=derive_device=videotoolbox");
+                subFilters.Add("hwupload");
                 overlayFilters.Add("overlay_videotoolbox=eof_action=pass:repeatlast=0");
             }
 
+            if (usingHwSurface)
+            {
+                return (mainFilters, subFilters, overlayFilters);
+            }
+
+            // For old jellyfin-ffmpeg that has broken hwsurface, add a hwupload
             var needFiltering = mainFilters.Any(f => !string.IsNullOrEmpty(f)) ||
                                 subFilters.Any(f => !string.IsNullOrEmpty(f)) ||
                                 overlayFilters.Any(f => !string.IsNullOrEmpty(f));
-
-            // This is a workaround for ffmpeg's hwupload implementation
-            // For VideoToolbox encoders, a hwupload without a valid filter actually consuming its frame
-            // will cause the encoder to produce incorrect frames.
             if (needFiltering)
             {
                 // INPUT videotoolbox/memory surface(vram/uma)
                 // this will pass-through automatically if in/out format matches.
                 mainFilters.Insert(0, "format=nv12|p010le|videotoolbox_vld");
-                mainFilters.Insert(0, "hwupload=derive_device=videotoolbox");
+                mainFilters.Insert(0, "hwupload");
             }
 
             return (mainFilters, subFilters, overlayFilters);
@@ -6458,22 +6452,20 @@ namespace MediaBrowser.Controller.MediaEncoding
                                     || string.Equals("yuvj420p", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase);
             var is8_10bitSwFormatsVt = is8bitSwFormatsVt || string.Equals("yuv420p10le", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase);
 
-            // VideoToolbox's Hardware surface in ffmpeg is not only slower than hwupload, but also breaks HDR in many cases.
-            // For example: https://trac.ffmpeg.org/ticket/10884
-            // Disable it for now.
-            const bool UseHwSurface = false;
+            // The related patches make videotoolbox hardware surface working is only available in jellyfin-ffmpeg 7.0.1 at the moment.
+            bool useHwSurface = (_mediaEncoder.EncoderVersion >= _minFFmpegWorkingVtHwSurface) && IsVideoToolboxFullSupported();
 
             if (is8bitSwFormatsVt)
             {
                 if (string.Equals("avc", videoStream.Codec, StringComparison.OrdinalIgnoreCase)
                     || string.Equals("h264", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
                 {
-                    return GetHwaccelType(state, options, "h264", bitDepth, UseHwSurface);
+                    return GetHwaccelType(state, options, "h264", bitDepth, useHwSurface);
                 }
 
                 if (string.Equals("vp8", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
                 {
-                    return GetHwaccelType(state, options, "vp8", bitDepth, UseHwSurface);
+                    return GetHwaccelType(state, options, "vp8", bitDepth, useHwSurface);
                 }
             }
 
@@ -6482,12 +6474,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (string.Equals("hevc", videoStream.Codec, StringComparison.OrdinalIgnoreCase)
                     || string.Equals("h265", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
                 {
-                    return GetHwaccelType(state, options, "hevc", bitDepth, UseHwSurface);
+                    return GetHwaccelType(state, options, "hevc", bitDepth, useHwSurface);
                 }
 
                 if (string.Equals("vp9", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
                 {
-                    return GetHwaccelType(state, options, "vp9", bitDepth, UseHwSurface);
+                    return GetHwaccelType(state, options, "vp9", bitDepth, useHwSurface);
                 }
             }
 
@@ -7172,7 +7164,10 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var channels = state.OutputAudioChannels;
 
-            if (channels.HasValue && ((channels.Value != 2 && state.AudioStream?.Channels != 6) || encodingOptions.DownMixStereoAlgorithm == DownMixStereoAlgorithms.None))
+            var useDownMixAlgorithm = state.AudioStream is not null
+                                      && DownMixAlgorithmsHelper.AlgorithmFilterStrings.ContainsKey((encodingOptions.DownMixStereoAlgorithm, DownMixAlgorithmsHelper.InferChannelLayout(state.AudioStream)));
+
+            if (channels.HasValue && !useDownMixAlgorithm)
             {
                 args += " -ac " + channels.Value;
             }

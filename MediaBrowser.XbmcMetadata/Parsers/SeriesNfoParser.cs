@@ -48,29 +48,16 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             {
                 case "id":
                     {
-                        string? imdbId = reader.GetAttribute("IMDB");
-                        string? tmdbId = reader.GetAttribute("TMDB");
-                        string? tvdbId = reader.GetAttribute("TVDB");
+                        item.TrySetProviderId(MetadataProvider.Imdb, reader.GetAttribute("IMDB"));
+                        item.TrySetProviderId(MetadataProvider.Tmdb, reader.GetAttribute("TMDB"));
 
+                        string? tvdbId = reader.GetAttribute("TVDB");
                         if (string.IsNullOrWhiteSpace(tvdbId))
                         {
                             tvdbId = reader.ReadElementContentAsString();
                         }
 
-                        if (!string.IsNullOrWhiteSpace(imdbId))
-                        {
-                            item.SetProviderId(MetadataProvider.Imdb, imdbId);
-                        }
-
-                        if (!string.IsNullOrWhiteSpace(tmdbId))
-                        {
-                            item.SetProviderId(MetadataProvider.Tmdb, tmdbId);
-                        }
-
-                        if (!string.IsNullOrWhiteSpace(tvdbId))
-                        {
-                            item.SetProviderId(MetadataProvider.Tvdb, tvdbId);
-                        }
+                        item.TrySetProviderId(MetadataProvider.Tvdb, tvdbId);
 
                         break;
                     }

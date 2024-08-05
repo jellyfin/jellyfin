@@ -76,7 +76,7 @@
     "Genres": "Žanri",
     "Folders": "Mapes",
     "Favorites": "Izlase",
-    "FailedLoginAttemptWithUserName": "Neveiksmīgs ielogošanos mēģinājums no {0}",
+    "FailedLoginAttemptWithUserName": "Neizdevies ieiešanas mēģinājums no {0}",
     "DeviceOnlineWithName": "Savienojums ar {0} ir izveidots",
     "DeviceOfflineWithName": "Savienojums ar {0} ir pārtraukts",
     "Collections": "Kolekcijas",
@@ -95,7 +95,7 @@
     "TaskRefreshChapterImages": "Izvilkt nodaļu attēlus",
     "TasksApplicationCategory": "Lietotne",
     "TasksLibraryCategory": "Bibliotēka",
-    "TaskDownloadMissingSubtitlesDescription": "Meklē trūkstošus subtitrus internēta balstoties uz metadatu uzstādījumiem.",
+    "TaskDownloadMissingSubtitlesDescription": "Meklē internetā trūkstošos subtitrus, pamatojoties uz metadatu konfigurāciju.",
     "TaskDownloadMissingSubtitles": "Lejupielādēt trūkstošos subtitrus",
     "TaskRefreshChannelsDescription": "Atjauno interneta kanālu informāciju.",
     "TaskRefreshChannels": "Atjaunot kanālus",
@@ -127,7 +127,7 @@
     "TaskRefreshTrickplayImages": "Ģenerēt partīšanas attēlus",
     "TaskRefreshTrickplayImagesDescription": "Izveido priekšskatījumus videoklipu pārtīšanai iespējotajās bibliotēkās.",
     "TaskAudioNormalization": "Audio normalizācija",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Noņem elemēntus no kolekcijām un atskaņošanas sarakstiem, kuri vairs neeksistē.",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Noņem vairs neeksistējošus vienumus no kolekcijām un atskaņošanas sarakstiem.",
     "TaskAudioNormalizationDescription": "Skanē failus priekš audio normālizācijas informācijas.",
     "TaskCleanCollectionsAndPlaylists": "Notīrīt kolekcijas un atskaņošanas sarakstus"
 }

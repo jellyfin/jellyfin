@@ -202,7 +202,7 @@ namespace MediaBrowser.Model.Entities
                         || dvProfile == 8
                         || dvProfile == 9))
                 {
-                    var title = "DV Profile " + dvProfile;
+                    var title = "Dolby Vision Profile " + dvProfile;
 
                     if (dvBlCompatId > 0)
                     {
@@ -214,6 +214,7 @@ namespace MediaBrowser.Model.Entities
                         1 => title + " (HDR10)",
                         2 => title + " (SDR)",
                         4 => title + " (HLG)",
+                        6 => title + " (HDR10)", // Technically means Blu-ray, but practically always HDR10
                         _ => title
                     };
                 }
@@ -336,7 +337,11 @@ namespace MediaBrowser.Model.Entities
                             attributes.Add(Codec.ToUpperInvariant());
                         }
 
-                        if (VideoRange != VideoRange.Unknown)
+                        if (VideoDoViTitle is not null)
+                        {
+                            attributes.Add(VideoDoViTitle);
+                        }
+                        else if (VideoRange != VideoRange.Unknown)
                         {
                             attributes.Add(VideoRange.ToString());
                         }
