@@ -8,7 +8,7 @@ namespace MediaBrowser.Model;
 public record MediaSegmentGenerationRequest
 {
     /// <summary>
-    /// Gets the path to the media the segments should be extracted from.
+    /// Gets the Id to the BaseItem the segments should be extracted from.
     /// </summary>
     public Guid ItemId { get; init; }
 }
