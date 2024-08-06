@@ -31,6 +31,7 @@ public class BaseItemScheduledTaskWorker : ScheduledTaskWorker
     /// <param name="applicationPaths">Application paths.</param>
     /// <param name="taskManager">Task manager.</param>
     /// <param name="logger">logger.</param>
+    /// <param name="libraryManager">Library manager.</param>
     public BaseItemScheduledTaskWorker(IScheduledTask scheduledTask, IApplicationPaths applicationPaths, ITaskManager taskManager, ILogger logger, ILibraryManager libraryManager)
         : base(scheduledTask, applicationPaths, taskManager, logger)
     {
