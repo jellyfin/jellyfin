@@ -149,14 +149,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
             return;
         }
 
-        var timerDuration = 10000;
-
-        if (job.Type != TranscodingJobType.Progressive)
-        {
-            timerDuration = 60000;
-        }
-
-        job.PingTimeout = timerDuration;
+        job.PingTimeout = 60_000;
         job.LastPingDate = DateTime.UtcNow;
 
         // Don't start the timer for playback checkins with progressive streaming
