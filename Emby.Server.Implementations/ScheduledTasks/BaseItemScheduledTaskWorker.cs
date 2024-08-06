@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,6 +9,7 @@ using Emby.Server.Implementations.ScheduledTasks.Triggers;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
@@ -19,6 +21,7 @@ namespace Emby.Server.Implementations.ScheduledTasks;
 /// </summary>
 public class BaseItemScheduledTaskWorker : ScheduledTaskWorker
 {
+    private readonly ILibraryManager _libraryManager;
     private ConcurrentBag<(BaseItem, TaskActionTypes)> _baseItems;
 
     /// <summary>
@@ -28,10 +31,37 @@ public class BaseItemScheduledTaskWorker : ScheduledTaskWorker
     /// <param name="applicationPaths">Application paths.</param>
     /// <param name="taskManager">Task manager.</param>
     /// <param name="logger">logger.</param>
-    public BaseItemScheduledTaskWorker(IScheduledTask scheduledTask, IApplicationPaths applicationPaths, ITaskManager taskManager, ILogger logger)
+    public BaseItemScheduledTaskWorker(IScheduledTask scheduledTask, IApplicationPaths applicationPaths, ITaskManager taskManager, ILogger logger, ILibraryManager libraryManager)
         : base(scheduledTask, applicationPaths, taskManager, logger)
     {
-        _baseItems = new ConcurrentBag<(BaseItem, TaskActionTypes)>();
+        _baseItems = [];
+        _libraryManager = libraryManager;
+        _libraryManager.ItemAdded += ItemChanged;
+        _libraryManager.ItemRemoved += ItemDeleted;
+        _libraryManager.ItemUpdated += ItemChanged;
+    }
+
+    private void ItemChanged(object? sender, ItemChangeEventArgs e)
+    {
+        EnqueueRun(e.Item, e.UpdateReason switch
+            {
+                ItemUpdateType.None => TaskActionTypes.Added,
+                _ => TaskActionTypes.Changed
+            });
+    }
+
+    private void ItemDeleted(object? sender, ItemChangeEventArgs e)
+    {
+        EnqueueRun(e.Item, TaskActionTypes.Removed);
+    }
+
+    /// <inheritdoc/>
+    protected override void Dispose(bool dispose)
+    {
+        _libraryManager.ItemAdded -= ItemChanged;
+        _libraryManager.ItemRemoved -= ItemChanged;
+        _libraryManager.ItemUpdated -= ItemChanged;
+        base.Dispose(dispose);
     }
 
     /// <summary>

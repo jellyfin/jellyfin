@@ -7,6 +7,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Data.Events;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -25,19 +27,22 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
         private readonly IApplicationPaths _applicationPaths;
         private readonly ILogger<TaskManager> _logger;
+        private readonly ILibraryManager _libraryManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TaskManager" /> class.
         /// </summary>
         /// <param name="applicationPaths">The application paths.</param>
         /// <param name="logger">The logger.</param>
+        /// <param name="libraryManager">The Library manager.</param>
         public TaskManager(
             IApplicationPaths applicationPaths,
-            ILogger<TaskManager> logger)
+            ILogger<TaskManager> logger,
+            ILibraryManager libraryManager)
         {
             _applicationPaths = applicationPaths;
             _logger = logger;
-
+            _libraryManager = libraryManager;
             ScheduledTasks = Array.Empty<IScheduledTaskWorker>();
         }
 
@@ -190,9 +195,11 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// Adds the tasks.
         /// </summary>
         /// <param name="tasks">The tasks.</param>
-        public void AddTasks(IEnumerable<IScheduledTask> tasks)
+        public void AddTasks(IReadOnlyList<IScheduledTask> tasks)
         {
-            var list = tasks.Select(t => new ScheduledTaskWorker(t, _applicationPaths, this, _logger));
+            var list = tasks.Except(tasks.OfType<IBaseItemScheduledTask>())
+                .Select(t => new ScheduledTaskWorker(t, _applicationPaths, this, _logger))
+                .Concat(tasks.OfType<IBaseItemScheduledTask>().Select(e => new BaseItemScheduledTaskWorker(e, _applicationPaths, this, _logger, _libraryManager)));
 
             ScheduledTasks = ScheduledTasks.Concat(list).ToArray();
         }
