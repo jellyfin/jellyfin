@@ -9,8 +9,21 @@ namespace Jellyfin.Extensions
     /// </summary>
     public static partial class StringExtensions
     {
-        private static readonly Lazy<Transliterator> _transliterator = new(() => Transliterator.GetInstance(
-            "Any-Latin; Latin-Ascii; Lower; NFD; [:Nonspacing Mark:] Remove; [:Punctuation:] Remove;"));
+        private static readonly Lazy<string> _transliteratorId = new(() =>
+            Environment.GetEnvironmentVariable("JELLYFIN_TRANSLITERATOR_ID")
+            ?? "Any-Latin; Latin-Ascii; Lower; NFD; [:Nonspacing Mark:] Remove; [:Punctuation:] Remove;");
+
+        private static readonly Lazy<Transliterator?> _transliterator = new(() =>
+        {
+            try
+            {
+                return Transliterator.GetInstance(_transliteratorId.Value);
+            }
+            catch (ArgumentException)
+            {
+                return null;
+            }
+        });
 
         // Matches non-conforming unicode chars
         // https://mnaoumov.wordpress.com/2014/06/14/stripping-invalid-characters-from-utf-16-strings/
@@ -108,7 +121,7 @@ namespace Jellyfin.Extensions
         /// <returns>The transliterated string.</returns>
         public static string Transliterated(this string text)
         {
-            return _transliterator.Value.Transliterate(text);
+            return (_transliterator.Value is null) ? text : _transliterator.Value.Transliterate(text);
         }
     }
 }
