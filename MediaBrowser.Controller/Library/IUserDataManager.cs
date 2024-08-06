@@ -48,6 +48,8 @@ namespace MediaBrowser.Controller.Library
 
         UserItemData GetUserData(Guid userId, BaseItem item);
 
+        UserItemData GetUserDataByPresentationUniqueKey(User user, BaseItem item);
+
         /// <summary>
         /// Gets the user data dto.
         /// </summary>
