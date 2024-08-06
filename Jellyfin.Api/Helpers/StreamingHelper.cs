@@ -17,43 +17,46 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Net.Http.Headers;
 
 namespace Jellyfin.Api.Helpers;
 
-/// <summary>
-/// The streaming helpers.
-/// </summary>
-public static class StreamingHelpers
+/// <inheritdoc/>
+public class StreamingHelper : IStreamingHelper
 {
+    private readonly IMediaSourceManager _mediaSourceManager;
+    private readonly IUserManager _userManager;
+    private readonly ILibraryManager _libraryManager;
+    private readonly IServerConfigurationManager _serverConfigurationManager;
+    private readonly IMediaEncoder _mediaEncoder;
+    private readonly ITranscodeManager _transcodeManager;
+
     /// <summary>
-    /// Gets the current streaming state.
+    /// Initializes a new instance of the <see cref="StreamingHelper"/> class.
     /// </summary>
-    /// <param name="streamingRequest">The <see cref="StreamingRequestDto"/>.</param>
-    /// <param name="httpContext">The <see cref="HttpContext"/>.</param>
-    /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
-    /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
-    /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
-    /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
-    /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
-    /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
-    /// <param name="transcodeManager">Instance of the <see cref="ITranscodeManager"/> interface.</param>
-    /// <param name="transcodingJobType">The <see cref="TranscodingJobType"/>.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
-    /// <returns>A <see cref="Task"/> containing the current <see cref="StreamState"/>.</returns>
-    public static async Task<StreamState> GetStreamingState(
+    /// <param name="mediaSourceManager">Instance of <see cref="IMediaSourceManager"/>.</param>
+    /// <param name="userManager">Instance of <see cref="IUserManager"/>.</param>
+    /// <param name="libraryManager">Instance of <see cref="ILibraryManager"/>.</param>
+    /// <param name="serverConfigurationManager">Instance of <see cref="IServerConfigurationManager"/>.</param>
+    /// <param name="mediaEncoder">Instance of <see cref="IMediaEncoder"/>.</param>
+    /// <param name="transcodeManager">Instance of <see cref="ITranscodeManager"/>.</param>
+    public StreamingHelper(IMediaSourceManager mediaSourceManager, IUserManager userManager, ILibraryManager libraryManager, IServerConfigurationManager serverConfigurationManager, IMediaEncoder mediaEncoder, ITranscodeManager transcodeManager)
+    {
+        _mediaSourceManager = mediaSourceManager;
+        _userManager = userManager;
+        _libraryManager = libraryManager;
+        _serverConfigurationManager = serverConfigurationManager;
+        _mediaEncoder = mediaEncoder;
+        _transcodeManager = transcodeManager;
+    }
+
+    /// <inheritdoc/>
+    public async Task<StreamState> GetStreamingState(
         StreamingRequestDto streamingRequest,
         HttpContext httpContext,
-        IMediaSourceManager mediaSourceManager,
-        IUserManager userManager,
-        ILibraryManager libraryManager,
-        IServerConfigurationManager serverConfigurationManager,
-        IMediaEncoder mediaEncoder,
         EncodingHelper encodingHelper,
-        ITranscodeManager transcodeManager,
         TranscodingJobType transcodingJobType,
         CancellationToken cancellationToken)
     {
@@ -76,7 +79,7 @@ public static class StreamingHelpers
             streamingRequest.AudioCodec = encodingHelper.InferAudioCodec(url);
         }
 
-        var state = new StreamState(mediaSourceManager, transcodingJobType, transcodeManager)
+        var state = new StreamState(_mediaSourceManager, transcodingJobType, _transcodeManager)
         {
             Request = streamingRequest,
             RequestedUrl = url,
@@ -86,7 +89,7 @@ public static class StreamingHelpers
         var userId = httpContext.User.GetUserId();
         if (!userId.IsEmpty())
         {
-            state.User = userManager.GetUserById(userId);
+            state.User = _userManager.GetUserById(userId);
         }
 
         if (state.IsVideoRequest && !string.IsNullOrWhiteSpace(state.Request.VideoCodec))
@@ -98,18 +101,18 @@ public static class StreamingHelpers
         if (!string.IsNullOrWhiteSpace(streamingRequest.AudioCodec))
         {
             state.SupportedAudioCodecs = streamingRequest.AudioCodec.Split(',', StringSplitOptions.RemoveEmptyEntries);
-            state.Request.AudioCodec = state.SupportedAudioCodecs.FirstOrDefault(mediaEncoder.CanEncodeToAudioCodec)
+            state.Request.AudioCodec = state.SupportedAudioCodecs.FirstOrDefault(_mediaEncoder.CanEncodeToAudioCodec)
                                        ?? state.SupportedAudioCodecs.FirstOrDefault();
         }
 
         if (!string.IsNullOrWhiteSpace(streamingRequest.SubtitleCodec))
         {
             state.SupportedSubtitleCodecs = streamingRequest.SubtitleCodec.Split(',', StringSplitOptions.RemoveEmptyEntries);
-            state.Request.SubtitleCodec = state.SupportedSubtitleCodecs.FirstOrDefault(mediaEncoder.CanEncodeToSubtitleCodec)
+            state.Request.SubtitleCodec = state.SupportedSubtitleCodecs.FirstOrDefault(_mediaEncoder.CanEncodeToSubtitleCodec)
                                           ?? state.SupportedSubtitleCodecs.FirstOrDefault();
         }
 
-        var item = libraryManager.GetItemById<BaseItem>(streamingRequest.Id)
+        var item = _libraryManager.GetItemById<BaseItem>(streamingRequest.Id)
             ?? throw new ResourceNotFoundException();
 
         state.IsInputVideo = item.MediaType == MediaType.Video;
@@ -118,7 +121,7 @@ public static class StreamingHelpers
         if (string.IsNullOrWhiteSpace(streamingRequest.LiveStreamId))
         {
             var currentJob = !string.IsNullOrWhiteSpace(streamingRequest.PlaySessionId)
-                ? transcodeManager.GetTranscodingJob(streamingRequest.PlaySessionId)
+                ? _transcodeManager.GetTranscodingJob(streamingRequest.PlaySessionId)
                 : null;
 
             if (currentJob is not null)
@@ -128,7 +131,7 @@ public static class StreamingHelpers
 
             if (mediaSource is null)
             {
-                var mediaSources = await mediaSourceManager.GetPlaybackMediaSources(libraryManager.GetItemById<BaseItem>(streamingRequest.Id), null, false, false, cancellationToken).ConfigureAwait(false);
+                var mediaSources = await _mediaSourceManager.GetPlaybackMediaSources(item, null, false, false, cancellationToken).ConfigureAwait(false);
 
                 mediaSource = string.IsNullOrEmpty(streamingRequest.MediaSourceId)
                     ? mediaSources[0]
@@ -161,12 +164,13 @@ public static class StreamingHelpers
                 state.Request.AudioCodec = "aac";
             }
 
-            var liveStreamInfo = await mediaSourceManager.GetLiveStreamWithDirectStreamProvider(streamingRequest.LiveStreamId, cancellationToken).ConfigureAwait(false);
+            var liveStreamInfo = await _mediaSourceManager.GetLiveStreamWithDirectStreamProvider(streamingRequest.LiveStreamId, cancellationToken).ConfigureAwait(false);
+
             mediaSource = liveStreamInfo.Item1;
             state.DirectStreamProvider = liveStreamInfo.Item2;
         }
 
-        var encodingOptions = serverConfigurationManager.GetEncodingOptions();
+        var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
 
         encodingHelper.AttachMediaSourceInfo(state, encodingOptions, mediaSource, url);
 
@@ -248,16 +252,11 @@ public static class StreamingHelpers
             ? GetOutputFileExtension(state, mediaSource)
             : ("." + GetContainerFileExtension(state.OutputContainer));
 
-        state.OutputFilePath = GetOutputFilePath(state, ext, serverConfigurationManager, streamingRequest.DeviceId, streamingRequest.PlaySessionId);
+        state.OutputFilePath = GetOutputFilePath(state, ext, _serverConfigurationManager, streamingRequest.DeviceId, streamingRequest.PlaySessionId);
 
         return state;
     }
 
-    /// <summary>
-    /// Parses query parameters as StreamOptions.
-    /// </summary>
-    /// <param name="queryString">The query string.</param>
-    /// <returns>A <see cref="Dictionary{String,String}"/> containing the stream options.</returns>
     private static Dictionary<string, string?> ParseStreamOptions(IQueryCollection queryString)
     {
         Dictionary<string, string?> streamOptions = new Dictionary<string, string?>();
@@ -275,12 +274,6 @@ public static class StreamingHelpers
         return streamOptions;
     }
 
-    /// <summary>
-    /// Gets the output file extension.
-    /// </summary>
-    /// <param name="state">The state.</param>
-    /// <param name="mediaSource">The mediaSource.</param>
-    /// <returns>System.String.</returns>
     private static string GetOutputFileExtension(StreamState state, MediaSourceInfo? mediaSource)
     {
         var ext = Path.GetExtension(state.RequestedUrl);
@@ -358,15 +351,6 @@ public static class StreamingHelpers
         throw new InvalidOperationException("Failed to find an appropriate file extension");
     }
 
-    /// <summary>
-    /// Gets the output file path for transcoding.
-    /// </summary>
-    /// <param name="state">The current <see cref="StreamState"/>.</param>
-    /// <param name="outputFileExtension">The file extension of the output file.</param>
-    /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
-    /// <param name="deviceId">The device id.</param>
-    /// <param name="playSessionId">The play session id.</param>
-    /// <returns>The complete file path, including the folder, for the transcoding file.</returns>
     private static string GetOutputFilePath(StreamState state, string outputFileExtension, IServerConfigurationManager serverConfigurationManager, string? deviceId, string? playSessionId)
     {
         var data = $"{state.MediaPath}-{state.UserAgent}-{deviceId!}-{playSessionId!}";
@@ -378,10 +362,6 @@ public static class StreamingHelpers
         return Path.Combine(folder, filename + ext);
     }
 
-    /// <summary>
-    /// Parses the parameters.
-    /// </summary>
-    /// <param name="request">The request.</param>
     private static void ParseParams(StreamingRequestDto request)
     {
         if (string.IsNullOrEmpty(request.Params))
@@ -581,10 +561,6 @@ public static class StreamingHelpers
         }
     }
 
-    /// <summary>
-    /// Parses the container into its file extension.
-    /// </summary>
-    /// <param name="container">The container.</param>
     private static string? GetContainerFileExtension(string? container)
     {
         if (string.Equals(container, "mpegts", StringComparison.OrdinalIgnoreCase))

@@ -3,18 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
+using Jellyfin.Api.Services;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Api;
-using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -23,8 +20,6 @@ using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -40,14 +35,7 @@ public class VideosController : BaseJellyfinApiController
     private readonly ILibraryManager _libraryManager;
     private readonly IUserManager _userManager;
     private readonly IDtoService _dtoService;
-    private readonly IMediaSourceManager _mediaSourceManager;
-    private readonly IServerConfigurationManager _serverConfigurationManager;
-    private readonly IMediaEncoder _mediaEncoder;
-    private readonly ITranscodeManager _transcodeManager;
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly EncodingHelper _encodingHelper;
-
-    private readonly TranscodingJobType _transcodingJobType = TranscodingJobType.Progressive;
+    private readonly IVideoService _videoService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VideosController"/> class.
@@ -55,32 +43,13 @@ public class VideosController : BaseJellyfinApiController
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
     /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
-    /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
-    /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
-    /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
-    /// <param name="transcodeManager">Instance of the <see cref="ITranscodeManager"/> interface.</param>
-    /// <param name="httpClientFactory">Instance of the <see cref="IHttpClientFactory"/> interface.</param>
-    /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
-    public VideosController(
-        ILibraryManager libraryManager,
-        IUserManager userManager,
-        IDtoService dtoService,
-        IMediaSourceManager mediaSourceManager,
-        IServerConfigurationManager serverConfigurationManager,
-        IMediaEncoder mediaEncoder,
-        ITranscodeManager transcodeManager,
-        IHttpClientFactory httpClientFactory,
-        EncodingHelper encodingHelper)
+    /// <param name="videoService">Instance of the <see cref="IVideoService"/>.</param>
+    public VideosController(ILibraryManager libraryManager, IUserManager userManager, IDtoService dtoService, IVideoService videoService)
     {
         _libraryManager = libraryManager;
         _userManager = userManager;
         _dtoService = dtoService;
-        _mediaSourceManager = mediaSourceManager;
-        _serverConfigurationManager = serverConfigurationManager;
-        _mediaEncoder = mediaEncoder;
-        _transcodeManager = transcodeManager;
-        _httpClientFactory = httpClientFactory;
-        _encodingHelper = encodingHelper;
+        _videoService = videoService;
     }
 
     /// <summary>
@@ -315,18 +284,18 @@ public class VideosController : BaseJellyfinApiController
     [ProducesVideoFile]
     public async Task<ActionResult> GetVideoStream(
         [FromRoute, Required] Guid itemId,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? container,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? container,
         [FromQuery] bool? @static,
         [FromQuery] string? @params,
         [FromQuery] string? tag,
         [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? segmentContainer,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? segmentContainer,
         [FromQuery] int? segmentLength,
         [FromQuery] int? minSegments,
         [FromQuery] string? mediaSourceId,
         [FromQuery] string? deviceId,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? audioCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? audioCodec,
         [FromQuery] bool? enableAutoStreamCopy,
         [FromQuery] bool? allowVideoStreamCopy,
         [FromQuery] bool? allowAudioStreamCopy,
@@ -358,8 +327,8 @@ public class VideosController : BaseJellyfinApiController
         [FromQuery] int? cpuCoreLimit,
         [FromQuery] string? liveStreamId,
         [FromQuery] bool? enableMpegtsM2TsMode,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? videoCodec,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? subtitleCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? videoCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? subtitleCodec,
         [FromQuery] string? transcodeReasons,
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
@@ -367,10 +336,7 @@ public class VideosController : BaseJellyfinApiController
         [FromQuery] Dictionary<string, string> streamOptions,
         [FromQuery] bool enableAudioVbrEncoding = true)
     {
-        var isHeadRequest = Request.Method == System.Net.WebRequestMethods.Http.Head;
-        // CTS lifecycle is managed internally.
-        var cancellationTokenSource = new CancellationTokenSource();
-        var streamingRequest = new VideoRequestDto
+        VideoRequestDto streamingRequest = new VideoRequestDto
         {
             Id = itemId,
             Container = container,
@@ -401,8 +367,6 @@ public class VideosController : BaseJellyfinApiController
             StartTimeTicks = startTimeTicks,
             Width = width,
             Height = height,
-            MaxWidth = maxWidth,
-            MaxHeight = maxHeight,
             VideoBitRate = videoBitRate,
             SubtitleStreamIndex = subtitleStreamIndex,
             SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.Encode,
@@ -422,75 +386,12 @@ public class VideosController : BaseJellyfinApiController
             VideoStreamIndex = videoStreamIndex,
             Context = context ?? EncodingContext.Streaming,
             StreamOptions = streamOptions,
-            EnableAudioVbrEncoding = enableAudioVbrEncoding
+            EnableAudioVbrEncoding = enableAudioVbrEncoding,
+            MaxHeight = maxHeight,
+            MaxWidth = maxWidth
         };
 
-        var state = await StreamingHelpers.GetStreamingState(
-                streamingRequest,
-                HttpContext,
-                _mediaSourceManager,
-                _userManager,
-                _libraryManager,
-                _serverConfigurationManager,
-                _mediaEncoder,
-                _encodingHelper,
-                _transcodeManager,
-                _transcodingJobType,
-                cancellationTokenSource.Token)
-            .ConfigureAwait(false);
-
-        if (@static.HasValue && @static.Value && state.DirectStreamProvider is not null)
-        {
-            var liveStreamInfo = _mediaSourceManager.GetLiveStreamInfo(streamingRequest.LiveStreamId);
-            if (liveStreamInfo is null)
-            {
-                return NotFound();
-            }
-
-            var liveStream = new ProgressiveFileStream(liveStreamInfo.GetStream());
-            // TODO (moved from MediaBrowser.Api): Don't hardcode contentType
-            return File(liveStream, MimeTypes.GetMimeType("file.ts"));
-        }
-
-        // Static remote stream
-        if (@static.HasValue && @static.Value && state.InputProtocol == MediaProtocol.Http)
-        {
-            var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
-            return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, httpClient, HttpContext).ConfigureAwait(false);
-        }
-
-        if (@static.HasValue && @static.Value && state.InputProtocol != MediaProtocol.File)
-        {
-            return BadRequest($"Input protocol {state.InputProtocol} cannot be streamed statically");
-        }
-
-        // Static stream
-        if (@static.HasValue && @static.Value && !(state.MediaSource.VideoType == VideoType.BluRay || state.MediaSource.VideoType == VideoType.Dvd))
-        {
-            var contentType = state.GetMimeType("." + state.OutputContainer, false) ?? state.GetMimeType(state.MediaPath);
-
-            if (state.MediaSource.IsInfiniteStream)
-            {
-                var liveStream = new ProgressiveFileStream(state.MediaPath, null, _transcodeManager);
-                return File(liveStream, contentType);
-            }
-
-            return FileStreamResponseHelpers.GetStaticFileResult(
-                state.MediaPath,
-                contentType);
-        }
-
-        // Need to start ffmpeg (because media can't be returned directly)
-        var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
-        var ffmpegCommandLineArguments = _encodingHelper.GetProgressiveVideoFullCommandLine(state, encodingOptions, "superfast");
-        return await FileStreamResponseHelpers.GetTranscodedFile(
-            state,
-            isHeadRequest,
-            HttpContext,
-            _transcodeManager,
-            ffmpegCommandLineArguments,
-            _transcodingJobType,
-            cancellationTokenSource).ConfigureAwait(false);
+        return await _videoService.GetVideoStreamAsync(streamingRequest, Request, HttpContext).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -554,7 +455,7 @@ public class VideosController : BaseJellyfinApiController
     [HttpHead("{itemId}/stream.{container}", Name = "HeadVideoStreamByContainer")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesVideoFile]
-    public Task<ActionResult> GetVideoStreamByContainer(
+    public async Task<ActionResult> GetVideoStreamByContainer(
         [FromRoute, Required] Guid itemId,
         [FromRoute, Required] string container,
         [FromQuery] bool? @static,
@@ -562,12 +463,12 @@ public class VideosController : BaseJellyfinApiController
         [FromQuery] string? tag,
         [FromQuery] string? deviceProfileId,
         [FromQuery] string? playSessionId,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? segmentContainer,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? segmentContainer,
         [FromQuery] int? segmentLength,
         [FromQuery] int? minSegments,
         [FromQuery] string? mediaSourceId,
         [FromQuery] string? deviceId,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? audioCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? audioCodec,
         [FromQuery] bool? enableAutoStreamCopy,
         [FromQuery] bool? allowVideoStreamCopy,
         [FromQuery] bool? allowAudioStreamCopy,
@@ -599,8 +500,8 @@ public class VideosController : BaseJellyfinApiController
         [FromQuery] int? cpuCoreLimit,
         [FromQuery] string? liveStreamId,
         [FromQuery] bool? enableMpegtsM2TsMode,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? videoCodec,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? subtitleCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? videoCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? subtitleCodec,
         [FromQuery] string? transcodeReasons,
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
@@ -608,58 +509,61 @@ public class VideosController : BaseJellyfinApiController
         [FromQuery] Dictionary<string, string> streamOptions,
         [FromQuery] bool enableAudioVbrEncoding = true)
     {
-        return GetVideoStream(
-            itemId,
-            container,
-            @static,
-            @params,
-            tag,
-            deviceProfileId,
-            playSessionId,
-            segmentContainer,
-            segmentLength,
-            minSegments,
-            mediaSourceId,
-            deviceId,
-            audioCodec,
-            enableAutoStreamCopy,
-            allowVideoStreamCopy,
-            allowAudioStreamCopy,
-            breakOnNonKeyFrames,
-            audioSampleRate,
-            maxAudioBitDepth,
-            audioBitRate,
-            audioChannels,
-            maxAudioChannels,
-            profile,
-            level,
-            framerate,
-            maxFramerate,
-            copyTimestamps,
-            startTimeTicks,
-            width,
-            height,
-            maxWidth,
-            maxHeight,
-            videoBitRate,
-            subtitleStreamIndex,
-            subtitleMethod,
-            maxRefFrames,
-            maxVideoBitDepth,
-            requireAvc,
-            deInterlace,
-            requireNonAnamorphic,
-            transcodingMaxAudioChannels,
-            cpuCoreLimit,
-            liveStreamId,
-            enableMpegtsM2TsMode,
-            videoCodec,
-            subtitleCodec,
-            transcodeReasons,
-            audioStreamIndex,
-            videoStreamIndex,
-            context,
-            streamOptions,
-            enableAudioVbrEncoding);
+        VideoRequestDto streamingRequest = new VideoRequestDto
+        {
+            Id = itemId,
+            Container = container,
+            Static = @static ?? false,
+            Params = @params,
+            Tag = tag,
+            PlaySessionId = playSessionId,
+            SegmentContainer = segmentContainer,
+            SegmentLength = segmentLength,
+            MinSegments = minSegments,
+            MediaSourceId = mediaSourceId,
+            DeviceId = deviceId,
+            AudioCodec = audioCodec,
+            EnableAutoStreamCopy = enableAutoStreamCopy ?? true,
+            AllowAudioStreamCopy = allowAudioStreamCopy ?? true,
+            AllowVideoStreamCopy = allowVideoStreamCopy ?? true,
+            BreakOnNonKeyFrames = breakOnNonKeyFrames ?? false,
+            AudioSampleRate = audioSampleRate,
+            MaxAudioChannels = maxAudioChannels,
+            AudioBitRate = audioBitRate,
+            MaxAudioBitDepth = maxAudioBitDepth,
+            AudioChannels = audioChannels,
+            Profile = profile,
+            Level = level,
+            Framerate = framerate,
+            MaxFramerate = maxFramerate,
+            CopyTimestamps = copyTimestamps ?? false,
+            StartTimeTicks = startTimeTicks,
+            Width = width,
+            Height = height,
+            VideoBitRate = videoBitRate,
+            SubtitleStreamIndex = subtitleStreamIndex,
+            SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.Encode,
+            MaxRefFrames = maxRefFrames,
+            MaxVideoBitDepth = maxVideoBitDepth,
+            RequireAvc = requireAvc ?? false,
+            DeInterlace = deInterlace ?? false,
+            RequireNonAnamorphic = requireNonAnamorphic ?? false,
+            TranscodingMaxAudioChannels = transcodingMaxAudioChannels,
+            CpuCoreLimit = cpuCoreLimit,
+            LiveStreamId = liveStreamId,
+            EnableMpegtsM2TsMode = enableMpegtsM2TsMode ?? false,
+            VideoCodec = videoCodec,
+            SubtitleCodec = subtitleCodec,
+            TranscodeReasons = transcodeReasons,
+            AudioStreamIndex = audioStreamIndex,
+            VideoStreamIndex = videoStreamIndex,
+            Context = context ?? EncodingContext.Streaming,
+            StreamOptions = streamOptions,
+            MaxHeight = maxHeight,
+            MaxWidth = maxWidth,
+            EnableAudioVbrEncoding = enableAudioVbrEncoding
+        };
+
+        return await _videoService.GetVideoStreamAsync(streamingRequest, Request, HttpContext).ConfigureAwait(false);
     }
 }
