@@ -57,7 +57,7 @@ public class LyricDownloadTask : IScheduledTask
     public string Name => _localizationManager.GetLocalizedString("TaskDownloadMissingLyrics");
 
     /// <inheritdoc />
-    public string Key => "DownloadLrcLibLyrics";
+    public string Key => "DownloadLyrics";
 
     /// <inheritdoc />
     public string Description => _localizationManager.GetLocalizedString("TaskDownloadMissingLyricsDescription");
