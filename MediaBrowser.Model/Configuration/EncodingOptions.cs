@@ -26,6 +26,7 @@ public class EncodingOptions
         // This is a DRM device that is almost guaranteed to be there on every intel platform,
         // plus it's the default one in ffmpeg if you don't specify anything
         VaapiDevice = "/dev/dri/renderD128";
+        QsvDevice = string.Empty;
         EnableTonemapping = false;
         EnableVppTonemapping = false;
         EnableVideoToolboxTonemapping = false;
@@ -135,6 +136,11 @@ public class EncodingOptions
     /// Gets or sets the VA-API device.
     /// </summary>
     public string VaapiDevice { get; set; }
+
+    /// <summary>
+    /// Gets or sets the QSV device.
+    /// </summary>
+    public string QsvDevice { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether tonemapping is enabled.
