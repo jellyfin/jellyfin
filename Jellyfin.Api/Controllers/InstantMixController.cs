@@ -307,45 +307,6 @@ public class InstantMixController : BaseJellyfinApiController
     }
 
     /// <summary>
-    /// Creates an instant playlist based on a given artist.
-    /// </summary>
-    /// <param name="id">The item id.</param>
-    /// <param name="userId">Optional. Filter by user id, and attach user data.</param>
-    /// <param name="limit">Optional. The maximum number of records to return.</param>
-    /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
-    /// <param name="enableImages">Optional. Include image information in output.</param>
-    /// <param name="enableUserData">Optional. Include user data.</param>
-    /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
-    /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
-    /// <response code="200">Instant playlist returned.</response>
-    /// <response code="404">Item not found.</response>
-    /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the playlist items.</returns>
-    [HttpGet("Artists/InstantMix")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [Obsolete("Use GetInstantMixFromArtists")]
-    public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromArtists2(
-        [FromQuery, Required] Guid id,
-        [FromQuery] Guid? userId,
-        [FromQuery] int? limit,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
-        [FromQuery] bool? enableImages,
-        [FromQuery] bool? enableUserData,
-        [FromQuery] int? imageTypeLimit,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
-    {
-        return GetInstantMixFromArtists(
-            id,
-            userId,
-            limit,
-            fields,
-            enableImages,
-            enableUserData,
-            imageTypeLimit,
-            enableImageTypes);
-    }
-
-    /// <summary>
     /// Creates an instant playlist based on a given genre.
     /// </summary>
     /// <param name="id">The item id.</param>

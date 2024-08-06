@@ -127,34 +127,6 @@ public class PluginsController : BaseJellyfinApiController
     }
 
     /// <summary>
-    /// Uninstalls a plugin.
-    /// </summary>
-    /// <param name="pluginId">Plugin id.</param>
-    /// <response code="204">Plugin uninstalled.</response>
-    /// <response code="404">Plugin not found.</response>
-    /// <returns>An <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if the plugin could not be found.</returns>
-    [HttpDelete("{pluginId}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [Obsolete("Please use the UninstallPluginByVersion API.")]
-    public ActionResult UninstallPlugin([FromRoute, Required] Guid pluginId)
-    {
-        // If no version is given, return the current instance.
-        var plugins = _pluginManager.Plugins.Where(p => p.Id.Equals(pluginId)).ToList();
-
-        // Select the un-instanced one first.
-        var plugin = plugins.FirstOrDefault(p => p.Instance is null) ?? plugins.MinBy(p => p.Manifest.Status);
-
-        if (plugin is not null)
-        {
-            _installationManager.UninstallPlugin(plugin);
-            return NoContent();
-        }
-
-        return NotFound();
-    }
-
-    /// <summary>
     /// Gets plugin configuration.
     /// </summary>
     /// <param name="pluginId">Plugin id.</param>

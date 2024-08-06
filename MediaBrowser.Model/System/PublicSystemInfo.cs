@@ -31,13 +31,6 @@ namespace MediaBrowser.Model.System
         public string ProductName { get; set; }
 
         /// <summary>
-        /// Gets or sets the operating system.
-        /// </summary>
-        /// <value>The operating system.</value>
-        [Obsolete("This is no longer set")]
-        public string OperatingSystem { get; set; } = string.Empty;
-
-        /// <summary>
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>

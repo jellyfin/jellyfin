@@ -14,9 +14,6 @@ namespace MediaBrowser.Controller.Session
 
         public string Password { get; set; }
 
-        [Obsolete("Send full password in Password field")]
-        public string PasswordSha1 { get; set; }
-
         public string App { get; set; }
 
         public string AppVersion { get; set; }

@@ -112,20 +112,6 @@ public class LibraryController : BaseJellyfinApiController
     }
 
     /// <summary>
-    /// Gets critic review for an item.
-    /// </summary>
-    /// <response code="200">Critic reviews returned.</response>
-    /// <returns>The list of critic reviews.</returns>
-    [HttpGet("Items/{itemId}/CriticReviews")]
-    [Authorize]
-    [Obsolete("This endpoint is obsolete.")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<QueryResult<BaseItemDto>> GetCriticReviews()
-    {
-        return new QueryResult<BaseItemDto>();
-    }
-
-    /// <summary>
     /// Get theme songs for an item.
     /// </summary>
     /// <param name="itemId">The item id.</param>

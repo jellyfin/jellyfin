@@ -22,13 +22,6 @@ namespace MediaBrowser.Model.System
         }
 
         /// <summary>
-        /// Gets or sets the display name of the operating system.
-        /// </summary>
-        /// <value>The display name of the operating system.</value>
-        [Obsolete("This is no longer set")]
-        public string OperatingSystemDisplayName { get; set; } = string.Empty;
-
-        /// <summary>
         /// Gets or sets the package name.
         /// </summary>
         /// <value>The value of the '-package' command line argument.</value>
@@ -59,18 +52,6 @@ namespace MediaBrowser.Model.System
         /// </summary>
         /// <value>The completed installations.</value>
         public InstallationInfo[] CompletedInstallations { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance can self restart.
-        /// </summary>
-        /// <value><c>true</c>.</value>
-        [Obsolete("This is always true")]
-        [DefaultValue(true)]
-        public bool CanSelfRestart { get; set; } = true;
-
-        [Obsolete("This is always false")]
-        [DefaultValue(false)]
-        public bool CanLaunchWebBrowser { get; set; } = false;
 
         /// <summary>
         /// Gets or sets the program data path.
@@ -118,21 +99,5 @@ namespace MediaBrowser.Model.System
         /// Gets or sets the list of cast receiver applications.
         /// </summary>
         public IReadOnlyList<CastReceiverApplication> CastReceiverApplications { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance has update available.
-        /// </summary>
-        /// <value><c>true</c> if this instance has update available; otherwise, <c>false</c>.</value>
-        [Obsolete("This should be handled by the package manager")]
-        [DefaultValue(false)]
-        public bool HasUpdateAvailable { get; set; }
-
-        [Obsolete("This isn't set correctly anymore")]
-        [DefaultValue("System")]
-        public string EncoderLocation { get; set; } = "System";
-
-        [Obsolete("This is no longer set")]
-        [DefaultValue("X64")]
-        public string SystemArchitecture { get; set; } = "X64";
     }
 }
