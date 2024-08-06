@@ -18,7 +18,7 @@ namespace MediaBrowser.Providers.Plugins.StudioImages
         /// <summary>
         /// Artwork repository URL.
         /// </summary>
-        public const string DefaultServer = "https://raw.github.com/jellyfin/emby-artwork/master/studios";
+        public const string DefaultServer = "https://raw.githubusercontent.com/jellyfin/emby-artwork/master/studios";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Plugin"/> class.
