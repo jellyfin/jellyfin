@@ -24,6 +24,7 @@ using Jellyfin.Server.Configuration;
 using Jellyfin.Server.Filters;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.Authentication;
@@ -35,6 +36,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using AuthenticationSchemes = Jellyfin.Api.Constants.AuthenticationSchemes;
 
@@ -253,6 +257,48 @@ namespace Jellyfin.Server.Extensions
                 c.OperationFilter<ParameterObsoleteFilter>();
                 c.DocumentFilter<AdditionalModelFilter>();
             });
+        }
+
+        /// <summary>
+        /// Add Open Telemetry Services.
+        /// </summary>
+        /// <param name="serviceCollection">The Service Collection.</param>
+        /// <param name="config">Otel Config.</param>
+        /// <param name="appVersion">Application Version.</param>
+        /// <returns>Updated Service Collection.</returns>
+        public static IServiceCollection AddOTel(this IServiceCollection serviceCollection, OtelConfiguration config, string appVersion)
+        {
+            if (config.Enabled)
+            {
+                serviceCollection
+                    .AddOpenTelemetry()
+                    .ConfigureResource(resourceBuilder => resourceBuilder.AddService("JellyFin", appVersion))
+                    .WithMetrics(metrics =>
+                    {
+                        metrics
+                        .AddMeter(config.Meters)
+                        .AddAspNetCoreInstrumentation()
+                        .AddRuntimeInstrumentation()
+                        .AddHttpClientInstrumentation();
+                        metrics.AddOtlpExporter(exporter =>
+                        {
+                            exporter.Endpoint = new Uri(config.Endpoint);
+                        });
+                    })
+                    .WithTracing(tracing =>
+                    {
+                        tracing
+                        .AddSource(config.ActivitySources)
+                        .AddAspNetCoreInstrumentation()
+                        .AddHttpClientInstrumentation();
+                        tracing.AddOtlpExporter(exporter =>
+                        {
+                            exporter.Endpoint = new Uri(config.Endpoint);
+                        });
+                    });
+            }
+
+            return serviceCollection;
         }
 
         private static void AddPolicy(this AuthorizationOptions authorizationOptions, string policyName, IAuthorizationRequirement authorizationRequirement)
