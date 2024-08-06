@@ -146,8 +146,8 @@ namespace Emby.Naming.Common
 
             CleanDateTimes = new[]
             {
-                @"(.+[^_\,\.\(\)\[\]\-])[_\.\(\)\[\]\-](19[0-9]{2}|20[0-9]{2})(?![0-9]+|\W[0-9]{2}\W[0-9]{2})([ _\,\.\(\)\[\]\-][^0-9]|).*(19[0-9]{2}|20[0-9]{2})*",
-                @"(.+[^_\,\.\(\)\[\]\-])[ _\.\(\)\[\]\-]+(19[0-9]{2}|20[0-9]{2})(?![0-9]+|\W[0-9]{2}\W[0-9]{2})([ _\,\.\(\)\[\]\-][^0-9]|).*(19[0-9]{2}|20[0-9]{2})*"
+                @"(.+?[^_\,\.\(\)\[\]\-])[_\.\(\)\[\]\-](19[0-9]{2}|20[0-9]{2})(?![0-9]+|\W[0-9]{2}\W[0-9]{2})([ _\,\.\(\)\[\]\-][^0-9]|).*(19[0-9]{2}|20[0-9]{2})*",
+                @"(.+?[^_\,\.\(\)\[\]\-])[ _\.\(\)\[\]\-]+(19[0-9]{2}|20[0-9]{2})(?![0-9]+|\W[0-9]{2}\W[0-9]{2})([ _\,\.\(\)\[\]\-][^0-9]|).*(19[0-9]{2}|20[0-9]{2})*"
             };
 
             CleanStrings = new[]
@@ -739,6 +739,12 @@ namespace Emby.Naming.Common
                 @"^\s*(?<name>[^ ].*?)\s*$"
             };
 
+            VideoVersionExpressions = new[]
+            {
+                // Get filename before final space-dash-space
+                @"^(?<filename>.*?)(?:\s-\s(?!.*\s-\s)(.*))?$"
+            };
+
             MultipleEpisodeExpressions = new[]
             {
                 @".*(\\|\/)[sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]{1,3})((-| - )[0-9]{1,4}[eExX](?<endingepnumber>[0-9]{1,3}))+[^\\\/]*$",
@@ -865,6 +871,11 @@ namespace Emby.Naming.Common
         public string[] CleanStrings { get; set; }
 
         /// <summary>
+        /// Gets or sets list of raw clean strings regular expressions strings.
+        /// </summary>
+        public string[] VideoVersionExpressions { get; set; }
+
+        /// <summary>
         /// Gets or sets list of multi-episode regular expressions.
         /// </summary>
         public EpisodeExpression[] MultipleEpisodeExpressions { get; set; }
@@ -885,12 +896,18 @@ namespace Emby.Naming.Common
         public Regex[] CleanStringRegexes { get; private set; } = Array.Empty<Regex>();
 
         /// <summary>
+        /// Gets list of video version regular expressions.
+        /// </summary>
+        public Regex[] VideoVersionRegexes { get; private set; } = Array.Empty<Regex>();
+
+        /// <summary>
         /// Compiles raw regex strings into regexes.
         /// </summary>
         public void Compile()
         {
             CleanDateTimeRegexes = CleanDateTimes.Select(Compile).ToArray();
             CleanStringRegexes = CleanStrings.Select(Compile).ToArray();
+            VideoVersionRegexes = VideoVersionExpressions.Select(Compile).ToArray();
         }
 
         private Regex Compile(string exp)

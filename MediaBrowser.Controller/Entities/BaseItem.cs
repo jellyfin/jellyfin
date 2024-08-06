@@ -1194,9 +1194,17 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (HasLocalAlternateVersions)
                 {
-                    var displayName = System.IO.Path.GetFileNameWithoutExtension(path)
+                    var fileName = System.IO.Path.GetFileNameWithoutExtension(path);
+                    var displayName = fileName
                         .Replace(System.IO.Path.GetFileName(ContainingFolderPath), string.Empty, StringComparison.OrdinalIgnoreCase)
                         .TrimStart(new char[] { ' ', '-' });
+
+                    if (fileName == displayName)
+                    {
+                        // File does not start with parent folder name. This must be an episode in a mixed directory
+                        // Get string after last dash - this is the version name
+                        displayName = fileName.Substring(fileName.LastIndexOf('-') + 1).TrimStart(new char[] { ' ', '-' });
+                    }
 
                     if (!string.IsNullOrEmpty(displayName))
                     {
