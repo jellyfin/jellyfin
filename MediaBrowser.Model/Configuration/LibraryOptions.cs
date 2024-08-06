@@ -13,6 +13,8 @@ namespace MediaBrowser.Model.Configuration
             DisabledSubtitleFetchers = Array.Empty<string>();
             SubtitleFetcherOrder = Array.Empty<string>();
             DisabledLocalMetadataReaders = Array.Empty<string>();
+            DisabledLyricFetchers = Array.Empty<string>();
+            LyricFetcherOrder = Array.Empty<string>();
 
             SkipSubtitlesIfAudioTrackMatches = true;
             RequirePerfectSubtitleMatch = true;
@@ -96,6 +98,10 @@ namespace MediaBrowser.Model.Configuration
 
         [DefaultValue(false)]
         public bool SaveLyricsWithMedia { get; set; }
+
+        public string[] DisabledLyricFetchers { get; set; }
+
+        public string[] LyricFetcherOrder { get; set; }
 
         public bool AutomaticallyAddToCollection { get; set; }
 
