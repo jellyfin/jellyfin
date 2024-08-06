@@ -14,6 +14,6 @@ namespace MediaBrowser.Controller.Chapters
         /// </summary>
         /// <param name="itemId">The item.</param>
         /// <param name="chapters">The set of chapters.</param>
-        void SaveChapters(Guid itemId, IReadOnlyList<ChapterInfo> chapters);
+        void SaveChapters(Guid itemId, IEnumerable<ChapterInfo> chapters);
     }
 }

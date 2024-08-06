@@ -66,7 +66,7 @@ namespace MediaBrowser.Providers.TV
         }
 
         /// <inheritdoc />
-        protected override void MergeData(MetadataResult<Series> source, MetadataResult<Series> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<Series> source, MetadataResult<Series> target, IReadOnlyList<MetadataField> lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             base.MergeData(source, target, lockedFields, replaceData, mergeMetadataSettings);
 
@@ -83,7 +83,7 @@ namespace MediaBrowser.Providers.TV
                 targetItem.Status = sourceItem.Status;
             }
 
-            if (replaceData || targetItem.AirDays is null || targetItem.AirDays.Length == 0)
+            if (replaceData || targetItem.AirDays is null || targetItem.AirDays.Count == 0)
             {
                 targetItem.AirDays = sourceItem.AirDays;
             }

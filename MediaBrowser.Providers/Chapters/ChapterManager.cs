@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
@@ -18,9 +19,9 @@ namespace MediaBrowser.Providers.Chapters
         }
 
         /// <inheritdoc />
-        public void SaveChapters(Guid itemId, IReadOnlyList<ChapterInfo> chapters)
+        public void SaveChapters(Guid itemId, IEnumerable<ChapterInfo> chapters)
         {
-            _itemRepo.SaveChapters(itemId, chapters);
+            _itemRepo.SaveChapters(itemId, chapters.ToImmutableList());
         }
     }
 }

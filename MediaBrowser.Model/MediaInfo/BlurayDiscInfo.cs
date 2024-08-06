@@ -14,7 +14,7 @@ public class BlurayDiscInfo
     /// Gets or sets the media streams.
     /// </summary>
     /// <value>The media streams.</value>
-    public IEnumerable<MediaStream> MediaStreams { get; set; }
+    public IReadOnlyList<MediaStream> MediaStreams { get; set; }
 
     /// <summary>
     /// Gets or sets the run time ticks.
@@ -26,7 +26,7 @@ public class BlurayDiscInfo
     /// Gets or sets the files.
     /// </summary>
     /// <value>The files.</value>
-    public IEnumerable<string> Files { get; set; }
+    public IReadOnlyList<string> Files { get; set; }
 
     /// <summary>
     /// Gets or sets the playlist name.
@@ -38,5 +38,5 @@ public class BlurayDiscInfo
     /// Gets or sets the chapters.
     /// </summary>
     /// <value>The chapters.</value>
-    public IEnumerable<double> Chapters { get; set; }
+    public IReadOnlyList<double> Chapters { get; set; }
 }

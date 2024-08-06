@@ -19,7 +19,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (!current.Contains(name, StringComparison.OrdinalIgnoreCase))
             {
-                if (current.Length == 0)
+                if (current.Count == 0)
                 {
                     item.Tags = [name];
                 }
