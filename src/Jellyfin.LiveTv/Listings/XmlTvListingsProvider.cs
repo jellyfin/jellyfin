@@ -167,7 +167,7 @@ namespace Jellyfin.LiveTv.Listings
                 Overview = program.Description,
                 ProductionYear = program.CopyrightDate?.Year,
                 SeasonNumber = program.Episode.Series,
-                IsSeries = program.Episode.Series is not null,
+                IsSeries = program.Episode.Episode is not null,
                 IsRepeat = program.IsPreviouslyShown && !program.IsNew,
                 IsPremiere = program.Premiere is not null,
                 IsKids = programCategories.Any(c => info.KidsCategories.Contains(c, StringComparison.OrdinalIgnoreCase)),
