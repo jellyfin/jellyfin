@@ -16,7 +16,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Channels;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
@@ -27,17 +26,15 @@ namespace Emby.Server.Implementations.Library
     {
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _localizationManager;
-        private readonly IUserManager _userManager;
 
         private readonly IChannelManager _channelManager;
         private readonly ILiveTvManager _liveTvManager;
         private readonly IServerConfigurationManager _config;
 
-        public UserViewManager(ILibraryManager libraryManager, ILocalizationManager localizationManager, IUserManager userManager, IChannelManager channelManager, ILiveTvManager liveTvManager, IServerConfigurationManager config)
+        public UserViewManager(ILibraryManager libraryManager, ILocalizationManager localizationManager, IChannelManager channelManager, ILiveTvManager liveTvManager, IServerConfigurationManager config)
         {
             _libraryManager = libraryManager;
             _localizationManager = localizationManager;
-            _userManager = userManager;
             _channelManager = channelManager;
             _liveTvManager = liveTvManager;
             _config = config;
@@ -45,11 +42,7 @@ namespace Emby.Server.Implementations.Library
 
         public Folder[] GetUserViews(UserViewQuery query)
         {
-            var user = _userManager.GetUserById(query.UserId);
-            if (user is null)
-            {
-                throw new ArgumentException("User id specified in the query does not exist.", nameof(query));
-            }
+            var user = query.User;
 
             var folders = _libraryManager.GetUserRootFolder()
                 .GetChildren(user, true)
@@ -125,14 +118,14 @@ namespace Emby.Server.Implementations.Library
             {
                 var channelResult = _channelManager.GetChannelsInternalAsync(new ChannelQuery
                 {
-                    UserId = query.UserId
+                    UserId = user.Id
                 }).GetAwaiter().GetResult();
 
                 var channels = channelResult.Items;
 
                 list.AddRange(channels);
 
-                if (_liveTvManager.GetEnabledUsers().Select(i => i.Id).Contains(query.UserId))
+                if (_liveTvManager.GetEnabledUsers().Select(i => i.Id).Contains(user.Id))
                 {
                     list.Add(_liveTvManager.GetInternalLiveTvFolder(CancellationToken.None));
                 }
@@ -207,9 +200,7 @@ namespace Emby.Server.Implementations.Library
 
         public List<Tuple<BaseItem, List<BaseItem>>> GetLatestItems(LatestItemsQuery request, DtoOptions options)
         {
-            var user = _userManager.GetUserById(request.UserId);
-
-            var libraryItems = GetItemsForLatestItems(user, request, options);
+            var libraryItems = GetItemsForLatestItems(request.User, request, options);
 
             var list = new List<Tuple<BaseItem, List<BaseItem>>>();
 

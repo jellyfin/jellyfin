@@ -8,6 +8,7 @@ using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.UserViewDtos;
 using Jellyfin.Data.Enums;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -69,8 +70,9 @@ public class UserViewsController : BaseJellyfinApiController
         [FromQuery] bool includeHidden = false)
     {
         userId = RequestHelpers.GetUserId(User, userId);
+        var user = _userManager.GetUserById(userId.Value) ?? throw new ResourceNotFoundException();
 
-        var query = new UserViewQuery { UserId = userId.Value, IncludeHidden = includeHidden };
+        var query = new UserViewQuery { User = user, IncludeHidden = includeHidden };
 
         if (includeExternalContent.HasValue)
         {
@@ -86,8 +88,6 @@ public class UserViewsController : BaseJellyfinApiController
 
         var dtoOptions = new DtoOptions().AddClientFields(User);
         dtoOptions.Fields = [..dtoOptions.Fields, ItemFields.PrimaryImageAspectRatio, ItemFields.DisplayPreferencesId];
-
-        var user = _userManager.GetUserById(userId.Value);
 
         var dtos = Array.ConvertAll(folders, i => _dtoService.GetBaseItemDto(i, dtoOptions, user));
 

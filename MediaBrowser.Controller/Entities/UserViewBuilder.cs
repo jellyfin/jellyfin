@@ -337,7 +337,7 @@ namespace MediaBrowser.Controller.Entities
                 {
                     Limit = query.Limit,
                     StartIndex = query.StartIndex,
-                    UserId = query.User.Id
+                    User = query.User
                 },
                 parentFolders,
                 query.DtoOptions);
