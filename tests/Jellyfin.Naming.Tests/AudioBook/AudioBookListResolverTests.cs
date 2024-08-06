@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Emby.Naming.AudioBook;
 using Emby.Naming.Common;
@@ -255,6 +256,113 @@ namespace Jellyfin.Naming.Tests.AudioBook
             })).ToList();
 
             Assert.Empty(result);
+        }
+
+        [Fact]
+        public void Resolve_EmptyFileList_ShouldReturnEmptyList()
+        {
+            // Arrange
+            var resolver = GetResolver();
+            var files = new List<FileSystemMetadata>();
+
+            // Act
+            var result = resolver.Resolve(files);
+
+            // Assert
+            Assert.Empty(result);
+        }
+
+        [Fact]
+        public void Resolve_WithValidFiles_ShouldReturnAudioBookInfo()
+        {
+            // Arrange
+            var resolver = GetResolver();
+            var files = new List<FileSystemMetadata>
+            {
+                new FileSystemMetadata { IsDirectory = false, FullName = "SampleAudioBookFile1.mp3" },
+                new FileSystemMetadata { IsDirectory = false, FullName = "SampleAudioBookFile2.mp3" }
+            };
+
+            // Act
+            var result = resolver.Resolve(files);
+
+            // Assert
+            Assert.NotEmpty(result);
+        }
+
+        [Fact]
+        public void Resolve_WithAlternativeFiles_ShouldIncludeAlternativesInAudioBookInfo()
+        {
+            // Arrange
+            var resolver = GetResolver();
+            var files = new List<FileSystemMetadata>
+            {
+                new FileSystemMetadata { IsDirectory = false, FullName = "SampleAudioBookFile1.mp3" },
+                new FileSystemMetadata { IsDirectory = false, FullName = "SampleAudioBookFile2.mp3" },
+                new FileSystemMetadata { IsDirectory = false, FullName = "SampleAudioBookFile2_alternate.mp3" }
+            };
+
+            // Act
+            var result = resolver.Resolve(files);
+
+            // Assert
+            var audioBookInfo = Assert.Single(result);
+            Assert.NotEmpty(audioBookInfo.AlternateVersions);
+        }
+
+        [Fact]
+        public void Resolve_WithValidFiles_ShouldExtractNameAndYear()
+        {
+            // Arrange
+            var resolver = GetResolver();
+            var files = new[]
+            {
+                new FileSystemMetadata { IsDirectory = false, FullName = "Harry Potter and the Deathly Hallows (2007)/Chapter 1.ogg" },
+                new FileSystemMetadata { IsDirectory = false, FullName = "Batman (2020).ogg" },
+                new FileSystemMetadata { IsDirectory = false, FullName = "Batman( 2021 ).mp3" },
+                new FileSystemMetadata { IsDirectory = false, FullName = "Batman(*2021*).mp3" },
+                new FileSystemMetadata { IsDirectory = false, FullName = "Batman.mp3" },
+                new FileSystemMetadata { IsDirectory = false, FullName = " + Batman . .mp3" },
+                new FileSystemMetadata { IsDirectory = false, FullName = " .mp3" }
+            };
+
+            // Act
+            var result = resolver.Resolve(files).ToList(); // Convert to a list once
+
+            // Assert
+            Assert.Equal(files.Length, result.Count);
+            Assert.Equal("Harry Potter and the Deathly Hallows", result[0].Name);
+            Assert.Equal(2007, result[0].Year);
+            Assert.Equal("Batman", result[1].Name);
+            Assert.Equal(2020, result[1].Year);
+            Assert.Equal("Batman", result[2].Name);
+            Assert.Equal(2021, result[2].Year);
+            Assert.Equal("Batman(*2021*)", result[3].Name);
+            Assert.Null(result[3].Year);
+            Assert.Equal("Batman", result[4].Name);
+            Assert.Null(result[4].Year);
+            Assert.Equal("+ Batman .", result[5].Name);
+            Assert.Null(result[5].Year);
+            Assert.Equal(" ", result[6].Name);
+            Assert.Null(result[6].Year);
+        }
+
+        [Fact]
+        public void Resolve_WithMetadataFiles_ShouldIgnoreMetadataFiles()
+        {
+            // Arrange
+            var resolver = GetResolver();
+            var files = new List<FileSystemMetadata>
+            {
+                new FileSystemMetadata { IsDirectory = false, FullName = "Harry Potter and the Deathly Hallows/Chapter 1.ogg" },
+                new FileSystemMetadata { IsDirectory = false, FullName = "Harry Potter and the Deathly Hallows/Harry Potter and the Deathly Hallows.nfo" }
+            };
+
+            // Act
+            var result = resolver.Resolve(files);
+
+            // Assert
+            Assert.Single(result);
         }
 
         private AudioBookListResolver GetResolver()
