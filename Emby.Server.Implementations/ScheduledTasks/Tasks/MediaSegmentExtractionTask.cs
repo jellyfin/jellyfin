@@ -87,8 +87,7 @@ public class MediaSegmentExtractionTask : IScheduledTask
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    // in this case its expected that the token might show a cancelation so abort gracefully.
-                    return;
+                    cancellationToken.ThrowIfCancellationRequested();
                 }
 
                 var video = videos[i];
