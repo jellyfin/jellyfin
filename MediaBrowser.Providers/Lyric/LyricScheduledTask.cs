@@ -20,7 +20,7 @@ namespace MediaBrowser.Providers.Lyric;
 /// <summary>
 /// Task to download lyrics.
 /// </summary>
-public class LyricDownloadTask : IScheduledTask
+public class LyricScheduledTask : IScheduledTask
 {
     private const int QueryPageLimit = 100;
 
@@ -31,20 +31,20 @@ public class LyricDownloadTask : IScheduledTask
 
     private readonly ILibraryManager _libraryManager;
     private readonly ILyricManager _lyricManager;
-    private readonly ILogger<LyricDownloadTask> _logger;
+    private readonly ILogger<LyricScheduledTask> _logger;
     private readonly ILocalizationManager _localizationManager;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="LyricDownloadTask"/> class.
+    /// Initializes a new instance of the <see cref="LyricScheduledTask"/> class.
     /// </summary>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="lyricManager">Instance of the <see cref="ILyricManager"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger{DownloaderScheduledTask}"/> interface.</param>
     /// <param name="localizationManager">Instance of the <see cref="ILocalizationManager"/> interface.</param>
-    public LyricDownloadTask(
+    public LyricScheduledTask(
         ILibraryManager libraryManager,
         ILyricManager lyricManager,
-        ILogger<LyricDownloadTask> logger,
+        ILogger<LyricScheduledTask> logger,
         ILocalizationManager localizationManager)
     {
         _libraryManager = libraryManager;
