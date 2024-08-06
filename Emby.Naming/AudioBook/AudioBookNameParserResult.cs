@@ -18,7 +18,7 @@ namespace Emby.Naming.AudioBook
         public int? Year { get; set; }
 
         /// <summary>
-        /// Comparison equallity operators for <see cref="AudioBookNameParserResult"/>.
+        /// Equality operator for <see cref="AudioBookNameParserResult"/>.
         /// </summary>
         /// <param name="left">Source comparison object.</param>
         /// <param name="right">Target comparision object.</param>
@@ -29,7 +29,7 @@ namespace Emby.Naming.AudioBook
         }
 
         /// <summary>
-        /// Comparison unequallity operators for <see cref="AudioBookNameParserResult"/>.
+        /// Inequality operator for <see cref="AudioBookNameParserResult"/>.
         /// </summary>
         /// <param name="left">Source comparison object.</param>
         /// <param name="right">Target comparision object.</param>

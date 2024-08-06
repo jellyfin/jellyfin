@@ -19,9 +19,9 @@ namespace MediaBrowser.Providers.Chapters
         }
 
         /// <inheritdoc />
-        public void SaveChapters(Guid itemId, IEnumerable<ChapterInfo> chapters)
+        public void SaveChapters(Guid itemId, IReadOnlyList<ChapterInfo> chapters)
         {
-            _itemRepo.SaveChapters(itemId, chapters.ToImmutableList());
+            _itemRepo.SaveChapters(itemId, chapters);
         }
     }
 }
