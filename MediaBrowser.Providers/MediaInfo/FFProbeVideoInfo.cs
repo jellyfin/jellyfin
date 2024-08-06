@@ -298,9 +298,10 @@ namespace MediaBrowser.Providers.MediaInfo
                     extractDuringScan = libraryOptions.ExtractChapterImagesDuringLibraryScan;
                 }
 
-                await _encodingManager.RefreshChapterImages(video, options.DirectoryService, chapters.ToImmutableList(), extractDuringScan, false, cancellationToken).ConfigureAwait(false);
+                var chapterlist = chapters.ToImmutableList();
+                await _encodingManager.RefreshChapterImages(video, options.DirectoryService, chapterlist, extractDuringScan, false, cancellationToken).ConfigureAwait(false);
 
-                _chapterManager.SaveChapters(video.Id, chapters);
+                _chapterManager.SaveChapters(video.Id, chapterlist);
             }
         }
 

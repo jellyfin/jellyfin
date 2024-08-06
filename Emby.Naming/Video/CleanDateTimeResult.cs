@@ -31,7 +31,7 @@ namespace Emby.Naming.Video
         public int? Year { get; }
 
         /// <summary>
-        /// Comparison equallity operators for <see cref="CleanDateTimeResult"/>.
+        /// Equallity operator for <see cref="CleanDateTimeResult"/>.
         /// </summary>
         /// <param name="left">Source comparison object.</param>
         /// <param name="right">Target comparision object.</param>
@@ -42,7 +42,7 @@ namespace Emby.Naming.Video
         }
 
         /// <summary>
-        /// Comparison unequallity operators for <see cref="CleanDateTimeResult"/>.
+        /// Inequality operators for <see cref="CleanDateTimeResult"/>.
         /// </summary>
         /// <param name="left">Source comparison object.</param>
         /// <param name="right">Target comparision object.</param>
