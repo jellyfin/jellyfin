@@ -516,6 +516,7 @@ public class UserLibraryController : BaseJellyfinApiController
     /// <param name="enableUserData">Optional. include user data.</param>
     /// <param name="limit">Return item limit.</param>
     /// <param name="groupItems">Whether or not to group items into a parent container.</param>
+    /// <param name="sortByDateAdded">Whether or not to sort by date added or by premier date.</param>
     /// <response code="200">Latest media returned.</response>
     /// <returns>An <see cref="OkResult"/> containing the latest media.</returns>
     [HttpGet("Items/Latest")]
@@ -531,7 +532,8 @@ public class UserLibraryController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
         [FromQuery] bool? enableUserData,
         [FromQuery] int limit = 20,
-        [FromQuery] bool groupItems = true)
+        [FromQuery] bool groupItems = true,
+        [FromQuery] bool sortByDateAdded = true)
     {
         var requestUserId = RequestHelpers.GetUserId(User, userId);
         var user = _userManager.GetUserById(requestUserId);
@@ -561,6 +563,7 @@ public class UserLibraryController : BaseJellyfinApiController
                 Limit = limit,
                 ParentId = parentId ?? Guid.Empty,
                 UserId = requestUserId,
+                SortBy = sortByDateAdded ? ItemSortBy.DateCreated : ItemSortBy.PremiereDate
             },
             dtoOptions);
 

@@ -365,7 +365,7 @@ namespace Emby.Server.Implementations.Library
                 IncludeItemTypes = includeItemTypes,
                 OrderBy = new[]
                 {
-                    (ItemSortBy.DateCreated, SortOrder.Descending),
+                    (request.SortBy, SortOrder.Descending),
                     (ItemSortBy.SortName, SortOrder.Descending),
                     (ItemSortBy.ProductionYear, SortOrder.Descending)
                 },
