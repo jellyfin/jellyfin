@@ -3,6 +3,7 @@
 #pragma warning disable CA1819, CS1591
 
 using System;
+using System.Collections.Generic;
 using Jellyfin.Data.Enums;
 
 namespace MediaBrowser.Controller.Entities
@@ -18,7 +19,7 @@ namespace MediaBrowser.Controller.Entities
 
         Guid Id { get; }
 
-        string[] PhysicalLocations { get; }
+        IReadOnlyList<string> PhysicalLocations { get; }
     }
 
     public interface ISupportsUserSpecificView
