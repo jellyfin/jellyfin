@@ -17,17 +17,27 @@ namespace Emby.Naming.AudioBook
         /// </summary>
         public int? Year { get; set; }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+        /// <summary>
+        /// Comparison equallity operators for <see cref="AudioBookNameParserResult"/>.
+        /// </summary>
+        /// <param name="left">Source comparison object.</param>
+        /// <param name="right">Target comparision object.</param>
+        /// <returns>If both objects are the equal.</returns>
         public static bool operator ==(AudioBookNameParserResult left, AudioBookNameParserResult right)
         {
             return left.Equals(right);
         }
 
+        /// <summary>
+        /// Comparison unequallity operators for <see cref="AudioBookNameParserResult"/>.
+        /// </summary>
+        /// <param name="left">Source comparison object.</param>
+        /// <param name="right">Target comparision object.</param>
+        /// <returns>If both objects are the equal.</returns>
         public static bool operator !=(AudioBookNameParserResult left, AudioBookNameParserResult right)
         {
             return !(left == right);
         }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         /// <inheritdoc/>
         public override bool Equals(object? obj)
