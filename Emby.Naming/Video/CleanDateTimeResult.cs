@@ -30,17 +30,27 @@ namespace Emby.Naming.Video
         /// <value>The year.</value>
         public int? Year { get; }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+        /// <summary>
+        /// Comparison equallity operators for <see cref="CleanDateTimeResult"/>.
+        /// </summary>
+        /// <param name="left">Source comparison object.</param>
+        /// <param name="right">Target comparision object.</param>
+        /// <returns>If both objects are the equal.</returns>
         public static bool operator ==(CleanDateTimeResult left, CleanDateTimeResult right)
         {
             return left.Equals(right);
         }
 
+        /// <summary>
+        /// Comparison unequallity operators for <see cref="CleanDateTimeResult"/>.
+        /// </summary>
+        /// <param name="left">Source comparison object.</param>
+        /// <param name="right">Target comparision object.</param>
+        /// <returns>If both objects are the equal.</returns>
         public static bool operator !=(CleanDateTimeResult left, CleanDateTimeResult right)
         {
             return !(left == right);
         }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         /// <inheritdoc/>
         public override bool Equals(object? obj)
