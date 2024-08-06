@@ -1879,8 +1879,14 @@ namespace Emby.Server.Implementations.Library
             var outdated = forceUpdate
                 ? item.ImageInfos.Where(i => i.Path is not null).ToArray()
                 : item.ImageInfos.Where(ImageNeedsRefresh).ToArray();
-            // Skip image processing if current or live tv source
-            if (outdated.Length == 0 || item.SourceType != SourceType.Library)
+
+            var parentItem = item.GetParent();
+            var isLiveTvShow = item.SourceType != SourceType.Library &&
+                               parentItem is not null &&
+                               parentItem.SourceType != SourceType.Library; // not a channel
+
+            // Skip image processing if current or live tv show
+            if (outdated.Length == 0 || isLiveTvShow)
             {
                 RegisterItem(item);
                 return;
