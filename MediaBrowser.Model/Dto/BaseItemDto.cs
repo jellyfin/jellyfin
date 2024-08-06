@@ -111,13 +111,13 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the external urls.
         /// </summary>
         /// <value>The external urls.</value>
-        public ExternalUrl[] ExternalUrls { get; set; }
+        public IReadOnlyList<ExternalUrl> ExternalUrls { get; set; }
 
         /// <summary>
         /// Gets or sets the media versions.
         /// </summary>
         /// <value>The media versions.</value>
-        public MediaSourceInfo[] MediaSources { get; set; }
+        public IReadOnlyList<MediaSourceInfo> MediaSources { get; set; }
 
         /// <summary>
         /// Gets or sets the critic rating.
@@ -125,7 +125,7 @@ namespace MediaBrowser.Model.Dto
         /// <value>The critic rating.</value>
         public float? CriticRating { get; set; }
 
-        public string[] ProductionLocations { get; set; }
+        public IReadOnlyList<string> ProductionLocations { get; set; }
 
         /// <summary>
         /// Gets or sets the path.
@@ -165,13 +165,13 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the taglines.
         /// </summary>
         /// <value>The taglines.</value>
-        public string[] Taglines { get; set; }
+        public IReadOnlyList<string> Taglines { get; set; }
 
         /// <summary>
         /// Gets or sets the genres.
         /// </summary>
         /// <value>The genres.</value>
-        public string[] Genres { get; set; }
+        public IReadOnlyList<string> Genres { get; set; }
 
         /// <summary>
         /// Gets or sets the community rating.
@@ -281,15 +281,15 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the people.
         /// </summary>
         /// <value>The people.</value>
-        public BaseItemPerson[] People { get; set; }
+        public IReadOnlyList<BaseItemPerson> People { get; set; }
 
         /// <summary>
         /// Gets or sets the studios.
         /// </summary>
         /// <value>The studios.</value>
-        public NameGuidPair[] Studios { get; set; }
+        public IReadOnlyList<NameGuidPair> Studios { get; set; }
 
-        public NameGuidPair[] GenreItems { get; set; }
+        public IReadOnlyList<NameGuidPair> GenreItems { get; set; }
 
         /// <summary>
         /// Gets or sets whether the item has a logo, this will hold the Id of the Parent that has one.
@@ -307,7 +307,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the parent backdrop image tags.
         /// </summary>
         /// <value>The parent backdrop image tags.</value>
-        public string[] ParentBackdropImageTags { get; set; }
+        public IReadOnlyList<string> ParentBackdropImageTags { get; set; }
 
         /// <summary>
         /// Gets or sets the local trailer count.
@@ -379,13 +379,13 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the air days.
         /// </summary>
         /// <value>The air days.</value>
-        public DayOfWeek[] AirDays { get; set; }
+        public IReadOnlyList<DayOfWeek> AirDays { get; set; }
 
         /// <summary>
         /// Gets or sets the tags.
         /// </summary>
         /// <value>The tags.</value>
-        public string[] Tags { get; set; }
+        public IReadOnlyList<string> Tags { get; set; }
 
         /// <summary>
         /// Gets or sets the primary image aspect ratio, after image enhancements.
@@ -403,7 +403,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the artist items.
         /// </summary>
         /// <value>The artist items.</value>
-        public NameGuidPair[] ArtistItems { get; set; }
+        public IReadOnlyList<NameGuidPair> ArtistItems { get; set; }
 
         /// <summary>
         /// Gets or sets the album.
@@ -451,7 +451,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the album artists.
         /// </summary>
         /// <value>The album artists.</value>
-        public NameGuidPair[] AlbumArtists { get; set; }
+        public IReadOnlyList<NameGuidPair> AlbumArtists { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the season.
@@ -463,7 +463,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the media streams.
         /// </summary>
         /// <value>The media streams.</value>
-        public MediaStream[] MediaStreams { get; set; }
+        public IReadOnlyList<MediaStream> MediaStreams { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the video.
@@ -489,13 +489,13 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the backdrop image tags.
         /// </summary>
         /// <value>The backdrop image tags.</value>
-        public string[] BackdropImageTags { get; set; }
+        public IReadOnlyList<string> BackdropImageTags { get; set; }
 
         /// <summary>
         /// Gets or sets the screenshot image tags.
         /// </summary>
         /// <value>The screenshot image tags.</value>
-        public string[] ScreenshotImageTags { get; set; }
+        public IReadOnlyList<string> ScreenshotImageTags { get; set; }
 
         /// <summary>
         /// Gets or sets the parent logo image tag.
@@ -598,7 +598,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the locked fields.
         /// </summary>
         /// <value>The locked fields.</value>
-        public MetadataField[] LockedFields { get; set; }
+        public IReadOnlyList<MetadataField> LockedFields { get; set; }
 
         /// <summary>
         /// Gets or sets the trailer count.

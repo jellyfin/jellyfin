@@ -472,7 +472,7 @@ public class ImageController : BaseJellyfinApiController
         var list = new List<ImageInfo>();
         var itemImages = item.ImageInfos;
 
-        if (itemImages.Length == 0)
+        if (itemImages.Count == 0)
         {
             // short-circuit
             return list;

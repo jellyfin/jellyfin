@@ -120,7 +120,7 @@ namespace MediaBrowser.Controller.Entities
         public string Tagline { get; set; }
 
         [JsonIgnore]
-        public virtual ItemImageInfo[] ImageInfos { get; set; }
+        public virtual IReadOnlyList<ItemImageInfo> ImageInfos { get; set; }
 
         [JsonIgnore]
         public bool IsVirtualItem { get; set; }
@@ -387,7 +387,7 @@ namespace MediaBrowser.Controller.Entities
 
         public int Height { get; set; }
 
-        public Guid[] ExtraIds { get; set; }
+        public IReadOnlyList<Guid> ExtraIds { get; set; }
 
         /// <summary>
         /// Gets the primary image path.
@@ -426,7 +426,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The locked fields.</value>
         [JsonIgnore]
-        public MetadataField[] LockedFields { get; set; }
+        public IReadOnlyList<MetadataField> LockedFields { get; set; }
 
         /// <summary>
         /// Gets the type of the media.
@@ -436,7 +436,7 @@ namespace MediaBrowser.Controller.Entities
         public virtual MediaType MediaType => MediaType.Unknown;
 
         [JsonIgnore]
-        public virtual string[] PhysicalLocations
+        public virtual IReadOnlyList<string> PhysicalLocations
         {
             get
             {
@@ -604,24 +604,24 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The studios.</value>
         [JsonIgnore]
-        public string[] Studios { get; set; }
+        public IReadOnlyList<string> Studios { get; set; }
 
         /// <summary>
         /// Gets or sets the genres.
         /// </summary>
         /// <value>The genres.</value>
         [JsonIgnore]
-        public string[] Genres { get; set; }
+        public IReadOnlyList<string> Genres { get; set; }
 
         /// <summary>
         /// Gets or sets the tags.
         /// </summary>
         /// <value>The tags.</value>
         [JsonIgnore]
-        public string[] Tags { get; set; }
+        public IReadOnlyList<string> Tags { get; set; }
 
         [JsonIgnore]
-        public string[] ProductionLocations { get; set; }
+        public IReadOnlyList<string> ProductionLocations { get; set; }
 
         /// <summary>
         /// Gets or sets the home page URL.
@@ -1780,7 +1780,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (!current.Contains(name, StringComparison.OrdinalIgnoreCase))
             {
-                int curLen = current.Length;
+                int curLen = current.Count;
                 if (curLen == 0)
                 {
                     Studios = [name];
@@ -2122,7 +2122,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             // Yield return is more performant than LINQ Where on an Array
-            for (var i = 0; i < ImageInfos.Length; i++)
+            for (var i = 0; i < ImageInfos.Count; i++)
             {
                 var imageInfo = ImageInfos[i];
                 if (imageInfo.Type == imageType)

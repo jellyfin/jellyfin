@@ -43,7 +43,7 @@ namespace Emby.Naming.Video
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         /// <inheritdoc/>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is not CleanDateTimeResult other)
             {
