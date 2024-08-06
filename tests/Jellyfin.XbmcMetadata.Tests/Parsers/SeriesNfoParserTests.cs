@@ -53,7 +53,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             Assert.Equal("253573", item.ProviderIds[MetadataProvider.Tvdb.ToString()]);
             Assert.Equal("tt11111", item.ProviderIds[MetadataProvider.Imdb.ToString()]);
 
-            Assert.Equal(3, item.Genres.Length);
+            Assert.Equal(3, item.Genres.Count);
             Assert.Contains("Drama", item.Genres);
             Assert.Contains("Mystery", item.Genres);
             Assert.Contains("Sci-Fi & Fantasy", item.Genres);
