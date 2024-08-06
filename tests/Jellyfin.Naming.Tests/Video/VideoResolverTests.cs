@@ -137,6 +137,13 @@ namespace Jellyfin.Naming.Tests.Video
                     name: "Rain Man",
                     year: 1988));
 
+            data.Add(
+                new VideoFileInfo(
+                    path: "/server/Movies/1949.The.Adventures.Of.Ichabod.And.Mr..Toad.1440x1080.BDRip.x264.DTS-HD.MA.mkv",
+                    container: "mkv",
+                    name: "The.Adventures.Of.Ichabod.And.Mr..Toad",
+                    year: 1949));
+
             return data;
         }
 
