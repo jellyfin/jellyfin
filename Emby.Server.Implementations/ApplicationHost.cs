@@ -10,8 +10,12 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Net.Mime;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading.Tasks;
 using Emby.Naming.Common;
 using Emby.Photos;
@@ -37,6 +41,7 @@ using Emby.Server.Implementations.Updates;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Drawing;
 using Jellyfin.MediaEncoding.Hls.Playlist;
+using Jellyfin.Networking.HappyEyeballs;
 using Jellyfin.Networking.Manager;
 using Jellyfin.Networking.Udp;
 using Jellyfin.Server.Implementations;
@@ -280,6 +285,118 @@ namespace Emby.Server.Implementations
 
             return path.Replace(appPaths.DataPath, appPaths.VirtualDataPath, StringComparison.OrdinalIgnoreCase)
                 .Replace(appPaths.InternalMetadataPath, appPaths.VirtualInternalMetadataPath, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <inheritdoc />
+        public void AddPluginHttpClient<T>(
+            IServiceCollection serviceCollection,
+            string basedOnClientName,
+            (string Name, string[] Values)[] customHeaders)
+            where T : BasePlugin
+        {
+            ArgumentNullException.ThrowIfNull(serviceCollection);
+            ArgumentException.ThrowIfNullOrEmpty(basedOnClientName);
+
+            var pluginType = typeof(T);
+
+            if (string.Equals(NamedClient.Default, basedOnClientName, StringComparison.Ordinal)
+                || string.Equals(NamedClient.DirectIp, basedOnClientName, StringComparison.Ordinal))
+            {
+                AddHttpClient(serviceCollection, basedOnClientName, customHeaders, pluginType);
+            }
+            else
+            {
+                throw new InvalidOperationException($"Unknown HttpClient name '{basedOnClientName}' for plugin '{pluginType.Name}'");
+            }
+        }
+
+        /// <summary>
+        /// Add HttpClient.
+        /// Intended for internal use only.
+        /// </summary>
+        /// <param name="serviceCollection">The service collection.</param>
+        /// <param name="basedOnClientName">The name of the HttpClient to base this client on.</param>
+        /// <param name="customHeaders">The custom headers to use.</param>
+        /// <param name="pluginType">The type of plugin adding the HttpClient.</param>
+        public void AddHttpClient(
+            IServiceCollection serviceCollection,
+            string basedOnClientName,
+            (string Name, string[] Values)[] customHeaders = null,
+            Type pluginType = null)
+        {
+            var clientName = basedOnClientName;
+            ProductInfoHeaderValue pluginHeader = null;
+            if (pluginType is not null)
+            {
+                var assembly = pluginType.Assembly.GetName();
+                clientName = pluginType.Name;
+                pluginHeader = new ProductInfoHeaderValue(
+                    clientName.Replace(' ', '-').Replace('.', '-'),
+                    assembly.Version!.ToString(3));
+            }
+
+            if (string.Equals(NamedClient.Default, basedOnClientName, StringComparison.Ordinal))
+            {
+                serviceCollection.AddHttpClient(clientName, ConfigureClient)
+                    .ConfigurePrimaryHttpMessageHandler(EyeballsHttpClientHandlerDelegate);
+            }
+            else if (string.Equals(NamedClient.DirectIp, basedOnClientName, StringComparison.Ordinal))
+            {
+                serviceCollection.AddHttpClient(clientName, ConfigureClient)
+                    .ConfigurePrimaryHttpMessageHandler(DefaultHttpClientHandlerDelegate);
+            }
+            else
+            {
+                throw new InvalidOperationException($"Unknown HttpClient name '{basedOnClientName}'");
+            }
+
+            Logger.LogInformation("Added HttpClient '{ClientName}'", clientName);
+
+            return;
+
+            void ConfigureClient(HttpClient c)
+            {
+                var productHeader = new ProductInfoHeaderValue(Name.Replace(' ', '-'), ApplicationVersionString);
+                var contactHeader = new ProductInfoHeaderValue($"({ApplicationUserAgentAddress})");
+                var acceptJsonHeader = new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Json, 1.0);
+                var acceptXmlHeader = new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Xml, 0.9);
+                var acceptAnyHeader = new MediaTypeWithQualityHeaderValue("*/*", 0.8);
+
+                if (customHeaders is null)
+                {
+                    c.DefaultRequestHeaders.UserAgent.Add(productHeader);
+                    c.DefaultRequestHeaders.UserAgent.Add(contactHeader);
+                    if (pluginHeader is not null)
+                    {
+                        c.DefaultRequestHeaders.UserAgent.Add(pluginHeader);
+                    }
+
+                    c.DefaultRequestHeaders.Accept.Add(acceptJsonHeader);
+                    c.DefaultRequestHeaders.Accept.Add(acceptXmlHeader);
+                    c.DefaultRequestHeaders.Accept.Add(acceptAnyHeader);
+                }
+                else
+                {
+                    c.DefaultRequestHeaders.Clear();
+                    foreach (var (name, values) in customHeaders)
+                    {
+                        c.DefaultRequestHeaders.Add(name, values);
+                    }
+                }
+            }
+
+            static HttpMessageHandler DefaultHttpClientHandlerDelegate(IServiceProvider s) => new SocketsHttpHandler
+            {
+                AutomaticDecompression = DecompressionMethods.All,
+                RequestHeaderEncodingSelector = (_, _) => Encoding.UTF8
+            };
+
+            static HttpMessageHandler EyeballsHttpClientHandlerDelegate(IServiceProvider s) => new SocketsHttpHandler
+            {
+                AutomaticDecompression = DecompressionMethods.All,
+                RequestHeaderEncodingSelector = (_, _) => Encoding.UTF8,
+                ConnectCallback = HttpClientExtension.OnConnect
+            };
         }
 
         /// <summary>
