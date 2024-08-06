@@ -1,9 +1,11 @@
+using System;
+
 namespace Emby.Naming.Video
 {
     /// <summary>
     /// Holder structure for name and year.
     /// </summary>
-    public readonly struct CleanDateTimeResult
+    public readonly struct CleanDateTimeResult : IEquatable<CleanDateTimeResult>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CleanDateTimeResult"/> struct.
@@ -27,5 +29,40 @@ namespace Emby.Naming.Video
         /// </summary>
         /// <value>The year.</value>
         public int? Year { get; }
+
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+        public static bool operator ==(CleanDateTimeResult left, CleanDateTimeResult right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(CleanDateTimeResult left, CleanDateTimeResult right)
+        {
+            return !(left == right);
+        }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj)
+        {
+            if (obj is not CleanDateTimeResult other)
+            {
+                return false;
+            }
+
+            return Equals(other);
+        }
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Name, Year);
+        }
+
+        /// <inheritdoc/>
+        public bool Equals(CleanDateTimeResult other)
+        {
+            return string.Equals(Name, other.Name, StringComparison.Ordinal) && int.Equals(Year, other.Year);
+        }
     }
 }
