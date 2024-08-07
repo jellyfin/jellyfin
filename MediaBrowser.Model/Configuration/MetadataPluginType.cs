@@ -14,6 +14,7 @@ namespace MediaBrowser.Model.Configuration
         MetadataFetcher,
         MetadataSaver,
         SubtitleFetcher,
-        LyricFetcher
+        LyricFetcher,
+        MediaSegmentProvider
     }
 }
