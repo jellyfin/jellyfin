@@ -85,10 +85,7 @@ public class MediaSegmentExtractionTask : IScheduledTask
             // TODO parallelize with Parallel.ForEach?
             for (var i = 0; i < currentPageCount; i++)
             {
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                }
+                cancellationToken.ThrowIfCancellationRequested();
 
                 var video = videos[i];
                 // Only local files supported
