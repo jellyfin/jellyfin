@@ -91,7 +91,7 @@ namespace Emby.Server.Implementations.TV
             }
 
             string? presentationUniqueKey = null;
-            int? limit = request.Limit;
+            int? limit = null;
             if (!request.SeriesId.IsNullOrEmpty())
             {
                 if (_libraryManager.GetItemById(request.SeriesId.Value) is Series series)
