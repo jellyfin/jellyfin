@@ -102,7 +102,8 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
             "astc",
             "ktx",
             "pkm",
-            "wbmp"
+            "wbmp",
+            "avif"
         };
 
     /// <inheritdoc />
