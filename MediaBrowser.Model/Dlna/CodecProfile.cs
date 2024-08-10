@@ -28,7 +28,7 @@ namespace MediaBrowser.Model.Dlna
         [XmlAttribute("container")]
         public string Container { get; set; }
 
-        [XmlAttribute("container")]
+        [XmlAttribute("subcontainer")]
         public string SubContainer { get; set; }
 
         public string[] GetCodecs()
