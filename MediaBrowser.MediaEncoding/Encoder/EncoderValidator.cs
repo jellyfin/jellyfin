@@ -64,8 +64,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "libsvtav1",
             "mpeg4",
             "msmpeg4",
-            "libvpx",
-            "libvpx-vp9",
             "aac",
             "aac_at",
             "libfdk_aac",
