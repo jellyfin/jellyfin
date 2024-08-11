@@ -902,7 +902,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="cpuCoreLimit">Optional. The limit of how many cpu cores to use.</param>
     /// <param name="liveStreamId">The live stream id.</param>
     /// <param name="enableMpegtsM2TsMode">Optional. Whether to enable the MpegtsM2Ts mode.</param>
-    /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264. Options: h265, h264, mpeg4, theora, vpx, wmv.</param>
+    /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264.</param>
     /// <param name="subtitleCodec">Optional. Specify a subtitle codec to encode to.</param>
     /// <param name="transcodeReasons">Optional. The transcoding reason.</param>
     /// <param name="audioStreamIndex">Optional. The index of the audio stream to use. If omitted the first audio stream will be used.</param>
@@ -1258,7 +1258,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="cpuCoreLimit">Optional. The limit of how many cpu cores to use.</param>
     /// <param name="liveStreamId">The live stream id.</param>
     /// <param name="enableMpegtsM2TsMode">Optional. Whether to enable the MpegtsM2Ts mode.</param>
-    /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264. Options: h265, h264, mpeg4, theora, vpx, wmv.</param>
+    /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264.</param>
     /// <param name="subtitleCodec">Optional. Specify a subtitle codec to encode to.</param>
     /// <param name="transcodeReasons">Optional. The transcoding reason.</param>
     /// <param name="audioStreamIndex">Optional. The index of the audio stream to use. If omitted the first audio stream will be used.</param>
