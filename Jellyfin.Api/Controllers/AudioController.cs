@@ -46,7 +46,7 @@ public class AudioController : BaseJellyfinApiController
     /// <param name="minSegments">The minimum number of segments.</param>
     /// <param name="mediaSourceId">The media version id, if playing an alternate version.</param>
     /// <param name="deviceId">The device id of the client requesting. Used to stop encoding processes when needed.</param>
-    /// <param name="audioCodec">Optional. Specify a audio codec to encode to, e.g. mp3. If omitted the server will auto-select using the url's extension. Options: aac, mp3, vorbis, wma.</param>
+    /// <param name="audioCodec">Optional. Specify an audio codec to encode to, e.g. mp3. If omitted the server will auto-select using the url's extension.</param>
     /// <param name="enableAutoStreamCopy">Whether or not to allow automatic stream copy if requested values match the original source. Defaults to true.</param>
     /// <param name="allowVideoStreamCopy">Whether or not to allow copying of the video stream url.</param>
     /// <param name="allowAudioStreamCopy">Whether or not to allow copying of the audio stream url.</param>
@@ -76,7 +76,7 @@ public class AudioController : BaseJellyfinApiController
     /// <param name="cpuCoreLimit">Optional. The limit of how many cpu cores to use.</param>
     /// <param name="liveStreamId">The live stream id.</param>
     /// <param name="enableMpegtsM2TsMode">Optional. Whether to enable the MpegtsM2Ts mode.</param>
-    /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension. Options: h265, h264, mpeg4, theora, vp8, vp9, vpx (deprecated), wmv.</param>
+    /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension.</param>
     /// <param name="subtitleCodec">Optional. Specify a subtitle codec to encode to.</param>
     /// <param name="transcodeReasons">Optional. The transcoding reason.</param>
     /// <param name="audioStreamIndex">Optional. The index of the audio stream to use. If omitted the first audio stream will be used.</param>
@@ -213,7 +213,7 @@ public class AudioController : BaseJellyfinApiController
     /// <param name="minSegments">The minimum number of segments.</param>
     /// <param name="mediaSourceId">The media version id, if playing an alternate version.</param>
     /// <param name="deviceId">The device id of the client requesting. Used to stop encoding processes when needed.</param>
-    /// <param name="audioCodec">Optional. Specify a audio codec to encode to, e.g. mp3. If omitted the server will auto-select using the url's extension. Options: aac, mp3, vorbis, wma.</param>
+    /// <param name="audioCodec">Optional. Specify an audio codec to encode to, e.g. mp3. If omitted the server will auto-select using the url's extension.</param>
     /// <param name="enableAutoStreamCopy">Whether or not to allow automatic stream copy if requested values match the original source. Defaults to true.</param>
     /// <param name="allowVideoStreamCopy">Whether or not to allow copying of the video stream url.</param>
     /// <param name="allowAudioStreamCopy">Whether or not to allow copying of the audio stream url.</param>
@@ -243,7 +243,7 @@ public class AudioController : BaseJellyfinApiController
     /// <param name="cpuCoreLimit">Optional. The limit of how many cpu cores to use.</param>
     /// <param name="liveStreamId">The live stream id.</param>
     /// <param name="enableMpegtsM2TsMode">Optional. Whether to enable the MpegtsM2Ts mode.</param>
-    /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension. Options: h265, h264, mpeg4, theora, vp8, vp9, vpx (deprecated), wmv.</param>
+    /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension.</param>
     /// <param name="subtitleCodec">Optional. Specify a subtitle codec to encode to.</param>
     /// <param name="transcodeReasons">Optional. The transcoding reason.</param>
     /// <param name="audioStreamIndex">Optional. The index of the audio stream to use. If omitted the first audio stream will be used.</param>
