@@ -6308,7 +6308,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return 0;
             }
 
-            return threads >= Environment.ProcessorCount ? Environment.ProcessorCount : threads;
+            return Math.Min(threads, Environment.ProcessorCount);
         }
 
 #nullable disable
