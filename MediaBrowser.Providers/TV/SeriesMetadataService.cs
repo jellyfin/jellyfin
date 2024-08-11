@@ -211,8 +211,12 @@ namespace MediaBrowser.Providers.TV
                 }
                 else if (existingSeason.IsVirtualItem)
                 {
-                    existingSeason.IsVirtualItem = false;
-                    await existingSeason.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+                    var episodeCount = seriesChildren.OfType<Episode>().Count(e => e.ParentIndexNumber == seasonNumber && !e.IsMissingEpisode);
+                    if (episodeCount > 0)
+                    {
+                        existingSeason.IsVirtualItem = false;
+                        await existingSeason.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+                    }
                 }
             }
         }
