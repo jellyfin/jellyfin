@@ -107,7 +107,6 @@ namespace MediaBrowser.Controller.MediaEncoding
         // AAC, FLAC, ALAC, libopus, libvorbis encoders all support at least 8 channels
         private static readonly Dictionary<string, int> _audioTranscodeChannelLookup = new(StringComparer.OrdinalIgnoreCase)
         {
-            { "wmav2", 2 },
             { "libmp3lame", 2 },
             { "libfdk_aac", 6 },
             { "ac3", 6 },
@@ -398,16 +397,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (string.Equals(codec, "mjpeg", StringComparison.OrdinalIgnoreCase))
                 {
                     return GetMjpegEncoder(state, encodingOptions);
-                }
-
-                if (string.Equals(codec, "wmv", StringComparison.OrdinalIgnoreCase))
-                {
-                    return "wmv2";
-                }
-
-                if (string.Equals(codec, "theora", StringComparison.OrdinalIgnoreCase))
-                {
-                    return "libtheora";
                 }
 
                 if (_validationRegex.IsMatch(codec))
@@ -727,11 +716,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (string.Equals(codec, "vorbis", StringComparison.OrdinalIgnoreCase))
             {
                 return "libvorbis";
-            }
-
-            if (string.Equals(codec, "wma", StringComparison.OrdinalIgnoreCase))
-            {
-                return "wmav2";
             }
 
             if (string.Equals(codec, "opus", StringComparison.OrdinalIgnoreCase))
@@ -1363,11 +1347,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             // Currently use the same buffer size for all encoders
             int bufsize = bitrate * 2;
 
-            if (string.Equals(videoCodec, "msmpeg4", StringComparison.OrdinalIgnoreCase))
-            {
-                return FormattableString.Invariant($" -b:v {bitrate}");
-            }
-
             if (string.Equals(videoCodec, "libsvtav1", StringComparison.OrdinalIgnoreCase))
             {
                 return FormattableString.Invariant($" -b:v {bitrate} -bufsize {bufsize}");
@@ -1902,18 +1881,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                         param += " -prio_speed 1";
                         break;
                 }
-            }
-            else if (string.Equals(videoEncoder, "mpeg4", StringComparison.OrdinalIgnoreCase))
-            {
-                param += " -mbd rd -flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -bf 2";
-            }
-            else if (string.Equals(videoEncoder, "wmv2", StringComparison.OrdinalIgnoreCase)) // asf/wmv
-            {
-                param += " -qmin 2";
-            }
-            else if (string.Equals(videoEncoder, "msmpeg4", StringComparison.OrdinalIgnoreCase))
-            {
-                param += " -mbd 2";
             }
 
             param += GetVideoBitrateParam(state, videoEncoder);

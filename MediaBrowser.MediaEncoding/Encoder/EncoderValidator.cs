@@ -62,8 +62,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "libx264",
             "libx265",
             "libsvtav1",
-            "mpeg4",
-            "msmpeg4",
             "aac",
             "aac_at",
             "libfdk_aac",
