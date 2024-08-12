@@ -107,7 +107,6 @@ namespace MediaBrowser.Controller.MediaEncoding
         // AAC, FLAC, ALAC, libopus, libvorbis encoders all support at least 8 channels
         private static readonly Dictionary<string, int> _audioTranscodeChannelLookup = new(StringComparer.OrdinalIgnoreCase)
         {
-            { "wmav2", 2 },
             { "libmp3lame", 2 },
             { "libfdk_aac", 6 },
             { "ac3", 6 },
@@ -398,27 +397,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (string.Equals(codec, "mjpeg", StringComparison.OrdinalIgnoreCase))
                 {
                     return GetMjpegEncoder(state, encodingOptions);
-                }
-
-                if (string.Equals(codec, "vp8", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(codec, "vpx", StringComparison.OrdinalIgnoreCase))
-                {
-                    return "libvpx";
-                }
-
-                if (string.Equals(codec, "vp9", StringComparison.OrdinalIgnoreCase))
-                {
-                    return "libvpx-vp9";
-                }
-
-                if (string.Equals(codec, "wmv", StringComparison.OrdinalIgnoreCase))
-                {
-                    return "wmv2";
-                }
-
-                if (string.Equals(codec, "theora", StringComparison.OrdinalIgnoreCase))
-                {
-                    return "libtheora";
                 }
 
                 if (_validationRegex.IsMatch(codec))
@@ -738,11 +716,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (string.Equals(codec, "vorbis", StringComparison.OrdinalIgnoreCase))
             {
                 return "libvorbis";
-            }
-
-            if (string.Equals(codec, "wma", StringComparison.OrdinalIgnoreCase))
-            {
-                return "wmav2";
             }
 
             if (string.Equals(codec, "opus", StringComparison.OrdinalIgnoreCase))
@@ -1374,20 +1347,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             // Currently use the same buffer size for all encoders
             int bufsize = bitrate * 2;
 
-            if (string.Equals(videoCodec, "libvpx", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(videoCodec, "libvpx-vp9", StringComparison.OrdinalIgnoreCase))
-            {
-                // When crf is used with vpx, b:v becomes a max rate
-                // https://trac.ffmpeg.org/wiki/Encode/VP8
-                // https://trac.ffmpeg.org/wiki/Encode/VP9
-                return FormattableString.Invariant($" -maxrate:v {bitrate} -bufsize:v {bufsize} -b:v {bitrate}");
-            }
-
-            if (string.Equals(videoCodec, "msmpeg4", StringComparison.OrdinalIgnoreCase))
-            {
-                return FormattableString.Invariant($" -b:v {bitrate}");
-            }
-
             if (string.Equals(videoCodec, "libsvtav1", StringComparison.OrdinalIgnoreCase))
             {
                 return FormattableString.Invariant($" -b:v {bitrate} -bufsize {bufsize}");
@@ -1922,93 +1881,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                         param += " -prio_speed 1";
                         break;
                 }
-            }
-            else if (string.Equals(videoEncoder, "libvpx", StringComparison.OrdinalIgnoreCase)) // vp8
-            {
-                // Values 0-3, 0 being highest quality but slower
-                var profileScore = 0;
-
-                var qmin = "0";
-                var qmax = "50";
-                var crf = "10";
-
-                if (isVc1)
-                {
-                    profileScore++;
-                }
-
-                // Max of 2
-                profileScore = Math.Min(profileScore, 2);
-
-                // http://www.webmproject.org/docs/encoder-parameters/
-                param += string.Format(
-                    CultureInfo.InvariantCulture,
-                    " -speed 16 -quality good -profile:v {0} -slices 8 -crf {1} -qmin {2} -qmax {3}",
-                    profileScore.ToString(CultureInfo.InvariantCulture),
-                    crf,
-                    qmin,
-                    qmax);
-            }
-            else if (string.Equals(videoEncoder, "libvpx-vp9", StringComparison.OrdinalIgnoreCase)) // vp9
-            {
-                // When `-deadline` is set to `good` or `best`, `-cpu-used` ranges from 0-5.
-                // When `-deadline` is set to `realtime`, `-cpu-used` ranges from 0-15.
-                // Resources:
-                //   * https://trac.ffmpeg.org/wiki/Encode/VP9
-                //   * https://superuser.com/questions/1586934
-                //   * https://developers.google.com/media/vp9
-                param += encodingOptions.EncoderPreset switch
-                {
-                    "veryslow" => " -deadline best -cpu-used 0",
-                    "slower" => " -deadline best -cpu-used 2",
-                    "slow" => " -deadline best -cpu-used 3",
-                    "medium" => " -deadline good -cpu-used 0",
-                    "fast" => " -deadline good -cpu-used 1",
-                    "faster" => " -deadline good -cpu-used 2",
-                    "veryfast" => " -deadline good -cpu-used 3",
-                    "superfast" => " -deadline good -cpu-used 4",
-                    "ultrafast" => " -deadline good -cpu-used 5",
-                    _ => " -deadline good -cpu-used 1"
-                };
-
-                // TODO: until VP9 gets its own CRF setting, base CRF on H.265.
-                int h265Crf = encodingOptions.H265Crf;
-                int defaultVp9Crf = 31;
-                if (h265Crf >= 0 && h265Crf <= 51)
-                {
-                    // This conversion factor is chosen to match the default CRF for H.265 to the
-                    // recommended 1080p CRF from Google. The factor also maps the logarithmic CRF
-                    // scale of x265 [0, 51] to that of VP9 [0, 63] relatively well.
-
-                    // Resources:
-                    //   * https://developers.google.com/media/vp9/settings/vod
-                    const float H265ToVp9CrfConversionFactor = 1.12F;
-
-                    var vp9Crf = Convert.ToInt32(h265Crf * H265ToVp9CrfConversionFactor);
-
-                    // Encoder allows for CRF values in the range [0, 63].
-                    vp9Crf = Math.Clamp(vp9Crf, 0, 63);
-
-                    param += FormattableString.Invariant($" -crf {vp9Crf}");
-                }
-                else
-                {
-                    param += FormattableString.Invariant($" -crf {defaultVp9Crf}");
-                }
-
-                param += " -row-mt 1 -profile 1";
-            }
-            else if (string.Equals(videoEncoder, "mpeg4", StringComparison.OrdinalIgnoreCase))
-            {
-                param += " -mbd rd -flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -bf 2";
-            }
-            else if (string.Equals(videoEncoder, "wmv2", StringComparison.OrdinalIgnoreCase)) // asf/wmv
-            {
-                param += " -qmin 2";
-            }
-            else if (string.Equals(videoEncoder, "msmpeg4", StringComparison.OrdinalIgnoreCase))
-            {
-                param += " -mbd 2";
             }
 
             param += GetVideoBitrateParam(state, videoEncoder);
@@ -6428,24 +6300,15 @@ namespace MediaBrowser.Controller.MediaEncoding
 #nullable enable
         public static int GetNumberOfThreads(EncodingJobInfo? state, EncodingOptions encodingOptions, string? outputVideoCodec)
         {
-            // VP8 and VP9 encoders must have their thread counts set.
-            bool mustSetThreadCount = string.Equals(outputVideoCodec, "libvpx", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(outputVideoCodec, "libvpx-vp9", StringComparison.OrdinalIgnoreCase);
-
             var threads = state?.BaseRequest.CpuCoreLimit ?? encodingOptions.EncodingThreadCount;
 
             if (threads <= 0)
             {
                 // Automatically set thread count
-                return mustSetThreadCount ? Math.Max(Environment.ProcessorCount - 1, 1) : 0;
+                return 0;
             }
 
-            if (threads >= Environment.ProcessorCount)
-            {
-                return Environment.ProcessorCount;
-            }
-
-            return threads;
+            return Math.Min(threads, Environment.ProcessorCount);
         }
 
 #nullable disable
