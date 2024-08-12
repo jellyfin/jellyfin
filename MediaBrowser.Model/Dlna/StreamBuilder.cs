@@ -764,7 +764,19 @@ namespace MediaBrowser.Model.Dlna
                     {
                         var subtitleProfile = GetSubtitleProfile(item, subtitleStream, options.Profile.SubtitleProfiles, PlayMethod.Transcode, _transcoderSupport, transcodingProfile.Container, transcodingProfile.Protocol);
 
-                        playlistItem.SubtitleDeliveryMethod = subtitleProfile.Method;
+                        if (options.AlwaysBurnInSubtitleWhenTranscoding && (playlistItem.TranscodeReasons & (VideoReasons | TranscodeReason.ContainerBitrateExceedsLimit)) != 0)
+                        {
+                            playlistItem.SubtitleDeliveryMethod = SubtitleDeliveryMethod.Encode;
+                            foreach (SubtitleProfile profile in options.Profile.SubtitleProfiles)
+                            {
+                                profile.Method = SubtitleDeliveryMethod.Encode;
+                            }
+                        }
+                        else
+                        {
+                            playlistItem.SubtitleDeliveryMethod = subtitleProfile.Method;
+                        }
+
                         playlistItem.SubtitleFormat = subtitleProfile.Format;
                         playlistItem.SubtitleCodecs = new[] { subtitleProfile.Format };
                     }
