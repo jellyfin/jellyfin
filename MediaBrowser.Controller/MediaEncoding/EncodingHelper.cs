@@ -5279,8 +5279,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 // INPUT videotoolbox/memory surface(vram/uma)
                 // this will pass-through automatically if in/out format matches.
-                mainFilters.Insert(0, "format=nv12|p010le|videotoolbox_vld");
                 mainFilters.Insert(0, "hwupload");
+                mainFilters.Insert(0, "format=nv12|p010le|videotoolbox_vld");
             }
 
             return (mainFilters, subFilters, overlayFilters);
