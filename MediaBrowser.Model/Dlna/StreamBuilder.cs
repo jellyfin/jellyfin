@@ -352,7 +352,7 @@ namespace MediaBrowser.Model.Dlna
                     return TranscodeReason.VideoBitrateNotSupported;
 
                 case ProfileConditionValue.VideoCodecTag:
-                    return TranscodeReason.VideoCodecNotSupported;
+                    return TranscodeReason.VideoCodecTagNotSupported;
 
                 case ProfileConditionValue.VideoFramerate:
                     return TranscodeReason.VideoFramerateNotSupported;
