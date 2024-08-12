@@ -109,7 +109,6 @@ public class MediaInfoController : BaseJellyfinApiController
     /// <param name="enableTranscoding">Whether to enable transcoding. Default: true.</param>
     /// <param name="allowVideoStreamCopy">Whether to allow to copy the video stream. Default: true.</param>
     /// <param name="allowAudioStreamCopy">Whether to allow to copy the audio stream. Default: true.</param>
-    /// <param name="alwaysBurnInSubtitleWhenTranscoding">Always burn-in subtitle when transcoding.</param>
     /// <param name="playbackInfoDto">The playback info.</param>
     /// <response code="200">Playback info returned.</response>
     /// <response code="404">Item not found.</response>
@@ -133,7 +132,6 @@ public class MediaInfoController : BaseJellyfinApiController
         [FromQuery, ParameterObsolete] bool? enableTranscoding,
         [FromQuery, ParameterObsolete] bool? allowVideoStreamCopy,
         [FromQuery, ParameterObsolete] bool? allowAudioStreamCopy,
-        [FromQuery, ParameterObsolete] bool? alwaysBurnInSubtitleWhenTranscoding,
         [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] PlaybackInfoDto? playbackInfoDto)
     {
         var profile = playbackInfoDto?.DeviceProfile;
@@ -165,7 +163,6 @@ public class MediaInfoController : BaseJellyfinApiController
         enableTranscoding ??= playbackInfoDto?.EnableTranscoding ?? true;
         allowVideoStreamCopy ??= playbackInfoDto?.AllowVideoStreamCopy ?? true;
         allowAudioStreamCopy ??= playbackInfoDto?.AllowAudioStreamCopy ?? true;
-        alwaysBurnInSubtitleWhenTranscoding ??= playbackInfoDto?.AlwaysBurnInSubtitleWhenTranscoding ?? false;
 
         userId = RequestHelpers.GetUserId(User, userId);
         var user = userId.IsNullOrEmpty()
@@ -212,7 +209,7 @@ public class MediaInfoController : BaseJellyfinApiController
                     enableTranscoding.Value,
                     allowVideoStreamCopy.Value,
                     allowAudioStreamCopy.Value,
-                    alwaysBurnInSubtitleWhenTranscoding.Value,
+                    playbackInfoDto?.AlwaysBurnInSubtitleWhenTranscoding ?? false,
                     Request.HttpContext.GetNormalizedRemoteIP());
             }
 
@@ -241,7 +238,7 @@ public class MediaInfoController : BaseJellyfinApiController
                         SubtitleStreamIndex = subtitleStreamIndex,
                         UserId = userId ?? Guid.Empty,
                         OpenToken = mediaSource.OpenToken,
-                        AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding.Value
+                        AlwaysBurnInSubtitleWhenTranscoding = playbackInfoDto?.AlwaysBurnInSubtitleWhenTranscoding ?? false
                     }).ConfigureAwait(false);
 
                 info.MediaSources = new[] { openStreamResult.MediaSource };
