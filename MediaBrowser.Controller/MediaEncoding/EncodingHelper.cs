@@ -5151,8 +5151,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 // INPUT videotoolbox/memory surface(vram/uma)
                 // this will pass-through automatically if in/out format matches.
-                mainFilters.Insert(0, "format=nv12|p010le|videotoolbox_vld");
                 mainFilters.Insert(0, "hwupload");
+                mainFilters.Insert(0, "format=nv12|p010le|videotoolbox_vld");
             }
 
             return (mainFilters, subFilters, overlayFilters);
@@ -6165,12 +6165,6 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (is8bitSwFormatsVt)
             {
-                if (string.Equals("avc", videoStream.Codec, StringComparison.OrdinalIgnoreCase)
-                    || string.Equals("h264", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
-                {
-                    return GetHwaccelType(state, options, "h264", bitDepth, useHwSurface);
-                }
-
                 if (string.Equals("vp8", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
                 {
                     return GetHwaccelType(state, options, "vp8", bitDepth, useHwSurface);
@@ -6179,6 +6173,12 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (is8_10bitSwFormatsVt)
             {
+                if (string.Equals("avc", videoStream.Codec, StringComparison.OrdinalIgnoreCase)
+                    || string.Equals("h264", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
+                {
+                    return GetHwaccelType(state, options, "h264", bitDepth, useHwSurface);
+                }
+
                 if (string.Equals("hevc", videoStream.Codec, StringComparison.OrdinalIgnoreCase)
                     || string.Equals("h265", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
                 {
