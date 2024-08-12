@@ -6293,12 +6293,6 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (is8bitSwFormatsVt)
             {
-                if (string.Equals("avc", videoStream.Codec, StringComparison.OrdinalIgnoreCase)
-                    || string.Equals("h264", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
-                {
-                    return GetHwaccelType(state, options, "h264", bitDepth, useHwSurface);
-                }
-
                 if (string.Equals("vp8", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
                 {
                     return GetHwaccelType(state, options, "vp8", bitDepth, useHwSurface);
