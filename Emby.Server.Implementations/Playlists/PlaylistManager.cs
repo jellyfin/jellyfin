@@ -590,7 +590,12 @@ namespace Emby.Server.Implementations.Playlists
                     EnableImages = true
                 }).ConfigureAwait(false);
 
-                playlist = GetPlaylistForUser(request.Id, request.UserId)!;
+                playlist = GetPlaylistForUser(request.Id, request.UserId);
+            }
+
+            if (playlist is null)
+            {
+                throw new ArgumentException($"No playlist exists with Id {request.Id}");
             }
 
             if (request.Name is not null)
