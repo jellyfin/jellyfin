@@ -82,7 +82,7 @@ Instructions to run this project from the command line are included here, but yo
 
 ### Cloning the Repository
 
-After dependencies are installed you will need to clone a local copy of this repository. If you just want to run the server from source you can clone this repository directly, but if you are intending to contribute code changes to the project, you should [set up your own fork](https://jellyfin.org/docs/general/contributing/development.html#set-up-your-copy-of-the-repo) of the repository. The following example shows how you can clone the repository directly over HTTPS.
+After dependencies have been installed you will need to clone a local copy of this repository. If you just want to run the server from source you can clone this repository directly, but if you are intending to contribute code changes to the project, you should [set up your own fork](https://jellyfin.org/docs/general/contributing/development.html#set-up-your-copy-of-the-repo) of the repository. The following example shows how you can clone the repository directly over HTTPS.
 
 ```bash
 git clone https://github.com/jellyfin/jellyfin.git
@@ -116,7 +116,7 @@ Second, you need to [install the recommended extensions for the workspace](https
 
 After the required extensions are installed, you can run the server by pressing `F5`.
 
-#### Running From The Command Line
+#### Running From the Command Line
 
 To run the server from the command line you can use the `dotnet run` command. The example below shows how to do this if you have cloned the repository into a directory named `jellyfin` (the default directory name) and should work on all operating systems.
 
@@ -143,9 +143,9 @@ If the Server is configured to host the Web Client, and the Server is running, t
 API documentation can be viewed at `http://localhost:8096/api-docs/swagger/index.html`
 
 
-### Running from GH-Codespaces
+### Running from GitHub Codespaces
 
-As Jellyfin will run on a container on a github hosted server, JF needs to handle some things differently.
+As Jellyfin will run on a container on a GitHub hosted server, JF needs to handle some things differently.
 
 **NOTE:** Depending on the selected configuration (if you just click 'create codespace' it will create a default configuration one) it might take 20-30 seconds to load all extensions and prepare the environment while VS Code is already open. Just give it some time and wait until you see `Downloading .NET version(s) 7.0.15~x64 ...... Done!` in the output tab.
 
@@ -182,12 +182,12 @@ The following sections describe some more advanced scenarios for running the ser
 
 It is not necessary to host the frontend web client as part of the backend server. Hosting these two components separately may be useful for frontend developers who would prefer to host the client in a separate webpack development server for a tighter development loop. See the [jellyfin-web](https://github.com/jellyfin/jellyfin-web#getting-started) repo for instructions on how to do this.
 
-To instruct the server not to host the web content, there is a `nowebclient` configuration flag that must be set. This can specified using the command line
+To instruct the server not to host the web content, there is a `nowebclient` configuration flag that must be set. This can be specified using the command line
 switch `--nowebclient` or the environment variable `JELLYFIN_NOWEBCONTENT=true`.
 
 Since this is a common scenario, there is also a separate launch profile defined for Visual Studio called `Jellyfin.Server (nowebcontent)` that can be selected from the 'Start Debugging' dropdown in the main toolbar.
 
-**NOTE:** The setup wizard can not be run if the web client is hosted separately.
+**NOTE:** The setup wizard cannot be run if the web client is hosted separately.
 
 ---
 <p align="center">
