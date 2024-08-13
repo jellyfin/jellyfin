@@ -17,7 +17,7 @@ namespace MediaBrowser.Controller.Playlists
         /// <param name="playlistId">The playlist identifier.</param>
         /// <param name="userId">The user identifier.</param>
         /// <returns>Playlist.</returns>
-        Playlist GetPlaylistForUser(Guid playlistId, Guid userId);
+        Playlist? GetPlaylistForUser(Guid playlistId, Guid userId);
 
         /// <summary>
         /// Creates the playlist.
@@ -77,14 +77,14 @@ namespace MediaBrowser.Controller.Playlists
         /// Gets the playlists folder.
         /// </summary>
         /// <returns>Folder.</returns>
-        Folder GetPlaylistsFolder();
+        Folder? GetPlaylistsFolder();
 
         /// <summary>
         /// Gets the playlists folder for a user.
         /// </summary>
         /// <param name="userId">The user identifier.</param>
         /// <returns>Folder.</returns>
-        Folder GetPlaylistsFolder(Guid userId);
+        Folder? GetPlaylistsFolder(Guid userId);
 
         /// <summary>
         /// Moves the item.

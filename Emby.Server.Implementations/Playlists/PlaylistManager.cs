@@ -1,5 +1,3 @@
-#nullable disable
-
 #pragma warning disable CS1591
 
 using System;
@@ -59,14 +57,19 @@ namespace Emby.Server.Implementations.Playlists
             _appConfig = appConfig;
         }
 
-        public Playlist GetPlaylistForUser(Guid playlistId, Guid userId)
+        public Playlist? GetPlaylistForUser(Guid playlistId, Guid userId)
         {
-            return GetPlaylists(userId).Where(p => p.Id.Equals(playlistId)).FirstOrDefault();
+            return GetPlaylists(userId).FirstOrDefault(p => p.Id.Equals(playlistId));
         }
 
         public IEnumerable<Playlist> GetPlaylists(Guid userId)
         {
             var user = _userManager.GetUserById(userId);
+            if (user is null)
+            {
+                throw new ArgumentException($"No user exists with Id {userId}");
+            }
+
             return _libraryManager.GetItemList(new InternalItemsQuery
             {
                 IncludeItemTypes = [BaseItemKind.Playlist],
@@ -79,7 +82,7 @@ namespace Emby.Server.Implementations.Playlists
 
         public async Task<PlaylistCreationResult> CreatePlaylist(PlaylistCreationRequest request)
         {
-            var name = request.Name;
+            var name = request.Name!;
             var folderName = _fileSystem.GetValidFilename(name);
             var parentFolder = GetPlaylistsFolder(request.UserId);
             if (parentFolder is null)
@@ -189,7 +192,7 @@ namespace Emby.Server.Implementations.Playlists
             return path;
         }
 
-        private IReadOnlyList<BaseItem> GetPlaylistItems(IEnumerable<Guid> itemIds, User user, DtoOptions options)
+        private IReadOnlyList<BaseItem> GetPlaylistItems(IEnumerable<Guid> itemIds, User? user, DtoOptions options)
         {
             var items = itemIds.Select(_libraryManager.GetItemById).Where(i => i is not null);
 
@@ -206,7 +209,7 @@ namespace Emby.Server.Implementations.Playlists
             });
         }
 
-        private async Task AddToPlaylistInternal(Guid playlistId, IReadOnlyCollection<Guid> newItemIds, User user, DtoOptions options)
+        private async Task AddToPlaylistInternal(Guid playlistId, IReadOnlyCollection<Guid> newItemIds, User? user, DtoOptions options)
         {
             // Retrieve the existing playlist
             var playlist = _libraryManager.GetItemById(playlistId) as Playlist
@@ -485,7 +488,7 @@ namespace Emby.Server.Implementations.Playlists
 
         private static string NormalizeItemPath(string playlistPath, string itemPath)
         {
-            return MakeRelativePath(Path.GetDirectoryName(playlistPath), itemPath);
+            return MakeRelativePath(Path.GetDirectoryName(playlistPath)!, itemPath);
         }
 
         private static string MakeRelativePath(string folderPath, string fileAbsolutePath)
@@ -519,13 +522,13 @@ namespace Emby.Server.Implementations.Playlists
         }
 
         /// <inheritdoc />
-        public Folder GetPlaylistsFolder()
+        public Folder? GetPlaylistsFolder()
         {
             return GetPlaylistsFolder(Guid.Empty);
         }
 
         /// <inheritdoc />
-        public Folder GetPlaylistsFolder(Guid userId)
+        public Folder? GetPlaylistsFolder(Guid userId)
         {
             const string TypeName = "PlaylistsFolder";
 
@@ -566,19 +569,28 @@ namespace Emby.Server.Implementations.Playlists
         public async Task UpdatePlaylist(PlaylistUpdateRequest request)
         {
             var playlist = GetPlaylistForUser(request.Id, request.UserId);
+            if (playlist is null)
+            {
+                throw new ArgumentException($"No playlist exists with Id {request.Id}");
+            }
 
             if (request.Ids is not null)
             {
+                var user = _userManager.GetUserById(request.UserId);
+                if (user is null)
+                {
+                    throw new ArgumentException($"No user exists with Id {request.UserId}");
+                }
+
                 playlist.LinkedChildren = [];
                 await UpdatePlaylistInternal(playlist).ConfigureAwait(false);
 
-                var user = _userManager.GetUserById(request.UserId);
                 await AddToPlaylistInternal(request.Id, request.Ids, user, new DtoOptions(false)
                 {
                     EnableImages = true
                 }).ConfigureAwait(false);
 
-                playlist = GetPlaylistForUser(request.Id, request.UserId);
+                playlist = GetPlaylistForUser(request.Id, request.UserId)!;
             }
 
             if (request.Name is not null)
@@ -603,6 +615,11 @@ namespace Emby.Server.Implementations.Playlists
         {
             var userId = request.UserId;
             var playlist = GetPlaylistForUser(request.Id, userId);
+            if (playlist is null)
+            {
+                throw new ArgumentException($"No playlist exists with Id {request.Id}");
+            }
+
             var shares = playlist.Shares.ToList();
             var existingUserShare = shares.FirstOrDefault(s => s.UserId.Equals(userId));
             if (existingUserShare is not null)
@@ -618,6 +635,11 @@ namespace Emby.Server.Implementations.Playlists
         public async Task RemoveUserFromShares(Guid playlistId, Guid userId, PlaylistUserPermissions share)
         {
             var playlist = GetPlaylistForUser(playlistId, userId);
+            if (playlist is null)
+            {
+                throw new ArgumentException($"No playlist exists with Id {playlistId}");
+            }
+
             var shares = playlist.Shares.ToList();
             shares.Remove(share);
             playlist.Shares = shares;

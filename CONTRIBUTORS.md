@@ -187,6 +187,7 @@
  - [HonestlyWhoKnows](https://github.com/honestlywhoknows)
  - [TheMelmacian](https://github.com/TheMelmacian)
  - [ItsAllAboutTheCode](https://github.com/ItsAllAboutTheCode)
+ - [phito](https://github.com/phito)
 
 # Emby Contributors
 
