@@ -902,6 +902,12 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (OperatingSystem.IsWindows())
             {
+                // on Windows, the deviceIndex is an int
+                if (int.TryParse(renderNodePath, NumberStyles.Any, CultureInfo.InvariantCulture, out int deviceIndex))
+                {
+                    return GetD3d11vaDeviceArgs(deviceIndex, string.Empty, D3d11vaAlias) + arg + "@" + D3d11vaAlias;
+                }
+
                 // derive qsv from d3d11va device
                 return GetD3d11vaDeviceArgs(0, "0x8086", D3d11vaAlias) + arg + "@" + D3d11vaAlias;
             }
