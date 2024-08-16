@@ -122,6 +122,11 @@ namespace MediaBrowser.Controller.Entities.Movies
             };
             if (!string.IsNullOrEmpty(DisplayOrder))
             {
+              if (DisplayOrder == "InsertDate")
+              {
+                 return items;
+              }
+
               sortBy = new[]
                 {
                     Enum.Parse<ItemSortBy>(DisplayOrder)
