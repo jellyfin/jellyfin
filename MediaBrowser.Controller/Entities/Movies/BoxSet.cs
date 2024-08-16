@@ -112,37 +112,35 @@ namespace MediaBrowser.Controller.Entities.Movies
             return true;
         }
 
+        public IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user)
+        {
+            var sortBy = new[]
+            {
+               ItemSortBy.ProductionYear,
+               ItemSortBy.PremiereDate,
+               ItemSortBy.SortName
+            };
+            if (!string.IsNullOrEmpty(DisplayOrder))
+            {
+              sortBy = new[]
+                {
+                    Enum.Parse<ItemSortBy>(DisplayOrder)
+                };
+            }
+
+            return LibraryManager.Sort(items, user, sortBy, SortOrder.Ascending);
+        }
+
         public override List<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
         {
             var children = base.GetChildren(user, includeLinkedChildren, query);
-
-            if (string.Equals(DisplayOrder, "SortName", StringComparison.OrdinalIgnoreCase))
-            {
-                // Sort by name
-                return LibraryManager.Sort(children, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending).ToList();
-            }
-
-            if (string.Equals(DisplayOrder, "PremiereDate", StringComparison.OrdinalIgnoreCase))
-            {
-                // Sort by release date
-                return LibraryManager.Sort(children, user, new[] { ItemSortBy.ProductionYear, ItemSortBy.PremiereDate, ItemSortBy.SortName }, SortOrder.Ascending).ToList();
-            }
-
-            // Default sorting
-            return LibraryManager.Sort(children, user, new[] { ItemSortBy.ProductionYear, ItemSortBy.PremiereDate, ItemSortBy.SortName }, SortOrder.Ascending).ToList();
+            return Sort(children, user).ToList();
         }
 
         public override IEnumerable<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)
         {
             var children = base.GetRecursiveChildren(user, query);
-
-            if (string.Equals(DisplayOrder, "PremiereDate", StringComparison.OrdinalIgnoreCase))
-            {
-                // Sort by release date
-                return LibraryManager.Sort(children, user, new[] { ItemSortBy.ProductionYear, ItemSortBy.PremiereDate, ItemSortBy.SortName }, SortOrder.Ascending).ToList();
-            }
-
-            return children;
+            return Sort(children, user).ToList();
         }
 
         public BoxSetInfo GetLookupInfo()
