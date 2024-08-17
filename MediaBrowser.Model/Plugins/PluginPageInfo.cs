@@ -11,7 +11,7 @@ namespace MediaBrowser.Model.Plugins
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the display name of the plugin/
+        /// Gets or sets the display name of the plugin.
         /// </summary>
         public string? DisplayName { get; set; }
 
