@@ -147,28 +147,34 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private static partial Regex FfprobePathRegex();
 
         /// <summary>
-        /// Run at startup or if the user removes a Custom path from transcode page.
+        /// Run at startup to validate ffmpeg.
         /// Sets global variables FFmpegPath.
-        /// Precedence is: Config > CLI > $PATH.
+        /// Precedence is: CLI/Env var > Config > $PATH.
         /// </summary>
-        public void SetFFmpegPath()
+        /// <returns>bool indicates whether a valid ffmpeg is found.</returns>
+        public bool SetFFmpegPath()
         {
             // 1) Check if the --ffmpeg CLI switch has been given
             var ffmpegPath = _startupOptionFFmpegPath;
+            string ffmpegPathSetMethodText = "command line or environment variable";
             if (string.IsNullOrEmpty(ffmpegPath))
             {
                 // 2) Custom path stored in config/encoding xml file under tag <EncoderAppPath> should be used as a fallback
                 ffmpegPath = _configurationManager.GetEncodingOptions().EncoderAppPath;
+                ffmpegPathSetMethodText = "encoding.xml config file";
                 if (string.IsNullOrEmpty(ffmpegPath))
                 {
                     // 3) Check "ffmpeg"
                     ffmpegPath = "ffmpeg";
+                    ffmpegPathSetMethodText = "system $PATH";
                 }
             }
 
             if (!ValidatePath(ffmpegPath))
             {
                 _ffmpegPath = null;
+                _logger.LogError("FFmpeg: Path set by {FfmpegPathSetMethodText} is invalid", ffmpegPathSetMethodText);
+                return false;
             }
 
             // Write the FFmpeg path to the config/encoding.xml file as <EncoderAppPathDisplay> so it appears in UI
@@ -229,65 +235,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             _logger.LogInformation("FFmpeg: {FfmpegPath}", _ffmpegPath ?? string.Empty);
-        }
-
-        /// <summary>
-        /// Triggered from the Settings > Transcoding UI page when users submits Custom FFmpeg path to use.
-        /// Only write the new path to xml if it exists.  Do not perform validation checks on ffmpeg here.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="pathType">The path type.</param>
-        public void UpdateEncoderPath(string path, string pathType)
-        {
-            var config = _configurationManager.GetEncodingOptions();
-
-            // Filesystem may not be case insensitive, but EncoderAppPathDisplay should always point to a valid file?
-            if (string.IsNullOrEmpty(config.EncoderAppPath)
-                && string.Equals(config.EncoderAppPathDisplay, path, StringComparison.OrdinalIgnoreCase))
-            {
-                _logger.LogDebug("Existing ffmpeg path is empty and the new path is the same as {EncoderAppPathDisplay}. Skipping", nameof(config.EncoderAppPathDisplay));
-                return;
-            }
-
-            string newPath;
-
-            _logger.LogInformation("Attempting to update encoder path to {Path}. pathType: {PathType}", path ?? string.Empty, pathType ?? string.Empty);
-
-            if (!string.Equals(pathType, "custom", StringComparison.OrdinalIgnoreCase))
-            {
-                throw new ArgumentException("Unexpected pathType value");
-            }
-
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                // User had cleared the custom path in UI
-                newPath = string.Empty;
-            }
-            else
-            {
-                if (Directory.Exists(path))
-                {
-                    // Given path is directory, so resolve down to filename
-                    newPath = GetEncoderPathFromDirectory(path, "ffmpeg");
-                }
-                else
-                {
-                    newPath = path;
-                }
-
-                if (!new EncoderValidator(_logger, newPath).ValidateVersion())
-                {
-                    throw new ResourceNotFoundException();
-                }
-            }
-
-            // Write the new ffmpeg path to the xml as <EncoderAppPath>
-            // This ensures its not lost on next startup
-            config.EncoderAppPath = newPath;
-            _configurationManager.SaveConfiguration("encoding", config);
-
-            // Trigger SetFFmpegPath so we validate the new path and setup probe path
-            SetFFmpegPath();
+            return !string.IsNullOrWhiteSpace(ffmpegPath);
         }
 
         /// <summary>
@@ -306,7 +254,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             bool rc = new EncoderValidator(_logger, path).ValidateVersion();
             if (!rc)
             {
-                _logger.LogWarning("FFmpeg: Failed version check: {Path}", path);
+                _logger.LogError("FFmpeg: Failed version check: {Path}", path);
                 return false;
             }
 
