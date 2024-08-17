@@ -114,26 +114,19 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         public IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user)
         {
-            var sortBy = new[]
-            {
-               ItemSortBy.ProductionYear,
-               ItemSortBy.PremiereDate,
-               ItemSortBy.SortName
-            };
+            var sortBy = ItemSortBy.PremiereDate;
+
             if (!string.IsNullOrEmpty(DisplayOrder))
             {
-              if (DisplayOrder == "InsertDate")
-              {
-                 return items;
-              }
-
-              sortBy = new[]
-                {
-                    Enum.Parse<ItemSortBy>(DisplayOrder)
-                };
+                sortBy = Enum.Parse<ItemSortBy>(DisplayOrder);
             }
 
-            return LibraryManager.Sort(items, user, sortBy, SortOrder.Ascending);
+            if (sortBy == ItemSortBy.Default)
+            {
+              return items;
+            }
+
+            return LibraryManager.Sort(items, user, new[] { sortBy }, SortOrder.Ascending);
         }
 
         public override List<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
