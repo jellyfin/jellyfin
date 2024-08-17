@@ -403,8 +403,9 @@ namespace Emby.Server.Implementations
             ConfigurationManager.NamedConfigurationUpdated += OnConfigurationUpdated;
 
             var ffmpegValid = Resolve<IMediaEncoder>().SetFFmpegPath();
+            var isRunningInCi = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"));
 
-            if (!ffmpegValid)
+            if (!ffmpegValid && !isRunningInCi)
             {
                 throw new FfmpegException("Failed to find valid ffmpeg");
             }
