@@ -112,13 +112,11 @@ namespace MediaBrowser.Controller.Entities.Movies
             return true;
         }
 
-        public IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user)
+        private IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user)
         {
-            var sortBy = ItemSortBy.PremiereDate;
-
-            if (!string.IsNullOrEmpty(DisplayOrder))
+            if (!Enum.TryParse<ItemSortBy>(DisplayOrder, out var sortBy))
             {
-                sortBy = Enum.Parse<ItemSortBy>(DisplayOrder);
+                sortBy = ItemSortBy.PremiereDate;
             }
 
             if (sortBy == ItemSortBy.Default)
