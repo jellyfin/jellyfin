@@ -1569,7 +1569,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         var segmentContainer = outputExtension.TrimStart('.');
         var inputModifier = _encodingHelper.GetInputModifier(state, _encodingOptions, segmentContainer);
 
-        if (string.Equals(segmentContainer, "ts", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(segmentContainer, "ts", StringComparison.OrdinalIgnoreCase) || string.Equals(segmentContainer, "mpegts", StringComparison.OrdinalIgnoreCase))
         {
             segmentFormat = "mpegts";
         }
