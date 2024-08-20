@@ -24,6 +24,6 @@ internal static class SubtitleFormatExtensions
             _ => null,
         };
 
-        return errors is not null;
+        return !string.IsNullOrWhiteSpace(errors);
     }
 }
