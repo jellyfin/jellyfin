@@ -123,7 +123,7 @@
     "TaskRefreshChannels": "Refresh Channels",
     "TaskRefreshChannelsDescription": "Refreshes internet channel information.",
     "TaskDownloadMissingLyrics": "Download missing lyrics",
-    "TaskDownloadMissingLyricsDescription": "Task to download missing lyrics",
+    "TaskDownloadMissingLyricsDescription": "Downloads lyrics for songs",
     "TaskDownloadMissingSubtitles": "Download missing subtitles",
     "TaskDownloadMissingSubtitlesDescription": "Searches the internet for missing subtitles based on metadata configuration.",
     "TaskOptimizeDatabase": "Optimize database",
