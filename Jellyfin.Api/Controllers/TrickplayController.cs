@@ -95,6 +95,7 @@ public class TrickplayController : BaseJellyfinApiController
         var path = _trickplayManager.GetTrickplayTilePath(item, width, index);
         if (System.IO.File.Exists(path))
         {
+            Response.Headers.ContentDisposition = "attachment";
             return PhysicalFile(path, MediaTypeNames.Image.Jpeg);
         }
 
