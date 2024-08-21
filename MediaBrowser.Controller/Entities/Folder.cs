@@ -22,6 +22,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Controller.SearchExtension;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Querying;
@@ -167,6 +168,8 @@ namespace MediaBrowser.Controller.Entities
         }
 
         public static ICollectionManager CollectionManager { get; set; }
+
+        public static IEnumerable<IBaseItemSearchProvider> BaseItemSearchProviders { get; set; }
 
         public override bool CanDelete()
         {
@@ -970,6 +973,7 @@ namespace MediaBrowser.Controller.Entities
                 return QueryRecursive(query);
             }
 
+            var enumerators = BaseItemSearchProviders.Select(e => e.Search(this, query));
             var user = query.User;
 
             Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
@@ -989,6 +993,17 @@ namespace MediaBrowser.Controller.Entities
                 };
 
                 items = GetChildren(user, true, childQuery).Where(filter);
+            }
+
+            foreach (var enumerator in enumerators)
+            {
+                var externalSearchResult = new List<BaseItem>();
+                foreach (var item in enumerator.ToBlockingEnumerable())
+                {
+                    externalSearchResult.Add(item);
+                }
+
+                items = items.Concat(externalSearchResult).DistinctBy(e => e.Id);
             }
 
             return PostFilterAndSort(items, query, true);
