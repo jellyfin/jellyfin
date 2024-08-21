@@ -903,7 +903,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (OperatingSystem.IsWindows())
             {
                 // on Windows, the deviceIndex is an int
-                if (int.TryParse(renderNodePath, NumberStyles.Any, CultureInfo.InvariantCulture, out int deviceIndex))
+                if (int.TryParse(renderNodePath, NumberStyles.Integer, CultureInfo.InvariantCulture, out int deviceIndex))
                 {
                     return GetD3d11vaDeviceArgs(deviceIndex, string.Empty, D3d11vaAlias) + arg + "@" + D3d11vaAlias;
                 }
