@@ -233,6 +233,8 @@ public class PluginsController : BaseJellyfinApiController
             return NotFound();
         }
 
+        Response.Headers.ContentDisposition = "attachment";
+
         imagePath = Path.Combine(plugin.Path, plugin.Manifest.ImagePath);
         return PhysicalFile(imagePath, MimeTypes.GetMimeType(imagePath));
     }
