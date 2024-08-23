@@ -154,6 +154,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <returns>bool indicates whether a valid ffmpeg is found.</returns>
         public bool SetFFmpegPath()
         {
+            var skipValidation = _config.GetFFmpegSkipValidation();
+            if (skipValidation)
+            {
+                _logger.LogWarning("FFmpeg: Skipping FFmpeg Validation due to FFmpeg:novalidation set to true");
+                return true;
+            }
+
             // 1) Check if the --ffmpeg CLI switch has been given
             var ffmpegPath = _startupOptionFFmpegPath;
             string ffmpegPathSetMethodText = "command line or environment variable";

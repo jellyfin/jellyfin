@@ -403,9 +403,8 @@ namespace Emby.Server.Implementations
             ConfigurationManager.NamedConfigurationUpdated += OnConfigurationUpdated;
 
             var ffmpegValid = Resolve<IMediaEncoder>().SetFFmpegPath();
-            var skipFfmpegCheck = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("JELLYFIN_DEBUG_NO_FFMPEG"));
 
-            if (!skipFfmpegCheck && !ffmpegValid)
+            if (!ffmpegValid)
             {
                 throw new FfmpegException("Failed to find valid ffmpeg");
             }

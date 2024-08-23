@@ -48,7 +48,7 @@ namespace Jellyfin.Server.Integration.Tests
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             // Skip ffmpeg check for testing
-            Environment.SetEnvironmentVariable("JELLYFIN_DEBUG_NO_FFMPEG", "1");
+            Environment.SetEnvironmentVariable("JELLYFIN_FFMPEG__NOVALIDATION", "true");
             // Specify the startup command line options
             var commandLineOpts = new StartupOptions();
 
