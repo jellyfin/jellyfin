@@ -149,7 +149,6 @@ public class LyricScheduledTask : IScheduledTask
 
                 startIndex += QueryPageLimit;
                 previousCount = audioItems.Count;
-
             } while (previousCount > 0);
         }
 
