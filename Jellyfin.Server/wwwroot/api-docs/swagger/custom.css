@@ -13,3 +13,8 @@
     width: 150px;
 }
 /* end logo */
+
+/* hide server selector & authorize button */
+.scheme-container {
+    display: none;
+}

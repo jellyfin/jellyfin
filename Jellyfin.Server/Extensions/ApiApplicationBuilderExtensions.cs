@@ -1,9 +1,11 @@
+using System;
 using System.Collections.Generic;
 using Jellyfin.Api.Middleware;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerUI;
 
 namespace Jellyfin.Server.Extensions
 {
@@ -48,6 +50,9 @@ namespace Jellyfin.Server.Extensions
                     c.SwaggerEndpoint($"/{baseUrl}api-docs/openapi.json", "Jellyfin API");
                     c.InjectStylesheet($"/{baseUrl}api-docs/swagger/custom.css");
                     c.RoutePrefix = "api-docs/swagger";
+                    c.ConfigObject.DisplayOperationId = true;
+                    c.ConfigObject.TryItOutEnabled = false;
+                    c.ConfigObject.SupportedSubmitMethods = Array.Empty<SubmitMethod>();
                 })
                 .UseReDoc(c =>
                 {
