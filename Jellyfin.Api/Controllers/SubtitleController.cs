@@ -31,6 +31,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using SixLabors.Fonts;
 
 namespace Jellyfin.Api.Controllers;
 
@@ -517,17 +518,11 @@ public class SubtitleController : BaseJellyfinApiController
                 .ThenBy(i => i.Name)
                 .ThenByDescending(i => i.DateModified)
                 .ThenByDescending(i => i.DateCreated);
-            // max total size 20M
-            const int MaxSize = 20971520;
-            var sizeCounter = 0L;
             foreach (var fontFile in fontFiles)
             {
-                sizeCounter += fontFile.Size;
-                if (sizeCounter >= MaxSize)
-                {
-                    _logger.LogWarning("Some fonts will not be sent due to size limitations");
-                    yield break;
-                }
+                FontCollection collection = new();
+                FontFamily family = collection.Add(fallbackFontPath + "/" + fontFile.Name, CultureInfo.InvariantCulture);
+                fontFile.FamilyName = family.Name;
 
                 yield return fontFile;
             }
