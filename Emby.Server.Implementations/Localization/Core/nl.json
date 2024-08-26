@@ -130,5 +130,7 @@
     "TaskCleanCollectionsAndPlaylists": "Collecties en afspeellijsten opruimen",
     "TaskCleanCollectionsAndPlaylistsDescription": "Verwijdert niet langer bestaande items uit collecties en afspeellijsten.",
     "TaskAudioNormalization": "Geluidsnormalisatie",
-    "TaskAudioNormalizationDescription": "Scant bestanden op gegevens voor geluidsnormalisatie."
+    "TaskAudioNormalizationDescription": "Scant bestanden op gegevens voor geluidsnormalisatie.",
+    "TaskDownloadMissingLyrics": "Ontbrekende liedteksten downloaden",
+    "TaskDownloadMissingLyricsDescription": "Downloadt liedteksten"
 }
