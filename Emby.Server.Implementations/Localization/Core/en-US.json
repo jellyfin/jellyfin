@@ -80,6 +80,8 @@
     "SubtitleDownloadFailureFromForItem": "Subtitles failed to download from {0} for {1}",
     "Sync": "Sync",
     "System": "System",
+    "TaskSubtitleFallbackFontListPrecache": "Preload fallback subtitles font names",
+    "TaskSubtitleFallbackFontListPrecacheDescription": "Preloads the font family names for fallback subtitles fonts",
     "TvShows": "TV Shows",
     "Undefined": "Undefined",
     "User": "User",

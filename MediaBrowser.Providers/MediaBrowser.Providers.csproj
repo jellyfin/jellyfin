@@ -23,7 +23,9 @@
     <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="PlaylistsNET" />
-    <PackageReference Include="z440.atl.core"/>
+    <PackageReference Include="SixLabors.Fonts" />
+    <PackageReference Include="System.IO.Hashing" />
+    <PackageReference Include="z440.atl.core" />
     <PackageReference Include="TMDbLib" />
   </ItemGroup>
 
