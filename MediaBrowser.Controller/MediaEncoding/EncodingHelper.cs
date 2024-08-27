@@ -2005,7 +2005,26 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             var profile = state.GetRequestedProfiles(targetVideoCodec).FirstOrDefault() ?? string.Empty;
-            profile = WhiteSpaceRegex().Replace(profile, string.Empty);
+            profile = WhiteSpaceRegex().Replace(profile, string.Empty).ToLowerInvariant();
+
+            var videoProfiles = Array.Empty<string>();
+            if (string.Equals("h264", targetVideoCodec, StringComparison.OrdinalIgnoreCase))
+            {
+                videoProfiles = _videoProfilesH264;
+            }
+            else if (string.Equals("hevc", targetVideoCodec, StringComparison.OrdinalIgnoreCase))
+            {
+                videoProfiles = _videoProfilesH265;
+            }
+            else if (string.Equals("av1", targetVideoCodec, StringComparison.OrdinalIgnoreCase))
+            {
+                videoProfiles = _videoProfilesAv1;
+            }
+
+            if (!videoProfiles.Contains(profile, StringComparison.OrdinalIgnoreCase))
+            {
+                profile = string.Empty;
+            }
 
             // We only transcode to HEVC 8-bit for now, force Main Profile.
             if (profile.Contains("main10", StringComparison.OrdinalIgnoreCase)
