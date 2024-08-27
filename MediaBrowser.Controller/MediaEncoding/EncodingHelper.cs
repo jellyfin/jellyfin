@@ -3010,7 +3010,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 return string.Format(
                     CultureInfo.InvariantCulture,
-                    @"scale=-1:{1}:fast_bilinear,scale,crop,pad=max({0}\,iw):max({1}\,ih):(ow-iw)/2:(oh-ih)/2:black@0,crop={0}:{1}",
+                    @"scale,scale=-1:{1}:fast_bilinear,crop,pad=max({0}\,iw):max({1}\,ih):(ow-iw)/2:(oh-ih)/2:black@0,crop={0}:{1}",
                     outWidth.Value,
                     outHeight.Value);
             }
@@ -3771,7 +3771,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // sw => hw
                 if (doOclTonemap)
                 {
-                    mainFilters.Add("hwupload=derive_device=d3d11va:extra_hw_frames=16");
+                    mainFilters.Add("hwupload=derive_device=d3d11va:extra_hw_frames=24");
                     mainFilters.Add("format=d3d11");
                     mainFilters.Add("hwmap=derive_device=opencl");
                 }
