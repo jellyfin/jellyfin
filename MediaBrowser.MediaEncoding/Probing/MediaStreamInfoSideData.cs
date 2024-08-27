@@ -69,5 +69,12 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// <value>The DvBlSignalCompatibilityId.</value>
         [JsonPropertyName("dv_bl_signal_compatibility_id")]
         public int? DvBlSignalCompatibilityId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Rotation in degrees.
+        /// </summary>
+        /// <value>The Rotation.</value>
+        [JsonPropertyName("rotation")]
+        public int? Rotation { get; set; }
     }
 }

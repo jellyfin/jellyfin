@@ -33,6 +33,11 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// The overlay_vulkan_framesync.
         /// </summary>
-        OverlayVulkanFrameSync = 5
+        OverlayVulkanFrameSync = 5,
+
+        /// <summary>
+        /// The transpose_opencl_reversal.
+        /// </summary>
+        TransposeOpenclReversal = 6
     }
 }
