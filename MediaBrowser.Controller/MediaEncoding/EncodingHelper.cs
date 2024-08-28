@@ -6043,7 +6043,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 && isVideotoolboxSupported
                 && isCodecAvailable)
             {
-                return " -hwaccel videotoolbox" + (outputHwSurface ? " -hwaccel_output_format videotoolbox_vld" : string.Empty) + "-noautorotate" + stripRotationDataArgs;
+                return " -hwaccel videotoolbox" + (outputHwSurface ? " -hwaccel_output_format videotoolbox_vld" : string.Empty) + " -noautorotate" + stripRotationDataArgs;
             }
 
             // Rockchip rkmpp
