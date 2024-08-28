@@ -70,6 +70,8 @@ namespace MediaBrowser.Model.Dto
 
         public bool IsInfiniteStream { get; set; }
 
+        public bool RequiresTsContainerTranscoding { get; set; }
+
         public bool RequiresOpening { get; set; }
 
         public string OpenToken { get; set; }
@@ -97,6 +99,8 @@ namespace MediaBrowser.Model.Dto
         public string[] Formats { get; set; }
 
         public int? Bitrate { get; set; }
+
+        public int? FallbackMaxStreamingBitrate { get; set; }
 
         public TransportStreamTimestamp? Timestamp { get; set; }
 
