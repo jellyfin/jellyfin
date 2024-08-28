@@ -65,6 +65,11 @@ namespace MediaBrowser.Controller.Extensions
         public const string SqliteCacheSizeKey = "sqlite:cacheSize";
 
         /// <summary>
+        /// The key for enabling the metrics endpoint.
+        /// </summary>
+        public const string EnableMetricsKey = "EnableMetrics";
+
+        /// <summary>
         /// Gets a value indicating whether the application should host static web content from the <see cref="IConfiguration"/>.
         /// </summary>
         /// <param name="configuration">The configuration to retrieve the value from.</param>
