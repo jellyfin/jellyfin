@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Dlna;
@@ -24,6 +25,7 @@ namespace MediaBrowser.Model.Dto
             SupportsDirectStream = true;
             SupportsDirectPlay = true;
             SupportsProbing = true;
+            UseMostCompatibleTranscodingProfile = false;
         }
 
         public MediaProtocol Protocol { get; set; }
@@ -70,6 +72,7 @@ namespace MediaBrowser.Model.Dto
 
         public bool IsInfiniteStream { get; set; }
 
+        [DefaultValue(false)]
         public bool UseMostCompatibleTranscodingProfile { get; set; }
 
         public bool RequiresOpening { get; set; }
