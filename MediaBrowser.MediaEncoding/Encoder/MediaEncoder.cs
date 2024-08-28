@@ -719,8 +719,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             using (var processWrapper = new ProcessWrapper(process, this))
             {
-                bool ranToCompletion;
-
                 using (await _thumbnailResourcePool.LockAsync(cancellationToken).ConfigureAwait(false))
                 {
                     StartProcess(processWrapper);
@@ -734,22 +732,18 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     try
                     {
                         await process.WaitForExitAsync(TimeSpan.FromMilliseconds(timeoutMs)).ConfigureAwait(false);
-                        ranToCompletion = true;
                     }
-                    catch (OperationCanceledException)
+                    catch (OperationCanceledException ex)
                     {
                         process.Kill(true);
-                        ranToCompletion = false;
+                        throw new FfmpegException(string.Format(CultureInfo.InvariantCulture, "ffmpeg image extraction timed out for {0} after {1}ms", inputPath, timeoutMs), ex);
                     }
                 }
 
-                var exitCode = ranToCompletion ? processWrapper.ExitCode ?? 0 : -1;
                 var file = _fileSystem.GetFileInfo(tempExtractPath);
 
-                if (exitCode == -1 || !file.Exists || file.Length == 0)
+                if (processWrapper.ExitCode > 0 || !file.Exists || file.Length == 0)
                 {
-                    _logger.LogError("ffmpeg image extraction failed for {Path}", inputPath);
-
                     throw new FfmpegException(string.Format(CultureInfo.InvariantCulture, "ffmpeg image extraction failed for {0}", inputPath));
                 }
 
