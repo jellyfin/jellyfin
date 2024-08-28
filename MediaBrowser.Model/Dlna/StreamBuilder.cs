@@ -805,7 +805,7 @@ namespace MediaBrowser.Model.Dlna
             }
 
             var transcodingProfiles = options.Profile.TranscodingProfiles
-                .Where(i => !item.RequiresTsContainerTranscoding || string.Equals(i.Container, "ts", StringComparison.OrdinalIgnoreCase))
+                .Where(i => !item.UseMostCompatibleTranscodingProfile || string.Equals(i.Container, "ts", StringComparison.OrdinalIgnoreCase))
                 .Where(i => i.Type == playlistItem.MediaType && i.Context == options.Context);
 
             if (options.AllowVideoStreamCopy)

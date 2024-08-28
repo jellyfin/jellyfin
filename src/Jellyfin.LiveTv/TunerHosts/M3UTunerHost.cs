@@ -201,7 +201,7 @@ namespace Jellyfin.LiveTv.TunerHosts
                 SupportsDirectStream = supportsDirectStream,
 
                 RequiredHttpHeaders = httpHeaders,
-                RequiresTsContainerTranscoding = !info.AllowFmp4TranscodingContainer,
+                UseMostCompatibleTranscodingProfile = !info.AllowFmp4TranscodingContainer,
                 FallbackMaxStreamingBitrate = info.FallbackMaxStreamingBitrate
             };
 

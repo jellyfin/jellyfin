@@ -70,7 +70,7 @@ namespace MediaBrowser.Model.Dto
 
         public bool IsInfiniteStream { get; set; }
 
-        public bool RequiresTsContainerTranscoding { get; set; }
+        public bool UseMostCompatibleTranscodingProfile { get; set; }
 
         public bool RequiresOpening { get; set; }
 
