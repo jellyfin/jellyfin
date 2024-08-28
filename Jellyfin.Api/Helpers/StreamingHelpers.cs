@@ -147,9 +147,9 @@ public static class StreamingHelpers
             state.DirectStreamProvider = liveStreamInfo.Item2;
 
             // Cap the max bitrate when it is too high. This is usually due to ffmpeg is unable to probe the source liveTV streams' bitrate.
-            if (mediaSource.FallbackMaxStreamingBitrate is not null)
+            if (mediaSource.FallbackMaxStreamingBitrate is not null && streamingRequest.VideoBitRate is not null)
             {
-                streamingRequest.VideoBitRate = Math.Min(streamingRequest.VideoBitRate, mediaSource.FallbackMaxStreamingBitrate);
+                streamingRequest.VideoBitRate = Math.Min(streamingRequest.VideoBitRate.Value, mediaSource.FallbackMaxStreamingBitrate.Value);
             }
         }
 
