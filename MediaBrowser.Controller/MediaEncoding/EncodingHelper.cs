@@ -66,6 +66,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         private readonly Version _minFFmpegReadrateOption = new Version(5, 0);
         private readonly Version _minFFmpegWorkingVtHwSurface = new Version(7, 0, 1);
         private readonly Version _minFFmpegDisplayRotationOption = new Version(6, 0);
+        private readonly Version _minFFmpegAdvancedTonemapMode = new Version(7, 0, 1);
 
         private static readonly Regex _validationRegex = new(ValidationRegex, RegexOptions.Compiled);
 
@@ -103,6 +104,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             "m4r",
             "m4v",
         };
+
+        private static readonly string[] _legacyTonemapModes = new[] { "max", "rgb" };
+        private static readonly string[] _advancedTonemapModes = new[] { "lum", "itp" };
 
         // Set max transcoding channels for encoders that can't handle more than a set amount of channels
         // AAC, FLAC, ALAC, libopus, libvorbis encoders all support at least 8 channels
@@ -3294,13 +3298,15 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 args = "tonemap_{0}=format={1}:p=bt709:t=bt709:m=bt709:tonemap={2}:peak={3}:desat={4}";
 
-                if (string.Equals(options.TonemappingMode, "max", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(options.TonemappingMode, "rgb", StringComparison.OrdinalIgnoreCase))
+                var useLegacyTonemapModes = _mediaEncoder.EncoderVersion >= _minFFmpegOclCuTonemapMode
+                                           && _legacyTonemapModes.Contains(options.TonemappingMode, StringComparison.OrdinalIgnoreCase);
+
+                var useAdvancedTonemapModes = _mediaEncoder.EncoderVersion >= _minFFmpegAdvancedTonemapMode
+                                              && _advancedTonemapModes.Contains(options.TonemappingMode, StringComparison.OrdinalIgnoreCase);
+
+                if (useLegacyTonemapModes || useAdvancedTonemapModes)
                 {
-                    if (_mediaEncoder.EncoderVersion >= _minFFmpegOclCuTonemapMode)
-                    {
-                        args += ":tonemap_mode={5}";
-                    }
+                    args += ":tonemap_mode={5}";
                 }
 
                 if (options.TonemappingParam != 0)
