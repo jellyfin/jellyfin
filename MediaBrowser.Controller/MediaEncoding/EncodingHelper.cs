@@ -1480,7 +1480,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                     }
                 }
 
-                // TODO: Perhaps also use original_size=1920x800 ??
                 return string.Format(
                     CultureInfo.InvariantCulture,
                     "subtitles=f='{0}'{1}{2}{3}{4}{5}",
@@ -1502,7 +1501,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 alphaParam,
                 sub2videoParam,
                 fontParam,
-                // fallbackFontParam,
                 setPtsParam);
         }
 
@@ -1775,12 +1773,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 else
                 {
                     param += " -preset veryfast";
-                }
-
-                // Only h264_qsv has look_ahead option
-                if (string.Equals(videoEncoder, "h264_qsv", StringComparison.OrdinalIgnoreCase))
-                {
-                    param += " -look_ahead 0";
                 }
             }
             else if (string.Equals(videoEncoder, "h264_nvenc", StringComparison.OrdinalIgnoreCase) // h264 (h264_nvenc)
@@ -2068,7 +2060,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (string.Equals(videoEncoder, "libx264", StringComparison.OrdinalIgnoreCase))
             {
-                param += " -x264opts:0 subme=0:me_range=4:rc_lookahead=10:me=dia:no_chroma_me:8x8dct=0:partitions=none";
+                param += " -x264opts:0 subme=0:me_range=16:rc_lookahead=10:me=hex:open_gop=0";
             }
 
             if (string.Equals(videoEncoder, "libx265", StringComparison.OrdinalIgnoreCase))
@@ -2076,8 +2068,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // libx265 only accept level option in -x265-params.
                 // level option may cause libx265 to fail.
                 // libx265 cannot adjust the given level, just throw an error.
-                // TODO: set fine tuned params.
-                param += " -x265-params:0 no-info=1";
+                param += " -x265-params:0 subme=3:merange=25:rc-lookahead=10:me=star:ctu=32:max-tu-size=32:min-cu-size=16:rskip=2:rskip-edge-threshold=2:no-sao=1:no-strong-intra-smoothing=1:no-scenecut=1:no-open-gop=1:no-info=1";
             }
 
             if (string.Equals(videoEncoder, "libsvtav1", StringComparison.OrdinalIgnoreCase)
