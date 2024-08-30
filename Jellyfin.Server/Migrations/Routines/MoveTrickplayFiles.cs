@@ -6,6 +6,7 @@ using Jellyfin.Server.Implementations.Trickplay;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Trickplay;
 
 namespace Jellyfin.Server.Migrations.Routines;
 
@@ -14,21 +15,18 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// </summary>
 public class MoveTrickplayFiles : IMigrationRoutine
 {
-    private readonly IServerConfigurationManager _serverConfigurationManager;
-    private readonly TrickplayManager _trickplayManager;
+    private readonly ITrickplayManager _trickplayManager;
     private readonly IFileSystem _fileSystem;
     private readonly ILibraryManager _libraryManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MoveTrickplayFiles"/> class.
     /// </summary>
-    /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
-    /// <param name="trickplayManager">Instance of the <see cref="TrickplayManager"/> interface.</param>
+    /// <param name="trickplayManager">Instance of the <see cref="ITrickplayManager"/> interface.</param>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
-    public MoveTrickplayFiles(IServerConfigurationManager serverConfigurationManager, TrickplayManager trickplayManager, IFileSystem fileSystem, ILibraryManager libraryManager)
+    public MoveTrickplayFiles(ITrickplayManager trickplayManager, IFileSystem fileSystem, ILibraryManager libraryManager)
     {
-        _serverConfigurationManager = serverConfigurationManager;
         _trickplayManager = trickplayManager;
         _fileSystem = fileSystem;
         _libraryManager = libraryManager;
