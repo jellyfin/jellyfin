@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations.Schema;
 using Jellyfin.Data.Enums;
 
 namespace Jellyfin.Data.Entities

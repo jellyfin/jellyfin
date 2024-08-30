@@ -1,4 +1,4 @@
-﻿namespace Jellyfin.Data.Enums
+namespace Jellyfin.Data.Enums
 {
     /// <summary>
     /// The base item kind.

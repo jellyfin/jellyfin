@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Jellyfin.Server.Implementations.ValueConverters
