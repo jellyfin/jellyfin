@@ -62,7 +62,7 @@ public class TrickplayMoveImagesTask : IScheduledTask
     /// <inheritdoc />
     public async Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
     {
-        var trickplayItems = await _trickplayManager.GetTrickplayItems().ConfigureAwait(false);
+        var trickplayItems = await _trickplayManager.GetTrickplayItemsAsync().ConfigureAwait(false);
         var query = new InternalItemsQuery
         {
             MediaTypes = [MediaType.Video],

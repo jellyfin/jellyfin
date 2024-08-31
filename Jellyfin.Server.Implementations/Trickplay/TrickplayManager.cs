@@ -215,8 +215,8 @@ public class TrickplayManager : ITrickplayManager
                     var existingFiles = Directory.GetFiles(outputDir);
                     if (existingFiles.Length > 0)
                     {
-                        var existingTrickplayResolution = (await GetTrickplayResolutions(video.Id).ConfigureAwait(false)).ContainsKey(actualWidth);
-                        if (existingTrickplayResolution)
+                        var hasTrickplayResolution = await HasTrickplayResolution(video.Id, actualWidth).ConfigureAwait(false);
+                        if (hasTrickplayResolution)
                         {
                             _logger.LogDebug("Found existing trickplay files for {ItemId}.", video.Id);
                             return;
@@ -455,7 +455,7 @@ public class TrickplayManager : ITrickplayManager
     }
 
     /// <inheritdoc />
-    public async Task<List<Guid>> GetTrickplayItems()
+    public async Task<List<Guid>> GetTrickplayItemsAsync()
     {
         List<Guid> trickplayItems;
 
@@ -509,7 +509,7 @@ public class TrickplayManager : ITrickplayManager
     }
 
     /// <inheritdoc />
-    public async Task<string> GetTrickplayTilePath(BaseItem item, int width, int index, bool saveWithMedia)
+    public async Task<string> GetTrickplayTilePathAsync(BaseItem item, int width, int index, bool saveWithMedia)
     {
         var trickplayResolutions = await GetTrickplayResolutions(item.Id).ConfigureAwait(false);
         if (trickplayResolutions is not null && trickplayResolutions.TryGetValue(width, out var trickplayInfo))
@@ -611,5 +611,20 @@ public class TrickplayManager : ITrickplayManager
             tileHeight.ToString(CultureInfo.InvariantCulture));
 
         return Path.Combine(path, subdirectory);
+    }
+
+    private async Task<bool> HasTrickplayResolution(Guid itemId, int width)
+    {
+        var trickplayResolutions = new Dictionary<int, TrickplayInfo>();
+
+        var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+        await using (dbContext.ConfigureAwait(false))
+        {
+            return await dbContext.TrickplayInfos
+                .AsNoTracking()
+                .Where(i => i.ItemId.Equals(itemId))
+                .AnyAsync(i => i.Width == width)
+                .ConfigureAwait(false);
+        }
     }
 }

@@ -47,7 +47,7 @@ public interface ITrickplayManager
     /// Gets the item ids of all items with trickplay info.
     /// </summary>
     /// <returns>Map of width resolutions to trickplay tiles info.</returns>
-    Task<List<Guid>> GetTrickplayItems();
+    Task<List<Guid>> GetTrickplayItemsAsync();
 
     /// <summary>
     /// Saves trickplay info.
@@ -71,7 +71,7 @@ public interface ITrickplayManager
     /// <param name="index">The tile's index.</param>
     /// <param name="saveWithMedia">Whether or not the tile should be saved next to the media file.</param>
     /// <returns>The absolute path.</returns>
-    Task<string> GetTrickplayTilePath(BaseItem item, int width, int index, bool saveWithMedia);
+    Task<string> GetTrickplayTilePathAsync(BaseItem item, int width, int index, bool saveWithMedia);
 
     /// <summary>
     /// Gets the path to a trickplay tile image.

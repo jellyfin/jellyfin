@@ -44,7 +44,7 @@ public class MoveTrickplayFiles : IMigrationRoutine
     /// <inheritdoc />
     public void Perform()
     {
-        var trickplayItems = _trickplayManager.GetTrickplayItems().GetAwaiter().GetResult();
+        var trickplayItems = _trickplayManager.GetTrickplayItemsAsync().GetAwaiter().GetResult();
         foreach (var itemId in trickplayItems)
         {
             var resolutions = _trickplayManager.GetTrickplayResolutions(itemId).GetAwaiter().GetResult();
