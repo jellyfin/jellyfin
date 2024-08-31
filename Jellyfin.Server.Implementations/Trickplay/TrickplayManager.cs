@@ -215,7 +215,7 @@ public class TrickplayManager : ITrickplayManager
                     var existingFiles = Directory.GetFiles(outputDir);
                     if (existingFiles.Length > 0)
                     {
-                        var hasTrickplayResolution = await HasTrickplayResolution(video.Id, actualWidth).ConfigureAwait(false);
+                        var hasTrickplayResolution = await HasTrickplayResolutionAsync(video.Id, actualWidth).ConfigureAwait(false);
                         if (hasTrickplayResolution)
                         {
                             _logger.LogDebug("Found existing trickplay files for {ItemId}.", video.Id);
