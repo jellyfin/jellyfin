@@ -613,7 +613,7 @@ public class TrickplayManager : ITrickplayManager
         return Path.Combine(path, subdirectory);
     }
 
-    private async Task<bool> HasTrickplayResolution(Guid itemId, int width)
+    private async Task<bool> HasTrickplayResolutionAsync(Guid itemId, int width)
     {
         var trickplayResolutions = new Dictionary<int, TrickplayInfo>();
 
