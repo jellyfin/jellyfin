@@ -829,7 +829,7 @@ namespace MediaBrowser.Model.Dlna
             var analyzedProfiles = transcodingProfiles
                 .Select(transcodingProfile =>
                 {
-                    var rank = new Tuple<int, int>(3, 3);
+                    var rank = (3, 3);
 
                     var container = transcodingProfile.Container;
 
@@ -848,7 +848,7 @@ namespace MediaBrowser.Model.Dlna
 
                             // An empty appliedVideoConditions means that the codec has no conditions for the current video stream
                             var conditionsSatisfied = appliedVideoConditions.All(satisfied => satisfied);
-                            rank = new Tuple<int, int>(conditionsSatisfied ? 1 : 2, rank.Item2);
+                            rank = (conditionsSatisfied ? 1 : 2, rank.Item2);
                         }
                     }
 
@@ -867,7 +867,7 @@ namespace MediaBrowser.Model.Dlna
 
                             // An empty appliedVideoConditions means that the codec has no conditions for the current audio stream
                             var conditionsSatisfied = appliedVideoConditions.All(satisfied => satisfied);
-                            rank = new Tuple<int, int>(rank.Item1, conditionsSatisfied ? 1 : 2);
+                            rank = (rank.Item1, conditionsSatisfied ? 1 : 2);
                         }
                     }
 
