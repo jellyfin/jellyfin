@@ -925,7 +925,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 audioStream = directAudioStream;
                 playlistItem.AudioStreamIndex = audioStream.Index;
-                playlistItem.AudioCodecs = new[] { audioStream.Codec };
+                playlistItem.AudioCodecs = audioCodecs = new[] { audioStream.Codec };
 
                 // Copy matching audio codec options
                 playlistItem.AudioSampleRate = audioStream.SampleRate;
@@ -966,15 +966,14 @@ namespace MediaBrowser.Model.Dlna
 
             var appliedVideoConditions = options.Profile.CodecProfiles
                 .Where(i => i.Type == CodecType.Video &&
-                    i.ContainsAnyCodec(videoCodec, container, useSubContainer) &&
+                    i.ContainsAnyCodec(videoCodecs, container, useSubContainer) &&
                     i.ApplyConditions.All(applyCondition => ConditionProcessor.IsVideoConditionSatisfied(applyCondition, width, height, bitDepth, videoBitrate, videoProfile, videoRangeType, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc)))
                 // Reverse codec profiles for backward compatibility - first codec profile has higher priority
                 .Reverse();
 
             foreach (var i in appliedVideoConditions)
             {
-                var transcodingVideoCodecs = ContainerProfile.SplitValue(videoCodec);
-                foreach (var transcodingVideoCodec in transcodingVideoCodecs)
+                foreach (var transcodingVideoCodec in videoCodecs)
                 {
                     if (i.ContainsAnyCodec(transcodingVideoCodec, container, useSubContainer))
                     {
@@ -999,15 +998,14 @@ namespace MediaBrowser.Model.Dlna
 
             var appliedAudioConditions = options.Profile.CodecProfiles
                 .Where(i => i.Type == CodecType.VideoAudio &&
-                    i.ContainsAnyCodec(audioCodec, container) &&
+                    i.ContainsAnyCodec(audioCodecs, container) &&
                     i.ApplyConditions.All(applyCondition => ConditionProcessor.IsVideoAudioConditionSatisfied(applyCondition, audioChannels, inputAudioBitrate, inputAudioSampleRate, inputAudioBitDepth, audioProfile, isSecondaryAudio)))
                 // Reverse codec profiles for backward compatibility - first codec profile has higher priority
                 .Reverse();
 
             foreach (var codecProfile in appliedAudioConditions)
             {
-                var transcodingAudioCodecs = ContainerProfile.SplitValue(audioCodec);
-                foreach (var transcodingAudioCodec in transcodingAudioCodecs)
+                foreach (var transcodingAudioCodec in audioCodecs)
                 {
                     if (codecProfile.ContainsAnyCodec(transcodingAudioCodec, container))
                     {
