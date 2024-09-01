@@ -848,7 +848,7 @@ namespace MediaBrowser.Model.Dlna
 
                             // An empty appliedVideoConditions means that the codec has no conditions for the current video stream
                             var conditionsSatisfied = appliedVideoConditions.All(satisfied => satisfied);
-                            rank = (conditionsSatisfied ? 1 : 2, rank.Item2);
+                            rank.Item1 = conditionsSatisfied ? 1 : 2;
                         }
                     }
 
@@ -867,7 +867,7 @@ namespace MediaBrowser.Model.Dlna
 
                             // An empty appliedVideoConditions means that the codec has no conditions for the current audio stream
                             var conditionsSatisfied = appliedVideoConditions.All(satisfied => satisfied);
-                            rank = (rank.Item1, conditionsSatisfied ? 1 : 2);
+                            rank.Item2 = conditionsSatisfied ? 1 : 2;
                         }
                     }
 
