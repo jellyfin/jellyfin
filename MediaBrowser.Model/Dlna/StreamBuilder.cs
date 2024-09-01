@@ -829,7 +829,7 @@ namespace MediaBrowser.Model.Dlna
             var analyzedProfiles = transcodingProfiles
                 .Select(transcodingProfile =>
                 {
-                    var rank = (3, 3);
+                    var rank = (Video: 3, Audio: 3);
 
                     var container = transcodingProfile.Container;
 
@@ -848,7 +848,7 @@ namespace MediaBrowser.Model.Dlna
 
                             // An empty appliedVideoConditions means that the codec has no conditions for the current video stream
                             var conditionsSatisfied = appliedVideoConditions.All(satisfied => satisfied);
-                            rank.Item1 = conditionsSatisfied ? 1 : 2;
+                            rank.Video = conditionsSatisfied ? 1 : 2;
                         }
                     }
 
@@ -867,13 +867,13 @@ namespace MediaBrowser.Model.Dlna
 
                             // An empty appliedVideoConditions means that the codec has no conditions for the current audio stream
                             var conditionsSatisfied = appliedVideoConditions.All(satisfied => satisfied);
-                            rank.Item2 = conditionsSatisfied ? 1 : 2;
+                            rank.Audio = conditionsSatisfied ? 1 : 2;
                         }
                     }
 
                     PlayMethod playMethod = PlayMethod.Transcode;
 
-                    if (rank.Item1 == 1)
+                    if (rank.Video == 1)
                     {
                         playMethod = PlayMethod.DirectStream;
                     }
