@@ -224,7 +224,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 if (OperatingSystem.IsLinux()
                     && SupportsHwaccel("vaapi")
                     && !string.IsNullOrEmpty(options.VaapiDevice)
-                    && string.Equals(options.HardwareAccelerationType, "vaapi", StringComparison.OrdinalIgnoreCase))
+                    && options.HardwareAccelerationType == HardwareAccelerationType.vaapi)
                 {
                     _isVaapiDeviceAmd = validator.CheckVaapiDeviceByDriverName("Mesa Gallium driver", options.VaapiDevice);
                     _isVaapiDeviceInteliHD = validator.CheckVaapiDeviceByDriverName("Intel iHD driver", options.VaapiDevice);
@@ -789,11 +789,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (allowHwAccel && enableKeyFrameOnlyExtraction)
             {
-                var supportsKeyFrameOnly = (string.Equals(options.HardwareAccelerationType, "nvenc", StringComparison.OrdinalIgnoreCase) && options.EnableEnhancedNvdecDecoder)
-                                           || (string.Equals(options.HardwareAccelerationType, "amf", StringComparison.OrdinalIgnoreCase) && OperatingSystem.IsWindows())
-                                           || (string.Equals(options.HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase) && options.PreferSystemNativeHwDecoder)
-                                           || string.Equals(options.HardwareAccelerationType, "vaapi", StringComparison.OrdinalIgnoreCase)
-                                           || string.Equals(options.HardwareAccelerationType, "videotoolbox", StringComparison.OrdinalIgnoreCase);
+                var hardwareAccelerationType = options.HardwareAccelerationType;
+                var supportsKeyFrameOnly = (hardwareAccelerationType == HardwareAccelerationType.nvenc && options.EnableEnhancedNvdecDecoder)
+                                           || (hardwareAccelerationType == HardwareAccelerationType.amf && OperatingSystem.IsWindows())
+                                           || (hardwareAccelerationType == HardwareAccelerationType.qsv && options.PreferSystemNativeHwDecoder)
+                                           || hardwareAccelerationType == HardwareAccelerationType.vaapi
+                                           || hardwareAccelerationType == HardwareAccelerationType.videotoolbox;
                 if (!supportsKeyFrameOnly)
                 {
                     // Disable hardware acceleration when the hardware decoder does not support keyframe only mode.
@@ -807,7 +808,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             if (!allowHwAccel)
             {
                 options.EnableHardwareEncoding = false;
-                options.HardwareAccelerationType = string.Empty;
+                options.HardwareAccelerationType = HardwareAccelerationType.none;
                 options.EnableTonemapping = false;
             }
 
@@ -851,7 +852,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 inputArg = "-threads " + threads + " " + inputArg; // HW accel args set a different input thread count, only set if disabled
             }
 
-            if (options.HardwareAccelerationType.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase) && _isLowPriorityHwDecodeSupported)
+            if (options.HardwareAccelerationType == HardwareAccelerationType.videotoolbox && _isLowPriorityHwDecodeSupported)
             {
                 // VideoToolbox supports low priority decoding, which is useful for trickplay
                 inputArg = "-hwaccel_flags +low_priority " + inputArg;

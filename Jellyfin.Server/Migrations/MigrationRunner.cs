@@ -23,7 +23,8 @@ namespace Jellyfin.Server.Migrations
         {
             typeof(PreStartupRoutines.CreateNetworkConfiguration),
             typeof(PreStartupRoutines.MigrateMusicBrainzTimeout),
-            typeof(PreStartupRoutines.MigrateNetworkConfiguration)
+            typeof(PreStartupRoutines.MigrateNetworkConfiguration),
+            typeof(PreStartupRoutines.MigrateEncodingOptions)
         };
 
         /// <summary>

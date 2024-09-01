@@ -40,8 +40,8 @@ namespace Jellyfin.Api.Controllers;
 [Authorize]
 public class DynamicHlsController : BaseJellyfinApiController
 {
-    private const string DefaultVodEncoderPreset = "veryfast";
-    private const string DefaultEventEncoderPreset = "superfast";
+    private const EncoderPreset DefaultVodEncoderPreset = EncoderPreset.veryfast;
+    private const EncoderPreset DefaultEventEncoderPreset = EncoderPreset.superfast;
     private const TranscodingJobType TranscodingJobType = MediaBrowser.Controller.MediaEncoding.TranscodingJobType.Hls;
 
     private readonly Version _minFFmpegFlacInMp4 = new Version(6, 0);
