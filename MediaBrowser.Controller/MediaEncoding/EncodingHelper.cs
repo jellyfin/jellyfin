@@ -296,14 +296,12 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (state.VideoStream is null
                 || !options.EnableTonemapping
                 || GetVideoColorBitDepth(state) != 10
-                || !_mediaEncoder.SupportsFilter("tonemapx")
-                || !(string.Equals(state.VideoStream?.ColorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase) || string.Equals(state.VideoStream?.ColorTransfer, "arib-std-b67", StringComparison.OrdinalIgnoreCase)))
+                || !_mediaEncoder.SupportsFilter("tonemapx"))
             {
                 return false;
             }
 
-            return state.VideoStream.VideoRange == VideoRange.HDR
-                   && state.VideoStream.VideoRangeType is VideoRangeType.HDR10 or VideoRangeType.HLG or VideoRangeType.DOVIWithHDR10 or VideoRangeType.DOVIWithHLG;
+            return state.VideoStream.VideoRange == VideoRange.HDR;
         }
 
         private bool IsHwTonemapAvailable(EncodingJobInfo state, EncodingOptions options)
@@ -3435,6 +3433,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var doDeintHevc = state.DeInterlace("h265", true) || state.DeInterlace("hevc", true);
             var doDeintH2645 = doDeintH264 || doDeintHevc;
             var doToneMap = IsSwTonemapAvailable(state, options);
+            var requireDoviReshaping = doToneMap && state.VideoStream.VideoRangeType == VideoRangeType.DOVI;
 
             var hasSubs = state.SubtitleStream is not null && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
             var hasTextSubs = hasSubs && state.SubtitleStream.IsTextSubtitleStream;
@@ -3472,11 +3471,13 @@ namespace MediaBrowser.Controller.MediaEncoding
             // sw scale
             mainFilters.Add(swScaleFilter);
 
-            // sw tonemap <= TODO: finish dovi tone mapping
-
+            // sw tonemap
             if (doToneMap)
             {
-                var tonemapArgs = $"tonemapx=tonemap={options.TonemappingAlgorithm}:desat={options.TonemappingDesat}:peak={options.TonemappingPeak}:t=bt709:m=bt709:p=bt709:format={outFormat}";
+                // tonemapx requires yuv420p10 input for dovi reshaping, let ffmpeg convert the frame when necessary
+                var tonemapFormat = requireDoviReshaping ? "yuv420p" : outFormat;
+
+                var tonemapArgs = $"tonemapx=tonemap={options.TonemappingAlgorithm}:desat={options.TonemappingDesat}:peak={options.TonemappingPeak}:t=bt709:m=bt709:p=bt709:format={tonemapFormat}";
 
                 if (options.TonemappingParam != 0)
                 {
@@ -3490,6 +3491,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
 
                 mainFilters.Add(tonemapArgs);
+
+                // convert back to nv12 for VAAPI encoders
+                // Q: Is this still being used?
+                if (requireDoviReshaping && isVaapiEncoder)
+                {
+                    mainFilters.Add("format=" + outFormat);
+                }
             }
             else
             {
