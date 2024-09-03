@@ -3,6 +3,7 @@
 using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
+using Jellyfin.Data.Enums;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -26,7 +27,7 @@ namespace MediaBrowser.Model.Dlna
         public string AudioCodec { get; set; } = string.Empty;
 
         [XmlAttribute("protocol")]
-        public string Protocol { get; set; } = string.Empty;
+        public MediaStreamProtocol Protocol { get; set; } = MediaStreamProtocol.http;
 
         [DefaultValue(false)]
         [XmlAttribute("estimateContentLength")]
@@ -68,6 +69,10 @@ namespace MediaBrowser.Model.Dlna
         public bool BreakOnNonKeyFrames { get; set; }
 
         public ProfileCondition[] Conditions { get; set; }
+
+        [DefaultValue(true)]
+        [XmlAttribute("enableAudioVbrEncoding")]
+        public bool EnableAudioVbrEncoding { get; set; } = true;
 
         public string[] GetAudioCodecs()
         {

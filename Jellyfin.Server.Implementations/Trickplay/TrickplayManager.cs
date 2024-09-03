@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using AsyncKeyedLock;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
@@ -37,7 +38,7 @@ public class TrickplayManager : ITrickplayManager
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
     private readonly IApplicationPaths _appPaths;
 
-    private static readonly SemaphoreSlim _resourcePool = new(1, 1);
+    private static readonly AsyncNonKeyedLocker _resourcePool = new(1);
     private static readonly string[] _trickplayImgExtensions = { ".jpg" };
 
     /// <summary>
@@ -80,6 +81,12 @@ public class TrickplayManager : ITrickplayManager
         _logger.LogDebug("Trickplay refresh for {ItemId} (replace existing: {Replace})", video.Id, replace);
 
         var options = _config.Configuration.TrickplayOptions;
+        if (options.Interval < 1000)
+        {
+            _logger.LogWarning("Trickplay image interval {Interval} is too small, reset to the minimum valid value of 1000", options.Interval);
+            options.Interval = 1000;
+        }
+
         foreach (var width in options.WidthResolutions)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -105,95 +112,113 @@ public class TrickplayManager : ITrickplayManager
         }
 
         var imgTempDir = string.Empty;
-        var outputDir = GetTrickplayDirectory(video, width);
 
-        await _resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-        try
+        using (await _resourcePool.LockAsync(cancellationToken).ConfigureAwait(false))
         {
-            if (!replace && Directory.Exists(outputDir) && (await GetTrickplayResolutions(video.Id).ConfigureAwait(false)).ContainsKey(width))
-            {
-                _logger.LogDebug("Found existing trickplay files for {ItemId}. Exiting.", video.Id);
-                return;
-            }
-
-            // Extract images
-            // Note: Media sources under parent items exist as their own video/item as well. Only use this video stream for trickplay.
-            var mediaSource = video.GetMediaSources(false).Find(source => Guid.Parse(source.Id).Equals(video.Id));
-
-            if (mediaSource is null)
-            {
-                _logger.LogDebug("Found no matching media source for item {ItemId}", video.Id);
-                return;
-            }
-
-            var mediaPath = mediaSource.Path;
-            var mediaStream = mediaSource.VideoStream;
-            var container = mediaSource.Container;
-
-            _logger.LogInformation("Creating trickplay files at {Width} width, for {Path} [ID: {ItemId}]", width, mediaPath, video.Id);
-            imgTempDir = await _mediaEncoder.ExtractVideoImagesOnIntervalAccelerated(
-                mediaPath,
-                container,
-                mediaSource,
-                mediaStream,
-                width,
-                TimeSpan.FromMilliseconds(options.Interval),
-                options.EnableHwAcceleration,
-                options.ProcessThreads,
-                options.Qscale,
-                options.ProcessPriority,
-                _encodingHelper,
-                cancellationToken).ConfigureAwait(false);
-
-            if (string.IsNullOrEmpty(imgTempDir) || !Directory.Exists(imgTempDir))
-            {
-                throw new InvalidOperationException("Null or invalid directory from media encoder.");
-            }
-
-            var images = _fileSystem.GetFiles(imgTempDir, _trickplayImgExtensions, false, false)
-                .Select(i => i.FullName)
-                .OrderBy(i => i)
-                .ToList();
-
-            // Create tiles
-            var trickplayInfo = CreateTiles(images, width, options, outputDir);
-
-            // Save tiles info
             try
             {
-                if (trickplayInfo is not null)
-                {
-                    trickplayInfo.ItemId = video.Id;
-                    await SaveTrickplayInfo(trickplayInfo).ConfigureAwait(false);
+                // Extract images
+                // Note: Media sources under parent items exist as their own video/item as well. Only use this video stream for trickplay.
+                var mediaSource = video.GetMediaSources(false).Find(source => Guid.Parse(source.Id).Equals(video.Id));
 
-                    _logger.LogInformation("Finished creation of trickplay files for {0}", mediaPath);
-                }
-                else
+                if (mediaSource is null)
                 {
-                    throw new InvalidOperationException("Null trickplay tiles info from CreateTiles.");
+                    _logger.LogDebug("Found no matching media source for item {ItemId}", video.Id);
+                    return;
+                }
+
+                var mediaPath = mediaSource.Path;
+                if (!File.Exists(mediaPath))
+                {
+                    _logger.LogWarning("Media not found at {Path} for item {ItemID}", mediaPath, video.Id);
+                    return;
+                }
+
+                // The width has to be even, otherwise a lot of filters will not be able to sample it
+                var actualWidth = 2 * (width / 2);
+
+                // Force using the video width when the trickplay setting has a too large width
+                if (mediaSource.VideoStream.Width is not null && mediaSource.VideoStream.Width < width)
+                {
+                    _logger.LogWarning("Video width {VideoWidth} is smaller than trickplay setting {TrickPlayWidth}, using video width for thumbnails", mediaSource.VideoStream.Width, width);
+                    actualWidth = 2 * ((int)mediaSource.VideoStream.Width / 2);
+                }
+
+                var outputDir = GetTrickplayDirectory(video, actualWidth);
+
+                if (!replace && Directory.Exists(outputDir) && (await GetTrickplayResolutions(video.Id).ConfigureAwait(false)).ContainsKey(actualWidth))
+                {
+                    _logger.LogDebug("Found existing trickplay files for {ItemId}. Exiting", video.Id);
+                    return;
+                }
+
+                var mediaStream = mediaSource.VideoStream;
+                var container = mediaSource.Container;
+
+                _logger.LogInformation("Creating trickplay files at {Width} width, for {Path} [ID: {ItemId}]", actualWidth, mediaPath, video.Id);
+                imgTempDir = await _mediaEncoder.ExtractVideoImagesOnIntervalAccelerated(
+                    mediaPath,
+                    container,
+                    mediaSource,
+                    mediaStream,
+                    actualWidth,
+                    TimeSpan.FromMilliseconds(options.Interval),
+                    options.EnableHwAcceleration,
+                    options.EnableHwEncoding,
+                    options.ProcessThreads,
+                    options.Qscale,
+                    options.ProcessPriority,
+                    options.EnableKeyFrameOnlyExtraction,
+                    _encodingHelper,
+                    cancellationToken).ConfigureAwait(false);
+
+                if (string.IsNullOrEmpty(imgTempDir) || !Directory.Exists(imgTempDir))
+                {
+                    throw new InvalidOperationException("Null or invalid directory from media encoder.");
+                }
+
+                var images = _fileSystem.GetFiles(imgTempDir, _trickplayImgExtensions, false, false)
+                    .Select(i => i.FullName)
+                    .OrderBy(i => i)
+                    .ToList();
+
+                // Create tiles
+                var trickplayInfo = CreateTiles(images, actualWidth, options, outputDir);
+
+                // Save tiles info
+                try
+                {
+                    if (trickplayInfo is not null)
+                    {
+                        trickplayInfo.ItemId = video.Id;
+                        await SaveTrickplayInfo(trickplayInfo).ConfigureAwait(false);
+
+                        _logger.LogInformation("Finished creation of trickplay files for {0}", mediaPath);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Null trickplay tiles info from CreateTiles.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error while saving trickplay tiles info.");
+
+                    // Make sure no files stay in metadata folders on failure
+                    // if tiles info wasn't saved.
+                    Directory.Delete(outputDir, true);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error while saving trickplay tiles info.");
-
-                // Make sure no files stay in metadata folders on failure
-                // if tiles info wasn't saved.
-                Directory.Delete(outputDir, true);
+                _logger.LogError(ex, "Error creating trickplay images.");
             }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error creating trickplay images.");
-        }
-        finally
-        {
-            _resourcePool.Release();
-
-            if (!string.IsNullOrEmpty(imgTempDir))
+            finally
             {
-                Directory.Delete(imgTempDir, true);
+                if (!string.IsNullOrEmpty(imgTempDir))
+                {
+                    Directory.Delete(imgTempDir, true);
+                }
             }
         }
     }
@@ -206,7 +231,7 @@ public class TrickplayManager : ITrickplayManager
             throw new ArgumentException("Can't create trickplay from 0 images.");
         }
 
-        var workDir = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid().ToString("N"));
+        var workDir = Path.Combine(_appPaths.TempDirectory, "trickplay_" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(workDir);
 
         var trickplayInfo = new TrickplayInfo
@@ -249,7 +274,7 @@ public class TrickplayManager : ITrickplayManager
             }
 
             // Update bitrate
-            var bitrate = (int)Math.Ceiling((decimal)new FileInfo(tilePath).Length * 8 / trickplayInfo.TileWidth / trickplayInfo.TileHeight / (trickplayInfo.Interval / 1000));
+            var bitrate = (int)Math.Ceiling(new FileInfo(tilePath).Length * 8m / trickplayInfo.TileWidth / trickplayInfo.TileHeight / (trickplayInfo.Interval / 1000m));
             trickplayInfo.Bandwidth = Math.Max(trickplayInfo.Bandwidth, bitrate);
         }
 
@@ -382,7 +407,7 @@ public class TrickplayManager : ITrickplayManager
 
             if (trickplayInfo.ThumbnailCount > 0)
             {
-                const string urlFormat = "Trickplay/{0}/{1}.jpg?MediaSourceId={2}&api_key={3}";
+                const string urlFormat = "{0}.jpg?MediaSourceId={1}&api_key={2}";
                 const string decimalFormat = "{0:0.###}";
 
                 var resolution = $"{trickplayInfo.Width}x{trickplayInfo.Height}";
@@ -431,7 +456,6 @@ public class TrickplayManager : ITrickplayManager
                         .AppendFormat(
                             CultureInfo.InvariantCulture,
                             urlFormat,
-                            width.ToString(CultureInfo.InvariantCulture),
                             i.ToString(CultureInfo.InvariantCulture),
                             itemId.ToString("N"),
                             apiKey)

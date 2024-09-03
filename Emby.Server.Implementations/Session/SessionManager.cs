@@ -159,10 +159,7 @@ namespace Emby.Server.Implementations.Session
 
         private void CheckDisposed()
         {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(GetType().Name);
-            }
+            ObjectDisposedException.ThrowIf(_disposed, this);
         }
 
         private void OnSessionStarted(SessionInfo info)
@@ -189,7 +186,7 @@ namespace Emby.Server.Implementations.Session
                 _logger);
         }
 
-        private void OnSessionEnded(SessionInfo info)
+        private async ValueTask OnSessionEnded(SessionInfo info)
         {
             EventHelper.QueueEventIfNotNull(
                 SessionEnded,
@@ -202,7 +199,7 @@ namespace Emby.Server.Implementations.Session
 
             _eventManager.Publish(new SessionEndedEventArgs(info));
 
-            info.Dispose();
+            await info.DisposeAsync().ConfigureAwait(false);
         }
 
         /// <inheritdoc />
@@ -240,7 +237,7 @@ namespace Emby.Server.Implementations.Session
             ArgumentException.ThrowIfNullOrEmpty(deviceId);
 
             var activityDate = DateTime.UtcNow;
-            var session = await GetSessionInfo(appName, appVersion, deviceId, deviceName, remoteEndPoint, user).ConfigureAwait(false);
+            var session = GetSessionInfo(appName, appVersion, deviceId, deviceName, remoteEndPoint, user);
             var lastActivityDate = session.LastActivityDate;
             session.LastActivityDate = activityDate;
 
@@ -301,12 +298,12 @@ namespace Emby.Server.Implementations.Session
                     await _mediaSourceManager.CloseLiveStream(session.PlayState.LiveStreamId).ConfigureAwait(false);
                 }
 
-                OnSessionEnded(session);
+                await OnSessionEnded(session).ConfigureAwait(false);
             }
         }
 
         /// <inheritdoc />
-        public void ReportSessionEnded(string sessionId)
+        public async ValueTask ReportSessionEnded(string sessionId)
         {
             CheckDisposed();
             var session = GetSession(sessionId, false);
@@ -317,7 +314,7 @@ namespace Emby.Server.Implementations.Session
 
                 _activeConnections.TryRemove(key, out _);
 
-                OnSessionEnded(session);
+                await OnSessionEnded(session).ConfigureAwait(false);
             }
         }
 
@@ -337,7 +334,7 @@ namespace Emby.Server.Implementations.Session
                 info.MediaSourceId = info.ItemId.ToString("N", CultureInfo.InvariantCulture);
             }
 
-            if (!info.ItemId.Equals(default) && info.Item is null && libraryItem is not null)
+            if (!info.ItemId.IsEmpty() && info.Item is null && libraryItem is not null)
             {
                 var current = session.NowPlayingItem;
 
@@ -394,6 +391,7 @@ namespace Emby.Server.Implementations.Session
             session.PlayState.SubtitleStreamIndex = info.SubtitleStreamIndex;
             session.PlayState.PlayMethod = info.PlayMethod;
             session.PlayState.RepeatMode = info.RepeatMode;
+            session.PlayState.PlaybackOrder = info.PlaybackOrder;
             session.PlaylistItemId = info.PlaylistItemId;
 
             var nowPlayingQueue = info.NowPlayingQueue;
@@ -402,7 +400,7 @@ namespace Emby.Server.Implementations.Session
             {
                 session.NowPlayingQueue = nowPlayingQueue;
 
-                var itemIds = nowPlayingQueue.Select(queue => queue.Id).ToArray();
+                var itemIds = Array.ConvertAll(nowPlayingQueue, queue => queue.Id);
                 session.NowPlayingQueueFullItems = _dtoService.GetBaseItemDtos(
                     _libraryManager.GetItemList(new InternalItemsQuery { ItemIds = itemIds }),
                     new DtoOptions(true));
@@ -437,7 +435,7 @@ namespace Emby.Server.Implementations.Session
         /// <param name="remoteEndPoint">The remote end point.</param>
         /// <param name="user">The user.</param>
         /// <returns>SessionInfo.</returns>
-        private async Task<SessionInfo> GetSessionInfo(
+        private SessionInfo GetSessionInfo(
             string appName,
             string appVersion,
             string deviceId,
@@ -455,8 +453,8 @@ namespace Emby.Server.Implementations.Session
 
             if (!_activeConnections.TryGetValue(key, out var sessionInfo))
             {
-                _activeConnections[key] = await CreateSession(key, appName, appVersion, deviceId, deviceName, remoteEndPoint, user).ConfigureAwait(false);
-                sessionInfo = _activeConnections[key];
+                sessionInfo = CreateSession(key, appName, appVersion, deviceId, deviceName, remoteEndPoint, user);
+                _activeConnections[key] = sessionInfo;
             }
 
             sessionInfo.UserId = user?.Id ?? Guid.Empty;
@@ -480,7 +478,7 @@ namespace Emby.Server.Implementations.Session
             return sessionInfo;
         }
 
-        private async Task<SessionInfo> CreateSession(
+        private SessionInfo CreateSession(
             string key,
             string appName,
             string appVersion,
@@ -510,7 +508,7 @@ namespace Emby.Server.Implementations.Session
                 deviceName = "Network Device";
             }
 
-            var deviceOptions = await _deviceManager.GetDeviceOptions(deviceId).ConfigureAwait(false);
+            var deviceOptions = _deviceManager.GetDeviceOptions(deviceId);
             if (string.IsNullOrEmpty(deviceOptions.CustomName))
             {
                 sessionInfo.DeviceName = deviceName;
@@ -529,7 +527,7 @@ namespace Emby.Server.Implementations.Session
         {
             var users = new List<User>();
 
-            if (session.UserId.Equals(default))
+            if (session.UserId.IsEmpty())
             {
                 return users;
             }
@@ -613,9 +611,6 @@ namespace Emby.Server.Implementations.Session
                         _logger.LogDebug(ex, "Error calling OnPlaybackStopped");
                     }
                 }
-
-                playingSessions = Sessions.Where(i => i.NowPlayingItem is not null)
-                    .ToList();
             }
             else
             {
@@ -690,7 +685,7 @@ namespace Emby.Server.Implementations.Session
 
             var session = GetSession(info.SessionId);
 
-            var libraryItem = info.ItemId.Equals(default)
+            var libraryItem = info.ItemId.IsEmpty()
                 ? null
                 : GetNowPlayingItem(session, info.ItemId);
 
@@ -784,7 +779,7 @@ namespace Emby.Server.Implementations.Session
 
             var session = GetSession(info.SessionId);
 
-            var libraryItem = info.ItemId.Equals(default)
+            var libraryItem = info.ItemId.IsEmpty()
                 ? null
                 : GetNowPlayingItem(session, info.ItemId);
 
@@ -923,7 +918,7 @@ namespace Emby.Server.Implementations.Session
 
             session.StopAutomaticProgress();
 
-            var libraryItem = info.ItemId.Equals(default)
+            var libraryItem = info.ItemId.IsEmpty()
                 ? null
                 : GetNowPlayingItem(session, info.ItemId);
 
@@ -933,7 +928,7 @@ namespace Emby.Server.Implementations.Session
                 info.MediaSourceId = info.ItemId.ToString("N", CultureInfo.InvariantCulture);
             }
 
-            if (!info.ItemId.Equals(default) && info.Item is null && libraryItem is not null)
+            if (!info.ItemId.IsEmpty() && info.Item is null && libraryItem is not null)
             {
                 var current = session.NowPlayingItem;
 
@@ -1154,7 +1149,7 @@ namespace Emby.Server.Implementations.Session
 
             var session = GetSessionToRemoteControl(sessionId);
 
-            var user = session.UserId.Equals(default) ? null : _userManager.GetUserById(session.UserId);
+            var user = session.UserId.IsEmpty() ? null : _userManager.GetUserById(session.UserId);
 
             List<BaseItem> items;
 
@@ -1207,7 +1202,8 @@ namespace Emby.Server.Implementations.Session
                             new DtoOptions(false)
                             {
                                 EnableImages = false
-                            })
+                            },
+                            user.DisplayMissingEpisodes)
                         .Where(i => !i.IsVirtualItem)
                         .SkipWhile(i => !i.Id.Equals(episode.Id))
                         .ToList();
@@ -1223,7 +1219,7 @@ namespace Emby.Server.Implementations.Session
             {
                 var controllingSession = GetSession(controllingSessionId);
                 AssertCanControl(session, controllingSession);
-                if (!controllingSession.UserId.Equals(default))
+                if (!controllingSession.UserId.IsEmpty())
                 {
                     command.ControllingUserId = controllingSession.UserId;
                 }
@@ -1301,7 +1297,7 @@ namespace Emby.Server.Implementations.Session
             return new[] { item };
         }
 
-        private IEnumerable<BaseItem> TranslateItemForInstantMix(Guid id, User user)
+        private List<BaseItem> TranslateItemForInstantMix(Guid id, User user)
         {
             var item = _libraryManager.GetItemById(id);
 
@@ -1311,7 +1307,7 @@ namespace Emby.Server.Implementations.Session
                 return new List<BaseItem>();
             }
 
-            return _musicManager.GetInstantMixFromItem(item, user, new DtoOptions(false) { EnableImages = false });
+            return _musicManager.GetInstantMixFromItem(item, user, new DtoOptions(false) { EnableImages = false }).ToList();
         }
 
         /// <inheritdoc />
@@ -1342,7 +1338,7 @@ namespace Emby.Server.Implementations.Session
             {
                 var controllingSession = GetSession(controllingSessionId);
                 AssertCanControl(session, controllingSession);
-                if (!controllingSession.UserId.Equals(default))
+                if (!controllingSession.UserId.IsEmpty())
                 {
                     command.ControllingUserId = controllingSession.UserId.ToString("N", CultureInfo.InvariantCulture);
                 }
@@ -1391,16 +1387,13 @@ namespace Emby.Server.Implementations.Session
             if (session.AdditionalUsers.All(i => !i.UserId.Equals(userId)))
             {
                 var user = _userManager.GetUserById(userId);
-
-                var list = session.AdditionalUsers.ToList();
-
-                list.Add(new SessionUserInfo
+                var newUser = new SessionUserInfo
                 {
                     UserId = userId,
                     UserName = user.Username
-                });
+                };
 
-                session.AdditionalUsers = list.ToArray();
+                session.AdditionalUsers = [..session.AdditionalUsers, newUser];
             }
         }
 
@@ -1463,7 +1456,7 @@ namespace Emby.Server.Implementations.Session
             ArgumentException.ThrowIfNullOrEmpty(request.AppVersion);
 
             User user = null;
-            if (!request.UserId.Equals(default))
+            if (!request.UserId.IsEmpty())
             {
                 user = _userManager.GetUserById(request.UserId);
             }
@@ -1527,12 +1520,12 @@ namespace Emby.Server.Implementations.Session
             // This should be validated above, but if it isn't don't delete all tokens.
             ArgumentException.ThrowIfNullOrEmpty(deviceId);
 
-            var existing = (await _deviceManager.GetDevices(
+            var existing = _deviceManager.GetDevices(
                 new DeviceQuery
                 {
                     DeviceId = deviceId,
                     UserId = user.Id
-                }).ConfigureAwait(false)).Items;
+                }).Items;
 
             foreach (var auth in existing)
             {
@@ -1560,12 +1553,12 @@ namespace Emby.Server.Implementations.Session
 
             ArgumentException.ThrowIfNullOrEmpty(accessToken);
 
-            var existing = (await _deviceManager.GetDevices(
+            var existing = _deviceManager.GetDevices(
                 new DeviceQuery
                 {
                     Limit = 1,
                     AccessToken = accessToken
-                }).ConfigureAwait(false)).Items;
+                }).Items;
 
             if (existing.Count > 0)
             {
@@ -1590,7 +1583,7 @@ namespace Emby.Server.Implementations.Session
             {
                 try
                 {
-                    ReportSessionEnded(session.Id);
+                    await ReportSessionEnded(session.Id).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -1604,10 +1597,10 @@ namespace Emby.Server.Implementations.Session
         {
             CheckDisposed();
 
-            var existing = await _deviceManager.GetDevices(new DeviceQuery
+            var existing = _deviceManager.GetDevices(new DeviceQuery
             {
                 UserId = userId
-            }).ConfigureAwait(false);
+            });
 
             foreach (var info in existing.Items)
             {
@@ -1670,7 +1663,6 @@ namespace Emby.Server.Implementations.Session
 
                 var fields = dtoOptions.Fields.ToList();
 
-                fields.Remove(ItemFields.BasicSyncInfo);
                 fields.Remove(ItemFields.CanDelete);
                 fields.Remove(ItemFields.CanDownload);
                 fields.Remove(ItemFields.ChildCount);
@@ -1767,7 +1759,7 @@ namespace Emby.Server.Implementations.Session
         {
             ArgumentNullException.ThrowIfNull(info);
 
-            var user = info.UserId.Equals(default)
+            var user = info.UserId.IsEmpty()
                 ? null
                 : _userManager.GetUserById(info.UserId);
 
@@ -1795,11 +1787,11 @@ namespace Emby.Server.Implementations.Session
         /// <inheritdoc />
         public async Task<SessionInfo> GetSessionByAuthenticationToken(string token, string deviceId, string remoteEndpoint)
         {
-            var items = (await _deviceManager.GetDevices(new DeviceQuery
+            var items = _deviceManager.GetDevices(new DeviceQuery
             {
                 AccessToken = token,
                 Limit = 1
-            }).ConfigureAwait(false)).Items;
+            }).Items;
 
             if (items.Count == 0)
             {

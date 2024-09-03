@@ -35,11 +35,11 @@ namespace Emby.Server.Implementations.Library
 
             item.Id = libraryManager.GetNewItemId(item.Path, item.GetType());
 
-            item.IsLocked = item.Path.IndexOf("[dontfetchmeta]", StringComparison.OrdinalIgnoreCase) != -1 ||
+            item.IsLocked = item.Path.Contains("[dontfetchmeta]", StringComparison.OrdinalIgnoreCase) ||
                 item.GetParents().Any(i => i.IsLocked);
 
             // Make sure DateCreated and DateModified have values
-            var fileInfo = directoryService.GetFile(item.Path);
+            var fileInfo = directoryService.GetFileSystemEntry(item.Path);
             if (fileInfo is null)
             {
                 return false;

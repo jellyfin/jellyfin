@@ -85,6 +85,8 @@
     <Rule Id="CA1309" Action="Error" />
     <!-- error on CA1310: Specify StringComparison for correctness -->
     <Rule Id="CA1310" Action="Error" />
+    <!-- error on CA1513: Use 'ObjectDisposedException.ThrowIf' instead of explicitly throwing a new exception instance -->
+    <Rule Id="CA1513" Action="Error" />
     <!-- error on CA1725: Parameter names should match base declaration -->
     <Rule Id="CA1725" Action="Error" />
     <!-- error on CA1725: Call async methods when in an async method -->
@@ -101,6 +103,30 @@
     <Rule Id="CA1849" Action="Error" />
     <!-- error on CA1851: Possible multiple enumerations of IEnumerable collection -->
     <Rule Id="CA1851" Action="Error" />
+    <!-- error on CA1854: Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check to avoid double lookup -->
+    <Rule Id="CA1854" Action="Error" />
+    <!-- error on CA1860: Avoid using 'Enumerable.Any()' extension method -->
+    <Rule Id="CA1860" Action="Error" />
+    <!-- error on CA1862: Use the 'StringComparison' method overloads to perform case-insensitive string comparisons -->
+    <Rule Id="CA1862" Action="Error" />
+    <!-- error on CA1863: Use 'CompositeFormat' -->
+    <Rule Id="CA1863" Action="Error" />
+    <!-- error on CA1864: Prefer the 'IDictionary.TryAdd(TKey, TValue)' method -->
+    <Rule Id="CA1864" Action="Error" />
+    <!-- error on CA1865-CA1867: Use 'string.Method(char)' instead of 'string.Method(string)' for string with single char -->
+    <Rule Id="CA1865" Action="Error" />
+    <Rule Id="CA1866" Action="Error" />
+    <Rule Id="CA1867" Action="Error" />
+    <!-- error on CA1868: Unnecessary call to 'Contains' for sets -->
+    <Rule Id="CA1868" Action="Error" />
+    <!-- error on CA1869: Cache and reuse 'JsonSerializerOptions' instances -->
+    <Rule Id="CA1869" Action="Error" />
+    <!-- error on CA1870: Use a cached 'SearchValues' instance -->
+    <Rule Id="CA1870" Action="Error" />
+    <!-- error on CA1871: Do not pass a nullable struct to 'ArgumentNullException.ThrowIfNull' -->
+    <Rule Id="CA1871" Action="Error" />
+    <!-- error on CA1872: Prefer 'Convert.ToHexString' and 'Convert.ToHexStringLower' over call chains based on 'BitConverter.ToString' -->
+    <Rule Id="CA1872" Action="Error" />
     <!-- error on CA2016: Forward the CancellationToken parameter to methods that take one
         or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token -->
     <Rule Id="CA2016" Action="Error" />
@@ -108,6 +134,8 @@
     <Rule Id="CA2201" Action="Error" />
     <!-- error on CA2215: Dispose methods should call base class dispose -->
     <Rule Id="CA2215" Action="Error" />
+    <!-- error on CA2249: Use 'string.Contains' instead of 'string.IndexOf' to improve readability -->
+    <Rule Id="CA2249" Action="Error" />
     <!-- error on CA2254: Template should be a static expression -->
     <Rule Id="CA2254" Action="Error" />
 

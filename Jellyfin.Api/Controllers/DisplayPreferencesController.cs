@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using Jellyfin.Api.Helpers;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
@@ -48,15 +49,17 @@ public class DisplayPreferencesController : BaseJellyfinApiController
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "displayPreferencesId", Justification = "Imported from ServiceStack")]
     public ActionResult<DisplayPreferencesDto> GetDisplayPreferences(
         [FromRoute, Required] string displayPreferencesId,
-        [FromQuery, Required] Guid userId,
+        [FromQuery] Guid? userId,
         [FromQuery, Required] string client)
     {
+        userId = RequestHelpers.GetUserId(User, userId);
+
         if (!Guid.TryParse(displayPreferencesId, out var itemId))
         {
             itemId = displayPreferencesId.GetMD5();
         }
 
-        var displayPreferences = _displayPreferencesManager.GetDisplayPreferences(userId, itemId, client);
+        var displayPreferences = _displayPreferencesManager.GetDisplayPreferences(userId.Value, itemId, client);
         var itemPreferences = _displayPreferencesManager.GetItemDisplayPreferences(displayPreferences.UserId, itemId, displayPreferences.Client);
         itemPreferences.ItemId = itemId;
 
@@ -113,10 +116,12 @@ public class DisplayPreferencesController : BaseJellyfinApiController
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "displayPreferencesId", Justification = "Imported from ServiceStack")]
     public ActionResult UpdateDisplayPreferences(
         [FromRoute, Required] string displayPreferencesId,
-        [FromQuery, Required] Guid userId,
+        [FromQuery] Guid? userId,
         [FromQuery, Required] string client,
         [FromBody, Required] DisplayPreferencesDto displayPreferences)
     {
+        userId = RequestHelpers.GetUserId(User, userId);
+
         HomeSectionType[] defaults =
         {
             HomeSectionType.SmallLibraryTiles,
@@ -134,7 +139,7 @@ public class DisplayPreferencesController : BaseJellyfinApiController
             itemId = displayPreferencesId.GetMD5();
         }
 
-        var existingDisplayPreferences = _displayPreferencesManager.GetDisplayPreferences(userId, itemId, client);
+        var existingDisplayPreferences = _displayPreferencesManager.GetDisplayPreferences(userId.Value, itemId, client);
         existingDisplayPreferences.IndexBy = Enum.TryParse<IndexingKind>(displayPreferences.IndexBy, true, out var indexBy) ? indexBy : null;
         existingDisplayPreferences.ShowBackdrop = displayPreferences.ShowBackdrop;
         existingDisplayPreferences.ShowSidebar = displayPreferences.ShowSidebar;
@@ -189,7 +194,7 @@ public class DisplayPreferencesController : BaseJellyfinApiController
 
         foreach (var key in displayPreferences.CustomPrefs.Keys.Where(key => key.StartsWith("landing-", StringComparison.OrdinalIgnoreCase)))
         {
-            if (!Enum.TryParse<ViewType>(displayPreferences.CustomPrefs[key], true, out var type))
+            if (!Enum.TryParse<ViewType>(displayPreferences.CustomPrefs[key], true, out _))
             {
                 _logger.LogError("Invalid ViewType: {LandingScreenOption}", displayPreferences.CustomPrefs[key]);
                 displayPreferences.CustomPrefs.Remove(key);
@@ -204,7 +209,7 @@ public class DisplayPreferencesController : BaseJellyfinApiController
         itemPrefs.ItemId = itemId;
 
         // Set all remaining custom preferences.
-        _displayPreferencesManager.SetCustomItemDisplayPreferences(userId, itemId, existingDisplayPreferences.Client, displayPreferences.CustomPrefs);
+        _displayPreferencesManager.SetCustomItemDisplayPreferences(userId.Value, itemId, existingDisplayPreferences.Client, displayPreferences.CustomPrefs);
         _displayPreferencesManager.SaveChanges();
 
         return NoContent();

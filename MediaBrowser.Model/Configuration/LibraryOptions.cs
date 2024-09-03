@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.ComponentModel;
 
 namespace MediaBrowser.Model.Configuration
 {
@@ -12,6 +13,8 @@ namespace MediaBrowser.Model.Configuration
             DisabledSubtitleFetchers = Array.Empty<string>();
             SubtitleFetcherOrder = Array.Empty<string>();
             DisabledLocalMetadataReaders = Array.Empty<string>();
+            DisabledLyricFetchers = Array.Empty<string>();
+            LyricFetcherOrder = Array.Empty<string>();
 
             SkipSubtitlesIfAudioTrackMatches = true;
             RequirePerfectSubtitleMatch = true;
@@ -20,10 +23,13 @@ namespace MediaBrowser.Model.Configuration
             AutomaticallyAddToCollection = false;
             EnablePhotos = true;
             SaveSubtitlesWithMedia = true;
+            SaveLyricsWithMedia = false;
             PathInfos = Array.Empty<MediaPathInfo>();
             EnableAutomaticSeriesGrouping = true;
             SeasonZeroDisplayName = "Specials";
         }
+
+        public bool Enabled { get; set; } = true;
 
         public bool EnablePhotos { get; set; }
 
@@ -89,6 +95,13 @@ namespace MediaBrowser.Model.Configuration
         public bool RequirePerfectSubtitleMatch { get; set; }
 
         public bool SaveSubtitlesWithMedia { get; set; }
+
+        [DefaultValue(false)]
+        public bool SaveLyricsWithMedia { get; set; }
+
+        public string[] DisabledLyricFetchers { get; set; }
+
+        public string[] LyricFetcherOrder { get; set; }
 
         public bool AutomaticallyAddToCollection { get; set; }
 

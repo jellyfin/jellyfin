@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -18,14 +19,12 @@ namespace Emby.Server.Implementations.TV
 {
     public class TVSeriesManager : ITVSeriesManager
     {
-        private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataManager;
         private readonly ILibraryManager _libraryManager;
         private readonly IServerConfigurationManager _configurationManager;
 
-        public TVSeriesManager(IUserManager userManager, IUserDataManager userDataManager, ILibraryManager libraryManager, IServerConfigurationManager configurationManager)
+        public TVSeriesManager(IUserDataManager userDataManager, ILibraryManager libraryManager, IServerConfigurationManager configurationManager)
         {
-            _userManager = userManager;
             _userDataManager = userDataManager;
             _libraryManager = libraryManager;
             _configurationManager = configurationManager;
@@ -33,15 +32,10 @@ namespace Emby.Server.Implementations.TV
 
         public QueryResult<BaseItem> GetNextUp(NextUpQuery query, DtoOptions options)
         {
-            var user = _userManager.GetUserById(query.UserId);
-
-            if (user is null)
-            {
-                throw new ArgumentException("User not found");
-            }
+            var user = query.User;
 
             string? presentationUniqueKey = null;
-            if (query.SeriesId.HasValue && !query.SeriesId.Value.Equals(default))
+            if (!query.SeriesId.IsNullOrEmpty())
             {
                 if (_libraryManager.GetItemById(query.SeriesId.Value) is Series series)
                 {
@@ -82,16 +76,11 @@ namespace Emby.Server.Implementations.TV
 
         public QueryResult<BaseItem> GetNextUp(NextUpQuery request, BaseItem[] parentsFolders, DtoOptions options)
         {
-            var user = _userManager.GetUserById(request.UserId);
-
-            if (user is null)
-            {
-                throw new ArgumentException("User not found");
-            }
+            var user = request.User;
 
             string? presentationUniqueKey = null;
             int? limit = null;
-            if (request.SeriesId.HasValue && !request.SeriesId.Value.Equals(default))
+            if (!request.SeriesId.IsNullOrEmpty())
             {
                 if (_libraryManager.GetItemById(request.SeriesId.Value) is Series series)
                 {
@@ -146,7 +135,7 @@ namespace Emby.Server.Implementations.TV
 
             // If viewing all next up for all series, remove first episodes
             // But if that returns empty, keep those first episodes (avoid completely empty view)
-            var alwaysEnableFirstEpisode = request.SeriesId.HasValue && !request.SeriesId.Value.Equals(default);
+            var alwaysEnableFirstEpisode = !request.SeriesId.IsNullOrEmpty();
             var anyFound = false;
 
             return allNextUp

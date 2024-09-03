@@ -65,15 +65,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             tmdbId = contentId;
                         }
 
-                        if (!string.IsNullOrWhiteSpace(imdbId))
-                        {
-                            item.SetProviderId(MetadataProvider.Imdb, imdbId);
-                        }
-
-                        if (!string.IsNullOrWhiteSpace(tmdbId))
-                        {
-                            item.SetProviderId(MetadataProvider.Tmdb, tmdbId);
-                        }
+                        item.TrySetProviderId(MetadataProvider.Imdb, imdbId);
+                        item.TrySetProviderId(MetadataProvider.Tmdb, tmdbId);
 
                         break;
                     }
@@ -83,10 +76,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         var movie = item as Movie;
 
                         var tmdbcolid = reader.GetAttribute("tmdbcolid");
-                        if (!string.IsNullOrWhiteSpace(tmdbcolid) && movie is not null)
-                        {
-                            movie.SetProviderId(MetadataProvider.TmdbCollection, tmdbcolid);
-                        }
+                        movie?.TrySetProviderId(MetadataProvider.TmdbCollection, tmdbcolid);
 
                         var val = reader.ReadInnerXml();
 
@@ -117,9 +107,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     var artist = reader.ReadNormalizedString();
                     if (!string.IsNullOrEmpty(artist) && item is MusicVideo artistVideo)
                     {
-                        var list = artistVideo.Artists.ToList();
-                        list.Add(artist);
-                        artistVideo.Artists = list.ToArray();
+                        artistVideo.Artists = [..artistVideo.Artists, artist];
                     }
 
                     break;

@@ -173,6 +173,13 @@ namespace Emby.Naming.Common
                 ".vtt",
             };
 
+            LyricFileExtensions = new[]
+            {
+                ".lrc",
+                ".elrc",
+                ".txt"
+            };
+
             AlbumStackingPrefixes = new[]
             {
                 "cd",
@@ -533,6 +540,12 @@ namespace Emby.Naming.Common
                 new ExtraRule(
                     ExtraType.Unknown,
                     ExtraRuleType.DirectoryName,
+                    "extra",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Unknown,
+                    ExtraRuleType.DirectoryName,
                     "other",
                     MediaType.Video),
 
@@ -790,6 +803,11 @@ namespace Emby.Naming.Common
         /// Gets or sets list of subtitle file extensions.
         /// </summary>
         public string[] SubtitleFileExtensions { get; set; }
+
+        /// <summary>
+        /// Gets the list of lyric file extensions.
+        /// </summary>
+        public string[] LyricFileExtensions { get; }
 
         /// <summary>
         /// Gets or sets list of episode regular expressions.

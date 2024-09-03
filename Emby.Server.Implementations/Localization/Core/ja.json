@@ -125,5 +125,9 @@
     "External": "外部",
     "HearingImpaired": "聴覚障害の方",
     "TaskRefreshTrickplayImages": "トリックプレー画像を生成",
-    "TaskRefreshTrickplayImagesDescription": "有効なライブラリ内のビデオをもとにトリックプレーのプレビューを生成します。"
+    "TaskRefreshTrickplayImagesDescription": "有効なライブラリ内のビデオをもとにトリックプレーのプレビューを生成します。",
+    "TaskCleanCollectionsAndPlaylists": "コレクションとプレイリストをクリーンアップ",
+    "TaskAudioNormalization": "音声の正規化",
+    "TaskAudioNormalizationDescription": "音声の正規化データのためにファイルをスキャンします。",
+    "TaskCleanCollectionsAndPlaylistsDescription": "在しなくなったコレクションやプレイリストからアイテムを削除します。"
 }

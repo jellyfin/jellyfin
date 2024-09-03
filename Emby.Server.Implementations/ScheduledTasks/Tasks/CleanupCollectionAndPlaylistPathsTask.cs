@@ -115,9 +115,10 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
         List<LinkedChild>? itemsToRemove = null;
         foreach (var linkedChild in folder.LinkedChildren)
         {
-            if (!File.Exists(folder.Path))
+            var path = linkedChild.Path;
+            if (!File.Exists(path) && !Directory.Exists(path))
             {
-                _logger.LogInformation("Item in {FolderName} cannot be found at {ItemPath}", folder.Name, linkedChild.Path);
+                _logger.LogInformation("Item in {FolderName} cannot be found at {ItemPath}", folder.Name, path);
                 (itemsToRemove ??= new List<LinkedChild>()).Add(linkedChild);
             }
         }
@@ -126,15 +127,8 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
         {
             _logger.LogDebug("Updating {FolderName}", folder.Name);
             folder.LinkedChildren = folder.LinkedChildren.Except(itemsToRemove).ToArray();
+            _providerManager.SaveMetadataAsync(folder, ItemUpdateType.MetadataEdit);
             folder.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken);
-
-            _providerManager.QueueRefresh(
-                folder.Id,
-                new MetadataRefreshOptions(new DirectoryService(_fileSystem))
-                {
-                    ForceSave = true
-                },
-                RefreshPriority.High);
         }
     }
 

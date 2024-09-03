@@ -59,8 +59,98 @@
                     "el_present_flag": 0,
                     "bl_present_flag": 1,
                     "dv_bl_signal_compatibility_id": 0
+                },
+                {
+                    "side_data_type": "Display Matrix",
+                    "rotation": -180
                 }
             ]
+        },
+        {
+            "index": 1,
+            "codec_name": "eac3",
+            "codec_long_name": "ATSC A/52B (AC-3, E-AC-3)",
+            "profile": "Dolby Digital Plus + Dolby Atmos",
+            "codec_type": "audio",
+            "codec_tag_string": "[0][0][0][0]",
+            "codec_tag": "0x0000",
+            "sample_fmt": "fltp",
+            "sample_rate": "48000",
+            "channels": 6,
+            "channel_layout": "5.1(side)",
+            "bits_per_sample": 0,
+            "initial_padding": 0,
+            "r_frame_rate": "0/0",
+            "avg_frame_rate": "0/0",
+            "time_base": "1/1000",
+            "start_pts": 0,
+            "start_time": "0.000000",
+            "bit_rate": "640000",
+            "disposition": {
+                "default": 1,
+                "dub": 0,
+                "original": 1,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0,
+                "captions": 0,
+                "descriptions": 0,
+                "metadata": 0,
+                "dependent": 0,
+                "still_image": 0
+            },
+            "tags": {
+                "language": "eng"
+            }
+        },
+        {
+            "index": 2,
+            "codec_name": "dts",
+            "codec_long_name": "DCA (DTS Coherent Acoustics)",
+            "profile": "DTS-HD MA + DTS:X",
+            "codec_type": "audio",
+            "codec_tag_string": "[0][0][0][0]",
+            "codec_tag": "0x0000",
+            "sample_fmt": "s32p",
+            "sample_rate": "48000",
+            "channels": 8,
+            "channel_layout": "7.1",
+            "bits_per_sample": 0,
+            "initial_padding": 0,
+            "r_frame_rate": "0/0",
+            "avg_frame_rate": "0/0",
+            "time_base": "1/1000",
+            "start_pts": 0,
+            "start_time": "0.000000",
+            "bits_per_raw_sample": "24",
+            "disposition": {
+                "default": 0,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0,
+                "captions": 0,
+                "descriptions": 0,
+                "metadata": 0,
+                "dependent": 0,
+                "still_image": 0
+            },
+            "tags": {
+                "language": "eng"
+            }
         }
     ],
     "chapters": [
@@ -68,7 +158,7 @@
     ],
     "format": {
         "filename": "some_metadata.mkv",
-        "nb_streams": 1,
+        "nb_streams": 3,
         "nb_programs": 0,
         "format_name": "matroska,webm",
         "format_long_name": "Matroska / WebM",

@@ -81,11 +81,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                     }
 
                     remoteResult.SetProviderId(MetadataProvider.Tmdb, movie.Id.ToString(CultureInfo.InvariantCulture));
-
-                    if (!string.IsNullOrWhiteSpace(movie.ImdbId))
-                    {
-                        remoteResult.SetProviderId(MetadataProvider.Imdb, movie.ImdbId);
-                    }
+                    remoteResult.TrySetProviderId(MetadataProvider.Imdb, movie.ImdbId);
 
                     return new[] { remoteResult };
                 }

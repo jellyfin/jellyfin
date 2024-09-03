@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -154,11 +155,11 @@ namespace MediaBrowser.Controller.Entities
             return base.GetNonCachedChildren(directoryService).Concat(_virtualChildren);
         }
 
-        protected override async Task ValidateChildrenInternal(IProgress<double> progress, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService, CancellationToken cancellationToken)
+        protected override async Task ValidateChildrenInternal(IProgress<double> progress, bool recursive, bool refreshChildMetadata, bool allowRemoveRoot, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
             ClearCache();
 
-            await base.ValidateChildrenInternal(progress, recursive, refreshChildMetadata, refreshOptions, directoryService, cancellationToken)
+            await base.ValidateChildrenInternal(progress, recursive, refreshChildMetadata, allowRemoveRoot, refreshOptions, directoryService, cancellationToken)
                 .ConfigureAwait(false);
 
             ClearCache();
@@ -184,7 +185,7 @@ namespace MediaBrowser.Controller.Entities
         /// <exception cref="ArgumentNullException">The id is empty.</exception>
         public BaseItem FindVirtualChild(Guid id)
         {
-            if (id.Equals(default))
+            if (id.IsEmpty())
             {
                 throw new ArgumentNullException(nameof(id));
             }

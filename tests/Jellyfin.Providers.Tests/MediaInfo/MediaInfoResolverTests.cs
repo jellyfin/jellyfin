@@ -37,7 +37,7 @@ public class MediaInfoResolverTests
     public MediaInfoResolverTests()
     {
         // prep BaseItem and Video for calls made that expect managers
-        Video.LiveTvManager = Mock.Of<ILiveTvManager>();
+        Video.RecordingsManager = Mock.Of<IRecordingsManager>();
 
         var applicationPaths = new Mock<IServerApplicationPaths>().Object;
         var serverConfig = new Mock<IServerConfigurationManager>();
@@ -182,7 +182,7 @@ public class MediaInfoResolverTests
     [Theory]
     [InlineData("https://url.com/My.Video.mkv")]
     [InlineData(VideoDirectoryPath)] // valid but no files found for this test
-    public async void GetExternalStreams_BadPaths_ReturnsNoSubtitles(string path)
+    public async Task GetExternalStreams_BadPaths_ReturnsNoSubtitles(string path)
     {
         // need a media source manager capable of returning something other than file protocol
         var mediaSourceManager = new Mock<IMediaSourceManager>();
@@ -285,7 +285,7 @@ public class MediaInfoResolverTests
 
     [Theory]
     [MemberData(nameof(GetExternalStreams_MergeMetadata_HandlesOverridesCorrectly_Data))]
-    public async void GetExternalStreams_MergeMetadata_HandlesOverridesCorrectly(string file, MediaStream[] inputStreams, MediaStream[] expectedStreams)
+    public async Task GetExternalStreams_MergeMetadata_HandlesOverridesCorrectly(string file, MediaStream[] inputStreams, MediaStream[] expectedStreams)
     {
         BaseItem.MediaSourceManager = Mock.Of<IMediaSourceManager>();
 
@@ -335,7 +335,7 @@ public class MediaInfoResolverTests
     [InlineData(1, 2)]
     [InlineData(2, 1)]
     [InlineData(2, 2)]
-    public async void GetExternalStreams_StreamIndex_HandlesFilesAndContainers(int fileCount, int streamCount)
+    public async Task GetExternalStreams_StreamIndex_HandlesFilesAndContainers(int fileCount, int streamCount)
     {
         BaseItem.MediaSourceManager = Mock.Of<IMediaSourceManager>();
 

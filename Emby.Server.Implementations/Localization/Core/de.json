@@ -121,10 +121,16 @@
     "Default": "Standard",
     "TaskOptimizeDatabaseDescription": "Komprimiert die Datenbank und trimmt den freien Speicherplatz. Die Ausführung dieser Aufgabe nach dem Scannen der Bibliothek oder nach anderen Änderungen, die Datenbankänderungen implizieren, kann die Leistung verbessern.",
     "TaskOptimizeDatabase": "Datenbank optimieren",
-    "TaskKeyframeExtractorDescription": "Extrahiere Keyframes aus Videodateien, um präzisere HLS-Playlisten zu erzeugen. Dieser Vorgang kann sehr lange dauern.",
-    "TaskKeyframeExtractor": "Keyframe Extraktor",
+    "TaskKeyframeExtractorDescription": "Extrahiert Keyframes aus Videodateien, um präzisere HLS-Playlisten zu erzeugen. Dieser Vorgang kann sehr lange dauern.",
+    "TaskKeyframeExtractor": "Keyframe-Extraktor",
     "External": "Extern",
     "HearingImpaired": "Hörgeschädigt",
     "TaskRefreshTrickplayImages": "Trickplay-Bilder generieren",
-    "TaskRefreshTrickplayImagesDescription": "Erstellt eine Trickplay-Vorschau für Videos in aktivierten Bibliotheken."
+    "TaskRefreshTrickplayImagesDescription": "Erstellt ein Trickplay-Vorschauen für Videos in aktivierten Bibliotheken.",
+    "TaskCleanCollectionsAndPlaylists": "Sammlungen und Playlisten aufräumen",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Lösche nicht mehr vorhandene Einträge aus den Sammlungen und Playlisten.",
+    "TaskAudioNormalization": "Audio Normalisierung",
+    "TaskAudioNormalizationDescription": "Durchsucht Dateien nach Audionormalisierungsdaten.",
+    "TaskDownloadMissingLyricsDescription": "Lädt Liedtexte herunter",
+    "TaskDownloadMissingLyrics": "Fehlende Liedtexte herunterladen"
 }

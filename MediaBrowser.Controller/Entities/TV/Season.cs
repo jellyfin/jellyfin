@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Querying;
@@ -48,12 +49,12 @@ namespace MediaBrowser.Controller.Entities.TV
             get
             {
                 var seriesId = SeriesId;
-                if (seriesId.Equals(default))
+                if (seriesId.IsEmpty())
                 {
                     seriesId = FindSeriesId();
                 }
 
-                return seriesId.Equals(default) ? null : (LibraryManager.GetItemById(seriesId) as Series);
+                return seriesId.IsEmpty() ? null : (LibraryManager.GetItemById(seriesId) as Series);
             }
         }
 
@@ -158,7 +159,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
             Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
 
-            var items = GetEpisodes(user, query.DtoOptions).Where(filter);
+            var items = GetEpisodes(user, query.DtoOptions, true).Where(filter);
 
             return PostFilterAndSort(items, query, false);
         }
@@ -168,30 +169,31 @@ namespace MediaBrowser.Controller.Entities.TV
         /// </summary>
         /// <param name="user">The user.</param>
         /// <param name="options">The options to use.</param>
+        /// <param name="shouldIncludeMissingEpisodes">If missing episodes should be included.</param>
         /// <returns>Set of episodes.</returns>
-        public List<BaseItem> GetEpisodes(User user, DtoOptions options)
+        public List<BaseItem> GetEpisodes(User user, DtoOptions options, bool shouldIncludeMissingEpisodes)
         {
-            return GetEpisodes(Series, user, options);
+            return GetEpisodes(Series, user, options, shouldIncludeMissingEpisodes);
         }
 
-        public List<BaseItem> GetEpisodes(Series series, User user, DtoOptions options)
+        public List<BaseItem> GetEpisodes(Series series, User user, DtoOptions options, bool shouldIncludeMissingEpisodes)
         {
-            return GetEpisodes(series, user, null, options);
+            return GetEpisodes(series, user, null, options, shouldIncludeMissingEpisodes);
         }
 
-        public List<BaseItem> GetEpisodes(Series series, User user, IEnumerable<Episode> allSeriesEpisodes, DtoOptions options)
+        public List<BaseItem> GetEpisodes(Series series, User user, IEnumerable<Episode> allSeriesEpisodes, DtoOptions options, bool shouldIncludeMissingEpisodes)
         {
-            return series.GetSeasonEpisodes(this, user, allSeriesEpisodes, options);
+            return series.GetSeasonEpisodes(this, user, allSeriesEpisodes, options, shouldIncludeMissingEpisodes);
         }
 
         public List<BaseItem> GetEpisodes()
         {
-            return Series.GetSeasonEpisodes(this, null, null, new DtoOptions(true));
+            return Series.GetSeasonEpisodes(this, null, null, new DtoOptions(true), true);
         }
 
         public override List<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
         {
-            return GetEpisodes(user, new DtoOptions(true));
+            return GetEpisodes(user, new DtoOptions(true), true);
         }
 
         protected override bool GetBlockUnratedValue(User user)
@@ -236,6 +238,7 @@ namespace MediaBrowser.Controller.Entities.TV
             if (series is not null)
             {
                 id.SeriesProviderIds = series.ProviderIds;
+                id.SeriesDisplayOrder = series.DisplayOrder;
             }
 
             return id;

@@ -11,7 +11,7 @@
     "Collections": "Kolekcije",
     "DeviceOfflineWithName": "{0} je prekinuo vezu",
     "DeviceOnlineWithName": "{0} je povezan",
-    "FailedLoginAttemptWithUserName": "Neuspjeli pokušaj prijave od {0}",
+    "FailedLoginAttemptWithUserName": "Neuspješan pokušaj prijave od {0}",
     "Favorites": "Favoriti",
     "Folders": "Mape",
     "Genres": "Žanrovi",
@@ -126,5 +126,9 @@
     "TaskOptimizeDatabaseDescription": "Sažima bazu podataka i uklanja prazan prostor. Pokretanje ovog zadatka, može poboljšati performanse nakon provođenja indeksiranja biblioteke ili provođenja drugih promjena koje utječu na bazu podataka.",
     "HearingImpaired": "Oštećen sluh",
     "TaskRefreshTrickplayImages": "Generiraj Trickplay Slike",
-    "TaskRefreshTrickplayImagesDescription": "Kreira trickplay pretpreglede za videe u omogućenim knjižnicama."
+    "TaskRefreshTrickplayImagesDescription": "Kreira trickplay pretpreglede za videe u omogućenim knjižnicama.",
+    "TaskAudioNormalization": "Normalizacija zvuka",
+    "TaskAudioNormalizationDescription": "Skenira datoteke u potrazi za podacima o normalizaciji zvuka.",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Uklanja stavke iz zbirki i popisa za reprodukciju koje više ne postoje.",
+    "TaskCleanCollectionsAndPlaylists": "Očisti zbirke i popise za reprodukciju"
 }

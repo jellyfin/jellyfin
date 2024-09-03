@@ -38,19 +38,26 @@ namespace MediaBrowser.LocalMetadata.Images
             }
 
             var parentPathFiles = directoryService.GetFiles(parentPath);
+            var nameWithoutExtension = Path.GetFileNameWithoutExtension(item.Path.AsSpan()).ToString();
 
-            var nameWithoutExtension = Path.GetFileNameWithoutExtension(item.Path.AsSpan());
+            var images = GetImageFilesFromFolder(nameWithoutExtension, parentPathFiles);
 
-            return GetFilesFromParentFolder(nameWithoutExtension, parentPathFiles);
+            var metadataSubDir = directoryService.GetDirectories(parentPath).FirstOrDefault(d => d.Name.Equals("metadata", StringComparison.Ordinal));
+            if (metadataSubDir is not null)
+            {
+                var files = directoryService.GetFiles(metadataSubDir.FullName);
+                images.AddRange(GetImageFilesFromFolder(nameWithoutExtension, files));
+            }
+
+            return images;
         }
 
-        private List<LocalImageInfo> GetFilesFromParentFolder(ReadOnlySpan<char> filenameWithoutExtension, List<FileSystemMetadata> parentPathFiles)
+        private List<LocalImageInfo> GetImageFilesFromFolder(ReadOnlySpan<char> filenameWithoutExtension, List<FileSystemMetadata> filePaths)
         {
+            var list = new List<LocalImageInfo>(1);
             var thumbName = string.Concat(filenameWithoutExtension, "-thumb");
 
-            var list = new List<LocalImageInfo>(1);
-
-            foreach (var i in parentPathFiles)
+            foreach (var i in filePaths)
             {
                 if (i.IsDirectory)
                 {

@@ -28,6 +28,7 @@ public class EncodingOptions
         VaapiDevice = "/dev/dri/renderD128";
         EnableTonemapping = false;
         EnableVppTonemapping = false;
+        EnableVideoToolboxTonemapping = false;
         TonemappingAlgorithm = "bt2390";
         TonemappingMode = "auto";
         TonemappingRange = "auto";
@@ -50,7 +51,6 @@ public class EncodingOptions
         EnableHardwareEncoding = true;
         AllowHevcEncoding = false;
         AllowAv1Encoding = false;
-        AllowMjpegEncoding = false;
         EnableSubtitleExtraction = true;
         AllowOnDemandMetadataBasedKeyframeExtractionForExtensions = new[] { "mkv" };
         HardwareDecodingCodecs = new string[] { "h264", "vc1" };
@@ -145,6 +145,11 @@ public class EncodingOptions
     /// Gets or sets a value indicating whether VPP tonemapping is enabled.
     /// </summary>
     public bool EnableVppTonemapping { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether videotoolbox tonemapping is enabled.
+    /// </summary>
+    public bool EnableVideoToolboxTonemapping { get; set; }
 
     /// <summary>
     /// Gets or sets the tone-mapping algorithm.
@@ -255,11 +260,6 @@ public class EncodingOptions
     /// Gets or sets a value indicating whether AV1 encoding is enabled.
     /// </summary>
     public bool AllowAv1Encoding { get; set; }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether MJPEG encoding is enabled.
-    /// </summary>
-    public bool AllowMjpegEncoding { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether subtitle extraction is enabled.

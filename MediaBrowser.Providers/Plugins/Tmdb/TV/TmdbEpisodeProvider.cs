@@ -187,20 +187,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             };
 
             var externalIds = episodeResult.ExternalIds;
-            if (!string.IsNullOrEmpty(externalIds?.TvdbId))
-            {
-                item.SetProviderId(MetadataProvider.Tvdb, externalIds.TvdbId);
-            }
-
-            if (!string.IsNullOrEmpty(externalIds?.ImdbId))
-            {
-                item.SetProviderId(MetadataProvider.Imdb, externalIds.ImdbId);
-            }
-
-            if (!string.IsNullOrEmpty(externalIds?.TvrageId))
-            {
-                item.SetProviderId(MetadataProvider.TvRage, externalIds.TvrageId);
-            }
+            item.TrySetProviderId(MetadataProvider.Tvdb, externalIds?.TvdbId);
+            item.TrySetProviderId(MetadataProvider.Imdb, externalIds?.ImdbId);
+            item.TrySetProviderId(MetadataProvider.TvRage, externalIds?.TvrageId);
 
             if (episodeResult.Videos?.Results is not null)
             {

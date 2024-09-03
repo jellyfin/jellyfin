@@ -67,6 +67,11 @@ namespace MediaBrowser.Model.Net
         {
             // Type application
             new(".azw3", "application/vnd.amazon.ebook"),
+            new(".cb7", "application/x-cb7"),
+            new(".cba", "application/x-cba"),
+            new(".cbr", "application/vnd.comicbook-rar"),
+            new(".cbt", "application/x-cbt"),
+            new(".cbz", "application/vnd.comicbook+zip"),
 
             // Type image
             new(".tbn", "image/jpeg"),
@@ -88,7 +93,7 @@ namespace MediaBrowser.Model.Net
             new(".dsf", "audio/dsf"),
             new(".dsp", "audio/dsp"),
             new(".flac", "audio/flac"),
-            new(".m4b", "audio/m4b"),
+            new(".m4b", "audio/mp4"),
             new(".mp3", "audio/mpeg"),
             new(".vorbis", "audio/vorbis"),
             new(".webma", "audio/webm"),
@@ -99,6 +104,12 @@ namespace MediaBrowser.Model.Net
         private static readonly FrozenDictionary<string, string> _extensionLookup = new KeyValuePair<string, string>[]
         {
             // Type application
+            new("application/vnd.comicbook-rar", ".cbr"),
+            new("application/vnd.comicbook+zip", ".cbz"),
+            new("application/x-cb7", ".cb7"),
+            new("application/x-cba", ".cba"),
+            new("application/x-cbr", ".cbr"),
+            new("application/x-cbt", ".cbt"),
             new("application/x-cbz", ".cbz"),
             new("application/x-javascript", ".js"),
             new("application/xml", ".xml"),

@@ -1,3 +1,5 @@
+using System;
+
 namespace MediaBrowser.Model.Providers
 {
     /// <summary>
@@ -17,7 +19,9 @@ namespace MediaBrowser.Model.Providers
             Name = name;
             Key = key;
             Type = type;
+#pragma warning disable CS0618 // Type or member is obsolete - Remove 10.11
             UrlFormatString = urlFormatString;
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         /// <summary>
@@ -46,6 +50,7 @@ namespace MediaBrowser.Model.Providers
         /// <summary>
         /// Gets or sets the URL format string.
         /// </summary>
+        [Obsolete("Obsolete in 10.10, to be removed in 10.11")]
         public string? UrlFormatString { get; set; }
     }
 }

@@ -2,7 +2,10 @@ using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using Jellyfin.Api.Constants;
+using Jellyfin.Api.Extensions;
+using Jellyfin.Api.Helpers;
 using MediaBrowser.Common.Api;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
@@ -61,7 +64,7 @@ public class ItemRefreshController : BaseJellyfinApiController
         [FromQuery] bool replaceAllMetadata = false,
         [FromQuery] bool replaceAllImages = false)
     {
-        var item = _libraryManager.GetItemById(itemId);
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, User.GetUserId());
         if (item is null)
         {
             return NotFound();
@@ -77,7 +80,8 @@ public class ItemRefreshController : BaseJellyfinApiController
                 || imageRefreshMode == MetadataRefreshMode.FullRefresh
                 || replaceAllImages
                 || replaceAllMetadata,
-            IsAutomated = false
+            IsAutomated = false,
+            RemoveOldMetadata = replaceAllMetadata
         };
 
         _providerManager.QueueRefresh(item.Id, refreshOptions, RefreshPriority.High);

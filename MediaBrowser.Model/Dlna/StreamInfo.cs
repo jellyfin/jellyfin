@@ -36,7 +36,7 @@ namespace MediaBrowser.Model.Dlna
 
         public string? Container { get; set; }
 
-        public string? SubProtocol { get; set; }
+        public MediaStreamProtocol SubProtocol { get; set; }
 
         public long StartPositionTicks { get; set; }
 
@@ -107,6 +107,8 @@ namespace MediaBrowser.Model.Dlna
         public Dictionary<string, string> StreamOptions { get; private set; }
 
         public string? MediaSourceId => MediaSource?.Id;
+
+        public bool EnableAudioVbrEncoding { get; set; }
 
         public bool IsDirectStream => MediaSource?.VideoType is not (VideoType.Dvd or VideoType.BluRay)
             && PlayMethod is PlayMethod.DirectStream or PlayMethod.DirectPlay;
@@ -670,7 +672,7 @@ namespace MediaBrowser.Model.Dlna
 
             if (MediaType == DlnaProfileType.Audio)
             {
-                if (string.Equals(SubProtocol, "hls", StringComparison.OrdinalIgnoreCase))
+                if (SubProtocol == MediaStreamProtocol.hls)
                 {
                     return string.Format(CultureInfo.InvariantCulture, "{0}/audio/{1}/master.m3u8?{2}", baseUrl, ItemId, queryString);
                 }
@@ -678,7 +680,7 @@ namespace MediaBrowser.Model.Dlna
                 return string.Format(CultureInfo.InvariantCulture, "{0}/audio/{1}/stream{2}?{3}", baseUrl, ItemId, extension, queryString);
             }
 
-            if (string.Equals(SubProtocol, "hls", StringComparison.OrdinalIgnoreCase))
+            if (SubProtocol == MediaStreamProtocol.hls)
             {
                 return string.Format(CultureInfo.InvariantCulture, "{0}/videos/{1}/master.m3u8?{2}", baseUrl, ItemId, queryString);
             }
@@ -716,9 +718,7 @@ namespace MediaBrowser.Model.Dlna
 
             long startPositionTicks = item.StartPositionTicks;
 
-            var isHls = string.Equals(item.SubProtocol, "hls", StringComparison.OrdinalIgnoreCase);
-
-            if (isHls)
+            if (item.SubProtocol == MediaStreamProtocol.hls)
             {
                 list.Add(new NameValuePair("StartTimeTicks", string.Empty));
             }
@@ -770,6 +770,8 @@ namespace MediaBrowser.Model.Dlna
                 }
 
                 list.Add(new NameValuePair("RequireAvc", item.RequireAvc.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()));
+
+                list.Add(new NameValuePair("EnableAudioVbrEncoding", item.EnableAudioVbrEncoding.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()));
             }
 
             list.Add(new NameValuePair("Tag", item.MediaSource?.ETag ?? string.Empty));
@@ -780,7 +782,7 @@ namespace MediaBrowser.Model.Dlna
 
             list.Add(new NameValuePair("SubtitleCodec", item.SubtitleStreamIndex.HasValue && item.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Embed ? subtitleCodecs : string.Empty));
 
-            if (isHls)
+            if (item.SubProtocol == MediaStreamProtocol.hls)
             {
                 list.Add(new NameValuePair("SegmentContainer", item.Container ?? string.Empty));
 
@@ -831,7 +833,7 @@ namespace MediaBrowser.Model.Dlna
             var list = new List<SubtitleStreamInfo>();
 
             // HLS will preserve timestamps so we can just grab the full subtitle stream
-            long startPositionTicks = string.Equals(SubProtocol, "hls", StringComparison.OrdinalIgnoreCase)
+            long startPositionTicks = SubProtocol == MediaStreamProtocol.hls
                 ? 0
                 : (PlayMethod == PlayMethod.Transcode && !CopyTimestamps ? StartPositionTicks : 0);
 

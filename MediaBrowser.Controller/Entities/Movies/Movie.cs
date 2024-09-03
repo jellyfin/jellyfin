@@ -45,9 +45,6 @@ namespace MediaBrowser.Controller.Entities.Movies
             set => TmdbCollectionName = value;
         }
 
-        [JsonIgnore]
-        public override bool StopRefreshIfLocalMetadataFound => false;
-
         public override double GetDefaultPrimaryImageAspectRatio()
         {
             // hack for tv plugins
@@ -123,24 +120,6 @@ namespace MediaBrowser.Controller.Entities.Movies
             }
 
             return hasChanges;
-        }
-
-        /// <inheritdoc />
-        public override List<ExternalUrl> GetRelatedUrls()
-        {
-            var list = base.GetRelatedUrls();
-
-            var imdbId = this.GetProviderId(MetadataProvider.Imdb);
-            if (!string.IsNullOrEmpty(imdbId))
-            {
-                list.Add(new ExternalUrl
-                {
-                    Name = "Trakt",
-                    Url = string.Format(CultureInfo.InvariantCulture, "https://trakt.tv/movies/{0}", imdbId)
-                });
-            }
-
-            return list;
         }
     }
 }

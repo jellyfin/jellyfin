@@ -24,7 +24,7 @@ namespace MediaBrowser.Controller.Entities.Audio
     public class MusicArtist : Folder, IItemByName, IHasMusicGenres, IHasDualAccess, IHasLookupInfo<ArtistInfo>
     {
         [JsonIgnore]
-        public bool IsAccessedByName => ParentId.Equals(default);
+        public bool IsAccessedByName => ParentId.IsEmpty();
 
         [JsonIgnore]
         public override bool IsFolder => !IsAccessedByName;
@@ -110,7 +110,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             return base.IsSaveLocalMetadataEnabled();
         }
 
-        protected override Task ValidateChildrenInternal(IProgress<double> progress, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService, CancellationToken cancellationToken)
+        protected override Task ValidateChildrenInternal(IProgress<double> progress, bool recursive, bool refreshChildMetadata, bool allowRemoveRoot, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
             if (IsAccessedByName)
             {
@@ -118,7 +118,7 @@ namespace MediaBrowser.Controller.Entities.Audio
                 return Task.CompletedTask;
             }
 
-            return base.ValidateChildrenInternal(progress, recursive, refreshChildMetadata, refreshOptions, directoryService, cancellationToken);
+            return base.ValidateChildrenInternal(progress, recursive, refreshChildMetadata, false, refreshOptions, directoryService, cancellationToken);
         }
 
         public override List<string> GetUserDataKeys()

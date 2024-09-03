@@ -7,6 +7,18 @@
   <thumb>https://artworks.thetvdb.com/banners/episodes/70851/25333.jpg</thumb>
   <watched>false</watched>
   <rating>8.0</rating>
+  <actor>
+    <name>Joe Flanigan</name>
+    <role>John Sheppard</role>
+    <order>0</order>
+    <thumb>https://image.tmdb.org/t/p/w300_and_h450_bestv2/5AA1ORKIsnMakT6fCVy3JKlzMs6.jpg</thumb>
+  </actor>
+  <actor>
+    <name>David Hewlett</name>
+    <role>Rodney McKay</role>
+    <order>1</order>
+    <thumb>https://image.tmdb.org/t/p/w300_and_h450_bestv2/hUcYyssAPCqnZ4GjolhOWXHTWSa.jpg</thumb>
+  </actor>
 </episodedetails>
 <episodedetails>
   <title>Rising (2)</title>
@@ -17,4 +29,16 @@
   <thumb>https://artworks.thetvdb.com/banners/episodes/70851/25334.jpg</thumb>
   <watched>false</watched>
   <rating>7.9</rating>
+  <actor>
+    <name>Joe Flanigan</name>
+    <role>John Sheppard</role>
+    <order>0</order>
+    <thumb>https://image.tmdb.org/t/p/w300_and_h450_bestv2/5AA1ORKIsnMakT6fCVy3JKlzMs6.jpg</thumb>
+  </actor>
+  <actor>
+    <name>David Hewlett</name>
+    <role>Rodney McKay</role>
+    <order>1</order>
+    <thumb>https://image.tmdb.org/t/p/w300_and_h450_bestv2/hUcYyssAPCqnZ4GjolhOWXHTWSa.jpg</thumb>
+  </actor>
 </episodedetails>

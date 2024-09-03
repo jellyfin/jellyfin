@@ -1,6 +1,7 @@
 #nullable disable
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -13,6 +14,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
@@ -43,6 +45,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly ILogger<ProbeProvider> _logger;
         private readonly AudioResolver _audioResolver;
         private readonly SubtitleResolver _subtitleResolver;
+        private readonly LyricResolver _lyricResolver;
         private readonly FFProbeVideoInfo _videoProber;
         private readonly AudioFileProber _audioProber;
         private readonly Task<ItemUpdateType> _cachedTask = Task.FromResult(ItemUpdateType.None);
@@ -63,6 +66,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="loggerFactory">Instance of the <see cref="ILoggerFactory"/>.</param>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
         /// <param name="namingOptions">The <see cref="NamingOptions"/>.</param>
+        /// <param name="lyricManager">Instance of the <see cref="ILyricManager"/> interface.</param>
         public ProbeProvider(
             IMediaSourceManager mediaSourceManager,
             IMediaEncoder mediaEncoder,
@@ -76,12 +80,14 @@ namespace MediaBrowser.Providers.MediaInfo
             ILibraryManager libraryManager,
             IFileSystem fileSystem,
             ILoggerFactory loggerFactory,
-            NamingOptions namingOptions)
+            NamingOptions namingOptions,
+            ILyricManager lyricManager)
         {
             _logger = loggerFactory.CreateLogger<ProbeProvider>();
-            _audioProber = new AudioFileProber(loggerFactory.CreateLogger<AudioFileProber>(), mediaSourceManager, mediaEncoder, itemRepo, libraryManager);
             _audioResolver = new AudioResolver(loggerFactory.CreateLogger<AudioResolver>(), localization, mediaEncoder, fileSystem, namingOptions);
             _subtitleResolver = new SubtitleResolver(loggerFactory.CreateLogger<SubtitleResolver>(), localization, mediaEncoder, fileSystem, namingOptions);
+            _lyricResolver = new LyricResolver(loggerFactory.CreateLogger<LyricResolver>(), localization, mediaEncoder, fileSystem, namingOptions);
+
             _videoProber = new FFProbeVideoInfo(
                 loggerFactory.CreateLogger<FFProbeVideoInfo>(),
                 mediaSourceManager,
@@ -96,6 +102,15 @@ namespace MediaBrowser.Providers.MediaInfo
                 libraryManager,
                 _audioResolver,
                 _subtitleResolver);
+
+            _audioProber = new AudioFileProber(
+                loggerFactory.CreateLogger<AudioFileProber>(),
+                mediaSourceManager,
+                mediaEncoder,
+                itemRepo,
+                libraryManager,
+                _lyricResolver,
+                lyricManager);
         }
 
         /// <inheritdoc />
@@ -123,24 +138,34 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            if (item.SupportsLocalMetadata && video is not null && !video.IsPlaceHolder
-                && !video.SubtitleFiles.SequenceEqual(
-                    _subtitleResolver.GetExternalFiles(video, directoryService, false)
-                    .Select(info => info.Path).ToList(),
-                    StringComparer.Ordinal))
+            if (video is not null
+                && item.SupportsLocalMetadata
+                && !video.IsPlaceHolder)
             {
-                _logger.LogDebug("Refreshing {ItemPath} due to external subtitles change.", item.Path);
-                return true;
+                var externalFiles = new HashSet<string>(_subtitleResolver.GetExternalFiles(video, directoryService, false).Select(info => info.Path), StringComparer.OrdinalIgnoreCase);
+                if (!new HashSet<string>(video.SubtitleFiles, StringComparer.Ordinal).SetEquals(externalFiles))
+                {
+                    _logger.LogDebug("Refreshing {ItemPath} due to external subtitles change.", item.Path);
+                    return true;
+                }
+
+                externalFiles = new HashSet<string>(_audioResolver.GetExternalFiles(video, directoryService, false).Select(info => info.Path), StringComparer.OrdinalIgnoreCase);
+                if (!new HashSet<string>(video.AudioFiles, StringComparer.Ordinal).SetEquals(externalFiles))
+                {
+                    _logger.LogDebug("Refreshing {ItemPath} due to external audio change.", item.Path);
+                    return true;
+                }
             }
 
-            if (item.SupportsLocalMetadata && video is not null && !video.IsPlaceHolder
-                && !video.AudioFiles.SequenceEqual(
-                    _audioResolver.GetExternalFiles(video, directoryService, false)
-                    .Select(info => info.Path).ToList(),
-                    StringComparer.Ordinal))
+            if (item is Audio audio
+                && item.SupportsLocalMetadata)
             {
-                _logger.LogDebug("Refreshing {ItemPath} due to external audio change.", item.Path);
-                return true;
+                var externalFiles = new HashSet<string>(_lyricResolver.GetExternalFiles(audio, directoryService, false).Select(info => info.Path), StringComparer.OrdinalIgnoreCase);
+                if (!new HashSet<string>(audio.LyricFiles, StringComparer.Ordinal).SetEquals(externalFiles))
+                {
+                    _logger.LogDebug("Refreshing {ItemPath} due to external lyrics change.", item.Path);
+                    return true;
+                }
             }
 
             return false;

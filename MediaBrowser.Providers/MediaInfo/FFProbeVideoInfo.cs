@@ -124,11 +124,8 @@ namespace MediaBrowser.Providers.MediaInfo
                     // Get BD disc information
                     blurayDiscInfo = GetBDInfo(item.Path);
 
-                    // Get playable .m2ts files
-                    var m2ts = _mediaEncoder.GetPrimaryPlaylistM2tsFiles(item.Path);
-
                     // Return if no playable .m2ts files are found
-                    if (blurayDiscInfo is null || blurayDiscInfo.Files.Length == 0 || m2ts.Count == 0)
+                    if (blurayDiscInfo is null || blurayDiscInfo.Files.Length == 0)
                     {
                         _logger.LogError("No playable .m2ts files found in Blu-ray structure, skipping FFprobe.");
                         return ItemUpdateType.MetadataImport;
@@ -138,7 +135,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     mediaInfoResult = await GetMediaInfo(
                         new Video
                         {
-                            Path = m2ts[0]
+                            Path = blurayDiscInfo.Files[0]
                         },
                         cancellationToken).ConfigureAwait(false);
                 }
@@ -324,20 +321,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 return;
             }
 
-            // Use BD Info if it has multiple m2ts. Otherwise, treat it like a video file and rely more on ffprobe output
-            int? currentHeight = null;
-            int? currentWidth = null;
-            int? currentBitRate = null;
-
-            var videoStream = mediaStreams.FirstOrDefault(s => s.Type == MediaStreamType.Video);
-
-            // Grab the values that ffprobe recorded
-            if (videoStream is not null)
-            {
-                currentBitRate = videoStream.BitRate;
-                currentWidth = videoStream.Width;
-                currentHeight = videoStream.Height;
-            }
+            var ffmpegVideoStream = mediaStreams.FirstOrDefault(s => s.Type == MediaStreamType.Video);
 
             // Fill video properties from the BDInfo result
             mediaStreams.Clear();
@@ -361,14 +345,20 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            videoStream = mediaStreams.FirstOrDefault(s => s.Type == MediaStreamType.Video);
+            var blurayVideoStream = mediaStreams.FirstOrDefault(s => s.Type == MediaStreamType.Video);
 
             // Use the ffprobe values if these are empty
-            if (videoStream is not null)
+            if (blurayVideoStream is not null && ffmpegVideoStream is not null)
             {
-                videoStream.BitRate = videoStream.BitRate.GetValueOrDefault() == 0 ? currentBitRate : videoStream.BitRate;
-                videoStream.Width = videoStream.Width.GetValueOrDefault() == 0 ? currentWidth : videoStream.Width;
-                videoStream.Height = videoStream.Height.GetValueOrDefault() == 0 ? currentHeight : videoStream.Height;
+                // Always use ffmpeg's detected codec since that is what the rest of the codebase expects.
+                blurayVideoStream.Codec = ffmpegVideoStream.Codec;
+                blurayVideoStream.BitRate = blurayVideoStream.BitRate.GetValueOrDefault() == 0 ? ffmpegVideoStream.BitRate : blurayVideoStream.BitRate;
+                blurayVideoStream.Width = blurayVideoStream.Width.GetValueOrDefault() == 0 ? ffmpegVideoStream.Width : blurayVideoStream.Width;
+                blurayVideoStream.Height = blurayVideoStream.Height.GetValueOrDefault() == 0 ? ffmpegVideoStream.Width : blurayVideoStream.Height;
+                blurayVideoStream.ColorRange = ffmpegVideoStream.ColorRange;
+                blurayVideoStream.ColorSpace = ffmpegVideoStream.ColorSpace;
+                blurayVideoStream.ColorTransfer = ffmpegVideoStream.ColorTransfer;
+                blurayVideoStream.ColorPrimaries = ffmpegVideoStream.ColorPrimaries;
             }
         }
 

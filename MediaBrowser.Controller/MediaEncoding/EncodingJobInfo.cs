@@ -508,6 +508,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
         }
 
+        public bool EnableAudioVbrEncoding => BaseRequest.EnableAudioVbrEncoding;
+
         public int HlsListSize => 0;
 
         public bool EnableBreakOnNonKeyFrames(string videoCodec)
@@ -613,6 +615,26 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (!string.IsNullOrEmpty(rangetype))
                 {
                     return rangetype.Split(new[] { '|', ',' }, StringSplitOptions.RemoveEmptyEntries);
+                }
+            }
+
+            return Array.Empty<string>();
+        }
+
+        public string[] GetRequestedCodecTags(string codec)
+        {
+            if (!string.IsNullOrEmpty(BaseRequest.CodecTag))
+            {
+                return BaseRequest.CodecTag.Split(new[] { '|', ',' }, StringSplitOptions.RemoveEmptyEntries);
+            }
+
+            if (!string.IsNullOrEmpty(codec))
+            {
+                var codectag = BaseRequest.GetOption(codec, "codectag");
+
+                if (!string.IsNullOrEmpty(codectag))
+                {
+                    return codectag.Split(new[] { '|', ',' }, StringSplitOptions.RemoveEmptyEntries);
                 }
             }
 

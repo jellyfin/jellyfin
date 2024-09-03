@@ -11,6 +11,7 @@ using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
 using Jellyfin.Data.Events.Users;
+using Jellyfin.Extensions;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -58,6 +59,8 @@ namespace Jellyfin.Server.Implementations.Users
         /// <param name="imageProcessor">The image processor.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="serverConfigurationManager">The system config manager.</param>
+        /// <param name="passwordResetProviders">The password reset providers.</param>
+        /// <param name="authenticationProviders">The authentication providers.</param>
         public UserManager(
             IDbContextFactory<JellyfinDbContext> dbProvider,
             IEventManager eventManager,
@@ -65,7 +68,9 @@ namespace Jellyfin.Server.Implementations.Users
             IApplicationHost appHost,
             IImageProcessor imageProcessor,
             ILogger<UserManager> logger,
-            IServerConfigurationManager serverConfigurationManager)
+            IServerConfigurationManager serverConfigurationManager,
+            IEnumerable<IPasswordResetProvider> passwordResetProviders,
+            IEnumerable<IAuthenticationProvider> authenticationProviders)
         {
             _dbProvider = dbProvider;
             _eventManager = eventManager;
@@ -75,8 +80,8 @@ namespace Jellyfin.Server.Implementations.Users
             _logger = logger;
             _serverConfigurationManager = serverConfigurationManager;
 
-            _passwordResetProviders = appHost.GetExports<IPasswordResetProvider>();
-            _authenticationProviders = appHost.GetExports<IAuthenticationProvider>();
+            _passwordResetProviders = passwordResetProviders.ToList();
+            _authenticationProviders = authenticationProviders.ToList();
 
             _invalidAuthProvider = _authenticationProviders.OfType<InvalidAuthProvider>().First();
             _defaultAuthenticationProvider = _authenticationProviders.OfType<DefaultAuthenticationProvider>().First();
@@ -114,7 +119,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public User? GetUserById(Guid id)
         {
-            if (id.Equals(default))
+            if (id.IsEmpty())
             {
                 throw new ArgumentException("Guid can't be empty", nameof(id));
             }
@@ -685,6 +690,7 @@ namespace Jellyfin.Server.Implementations.Users
                 user.SetPermission(PermissionKind.EnablePlaybackRemuxing, policy.EnablePlaybackRemuxing);
                 user.SetPermission(PermissionKind.EnableCollectionManagement, policy.EnableCollectionManagement);
                 user.SetPermission(PermissionKind.EnableSubtitleManagement, policy.EnableSubtitleManagement);
+                user.SetPermission(PermissionKind.EnableLyricManagement, policy.EnableLyricManagement);
                 user.SetPermission(PermissionKind.ForceRemoteSourceTranscoding, policy.ForceRemoteSourceTranscoding);
                 user.SetPermission(PermissionKind.EnablePublicSharing, policy.EnablePublicSharing);
 

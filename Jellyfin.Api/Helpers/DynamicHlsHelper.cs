@@ -151,6 +151,14 @@ public class DynamicHlsHelper
 
         var queryString = _httpContextAccessor.HttpContext.Request.QueryString.ToString();
 
+        // from universal audio service, need to override the AudioCodec when the actual request differs from original query
+        if (!string.Equals(state.OutputAudioCodec, _httpContextAccessor.HttpContext.Request.Query["AudioCodec"].ToString(), StringComparison.OrdinalIgnoreCase))
+        {
+            var newQuery = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(_httpContextAccessor.HttpContext.Request.QueryString.ToString());
+            newQuery["AudioCodec"] = state.OutputAudioCodec;
+            queryString = Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString(string.Empty, newQuery);
+        }
+
         // from universal audio service
         if (!string.IsNullOrWhiteSpace(state.Request.SegmentContainer)
             && !queryString.Contains("SegmentContainer", StringComparison.OrdinalIgnoreCase))
@@ -190,6 +198,17 @@ public class DynamicHlsHelper
             AddSubtitles(state, subtitleStreams, builder, _httpContextAccessor.HttpContext.User);
         }
 
+        // Video rotation metadata is only supported in fMP4 remuxing
+        if (state.VideoStream is not null
+            && state.VideoRequest is not null
+            && (state.VideoStream?.Rotation ?? 0) != 0
+            && EncodingHelper.IsCopyCodec(state.OutputVideoCodec)
+            && !string.IsNullOrWhiteSpace(state.Request.SegmentContainer)
+            && !string.Equals(state.Request.SegmentContainer, "mp4", StringComparison.OrdinalIgnoreCase))
+        {
+            playlistUrl += "&AllowVideoStreamCopy=false";
+        }
+
         var basicPlaylist = AppendPlaylist(builder, state, playlistUrl, totalBitrate, subtitleGroup);
 
         if (state.VideoStream is not null && state.VideoRequest is not null)
@@ -211,19 +230,8 @@ public class DynamicHlsHelper
                     var sdrVideoUrl = ReplaceProfile(playlistUrl, "hevc", string.Join(',', requestedVideoProfiles), "main");
                     sdrVideoUrl += "&AllowVideoStreamCopy=false";
 
-                    var sdrOutputVideoBitrate = _encodingHelper.GetVideoBitrateParamValue(state.VideoRequest, state.VideoStream, state.OutputVideoCodec);
-                    var sdrOutputAudioBitrate = 0;
-                    if (EncodingHelper.LosslessAudioCodecs.Contains(state.VideoRequest.AudioCodec, StringComparison.OrdinalIgnoreCase))
-                    {
-                        sdrOutputAudioBitrate = state.AudioStream.BitRate ?? 0;
-                    }
-                    else
-                    {
-                        sdrOutputAudioBitrate = _encodingHelper.GetAudioBitrateParam(state.VideoRequest, state.AudioStream, state.OutputAudioChannels) ?? 0;
-                    }
-
-                    var sdrTotalBitrate = sdrOutputAudioBitrate + sdrOutputVideoBitrate;
-                    AppendPlaylist(builder, state, sdrVideoUrl, sdrTotalBitrate, subtitleGroup);
+                    // HACK: Use the same bitrate so that the client can choose by other attributes, such as color range.
+                    AppendPlaylist(builder, state, sdrVideoUrl, totalBitrate, subtitleGroup);
 
                     // Restore the video codec
                     state.OutputVideoCodec = "copy";
@@ -325,6 +333,7 @@ public class DynamicHlsHelper
         if (state.VideoStream is not null && state.VideoStream.VideoRange != VideoRange.Unknown)
         {
             var videoRange = state.VideoStream.VideoRange;
+            var videoRangeType = state.VideoStream.VideoRangeType;
             if (EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
             {
                 if (videoRange == VideoRange.SDR)
@@ -334,7 +343,14 @@ public class DynamicHlsHelper
 
                 if (videoRange == VideoRange.HDR)
                 {
-                    builder.Append(",VIDEO-RANGE=PQ");
+                    if (videoRangeType == VideoRangeType.HLG)
+                    {
+                        builder.Append(",VIDEO-RANGE=HLG");
+                    }
+                    else
+                    {
+                        builder.Append(",VIDEO-RANGE=PQ");
+                    }
                 }
             }
             else
@@ -715,6 +731,21 @@ public class DynamicHlsHelper
             }
 
             return HlsCodecStringHelpers.GetAv1String(profile, level, false, bitDepth);
+        }
+
+        // VP9 HLS is for video remuxing only, everything is probed from the original video
+        if (string.Equals(codec, "vp9", StringComparison.OrdinalIgnoreCase))
+        {
+            var width = state.VideoStream.Width ?? 0;
+            var height = state.VideoStream.Height ?? 0;
+            var framerate = state.VideoStream.AverageFrameRate ?? 30;
+            var bitDepth = state.VideoStream.BitDepth ?? 8;
+            return HlsCodecStringHelpers.GetVp9String(
+                width,
+                height,
+                state.VideoStream.PixelFormat,
+                framerate,
+                bitDepth);
         }
 
         return string.Empty;

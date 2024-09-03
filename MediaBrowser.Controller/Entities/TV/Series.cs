@@ -28,15 +28,11 @@ namespace MediaBrowser.Controller.Entities.TV
         public Series()
         {
             AirDays = Array.Empty<DayOfWeek>();
-            SeasonNames = new Dictionary<int, string>();
         }
 
         public DayOfWeek[] AirDays { get; set; }
 
         public string AirTime { get; set; }
-
-        [JsonIgnore]
-        public Dictionary<int, string> SeasonNames { get; set; }
 
         [JsonIgnore]
         public override bool SupportsAddingToPlaylist => true;
@@ -72,9 +68,6 @@ namespace MediaBrowser.Controller.Entities.TV
         /// </summary>
         /// <value>The status.</value>
         public SeriesStatus? Status { get; set; }
-
-        [JsonIgnore]
-        public override bool StopRefreshIfLocalMetadataFound => false;
 
         public override double GetDefaultPrimaryImageAspectRatio()
         {
@@ -257,7 +250,7 @@ namespace MediaBrowser.Controller.Entities.TV
             return LibraryManager.GetItemsResult(query);
         }
 
-        public IEnumerable<BaseItem> GetEpisodes(User user, DtoOptions options)
+        public IEnumerable<BaseItem> GetEpisodes(User user, DtoOptions options, bool shouldIncludeMissingEpisodes)
         {
             var seriesKey = GetUniqueSeriesKey(this);
 
@@ -267,10 +260,10 @@ namespace MediaBrowser.Controller.Entities.TV
                 SeriesPresentationUniqueKey = seriesKey,
                 IncludeItemTypes = new[] { BaseItemKind.Episode, BaseItemKind.Season },
                 OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) },
-                DtoOptions = options
+                DtoOptions = options,
             };
 
-            if (user is null || !user.DisplayMissingEpisodes)
+            if (!shouldIncludeMissingEpisodes)
             {
                 query.IsMissing = false;
             }
@@ -280,7 +273,7 @@ namespace MediaBrowser.Controller.Entities.TV
             var allSeriesEpisodes = allItems.OfType<Episode>().ToList();
 
             var allEpisodes = allItems.OfType<Season>()
-                .SelectMany(i => i.GetEpisodes(this, user, allSeriesEpisodes, options))
+                .SelectMany(i => i.GetEpisodes(this, user, allSeriesEpisodes, options, shouldIncludeMissingEpisodes))
                 .Reverse();
 
             // Specials could appear twice based on above - once in season 0, once in the aired season
@@ -292,8 +285,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public async Task RefreshAllMetadata(MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
         {
-            // Refresh bottom up, children first, then the boxset
-            // By then hopefully the  movies within will have Tmdb collection values
+            // Refresh bottom up, seasons and episodes first, then the series
             var items = GetRecursiveChildren();
 
             var totalItems = items.Count;
@@ -356,7 +348,7 @@ namespace MediaBrowser.Controller.Entities.TV
             await ProviderManager.RefreshSingleItem(this, refreshOptions, cancellationToken).ConfigureAwait(false);
         }
 
-        public List<BaseItem> GetSeasonEpisodes(Season parentSeason, User user, DtoOptions options)
+        public List<BaseItem> GetSeasonEpisodes(Season parentSeason, User user, DtoOptions options, bool shouldIncludeMissingEpisodes)
         {
             var queryFromSeries = ConfigurationManager.Configuration.DisplaySpecialsWithinSeasons;
 
@@ -373,24 +365,22 @@ namespace MediaBrowser.Controller.Entities.TV
                 OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) },
                 DtoOptions = options
             };
-            if (user is not null)
+
+            if (!shouldIncludeMissingEpisodes)
             {
-                if (!user.DisplayMissingEpisodes)
-                {
-                    query.IsMissing = false;
-                }
+                query.IsMissing = false;
             }
 
             var allItems = LibraryManager.GetItemList(query);
 
-            return GetSeasonEpisodes(parentSeason, user, allItems, options);
+            return GetSeasonEpisodes(parentSeason, user, allItems, options, shouldIncludeMissingEpisodes);
         }
 
-        public List<BaseItem> GetSeasonEpisodes(Season parentSeason, User user, IEnumerable<BaseItem> allSeriesEpisodes, DtoOptions options)
+        public List<BaseItem> GetSeasonEpisodes(Season parentSeason, User user, IEnumerable<BaseItem> allSeriesEpisodes, DtoOptions options, bool shouldIncludeMissingEpisodes)
         {
             if (allSeriesEpisodes is null)
             {
-                return GetSeasonEpisodes(parentSeason, user, options);
+                return GetSeasonEpisodes(parentSeason, user, options, shouldIncludeMissingEpisodes);
             }
 
             var episodes = FilterEpisodesBySeason(allSeriesEpisodes, parentSeason, ConfigurationManager.Configuration.DisplaySpecialsWithinSeasons);
@@ -498,23 +488,6 @@ namespace MediaBrowser.Controller.Entities.TV
             }
 
             return hasChanges;
-        }
-
-        public override List<ExternalUrl> GetRelatedUrls()
-        {
-            var list = base.GetRelatedUrls();
-
-            var imdbId = this.GetProviderId(MetadataProvider.Imdb);
-            if (!string.IsNullOrEmpty(imdbId))
-            {
-                list.Add(new ExternalUrl
-                {
-                    Name = "Trakt",
-                    Url = string.Format(CultureInfo.InvariantCulture, "https://trakt.tv/shows/{0}", imdbId)
-                });
-            }
-
-            return list;
         }
     }
 }
