@@ -430,8 +430,6 @@ namespace MediaBrowser.Controller.Entities
             InternalItemsQuery query,
             ILibraryManager libraryManager)
         {
-            var user = query.User;
-
             // This must be the last filter
             if (!query.AdjacentTo.IsNullOrEmpty())
             {
