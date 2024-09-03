@@ -3491,13 +3491,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
 
                 mainFilters.Add(tonemapArgs);
-
-                // convert back to nv12 for VAAPI encoders
-                // Q: Is this still being used?
-                if (requireDoviReshaping && isVaapiEncoder)
-                {
-                    mainFilters.Add("format=" + outFormat);
-                }
             }
             else
             {
