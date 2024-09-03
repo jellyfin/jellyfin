@@ -19,14 +19,12 @@ namespace Emby.Server.Implementations.TV
 {
     public class TVSeriesManager : ITVSeriesManager
     {
-        private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataManager;
         private readonly ILibraryManager _libraryManager;
         private readonly IServerConfigurationManager _configurationManager;
 
-        public TVSeriesManager(IUserManager userManager, IUserDataManager userDataManager, ILibraryManager libraryManager, IServerConfigurationManager configurationManager)
+        public TVSeriesManager(IUserDataManager userDataManager, ILibraryManager libraryManager, IServerConfigurationManager configurationManager)
         {
-            _userManager = userManager;
             _userDataManager = userDataManager;
             _libraryManager = libraryManager;
             _configurationManager = configurationManager;
@@ -34,12 +32,7 @@ namespace Emby.Server.Implementations.TV
 
         public QueryResult<BaseItem> GetNextUp(NextUpQuery query, DtoOptions options)
         {
-            var user = _userManager.GetUserById(query.UserId);
-
-            if (user is null)
-            {
-                throw new ArgumentException("User not found");
-            }
+            var user = query.User;
 
             string? presentationUniqueKey = null;
             if (!query.SeriesId.IsNullOrEmpty())
@@ -83,15 +76,10 @@ namespace Emby.Server.Implementations.TV
 
         public QueryResult<BaseItem> GetNextUp(NextUpQuery request, BaseItem[] parentsFolders, DtoOptions options)
         {
-            var user = _userManager.GetUserById(request.UserId);
-
-            if (user is null)
-            {
-                throw new ArgumentException("User not found");
-            }
+            var user = request.User;
 
             string? presentationUniqueKey = null;
-            int? limit = request.Limit;
+            int? limit = null;
             if (!request.SeriesId.IsNullOrEmpty())
             {
                 if (_libraryManager.GetItemById(request.SeriesId.Value) is Series series)

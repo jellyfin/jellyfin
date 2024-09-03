@@ -223,14 +223,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// Sets the path to find FFmpeg.
         /// </summary>
-        void SetFFmpegPath();
-
-        /// <summary>
-        /// Updates the encoder path.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="pathType">The type of path.</param>
-        void UpdateEncoderPath(string path, string pathType);
+        /// <returns>bool indicates whether a valid ffmpeg is found.</returns>
+        bool SetFFmpegPath();
 
         /// <summary>
         /// Gets the primary playlist of .vob files.
