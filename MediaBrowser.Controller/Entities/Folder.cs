@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Security;
@@ -721,6 +722,7 @@ namespace MediaBrowser.Controller.Entities
                 IEnumerable<BaseItem> items;
                 Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
 
+                var externalSearchEnumerators = BaseItemSearchProviders.Select(e => e.Search(this, query));
                 if (query.User is null)
                 {
                     items = GetRecursiveChildren(filter);
@@ -730,7 +732,16 @@ namespace MediaBrowser.Controller.Entities
                     items = GetRecursiveChildren(user, query);
                 }
 
-                return PostFilterAndSort(items, query, true);
+                var externalSearchResult = new HashSet<BaseItem>(BaseItemSearchEquallityComparer.Instance);
+                foreach (var enumerator in externalSearchEnumerators)
+                {
+                    foreach (var item in enumerator.ToBlockingEnumerable())
+                    {
+                        externalSearchResult.Add(item);
+                    }
+                }
+
+                return PostFilterAndSort(items, query, externalSearchResult, true);
             }
 
             if (this is not UserRootFolder
@@ -973,7 +984,7 @@ namespace MediaBrowser.Controller.Entities
                 return QueryRecursive(query);
             }
 
-            var enumerators = BaseItemSearchProviders.Select(e => e.Search(this, query));
+            var externalSearchEnumerators = BaseItemSearchProviders.Select(e => e.Search(this, query));
             var user = query.User;
 
             Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
@@ -995,21 +1006,23 @@ namespace MediaBrowser.Controller.Entities
                 items = GetChildren(user, true, childQuery).Where(filter);
             }
 
-            foreach (var enumerator in enumerators)
+            var externalSearchResult = new HashSet<BaseItem>(BaseItemSearchEquallityComparer.Instance);
+            foreach (var enumerator in externalSearchEnumerators)
             {
-                var externalSearchResult = new List<BaseItem>();
                 foreach (var item in enumerator.ToBlockingEnumerable())
                 {
                     externalSearchResult.Add(item);
                 }
-
-                items = items.Concat(externalSearchResult).DistinctBy(e => e.Id);
             }
 
-            return PostFilterAndSort(items, query, true);
+            return PostFilterAndSort(items, query, externalSearchResult, true);
         }
 
-        protected QueryResult<BaseItem> PostFilterAndSort(IEnumerable<BaseItem> items, InternalItemsQuery query, bool enableSorting)
+        protected QueryResult<BaseItem> PostFilterAndSort(
+            IEnumerable<BaseItem> items,
+            InternalItemsQuery query,
+            HashSet<BaseItem> externalSearchResult,
+            bool enableSorting)
         {
             var user = query.User;
 
@@ -1042,6 +1055,7 @@ namespace MediaBrowser.Controller.Entities
                 items = UserViewBuilder.FilterForAdjacency(items.ToList(), query.AdjacentTo.Value);
             }
 
+            items = items.Concat(externalSearchResult).Distinct(BaseItemSearchEquallityComparer.Instance);
             return UserViewBuilder.SortAndPage(items, null, query, LibraryManager, enableSorting);
         }
 
@@ -1783,6 +1797,26 @@ namespace MediaBrowser.Controller.Entities
                 {
                     dto.Played = (dto.UnplayedItemCount ?? 0) == 0;
                 }
+            }
+        }
+
+        private class BaseItemSearchEquallityComparer : IEqualityComparer<BaseItem>
+        {
+            private static IEqualityComparer<BaseItem> _instance;
+
+            public static IEqualityComparer<BaseItem> Instance
+            {
+                get { return _instance ??= new BaseItemSearchEquallityComparer(); }
+            }
+
+            public bool Equals(BaseItem x, BaseItem y)
+            {
+                return x == y || (x.Id.Equals(Guid.Empty) && x.Id.Equals(y.Id));
+            }
+
+            public int GetHashCode([DisallowNull] BaseItem obj)
+            {
+                return obj.Id.GetHashCode();
             }
         }
 
