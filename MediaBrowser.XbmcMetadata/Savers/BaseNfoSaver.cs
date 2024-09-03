@@ -67,6 +67,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             "id",
             "credits",
             "originaltitle",
+            "originallanguage",
             "watched",
             "playcount",
             "lastplayed",
@@ -482,6 +483,11 @@ namespace MediaBrowser.XbmcMetadata.Savers
             if (!string.IsNullOrWhiteSpace(item.OriginalTitle))
             {
                 writer.WriteElementString("originaltitle", item.OriginalTitle);
+            }
+
+            if (!string.IsNullOrWhiteSpace(item.OriginalLanguage))
+            {
+                writer.WriteElementString("originallanguage", item.OriginalLanguage);
             }
 
             var people = libraryManager.GetPeople(item);
