@@ -943,6 +943,11 @@ namespace MediaBrowser.Providers.Manager
                 target.OriginalTitle = source.OriginalTitle;
             }
 
+            if (replaceData || string.IsNullOrEmpty(target.OriginalLanguage))
+            {
+                target.OriginalLanguage = source.OriginalLanguage;
+            }
+
             if (replaceData || !target.CommunityRating.HasValue)
             {
                 target.CommunityRating = source.CommunityRating;

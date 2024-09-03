@@ -49,8 +49,8 @@ namespace Emby.Server.Implementations.Data
 
         private const string SaveItemCommandText =
             @"replace into TypedBaseItems
-            (guid,type,data,Path,StartDate,EndDate,ChannelId,IsMovie,IsSeries,EpisodeTitle,IsRepeat,CommunityRating,CustomRating,IndexNumber,IsLocked,Name,OfficialRating,MediaType,Overview,ParentIndexNumber,PremiereDate,ProductionYear,ParentId,Genres,InheritedParentalRatingValue,SortName,ForcedSortName,RunTimeTicks,Size,DateCreated,DateModified,PreferredMetadataLanguage,PreferredMetadataCountryCode,Width,Height,DateLastRefreshed,DateLastSaved,IsInMixedFolder,LockedFields,Studios,Audio,ExternalServiceId,Tags,IsFolder,UnratedType,TopParentId,TrailerTypes,CriticRating,CleanName,PresentationUniqueKey,OriginalTitle,PrimaryVersionId,DateLastMediaAdded,Album,LUFS,NormalizationGain,IsVirtualItem,SeriesName,UserDataKey,SeasonName,SeasonId,SeriesId,ExternalSeriesId,Tagline,ProviderIds,Images,ProductionLocations,ExtraIds,TotalBitrate,ExtraType,Artists,AlbumArtists,ExternalId,SeriesPresentationUniqueKey,ShowId,OwnerId)
-            values (@guid,@type,@data,@Path,@StartDate,@EndDate,@ChannelId,@IsMovie,@IsSeries,@EpisodeTitle,@IsRepeat,@CommunityRating,@CustomRating,@IndexNumber,@IsLocked,@Name,@OfficialRating,@MediaType,@Overview,@ParentIndexNumber,@PremiereDate,@ProductionYear,@ParentId,@Genres,@InheritedParentalRatingValue,@SortName,@ForcedSortName,@RunTimeTicks,@Size,@DateCreated,@DateModified,@PreferredMetadataLanguage,@PreferredMetadataCountryCode,@Width,@Height,@DateLastRefreshed,@DateLastSaved,@IsInMixedFolder,@LockedFields,@Studios,@Audio,@ExternalServiceId,@Tags,@IsFolder,@UnratedType,@TopParentId,@TrailerTypes,@CriticRating,@CleanName,@PresentationUniqueKey,@OriginalTitle,@PrimaryVersionId,@DateLastMediaAdded,@Album,@LUFS,@NormalizationGain,@IsVirtualItem,@SeriesName,@UserDataKey,@SeasonName,@SeasonId,@SeriesId,@ExternalSeriesId,@Tagline,@ProviderIds,@Images,@ProductionLocations,@ExtraIds,@TotalBitrate,@ExtraType,@Artists,@AlbumArtists,@ExternalId,@SeriesPresentationUniqueKey,@ShowId,@OwnerId)";
+            (guid,type,data,Path,StartDate,EndDate,ChannelId,IsMovie,IsSeries,EpisodeTitle,IsRepeat,CommunityRating,CustomRating,IndexNumber,IsLocked,Name,OfficialRating,MediaType,Overview,ParentIndexNumber,PremiereDate,ProductionYear,ParentId,Genres,InheritedParentalRatingValue,SortName,ForcedSortName,RunTimeTicks,Size,DateCreated,DateModified,PreferredMetadataLanguage,PreferredMetadataCountryCode,Width,Height,DateLastRefreshed,DateLastSaved,IsInMixedFolder,LockedFields,Studios,Audio,ExternalServiceId,Tags,IsFolder,UnratedType,TopParentId,TrailerTypes,CriticRating,CleanName,PresentationUniqueKey,OriginalTitle,OriginalLanguage,PrimaryVersionId,DateLastMediaAdded,Album,LUFS,NormalizationGain,IsVirtualItem,SeriesName,UserDataKey,SeasonName,SeasonId,SeriesId,ExternalSeriesId,Tagline,ProviderIds,Images,ProductionLocations,ExtraIds,TotalBitrate,ExtraType,Artists,AlbumArtists,ExternalId,SeriesPresentationUniqueKey,ShowId,OwnerId)
+            values (@guid,@type,@data,@Path,@StartDate,@EndDate,@ChannelId,@IsMovie,@IsSeries,@EpisodeTitle,@IsRepeat,@CommunityRating,@CustomRating,@IndexNumber,@IsLocked,@Name,@OfficialRating,@MediaType,@Overview,@ParentIndexNumber,@PremiereDate,@ProductionYear,@ParentId,@Genres,@InheritedParentalRatingValue,@SortName,@ForcedSortName,@RunTimeTicks,@Size,@DateCreated,@DateModified,@PreferredMetadataLanguage,@PreferredMetadataCountryCode,@Width,@Height,@DateLastRefreshed,@DateLastSaved,@IsInMixedFolder,@LockedFields,@Studios,@Audio,@ExternalServiceId,@Tags,@IsFolder,@UnratedType,@TopParentId,@TrailerTypes,@CriticRating,@CleanName,@PresentationUniqueKey,@OriginalTitle,@OriginalLanguage,@PrimaryVersionId,@DateLastMediaAdded,@Album,@LUFS,@NormalizationGain,@IsVirtualItem,@SeriesName,@UserDataKey,@SeasonName,@SeasonId,@SeriesId,@ExternalSeriesId,@Tagline,@ProviderIds,@Images,@ProductionLocations,@ExtraIds,@TotalBitrate,@ExtraType,@Artists,@AlbumArtists,@ExternalId,@SeriesPresentationUniqueKey,@ShowId,@OwnerId)";
 
         private readonly IServerConfigurationManager _config;
         private readonly IServerApplicationHost _appHost;
@@ -107,6 +107,7 @@ namespace Emby.Server.Implementations.Data
             "Tags",
             "TrailerTypes",
             "OriginalTitle",
+            "OriginalLanguage",
             "PrimaryVersionId",
             "DateLastMediaAdded",
             "Album",
@@ -475,6 +476,7 @@ namespace Emby.Server.Implementations.Data
                 AddColumn(connection, "TypedBaseItems", "CleanName", "Text", existingColumnNames);
                 AddColumn(connection, "TypedBaseItems", "PresentationUniqueKey", "Text", existingColumnNames);
                 AddColumn(connection, "TypedBaseItems", "OriginalTitle", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "OriginalLanguage", "Text", existingColumnNames);
                 AddColumn(connection, "TypedBaseItems", "PrimaryVersionId", "Text", existingColumnNames);
                 AddColumn(connection, "TypedBaseItems", "DateLastMediaAdded", "DATETIME", existingColumnNames);
                 AddColumn(connection, "TypedBaseItems", "Album", "Text", existingColumnNames);
@@ -869,6 +871,7 @@ namespace Emby.Server.Implementations.Data
 
             saveItemStatement.TryBind("@PresentationUniqueKey", item.PresentationUniqueKey);
             saveItemStatement.TryBind("@OriginalTitle", item.OriginalTitle);
+            saveItemStatement.TryBind("@OriginalLanguage", item.OriginalLanguage);
 
             if (item is Video video)
             {
@@ -1647,6 +1650,14 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
+            if (HasField(query, ItemFields.OriginalLanguage))
+            {
+                if (reader.TryGetString(index++, out var originalLanguage))
+                {
+                    item.OriginalLanguage = originalLanguage;
+                }
+            }
+
             if (item is Video video)
             {
                 if (reader.TryGetString(index, out var primaryVersionId))
@@ -2062,6 +2073,7 @@ namespace Emby.Server.Implementations.Data
                 case ItemFields.ProductionLocations:
                 case ItemFields.Settings:
                 case ItemFields.OriginalTitle:
+                case ItemFields.OriginalLanguage:
                 case ItemFields.Taglines:
                 case ItemFields.SortName:
                 case ItemFields.Studios:
