@@ -124,8 +124,9 @@ jobs:
             <!--abi-diff-workflow-comment-->
             <details>
             <summary>ABI Difference</summary>
-
+            ```
             ${{ steps.diff.outputs.body }}
+            ```
 
             </details>
 
