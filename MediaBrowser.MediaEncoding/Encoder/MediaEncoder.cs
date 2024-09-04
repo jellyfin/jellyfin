@@ -87,6 +87,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             "VK_EXT_image_drm_format_modifier",
         };
+
         private static string[] _vulkanExternalMemoryDmaBufExts =
         {
             "VK_KHR_external_memory_fd",
