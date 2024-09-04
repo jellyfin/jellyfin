@@ -5136,13 +5136,15 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return (null, null, null);
             }
 
+            // ReSharper disable once InconsistentNaming
             var isMacOS = OperatingSystem.IsMacOS();
             var vidDecoder = GetHardwareVideoDecoder(state, options) ?? string.Empty;
+            var isVtDecoder = vidDecoder.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase);
             var isVtEncoder = vidEncoder.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase);
             var isVtFullSupported = isMacOS && IsVideoToolboxFullSupported();
 
             // legacy videotoolbox pipeline (disable hw filters)
-            if (!isVtEncoder
+            if (!(isVtEncoder || isVtDecoder)
                 || !isVtFullSupported
                 || !_mediaEncoder.SupportsFilter("alphasrc"))
             {
@@ -5161,12 +5163,6 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             var isVtEncoder = vidEncoder.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase);
             var isVtDecoder = vidDecoder.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase);
-
-            if (!isVtEncoder)
-            {
-                // should not happen.
-                return (null, null, null);
-            }
 
             var inW = state.VideoStream?.Width;
             var inH = state.VideoStream?.Height;
@@ -5282,6 +5278,12 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (usingHwSurface)
             {
+                if (!isVtEncoder)
+                {
+                    mainFilters.Add("hwdownload");
+                    mainFilters.Add("format=nv12");
+                }
+
                 return (mainFilters, subFilters, overlayFilters);
             }
 
@@ -5295,6 +5297,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // this will pass-through automatically if in/out format matches.
                 mainFilters.Insert(0, "hwupload");
                 mainFilters.Insert(0, "format=nv12|p010le|videotoolbox_vld");
+
+                if (!isVtEncoder)
+                {
+                    mainFilters.Add("hwdownload");
+                    mainFilters.Add("format=nv12");
+                }
             }
 
             return (mainFilters, subFilters, overlayFilters);
