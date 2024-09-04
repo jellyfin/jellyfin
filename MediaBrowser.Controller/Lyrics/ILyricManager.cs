@@ -116,10 +116,4 @@ public interface ILyricManager
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The parsed lyric model.</returns>
     Task<LyricDto?> GetLyricsAsync(Audio audio, CancellationToken cancellationToken);
-
-    /// <summary>
-    /// Fake call to test ABI compat.
-    /// </summary>
-    /// <returns>a number.</returns>
-    Task<int> FakeCall();
 }

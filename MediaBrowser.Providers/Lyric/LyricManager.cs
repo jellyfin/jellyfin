@@ -289,12 +289,6 @@ public class LyricManager : ILyricManager
         return null;
     }
 
-    /// <inheritdoc />
-    public Task<int> FakeCall()
-    {
-        throw new NotImplementedException();
-    }
-
     private ILyricProvider? GetProvider(string providerId)
     {
         var provider = _lyricProviders.FirstOrDefault(p => string.Equals(providerId, GetProviderId(p.Name), StringComparison.Ordinal));
