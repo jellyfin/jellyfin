@@ -13,7 +13,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Triggers
         private readonly TimeSpan _timeOfDay;
         private readonly DayOfWeek _dayOfWeek;
         private Timer? _timer;
-        private bool _disposed = false;
+        private bool _disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WeeklyTrigger"/> class.
@@ -28,23 +28,13 @@ namespace Emby.Server.Implementations.ScheduledTasks.Triggers
             TaskOptions = taskOptions;
         }
 
-        /// <summary>
-        /// Occurs when [triggered].
-        /// </summary>
+        /// <inheritdoc />
         public event EventHandler<EventArgs>? Triggered;
 
-        /// <summary>
-        /// Gets the options of this task.
-        /// </summary>
+        /// <inheritdoc />
         public TaskOptions TaskOptions { get; }
 
-        /// <summary>
-        /// Stars waiting for the trigger action.
-        /// </summary>
-        /// <param name="lastResult">The last result.</param>
-        /// <param name="logger">The logger.</param>
-        /// <param name="taskName">The name of the task.</param>
-        /// <param name="isApplicationStartup">if set to <c>true</c> [is application startup].</param>
+        /// <inheritdoc />
         public void Start(TaskResult? lastResult, ILogger logger, string taskName, bool isApplicationStartup)
         {
             DisposeTimer();
@@ -81,9 +71,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Triggers
             return triggerDate.Add(_timeOfDay);
         }
 
-        /// <summary>
-        /// Stops waiting for the trigger action.
-        /// </summary>
+        /// <inheritdoc />
         public void Stop()
         {
             DisposeTimer();
