@@ -24,7 +24,7 @@ public class MediaSegmentExtractionTask : IScheduledTask
     private readonly ILibraryManager _libraryManager;
     private readonly ILocalizationManager _localization;
     private readonly IMediaSegmentManager _mediaSegmentManager;
-    private static readonly BaseItemKind[] _itemTypes = { BaseItemKind.Episode, BaseItemKind.Movie, BaseItemKind.Audio, BaseItemKind.AudioBook, };
+    private static readonly BaseItemKind[] _itemTypes = [BaseItemKind.Episode, BaseItemKind.Movie, BaseItemKind.Audio, BaseItemKind.AudioBook];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MediaSegmentExtractionTask" /> class.
