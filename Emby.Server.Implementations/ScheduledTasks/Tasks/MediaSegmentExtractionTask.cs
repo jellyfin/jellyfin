@@ -80,18 +80,18 @@ public class MediaSegmentExtractionTask : IScheduledTask
         {
             query.StartIndex = startIndex;
 
-            var videos = _libraryManager.GetItemList(query);
-            var currentPageCount = videos.Count;
+            var baseItems = _libraryManager.GetItemList(query);
+            var currentPageCount = baseItems.Count;
             // TODO parallelize with Parallel.ForEach?
             for (var i = 0; i < currentPageCount; i++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var video = videos[i];
+                var item = baseItems[i];
                 // Only local files supported
-                if (video.IsFileProtocol && File.Exists(video.Path))
+                if (item.IsFileProtocol && File.Exists(item.Path))
                 {
-                    await _mediaSegmentManager.RunSegmentPluginProviders(video, false, cancellationToken).ConfigureAwait(false);
+                    await _mediaSegmentManager.RunSegmentPluginProviders(item, false, cancellationToken).ConfigureAwait(false);
                 }
 
                 // Update progress
