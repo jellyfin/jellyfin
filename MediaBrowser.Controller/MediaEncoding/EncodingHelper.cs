@@ -67,6 +67,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         private readonly Version _minFFmpegWorkingVtHwSurface = new Version(7, 0, 1);
         private readonly Version _minFFmpegDisplayRotationOption = new Version(6, 0);
         private readonly Version _minFFmpegAdvancedTonemapMode = new Version(7, 0, 1);
+        private readonly Version _minFFmpegAlteredVaVkInterop = new Version(7, 0, 1);
 
         private static readonly Regex _validationRegex = new(ValidationRegex, RegexOptions.Compiled);
 
@@ -3367,15 +3368,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     algorithm = "clip";
                 }
 
-                tonemapArg = ":tonemapping=" + algorithm;
-
-                if (string.Equals(mode, "max", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(mode, "rgb", StringComparison.OrdinalIgnoreCase))
-                {
-                    tonemapArg += ":tonemapping_mode=" + mode;
-                }
-
-                tonemapArg += ":peak_detect=0:color_primaries=bt709:color_trc=bt709:colorspace=bt709";
+                tonemapArg = ":tonemapping=" + algorithm + ":peak_detect=0:color_primaries=bt709:color_trc=bt709:colorspace=bt709";
 
                 if (string.Equals(range, "tv", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(range, "pc", StringComparison.OrdinalIgnoreCase))
@@ -4804,8 +4797,34 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (doVkTranspose || doVkTonemap || hasSubs)
                 {
                     // map from vaapi to vulkan/drm via interop (Polaris/gfx8+).
-                    mainFilters.Add("hwmap=derive_device=vulkan");
-                    mainFilters.Add("format=vulkan");
+                    if (_mediaEncoder.EncoderVersion >= _minFFmpegAlteredVaVkInterop)
+                    {
+                        if (doVkTranspose || !_mediaEncoder.IsVaapiDeviceSupportVulkanDrmModifier)
+                        {
+                            // disable the indirect va-drm-vk mapping since it's no longer reliable.
+                            mainFilters.Add("hwmap=derive_device=drm");
+                            mainFilters.Add("format=drm_prime");
+                            mainFilters.Add("hwmap=derive_device=vulkan");
+                            mainFilters.Add("format=vulkan");
+
+                            // workaround for libplacebo using the imported vulkan frame on gfx8.
+                            if (!_mediaEncoder.IsVaapiDeviceSupportVulkanDrmModifier)
+                            {
+                                mainFilters.Add("scale_vulkan");
+                            }
+                        }
+                        else if (doVkTonemap || hasSubs)
+                        {
+                            // non ad-hoc libplacebo also accepts drm_prime direct input.
+                            mainFilters.Add("hwmap=derive_device=drm");
+                            mainFilters.Add("format=drm_prime");
+                        }
+                    }
+                    else // legacy va-vk mapping that works only in jellyfin-ffmpeg6
+                    {
+                        mainFilters.Add("hwmap=derive_device=vulkan");
+                        mainFilters.Add("format=vulkan");
+                    }
                 }
                 else
                 {
@@ -4840,6 +4859,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 var libplaceboFilter = GetLibplaceboFilter(options, "bgra", doVkTonemap, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
                 mainFilters.Add(libplaceboFilter);
+                mainFilters.Add("format=vulkan");
             }
 
             if (doVkTonemap && !hasSubs)
