@@ -119,7 +119,6 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           edit-mode: replace
-          token: ${{ secrets.JF_BOT_TOKEN }}
           body: |
             <!--abi-diff-workflow-comment-->
             <details>
@@ -138,7 +137,6 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           edit-mode: replace
-          token: ${{ secrets.JF_BOT_TOKEN }}
           body: |
             <!--abi-diff-workflow-comment-->
             <details>
