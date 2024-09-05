@@ -98,6 +98,7 @@ public class TrickplayController : BaseJellyfinApiController
             var withMediaPath = await _trickplayManager.GetTrickplayTilePathAsync(item, width, index, saveWithMedia).ConfigureAwait(false);
             if (!string.IsNullOrEmpty(withMediaPath) && System.IO.File.Exists(withMediaPath))
             {
+                Response.Headers.ContentDisposition = "attachment";
                 return PhysicalFile(withMediaPath, MediaTypeNames.Image.Jpeg);
             }
         }

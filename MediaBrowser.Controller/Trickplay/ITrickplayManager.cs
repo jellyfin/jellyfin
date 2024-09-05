@@ -34,7 +34,7 @@ public interface ITrickplayManager
     /// <remarks>
     /// The output directory will be DELETED and replaced if it already exists.
     /// </remarks>
-    TrickplayInfo CreateTiles(List<string> images, int width, TrickplayOptions options, string outputDir);
+    TrickplayInfo CreateTiles(IReadOnlyList<string> images, int width, TrickplayOptions options, string outputDir);
 
     /// <summary>
     /// Get available trickplay resolutions and corresponding info.
@@ -46,8 +46,8 @@ public interface ITrickplayManager
     /// <summary>
     /// Gets the item ids of all items with trickplay info.
     /// </summary>
-    /// <returns>Map of width resolutions to trickplay tiles info.</returns>
-    Task<List<Guid>> GetTrickplayItemsAsync();
+    /// <returns>The list of item ids that have trickplay info.</returns>
+    public Task<IReadOnlyList<Guid>> GetTrickplayItemsAsync();
 
     /// <summary>
     /// Saves trickplay info.

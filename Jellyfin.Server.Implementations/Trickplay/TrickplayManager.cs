@@ -323,7 +323,7 @@ public class TrickplayManager : ITrickplayManager
     }
 
     /// <inheritdoc />
-    public TrickplayInfo CreateTiles(List<string> images, int width, TrickplayOptions options, string outputDir)
+    public TrickplayInfo CreateTiles(IReadOnlyList<string> images, int width, TrickplayOptions options, string outputDir)
     {
         if (images.Count == 0)
         {
@@ -363,7 +363,7 @@ public class TrickplayManager : ITrickplayManager
             var tilePath = Path.Combine(workDir, $"{i}.jpg");
 
             imageOptions.OutputPath = tilePath;
-            imageOptions.InputPaths = images.GetRange(i * thumbnailsPerTile, Math.Min(thumbnailsPerTile, images.Count - (i * thumbnailsPerTile)));
+            imageOptions.InputPaths = images.Skip(i * thumbnailsPerTile).Take(Math.Min(thumbnailsPerTile, images.Count - (i * thumbnailsPerTile))).ToList();
 
             // Generate image and use returned height for tiles info
             var height = _imageEncoder.CreateTrickplayTile(imageOptions, options.JpegQuality, trickplayInfo.Width, trickplayInfo.Height != 0 ? trickplayInfo.Height : null);
@@ -455,7 +455,7 @@ public class TrickplayManager : ITrickplayManager
     }
 
     /// <inheritdoc />
-    public async Task<List<Guid>> GetTrickplayItemsAsync()
+    public async Task<IReadOnlyList<Guid>> GetTrickplayItemsAsync()
     {
         List<Guid> trickplayItems;
 
@@ -596,12 +596,9 @@ public class TrickplayManager : ITrickplayManager
     /// <inheritdoc />
     public string GetTrickplayDirectory(BaseItem item, int tileWidth, int tileHeight, int width, bool saveWithMedia = false)
     {
-        var path = Path.Combine(item.GetInternalMetadataPath(), "trickplay");
-        if (saveWithMedia)
-        {
-            var itemName = Path.GetFileNameWithoutExtension(item.Path);
-            path = Path.Combine(item.ContainingFolderPath, itemName + ".trickplay");
-        }
+        var path = saveWithMedia
+            ? Path.Combine(item.ContainingFolderPath, Path.ChangeExtension(item.Path, ".trickplay"))
+            : Path.Combine(item.GetInternalMetadataPath(), "trickplay");
 
         var subdirectory = string.Format(
             CultureInfo.InvariantCulture,
@@ -615,8 +612,6 @@ public class TrickplayManager : ITrickplayManager
 
     private async Task<bool> HasTrickplayResolutionAsync(Guid itemId, int width)
     {
-        var trickplayResolutions = new Dictionary<int, TrickplayInfo>();
-
         var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
         await using (dbContext.ConfigureAwait(false))
         {
