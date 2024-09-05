@@ -68,6 +68,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         private readonly Version _minFFmpegDisplayRotationOption = new Version(6, 0);
         private readonly Version _minFFmpegAdvancedTonemapMode = new Version(7, 0, 1);
         private readonly Version _minFFmpegAlteredVaVkInterop = new Version(7, 0, 1);
+        private readonly Version _minFFmpegQsvVppTonemapOption = new Version(7, 0, 1);
 
         private static readonly Regex _validationRegex = new(ValidationRegex, RegexOptions.Compiled);
 
@@ -348,7 +349,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                    && GetVideoColorBitDepth(state) == 10;
         }
 
-        private bool IsVaapiVppTonemapAvailable(EncodingJobInfo state, EncodingOptions options)
+        private bool IsIntelVppTonemapAvailable(EncodingJobInfo state, EncodingOptions options)
         {
             if (state.VideoStream is null
                 || !options.EnableVppTonemapping
@@ -357,7 +358,14 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return false;
             }
 
-            // Native VPP tonemapping may come to QSV in the future.
+            // prefer 'tonemap_vaapi' over 'vpp_qsv' on Linux for supporting Gen9/KBLx.
+            // 'vpp_qsv' requires VPL, which is only supported on Gen12/TGLx and newer.
+            if (OperatingSystem.IsWindows()
+                && string.Equals(options.HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase)
+                && _mediaEncoder.EncoderVersion < _minFFmpegQsvVppTonemapOption)
+            {
+                return false;
+            }
 
             return state.VideoStream.VideoRange == VideoRange.HDR
                    && (state.VideoStream.VideoRangeType == VideoRangeType.HDR10
@@ -1662,7 +1670,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         var doOclTonemap = _mediaEncoder.SupportsHwaccel("qsv")
                             && IsVaapiSupported(state)
                             && IsOpenclFullSupported()
-                            && !IsVaapiVppTonemapAvailable(state, encodingOptions)
+                            && !IsIntelVppTonemapAvailable(state, encodingOptions)
                             && IsHwTonemapAvailable(state, encodingOptions);
 
                         enableWaFori915Hang = isIntelDecoder && doOclTonemap;
@@ -3281,14 +3289,31 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (string.Equals(hwTonemapSuffix, "vaapi", StringComparison.OrdinalIgnoreCase))
             {
-                args = "procamp_vaapi=b={1}:c={2},tonemap_vaapi=format={0}:p=bt709:t=bt709:m=bt709:extra_hw_frames=32";
+                var doVaVppProcamp = false;
+                var procampParams = string.Empty;
+                if (options.VppTonemappingBrightness != 0
+                    && options.VppTonemappingBrightness >= -100
+                    && options.VppTonemappingBrightness <= 100)
+                {
+                    procampParams += $"=b={options.VppTonemappingBrightness}";
+                    doVaVppProcamp = true;
+                }
+
+                if (options.VppTonemappingContrast > 1
+                    && options.VppTonemappingContrast <= 10)
+                {
+                    procampParams += doVaVppProcamp ? ":" : "=";
+                    procampParams += $"c={options.VppTonemappingContrast}";
+                    doVaVppProcamp = true;
+                }
+
+                args = "{0}tonemap_vaapi=format={1}:p=bt709:t=bt709:m=bt709:extra_hw_frames=32";
 
                 return string.Format(
                         CultureInfo.InvariantCulture,
                         args,
-                        videoFormat ?? "nv12",
-                        options.VppTonemappingBrightness,
-                        options.VppTonemappingContrast);
+                        doVaVppProcamp ? $"procamp_vaapi{procampParams}," : string.Empty,
+                        videoFormat ?? "nv12");
             }
             else
             {
@@ -4012,7 +4037,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             var doDeintH264 = state.DeInterlace("h264", true) || state.DeInterlace("avc", true);
             var doDeintHevc = state.DeInterlace("h265", true) || state.DeInterlace("hevc", true);
             var doDeintH2645 = doDeintH264 || doDeintHevc;
-            var doOclTonemap = IsHwTonemapAvailable(state, options);
+            var doVppTonemap = IsIntelVppTonemapAvailable(state, options);
+            var doOclTonemap = !doVppTonemap && IsHwTonemapAvailable(state, options);
+            var doTonemap = doVppTonemap || doOclTonemap;
 
             var hasSubs = state.SubtitleStream is not null && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
             var hasTextSubs = hasSubs && state.SubtitleStream.IsTextSubtitleStream;
@@ -4031,7 +4058,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             /* Make main filters for video stream */
             var mainFilters = new List<string>();
 
-            mainFilters.Add(GetOverwriteColorPropertiesParam(state, doOclTonemap));
+            mainFilters.Add(GetOverwriteColorPropertiesParam(state, doTonemap));
 
             if (isSwDecoder)
             {
@@ -4059,14 +4086,43 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
             else if (isD3d11vaDecoder || isQsvDecoder)
             {
+                var doVppProcamp = false;
+                var procampParams = string.Empty;
+                if (doVppTonemap)
+                {
+                    if (options.VppTonemappingBrightness != 0
+                        && options.VppTonemappingBrightness >= -100
+                        && options.VppTonemappingBrightness <= 100)
+                    {
+                        procampParams += $":brightness={options.VppTonemappingBrightness}";
+                        doVppProcamp = true;
+                    }
+
+                    if (options.VppTonemappingContrast > 1
+                        && options.VppTonemappingContrast <= 10)
+                    {
+                        procampParams += $":contrast={options.VppTonemappingContrast}";
+                        doVppProcamp = true;
+                    }
+
+                    procampParams += doVppProcamp ? ":procamp=1:async_depth=2" : string.Empty;
+                }
+
                 var outFormat = doOclTonemap ? (doVppTranspose ? "p010" : string.Empty) : "nv12";
+                outFormat = (doVppTonemap && doVppProcamp) ? "p010" : outFormat;
+
                 var swapOutputWandH = doVppTranspose && swapWAndH;
-                var hwScalePrefix = doVppTranspose ? "vpp" : "scale";
+                var hwScalePrefix = (doVppTranspose || doVppTonemap) ? "vpp" : "scale";
                 var hwScaleFilter = GetHwScaleFilter(hwScalePrefix, "qsv", outFormat, swapOutputWandH, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
 
                 if (!string.IsNullOrEmpty(hwScaleFilter) && doVppTranspose)
                 {
                     hwScaleFilter += $":transpose={tranposeDir}";
+                }
+
+                if (!string.IsNullOrEmpty(hwScaleFilter) && doVppTonemap)
+                {
+                    hwScaleFilter += doVppProcamp ? procampParams : ":tonemap=1";
                 }
 
                 if (isD3d11vaDecoder)
@@ -4086,8 +4142,20 @@ namespace MediaBrowser.Controller.MediaEncoding
                     mainFilters.Add(deintFilter);
                 }
 
-                // hw transpose & scale
+                // hw transpose & scale & tonemap(w/o procamp)
                 mainFilters.Add(hwScaleFilter);
+
+                // hw tonemap(w/ procamp)
+                if (doVppTonemap && doVppProcamp)
+                {
+                    mainFilters.Add("vpp_qsv=tonemap=1:format=nv12:async_depth=2");
+                }
+
+                // force bt709 just in case vpp tonemap is not triggered or using MSDK instead of VPL.
+                if (doVppTonemap)
+                {
+                    mainFilters.Add(GetOverwriteColorPropertiesParam(state, false));
+                }
             }
 
             if (doOclTonemap && isHwDecoder)
@@ -4220,7 +4288,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var doDeintH264 = state.DeInterlace("h264", true) || state.DeInterlace("avc", true);
             var doDeintHevc = state.DeInterlace("h265", true) || state.DeInterlace("hevc", true);
-            var doVaVppTonemap = IsVaapiVppTonemapAvailable(state, options);
+            var doVaVppTonemap = IsIntelVppTonemapAvailable(state, options);
             var doOclTonemap = !doVaVppTonemap && IsHwTonemapAvailable(state, options);
             var doTonemap = doVaVppTonemap || doOclTonemap;
             var doDeintH2645 = doDeintH264 || doDeintHevc;
@@ -4531,7 +4599,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var doDeintH264 = state.DeInterlace("h264", true) || state.DeInterlace("avc", true);
             var doDeintHevc = state.DeInterlace("h265", true) || state.DeInterlace("hevc", true);
-            var doVaVppTonemap = isVaapiDecoder && IsVaapiVppTonemapAvailable(state, options);
+            var doVaVppTonemap = isVaapiDecoder && IsIntelVppTonemapAvailable(state, options);
             var doOclTonemap = !doVaVppTonemap && IsHwTonemapAvailable(state, options);
             var doTonemap = doVaVppTonemap || doOclTonemap;
             var doDeintH2645 = doDeintH264 || doDeintHevc;
