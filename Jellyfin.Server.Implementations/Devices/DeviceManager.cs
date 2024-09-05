@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Jellyfin.Data.Dtos;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Entities.Security;
 using Jellyfin.Data.Enums;
@@ -13,6 +14,7 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Devices;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
 using Microsoft.EntityFrameworkCore;
@@ -68,7 +70,7 @@ namespace Jellyfin.Server.Implementations.Devices
         }
 
         /// <inheritdoc />
-        public async Task UpdateDeviceOptions(string deviceId, string deviceName)
+        public async Task UpdateDeviceOptions(string deviceId, string? deviceName)
         {
             DeviceOptions? deviceOptions;
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
@@ -105,29 +107,37 @@ namespace Jellyfin.Server.Implementations.Devices
         }
 
         /// <inheritdoc />
-        public DeviceOptions GetDeviceOptions(string deviceId)
+        public DeviceOptionsDto? GetDeviceOptions(string deviceId)
         {
-            _deviceOptions.TryGetValue(deviceId, out var deviceOptions);
+            if (_deviceOptions.TryGetValue(deviceId, out var deviceOptions))
+            {
+                return ToDeviceOptionsDto(deviceOptions);
+            }
 
-            return deviceOptions ?? new DeviceOptions(deviceId);
+            return null;
         }
 
         /// <inheritdoc />
-        public ClientCapabilities GetCapabilities(string deviceId)
+        public ClientCapabilities GetCapabilities(string? deviceId)
         {
+            if (deviceId is null)
+            {
+                return new();
+            }
+
             return _capabilitiesMap.TryGetValue(deviceId, out ClientCapabilities? result)
                 ? result
-                : new ClientCapabilities();
+                : new();
         }
 
         /// <inheritdoc />
-        public DeviceInfo? GetDevice(string id)
+        public DeviceInfoDto? GetDevice(string id)
         {
             var device = _devices.Values.Where(d => d.DeviceId == id).OrderByDescending(d => d.DateLastActivity).FirstOrDefault();
             _deviceOptions.TryGetValue(id, out var deviceOption);
 
             var deviceInfo = device is null ? null : ToDeviceInfo(device, deviceOption);
-            return deviceInfo;
+            return deviceInfo is null ? null : ToDeviceInfoDto(deviceInfo);
         }
 
         /// <inheritdoc />
@@ -166,7 +176,7 @@ namespace Jellyfin.Server.Implementations.Devices
         }
 
         /// <inheritdoc />
-        public QueryResult<DeviceInfo> GetDevicesForUser(Guid? userId)
+        public QueryResult<DeviceInfoDto> GetDevicesForUser(Guid? userId)
         {
             IEnumerable<Device> devices = _devices.Values
                 .OrderByDescending(d => d.DateLastActivity)
@@ -187,9 +197,11 @@ namespace Jellyfin.Server.Implementations.Devices
                 {
                     _deviceOptions.TryGetValue(device.DeviceId, out var option);
                     return ToDeviceInfo(device, option);
-                }).ToArray();
+                })
+                .Select(ToDeviceInfoDto)
+                .ToArray();
 
-            return new QueryResult<DeviceInfo>(array);
+            return new QueryResult<DeviceInfoDto>(array);
         }
 
         /// <inheritdoc />
@@ -235,13 +247,9 @@ namespace Jellyfin.Server.Implementations.Devices
         private DeviceInfo ToDeviceInfo(Device authInfo, DeviceOptions? options = null)
         {
             var caps = GetCapabilities(authInfo.DeviceId);
-            var user = _userManager.GetUserById(authInfo.UserId);
-            if (user is null)
-            {
-                throw new ResourceNotFoundException("User with UserId " + authInfo.UserId + " not found");
-            }
+            var user = _userManager.GetUserById(authInfo.UserId) ?? throw new ResourceNotFoundException("User with UserId " + authInfo.UserId + " not found");
 
-            return new DeviceInfo
+            return new()
             {
                 AppName = authInfo.AppName,
                 AppVersion = authInfo.AppVersion,
@@ -252,6 +260,49 @@ namespace Jellyfin.Server.Implementations.Devices
                 DateLastActivity = authInfo.DateLastActivity,
                 IconUrl = caps.IconUrl,
                 CustomName = options?.CustomName,
+            };
+        }
+
+        private DeviceOptionsDto ToDeviceOptionsDto(DeviceOptions options)
+        {
+            return new()
+            {
+                Id = options.Id,
+                DeviceId = options.DeviceId,
+                CustomName = options.CustomName,
+            };
+        }
+
+        private DeviceInfoDto ToDeviceInfoDto(DeviceInfo info)
+        {
+            return new()
+            {
+                Name = info.Name,
+                CustomName = info.CustomName,
+                AccessToken = info.AccessToken,
+                Id = info.Id,
+                LastUserName = info.LastUserName,
+                AppName = info.AppName,
+                AppVersion = info.AppVersion,
+                LastUserId = info.LastUserId,
+                DateLastActivity = info.DateLastActivity,
+                Capabilities = ToClientCapabilitiesDto(info.Capabilities),
+                IconUrl = info.IconUrl
+            };
+        }
+
+        /// <inheritdoc />
+        public ClientCapabilitiesDto ToClientCapabilitiesDto(ClientCapabilities capabilities)
+        {
+            return new()
+            {
+                PlayableMediaTypes = capabilities.PlayableMediaTypes,
+                SupportedCommands = capabilities.SupportedCommands,
+                SupportsMediaControl = capabilities.SupportsMediaControl,
+                SupportsPersistentIdentifier = capabilities.SupportsPersistentIdentifier,
+                DeviceProfile = capabilities.DeviceProfile,
+                AppStoreUrl = capabilities.AppStoreUrl,
+                IconUrl = capabilities.IconUrl
             };
         }
     }

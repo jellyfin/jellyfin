@@ -41,7 +41,7 @@ namespace Jellyfin.Extensions.Tests.Json.Converters
         {
             var desiredValue = new GenericBodyArrayModel<string>
             {
-                Value = new[] { "a", "b", "c" }
+                Value = ["a", "b", "c"]
             };
 
             var value = JsonSerializer.Deserialize<GenericBodyArrayModel<string>>(@"{ ""Value"": ""a,b,c"" }", _jsonOptions);
@@ -53,7 +53,7 @@ namespace Jellyfin.Extensions.Tests.Json.Converters
         {
             var desiredValue = new GenericBodyArrayModel<string>
             {
-                Value = new[] { "a", "b", "c" }
+                Value = ["a", "b", "c"]
             };
 
             var value = JsonSerializer.Deserialize<GenericBodyArrayModel<string>>(@"{ ""Value"": ""a, b, c"" }", _jsonOptions);
@@ -65,7 +65,7 @@ namespace Jellyfin.Extensions.Tests.Json.Converters
         {
             var desiredValue = new GenericBodyArrayModel<GeneralCommandType>
             {
-                Value = new[] { GeneralCommandType.MoveUp, GeneralCommandType.MoveDown }
+                Value = [GeneralCommandType.MoveUp, GeneralCommandType.MoveDown]
             };
 
             var value = JsonSerializer.Deserialize<GenericBodyArrayModel<GeneralCommandType>>(@"{ ""Value"": ""MoveUp,MoveDown"" }", _jsonOptions);
@@ -77,7 +77,7 @@ namespace Jellyfin.Extensions.Tests.Json.Converters
         {
             var desiredValue = new GenericBodyArrayModel<GeneralCommandType>
             {
-                Value = new[] { GeneralCommandType.MoveUp, GeneralCommandType.MoveDown }
+                Value = [GeneralCommandType.MoveUp, GeneralCommandType.MoveDown]
             };
 
             var value = JsonSerializer.Deserialize<GenericBodyArrayModel<GeneralCommandType>>(@"{ ""Value"": ""MoveUp,,MoveDown"" }", _jsonOptions);
@@ -89,7 +89,7 @@ namespace Jellyfin.Extensions.Tests.Json.Converters
         {
             var desiredValue = new GenericBodyArrayModel<GeneralCommandType>
             {
-                Value = new[] { GeneralCommandType.MoveUp, GeneralCommandType.MoveDown }
+                Value = [GeneralCommandType.MoveUp, GeneralCommandType.MoveDown]
             };
 
             var value = JsonSerializer.Deserialize<GenericBodyArrayModel<GeneralCommandType>>(@"{ ""Value"": ""MoveUp,TotallyNotAVallidCommand,MoveDown"" }", _jsonOptions);
@@ -101,7 +101,7 @@ namespace Jellyfin.Extensions.Tests.Json.Converters
         {
             var desiredValue = new GenericBodyArrayModel<GeneralCommandType>
             {
-                Value = new[] { GeneralCommandType.MoveUp, GeneralCommandType.MoveDown }
+                Value = [GeneralCommandType.MoveUp, GeneralCommandType.MoveDown]
             };
 
             var value = JsonSerializer.Deserialize<GenericBodyArrayModel<GeneralCommandType>>(@"{ ""Value"": ""MoveUp, MoveDown"" }", _jsonOptions);
@@ -113,7 +113,7 @@ namespace Jellyfin.Extensions.Tests.Json.Converters
         {
             var desiredValue = new GenericBodyArrayModel<string>
             {
-                Value = new[] { "a", "b", "c" }
+                Value = ["a", "b", "c"]
             };
 
             var value = JsonSerializer.Deserialize<GenericBodyArrayModel<string>>(@"{ ""Value"": [""a"",""b"",""c""] }", _jsonOptions);
@@ -125,7 +125,7 @@ namespace Jellyfin.Extensions.Tests.Json.Converters
         {
             var desiredValue = new GenericBodyArrayModel<GeneralCommandType>
             {
-                Value = new[] { GeneralCommandType.MoveUp, GeneralCommandType.MoveDown }
+                Value = [GeneralCommandType.MoveUp, GeneralCommandType.MoveDown]
             };
 
             var value = JsonSerializer.Deserialize<GenericBodyArrayModel<GeneralCommandType>>(@"{ ""Value"": [""MoveUp"", ""MoveDown""] }", _jsonOptions);

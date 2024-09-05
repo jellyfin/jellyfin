@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -35,38 +37,27 @@ namespace Jellyfin.Extensions.Json.Converters
                 var stringEntries = reader.GetString()!.Split(Delimiter, StringSplitOptions.RemoveEmptyEntries);
                 if (stringEntries.Length == 0)
                 {
-                    return Array.Empty<T>();
+                    return [];
                 }
 
-                var parsedValues = new object[stringEntries.Length];
-                var convertedCount = 0;
+                var typedValues = new List<T>();
                 for (var i = 0; i < stringEntries.Length; i++)
                 {
                     try
                     {
-                        parsedValues[i] = _typeConverter.ConvertFromInvariantString(stringEntries[i].Trim()) ?? throw new FormatException();
-                        convertedCount++;
+                        var parsedValue = _typeConverter.ConvertFromInvariantString(stringEntries[i].Trim());
+                        if (parsedValue is not null)
+                        {
+                            typedValues.Add((T)parsedValue);
+                        }
                     }
                     catch (FormatException)
                     {
-                        // TODO log when upgraded to .Net6
-                        // https://github.com/dotnet/runtime/issues/42975
-                        // _logger.LogDebug(e, "Error converting value.");
+                        // Ignore unconvertable inputs
                     }
                 }
 
-                var typedValues = new T[convertedCount];
-                var typedValueIndex = 0;
-                for (var i = 0; i < stringEntries.Length; i++)
-                {
-                    if (parsedValues[i] is not null)
-                    {
-                        typedValues.SetValue(parsedValues[i], typedValueIndex);
-                        typedValueIndex++;
-                    }
-                }
-
-                return typedValues;
+                return [.. typedValues];
             }
 
             return JsonSerializer.Deserialize<T[]>(ref reader, options);
@@ -75,7 +66,39 @@ namespace Jellyfin.Extensions.Json.Converters
         /// <inheritdoc />
         public override void Write(Utf8JsonWriter writer, T[]? value, JsonSerializerOptions options)
         {
-            throw new NotImplementedException();
+            if (value is not null)
+            {
+                writer.WriteStartArray();
+                if (value.Length > 0)
+                {
+                    var toWrite = value.Length - 1;
+                    foreach (var it in value)
+                    {
+                        var wrote = false;
+                        if (it is not null)
+                        {
+                            writer.WriteStringValue(it.ToString());
+                            wrote = true;
+                        }
+
+                        if (toWrite > 0)
+                        {
+                            if (wrote)
+                            {
+                                writer.WriteStringValue(Delimiter.ToString());
+                            }
+
+                            toWrite--;
+                        }
+                    }
+                }
+
+                writer.WriteEndArray();
+            }
+            else
+            {
+                writer.WriteNullValue();
+            }
         }
     }
 }

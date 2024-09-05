@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Jellyfin.Data.Entities.Security;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.SyncPlay;
 
@@ -291,6 +292,16 @@ namespace MediaBrowser.Controller.Session
         /// <param name="version">The version.</param>
         /// <returns>SessionInfo.</returns>
         SessionInfo GetSession(string deviceId, string client, string version);
+
+        /// <summary>
+        /// Gets all sessions available to a user.
+        /// </summary>
+        /// <param name="userId">The session identifier.</param>
+        /// <param name="deviceId">The device id.</param>
+        /// <param name="activeWithinSeconds">Active within session limit.</param>
+        /// <param name="controllableUserToCheck">Filter for sessions remote controllable for this user.</param>
+        /// <returns>IReadOnlyList{SessionInfoDto}.</returns>
+        IReadOnlyList<SessionInfoDto> GetSessions(Guid userId, string deviceId, int? activeWithinSeconds, Guid? controllableUserToCheck);
 
         /// <summary>
         /// Gets the session by authentication token.
