@@ -1,7 +1,5 @@
 #nullable disable
 
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -95,8 +93,12 @@ public class ScheduledTaskWorker : IScheduledTaskWorker
         InitTriggerEvents();
     }
 
+    /// <inheritdoc/>
     public event EventHandler<GenericEventArgs<double>> TaskProgress;
 
+    /// <summary>
+    /// Gets or sets the currently executed task.
+    /// </summary>
     protected Task CurrentTask { get; set; }
 
     /// <summary>
@@ -295,6 +297,7 @@ public class ScheduledTaskWorker : IScheduledTaskWorker
         ReloadTriggerEvents(true);
     }
 
+    /// <inheritdoc/>
     public void ReloadTriggerEvents()
     {
         ReloadTriggerEvents(false);
@@ -424,6 +427,12 @@ public class ScheduledTaskWorker : IScheduledTaskWorker
         OnTaskCompleted(startTime, endTime, status, failureException);
     }
 
+    /// <summary>
+    /// Runs the associated task.
+    /// </summary>
+    /// <param name="progress">The progress handler.</param>
+    /// <param name="cancellationTokenSource">The cancelation token.</param>
+    /// <returns>A task that gets resolved when the associated task finishes.</returns>
     protected virtual async Task ExecuteTask(Progress<double> progress, CancellationTokenSource cancellationTokenSource)
     {
         await ScheduledTask.ExecuteAsync(progress, cancellationTokenSource.Token).ConfigureAwait(false);

@@ -55,7 +55,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// Gets the list of Scheduled Tasks.
         /// </summary>
         /// <value>The scheduled tasks.</value>
-        public IReadOnlyCollection<IScheduledTaskWorker> ScheduledTasks { get; private set; }
+        public IReadOnlyList<IScheduledTaskWorker> ScheduledTasks { get; private set; }
 
         /// <summary>
         /// Cancels if running and queue.
@@ -196,7 +196,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// Adds the tasks.
         /// </summary>
         /// <param name="tasks">The tasks.</param>
-        public void AddTasks(IReadOnlyCollection<IScheduledTask> tasks)
+        public void AddTasks(IReadOnlyList<IScheduledTask> tasks)
         {
             var libraryManager = _serviceProvider.GetRequiredService<ILibraryManager>();
             var list = tasks.Except(tasks.OfType<IBaseItemScheduledTask>())
