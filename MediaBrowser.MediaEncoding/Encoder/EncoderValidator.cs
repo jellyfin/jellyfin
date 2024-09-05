@@ -110,6 +110,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // cuda
             "scale_cuda",
             "yadif_cuda",
+            "bwdif_cuda",
             "tonemap_cuda",
             "overlay_cuda",
             "transpose_cuda",
