@@ -269,14 +269,24 @@ public class SkiaEncoder : IImageEncoder
             }
 
             // create the bitmap
-            var bitmap = new SKBitmap(codec.Info.Width, codec.Info.Height, !requiresTransparencyHack);
+            SKBitmap? bitmap = null;
+            try
+            {
+                bitmap = new SKBitmap(codec.Info.Width, codec.Info.Height, !requiresTransparencyHack);
 
-            // decode
-            _ = codec.GetPixels(bitmap.Info, bitmap.GetPixels());
+                // decode
+                _ = codec.GetPixels(bitmap.Info, bitmap.GetPixels());
 
-            origin = codec.EncodedOrigin;
+                origin = codec.EncodedOrigin;
 
-            return bitmap;
+                return bitmap!;
+            }
+            catch
+            {
+                _logger.LogError("Told you there is an memory leak.");
+                bitmap?.Dispose();
+                throw;
+            }
         }
 
         var resultBitmap = SKBitmap.Decode(NormalizePath(path));
@@ -286,17 +296,26 @@ public class SkiaEncoder : IImageEncoder
             return Decode(path, true, orientation, out origin);
         }
 
-        // If we have to resize these they often end up distorted
-        if (resultBitmap.ColorType == SKColorType.Gray8)
+        try
         {
-            using (resultBitmap)
+             // If we have to resize these they often end up distorted
+            if (resultBitmap.ColorType == SKColorType.Gray8)
             {
-                return Decode(path, true, orientation, out origin);
+                using (resultBitmap)
+                {
+                    return Decode(path, true, orientation, out origin);
+                }
             }
-        }
 
-        origin = SKEncodedOrigin.TopLeft;
-        return resultBitmap;
+            origin = SKEncodedOrigin.TopLeft;
+            return resultBitmap;
+        }
+        catch
+        {
+            _logger.LogError("Told you there is an memory leak.");
+            resultBitmap?.Dispose();
+            throw;
+        }
     }
 
     private SKBitmap? GetBitmap(string path, bool autoOrient, ImageOrientation? orientation)
@@ -335,13 +354,23 @@ public class SkiaEncoder : IImageEncoder
         var width = (int)Math.Round(svg.Drawable.Bounds.Width);
         var height = (int)Math.Round(svg.Drawable.Bounds.Height);
 
-        var bitmap = new SKBitmap(width, height);
-        using var canvas = new SKCanvas(bitmap);
-        canvas.DrawPicture(svg.Picture);
-        canvas.Flush();
-        canvas.Save();
+        SKBitmap? bitmap = null;
+        try
+        {
+            bitmap = new SKBitmap(width, height);
+            using var canvas = new SKCanvas(bitmap);
+            canvas.DrawPicture(svg.Picture);
+            canvas.Flush();
+            canvas.Save();
 
-        return bitmap;
+            return bitmap!;
+        }
+        catch
+        {
+            _logger.LogError("Told you there is an memory leak.");
+            bitmap?.Dispose();
+            throw;
+        }
     }
 
     private SKBitmap OrientImage(SKBitmap bitmap, SKEncodedOrigin origin)
@@ -350,43 +379,52 @@ public class SkiaEncoder : IImageEncoder
         var rotated = needsFlip
             ? new SKBitmap(bitmap.Height, bitmap.Width)
             : new SKBitmap(bitmap.Width, bitmap.Height);
-        using var surface = new SKCanvas(rotated);
-        var midX = (float)rotated.Width / 2;
-        var midY = (float)rotated.Height / 2;
-
-        switch (origin)
+        try
         {
-            case SKEncodedOrigin.TopRight:
-                surface.Scale(-1, 1, midX, midY);
-                break;
-            case SKEncodedOrigin.BottomRight:
-                surface.RotateDegrees(180, midX, midY);
-                break;
-            case SKEncodedOrigin.BottomLeft:
-                surface.Scale(1, -1, midX, midY);
-                break;
-            case SKEncodedOrigin.LeftTop:
-                surface.Translate(0, -rotated.Height);
-                surface.Scale(1, -1, midX, midY);
-                surface.RotateDegrees(-90);
-                break;
-            case SKEncodedOrigin.RightTop:
-                surface.Translate(rotated.Width, 0);
-                surface.RotateDegrees(90);
-                break;
-            case SKEncodedOrigin.RightBottom:
-                surface.Translate(rotated.Width, 0);
-                surface.Scale(1, -1, midX, midY);
-                surface.RotateDegrees(90);
-                break;
-            case SKEncodedOrigin.LeftBottom:
-                surface.Translate(0, rotated.Height);
-                surface.RotateDegrees(-90);
-                break;
-        }
+            using var surface = new SKCanvas(rotated);
+            var midX = (float)rotated.Width / 2;
+            var midY = (float)rotated.Height / 2;
 
-        surface.DrawBitmap(bitmap, 0, 0);
-        return rotated;
+            switch (origin)
+            {
+                case SKEncodedOrigin.TopRight:
+                    surface.Scale(-1, 1, midX, midY);
+                    break;
+                case SKEncodedOrigin.BottomRight:
+                    surface.RotateDegrees(180, midX, midY);
+                    break;
+                case SKEncodedOrigin.BottomLeft:
+                    surface.Scale(1, -1, midX, midY);
+                    break;
+                case SKEncodedOrigin.LeftTop:
+                    surface.Translate(0, -rotated.Height);
+                    surface.Scale(1, -1, midX, midY);
+                    surface.RotateDegrees(-90);
+                    break;
+                case SKEncodedOrigin.RightTop:
+                    surface.Translate(rotated.Width, 0);
+                    surface.RotateDegrees(90);
+                    break;
+                case SKEncodedOrigin.RightBottom:
+                    surface.Translate(rotated.Width, 0);
+                    surface.Scale(1, -1, midX, midY);
+                    surface.RotateDegrees(90);
+                    break;
+                case SKEncodedOrigin.LeftBottom:
+                    surface.Translate(0, rotated.Height);
+                    surface.RotateDegrees(-90);
+                    break;
+            }
+
+            surface.DrawBitmap(bitmap, 0, 0);
+            return rotated;
+        }
+        catch
+        {
+            _logger.LogError("Told you there is an memory leak.");
+            rotated.Dispose();
+            throw;
+        }
     }
 
     /// <summary>
