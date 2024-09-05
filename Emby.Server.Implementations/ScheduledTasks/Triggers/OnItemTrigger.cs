@@ -18,6 +18,7 @@ public class OnItemTrigger : ITaskTrigger
     /// <inheritdoc/>
     public void Start(TaskResult? lastResult, ILogger logger, string taskName, bool isApplicationStartup)
     {
+        Triggered?.Invoke(this, EventArgs.Empty);
     }
 
     /// <inheritdoc/>

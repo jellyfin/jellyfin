@@ -17,7 +17,7 @@ namespace MediaBrowser.Model.Tasks
         /// Gets the list of Scheduled Tasks.
         /// </summary>
         /// <value>The scheduled tasks.</value>
-        IScheduledTaskWorker[] ScheduledTasks { get; }
+        IReadOnlyCollection<IScheduledTaskWorker> ScheduledTasks { get; }
 
         /// <summary>
         /// Cancels if running and queue.
@@ -70,7 +70,7 @@ namespace MediaBrowser.Model.Tasks
         /// Adds the tasks.
         /// </summary>
         /// <param name="tasks">The tasks.</param>
-        void AddTasks(IReadOnlyList<IScheduledTask> tasks);
+        void AddTasks(IReadOnlyCollection<IScheduledTask> tasks);
 
         void Cancel(IScheduledTaskWorker task);
 
