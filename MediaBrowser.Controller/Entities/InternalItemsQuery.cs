@@ -233,9 +233,9 @@ namespace MediaBrowser.Controller.Entities
 
         public int? IndexNumber { get; set; }
 
-        public int? MinParentalRating { get; set; }
+        public double? MinParentalRating { get; set; }
 
-        public int? MaxParentalRating { get; set; }
+        public double? MaxParentalRating { get; set; }
 
         public bool? HasDeadParentId { get; set; }
 

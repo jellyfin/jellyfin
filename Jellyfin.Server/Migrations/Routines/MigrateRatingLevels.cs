@@ -30,7 +30,7 @@ namespace Jellyfin.Server.Migrations.Routines
         }
 
         /// <inheritdoc/>
-        public Guid Id => Guid.Parse("{67445D54-B895-4B24-9F4C-35CE0690EA07}");
+        public Guid Id => Guid.Parse("{A4E4cEA6-04ED-4773-9200-5343CA223321}");
 
         /// <inheritdoc/>
         public string Name => "MigrateRatingLevels";
@@ -64,8 +64,12 @@ namespace Jellyfin.Server.Migrations.Routines
             }
 
             // Migrate parental rating strings to new levels
-            _logger.LogInformation("Recalculating parental rating levels based on rating string.");
             using var connection = new SqliteConnection($"Filename={dbPath}");
+            _logger.LogInformation("Dropping and re-creating InheritedParentalRatingValue column to change type.");
+            connection.Execute("ALTER TABLE TypedBaseItems DROP COLUMN InheritedParentalRatingValue;");
+            connection.Execute("ALTER TABLE TypedBaseItems ADD COLUMN InheritedParentalRatingValue FLOAT NULL;");
+
+            _logger.LogInformation("Populating InheritedParentalRatingValue column by re-processing rating strings.");
             connection.Open();
             using (var transaction = connection.BeginTransaction())
             {

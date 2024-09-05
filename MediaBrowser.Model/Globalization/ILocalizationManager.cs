@@ -31,8 +31,8 @@ namespace MediaBrowser.Model.Globalization
         /// </summary>
         /// <param name="rating">The rating.</param>
         /// <param name="countryCode">The optional two letter ISO language string.</param>
-        /// <returns><see cref="int" /> or <c>null</c>.</returns>
-        int? GetRatingLevel(string rating, string? countryCode = null);
+        /// <returns><see cref="double" /> or <c>null</c>.</returns>
+        double? GetRatingLevel(string rating, string? countryCode = null);
 
         /// <summary>
         /// Gets the localized string.

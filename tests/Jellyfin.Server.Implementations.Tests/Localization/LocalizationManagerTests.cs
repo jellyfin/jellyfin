@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Localization;
 using MediaBrowser.Controller.Configuration;
@@ -109,14 +108,14 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
         }
 
         [Theory]
-        [InlineData("CA-R", "CA", 18)]
-        [InlineData("FSK-16", "DE", 16)]
-        [InlineData("FSK-18", "DE", 18)]
-        [InlineData("FSK-18", "US", 18)]
-        [InlineData("TV-MA", "US", 17)]
-        [InlineData("XXX", "asdf", 1000)]
-        [InlineData("Germany: FSK-18", "DE", 18)]
-        public async Task GetRatingLevel_GivenValidString_Success(string value, string countryCode, int expectedLevel)
+        [InlineData("CA-R", "CA", 18.0)]
+        [InlineData("FSK-16", "DE", 16.0)]
+        [InlineData("FSK-18", "DE", 18.0)]
+        [InlineData("FSK-18", "US", 18.0)]
+        [InlineData("TV-MA", "US", 17.0)]
+        [InlineData("XXX", "asdf", 1000.0)]
+        [InlineData("Germany: FSK-18", "DE", 18.0)]
+        public async Task GetRatingLevel_GivenValidString_Success(string value, string countryCode, double expectedLevel)
         {
             var localizationManager = Setup(new ServerConfiguration()
             {
@@ -129,13 +128,13 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
         }
 
         [Theory]
-        [InlineData("0", 0)]
-        [InlineData("1", 1)]
-        [InlineData("6", 6)]
-        [InlineData("12", 12)]
-        [InlineData("42", 42)]
-        [InlineData("9999", 9999)]
-        public async Task GetRatingLevel_GivenValidAge_Success(string value, int expectedLevel)
+        [InlineData("0", 0.0)]
+        [InlineData("1", 1.0)]
+        [InlineData("6", 6.0)]
+        [InlineData("12", 12.0)]
+        [InlineData("42", 42.0)]
+        [InlineData("9999", 9999.0)]
+        public async Task GetRatingLevel_GivenValidAge_Success(string value, double expectedLevel)
         {
             var localizationManager = Setup(new ServerConfiguration { MetadataCountryCode = "nl" });
             await localizationManager.LoadAll();

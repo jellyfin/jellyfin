@@ -467,7 +467,7 @@ namespace Emby.Server.Implementations.Data
                 AddColumn(connection, "TypedBaseItems", "ExternalServiceId", "Text", existingColumnNames);
                 AddColumn(connection, "TypedBaseItems", "Tags", "Text", existingColumnNames);
                 AddColumn(connection, "TypedBaseItems", "IsFolder", "BIT", existingColumnNames);
-                AddColumn(connection, "TypedBaseItems", "InheritedParentalRatingValue", "INT", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "InheritedParentalRatingValue", "Float", existingColumnNames);
                 AddColumn(connection, "TypedBaseItems", "UnratedType", "Text", existingColumnNames);
                 AddColumn(connection, "TypedBaseItems", "TopParentId", "Text", existingColumnNames);
                 AddColumn(connection, "TypedBaseItems", "TrailerTypes", "Text", existingColumnNames);
@@ -1746,7 +1746,7 @@ namespace Emby.Server.Implementations.Data
 
             if (HasField(query, ItemFields.InheritedParentalRatingValue))
             {
-                if (reader.TryGetInt32(index++, out var parentalRating))
+                if (reader.TryGetDouble(index++, out var parentalRating))
                 {
                     item.InheritedParentalRatingValue = parentalRating;
                 }

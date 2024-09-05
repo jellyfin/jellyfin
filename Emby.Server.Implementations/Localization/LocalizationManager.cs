@@ -26,20 +26,18 @@ namespace Emby.Server.Implementations.Localization
         private const string CulturesPath = "Emby.Server.Implementations.Localization.iso6392.txt";
         private const string CountriesPath = "Emby.Server.Implementations.Localization.countries.json";
         private static readonly Assembly _assembly = typeof(LocalizationManager).Assembly;
-        private static readonly string[] _unratedValues = { "n/a", "unrated", "not rated", "nr" };
+        private static readonly string[] _unratedValues = ["n/a", "unrated", "not rated", "nr"];
 
         private readonly IServerConfigurationManager _configurationManager;
         private readonly ILogger<LocalizationManager> _logger;
 
-        private readonly Dictionary<string, Dictionary<string, ParentalRating>> _allParentalRatings =
-            new Dictionary<string, Dictionary<string, ParentalRating>>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, Dictionary<string, ParentalRating>> _allParentalRatings = new(StringComparer.OrdinalIgnoreCase);
 
-        private readonly ConcurrentDictionary<string, Dictionary<string, string>> _dictionaries =
-            new ConcurrentDictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, Dictionary<string, string>> _dictionaries = new(StringComparer.OrdinalIgnoreCase);
 
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
-        private List<CultureDto> _cultures = new List<CultureDto>();
+        private List<CultureDto> _cultures = [];
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LocalizationManager" /> class.
@@ -84,7 +82,7 @@ namespace Emby.Server.Implementations.Localization
 
                         string[] parts = line.Split(',');
                         if (parts.Length == 2
-                            && int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
+                            && double.TryParse(parts[1], NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var value))
                         {
                             var name = parts[0];
                             dict.Add(name, new ParentalRating(name, value));
@@ -111,7 +109,7 @@ namespace Emby.Server.Implementations.Localization
 
         private async Task LoadCultures()
         {
-            List<CultureDto> list = new List<CultureDto>();
+            List<CultureDto> list = [];
 
             await using var stream = _assembly.GetManifestResourceStream(CulturesPath)
                 ?? throw new InvalidOperationException($"Invalid resource path: '{CulturesPath}'");
@@ -142,11 +140,11 @@ namespace Emby.Server.Implementations.Localization
                     string[] threeletterNames;
                     if (string.IsNullOrWhiteSpace(parts[1]))
                     {
-                        threeletterNames = new[] { parts[0] };
+                        threeletterNames = [parts[0]];
                     }
                     else
                     {
-                        threeletterNames = new[] { parts[0], parts[1] };
+                        threeletterNames = [parts[0], parts[1]];
                     }
 
                     list.Add(new CultureDto(name, name, twoCharName, threeletterNames));
@@ -189,8 +187,7 @@ namespace Emby.Server.Implementations.Localization
         {
             // Use server default language for ratings
             // Fall back to empty list if there are no parental ratings for that language
-            var ratings = GetParentalRatingsDictionary()?.Values.ToList()
-                ?? new List<ParentalRating>();
+            var ratings = GetParentalRatingsDictionary()?.Values.ToList() ?? [];
 
             // Add common ratings to ensure them being available for selection
             // Based on the US rating system due to it being the main source of rating in the metadata providers
@@ -203,44 +200,44 @@ namespace Emby.Server.Implementations.Localization
             // Minimum rating possible
             if (ratings.All(x => x.Value != 0))
             {
-                ratings.Add(new ParentalRating("Approved", 0));
+                ratings.Add(new ParentalRating("Approved", 0.0));
             }
 
             // Matches PG (this has different age restrictions depending on country)
             if (ratings.All(x => x.Value != 10))
             {
-                ratings.Add(new ParentalRating("10", 10));
+                ratings.Add(new ParentalRating("10", 10.0));
             }
 
             // Matches PG-13
             if (ratings.All(x => x.Value != 13))
             {
-                ratings.Add(new ParentalRating("13", 13));
+                ratings.Add(new ParentalRating("13", 13.0));
             }
 
             // Matches TV-14
             if (ratings.All(x => x.Value != 14))
             {
-                ratings.Add(new ParentalRating("14", 14));
+                ratings.Add(new ParentalRating("14", 14.0));
             }
 
             // Catchall if max rating of country is less than 21
             // Using 21 instead of 18 to be sure to allow access to all rated content except adult and banned
             if (!ratings.Any(x => x.Value >= 21))
             {
-                ratings.Add(new ParentalRating("21", 21));
+                ratings.Add(new ParentalRating("21", 21.0));
             }
 
             // A lot of countries don't excplicitly have a seperate rating for adult content
             if (ratings.All(x => x.Value != 1000))
             {
-                ratings.Add(new ParentalRating("XXX", 1000));
+                ratings.Add(new ParentalRating("XXX", 1000.0));
             }
 
             // A lot of countries don't excplicitly have a seperate rating for banned content
             if (ratings.All(x => x.Value != 1001))
             {
-                ratings.Add(new ParentalRating("Banned", 1001));
+                ratings.Add(new ParentalRating("Banned", 1001.0));
             }
 
             return ratings.OrderBy(r => r.Value);
@@ -268,7 +265,7 @@ namespace Emby.Server.Implementations.Localization
         }
 
         /// <inheritdoc />
-        public int? GetRatingLevel(string rating, string? countryCode = null)
+        public double? GetRatingLevel(string rating, string? countryCode = null)
         {
             ArgumentException.ThrowIfNullOrEmpty(rating);
 
@@ -278,9 +275,9 @@ namespace Emby.Server.Implementations.Localization
                 return null;
             }
 
-            // Convert integers directly
+            // Convert doubles directly
             // This may override some of the locale specific age ratings (but those always map to the same age)
-            if (int.TryParse(rating, out var ratingAge))
+            if (double.TryParse(rating, out var ratingAge))
             {
                 return ratingAge;
             }

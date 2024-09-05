@@ -570,7 +570,7 @@ namespace MediaBrowser.Controller.Entities
         public string OfficialRating { get; set; }
 
         [JsonIgnore]
-        public int? InheritedParentalRatingValue { get; set; }
+        public double? InheritedParentalRatingValue { get; set; }
 
         /// <summary>
         /// Gets or sets the critic rating.
@@ -1564,7 +1564,7 @@ namespace MediaBrowser.Controller.Entities
             return !maxAllowedRating.HasValue || value.Value <= maxAllowedRating.Value;
         }
 
-        public int? GetInheritedParentalRatingValue()
+        public double? GetInheritedParentalRatingValue()
         {
             var rating = CustomRatingForComparison;
 

@@ -36,8 +36,8 @@ namespace Emby.Server.Implementations.Sorting
 
             ArgumentNullException.ThrowIfNull(y);
 
-            var levelX = string.IsNullOrEmpty(x.OfficialRating) ? 0 : _localization.GetRatingLevel(x.OfficialRating) ?? 0;
-            var levelY = string.IsNullOrEmpty(y.OfficialRating) ? 0 : _localization.GetRatingLevel(y.OfficialRating) ?? 0;
+            var levelX = string.IsNullOrEmpty(x.OfficialRating) ? 0.0 : _localization.GetRatingLevel(x.OfficialRating) ?? 0.0;
+            var levelY = string.IsNullOrEmpty(y.OfficialRating) ? 0.0 : _localization.GetRatingLevel(y.OfficialRating) ?? 0.0;
 
             return levelX.CompareTo(levelY);
         }
