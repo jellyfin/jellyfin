@@ -3242,14 +3242,18 @@ namespace MediaBrowser.Controller.MediaEncoding
                 doubleRateDeint ? "1" : "0");
         }
 
-        public static string GetHwDeinterlaceFilter(EncodingJobInfo state, EncodingOptions options, string hwDeintSuffix)
+        public string GetHwDeinterlaceFilter(EncodingJobInfo state, EncodingOptions options, string hwDeintSuffix)
         {
             var doubleRateDeint = options.DeinterlaceDoubleRate && (state.VideoStream?.AverageFrameRate ?? 60) <= 30;
             if (hwDeintSuffix.Contains("cuda", StringComparison.OrdinalIgnoreCase))
             {
+                var useBwdif = string.Equals(options.DeinterlaceMethod, "bwdif", StringComparison.OrdinalIgnoreCase)
+                    && _mediaEncoder.SupportsFilter("bwdif_cuda");
+
                 return string.Format(
                     CultureInfo.InvariantCulture,
-                    "yadif_cuda={0}:-1:0",
+                    "{0}_cuda={1}:-1:0",
+                    useBwdif ? "bwdif" : "yadif",
                     doubleRateDeint ? "1" : "0");
             }
 
