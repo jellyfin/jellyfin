@@ -270,7 +270,7 @@ namespace MediaBrowser.Controller.Entities
                     var key = this.GetProviderId(MetadataProvider.Tmdb);
                     if (!string.IsNullOrEmpty(key))
                     {
-                        list.Insert(0, GetUserDataKey(key));
+                        list.Insert(0, "tmdb-" + GetUserDataKey(key));
                     }
 
                     key = this.GetProviderId(MetadataProvider.Imdb);
@@ -290,7 +290,7 @@ namespace MediaBrowser.Controller.Entities
                     key = this.GetProviderId(MetadataProvider.Tmdb);
                     if (!string.IsNullOrEmpty(key))
                     {
-                        list.Insert(0, key);
+                        list.Insert(0, "tmdb-" + key);
                     }
                 }
             }
