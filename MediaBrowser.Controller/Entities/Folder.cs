@@ -1732,12 +1732,9 @@ namespace MediaBrowser.Controller.Entities
                 return;
             }
 
-            if (itemDto is not null)
+            if (itemDto is not null && fields.ContainsField(ItemFields.RecursiveItemCount))
             {
-                if (fields.ContainsField(ItemFields.RecursiveItemCount))
-                {
-                    itemDto.RecursiveItemCount = GetRecursiveChildCount(user);
-                }
+                itemDto.RecursiveItemCount = GetRecursiveChildCount(user);
             }
 
             if (SupportsPlayedStatus)
