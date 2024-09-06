@@ -962,9 +962,11 @@ namespace MediaBrowser.Model.Dlna
             int? numAudioStreams = item.GetStreamCount(MediaStreamType.Audio);
             int? numVideoStreams = item.GetStreamCount(MediaStreamType.Video);
 
+            var useSubContainer = playlistItem.SubProtocol == MediaStreamProtocol.hls;
+
             var appliedVideoConditions = options.Profile.CodecProfiles
                 .Where(i => i.Type == CodecType.Video &&
-                    i.ContainsAnyCodec(videoStream?.Codec, container) &&
+                    i.ContainsAnyCodec(videoStream?.Codec, container, useSubContainer) &&
                     i.ApplyConditions.All(applyCondition => ConditionProcessor.IsVideoConditionSatisfied(applyCondition, width, height, bitDepth, videoBitrate, videoProfile, videoRangeType, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc)))
                 // Reverse codec profiles for backward compatibility - first codec profile has higher priority
                 .Reverse();
@@ -974,7 +976,7 @@ namespace MediaBrowser.Model.Dlna
                 var transcodingVideoCodecs = ContainerProfile.SplitValue(videoCodec);
                 foreach (var transcodingVideoCodec in transcodingVideoCodecs)
                 {
-                    if (i.ContainsAnyCodec(transcodingVideoCodec, container))
+                    if (i.ContainsAnyCodec(transcodingVideoCodec, container, useSubContainer))
                     {
                         ApplyTranscodingConditions(playlistItem, i.Conditions, transcodingVideoCodec, true, true);
                         continue;
