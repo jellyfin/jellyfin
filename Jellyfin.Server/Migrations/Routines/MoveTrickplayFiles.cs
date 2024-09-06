@@ -47,16 +47,18 @@ public class MoveTrickplayFiles : IMigrationRoutine
         {
             var resolutions = _trickplayManager.GetTrickplayResolutions(itemId).GetAwaiter().GetResult();
             var item = _libraryManager.GetItemById(itemId);
-            if (item is not null)
+            if (item is null)
             {
-                foreach (var resolution in resolutions)
+                continue;
+            }
+
+            foreach (var resolution in resolutions)
+            {
+                var oldPath = GetOldTrickplayDirectory(item, resolution.Key);
+                var newPath = _trickplayManager.GetTrickplayDirectory(item, resolution.Value.TileWidth, resolution.Value.TileHeight, resolution.Value.Width, false);
+                if (_fileSystem.DirectoryExists(oldPath))
                 {
-                    var oldPath = GetOldTrickplayDirectory(item, resolution.Key);
-                    var newPath = _trickplayManager.GetTrickplayDirectory(item, resolution.Value.TileWidth, resolution.Value.TileHeight, resolution.Value.Width, false);
-                    if (_fileSystem.DirectoryExists(oldPath))
-                    {
-                        _fileSystem.MoveDirectory(oldPath, newPath);
-                    }
+                    _fileSystem.MoveDirectory(oldPath, newPath);
                 }
             }
         }

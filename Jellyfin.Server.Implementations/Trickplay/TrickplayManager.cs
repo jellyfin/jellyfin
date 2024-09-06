@@ -79,19 +79,19 @@ public class TrickplayManager : ITrickplayManager
     public async Task MoveGeneratedTrickplayDataAsync(Video video, LibraryOptions? libraryOptions, CancellationToken cancellationToken)
     {
         var options = _config.Configuration.TrickplayOptions;
-        var existingTrickplayResolutions = await GetTrickplayResolutions(video.Id).ConfigureAwait(false);
         if (!CanGenerateTrickplay(video, options.Interval))
         {
             return;
         }
 
+        var existingTrickplayResolutions = await GetTrickplayResolutions(video.Id).ConfigureAwait(false);
         foreach (var resolution in existingTrickplayResolutions)
         {
             cancellationToken.ThrowIfCancellationRequested();
             var existingResolution = resolution.Key;
             var tileWidth = resolution.Value.TileWidth;
             var tileHeight = resolution.Value.TileHeight;
-            var shouldBeSavedWithMedia = libraryOptions is not null ? libraryOptions.SaveTrickplayWithMedia : false;
+            var shouldBeSavedWithMedia = libraryOptions is null ? false : libraryOptions.SaveTrickplayWithMedia;
             var localOutputDir = GetTrickplayDirectory(video, tileWidth, tileHeight, existingResolution, false);
             var mediaOutputDir = GetTrickplayDirectory(video, tileWidth, tileHeight, existingResolution, true);
             if (shouldBeSavedWithMedia && Directory.Exists(localOutputDir))
@@ -206,7 +206,7 @@ public class TrickplayManager : ITrickplayManager
 
                 var tileWidth = options.TileWidth;
                 var tileHeight = options.TileHeight;
-                var saveWithMedia = libraryOptions is not null ? libraryOptions.SaveTrickplayWithMedia : false;
+                var saveWithMedia = libraryOptions is null ? false : libraryOptions.SaveTrickplayWithMedia;
                 var outputDir = GetTrickplayDirectory(video, tileWidth, tileHeight, actualWidth, saveWithMedia);
 
                 // Import existing trickplay tiles
