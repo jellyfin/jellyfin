@@ -1,4 +1,4 @@
-﻿namespace MediaBrowser.Controller.MediaEncoding
+namespace MediaBrowser.Controller.MediaEncoding
 {
     /// <summary>
     /// Enum TranscodingJobType.

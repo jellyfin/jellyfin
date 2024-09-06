@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using Jellyfin.MediaEncoding.Keyframes;
 using Microsoft.Extensions.Logging;

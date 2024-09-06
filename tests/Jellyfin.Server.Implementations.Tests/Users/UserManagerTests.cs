@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Jellyfin.Server.Implementations.Users;
 using Xunit;
 
