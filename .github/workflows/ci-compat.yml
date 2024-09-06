@@ -1,7 +1,6 @@
 ﻿name: ABI Compatibility
 on:
   pull_request_target:
-  pull_request:
 
 permissions: {}
 
@@ -68,6 +67,7 @@ jobs:
       pull-requests: write  #  to create or update comment (peter-evans/create-or-update-comment)
 
     name: ABI - Difference
+    if: ${{ github.event_name == 'pull_request_target' }}
     runs-on: ubuntu-latest
     needs:
       - abi-head
@@ -119,6 +119,7 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           edit-mode: replace
+          token: ${{ secrets.JF_BOT_TOKEN }}
           body: |
             <!--abi-diff-workflow-comment-->
             <details>
@@ -137,6 +138,7 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           edit-mode: replace
+          token: ${{ secrets.JF_BOT_TOKEN }}
           body: |
             <!--abi-diff-workflow-comment-->
             <details>
