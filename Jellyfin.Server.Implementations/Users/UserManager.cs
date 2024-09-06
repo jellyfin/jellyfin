@@ -384,7 +384,6 @@ namespace Jellyfin.Server.Implementations.Users
         public async Task<User?> AuthenticateUser(
             string username,
             string password,
-            string passwordSha1,
             string remoteEndPoint,
             bool isUserSession)
         {

@@ -296,7 +296,6 @@ public class UserController : BaseJellyfinApiController
                 var success = await _userManager.AuthenticateUser(
                     user.Username,
                     request.CurrentPw ?? string.Empty,
-                    request.CurrentPw ?? string.Empty,
                     HttpContext.GetNormalizedRemoteIP().ToString(),
                     false).ConfigureAwait(false);
 
