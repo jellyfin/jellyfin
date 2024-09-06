@@ -45,7 +45,8 @@ namespace Jellyfin.Server.Migrations
             typeof(Routines.MigrateRatingLevels),
             typeof(Routines.AddDefaultCastReceivers),
             typeof(Routines.UpdateDefaultPluginRepository),
-            typeof(Routines.FixAudioData)
+            typeof(Routines.FixAudioData),
+            typeof(Routines.MoveTrickplayFiles)
         };
 
         /// <summary>
