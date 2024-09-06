@@ -142,7 +142,7 @@ public partial class AudioNormalizationTask : IScheduledTask
                     continue;
                 }
 
-                t.LUFS = await CalculateLUFSAsync(string.Format(CultureInfo.InvariantCulture, "-i \"{0}\"", t.Path.Replace("\"", "\\\"", StringComparison.Ordinal)), cancellationToken);
+                t.LUFS = await CalculateLUFSAsync(string.Format(CultureInfo.InvariantCulture, "-i \"{0}\"", t.Path.Replace("\"", "\\\"", StringComparison.Ordinal)), cancellationToken).ConfigureAwait(false);
             }
 
             _itemRepository.SaveItems(tracks, cancellationToken);
