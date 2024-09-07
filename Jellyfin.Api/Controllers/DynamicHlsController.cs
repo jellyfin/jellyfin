@@ -1797,10 +1797,11 @@ public class DynamicHlsController : BaseJellyfinApiController
 
         var args = "-codec:v:0 " + codec;
 
-        if (string.Equals(state.ActualOutputVideoCodec, "h265", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(codec, "h265", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase))
+        var isActualOutputVideoCodecAv1 = string.Equals(state.ActualOutputVideoCodec, "av1", StringComparison.OrdinalIgnoreCase);
+        var isActualOutputVideoCodecHevc = string.Equals(state.ActualOutputVideoCodec, "h265", StringComparison.OrdinalIgnoreCase)
+                                           || string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase);
+
+        if (isActualOutputVideoCodecHevc || isActualOutputVideoCodecAv1)
         {
             var requestedRange = state.GetRequestedRangeTypes(state.ActualOutputVideoCodec);
             var requestHasDOVI = requestedRange.Contains(VideoRangeType.DOVI.ToString(), StringComparison.OrdinalIgnoreCase);
@@ -1814,10 +1815,17 @@ public class DynamicHlsController : BaseJellyfinApiController
                     || (state.VideoStream.VideoRangeType == VideoRangeType.DOVIWithHLG && requestHasDOVIWithHLG)
                     || (state.VideoStream.VideoRangeType == VideoRangeType.DOVIWithSDR && requestHasDOVIWithSDR)))
             {
-                // Prefer dvh1 to dvhe
-                args += " -tag:v:0 dvh1 -strict -2";
+                if (isActualOutputVideoCodecHevc)
+                {
+                    // Prefer dvh1 to dvhe
+                    args += " -tag:v:0 dvh1 -strict -2";
+                }
+                else if (isActualOutputVideoCodecAv1)
+                {
+                    args += " -tag:v:0 dav1 -strict -2";
+                }
             }
-            else
+            else if (isActualOutputVideoCodecHevc)
             {
                 // Prefer hvc1 to hev1
                 args += " -tag:v:0 hvc1";
