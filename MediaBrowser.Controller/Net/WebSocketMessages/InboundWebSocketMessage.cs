@@ -1,4 +1,4 @@
-﻿namespace MediaBrowser.Controller.Net.WebSocketMessages;
+namespace MediaBrowser.Controller.Net.WebSocketMessages;
 
 /// <summary>
 /// Inbound websocket message.

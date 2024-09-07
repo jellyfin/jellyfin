@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using MediaBrowser.Model.Dlna;
 
 namespace Jellyfin.Api.Models.MediaInfoDtos;

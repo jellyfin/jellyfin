@@ -15,6 +15,8 @@ namespace MediaBrowser.Model.Configuration
             MediaSegmentProvideOrder = Array.Empty<string>();
             SubtitleFetcherOrder = Array.Empty<string>();
             DisabledLocalMetadataReaders = Array.Empty<string>();
+            DisabledLyricFetchers = Array.Empty<string>();
+            LyricFetcherOrder = Array.Empty<string>();
 
             SkipSubtitlesIfAudioTrackMatches = true;
             RequirePerfectSubtitleMatch = true;
@@ -24,6 +26,7 @@ namespace MediaBrowser.Model.Configuration
             EnablePhotos = true;
             SaveSubtitlesWithMedia = true;
             SaveLyricsWithMedia = false;
+            SaveTrickplayWithMedia = false;
             PathInfos = Array.Empty<MediaPathInfo>();
             EnableAutomaticSeriesGrouping = true;
             SeasonZeroDisplayName = "Specials";
@@ -102,6 +105,13 @@ namespace MediaBrowser.Model.Configuration
 
         [DefaultValue(false)]
         public bool SaveLyricsWithMedia { get; set; }
+
+        [DefaultValue(false)]
+        public bool SaveTrickplayWithMedia { get; set; }
+
+        public string[] DisabledLyricFetchers { get; set; }
+
+        public string[] LyricFetcherOrder { get; set; }
 
         public bool AutomaticallyAddToCollection { get; set; }
 

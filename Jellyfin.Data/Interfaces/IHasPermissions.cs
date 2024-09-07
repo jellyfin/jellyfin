@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 

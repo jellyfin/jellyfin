@@ -305,7 +305,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (BaseRequest.Static
                     || EncodingHelper.IsCopyCodec(OutputVideoCodec))
                 {
-                    return VideoStream is null ? null : (VideoStream.AverageFrameRate ?? VideoStream.RealFrameRate);
+                    return VideoStream?.ReferenceFrameRate;
                 }
 
                 return BaseRequest.MaxFramerate ?? BaseRequest.Framerate;

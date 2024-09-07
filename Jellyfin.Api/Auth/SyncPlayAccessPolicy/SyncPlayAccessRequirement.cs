@@ -1,4 +1,4 @@
-﻿using Jellyfin.Api.Auth.DefaultAuthorizationPolicy;
+using Jellyfin.Api.Auth.DefaultAuthorizationPolicy;
 using Jellyfin.Data.Enums;
 
 namespace Jellyfin.Api.Auth.SyncPlayAccessPolicy

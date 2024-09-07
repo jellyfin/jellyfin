@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Text;
 
@@ -19,12 +19,12 @@ public static class HlsCodecStringHelpers
     /// <summary>
     /// Codec name for AC-3.
     /// </summary>
-    public const string AC3 = "mp4a.a5";
+    public const string AC3 = "ac-3";
 
     /// <summary>
     /// Codec name for E-AC-3.
     /// </summary>
-    public const string EAC3 = "mp4a.a6";
+    public const string EAC3 = "ec-3";
 
     /// <summary>
     /// Codec name for FLAC.

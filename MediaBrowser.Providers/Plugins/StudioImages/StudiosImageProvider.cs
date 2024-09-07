@@ -53,10 +53,7 @@ namespace MediaBrowser.Providers.Plugins.StudioImages
         /// <inheritdoc />
         public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
-            return new ImageType[]
-            {
-                ImageType.Thumb
-            };
+            return [ImageType.Thumb];
         }
 
         /// <inheritdoc />
@@ -72,13 +69,10 @@ namespace MediaBrowser.Providers.Plugins.StudioImages
 
             if (imageInfo is null)
             {
-                return Enumerable.Empty<RemoteImageInfo>();
+                return [];
             }
 
-            return new RemoteImageInfo[]
-            {
-                imageInfo
-            };
+            return [imageInfo];
         }
 
         private RemoteImageInfo GetImage(BaseItem item, string filename, ImageType type, string remoteFilename)

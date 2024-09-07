@@ -130,5 +130,7 @@
     "TaskCleanCollectionsAndPlaylists": "清理合集和播放列表",
     "TaskCleanCollectionsAndPlaylistsDescription": "清理合集和播放列表中已不存在的项目。",
     "TaskAudioNormalization": "音频标准化",
-    "TaskAudioNormalizationDescription": "扫描文件以寻找音频标准化数据。"
+    "TaskAudioNormalizationDescription": "扫描文件以寻找音频标准化数据。",
+    "TaskDownloadMissingLyrics": "下载缺失的歌词",
+    "TaskDownloadMissingLyricsDescription": "下载歌曲歌词"
 }

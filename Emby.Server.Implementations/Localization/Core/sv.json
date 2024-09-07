@@ -16,7 +16,7 @@
     "Folders": "Mappar",
     "Genres": "Genrer",
     "HeaderAlbumArtists": "Albumartister",
-    "HeaderContinueWatching": "Fortsätt titta på",
+    "HeaderContinueWatching": "Fortsätt titta",
     "HeaderFavoriteAlbums": "Favoritalbum",
     "HeaderFavoriteArtists": "Favoritartister",
     "HeaderFavoriteEpisodes": "Favoritavsnitt",
@@ -130,5 +130,7 @@
     "TaskCleanCollectionsAndPlaylists": "Rensa upp samlingar och spellistor",
     "TaskAudioNormalization": "Ljudnormalisering",
     "TaskCleanCollectionsAndPlaylistsDescription": "Tar bort objekt från samlingar och spellistor som inte längre finns.",
-    "TaskAudioNormalizationDescription": "Skannar filer för ljudnormaliseringsdata."
+    "TaskAudioNormalizationDescription": "Skannar filer för ljudnormaliseringsdata.",
+    "TaskDownloadMissingLyrics": "Ladda ner saknad låttext",
+    "TaskDownloadMissingLyricsDescription": "Laddar ner låttexter"
 }
