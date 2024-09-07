@@ -64,7 +64,7 @@ public class MediaSegmentManager : IMediaSegmentManager
                     var index = libraryOptions.MediaSegmentProvideOrder.IndexOf(i.Name);
                     return index == -1 ? int.MaxValue : index;
                 })
-            .ToImmutableList();
+            .ToList();
 
         _logger.LogInformation("Start media segment extraction from providers with {CountProviders} enabled", providers.Count);
         using var db = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
@@ -196,8 +196,7 @@ public class MediaSegmentManager : IMediaSegmentManager
         }
 
         return _segmentProviders
-            .Select(p => (p.Name, GetProviderId(p.Name)))
-            .ToImmutableArray();
+            .Select(p => (p.Name, GetProviderId(p.Name)));
     }
 
     private string GetProviderId(string name)
