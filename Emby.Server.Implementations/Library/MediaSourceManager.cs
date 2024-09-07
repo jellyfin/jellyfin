@@ -423,6 +423,12 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
+            if (user.AudioLanguagePreference == "OriginalLanguage" && originalLanguage is not null)
+            {
+                // If there are multiple original languages, use the first language
+                originalLanguage = originalLanguage.Split(',').FirstOrDefault();
+            }
+
             var preferredAudio = user.AudioLanguagePreference == "OriginalLanguage" && originalLanguage is not null
                 ? NormalizeLanguage(originalLanguage)
                 : NormalizeLanguage(user.AudioLanguagePreference);
