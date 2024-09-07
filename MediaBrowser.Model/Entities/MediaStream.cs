@@ -200,7 +200,8 @@ namespace MediaBrowser.Model.Entities
                         || dvProfile == 5
                         || dvProfile == 7
                         || dvProfile == 8
-                        || dvProfile == 9))
+                        || dvProfile == 9
+                        || dvProfile == 10))
                 {
                     var title = "Dolby Vision Profile " + dvProfile;
 
@@ -777,7 +778,7 @@ namespace MediaBrowser.Model.Entities
             var blPresentFlag = BlPresentFlag == 1;
             var dvBlCompatId = DvBlSignalCompatibilityId;
 
-            var isDoViProfile = dvProfile == 5 || dvProfile == 7 || dvProfile == 8;
+            var isDoViProfile = dvProfile == 5 || dvProfile == 7 || dvProfile == 8 || dvProfile == 10;
             var isDoViFlag = rpuPresentFlag && blPresentFlag && (dvBlCompatId == 0 || dvBlCompatId == 1 || dvBlCompatId == 4 || dvBlCompatId == 2 || dvBlCompatId == 6);
 
             if ((isDoViProfile && isDoViFlag)
@@ -800,6 +801,17 @@ namespace MediaBrowser.Model.Entities
                         _ => (VideoRange.SDR, VideoRangeType.SDR)
                     },
                     7 => (VideoRange.HDR, VideoRangeType.HDR10),
+                    10 => dvBlCompatId switch
+                    {
+                        0 => (VideoRange.HDR, VideoRangeType.DOVI),
+                        1 => (VideoRange.HDR, VideoRangeType.DOVIWithHDR10),
+                        2 => (VideoRange.SDR, VideoRangeType.DOVIWithSDR),
+                        4 => (VideoRange.HDR, VideoRangeType.DOVIWithHLG),
+                        // While not in Dolby Spec, Profile 8 CCid 6 media are possible to create, and since CCid 6 stems from Bluray (Profile 7 originally) an HDR10 base layer is guaranteed to exist.
+                        6 => (VideoRange.HDR, VideoRangeType.DOVIWithHDR10),
+                        // There is no other case to handle here as per Dolby Spec. Default case included for completeness and linting purposes
+                        _ => (VideoRange.SDR, VideoRangeType.SDR)
+                    },
                     _ => (VideoRange.SDR, VideoRangeType.SDR)
                 };
             }
