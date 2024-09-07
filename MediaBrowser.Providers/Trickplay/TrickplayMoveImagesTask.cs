@@ -14,26 +14,26 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Providers.Trickplay;
 
 /// <summary>
-/// Class TrickplayImagesTask.
+/// Class TrickplayMoveImagesTask.
 /// </summary>
-public class TrickplayImagesTask : IScheduledTask
+public class TrickplayMoveImagesTask : IScheduledTask
 {
     private const int QueryPageLimit = 100;
 
-    private readonly ILogger<TrickplayImagesTask> _logger;
+    private readonly ILogger<TrickplayMoveImagesTask> _logger;
     private readonly ILibraryManager _libraryManager;
     private readonly ILocalizationManager _localization;
     private readonly ITrickplayManager _trickplayManager;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="TrickplayImagesTask"/> class.
+    /// Initializes a new instance of the <see cref="TrickplayMoveImagesTask"/> class.
     /// </summary>
     /// <param name="logger">The logger.</param>
     /// <param name="libraryManager">The library manager.</param>
     /// <param name="localization">The localization manager.</param>
     /// <param name="trickplayManager">The trickplay manager.</param>
-    public TrickplayImagesTask(
-        ILogger<TrickplayImagesTask> logger,
+    public TrickplayMoveImagesTask(
+        ILogger<TrickplayMoveImagesTask> logger,
         ILibraryManager libraryManager,
         ILocalizationManager localization,
         ITrickplayManager trickplayManager)
@@ -45,37 +45,28 @@ public class TrickplayImagesTask : IScheduledTask
     }
 
     /// <inheritdoc />
-    public string Name => _localization.GetLocalizedString("TaskRefreshTrickplayImages");
+    public string Name => _localization.GetLocalizedString("TaskMoveTrickplayImages");
 
     /// <inheritdoc />
-    public string Description => _localization.GetLocalizedString("TaskRefreshTrickplayImagesDescription");
+    public string Description => _localization.GetLocalizedString("TaskMoveTrickplayImagesDescription");
 
     /// <inheritdoc />
-    public string Key => "RefreshTrickplayImages";
+    public string Key => "MoveTrickplayImages";
 
     /// <inheritdoc />
-    public string Category => _localization.GetLocalizedString("TasksLibraryCategory");
+    public string Category => _localization.GetLocalizedString("TasksMaintenanceCategory");
 
     /// <inheritdoc />
-    public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
-    {
-        return new[]
-        {
-            new TaskTriggerInfo
-            {
-                Type = TaskTriggerInfo.TriggerDaily,
-                TimeOfDayTicks = TimeSpan.FromHours(3).Ticks
-            }
-        };
-    }
+    public IEnumerable<TaskTriggerInfo> GetDefaultTriggers() => [];
 
     /// <inheritdoc />
     public async Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
     {
+        var trickplayItems = await _trickplayManager.GetTrickplayItemsAsync().ConfigureAwait(false);
         var query = new InternalItemsQuery
         {
-            MediaTypes = new[] { MediaType.Video },
-            SourceTypes = new[] { SourceType.Library },
+            MediaTypes = [MediaType.Video],
+            SourceTypes = [SourceType.Library],
             IsVirtualItem = false,
             IsFolder = false,
             Recursive = true,
@@ -90,7 +81,8 @@ public class TrickplayImagesTask : IScheduledTask
         while (startIndex < numberOfVideos)
         {
             query.StartIndex = startIndex;
-            var videos = _libraryManager.GetItemList(query).OfType<Video>();
+            var videos = _libraryManager.GetItemList(query).OfType<Video>().ToList();
+            videos.RemoveAll(i => !trickplayItems.Contains(i.Id));
 
             foreach (var video in videos)
             {
@@ -99,11 +91,11 @@ public class TrickplayImagesTask : IScheduledTask
                 try
                 {
                     var libraryOptions = _libraryManager.GetLibraryOptions(video);
-                    await _trickplayManager.RefreshTrickplayDataAsync(video, false, libraryOptions, cancellationToken).ConfigureAwait(false);
+                    await _trickplayManager.MoveGeneratedTrickplayDataAsync(video, libraryOptions, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error creating trickplay files for {ItemName}", video.Name);
+                    _logger.LogError(ex, "Error moving trickplay files for {ItemName}", video.Name);
                 }
 
                 numComplete++;
