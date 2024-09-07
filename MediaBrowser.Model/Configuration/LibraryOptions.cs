@@ -11,6 +11,8 @@ namespace MediaBrowser.Model.Configuration
         {
             TypeOptions = Array.Empty<TypeOptions>();
             DisabledSubtitleFetchers = Array.Empty<string>();
+            DisabledMediaSegmentProviders = Array.Empty<string>();
+            MediaSegmentProvideOrder = Array.Empty<string>();
             SubtitleFetcherOrder = Array.Empty<string>();
             DisabledLocalMetadataReaders = Array.Empty<string>();
             DisabledLyricFetchers = Array.Empty<string>();
@@ -86,6 +88,10 @@ namespace MediaBrowser.Model.Configuration
         public string[] DisabledSubtitleFetchers { get; set; }
 
         public string[] SubtitleFetcherOrder { get; set; }
+
+        public string[] DisabledMediaSegmentProviders { get; set; }
+
+        public string[] MediaSegmentProvideOrder { get; set; }
 
         public bool SkipSubtitlesIfEmbeddedSubtitlesPresent { get; set; }
 
