@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Jellyfin.Api.Middleware;
 using Microsoft.AspNetCore.Http;

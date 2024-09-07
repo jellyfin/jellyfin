@@ -25,7 +25,7 @@
     "HeaderLiveTV": "Live TV",
     "HeaderNextUp": "Volgende",
     "HeaderRecordingGroups": "Opnamegroepen",
-    "HomeVideos": "Thuis video's",
+    "HomeVideos": "Homevideo's",
     "Inherit": "Erven",
     "ItemAddedWithName": "{0} is toegevoegd aan de bibliotheek",
     "ItemRemovedWithName": "{0} is verwijderd uit de bibliotheek",
@@ -130,5 +130,7 @@
     "TaskCleanCollectionsAndPlaylists": "Collecties en afspeellijsten opruimen",
     "TaskCleanCollectionsAndPlaylistsDescription": "Verwijdert niet langer bestaande items uit collecties en afspeellijsten.",
     "TaskAudioNormalization": "Geluidsnormalisatie",
-    "TaskAudioNormalizationDescription": "Scant bestanden op gegevens voor geluidsnormalisatie."
+    "TaskAudioNormalizationDescription": "Scant bestanden op gegevens voor geluidsnormalisatie.",
+    "TaskDownloadMissingLyrics": "Ontbrekende liedteksten downloaden",
+    "TaskDownloadMissingLyricsDescription": "Downloadt liedteksten"
 }

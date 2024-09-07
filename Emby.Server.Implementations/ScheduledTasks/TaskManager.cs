@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -47,21 +45,16 @@ namespace Emby.Server.Implementations.ScheduledTasks
             ScheduledTasks = [];
         }
 
+        /// <inheritdoc />
         public event EventHandler<GenericEventArgs<IScheduledTaskWorker>>? TaskExecuting;
 
+        /// <inheritdoc />
         public event EventHandler<TaskCompletionEventArgs>? TaskCompleted;
 
-        /// <summary>
-        /// Gets the list of Scheduled Tasks.
-        /// </summary>
-        /// <value>The scheduled tasks.</value>
+        /// <inheritdoc />
         public IReadOnlyList<IScheduledTaskWorker> ScheduledTasks { get; private set; }
 
-        /// <summary>
-        /// Cancels if running and queue.
-        /// </summary>
-        /// <typeparam name="T">The task type.</typeparam>
-        /// <param name="options">Task options.</param>
+        /// <inheritdoc />
         public void CancelIfRunningAndQueue<T>(TaskOptions options)
             where T : IScheduledTask
         {
@@ -71,16 +64,14 @@ namespace Emby.Server.Implementations.ScheduledTasks
             QueueScheduledTask<T>(options);
         }
 
+        /// <inheritdoc />
         public void CancelIfRunningAndQueue<T>()
                where T : IScheduledTask
         {
             CancelIfRunningAndQueue<T>(new TaskOptions());
         }
 
-        /// <summary>
-        /// Cancels if running.
-        /// </summary>
-        /// <typeparam name="T">The task type.</typeparam>
+        /// <inheritdoc />
         public void CancelIfRunning<T>()
                  where T : IScheduledTask
         {
@@ -88,11 +79,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             ((ScheduledTaskWorker)task).CancelIfRunning();
         }
 
-        /// <summary>
-        /// Queues the scheduled task.
-        /// </summary>
-        /// <typeparam name="T">The task type.</typeparam>
-        /// <param name="options">Task options.</param>
+        /// <inheritdoc />
         public void QueueScheduledTask<T>(TaskOptions options)
             where T : IScheduledTask
         {
@@ -108,12 +95,14 @@ namespace Emby.Server.Implementations.ScheduledTasks
             }
         }
 
+        /// <inheritdoc />
         public void QueueScheduledTask<T>()
             where T : IScheduledTask
         {
             QueueScheduledTask<T>(new TaskOptions());
         }
 
+        /// <inheritdoc />
         public void QueueIfNotRunning<T>()
             where T : IScheduledTask
         {
@@ -125,6 +114,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             }
         }
 
+        /// <inheritdoc />
         public void Execute<T>()
             where T : IScheduledTask
         {
@@ -150,11 +140,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             }
         }
 
-        /// <summary>
-        /// Queues the scheduled task.
-        /// </summary>
-        /// <param name="task">The task.</param>
-        /// <param name="options">The task options.</param>
+        /// <inheritdoc />
         public void QueueScheduledTask(IScheduledTask task, TaskOptions options)
         {
             var scheduledTask = ScheduledTasks.FirstOrDefault(t => t.ScheduledTask.GetType() == task.GetType());
@@ -192,10 +178,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             }
         }
 
-        /// <summary>
-        /// Adds the tasks.
-        /// </summary>
-        /// <param name="tasks">The tasks.</param>
+        /// <inheritdoc />
         public void AddTasks(IReadOnlyList<IScheduledTask> tasks)
         {
             var libraryManager = _serviceProvider.GetRequiredService<ILibraryManager>();
@@ -206,9 +189,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             ScheduledTasks = ScheduledTasks.Concat(list).ToArray();
         }
 
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
+        /// <inheritdoc />
         public void Dispose()
         {
             Dispose(true);
@@ -227,11 +208,13 @@ namespace Emby.Server.Implementations.ScheduledTasks
             }
         }
 
+        /// <inheritdoc />
         public void Cancel(IScheduledTaskWorker task)
         {
             ((ScheduledTaskWorker)task).Cancel();
         }
 
+        /// <inheritdoc />
         public Task Execute(IScheduledTaskWorker task, TaskOptions options)
         {
             return ((ScheduledTaskWorker)task).Execute(options);

@@ -113,21 +113,15 @@ public class ScheduledTaskWorker : IScheduledTaskWorker
     /// <value>The task manager.</value>
     protected ITaskManager TaskManager { get; }
 
-    /// <summary>
-    /// Gets the scheduled task.
-    /// </summary>
-    /// <value>The scheduled task.</value>
-    public IScheduledTask ScheduledTask { get; private set; }
+        /// <inheritdoc />
+        public IScheduledTask ScheduledTask { get; private set; }
 
-    /// <summary>
-    /// Gets the last execution result.
-    /// </summary>
-    /// <value>The last execution result.</value>
-    public TaskResult LastExecutionResult
-    {
-        get
+        /// <inheritdoc />
+        public TaskResult LastExecutionResult
         {
-            var path = GetHistoryFilePath();
+            get
+            {
+                var path = GetHistoryFilePath();
 
             lock (_lastExecutionResultSyncLock)
             {
@@ -176,23 +170,14 @@ public class ScheduledTaskWorker : IScheduledTaskWorker
         }
     }
 
-    /// <summary>
-    /// Gets the name.
-    /// </summary>
-    /// <value>The name.</value>
-    public string Name => ScheduledTask.Name;
+        /// <inheritdoc />
+        public string Name => ScheduledTask.Name;
 
-    /// <summary>
-    /// Gets the description.
-    /// </summary>
-    /// <value>The description.</value>
-    public string Description => ScheduledTask.Description;
+        /// <inheritdoc />
+        public string Description => ScheduledTask.Description;
 
-    /// <summary>
-    /// Gets the category.
-    /// </summary>
-    /// <value>The category.</value>
-    public string Category => ScheduledTask.Category;
+        /// <inheritdoc />
+        public string Category => ScheduledTask.Category;
 
     /// <summary>
     /// Gets or sets the current cancellation token.
@@ -206,30 +191,24 @@ public class ScheduledTaskWorker : IScheduledTaskWorker
     /// <value>The current execution start time.</value>
     private DateTime CurrentExecutionStartTime { get; set; }
 
-    /// <summary>
-    /// Gets the state.
-    /// </summary>
-    /// <value>The state.</value>
-    public TaskState State
-    {
-        get
+        /// <inheritdoc />
+        public TaskState State
         {
-            if (CurrentCancellationTokenSource is not null)
+            get
             {
-                return CurrentCancellationTokenSource.IsCancellationRequested
-                           ? TaskState.Cancelling
-                           : TaskState.Running;
-            }
+                if (CurrentCancellationTokenSource is not null)
+                {
+                    return CurrentCancellationTokenSource.IsCancellationRequested
+                               ? TaskState.Cancelling
+                               : TaskState.Running;
+                }
 
             return TaskState.Idle;
         }
     }
 
-    /// <summary>
-    /// Gets the current progress.
-    /// </summary>
-    /// <value>The current progress.</value>
-    public double? CurrentProgress { get; private set; }
+        /// <inheritdoc />
+        public double? CurrentProgress { get; private set; }
 
     /// <summary>
     /// Gets or sets the triggers that define when the task will run.
@@ -254,11 +233,7 @@ public class ScheduledTaskWorker : IScheduledTaskWorker
         }
     }
 
-    /// <summary>
-    /// Gets or sets the triggers that define when the task will run.
-    /// </summary>
-    /// <value>The triggers.</value>
-    /// <exception cref="ArgumentNullException"><c>value</c> is <c>null</c>.</exception>
+    /// <inheritdoc />
     public IReadOnlyList<TaskTriggerInfo> Triggers
     {
         get
@@ -279,17 +254,14 @@ public class ScheduledTaskWorker : IScheduledTaskWorker
         }
     }
 
-    /// <summary>
-    /// Gets the unique id.
-    /// </summary>
-    /// <value>The unique id.</value>
-    public string Id
-    {
-        get
+        /// <inheritdoc />
+        public string Id
         {
-            return _id ??= ScheduledTask.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture);
+            get
+            {
+                return _id ??= ScheduledTask.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture);
+            }
         }
-    }
 
     private void InitTriggerEvents()
     {
@@ -297,11 +269,11 @@ public class ScheduledTaskWorker : IScheduledTaskWorker
         ReloadTriggerEvents(true);
     }
 
-    /// <inheritdoc/>
-    public void ReloadTriggerEvents()
-    {
-        ReloadTriggerEvents(false);
-    }
+        /// <inheritdoc />
+        public void ReloadTriggerEvents()
+        {
+            ReloadTriggerEvents(false);
+        }
 
     /// <summary>
     /// Reloads the trigger events.
@@ -540,24 +512,24 @@ public class ScheduledTaskWorker : IScheduledTaskWorker
         return list ?? GetDefaultTriggers();
     }
 
-    private TaskTriggerInfo[] GetDefaultTriggers()
-    {
-        try
+        private TaskTriggerInfo[] GetDefaultTriggers()
         {
-            return ScheduledTask.GetDefaultTriggers().ToArray();
-        }
-        catch
-        {
-            return new TaskTriggerInfo[]
+            try
             {
-                new TaskTriggerInfo
-                {
-                    IntervalTicks = TimeSpan.FromDays(1).Ticks,
-                    Type = TaskTriggerInfo.TriggerInterval
-                }
-            };
+                return ScheduledTask.GetDefaultTriggers().ToArray();
+            }
+            catch
+            {
+                return
+                [
+                    new()
+                    {
+                        IntervalTicks = TimeSpan.FromDays(1).Ticks,
+                        Type = TaskTriggerInfo.TriggerInterval
+                    }
+                ];
+            }
         }
-    }
 
     /// <summary>
     /// Saves the triggers.
@@ -608,14 +580,12 @@ public class ScheduledTaskWorker : IScheduledTaskWorker
         ((TaskManager)TaskManager).OnTaskCompleted(this, result);
     }
 
-    /// <summary>
-    /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-    /// </summary>
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
     /// <summary>
     /// Releases unmanaged and - optionally - managed resources.

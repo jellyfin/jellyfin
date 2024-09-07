@@ -669,7 +669,7 @@ namespace Emby.Server.Implementations.Library
 
             if (parent is not null)
             {
-                var multiItemResolvers = resolvers is null ? MultiItemResolvers : resolvers.OfType<IMultiItemResolver>().ToArray();
+                var multiItemResolvers = resolvers is null ? MultiItemResolvers : resolvers.OfType<IMultiItemResolver>();
 
                 foreach (var resolver in multiItemResolvers)
                 {
@@ -1530,7 +1530,7 @@ namespace Emby.Server.Implementations.Library
             {
                 var userViews = UserViewManager.GetUserViews(new UserViewQuery
                 {
-                    UserId = user.Id,
+                    User = user,
                     IncludeHidden = true,
                     IncludeExternalContent = allowExternalContent
                 });

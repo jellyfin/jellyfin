@@ -560,7 +560,7 @@ public class UserLibraryController : BaseJellyfinApiController
                 IsPlayed = isPlayed,
                 Limit = limit,
                 ParentId = parentId ?? Guid.Empty,
-                UserId = requestUserId,
+                User = user,
             },
             dtoOptions);
 

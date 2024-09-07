@@ -14,7 +14,7 @@ namespace MediaBrowser.Model.Tasks
         /// </summary>
         public TaskInfo()
         {
-            Triggers = Array.Empty<TaskTriggerInfo>();
+            Triggers = [];
         }
 
         /// <summary>

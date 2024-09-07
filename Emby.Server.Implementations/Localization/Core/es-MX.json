@@ -130,5 +130,6 @@
     "TaskAudioNormalization": "Normalización de audio",
     "TaskAudioNormalizationDescription": "Analiza los archivos para normalizar el audio.",
     "TaskCleanCollectionsAndPlaylists": "Limpieza de colecciones y listas de reproducción",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Quita elementos que ya no existen de colecciones y listas de reproducción."
+    "TaskCleanCollectionsAndPlaylistsDescription": "Quita elementos que ya no existen de colecciones y listas de reproducción.",
+    "TaskDownloadMissingLyrics": "descargar letras que faltan"
 }

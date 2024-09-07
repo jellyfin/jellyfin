@@ -1,4 +1,4 @@
-﻿namespace Jellyfin.MediaEncoding.Hls.Playlist;
+namespace Jellyfin.MediaEncoding.Hls.Playlist;
 
 /// <summary>
 /// Request class for the <see cref="IDynamicHlsPlaylistGenerator.CreateMainPlaylist(CreateMainPlaylistRequest)"/> method.

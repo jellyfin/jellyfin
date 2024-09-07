@@ -1,4 +1,4 @@
-﻿#pragma warning disable CA1307
+#pragma warning disable CA1307
 
 using System;
 using System.Collections.Concurrent;
@@ -384,7 +384,6 @@ namespace Jellyfin.Server.Implementations.Users
         public async Task<User?> AuthenticateUser(
             string username,
             string password,
-            string passwordSha1,
             string remoteEndPoint,
             bool isUserSession)
         {

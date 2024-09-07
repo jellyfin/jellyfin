@@ -1,4 +1,4 @@
-﻿#pragma warning disable CS1591, SA1601
+#pragma warning disable CS1591, SA1601
 
 using System;
 using Microsoft.EntityFrameworkCore.Migrations;

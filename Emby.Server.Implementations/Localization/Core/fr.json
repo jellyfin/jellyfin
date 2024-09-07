@@ -15,7 +15,7 @@
     "Favorites": "Favoris",
     "Folders": "Dossiers",
     "Genres": "Genres",
-    "HeaderAlbumArtists": "Artistes de l'album",
+    "HeaderAlbumArtists": "Artistes d'albums",
     "HeaderContinueWatching": "Continuer de regarder",
     "HeaderFavoriteAlbums": "Albums favoris",
     "HeaderFavoriteArtists": "Artistes préférés",
@@ -130,5 +130,7 @@
     "TaskCleanCollectionsAndPlaylists": "Nettoyer les collections et les listes de lecture",
     "TaskCleanCollectionsAndPlaylistsDescription": "Supprime les éléments des collections et des listes de lecture qui n'existent plus.",
     "TaskAudioNormalization": "Normalisation audio",
-    "TaskAudioNormalizationDescription": "Analyse les fichiers à la recherche de données de normalisation audio."
+    "TaskAudioNormalizationDescription": "Analyse les fichiers à la recherche de données de normalisation audio.",
+    "TaskDownloadMissingLyricsDescription": "Téléchargement des paroles des chansons",
+    "TaskDownloadMissingLyrics": "Télécharger les paroles des chansons manquantes"
 }

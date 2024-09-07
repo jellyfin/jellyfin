@@ -402,7 +402,12 @@ namespace Emby.Server.Implementations
             ConfigurationManager.ConfigurationUpdated += OnConfigurationUpdated;
             ConfigurationManager.NamedConfigurationUpdated += OnConfigurationUpdated;
 
-            Resolve<IMediaEncoder>().SetFFmpegPath();
+            var ffmpegValid = Resolve<IMediaEncoder>().SetFFmpegPath();
+
+            if (!ffmpegValid)
+            {
+                throw new FfmpegException("Failed to find valid ffmpeg");
+            }
 
             Logger.LogInformation("ServerId: {ServerId}", SystemId);
             Logger.LogInformation("Core startup complete");

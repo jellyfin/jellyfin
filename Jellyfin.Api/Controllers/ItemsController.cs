@@ -972,12 +972,17 @@ public class ItemsController : BaseJellyfinApiController
         [FromRoute, Required] Guid itemId)
     {
         var requestUserId = RequestHelpers.GetUserId(User, userId);
-        if (!RequestHelpers.AssertCanUpdateUser(_userManager, User, requestUserId, true))
+        var user = _userManager.GetUserById(requestUserId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        if (!RequestHelpers.AssertCanUpdateUser(User, user, true))
         {
             return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to view this item user data.");
         }
 
-        var user = _userManager.GetUserById(requestUserId) ?? throw new ResourceNotFoundException();
         var item = _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
@@ -1023,12 +1028,17 @@ public class ItemsController : BaseJellyfinApiController
         [FromBody, Required] UpdateUserItemDataDto userDataDto)
     {
         var requestUserId = RequestHelpers.GetUserId(User, userId);
-        if (!RequestHelpers.AssertCanUpdateUser(_userManager, User, requestUserId, true))
+        var user = _userManager.GetUserById(requestUserId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        if (!RequestHelpers.AssertCanUpdateUser(User, user, true))
         {
             return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update this item user data.");
         }
 
-        var user = _userManager.GetUserById(requestUserId) ?? throw new ResourceNotFoundException();
         var item = _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {

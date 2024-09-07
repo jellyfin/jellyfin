@@ -129,5 +129,7 @@
     "TaskCleanCollectionsAndPlaylists": "Dọn dẹp bộ sưu tập và danh sách phát",
     "TaskCleanCollectionsAndPlaylistsDescription": "Xóa các mục khỏi bộ sưu tập và danh sách phát không còn tồn tại.",
     "TaskAudioNormalization": "Chuẩn Hóa Âm Thanh",
-    "TaskAudioNormalizationDescription": "Quét tập tin để tìm dữ liệu chuẩn hóa âm thanh."
+    "TaskAudioNormalizationDescription": "Quét tập tin để tìm dữ liệu chuẩn hóa âm thanh.",
+    "TaskDownloadMissingLyricsDescription": "Tải xuống lời cho bài hát",
+    "TaskDownloadMissingLyrics": "Tải xuống lời bị thiếu"
 }

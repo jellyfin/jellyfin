@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using MediaBrowser.Providers.Plugins.Omdb;
 using Xunit;

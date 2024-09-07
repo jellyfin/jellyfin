@@ -35,9 +35,9 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
     /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
     /// <param name="collectionManager">Instance of the <see cref="ICollectionManager"/> interface.</param>
     /// <param name="playlistManager">Instance of the <see cref="IPlaylistManager"/> interface.</param>
-    /// <param name="logger">The logger.</param>
-    /// <param name="providerManager">The provider manager.</param>
-    /// <param name="fileSystem">The filesystem.</param>
+    /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
+    /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
+    /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     public CleanupCollectionAndPlaylistPathsTask(
         ILocalizationManager localization,
         ICollectionManager collectionManager,
@@ -135,6 +135,6 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
     /// <inheritdoc />
     public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
     {
-        return new[] { new TaskTriggerInfo() { Type = TaskTriggerInfo.TriggerStartup } };
+        return [new TaskTriggerInfo() { Type = TaskTriggerInfo.TriggerStartup }];
     }
 }
