@@ -284,7 +284,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
                 if (extractableAttachmentIds.Count > 0)
                 {
-                    await CacheAllAttachmentsInternal(mediaPath, inputFile, mediaSource, extractableAttachmentIds, cancellationToken).ConfigureAwait(false);
+                    await CacheAllAttachmentsInternal(mediaPath, _mediaEncoder.GetInputArgument(inputFile, mediaSource), mediaSource, extractableAttachmentIds, cancellationToken).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
@@ -323,7 +323,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
             processArgs += string.Format(
                 CultureInfo.InvariantCulture,
-                " -i \"{0}\" -t 0 -f null null",
+                " -i {0} -t 0 -f null null",
                 inputFile);
 
             int exitCode;
