@@ -901,11 +901,14 @@ public class ItemsController : BaseJellyfinApiController
             {
                 var item = _libraryManager.GetItemById(childItemId);
 
-                var userData = _userDataRepository.GetUserDataByPresentationUniqueKey(user, item);
-
-                if (item != null && userData != null && userData.PlaybackPositionTicks > 0)
+                if (item != null)
                 {
-                    itemsResult.Items = itemsResult.Items.Append(item).ToList();
+                    var userData = _userDataRepository.GetUserDataByPresentationUniqueKey(user, item);
+
+                    if (item != null && userData != null && userData.PlaybackPositionTicks > 0)
+                    {
+                        itemsResult.Items = itemsResult.Items.Append(item).ToList();
+                    }
                 }
             }
         }
