@@ -535,6 +535,9 @@ namespace MediaBrowser.Model.Entities
         {
             get
             {
+                // In some cases AverageFrameRate for videos will be read as 1000fps even if it is not.
+                // This is probably due to a library compatability issue.
+                // See https://github.com/jellyfin/jellyfin/pull/12603#discussion_r1748044018 for mor info.
                 return AverageFrameRate < 1000 ? AverageFrameRate : RealFrameRate;
             }
         }
