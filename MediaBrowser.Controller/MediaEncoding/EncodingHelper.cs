@@ -315,8 +315,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return false;
             }
 
-            if (string.Equals(state.VideoStream.Codec, "hevc", StringComparison.OrdinalIgnoreCase)
-                && state.VideoStream.VideoRange == VideoRange.HDR
+            if (state.VideoStream.VideoRange == VideoRange.HDR
                 && state.VideoStream.VideoRangeType == VideoRangeType.DOVI)
             {
                 // Only native SW decoder and HW accelerator can parse dovi rpu.
