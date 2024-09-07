@@ -113,15 +113,15 @@ public class ScheduledTaskWorker : IScheduledTaskWorker
     /// <value>The task manager.</value>
     protected ITaskManager TaskManager { get; }
 
-        /// <inheritdoc />
-        public IScheduledTask ScheduledTask { get; private set; }
+    /// <inheritdoc />
+    public IScheduledTask ScheduledTask { get; private set; }
 
-        /// <inheritdoc />
-        public TaskResult LastExecutionResult
+    /// <inheritdoc />
+    public TaskResult LastExecutionResult
+    {
+        get
         {
-            get
-            {
-                var path = GetHistoryFilePath();
+            var path = GetHistoryFilePath();
 
             lock (_lastExecutionResultSyncLock)
             {
@@ -170,14 +170,14 @@ public class ScheduledTaskWorker : IScheduledTaskWorker
         }
     }
 
-        /// <inheritdoc />
-        public string Name => ScheduledTask.Name;
+    /// <inheritdoc />
+    public string Name => ScheduledTask.Name;
 
-        /// <inheritdoc />
-        public string Description => ScheduledTask.Description;
+    /// <inheritdoc />
+    public string Description => ScheduledTask.Description;
 
-        /// <inheritdoc />
-        public string Category => ScheduledTask.Category;
+    /// <inheritdoc />
+    public string Category => ScheduledTask.Category;
 
     /// <summary>
     /// Gets or sets the current cancellation token.
@@ -191,24 +191,24 @@ public class ScheduledTaskWorker : IScheduledTaskWorker
     /// <value>The current execution start time.</value>
     private DateTime CurrentExecutionStartTime { get; set; }
 
-        /// <inheritdoc />
-        public TaskState State
+    /// <inheritdoc />
+    public TaskState State
+    {
+        get
         {
-            get
+            if (CurrentCancellationTokenSource is not null)
             {
-                if (CurrentCancellationTokenSource is not null)
-                {
-                    return CurrentCancellationTokenSource.IsCancellationRequested
-                               ? TaskState.Cancelling
-                               : TaskState.Running;
-                }
+                return CurrentCancellationTokenSource.IsCancellationRequested
+                           ? TaskState.Cancelling
+                           : TaskState.Running;
+            }
 
             return TaskState.Idle;
         }
     }
 
-        /// <inheritdoc />
-        public double? CurrentProgress { get; private set; }
+    /// <inheritdoc />
+    public double? CurrentProgress { get; private set; }
 
     /// <summary>
     /// Gets or sets the triggers that define when the task will run.
@@ -254,14 +254,14 @@ public class ScheduledTaskWorker : IScheduledTaskWorker
         }
     }
 
-        /// <inheritdoc />
-        public string Id
+    /// <inheritdoc />
+    public string Id
+    {
+        get
         {
-            get
-            {
-                return _id ??= ScheduledTask.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture);
-            }
+            return _id ??= ScheduledTask.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture);
         }
+    }
 
     private void InitTriggerEvents()
     {
@@ -269,11 +269,11 @@ public class ScheduledTaskWorker : IScheduledTaskWorker
         ReloadTriggerEvents(true);
     }
 
-        /// <inheritdoc />
-        public void ReloadTriggerEvents()
-        {
-            ReloadTriggerEvents(false);
-        }
+    /// <inheritdoc />
+    public void ReloadTriggerEvents()
+    {
+        ReloadTriggerEvents(false);
+    }
 
     /// <summary>
     /// Reloads the trigger events.
@@ -512,24 +512,24 @@ public class ScheduledTaskWorker : IScheduledTaskWorker
         return list ?? GetDefaultTriggers();
     }
 
-        private TaskTriggerInfo[] GetDefaultTriggers()
+    private TaskTriggerInfo[] GetDefaultTriggers()
+    {
+        try
         {
-            try
-            {
-                return ScheduledTask.GetDefaultTriggers().ToArray();
-            }
-            catch
-            {
-                return
-                [
-                    new()
+            return ScheduledTask.GetDefaultTriggers().ToArray();
+        }
+        catch
+        {
+            return
+            [
+                new()
                     {
                         IntervalTicks = TimeSpan.FromDays(1).Ticks,
                         Type = TaskTriggerInfo.TriggerInterval
                     }
-                ];
-            }
+            ];
         }
+    }
 
     /// <summary>
     /// Saves the triggers.
@@ -580,12 +580,12 @@ public class ScheduledTaskWorker : IScheduledTaskWorker
         ((TaskManager)TaskManager).OnTaskCompleted(this, result);
     }
 
-        /// <inheritdoc />
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
 
     /// <summary>
     /// Releases unmanaged and - optionally - managed resources.
