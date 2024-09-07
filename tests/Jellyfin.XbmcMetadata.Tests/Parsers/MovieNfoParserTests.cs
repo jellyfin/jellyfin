@@ -149,7 +149,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             Assert.Equal(new DateTime(2019, 8, 6, 9, 1, 18), item.DateCreated);
 
             // userData
-            var userData = _userDataManager.GetUserData(_testUser, item);
+            var userData = _userDataManager.GetUserData(_testUser, item)!;
             Assert.Equal(2, userData.PlayCount);
             Assert.True(userData.Played);
             Assert.Equal(new DateTime(2021, 02, 11, 07, 47, 23), userData.LastPlayedDate);

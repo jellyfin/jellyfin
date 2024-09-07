@@ -3,6 +3,7 @@ using System;
 using Jellyfin.Server.Implementations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Jellyfin.Server.Implementations.Migrations
 {
     [DbContext(typeof(JellyfinDbContext))]
-    partial class JellyfinDbModelSnapshot : ModelSnapshot
+    [Migration("20240907123425_UserDataInJfLib")]
+    partial class UserDataInJfLib
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.8");
@@ -282,14 +285,15 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<Guid>("ItemId")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("SegmentProviderId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<long>("StartTicks")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("Type")
                         .HasColumnType("INTEGER");
-
-                    b.Property<string>("SegmentProviderId")
-                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 

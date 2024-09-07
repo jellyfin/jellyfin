@@ -44,7 +44,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="user">User to use.</param>
         /// <param name="item">Item to use.</param>
         /// <returns>User data.</returns>
-        UserItemData GetUserData(User user, BaseItem item);
+        UserItemData? GetUserData(User user, BaseItem item);
 
         /// <summary>
         /// Gets the user data dto.

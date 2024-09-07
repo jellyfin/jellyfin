@@ -492,7 +492,6 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<IBlurayExaminer, BdInfoExaminer>();
 
-            serviceCollection.AddSingleton<IUserDataRepository, SqliteUserDataRepository>();
             serviceCollection.AddSingleton<IUserDataManager, UserDataManager>();
 
             serviceCollection.AddSingleton<IItemRepository, SqliteItemRepository>();
@@ -580,7 +579,6 @@ namespace Emby.Server.Implementations
             }
 
             ((SqliteItemRepository)Resolve<IItemRepository>()).Initialize();
-            ((SqliteUserDataRepository)Resolve<IUserDataRepository>()).Initialize();
 
             var localizationManager = (LocalizationManager)Resolve<ILocalizationManager>();
             await localizationManager.LoadAll().ConfigureAwait(false);
