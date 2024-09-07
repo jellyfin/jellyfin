@@ -217,7 +217,7 @@ namespace MediaBrowser.Model.Dlna
                 var stream = TargetVideoStream;
                 return MaxFramerate.HasValue && !IsDirectStream
                     ? MaxFramerate
-                    : stream is null ? null : stream.AverageFrameRate ?? stream.RealFrameRate;
+                    : stream?.ReferenceFrameRate;
             }
         }
 

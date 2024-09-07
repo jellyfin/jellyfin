@@ -1534,7 +1534,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (maxrate.HasValue && state.VideoStream is not null)
             {
-                var contentRate = state.VideoStream.AverageFrameRate ?? state.VideoStream.RealFrameRate;
+                var contentRate = state.VideoStream.ReferenceFrameRate;
 
                 if (contentRate.HasValue && contentRate.Value > maxrate.Value)
                 {
@@ -2218,7 +2218,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var requestedFramerate = request.MaxFramerate ?? request.Framerate;
             if (requestedFramerate.HasValue)
             {
-                var videoFrameRate = videoStream.AverageFrameRate ?? videoStream.RealFrameRate;
+                var videoFrameRate = videoStream.ReferenceFrameRate;
 
                 if (!videoFrameRate.HasValue || videoFrameRate.Value > requestedFramerate.Value)
                 {
@@ -3234,7 +3234,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public static string GetSwDeinterlaceFilter(EncodingJobInfo state, EncodingOptions options)
         {
-            var doubleRateDeint = options.DeinterlaceDoubleRate && state.VideoStream?.AverageFrameRate <= 30;
+            var doubleRateDeint = options.DeinterlaceDoubleRate && state.VideoStream?.ReferenceFrameRate <= 30;
             return string.Format(
                 CultureInfo.InvariantCulture,
                 "{0}={1}:-1:0",
@@ -3244,7 +3244,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public string GetHwDeinterlaceFilter(EncodingJobInfo state, EncodingOptions options, string hwDeintSuffix)
         {
-            var doubleRateDeint = options.DeinterlaceDoubleRate && (state.VideoStream?.AverageFrameRate ?? 60) <= 30;
+            var doubleRateDeint = options.DeinterlaceDoubleRate && (state.VideoStream?.ReferenceFrameRate ?? 60) <= 30;
             if (hwDeintSuffix.Contains("cuda", StringComparison.OrdinalIgnoreCase))
             {
                 var useBwdif = string.Equals(options.DeinterlaceMethod, "bwdif", StringComparison.OrdinalIgnoreCase)
@@ -3598,7 +3598,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isSwEncoder = !isNvencEncoder;
             var isCuInCuOut = isNvDecoder && isNvencEncoder;
 
-            var doubleRateDeint = options.DeinterlaceDoubleRate && (state.VideoStream?.AverageFrameRate ?? 60) <= 30;
+            var doubleRateDeint = options.DeinterlaceDoubleRate && (state.VideoStream?.ReferenceFrameRate ?? 60) <= 30;
             var doDeintH264 = state.DeInterlace("h264", true) || state.DeInterlace("avc", true);
             var doDeintHevc = state.DeInterlace("h265", true) || state.DeInterlace("hevc", true);
             var doDeintH2645 = doDeintH264 || doDeintHevc;
