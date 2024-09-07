@@ -810,7 +810,7 @@ namespace MediaBrowser.Model.Dlna
             if (options.AllowVideoStreamCopy)
             {
                 // prefer direct copy profile
-                float videoFramerate = videoStream?.AverageFrameRate ?? videoStream?.RealFrameRate ?? 0;
+                float videoFramerate = videoStream?.ReferenceFrameRate ?? 0;
                 TransportStreamTimestamp? timestamp = videoStream is null ? TransportStreamTimestamp.None : item.Timestamp;
                 int? numAudioStreams = item.GetStreamCount(MediaStreamType.Audio);
                 int? numVideoStreams = item.GetStreamCount(MediaStreamType.Video);
@@ -875,7 +875,7 @@ namespace MediaBrowser.Model.Dlna
             playlistItem.VideoCodecs = videoCodecs;
 
             // Copy video codec options as a starting point, this applies to transcode and direct-stream
-            playlistItem.MaxFramerate = videoStream?.AverageFrameRate;
+            playlistItem.MaxFramerate = videoStream?.ReferenceFrameRate;
             var qualifier = videoStream?.Codec;
             if (videoStream?.Level is not null)
             {
@@ -949,7 +949,7 @@ namespace MediaBrowser.Model.Dlna
             double? videoLevel = videoStream?.Level;
             string? videoProfile = videoStream?.Profile;
             VideoRangeType? videoRangeType = videoStream?.VideoRangeType;
-            float videoFramerate = videoStream is null ? 0 : videoStream.AverageFrameRate ?? videoStream.AverageFrameRate ?? 0;
+            float videoFramerate = videoStream is null ? 0 : videoStream.ReferenceFrameRate ?? 0;
             bool? isAnamorphic = videoStream?.IsAnamorphic;
             bool? isInterlaced = videoStream?.IsInterlaced;
             string? videoCodecTag = videoStream?.CodecTag;
@@ -1208,7 +1208,7 @@ namespace MediaBrowser.Model.Dlna
             double? videoLevel = videoStream?.Level;
             string? videoProfile = videoStream?.Profile;
             VideoRangeType? videoRangeType = videoStream?.VideoRangeType;
-            float videoFramerate = videoStream is null ? 0 : videoStream.AverageFrameRate ?? videoStream.AverageFrameRate ?? 0;
+            float videoFramerate = videoStream is null ? 0 : videoStream.ReferenceFrameRate ?? 0;
             bool? isAnamorphic = videoStream?.IsAnamorphic;
             bool? isInterlaced = videoStream?.IsInterlaced;
             string? videoCodecTag = videoStream?.CodecTag;

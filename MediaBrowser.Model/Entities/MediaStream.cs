@@ -526,6 +526,23 @@ namespace MediaBrowser.Model.Entities
         public float? RealFrameRate { get; set; }
 
         /// <summary>
+        /// Gets the framerate used as reference.
+        /// Prefer AverageFrameRate, if that is null or an unrealistic value
+        /// then fallback to RealFrameRate.
+        /// </summary>
+        /// <value>The reference frame rate.</value>
+        public float? ReferenceFrameRate
+        {
+            get
+            {
+                // In some cases AverageFrameRate for videos will be read as 1000fps even if it is not.
+                // This is probably due to a library compatability issue.
+                // See https://github.com/jellyfin/jellyfin/pull/12603#discussion_r1748044018 for more info.
+                return AverageFrameRate < 1000 ? AverageFrameRate : RealFrameRate;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the profile.
         /// </summary>
         /// <value>The profile.</value>
