@@ -128,7 +128,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             { "vaapi", _defaultMjpegEncoder + "_vaapi" },
             { "qsv", _defaultMjpegEncoder + "_qsv" },
-            { "videotoolbox", _defaultMjpegEncoder + "_videotoolbox" }
+            { "videotoolbox", _defaultMjpegEncoder + "_videotoolbox" },
+            { "rkmpp", _defaultMjpegEncoder + "_rkmpp" }
         };
 
         public static readonly string[] LosslessAudioCodecs = new string[]
@@ -5482,6 +5483,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isSwDecoder = !isRkmppDecoder;
             var isSwEncoder = !isRkmppEncoder;
             var isDrmInDrmOut = isRkmppDecoder && isRkmppEncoder;
+            var isEncoderSupportAfbc = isRkmppEncoder
+                && (vidEncoder.Contains("h264", StringComparison.OrdinalIgnoreCase)
+                    || vidEncoder.Contains("hevc", StringComparison.OrdinalIgnoreCase));
 
             var doDeintH264 = state.DeInterlace("h264", true) || state.DeInterlace("avc", true);
             var doDeintHevc = state.DeInterlace("h265", true) || state.DeInterlace("hevc", true);
@@ -5540,7 +5544,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 // INPUT rkmpp/drm surface(gem/dma-heap)
 
-                var isFullAfbcPipeline = isDrmInDrmOut && !doOclTonemap;
+                var isFullAfbcPipeline = isEncoderSupportAfbc && isDrmInDrmOut && !doOclTonemap;
                 var swapOutputWandH = doRkVppTranspose && swapWAndH;
                 var outFormat = doOclTonemap ? "p010" : "nv12";
                 var hwScalePrefix = doRkVppTranspose ? "vpp" : "scale";
@@ -5578,12 +5582,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (doOclTonemap)
             {
                 var tonemapFilter = GetHwTonemapFilter(options, "opencl", "nv12");
-                // enable tradeoffs for performance
-                if (!string.IsNullOrEmpty(tonemapFilter))
-                {
-                    tonemapFilter += ":tradeoff=1";
-                }
-
                 mainFilters.Add(tonemapFilter);
             }
 
@@ -5654,7 +5652,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                     subFilters.Add("hwupload=derive_device=rkmpp");
 
                     // try enabling AFBC to save DDR bandwidth
-                    overlayFilters.Add("overlay_rkrga=eof_action=pass:repeatlast=0:format=nv12:afbc=1");
+                    var hwOverlayFilter = "overlay_rkrga=eof_action=pass:repeatlast=0:format=nv12";
+                    if (isEncoderSupportAfbc)
+                    {
+                        hwOverlayFilter += ":afbc=1";
+                    }
+
+                    overlayFilters.Add(hwOverlayFilter);
                 }
             }
             else if (memoryOutput)

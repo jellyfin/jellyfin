@@ -895,21 +895,30 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 throw new InvalidOperationException("Empty or invalid input argument.");
             }
 
-            float? encoderQuality = qualityScale;
-            if (vidEncoder.Contains("vaapi", StringComparison.OrdinalIgnoreCase))
+            // ffmpeg qscale is a value from 1-31, with 1 being best quality and 31 being worst
+            // jpeg quality is a value from 0-100, with 0 being worst quality and 100 being best
+            var encoderQuality = Math.Clamp(qualityScale ?? 4, 1, 31);
+            var encoderQualityOption = "-qscale:v ";
+
+            if (vidEncoder.Contains("vaapi", StringComparison.OrdinalIgnoreCase)
+                || vidEncoder.Contains("qsv", StringComparison.OrdinalIgnoreCase))
             {
-                // vaapi's mjpeg encoder uses jpeg quality divided by QP2LAMBDA (118) as input, instead of ffmpeg defined qscale
-                // ffmpeg qscale is a value from 1-31, with 1 being best quality and 31 being worst
-                // jpeg quality is a value from 0-100, with 0 being worst quality and 100 being best
-                encoderQuality = (100 - ((qualityScale - 1) * (100 / 30))) / 118;
+                // vaapi and qsv's mjpeg encoder use jpeg quality as input, instead of ffmpeg defined qscale
+                encoderQuality = 100 - ((encoderQuality - 1) * (100 / 30));
+                encoderQualityOption = "-global_quality:v ";
             }
 
             if (vidEncoder.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase))
             {
                 // videotoolbox's mjpeg encoder uses jpeg quality scaled to QP2LAMBDA (118) instead of ffmpeg defined qscale
-                // ffmpeg qscale is a value from 1-31, with 1 being best quality and 31 being worst
-                // jpeg quality is a value from 0-100, with 0 being worst quality and 100 being best
-                encoderQuality = 118 - ((qualityScale - 1) * (118 / 30));
+                encoderQuality = 118 - ((encoderQuality - 1) * (118 / 30));
+            }
+
+            if (vidEncoder.Contains("rkmpp", StringComparison.OrdinalIgnoreCase))
+            {
+                // rkmpp's mjpeg encoder uses jpeg quality as input (max is 99, not 100), instead of ffmpeg defined qscale
+                encoderQuality = 99 - ((encoderQuality - 1) * (99 / 30));
+                encoderQualityOption = "-qp_init:v ";
             }
 
             // Output arguments
@@ -925,7 +934,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 filterParam,
                 outputThreads.GetValueOrDefault(_threads),
                 vidEncoder,
-                qualityScale.HasValue ? "-qscale:v " + encoderQuality.Value.ToString(CultureInfo.InvariantCulture) + " " : string.Empty,
+                encoderQualityOption + encoderQuality + " ",
                 vidEncoder.Contains("videotoolbox", StringComparison.InvariantCultureIgnoreCase) ? "-allow_sw 1 " : string.Empty, // allow_sw fallback for some intel macs
                 "image2",
                 outputPath);

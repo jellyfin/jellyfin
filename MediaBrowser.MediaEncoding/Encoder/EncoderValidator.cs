@@ -93,7 +93,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "hevc_videotoolbox",
             "mjpeg_videotoolbox",
             "h264_rkmpp",
-            "hevc_rkmpp"
+            "hevc_rkmpp",
+            "mjpeg_rkmpp"
         };
 
         private static readonly string[] _requiredFilters = new[]
