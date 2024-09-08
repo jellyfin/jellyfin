@@ -149,6 +149,14 @@ namespace MediaBrowser.Controller.Library
         /// <returns>Task.</returns>
         Task ValidateMediaLibrary(IProgress<double> progress, CancellationToken cancellationToken);
 
+        /// <summary>
+        /// Reloads the root media folder.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="removeRoot">Is remove the library itself allowed.</param>
+        /// <returns>Task.</returns>
+        Task ValidateTopLibraryFolders(CancellationToken cancellationToken, bool removeRoot = false);
+
         Task UpdateImagesAsync(BaseItem item, bool forceUpdate = false);
 
         /// <summary>

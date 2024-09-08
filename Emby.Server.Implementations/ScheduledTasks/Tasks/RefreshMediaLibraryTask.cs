@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -45,10 +43,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         /// <inheritdoc />
         public string Key => "RefreshLibrary";
 
-        /// <summary>
-        /// Creates the triggers that define when the task will run.
-        /// </summary>
-        /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
+        /// <inheritdoc />
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
             yield return new TaskTriggerInfo

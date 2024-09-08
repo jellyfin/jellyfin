@@ -28,24 +28,28 @@ namespace MediaBrowser.Model.Dlna
         [XmlAttribute("container")]
         public string Container { get; set; }
 
+        [XmlAttribute("subcontainer")]
+        public string SubContainer { get; set; }
+
         public string[] GetCodecs()
         {
             return ContainerProfile.SplitValue(Codec);
         }
 
-        private bool ContainsContainer(string container)
+        private bool ContainsContainer(string container, bool useSubContainer = false)
         {
-            return ContainerProfile.ContainsContainer(Container, container);
+            var containerToCheck = useSubContainer && string.Equals(Container, "hls", StringComparison.OrdinalIgnoreCase) ? SubContainer : Container;
+            return ContainerProfile.ContainsContainer(containerToCheck, container);
         }
 
-        public bool ContainsAnyCodec(string codec, string container)
+        public bool ContainsAnyCodec(string codec, string container, bool useSubContainer = false)
         {
-            return ContainsAnyCodec(ContainerProfile.SplitValue(codec), container);
+            return ContainsAnyCodec(ContainerProfile.SplitValue(codec), container, useSubContainer);
         }
 
-        public bool ContainsAnyCodec(string[] codec, string container)
+        public bool ContainsAnyCodec(string[] codec, string container, bool useSubContainer = false)
         {
-            if (!ContainsContainer(container))
+            if (!ContainsContainer(container, useSubContainer))
             {
                 return false;
             }

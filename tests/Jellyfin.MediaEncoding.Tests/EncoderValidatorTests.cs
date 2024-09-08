@@ -17,6 +17,7 @@ namespace Jellyfin.MediaEncoding.Tests
         }
 
         [Theory]
+        [InlineData(EncoderValidatorTestsData.FFmpegV701Output, true)]
         [InlineData(EncoderValidatorTestsData.FFmpegV611Output, true)]
         [InlineData(EncoderValidatorTestsData.FFmpegV60Output, true)]
         [InlineData(EncoderValidatorTestsData.FFmpegV512Output, true)]
@@ -33,6 +34,7 @@ namespace Jellyfin.MediaEncoding.Tests
         {
             public GetFFmpegVersionTestData()
             {
+                Add(EncoderValidatorTestsData.FFmpegV701Output, new Version(7, 0, 1));
                 Add(EncoderValidatorTestsData.FFmpegV611Output, new Version(6, 1, 1));
                 Add(EncoderValidatorTestsData.FFmpegV60Output, new Version(6, 0));
                 Add(EncoderValidatorTestsData.FFmpegV512Output, new Version(5, 1, 2));

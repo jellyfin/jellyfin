@@ -51,6 +51,8 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         o.PoolInitialFill = 1;
     });
 
+    private readonly Version _maxFFmpegCkeyPauseSupported = new Version(6, 1);
+
     /// <summary>
     /// Initializes a new instance of the <see cref="TranscodeManager"/> class.
     /// </summary>
@@ -235,15 +237,6 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         if (delete(job.Path!))
         {
             await DeletePartialStreamFiles(job.Path!, job.Type, 0, 1500).ConfigureAwait(false);
-            if (job.MediaSource?.VideoType == VideoType.Dvd || job.MediaSource?.VideoType == VideoType.BluRay)
-            {
-                var concatFilePath = Path.Join(_serverConfigurationManager.GetTranscodePath(), job.MediaSource.Id + ".concat");
-                if (File.Exists(concatFilePath))
-                {
-                    _logger.LogInformation("Deleting ffmpeg concat configuration at {Path}", concatFilePath);
-                    File.Delete(concatFilePath);
-                }
-            }
         }
 
         if (closeLiveStream && !string.IsNullOrWhiteSpace(job.LiveStreamId))
@@ -419,7 +412,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
             var attachmentPath = Path.Combine(_appPaths.CachePath, "attachments", state.MediaSource.Id);
             if (state.MediaSource.VideoType == VideoType.Dvd || state.MediaSource.VideoType == VideoType.BluRay)
             {
-                var concatPath = Path.Join(_serverConfigurationManager.GetTranscodePath(), state.MediaSource.Id + ".concat");
+                var concatPath = Path.Join(_appPaths.CachePath, "concat", state.MediaSource.Id + ".concat");
                 await _attachmentExtractor.ExtractAllAttachments(concatPath, state.MediaSource, attachmentPath, cancellationTokenSource.Token).ConfigureAwait(false);
             }
             else
@@ -477,6 +470,11 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
             logFilePrefix = EncodingHelper.IsCopyCodec(state.OutputAudioCodec)
                 ? "FFmpeg.Remux-"
                 : "FFmpeg.DirectStream-";
+        }
+
+        if (state.VideoRequest is null && EncodingHelper.IsCopyCodec(state.OutputAudioCodec))
+        {
+            logFilePrefix = "FFmpeg.Remux-";
         }
 
         var logFilePath = Path.Combine(
@@ -559,7 +557,9 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
 
     private void StartThrottler(StreamState state, TranscodingJob transcodingJob)
     {
-        if (EnableThrottling(state))
+        if (EnableThrottling(state)
+            && (_mediaEncoder.IsPkeyPauseSupported
+                || _mediaEncoder.EncoderVersion <= _maxFFmpegCkeyPauseSupported))
         {
             transcodingJob.TranscodingThrottler = new TranscodingThrottler(transcodingJob, _loggerFactory.CreateLogger<TranscodingThrottler>(), _serverConfigurationManager, _fileSystem, _mediaEncoder);
             transcodingJob.TranscodingThrottler.Start();

@@ -90,7 +90,12 @@ public class TvShowsController : BaseJellyfinApiController
         [FromQuery] bool enableResumable = true,
         [FromQuery] bool enableRewatching = false)
     {
-        userId = RequestHelpers.GetUserId(User, userId);
+        var user = _userManager.GetUserById(RequestHelpers.GetUserId(User, userId));
+        if (user is null)
+        {
+            return NotFound();
+        }
+
         var options = new DtoOptions { Fields = fields }
             .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
@@ -102,7 +107,7 @@ public class TvShowsController : BaseJellyfinApiController
                 ParentId = parentId,
                 SeriesId = seriesId,
                 StartIndex = startIndex,
-                UserId = userId.Value,
+                User = user,
                 EnableTotalRecordCount = enableTotalRecordCount,
                 DisableFirstEpisode = disableFirstEpisode,
                 NextUpDateCutoff = nextUpDateCutoff ?? DateTime.MinValue,
@@ -110,10 +115,6 @@ public class TvShowsController : BaseJellyfinApiController
                 EnableRewatching = enableRewatching
             },
             options);
-
-        var user = userId.IsNullOrEmpty()
-            ? null
-            : _userManager.GetUserById(userId.Value);
 
         var returnItems = _dtoService.GetBaseItemDtos(result.Items, options, user);
 

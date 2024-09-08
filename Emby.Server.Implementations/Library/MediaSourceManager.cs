@@ -113,6 +113,11 @@ namespace Emby.Server.Implementations.Library
                 return true;
             }
 
+            if (stream.IsPgsSubtitleStream)
+            {
+                return true;
+            }
+
             return false;
         }
 
@@ -374,7 +379,8 @@ namespace Emby.Server.Implementations.Library
 
         private void SetDefaultSubtitleStreamIndex(MediaSourceInfo source, UserItemData userData, User user, bool allowRememberingSelection)
         {
-            if (userData.SubtitleStreamIndex.HasValue
+            if (userData is not null
+                && userData.SubtitleStreamIndex.HasValue
                 && user.RememberSubtitleSelections
                 && user.SubtitleMode != SubtitlePlaybackMode.None
                 && allowRememberingSelection)
@@ -406,7 +412,7 @@ namespace Emby.Server.Implementations.Library
 
         private void SetDefaultAudioStreamIndex(MediaSourceInfo source, UserItemData userData, User user, bool allowRememberingSelection)
         {
-            if (userData.AudioStreamIndex.HasValue && user.RememberAudioSelections && allowRememberingSelection)
+            if (userData is not null && userData.AudioStreamIndex.HasValue && user.RememberAudioSelections && allowRememberingSelection)
             {
                 var index = userData.AudioStreamIndex.Value;
                 // Make sure the saved index is still valid
@@ -429,7 +435,7 @@ namespace Emby.Server.Implementations.Library
 
             if (mediaType == MediaType.Video)
             {
-                var userData = item is null ? new UserItemData() : _userDataManager.GetUserData(user, item);
+                var userData = item is null ? null : _userDataManager.GetUserData(user, item);
 
                 var allowRememberingSelection = item is null || item.EnableRememberingTrackSelections;
 

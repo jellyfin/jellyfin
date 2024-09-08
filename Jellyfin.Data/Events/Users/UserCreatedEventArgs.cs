@@ -1,4 +1,4 @@
-﻿using Jellyfin.Data.Entities;
+using Jellyfin.Data.Entities;
 
 namespace Jellyfin.Data.Events.Users
 {

@@ -47,7 +47,7 @@ namespace MediaBrowser.Controller.Entities
         /// The supported image extensions.
         /// </summary>
         public static readonly string[] SupportedImageExtensions
-            = new[] { ".png", ".jpg", ".jpeg", ".webp", ".tbn", ".gif" };
+            = new[] { ".png", ".jpg", ".jpeg", ".webp", ".tbn", ".gif", ".svg" };
 
         private static readonly List<string> _supportedExtensions = new List<string>(SupportedImageExtensions)
         {
@@ -486,6 +486,8 @@ namespace MediaBrowser.Controller.Entities
         public static IChannelManager ChannelManager { get; set; }
 
         public static IMediaSourceManager MediaSourceManager { get; set; }
+
+        public static IMediaSegmentManager MediaSegmentManager { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the forced sort.
@@ -1116,7 +1118,10 @@ namespace MediaBrowser.Controller.Entities
                 RunTimeTicks = item.RunTimeTicks,
                 Container = item.Container,
                 Size = item.Size,
-                Type = type
+                Type = type,
+                HasSegments = MediaSegmentManager.IsTypeSupported(item)
+                    && (protocol is null or MediaProtocol.File)
+                    && MediaSegmentManager.HasSegments(item.Id)
             };
 
             if (string.IsNullOrEmpty(info.Path))
@@ -1180,28 +1185,29 @@ namespace MediaBrowser.Controller.Entities
             return info;
         }
 
-        private string GetMediaSourceName(BaseItem item)
+        internal string GetMediaSourceName(BaseItem item)
         {
             var terms = new List<string>();
 
             var path = item.Path;
             if (item.IsFileProtocol && !string.IsNullOrEmpty(path))
             {
+                var displayName = System.IO.Path.GetFileNameWithoutExtension(path);
                 if (HasLocalAlternateVersions)
                 {
-                    var displayName = System.IO.Path.GetFileNameWithoutExtension(path)
-                        .Replace(System.IO.Path.GetFileName(ContainingFolderPath), string.Empty, StringComparison.OrdinalIgnoreCase)
-                        .TrimStart(new char[] { ' ', '-' });
-
-                    if (!string.IsNullOrEmpty(displayName))
+                    var containingFolderName = System.IO.Path.GetFileName(ContainingFolderPath);
+                    if (displayName.Length > containingFolderName.Length && displayName.StartsWith(containingFolderName, StringComparison.OrdinalIgnoreCase))
                     {
-                        terms.Add(displayName);
+                        var name = displayName.AsSpan(containingFolderName.Length).TrimStart([' ', '-']);
+                        if (!name.IsWhiteSpace())
+                        {
+                            terms.Add(name.ToString());
+                        }
                     }
                 }
 
                 if (terms.Count == 0)
                 {
-                    var displayName = System.IO.Path.GetFileNameWithoutExtension(path);
                     terms.Add(displayName);
                 }
             }
@@ -1839,7 +1845,7 @@ namespace MediaBrowser.Controller.Entities
             data.LastPlayedDate = datePlayed ?? data.LastPlayedDate ?? DateTime.UtcNow;
             data.Played = true;
 
-            UserDataManager.SaveUserData(user.Id, this, data, UserDataSaveReason.TogglePlayed, CancellationToken.None);
+            UserDataManager.SaveUserData(user, this, data, UserDataSaveReason.TogglePlayed, CancellationToken.None);
         }
 
         /// <summary>
@@ -1861,7 +1867,7 @@ namespace MediaBrowser.Controller.Entities
             data.LastPlayedDate = null;
             data.Played = false;
 
-            UserDataManager.SaveUserData(user.Id, this, data, UserDataSaveReason.TogglePlayed, CancellationToken.None);
+            UserDataManager.SaveUserData(user, this, data, UserDataSaveReason.TogglePlayed, CancellationToken.None);
         }
 
         /// <summary>
@@ -1949,13 +1955,14 @@ namespace MediaBrowser.Controller.Entities
                 return;
             }
 
-            // Remove it from the item
-            RemoveImage(info);
-
+            // Remove from file system
             if (info.IsLocalFile)
             {
                 FileSystem.DeleteFile(info.Path);
             }
+
+            // Remove from item
+            RemoveImage(info);
 
             await UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
         }
@@ -2496,11 +2503,6 @@ namespace MediaBrowser.Controller.Entities
             return new[] { Id };
         }
 
-        public virtual List<ExternalUrl> GetRelatedUrls()
-        {
-            return new List<ExternalUrl>();
-        }
-
         public virtual double? GetRefreshProgress()
         {
             return null;
@@ -2548,14 +2550,24 @@ namespace MediaBrowser.Controller.Entities
                 StringComparison.OrdinalIgnoreCase);
         }
 
-        public IReadOnlyList<BaseItem> GetThemeSongs()
+        public IReadOnlyList<BaseItem> GetThemeSongs(User user = null)
         {
-            return GetExtras().Where(e => e.ExtraType == Model.Entities.ExtraType.ThemeSong).ToArray();
+            return GetThemeSongs(user, Array.Empty<(ItemSortBy, SortOrder)>());
         }
 
-        public IReadOnlyList<BaseItem> GetThemeVideos()
+        public IReadOnlyList<BaseItem> GetThemeSongs(User user, IEnumerable<(ItemSortBy SortBy, SortOrder SortOrder)> orderBy)
         {
-            return GetExtras().Where(e => e.ExtraType == Model.Entities.ExtraType.ThemeVideo).ToArray();
+            return LibraryManager.Sort(GetExtras().Where(e => e.ExtraType == Model.Entities.ExtraType.ThemeSong), user, orderBy).ToArray();
+        }
+
+        public IReadOnlyList<BaseItem> GetThemeVideos(User user = null)
+        {
+            return GetThemeVideos(user, Array.Empty<(ItemSortBy, SortOrder)>());
+        }
+
+        public IReadOnlyList<BaseItem> GetThemeVideos(User user, IEnumerable<(ItemSortBy SortBy, SortOrder SortOrder)> orderBy)
+        {
+            return LibraryManager.Sort(GetExtras().Where(e => e.ExtraType == Model.Entities.ExtraType.ThemeVideo), user, orderBy).ToArray();
         }
 
         /// <summary>

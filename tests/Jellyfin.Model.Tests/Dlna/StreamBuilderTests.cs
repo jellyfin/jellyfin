@@ -51,8 +51,8 @@ namespace Jellyfin.Model.Tests
         [InlineData("SafariNext", "mp4-h264-ac3-aacExt-srt-2600k", PlayMethod.DirectPlay)] // #6450
         [InlineData("SafariNext", "mp4-h264-ac3-srt-2600k", PlayMethod.DirectPlay)] // #6450
         [InlineData("SafariNext", "mp4-hevc-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported, "Remux", "HLS.mp4")] // #6450
-        [InlineData("SafariNext", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported, "Remux", "HLS.mp4")] // #6450
-        [InlineData("SafariNext", "mp4-hevc-ac3-aacExt-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported, "Remux", "HLS.mp4")] // #6450
+        [InlineData("SafariNext", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported | TranscodeReason.AudioChannelsNotSupported, "DirectStream", "HLS.mp4")] // #6450
+        [InlineData("SafariNext", "mp4-hevc-ac3-aacExt-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported | TranscodeReason.AudioChannelsNotSupported, "DirectStream", "HLS.mp4")] // #6450
         // AndroidPixel
         [InlineData("AndroidPixel", "mp4-h264-aac-srt-2600k", PlayMethod.DirectPlay)] // #6450
         [InlineData("AndroidPixel", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.DirectPlay)] // #6450
@@ -205,8 +205,8 @@ namespace Jellyfin.Model.Tests
         [InlineData("SafariNext", "mp4-h264-ac3-aacExt-srt-2600k", PlayMethod.DirectPlay)] // #6450
         [InlineData("SafariNext", "mp4-h264-ac3-srt-2600k", PlayMethod.DirectPlay)] // #6450
         [InlineData("SafariNext", "mp4-hevc-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported, "Remux", "HLS.mp4")] // #6450
-        [InlineData("SafariNext", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported, "Remux", "HLS.mp4")] // #6450
-        [InlineData("SafariNext", "mp4-hevc-ac3-aacExt-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported, "Remux", "HLS.mp4")] // #6450
+        [InlineData("SafariNext", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported | TranscodeReason.AudioChannelsNotSupported, "DirectStream", "HLS.mp4")] // #6450
+        [InlineData("SafariNext", "mp4-hevc-ac3-aacExt-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported | TranscodeReason.AudioChannelsNotSupported, "DirectStream", "HLS.mp4")] // #6450
         // AndroidPixel
         [InlineData("AndroidPixel", "mp4-h264-aac-srt-2600k", PlayMethod.DirectPlay)] // #6450
         [InlineData("AndroidPixel", "mp4-h264-ac3-aacDef-srt-2600k", PlayMethod.DirectPlay)] // #6450
@@ -432,7 +432,14 @@ namespace Jellyfin.Model.Tests
                         if (targetAudioStream?.IsExternal == false)
                         {
                             // Check expected audio codecs (1)
-                            Assert.DoesNotContain(targetAudioStream.Codec, streamInfo.AudioCodecs);
+                            if ((why & TranscodeReason.AudioChannelsNotSupported) == 0)
+                            {
+                                Assert.DoesNotContain(targetAudioStream.Codec, streamInfo.AudioCodecs);
+                            }
+                            else
+                            {
+                                Assert.Equal(targetAudioStream.Channels, streamInfo.TranscodingMaxAudioChannels);
+                            }
                         }
                     }
                     else if (transcodeMode.Equals("Remux", StringComparison.Ordinal))

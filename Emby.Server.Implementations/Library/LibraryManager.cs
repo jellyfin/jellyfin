@@ -1,4 +1,5 @@
 #pragma warning disable CS1591
+#pragma warning disable CA5394
 
 using System;
 using System.Collections.Concurrent;
@@ -16,6 +17,7 @@ using Emby.Server.Implementations.Library.Resolvers;
 using Emby.Server.Implementations.Library.Validators;
 using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.ScheduledTasks.Tasks;
+using Emby.Server.Implementations.Sorting;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
@@ -667,7 +669,7 @@ namespace Emby.Server.Implementations.Library
 
             if (parent is not null)
             {
-                var multiItemResolvers = resolvers is null ? MultiItemResolvers : resolvers.OfType<IMultiItemResolver>().ToArray();
+                var multiItemResolvers = resolvers is null ? MultiItemResolvers : resolvers.OfType<IMultiItemResolver>();
 
                 foreach (var resolver in multiItemResolvers)
                 {
@@ -1029,7 +1031,7 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        private async Task ValidateTopLibraryFolders(CancellationToken cancellationToken, bool removeRoot = false)
+        public async Task ValidateTopLibraryFolders(CancellationToken cancellationToken, bool removeRoot = false)
         {
             await RootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
 
@@ -1528,7 +1530,7 @@ namespace Emby.Server.Implementations.Library
             {
                 var userViews = UserViewManager.GetUserViews(new UserViewQuery
                 {
-                    UserId = user.Id,
+                    User = user,
                     IncludeHidden = true,
                     IncludeExternalContent = allowExternalContent
                 });
@@ -1710,13 +1712,19 @@ namespace Emby.Server.Implementations.Library
         /// <inheritdoc />
         public IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User? user, IEnumerable<ItemSortBy> sortBy, SortOrder sortOrder)
         {
-            var isFirst = true;
-
             IOrderedEnumerable<BaseItem>? orderedItems = null;
 
             foreach (var orderBy in sortBy.Select(o => GetComparer(o, user)).Where(c => c is not null))
             {
-                if (isFirst)
+                if (orderBy is RandomComparer)
+                {
+                    var randomItems = items.ToArray();
+                    Random.Shared.Shuffle(randomItems);
+                    items = randomItems;
+                    // Items are no longer ordered at this point, so set orderedItems back to null
+                    orderedItems = null;
+                }
+                else if (orderedItems is null)
                 {
                     orderedItems = sortOrder == SortOrder.Descending
                         ? items.OrderByDescending(i => i, orderBy)
@@ -1728,8 +1736,6 @@ namespace Emby.Server.Implementations.Library
                         ? orderedItems!.ThenByDescending(i => i, orderBy)
                         : orderedItems!.ThenBy(i => i, orderBy); // orderedItems is set during the first iteration
                 }
-
-                isFirst = false;
             }
 
             return orderedItems ?? items;
@@ -1738,8 +1744,6 @@ namespace Emby.Server.Implementations.Library
         /// <inheritdoc />
         public IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User? user, IEnumerable<(ItemSortBy OrderBy, SortOrder SortOrder)> orderBy)
         {
-            var isFirst = true;
-
             IOrderedEnumerable<BaseItem>? orderedItems = null;
 
             foreach (var (name, sortOrder) in orderBy)
@@ -1750,7 +1754,15 @@ namespace Emby.Server.Implementations.Library
                     continue;
                 }
 
-                if (isFirst)
+                if (comparer is RandomComparer)
+                {
+                    var randomItems = items.ToArray();
+                    Random.Shared.Shuffle(randomItems);
+                    items = randomItems;
+                    // Items are no longer ordered at this point, so set orderedItems back to null
+                    orderedItems = null;
+                }
+                else if (orderedItems is null)
                 {
                     orderedItems = sortOrder == SortOrder.Descending
                         ? items.OrderByDescending(i => i, comparer)
@@ -1762,8 +1774,6 @@ namespace Emby.Server.Implementations.Library
                         ? orderedItems!.ThenByDescending(i => i, comparer)
                         : orderedItems!.ThenBy(i => i, comparer); // orderedItems is set during the first iteration
                 }
-
-                isFirst = false;
             }
 
             return orderedItems ?? items;
@@ -1884,7 +1894,7 @@ namespace Emby.Server.Implementations.Library
                     try
                     {
                         var index = item.GetImageIndex(img);
-                        image = await ConvertImageToLocal(item, img, index, removeOnFailure: true).ConfigureAwait(false);
+                        image = await ConvertImageToLocal(item, img, index, true).ConfigureAwait(false);
                     }
                     catch (ArgumentException)
                     {
@@ -2715,33 +2725,9 @@ namespace Emby.Server.Implementations.Library
 
         public string GetPathAfterNetworkSubstitution(string path, BaseItem? ownerItem)
         {
-            string? newPath;
-            if (ownerItem is not null)
-            {
-                var libraryOptions = GetLibraryOptions(ownerItem);
-                if (libraryOptions is not null)
-                {
-                    foreach (var pathInfo in libraryOptions.PathInfos)
-                    {
-                        if (path.TryReplaceSubPath(pathInfo.Path, pathInfo.NetworkPath, out newPath))
-                        {
-                            return newPath;
-                        }
-                    }
-                }
-            }
-
-            var metadataPath = _configurationManager.Configuration.MetadataPath;
-            var metadataNetworkPath = _configurationManager.Configuration.MetadataNetworkPath;
-
-            if (path.TryReplaceSubPath(metadataPath, metadataNetworkPath, out newPath))
-            {
-                return newPath;
-            }
-
             foreach (var map in _configurationManager.Configuration.PathSubstitutions)
             {
-                if (path.TryReplaceSubPath(map.From, map.To, out newPath))
+                if (path.TryReplaceSubPath(map.From, map.To, out var newPath))
                 {
                     return newPath;
                 }
@@ -3059,15 +3045,6 @@ namespace Emby.Server.Implementations.Library
             var libraryOptions = CollectionFolder.GetLibraryOptions(virtualFolderPath);
 
             SyncLibraryOptionsToLocations(virtualFolderPath, libraryOptions);
-
-            foreach (var originalPathInfo in libraryOptions.PathInfos)
-            {
-                if (string.Equals(mediaPath.Path, originalPathInfo.Path, StringComparison.Ordinal))
-                {
-                    originalPathInfo.NetworkPath = mediaPath.NetworkPath;
-                    break;
-                }
-            }
 
             CollectionFolder.SaveLibraryOptions(virtualFolderPath, libraryOptions);
         }

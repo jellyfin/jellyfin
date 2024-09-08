@@ -86,7 +86,7 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        private void ImportUserIds(SqliteConnection db, IEnumerable<User> users)
+        private void ImportUserIds(ManagedConnection db, IEnumerable<User> users)
         {
             var userIdsWithUserData = GetAllUserIdsWithUserData(db);
 
@@ -107,7 +107,7 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        private List<Guid> GetAllUserIdsWithUserData(SqliteConnection db)
+        private List<Guid> GetAllUserIdsWithUserData(ManagedConnection db)
         {
             var list = new List<Guid>();
 
@@ -176,7 +176,7 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        private static void SaveUserData(SqliteConnection db, long internalUserId, string key, UserItemData userData)
+        private static void SaveUserData(ManagedConnection db, long internalUserId, string key, UserItemData userData)
         {
             using (var statement = db.PrepareStatement("replace into UserDatas (key, userId, rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex) values (@key, @userId, @rating,@played,@playCount,@isFavorite,@playbackPositionTicks,@lastPlayedDate,@AudioStreamIndex,@SubtitleStreamIndex)"))
             {
@@ -267,7 +267,7 @@ namespace Emby.Server.Implementations.Data
 
             ArgumentException.ThrowIfNullOrEmpty(key);
 
-            using (var connection = GetConnection())
+            using (var connection = GetConnection(true))
             {
                 using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from UserDatas where key =@Key and userId=@UserId"))
                 {
@@ -333,10 +333,10 @@ namespace Emby.Server.Implementations.Data
         /// <returns>The user item data.</returns>
         private UserItemData ReadRow(SqliteDataReader reader)
         {
-            var userData = new UserItemData();
-
-            userData.Key = reader[0].ToString();
-            // userData.UserId = reader[1].ReadGuidFromBlob();
+            var userData = new UserItemData
+            {
+                Key = reader.GetString(0)
+            };
 
             if (reader.TryGetDouble(2, out var rating))
             {

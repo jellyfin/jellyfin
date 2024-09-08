@@ -62,18 +62,19 @@ namespace MediaBrowser.Providers.Manager
         private readonly CancellationTokenSource _disposeCancellationTokenSource = new();
         private readonly PriorityQueue<(Guid ItemId, MetadataRefreshOptions RefreshOptions), RefreshPriority> _refreshQueue = new();
         private readonly IMemoryCache _memoryCache;
-
+        private readonly IMediaSegmentManager _mediaSegmentManager;
         private readonly AsyncKeyedLocker<string> _imageSaveLock = new(o =>
         {
             o.PoolSize = 20;
             o.PoolInitialFill = 1;
         });
 
-        private IImageProvider[] _imageProviders = Array.Empty<IImageProvider>();
-        private IMetadataService[] _metadataServices = Array.Empty<IMetadataService>();
-        private IMetadataProvider[] _metadataProviders = Array.Empty<IMetadataProvider>();
-        private IMetadataSaver[] _savers = Array.Empty<IMetadataSaver>();
-        private IExternalId[] _externalIds = Array.Empty<IExternalId>();
+        private IImageProvider[] _imageProviders = [];
+        private IMetadataService[] _metadataServices = [];
+        private IMetadataProvider[] _metadataProviders = [];
+        private IMetadataSaver[] _savers = [];
+        private IExternalId[] _externalIds = [];
+        private IExternalUrlProvider[] _externalUrlProviders = [];
         private bool _isProcessingRefreshQueue;
         private bool _disposed;
 
@@ -91,6 +92,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="baseItemManager">The BaseItem manager.</param>
         /// <param name="lyricManager">The lyric manager.</param>
         /// <param name="memoryCache">The memory cache.</param>
+        /// <param name="mediaSegmentManager">The media segment manager.</param>
         public ProviderManager(
             IHttpClientFactory httpClientFactory,
             ISubtitleManager subtitleManager,
@@ -102,7 +104,8 @@ namespace MediaBrowser.Providers.Manager
             ILibraryManager libraryManager,
             IBaseItemManager baseItemManager,
             ILyricManager lyricManager,
-            IMemoryCache memoryCache)
+            IMemoryCache memoryCache,
+            IMediaSegmentManager mediaSegmentManager)
         {
             _logger = logger;
             _httpClientFactory = httpClientFactory;
@@ -115,6 +118,7 @@ namespace MediaBrowser.Providers.Manager
             _baseItemManager = baseItemManager;
             _lyricManager = lyricManager;
             _memoryCache = memoryCache;
+            _mediaSegmentManager = mediaSegmentManager;
         }
 
         /// <inheritdoc/>
@@ -132,12 +136,14 @@ namespace MediaBrowser.Providers.Manager
             IEnumerable<IMetadataService> metadataServices,
             IEnumerable<IMetadataProvider> metadataProviders,
             IEnumerable<IMetadataSaver> metadataSavers,
-            IEnumerable<IExternalId> externalIds)
+            IEnumerable<IExternalId> externalIds,
+            IEnumerable<IExternalUrlProvider> externalUrlProviders)
         {
             _imageProviders = imageProviders.ToArray();
             _metadataServices = metadataServices.OrderBy(i => i.Order).ToArray();
             _metadataProviders = metadataProviders.ToArray();
             _externalIds = externalIds.OrderBy(i => i.ProviderName).ToArray();
+            _externalUrlProviders = externalUrlProviders.OrderBy(i => i.Name).ToArray();
 
             _savers = metadataSavers.ToArray();
         }
@@ -418,6 +424,12 @@ namespace MediaBrowser.Providers.Manager
             return GetMetadataProvidersInternal<T>(item, libraryOptions, globalMetadataOptions, false, false);
         }
 
+        /// <inheritdoc />
+        public IEnumerable<IMetadataSaver> GetMetadataSavers(BaseItem item, LibraryOptions libraryOptions)
+        {
+            return _savers.Where(i => IsSaverEnabledForItem(i, item, libraryOptions, ItemUpdateType.MetadataEdit, false));
+        }
+
         private IEnumerable<IMetadataProvider<T>> GetMetadataProvidersInternal<T>(BaseItem item, LibraryOptions libraryOptions, MetadataOptions globalMetadataOptions, bool includeDisabled, bool forceEnableInternetMetadata)
             where T : BaseItem
         {
@@ -561,6 +573,14 @@ namespace MediaBrowser.Providers.Manager
             {
                 Name = i.Name,
                 Type = MetadataPluginType.LyricFetcher
+            }));
+
+            // Media segment providers
+            var mediaSegmentProviders = _mediaSegmentManager.GetSupportedProviders(dummy);
+            pluginList.AddRange(mediaSegmentProviders.Select(i => new MetadataPlugin
+            {
+                Name = i.Name,
+                Type = MetadataPluginType.MediaSegmentProvider
             }));
 
             summary.Plugins = pluginList.ToArray();
@@ -871,31 +891,35 @@ namespace MediaBrowser.Providers.Manager
         /// <inheritdoc/>
         public IEnumerable<ExternalUrl> GetExternalUrls(BaseItem item)
         {
-            return GetExternalIds(item)
+#pragma warning disable CS0618 // Type or member is obsolete - Remove 10.11
+            var legacyExternalIdUrls = GetExternalIds(item)
                 .Select(i =>
-            {
-                if (string.IsNullOrEmpty(i.UrlFormatString))
                 {
-                    return null;
-                }
+                    var urlFormatString = i.UrlFormatString;
+                    if (string.IsNullOrEmpty(urlFormatString)
+                        || !item.TryGetProviderId(i.Key, out var providerId))
+                    {
+                        return null;
+                    }
 
-                var value = item.GetProviderId(i.Key);
+                    return new ExternalUrl
+                    {
+                        Name = i.ProviderName,
+                        Url = string.Format(
+                            CultureInfo.InvariantCulture,
+                            urlFormatString,
+                            providerId)
+                    };
+                })
+                .OfType<ExternalUrl>();
+#pragma warning restore CS0618 // Type or member is obsolete
 
-                if (string.IsNullOrEmpty(value))
-                {
-                    return null;
-                }
+            var externalUrls = _externalUrlProviders
+                .SelectMany(p => p
+                    .GetExternalUrls(item)
+                    .Select(externalUrl => new ExternalUrl { Name = p.Name, Url = externalUrl }));
 
-                return new ExternalUrl
-                {
-                    Name = i.ProviderName,
-                    Url = string.Format(
-                        CultureInfo.InvariantCulture,
-                        i.UrlFormatString,
-                        value)
-                };
-            }).Where(i => i is not null)
-                .Concat(item.GetRelatedUrls())!; // We just filtered out all the nulls
+            return legacyExternalIdUrls.Concat(externalUrls).OrderBy(u => u.Name);
         }
 
         /// <inheritdoc/>
@@ -906,7 +930,9 @@ namespace MediaBrowser.Providers.Manager
                     name: i.ProviderName,
                     key: i.Key,
                     type: i.Type,
+#pragma warning disable CS0618 // Type or member is obsolete - Remove 10.11
                     urlFormatString: i.UrlFormatString));
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         /// <inheritdoc/>

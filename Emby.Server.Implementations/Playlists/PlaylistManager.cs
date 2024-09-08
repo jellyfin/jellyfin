@@ -170,8 +170,13 @@ namespace Emby.Server.Implementations.Playlists
         private List<Playlist> GetUserPlaylists(Guid userId)
         {
             var user = _userManager.GetUserById(userId);
+            var playlistsFolder = GetPlaylistsFolder(userId);
+            if (playlistsFolder is null)
+            {
+                return [];
+            }
 
-            return GetPlaylistsFolder(userId).GetChildren(user, true).OfType<Playlist>().ToList();
+            return playlistsFolder.GetChildren(user, true).OfType<Playlist>().ToList();
         }
 
         private static string GetTargetPath(string path)
@@ -184,11 +189,11 @@ namespace Emby.Server.Implementations.Playlists
             return path;
         }
 
-        private IReadOnlyList<BaseItem> GetPlaylistItems(IEnumerable<Guid> itemIds, MediaType playlistMediaType, User user, DtoOptions options)
+        private IReadOnlyList<BaseItem> GetPlaylistItems(IEnumerable<Guid> itemIds, User user, DtoOptions options)
         {
             var items = itemIds.Select(_libraryManager.GetItemById).Where(i => i is not null);
 
-            return Playlist.GetPlaylistItems(playlistMediaType, items, user, options);
+            return Playlist.GetPlaylistItems(items, user, options);
         }
 
         public Task AddItemToPlaylistAsync(Guid playlistId, IReadOnlyCollection<Guid> itemIds, Guid userId)
@@ -208,7 +213,7 @@ namespace Emby.Server.Implementations.Playlists
                 ?? throw new ArgumentException("No Playlist exists with Id " + playlistId);
 
             // Retrieve all the items to be added to the playlist
-            var newItems = GetPlaylistItems(newItemIds, playlist.MediaType, user, options)
+            var newItems = GetPlaylistItems(newItemIds, user, options)
                 .Where(i => i.SupportsAddingToPlaylist);
 
             // Filter out duplicate items, if necessary

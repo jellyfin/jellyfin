@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 
 using System;
+using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 
 namespace MediaBrowser.Model.Library
@@ -14,10 +15,10 @@ namespace MediaBrowser.Model.Library
         }
 
         /// <summary>
-        /// Gets or sets the user identifier.
+        /// Gets or sets the user.
         /// </summary>
-        /// <value>The user identifier.</value>
-        public Guid UserId { get; set; }
+        /// <value>The user.</value>
+        public required User User { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [include external content].

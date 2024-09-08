@@ -373,22 +373,14 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 {
                     // Check for TMDb id
                     var tmdbid = justName.GetAttributeValue("tmdbid");
-
-                    if (!string.IsNullOrWhiteSpace(tmdbid))
-                    {
-                        item.SetProviderId(MetadataProvider.Tmdb, tmdbid);
-                    }
+                    item.TrySetProviderId(MetadataProvider.Tmdb, tmdbid);
                 }
 
                 if (!string.IsNullOrEmpty(item.Path))
                 {
                     // Check for IMDb id - we use full media path, as we can assume that this will match in any use case (whether  id in parent dir or in file name)
                     var imdbid = item.Path.AsSpan().GetAttributeValue("imdbid");
-
-                    if (!string.IsNullOrWhiteSpace(imdbid))
-                    {
-                        item.SetProviderId(MetadataProvider.Imdb, imdbid);
-                    }
+                    item.TrySetProviderId(MetadataProvider.Imdb, imdbid);
                 }
             }
         }

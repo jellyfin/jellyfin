@@ -1,3 +1,16 @@
 {
-    "Albums": "Albaim"
+    "Albums": "Albaim",
+    "Artists": "Ealaíontóir",
+    "AuthenticationSucceededWithUserName": "{0} fíordheimhnithe",
+    "Books": "leabhair",
+    "CameraImageUploadedFrom": "Tá íomhá ceamara nua uaslódáilte ó {0}",
+    "Channels": "Cainéil",
+    "ChapterNameValue": "Caibidil {0}",
+    "Collections": "Bailiúcháin",
+    "Default": "Mainneachtain",
+    "DeviceOfflineWithName": "scoireadh {0}",
+    "DeviceOnlineWithName": "{0} ceangailte",
+    "External": "Forimeallach",
+    "FailedLoginAttemptWithUserName": "Iarracht ar theip ar fhíordheimhniú ó {0}",
+    "Favorites": "Ceanáin"
 }

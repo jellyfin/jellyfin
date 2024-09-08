@@ -1,6 +1,4 @@
 #nullable disable
-#pragma warning disable CS1591
-
 using System;
 
 namespace MediaBrowser.Model.Tasks
@@ -10,10 +8,24 @@ namespace MediaBrowser.Model.Tasks
     /// </summary>
     public class TaskTriggerInfo
     {
+        /// <summary>
+        /// The daily trigger.
+        /// </summary>
         public const string TriggerDaily = "DailyTrigger";
+
+        /// <summary>
+        /// The weekly trigger.
+        /// </summary>
         public const string TriggerWeekly = "WeeklyTrigger";
+
+        /// <summary>
+        /// The interval trigger.
+        /// </summary>
         public const string TriggerInterval = "IntervalTrigger";
-        public const string TriggerSystemEvent = "SystemEventTrigger";
+
+        /// <summary>
+        /// The startup trigger.
+        /// </summary>
         public const string TriggerStartup = "StartupTrigger";
 
         /// <summary>

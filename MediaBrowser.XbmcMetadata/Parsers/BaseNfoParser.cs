@@ -306,12 +306,15 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     break;
                 case "watched":
                     var played = reader.ReadElementContentAsBoolean();
-                    if (!string.IsNullOrWhiteSpace(nfoConfiguration.UserId))
+                    if (Guid.TryParse(nfoConfiguration.UserId, out var userId))
                     {
-                        var user = _userManager.GetUserById(Guid.Parse(nfoConfiguration.UserId));
-                        userData = _userDataManager.GetUserData(user, item);
-                        userData.Played = played;
-                        _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+                        var user = _userManager.GetUserById(userId);
+                        if (user is not null)
+                        {
+                            userData = _userDataManager.GetUserData(user, item);
+                            userData.Played = played;
+                            _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+                        }
                     }
 
                     break;
@@ -320,9 +323,12 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         && Guid.TryParse(nfoConfiguration.UserId, out var playCountUserId))
                     {
                         var user = _userManager.GetUserById(playCountUserId);
-                        userData = _userDataManager.GetUserData(user, item);
-                        userData.PlayCount = count;
-                        _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+                        if (user is not null)
+                        {
+                            userData = _userDataManager.GetUserData(user, item);
+                            userData.PlayCount = count;
+                            _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+                        }
                     }
 
                     break;
@@ -331,9 +337,12 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         && Guid.TryParse(nfoConfiguration.UserId, out var lastPlayedUserId))
                     {
                         var user = _userManager.GetUserById(lastPlayedUserId);
-                        userData = _userDataManager.GetUserData(user, item);
-                        userData.LastPlayedDate = lastPlayed;
-                        _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+                        if (user is not null)
+                        {
+                            userData = _userDataManager.GetUserData(user, item);
+                            userData.LastPlayedDate = lastPlayed;
+                            _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+                        }
                     }
 
                     break;
@@ -519,7 +528,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     if (reader.TryReadDateTimeExact(nfoConfiguration.ReleaseDateFormat, out var releaseDate))
                     {
                         item.PremiereDate = releaseDate;
-                        item.ProductionYear = releaseDate.Year;
+
+                        // Production year can already be set by the year tag
+                        item.ProductionYear ??= releaseDate.Year;
                     }
 
                     break;
@@ -570,10 +581,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                     var provider = reader.GetAttribute("type");
                     var providerId = reader.ReadElementContentAsString();
-                    if (!string.IsNullOrWhiteSpace(provider) && !string.IsNullOrWhiteSpace(providerId))
-                    {
-                        item.SetProviderId(provider, providerId);
-                    }
+                    item.TrySetProviderId(provider, providerId);
 
                     break;
                 case "thumb":
@@ -602,10 +610,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     if (_validProviderIds.TryGetValue(readerName, out string? providerIdValue))
                     {
                         var id = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(providerIdValue) && !string.IsNullOrWhiteSpace(id))
-                        {
-                            item.SetProviderId(providerIdValue, id);
-                        }
+                        item.TrySetProviderId(providerIdValue, id);
                     }
                     else
                     {
