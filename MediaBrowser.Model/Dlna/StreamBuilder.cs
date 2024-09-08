@@ -805,8 +805,12 @@ namespace MediaBrowser.Model.Dlna
             }
 
             var transcodingProfiles = options.Profile.TranscodingProfiles
-                .Where(i => !item.UseMostCompatibleTranscodingProfile || string.Equals(i.Container, "ts", StringComparison.OrdinalIgnoreCase))
                 .Where(i => i.Type == playlistItem.MediaType && i.Context == options.Context);
+
+            if (item.UseMostCompatibleTranscodingProfile)
+            {
+                transcodingProfiles = transcodingProfiles.Where(i => string.Equals(i.Container, "ts", StringComparison.OrdinalIgnoreCase));
+            }
 
             if (options.AllowVideoStreamCopy)
             {
