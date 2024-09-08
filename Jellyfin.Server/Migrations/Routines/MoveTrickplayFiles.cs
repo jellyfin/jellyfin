@@ -1,10 +1,10 @@
 using System;
 using System.Globalization;
 using System.IO;
-using DiscUtils;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Trickplay;
+using MediaBrowser.Model.IO;
 
 namespace Jellyfin.Server.Migrations.Routines;
 
