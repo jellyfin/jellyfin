@@ -93,6 +93,41 @@ public class JellyfinDbContext : DbContext
     /// </summary>
     public DbSet<UserData> UserData => Set<UserData>();
 
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the user data.
+    /// </summary>
+    public DbSet<AncestorId> AncestorIds => Set<AncestorId>();
+
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the user data.
+    /// </summary>
+    public DbSet<AttachmentStreamInfo> AttachmentStreamInfos => Set<AttachmentStreamInfo>();
+
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the user data.
+    /// </summary>
+    public DbSet<BaseItem> BaseItems => Set<BaseItem>();
+
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the user data.
+    /// </summary>
+    public DbSet<Chapter> Chapters => Set<Chapter>();
+
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the user data.
+    /// </summary>
+    public DbSet<ItemValue> ItemValues => Set<ItemValue>();
+
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the user data.
+    /// </summary>
+    public DbSet<MediaStreamInfo> MediaStreamInfos => Set<MediaStreamInfo>();
+
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the user data.
+    /// </summary>
+    public DbSet<People> Peoples => Set<People>();
+
     /*public DbSet<Artwork> Artwork => Set<Artwork>();
 
     public DbSet<Book> Books => Set<Book>();
