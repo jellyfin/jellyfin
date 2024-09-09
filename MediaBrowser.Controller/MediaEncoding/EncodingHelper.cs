@@ -184,7 +184,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     { HardwareAccelerationType.qsv,                  hwEncoder + "_qsv" },
                     { HardwareAccelerationType.vaapi,                hwEncoder + "_vaapi" },
                     { HardwareAccelerationType.videotoolbox,         hwEncoder + "_videotoolbox" },
-                    { HardwareAccelerationType.v4l2m2,              hwEncoder + "_v4l2m2m" },
+                    { HardwareAccelerationType.v4l2m2m,              hwEncoder + "_v4l2m2m" },
                     { HardwareAccelerationType.rkmpp,                hwEncoder + "_rkmpp" },
                 };
 

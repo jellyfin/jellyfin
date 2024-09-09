@@ -30,7 +30,7 @@ public enum HardwareAccelerationType
     /// <summary>
     /// Video4Linux2 V4L2M2M.
     /// </summary>
-    v4l2m2 = 4,
+    v4l2m2m = 4,
 
     /// <summary>
     /// Video Acceleration API (VAAPI).
