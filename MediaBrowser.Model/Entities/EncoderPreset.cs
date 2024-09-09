@@ -8,7 +8,7 @@ namespace MediaBrowser.Model.Entities;
 public enum EncoderPreset
 {
     /// <summary>
-    /// Encoder default preset.
+    /// Auto preset.
     /// </summary>
     auto = 0,
 
