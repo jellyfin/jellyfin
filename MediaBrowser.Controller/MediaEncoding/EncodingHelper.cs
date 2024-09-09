@@ -129,7 +129,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             { HardwareAccelerationType.vaapi, _defaultMjpegEncoder + "_vaapi" },
             { HardwareAccelerationType.qsv, _defaultMjpegEncoder + "_qsv" },
-            { HardwareAccelerationType.videotoolbox, _defaultMjpegEncoder + "_videotoolbox" }
+            { HardwareAccelerationType.videotoolbox, _defaultMjpegEncoder + "_videotoolbox" },
             { HardwareAccelerationType.rkmpp, _defaultMjpegEncoder + "_rkmpp" }
         };
 
