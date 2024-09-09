@@ -1466,7 +1466,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             else if (encoderPreset == EncoderPreset.auto)
             {
                 return param;
-            } else if (string.Equals(videoEncoder, "h264_vaapi", StringComparison.OrdinalIgnoreCase)
+            }
+            else if (string.Equals(videoEncoder, "h264_vaapi", StringComparison.OrdinalIgnoreCase)
                      || string.Equals(videoEncoder, "hevc_vaapi", StringComparison.OrdinalIgnoreCase)
                      || string.Equals(videoEncoder, "av1_vaapi", StringComparison.OrdinalIgnoreCase))
             {
