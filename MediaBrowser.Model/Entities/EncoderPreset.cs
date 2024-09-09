@@ -8,52 +8,57 @@ namespace MediaBrowser.Model.Entities;
 public enum EncoderPreset
 {
     /// <summary>
+    /// Encoder default preset.
+    /// </summary>
+    auto = 0,
+
+    /// <summary>
     /// Placebo preset.
     /// </summary>
-    placebo = 0,
+    placebo = 1,
 
     /// <summary>
     /// Veryslow preset.
     /// </summary>
-    veryslow = 1,
+    veryslow = 2,
 
     /// <summary>
     /// Slower preset.
     /// </summary>
-    slower = 2,
+    slower = 3,
 
     /// <summary>
     /// Slow preset.
     /// </summary>
-    slow = 3,
+    slow = 4,
 
     /// <summary>
     /// Medium preset.
     /// </summary>
-    medium = 4,
+    medium = 5,
 
     /// <summary>
     /// Fast preset.
     /// </summary>
-    fast = 5,
+    fast = 6,
 
     /// <summary>
     /// Faster preset.
     /// </summary>
-    faster = 6,
+    faster = 7,
 
     /// <summary>
     /// Veryfast preset.
     /// </summary>
-    veryfast = 7,
+    veryfast = 8,
 
     /// <summary>
     /// Superfast preset.
     /// </summary>
-    superfast = 8,
+    superfast = 9,
 
     /// <summary>
     /// Ultrafast preset.
     /// </summary>
-    ultrafast = 9
+    ultrafast = 10
 }

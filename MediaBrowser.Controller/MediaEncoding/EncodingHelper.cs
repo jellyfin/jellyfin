@@ -1415,6 +1415,152 @@ namespace MediaBrowser.Controller.MediaEncoding
             return FormattableString.Invariant($" -b:v {bitrate} -maxrate {bitrate} -bufsize {bufsize}");
         }
 
+        private string GetEncoderParam(EncoderPreset? preset, EncoderPreset defaultPreset, EncodingOptions encodingOptions, string videoEncoder, bool isLibX265)
+        {
+            var param = string.Empty;
+            var encoderPreset = preset ?? defaultPreset;
+            if (string.Equals(videoEncoder, "libx264", StringComparison.OrdinalIgnoreCase) || isLibX265)
+            {
+                param += " -preset " + encoderPreset.ToString().ToLowerInvariant();
+
+                int encodeCrf = encodingOptions.H264Crf;
+                if (isLibX265)
+                {
+                    encodeCrf = encodingOptions.H265Crf;
+                }
+
+                if (encodeCrf >= 0 && encodeCrf <= 51)
+                {
+                    param += " -crf " + encodeCrf.ToString(CultureInfo.InvariantCulture);
+                }
+                else
+                {
+                    string defaultCrf = "23";
+                    if (isLibX265)
+                    {
+                        defaultCrf = "28";
+                    }
+
+                    param += " -crf " + defaultCrf;
+                }
+            }
+            else if (string.Equals(videoEncoder, "libsvtav1", StringComparison.OrdinalIgnoreCase))
+            {
+                // Default to use the recommended preset 10.
+                // Omit presets < 5, which are too slow for on the fly encoding.
+                // https://gitlab.com/AOMediaCodec/SVT-AV1/-/blob/master/Docs/Ffmpeg.md
+                param += encoderPreset switch
+                {
+                    EncoderPreset.veryslow => " -preset 5",
+                    EncoderPreset.slower => " -preset 6",
+                    EncoderPreset.slow => " -preset 7",
+                    EncoderPreset.medium => " -preset 8",
+                    EncoderPreset.fast => " -preset 9",
+                    EncoderPreset.faster => " -preset 10",
+                    EncoderPreset.veryfast => " -preset 11",
+                    EncoderPreset.superfast => " -preset 12",
+                    EncoderPreset.ultrafast => " -preset 13",
+                    _ => " -preset 10"
+                };
+            }
+            else if (encoderPreset == EncoderPreset.auto)
+            {
+                return param;
+            } else if (string.Equals(videoEncoder, "h264_vaapi", StringComparison.OrdinalIgnoreCase)
+                     || string.Equals(videoEncoder, "hevc_vaapi", StringComparison.OrdinalIgnoreCase)
+                     || string.Equals(videoEncoder, "av1_vaapi", StringComparison.OrdinalIgnoreCase))
+            {
+                // -compression_level is not reliable on AMD.
+                if (_mediaEncoder.IsVaapiDeviceInteliHD)
+                {
+                    param += encoderPreset switch
+                    {
+                        EncoderPreset.veryslow => " -compression_level 1",
+                        EncoderPreset.slower => " -compression_level 2",
+                        EncoderPreset.slow => " -compression_level 3",
+                        EncoderPreset.medium => " -compression_level 4",
+                        EncoderPreset.fast => " -compression_level 5",
+                        EncoderPreset.faster => " -compression_level 6",
+                        EncoderPreset.veryfast => " -compression_level 7",
+                        EncoderPreset.superfast => " -compression_level 7",
+                        EncoderPreset.ultrafast => " -compression_level 7",
+                        _ => string.Empty
+                    };
+                }
+            }
+            else if (string.Equals(videoEncoder, "h264_qsv", StringComparison.OrdinalIgnoreCase) // h264 (h264_qsv)
+                     || string.Equals(videoEncoder, "hevc_qsv", StringComparison.OrdinalIgnoreCase) // hevc (hevc_qsv)
+                     || string.Equals(videoEncoder, "av1_qsv", StringComparison.OrdinalIgnoreCase)) // av1 (av1_qsv)
+            {
+                EncoderPreset[] valid_presets = [EncoderPreset.veryslow, EncoderPreset.slower, EncoderPreset.slow, EncoderPreset.medium, EncoderPreset.fast, EncoderPreset.faster, EncoderPreset.veryfast];
+
+                if (valid_presets.Contains(encoderPreset))
+                {
+                    param += " -preset " + encodingOptions.EncoderPreset;
+                }
+                else
+                {
+                    param += " -preset " + EncoderPreset.veryfast.ToString().ToLowerInvariant();
+                }
+            }
+            else if (string.Equals(videoEncoder, "h264_nvenc", StringComparison.OrdinalIgnoreCase) // h264 (h264_nvenc)
+                        || string.Equals(videoEncoder, "hevc_nvenc", StringComparison.OrdinalIgnoreCase) // hevc (hevc_nvenc)
+                        || string.Equals(videoEncoder, "av1_nvenc", StringComparison.OrdinalIgnoreCase) // av1 (av1_nvenc)
+            )
+            {
+                param += encoderPreset switch
+                {
+                        EncoderPreset.veryslow => " -preset p7",
+                        EncoderPreset.slower => " -preset p6",
+                        EncoderPreset.slow => " -preset p5",
+                        EncoderPreset.medium => " -preset p4",
+                        EncoderPreset.fast => " -preset p3",
+                        EncoderPreset.faster => " -preset p2",
+                        _ => " -preset p1"
+                };
+            }
+            else if (string.Equals(videoEncoder, "h264_amf", StringComparison.OrdinalIgnoreCase) // h264 (h264_amf)
+                        || string.Equals(videoEncoder, "hevc_amf", StringComparison.OrdinalIgnoreCase) // hevc (hevc_amf)
+                        || string.Equals(videoEncoder, "av1_amf", StringComparison.OrdinalIgnoreCase) // av1 (av1_amf)
+            )
+            {
+                param += encoderPreset switch
+                {
+                        EncoderPreset.veryslow => " -quality quality",
+                        EncoderPreset.slower => " -quality quality",
+                        EncoderPreset.slow => " -quality quality",
+                        EncoderPreset.medium => " -quality balanced",
+                        _ => " -quality speed"
+                };
+
+                if (string.Equals(videoEncoder, "hevc_amf", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(videoEncoder, "av1_amf", StringComparison.OrdinalIgnoreCase))
+                {
+                    param += " -header_insertion_mode gop";
+                }
+
+                if (string.Equals(videoEncoder, "hevc_amf", StringComparison.OrdinalIgnoreCase))
+                {
+                    param += " -gops_per_idr 1";
+                }
+            }
+            else if (string.Equals(videoEncoder, "h264_videotoolbox", StringComparison.OrdinalIgnoreCase) // h264 (h264_videotoolbox)
+                        || string.Equals(videoEncoder, "hevc_videotoolbox", StringComparison.OrdinalIgnoreCase) // hevc (hevc_videotoolbox)
+            )
+            {
+                param += encoderPreset switch
+                {
+                        EncoderPreset.veryslow => " -prio_speed 0",
+                        EncoderPreset.slower => " -prio_speed 0",
+                        EncoderPreset.slow => " -prio_speed 0",
+                        EncoderPreset.medium => " -prio_speed 0",
+                        _ => " -prio_speed 1"
+                };
+            }
+
+            return param;
+        }
+
         public static string NormalizeTranscodingLevel(EncodingJobInfo state, string level)
         {
             if (double.TryParse(level, CultureInfo.InvariantCulture, out double requestLevel))
@@ -1704,156 +1850,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                 param += " -async_depth 1";
             }
 
-            var isVc1 = string.Equals(state.VideoStream?.Codec, "vc1", StringComparison.OrdinalIgnoreCase);
             var isLibX265 = string.Equals(videoEncoder, "libx265", StringComparison.OrdinalIgnoreCase);
             var encodingPreset = encodingOptions.EncoderPreset;
 
-            if (string.Equals(videoEncoder, "libx264", StringComparison.OrdinalIgnoreCase) || isLibX265)
-            {
-                if (encodingPreset is not null)
-                {
-                    param += " -preset " + encodingPreset.ToString().ToLowerInvariant();
-                }
-                else
-                {
-                    param += " -preset " + defaultPreset;
-                }
-
-                int encodeCrf = encodingOptions.H264Crf;
-                if (isLibX265)
-                {
-                    encodeCrf = encodingOptions.H265Crf;
-                }
-
-                if (encodeCrf >= 0 && encodeCrf <= 51)
-                {
-                    param += " -crf " + encodeCrf.ToString(CultureInfo.InvariantCulture);
-                }
-                else
-                {
-                    string defaultCrf = "23";
-                    if (isLibX265)
-                    {
-                        defaultCrf = "28";
-                    }
-
-                    param += " -crf " + defaultCrf;
-                }
-            }
-            else if (string.Equals(videoEncoder, "libsvtav1", StringComparison.OrdinalIgnoreCase))
-            {
-                // Default to use the recommended preset 10.
-                // Omit presets < 5, which are too slow for on the fly encoding.
-                // https://gitlab.com/AOMediaCodec/SVT-AV1/-/blob/master/Docs/Ffmpeg.md
-                param += encodingPreset switch
-                {
-                    EncoderPreset.veryslow => " -preset 5",
-                    EncoderPreset.slower => " -preset 6",
-                    EncoderPreset.slow => " -preset 7",
-                    EncoderPreset.medium => " -preset 8",
-                    EncoderPreset.fast => " -preset 9",
-                    EncoderPreset.faster => " -preset 10",
-                    EncoderPreset.veryfast => " -preset 11",
-                    EncoderPreset.superfast => " -preset 12",
-                    EncoderPreset.ultrafast => " -preset 13",
-                    _ => " -preset 10"
-                };
-            }
-            else if (string.Equals(videoEncoder, "h264_vaapi", StringComparison.OrdinalIgnoreCase)
-                     || string.Equals(videoEncoder, "hevc_vaapi", StringComparison.OrdinalIgnoreCase)
-                     || string.Equals(videoEncoder, "av1_vaapi", StringComparison.OrdinalIgnoreCase))
-            {
-                // -compression_level is not reliable on AMD.
-                if (_mediaEncoder.IsVaapiDeviceInteliHD)
-                {
-                    param += encodingPreset switch
-                    {
-                        EncoderPreset.veryslow => " -compression_level 1",
-                        EncoderPreset.slower => " -compression_level 2",
-                        EncoderPreset.slow => " -compression_level 3",
-                        EncoderPreset.medium => " -compression_level 4",
-                        EncoderPreset.fast => " -compression_level 5",
-                        EncoderPreset.faster => " -compression_level 6",
-                        EncoderPreset.veryfast => " -compression_level 7",
-                        EncoderPreset.superfast => " -compression_level 7",
-                        EncoderPreset.ultrafast => " -compression_level 7",
-                        _ => string.Empty
-                    };
-                }
-            }
-            else if (string.Equals(videoEncoder, "h264_qsv", StringComparison.OrdinalIgnoreCase) // h264 (h264_qsv)
-                     || string.Equals(videoEncoder, "hevc_qsv", StringComparison.OrdinalIgnoreCase) // hevc (hevc_qsv)
-                     || string.Equals(videoEncoder, "av1_qsv", StringComparison.OrdinalIgnoreCase)) // av1 (av1_qsv)
-            {
-                EncoderPreset[] valid_presets = [EncoderPreset.veryslow, EncoderPreset.slower, EncoderPreset.slow, EncoderPreset.medium, EncoderPreset.fast, EncoderPreset.faster, EncoderPreset.veryfast];
-
-                if (encodingPreset is not null && valid_presets.Contains(encodingPreset.Value))
-                {
-                    param += " -preset " + encodingOptions.EncoderPreset;
-                }
-                else
-                {
-                    param += " -preset " + EncoderPreset.veryfast.ToString().ToLowerInvariant();
-                }
-            }
-            else if (encodingPreset is not null
-                        && (string.Equals(videoEncoder, "h264_nvenc", StringComparison.OrdinalIgnoreCase) // h264 (h264_nvenc)
-                            || string.Equals(videoEncoder, "hevc_nvenc", StringComparison.OrdinalIgnoreCase) // hevc (hevc_nvenc)
-                            || string.Equals(videoEncoder, "av1_nvenc", StringComparison.OrdinalIgnoreCase)) // av1 (av1_nvenc)
-            )
-            {
-                param += encodingPreset.Value switch
-                {
-                        EncoderPreset.veryslow => " -preset p7",
-                        EncoderPreset.slower => " -preset p6",
-                        EncoderPreset.slow => " -preset p5",
-                        EncoderPreset.medium => " -preset p4",
-                        EncoderPreset.fast => " -preset p3",
-                        EncoderPreset.faster => " -preset p2",
-                        _ => " -preset p1"
-                };
-            }
-            else if (encodingPreset is not null
-                     && (string.Equals(videoEncoder, "h264_amf", StringComparison.OrdinalIgnoreCase) // h264 (h264_amf)
-                        || string.Equals(videoEncoder, "hevc_amf", StringComparison.OrdinalIgnoreCase) // hevc (hevc_amf)
-                        || string.Equals(videoEncoder, "av1_amf", StringComparison.OrdinalIgnoreCase)) // av1 (av1_amf)
-            )
-            {
-                param += encodingPreset.Value switch
-                {
-                        EncoderPreset.veryslow => " -quality quality",
-                        EncoderPreset.slower => " -quality quality",
-                        EncoderPreset.slow => " -quality quality",
-                        EncoderPreset.medium => " -quality balanced",
-                        _ => " -quality speed"
-                };
-
-                if (string.Equals(videoEncoder, "hevc_amf", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(videoEncoder, "av1_amf", StringComparison.OrdinalIgnoreCase))
-                {
-                    param += " -header_insertion_mode gop";
-                }
-
-                if (string.Equals(videoEncoder, "hevc_amf", StringComparison.OrdinalIgnoreCase))
-                {
-                    param += " -gops_per_idr 1";
-                }
-            }
-            else if (encodingPreset is not null
-                        && (string.Equals(videoEncoder, "h264_videotoolbox", StringComparison.OrdinalIgnoreCase) // h264 (h264_videotoolbox)
-                            || string.Equals(videoEncoder, "hevc_videotoolbox", StringComparison.OrdinalIgnoreCase)) // hevc (hevc_videotoolbox)
-            )
-            {
-                param += encodingPreset.Value switch
-                {
-                        EncoderPreset.veryslow => " -prio_speed 0",
-                        EncoderPreset.slower => " -prio_speed 0",
-                        EncoderPreset.slow => " -prio_speed 0",
-                        EncoderPreset.medium => " -prio_speed 0",
-                        _ => " -prio_speed 1"
-                };
-            }
-
+            param += GetEncoderParam(encodingPreset, defaultPreset, encodingOptions, videoEncoder, isLibX265);
             param += GetVideoBitrateParam(state, videoEncoder);
 
             var framerate = GetFramerateParam(state);
