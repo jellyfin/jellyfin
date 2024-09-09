@@ -141,7 +141,13 @@ namespace Emby.Naming.Video
                 {
                     if (group.Key)
                     {
-                        videos.InsertRange(0, group.OrderByDescending(x => x.Files[0].FileNameWithoutExtension.ToString(), new AlphanumericComparator()));
+                        videos.InsertRange(0, group
+                            .OrderBy(x =>
+                            {
+                                var resolutionMatch = ResolutionRegex().Match(x.Files[0].FileNameWithoutExtension.ToString());
+                                return x.Files[0].FileNameWithoutExtension.ToString()[(resolutionMatch.Index + resolutionMatch.Length)..];
+                            })
+                            .ThenByDescending(x => ResolutionRegex().Match(x.Files[0].FileNameWithoutExtension.ToString()).Value, new AlphanumericComparator()));
                     }
                     else
                     {
