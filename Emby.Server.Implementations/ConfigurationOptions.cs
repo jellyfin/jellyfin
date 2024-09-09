@@ -20,8 +20,7 @@ namespace Emby.Server.Implementations
             { PlaylistsAllowDuplicatesKey, bool.FalseString },
             { BindToUnixSocketKey, bool.FalseString },
             { SqliteCacheSizeKey, "20000" },
-            { FfmpegSkipValidationKey, bool.FalseString }
-            { SqliteCacheSizeKey, "20000" },
+            { FfmpegSkipValidationKey, bool.FalseString },
             { DetectNetworkChangeKey, bool.TrueString }
         };
     }
