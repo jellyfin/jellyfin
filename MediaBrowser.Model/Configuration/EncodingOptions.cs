@@ -1,3 +1,5 @@
+#pragma warning disable CA1819 // XML serialization handles collections improperly, so we need to use arrays
+
 #nullable disable
 using MediaBrowser.Model.Entities;
 
@@ -30,9 +32,9 @@ public class EncodingOptions
         EnableTonemapping = false;
         EnableVppTonemapping = false;
         EnableVideoToolboxTonemapping = false;
-        TonemappingAlgorithm = "bt2390";
-        TonemappingMode = "auto";
-        TonemappingRange = "auto";
+        TonemappingAlgorithm = TonemappingAlgorithm.bt2390;
+        TonemappingMode = TonemappingMode.auto;
+        TonemappingRange = TonemappingRange.auto;
         TonemappingDesat = 0;
         TonemappingPeak = 100;
         TonemappingParam = 0;
@@ -41,7 +43,7 @@ public class EncodingOptions
         H264Crf = 23;
         H265Crf = 28;
         DeinterlaceDoubleRate = false;
-        DeinterlaceMethod = "yadif";
+        DeinterlaceMethod = DeinterlaceMethod.yadif;
         EnableDecodingColorDepth10Hevc = true;
         EnableDecodingColorDepth10Vp9 = true;
         // Enhanced Nvdec or system native decoder is required for DoVi to SDR tone-mapping.
@@ -53,8 +55,8 @@ public class EncodingOptions
         AllowHevcEncoding = false;
         AllowAv1Encoding = false;
         EnableSubtitleExtraction = true;
-        AllowOnDemandMetadataBasedKeyframeExtractionForExtensions = new[] { "mkv" };
-        HardwareDecodingCodecs = new string[] { "h264", "vc1" };
+        AllowOnDemandMetadataBasedKeyframeExtractionForExtensions = ["mkv"];
+        HardwareDecodingCodecs = ["h264", "vc1"];
     }
 
     /// <summary>
@@ -120,7 +122,7 @@ public class EncodingOptions
     /// <summary>
     /// Gets or sets the hardware acceleration type.
     /// </summary>
-    public string HardwareAccelerationType { get; set; }
+    public HardwareAccelerationType HardwareAccelerationType { get; set; }
 
     /// <summary>
     /// Gets or sets the FFmpeg path as set by the user via the UI.
@@ -160,17 +162,17 @@ public class EncodingOptions
     /// <summary>
     /// Gets or sets the tone-mapping algorithm.
     /// </summary>
-    public string TonemappingAlgorithm { get; set; }
+    public TonemappingAlgorithm TonemappingAlgorithm { get; set; }
 
     /// <summary>
     /// Gets or sets the tone-mapping mode.
     /// </summary>
-    public string TonemappingMode { get; set; }
+    public TonemappingMode TonemappingMode { get; set; }
 
     /// <summary>
     /// Gets or sets the tone-mapping range.
     /// </summary>
-    public string TonemappingRange { get; set; }
+    public TonemappingRange TonemappingRange { get; set; }
 
     /// <summary>
     /// Gets or sets the tone-mapping desaturation.
@@ -210,7 +212,7 @@ public class EncodingOptions
     /// <summary>
     /// Gets or sets the encoder preset.
     /// </summary>
-    public string EncoderPreset { get; set; }
+    public EncoderPreset? EncoderPreset { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether the framerate is doubled when deinterlacing.
@@ -220,7 +222,7 @@ public class EncodingOptions
     /// <summary>
     /// Gets or sets the deinterlace method.
     /// </summary>
-    public string DeinterlaceMethod { get; set; }
+    public DeinterlaceMethod DeinterlaceMethod { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether 10bit HEVC decoding is enabled.
