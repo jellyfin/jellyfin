@@ -135,13 +135,25 @@ namespace Emby.Naming.Video
 
             if (videos.Count > 1)
             {
-                videos = videos.OrderBy(x =>
+                var groups = videos.GroupBy(x => ResolutionRegex().IsMatch(x.Files[0].FileNameWithoutExtension)).ToList();
+                videos.Clear();
+                foreach (var group in groups)
                 {
-                    var resolutionMatch = ResolutionRegex().Match(x.Files[0].FileNameWithoutExtension.ToString());
-                    return x.Files[0].FileNameWithoutExtension.ToString()[(resolutionMatch.Index + resolutionMatch.Length)..];
-                })
-                    .ThenByDescending(x => ResolutionRegex().Match(x.Files[0].FileNameWithoutExtension.ToString()).Value, new AlphanumericComparator())
-                    .ToList();
+                    if (group.Key)
+                    {
+                        videos.InsertRange(0, group
+                            .OrderBy(x =>
+                            {
+                                var resolutionMatch = ResolutionRegex().Match(x.Files[0].FileNameWithoutExtension.ToString());
+                                return x.Files[0].FileNameWithoutExtension.ToString()[(resolutionMatch.Index + resolutionMatch.Length)..];
+                            })
+                            .ThenByDescending(x => ResolutionRegex().Match(x.Files[0].FileNameWithoutExtension.ToString()).Value, new AlphanumericComparator()));
+                    }
+                    else
+                    {
+                        videos.AddRange(group.OrderBy(x => x.Files[0].FileNameWithoutExtension.ToString(), new AlphanumericComparator()));
+                    }
+                }
             }
 
             primary ??= videos[0];
