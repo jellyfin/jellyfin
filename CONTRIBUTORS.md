@@ -190,6 +190,7 @@
  - [ItsAllAboutTheCode](https://github.com/ItsAllAboutTheCode)
  - [pret0rian8](https://github.com/pret0rian)
  - [jaina heartles](https://github.com/heartles)
+ - [oxixes](https://github.com/oxixes)
 
 # Emby Contributors
 
