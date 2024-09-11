@@ -14,10 +14,13 @@ using Xunit;
 
 namespace Jellyfin.Server.Implementations.Tests.Updates
 {
-    public class InstallationManagerTests
+    public sealed class InstallationManagerTests : IDisposable
     {
         private readonly Fixture _fixture;
         private readonly InstallationManager _installationManager;
+        private readonly HttpClient _httpClient;
+
+        private bool _disposed;
 
         public InstallationManagerTests()
         {
@@ -33,9 +36,10 @@ namespace Jellyfin.Server.Implementations.Tests.Updates
                         });
                     });
 
+            _httpClient = new HttpClient(messageHandler.Object);
             var http = new Mock<IHttpClientFactory>();
             http.Setup(x => x.CreateClient(It.IsAny<string>()))
-                .Returns(new HttpClient(messageHandler.Object));
+                .Returns(_httpClient);
             _fixture = new Fixture();
             _fixture.Customize(new AutoMoqCustomization
             {
@@ -105,6 +109,18 @@ namespace Jellyfin.Server.Implementations.Tests.Updates
 
             var ex = await Record.ExceptionAsync(() => _installationManager.InstallPackage(packageInfo, CancellationToken.None));
             Assert.Null(ex);
+        }
+
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _installationManager.Dispose();
+            _httpClient.Dispose();
+            _disposed = true;
         }
     }
 }
