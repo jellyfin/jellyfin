@@ -6,7 +6,7 @@ using MediaBrowser.Model.Dto;
 namespace MediaBrowser.Controller.Entities;
 
 /// <summary>
-/// Alphanumeric <see cref="IComparer{T}" />.
+/// Compare MediaSource of the same file by Video width <see cref="IComparer{T}" />.
 /// </summary>
 public class MediaSourceWidthComparator : IComparer<MediaSourceInfo>
 {
