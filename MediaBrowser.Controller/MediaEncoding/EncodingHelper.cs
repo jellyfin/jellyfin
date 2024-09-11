@@ -1652,13 +1652,15 @@ namespace MediaBrowser.Controller.MediaEncoding
                     setPtsParam);
             }
 
-            var mediaPath = state.MediaPath ?? string.Empty;
+            var subtitlePath = _subtitleEncoder.GetSubtitleFilePath(
+                    state.SubtitleStream,
+                    state.MediaSource,
+                    CancellationToken.None).GetAwaiter().GetResult();
 
             return string.Format(
                 CultureInfo.InvariantCulture,
-                "subtitles=f='{0}':si={1}{2}{3}{4}{5}",
-                _mediaEncoder.EscapeSubtitleFilterPath(mediaPath),
-                state.InternalSubtitleStreamOffset.ToString(CultureInfo.InvariantCulture),
+                "subtitles=f='{0}'{1}{2}{3}{4}",
+                _mediaEncoder.EscapeSubtitleFilterPath(subtitlePath),
                 alphaParam,
                 sub2videoParam,
                 fontParam,
