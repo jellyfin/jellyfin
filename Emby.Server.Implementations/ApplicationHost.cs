@@ -608,6 +608,7 @@ namespace Emby.Server.Implementations
                 var localCert = new X509Certificate2(path, password, X509KeyStorageFlags.UserKeySet);
                 if (!localCert.HasPrivateKey)
                 {
+                    localCert.Dispose();
                     Logger.LogError("No private key included in SSL cert {CertificateLocation}.", path);
                     return null;
                 }
