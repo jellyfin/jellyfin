@@ -1491,14 +1491,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 EncoderPreset[] valid_presets = [EncoderPreset.veryslow, EncoderPreset.slower, EncoderPreset.slow, EncoderPreset.medium, EncoderPreset.fast, EncoderPreset.faster, EncoderPreset.veryfast];
 
-                if (valid_presets.Contains(encoderPreset))
-                {
-                    param += " -preset " + encodingOptions.EncoderPreset;
-                }
-                else
-                {
-                    param += " -preset " + EncoderPreset.veryfast.ToString().ToLowerInvariant();
-                }
+                param += " -preset " + (valid_presets.Contains(encoderPreset) ? encoderPreset : EncoderPreset.veryfast).ToString().ToLowerInvariant();
             }
             else if (string.Equals(videoEncoder, "h264_nvenc", StringComparison.OrdinalIgnoreCase) // h264 (h264_nvenc)
                         || string.Equals(videoEncoder, "hevc_nvenc", StringComparison.OrdinalIgnoreCase) // hevc (hevc_nvenc)
