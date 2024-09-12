@@ -269,10 +269,7 @@ namespace MediaBrowser.Model.Dlna
         {
             foreach (var stream in mediaSource.MediaStreams)
             {
-                if (!stream.DirectPlayErrors.HasValue)
-                {
-                    stream.DirectPlayErrors = GetCompatibility(mediaType, mediaSource, stream, profile);
-                }
+                stream.DirectPlayErrors ??= GetCompatibility(mediaType, mediaSource, stream, profile);
             }
         }
 
