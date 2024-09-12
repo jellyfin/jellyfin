@@ -132,5 +132,6 @@
     "TaskAudioNormalizationDescription": "Skan filer for lyd normaliserende data",
     "TaskCleanCollectionsAndPlaylistsDescription": "Fjerner elementer fra kolleksjoner og spillelister som ikke lengere finnes",
     "TaskDownloadMissingLyrics": "Last ned manglende tekster",
-    "TaskDownloadMissingLyricsDescription": "Last ned sangtekster"
+    "TaskDownloadMissingLyricsDescription": "Last ned sangtekster",
+    "TaskExtractMediaSegments": "Skann mediasegment"
 }
