@@ -3244,9 +3244,12 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (hwDeintSuffix.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase))
             {
+                var useBwdif = options.DeinterlaceMethod == DeinterlaceMethod.bwdif && _mediaEncoder.SupportsFilter("bwdif_videotoolbox");
+
                 return string.Format(
                     CultureInfo.InvariantCulture,
-                    "yadif_videotoolbox={0}:-1:0",
+                    "{0}_videotoolbox={1}:-1:0",
+                    useBwdif ? "bwdif" : "yadif",
                     doubleRateDeint ? "1" : "0");
             }
 

@@ -137,6 +137,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "flip_vulkan",
             // videotoolbox
             "yadif_videotoolbox",
+            "bwdif_videotoolbox",
             "scale_vt",
             "transpose_vt",
             "overlay_videotoolbox",
