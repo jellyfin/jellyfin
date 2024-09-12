@@ -1495,13 +1495,13 @@ namespace MediaBrowser.Model.Dlna
                     .Where(containerProfile => containerProfile.Type == DlnaProfileType.Video && containerProfile.ContainsContainer(container))
                     .SelectMany(containerProfile => checkVideoConditions(containerProfile.Conditions)));
 
-            // FIXME: Throw if CompatibilityErrors has no value?
+            // FIXME: Throw if DirectPlayErrors has no value?
             var videoCodecProfileReasons = (videoStream?.DirectPlayErrors ?? 0) & ~GenericReasons;
 
-            // FIXME: Throw if CompatibilityErrors has no value?
+            // FIXME: Throw if DirectPlayErrors has no value?
             var audioStreamMatches = candidateAudioStreams.ToDictionary(s => s, audioStream => (audioStream.DirectPlayErrors ?? 0) & ~GenericReasons);
 
-            // FIXME: Throw if CompatibilityErrors has no value?
+            // FIXME: Throw if DirectPlayErrors has no value?
             var subtitleProfileReasons = (subtitleStream?.DirectPlayErrors ?? 0) & ~GenericReasons;
 
             if ((subtitleProfileReasons & TranscodeReason.SubtitleCodecNotSupported) != 0)
