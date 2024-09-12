@@ -580,6 +580,7 @@ namespace Jellyfin.Providers.Tests.Manager
                 CallBase = true
             };
             item.Setup(m => m.IsSaveLocalMetadataEnabled()).Returns(false);
+            item.Setup(m => m.GetInternalMetadataPath()).Returns(string.Empty);
 
             var path = validPaths ? _testDataImagePath.Format : "invalid path {0}";
             for (int i = 0; i < count; i++)
