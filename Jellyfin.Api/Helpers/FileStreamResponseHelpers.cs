@@ -56,7 +56,8 @@ public static class FileStreamResponseHelpers
         string path,
         string contentType)
     {
-        return new PhysicalFileResult(path, contentType) { EnableRangeProcessing = true };
+        FileStream fs = File.OpenRead(path);
+        return new FileStreamResult(fs, contentType) { EnableRangeProcessing = true };
     }
 
     /// <summary>
