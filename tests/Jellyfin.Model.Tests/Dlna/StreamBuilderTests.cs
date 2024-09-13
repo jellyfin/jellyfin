@@ -35,6 +35,10 @@ namespace Jellyfin.Model.Tests
         [InlineData("Chrome", "mkv-vp9-vorbis-vtt-2600k", PlayMethod.DirectPlay)] // #6450
         [InlineData("Chrome", "mp4-h264-hi10p-aac-5000k", PlayMethod.DirectPlay)]
         [InlineData("Chrome", "mkv-h264-hi10p-aac-5000k-brokenfps", PlayMethod.Transcode, TranscodeReason.ContainerNotSupported, "Remux", "HLS.mp4")]
+        [InlineData("Chrome", "mp4-dvh1.05-eac3-15200k", PlayMethod.Transcode, TranscodeReason.VideoRangeTypeNotSupported | TranscodeReason.AudioCodecNotSupported, "Transcode", "HLS.mp4")]
+        [InlineData("Chrome", "mkv-dvhe.05-eac3-28000k", PlayMethod.Transcode, TranscodeReason.ContainerNotSupported | TranscodeReason.VideoRangeTypeNotSupported | TranscodeReason.AudioCodecNotSupported, "Transcode", "HLS.mp4")]
+        [InlineData("Chrome", "mkv-dvhe.08-eac3-15200k", PlayMethod.Transcode, TranscodeReason.ContainerNotSupported | TranscodeReason.VideoRangeTypeNotSupported | TranscodeReason.AudioCodecNotSupported, "Transcode", "HLS.mp4")]
+        [InlineData("Chrome", "mp4-dvhe.08-eac3-15200k", PlayMethod.Transcode, TranscodeReason.VideoRangeTypeNotSupported | TranscodeReason.AudioCodecNotSupported, "Transcode", "HLS.mp4")]
         // Firefox
         [InlineData("Firefox", "mp4-h264-aac-vtt-2600k", PlayMethod.DirectPlay)] // #6450
         [InlineData("Firefox", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported, "DirectStream", "HLS.mp4")] // #6450
@@ -50,6 +54,10 @@ namespace Jellyfin.Model.Tests
         [InlineData("Firefox", "mkv-vp9-vorbis-vtt-2600k", PlayMethod.DirectPlay)] // #6450
         [InlineData("Firefox", "mp4-h264-hi10p-aac-5000k", PlayMethod.Transcode, TranscodeReason.ContainerNotSupported | TranscodeReason.VideoProfileNotSupported, "Transcode", "HLS.mp4")]
         [InlineData("Firefox", "mkv-h264-hi10p-aac-5000k-brokenfps", PlayMethod.Transcode, TranscodeReason.ContainerNotSupported | TranscodeReason.VideoProfileNotSupported, "Transcode", "HLS.mp4")]
+        [InlineData("Firefox", "mp4-dvh1.05-eac3-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported | TranscodeReason.AudioCodecNotSupported, "Transcode", "HLS.mp4")]
+        [InlineData("Firefox", "mkv-dvhe.05-eac3-28000k", PlayMethod.Transcode, TranscodeReason.ContainerNotSupported | TranscodeReason.VideoCodecNotSupported | TranscodeReason.AudioCodecNotSupported, "Transcode", "HLS.mp4")]
+        [InlineData("Firefox", "mkv-dvhe.08-eac3-15200k", PlayMethod.Transcode, TranscodeReason.ContainerNotSupported | TranscodeReason.VideoCodecNotSupported | TranscodeReason.AudioCodecNotSupported, "Transcode", "HLS.mp4")]
+        [InlineData("Firefox", "mp4-dvhe.08-eac3-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported | TranscodeReason.AudioCodecNotSupported, "Transcode", "HLS.mp4")]
         // Safari
         [InlineData("SafariNext", "mp4-h264-aac-vtt-2600k", PlayMethod.DirectPlay)] // #6450
         [InlineData("SafariNext", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.DirectPlay)] // #6450
@@ -62,6 +70,10 @@ namespace Jellyfin.Model.Tests
         [InlineData("SafariNext", "mp4-hevc-ac3-aacExt-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecTagNotSupported | TranscodeReason.AudioChannelsNotSupported, "DirectStream", "HLS.mp4")] // #6450
         [InlineData("SafariNext", "mp4-h264-hi10p-aac-5000k", PlayMethod.Transcode, TranscodeReason.VideoProfileNotSupported, "Remux", "HLS.mp4")]
         [InlineData("SafariNext", "mkv-h264-hi10p-aac-5000k-brokenfps", PlayMethod.Transcode, TranscodeReason.ContainerNotSupported | TranscodeReason.VideoProfileNotSupported, "Remux", "HLS.mp4")]
+        [InlineData("SafariNext", "mp4-dvh1.05-eac3-15200k", PlayMethod.DirectPlay)]
+        [InlineData("SafariNext", "mkv-dvhe.05-eac3-28000k", PlayMethod.Transcode, TranscodeReason.ContainerNotSupported | TranscodeReason.VideoCodecTagNotSupported | TranscodeReason.AudioChannelsNotSupported, "DirectStream", "HLS.mp4")]
+        [InlineData("SafariNext", "mkv-dvhe.08-eac3-15200k", PlayMethod.Transcode, TranscodeReason.ContainerNotSupported | TranscodeReason.VideoCodecTagNotSupported | TranscodeReason.AudioChannelsNotSupported, "DirectStream", "HLS.mp4")]
+        [InlineData("SafariNext", "mp4-dvhe.08-eac3-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecTagNotSupported | TranscodeReason.AudioChannelsNotSupported, "DirectStream", "HLS.mp4")]
         // AndroidPixel
         [InlineData("AndroidPixel", "mp4-h264-aac-srt-2600k", PlayMethod.DirectPlay)] // #6450
         [InlineData("AndroidPixel", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.DirectPlay)] // #6450
@@ -167,6 +179,11 @@ namespace Jellyfin.Model.Tests
         [InlineData("Tizen4-4K-5.1", "mkv-vp9-aac-srt-2600k", PlayMethod.DirectPlay)]
         [InlineData("Tizen4-4K-5.1", "mkv-vp9-ac3-srt-2600k", PlayMethod.DirectPlay)]
         [InlineData("Tizen4-4K-5.1", "mkv-vp9-vorbis-vtt-2600k", PlayMethod.DirectPlay)]
+        // WebOS 23
+        [InlineData("WebOS-23", "mkv-dvhe.08-eac3-15200k", PlayMethod.Transcode, TranscodeReason.VideoRangeTypeNotSupported, "Remux")]
+        [InlineData("WebOS-23", "mp4-dvh1.05-eac3-15200k", PlayMethod.DirectPlay)]
+        [InlineData("WebOS-23", "mp4-dvhe.08-eac3-15200k", PlayMethod.DirectPlay)]
+        [InlineData("WebOS-23", "mkv-dvhe.05-eac3-28000k", PlayMethod.Transcode, TranscodeReason.VideoRangeTypeNotSupported, "Remux")]
         // Non-HLS Progressive transcoding
         [InlineData("Chrome-NoHLS", "mp4-h264-aac-vtt-2600k", PlayMethod.DirectPlay)] // #6450
         [InlineData("Chrome-NoHLS", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported, "DirectStream", "http")] // #6450
@@ -422,7 +439,7 @@ namespace Jellyfin.Model.Tests
                 // Full transcode
                 if (transcodeMode.Equals("Transcode", StringComparison.Ordinal))
                 {
-                    if ((streamInfo.TranscodeReasons & (StreamBuilder.ContainerReasons | TranscodeReason.DirectPlayError)) == 0)
+                    if ((streamInfo.TranscodeReasons & (StreamBuilder.ContainerReasons | TranscodeReason.DirectPlayError | TranscodeReason.VideoRangeTypeNotSupported)) == 0)
                     {
                         Assert.All(
                             videoStreams,
