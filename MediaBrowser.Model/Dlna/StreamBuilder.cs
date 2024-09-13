@@ -1415,16 +1415,49 @@ namespace MediaBrowser.Model.Dlna
                 return profileMatch;
             }
 
+            TranscodeReason inferredReason = 0;
+
             var failureReasons = analyzedProfiles[false]
                 .Select(analysis => analysis.Result)
                 .Where(result => !containerSupported || (result.TranscodeReason & TranscodeReason.ContainerNotSupported) == 0)
-                .FirstOrDefault().TranscodeReason;
-            if (failureReasons == 0)
+                .Select(result => result.TranscodeReason)
+                .ToList();
+
+            if (failureReasons.FirstOrDefault() == 0)
             {
-                failureReasons = TranscodeReason.DirectPlayError;
+                inferredReason = TranscodeReason.DirectPlayError;
+            }
+            else
+            {
+                var videoCodecNotSupportedCount = failureReasons.Count(r => (r & TranscodeReason.VideoCodecNotSupported) != 0);
+                var audioCodecNotSupportedCount = failureReasons.Count(r => (r & TranscodeReason.AudioCodecNotSupported) != 0);
+
+                if (!containerSupported)
+                {
+                    inferredReason |= TranscodeReason.ContainerNotSupported;
+                }
+
+                if (videoCodecNotSupportedCount == failureReasons.Count)
+                {
+                    inferredReason |= TranscodeReason.VideoCodecNotSupported;
+                }
+
+                if (audioCodecNotSupportedCount == failureReasons.Count)
+                {
+                    inferredReason |= TranscodeReason.AudioCodecNotSupported;
+                }
+
+                foreach (var transcodeReason in failureReasons)
+                {
+                    var temp = transcodeReason;
+                    temp &= ~TranscodeReason.ContainerNotSupported;
+                    temp &= ~TranscodeReason.VideoCodecNotSupported;
+                    temp &= ~TranscodeReason.AudioCodecNotSupported;
+                    inferredReason |= temp;
+                }
             }
 
-            return (Profile: null, PlayMethod: null, AudioStreamIndex: null, TranscodeReasons: failureReasons);
+            return (Profile: null, PlayMethod: null, AudioStreamIndex: null, TranscodeReasons: inferredReason);
         }
 
         private TranscodeReason CheckVideoAudioStreamDirectPlay(MediaOptions options, MediaSourceInfo mediaSource, string container, MediaStream audioStream)
