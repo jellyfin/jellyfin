@@ -1419,7 +1419,7 @@ namespace MediaBrowser.Model.Dlna
 
             var failureReasons = analyzedProfiles[false]
                 .Select(analysis => analysis.Result)
-                .Where(result => !containerSupported || (result.TranscodeReason & TranscodeReason.ContainerNotSupported) == 0)
+                .Where(result => !containerSupported || !result.TranscodeReason.HasFlag(TranscodeReason.ContainerNotSupported))
                 .Select(result => result.TranscodeReason)
                 .ToList();
 
@@ -1429,8 +1429,8 @@ namespace MediaBrowser.Model.Dlna
             }
             else
             {
-                var videoCodecNotSupportedCount = failureReasons.Count(r => (r & TranscodeReason.VideoCodecNotSupported) != 0);
-                var audioCodecNotSupportedCount = failureReasons.Count(r => (r & TranscodeReason.AudioCodecNotSupported) != 0);
+                var videoCodecNotSupportedCount = failureReasons.Count(r => r.HasFlag(TranscodeReason.VideoCodecNotSupported));
+                var audioCodecNotSupportedCount = failureReasons.Count(r => r.HasFlag(TranscodeReason.AudioCodecNotSupported));
 
                 if (!containerSupported)
                 {
