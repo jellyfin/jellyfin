@@ -107,7 +107,6 @@ namespace Emby.Server.Implementations.MediaEncoder
             return sum / chapters.Count;
         }
 
-
         public async Task<bool> RefreshChapterImages(Video video, IDirectoryService directoryService, IReadOnlyList<ChapterInfo> chapters, bool extractImages, bool saveChapters, CancellationToken cancellationToken)
         {
             if (chapters.Count == 0)
