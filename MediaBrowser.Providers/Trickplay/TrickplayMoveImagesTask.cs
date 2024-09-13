@@ -18,8 +18,6 @@ namespace MediaBrowser.Providers.Trickplay;
 /// </summary>
 public class TrickplayMoveImagesTask : IScheduledTask
 {
-    private const int QueryPageLimit = 100;
-
     private readonly ILogger<TrickplayMoveImagesTask> _logger;
     private readonly ILibraryManager _libraryManager;
     private readonly ILocalizationManager _localization;
@@ -62,32 +60,46 @@ public class TrickplayMoveImagesTask : IScheduledTask
     /// <inheritdoc />
     public async Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
     {
-        var trickplayItems = await _trickplayManager.GetTrickplayItemsAsync().ConfigureAwait(false);
-        var query = new InternalItemsQuery
+        const int Limit = 100;
+        int itemCount = 0, offset = 0, previousCount;
+
+        // This count may not be accurate, but just get something to show progress on the dashboard.
+        var totalVideoCount = _libraryManager.GetCount(new InternalItemsQuery
         {
             MediaTypes = [MediaType.Video],
             SourceTypes = [SourceType.Library],
             IsVirtualItem = false,
             IsFolder = false,
-            Recursive = true,
-            Limit = QueryPageLimit
+            Recursive = true
+        });
+
+        var trickplayQuery = new InternalItemsQuery
+        {
+            MediaTypes = [MediaType.Video],
+            SourceTypes = [SourceType.Library],
+            IsVirtualItem = false,
+            IsFolder = false
         };
 
-        var numberOfVideos = _libraryManager.GetCount(query);
-
-        var startIndex = 0;
-        var numComplete = 0;
-
-        while (startIndex < numberOfVideos)
+        do
         {
-            query.StartIndex = startIndex;
-            var videos = _libraryManager.GetItemList(query).OfType<Video>().ToList();
-            videos.RemoveAll(i => !trickplayItems.Contains(i.Id));
+            var trickplayInfos = await _trickplayManager.GetTrickplayItemsAsync(Limit, offset).ConfigureAwait(false);
+            previousCount = trickplayInfos.Count;
+            offset += Limit;
 
-            foreach (var video in videos)
+            trickplayQuery.ItemIds = trickplayInfos.Select(i => i.ItemId).Distinct().ToArray();
+            var items = _libraryManager.GetItemList(trickplayQuery);
+            foreach (var trickplayInfo in trickplayInfos)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
+                var video = items.OfType<Video>().FirstOrDefault(i => i.Id.Equals(trickplayInfo.ItemId));
+                if (video is null)
+                {
+                    continue;
+                }
+
+                itemCount++;
                 try
                 {
                     var libraryOptions = _libraryManager.GetLibraryOptions(video);
@@ -97,13 +109,10 @@ public class TrickplayMoveImagesTask : IScheduledTask
                 {
                     _logger.LogError(ex, "Error moving trickplay files for {ItemName}", video.Name);
                 }
-
-                numComplete++;
-                progress.Report(100d * numComplete / numberOfVideos);
             }
 
-            startIndex += QueryPageLimit;
-        }
+            progress.Report(100d * itemCount / totalVideoCount);
+        } while (previousCount != 0);
 
         progress.Report(100);
     }

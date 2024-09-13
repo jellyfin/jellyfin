@@ -1,10 +1,15 @@
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
+using Jellyfin.Data.Enums;
+using MediaBrowser.Common;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Trickplay;
 using MediaBrowser.Model.IO;
+using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Migrations.Routines;
 
@@ -16,6 +21,7 @@ public class MoveTrickplayFiles : IMigrationRoutine
     private readonly ITrickplayManager _trickplayManager;
     private readonly IFileSystem _fileSystem;
     private readonly ILibraryManager _libraryManager;
+    private readonly ILogger<MoveTrickplayFiles> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MoveTrickplayFiles"/> class.
@@ -23,11 +29,13 @@ public class MoveTrickplayFiles : IMigrationRoutine
     /// <param name="trickplayManager">Instance of the <see cref="ITrickplayManager"/> interface.</param>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
-    public MoveTrickplayFiles(ITrickplayManager trickplayManager, IFileSystem fileSystem, ILibraryManager libraryManager)
+    /// <param name="logger">The logger.</param>
+    public MoveTrickplayFiles(ITrickplayManager trickplayManager, IFileSystem fileSystem, ILibraryManager libraryManager, ILogger<MoveTrickplayFiles> logger)
     {
         _trickplayManager = trickplayManager;
         _fileSystem = fileSystem;
         _libraryManager = libraryManager;
+        _logger = logger;
     }
 
     /// <inheritdoc />
@@ -42,26 +50,49 @@ public class MoveTrickplayFiles : IMigrationRoutine
     /// <inheritdoc />
     public void Perform()
     {
-        var trickplayItems = _trickplayManager.GetTrickplayItemsAsync().GetAwaiter().GetResult();
-        foreach (var itemId in trickplayItems)
-        {
-            var resolutions = _trickplayManager.GetTrickplayResolutions(itemId).GetAwaiter().GetResult();
-            var item = _libraryManager.GetItemById(itemId);
-            if (item is null)
-            {
-                continue;
-            }
+        const int Limit = 100;
+        int itemCount = 0, offset = 0, previousCount;
 
-            foreach (var resolution in resolutions)
+        var sw = Stopwatch.StartNew();
+        var trickplayQuery = new InternalItemsQuery
+        {
+            MediaTypes = [MediaType.Video],
+            SourceTypes = [SourceType.Library],
+            IsVirtualItem = false,
+            IsFolder = false
+        };
+
+        do
+        {
+            var trickplayInfos = _trickplayManager.GetTrickplayItemsAsync(Limit, offset).GetAwaiter().GetResult();
+            previousCount = trickplayInfos.Count;
+            offset += Limit;
+
+            trickplayQuery.ItemIds = trickplayInfos.Select(i => i.ItemId).Distinct().ToArray();
+            var items = _libraryManager.GetItemList(trickplayQuery);
+            foreach (var trickplayInfo in trickplayInfos)
             {
-                var oldPath = GetOldTrickplayDirectory(item, resolution.Key);
-                var newPath = _trickplayManager.GetTrickplayDirectory(item, resolution.Value.TileWidth, resolution.Value.TileHeight, resolution.Value.Width, false);
+                var item = items.OfType<Video>().FirstOrDefault(i => i.Id.Equals(trickplayInfo.ItemId));
+                if (item is null)
+                {
+                    continue;
+                }
+
+                if (++itemCount % 1_000 == 0)
+                {
+                    _logger.LogInformation("Moved {Count} items in {Time}", itemCount, sw.Elapsed);
+                }
+
+                var oldPath = GetOldTrickplayDirectory(item, trickplayInfo.Width);
+                var newPath = _trickplayManager.GetTrickplayDirectory(item, trickplayInfo.TileWidth, trickplayInfo.TileHeight, trickplayInfo.Width, false);
                 if (_fileSystem.DirectoryExists(oldPath))
                 {
                     _fileSystem.MoveDirectory(oldPath, newPath);
                 }
             }
-        }
+        } while (previousCount != 0);
+
+        _logger.LogInformation("Moved {Count} items in {Time}", itemCount, sw.Elapsed);
     }
 
     private string GetOldTrickplayDirectory(BaseItem item, int? width = null)
