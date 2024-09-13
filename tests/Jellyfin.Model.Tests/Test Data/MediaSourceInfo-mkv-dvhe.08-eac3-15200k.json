@@ -92,10 +92,6 @@
     "MediaAttachments": [],
     "Formats": [],
     "Bitrate": 15473851,
-    "RequiredHttpHeaders": {},
-    "TranscodingUrl": "/videos/ac2a9824-755f-beff-d891-b8ff2634901a/master.m3u8?DeviceId=TW96aWxsYS81LjAgKE1hY2ludG9zaDsgSW50ZWwgTWFjIE9TIFggMTBfMTVfNykgQXBwbGVXZWJLaXQvNjA1LjEuMTUgKEtIVE1MLCBsaWtlIEdlY2tvKSBWZXJzaW9uLzE3LjQgU2FmYXJpLzYwNS4xLjE1fDE3MTgxMjcxNTczNzk1&MediaSourceId=ac2a9824755fbeffd891b8ff2634901a&VideoCodec=hevc,h264,vp9,hevc&AudioCodec=eac3&AudioStreamIndex=1&VideoBitrate=148965748&AudioBitrate=640000&AudioSampleRate=48000&MaxFramerate=59.94006&PlaySessionId=2c5377dde2b944b18f80c7f3203e970f&api_key=f17a653e8c0c4b588f26231812ff3794&TranscodingMaxAudioChannels=6&RequireAvc=false&EnableAudioVbrEncoding=true&Tag=8ac40cacc99e4748bc9218045b38d184&SegmentContainer=mp4&MinSegments=2&BreakOnNonKeyFrames=True&hevc-level=153&hevc-videobitdepth=10&hevc-profile=main10&hevc-audiochannels=6&eac3-profile=dolbydigitalplus+dolbyatmos&vp9-rangetype=SDR,HDR10,HLG&hevc-rangetype=SDR,HDR10,HLG,DOVI,DOVIWithHDR10,DOVIWithHLG,DOVIWithSDR&hevc-deinterlace=true&hevc-codectag=hvc1,dvh1&h264-profile=high,main,baseline,constrainedbaseline,high10&h264-rangetype=SDR&h264-level=52&h264-deinterlace=true&TranscodeReasons=VideoCodecTagNotSupported",
-    "TranscodingSubProtocol": "hls",
-    "TranscodingContainer": "mp4",
     "DefaultAudioStreamIndex": 1,
     "HasSegments": false
 }
