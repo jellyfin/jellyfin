@@ -22,37 +22,41 @@ namespace Jellyfin.Model.Tests
         [Theory]
         // Chrome
         [InlineData("Chrome", "mp4-h264-aac-vtt-2600k", PlayMethod.DirectPlay)] // #6450
-        [InlineData("Chrome", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.DirectStream, TranscodeReason.AudioCodecNotSupported)] // #6450
-        [InlineData("Chrome", "mp4-h264-ac3-aacDef-srt-2600k", PlayMethod.DirectStream, TranscodeReason.SecondaryAudioNotSupported, "Remux")] // #6450
-        [InlineData("Chrome", "mp4-h264-ac3-aacExt-srt-2600k", PlayMethod.DirectStream, TranscodeReason.AudioIsExternal)] // #6450
-        [InlineData("Chrome", "mp4-h264-ac3-srt-2600k", PlayMethod.DirectStream, TranscodeReason.AudioCodecNotSupported)] // #6450
-        [InlineData("Chrome", "mp4-hevc-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported, "Transcode")]
-        [InlineData("Chrome", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported | TranscodeReason.AudioCodecNotSupported, "Transcode")]
-        [InlineData("Chrome", "mp4-hevc-ac3-aacDef-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported | TranscodeReason.SecondaryAudioNotSupported, "Transcode")]
-        [InlineData("Chrome", "mkv-vp9-aac-srt-2600k", PlayMethod.DirectStream, TranscodeReason.ContainerNotSupported, "Remux")] // #6450
-        [InlineData("Chrome", "mkv-vp9-ac3-srt-2600k", PlayMethod.DirectStream, TranscodeReason.ContainerNotSupported | TranscodeReason.AudioCodecNotSupported)] // #6450
-        [InlineData("Chrome", "mkv-vp9-vorbis-vtt-2600k", PlayMethod.DirectPlay, (TranscodeReason)0, "Remux")] // #6450
+        [InlineData("Chrome", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported, "DirectStream", "HLS.mp4")] // #6450
+        [InlineData("Chrome", "mp4-h264-ac3-aacDef-srt-2600k", PlayMethod.Transcode, TranscodeReason.SecondaryAudioNotSupported, "Remux", "HLS.mp4")] // #6450
+        [InlineData("Chrome", "mp4-h264-ac3-aacExt-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioIsExternal, "DirectStream", "HLS.mp4")] // #6450
+        [InlineData("Chrome", "mp4-h264-ac3-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported, "DirectStream", "HLS.mp4")] // #6450
+        [InlineData("Chrome", "mp4-hevc-aac-srt-15200k", PlayMethod.DirectPlay)]
+        [InlineData("Chrome", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported, "DirectStream", "HLS.mp4")]
+        [InlineData("Chrome", "mp4-hevc-ac3-aacDef-srt-15200k", PlayMethod.Transcode, TranscodeReason.SecondaryAudioNotSupported, "Remux", "HLS.mp4")]
+        [InlineData("Chrome", "mkv-vp9-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.ContainerNotSupported, "Remux", "HLS.mp4")] // #6450
+        [InlineData("Chrome", "mkv-vp9-ac3-srt-2600k", PlayMethod.Transcode, TranscodeReason.ContainerNotSupported | TranscodeReason.AudioCodecNotSupported, "DirectStream", "HLS.mp4")] // #6450
+        [InlineData("Chrome", "mkv-vp9-vorbis-vtt-2600k", PlayMethod.DirectPlay)] // #6450
+        [InlineData("Chrome", "mp4-h264-hi10p-aac-5000k", PlayMethod.DirectPlay)]
         // Firefox
         [InlineData("Firefox", "mp4-h264-aac-vtt-2600k", PlayMethod.DirectPlay)] // #6450
-        [InlineData("Firefox", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.DirectStream, TranscodeReason.AudioCodecNotSupported)] // #6450
-        [InlineData("Firefox", "mp4-h264-ac3-aacDef-srt-2600k", PlayMethod.DirectStream, TranscodeReason.SecondaryAudioNotSupported, "Remux")] // #6450
-        [InlineData("Firefox", "mp4-h264-ac3-aacExt-srt-2600k", PlayMethod.DirectStream, TranscodeReason.AudioIsExternal)] // #6450
-        [InlineData("Firefox", "mp4-h264-ac3-srt-2600k", PlayMethod.DirectStream, TranscodeReason.AudioCodecNotSupported)] // #6450
-        [InlineData("Firefox", "mp4-hevc-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported, "Transcode")]
-        [InlineData("Firefox", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported | TranscodeReason.AudioCodecNotSupported, "Transcode")]
-        [InlineData("Firefox", "mp4-hevc-ac3-aacDef-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported | TranscodeReason.SecondaryAudioNotSupported, "Transcode")]
-        [InlineData("Firefox", "mkv-vp9-aac-srt-2600k", PlayMethod.DirectStream, TranscodeReason.ContainerNotSupported, "Remux")] // #6450
-        [InlineData("Firefox", "mkv-vp9-ac3-srt-2600k", PlayMethod.DirectStream, TranscodeReason.ContainerNotSupported | TranscodeReason.AudioCodecNotSupported)] // #6450
-        [InlineData("Firefox", "mkv-vp9-vorbis-vtt-2600k", PlayMethod.DirectPlay, (TranscodeReason)0, "Remux")] // #6450
+        [InlineData("Firefox", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported, "DirectStream", "HLS.mp4")] // #6450
+        [InlineData("Firefox", "mp4-h264-ac3-aacDef-srt-2600k", PlayMethod.Transcode, TranscodeReason.SecondaryAudioNotSupported, "Remux", "HLS.mp4")] // #6450
+        [InlineData("Firefox", "mp4-h264-ac3-aacExt-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioIsExternal, "DirectStream", "HLS.mp4")] // #6450
+        [InlineData("Firefox", "mp4-h264-ac3-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported, "DirectStream", "HLS.mp4")] // #6450
+        [InlineData("Firefox", "mp4-hevc-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported, "Transcode", "HLS.mp4")]
+        [InlineData("Firefox", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported | TranscodeReason.AudioCodecNotSupported, "Transcode", "HLS.mp4")]
+        [InlineData("Firefox", "mp4-hevc-ac3-aacDef-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported | TranscodeReason.SecondaryAudioNotSupported, "Transcode", "HLS.mp4")]
+        [InlineData("Firefox", "mkv-vp9-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.ContainerNotSupported, "Remux", "HLS.mp4")] // #6450
+        [InlineData("Firefox", "mkv-vp9-ac3-srt-2600k", PlayMethod.Transcode, TranscodeReason.ContainerNotSupported | TranscodeReason.AudioCodecNotSupported, "DirectStream", "HLS.mp4")] // #6450
+        [InlineData("Firefox", "mkv-vp9-vorbis-vtt-2600k", PlayMethod.DirectPlay)] // #6450
+        [InlineData("Firefox", "mp4-h264-hi10p-aac-5000k", PlayMethod.Transcode, TranscodeReason.ContainerNotSupported | TranscodeReason.VideoCodecNotSupported | TranscodeReason.AudioCodecNotSupported, "Transcode", "HLS.mp4")] // TODO: investigate why firefox profile has everything unsupported
         // Safari
         [InlineData("SafariNext", "mp4-h264-aac-vtt-2600k", PlayMethod.DirectPlay)] // #6450
         [InlineData("SafariNext", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.DirectPlay)] // #6450
         [InlineData("SafariNext", "mp4-h264-ac3-aacDef-srt-2600k", PlayMethod.DirectPlay)] // #6450
         [InlineData("SafariNext", "mp4-h264-ac3-aacExt-srt-2600k", PlayMethod.DirectPlay)] // #6450
         [InlineData("SafariNext", "mp4-h264-ac3-srt-2600k", PlayMethod.DirectPlay)] // #6450
-        [InlineData("SafariNext", "mp4-hevc-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported, "Remux", "HLS.mp4")] // #6450
-        [InlineData("SafariNext", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported | TranscodeReason.AudioChannelsNotSupported, "DirectStream", "HLS.mp4")] // #6450
-        [InlineData("SafariNext", "mp4-hevc-ac3-aacExt-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported | TranscodeReason.AudioChannelsNotSupported, "DirectStream", "HLS.mp4")] // #6450
+        [InlineData("SafariNext", "mp4-hevc-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecTagNotSupported, "Remux", "HLS.mp4")] // #6450
+        [InlineData("SafariNext", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecTagNotSupported | TranscodeReason.AudioChannelsNotSupported, "DirectStream", "HLS.mp4")] // #6450
+        [InlineData("SafariNext", "mp4-hevc-ac3-aacExt-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecTagNotSupported | TranscodeReason.AudioChannelsNotSupported, "DirectStream", "HLS.mp4")] // #6450
+        [InlineData("SafariNext", "mp4-h264-hi10p-aac-5000k", PlayMethod.Transcode, TranscodeReason.VideoProfileNotSupported, "Remux", "HLS.mp4")]
+
         // AndroidPixel
         [InlineData("AndroidPixel", "mp4-h264-aac-srt-2600k", PlayMethod.DirectPlay)] // #6450
         [InlineData("AndroidPixel", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.DirectPlay)] // #6450
@@ -62,21 +66,21 @@ namespace Jellyfin.Model.Tests
         [InlineData("AndroidPixel", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.ContainerBitrateExceedsLimit, "Transcode")]
         // Yatse
         [InlineData("Yatse", "mp4-h264-aac-srt-2600k", PlayMethod.DirectPlay, (TranscodeReason)0, "Remux")] // #6450
-        [InlineData("Yatse", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.DirectStream, TranscodeReason.AudioCodecNotSupported)] // #6450
-        [InlineData("Yatse", "mp4-h264-ac3-aacDef-srt-2600k", PlayMethod.DirectStream, TranscodeReason.SecondaryAudioNotSupported, "Remux")] // #6450
-        [InlineData("Yatse", "mp4-h264-ac3-srt-2600k", PlayMethod.DirectStream, TranscodeReason.AudioCodecNotSupported)]
+        [InlineData("Yatse", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported)] // #6450
+        [InlineData("Yatse", "mp4-h264-ac3-aacDef-srt-2600k", PlayMethod.Transcode, TranscodeReason.SecondaryAudioNotSupported, "Remux")] // #6450
+        [InlineData("Yatse", "mp4-h264-ac3-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported)]
         [InlineData("Yatse", "mp4-hevc-aac-srt-15200k", PlayMethod.DirectPlay, (TranscodeReason)0, "Remux")] // #6450
-        [InlineData("Yatse", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.DirectStream, TranscodeReason.AudioCodecNotSupported)] // #6450
-        [InlineData("Yatse", "mp4-hevc-ac3-aacDef-srt-15200k", PlayMethod.DirectStream, TranscodeReason.SecondaryAudioNotSupported, "Remux")] // #6450
+        [InlineData("Yatse", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported, "Transcode")] // Full transcode because profile only has ts which does not allow hevc
+        [InlineData("Yatse", "mp4-hevc-ac3-aacDef-srt-15200k", PlayMethod.Transcode, TranscodeReason.SecondaryAudioNotSupported, "Transcode")] // Full transcode because profile only has ts which does not allow hevc
         // RokuSSPlus
         [InlineData("RokuSSPlus", "mp4-h264-aac-srt-2600k", PlayMethod.DirectPlay, (TranscodeReason)0, "Remux")] // #6450
-        [InlineData("RokuSSPlus", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.DirectStream, TranscodeReason.AudioCodecNotSupported)] // #6450
+        [InlineData("RokuSSPlus", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported)] // #6450
         [InlineData("RokuSSPlus", "mp4-h264-ac3-aacDef-srt-2600k", PlayMethod.DirectPlay, (TranscodeReason)0, "Remux")] // #6450 should be DirectPlay
-        [InlineData("RokuSSPlus", "mp4-h264-ac3-srt-2600k", PlayMethod.DirectStream, TranscodeReason.AudioCodecNotSupported)] // #6450
+        [InlineData("RokuSSPlus", "mp4-h264-ac3-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported)] // #6450
         [InlineData("RokuSSPlus", "mp4-hevc-aac-srt-15200k", PlayMethod.DirectPlay, (TranscodeReason)0, "Remux")] // #6450
-        [InlineData("RokuSSPlus", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.DirectStream, TranscodeReason.AudioCodecNotSupported)] // #6450
+        [InlineData("RokuSSPlus", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported, "Transcode")] // Full transcode because profile only has ts which does not allow hevc
         [InlineData("RokuSSPlus", "mp4-hevc-ac3-aacDef-srt-15200k", PlayMethod.DirectPlay, (TranscodeReason)0, "Remux")] // #6450
-        [InlineData("RokuSSPlus", "mp4-hevc-ac3-srt-15200k", PlayMethod.DirectStream, TranscodeReason.AudioCodecNotSupported)] // #6450
+        [InlineData("RokuSSPlus", "mp4-hevc-ac3-srt-15200k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported, "Transcode")] // Full transcode because profile only has ts which does not allow hevc
         // JellyfinMediaPlayer
         [InlineData("JellyfinMediaPlayer", "mp4-h264-aac-vtt-2600k", PlayMethod.DirectPlay, (TranscodeReason)0, "Remux")] // #6450
         [InlineData("JellyfinMediaPlayer", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.DirectPlay, (TranscodeReason)0, "Remux")] // #6450
@@ -86,18 +90,6 @@ namespace Jellyfin.Model.Tests
         [InlineData("JellyfinMediaPlayer", "mkv-vp9-aac-srt-2600k", PlayMethod.DirectPlay)] // #6450
         [InlineData("JellyfinMediaPlayer", "mkv-vp9-ac3-srt-2600k", PlayMethod.DirectPlay)] // #6450
         [InlineData("JellyfinMediaPlayer", "mkv-vp9-vorbis-vtt-2600k", PlayMethod.DirectPlay)] // #6450
-        // Chrome-NoHLS
-        [InlineData("Chrome-NoHLS", "mp4-h264-aac-vtt-2600k", PlayMethod.DirectPlay)] // #6450
-        [InlineData("Chrome-NoHLS", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.DirectStream, TranscodeReason.AudioCodecNotSupported)] // #6450
-        [InlineData("Chrome-NoHLS", "mp4-h264-ac3-aacDef-srt-2600k", PlayMethod.DirectStream, TranscodeReason.SecondaryAudioNotSupported, "Remux")] // #6450
-        [InlineData("Chrome-NoHLS", "mp4-h264-ac3-aacExt-srt-2600k", PlayMethod.DirectStream, TranscodeReason.AudioIsExternal)] // #6450
-        [InlineData("Chrome-NoHLS", "mp4-h264-ac3-srt-2600k", PlayMethod.DirectStream, TranscodeReason.AudioCodecNotSupported)] // #6450
-        [InlineData("Chrome-NoHLS", "mp4-hevc-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported, "Transcode", "http")]
-        [InlineData("Chrome-NoHLS", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported | TranscodeReason.AudioCodecNotSupported, "Transcode", "http")]
-        [InlineData("Chrome-NoHLS", "mp4-hevc-ac3-aacDef-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported | TranscodeReason.SecondaryAudioNotSupported, "Transcode", "http")]
-        [InlineData("Chrome-NoHLS", "mkv-vp9-aac-srt-2600k", PlayMethod.DirectStream, TranscodeReason.ContainerNotSupported, "Remux")] // #6450
-        [InlineData("Chrome-NoHLS", "mkv-vp9-ac3-srt-2600k", PlayMethod.DirectStream, TranscodeReason.ContainerNotSupported | TranscodeReason.AudioCodecNotSupported)] // #6450
-        [InlineData("Chrome-NoHLS", "mkv-vp9-vorbis-vtt-2600k", PlayMethod.DirectPlay, (TranscodeReason)0, "Remux")] // #6450
         // TranscodeMedia
         [InlineData("TranscodeMedia", "mp4-h264-aac-vtt-2600k", PlayMethod.Transcode, TranscodeReason.DirectPlayError, "Remux", "HLS.mp4")]
         [InlineData("TranscodeMedia", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.DirectPlayError, "DirectStream", "HLS.mp4")]
@@ -147,7 +139,7 @@ namespace Jellyfin.Model.Tests
         [InlineData("AndroidTVExoPlayer", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.DirectPlay)]
         [InlineData("AndroidTVExoPlayer", "mkv-vp9-aac-srt-2600k", PlayMethod.DirectPlay)]
         [InlineData("AndroidTVExoPlayer", "mkv-vp9-ac3-srt-2600k", PlayMethod.DirectPlay)]
-        [InlineData("AndroidTVExoPlayer", "mkv-vp9-vorbis-vtt-2600k", PlayMethod.DirectStream, TranscodeReason.AudioCodecNotSupported)]
+        [InlineData("AndroidTVExoPlayer", "mkv-vp9-vorbis-vtt-2600k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported, "Transcode")] // Full transcode because profile only has ts which does not allow vp9
         // Tizen 3 Stereo
         [InlineData("Tizen3-stereo", "mp4-h264-aac-vtt-2600k", PlayMethod.DirectPlay)]
         [InlineData("Tizen3-stereo", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.DirectPlay)]
@@ -155,7 +147,7 @@ namespace Jellyfin.Model.Tests
         [InlineData("Tizen3-stereo", "mp4-h264-dts-srt-2600k", PlayMethod.DirectPlay)]
         [InlineData("Tizen3-stereo", "mp4-hevc-aac-srt-15200k", PlayMethod.DirectPlay)]
         [InlineData("Tizen3-stereo", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.DirectPlay)]
-        [InlineData("Tizen3-stereo", "mp4-hevc-truehd-srt-15200k", PlayMethod.DirectStream, TranscodeReason.AudioCodecNotSupported)]
+        [InlineData("Tizen3-stereo", "mp4-hevc-truehd-srt-15200k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported)]
         [InlineData("Tizen3-stereo", "mkv-vp9-aac-srt-2600k", PlayMethod.DirectPlay)]
         [InlineData("Tizen3-stereo", "mkv-vp9-ac3-srt-2600k", PlayMethod.DirectPlay)]
         [InlineData("Tizen3-stereo", "mkv-vp9-vorbis-vtt-2600k", PlayMethod.DirectPlay)]
@@ -163,10 +155,10 @@ namespace Jellyfin.Model.Tests
         [InlineData("Tizen4-4K-5.1", "mp4-h264-aac-vtt-2600k", PlayMethod.DirectPlay)]
         [InlineData("Tizen4-4K-5.1", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.DirectPlay)]
         [InlineData("Tizen4-4K-5.1", "mp4-h264-ac3-srt-2600k", PlayMethod.DirectPlay)]
-        [InlineData("Tizen4-4K-5.1", "mp4-h264-dts-srt-2600k", PlayMethod.DirectStream, TranscodeReason.AudioCodecNotSupported)]
+        [InlineData("Tizen4-4K-5.1", "mp4-h264-dts-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported)]
         [InlineData("Tizen4-4K-5.1", "mp4-hevc-aac-srt-15200k", PlayMethod.DirectPlay)]
         [InlineData("Tizen4-4K-5.1", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.DirectPlay)]
-        [InlineData("Tizen4-4K-5.1", "mp4-hevc-truehd-srt-15200k", PlayMethod.DirectStream, TranscodeReason.AudioCodecNotSupported)]
+        [InlineData("Tizen4-4K-5.1", "mp4-hevc-truehd-srt-15200k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported)]
         [InlineData("Tizen4-4K-5.1", "mkv-vp9-aac-srt-2600k", PlayMethod.DirectPlay)]
         [InlineData("Tizen4-4K-5.1", "mkv-vp9-ac3-srt-2600k", PlayMethod.DirectPlay)]
         [InlineData("Tizen4-4K-5.1", "mkv-vp9-vorbis-vtt-2600k", PlayMethod.DirectPlay)]
@@ -179,24 +171,24 @@ namespace Jellyfin.Model.Tests
         [Theory]
         // Chrome
         [InlineData("Chrome", "mp4-h264-aac-vtt-2600k", PlayMethod.DirectPlay)] // #6450
-        [InlineData("Chrome", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.DirectStream, TranscodeReason.AudioCodecNotSupported)] // #6450
-        [InlineData("Chrome", "mp4-h264-ac3-aacDef-srt-2600k", PlayMethod.DirectStream, TranscodeReason.AudioCodecNotSupported)] // #6450 <BUG: this is direct played>
-        [InlineData("Chrome", "mp4-h264-ac3-aacExt-srt-2600k", PlayMethod.DirectStream, TranscodeReason.AudioCodecNotSupported)] // #6450
-        [InlineData("Chrome", "mp4-h264-ac3-srt-2600k", PlayMethod.DirectStream, TranscodeReason.AudioCodecNotSupported)] // #6450
-        [InlineData("Chrome", "mp4-hevc-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported, "Transcode")]
-        [InlineData("Chrome", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported | TranscodeReason.AudioCodecNotSupported, "Transcode")]
-        [InlineData("Chrome", "mkv-vp9-aac-srt-2600k", PlayMethod.DirectStream, TranscodeReason.ContainerNotSupported, "Remux")] // #6450
-        [InlineData("Chrome", "mkv-vp9-ac3-srt-2600k", PlayMethod.DirectStream, TranscodeReason.ContainerNotSupported | TranscodeReason.AudioCodecNotSupported)] // #6450
-        [InlineData("Chrome", "mkv-vp9-vorbis-vtt-2600k", PlayMethod.DirectPlay, (TranscodeReason)0, "Remux")] // #6450
+        [InlineData("Chrome", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported, "DirectStream", "HLS.mp4")] // #6450
+        [InlineData("Chrome", "mp4-h264-ac3-aacDef-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported, "DirectStream", "HLS.mp4")] // #6450 <BUG: this is direct played>
+        [InlineData("Chrome", "mp4-h264-ac3-aacExt-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported, "DirectStream", "HLS.mp4")] // #6450
+        [InlineData("Chrome", "mp4-h264-ac3-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported, "DirectStream", "HLS.mp4")] // #6450
+        [InlineData("Chrome", "mp4-hevc-aac-srt-15200k", PlayMethod.DirectPlay)]
+        [InlineData("Chrome", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported, "DirectStream", "HLS.mp4")]
+        [InlineData("Chrome", "mkv-vp9-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.ContainerNotSupported, "Remux", "HLS.mp4")] // #6450
+        [InlineData("Chrome", "mkv-vp9-ac3-srt-2600k", PlayMethod.Transcode, TranscodeReason.ContainerNotSupported | TranscodeReason.AudioCodecNotSupported, "DirectStream", "HLS.mp4")] // #6450
+        [InlineData("Chrome", "mkv-vp9-vorbis-vtt-2600k", PlayMethod.DirectPlay, (TranscodeReason)0, "Remux", "HLS.mp4")] // #6450
         // Firefox
         [InlineData("Firefox", "mp4-h264-aac-vtt-2600k", PlayMethod.DirectPlay)] // #6450
-        [InlineData("Firefox", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.DirectStream, TranscodeReason.AudioCodecNotSupported)] // #6450
-        [InlineData("Firefox", "mp4-h264-ac3-aacDef-srt-2600k", PlayMethod.DirectStream, TranscodeReason.AudioCodecNotSupported)] // #6450
-        [InlineData("Firefox", "mp4-h264-ac3-srt-2600k", PlayMethod.DirectStream, TranscodeReason.AudioCodecNotSupported)] // #6450
-        [InlineData("Firefox", "mp4-hevc-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported, "Transcode")]
-        [InlineData("Firefox", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported | TranscodeReason.AudioCodecNotSupported, "Transcode")]
-        [InlineData("Firefox", "mkv-vp9-aac-srt-2600k", PlayMethod.DirectStream, TranscodeReason.ContainerNotSupported, "Remux")] // #6450
-        [InlineData("Firefox", "mkv-vp9-ac3-srt-2600k", PlayMethod.DirectStream, TranscodeReason.ContainerNotSupported | TranscodeReason.AudioCodecNotSupported)] // #6450
+        [InlineData("Firefox", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported, "DirectStream", "HLS.mp4")] // #6450
+        [InlineData("Firefox", "mp4-h264-ac3-aacDef-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported, "DirectStream", "HLS.mp4")] // #6450
+        [InlineData("Firefox", "mp4-h264-ac3-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported, "DirectStream", "HLS.mp4")] // #6450
+        [InlineData("Firefox", "mp4-hevc-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported, "Transcode", "HLS.mp4")]
+        [InlineData("Firefox", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported | TranscodeReason.AudioCodecNotSupported, "Transcode", "HLS.mp4")]
+        [InlineData("Firefox", "mkv-vp9-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.ContainerNotSupported, "Remux", "HLS.mp4")] // #6450
+        [InlineData("Firefox", "mkv-vp9-ac3-srt-2600k", PlayMethod.Transcode, TranscodeReason.ContainerNotSupported | TranscodeReason.AudioCodecNotSupported, "DirectStream", "HLS.mp4")] // #6450
         [InlineData("Firefox", "mkv-vp9-vorbis-vtt-2600k", PlayMethod.DirectPlay, (TranscodeReason)0, "Remux")] // #6450
         // Safari
         [InlineData("SafariNext", "mp4-h264-aac-vtt-2600k", PlayMethod.DirectPlay)] // #6450
@@ -204,9 +196,10 @@ namespace Jellyfin.Model.Tests
         [InlineData("SafariNext", "mp4-h264-ac3-aacDef-srt-2600k", PlayMethod.DirectPlay)] // #6450
         [InlineData("SafariNext", "mp4-h264-ac3-aacExt-srt-2600k", PlayMethod.DirectPlay)] // #6450
         [InlineData("SafariNext", "mp4-h264-ac3-srt-2600k", PlayMethod.DirectPlay)] // #6450
-        [InlineData("SafariNext", "mp4-hevc-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported, "Remux", "HLS.mp4")] // #6450
-        [InlineData("SafariNext", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported | TranscodeReason.AudioChannelsNotSupported, "DirectStream", "HLS.mp4")] // #6450
-        [InlineData("SafariNext", "mp4-hevc-ac3-aacExt-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported | TranscodeReason.AudioChannelsNotSupported, "DirectStream", "HLS.mp4")] // #6450
+        [InlineData("SafariNext", "mp4-hevc-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecTagNotSupported, "Remux", "HLS.mp4")] // #6450
+        [InlineData("SafariNext", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecTagNotSupported | TranscodeReason.AudioChannelsNotSupported, "DirectStream", "HLS.mp4")] // #6450
+        [InlineData("SafariNext", "mp4-hevc-ac3-aacExt-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecTagNotSupported | TranscodeReason.AudioChannelsNotSupported, "DirectStream", "HLS.mp4")] // #6450
+
         // AndroidPixel
         [InlineData("AndroidPixel", "mp4-h264-aac-srt-2600k", PlayMethod.DirectPlay)] // #6450
         [InlineData("AndroidPixel", "mp4-h264-ac3-aacDef-srt-2600k", PlayMethod.DirectPlay)] // #6450
@@ -215,19 +208,19 @@ namespace Jellyfin.Model.Tests
         [InlineData("AndroidPixel", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.ContainerBitrateExceedsLimit, "Transcode")]
         // Yatse
         [InlineData("Yatse", "mp4-h264-aac-srt-2600k", PlayMethod.DirectPlay, (TranscodeReason)0, "Remux")] // #6450
-        [InlineData("Yatse", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.DirectStream, TranscodeReason.AudioCodecNotSupported)] // #6450
-        [InlineData("Yatse", "mp4-h264-ac3-aacDef-srt-2600k", PlayMethod.DirectStream, TranscodeReason.AudioCodecNotSupported)] // #6450
-        [InlineData("Yatse", "mp4-h264-ac3-srt-2600k", PlayMethod.DirectStream, TranscodeReason.AudioCodecNotSupported)]
+        [InlineData("Yatse", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported)] // #6450
+        [InlineData("Yatse", "mp4-h264-ac3-aacDef-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported)] // #6450
+        [InlineData("Yatse", "mp4-h264-ac3-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported)]
         [InlineData("Yatse", "mp4-hevc-aac-srt-15200k", PlayMethod.DirectPlay, (TranscodeReason)0, "Remux")] // #6450
-        [InlineData("Yatse", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.DirectStream, TranscodeReason.AudioCodecNotSupported)] // #6450
+        [InlineData("Yatse", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported, "Transcode")] // Full transcode because profile only has ts which does not allow hevc
         // RokuSSPlus
         [InlineData("RokuSSPlus", "mp4-h264-aac-srt-2600k", PlayMethod.DirectPlay, (TranscodeReason)0, "Remux")] // #6450
-        [InlineData("RokuSSPlus", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.DirectStream, TranscodeReason.AudioCodecNotSupported)] // #6450 should be DirectPlay
-        [InlineData("RokuSSPlus", "mp4-h264-ac3-aacDef-srt-2600k", PlayMethod.DirectStream, TranscodeReason.AudioCodecNotSupported)] // #6450
-        [InlineData("RokuSSPlus", "mp4-h264-ac3-srt-2600k", PlayMethod.DirectStream, TranscodeReason.AudioCodecNotSupported)] // #6450
+        [InlineData("RokuSSPlus", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported)] // #6450 should be DirectPlay
+        [InlineData("RokuSSPlus", "mp4-h264-ac3-aacDef-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported)] // #6450
+        [InlineData("RokuSSPlus", "mp4-h264-ac3-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported)] // #6450
         [InlineData("RokuSSPlus", "mp4-hevc-aac-srt-15200k", PlayMethod.DirectPlay, (TranscodeReason)0, "Remux")] // #6450
-        [InlineData("RokuSSPlus", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.DirectStream, TranscodeReason.AudioCodecNotSupported)] // #6450
-        [InlineData("RokuSSPlus", "mp4-hevc-ac3-srt-15200k", PlayMethod.DirectStream, TranscodeReason.AudioCodecNotSupported)] // #6450
+        [InlineData("RokuSSPlus", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported, "Transcode")] // Full transcode because profile only has ts which does not allow hevc
+        [InlineData("RokuSSPlus", "mp4-hevc-ac3-srt-15200k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported, "Transcode")] // Full transcode because profile only has ts which does not allow hevc
         // JellyfinMediaPlayer
         [InlineData("JellyfinMediaPlayer", "mp4-h264-aac-vtt-2600k", PlayMethod.DirectPlay, (TranscodeReason)0, "Remux")] // #6450
         [InlineData("JellyfinMediaPlayer", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.DirectPlay, (TranscodeReason)0, "Remux")] // #6450
@@ -245,7 +238,7 @@ namespace Jellyfin.Model.Tests
         [InlineData("AndroidTVExoPlayer", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.DirectPlay)]
         [InlineData("AndroidTVExoPlayer", "mkv-vp9-aac-srt-2600k", PlayMethod.DirectPlay)]
         [InlineData("AndroidTVExoPlayer", "mkv-vp9-ac3-srt-2600k", PlayMethod.DirectPlay)]
-        [InlineData("AndroidTVExoPlayer", "mkv-vp9-vorbis-vtt-2600k", PlayMethod.DirectStream, TranscodeReason.AudioCodecNotSupported)]
+        [InlineData("AndroidTVExoPlayer", "mkv-vp9-vorbis-vtt-2600k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported, "Transcode")] // Full transcode because profile only has ts which does not allow vp9
         // Tizen 3 Stereo
         [InlineData("Tizen3-stereo", "mp4-h264-aac-vtt-2600k", PlayMethod.DirectPlay)]
         [InlineData("Tizen3-stereo", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.DirectPlay)]
@@ -253,7 +246,7 @@ namespace Jellyfin.Model.Tests
         [InlineData("Tizen3-stereo", "mp4-h264-dts-srt-2600k", PlayMethod.DirectPlay)]
         [InlineData("Tizen3-stereo", "mp4-hevc-aac-srt-15200k", PlayMethod.DirectPlay)]
         [InlineData("Tizen3-stereo", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.DirectPlay)]
-        [InlineData("Tizen3-stereo", "mp4-hevc-truehd-srt-15200k", PlayMethod.DirectStream, TranscodeReason.AudioCodecNotSupported)]
+        [InlineData("Tizen3-stereo", "mp4-hevc-truehd-srt-15200k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported)]
         [InlineData("Tizen3-stereo", "mkv-vp9-aac-srt-2600k", PlayMethod.DirectPlay)]
         [InlineData("Tizen3-stereo", "mkv-vp9-ac3-srt-2600k", PlayMethod.DirectPlay)]
         [InlineData("Tizen3-stereo", "mkv-vp9-vorbis-vtt-2600k", PlayMethod.DirectPlay)]
@@ -261,10 +254,10 @@ namespace Jellyfin.Model.Tests
         [InlineData("Tizen4-4K-5.1", "mp4-h264-aac-vtt-2600k", PlayMethod.DirectPlay)]
         [InlineData("Tizen4-4K-5.1", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.DirectPlay)]
         [InlineData("Tizen4-4K-5.1", "mp4-h264-ac3-srt-2600k", PlayMethod.DirectPlay)]
-        [InlineData("Tizen4-4K-5.1", "mp4-h264-dts-srt-2600k", PlayMethod.DirectStream, TranscodeReason.AudioCodecNotSupported)]
+        [InlineData("Tizen4-4K-5.1", "mp4-h264-dts-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported)]
         [InlineData("Tizen4-4K-5.1", "mp4-hevc-aac-srt-15200k", PlayMethod.DirectPlay)]
         [InlineData("Tizen4-4K-5.1", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.DirectPlay)]
-        [InlineData("Tizen4-4K-5.1", "mp4-hevc-truehd-srt-15200k", PlayMethod.DirectStream, TranscodeReason.AudioCodecNotSupported)]
+        [InlineData("Tizen4-4K-5.1", "mp4-hevc-truehd-srt-15200k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported)]
         [InlineData("Tizen4-4K-5.1", "mkv-vp9-aac-srt-2600k", PlayMethod.DirectPlay)]
         [InlineData("Tizen4-4K-5.1", "mkv-vp9-ac3-srt-2600k", PlayMethod.DirectPlay)]
         [InlineData("Tizen4-4K-5.1", "mkv-vp9-vorbis-vtt-2600k", PlayMethod.DirectPlay)]
@@ -281,34 +274,34 @@ namespace Jellyfin.Model.Tests
 
         [Theory]
         // Chrome
-        [InlineData("Chrome", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.DirectStream, TranscodeReason.SecondaryAudioNotSupported, "Remux")] // #6450
-        [InlineData("Chrome", "mp4-h264-ac3-aac-aac-srt-2600k", PlayMethod.DirectStream, TranscodeReason.SecondaryAudioNotSupported, "Remux")]
-        [InlineData("Chrome", "mp4-h264-ac3-aacExt-srt-2600k", PlayMethod.DirectStream, TranscodeReason.AudioIsExternal)] // #6450
-        [InlineData("Chrome", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported | TranscodeReason.SecondaryAudioNotSupported, "Transcode")]
+        [InlineData("Chrome", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.SecondaryAudioNotSupported, "Remux", "HLS.mp4")] // #6450
+        [InlineData("Chrome", "mp4-h264-ac3-aac-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.SecondaryAudioNotSupported, "Remux", "HLS.mp4")]
+        [InlineData("Chrome", "mp4-h264-ac3-aacExt-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioIsExternal, "DirectStream", "HLS.mp4")] // #6450
+        [InlineData("Chrome", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.SecondaryAudioNotSupported, "Remux", "HLS.mp4")]
         // Firefox
-        [InlineData("Firefox", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.DirectStream, TranscodeReason.SecondaryAudioNotSupported, "Remux")] // #6450
-        [InlineData("Firefox", "mp4-h264-ac3-aac-aac-srt-2600k", PlayMethod.DirectStream, TranscodeReason.SecondaryAudioNotSupported, "Remux")]
-        [InlineData("Firefox", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported | TranscodeReason.SecondaryAudioNotSupported, "Transcode")]
+        [InlineData("Firefox", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.SecondaryAudioNotSupported, "Remux", "HLS.mp4")] // #6450
+        [InlineData("Firefox", "mp4-h264-ac3-aac-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.SecondaryAudioNotSupported, "Remux", "HLS.mp4")]
+        [InlineData("Firefox", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported | TranscodeReason.SecondaryAudioNotSupported, "Transcode", "HLS.mp4")]
         // Yatse
-        [InlineData("Yatse", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.DirectStream, TranscodeReason.SecondaryAudioNotSupported, "Remux")] // #6450
-        [InlineData("Yatse", "mp4-h264-ac3-aac-aac-srt-2600k", PlayMethod.DirectStream, TranscodeReason.SecondaryAudioNotSupported, "Remux")]
-        [InlineData("Yatse", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.DirectStream, TranscodeReason.SecondaryAudioNotSupported, "Remux")] // #6450
+        [InlineData("Yatse", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.SecondaryAudioNotSupported, "Remux")] // #6450
+        [InlineData("Yatse", "mp4-h264-ac3-aac-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.SecondaryAudioNotSupported, "Remux")]
+        [InlineData("Yatse", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.SecondaryAudioNotSupported, "Transcode")] // Full transcode because profile only has ts which does not allow hevc
         // RokuSSPlus
         [InlineData("RokuSSPlus", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.DirectPlay, (TranscodeReason)0, "Remux")] // #6450
         [InlineData("RokuSSPlus", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.DirectPlay, (TranscodeReason)0, "Remux")] // #6450
         // no streams
-        [InlineData("Chrome", "no-streams", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported, "Transcode")] // #6450
+        [InlineData("Chrome", "no-streams", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported, "Transcode", "HLS.mp4")] // #6450
         // AndroidTV
         [InlineData("AndroidTVExoPlayer", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.DirectPlay, (TranscodeReason)0, "Remux")]
         [InlineData("AndroidTVExoPlayer", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.DirectPlay, (TranscodeReason)0, "Remux")]
         // Tizen 3 Stereo
-        [InlineData("Tizen3-stereo", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.DirectStream, TranscodeReason.SecondaryAudioNotSupported, "Remux")]
-        [InlineData("Tizen3-stereo", "mp4-h264-ac3-aac-aac-srt-2600k", PlayMethod.DirectStream, TranscodeReason.SecondaryAudioNotSupported, "Remux")]
-        [InlineData("Tizen3-stereo", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.DirectStream, TranscodeReason.SecondaryAudioNotSupported, "Remux")]
+        [InlineData("Tizen3-stereo", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.SecondaryAudioNotSupported, "Remux")]
+        [InlineData("Tizen3-stereo", "mp4-h264-ac3-aac-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.SecondaryAudioNotSupported, "Remux")]
+        [InlineData("Tizen3-stereo", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.SecondaryAudioNotSupported, "Remux")]
         // Tizen 4 4K 5.1
-        [InlineData("Tizen4-4K-5.1", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.DirectStream, TranscodeReason.SecondaryAudioNotSupported, "Remux")]
-        [InlineData("Tizen4-4K-5.1", "mp4-h264-ac3-aac-aac-srt-2600k", PlayMethod.DirectStream, TranscodeReason.SecondaryAudioNotSupported, "Remux")]
-        [InlineData("Tizen4-4K-5.1", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.DirectStream, TranscodeReason.SecondaryAudioNotSupported, "Remux")]
+        [InlineData("Tizen4-4K-5.1", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.SecondaryAudioNotSupported, "Remux")]
+        [InlineData("Tizen4-4K-5.1", "mp4-h264-ac3-aac-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.SecondaryAudioNotSupported, "Remux")]
+        [InlineData("Tizen4-4K-5.1", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.Transcode, TranscodeReason.SecondaryAudioNotSupported, "Remux")]
         // TranscodeMedia
         [InlineData("TranscodeMedia", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.DirectPlayError, "Remux", "HLS.mp4")]
         [InlineData("TranscodeMedia", "mp4-h264-ac3-aac-mp3-srt-2600k", PlayMethod.Transcode, TranscodeReason.DirectPlayError, "Remux", "HLS.ts")]
@@ -331,7 +324,7 @@ namespace Jellyfin.Model.Tests
         {
             if (string.IsNullOrEmpty(transcodeProtocol))
             {
-                transcodeProtocol = playMethod == PlayMethod.DirectStream ? "http" : "HLS.ts";
+                transcodeProtocol = "HLS.ts";
             }
 
             var builder = GetStreamBuilder();
@@ -380,7 +373,7 @@ namespace Jellyfin.Model.Tests
                     Assert.Equal(streamInfo.Container, uri.Extension);
                 }
             }
-            else if (playMethod == PlayMethod.DirectStream || playMethod == PlayMethod.Transcode)
+            else if (playMethod == PlayMethod.Transcode)
             {
                 Assert.NotNull(streamInfo.Container);
                 Assert.NotEmpty(streamInfo.VideoCodecs);
@@ -550,6 +543,7 @@ namespace Jellyfin.Model.Tests
                 Profile = dp,
                 AllowAudioStreamCopy = true,
                 AllowVideoStreamCopy = true,
+                EnableDirectStream = false // This is disabled in server
             };
         }
 
