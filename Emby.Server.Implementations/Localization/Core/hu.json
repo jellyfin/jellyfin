@@ -130,5 +130,8 @@
     "TaskAudioNormalization": "Hangerő Normalizáció",
     "TaskCleanCollectionsAndPlaylistsDescription": "Nem létező elemek törlése a gyűjteményekből és lejátszási listákról.",
     "TaskAudioNormalizationDescription": "Hangerő normalizációs adatok keresése.",
-    "TaskCleanCollectionsAndPlaylists": "Gyűjtemények és lejátszási listák optimalizálása"
+    "TaskCleanCollectionsAndPlaylists": "Gyűjtemények és lejátszási listák optimalizálása",
+    "TaskExtractMediaSegments": "Média szegmens felismerése",
+    "TaskDownloadMissingLyrics": "Hiányzó szöveg letöltése",
+    "TaskDownloadMissingLyricsDescription": "Zenék szövegének letöltése"
 }
