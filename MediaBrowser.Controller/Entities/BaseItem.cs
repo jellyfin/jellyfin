@@ -574,6 +574,9 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public int? InheritedParentalRatingValue { get; set; }
 
+        [JsonIgnore]
+        public int? InheritedParentalRatingSubValue { get; set; }
+
         /// <summary>
         /// Gets or sets the critic rating.
         /// </summary>
@@ -1532,7 +1535,8 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            var maxAllowedRating = user.MaxParentalAgeRating;
+            var maxAllowedRating = user.MaxParentalRatingScore;
+            var maxAllowedSubRating = user.MaxParentalRatingSubScore;
             var rating = CustomRatingForComparison;
 
             if (string.IsNullOrEmpty(rating))
@@ -1546,10 +1550,10 @@ namespace MediaBrowser.Controller.Entities
                 return !GetBlockUnratedValue(user);
             }
 
-            var value = LocalizationManager.GetRatingLevel(rating);
+            var ratingScore = LocalizationManager.GetRatingScore(rating);
 
             // Could not determine rating level
-            if (!value.HasValue)
+            if (ratingScore is null)
             {
                 var isAllowed = !GetBlockUnratedValue(user);
 
@@ -1561,10 +1565,15 @@ namespace MediaBrowser.Controller.Entities
                 return isAllowed;
             }
 
-            return !maxAllowedRating.HasValue || value.Value <= maxAllowedRating.Value;
+            if (maxAllowedSubRating is not null)
+            {
+                return (ratingScore.SubScore ?? 0) <= maxAllowedSubRating && ratingScore.Score <= maxAllowedRating.Value;
+            }
+
+            return !maxAllowedRating.HasValue || ratingScore.Score <= maxAllowedRating.Value;
         }
 
-        public int? GetInheritedParentalRatingValue()
+        public ParentalRatingScore GetParentalRatingScore()
         {
             var rating = CustomRatingForComparison;
 
@@ -1578,7 +1587,7 @@ namespace MediaBrowser.Controller.Entities
                 return null;
             }
 
-            return LocalizationManager.GetRatingLevel(rating);
+            return LocalizationManager.GetRatingScore(rating);
         }
 
         public List<string> GetInheritedTags()
@@ -2509,11 +2518,20 @@ namespace MediaBrowser.Controller.Entities
 
             var item = this;
 
-            var inheritedParentalRatingValue = item.GetInheritedParentalRatingValue() ?? null;
-            if (inheritedParentalRatingValue != item.InheritedParentalRatingValue)
+            var rating = item.GetParentalRatingScore();
+            if (rating is not null)
             {
-                item.InheritedParentalRatingValue = inheritedParentalRatingValue;
-                updateType |= ItemUpdateType.MetadataImport;
+                if (rating.Score != item.InheritedParentalRatingValue)
+                {
+                    item.InheritedParentalRatingValue = rating.Score;
+                    updateType |= ItemUpdateType.MetadataImport;
+                }
+
+                if (rating.SubScore != item.InheritedParentalRatingSubValue)
+                {
+                    item.InheritedParentalRatingSubValue = rating.SubScore;
+                    updateType |= ItemUpdateType.MetadataImport;
+                }
             }
 
             return updateType;
@@ -2533,8 +2551,9 @@ namespace MediaBrowser.Controller.Entities
                 .Select(i => i.OfficialRating)
                 .Where(i => !string.IsNullOrEmpty(i))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Select(rating => (rating, LocalizationManager.GetRatingLevel(rating)))
-                .OrderBy(i => i.Item2 ?? 1000)
+                .Select(rating => (rating, LocalizationManager.GetRatingScore(rating)))
+                .OrderBy(i => i.Item2 is null ? 1001 : i.Item2.Score)
+                .ThenBy(i => i.Item2 is null ? 1001 : i.Item2.SubScore)
                 .Select(i => i.rating);
 
             OfficialRating = ratings.FirstOrDefault() ?? currentOfficialRating;
