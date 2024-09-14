@@ -47,7 +47,7 @@ namespace MediaBrowser.Model.Dlna
 
             if (isHdr)
             {
-                referenceBitrate *= 1.2f;
+                referenceBitrate *= 0.8f;
             }
 
             var resolutionConfig = GetResolutionConfiguration(Convert.ToInt32(referenceBitrate));
