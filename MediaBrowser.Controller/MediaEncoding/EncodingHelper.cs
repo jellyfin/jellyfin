@@ -2381,7 +2381,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             return 1;
         }
 
-        private static int ScaleBitrate(int bitrate, string inputVideoCodec, string outputVideoCodec)
+        public static int ScaleBitrate(int bitrate, string inputVideoCodec, string outputVideoCodec)
         {
             var inputScaleFactor = GetVideoBitrateScaleFactor(inputVideoCodec);
             var outputScaleFactor = GetVideoBitrateScaleFactor(outputVideoCodec);

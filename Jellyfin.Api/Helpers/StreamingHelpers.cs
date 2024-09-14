@@ -219,11 +219,17 @@ public static class StreamingHelpers
                 }
                 else
                 {
+                    var h264EquivalentBitrate = EncodingHelper.ScaleBitrate(
+                        state.OutputVideoBitrate.Value,
+                        state.ActualOutputVideoCodec,
+                        "h264");
                     var resolution = ResolutionNormalizer.Normalize(
                         state.VideoStream?.BitRate,
                         state.OutputVideoBitrate.Value,
+                        h264EquivalentBitrate,
                         state.VideoRequest.MaxWidth,
-                        state.VideoRequest.MaxHeight);
+                        state.VideoRequest.MaxHeight,
+                        state.TargetFramerate);
 
                     state.VideoRequest.MaxWidth = resolution.MaxWidth;
                     state.VideoRequest.MaxHeight = resolution.MaxHeight;
