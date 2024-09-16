@@ -27,6 +27,7 @@ namespace MediaBrowser.Model.Dlna
         IsInterlaced = 21,
         AudioSampleRate = 22,
         AudioBitDepth = 23,
-        VideoRangeType = 24
+        VideoRangeType = 24,
+        IsDefaultTrack = 25
     }
 }

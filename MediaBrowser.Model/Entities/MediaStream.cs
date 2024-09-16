@@ -13,6 +13,7 @@ using Jellyfin.Extensions;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Session;
 
 namespace MediaBrowser.Model.Entities
 {
@@ -671,6 +672,24 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value><c>true</c> if this instance is anamorphic; otherwise, <c>false</c>.</value>
         public bool? IsAnamorphic { get; set; }
+
+        /// <summary>
+        /// Gets or sets DirectPlay errors.
+        /// </summary>
+        /// <value>DirectPlay errors.</value>
+        public TranscodeReason? DirectPlayErrors { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is compatible with the device.
+        /// </summary>
+        /// <value><c>true</c> if this instance is compatible with the device; otherwise, <c>false</c>.</value>
+        public bool SupportsDirectPlay
+        {
+            get
+            {
+                return DirectPlayErrors == 0;
+            }
+        }
 
         internal string GetResolutionText()
         {
