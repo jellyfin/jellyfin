@@ -1,18 +1,7 @@
 {
-    "EnableAlbumArtInDidl": false,
-    "EnableSingleAlbumArtLimit": false,
-    "EnableSingleSubtitleLimit": false,
-    "SupportedMediaTypes": "Audio,Photo,Video",
-    "MaxAlbumArtWidth": 0,
-    "MaxAlbumArtHeight": 0,
     "MaxStreamingBitrate": 120000000,
     "MaxStaticBitrate": 100000000,
     "MusicStreamingTranscodingBitrate": 384000,
-    "TimelineOffsetSeconds": 0,
-    "RequiresPlainVideoItems": false,
-    "RequiresPlainFolders": false,
-    "EnableMSMediaReceiverRegistrar": false,
-    "IgnoreTranscodeByteRangeRequests": false,
     "DirectPlayProfiles": [
         {
             "Container": "webm",
@@ -23,14 +12,62 @@
         {
             "Container": "mp4,m4v",
             "Type": "Video",
-            "VideoCodec": "h264,hevc,vp9,av1",
-            "AudioCodec": "aac,mp3,mp2,opus,flac,vorbis"
+            "VideoCodec": "h264,hevc,mpeg2video,vc1,vp9,av1",
+            "AudioCodec": "aac,ac3,eac3,mp2,pcm_s16le,pcm_s24le,opus,flac,vorbis"
+        },
+        {
+            "Container": "mkv",
+            "Type": "Video",
+            "VideoCodec": "h264,hevc,mpeg2video,vc1,vp9,av1",
+            "AudioCodec": "aac,ac3,eac3,mp2,pcm_s16le,pcm_s24le,opus,flac,vorbis"
+        },
+        {
+            "Container": "m2ts",
+            "Type": "Video",
+            "VideoCodec": "h264,vc1,mpeg2video",
+            "AudioCodec": "aac,ac3,eac3,mp2,pcm_s16le,pcm_s24le,opus,flac,vorbis"
+        },
+        {
+            "Container": "wmv",
+            "Type": "Video",
+            "VideoCodec": "",
+            "AudioCodec": ""
+        },
+        {
+            "Container": "ts,mpegts",
+            "Type": "Video",
+            "VideoCodec": "h264,hevc,vc1,mpeg2video",
+            "AudioCodec": "aac,ac3,eac3,mp2,pcm_s16le,pcm_s24le,opus,flac,vorbis"
+        },
+        {
+            "Container": "asf",
+            "Type": "Video",
+            "VideoCodec": "",
+            "AudioCodec": ""
+        },
+        {
+            "Container": "avi",
+            "Type": "Video",
+            "VideoCodec": "",
+            "AudioCodec": "aac,ac3,eac3,mp2,pcm_s16le,pcm_s24le,opus,flac,vorbis"
+        },
+        {
+            "Container": "mpg",
+            "Type": "Video",
+            "VideoCodec": "",
+            "AudioCodec": "aac,ac3,eac3,mp2,pcm_s16le,pcm_s24le,opus,flac,vorbis"
+        },
+        {
+            "Container": "mpeg",
+            "Type": "Video",
+            "VideoCodec": "",
+            "AudioCodec": "aac,ac3,eac3,mp2,pcm_s16le,pcm_s24le,opus,flac,vorbis"
         },
         {
             "Container": "mov",
             "Type": "Video",
             "VideoCodec": "h264",
-            "AudioCodec": "aac,mp3,mp2,opus,flac,vorbis"
+            "AudioCodec": "aac,ac3,eac3,mp2,pcm_s16le,pcm_s24le,opus,flac,vorbis"
         },
         {
             "Container": "opus",
@@ -65,7 +102,8 @@
             "Type": "Audio"
         },
         {
-            "Container": "flac",
+            "Container": "mp4",
+            "AudioCodec": "flac",
             "Type": "Audio"
         },
         {
@@ -82,32 +120,22 @@
             "Type": "Audio"
         },
         {
-            "Container": "ogg",
-            "Type": "Audio"
-        },
-        {
             "Container": "hls",
             "Type": "Video",
-            "VideoCodec": "av1,hevc,h264,vp9",
-            "AudioCodec": "aac,mp2,opus,flac"
-        },
-        {
-            "Container": "hls",
-            "Type": "Video",
-            "VideoCodec": "h264",
-            "AudioCodec": "aac,mp3,mp2"
+            "VideoCodec": "h264,hevc",
+            "AudioCodec": "aac,ac3,eac3,mp2"
         }
     ],
     "TranscodingProfiles": [
         {
-            "Container": "mp4",
+            "Container": "ts",
             "Type": "Audio",
             "AudioCodec": "aac",
             "Context": "Streaming",
             "Protocol": "hls",
-            "MaxAudioChannels": "2",
-            "MinSegments": "2",
-            "BreakOnNonKeyFrames": true,
+            "MaxAudioChannels": "6",
+            "MinSegments": "1",
+            "BreakOnNonKeyFrames": false,
             "EnableAudioVbrEncoding": true
         },
         {
@@ -116,7 +144,7 @@
             "AudioCodec": "aac",
             "Context": "Streaming",
             "Protocol": "http",
-            "MaxAudioChannels": "2"
+            "MaxAudioChannels": "6"
         },
         {
             "Container": "mp3",
@@ -124,7 +152,7 @@
             "AudioCodec": "mp3",
             "Context": "Streaming",
             "Protocol": "http",
-            "MaxAudioChannels": "2"
+            "MaxAudioChannels": "6"
         },
         {
             "Container": "opus",
@@ -132,7 +160,7 @@
             "AudioCodec": "opus",
             "Context": "Streaming",
             "Protocol": "http",
-            "MaxAudioChannels": "2"
+            "MaxAudioChannels": "6"
         },
         {
             "Container": "wav",
@@ -140,7 +168,7 @@
             "AudioCodec": "wav",
             "Context": "Streaming",
             "Protocol": "http",
-            "MaxAudioChannels": "2"
+            "MaxAudioChannels": "6"
         },
         {
             "Container": "opus",
@@ -148,7 +176,7 @@
             "AudioCodec": "opus",
             "Context": "Static",
             "Protocol": "http",
-            "MaxAudioChannels": "2"
+            "MaxAudioChannels": "6"
         },
         {
             "Container": "mp3",
@@ -156,7 +184,7 @@
             "AudioCodec": "mp3",
             "Context": "Static",
             "Protocol": "http",
-            "MaxAudioChannels": "2"
+            "MaxAudioChannels": "6"
         },
         {
             "Container": "aac",
@@ -164,7 +192,7 @@
             "AudioCodec": "aac",
             "Context": "Static",
             "Protocol": "http",
-            "MaxAudioChannels": "2"
+            "MaxAudioChannels": "6"
         },
         {
             "Container": "wav",
@@ -172,52 +200,30 @@
             "AudioCodec": "wav",
             "Context": "Static",
             "Protocol": "http",
-            "MaxAudioChannels": "2"
-        },
-        {
-            "Container": "mp4",
-            "Type": "Video",
-            "AudioCodec": "aac,mp2,opus,flac",
-            "VideoCodec": "av1,hevc,h264,vp9",
-            "Context": "Streaming",
-            "Protocol": "hls",
-            "MaxAudioChannels": "2",
-            "MinSegments": "2",
-            "BreakOnNonKeyFrames": true
+            "MaxAudioChannels": "6"
         },
         {
             "Container": "ts",
             "Type": "Video",
-            "AudioCodec": "aac,mp3,mp2",
-            "VideoCodec": "h264",
+            "AudioCodec": "aac,ac3,eac3,mp2",
+            "VideoCodec": "h264,hevc",
             "Context": "Streaming",
             "Protocol": "hls",
-            "MaxAudioChannels": "2",
-            "MinSegments": "2",
-            "BreakOnNonKeyFrames": true
+            "MaxAudioChannels": "6",
+            "MinSegments": "1",
+            "BreakOnNonKeyFrames": false
         }
     ],
     "ContainerProfiles": [],
     "CodecProfiles": [
         {
             "Type": "VideoAudio",
-            "Codec": "aac",
+            "Codec": "flac",
             "Conditions": [
                 {
-                    "Condition": "Equals",
-                    "Property": "IsSecondaryAudio",
-                    "Value": "false",
-                    "IsRequired": false
-                }
-            ]
-        },
-        {
-            "Type": "VideoAudio",
-            "Conditions": [
-                {
-                    "Condition": "Equals",
-                    "Property": "IsSecondaryAudio",
-                    "Value": "false",
+                    "Condition": "LessThanEqual",
+                    "Property": "AudioChannels",
+                    "Value": "2",
                     "IsRequired": false
                 }
             ]
@@ -235,7 +241,7 @@
                 {
                     "Condition": "EqualsAny",
                     "Property": "VideoProfile",
-                    "Value": "high|main|baseline|constrained baseline|high 10",
+                    "Value": "high|main|baseline|constrained baseline",
                     "IsRequired": false
                 },
                 {
@@ -249,11 +255,18 @@
                     "Property": "VideoLevel",
                     "Value": "52",
                     "IsRequired": false
-                },
+                }
+            ]
+        },
+        {
+            "Type": "Video",
+            "Container": "-mp4,ts",
+            "Codec": "hevc",
+            "Conditions": [
                 {
-                    "Condition": "NotEquals",
-                    "Property": "IsInterlaced",
-                    "Value": "true",
+                    "Condition": "EqualsAny",
+                    "Property": "VideoRangeType",
+                    "Value": "SDR|HDR10|HLG",
                     "IsRequired": false
                 }
             ]
@@ -277,19 +290,13 @@
                 {
                     "Condition": "EqualsAny",
                     "Property": "VideoRangeType",
-                    "Value": "SDR|HDR10|HLG",
+                    "Value": "SDR|HDR10|HLG|DOVI|DOVIWithHDR10|DOVIWithHLG|DOVIWithSDR",
                     "IsRequired": false
                 },
                 {
                     "Condition": "LessThanEqual",
                     "Property": "VideoLevel",
                     "Value": "183",
-                    "IsRequired": false
-                },
-                {
-                    "Condition": "NotEquals",
-                    "Property": "IsInterlaced",
-                    "Value": "true",
                     "IsRequired": false
                 }
             ]
@@ -331,26 +338,13 @@
                 {
                     "Condition": "LessThanEqual",
                     "Property": "VideoLevel",
-                    "Value": "19",
+                    "Value": "15",
                     "IsRequired": false
                 }
             ]
         }
     ],
-    "SubtitleProfiles": [
-        {
-            "Format": "vtt",
-            "Method": "External"
-        },
-        {
-            "Format": "ass",
-            "Method": "External"
-        },
-        {
-            "Format": "ssa",
-            "Method": "External"
-        }
-    ],
+    "SubtitleProfiles": [],
     "ResponseProfiles": [
         {
             "Type": "Video",

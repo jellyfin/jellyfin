@@ -19,8 +19,10 @@ namespace MediaBrowser.Model.Dlna
     {
         // Aliases
         internal const TranscodeReason ContainerReasons = TranscodeReason.ContainerNotSupported | TranscodeReason.ContainerBitrateExceedsLimit;
-        internal const TranscodeReason AudioReasons = TranscodeReason.AudioCodecNotSupported | TranscodeReason.AudioBitrateNotSupported | TranscodeReason.AudioChannelsNotSupported | TranscodeReason.AudioProfileNotSupported | TranscodeReason.AudioSampleRateNotSupported | TranscodeReason.SecondaryAudioNotSupported | TranscodeReason.AudioBitDepthNotSupported | TranscodeReason.AudioIsExternal;
-        internal const TranscodeReason VideoReasons = TranscodeReason.VideoCodecNotSupported | TranscodeReason.VideoResolutionNotSupported | TranscodeReason.AnamorphicVideoNotSupported | TranscodeReason.InterlacedVideoNotSupported | TranscodeReason.VideoBitDepthNotSupported | TranscodeReason.VideoBitrateNotSupported | TranscodeReason.VideoFramerateNotSupported | TranscodeReason.VideoLevelNotSupported | TranscodeReason.RefFramesNotSupported | TranscodeReason.VideoRangeTypeNotSupported | TranscodeReason.VideoProfileNotSupported;
+        internal const TranscodeReason AudioCodecReasons = TranscodeReason.AudioBitrateNotSupported | TranscodeReason.AudioChannelsNotSupported | TranscodeReason.AudioProfileNotSupported | TranscodeReason.AudioSampleRateNotSupported | TranscodeReason.SecondaryAudioNotSupported | TranscodeReason.AudioBitDepthNotSupported | TranscodeReason.AudioIsExternal;
+        internal const TranscodeReason AudioReasons = TranscodeReason.AudioCodecNotSupported | AudioCodecReasons;
+        internal const TranscodeReason VideoCodecReasons = TranscodeReason.VideoResolutionNotSupported | TranscodeReason.AnamorphicVideoNotSupported | TranscodeReason.InterlacedVideoNotSupported | TranscodeReason.VideoBitDepthNotSupported | TranscodeReason.VideoBitrateNotSupported | TranscodeReason.VideoFramerateNotSupported | TranscodeReason.VideoLevelNotSupported | TranscodeReason.RefFramesNotSupported | TranscodeReason.VideoRangeTypeNotSupported | TranscodeReason.VideoProfileNotSupported;
+        internal const TranscodeReason VideoReasons = TranscodeReason.VideoCodecNotSupported | VideoCodecReasons;
         internal const TranscodeReason DirectStreamReasons = AudioReasons | TranscodeReason.ContainerNotSupported | TranscodeReason.VideoCodecTagNotSupported;
 
         private readonly ILogger _logger;
@@ -1314,7 +1316,7 @@ namespace MediaBrowser.Model.Dlna
                 }
             }
 
-            var rankings = new[] { VideoReasons, AudioReasons, ContainerReasons };
+            var rankings = new[] { TranscodeReason.VideoCodecNotSupported, VideoCodecReasons, TranscodeReason.AudioCodecNotSupported, AudioCodecReasons, ContainerReasons };
             var rank = (ref TranscodeReason a) =>
                 {
                     var index = 1;
@@ -1417,7 +1419,7 @@ namespace MediaBrowser.Model.Dlna
 
             var failureReasons = analyzedProfiles[false]
                 .Select(analysis => analysis.Result)
-                .Where(result => !containerSupported || (result.TranscodeReason & TranscodeReason.ContainerNotSupported) == 0)
+                .Where(result => !containerSupported || !result.TranscodeReason.HasFlag(TranscodeReason.ContainerNotSupported))
                 .FirstOrDefault().TranscodeReason;
             if (failureReasons == 0)
             {
