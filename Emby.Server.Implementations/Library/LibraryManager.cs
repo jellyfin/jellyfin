@@ -649,7 +649,9 @@ namespace Emby.Server.Implementations.Library
         private static bool ShouldResolvePathContents(ItemResolveArgs args)
         {
             // Ignore any folders containing a file called .ignore
-            return !args.ContainsFileSystemEntryByName(".ignore");
+            return !args.ContainsFileSystemEntryByName(".ignore")
+                   // Ignore trickplay folders
+                || !(args.IsDirectory && args.Path.EndsWith(".trickplay", StringComparison.OrdinalIgnoreCase));
         }
 
         public IEnumerable<BaseItem> ResolvePaths(IEnumerable<FileSystemMetadata> files, IDirectoryService directoryService, Folder parent, LibraryOptions libraryOptions, CollectionType? collectionType = null)
