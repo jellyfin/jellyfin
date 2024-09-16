@@ -2980,6 +2980,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         public static string GetGraphicalSubPreProcessFilters(
             int? videoWidth,
             int? videoHeight,
+            int? subtitleWidth,
+            int? subtitleHeight,
             int? requestedWidth,
             int? requestedHeight,
             int? requestedMaxWidth,
@@ -2993,16 +2995,37 @@ namespace MediaBrowser.Controller.MediaEncoding
                 requestedMaxWidth,
                 requestedMaxHeight);
 
-            if (outWidth.HasValue && outHeight.HasValue)
+            if (!outWidth.HasValue
+                || !outHeight.HasValue
+                || outWidth.Value <= 0
+                || outHeight.Value <= 0)
             {
-                return string.Format(
-                    CultureInfo.InvariantCulture,
-                    @"scale,scale=-1:{1}:fast_bilinear,crop,pad=max({0}\,iw):max({1}\,ih):(ow-iw)/2:(oh-ih)/2:black@0,crop={0}:{1}",
-                    outWidth.Value,
-                    outHeight.Value);
+                return string.Empty;
             }
 
-            return string.Empty;
+            // Automatically add padding based on subtitle input
+            var filters = @"scale,scale=-1:{1}:fast_bilinear,crop,pad=max({0}\,iw):max({1}\,ih):(ow-iw)/2:(oh-ih)/2:black@0,crop={0}:{1}";
+
+            if (subtitleWidth.HasValue
+                && subtitleHeight.HasValue
+                && subtitleWidth.Value > 0
+                && subtitleHeight.Value > 0)
+            {
+                var videoDar = (double)outWidth.Value / outHeight.Value;
+                var subtitleDar = (double)subtitleWidth.Value / subtitleHeight.Value;
+
+                // No need to add padding when DAR is the same -> 1080p PGSSUB on 2160p video
+                if (videoDar == subtitleDar)
+                {
+                    filters = @"scale,scale={0}:{1}:fast_bilinear";
+                }
+            }
+
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                filters,
+                outWidth.Value,
+                outHeight.Value);
         }
 
         public static string GetAlphaSrcFilter(
@@ -3507,7 +3530,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
             else if (hasGraphicalSubs)
             {
-                var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
+                var subW = state.SubtitleStream?.Width;
+                var subH = state.SubtitleStream?.Height;
+                var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, reqMaxH);
                 subFilters.Add(subPreProcFilters);
                 overlayFilters.Add("overlay=eof_action=pass:repeatlast=0");
             }
@@ -3580,6 +3605,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             var hasAssSubs = hasSubs
                 && (string.Equals(state.SubtitleStream.Codec, "ass", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(state.SubtitleStream.Codec, "ssa", StringComparison.OrdinalIgnoreCase));
+            var subW = state.SubtitleStream?.Width;
+            var subH = state.SubtitleStream?.Height;
 
             var rotation = state.VideoStream?.Rotation ?? 0;
             var tranposeDir = rotation == 0 ? string.Empty : GetVideoTransposeDirection(state);
@@ -3683,7 +3710,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     if (hasGraphicalSubs)
                     {
-                        var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
+                        var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, reqMaxH);
                         subFilters.Add(subPreProcFilters);
                         subFilters.Add("format=yuva420p");
                     }
@@ -3708,7 +3735,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
+                    var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subPreProcFilters);
                     overlayFilters.Add("overlay=eof_action=pass:repeatlast=0");
                 }
@@ -3783,6 +3810,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             var hasAssSubs = hasSubs
                 && (string.Equals(state.SubtitleStream.Codec, "ass", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(state.SubtitleStream.Codec, "ssa", StringComparison.OrdinalIgnoreCase));
+            var subW = state.SubtitleStream?.Width;
+            var subH = state.SubtitleStream?.Height;
 
             var rotation = state.VideoStream?.Rotation ?? 0;
             var tranposeDir = rotation == 0 ? string.Empty : GetVideoTransposeDirection(state);
@@ -3897,7 +3926,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     if (hasGraphicalSubs)
                     {
-                        var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
+                        var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, reqMaxH);
                         subFilters.Add(subPreProcFilters);
                         subFilters.Add("format=yuva420p");
                     }
@@ -3924,7 +3953,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
+                    var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subPreProcFilters);
                     overlayFilters.Add("overlay=eof_action=pass:repeatlast=0");
                 }
@@ -4021,6 +4050,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             var hasAssSubs = hasSubs
                 && (string.Equals(state.SubtitleStream.Codec, "ass", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(state.SubtitleStream.Codec, "ssa", StringComparison.OrdinalIgnoreCase));
+            var subW = state.SubtitleStream?.Width;
+            var subH = state.SubtitleStream?.Height;
 
             var rotation = state.VideoStream?.Rotation ?? 0;
             var tranposeDir = rotation == 0 ? string.Empty : GetVideoTransposeDirection(state);
@@ -4193,7 +4224,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     if (hasGraphicalSubs)
                     {
                         // overlay_qsv can handle overlay scaling, setup a smaller height to reduce transfer overhead
-                        var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, reqW, reqH, reqMaxW, 1080);
+                        var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, 1080);
                         subFilters.Add(subPreProcFilters);
                         subFilters.Add("format=bgra");
                     }
@@ -4229,7 +4260,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
+                    var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subPreProcFilters);
                     overlayFilters.Add("overlay=eof_action=pass:repeatlast=0");
                 }
@@ -4273,6 +4304,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             var hasAssSubs = hasSubs
                 && (string.Equals(state.SubtitleStream.Codec, "ass", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(state.SubtitleStream.Codec, "ssa", StringComparison.OrdinalIgnoreCase));
+            var subW = state.SubtitleStream?.Width;
+            var subH = state.SubtitleStream?.Height;
 
             var rotation = state.VideoStream?.Rotation ?? 0;
             var tranposeDir = rotation == 0 ? string.Empty : GetVideoTransposeDirection(state);
@@ -4439,7 +4472,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     if (hasGraphicalSubs)
                     {
                         // overlay_qsv can handle overlay scaling, setup a smaller height to reduce transfer overhead
-                        var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, reqW, reqH, reqMaxW, 1080);
+                        var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, 1080);
                         subFilters.Add(subPreProcFilters);
                         subFilters.Add("format=bgra");
                     }
@@ -4474,7 +4507,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
+                    var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subPreProcFilters);
                     overlayFilters.Add("overlay=eof_action=pass:repeatlast=0");
                 }
@@ -4584,6 +4617,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             var hasAssSubs = hasSubs
                 && (string.Equals(state.SubtitleStream.Codec, "ass", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(state.SubtitleStream.Codec, "ssa", StringComparison.OrdinalIgnoreCase));
+            var subW = state.SubtitleStream?.Width;
+            var subH = state.SubtitleStream?.Height;
 
             var rotation = state.VideoStream?.Rotation ?? 0;
             var tranposeDir = rotation == 0 ? string.Empty : GetVideoTransposeDirection(state);
@@ -4725,7 +4760,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     if (hasGraphicalSubs)
                     {
                         // overlay_vaapi can handle overlay scaling, setup a smaller height to reduce transfer overhead
-                        var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, reqW, reqH, reqMaxW, 1080);
+                        var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, 1080);
                         subFilters.Add(subPreProcFilters);
                         subFilters.Add("format=bgra");
                     }
@@ -4758,7 +4793,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
+                    var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subPreProcFilters);
                     overlayFilters.Add("overlay=eof_action=pass:repeatlast=0");
 
@@ -4950,7 +4985,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
+                    var subW = state.SubtitleStream?.Width;
+                    var subH = state.SubtitleStream?.Height;
+                    var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subPreProcFilters);
                     subFilters.Add("format=bgra");
                 }
@@ -5173,7 +5210,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
+                    var subW = state.SubtitleStream?.Width;
+                    var subH = state.SubtitleStream?.Height;
+                    var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subPreProcFilters);
                     overlayFilters.Add("overlay=eof_action=pass:repeatlast=0");
 
@@ -5324,7 +5363,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
+                    var subW = state.SubtitleStream?.Width;
+                    var subH = state.SubtitleStream?.Height;
+                    var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subPreProcFilters);
                     subFilters.Add("format=bgra");
                 }
@@ -5449,6 +5490,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             var hasAssSubs = hasSubs
                 && (string.Equals(state.SubtitleStream.Codec, "ass", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(state.SubtitleStream.Codec, "ssa", StringComparison.OrdinalIgnoreCase));
+            var subW = state.SubtitleStream?.Width;
+            var subH = state.SubtitleStream?.Height;
 
             var rotation = state.VideoStream?.Rotation ?? 0;
             var tranposeDir = rotation == 0 ? string.Empty : GetVideoTransposeDirection(state);
@@ -5583,7 +5626,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     if (hasGraphicalSubs)
                     {
-                        var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
+                        var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, reqMaxH);
                         subFilters.Add(subPreProcFilters);
                         subFilters.Add("format=bgra");
                     }
@@ -5616,7 +5659,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
+                    var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subPreProcFilters);
                     overlayFilters.Add("overlay=eof_action=pass:repeatlast=0");
                 }
