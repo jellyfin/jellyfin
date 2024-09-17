@@ -3015,7 +3015,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var subtitleDar = (double)subtitleWidth.Value / subtitleHeight.Value;
 
                 // No need to add padding when DAR is the same -> 1080p PGSSUB on 2160p video
-                if (videoDar == subtitleDar)
+                if (Math.Abs(videoDar - subtitleDar) < 0.01f)
                 {
                     filters = @"scale,scale={0}:{1}:fast_bilinear";
                 }
