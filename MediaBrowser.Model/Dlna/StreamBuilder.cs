@@ -407,10 +407,9 @@ namespace MediaBrowser.Model.Dlna
                         continue;
                     }
 
-                    var formatStr = format.ToString();
-                    if (directPlayProfile.SupportsContainer(formatStr))
+                    if (directPlayProfile.SupportsContainer(format))
                     {
-                        return formatStr;
+                        return format;
                     }
                 }
             }
@@ -1317,6 +1316,7 @@ namespace MediaBrowser.Model.Dlna
             }
 
             var containerSupported = false;
+            TranscodeReason[] rankings = [TranscodeReason.VideoCodecNotSupported, VideoCodecReasons, TranscodeReason.AudioCodecNotSupported, AudioCodecReasons, ContainerReasons];
 
             // Check DirectPlay profiles to see if it can be direct played
             var analyzedProfiles = profile.DirectPlayProfiles
@@ -1382,7 +1382,6 @@ namespace MediaBrowser.Model.Dlna
                         playMethod = PlayMethod.DirectStream;
                     }
 
-                    TranscodeReason[] rankings = [TranscodeReason.VideoCodecNotSupported, VideoCodecReasons, TranscodeReason.AudioCodecNotSupported, AudioCodecReasons, ContainerReasons];
                     var ranked = GetRank(ref failureReasons, rankings);
 
                     return (Result: (Profile: directPlayProfile, PlayMethod: playMethod, AudioStreamIndex: selectedAudioStream?.Index, TranscodeReason: failureReasons), Order: order, Rank: ranked);

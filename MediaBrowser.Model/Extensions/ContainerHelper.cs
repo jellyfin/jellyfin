@@ -91,7 +91,7 @@ public static class ContainerHelper
             {
                 foreach (var profile in allProfileContainers)
                 {
-                    if (container.Equals(profile, StringComparison.OrdinalIgnoreCase))
+                    if (!profile.IsEmpty && container.Equals(profile, StringComparison.OrdinalIgnoreCase))
                     {
                         return !isNegativeList;
                     }
@@ -118,7 +118,7 @@ public static class ContainerHelper
             return true;
         }
 
-        var allInputContainers = inputContainer.Split(',');
+        var allInputContainers = Split(inputContainer);
         foreach (var container in allInputContainers)
         {
             foreach (var profile in profileContainers)
