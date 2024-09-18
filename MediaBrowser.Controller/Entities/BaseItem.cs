@@ -1087,12 +1087,7 @@ namespace MediaBrowser.Controller.Entities
 
                 return 1;
             }).ThenBy(i => i.Video3DFormat.HasValue ? 1 : 0)
-            .ThenByDescending(i =>
-            {
-                var stream = i.VideoStream;
-
-                return stream is null || stream.Width is null ? 0 : stream.Width.Value;
-            })
+            .ThenByDescending(i => i, new MediaSourceWidthComparator())
             .ToList();
         }
 
