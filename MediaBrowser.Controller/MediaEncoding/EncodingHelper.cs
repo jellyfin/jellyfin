@@ -6001,7 +6001,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             var decoderName = decoderPrefix + '_' + decoderSuffix;
 
             var isCodecAvailable = _mediaEncoder.SupportsDecoder(decoderName) && options.HardwareDecodingCodecs.Contains(videoCodec, StringComparison.OrdinalIgnoreCase);
-            if (bitDepth == 10 && isCodecAvailable)
+
+            // VideoToolbox decoders have built-in SW fallback
+            if (bitDepth == 10
+                && isCodecAvailable
+                && (options.HardwareAccelerationType != HardwareAccelerationType.videotoolbox))
             {
                 if (string.Equals(videoCodec, "hevc", StringComparison.OrdinalIgnoreCase)
                     && options.HardwareDecodingCodecs.Contains("hevc", StringComparison.OrdinalIgnoreCase)
@@ -6077,7 +6081,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                 && ffmpegVersion >= _minFFmpegDisplayRotationOption;
             var stripRotationDataArgs = stripRotationData ? " -display_rotation 0" : string.Empty;
 
-            if (isCodecAvailable)
+            // VideoToolbox decoders have built-in SW fallback
+            if (isCodecAvailable
+                && (options.HardwareAccelerationType != HardwareAccelerationType.videotoolbox))
             {
                 if (string.Equals(videoCodec, "hevc", StringComparison.OrdinalIgnoreCase)
                     && options.HardwareDecodingCodecs.Contains("hevc", StringComparison.OrdinalIgnoreCase))
