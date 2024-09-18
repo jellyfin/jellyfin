@@ -64,11 +64,6 @@ public class SessionController : BaseJellyfinApiController
             activeWithinSeconds,
             controllableUserToCheck);
 
-        if (result.Count == 0)
-        {
-            return NotFound();
-        }
-
         return Ok(result);
     }
 
