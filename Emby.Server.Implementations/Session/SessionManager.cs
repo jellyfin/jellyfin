@@ -1886,7 +1886,7 @@ namespace Emby.Server.Implementations.Session
                 if (!user.HasPermission(PermissionKind.EnableRemoteControlOfOtherUsers))
                 {
                     // User cannot control other user's sessions, validate user id.
-                    result = result.Where(i => i.UserId.IsEmpty() || i.ContainsUser(controllableUserToCheck.Value));
+                    result = result.Where(i => i.UserId.IsEmpty() || i.ContainsUser(user.Id));
                 }
 
                 result = result.Where(i =>
@@ -1903,7 +1903,10 @@ namespace Emby.Server.Implementations.Session
             {
                 // Request isn't from administrator, limit to "own" sessions.
                 result = result.Where(i => i.UserId.IsEmpty() || i.ContainsUser(userId));
+            }
 
+            if (!user.HasPermission(PermissionKind.IsAdministrator))
+            {
                 // Don't report acceleration type for non-admin users.
                 result = result.Select(r =>
                 {
