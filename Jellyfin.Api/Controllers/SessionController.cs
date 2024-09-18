@@ -16,6 +16,7 @@ using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -66,6 +67,7 @@ public class SessionController : BaseJellyfinApiController
         [FromQuery] int? activeWithinSeconds)
     {
         var result = _sessionManager.Sessions;
+        var isRequestingFromAdmin = User.IsInRole(UserRoles.Administrator);
 
         if (!string.IsNullOrEmpty(deviceId))
         {
@@ -106,7 +108,7 @@ public class SessionController : BaseJellyfinApiController
                 return true;
             });
         }
-        else if (!User.IsInRole(UserRoles.Administrator))
+        else if (!isRequestingFromAdmin)
         {
             // Request isn't from administrator, limit to "own" sessions.
             result = result.Where(i => i.UserId.IsEmpty() || i.ContainsUser(User.GetUserId()));
@@ -116,6 +118,16 @@ public class SessionController : BaseJellyfinApiController
         {
             var minActiveDate = DateTime.UtcNow.AddSeconds(0 - activeWithinSeconds.Value);
             result = result.Where(i => i.LastActivityDate >= minActiveDate);
+        }
+
+        // Request isn't from administrator, don't report acceleration type.
+        if (!isRequestingFromAdmin)
+        {
+            result = result.Select(r =>
+            {
+                r.TranscodingInfo.HardwareAccelerationType = HardwareAccelerationType.none;
+                return r;
+            });
         }
 
         return Ok(result);
