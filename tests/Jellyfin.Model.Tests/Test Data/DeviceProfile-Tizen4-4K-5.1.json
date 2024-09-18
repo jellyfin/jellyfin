@@ -444,6 +444,13 @@
                     "$type": "ProfileCondition"
                 },
                 {
+                    "Condition": "EqualsAny",
+                    "Property": "VideoRangeType",
+                    "Value": "SDR",
+                    "IsRequired": false,
+                    "$type": "ProfileCondition"
+                },
+                {
                     "Condition": "LessThanEqual",
                     "Property": "VideoLevel",
                     "Value": "52",
@@ -468,6 +475,13 @@
                     "Condition": "EqualsAny",
                     "Property": "VideoProfile",
                     "Value": "main|main 10",
+                    "IsRequired": false,
+                    "$type": "ProfileCondition"
+                },
+                {
+                    "Condition": "EqualsAny",
+                    "Property": "VideoRangeType",
+                    "Value": "SDR|HDR10|HLG",
                     "IsRequired": false,
                     "$type": "ProfileCondition"
                 },
