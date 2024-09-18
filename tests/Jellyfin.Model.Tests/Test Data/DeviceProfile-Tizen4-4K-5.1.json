@@ -439,7 +439,7 @@
                 {
                     "Condition": "EqualsAny",
                     "Property": "VideoProfile",
-                    "Value": "high|main|baseline|constrained baseline|high 10",
+                    "Value": "high|main|baseline|constrained baseline",
                     "IsRequired": false,
                     "$type": "ProfileCondition"
                 },
