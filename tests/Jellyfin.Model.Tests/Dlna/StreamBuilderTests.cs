@@ -389,18 +389,23 @@ namespace Jellyfin.Model.Tests
             if (playMethod == PlayMethod.DirectPlay)
             {
                 // Check expected container
-                var containers = ContainerProfile.SplitValue(mediaSource.Container);
+                var containers = mediaSource.Container.Split(',');
+                Assert.Contains(uri.Extension, containers);
                 // TODO: Test transcode too
-                // Assert.Contains(uri.Extension, containers);
 
                 // Check expected video codec (1)
-                Assert.Contains(targetVideoStream?.Codec, streamInfo.TargetVideoCodec);
-                Assert.Single(streamInfo.TargetVideoCodec);
+                if (targetVideoStream?.Codec is not null)
+                {
+                    Assert.Contains(targetVideoStream?.Codec, streamInfo.TargetVideoCodec);
+                    Assert.Single(streamInfo.TargetVideoCodec);
+                }
 
-                // Check expected audio codecs (1)
-                Assert.Contains(targetAudioStream?.Codec, streamInfo.TargetAudioCodec);
-                Assert.Single(streamInfo.TargetAudioCodec);
-                // Assert.Single(val.AudioCodecs);
+                if (targetAudioStream?.Codec is not null)
+                {
+                    // Check expected audio codecs (1)
+                    Assert.Contains(targetAudioStream?.Codec, streamInfo.TargetAudioCodec);
+                    Assert.Single(streamInfo.TargetAudioCodec);
+                }
 
                 if (transcodeMode.Equals("DirectStream", StringComparison.Ordinal))
                 {

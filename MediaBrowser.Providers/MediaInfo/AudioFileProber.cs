@@ -316,7 +316,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     genres = genres.SelectMany(g => SplitWithCustomDelimiter(g, libraryOptions.CustomTagDelimiters, libraryOptions.DelimiterWhitelist)).ToArray();
                 }
 
-                audio.Genres = options.ReplaceAllMetadata || audio.Genres == null || audio.Genres.Length == 0
+                audio.Genres = options.ReplaceAllMetadata || audio.Genres is null || audio.Genres.Length == 0
                     ? genres
                     : audio.Genres;
             }
