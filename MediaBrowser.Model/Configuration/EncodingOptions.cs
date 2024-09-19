@@ -46,6 +46,8 @@ public class EncodingOptions
         DeinterlaceMethod = DeinterlaceMethod.yadif;
         EnableDecodingColorDepth10Hevc = true;
         EnableDecodingColorDepth10Vp9 = true;
+        EnableDecodingColorDepth10HevcRext = false;
+        EnableDecodingColorDepth12HevcRext = false;
         // Enhanced Nvdec or system native decoder is required for DoVi to SDR tone-mapping.
         EnableEnhancedNvdecDecoder = true;
         PreferSystemNativeHwDecoder = true;
@@ -233,6 +235,16 @@ public class EncodingOptions
     /// Gets or sets a value indicating whether 10bit VP9 decoding is enabled.
     /// </summary>
     public bool EnableDecodingColorDepth10Vp9 { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether 8/10bit HEVC RExt decoding is enabled.
+    /// </summary>
+    public bool EnableDecodingColorDepth10HevcRext { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether 12bit HEVC RExt decoding is enabled.
+    /// </summary>
+    public bool EnableDecodingColorDepth12HevcRext { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether the enhanced NVDEC is enabled.

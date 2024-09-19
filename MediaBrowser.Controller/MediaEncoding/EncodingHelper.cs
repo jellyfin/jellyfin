@@ -299,7 +299,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             if (state.VideoStream is null
                 || !options.EnableTonemapping
-                || GetVideoColorBitDepth(state) != 10
+                || GetVideoColorBitDepth(state) < 10
                 || !_mediaEncoder.SupportsFilter("tonemapx"))
             {
                 return false;
@@ -312,7 +312,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             if (state.VideoStream is null
                 || !options.EnableTonemapping
-                || GetVideoColorBitDepth(state) != 10)
+                || GetVideoColorBitDepth(state) < 10)
             {
                 return false;
             }
@@ -354,7 +354,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             if (state.VideoStream is null
                 || !options.EnableVppTonemapping
-                || GetVideoColorBitDepth(state) != 10)
+                || GetVideoColorBitDepth(state) < 10)
             {
                 return false;
             }
@@ -377,7 +377,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             if (state.VideoStream is null
                 || !options.EnableVideoToolboxTonemapping
-                || GetVideoColorBitDepth(state) != 10)
+                || GetVideoColorBitDepth(state) < 10)
             {
                 return false;
             }
@@ -386,6 +386,25 @@ namespace MediaBrowser.Controller.MediaEncoding
             // All other HDR formats working.
             return state.VideoStream.VideoRange == VideoRange.HDR
                    && state.VideoStream.VideoRangeType is VideoRangeType.HDR10 or VideoRangeType.HLG or VideoRangeType.HDR10Plus or VideoRangeType.DOVIWithHDR10 or VideoRangeType.DOVIWithHLG;
+        }
+
+        private bool IsVideoStreamHevcRext(EncodingJobInfo state)
+        {
+            var videoStream = state.VideoStream;
+            if (videoStream is null)
+            {
+                return false;
+            }
+
+            return string.Equals(videoStream.Codec, "hevc", StringComparison.OrdinalIgnoreCase)
+                   && (string.Equals(videoStream.Profile, "Rext", StringComparison.OrdinalIgnoreCase)
+                       || string.Equals(videoStream.PixelFormat, "yuv420p12le", StringComparison.OrdinalIgnoreCase)
+                       || string.Equals(videoStream.PixelFormat, "yuv422p", StringComparison.OrdinalIgnoreCase)
+                       || string.Equals(videoStream.PixelFormat, "yuv422p10le", StringComparison.OrdinalIgnoreCase)
+                       || string.Equals(videoStream.PixelFormat, "yuv422p12le", StringComparison.OrdinalIgnoreCase)
+                       || string.Equals(videoStream.PixelFormat, "yuv444p", StringComparison.OrdinalIgnoreCase)
+                       || string.Equals(videoStream.PixelFormat, "yuv444p10le", StringComparison.OrdinalIgnoreCase)
+                       || string.Equals(videoStream.PixelFormat, "yuv444p12le", StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>
@@ -3659,7 +3678,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                     mainFilters.Add($"transpose_cuda=dir={tranposeDir}");
                 }
 
-                var outFormat = doCuTonemap ? string.Empty : "yuv420p";
+                var isRext = IsVideoStreamHevcRext(state);
+                var outFormat = doCuTonemap ? (isRext ? "p010" : string.Empty) : "yuv420p";
                 var hwScaleFilter = GetHwScaleFilter("scale", "cuda", outFormat, false, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
                 // hw scale
                 mainFilters.Add(hwScaleFilter);
@@ -4091,6 +4111,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
             else if (isD3d11vaDecoder || isQsvDecoder)
             {
+                var isRext = IsVideoStreamHevcRext(state);
+                var twoPassVppTonemap = isRext;
                 var doVppProcamp = false;
                 var procampParams = string.Empty;
                 if (doVppTonemap)
@@ -4100,21 +4122,21 @@ namespace MediaBrowser.Controller.MediaEncoding
                         && options.VppTonemappingBrightness <= 100)
                     {
                         procampParams += $":brightness={options.VppTonemappingBrightness}";
-                        doVppProcamp = true;
+                        twoPassVppTonemap = doVppProcamp = true;
                     }
 
                     if (options.VppTonemappingContrast > 1
                         && options.VppTonemappingContrast <= 10)
                     {
                         procampParams += $":contrast={options.VppTonemappingContrast}";
-                        doVppProcamp = true;
+                        twoPassVppTonemap = doVppProcamp = true;
                     }
 
                     procampParams += doVppProcamp ? ":procamp=1:async_depth=2" : string.Empty;
                 }
 
-                var outFormat = doOclTonemap ? (doVppTranspose ? "p010" : string.Empty) : "nv12";
-                outFormat = (doVppTonemap && doVppProcamp) ? "p010" : outFormat;
+                var outFormat = doOclTonemap ? ((doVppTranspose || isRext) ? "p010" : string.Empty) : "nv12";
+                outFormat = twoPassVppTonemap ? "p010" : outFormat;
 
                 var swapOutputWandH = doVppTranspose && swapWAndH;
                 var hwScalePrefix = (doVppTranspose || doVppTonemap) ? "vpp" : "scale";
@@ -4127,7 +4149,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 if (!string.IsNullOrEmpty(hwScaleFilter) && doVppTonemap)
                 {
-                    hwScaleFilter += doVppProcamp ? procampParams : ":tonemap=1";
+                    hwScaleFilter += doVppProcamp ? procampParams : (twoPassVppTonemap ? string.Empty : ":tonemap=1");
                 }
 
                 if (isD3d11vaDecoder)
@@ -4151,7 +4173,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 mainFilters.Add(hwScaleFilter);
 
                 // hw tonemap(w/ procamp)
-                if (doVppTonemap && doVppProcamp)
+                if (doVppTonemap && twoPassVppTonemap)
                 {
                     mainFilters.Add("vpp_qsv=tonemap=1:format=nv12:async_depth=2");
                 }
@@ -4346,6 +4368,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             else if (isVaapiDecoder || isQsvDecoder)
             {
                 var hwFilterSuffix = isVaapiDecoder ? "vaapi" : "qsv";
+                var isRext = IsVideoStreamHevcRext(state);
 
                 // INPUT vaapi/qsv surface(vram)
                 // hw deint
@@ -4362,6 +4385,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
 
                 var outFormat = doOclTonemap ? ((isQsvDecoder && doVppTranspose) ? "p010" : string.Empty) : "nv12";
+                outFormat = (doTonemap && isRext) ? "p010" : outFormat;
+
                 var swapOutputWandH = isQsvDecoder && doVppTranspose && swapWAndH;
                 var hwScalePrefix = (isQsvDecoder && doVppTranspose) ? "vpp" : "scale";
                 var hwScaleFilter = GetHwScaleFilter(hwScalePrefix, hwFilterSuffix, outFormat, swapOutputWandH, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
@@ -4658,6 +4683,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
             else if (isVaapiDecoder)
             {
+                var isRext = IsVideoStreamHevcRext(state);
+
                 // INPUT vaapi surface(vram)
                 // hw deint
                 if (doDeintH2645)
@@ -4672,7 +4699,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     mainFilters.Add($"transpose_vaapi=dir={tranposeDir}");
                 }
 
-                var outFormat = doTonemap ? string.Empty : "nv12";
+                var outFormat = doTonemap ? (isRext ? "p010" : string.Empty) : "nv12";
                 var hwScaleFilter = GetHwScaleFilter("scale", "vaapi", outFormat, false, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
 
                 // allocate extra pool sizes for vaapi vpp
@@ -5974,7 +6001,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             var decoderName = decoderPrefix + '_' + decoderSuffix;
 
             var isCodecAvailable = _mediaEncoder.SupportsDecoder(decoderName) && options.HardwareDecodingCodecs.Contains(videoCodec, StringComparison.OrdinalIgnoreCase);
-            if (bitDepth == 10 && isCodecAvailable)
+
+            // VideoToolbox decoders have built-in SW fallback
+            if (bitDepth == 10
+                && isCodecAvailable
+                && (options.HardwareAccelerationType != HardwareAccelerationType.videotoolbox))
             {
                 if (string.Equals(videoCodec, "hevc", StringComparison.OrdinalIgnoreCase)
                     && options.HardwareDecodingCodecs.Contains("hevc", StringComparison.OrdinalIgnoreCase)
@@ -6050,17 +6081,40 @@ namespace MediaBrowser.Controller.MediaEncoding
                 && ffmpegVersion >= _minFFmpegDisplayRotationOption;
             var stripRotationDataArgs = stripRotationData ? " -display_rotation 0" : string.Empty;
 
-            if (bitDepth == 10 && isCodecAvailable)
+            // VideoToolbox decoders have built-in SW fallback
+            if (isCodecAvailable
+                && (options.HardwareAccelerationType != HardwareAccelerationType.videotoolbox))
             {
                 if (string.Equals(videoCodec, "hevc", StringComparison.OrdinalIgnoreCase)
-                    && options.HardwareDecodingCodecs.Contains("hevc", StringComparison.OrdinalIgnoreCase)
-                    && !options.EnableDecodingColorDepth10Hevc)
+                    && options.HardwareDecodingCodecs.Contains("hevc", StringComparison.OrdinalIgnoreCase))
                 {
-                    return null;
+                    if (IsVideoStreamHevcRext(state))
+                    {
+                        if (bitDepth <= 10 && !options.EnableDecodingColorDepth10HevcRext)
+                        {
+                            return null;
+                        }
+
+                        if (bitDepth == 12 && !options.EnableDecodingColorDepth12HevcRext)
+                        {
+                            return null;
+                        }
+
+                        if (hardwareAccelerationType == HardwareAccelerationType.vaapi
+                            && !_mediaEncoder.IsVaapiDeviceInteliHD)
+                        {
+                            return null;
+                        }
+                    }
+                    else if (bitDepth == 10 && !options.EnableDecodingColorDepth10Hevc)
+                    {
+                        return null;
+                    }
                 }
 
                 if (string.Equals(videoCodec, "vp9", StringComparison.OrdinalIgnoreCase)
                     && options.HardwareDecodingCodecs.Contains("vp9", StringComparison.OrdinalIgnoreCase)
+                    && bitDepth == 10
                     && !options.EnableDecodingColorDepth10Vp9)
                 {
                     return null;
@@ -6172,6 +6226,14 @@ namespace MediaBrowser.Controller.MediaEncoding
             var is8bitSwFormatsQsv = string.Equals("yuv420p", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase)
                                      || string.Equals("yuvj420p", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase);
             var is8_10bitSwFormatsQsv = is8bitSwFormatsQsv || string.Equals("yuv420p10le", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase);
+            var is8_10_12bitSwFormatsQsv = is8_10bitSwFormatsQsv
+                || string.Equals("yuv422p", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase)
+                || string.Equals("yuv444p", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase)
+                || string.Equals("yuv422p10le", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase)
+                || string.Equals("yuv444p10le", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase)
+                || string.Equals("yuv420p12le", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase)
+                || string.Equals("yuv422p12le", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase)
+                || string.Equals("yuv444p12le", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase);
             // TODO: add more 8/10bit and 4:4:4 formats for Qsv after finishing the ffcheck tool
 
             if (is8bitSwFormatsQsv)
@@ -6200,12 +6262,6 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (is8_10bitSwFormatsQsv)
             {
-                if (string.Equals(videoStream.Codec, "hevc", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(videoStream.Codec, "h265", StringComparison.OrdinalIgnoreCase))
-                {
-                    return GetHwaccelType(state, options, "hevc", bitDepth, hwSurface) + GetHwDecoderName(options, "hevc", "qsv", "hevc", bitDepth);
-                }
-
                 if (string.Equals(videoStream.Codec, "vp9", StringComparison.OrdinalIgnoreCase))
                 {
                     return GetHwaccelType(state, options, "vp9", bitDepth, hwSurface) + GetHwDecoderName(options, "vp9", "qsv", "vp9", bitDepth);
@@ -6214,6 +6270,15 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (string.Equals(videoStream.Codec, "av1", StringComparison.OrdinalIgnoreCase))
                 {
                     return GetHwaccelType(state, options, "av1", bitDepth, hwSurface) + GetHwDecoderName(options, "av1", "qsv", "av1", bitDepth);
+                }
+            }
+
+            if (is8_10_12bitSwFormatsQsv)
+            {
+                if (string.Equals(videoStream.Codec, "hevc", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(videoStream.Codec, "h265", StringComparison.OrdinalIgnoreCase))
+                {
+                    return GetHwaccelType(state, options, "hevc", bitDepth, hwSurface) + GetHwDecoderName(options, "hevc", "qsv", "hevc", bitDepth);
                 }
             }
 
@@ -6232,6 +6297,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             var is8bitSwFormatsNvdec = string.Equals("yuv420p", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase)
                                        || string.Equals("yuvj420p", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase);
             var is8_10bitSwFormatsNvdec = is8bitSwFormatsNvdec || string.Equals("yuv420p10le", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase);
+            var is8_10_12bitSwFormatsNvdec = is8_10bitSwFormatsNvdec
+                || string.Equals("yuv444p", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase)
+                || string.Equals("yuv444p10le", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase)
+                || string.Equals("yuv420p12le", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase)
+                || string.Equals("yuv444p12le", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase);
             // TODO: add more 8/10/12bit and 4:4:4 formats for Nvdec after finishing the ffcheck tool
 
             if (is8bitSwFormatsNvdec)
@@ -6265,12 +6335,6 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (is8_10bitSwFormatsNvdec)
             {
-                if (string.Equals("hevc", videoStream.Codec, StringComparison.OrdinalIgnoreCase)
-                    || string.Equals("h265", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
-                {
-                    return GetHwaccelType(state, options, "hevc", bitDepth, hwSurface) + GetHwDecoderName(options, "hevc", "cuvid", "hevc", bitDepth);
-                }
-
                 if (string.Equals("vp9", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
                 {
                     return GetHwaccelType(state, options, "vp9", bitDepth, hwSurface) + GetHwDecoderName(options, "vp9", "cuvid", "vp9", bitDepth);
@@ -6279,6 +6343,15 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (string.Equals("av1", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
                 {
                     return GetHwaccelType(state, options, "av1", bitDepth, hwSurface) + GetHwDecoderName(options, "av1", "cuvid", "av1", bitDepth);
+                }
+            }
+
+            if (is8_10_12bitSwFormatsNvdec)
+            {
+                if (string.Equals("hevc", videoStream.Codec, StringComparison.OrdinalIgnoreCase)
+                    || string.Equals("h265", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
+                {
+                    return GetHwaccelType(state, options, "hevc", bitDepth, hwSurface) + GetHwDecoderName(options, "hevc", "cuvid", "hevc", bitDepth);
                 }
             }
 
@@ -6356,6 +6429,14 @@ namespace MediaBrowser.Controller.MediaEncoding
             var is8bitSwFormatsVaapi = string.Equals("yuv420p", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase)
                                        || string.Equals("yuvj420p", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase);
             var is8_10bitSwFormatsVaapi = is8bitSwFormatsVaapi || string.Equals("yuv420p10le", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase);
+            var is8_10_12bitSwFormatsVaapi = is8_10bitSwFormatsVaapi
+                || string.Equals("yuv422p", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase)
+                || string.Equals("yuv444p", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase)
+                || string.Equals("yuv422p10le", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase)
+                || string.Equals("yuv444p10le", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase)
+                || string.Equals("yuv420p12le", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase)
+                || string.Equals("yuv422p12le", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase)
+                || string.Equals("yuv444p12le", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase);
 
             if (is8bitSwFormatsVaapi)
             {
@@ -6383,12 +6464,6 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (is8_10bitSwFormatsVaapi)
             {
-                if (string.Equals("hevc", videoStream.Codec, StringComparison.OrdinalIgnoreCase)
-                    || string.Equals("h265", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
-                {
-                    return GetHwaccelType(state, options, "hevc", bitDepth, hwSurface);
-                }
-
                 if (string.Equals("vp9", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
                 {
                     return GetHwaccelType(state, options, "vp9", bitDepth, hwSurface);
@@ -6397,6 +6472,15 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (string.Equals("av1", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
                 {
                     return GetHwaccelType(state, options, "av1", bitDepth, hwSurface);
+                }
+            }
+
+            if (is8_10_12bitSwFormatsVaapi)
+            {
+                if (string.Equals("hevc", videoStream.Codec, StringComparison.OrdinalIgnoreCase)
+                    || string.Equals("h265", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
+                {
+                    return GetHwaccelType(state, options, "hevc", bitDepth, hwSurface);
                 }
             }
 
@@ -6414,6 +6498,14 @@ namespace MediaBrowser.Controller.MediaEncoding
             var is8bitSwFormatsVt = string.Equals("yuv420p", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase)
                                     || string.Equals("yuvj420p", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase);
             var is8_10bitSwFormatsVt = is8bitSwFormatsVt || string.Equals("yuv420p10le", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase);
+            var is8_10_12bitSwFormatsVt = is8_10bitSwFormatsVt
+                || string.Equals("yuv422p", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase)
+                || string.Equals("yuv444p", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase)
+                || string.Equals("yuv422p10le", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase)
+                || string.Equals("yuv444p10le", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase)
+                || string.Equals("yuv420p12le", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase)
+                || string.Equals("yuv422p12le", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase)
+                || string.Equals("yuv444p12le", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase);
 
             // The related patches make videotoolbox hardware surface working is only available in jellyfin-ffmpeg 7.0.1 at the moment.
             bool useHwSurface = (_mediaEncoder.EncoderVersion >= _minFFmpegWorkingVtHwSurface) && IsVideoToolboxFullSupported();
@@ -6434,15 +6526,18 @@ namespace MediaBrowser.Controller.MediaEncoding
                     return GetHwaccelType(state, options, "h264", bitDepth, useHwSurface);
                 }
 
+                if (string.Equals("vp9", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
+                {
+                    return GetHwaccelType(state, options, "vp9", bitDepth, useHwSurface);
+                }
+            }
+
+            if (is8_10_12bitSwFormatsVt)
+            {
                 if (string.Equals("hevc", videoStream.Codec, StringComparison.OrdinalIgnoreCase)
                     || string.Equals("h265", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
                 {
                     return GetHwaccelType(state, options, "hevc", bitDepth, useHwSurface);
-                }
-
-                if (string.Equals("vp9", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
-                {
-                    return GetHwaccelType(state, options, "vp9", bitDepth, useHwSurface);
                 }
             }
 
