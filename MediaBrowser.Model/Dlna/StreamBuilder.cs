@@ -101,21 +101,16 @@ namespace MediaBrowser.Model.Dlna
 
             MediaStream audioStream = item.GetDefaultAudioStream(null);
 
+            ArgumentNullException.ThrowIfNull(audioStream);
+
             var directPlayInfo = GetAudioDirectPlayProfile(item, audioStream, options);
 
             var directPlayMethod = directPlayInfo.PlayMethod;
             var transcodeReasons = directPlayInfo.TranscodeReasons;
 
-            var inputAudioChannels = audioStream?.Channels;
-            var inputAudioBitrate = audioStream?.BitRate;
-            var inputAudioSampleRate = audioStream?.SampleRate;
-            var inputAudioBitDepth = audioStream?.BitDepth;
-
             if (directPlayMethod is PlayMethod.DirectPlay)
             {
-                var profile = options.Profile;
-                var audioFailureConditions = GetProfileConditionsForAudio(profile.CodecProfiles, item.Container, audioStream?.Codec, inputAudioChannels, inputAudioBitrate, inputAudioSampleRate, inputAudioBitDepth, true);
-                var audioFailureReasons = AggregateFailureConditions(item, profile, "AudioCodecProfile", audioFailureConditions);
+                var audioFailureReasons = GetCompatibilityAudioCodec(options, item, item.Container, audioStream, null, false, false);
                 transcodeReasons |= audioFailureReasons;
 
                 if (audioFailureReasons == 0)
@@ -187,6 +182,11 @@ namespace MediaBrowser.Model.Dlna
                 }
 
                 SetStreamInfoOptionsFromTranscodingProfile(item, playlistItem, transcodingProfile);
+
+                var inputAudioChannels = audioStream.Channels;
+                var inputAudioBitrate = audioStream.BitRate;
+                var inputAudioSampleRate = audioStream.SampleRate;
+                var inputAudioBitDepth = audioStream.BitDepth;
 
                 var audioTranscodingConditions = GetProfileConditionsForAudio(options.Profile.CodecProfiles, transcodingProfile.Container, transcodingProfile.AudioCodec, inputAudioChannels, inputAudioBitrate, inputAudioSampleRate, inputAudioBitDepth, false).ToArray();
                 ApplyTranscodingConditions(playlistItem, audioTranscodingConditions, null, true, true);
