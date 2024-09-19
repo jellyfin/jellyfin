@@ -90,7 +90,7 @@ public class MoveTrickplayFiles : IMigrationRoutine
                     _fileSystem.MoveDirectory(oldPath, newPath);
                 }
             }
-        } while (previousCount != 0);
+        } while (previousCount == Limit);
 
         _logger.LogInformation("Moved {Count} items in {Time}", itemCount, sw.Elapsed);
     }

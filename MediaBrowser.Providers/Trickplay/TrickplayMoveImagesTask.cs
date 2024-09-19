@@ -112,7 +112,7 @@ public class TrickplayMoveImagesTask : IScheduledTask
             }
 
             progress.Report(100d * itemCount / totalVideoCount);
-        } while (previousCount != 0);
+        } while (previousCount == Limit);
 
         progress.Report(100);
     }
