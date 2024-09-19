@@ -57,7 +57,7 @@ namespace Jellyfin.Extensions.Json.Converters
                     }
                 }
 
-                return [.. typedValues];
+                return typedValues.ToArray();
             }
 
             return JsonSerializer.Deserialize<T[]>(ref reader, options);
