@@ -1,19 +1,18 @@
 using System;
-using MediaBrowser.Model.Session;
 
-namespace MediaBrowser.Model.Devices;
+namespace MediaBrowser.Model.Dto;
 
 /// <summary>
-/// A class for device Information.
+/// A DTO representing device information.
 /// </summary>
-public class DeviceInfo
+public class DeviceInfoDto
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="DeviceInfo"/> class.
+    /// Initializes a new instance of the <see cref="DeviceInfoDto"/> class.
     /// </summary>
-    public DeviceInfo()
+    public DeviceInfoDto()
     {
-        Capabilities = new ClientCapabilities();
+        Capabilities = new ClientCapabilitiesDto();
     }
 
     /// <summary>
@@ -74,7 +73,7 @@ public class DeviceInfo
     /// Gets or sets the capabilities.
     /// </summary>
     /// <value>The capabilities.</value>
-    public ClientCapabilities Capabilities { get; set; }
+    public ClientCapabilitiesDto Capabilities { get; set; }
 
     /// <summary>
     /// Gets or sets the icon URL.
