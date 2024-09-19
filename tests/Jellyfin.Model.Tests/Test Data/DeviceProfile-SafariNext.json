@@ -191,6 +191,28 @@
     "ContainerProfiles": [],
     "CodecProfiles": [
         {
+            "Type": "Audio",
+            "Conditions": [
+                {
+                    "Condition": "LessThanEqual",
+                    "Property": "AudioChannels",
+                    "Value": "2",
+                    "IsRequired": false
+                }
+            ]
+        },
+        {
+            "Type": "VideoAudio",
+            "Conditions": [
+                {
+                    "Condition": "LessThanEqual",
+                    "Property": "AudioChannels",
+                    "Value": "2",
+                    "IsRequired": false
+                }
+            ]
+        },
+        {
             "Type": "Video",
             "Container": "hls",
             "SubContainer": "mp4",
