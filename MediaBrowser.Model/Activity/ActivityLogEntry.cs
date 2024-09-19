@@ -70,13 +70,6 @@ namespace MediaBrowser.Model.Activity
         public Guid UserId { get; set; }
 
         /// <summary>
-        /// Gets or sets the user primary image tag.
-        /// </summary>
-        /// <value>The user primary image tag.</value>
-        [Obsolete("UserPrimaryImageTag is not used.")]
-        public string? UserPrimaryImageTag { get; set; }
-
-        /// <summary>
         /// Gets or sets the log severity.
         /// </summary>
         /// <value>The log severity.</value>

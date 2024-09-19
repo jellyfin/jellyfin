@@ -59,9 +59,6 @@ namespace MediaBrowser.Model.Configuration
 
         public bool SaveLocalMetadata { get; set; }
 
-        [Obsolete("Disable remote providers in TypeOptions instead")]
-        public bool EnableInternetProviders { get; set; }
-
         public bool EnableAutomaticSeriesGrouping { get; set; }
 
         public bool EnableEmbeddedTitles { get; set; }

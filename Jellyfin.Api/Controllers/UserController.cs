@@ -166,40 +166,6 @@ public class UserController : BaseJellyfinApiController
     }
 
     /// <summary>
-    /// Authenticates a user.
-    /// </summary>
-    /// <param name="userId">The user id.</param>
-    /// <param name="pw">The password as plain text.</param>
-    /// <response code="200">User authenticated.</response>
-    /// <response code="403">Sha1-hashed password only is not allowed.</response>
-    /// <response code="404">User not found.</response>
-    /// <returns>A <see cref="Task"/> containing an <see cref="AuthenticationResult"/>.</returns>
-    [HttpPost("{userId}/Authenticate")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ApiExplorerSettings(IgnoreApi = true)]
-    [Obsolete("Authenticate with username instead")]
-    public async Task<ActionResult<AuthenticationResult>> AuthenticateUser(
-        [FromRoute, Required] Guid userId,
-        [FromQuery, Required] string pw)
-    {
-        var user = _userManager.GetUserById(userId);
-
-        if (user is null)
-        {
-            return NotFound("User not found");
-        }
-
-        AuthenticateUserByName request = new AuthenticateUserByName
-        {
-            Username = user.Username,
-            Pw = pw
-        };
-        return await AuthenticateUserByName(request).ConfigureAwait(false);
-    }
-
-    /// <summary>
     /// Authenticates a user by name.
     /// </summary>
     /// <param name="request">The <see cref="AuthenticateUserByName"/> request.</param>
@@ -335,29 +301,6 @@ public class UserController : BaseJellyfinApiController
         [FromRoute, Required] Guid userId,
         [FromBody, Required] UpdateUserPassword request)
         => UpdateUserPassword(userId, request);
-
-    /// <summary>
-    /// Updates a user's easy password.
-    /// </summary>
-    /// <param name="userId">The user id.</param>
-    /// <param name="request">The <see cref="UpdateUserEasyPassword"/> request.</param>
-    /// <response code="204">Password successfully reset.</response>
-    /// <response code="403">User is not allowed to update the password.</response>
-    /// <response code="404">User not found.</response>
-    /// <returns>A <see cref="NoContentResult"/> indicating success or a <see cref="ForbidResult"/> or a <see cref="NotFoundResult"/> on failure.</returns>
-    [HttpPost("{userId}/EasyPassword")]
-    [Obsolete("Use Quick Connect instead")]
-    [ApiExplorerSettings(IgnoreApi = true)]
-    [Authorize]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult UpdateUserEasyPassword(
-        [FromRoute, Required] Guid userId,
-        [FromBody, Required] UpdateUserEasyPassword request)
-    {
-        return Forbid();
-    }
 
     /// <summary>
     /// Updates a user.

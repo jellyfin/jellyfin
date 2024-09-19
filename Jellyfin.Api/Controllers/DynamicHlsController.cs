@@ -110,7 +110,6 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="static">Optional. If true, the original file will be streamed statically without any encoding. Use either no url extension or the original file extension. true/false.</param>
     /// <param name="params">The streaming parameters.</param>
     /// <param name="tag">The tag.</param>
-    /// <param name="deviceProfileId">Optional. The dlna device profile id to utilize.</param>
     /// <param name="playSessionId">The play session id.</param>
     /// <param name="segmentContainer">The segment container.</param>
     /// <param name="segmentLength">The segment length.</param>
@@ -169,7 +168,6 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] bool? @static,
         [FromQuery] string? @params,
         [FromQuery] string? tag,
-        [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
         [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? segmentContainer,
         [FromQuery] int? segmentLength,
@@ -349,7 +347,6 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="static">Optional. If true, the original file will be streamed statically without any encoding. Use either no url extension or the original file extension. true/false.</param>
     /// <param name="params">The streaming parameters.</param>
     /// <param name="tag">The tag.</param>
-    /// <param name="deviceProfileId">Optional. The dlna device profile id to utilize.</param>
     /// <param name="playSessionId">The play session id.</param>
     /// <param name="segmentContainer">The segment container.</param>
     /// <param name="segmentLength">The segment length.</param>
@@ -409,7 +406,6 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] bool? @static,
         [FromQuery] string? @params,
         [FromQuery] string? tag,
-        [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
         [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? segmentContainer,
         [FromQuery] int? segmentLength,
@@ -525,7 +521,6 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="static">Optional. If true, the original file will be streamed statically without any encoding. Use either no url extension or the original file extension. true/false.</param>
     /// <param name="params">The streaming parameters.</param>
     /// <param name="tag">The tag.</param>
-    /// <param name="deviceProfileId">Optional. The dlna device profile id to utilize.</param>
     /// <param name="playSessionId">The play session id.</param>
     /// <param name="segmentContainer">The segment container.</param>
     /// <param name="segmentLength">The segment length.</param>
@@ -583,7 +578,6 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] bool? @static,
         [FromQuery] string? @params,
         [FromQuery] string? tag,
-        [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
         [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? segmentContainer,
         [FromQuery] int? segmentLength,
@@ -694,7 +688,6 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="static">Optional. If true, the original file will be streamed statically without any encoding. Use either no url extension or the original file extension. true/false.</param>
     /// <param name="params">The streaming parameters.</param>
     /// <param name="tag">The tag.</param>
-    /// <param name="deviceProfileId">Optional. The dlna device profile id to utilize.</param>
     /// <param name="playSessionId">The play session id.</param>
     /// <param name="segmentContainer">The segment container.</param>
     /// <param name="segmentLength">The segment length.</param>
@@ -751,7 +744,6 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] bool? @static,
         [FromQuery] string? @params,
         [FromQuery] string? tag,
-        [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
         [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? segmentContainer,
         [FromQuery] int? segmentLength,
@@ -865,7 +857,6 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="static">Optional. If true, the original file will be streamed statically without any encoding. Use either no url extension or the original file extension. true/false.</param>
     /// <param name="params">The streaming parameters.</param>
     /// <param name="tag">The tag.</param>
-    /// <param name="deviceProfileId">Optional. The dlna device profile id to utilize.</param>
     /// <param name="playSessionId">The play session id.</param>
     /// <param name="segmentContainer">The segment container.</param>
     /// <param name="segmentLength">The segment length.</param>
@@ -921,7 +912,6 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] bool? @static,
         [FromQuery] string? @params,
         [FromQuery] string? tag,
-        [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
         [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? segmentContainer,
         [FromQuery] int? segmentLength,
@@ -1037,7 +1027,6 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="static">Optional. If true, the original file will be streamed statically without any encoding. Use either no url extension or the original file extension. true/false.</param>
     /// <param name="params">The streaming parameters.</param>
     /// <param name="tag">The tag.</param>
-    /// <param name="deviceProfileId">Optional. The dlna device profile id to utilize.</param>
     /// <param name="playSessionId">The play session id.</param>
     /// <param name="segmentContainer">The segment container.</param>
     /// <param name="segmentLength">The desired segment length.</param>
@@ -1100,7 +1089,6 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] bool? @static,
         [FromQuery] string? @params,
         [FromQuery] string? tag,
-        [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
         [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? segmentContainer,
         [FromQuery] int? segmentLength,
@@ -1221,7 +1209,6 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="static">Optional. If true, the original file will be streamed statically without any encoding. Use either no url extension or the original file extension. true/false.</param>
     /// <param name="params">The streaming parameters.</param>
     /// <param name="tag">The tag.</param>
-    /// <param name="deviceProfileId">Optional. The dlna device profile id to utilize.</param>
     /// <param name="playSessionId">The play session id.</param>
     /// <param name="segmentContainer">The segment container.</param>
     /// <param name="segmentLength">The segment length.</param>
@@ -1283,7 +1270,6 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] bool? @static,
         [FromQuery] string? @params,
         [FromQuery] string? tag,
-        [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
         [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? segmentContainer,
         [FromQuery] int? segmentLength,
