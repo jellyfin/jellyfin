@@ -5570,13 +5570,22 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var outFormat = doOclTonemap ? "p010" : "nv12";
                 var hwScalePrefix = doRkVppTranspose ? "vpp" : "scale";
                 var hwScaleFilter = GetHwScaleFilter(hwScalePrefix, "rkrga", outFormat, swapOutputWandH, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
-                var hwScaleFilter2 = GetHwScaleFilter(hwScalePrefix, "rkrga", string.Empty, swapOutputWandH, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
+                var doScaling = GetHwScaleFilter(hwScalePrefix, "rkrga", string.Empty, swapOutputWandH, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
 
                 if (!hasSubs
                      || doRkVppTranspose
                      || !isFullAfbcPipeline
-                     || !string.IsNullOrEmpty(hwScaleFilter2))
+                     || !string.IsNullOrEmpty(doScaling))
                 {
+                    // RGA3 hardware only support (1/8 ~ 8) scaling in each blit operation,
+                    // but in Trickplay there's a case: (3840/320 == 12), enable 2pass for it
+                    if (!string.IsNullOrEmpty(doScaling)
+                        && !IsScaleRatioSupported(inW, inH, reqW, reqH, reqMaxW, reqMaxH, 8.0f))
+                    {
+                        var hwScaleFilterFirstPass = $"scale_rkrga=w=iw/8:h=ih/8:format={outFormat}:afbc=1";
+                        mainFilters.Add(hwScaleFilterFirstPass);
+                    }
+
                     if (!string.IsNullOrEmpty(hwScaleFilter) && doRkVppTranspose)
                     {
                         hwScaleFilter += $":transpose={tranposeDir}";
