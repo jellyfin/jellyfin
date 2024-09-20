@@ -804,7 +804,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                                            || (hardwareAccelerationType == HardwareAccelerationType.amf && OperatingSystem.IsWindows())
                                            || (hardwareAccelerationType == HardwareAccelerationType.qsv && options.PreferSystemNativeHwDecoder)
                                            || hardwareAccelerationType == HardwareAccelerationType.vaapi
-                                           || hardwareAccelerationType == HardwareAccelerationType.videotoolbox;
+                                           || hardwareAccelerationType == HardwareAccelerationType.videotoolbox
+                                           || hardwareAccelerationType == HardwareAccelerationType.rkmpp;
                 if (!supportsKeyFrameOnly)
                 {
                     // Disable hardware acceleration when the hardware decoder does not support keyframe only mode.
@@ -930,13 +931,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // Final command arguments
             var args = string.Format(
                 CultureInfo.InvariantCulture,
-                "-loglevel error {0} -an -sn {1} -threads {2} -c:v {3} {4}{5}-f {6} \"{7}\"",
+                "-loglevel error {0} -an -sn {1} -threads {2} -c:v {3} {4}{5}{6}-f {7} \"{8}\"",
                 inputArg,
                 filterParam,
                 outputThreads.GetValueOrDefault(_threads),
                 vidEncoder,
                 encoderQualityOption + encoderQuality + " ",
                 vidEncoder.Contains("videotoolbox", StringComparison.InvariantCultureIgnoreCase) ? "-allow_sw 1 " : string.Empty, // allow_sw fallback for some intel macs
+                EncoderVersion >= new Version(5, 1) ? "-fps_mode passthrough " : "-vsync passthrough ", // passthrough timestamp
                 "image2",
                 outputPath);
 
