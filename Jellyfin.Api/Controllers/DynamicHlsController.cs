@@ -158,6 +158,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="maxHeight">Optional. The max height.</param>
     /// <param name="enableSubtitlesInManifest">Optional. Whether to enable subtitles in the manifest.</param>
     /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
+    /// <param name="alwaysBurnInSubtitleWhenTranscoding">Whether to always burn in subtitles when transcoding.</param>
     /// <response code="200">Hls live stream retrieved.</response>
     /// <returns>A <see cref="FileResult"/> containing the hls file.</returns>
     [HttpGet("Videos/{itemId}/live.m3u8")]
@@ -216,7 +217,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? maxWidth,
         [FromQuery] int? maxHeight,
         [FromQuery] bool? enableSubtitlesInManifest,
-        [FromQuery] bool enableAudioVbrEncoding = true)
+        [FromQuery] bool enableAudioVbrEncoding = true,
+        [FromQuery] bool alwaysBurnInSubtitleWhenTranscoding = false)
     {
         VideoRequestDto streamingRequest = new VideoRequestDto
         {
@@ -251,7 +253,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             Height = height,
             VideoBitRate = videoBitRate,
             SubtitleStreamIndex = subtitleStreamIndex,
-            SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.Encode,
+            SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.External,
             MaxRefFrames = maxRefFrames,
             MaxVideoBitDepth = maxVideoBitDepth,
             RequireAvc = requireAvc ?? false,
@@ -271,7 +273,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             MaxHeight = maxHeight,
             MaxWidth = maxWidth,
             EnableSubtitlesInManifest = enableSubtitlesInManifest ?? true,
-            EnableAudioVbrEncoding = enableAudioVbrEncoding
+            EnableAudioVbrEncoding = enableAudioVbrEncoding,
+            AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding
         };
 
         // CTS lifecycle is managed internally.
@@ -398,6 +401,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="enableAdaptiveBitrateStreaming">Enable adaptive bitrate streaming.</param>
     /// <param name="enableTrickplay">Enable trickplay image playlists being added to master playlist.</param>
     /// <param name="enableAudioVbrEncoding">Whether to enable Audio Encoding.</param>
+    /// <param name="alwaysBurnInSubtitleWhenTranscoding">Whether to always burn in subtitles when transcoding.</param>
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the playlist file.</returns>
     [HttpGet("Videos/{itemId}/master.m3u8")]
@@ -457,7 +461,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] Dictionary<string, string> streamOptions,
         [FromQuery] bool enableAdaptiveBitrateStreaming = true,
         [FromQuery] bool enableTrickplay = true,
-        [FromQuery] bool enableAudioVbrEncoding = true)
+        [FromQuery] bool enableAudioVbrEncoding = true,
+        [FromQuery] bool alwaysBurnInSubtitleWhenTranscoding = false)
     {
         var streamingRequest = new HlsVideoRequestDto
         {
@@ -493,7 +498,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             MaxHeight = maxHeight,
             VideoBitRate = videoBitRate,
             SubtitleStreamIndex = subtitleStreamIndex,
-            SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.Encode,
+            SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.External,
             MaxRefFrames = maxRefFrames,
             MaxVideoBitDepth = maxVideoBitDepth,
             RequireAvc = requireAvc ?? false,
@@ -512,7 +517,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             StreamOptions = streamOptions,
             EnableAdaptiveBitrateStreaming = enableAdaptiveBitrateStreaming,
             EnableTrickplay = enableTrickplay,
-            EnableAudioVbrEncoding = enableAudioVbrEncoding
+            EnableAudioVbrEncoding = enableAudioVbrEncoding,
+            AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding
         };
 
         return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
@@ -572,6 +578,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="streamOptions">Optional. The streaming options.</param>
     /// <param name="enableAdaptiveBitrateStreaming">Enable adaptive bitrate streaming.</param>
     /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
+    /// <param name="alwaysBurnInSubtitleWhenTranscoding">Whether to always burn in subtitles when transcoding.</param>
     /// <response code="200">Audio stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the playlist file.</returns>
     [HttpGet("Audio/{itemId}/master.m3u8")]
@@ -629,7 +636,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] EncodingContext? context,
         [FromQuery] Dictionary<string, string> streamOptions,
         [FromQuery] bool enableAdaptiveBitrateStreaming = true,
-        [FromQuery] bool enableAudioVbrEncoding = true)
+        [FromQuery] bool enableAudioVbrEncoding = true,
+        [FromQuery] bool alwaysBurnInSubtitleWhenTranscoding = false)
     {
         var streamingRequest = new HlsAudioRequestDto
         {
@@ -663,7 +671,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             Height = height,
             VideoBitRate = videoBitRate,
             SubtitleStreamIndex = subtitleStreamIndex,
-            SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.Encode,
+            SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.External,
             MaxRefFrames = maxRefFrames,
             MaxVideoBitDepth = maxVideoBitDepth,
             RequireAvc = requireAvc ?? false,
@@ -681,7 +689,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             Context = context ?? EncodingContext.Streaming,
             StreamOptions = streamOptions,
             EnableAdaptiveBitrateStreaming = enableAdaptiveBitrateStreaming,
-            EnableAudioVbrEncoding = enableAudioVbrEncoding
+            EnableAudioVbrEncoding = enableAudioVbrEncoding,
+            AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding
         };
 
         return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
@@ -741,6 +750,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
     /// <param name="streamOptions">Optional. The streaming options.</param>
     /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
+    /// <param name="alwaysBurnInSubtitleWhenTranscoding">Whether to always burn in subtitles when transcoding.</param>
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
     [HttpGet("Videos/{itemId}/main.m3u8")]
@@ -797,7 +807,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? videoStreamIndex,
         [FromQuery] EncodingContext? context,
         [FromQuery] Dictionary<string, string> streamOptions,
-        [FromQuery] bool enableAudioVbrEncoding = true)
+        [FromQuery] bool enableAudioVbrEncoding = true,
+        [FromQuery] bool alwaysBurnInSubtitleWhenTranscoding = false)
     {
         using var cancellationTokenSource = new CancellationTokenSource();
         var streamingRequest = new VideoRequestDto
@@ -834,7 +845,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             MaxHeight = maxHeight,
             VideoBitRate = videoBitRate,
             SubtitleStreamIndex = subtitleStreamIndex,
-            SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.Encode,
+            SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.External,
             MaxRefFrames = maxRefFrames,
             MaxVideoBitDepth = maxVideoBitDepth,
             RequireAvc = requireAvc ?? false,
@@ -851,7 +862,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             VideoStreamIndex = videoStreamIndex,
             Context = context ?? EncodingContext.Streaming,
             StreamOptions = streamOptions,
-            EnableAudioVbrEncoding = enableAudioVbrEncoding
+            EnableAudioVbrEncoding = enableAudioVbrEncoding,
+            AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding
         };
 
         return await GetVariantPlaylistInternal(streamingRequest, cancellationTokenSource)
@@ -911,6 +923,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
     /// <param name="streamOptions">Optional. The streaming options.</param>
     /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
+    /// <param name="alwaysBurnInSubtitleWhenTranscoding">Whether to always burn in subtitles when transcoding.</param>
     /// <response code="200">Audio stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
     [HttpGet("Audio/{itemId}/main.m3u8")]
@@ -966,7 +979,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? videoStreamIndex,
         [FromQuery] EncodingContext? context,
         [FromQuery] Dictionary<string, string> streamOptions,
-        [FromQuery] bool enableAudioVbrEncoding = true)
+        [FromQuery] bool enableAudioVbrEncoding = true,
+        [FromQuery] bool alwaysBurnInSubtitleWhenTranscoding = false)
     {
         using var cancellationTokenSource = new CancellationTokenSource();
         var streamingRequest = new StreamingRequestDto
@@ -1001,7 +1015,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             Height = height,
             VideoBitRate = videoBitRate,
             SubtitleStreamIndex = subtitleStreamIndex,
-            SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.Encode,
+            SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.External,
             MaxRefFrames = maxRefFrames,
             MaxVideoBitDepth = maxVideoBitDepth,
             RequireAvc = requireAvc ?? false,
@@ -1018,7 +1032,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             VideoStreamIndex = videoStreamIndex,
             Context = context ?? EncodingContext.Streaming,
             StreamOptions = streamOptions,
-            EnableAudioVbrEncoding = enableAudioVbrEncoding
+            EnableAudioVbrEncoding = enableAudioVbrEncoding,
+            AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding
         };
 
         return await GetVariantPlaylistInternal(streamingRequest, cancellationTokenSource)
@@ -1084,6 +1099,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
     /// <param name="streamOptions">Optional. The streaming options.</param>
     /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
+    /// <param name="alwaysBurnInSubtitleWhenTranscoding">Whether to always burn in subtitles when transcoding.</param>
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
     [HttpGet("Videos/{itemId}/hls1/{playlistId}/{segmentId}.{container}")]
@@ -1146,7 +1162,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? videoStreamIndex,
         [FromQuery] EncodingContext? context,
         [FromQuery] Dictionary<string, string> streamOptions,
-        [FromQuery] bool enableAudioVbrEncoding = true)
+        [FromQuery] bool enableAudioVbrEncoding = true,
+        [FromQuery] bool alwaysBurnInSubtitleWhenTranscoding = false)
     {
         var streamingRequest = new VideoRequestDto
         {
@@ -1185,7 +1202,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             MaxHeight = maxHeight,
             VideoBitRate = videoBitRate,
             SubtitleStreamIndex = subtitleStreamIndex,
-            SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.Encode,
+            SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.External,
             MaxRefFrames = maxRefFrames,
             MaxVideoBitDepth = maxVideoBitDepth,
             RequireAvc = requireAvc ?? false,
@@ -1202,7 +1219,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             VideoStreamIndex = videoStreamIndex,
             Context = context ?? EncodingContext.Streaming,
             StreamOptions = streamOptions,
-            EnableAudioVbrEncoding = enableAudioVbrEncoding
+            EnableAudioVbrEncoding = enableAudioVbrEncoding,
+            AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding
         };
 
         return await GetDynamicSegment(streamingRequest, segmentId)
@@ -1267,6 +1285,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
     /// <param name="streamOptions">Optional. The streaming options.</param>
     /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
+    /// <param name="alwaysBurnInSubtitleWhenTranscoding">Whether to always burn in subtitles when transcoding.</param>
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
     [HttpGet("Audio/{itemId}/hls1/{playlistId}/{segmentId}.{container}")]
@@ -1328,7 +1347,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? videoStreamIndex,
         [FromQuery] EncodingContext? context,
         [FromQuery] Dictionary<string, string> streamOptions,
-        [FromQuery] bool enableAudioVbrEncoding = true)
+        [FromQuery] bool enableAudioVbrEncoding = true,
+        [FromQuery] bool alwaysBurnInSubtitleWhenTranscoding = false)
     {
         var streamingRequest = new StreamingRequestDto
         {
@@ -1365,7 +1385,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             Height = height,
             VideoBitRate = videoBitRate,
             SubtitleStreamIndex = subtitleStreamIndex,
-            SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.Encode,
+            SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.External,
             MaxRefFrames = maxRefFrames,
             MaxVideoBitDepth = maxVideoBitDepth,
             RequireAvc = requireAvc ?? false,
@@ -1382,7 +1402,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             VideoStreamIndex = videoStreamIndex,
             Context = context ?? EncodingContext.Streaming,
             StreamOptions = streamOptions,
-            EnableAudioVbrEncoding = enableAudioVbrEncoding
+            EnableAudioVbrEncoding = enableAudioVbrEncoding,
+            AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding
         };
 
         return await GetDynamicSegment(streamingRequest, segmentId)
