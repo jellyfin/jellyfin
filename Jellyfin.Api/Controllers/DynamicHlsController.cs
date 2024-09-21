@@ -578,7 +578,6 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="streamOptions">Optional. The streaming options.</param>
     /// <param name="enableAdaptiveBitrateStreaming">Enable adaptive bitrate streaming.</param>
     /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
-    /// <param name="alwaysBurnInSubtitleWhenTranscoding">Whether to always burn in subtitles when transcoding.</param>
     /// <response code="200">Audio stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the playlist file.</returns>
     [HttpGet("Audio/{itemId}/master.m3u8")]
@@ -636,8 +635,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] EncodingContext? context,
         [FromQuery] Dictionary<string, string> streamOptions,
         [FromQuery] bool enableAdaptiveBitrateStreaming = true,
-        [FromQuery] bool enableAudioVbrEncoding = true,
-        [FromQuery] bool alwaysBurnInSubtitleWhenTranscoding = false)
+        [FromQuery] bool enableAudioVbrEncoding = true)
     {
         var streamingRequest = new HlsAudioRequestDto
         {
@@ -690,7 +688,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             StreamOptions = streamOptions,
             EnableAdaptiveBitrateStreaming = enableAdaptiveBitrateStreaming,
             EnableAudioVbrEncoding = enableAudioVbrEncoding,
-            AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding
+            AlwaysBurnInSubtitleWhenTranscoding = false
         };
 
         return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
