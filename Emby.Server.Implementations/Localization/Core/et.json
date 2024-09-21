@@ -131,5 +131,9 @@
     "TaskCleanCollectionsAndPlaylistsDescription": "Eemaldab kogumikest ja esitusloenditest asjad, mida enam ei eksisteeri.",
     "TaskCleanCollectionsAndPlaylists": "Puhasta kogumikud ja esitusloendid",
     "TaskDownloadMissingLyrics": "Lae alla puuduolev lüürika",
-    "TaskDownloadMissingLyricsDescription": "Lae lauludele alla lüürika"
+    "TaskDownloadMissingLyricsDescription": "Lae lauludele alla lüürika",
+    "TaskMoveTrickplayImagesDescription": "Liigutab trickplay pildid meediakogu sätete kohaselt.",
+    "TaskExtractMediaSegments": "Meediasegmentide skaneerimine",
+    "TaskExtractMediaSegmentsDescription": "Eraldab või võtab meediasegmendid MediaSegment'i lubavatest pluginatest.",
+    "TaskMoveTrickplayImages": "Migreeri trickplay piltide asukoht"
 }
