@@ -129,5 +129,7 @@
     "TaskAudioNormalization": "Heli Normaliseerimine",
     "TaskAudioNormalizationDescription": "Skaneerib faile heli normaliseerimise andmete jaoks.",
     "TaskCleanCollectionsAndPlaylistsDescription": "Eemaldab kogumikest ja esitusloenditest asjad, mida enam ei eksisteeri.",
-    "TaskCleanCollectionsAndPlaylists": "Puhasta kogumikud ja esitusloendid"
+    "TaskCleanCollectionsAndPlaylists": "Puhasta kogumikud ja esitusloendid",
+    "TaskDownloadMissingLyrics": "Lae alla puuduolev lüürika",
+    "TaskDownloadMissingLyricsDescription": "Lae lauludele alla lüürika"
 }
