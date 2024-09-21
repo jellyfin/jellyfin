@@ -293,7 +293,10 @@ public class MediaInfoHelper
                 mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
                 mediaSource.TranscodingContainer = streamInfo.Container;
                 mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
-                mediaSource.TranscodingUrl += "&alwaysBurnInSubtitleWhenTranscoding=true";
+                if (streamInfo.AlwaysBurnInSubtitleWhenTranscoding)
+                {
+                    mediaSource.TranscodingUrl += "&alwaysBurnInSubtitleWhenTranscoding=true";
+                }
             }
             else
             {
