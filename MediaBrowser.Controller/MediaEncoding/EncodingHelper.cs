@@ -5979,19 +5979,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
             }
 
-            var whichCodec = videoStream.Codec;
-            if (string.Equals(whichCodec, "avc", StringComparison.OrdinalIgnoreCase))
-            {
-                whichCodec = "h264";
-            }
-            else if (string.Equals(whichCodec, "h265", StringComparison.OrdinalIgnoreCase))
-            {
-                whichCodec = "hevc";
-            }
-
-            // Avoid a second attempt if no hardware acceleration is being used
-            options.HardwareDecodingCodecs = options.HardwareDecodingCodecs.Where(c => !string.Equals(c, whichCodec, StringComparison.OrdinalIgnoreCase)).ToArray();
-
             // leave blank so ffmpeg will decide
             return null;
         }
