@@ -481,7 +481,7 @@
                 {
                     "Condition": "EqualsAny",
                     "Property": "VideoRangeType",
-                    "Value": "SDR|HDR10|HLG",
+                    "Value": "SDR|DOVIWithSDR|HDR10|DOVIWithHDR10|HLG|DOVIWithHLG",
                     "IsRequired": false,
                     "$type": "ProfileCondition"
                 },
