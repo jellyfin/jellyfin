@@ -22,7 +22,7 @@ public class DeviceProfile
     /// <summary>
     /// Gets or sets the unique internal identifier.
     /// </summary>
-    public Guid Id { get; set; }
+    public Guid? Id { get; set; }
 
     /// <summary>
     /// Gets or sets the maximum allowed bitrate for all streamed content.
