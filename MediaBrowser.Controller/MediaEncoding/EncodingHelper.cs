@@ -5574,9 +5574,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var isFullAfbcPipeline = isEncoderSupportAfbc && isDrmInDrmOut && !doOclTonemap;
                 var swapOutputWandH = doRkVppTranspose && swapWAndH;
                 var outFormat = doOclTonemap ? "p010" : "nv12";
-                var hwScalePrefix = doRkVppTranspose ? "vpp" : "scale";
-                var hwScaleFilter = GetHwScaleFilter(hwScalePrefix, "rkrga", outFormat, swapOutputWandH, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
-                var doScaling = GetHwScaleFilter(hwScalePrefix, "rkrga", string.Empty, swapOutputWandH, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
+                var hwScaleFilter = GetHwScaleFilter("vpp", "rkrga", outFormat, swapOutputWandH, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
+                var doScaling = GetHwScaleFilter("vpp", "rkrga", string.Empty, swapOutputWandH, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
 
                 if (!hasSubs
                      || doRkVppTranspose
@@ -5588,7 +5587,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     if (!string.IsNullOrEmpty(doScaling)
                         && !IsScaleRatioSupported(inW, inH, reqW, reqH, reqMaxW, reqMaxH, 8.0f))
                     {
-                        var hwScaleFilterFirstPass = $"scale_rkrga=w=iw/8:h=ih/8:format={outFormat}:afbc=1";
+                        var hwScaleFilterFirstPass = $"scale_rkrga=w=iw/7.9:h=ih/7.9:format={outFormat}:afbc=1";
                         mainFilters.Add(hwScaleFilterFirstPass);
                     }
 
@@ -5979,19 +5978,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                     return decoder;
                 }
             }
-
-            var whichCodec = videoStream.Codec;
-            if (string.Equals(whichCodec, "avc", StringComparison.OrdinalIgnoreCase))
-            {
-                whichCodec = "h264";
-            }
-            else if (string.Equals(whichCodec, "h265", StringComparison.OrdinalIgnoreCase))
-            {
-                whichCodec = "hevc";
-            }
-
-            // Avoid a second attempt if no hardware acceleration is being used
-            options.HardwareDecodingCodecs = options.HardwareDecodingCodecs.Where(c => !string.Equals(c, whichCodec, StringComparison.OrdinalIgnoreCase)).ToArray();
 
             // leave blank so ffmpeg will decide
             return null;
