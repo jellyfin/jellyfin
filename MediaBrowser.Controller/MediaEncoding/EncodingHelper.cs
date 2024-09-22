@@ -5587,7 +5587,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     if (!string.IsNullOrEmpty(doScaling)
                         && !IsScaleRatioSupported(inW, inH, reqW, reqH, reqMaxW, reqMaxH, 8.0f))
                     {
-                        var hwScaleFilterFirstPass = $"scale_rkrga=w=iw/8:h=ih/8:format={outFormat}:afbc=1";
+                        var hwScaleFilterFirstPass = $"scale_rkrga=w=iw/7.9:h=ih/7.9:format={outFormat}:afbc=1";
                         mainFilters.Add(hwScaleFilterFirstPass);
                     }
 
