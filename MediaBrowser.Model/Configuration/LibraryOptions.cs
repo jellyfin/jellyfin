@@ -2,12 +2,13 @@
 
 using System;
 using System.ComponentModel;
+using System.Linq;
 
 namespace MediaBrowser.Model.Configuration
 {
     public class LibraryOptions
     {
-        private static readonly char[] _defaultTagDelimiters = ['/', '|', ';', '\\'];
+        private static readonly string[] _defaultTagDelimiters = ["/", "|", ";", "\\"];
 
         public LibraryOptions()
         {
@@ -126,8 +127,7 @@ namespace MediaBrowser.Model.Configuration
         [DefaultValue(false)]
         public bool UseCustomTagDelimiters { get; set; }
 
-        [DefaultValue(typeof(LibraryOptions), nameof(_defaultTagDelimiters))]
-        public char[] CustomTagDelimiters { get; set; }
+        public string[] CustomTagDelimiters { get; set; }
 
         public string[] DelimiterWhitelist { get; set; }
 
@@ -148,6 +148,20 @@ namespace MediaBrowser.Model.Configuration
             }
 
             return null;
+        }
+
+        public char[] GetCustomTagDelimiters()
+        {
+            return CustomTagDelimiters.Select<string, char?>(x =>
+            {
+                var isChar = char.TryParse(x, out var c);
+                if (isChar)
+                {
+                    return c;
+                }
+
+                return null;
+            }).Where(x => x is not null).Select(x => x!.Value).ToArray();
         }
     }
 }
