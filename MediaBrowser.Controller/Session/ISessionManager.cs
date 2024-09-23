@@ -300,8 +300,9 @@ namespace MediaBrowser.Controller.Session
         /// <param name="deviceId">The device id.</param>
         /// <param name="activeWithinSeconds">Active within session limit.</param>
         /// <param name="controllableUserToCheck">Filter for sessions remote controllable for this user.</param>
+        /// <param name="isApiKey">Is the request authenticated with API key.</param>
         /// <returns>IReadOnlyList{SessionInfoDto}.</returns>
-        IReadOnlyList<SessionInfoDto> GetSessions(Guid userId, string deviceId, int? activeWithinSeconds, Guid? controllableUserToCheck);
+        IReadOnlyList<SessionInfoDto> GetSessions(Guid userId, string deviceId, int? activeWithinSeconds, Guid? controllableUserToCheck, bool isApiKey);
 
         /// <summary>
         /// Gets the session by authentication token.
