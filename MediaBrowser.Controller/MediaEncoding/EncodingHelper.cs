@@ -209,6 +209,14 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 var hwType = encodingOptions.HardwareAccelerationType;
 
+                // Only Intel has VA-API MJPEG encoder
+                if (hwType == HardwareAccelerationType.vaapi
+                    && !(_mediaEncoder.IsVaapiDeviceInteliHD
+                         || _mediaEncoder.IsVaapiDeviceInteli965))
+                {
+                    return _defaultMjpegEncoder;
+                }
+
                 if (hwType != HardwareAccelerationType.none
                     && encodingOptions.EnableHardwareEncoding
                     && _mjpegCodecMap.TryGetValue(hwType, out var preferredEncoder)
