@@ -150,6 +150,36 @@ public class PlaylistsController : BaseJellyfinApiController
     }
 
     /// <summary>
+    /// Get a playlist.
+    /// </summary>
+    /// <param name="playlistId">The playlist id.</param>
+    /// <response code="200">The playlist.</response>
+    /// <response code="403">Access forbidden.</response>
+    /// <response code="404">Playlist not found.</response>
+    /// <returns>
+    /// A <see cref="Playlist"/> objects.
+    /// </returns>
+    [HttpGet("{playlistId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public ActionResult<Playlist> GetPlaylist(
+        [FromRoute, Required] Guid playlistId)
+    {
+        var userId = User.GetUserId();
+
+        var playlist = _playlistManager.GetPlaylistForUser(playlistId, userId);
+        if (playlist is null)
+        {
+            return NotFound("Playlist not found");
+        }
+
+        var isPermitted = playlist.OwnerUserId.Equals(userId);
+
+        return isPermitted ? playlist : Forbid();
+    }
+
+    /// <summary>
     /// Get a playlist's users.
     /// </summary>
     /// <param name="playlistId">The playlist id.</param>
