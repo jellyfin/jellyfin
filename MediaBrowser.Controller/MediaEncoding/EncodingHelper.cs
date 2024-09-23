@@ -1441,7 +1441,13 @@ namespace MediaBrowser.Controller.MediaEncoding
             var encoderPreset = preset ?? defaultPreset;
             if (string.Equals(videoEncoder, "libx264", StringComparison.OrdinalIgnoreCase) || isLibX265)
             {
-                param += " -preset " + encoderPreset.ToString().ToLowerInvariant();
+                var presetString = encoderPreset switch
+                {
+                    EncoderPreset.auto => EncoderPreset.veryfast.ToString().ToLowerInvariant(),
+                    _ => encoderPreset.ToString().ToLowerInvariant()
+                };
+
+                param += " -preset " + presetString;
 
                 int encodeCrf = encodingOptions.H264Crf;
                 if (isLibX265)
