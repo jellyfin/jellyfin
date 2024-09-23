@@ -71,6 +71,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         private readonly Version _minFFmpegAdvancedTonemapMode = new Version(7, 0, 1);
         private readonly Version _minFFmpegAlteredVaVkInterop = new Version(7, 0, 1);
         private readonly Version _minFFmpegQsvVppTonemapOption = new Version(7, 0, 1);
+        private readonly Version _minFFmpegQsvVppOutRangeOption = new Version(7, 0, 1);
 
         private static readonly Regex _validationRegex = new(ValidationRegex, RegexOptions.Compiled);
 
@@ -3297,7 +3298,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             return string.Empty;
         }
 
-        public string GetHwTonemapFilter(EncodingOptions options, string hwTonemapSuffix, string videoFormat)
+        private string GetHwTonemapFilter(EncodingOptions options, string hwTonemapSuffix, string videoFormat, bool forceFullRange)
         {
             if (string.IsNullOrEmpty(hwTonemapSuffix))
             {
@@ -3307,7 +3308,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var args = string.Empty;
             var algorithm = options.TonemappingAlgorithm.ToString().ToLowerInvariant();
             var mode = options.TonemappingMode.ToString().ToLowerInvariant();
-            var range = options.TonemappingRange;
+            var range = forceFullRange ? TonemappingRange.pc : options.TonemappingRange;
             var rangeString = range.ToString().ToLowerInvariant();
 
             if (string.Equals(hwTonemapSuffix, "vaapi", StringComparison.OrdinalIgnoreCase))
@@ -3377,7 +3378,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     rangeString);
         }
 
-        public string GetLibplaceboFilter(
+        private string GetLibplaceboFilter(
             EncodingOptions options,
             string videoFormat,
             bool doTonemap,
@@ -3386,7 +3387,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             int? requestedWidth,
             int? requestedHeight,
             int? requestedMaxWidth,
-            int? requestedMaxHeight)
+            int? requestedMaxHeight,
+            bool forceFullRange)
         {
             var (outWidth, outHeight) = GetFixedOutputSize(
                 videoWidth,
@@ -3411,7 +3413,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var algorithm = options.TonemappingAlgorithm;
                 var algorithmString = "clip";
                 var mode = options.TonemappingMode;
-                var range = options.TonemappingRange;
+                var range = forceFullRange ? TonemappingRange.pc : options.TonemappingRange;
 
                 if (algorithm == TonemappingAlgorithm.bt2390)
                 {
@@ -3616,6 +3618,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isNvencEncoder = vidEncoder.Contains("nvenc", StringComparison.OrdinalIgnoreCase);
             var isSwDecoder = string.IsNullOrEmpty(vidDecoder);
             var isSwEncoder = !isNvencEncoder;
+            var isMjpegEncoder = vidEncoder.Contains("mjpeg", StringComparison.OrdinalIgnoreCase);
             var isCuInCuOut = isNvDecoder && isNvencEncoder;
 
             var doubleRateDeint = options.DeinterlaceDoubleRate && (state.VideoStream?.ReferenceFrameRate ?? 60) <= 30;
@@ -3694,7 +3697,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             // hw tonemap
             if (doCuTonemap)
             {
-                var tonemapFilter = GetHwTonemapFilter(options, "cuda", "yuv420p");
+                var tonemapFilter = GetHwTonemapFilter(options, "cuda", "yuv420p", isMjpegEncoder);
                 mainFilters.Add(tonemapFilter);
             }
 
@@ -3823,6 +3826,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isAmfEncoder = vidEncoder.Contains("amf", StringComparison.OrdinalIgnoreCase);
             var isSwDecoder = string.IsNullOrEmpty(vidDecoder);
             var isSwEncoder = !isAmfEncoder;
+            var isMjpegEncoder = vidEncoder.Contains("mjpeg", StringComparison.OrdinalIgnoreCase);
             var isDxInDxOut = isD3d11vaDecoder && isAmfEncoder;
 
             var doDeintH264 = state.DeInterlace("h264", true) || state.DeInterlace("avc", true);
@@ -3902,7 +3906,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             // hw tonemap
             if (doOclTonemap)
             {
-                var tonemapFilter = GetHwTonemapFilter(options, "opencl", "nv12");
+                var tonemapFilter = GetHwTonemapFilter(options, "opencl", "nv12", isMjpegEncoder);
                 mainFilters.Add(tonemapFilter);
             }
 
@@ -4061,6 +4065,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isHwDecoder = isD3d11vaDecoder || isQsvDecoder;
             var isSwDecoder = string.IsNullOrEmpty(vidDecoder);
             var isSwEncoder = !isQsvEncoder;
+            var isMjpegEncoder = vidEncoder.Contains("mjpeg", StringComparison.OrdinalIgnoreCase);
             var isQsvInQsvOut = isHwDecoder && isQsvEncoder;
 
             var doDeintH264 = state.DeInterlace("h264", true) || state.DeInterlace("avc", true);
@@ -4119,6 +4124,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 var isRext = IsVideoStreamHevcRext(state);
                 var twoPassVppTonemap = isRext;
+                var doVppFullRangeOut = isMjpegEncoder
+                    && _mediaEncoder.EncoderVersion >= _minFFmpegQsvVppOutRangeOption;
                 var doVppProcamp = false;
                 var procampParams = string.Empty;
                 if (doVppTonemap)
@@ -4145,12 +4152,17 @@ namespace MediaBrowser.Controller.MediaEncoding
                 outFormat = twoPassVppTonemap ? "p010" : outFormat;
 
                 var swapOutputWandH = doVppTranspose && swapWAndH;
-                var hwScalePrefix = (doVppTranspose || doVppTonemap) ? "vpp" : "scale";
+                var hwScalePrefix = (doVppTranspose || doVppTonemap || doVppFullRangeOut) ? "vpp" : "scale";
                 var hwScaleFilter = GetHwScaleFilter(hwScalePrefix, "qsv", outFormat, swapOutputWandH, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
 
                 if (!string.IsNullOrEmpty(hwScaleFilter) && doVppTranspose)
                 {
                     hwScaleFilter += $":transpose={tranposeDir}";
+                }
+
+                if (!string.IsNullOrEmpty(hwScaleFilter) && doVppFullRangeOut)
+                {
+                    hwScaleFilter += ":out_range=pc";
                 }
 
                 if (!string.IsNullOrEmpty(hwScaleFilter) && doVppTonemap)
@@ -4200,7 +4212,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             // hw tonemap
             if (doOclTonemap)
             {
-                var tonemapFilter = GetHwTonemapFilter(options, "opencl", "nv12");
+                var tonemapFilter = GetHwTonemapFilter(options, "opencl", "nv12", isMjpegEncoder);
                 mainFilters.Add(tonemapFilter);
             }
 
@@ -4317,6 +4329,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isHwDecoder = isVaapiDecoder || isQsvDecoder;
             var isSwDecoder = string.IsNullOrEmpty(vidDecoder);
             var isSwEncoder = !isQsvEncoder;
+            var isMjpegEncoder = vidEncoder.Contains("mjpeg", StringComparison.OrdinalIgnoreCase);
             var isQsvInQsvOut = isHwDecoder && isQsvEncoder;
 
             var doDeintH264 = state.DeInterlace("h264", true) || state.DeInterlace("avc", true);
@@ -4375,6 +4388,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 var hwFilterSuffix = isVaapiDecoder ? "vaapi" : "qsv";
                 var isRext = IsVideoStreamHevcRext(state);
+                var doVppFullRangeOut = isMjpegEncoder
+                    && _mediaEncoder.EncoderVersion >= _minFFmpegQsvVppOutRangeOption;
 
                 // INPUT vaapi/qsv surface(vram)
                 // hw deint
@@ -4394,12 +4409,19 @@ namespace MediaBrowser.Controller.MediaEncoding
                 outFormat = (doTonemap && isRext) ? "p010" : outFormat;
 
                 var swapOutputWandH = isQsvDecoder && doVppTranspose && swapWAndH;
-                var hwScalePrefix = (isQsvDecoder && doVppTranspose) ? "vpp" : "scale";
+                var hwScalePrefix = (isQsvDecoder && (doVppTranspose || doVppFullRangeOut)) ? "vpp" : "scale";
                 var hwScaleFilter = GetHwScaleFilter(hwScalePrefix, hwFilterSuffix, outFormat, swapOutputWandH, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
 
                 if (!string.IsNullOrEmpty(hwScaleFilter) && isQsvDecoder && doVppTranspose)
                 {
                     hwScaleFilter += $":transpose={tranposeDir}";
+                }
+
+                if (!string.IsNullOrEmpty(hwScaleFilter)
+                    && ((isVaapiDecoder && isMjpegEncoder)
+                         || (isQsvDecoder && doVppFullRangeOut)))
+                {
+                    hwScaleFilter += ":out_range=pc";
                 }
 
                 // allocate extra pool sizes for vaapi vpp scale
@@ -4422,7 +4444,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     mainFilters.Add("format=vaapi");
                 }
 
-                var tonemapFilter = GetHwTonemapFilter(options, "vaapi", "nv12");
+                var tonemapFilter = GetHwTonemapFilter(options, "vaapi", "nv12", isMjpegEncoder);
                 mainFilters.Add(tonemapFilter);
 
                 if (isQsvDecoder)
@@ -4442,7 +4464,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             // ocl tonemap
             if (doOclTonemap)
             {
-                var tonemapFilter = GetHwTonemapFilter(options, "opencl", "nv12");
+                var tonemapFilter = GetHwTonemapFilter(options, "opencl", "nv12", isMjpegEncoder);
                 mainFilters.Add(tonemapFilter);
             }
 
@@ -4633,6 +4655,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isVaapiEncoder = vidEncoder.Contains("vaapi", StringComparison.OrdinalIgnoreCase);
             var isSwDecoder = string.IsNullOrEmpty(vidDecoder);
             var isSwEncoder = !isVaapiEncoder;
+            var isMjpegEncoder = vidEncoder.Contains("mjpeg", StringComparison.OrdinalIgnoreCase);
             var isVaInVaOut = isVaapiDecoder && isVaapiEncoder;
 
             var doDeintH264 = state.DeInterlace("h264", true) || state.DeInterlace("avc", true);
@@ -4708,6 +4731,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var outFormat = doTonemap ? (isRext ? "p010" : string.Empty) : "nv12";
                 var hwScaleFilter = GetHwScaleFilter("scale", "vaapi", outFormat, false, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
 
+                if (!string.IsNullOrEmpty(hwScaleFilter) && isMjpegEncoder)
+                {
+                    hwScaleFilter += ":out_range=pc";
+                }
+
                 // allocate extra pool sizes for vaapi vpp
                 if (!string.IsNullOrEmpty(hwScaleFilter))
                 {
@@ -4721,7 +4749,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             // vaapi vpp tonemap
             if (doVaVppTonemap && isVaapiDecoder)
             {
-                var tonemapFilter = GetHwTonemapFilter(options, "vaapi", "nv12");
+                var tonemapFilter = GetHwTonemapFilter(options, "vaapi", "nv12", isMjpegEncoder);
                 mainFilters.Add(tonemapFilter);
             }
 
@@ -4734,7 +4762,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             // ocl tonemap
             if (doOclTonemap)
             {
-                var tonemapFilter = GetHwTonemapFilter(options, "opencl", "nv12");
+                var tonemapFilter = GetHwTonemapFilter(options, "opencl", "nv12", isMjpegEncoder);
                 mainFilters.Add(tonemapFilter);
             }
 
@@ -4858,6 +4886,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isVaapiEncoder = vidEncoder.Contains("vaapi", StringComparison.OrdinalIgnoreCase);
             var isSwDecoder = string.IsNullOrEmpty(vidDecoder);
             var isSwEncoder = !isVaapiEncoder;
+            var isMjpegEncoder = vidEncoder.Contains("mjpeg", StringComparison.OrdinalIgnoreCase);
 
             var doDeintH264 = state.DeInterlace("h264", true) || state.DeInterlace("avc", true);
             var doDeintHevc = state.DeInterlace("h265", true) || state.DeInterlace("hevc", true);
@@ -4953,6 +4982,12 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                     // hw scale
                     var hwScaleFilter = GetHwScaleFilter("scale", "vaapi", "nv12", false, inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+
+                    if (!string.IsNullOrEmpty(hwScaleFilter) && isMjpegEncoder)
+                    {
+                        hwScaleFilter += ":out_range=pc";
+                    }
+
                     mainFilters.Add(hwScaleFilter);
                 }
             }
@@ -4973,7 +5008,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             // vk libplacebo
             if (doVkTonemap || hasSubs)
             {
-                var libplaceboFilter = GetLibplaceboFilter(options, "bgra", doVkTonemap, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
+                var libplaceboFilter = GetLibplaceboFilter(options, "bgra", doVkTonemap, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH, isMjpegEncoder);
                 mainFilters.Add(libplaceboFilter);
                 mainFilters.Add("format=vulkan");
             }
@@ -5088,6 +5123,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isVaapiEncoder = vidEncoder.Contains("vaapi", StringComparison.OrdinalIgnoreCase);
             var isSwDecoder = string.IsNullOrEmpty(vidDecoder);
             var isSwEncoder = !isVaapiEncoder;
+            var isMjpegEncoder = vidEncoder.Contains("mjpeg", StringComparison.OrdinalIgnoreCase);
             var isVaInVaOut = isVaapiDecoder && isVaapiEncoder;
             var isi965Driver = _mediaEncoder.IsVaapiDeviceInteli965;
             var isAmdDriver = _mediaEncoder.IsVaapiDeviceAmd;
@@ -5149,6 +5185,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 outFormat = doOclTonemap ? string.Empty : "nv12";
                 var hwScaleFilter = GetHwScaleFilter("scale", "vaapi", outFormat, false, inW, inH, reqW, reqH, reqMaxW, reqMaxH);
 
+                if (!string.IsNullOrEmpty(hwScaleFilter) && isMjpegEncoder)
+                {
+                    hwScaleFilter += ":out_range=pc";
+                }
+
                 // allocate extra pool sizes for vaapi vpp
                 if (!string.IsNullOrEmpty(hwScaleFilter))
                 {
@@ -5177,7 +5218,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             // ocl tonemap
             if (doOclTonemap)
             {
-                var tonemapFilter = GetHwTonemapFilter(options, "opencl", "nv12");
+                var tonemapFilter = GetHwTonemapFilter(options, "opencl", "nv12", isMjpegEncoder);
                 mainFilters.Add(tonemapFilter);
             }
 
@@ -5303,6 +5344,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             var isVtEncoder = vidEncoder.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase);
             var isVtDecoder = vidDecoder.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase);
+            var isMjpegEncoder = vidEncoder.Contains("mjpeg", StringComparison.OrdinalIgnoreCase);
 
             var inW = state.VideoStream?.Width;
             var inH = state.VideoStream?.Height;
@@ -5384,7 +5426,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             // Metal tonemap
             if (doMetalTonemap)
             {
-                var tonemapFilter = GetHwTonemapFilter(options, "videotoolbox", "nv12");
+                var tonemapFilter = GetHwTonemapFilter(options, "videotoolbox", "nv12", isMjpegEncoder);
                 mainFilters.Add(tonemapFilter);
             }
 
@@ -5507,6 +5549,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isRkmppEncoder = vidEncoder.Contains("rkmpp", StringComparison.OrdinalIgnoreCase);
             var isSwDecoder = !isRkmppDecoder;
             var isSwEncoder = !isRkmppEncoder;
+            var isMjpegEncoder = vidEncoder.Contains("mjpeg", StringComparison.OrdinalIgnoreCase);
             var isDrmInDrmOut = isRkmppDecoder && isRkmppEncoder;
             var isEncoderSupportAfbc = isRkmppEncoder
                 && (vidEncoder.Contains("h264", StringComparison.OrdinalIgnoreCase)
@@ -5573,7 +5616,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 var isFullAfbcPipeline = isEncoderSupportAfbc && isDrmInDrmOut && !doOclTonemap;
                 var swapOutputWandH = doRkVppTranspose && swapWAndH;
-                var outFormat = doOclTonemap ? "p010" : "nv12";
+                var outFormat = doOclTonemap ? "p010" : (isMjpegEncoder ? "bgra" : "nv12"); // RGA only support full range in rgb fmts
                 var hwScaleFilter = GetHwScaleFilter("vpp", "rkrga", outFormat, swapOutputWandH, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
                 var doScaling = GetHwScaleFilter("vpp", "rkrga", string.Empty, swapOutputWandH, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
 
@@ -5616,7 +5659,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             // ocl tonemap
             if (doOclTonemap)
             {
-                var tonemapFilter = GetHwTonemapFilter(options, "opencl", "nv12");
+                var tonemapFilter = GetHwTonemapFilter(options, "opencl", "nv12", isMjpegEncoder);
                 mainFilters.Add(tonemapFilter);
             }
 
