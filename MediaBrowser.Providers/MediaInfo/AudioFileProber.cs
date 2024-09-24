@@ -445,7 +445,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             if (useWorkaround)
             {
-                val = val.Replace(InternalValueSeparator.ToString(), AtlId3V22Separator.ToString(), StringComparison.OrdinalIgnoreCase);
+                val = val.Replace(InternalValueSeparator, AtlId3V22Separator);
             }
 
             return val.Split(separator);
