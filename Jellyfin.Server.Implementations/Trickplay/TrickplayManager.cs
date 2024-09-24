@@ -105,7 +105,7 @@ public class TrickplayManager : ITrickplayManager
                     _logger.LogInformation("Moved trickplay images for {ItemName} to {Location}", video.Name, mediaOutputDir);
                 }
             }
-            else if (Directory.Exists(mediaOutputDir))
+            else if (!shouldBeSavedWithMedia && Directory.Exists(mediaOutputDir))
             {
                 var mediaDirFiles = Directory.GetFiles(mediaOutputDir);
                 var localDirExists = Directory.Exists(localOutputDir);
