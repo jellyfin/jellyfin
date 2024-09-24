@@ -16,6 +16,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging;
 
@@ -178,7 +179,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 if (libraryOptions.UseCustomTagDelimiters)
                 {
-                    albumArtists = albumArtists.SelectMany(a => SplitWithCustomDelimiter(a, libraryOptions.CustomTagDelimiters, libraryOptions.DelimiterWhitelist)).ToArray();
+                    albumArtists = albumArtists.SelectMany(a => SplitWithCustomDelimiter(a, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist)).ToArray();
                 }
 
                 foreach (var albumArtist in albumArtists)
@@ -210,7 +211,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 if (libraryOptions.UseCustomTagDelimiters)
                 {
-                    performers = performers.SelectMany(p => SplitWithCustomDelimiter(p, libraryOptions.CustomTagDelimiters, libraryOptions.DelimiterWhitelist)).ToArray();
+                    performers = performers.SelectMany(p => SplitWithCustomDelimiter(p, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist)).ToArray();
                 }
 
                 foreach (var performer in performers)
@@ -313,7 +314,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 if (libraryOptions.UseCustomTagDelimiters)
                 {
-                    genres = genres.SelectMany(g => SplitWithCustomDelimiter(g, libraryOptions.CustomTagDelimiters, libraryOptions.DelimiterWhitelist)).ToArray();
+                    genres = genres.SelectMany(g => SplitWithCustomDelimiter(g, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist)).ToArray();
                 }
 
                 audio.Genres = options.ReplaceAllMetadata || audio.Genres is null || audio.Genres.Length == 0
