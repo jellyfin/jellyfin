@@ -149,19 +149,5 @@ namespace MediaBrowser.Model.Configuration
 
             return null;
         }
-
-        public char[] GetCustomTagDelimiters()
-        {
-            return CustomTagDelimiters.Select<string, char?>(x =>
-            {
-                var isChar = char.TryParse(x, out var c);
-                if (isChar)
-                {
-                    return c;
-                }
-
-                return null;
-            }).Where(x => x is not null).Select(x => x!.Value).ToArray();
-        }
     }
 }
