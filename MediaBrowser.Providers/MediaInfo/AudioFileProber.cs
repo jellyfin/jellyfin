@@ -65,6 +65,7 @@ namespace MediaBrowser.Providers.MediaInfo
             _lyricResolver = lyricResolver;
             _lyricManager = lyricManager;
             ATL.Settings.DisplayValueSeparator = InternalValueSeparator;
+            ATL.Settings.UseFileNameWhenNoTitle = false;
         }
 
         /// <summary>
@@ -168,12 +169,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 .Where(mf => string.Equals(mf.ShortName, "ID3v2", StringComparison.OrdinalIgnoreCase))
                 .All(mf => !string.Equals(mf.Name, "ID3v2.4", StringComparison.OrdinalIgnoreCase));
 
-            // ATL will fall back to filename as title when it does not understand the metadata
-            if (track.MetadataFormats.All(mf => mf.Equals(ATL.Factory.UNKNOWN_FORMAT)))
-            {
-                track.Title = mediaInfo.Name;
-            }
-
+            track.Title = string.IsNullOrEmpty(track.Title) ? mediaInfo.Name : track.Title;
             track.Album = string.IsNullOrEmpty(track.Album) ? mediaInfo.Album : track.Album;
             track.Year ??= mediaInfo.ProductionYear;
             track.TrackNumber ??= mediaInfo.IndexNumber;
