@@ -217,7 +217,7 @@ namespace MediaBrowser.Controller.Entities
             LibraryManager.CreateItem(item, this);
         }
 
-        public override bool IsVisible(User user)
+        public override bool IsVisible(User user, bool skipAllowedTagsCheck = false)
         {
             if (this is ICollectionFolder && this is not BasePluginFolder)
             {
@@ -239,7 +239,7 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            return base.IsVisible(user);
+            return base.IsVisible(user, skipAllowedTagsCheck);
         }
 
         /// <summary>
