@@ -154,14 +154,12 @@ public class PlaylistsController : BaseJellyfinApiController
     /// </summary>
     /// <param name="playlistId">The playlist id.</param>
     /// <response code="200">The playlist.</response>
-    /// <response code="403">Access forbidden.</response>
     /// <response code="404">Playlist not found.</response>
     /// <returns>
     /// A <see cref="Playlist"/> objects.
     /// </returns>
     [HttpGet("{playlistId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<PlaylistDto> GetPlaylist(
         [FromRoute, Required] Guid playlistId)

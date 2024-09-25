@@ -17,10 +17,10 @@ public class PlaylistDto
     /// <summary>
     /// Gets or sets the share permissions.
     /// </summary>
-    public IReadOnlyList<PlaylistUserPermissions>? Shares { get; set; }
+    public required IReadOnlyList<PlaylistUserPermissions> Shares { get; set; }
 
     /// <summary>
     /// Gets or sets the item ids.
     /// </summary>
-    public IReadOnlyList<Guid>? ItemIds { get; set; }
+    public required IReadOnlyList<Guid> ItemIds { get; set; }
 }
