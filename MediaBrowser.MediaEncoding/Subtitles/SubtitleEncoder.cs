@@ -558,9 +558,9 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 var inputPath = _mediaEncoder.GetInputArgument(mksFile, mediaSource);
                 var outputPaths = new List<string>();
                 var args = string.Format(
-                CultureInfo.InvariantCulture,
-                "-i {0} -copyts",
-                inputPath);
+                    CultureInfo.InvariantCulture,
+                    "-i {0} -copyts",
+                    inputPath);
 
                 foreach (var subtitleStream in subtitleStreams)
                 {
