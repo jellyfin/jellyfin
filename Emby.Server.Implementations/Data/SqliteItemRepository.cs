@@ -4203,6 +4203,15 @@ namespace Emby.Server.Implementations.Data
                                           OR (select CleanValue from ItemValues where ItemId=ParentId and Type=6 and CleanValue in ({includedTags})) is not null)
                                           """);
                     }
+
+                    // A playlist should be accessible to its owner regardless of allowed tags.
+                    else if (includeTypes.Length == 1 && includeTypes.FirstOrDefault() is BaseItemKind.Playlist)
+                    {
+                        whereClauses.Add($"""
+                                          ((select CleanValue from ItemValues where ItemId=Guid and Type=6 and CleanValue in ({includedTags})) is not null
+                                          OR data like @PlaylistOwnerUserId)
+                                          """);
+                    }
                     else
                     {
                         whereClauses.Add("((select CleanValue from ItemValues where ItemId=Guid and Type=6 and cleanvalue in (" + includedTags + ")) is not null)");
@@ -4213,6 +4222,11 @@ namespace Emby.Server.Implementations.Data
                     for (int index = 0; index < query.IncludeInheritedTags.Length; index++)
                     {
                         statement.TryBind(paramName + index, GetCleanValue(query.IncludeInheritedTags[index]));
+                    }
+
+                    if (query.User is not null)
+                    {
+                        statement.TryBind("@PlaylistOwnerUserId", $"""%"OwnerUserId":"{query.User.Id.ToString("N")}"%""");
                     }
                 }
             }
