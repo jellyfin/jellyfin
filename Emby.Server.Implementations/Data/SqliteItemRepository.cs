@@ -4224,7 +4224,7 @@ namespace Emby.Server.Implementations.Data
                         statement.TryBind(paramName + index, GetCleanValue(query.IncludeInheritedTags[index]));
                     }
 
-                    if (query.User != null)
+                    if (query.User is not null)
                     {
                         statement.TryBind("@PlaylistOwnerUserId", $"""%"OwnerUserId":"{query.User.Id.ToString("N")}"%""");
                     }
