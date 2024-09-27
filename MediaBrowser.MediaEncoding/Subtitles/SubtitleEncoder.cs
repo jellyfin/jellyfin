@@ -635,6 +635,11 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     outputPath);
             }
 
+            if (outputPaths.Count == 0)
+            {
+                return;
+            }
+
             await ExtractSubtitlesForFile(inputPath, args, outputPaths, cancellationToken).ConfigureAwait(false);
         }
 
