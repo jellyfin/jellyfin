@@ -1338,10 +1338,6 @@ namespace MediaBrowser.MediaEncoding.Probing
             mb = GetMultipleMusicBrainzId(tags.GetValueOrDefault("MusicBrainz Release Track Id"))
                  ?? GetMultipleMusicBrainzId(tags.GetValueOrDefault("MUSICBRAINZ_RELEASETRACKID"));
             audio.TrySetProviderId(MetadataProvider.MusicBrainzTrack, mb);
-
-            mb = GetMultipleMusicBrainzId(tags.GetValueOrDefault("MusicBrainz Track Id"))
-                 ?? GetMultipleMusicBrainzId(tags.GetValueOrDefault("MUSICBRAINZ_TRACKID"));
-            audio.TrySetProviderId(MetadataProvider.MusicBrainzRecording, mb);
         }
 
         private string GetMultipleMusicBrainzId(string value)
