@@ -608,15 +608,15 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             foreach (var subtitleStream in subtitleStreams)
             {
-                var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + GetExtractableSubtitleFileExtension(subtitleStream));
-                var outputCodec = IsCodecCopyable(subtitleStream.Codec) ? "copy" : "srt";
-                var streamIndex = EncodingHelper.FindIndex(mediaSource.MediaStreams, subtitleStream);
-
                 if (subtitleStream.Path.EndsWith(".mks", StringComparison.OrdinalIgnoreCase))
                 {
                     _logger.LogDebug("Subtitle {Index} for file {InputPath} is part in an MKS file. Skipping", inputPath, subtitleStream.Index);
                     continue;
                 }
+
+                var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + GetExtractableSubtitleFileExtension(subtitleStream));
+                var outputCodec = IsCodecCopyable(subtitleStream.Codec) ? "copy" : "srt";
+                var streamIndex = EncodingHelper.FindIndex(mediaSource.MediaStreams, subtitleStream);
 
                 if (streamIndex == -1)
                 {
