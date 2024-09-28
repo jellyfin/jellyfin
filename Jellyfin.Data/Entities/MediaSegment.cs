@@ -39,4 +39,9 @@ public class MediaSegment
     /// Gets or sets Id of the media segment provider this entry originates from.
     /// </summary>
     public required string SegmentProviderId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the image representing the segment.
+    /// </summary>
+    public string? ImageSource { get; set; }
 }
