@@ -3441,7 +3441,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     algorithmString = algorithm.ToString().ToLowerInvariant();
                 }
 
-                tonemapArg = ":tonemapping=" + algorithm + ":peak_detect=0:color_primaries=bt709:color_trc=bt709:colorspace=bt709";
+                tonemapArg = $":tonemapping={algorithmString}:peak_detect=0:color_primaries=bt709:color_trc=bt709:colorspace=bt709";
 
                 if (range == TonemappingRange.tv || range == TonemappingRange.pc)
                 {
