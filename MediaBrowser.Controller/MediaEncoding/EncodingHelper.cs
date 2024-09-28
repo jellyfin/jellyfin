@@ -4422,9 +4422,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     mainFilters.Add($"transpose_vaapi=dir={tranposeDir}");
                 }
 
-                var outFormat = doOclTonemap ? ((isQsvDecoder && doVppTranspose) ? "p010" : string.Empty) : "nv12";
-                outFormat = (doTonemap && isRext) ? "p010" : outFormat;
-
+                var outFormat = doTonemap ? (((isQsvDecoder && doVppTranspose) || isRext) ? "p010" : string.Empty) : "nv12";
                 var swapOutputWandH = isQsvDecoder && doVppTranspose && swapWAndH;
                 var hwScalePrefix = (isQsvDecoder && (doVppTranspose || doVppFullRangeOut)) ? "vpp" : "scale";
                 var hwScaleFilter = GetHwScaleFilter(hwScalePrefix, hwFilterSuffix, outFormat, swapOutputWandH, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
