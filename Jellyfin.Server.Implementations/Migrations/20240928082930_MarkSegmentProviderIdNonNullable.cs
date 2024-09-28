@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                 table: "MediaSegments",
                 type: "TEXT",
                 nullable: false,
-                defaultValue: "",
+                defaultValue: string.Empty,
                 oldClrType: typeof(string),
                 oldType: "TEXT",
                 oldNullable: true);
