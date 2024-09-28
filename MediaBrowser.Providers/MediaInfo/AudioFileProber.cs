@@ -28,6 +28,8 @@ namespace MediaBrowser.Providers.MediaInfo
     public class AudioFileProber
     {
         private const char InternalValueSeparator = '\u001F';
+        private const char AtlId3V22Separator = '/';
+
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IItemRepository _itemRepo;
         private readonly ILibraryManager _libraryManager;
@@ -63,6 +65,7 @@ namespace MediaBrowser.Providers.MediaInfo
             _lyricResolver = lyricResolver;
             _lyricManager = lyricManager;
             ATL.Settings.DisplayValueSeparator = InternalValueSeparator;
+            ATL.Settings.UseFileNameWhenNoTitle = false;
         }
 
         /// <summary>
@@ -161,12 +164,12 @@ namespace MediaBrowser.Providers.MediaInfo
             var libraryOptions = _libraryManager.GetLibraryOptions(audio);
             Track track = new Track(audio.Path);
 
-            // ATL will fall back to filename as title when it does not understand the metadata
-            if (track.MetadataFormats.All(mf => mf.Equals(ATL.Factory.UNKNOWN_FORMAT)))
-            {
-                track.Title = mediaInfo.Name;
-            }
+            // Current version of ATL split some ID3v2.2/2.3 tags by '/' which is not desired.
+            var shouldWorkaroundAtlId3V22Split = track.MetadataFormats
+                .Where(mf => string.Equals(mf.ShortName, "ID3v2", StringComparison.OrdinalIgnoreCase))
+                .All(mf => !string.Equals(mf.Name, "ID3v2.4", StringComparison.OrdinalIgnoreCase));
 
+            track.Title = string.IsNullOrEmpty(track.Title) ? mediaInfo.Name : track.Title;
             track.Album = string.IsNullOrEmpty(track.Album) ? mediaInfo.Album : track.Album;
             track.Year ??= mediaInfo.ProductionYear;
             track.TrackNumber ??= mediaInfo.IndexNumber;
@@ -175,7 +178,7 @@ namespace MediaBrowser.Providers.MediaInfo
             if (audio.SupportsPeople && !audio.LockedFields.Contains(MetadataField.Cast))
             {
                 var people = new List<PersonInfo>();
-                var albumArtists = string.IsNullOrEmpty(track.AlbumArtist) ? mediaInfo.AlbumArtists : track.AlbumArtist.Split(InternalValueSeparator);
+                var albumArtists = string.IsNullOrEmpty(track.AlbumArtist) ? mediaInfo.AlbumArtists : SplitWithWorkaround(track.AlbumArtist, InternalValueSeparator, shouldWorkaroundAtlId3V22Split);
 
                 if (libraryOptions.UseCustomTagDelimiters)
                 {
@@ -200,13 +203,13 @@ namespace MediaBrowser.Providers.MediaInfo
                     track.AdditionalFields.TryGetValue("ARTISTS", out var artistsTagString);
                     if (artistsTagString is not null)
                     {
-                        performers = artistsTagString.Split(InternalValueSeparator);
+                        performers = SplitWithWorkaround(artistsTagString, InternalValueSeparator, shouldWorkaroundAtlId3V22Split);
                     }
                 }
 
                 if (performers is null || performers.Length == 0)
                 {
-                    performers = string.IsNullOrEmpty(track.Artist) ? mediaInfo.Artists : track.Artist.Split(InternalValueSeparator);
+                    performers = string.IsNullOrEmpty(track.Artist) ? mediaInfo.Artists : SplitWithWorkaround(track.Artist, InternalValueSeparator, shouldWorkaroundAtlId3V22Split);
                 }
 
                 if (libraryOptions.UseCustomTagDelimiters)
@@ -226,7 +229,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     }
                 }
 
-                foreach (var composer in track.Composer.Split(InternalValueSeparator))
+                foreach (var composer in SplitWithWorkaround(track.Composer, InternalValueSeparator, shouldWorkaroundAtlId3V22Split))
                 {
                     if (!string.IsNullOrEmpty(composer))
                     {
@@ -310,7 +313,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (!audio.LockedFields.Contains(MetadataField.Genres))
             {
-                var genres = string.IsNullOrEmpty(track.Genre) ? mediaInfo.Genres : track.Genre.Split(InternalValueSeparator).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+                var genres = string.IsNullOrEmpty(track.Genre) ? mediaInfo.Genres : SplitWithWorkaround(track.Genre, InternalValueSeparator, shouldWorkaroundAtlId3V22Split).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
 
                 if (libraryOptions.UseCustomTagDelimiters)
                 {
@@ -436,6 +439,16 @@ namespace MediaBrowser.Providers.MediaInfo
             items.AddRange(items2);
 
             return items;
+        }
+
+        private static string[] SplitWithWorkaround(string val, char separator, bool useWorkaround)
+        {
+            if (useWorkaround)
+            {
+                val = val.Replace(InternalValueSeparator, AtlId3V22Separator);
+            }
+
+            return val.Split(separator);
         }
     }
 }
