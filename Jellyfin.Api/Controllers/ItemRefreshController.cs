@@ -80,8 +80,7 @@ public class ItemRefreshController : BaseJellyfinApiController
                 || imageRefreshMode == MetadataRefreshMode.FullRefresh
                 || replaceAllImages
                 || replaceAllMetadata,
-            IsAutomated = false,
-            RemoveOldMetadata = replaceAllMetadata
+            IsAutomated = false
         };
 
         _providerManager.QueueRefresh(item.Id, refreshOptions, RefreshPriority.High);
