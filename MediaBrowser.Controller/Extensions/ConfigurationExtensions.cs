@@ -40,6 +40,11 @@ namespace MediaBrowser.Controller.Extensions
         public const string FfmpegAnalyzeDurationKey = "FFmpeg:analyzeduration";
 
         /// <summary>
+        /// The key for the FFmpeg image extraction performance tradeoff option.
+        /// </summary>
+        public const string FfmpegImgExtractPerfTradeoffKey = "FFmpeg:imgExtractPerfTradeoff";
+
+        /// <summary>
         /// The key for the FFmpeg path option.
         /// </summary>
         public const string FfmpegPathKey = "ffmpeg";
@@ -106,6 +111,14 @@ namespace MediaBrowser.Controller.Extensions
         /// <returns><c>true</c> if the server should validate FFmpeg during startup, otherwise <c>false</c>.</returns>
         public static bool GetFFmpegSkipValidation(this IConfiguration configuration)
             => configuration.GetValue<bool>(FfmpegSkipValidationKey);
+
+        /// <summary>
+        /// Gets a value indicating whether the server should trade off for performance during FFmpeg image extraction.
+        /// </summary>
+        /// <param name="configuration">The configuration to read the setting from.</param>
+        /// <returns><c>true</c> if the server should trade off for performance during FFmpeg image extraction, otherwise <c>false</c>.</returns>
+        public static bool GetFFmpegImgExtractPerfTradeoff(this IConfiguration configuration)
+            => configuration.GetValue<bool>(FfmpegImgExtractPerfTradeoffKey);
 
         /// <summary>
         /// Gets a value indicating whether playlists should allow duplicate entries from the <see cref="IConfiguration"/>.
