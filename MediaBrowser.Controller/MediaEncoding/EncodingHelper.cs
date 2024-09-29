@@ -4177,7 +4177,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     hwScaleFilter += $":transpose={tranposeDir}";
                 }
 
-                if (!string.IsNullOrEmpty(hwScaleFilter) && doVppFullRangeOut)
+                if (!string.IsNullOrEmpty(hwScaleFilter) && doVppFullRangeOut && !doOclTonemap)
                 {
                     hwScaleFilter += ":out_range=pc";
                 }
@@ -4433,6 +4433,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
 
                 if (!string.IsNullOrEmpty(hwScaleFilter)
+                    && !doOclTonemap
                     && ((isVaapiDecoder && isMjpegEncoder)
                          || (isQsvDecoder && doVppFullRangeOut)))
                 {
@@ -4746,7 +4747,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var outFormat = doTonemap ? (isRext ? "p010" : string.Empty) : "nv12";
                 var hwScaleFilter = GetHwScaleFilter("scale", "vaapi", outFormat, false, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
 
-                if (!string.IsNullOrEmpty(hwScaleFilter) && isMjpegEncoder)
+                if (!string.IsNullOrEmpty(hwScaleFilter) && isMjpegEncoder && !doOclTonemap)
                 {
                     hwScaleFilter += ":out_range=pc";
                 }
@@ -4998,7 +4999,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     // hw scale
                     var hwScaleFilter = GetHwScaleFilter("scale", "vaapi", "nv12", false, inW, inH, reqW, reqH, reqMaxW, reqMaxH);
 
-                    if (!string.IsNullOrEmpty(hwScaleFilter) && isMjpegEncoder)
+                    if (!string.IsNullOrEmpty(hwScaleFilter) && isMjpegEncoder && !doVkTonemap)
                     {
                         hwScaleFilter += ":out_range=pc";
                     }
@@ -5200,7 +5201,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 outFormat = doOclTonemap ? string.Empty : "nv12";
                 var hwScaleFilter = GetHwScaleFilter("scale", "vaapi", outFormat, false, inW, inH, reqW, reqH, reqMaxW, reqMaxH);
 
-                if (!string.IsNullOrEmpty(hwScaleFilter) && isMjpegEncoder)
+                if (!string.IsNullOrEmpty(hwScaleFilter) && isMjpegEncoder && !doOclTonemap)
                 {
                     hwScaleFilter += ":out_range=pc";
                 }
