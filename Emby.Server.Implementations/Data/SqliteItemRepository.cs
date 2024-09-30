@@ -1,7 +1,5 @@
 #nullable disable
 
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -547,6 +545,7 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
+        /// <inheritdoc />
         public void SaveImages(BaseItem item)
         {
             ArgumentNullException.ThrowIfNull(item);
@@ -2340,9 +2339,6 @@ namespace Emby.Server.Implementations.Data
                 if (query.SearchTerm.Length > 1)
                 {
                     builder.Append("+ ((CleanName like @SearchTermContains or (OriginalTitle not null and OriginalTitle like @SearchTermContains)) * 10)");
-                    builder.Append("+ (SELECT COUNT(1) * 1 from ItemValues where ItemId=Guid and CleanValue like @SearchTermContains)");
-                    builder.Append("+ (SELECT COUNT(1) * 2 from ItemValues where ItemId=Guid and CleanValue like @SearchTermStartsWith)");
-                    builder.Append("+ (SELECT COUNT(1) * 10 from ItemValues where ItemId=Guid and CleanValue like @SearchTermEquals)");
                 }
 
                 builder.Append(") as SearchScore");
@@ -2372,11 +2368,6 @@ namespace Emby.Server.Implementations.Data
             if (commandText.Contains("@SearchTermContains", StringComparison.OrdinalIgnoreCase))
             {
                 statement.TryBind("@SearchTermContains", "%" + searchTerm + "%");
-            }
-
-            if (commandText.Contains("@SearchTermEquals", StringComparison.OrdinalIgnoreCase))
-            {
-                statement.TryBind("@SearchTermEquals", searchTerm);
             }
         }
 
@@ -2443,6 +2434,7 @@ namespace Emby.Server.Implementations.Data
             return string.Empty;
         }
 
+        /// <inheritdoc />
         public int GetCount(InternalItemsQuery query)
         {
             ArgumentNullException.ThrowIfNull(query);
@@ -2490,6 +2482,7 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
+        /// <inheritdoc />
         public List<BaseItem> GetItemList(InternalItemsQuery query)
         {
             ArgumentNullException.ThrowIfNull(query);
@@ -2643,6 +2636,7 @@ namespace Emby.Server.Implementations.Data
             items.Add(newItem);
         }
 
+        /// <inheritdoc />
         public QueryResult<BaseItem> GetItems(InternalItemsQuery query)
         {
             ArgumentNullException.ThrowIfNull(query);
@@ -2887,6 +2881,7 @@ namespace Emby.Server.Implementations.Data
             };
         }
 
+        /// <inheritdoc />
         public List<Guid> GetItemIdsList(InternalItemsQuery query)
         {
             ArgumentNullException.ThrowIfNull(query);
@@ -4445,6 +4440,7 @@ namespace Emby.Server.Implementations.Data
                 || query.IncludeItemTypes.Contains(BaseItemKind.Season);
         }
 
+        /// <inheritdoc />
         public void UpdateInheritedValues()
         {
             const string Statements = """
@@ -4461,6 +4457,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             transaction.Commit();
         }
 
+        /// <inheritdoc />
         public void DeleteItem(Guid id)
         {
             if (id.IsEmpty())
@@ -4503,6 +4500,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             }
         }
 
+        /// <inheritdoc />
         public List<string> GetPeopleNames(InternalPeopleQuery query)
         {
             ArgumentNullException.ThrowIfNull(query);
@@ -4541,6 +4539,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             return list;
         }
 
+        /// <inheritdoc />
         public List<PersonInfo> GetPeople(InternalPeopleQuery query)
         {
             ArgumentNullException.ThrowIfNull(query);
@@ -4700,46 +4699,55 @@ AND Type = @InternalPersonType)");
             }
         }
 
+        /// <inheritdoc />
         public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAllArtists(InternalItemsQuery query)
         {
             return GetItemValues(query, new[] { 0, 1 }, typeof(MusicArtist).FullName);
         }
 
+        /// <inheritdoc />
         public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetArtists(InternalItemsQuery query)
         {
             return GetItemValues(query, new[] { 0 }, typeof(MusicArtist).FullName);
         }
 
+        /// <inheritdoc />
         public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAlbumArtists(InternalItemsQuery query)
         {
             return GetItemValues(query, new[] { 1 }, typeof(MusicArtist).FullName);
         }
 
+        /// <inheritdoc />
         public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetStudios(InternalItemsQuery query)
         {
             return GetItemValues(query, new[] { 3 }, typeof(Studio).FullName);
         }
 
+        /// <inheritdoc />
         public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetGenres(InternalItemsQuery query)
         {
             return GetItemValues(query, new[] { 2 }, typeof(Genre).FullName);
         }
 
+        /// <inheritdoc />
         public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetMusicGenres(InternalItemsQuery query)
         {
             return GetItemValues(query, new[] { 2 }, typeof(MusicGenre).FullName);
         }
 
+        /// <inheritdoc />
         public List<string> GetStudioNames()
         {
             return GetItemValueNames(new[] { 3 }, Array.Empty<string>(), Array.Empty<string>());
         }
 
+        /// <inheritdoc />
         public List<string> GetAllArtistNames()
         {
             return GetItemValueNames(new[] { 0, 1 }, Array.Empty<string>(), Array.Empty<string>());
         }
 
+        /// <inheritdoc />
         public List<string> GetMusicGenreNames()
         {
             return GetItemValueNames(
@@ -4754,6 +4762,7 @@ AND Type = @InternalPersonType)");
                 Array.Empty<string>());
         }
 
+        /// <inheritdoc />
         public List<string> GetGenreNames()
         {
             return GetItemValueNames(
@@ -5231,6 +5240,7 @@ AND Type = @InternalPersonType)");
             }
         }
 
+        /// <inheritdoc />
         public void UpdatePeople(Guid itemId, List<PersonInfo> people)
         {
             if (itemId.IsEmpty())
@@ -5332,6 +5342,7 @@ AND Type = @InternalPersonType)");
             return item;
         }
 
+        /// <inheritdoc />
         public List<MediaStream> GetMediaStreams(MediaStreamQuery query)
         {
             CheckDisposed();
@@ -5380,6 +5391,7 @@ AND Type = @InternalPersonType)");
             }
         }
 
+        /// <inheritdoc />
         public void SaveMediaStreams(Guid id, IReadOnlyList<MediaStream> streams, CancellationToken cancellationToken)
         {
             CheckDisposed();
@@ -5734,6 +5746,7 @@ AND Type = @InternalPersonType)");
             return item;
         }
 
+        /// <inheritdoc />
         public List<MediaAttachment> GetMediaAttachments(MediaAttachmentQuery query)
         {
             CheckDisposed();
@@ -5769,6 +5782,7 @@ AND Type = @InternalPersonType)");
             return list;
         }
 
+        /// <inheritdoc />
         public void SaveMediaAttachments(
             Guid id,
             IReadOnlyList<MediaAttachment> attachments,
