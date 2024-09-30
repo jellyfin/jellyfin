@@ -2555,13 +2555,20 @@ namespace Emby.Server.Implementations.Data
                 var hasArtistFields = HasArtistFields(query);
                 var hasSeriesFields = HasSeriesFields(query);
 
-                foreach (var row in statement.ExecuteQuery())
+                try
                 {
-                    var item = GetItem(row, query, hasProgramAttributes, hasEpisodeAttributes, hasServiceName, hasStartDate, hasTrailerTypes, hasArtistFields, hasSeriesFields, query.SkipDeserialization);
-                    if (item is not null)
+                    foreach (var row in statement.ExecuteQuery())
                     {
-                        items.Add(item);
+                        var item = GetItem(row, query, hasProgramAttributes, hasEpisodeAttributes, hasServiceName, hasStartDate, hasTrailerTypes, hasArtistFields, hasSeriesFields, query.SkipDeserialization);
+                        if (item is not null)
+                        {
+                            items.Add(item);
+                        }
                     }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "Error occurred while executing query: {Query}", statement.CommandText);
                 }
             }
 
@@ -3990,12 +3997,12 @@ namespace Emby.Server.Implementations.Data
                 var index = 0;
                 foreach (var id in query.ItemIds)
                 {
-                    includeIds.Add("Guid = @IncludeId" + index);
+                    includeIds.Add("@IncludeId" + index);
                     statement?.TryBind("@IncludeId" + index, id);
                     index++;
                 }
 
-                whereClauses.Add("(" + string.Join(" OR ", includeIds) + ")");
+                whereClauses.Add("Guid IN (" + string.Join(", ", includeIds) + ")");
             }
 
             if (query.ExcludeItemIds.Length > 0)
