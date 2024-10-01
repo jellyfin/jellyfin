@@ -5669,7 +5669,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (doOclTonemap && isRkmppDecoder)
             {
                 // map from rkmpp/drm to opencl via drm-opencl interop.
-                mainFilters.Add("hwmap=derive_device=opencl:mode=read");
+                mainFilters.Add("hwmap=derive_device=opencl");
             }
 
             // ocl tonemap
@@ -5712,7 +5712,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     // OUTPUT drm(nv12) surface(gem/dma-heap)
                     // reverse-mapping via drm-opencl interop.
-                    mainFilters.Add("hwmap=derive_device=rkmpp:mode=write:reverse=1");
+                    mainFilters.Add("hwmap=derive_device=rkmpp:reverse=1");
                     mainFilters.Add("format=drm_prime");
                 }
             }
