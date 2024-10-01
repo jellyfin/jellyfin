@@ -73,6 +73,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         private readonly Version _minFFmpegQsvVppTonemapOption = new Version(7, 0, 1);
         private readonly Version _minFFmpegQsvVppOutRangeOption = new Version(7, 0, 1);
         private readonly Version _minFFmpegVaapiDeviceVendorId = new Version(7, 0, 1);
+        private readonly Version _minFFmpegQsvVppScaleModeOption = new Version(6, 0);
 
         private static readonly Regex _validationRegex = new(ValidationRegex, RegexOptions.Compiled);
 
@@ -4143,6 +4144,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var twoPassVppTonemap = isRext;
                 var doVppFullRangeOut = isMjpegEncoder
                     && _mediaEncoder.EncoderVersion >= _minFFmpegQsvVppOutRangeOption;
+                var doVppScaleModeHq = isMjpegEncoder
+                    && _mediaEncoder.EncoderVersion >= _minFFmpegQsvVppScaleModeOption;
                 var doVppProcamp = false;
                 var procampParams = string.Empty;
                 if (doVppTonemap)
@@ -4169,17 +4172,17 @@ namespace MediaBrowser.Controller.MediaEncoding
                 outFormat = twoPassVppTonemap ? "p010" : outFormat;
 
                 var swapOutputWandH = doVppTranspose && swapWAndH;
-                var hwScalePrefix = (doVppTranspose || doVppTonemap || doVppFullRangeOut) ? "vpp" : "scale";
-                var hwScaleFilter = GetHwScaleFilter(hwScalePrefix, "qsv", outFormat, swapOutputWandH, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
+                var hwScaleFilter = GetHwScaleFilter("vpp", "qsv", outFormat, swapOutputWandH, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
 
                 if (!string.IsNullOrEmpty(hwScaleFilter) && doVppTranspose)
                 {
                     hwScaleFilter += $":transpose={tranposeDir}";
                 }
 
-                if (!string.IsNullOrEmpty(hwScaleFilter) && doVppFullRangeOut && !doOclTonemap)
+                if (!string.IsNullOrEmpty(hwScaleFilter) && isMjpegEncoder)
                 {
-                    hwScaleFilter += ":out_range=pc";
+                    hwScaleFilter += (doVppFullRangeOut && !doOclTonemap) ? ":out_range=pc" : string.Empty;
+                    hwScaleFilter += doVppScaleModeHq ? ":scale_mode=hq" : string.Empty;
                 }
 
                 if (!string.IsNullOrEmpty(hwScaleFilter) && doVppTonemap)
@@ -4407,6 +4410,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var isRext = IsVideoStreamHevcRext(state);
                 var doVppFullRangeOut = isMjpegEncoder
                     && _mediaEncoder.EncoderVersion >= _minFFmpegQsvVppOutRangeOption;
+                var doVppScaleModeHq = isMjpegEncoder
+                    && _mediaEncoder.EncoderVersion >= _minFFmpegQsvVppScaleModeOption;
 
                 // INPUT vaapi/qsv surface(vram)
                 // hw deint
@@ -4424,7 +4429,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 var outFormat = doTonemap ? (((isQsvDecoder && doVppTranspose) || isRext) ? "p010" : string.Empty) : "nv12";
                 var swapOutputWandH = isQsvDecoder && doVppTranspose && swapWAndH;
-                var hwScalePrefix = (isQsvDecoder && (doVppTranspose || doVppFullRangeOut)) ? "vpp" : "scale";
+                var hwScalePrefix = isQsvDecoder ? "vpp" : "scale";
                 var hwScaleFilter = GetHwScaleFilter(hwScalePrefix, hwFilterSuffix, outFormat, swapOutputWandH, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
 
                 if (!string.IsNullOrEmpty(hwScaleFilter) && isQsvDecoder && doVppTranspose)
@@ -4432,12 +4437,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                     hwScaleFilter += $":transpose={tranposeDir}";
                 }
 
-                if (!string.IsNullOrEmpty(hwScaleFilter)
-                    && !doOclTonemap
-                    && ((isVaapiDecoder && isMjpegEncoder)
-                         || (isQsvDecoder && doVppFullRangeOut)))
+                if (!string.IsNullOrEmpty(hwScaleFilter) && isMjpegEncoder)
                 {
-                    hwScaleFilter += ":out_range=pc";
+                    hwScaleFilter += ((isQsvDecoder && !doVppFullRangeOut) || doOclTonemap) ? string.Empty : ":out_range=pc";
+                    hwScaleFilter += isQsvDecoder ? (doVppScaleModeHq ? ":scale_mode=hq" : string.Empty) : ":mode=hq";
                 }
 
                 // allocate extra pool sizes for vaapi vpp scale
@@ -4747,9 +4750,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var outFormat = doTonemap ? (isRext ? "p010" : string.Empty) : "nv12";
                 var hwScaleFilter = GetHwScaleFilter("scale", "vaapi", outFormat, false, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
 
-                if (!string.IsNullOrEmpty(hwScaleFilter) && isMjpegEncoder && !doOclTonemap)
+                if (!string.IsNullOrEmpty(hwScaleFilter) && isMjpegEncoder)
                 {
-                    hwScaleFilter += ":out_range=pc";
+                    hwScaleFilter += doOclTonemap ? string.Empty : ":out_range=pc";
+                    hwScaleFilter += ":mode=hq";
                 }
 
                 // allocate extra pool sizes for vaapi vpp
@@ -5001,7 +5005,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                     if (!string.IsNullOrEmpty(hwScaleFilter) && isMjpegEncoder && !doVkTonemap)
                     {
-                        hwScaleFilter += ":out_range=pc";
+                        hwScaleFilter += ":out_range=pc:mode=hq";
                     }
 
                     mainFilters.Add(hwScaleFilter);
@@ -5201,9 +5205,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                 outFormat = doOclTonemap ? string.Empty : "nv12";
                 var hwScaleFilter = GetHwScaleFilter("scale", "vaapi", outFormat, false, inW, inH, reqW, reqH, reqMaxW, reqMaxH);
 
-                if (!string.IsNullOrEmpty(hwScaleFilter) && isMjpegEncoder && !doOclTonemap)
+                if (!string.IsNullOrEmpty(hwScaleFilter) && isMjpegEncoder)
                 {
-                    hwScaleFilter += ":out_range=pc";
+                    hwScaleFilter += doOclTonemap ? string.Empty : ":out_range=pc";
+                    hwScaleFilter += ":mode=hq";
                 }
 
                 // allocate extra pool sizes for vaapi vpp
