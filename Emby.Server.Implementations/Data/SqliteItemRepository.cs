@@ -2044,11 +2044,13 @@ namespace Emby.Server.Implementations.Data
                     || sortingFields.Contains(ItemSortBy.PlayCount)
                     || sortingFields.Contains(ItemSortBy.DatePlayed)
                     || sortingFields.Contains(ItemSortBy.SeriesDatePlayed)
+                    || sortingFields.Contains(ItemSortBy.IsWatchlisted)
                     || query.IsFavoriteOrLiked.HasValue
                     || query.IsFavorite.HasValue
                     || query.IsResumable.HasValue
                     || query.IsPlayed.HasValue
-                    || query.IsLiked.HasValue;
+                    || query.IsLiked.HasValue
+                    || query.IsWatchlisted.HasValue;
         }
 
         private bool HasField(InternalItemsQuery query, ItemFields name)
@@ -2268,6 +2270,7 @@ namespace Emby.Server.Implementations.Data
                 columns.Add("UserDatas.playbackPositionTicks");
                 columns.Add("UserDatas.playcount");
                 columns.Add("UserDatas.isFavorite");
+                columns.Add("UserDatas.isWatchlisted");
                 columns.Add("UserDatas.played");
                 columns.Add("UserDatas.rating");
             }
@@ -2853,6 +2856,7 @@ namespace Emby.Server.Implementations.Data
                 ItemSortBy.DatePlayed => "LastPlayedDate",
                 ItemSortBy.PlayCount => "PlayCount",
                 ItemSortBy.IsFavoriteOrLiked => "(Select Case When IsFavorite is null Then 0 Else IsFavorite End )",
+                ItemSortBy.IsWatchlisted => "isWatchlisted",
                 ItemSortBy.IsFolder => "IsFolder",
                 ItemSortBy.IsPlayed => "played",
                 ItemSortBy.IsUnplayed => "played",
@@ -3513,6 +3517,20 @@ namespace Emby.Server.Implementations.Data
                 }
 
                 statement?.TryBind("@IsFavorite", query.IsFavorite.Value);
+            }
+
+            if (query.IsWatchlisted.HasValue)
+            {
+                if (query.IsWatchlisted.Value)
+                {
+                    whereClauses.Add("IsWatchlisted=@IsWatchlisted");
+                }
+                else
+                {
+                    whereClauses.Add("(IsWatchlisted is null or IsWatchlisted=@IsWatchlisted)");
+                }
+
+                statement?.TryBind("@IsWatchlisted", query.IsWatchlisted.Value);
             }
 
             if (EnableJoinUserData(query))
@@ -4923,6 +4941,7 @@ AND Type = @InternalPersonType)");
             {
                 IsPlayed = query.IsPlayed,
                 IsFavorite = query.IsFavorite,
+                IsWatchlisted = query.IsWatchlisted,
                 IsFavoriteOrLiked = query.IsFavoriteOrLiked,
                 IsLiked = query.IsLiked,
                 IsLocked = query.IsLocked,

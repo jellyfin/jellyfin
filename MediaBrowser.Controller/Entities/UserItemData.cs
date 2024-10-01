@@ -64,6 +64,12 @@ namespace MediaBrowser.Controller.Entities
         public bool IsFavorite { get; set; }
 
         /// <summary>
+        ///  Gets or sets a value indicating whether this instance is watchlisted.
+        /// </summary>
+        /// <value><c>true</c> if this instance is watchlisted; otherwise, <c>false</c>.</value>
+        public bool IsWatchlisted { get; set; }
+
+        /// <summary>
         /// Gets or sets the last played date.
         /// </summary>
         /// <value>The last played date.</value>

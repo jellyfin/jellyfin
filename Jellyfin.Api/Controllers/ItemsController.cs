@@ -112,6 +112,7 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="includeItemTypes">Optional. If specified, results will be filtered based on the item type. This allows multiple, comma delimited.</param>
     /// <param name="filters">Optional. Specify additional filters to apply. This allows multiple, comma delimited. Options: IsFolder, IsNotFolder, IsUnplayed, IsPlayed, IsFavorite, IsResumable, Likes, Dislikes.</param>
     /// <param name="isFavorite">Optional filter by items that are marked as favorite, or not.</param>
+    /// <param name="isWatchlisted">Optional filter by items that are watchlisted, or not.</param>
     /// <param name="mediaTypes">Optional filter by MediaType. Allows multiple, comma delimited.</param>
     /// <param name="imageTypes">Optional. If specified, results will be filtered based on those containing image types. This allows multiple, comma delimited.</param>
     /// <param name="sortBy">Optional. Specify one or more sort orders, comma delimited. Options: Album, AlbumArtist, Artist, Budget, CommunityRating, CriticRating, DateCreated, DatePlayed, PlayCount, PremiereDate, ProductionYear, SortName, Random, Revenue, Runtime.</param>
@@ -202,6 +203,7 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFilter[] filters,
         [FromQuery] bool? isFavorite,
+        [FromQuery] bool? isWatchlisted,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] MediaType[] mediaTypes,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] imageTypes,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemSortBy[] sortBy,
@@ -316,6 +318,7 @@ public class ItemsController : BaseJellyfinApiController
                 Recursive = recursive ?? false,
                 OrderBy = RequestHelpers.GetOrderBy(sortBy, sortOrder),
                 IsFavorite = isFavorite,
+                IsWatchlisted = isWatchlisted,
                 Limit = limit,
                 StartIndex = startIndex,
                 IsMissing = isMissing,
@@ -415,6 +418,9 @@ public class ItemsController : BaseJellyfinApiController
                         break;
                     case ItemFilter.Likes:
                         query.IsLiked = true;
+                        break;
+                    case ItemFilter.IsWatchlisted:
+                        query.IsWatchlisted = true;
                         break;
                 }
             }
@@ -756,6 +762,7 @@ public class ItemsController : BaseJellyfinApiController
             includeItemTypes,
             filters,
             isFavorite,
+            null,
             mediaTypes,
             imageTypes,
             sortBy,

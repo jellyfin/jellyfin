@@ -328,6 +328,68 @@ public class UserLibraryController : BaseJellyfinApiController
     }
 
     /// <summary>
+    /// Adds an item to the user's watchlist.
+    /// </summary>
+    /// <param name="userId">User id.</param>
+    /// <param name="itemId">Item id.</param>
+    /// <response code="200">Item added to watchlist.</response>
+    /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
+    [HttpPost("UserWatchlistItems/{itemId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public ActionResult<UserItemDataDto> AddToWatchlistItem(
+        [FromQuery] Guid? userId,
+        [FromRoute, Required] Guid itemId)
+    {
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = _userManager.GetUserById(userId.Value);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        var item = itemId.IsEmpty()
+            ? _libraryManager.GetUserRootFolder()
+            : _libraryManager.GetItemById<BaseItem>(itemId, user);
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        return MarkWatchlist(user, item, true);
+    }
+
+    /// <summary>
+    /// Removes an item from the user's watchlist.
+    /// </summary>
+    /// <param name="userId">User id.</param>
+    /// <param name="itemId">Item id.</param>
+    /// <response code="200">Item removed from watchlist.</response>
+    /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
+    [HttpDelete("UserWatchlistItems/{itemId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public ActionResult<UserItemDataDto> RemoveFromWatchlist(
+        [FromQuery] Guid? userId,
+        [FromRoute, Required] Guid itemId)
+    {
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = _userManager.GetUserById(userId.Value);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        var item = itemId.IsEmpty()
+            ? _libraryManager.GetUserRootFolder()
+            : _libraryManager.GetItemById<BaseItem>(itemId, user);
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        return MarkWatchlist(user, item, false);
+    }
+
+    /// <summary>
     /// Deletes a user's saved personal rating for an item.
     /// </summary>
     /// <param name="userId">User id.</param>
@@ -664,6 +726,25 @@ public class UserLibraryController : BaseJellyfinApiController
 
         // Set favorite status
         data.IsFavorite = isFavorite;
+
+        _userDataRepository.SaveUserData(user, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
+
+        return _userDataRepository.GetUserDataDto(item, user);
+    }
+
+    /// <summary>
+    /// Adds item to watchlist.
+    /// </summary>
+    /// <param name="user">The user.</param>
+    /// <param name="item">The item.</param>
+    /// <param name="isWatchlisted">if set to <c>true</c> [is in watchlist].</param>
+    private UserItemDataDto MarkWatchlist(User user, BaseItem item, bool isWatchlisted)
+    {
+        // Get the user data for this item
+        var data = _userDataRepository.GetUserData(user, item);
+
+        // Set watchlist status
+        data.IsWatchlisted = isWatchlisted;
 
         _userDataRepository.SaveUserData(user, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
 
