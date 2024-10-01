@@ -130,5 +130,11 @@
     "TaskAudioNormalization": "נרמול שמע",
     "TaskCleanCollectionsAndPlaylistsDescription": "מנקה פריטים לא קיימים מאוספים ורשימות השמעה.",
     "TaskAudioNormalizationDescription": "מחפש קבצי נורמליזציה של שמע.",
-    "TaskCleanCollectionsAndPlaylists": "מנקה אוספים ורשימות השמעה"
+    "TaskCleanCollectionsAndPlaylists": "מנקה אוספים ורשימות השמעה",
+    "TaskDownloadMissingLyrics": "הורדת מילים חסרות",
+    "TaskDownloadMissingLyricsDescription": "הורדת מילים לשירים",
+    "TaskMoveTrickplayImages": "מעביר את מיקום תמונות Trickplay",
+    "TaskExtractMediaSegments": "סריקת מדיה",
+    "TaskExtractMediaSegmentsDescription": "מחלץ חלקי מדיה מתוספים המאפשרים זאת.",
+    "TaskMoveTrickplayImagesDescription": "מזיז קבצי trickplay קיימים בהתאם להגדרות הספרייה."
 }
