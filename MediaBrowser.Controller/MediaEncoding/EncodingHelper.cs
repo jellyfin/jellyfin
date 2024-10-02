@@ -4126,6 +4126,12 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 var outFormat = doOclTonemap ? "yuv420p10le" : (hasGraphicalSubs ? "yuv420p" : "nv12");
                 var swScaleFilter = GetSwScaleFilter(state, options, vidEncoder, swpInW, swpInH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH);
+                if (isMjpegEncoder && !doOclTonemap)
+                {
+                    // sw decoder + hw mjpeg encoder
+                    swScaleFilter = string.IsNullOrEmpty(swScaleFilter) ? "scale=out_range=pc" : $"{swScaleFilter}:out_range=pc";
+                }
+
                 // sw scale
                 mainFilters.Add(swScaleFilter);
                 mainFilters.Add($"format={outFormat}");
@@ -4392,6 +4398,12 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 var outFormat = doOclTonemap ? "yuv420p10le" : (hasGraphicalSubs ? "yuv420p" : "nv12");
                 var swScaleFilter = GetSwScaleFilter(state, options, vidEncoder, swpInW, swpInH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH);
+                if (isMjpegEncoder && !doOclTonemap)
+                {
+                    // sw decoder + hw mjpeg encoder
+                    swScaleFilter = string.IsNullOrEmpty(swScaleFilter) ? "scale=out_range=pc" : $"{swScaleFilter}:out_range=pc";
+                }
+
                 // sw scale
                 mainFilters.Add(swScaleFilter);
                 mainFilters.Add($"format={outFormat}");
@@ -4717,6 +4729,12 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 var outFormat = doOclTonemap ? "yuv420p10le" : "nv12";
                 var swScaleFilter = GetSwScaleFilter(state, options, vidEncoder, swpInW, swpInH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH);
+                if (isMjpegEncoder && !doOclTonemap)
+                {
+                    // sw decoder + hw mjpeg encoder
+                    swScaleFilter = string.IsNullOrEmpty(swScaleFilter) ? "scale=out_range=pc" : $"{swScaleFilter}:out_range=pc";
+                }
+
                 // sw scale
                 mainFilters.Add(swScaleFilter);
                 mainFilters.Add($"format={outFormat}");
@@ -5180,6 +5198,12 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 outFormat = doOclTonemap ? "yuv420p10le" : "nv12";
                 var swScaleFilter = GetSwScaleFilter(state, options, vidEncoder, swpInW, swpInH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH);
+                if (isMjpegEncoder && !doOclTonemap)
+                {
+                    // sw decoder + hw mjpeg encoder
+                    swScaleFilter = string.IsNullOrEmpty(swScaleFilter) ? "scale=out_range=pc" : $"{swScaleFilter}:out_range=pc";
+                }
+
                 // sw scale
                 mainFilters.Add(swScaleFilter);
                 mainFilters.Add("format=" + outFormat);
@@ -5614,6 +5638,12 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 var outFormat = doOclTonemap ? "yuv420p10le" : (hasGraphicalSubs ? "yuv420p" : "nv12");
                 var swScaleFilter = GetSwScaleFilter(state, options, vidEncoder, swpInW, swpInH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH);
+                if (isMjpegEncoder && !doOclTonemap)
+                {
+                    // sw decoder + hw mjpeg encoder
+                    swScaleFilter = string.IsNullOrEmpty(swScaleFilter) ? "scale=out_range=pc" : $"{swScaleFilter}:out_range=pc";
+                }
+
                 if (!string.IsNullOrEmpty(swScaleFilter))
                 {
                     swScaleFilter += ":flags=fast_bilinear";
