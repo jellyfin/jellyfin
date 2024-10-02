@@ -6857,7 +6857,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (!string.IsNullOrEmpty(state.InputVideoSync))
             {
-                inputModifier += " -vsync " + state.InputVideoSync;
+                inputModifier += GetVideoSyncOption(state.InputVideoSync, _mediaEncoder.EncoderVersion);
             }
 
             if (state.ReadInputAtNativeFramerate && state.InputProtocol != MediaProtocol.Rtsp)
@@ -7280,7 +7280,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (!string.IsNullOrEmpty(state.OutputVideoSync))
             {
-                args += " -vsync " + state.OutputVideoSync;
+                args += GetVideoSyncOption(state.OutputVideoSync, _mediaEncoder.EncoderVersion);
             }
 
             args += GetOutputFFlags(state);
@@ -7452,6 +7452,34 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             return state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode
                    || (state.BaseRequest.AlwaysBurnInSubtitleWhenTranscoding && !IsCopyCodec(state.OutputVideoCodec));
+        }
+
+        public static string GetVideoSyncOption(string videoSync, Version encoderVersion)
+        {
+            if (string.IsNullOrEmpty(videoSync))
+            {
+                return string.Empty;
+            }
+
+            if (encoderVersion >= new Version(5, 1))
+            {
+                if (int.TryParse(videoSync, CultureInfo.InvariantCulture, out var vsync))
+                {
+                    return vsync switch
+                    {
+                        -1 => " -fps_mode auto",
+                        0 => " -fps_mode passthrough",
+                        1 => " -fps_mode cfr",
+                        2 => " -fps_mode vfr",
+                        _ => string.Empty
+                    };
+                }
+
+                return string.Empty;
+            }
+
+            // -vsync is deprecated in FFmpeg 5.1 and will be removed in the future.
+            return $" -vsync {videoSync}";
         }
     }
 }

@@ -945,7 +945,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 vidEncoder,
                 encoderQualityOption + encoderQuality + " ",
                 vidEncoder.Contains("videotoolbox", StringComparison.InvariantCultureIgnoreCase) ? "-allow_sw 1 " : string.Empty, // allow_sw fallback for some intel macs
-                EncoderVersion >= new Version(5, 1) ? "-fps_mode passthrough " : "-vsync passthrough ", // passthrough timestamp
+                EncodingHelper.GetVideoSyncOption("0", EncoderVersion).Trim() + " ", // passthrough timestamp
                 "image2",
                 outputPath);
 

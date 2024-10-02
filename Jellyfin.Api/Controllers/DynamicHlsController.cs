@@ -1908,7 +1908,7 @@ public class DynamicHlsController : BaseJellyfinApiController
 
         if (!string.IsNullOrEmpty(state.OutputVideoSync))
         {
-            args += " -vsync " + state.OutputVideoSync;
+            args += EncodingHelper.GetVideoSyncOption(state.OutputVideoSync, _mediaEncoder.EncoderVersion);
         }
 
         args += _encodingHelper.GetOutputFFlags(state);
