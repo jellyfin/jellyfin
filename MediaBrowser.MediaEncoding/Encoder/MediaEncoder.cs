@@ -701,8 +701,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 if (SupportsFilter("tonemapx"))
                 {
+                    var peak = videoStream.VideoRangeType == VideoRangeType.DOVI ? "400" : "100";
                     enableHdrExtraction = true;
-                    filters.Add("tonemapx=tonemap=bt2390:desat=0:peak=100:t=bt709:m=bt709:p=bt709:format=yuv420p");
+                    filters.Add($"tonemapx=tonemap=bt2390:desat=0:peak={peak}:t=bt709:m=bt709:p=bt709:format=yuv420p");
                 }
                 else if (SupportsFilter("zscale") && videoStream.VideoRangeType != VideoRangeType.DOVI)
                 {
