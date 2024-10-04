@@ -224,6 +224,10 @@ namespace MediaBrowser.Model.Dto
 
         public string ChannelNumber { get; set; }
 
+        /// <summary>
+        /// Gets or sets the channel's group name.
+        /// </summary>
+        /// <value>The group name.</value>
         public string ChannelGroup { get; set; }
 
         /// <summary>
