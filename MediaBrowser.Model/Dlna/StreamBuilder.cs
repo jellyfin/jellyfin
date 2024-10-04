@@ -392,7 +392,7 @@ namespace MediaBrowser.Model.Dlna
         public static string? NormalizeMediaSourceFormatIntoSingleContainer(string inputContainer, DeviceProfile? profile, DlnaProfileType type, DirectPlayProfile? playProfile = null)
         {
             // If the source is Live TV the inputContainer will be null until the mediasource is probed on first access
-            if (profile is null || inputContainer is null || !inputContainer.Contains(',', StringComparison.OrdinalIgnoreCase))
+            if (profile is null || string.IsNullOrEmpty(inputContainer) || !inputContainer.Contains(',', StringComparison.OrdinalIgnoreCase))
             {
                 return inputContainer;
             }
