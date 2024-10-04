@@ -223,6 +223,8 @@ namespace MediaBrowser.Model.Dto
 
         public string ChannelNumber { get; set; }
 
+        public string ChannelGroup { get; set; }
+
         /// <summary>
         /// Gets or sets the index number.
         /// </summary>
