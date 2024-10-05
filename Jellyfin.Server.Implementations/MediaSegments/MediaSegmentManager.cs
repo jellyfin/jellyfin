@@ -66,16 +66,21 @@ public class MediaSegmentManager : IMediaSegmentManager
                 })
             .ToList();
 
-        _logger.LogInformation("Start media segment extraction from providers with {CountProviders} enabled", providers.Count);
+        if (providers.Count == 0)
+        {
+            _logger.LogDebug("Skipping media segment extraction as no providers are enabled for {MediaPath}", baseItem.Path);
+            return;
+        }
+
         using var db = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
         if (!overwrite && (await db.MediaSegments.AnyAsync(e => e.ItemId.Equals(baseItem.Id), cancellationToken).ConfigureAwait(false)))
         {
-            _logger.LogInformation("Skip {MediaPath} as it already contains media segments", baseItem.Path);
+            _logger.LogDebug("Skip {MediaPath} as it already contains media segments", baseItem.Path);
             return;
         }
 
-        _logger.LogInformation("Clear existing Segments for {MediaPath}", baseItem.Path);
+        _logger.LogDebug("Start media segment extraction for {MediaPath} with {CountProviders} providers enabled", baseItem.Path, providers.Count);
 
         await db.MediaSegments.Where(e => e.ItemId.Equals(baseItem.Id)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
 
@@ -86,15 +91,19 @@ public class MediaSegmentManager : IMediaSegmentManager
         {
             if (!await provider.Supports(baseItem).ConfigureAwait(false))
             {
-                _logger.LogDebug("Media Segment provider {ProviderName} does not support item with path {Path}", provider.Name, baseItem.Path);
+                _logger.LogDebug("Media Segment provider {ProviderName} does not support item with path {MediaPath}", provider.Name, baseItem.Path);
                 continue;
             }
 
-            _logger.LogDebug("Run Media Segment provider {ProviderName}", provider.Name);
             try
             {
                 var segments = await provider.GetMediaSegments(requestItem, cancellationToken)
                     .ConfigureAwait(false);
+                if (segments.Count == 0)
+                {
+                    _logger.LogDebug("Media Segment provider {ProviderName} did not find any segments for {MediaPath}", provider.Name, baseItem.Path);
+                    continue;
+                }
 
                 _logger.LogInformation("Media Segment provider {ProviderName} found {CountSegments} for {MediaPath}", provider.Name, segments.Count, baseItem.Path);
                 var providerId = GetProviderId(provider.Name);
