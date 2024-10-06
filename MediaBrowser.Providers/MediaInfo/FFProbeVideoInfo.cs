@@ -323,9 +323,17 @@ namespace MediaBrowser.Providers.MediaInfo
 
             var ffmpegVideoStream = mediaStreams.FirstOrDefault(s => s.Type == MediaStreamType.Video);
 
+            List<MediaStream> externalStreams = mediaStreams.FindAll(s => s.IsExternal);
             // Fill video properties from the BDInfo result
             mediaStreams.Clear();
             mediaStreams.AddRange(blurayInfo.MediaStreams);
+            // Fill video properties from external stream
+            var startIndex = mediaStreams.Count;
+            foreach (var externalStream in externalStreams)
+            {
+                externalStream.Index = startIndex++;
+                mediaStreams.Add(externalStream);
+            }
 
             if (blurayInfo.RunTimeTicks.HasValue && blurayInfo.RunTimeTicks.Value > 0)
             {
