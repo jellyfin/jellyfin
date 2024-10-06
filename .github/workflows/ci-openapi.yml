@@ -172,7 +172,7 @@ jobs:
           strip_components: 1
           target: "/srv/incoming/openapi/unstable/jellyfin-openapi-${{ env.JELLYFIN_VERSION }}"
       - name: Move openapi.json (unstable) into place
-        uses: appleboy/ssh-action@029f5b4aeeeb58fdfe1410a5d17f967dacf36262 # v1.0.3
+        uses: appleboy/ssh-action@25ce8cbbcb08177468c7ff7ec5cbfa236f9341e1 # v1.1.0
         with:
           host: "${{ secrets.REPO_HOST }}"
           username: "${{ secrets.REPO_USER }}"
@@ -234,7 +234,7 @@ jobs:
           strip_components: 1
           target: "/srv/incoming/openapi/stable/jellyfin-openapi-${{ env.JELLYFIN_VERSION }}"
       - name: Move openapi.json (stable) into place
-        uses: appleboy/ssh-action@029f5b4aeeeb58fdfe1410a5d17f967dacf36262 # v1.0.3
+        uses: appleboy/ssh-action@25ce8cbbcb08177468c7ff7ec5cbfa236f9341e1 # v1.1.0
         with:
           host: "${{ secrets.REPO_HOST }}"
           username: "${{ secrets.REPO_USER }}"
