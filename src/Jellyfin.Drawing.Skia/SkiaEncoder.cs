@@ -421,7 +421,7 @@ public class SkiaEncoder : IImageEncoder
         }
         catch
         {
-            _logger.LogError("Detected intermediary error rotating image {0}", path);
+            _logger.LogError("Detected intermediary error rotating image");
             rotated.Dispose();
             throw;
         }
