@@ -281,9 +281,9 @@ public class SkiaEncoder : IImageEncoder
 
                 return bitmap!;
             }
-            catch
+            catch (Exception e)
             {
-                _logger.LogError("Detected intermediary error decoding image {0}", path);
+                _logger.LogError(e, "Detected intermediary error decoding image {0}", path);
                 bitmap?.Dispose();
                 throw;
             }
@@ -310,9 +310,9 @@ public class SkiaEncoder : IImageEncoder
             origin = SKEncodedOrigin.TopLeft;
             return resultBitmap;
         }
-        catch
+        catch (Exception e)
         {
-            _logger.LogError("Detected intermediary error decoding image {0}", path);
+            _logger.LogError(e, "Detected intermediary error decoding image {0}", path);
             resultBitmap?.Dispose();
             throw;
         }
@@ -365,9 +365,9 @@ public class SkiaEncoder : IImageEncoder
 
             return bitmap!;
         }
-        catch
+        catch (Exception e)
         {
-            _logger.LogError("Detected intermediary error extracting image {0}", path);
+            _logger.LogError(e, "Detected intermediary error extracting image {0}", path);
             bitmap?.Dispose();
             throw;
         }
@@ -419,9 +419,9 @@ public class SkiaEncoder : IImageEncoder
             surface.DrawBitmap(bitmap, 0, 0);
             return rotated;
         }
-        catch
+        catch (Exception e)
         {
-            _logger.LogError("Detected intermediary error rotating image");
+            _logger.LogError(e, "Detected intermediary error rotating image");
             rotated.Dispose();
             throw;
         }
