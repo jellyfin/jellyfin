@@ -138,9 +138,10 @@ public class SplashscreenBuilder
     /// <returns>The transformed image.</returns>
     private SKBitmap Transform3D(SKBitmap input)
     {
-        var bitmap = new SKBitmap(FinalWidth, FinalHeight);
+        SKBitmap? bitmap = null;
         try
         {
+            bitmap = new SKBitmap(FinalWidth, FinalHeight);
             using var canvas = new SKCanvas(bitmap);
             canvas.Clear(SKColors.Black);
             var matrix = new SKMatrix
@@ -164,7 +165,7 @@ public class SplashscreenBuilder
         catch (Exception e)
         {
             _logger.LogError(e, "Detected intermediary error creating splashscreen image transforming the image");
-            bitmap.Dispose();
+            bitmap?.Dispose();
             throw;
         }
     }

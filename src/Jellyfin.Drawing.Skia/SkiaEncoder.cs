@@ -376,11 +376,12 @@ public class SkiaEncoder : IImageEncoder
     private SKBitmap OrientImage(SKBitmap bitmap, SKEncodedOrigin origin)
     {
         var needsFlip = origin is SKEncodedOrigin.LeftBottom or SKEncodedOrigin.LeftTop or SKEncodedOrigin.RightBottom or SKEncodedOrigin.RightTop;
-        var rotated = needsFlip
-            ? new SKBitmap(bitmap.Height, bitmap.Width)
-            : new SKBitmap(bitmap.Width, bitmap.Height);
+        SKBitmap? rotated = null;
         try
         {
+            rotated = needsFlip
+                ? new SKBitmap(bitmap.Height, bitmap.Width)
+                : new SKBitmap(bitmap.Width, bitmap.Height);
             using var surface = new SKCanvas(rotated);
             var midX = (float)rotated.Width / 2;
             var midY = (float)rotated.Height / 2;
@@ -422,7 +423,7 @@ public class SkiaEncoder : IImageEncoder
         catch (Exception e)
         {
             _logger.LogError(e, "Detected intermediary error rotating image");
-            rotated.Dispose();
+            rotated?.Dispose();
             throw;
         }
     }
