@@ -149,6 +149,26 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
+        /// <inheritdoc />
+        public void MoveDirectory(string source, string destination)
+        {
+            try
+            {
+                Directory.Move(source, destination);
+            }
+            catch (IOException)
+            {
+                // Cross device move requires a copy
+                Directory.CreateDirectory(destination);
+                foreach (string file in Directory.GetFiles(source))
+                {
+                    File.Copy(file, Path.Combine(destination, Path.GetFileName(file)), true);
+                }
+
+                Directory.Delete(source, true);
+            }
+        }
+
         /// <summary>
         /// Returns a <see cref="FileSystemMetadata"/> object for the specified file or directory path.
         /// </summary>
@@ -327,11 +347,7 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
-        /// <summary>
-        /// Gets the creation time UTC.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>DateTime.</returns>
+        /// <inheritdoc />
         public virtual DateTime GetCreationTimeUtc(string path)
         {
             return GetCreationTimeUtc(GetFileSystemInfo(path));
@@ -368,11 +384,7 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
-        /// <summary>
-        /// Gets the last write time UTC.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>DateTime.</returns>
+        /// <inheritdoc />
         public virtual DateTime GetLastWriteTimeUtc(string path)
         {
             return GetLastWriteTimeUtc(GetFileSystemInfo(path));
@@ -446,11 +458,7 @@ namespace Emby.Server.Implementations.IO
             File.SetAttributes(path, attributes);
         }
 
-        /// <summary>
-        /// Swaps the files.
-        /// </summary>
-        /// <param name="file1">The file1.</param>
-        /// <param name="file2">The file2.</param>
+        /// <inheritdoc />
         public virtual void SwapFiles(string file1, string file2)
         {
             ArgumentException.ThrowIfNullOrEmpty(file1);

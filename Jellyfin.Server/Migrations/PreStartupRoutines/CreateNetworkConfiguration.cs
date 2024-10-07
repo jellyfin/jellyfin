@@ -132,5 +132,4 @@ public class CreateNetworkConfiguration : IMigrationRoutine
 
         public string[] KnownProxies { get; set; } = Array.Empty<string>();
     }
-#pragma warning restore
 }

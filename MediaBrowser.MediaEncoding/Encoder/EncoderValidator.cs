@@ -93,7 +93,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "hevc_videotoolbox",
             "mjpeg_videotoolbox",
             "h264_rkmpp",
-            "hevc_rkmpp"
+            "hevc_rkmpp",
+            "mjpeg_rkmpp"
         };
 
         private static readonly string[] _requiredFilters = new[]
@@ -136,6 +137,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "flip_vulkan",
             // videotoolbox
             "yadif_videotoolbox",
+            "bwdif_videotoolbox",
             "scale_vt",
             "transpose_vt",
             "overlay_videotoolbox",

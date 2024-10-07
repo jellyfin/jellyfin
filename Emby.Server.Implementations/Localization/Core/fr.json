@@ -132,5 +132,9 @@
     "TaskAudioNormalization": "Normalisation audio",
     "TaskAudioNormalizationDescription": "Analyse les fichiers à la recherche de données de normalisation audio.",
     "TaskDownloadMissingLyricsDescription": "Téléchargement des paroles des chansons",
-    "TaskDownloadMissingLyrics": "Télécharger les paroles des chansons manquantes"
+    "TaskDownloadMissingLyrics": "Télécharger les paroles des chansons manquantes",
+    "TaskExtractMediaSegments": "Analyse des segments de média",
+    "TaskMoveTrickplayImages": "Changer l'emplacement des images Trickplay",
+    "TaskExtractMediaSegmentsDescription": "Extrait ou obtient des segments de média à partir des plugins compatibles avec MediaSegment.",
+    "TaskMoveTrickplayImagesDescription": "Déplace les fichiers trickplay existants en fonction des paramètres de la bibliothèque."
 }
