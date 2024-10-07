@@ -600,7 +600,7 @@ public class SkiaEncoder : IImageEncoder
         // Only generate the splash screen if we have at least one poster and at least one backdrop/thumbnail.
         if (posters.Count > 0 && backdrops.Count > 0)
         {
-            var splashBuilder = new SplashscreenBuilder(this);
+            var splashBuilder = new SplashscreenBuilder(this, _logger);
             var outputPath = Path.Combine(_appPaths.DataPath, "splashscreen.png");
             splashBuilder.GenerateSplash(posters, backdrops, outputPath);
         }

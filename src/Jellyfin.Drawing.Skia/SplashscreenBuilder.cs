@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 using SkiaSharp;
 
 namespace Jellyfin.Drawing.Skia;
@@ -18,14 +19,17 @@ public class SplashscreenBuilder
     private const int Spacing = 20;
 
     private readonly SkiaEncoder _skiaEncoder;
+    private readonly ILogger _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SplashscreenBuilder"/> class.
     /// </summary>
     /// <param name="skiaEncoder">The SkiaEncoder.</param>
-    public SplashscreenBuilder(SkiaEncoder skiaEncoder)
+    /// <param name="logger">The logger.</param>
+    public SplashscreenBuilder(SkiaEncoder skiaEncoder, ILogger logger)
     {
         _skiaEncoder = skiaEncoder;
+        _logger = logger;
     }
 
     /// <summary>
@@ -119,8 +123,9 @@ public class SplashscreenBuilder
 
             return bitmap;
         }
-        catch
+        catch (Exception e)
         {
+            _logger.LogError(e, "Detected intermediary error creating splashscreen image");
             bitmap?.Dispose();
             throw;
         }
@@ -156,8 +161,9 @@ public class SplashscreenBuilder
 
             return bitmap;
         }
-        catch
+        catch (Exception e)
         {
+            _logger.LogError(e, "Detected intermediary error creating splashscreen image transforming the image");
             bitmap.Dispose();
             throw;
         }
