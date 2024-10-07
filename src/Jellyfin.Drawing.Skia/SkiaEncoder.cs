@@ -283,7 +283,7 @@ public class SkiaEncoder : IImageEncoder
             }
             catch
             {
-                _logger.LogError("Told you there is an memory leak.");
+                _logger.LogError("Detected intermediary error decoding image {0}", path);
                 bitmap?.Dispose();
                 throw;
             }
@@ -312,7 +312,7 @@ public class SkiaEncoder : IImageEncoder
         }
         catch
         {
-            _logger.LogError("Told you there is an memory leak.");
+            _logger.LogError("Detected intermediary error decoding image {0}", path);
             resultBitmap?.Dispose();
             throw;
         }
@@ -367,7 +367,7 @@ public class SkiaEncoder : IImageEncoder
         }
         catch
         {
-            _logger.LogError("Told you there is an memory leak.");
+            _logger.LogError("Detected intermediary error extracting image {0}", path);
             bitmap?.Dispose();
             throw;
         }
@@ -421,7 +421,7 @@ public class SkiaEncoder : IImageEncoder
         }
         catch
         {
-            _logger.LogError("Told you there is an memory leak.");
+            _logger.LogError("Detected intermediary error rotating image {0}", path);
             rotated.Dispose();
             throw;
         }
