@@ -1196,7 +1196,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             // Generate concat configuration entries for each file and write to file
             Directory.CreateDirectory(Path.GetDirectoryName(concatFilePath));
-            using FormattingStreamWriter sw = new FormattingStreamWriter(concatFilePath, CultureInfo.InvariantCulture);
+            using StreamWriter sw = new StreamWriter(concatFilePath);
             foreach (var path in files)
             {
                 var mediaInfoResult = GetMediaInfo(
