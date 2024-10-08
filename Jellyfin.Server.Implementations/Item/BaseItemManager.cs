@@ -583,266 +583,149 @@ public class BaseItemManager : IItemRepository
             }
         }
 
+        var artistQuery = context.BaseItems.Where(w => query.ArtistIds.Contains(w.Id));
+
         if (query.ArtistIds.Length > 0)
         {
             baseQuery = baseQuery
-                   .Where(e => e.ItemValues!.Any(f => f.Type <= 1 && context.BaseItems.Where(w => query.ArtistIds.Contains(w.Id)).Any(w => w.CleanName == f.CleanValue)));
+                   .Where(e => e.ItemValues!.Any(f => f.Type <= 1 && artistQuery.Any(w => w.CleanName == f.CleanValue)));
         }
 
         if (query.AlbumArtistIds.Length > 0)
         {
             baseQuery = baseQuery
-               .Where(e => e.ItemValues!.Any(f => f.Type == 1 && context.BaseItems.Where(w => query.ArtistIds.Contains(w.Id)).Any(w => w.CleanName == f.CleanValue)));
+               .Where(e => e.ItemValues!.Any(f => f.Type == 1 && artistQuery.Any(w => w.CleanName == f.CleanValue)));
         }
 
         if (query.ContributingArtistIds.Length > 0)
         {
             var contributingArtists = context.BaseItems.Where(e => query.ContributingArtistIds.Contains(e.Id));
             baseQuery = baseQuery.Where(e => e.ItemValues!.Any(f => f.Type == 0 && contributingArtists.Any(w => w.CleanName == f.CleanValue)));
-
-            clauseBuilder.Append('(');
-            for (var i = 0; i < query.ContributingArtistIds.Length; i++)
-            {
-                clauseBuilder.Append("((select CleanName from TypedBaseItems where guid=@ArtistIds")
-                    .Append(i)
-                    .Append(") in (select CleanValue from ItemValues where ItemId=Guid and Type=0) AND (select CleanName from TypedBaseItems where guid=@ArtistIds")
-                    .Append(i)
-                    .Append(") not in (select CleanValue from ItemValues where ItemId=Guid and Type=1)) OR ");
-                statement?.TryBind("@ArtistIds" + i, query.ContributingArtistIds[i]);
-            }
-
-            clauseBuilder.Length -= Or.Length;
-            whereClauses.Add(clauseBuilder.Append(')').ToString());
-            clauseBuilder.Length = 0;
         }
 
         if (query.AlbumIds.Length > 0)
         {
-            clauseBuilder.Append('(');
-            for (var i = 0; i < query.AlbumIds.Length; i++)
-            {
-                clauseBuilder.Append("Album in (select Name from typedbaseitems where guid=@AlbumIds")
-                    .Append(i)
-                    .Append(") OR ");
-                statement?.TryBind("@AlbumIds" + i, query.AlbumIds[i]);
-            }
-
-            clauseBuilder.Length -= Or.Length;
-            whereClauses.Add(clauseBuilder.Append(')').ToString());
-            clauseBuilder.Length = 0;
+            baseQuery = baseQuery.Where(e => context.BaseItems.Where(e => query.AlbumIds.Contains(e.Id)).Any(f => f.Name == e.Album));
         }
 
         if (query.ExcludeArtistIds.Length > 0)
         {
-            clauseBuilder.Append('(');
-            for (var i = 0; i < query.ExcludeArtistIds.Length; i++)
-            {
-                clauseBuilder.Append("(guid not in (select itemid from ItemValues where CleanValue = (select CleanName from TypedBaseItems where guid=@ExcludeArtistId")
-                    .Append(i)
-                    .Append(") and Type<=1)) OR ");
-                statement?.TryBind("@ExcludeArtistId" + i, query.ExcludeArtistIds[i]);
-            }
-
-            clauseBuilder.Length -= Or.Length;
-            whereClauses.Add(clauseBuilder.Append(')').ToString());
-            clauseBuilder.Length = 0;
+            var excludeArtistQuery = context.BaseItems.Where(w => query.ExcludeArtistIds.Contains(w.Id));
+            baseQuery = baseQuery
+                   .Where(e => !e.ItemValues!.Any(f => f.Type <= 1 && artistQuery.Any(w => w.CleanName == f.CleanValue)));
         }
 
         if (query.GenreIds.Count > 0)
         {
-            clauseBuilder.Append('(');
-            for (var i = 0; i < query.GenreIds.Count; i++)
-            {
-                clauseBuilder.Append("(guid in (select itemid from ItemValues where CleanValue = (select CleanName from TypedBaseItems where guid=@GenreId")
-                    .Append(i)
-                    .Append(") and Type=2)) OR ");
-                statement?.TryBind("@GenreId" + i, query.GenreIds[i]);
-            }
-
-            clauseBuilder.Length -= Or.Length;
-            whereClauses.Add(clauseBuilder.Append(')').ToString());
-            clauseBuilder.Length = 0;
+            baseQuery = baseQuery
+                   .Where(e => e.ItemValues!.Any(f => f.Type == 2 && context.BaseItems.Where(w => query.GenreIds.Contains(w.Id)).Any(w => w.CleanName == f.CleanValue)));
         }
 
         if (query.Genres.Count > 0)
         {
-            clauseBuilder.Append('(');
-            for (var i = 0; i < query.Genres.Count; i++)
-            {
-                clauseBuilder.Append("@Genre")
-                    .Append(i)
-                    .Append(" in (select CleanValue from ItemValues where ItemId=Guid and Type=2) OR ");
-                statement?.TryBind("@Genre" + i, GetCleanValue(query.Genres[i]));
-            }
-
-            clauseBuilder.Length -= Or.Length;
-            whereClauses.Add(clauseBuilder.Append(')').ToString());
-            clauseBuilder.Length = 0;
+            var cleanGenres = query.Genres.Select(e => GetCleanValue(e)).ToArray();
+            baseQuery = baseQuery
+                   .Where(e => e.ItemValues!.Any(f => f.Type == 2 && cleanGenres.Contains(f.CleanValue)));
         }
 
         if (tags.Count > 0)
         {
-            clauseBuilder.Append('(');
-            for (var i = 0; i < tags.Count; i++)
-            {
-                clauseBuilder.Append("@Tag")
-                    .Append(i)
-                    .Append(" in (select CleanValue from ItemValues where ItemId=Guid and Type=4) OR ");
-                statement?.TryBind("@Tag" + i, GetCleanValue(tags[i]));
-            }
-
-            clauseBuilder.Length -= Or.Length;
-            whereClauses.Add(clauseBuilder.Append(')').ToString());
-            clauseBuilder.Length = 0;
+            var cleanValues = tags.Select(e => GetCleanValue(e)).ToArray();
+            baseQuery = baseQuery
+                   .Where(e => e.ItemValues!.Any(f => f.Type == 4 && cleanValues.Contains(f.CleanValue)));
         }
 
         if (excludeTags.Count > 0)
         {
-            clauseBuilder.Append('(');
-            for (var i = 0; i < excludeTags.Count; i++)
-            {
-                clauseBuilder.Append("@ExcludeTag")
-                    .Append(i)
-                    .Append(" not in (select CleanValue from ItemValues where ItemId=Guid and Type=4) OR ");
-                statement?.TryBind("@ExcludeTag" + i, GetCleanValue(excludeTags[i]));
-            }
-
-            clauseBuilder.Length -= Or.Length;
-            whereClauses.Add(clauseBuilder.Append(')').ToString());
-            clauseBuilder.Length = 0;
+            var cleanValues = excludeTags.Select(e => GetCleanValue(e)).ToArray();
+            baseQuery = baseQuery
+                   .Where(e => !e.ItemValues!.Any(f => f.Type == 4 && cleanValues.Contains(f.CleanValue)));
         }
 
         if (query.StudioIds.Length > 0)
         {
-            clauseBuilder.Append('(');
-            for (var i = 0; i < query.StudioIds.Length; i++)
-            {
-                clauseBuilder.Append("(guid in (select itemid from ItemValues where CleanValue = (select CleanName from TypedBaseItems where guid=@StudioId")
-                    .Append(i)
-                    .Append(") and Type=3)) OR ");
-                statement?.TryBind("@StudioId" + i, query.StudioIds[i]);
-            }
-
-            clauseBuilder.Length -= Or.Length;
-            whereClauses.Add(clauseBuilder.Append(')').ToString());
-            clauseBuilder.Length = 0;
+            baseQuery = baseQuery
+                   .Where(e => e.ItemValues!.Any(f => f.Type == 3 && context.BaseItems.Where(w => query.StudioIds.Contains(w.Id)).Any(w => w.CleanName == f.CleanValue)));
         }
 
         if (query.OfficialRatings.Length > 0)
         {
-            clauseBuilder.Append('(');
-            for (var i = 0; i < query.OfficialRatings.Length; i++)
-            {
-                clauseBuilder.Append("OfficialRating=@OfficialRating").Append(i).Append(Or);
-                statement?.TryBind("@OfficialRating" + i, query.OfficialRatings[i]);
-            }
-
-            clauseBuilder.Length -= Or.Length;
-            whereClauses.Add(clauseBuilder.Append(')').ToString());
-            clauseBuilder.Length = 0;
+            baseQuery = baseQuery
+                   .Where(e => query.OfficialRatings.Contains(e.OfficialRating));
         }
 
-        clauseBuilder.Append('(');
         if (query.HasParentalRating ?? false)
         {
-            clauseBuilder.Append("InheritedParentalRatingValue not null");
             if (query.MinParentalRating.HasValue)
             {
-                clauseBuilder.Append(" AND InheritedParentalRatingValue >= @MinParentalRating");
-                statement?.TryBind("@MinParentalRating", query.MinParentalRating.Value);
+                baseQuery = baseQuery
+                   .Where(e => e.InheritedParentalRatingValue >= query.MinParentalRating.Value);
             }
 
             if (query.MaxParentalRating.HasValue)
             {
-                clauseBuilder.Append(" AND InheritedParentalRatingValue <= @MaxParentalRating");
-                statement?.TryBind("@MaxParentalRating", query.MaxParentalRating.Value);
+                baseQuery = baseQuery
+                   .Where(e => e.InheritedParentalRatingValue < query.MaxParentalRating.Value);
             }
         }
         else if (query.BlockUnratedItems.Length > 0)
         {
-            const string ParamName = "@UnratedType";
-            clauseBuilder.Append("(InheritedParentalRatingValue is null AND UnratedType not in (");
-
-            for (int i = 0; i < query.BlockUnratedItems.Length; i++)
-            {
-                clauseBuilder.Append(ParamName).Append(i).Append(',');
-                statement?.TryBind(ParamName + i, query.BlockUnratedItems[i].ToString());
-            }
-
-            // Remove trailing comma
-            clauseBuilder.Length--;
-            clauseBuilder.Append("))");
-
-            if (query.MinParentalRating.HasValue || query.MaxParentalRating.HasValue)
-            {
-                clauseBuilder.Append(" OR (");
-            }
-
             if (query.MinParentalRating.HasValue)
             {
-                clauseBuilder.Append("InheritedParentalRatingValue >= @MinParentalRating");
-                statement?.TryBind("@MinParentalRating", query.MinParentalRating.Value);
-            }
-
-            if (query.MaxParentalRating.HasValue)
-            {
-                if (query.MinParentalRating.HasValue)
+                if (query.MaxParentalRating.HasValue)
                 {
-                    clauseBuilder.Append(" AND ");
+                    baseQuery = baseQuery
+                        .Where(e => (e.InheritedParentalRatingValue == null && !query.BlockUnratedItems.Select(e => e.ToString()).Contains(e.UnratedType))
+                        || (e.InheritedParentalRatingValue >= query.MinParentalRating && e.InheritedParentalRatingValue <= query.MaxParentalRating));
                 }
-
-                clauseBuilder.Append("InheritedParentalRatingValue <= @MaxParentalRating");
-                statement?.TryBind("@MaxParentalRating", query.MaxParentalRating.Value);
+                else
+                {
+                    baseQuery = baseQuery
+                        .Where(e => (e.InheritedParentalRatingValue == null && !query.BlockUnratedItems.Select(e => e.ToString()).Contains(e.UnratedType))
+                        || e.InheritedParentalRatingValue >= query.MinParentalRating);
+                }
             }
-
-            if (query.MinParentalRating.HasValue || query.MaxParentalRating.HasValue)
+            else
             {
-                clauseBuilder.Append(')');
-            }
-
-            if (!(query.MinParentalRating.HasValue || query.MaxParentalRating.HasValue))
-            {
-                clauseBuilder.Append(" OR InheritedParentalRatingValue not null");
+                baseQuery = baseQuery
+                    .Where(e => e.InheritedParentalRatingValue != null && !query.BlockUnratedItems.Select(e => e.ToString()).Contains(e.UnratedType));
             }
         }
         else if (query.MinParentalRating.HasValue)
         {
-            clauseBuilder.Append("InheritedParentalRatingValue is null OR (InheritedParentalRatingValue >= @MinParentalRating");
-            statement?.TryBind("@MinParentalRating", query.MinParentalRating.Value);
-
             if (query.MaxParentalRating.HasValue)
             {
-                clauseBuilder.Append(" AND InheritedParentalRatingValue <= @MaxParentalRating");
-                statement?.TryBind("@MaxParentalRating", query.MaxParentalRating.Value);
+                baseQuery = baseQuery
+                    .Where(e => e.InheritedParentalRatingValue != null && e.InheritedParentalRatingValue >= query.MinParentalRating.Value && e.InheritedParentalRatingValue <= query.MaxParentalRating.Value);
             }
-
-            clauseBuilder.Append(')');
+            else
+            {
+                baseQuery = baseQuery
+                    .Where(e => e.InheritedParentalRatingValue != null && e.InheritedParentalRatingValue >= query.MinParentalRating.Value);
+            }
         }
         else if (query.MaxParentalRating.HasValue)
         {
-            clauseBuilder.Append("InheritedParentalRatingValue is null OR InheritedParentalRatingValue <= @MaxParentalRating");
-            statement?.TryBind("@MaxParentalRating", query.MaxParentalRating.Value);
+            baseQuery = baseQuery
+                .Where(e => e.InheritedParentalRatingValue != null && e.InheritedParentalRatingValue >= query.MaxParentalRating.Value);
         }
         else if (!query.HasParentalRating ?? false)
         {
-            clauseBuilder.Append("InheritedParentalRatingValue is null");
-        }
-
-        if (clauseBuilder.Length > 1)
-        {
-            whereClauses.Add(clauseBuilder.Append(')').ToString());
-            clauseBuilder.Length = 0;
+            baseQuery = baseQuery
+                .Where(e => e.InheritedParentalRatingValue == null);
         }
 
         if (query.HasOfficialRating.HasValue)
         {
             if (query.HasOfficialRating.Value)
             {
-                whereClauses.Add("(OfficialRating not null AND OfficialRating<>'')");
+                baseQuery = baseQuery
+                    .Where(e => e.OfficialRating != null && e.OfficialRating != string.Empty);
             }
             else
             {
-                whereClauses.Add("(OfficialRating is null OR OfficialRating='')");
+                baseQuery = baseQuery
+                    .Where(e => e.OfficialRating == null || e.OfficialRating == string.Empty);
             }
         }
 
@@ -850,11 +733,13 @@ public class BaseItemManager : IItemRepository
         {
             if (query.HasOverview.Value)
             {
-                whereClauses.Add("(Overview not null AND Overview<>'')");
+                baseQuery = baseQuery
+                    .Where(e => e.Overview != null && e.Overview != string.Empty);
             }
             else
             {
-                whereClauses.Add("(Overview is null OR Overview='')");
+                baseQuery = baseQuery
+                    .Where(e => e.Overview == null || e.Overview == string.Empty);
             }
         }
 
@@ -862,109 +747,105 @@ public class BaseItemManager : IItemRepository
         {
             if (query.HasOwnerId.Value)
             {
-                whereClauses.Add("OwnerId not null");
+                baseQuery = baseQuery
+                    .Where(e => e.OwnerId != null);
             }
             else
             {
-                whereClauses.Add("OwnerId is null");
+                baseQuery = baseQuery
+                    .Where(e => e.OwnerId == null);
             }
         }
 
         if (!string.IsNullOrWhiteSpace(query.HasNoAudioTrackWithLanguage))
         {
-            whereClauses.Add("((select language from MediaStreams where MediaStreams.ItemId=A.Guid and MediaStreams.StreamType='Audio' and MediaStreams.Language=@HasNoAudioTrackWithLanguage limit 1) is null)");
-            statement?.TryBind("@HasNoAudioTrackWithLanguage", query.HasNoAudioTrackWithLanguage);
+            baseQuery = baseQuery
+                .Where(e => !e.MediaStreams!.Any(e => e.StreamType == "Audio" && e.Language == query.HasNoAudioTrackWithLanguage));
         }
 
         if (!string.IsNullOrWhiteSpace(query.HasNoInternalSubtitleTrackWithLanguage))
         {
-            whereClauses.Add("((select language from MediaStreams where MediaStreams.ItemId=A.Guid and MediaStreams.StreamType='Subtitle' and MediaStreams.IsExternal=0 and MediaStreams.Language=@HasNoInternalSubtitleTrackWithLanguage limit 1) is null)");
-            statement?.TryBind("@HasNoInternalSubtitleTrackWithLanguage", query.HasNoInternalSubtitleTrackWithLanguage);
+            baseQuery = baseQuery
+                .Where(e => !e.MediaStreams!.Any(e => e.StreamType == "Subtitle" && !e.IsExternal && e.Language == query.HasNoInternalSubtitleTrackWithLanguage));
         }
 
         if (!string.IsNullOrWhiteSpace(query.HasNoExternalSubtitleTrackWithLanguage))
         {
-            whereClauses.Add("((select language from MediaStreams where MediaStreams.ItemId=A.Guid and MediaStreams.StreamType='Subtitle' and MediaStreams.IsExternal=1 and MediaStreams.Language=@HasNoExternalSubtitleTrackWithLanguage limit 1) is null)");
-            statement?.TryBind("@HasNoExternalSubtitleTrackWithLanguage", query.HasNoExternalSubtitleTrackWithLanguage);
+            baseQuery = baseQuery
+                .Where(e => !e.MediaStreams!.Any(e => e.StreamType == "Subtitle" && e.IsExternal && e.Language == query.HasNoExternalSubtitleTrackWithLanguage));
         }
 
         if (!string.IsNullOrWhiteSpace(query.HasNoSubtitleTrackWithLanguage))
         {
-            whereClauses.Add("((select language from MediaStreams where MediaStreams.ItemId=A.Guid and MediaStreams.StreamType='Subtitle' and MediaStreams.Language=@HasNoSubtitleTrackWithLanguage limit 1) is null)");
-            statement?.TryBind("@HasNoSubtitleTrackWithLanguage", query.HasNoSubtitleTrackWithLanguage);
+            baseQuery = baseQuery
+                .Where(e => !e.MediaStreams!.Any(e => e.StreamType == "Subtitle" && e.Language == query.HasNoSubtitleTrackWithLanguage));
         }
 
         if (query.HasSubtitles.HasValue)
         {
-            if (query.HasSubtitles.Value)
-            {
-                whereClauses.Add("((select type from MediaStreams where MediaStreams.ItemId=A.Guid and MediaStreams.StreamType='Subtitle' limit 1) not null)");
-            }
-            else
-            {
-                whereClauses.Add("((select type from MediaStreams where MediaStreams.ItemId=A.Guid and MediaStreams.StreamType='Subtitle' limit 1) is null)");
-            }
+            baseQuery = baseQuery
+                .Where(e => e.MediaStreams!.Any(e => e.StreamType == "Subtitle") == query.HasSubtitles.Value);
         }
 
         if (query.HasChapterImages.HasValue)
         {
-            if (query.HasChapterImages.Value)
-            {
-                whereClauses.Add("((select imagepath from Chapters2 where Chapters2.ItemId=A.Guid and imagepath not null limit 1) not null)");
-            }
-            else
-            {
-                whereClauses.Add("((select imagepath from Chapters2 where Chapters2.ItemId=A.Guid and imagepath not null limit 1) is null)");
-            }
+            baseQuery = baseQuery
+                .Where(e => e.Chapters!.Any(e => e.ImagePath != null) == query.HasChapterImages.Value);
         }
 
         if (query.HasDeadParentId.HasValue && query.HasDeadParentId.Value)
         {
-            whereClauses.Add("ParentId NOT NULL AND ParentId NOT IN (select guid from TypedBaseItems)");
+            baseQuery = baseQuery
+                .Where(e => e.ParentId.HasValue && context.BaseItems.Any(f => f.Id.Equals(e.ParentId.Value)));
         }
 
         if (query.IsDeadArtist.HasValue && query.IsDeadArtist.Value)
         {
-            whereClauses.Add("CleanName not in (Select CleanValue From ItemValues where Type in (0,1))");
+            baseQuery = baseQuery
+                .Where(e => e.ItemValues!.Any(f => (f.Type == 0 || f.Type == 1) && f.CleanValue == e.CleanName));
         }
 
         if (query.IsDeadStudio.HasValue && query.IsDeadStudio.Value)
         {
-            whereClauses.Add("CleanName not in (Select CleanValue From ItemValues where Type = 3)");
+            baseQuery = baseQuery
+                .Where(e => e.ItemValues!.Any(f => f.Type == 3 && f.CleanValue == e.CleanName));
         }
 
         if (query.IsDeadPerson.HasValue && query.IsDeadPerson.Value)
         {
-            whereClauses.Add("Name not in (Select Name From People)");
+            baseQuery = baseQuery
+                .Where(e => !e.Peoples!.Any(f => f.Name == e.Name));
         }
 
         if (query.Years.Length == 1)
         {
-            whereClauses.Add("ProductionYear=@Years");
-            statement?.TryBind("@Years", query.Years[0].ToString(CultureInfo.InvariantCulture));
+            baseQuery = baseQuery
+                .Where(e => e.ProductionYear == query.Years[0]);
         }
         else if (query.Years.Length > 1)
         {
-            var val = string.Join(',', query.Years);
-            whereClauses.Add("ProductionYear in (" + val + ")");
+            baseQuery = baseQuery
+                .Where(e => query.Years.Any(f => f == e.ProductionYear));
         }
 
         var isVirtualItem = query.IsVirtualItem ?? query.IsMissing;
         if (isVirtualItem.HasValue)
         {
-            whereClauses.Add("IsVirtualItem=@IsVirtualItem");
-            statement?.TryBind("@IsVirtualItem", isVirtualItem.Value);
+            baseQuery = baseQuery
+                .Where(e => e.IsVirtualItem == isVirtualItem.Value);
         }
 
         if (query.IsSpecialSeason.HasValue)
         {
             if (query.IsSpecialSeason.Value)
             {
-                whereClauses.Add("IndexNumber = 0");
+                baseQuery = baseQuery
+                    .Where(e => e.IndexNumber == 0);
             }
             else
             {
-                whereClauses.Add("IndexNumber <> 0");
+                baseQuery = baseQuery
+                    .Where(e => e.IndexNumber != 0);
             }
         }
 
@@ -972,81 +853,53 @@ public class BaseItemManager : IItemRepository
         {
             if (query.IsUnaired.Value)
             {
-                whereClauses.Add("PremiereDate >= DATETIME('now')");
+                baseQuery = baseQuery
+                    .Where(e => e.PremiereDate >= now);
             }
             else
             {
-                whereClauses.Add("PremiereDate < DATETIME('now')");
+                baseQuery = baseQuery
+                    .Where(e => e.PremiereDate < now);
             }
         }
 
         if (query.MediaTypes.Length == 1)
         {
-            whereClauses.Add("MediaType=@MediaTypes");
-            statement?.TryBind("@MediaTypes", query.MediaTypes[0].ToString());
+            baseQuery = baseQuery
+                .Where(e => e.MediaType == query.MediaTypes[0].ToString());
         }
         else if (query.MediaTypes.Length > 1)
         {
-            var val = string.Join(',', query.MediaTypes.Select(i => $"'{i}'"));
-            whereClauses.Add("MediaType in (" + val + ")");
+            baseQuery = baseQuery
+                .Where(e => query.MediaTypes.Select(f => f.ToString()).Contains(e.MediaType));
         }
 
         if (query.ItemIds.Length > 0)
         {
-            var includeIds = new List<string>();
-            var index = 0;
-            foreach (var id in query.ItemIds)
-            {
-                includeIds.Add("Guid = @IncludeId" + index);
-                statement?.TryBind("@IncludeId" + index, id);
-                index++;
-            }
-
-            whereClauses.Add("(" + string.Join(" OR ", includeIds) + ")");
+            baseQuery = baseQuery
+                .Where(e => query.ItemIds.Contains(e.Id));
         }
 
         if (query.ExcludeItemIds.Length > 0)
         {
-            var excludeIds = new List<string>();
-            var index = 0;
-            foreach (var id in query.ExcludeItemIds)
-            {
-                excludeIds.Add("Guid <> @ExcludeId" + index);
-                statement?.TryBind("@ExcludeId" + index, id);
-                index++;
-            }
-
-            whereClauses.Add(string.Join(" AND ", excludeIds));
+            baseQuery = baseQuery
+                .Where(e => !query.ItemIds.Contains(e.Id));
         }
 
         if (query.ExcludeProviderIds is not null && query.ExcludeProviderIds.Count > 0)
         {
-            var excludeIds = new List<string>();
-
-            var index = 0;
-            foreach (var pair in query.ExcludeProviderIds)
+            foreach (var item in query.ExcludeProviderIds.Where(e => e.Key != nameof(MetadataProvider.TmdbCollection))
+                .Select(e => $"{e.Key}={e.Value}"))
             {
-                if (string.Equals(pair.Key, nameof(MetadataProvider.TmdbCollection), StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                var paramName = "@ExcludeProviderId" + index;
-                excludeIds.Add("(ProviderIds is null or ProviderIds not like " + paramName + ")");
-                statement?.TryBind(paramName, "%" + pair.Key + "=" + pair.Value + "%");
-                index++;
-
-                break;
-            }
-
-            if (excludeIds.Count > 0)
-            {
-                whereClauses.Add(string.Join(" AND ", excludeIds));
+                baseQuery = baseQuery
+                    .Where(e => e.ProviderIds == null || !e.ProviderIds.Contains(item));
             }
         }
 
         if (query.HasAnyProviderId is not null && query.HasAnyProviderId.Count > 0)
         {
+            baseQuery = baseQuery
+                .Where(e => e.ProviderIds == null || !e.ProviderIds.Contains(item));
             var hasProviderIds = new List<string>();
 
             var index = 0;

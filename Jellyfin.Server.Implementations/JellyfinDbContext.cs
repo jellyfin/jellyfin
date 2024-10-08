@@ -128,6 +128,11 @@ public class JellyfinDbContext : DbContext
     /// </summary>
     public DbSet<People> Peoples => Set<People>();
 
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the referenced Providers with ids.
+    /// </summary>
+    public DbSet<BaseItemProvider> BaseItemProviders => Set<BaseItemProvider>();
+
     /*public DbSet<Artwork> Artwork => Set<Artwork>();
 
     public DbSet<Book> Books => Set<Book>();

@@ -10,6 +10,8 @@ public class Chapter
 {
     public Guid ItemId { get; set; }
 
+    public required BaseItem Item { get; set; }
+
     public required int ChapterIndex { get; set; }
 
     public required long StartPositionTicks { get; set; }

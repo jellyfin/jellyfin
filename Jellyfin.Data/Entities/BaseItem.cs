@@ -132,8 +132,6 @@ public class BaseItem
 
     public string? Tagline { get; set; }
 
-    public string? ProviderIds { get; set; }
-
     public string? Images { get; set; }
 
     public string? ProductionLocations { get; set; }
@@ -167,4 +165,10 @@ public class BaseItem
     public ICollection<UserData>? UserData { get; set; }
 
     public ICollection<ItemValue>? ItemValues { get; set; }
+
+    public ICollection<MediaStreamInfo>? MediaStreams { get; set; }
+
+    public ICollection<Chapter>? Chapters { get; set; }
+
+    public ICollection<BaseItemProvider>? Provider { get; set; }
 }
