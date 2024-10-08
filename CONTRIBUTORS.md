@@ -191,6 +191,7 @@
  - [pret0rian8](https://github.com/pret0rian)
  - [jaina heartles](https://github.com/heartles)
  - [oxixes](https://github.com/oxixes)
+ - [Kenneth Cochran](https://github.com/kennethcochran)
 
 # Emby Contributors
 
