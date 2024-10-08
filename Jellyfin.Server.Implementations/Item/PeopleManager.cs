@@ -6,22 +6,22 @@ using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace Jellyfin.Server.Implementations.Item;
 
-public class PeopleManager
+/// <summary>
+/// Manager for handling people.
+/// </summary>
+/// <param name="dbProvider">Efcore Factory.</param>
+/// <remarks>
+/// Initializes a new instance of the <see cref="PeopleManager"/> class.
+/// </remarks>
+/// <param name="dbProvider">The EFCore Context factory.</param>
+public class PeopleManager(IDbContextFactory<JellyfinDbContext> dbProvider) : IPeopleManager
 {
-    private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="PeopleManager"/> class.
-    /// </summary>
-    /// <param name="dbProvider">The EFCore Context factory.</param>
-    public PeopleManager(IDbContextFactory<JellyfinDbContext> dbProvider)
-    {
-        _dbProvider = dbProvider;
-    }
+    private readonly IDbContextFactory<JellyfinDbContext> _dbProvider = dbProvider;
 
     public IReadOnlyList<PersonInfo> GetPeople(InternalPeopleQuery filter)
     {

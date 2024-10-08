@@ -34,7 +34,7 @@ namespace Jellyfin.Server.Implementations.Item;
 /// <summary>
 /// Handles all storage logic for BaseItems.
 /// </summary>
-public class BaseItemManager : IItemRepository
+public sealed class BaseItemManager : IItemRepository, IDisposable
 {
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
     private readonly IServerApplicationHost _appHost;
@@ -135,6 +135,7 @@ public class BaseItemManager : IItemRepository
     /// so that we can de-serialize properly when we don't have strong types.
     /// </summary>
     private static readonly ConcurrentDictionary<string, Type?> _typeMap = new ConcurrentDictionary<string, Type?>();
+    private bool _disposed;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BaseItemManager"/> class.
@@ -145,6 +146,17 @@ public class BaseItemManager : IItemRepository
     {
         _dbProvider = dbProvider;
         _appHost = appHost;
+    }
+
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
     }
 
     private QueryResult<(BaseItemDto Item, ItemCounts ItemCounts)> GetItemValues(InternalItemsQuery filter, int[] itemValueTypes, string returnType)
@@ -338,106 +350,148 @@ public class BaseItemManager : IItemRepository
     }
 
     /// <inheritdoc />
-    public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAllArtists(InternalItemsQuery query)
+    public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAllArtists(InternalItemsQuery filter)
     {
-        return GetItemValues(query, new[] { 0, 1 }, typeof(MusicArtist).FullName);
+        return GetItemValues(filter, new[] { 0, 1 }, typeof(MusicArtist).FullName!);
     }
 
     /// <inheritdoc />
-    public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetArtists(InternalItemsQuery query)
+    public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetArtists(InternalItemsQuery filter)
     {
-        return GetItemValues(query, new[] { 0 }, typeof(MusicArtist).FullName);
+        return GetItemValues(filter, new[] { 0 }, typeof(MusicArtist).FullName!);
     }
 
     /// <inheritdoc />
-    public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAlbumArtists(InternalItemsQuery query)
+    public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAlbumArtists(InternalItemsQuery filter)
     {
-        return GetItemValues(query, new[] { 1 }, typeof(MusicArtist).FullName);
+        return GetItemValues(filter, new[] { 1 }, typeof(MusicArtist).FullName!);
     }
 
     /// <inheritdoc />
-    public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetStudios(InternalItemsQuery query)
+    public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetStudios(InternalItemsQuery filter)
     {
-        return GetItemValues(query, new[] { 3 }, typeof(Studio).FullName);
+        return GetItemValues(filter, new[] { 3 }, typeof(Studio).FullName!);
     }
 
     /// <inheritdoc />
-    public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetGenres(InternalItemsQuery query)
+    public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetGenres(InternalItemsQuery filter)
     {
-        return GetItemValues(query, new[] { 2 }, typeof(Genre).FullName);
+        return GetItemValues(filter, new[] { 2 }, typeof(Genre).FullName!);
     }
 
     /// <inheritdoc />
-    public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetMusicGenres(InternalItemsQuery query)
+    public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetMusicGenres(InternalItemsQuery filter)
     {
-        return GetItemValues(query, new[] { 2 }, typeof(MusicGenre).FullName);
+        return GetItemValues(filter, new[] { 2 }, typeof(MusicGenre).FullName!);
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> GetStudioNames()
+    {
+        return GetItemValueNames(new[] { 3 }, Array.Empty<string>(), Array.Empty<string>());
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> GetAllArtistNames()
+    {
+        return GetItemValueNames(new[] { 0, 1 }, Array.Empty<string>(), Array.Empty<string>());
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> GetMusicGenreNames()
+    {
+        return GetItemValueNames(
+            new[] { 2 },
+            new string[]
+            {
+                    typeof(Audio).FullName!,
+                    typeof(MusicVideo).FullName!,
+                    typeof(MusicAlbum).FullName!,
+                    typeof(MusicArtist).FullName!
+            },
+            Array.Empty<string>());
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> GetGenreNames()
+    {
+        return GetItemValueNames(
+            new[] { 2 },
+            Array.Empty<string>(),
+            new string[]
+            {
+                    typeof(Audio).FullName!,
+                    typeof(MusicVideo).FullName!,
+                    typeof(MusicAlbum).FullName!,
+                    typeof(MusicArtist).FullName!
+            });
     }
 
     /// <inheritdoc cref="IItemRepository"/>
-    public QueryResult<BaseItemDto> GetItems(InternalItemsQuery query)
+    public QueryResult<BaseItemDto> GetItems(InternalItemsQuery filter)
     {
-        ArgumentNullException.ThrowIfNull(query);
-        if (!query.EnableTotalRecordCount || (!query.Limit.HasValue && (query.StartIndex ?? 0) == 0))
+        ArgumentNullException.ThrowIfNull(filter);
+        if (!filter.EnableTotalRecordCount || (!filter.Limit.HasValue && (filter.StartIndex ?? 0) == 0))
         {
-            var returnList = GetItemList(query);
+            var returnList = GetItemList(filter);
             return new QueryResult<BaseItemDto>(
-                query.StartIndex,
+                filter.StartIndex,
                 returnList.Count,
                 returnList);
         }
 
-        PrepareFilterQuery(query);
+        PrepareFilterQuery(filter);
         var result = new QueryResult<BaseItemDto>();
 
         using var context = _dbProvider.CreateDbContext();
-        var dbQuery = TranslateQuery(context.BaseItems, context, query)
+        var dbQuery = TranslateQuery(context.BaseItems, context, filter)
             .DistinctBy(e => e.Id);
-        if (query.EnableTotalRecordCount)
+        if (filter.EnableTotalRecordCount)
         {
             result.TotalRecordCount = dbQuery.Count();
         }
 
-        if (query.Limit.HasValue || query.StartIndex.HasValue)
+        if (filter.Limit.HasValue || filter.StartIndex.HasValue)
         {
-            var offset = query.StartIndex ?? 0;
+            var offset = filter.StartIndex ?? 0;
 
             if (offset > 0)
             {
                 dbQuery = dbQuery.Skip(offset);
             }
 
-            if (query.Limit.HasValue)
+            if (filter.Limit.HasValue)
             {
-                dbQuery = dbQuery.Take(query.Limit.Value);
+                dbQuery = dbQuery.Take(filter.Limit.Value);
             }
         }
 
         result.Items = dbQuery.ToList().Select(DeserialiseBaseItem).ToImmutableArray();
-        result.StartIndex = query.StartIndex ?? 0;
+        result.StartIndex = filter.StartIndex ?? 0;
         return result;
     }
 
     /// <inheritdoc cref="IItemRepository"/>
-    public IReadOnlyList<BaseItemDto> GetItemList(InternalItemsQuery query)
+    public IReadOnlyList<BaseItemDto> GetItemList(InternalItemsQuery filter)
     {
-        ArgumentNullException.ThrowIfNull(query);
-        PrepareFilterQuery(query);
+        ArgumentNullException.ThrowIfNull(filter);
+        PrepareFilterQuery(filter);
 
         using var context = _dbProvider.CreateDbContext();
-        var dbQuery = TranslateQuery(context.BaseItems, context, query)
+        var dbQuery = TranslateQuery(context.BaseItems, context, filter)
             .DistinctBy(e => e.Id);
-        if (query.Limit.HasValue || query.StartIndex.HasValue)
+        if (filter.Limit.HasValue || filter.StartIndex.HasValue)
         {
-            var offset = query.StartIndex ?? 0;
+            var offset = filter.StartIndex ?? 0;
 
             if (offset > 0)
             {
                 dbQuery = dbQuery.Skip(offset);
             }
 
-            if (query.Limit.HasValue)
+            if (filter.Limit.HasValue)
             {
-                dbQuery = dbQuery.Take(query.Limit.Value);
+                dbQuery = dbQuery.Take(filter.Limit.Value);
             }
         }
 
@@ -445,14 +499,14 @@ public class BaseItemManager : IItemRepository
     }
 
     /// <inheritdoc/>
-    public int GetCount(InternalItemsQuery query)
+    public int GetCount(InternalItemsQuery filter)
     {
-        ArgumentNullException.ThrowIfNull(query);
+        ArgumentNullException.ThrowIfNull(filter);
         // Hack for right now since we currently don't support filtering out these duplicates within a query
-        PrepareFilterQuery(query);
+        PrepareFilterQuery(filter);
 
         using var context = _dbProvider.CreateDbContext();
-        var dbQuery = TranslateQuery(context.BaseItems, context, query);
+        var dbQuery = TranslateQuery(context.BaseItems, context, filter);
 
         return dbQuery.Count();
     }
@@ -460,16 +514,16 @@ public class BaseItemManager : IItemRepository
     private IQueryable<BaseItemEntity> TranslateQuery(
         IQueryable<BaseItemEntity> baseQuery,
         JellyfinDbContext context,
-        InternalItemsQuery query)
+        InternalItemsQuery filter)
     {
-        var minWidth = query.MinWidth;
-        var maxWidth = query.MaxWidth;
+        var minWidth = filter.MinWidth;
+        var maxWidth = filter.MaxWidth;
         var now = DateTime.UtcNow;
 
-        if (query.IsHD.HasValue)
+        if (filter.IsHD.HasValue)
         {
             const int Threshold = 1200;
-            if (query.IsHD.Value)
+            if (filter.IsHD.Value)
             {
                 minWidth = Threshold;
             }
@@ -479,10 +533,10 @@ public class BaseItemManager : IItemRepository
             }
         }
 
-        if (query.Is4K.HasValue)
+        if (filter.Is4K.HasValue)
         {
             const int Threshold = 3800;
-            if (query.Is4K.Value)
+            if (filter.Is4K.Value)
             {
                 minWidth = Threshold;
             }
@@ -497,9 +551,9 @@ public class BaseItemManager : IItemRepository
             baseQuery = baseQuery.Where(e => e.Width >= minWidth);
         }
 
-        if (query.MinHeight.HasValue)
+        if (filter.MinHeight.HasValue)
         {
-            baseQuery = baseQuery.Where(e => e.Height >= query.MinHeight);
+            baseQuery = baseQuery.Where(e => e.Height >= filter.MinHeight);
         }
 
         if (maxWidth.HasValue)
@@ -507,41 +561,41 @@ public class BaseItemManager : IItemRepository
             baseQuery = baseQuery.Where(e => e.Width >= maxWidth);
         }
 
-        if (query.MaxHeight.HasValue)
+        if (filter.MaxHeight.HasValue)
         {
-            baseQuery = baseQuery.Where(e => e.Height <= query.MaxHeight);
+            baseQuery = baseQuery.Where(e => e.Height <= filter.MaxHeight);
         }
 
-        if (query.IsLocked.HasValue)
+        if (filter.IsLocked.HasValue)
         {
-            baseQuery = baseQuery.Where(e => e.IsLocked == query.IsLocked);
+            baseQuery = baseQuery.Where(e => e.IsLocked == filter.IsLocked);
         }
 
-        var tags = query.Tags.ToList();
-        var excludeTags = query.ExcludeTags.ToList();
+        var tags = filter.Tags.ToList();
+        var excludeTags = filter.ExcludeTags.ToList();
 
-        if (query.IsMovie == true)
+        if (filter.IsMovie == true)
         {
-            if (query.IncludeItemTypes.Length == 0
-                || query.IncludeItemTypes.Contains(BaseItemKind.Movie)
-                || query.IncludeItemTypes.Contains(BaseItemKind.Trailer))
+            if (filter.IncludeItemTypes.Length == 0
+                || filter.IncludeItemTypes.Contains(BaseItemKind.Movie)
+                || filter.IncludeItemTypes.Contains(BaseItemKind.Trailer))
             {
                 baseQuery = baseQuery.Where(e => e.IsMovie);
             }
         }
-        else if (query.IsMovie.HasValue)
+        else if (filter.IsMovie.HasValue)
         {
-            baseQuery = baseQuery.Where(e => e.IsMovie == query.IsMovie);
+            baseQuery = baseQuery.Where(e => e.IsMovie == filter.IsMovie);
         }
 
-        if (query.IsSeries.HasValue)
+        if (filter.IsSeries.HasValue)
         {
-            baseQuery = baseQuery.Where(e => e.IsSeries == query.IsSeries);
+            baseQuery = baseQuery.Where(e => e.IsSeries == filter.IsSeries);
         }
 
-        if (query.IsSports.HasValue)
+        if (filter.IsSports.HasValue)
         {
-            if (query.IsSports.Value)
+            if (filter.IsSports.Value)
             {
                 tags.Add("Sports");
             }
@@ -551,9 +605,9 @@ public class BaseItemManager : IItemRepository
             }
         }
 
-        if (query.IsNews.HasValue)
+        if (filter.IsNews.HasValue)
         {
-            if (query.IsNews.Value)
+            if (filter.IsNews.Value)
             {
                 tags.Add("News");
             }
@@ -563,9 +617,9 @@ public class BaseItemManager : IItemRepository
             }
         }
 
-        if (query.IsKids.HasValue)
+        if (filter.IsKids.HasValue)
         {
-            if (query.IsKids.Value)
+            if (filter.IsKids.Value)
             {
                 tags.Add("Kids");
             }
@@ -575,21 +629,21 @@ public class BaseItemManager : IItemRepository
             }
         }
 
-        if (!string.IsNullOrEmpty(query.SearchTerm))
+        if (!string.IsNullOrEmpty(filter.SearchTerm))
         {
-            baseQuery = baseQuery.Where(e => e.CleanName!.Contains(query.SearchTerm, StringComparison.InvariantCultureIgnoreCase) || (e.OriginalTitle != null && e.OriginalTitle.Contains(query.SearchTerm, StringComparison.InvariantCultureIgnoreCase)));
+            baseQuery = baseQuery.Where(e => e.CleanName!.Contains(filter.SearchTerm, StringComparison.InvariantCultureIgnoreCase) || (e.OriginalTitle != null && e.OriginalTitle.Contains(filter.SearchTerm, StringComparison.InvariantCultureIgnoreCase)));
         }
 
-        if (query.IsFolder.HasValue)
+        if (filter.IsFolder.HasValue)
         {
-            baseQuery = baseQuery.Where(e => e.IsFolder == query.IsFolder);
+            baseQuery = baseQuery.Where(e => e.IsFolder == filter.IsFolder);
         }
 
-        var includeTypes = query.IncludeItemTypes;
+        var includeTypes = filter.IncludeItemTypes;
         // Only specify excluded types if no included types are specified
-        if (query.IncludeItemTypes.Length == 0)
+        if (filter.IncludeItemTypes.Length == 0)
         {
-            var excludeTypes = query.ExcludeItemTypes;
+            var excludeTypes = filter.ExcludeItemTypes;
             if (excludeTypes.Length == 1)
             {
                 if (_baseItemKindNames.TryGetValue(excludeTypes[0], out var excludeTypeName))
@@ -632,82 +686,82 @@ public class BaseItemManager : IItemRepository
             baseQuery = baseQuery.Where(e => includeTypeName.Contains(e.Type));
         }
 
-        if (query.ChannelIds.Count == 1)
+        if (filter.ChannelIds.Count == 1)
         {
-            baseQuery = baseQuery.Where(e => e.ChannelId == query.ChannelIds[0].ToString("N", CultureInfo.InvariantCulture));
+            baseQuery = baseQuery.Where(e => e.ChannelId == filter.ChannelIds[0].ToString("N", CultureInfo.InvariantCulture));
         }
-        else if (query.ChannelIds.Count > 1)
+        else if (filter.ChannelIds.Count > 1)
         {
-            baseQuery = baseQuery.Where(e => query.ChannelIds.Select(f => f.ToString("N", CultureInfo.InvariantCulture)).Contains(e.ChannelId));
-        }
-
-        if (!query.ParentId.IsEmpty())
-        {
-            baseQuery = baseQuery.Where(e => e.ParentId.Equals(query.ParentId));
+            baseQuery = baseQuery.Where(e => filter.ChannelIds.Select(f => f.ToString("N", CultureInfo.InvariantCulture)).Contains(e.ChannelId));
         }
 
-        if (!string.IsNullOrWhiteSpace(query.Path))
+        if (!filter.ParentId.IsEmpty())
         {
-            baseQuery = baseQuery.Where(e => e.Path == query.Path);
+            baseQuery = baseQuery.Where(e => e.ParentId.Equals(filter.ParentId));
         }
 
-        if (!string.IsNullOrWhiteSpace(query.PresentationUniqueKey))
+        if (!string.IsNullOrWhiteSpace(filter.Path))
         {
-            baseQuery = baseQuery.Where(e => e.PresentationUniqueKey == query.PresentationUniqueKey);
+            baseQuery = baseQuery.Where(e => e.Path == filter.Path);
         }
 
-        if (query.MinCommunityRating.HasValue)
+        if (!string.IsNullOrWhiteSpace(filter.PresentationUniqueKey))
         {
-            baseQuery = baseQuery.Where(e => e.CommunityRating >= query.MinCommunityRating);
+            baseQuery = baseQuery.Where(e => e.PresentationUniqueKey == filter.PresentationUniqueKey);
         }
 
-        if (query.MinIndexNumber.HasValue)
+        if (filter.MinCommunityRating.HasValue)
         {
-            baseQuery = baseQuery.Where(e => e.IndexNumber >= query.MinIndexNumber);
+            baseQuery = baseQuery.Where(e => e.CommunityRating >= filter.MinCommunityRating);
         }
 
-        if (query.MinParentAndIndexNumber.HasValue)
+        if (filter.MinIndexNumber.HasValue)
+        {
+            baseQuery = baseQuery.Where(e => e.IndexNumber >= filter.MinIndexNumber);
+        }
+
+        if (filter.MinParentAndIndexNumber.HasValue)
         {
             baseQuery = baseQuery
-                .Where(e => (e.ParentIndexNumber == query.MinParentAndIndexNumber.Value.ParentIndexNumber && e.IndexNumber >= query.MinParentAndIndexNumber.Value.IndexNumber) || e.ParentIndexNumber > query.MinParentAndIndexNumber.Value.ParentIndexNumber);
+                .Where(e => (e.ParentIndexNumber == filter.MinParentAndIndexNumber.Value.ParentIndexNumber && e.IndexNumber >= filter.MinParentAndIndexNumber.Value.IndexNumber) || e.ParentIndexNumber > filter.MinParentAndIndexNumber.Value.ParentIndexNumber);
         }
 
-        if (query.MinDateCreated.HasValue)
+        if (filter.MinDateCreated.HasValue)
         {
-            baseQuery = baseQuery.Where(e => e.DateCreated >= query.MinDateCreated);
+            baseQuery = baseQuery.Where(e => e.DateCreated >= filter.MinDateCreated);
         }
 
-        if (query.MinDateLastSaved.HasValue)
+        if (filter.MinDateLastSaved.HasValue)
         {
-            baseQuery = baseQuery.Where(e => e.DateLastSaved != null && e.DateLastSaved >= query.MinDateLastSaved.Value);
+            baseQuery = baseQuery.Where(e => e.DateLastSaved != null && e.DateLastSaved >= filter.MinDateLastSaved.Value);
         }
 
-        if (query.MinDateLastSavedForUser.HasValue)
+        if (filter.MinDateLastSavedForUser.HasValue)
         {
-            baseQuery = baseQuery.Where(e => e.DateLastSaved != null && e.DateLastSaved >= query.MinDateLastSavedForUser.Value);
+            baseQuery = baseQuery.Where(e => e.DateLastSaved != null && e.DateLastSaved >= filter.MinDateLastSavedForUser.Value);
         }
 
-        if (query.IndexNumber.HasValue)
+        if (filter.IndexNumber.HasValue)
         {
-            baseQuery = baseQuery.Where(e => e.IndexNumber == query.IndexNumber.Value);
+            baseQuery = baseQuery.Where(e => e.IndexNumber == filter.IndexNumber.Value);
         }
 
-        if (query.ParentIndexNumber.HasValue)
+        if (filter.ParentIndexNumber.HasValue)
         {
-            baseQuery = baseQuery.Where(e => e.ParentIndexNumber == query.ParentIndexNumber.Value);
+            baseQuery = baseQuery.Where(e => e.ParentIndexNumber == filter.ParentIndexNumber.Value);
         }
 
-        if (query.ParentIndexNumberNotEquals.HasValue)
+        if (filter.ParentIndexNumberNotEquals.HasValue)
         {
-            baseQuery = baseQuery.Where(e => e.ParentIndexNumber != query.ParentIndexNumberNotEquals.Value || e.ParentIndexNumber == null);
+            baseQuery = baseQuery.Where(e => e.ParentIndexNumber != filter.ParentIndexNumberNotEquals.Value || e.ParentIndexNumber == null);
         }
 
-        var minEndDate = query.MinEndDate;
-        var maxEndDate = query.MaxEndDate;
+        var minEndDate = filter.MinEndDate;
+        var maxEndDate = filter.MaxEndDate;
 
-        if (query.HasAired.HasValue)
+        if (filter.HasAired.HasValue)
         {
-            if (query.HasAired.Value)
+            if (filter.HasAired.Value)
             {
                 maxEndDate = DateTime.UtcNow;
             }
@@ -727,34 +781,34 @@ public class BaseItemManager : IItemRepository
             baseQuery = baseQuery.Where(e => e.EndDate <= maxEndDate);
         }
 
-        if (query.MinStartDate.HasValue)
+        if (filter.MinStartDate.HasValue)
         {
-            baseQuery = baseQuery.Where(e => e.StartDate >= query.MinStartDate.Value);
+            baseQuery = baseQuery.Where(e => e.StartDate >= filter.MinStartDate.Value);
         }
 
-        if (query.MaxStartDate.HasValue)
+        if (filter.MaxStartDate.HasValue)
         {
-            baseQuery = baseQuery.Where(e => e.StartDate <= query.MaxStartDate.Value);
+            baseQuery = baseQuery.Where(e => e.StartDate <= filter.MaxStartDate.Value);
         }
 
-        if (query.MinPremiereDate.HasValue)
+        if (filter.MinPremiereDate.HasValue)
         {
-            baseQuery = baseQuery.Where(e => e.PremiereDate <= query.MinPremiereDate.Value);
+            baseQuery = baseQuery.Where(e => e.PremiereDate <= filter.MinPremiereDate.Value);
         }
 
-        if (query.MaxPremiereDate.HasValue)
+        if (filter.MaxPremiereDate.HasValue)
         {
-            baseQuery = baseQuery.Where(e => e.PremiereDate <= query.MaxPremiereDate.Value);
+            baseQuery = baseQuery.Where(e => e.PremiereDate <= filter.MaxPremiereDate.Value);
         }
 
-        if (query.TrailerTypes.Length > 0)
+        if (filter.TrailerTypes.Length > 0)
         {
-            baseQuery = baseQuery.Where(e => query.TrailerTypes.Any(f => e.TrailerTypes!.Contains(f.ToString(), StringComparison.OrdinalIgnoreCase)));
+            baseQuery = baseQuery.Where(e => filter.TrailerTypes.Any(f => e.TrailerTypes!.Contains(f.ToString(), StringComparison.OrdinalIgnoreCase)));
         }
 
-        if (query.IsAiring.HasValue)
+        if (filter.IsAiring.HasValue)
         {
-            if (query.IsAiring.Value)
+            if (filter.IsAiring.Value)
             {
                 baseQuery = baseQuery.Where(e => e.StartDate <= now && e.EndDate >= now);
             }
@@ -764,20 +818,20 @@ public class BaseItemManager : IItemRepository
             }
         }
 
-        if (query.PersonIds.Length > 0)
+        if (filter.PersonIds.Length > 0)
         {
             baseQuery = baseQuery
                 .Where(e =>
-                    context.Peoples.Where(w => context.BaseItems.Where(w => query.PersonIds.Contains(w.Id)).Any(f => f.Name == w.Name))
+                    context.Peoples.Where(w => context.BaseItems.Where(w => filter.PersonIds.Contains(w.Id)).Any(f => f.Name == w.Name))
                         .Any(f => f.ItemId.Equals(e.Id)));
         }
 
-        if (!string.IsNullOrWhiteSpace(query.Person))
+        if (!string.IsNullOrWhiteSpace(filter.Person))
         {
-            baseQuery = baseQuery.Where(e => e.Peoples!.Any(f => f.Name == query.Person));
+            baseQuery = baseQuery.Where(e => e.Peoples!.Any(f => f.Name == filter.Person));
         }
 
-        if (!string.IsNullOrWhiteSpace(query.MinSortName))
+        if (!string.IsNullOrWhiteSpace(filter.MinSortName))
         {
             // this does not makes sense.
             // baseQuery = baseQuery.Where(e => e.SortName >= query.MinSortName);
@@ -785,132 +839,132 @@ public class BaseItemManager : IItemRepository
             // statement?.TryBind("@MinSortName", query.MinSortName);
         }
 
-        if (!string.IsNullOrWhiteSpace(query.ExternalSeriesId))
+        if (!string.IsNullOrWhiteSpace(filter.ExternalSeriesId))
         {
-            baseQuery = baseQuery.Where(e => e.ExternalSeriesId == query.ExternalSeriesId);
+            baseQuery = baseQuery.Where(e => e.ExternalSeriesId == filter.ExternalSeriesId);
         }
 
-        if (!string.IsNullOrWhiteSpace(query.ExternalId))
+        if (!string.IsNullOrWhiteSpace(filter.ExternalId))
         {
-            baseQuery = baseQuery.Where(e => e.ExternalId == query.ExternalId);
+            baseQuery = baseQuery.Where(e => e.ExternalId == filter.ExternalId);
         }
 
-        if (!string.IsNullOrWhiteSpace(query.Name))
+        if (!string.IsNullOrWhiteSpace(filter.Name))
         {
-            var cleanName = GetCleanValue(query.Name);
+            var cleanName = GetCleanValue(filter.Name);
             baseQuery = baseQuery.Where(e => e.CleanName == cleanName);
         }
 
         // These are the same, for now
-        var nameContains = query.NameContains;
+        var nameContains = filter.NameContains;
         if (!string.IsNullOrWhiteSpace(nameContains))
         {
             baseQuery = baseQuery.Where(e =>
-                e.CleanName == query.NameContains
-                || e.OriginalTitle!.Contains(query.NameContains!, StringComparison.Ordinal));
+                e.CleanName == filter.NameContains
+                || e.OriginalTitle!.Contains(filter.NameContains!, StringComparison.Ordinal));
         }
 
-        if (!string.IsNullOrWhiteSpace(query.NameStartsWith))
+        if (!string.IsNullOrWhiteSpace(filter.NameStartsWith))
         {
-            baseQuery = baseQuery.Where(e => e.SortName!.Contains(query.NameStartsWith, StringComparison.OrdinalIgnoreCase));
+            baseQuery = baseQuery.Where(e => e.SortName!.Contains(filter.NameStartsWith, StringComparison.OrdinalIgnoreCase));
         }
 
-        if (!string.IsNullOrWhiteSpace(query.NameStartsWithOrGreater))
-        {
-            // i hate this
-            baseQuery = baseQuery.Where(e => e.SortName![0] > query.NameStartsWithOrGreater[0]);
-        }
-
-        if (!string.IsNullOrWhiteSpace(query.NameLessThan))
+        if (!string.IsNullOrWhiteSpace(filter.NameStartsWithOrGreater))
         {
             // i hate this
-            baseQuery = baseQuery.Where(e => e.SortName![0] < query.NameLessThan[0]);
+            baseQuery = baseQuery.Where(e => e.SortName![0] > filter.NameStartsWithOrGreater[0]);
         }
 
-        if (query.ImageTypes.Length > 0)
+        if (!string.IsNullOrWhiteSpace(filter.NameLessThan))
         {
-            baseQuery = baseQuery.Where(e => query.ImageTypes.Any(f => e.Images!.Contains(f.ToString(), StringComparison.InvariantCulture)));
+            // i hate this
+            baseQuery = baseQuery.Where(e => e.SortName![0] < filter.NameLessThan[0]);
         }
 
-        if (query.IsLiked.HasValue)
+        if (filter.ImageTypes.Length > 0)
         {
-            baseQuery = baseQuery
-                .Where(e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id) && f.Key == e.UserDataKey)!.Rating >= UserItemData.MinLikeValue);
+            baseQuery = baseQuery.Where(e => filter.ImageTypes.Any(f => e.Images!.Contains(f.ToString(), StringComparison.InvariantCulture)));
         }
 
-        if (query.IsFavoriteOrLiked.HasValue)
-        {
-            baseQuery = baseQuery
-                .Where(e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id) && f.Key == e.UserDataKey)!.IsFavorite == query.IsFavoriteOrLiked);
-        }
-
-        if (query.IsFavorite.HasValue)
+        if (filter.IsLiked.HasValue)
         {
             baseQuery = baseQuery
-                .Where(e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id) && f.Key == e.UserDataKey)!.IsFavorite == query.IsFavorite);
+                .Where(e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(filter.User!.Id) && f.Key == e.UserDataKey)!.Rating >= UserItemData.MinLikeValue);
         }
 
-        if (query.IsPlayed.HasValue)
+        if (filter.IsFavoriteOrLiked.HasValue)
         {
             baseQuery = baseQuery
-                   .Where(e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id) && f.Key == e.UserDataKey)!.Played == query.IsPlayed.Value);
+                .Where(e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(filter.User!.Id) && f.Key == e.UserDataKey)!.IsFavorite == filter.IsFavoriteOrLiked);
         }
 
-        if (query.IsResumable.HasValue)
+        if (filter.IsFavorite.HasValue)
         {
-            if (query.IsResumable.Value)
+            baseQuery = baseQuery
+                .Where(e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(filter.User!.Id) && f.Key == e.UserDataKey)!.IsFavorite == filter.IsFavorite);
+        }
+
+        if (filter.IsPlayed.HasValue)
+        {
+            baseQuery = baseQuery
+                   .Where(e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(filter.User!.Id) && f.Key == e.UserDataKey)!.Played == filter.IsPlayed.Value);
+        }
+
+        if (filter.IsResumable.HasValue)
+        {
+            if (filter.IsResumable.Value)
             {
                 baseQuery = baseQuery
-                       .Where(e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id) && f.Key == e.UserDataKey)!.PlaybackPositionTicks > 0);
+                       .Where(e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(filter.User!.Id) && f.Key == e.UserDataKey)!.PlaybackPositionTicks > 0);
             }
             else
             {
                 baseQuery = baseQuery
-                       .Where(e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id) && f.Key == e.UserDataKey)!.PlaybackPositionTicks == 0);
+                       .Where(e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(filter.User!.Id) && f.Key == e.UserDataKey)!.PlaybackPositionTicks == 0);
             }
         }
 
-        var artistQuery = context.BaseItems.Where(w => query.ArtistIds.Contains(w.Id));
+        var artistQuery = context.BaseItems.Where(w => filter.ArtistIds.Contains(w.Id));
 
-        if (query.ArtistIds.Length > 0)
+        if (filter.ArtistIds.Length > 0)
         {
             baseQuery = baseQuery
                    .Where(e => e.ItemValues!.Any(f => f.Type <= 1 && artistQuery.Any(w => w.CleanName == f.CleanValue)));
         }
 
-        if (query.AlbumArtistIds.Length > 0)
+        if (filter.AlbumArtistIds.Length > 0)
         {
             baseQuery = baseQuery
                .Where(e => e.ItemValues!.Any(f => f.Type == 1 && artistQuery.Any(w => w.CleanName == f.CleanValue)));
         }
 
-        if (query.ContributingArtistIds.Length > 0)
+        if (filter.ContributingArtistIds.Length > 0)
         {
-            var contributingArtists = context.BaseItems.Where(e => query.ContributingArtistIds.Contains(e.Id));
+            var contributingArtists = context.BaseItems.Where(e => filter.ContributingArtistIds.Contains(e.Id));
             baseQuery = baseQuery.Where(e => e.ItemValues!.Any(f => f.Type == 0 && contributingArtists.Any(w => w.CleanName == f.CleanValue)));
         }
 
-        if (query.AlbumIds.Length > 0)
+        if (filter.AlbumIds.Length > 0)
         {
-            baseQuery = baseQuery.Where(e => context.BaseItems.Where(e => query.AlbumIds.Contains(e.Id)).Any(f => f.Name == e.Album));
+            baseQuery = baseQuery.Where(e => context.BaseItems.Where(e => filter.AlbumIds.Contains(e.Id)).Any(f => f.Name == e.Album));
         }
 
-        if (query.ExcludeArtistIds.Length > 0)
+        if (filter.ExcludeArtistIds.Length > 0)
         {
-            var excludeArtistQuery = context.BaseItems.Where(w => query.ExcludeArtistIds.Contains(w.Id));
+            var excludeArtistQuery = context.BaseItems.Where(w => filter.ExcludeArtistIds.Contains(w.Id));
             baseQuery = baseQuery
                    .Where(e => !e.ItemValues!.Any(f => f.Type <= 1 && artistQuery.Any(w => w.CleanName == f.CleanValue)));
         }
 
-        if (query.GenreIds.Count > 0)
+        if (filter.GenreIds.Count > 0)
         {
             baseQuery = baseQuery
-                   .Where(e => e.ItemValues!.Any(f => f.Type == 2 && context.BaseItems.Where(w => query.GenreIds.Contains(w.Id)).Any(w => w.CleanName == f.CleanValue)));
+                   .Where(e => e.ItemValues!.Any(f => f.Type == 2 && context.BaseItems.Where(w => filter.GenreIds.Contains(w.Id)).Any(w => w.CleanName == f.CleanValue)));
         }
 
-        if (query.Genres.Count > 0)
+        if (filter.Genres.Count > 0)
         {
-            var cleanGenres = query.Genres.Select(e => GetCleanValue(e)).ToArray();
+            var cleanGenres = filter.Genres.Select(e => GetCleanValue(e)).ToArray();
             baseQuery = baseQuery
                    .Where(e => e.ItemValues!.Any(f => f.Type == 2 && cleanGenres.Contains(f.CleanValue)));
         }
@@ -929,82 +983,82 @@ public class BaseItemManager : IItemRepository
                    .Where(e => !e.ItemValues!.Any(f => f.Type == 4 && cleanValues.Contains(f.CleanValue)));
         }
 
-        if (query.StudioIds.Length > 0)
+        if (filter.StudioIds.Length > 0)
         {
             baseQuery = baseQuery
-                   .Where(e => e.ItemValues!.Any(f => f.Type == 3 && context.BaseItems.Where(w => query.StudioIds.Contains(w.Id)).Any(w => w.CleanName == f.CleanValue)));
+                   .Where(e => e.ItemValues!.Any(f => f.Type == 3 && context.BaseItems.Where(w => filter.StudioIds.Contains(w.Id)).Any(w => w.CleanName == f.CleanValue)));
         }
 
-        if (query.OfficialRatings.Length > 0)
+        if (filter.OfficialRatings.Length > 0)
         {
             baseQuery = baseQuery
-                   .Where(e => query.OfficialRatings.Contains(e.OfficialRating));
+                   .Where(e => filter.OfficialRatings.Contains(e.OfficialRating));
         }
 
-        if (query.HasParentalRating ?? false)
+        if (filter.HasParentalRating ?? false)
         {
-            if (query.MinParentalRating.HasValue)
+            if (filter.MinParentalRating.HasValue)
             {
                 baseQuery = baseQuery
-                   .Where(e => e.InheritedParentalRatingValue >= query.MinParentalRating.Value);
+                   .Where(e => e.InheritedParentalRatingValue >= filter.MinParentalRating.Value);
             }
 
-            if (query.MaxParentalRating.HasValue)
+            if (filter.MaxParentalRating.HasValue)
             {
                 baseQuery = baseQuery
-                   .Where(e => e.InheritedParentalRatingValue < query.MaxParentalRating.Value);
+                   .Where(e => e.InheritedParentalRatingValue < filter.MaxParentalRating.Value);
             }
         }
-        else if (query.BlockUnratedItems.Length > 0)
+        else if (filter.BlockUnratedItems.Length > 0)
         {
-            if (query.MinParentalRating.HasValue)
+            if (filter.MinParentalRating.HasValue)
             {
-                if (query.MaxParentalRating.HasValue)
+                if (filter.MaxParentalRating.HasValue)
                 {
                     baseQuery = baseQuery
-                        .Where(e => (e.InheritedParentalRatingValue == null && !query.BlockUnratedItems.Select(e => e.ToString()).Contains(e.UnratedType))
-                        || (e.InheritedParentalRatingValue >= query.MinParentalRating && e.InheritedParentalRatingValue <= query.MaxParentalRating));
+                        .Where(e => (e.InheritedParentalRatingValue == null && !filter.BlockUnratedItems.Select(e => e.ToString()).Contains(e.UnratedType))
+                        || (e.InheritedParentalRatingValue >= filter.MinParentalRating && e.InheritedParentalRatingValue <= filter.MaxParentalRating));
                 }
                 else
                 {
                     baseQuery = baseQuery
-                        .Where(e => (e.InheritedParentalRatingValue == null && !query.BlockUnratedItems.Select(e => e.ToString()).Contains(e.UnratedType))
-                        || e.InheritedParentalRatingValue >= query.MinParentalRating);
+                        .Where(e => (e.InheritedParentalRatingValue == null && !filter.BlockUnratedItems.Select(e => e.ToString()).Contains(e.UnratedType))
+                        || e.InheritedParentalRatingValue >= filter.MinParentalRating);
                 }
             }
             else
             {
                 baseQuery = baseQuery
-                    .Where(e => e.InheritedParentalRatingValue != null && !query.BlockUnratedItems.Select(e => e.ToString()).Contains(e.UnratedType));
+                    .Where(e => e.InheritedParentalRatingValue != null && !filter.BlockUnratedItems.Select(e => e.ToString()).Contains(e.UnratedType));
             }
         }
-        else if (query.MinParentalRating.HasValue)
+        else if (filter.MinParentalRating.HasValue)
         {
-            if (query.MaxParentalRating.HasValue)
+            if (filter.MaxParentalRating.HasValue)
             {
                 baseQuery = baseQuery
-                    .Where(e => e.InheritedParentalRatingValue != null && e.InheritedParentalRatingValue >= query.MinParentalRating.Value && e.InheritedParentalRatingValue <= query.MaxParentalRating.Value);
+                    .Where(e => e.InheritedParentalRatingValue != null && e.InheritedParentalRatingValue >= filter.MinParentalRating.Value && e.InheritedParentalRatingValue <= filter.MaxParentalRating.Value);
             }
             else
             {
                 baseQuery = baseQuery
-                    .Where(e => e.InheritedParentalRatingValue != null && e.InheritedParentalRatingValue >= query.MinParentalRating.Value);
+                    .Where(e => e.InheritedParentalRatingValue != null && e.InheritedParentalRatingValue >= filter.MinParentalRating.Value);
             }
         }
-        else if (query.MaxParentalRating.HasValue)
+        else if (filter.MaxParentalRating.HasValue)
         {
             baseQuery = baseQuery
-                .Where(e => e.InheritedParentalRatingValue != null && e.InheritedParentalRatingValue >= query.MaxParentalRating.Value);
+                .Where(e => e.InheritedParentalRatingValue != null && e.InheritedParentalRatingValue >= filter.MaxParentalRating.Value);
         }
-        else if (!query.HasParentalRating ?? false)
+        else if (!filter.HasParentalRating ?? false)
         {
             baseQuery = baseQuery
                 .Where(e => e.InheritedParentalRatingValue == null);
         }
 
-        if (query.HasOfficialRating.HasValue)
+        if (filter.HasOfficialRating.HasValue)
         {
-            if (query.HasOfficialRating.Value)
+            if (filter.HasOfficialRating.Value)
             {
                 baseQuery = baseQuery
                     .Where(e => e.OfficialRating != null && e.OfficialRating != string.Empty);
@@ -1016,9 +1070,9 @@ public class BaseItemManager : IItemRepository
             }
         }
 
-        if (query.HasOverview.HasValue)
+        if (filter.HasOverview.HasValue)
         {
-            if (query.HasOverview.Value)
+            if (filter.HasOverview.Value)
             {
                 baseQuery = baseQuery
                     .Where(e => e.Overview != null && e.Overview != string.Empty);
@@ -1030,9 +1084,9 @@ public class BaseItemManager : IItemRepository
             }
         }
 
-        if (query.HasOwnerId.HasValue)
+        if (filter.HasOwnerId.HasValue)
         {
-            if (query.HasOwnerId.Value)
+            if (filter.HasOwnerId.Value)
             {
                 baseQuery = baseQuery
                     .Where(e => e.OwnerId != null);
@@ -1044,87 +1098,87 @@ public class BaseItemManager : IItemRepository
             }
         }
 
-        if (!string.IsNullOrWhiteSpace(query.HasNoAudioTrackWithLanguage))
+        if (!string.IsNullOrWhiteSpace(filter.HasNoAudioTrackWithLanguage))
         {
             baseQuery = baseQuery
-                .Where(e => !e.MediaStreams!.Any(e => e.StreamType == "Audio" && e.Language == query.HasNoAudioTrackWithLanguage));
+                .Where(e => !e.MediaStreams!.Any(e => e.StreamType == "Audio" && e.Language == filter.HasNoAudioTrackWithLanguage));
         }
 
-        if (!string.IsNullOrWhiteSpace(query.HasNoInternalSubtitleTrackWithLanguage))
+        if (!string.IsNullOrWhiteSpace(filter.HasNoInternalSubtitleTrackWithLanguage))
         {
             baseQuery = baseQuery
-                .Where(e => !e.MediaStreams!.Any(e => e.StreamType == "Subtitle" && !e.IsExternal && e.Language == query.HasNoInternalSubtitleTrackWithLanguage));
+                .Where(e => !e.MediaStreams!.Any(e => e.StreamType == "Subtitle" && !e.IsExternal && e.Language == filter.HasNoInternalSubtitleTrackWithLanguage));
         }
 
-        if (!string.IsNullOrWhiteSpace(query.HasNoExternalSubtitleTrackWithLanguage))
+        if (!string.IsNullOrWhiteSpace(filter.HasNoExternalSubtitleTrackWithLanguage))
         {
             baseQuery = baseQuery
-                .Where(e => !e.MediaStreams!.Any(e => e.StreamType == "Subtitle" && e.IsExternal && e.Language == query.HasNoExternalSubtitleTrackWithLanguage));
+                .Where(e => !e.MediaStreams!.Any(e => e.StreamType == "Subtitle" && e.IsExternal && e.Language == filter.HasNoExternalSubtitleTrackWithLanguage));
         }
 
-        if (!string.IsNullOrWhiteSpace(query.HasNoSubtitleTrackWithLanguage))
+        if (!string.IsNullOrWhiteSpace(filter.HasNoSubtitleTrackWithLanguage))
         {
             baseQuery = baseQuery
-                .Where(e => !e.MediaStreams!.Any(e => e.StreamType == "Subtitle" && e.Language == query.HasNoSubtitleTrackWithLanguage));
+                .Where(e => !e.MediaStreams!.Any(e => e.StreamType == "Subtitle" && e.Language == filter.HasNoSubtitleTrackWithLanguage));
         }
 
-        if (query.HasSubtitles.HasValue)
+        if (filter.HasSubtitles.HasValue)
         {
             baseQuery = baseQuery
-                .Where(e => e.MediaStreams!.Any(e => e.StreamType == "Subtitle") == query.HasSubtitles.Value);
+                .Where(e => e.MediaStreams!.Any(e => e.StreamType == "Subtitle") == filter.HasSubtitles.Value);
         }
 
-        if (query.HasChapterImages.HasValue)
+        if (filter.HasChapterImages.HasValue)
         {
             baseQuery = baseQuery
-                .Where(e => e.Chapters!.Any(e => e.ImagePath != null) == query.HasChapterImages.Value);
+                .Where(e => e.Chapters!.Any(e => e.ImagePath != null) == filter.HasChapterImages.Value);
         }
 
-        if (query.HasDeadParentId.HasValue && query.HasDeadParentId.Value)
+        if (filter.HasDeadParentId.HasValue && filter.HasDeadParentId.Value)
         {
             baseQuery = baseQuery
                 .Where(e => e.ParentId.HasValue && context.BaseItems.Any(f => f.Id.Equals(e.ParentId.Value)));
         }
 
-        if (query.IsDeadArtist.HasValue && query.IsDeadArtist.Value)
+        if (filter.IsDeadArtist.HasValue && filter.IsDeadArtist.Value)
         {
             baseQuery = baseQuery
                 .Where(e => e.ItemValues!.Any(f => (f.Type == 0 || f.Type == 1) && f.CleanValue == e.CleanName));
         }
 
-        if (query.IsDeadStudio.HasValue && query.IsDeadStudio.Value)
+        if (filter.IsDeadStudio.HasValue && filter.IsDeadStudio.Value)
         {
             baseQuery = baseQuery
                 .Where(e => e.ItemValues!.Any(f => f.Type == 3 && f.CleanValue == e.CleanName));
         }
 
-        if (query.IsDeadPerson.HasValue && query.IsDeadPerson.Value)
+        if (filter.IsDeadPerson.HasValue && filter.IsDeadPerson.Value)
         {
             baseQuery = baseQuery
                 .Where(e => !e.Peoples!.Any(f => f.Name == e.Name));
         }
 
-        if (query.Years.Length == 1)
+        if (filter.Years.Length == 1)
         {
             baseQuery = baseQuery
-                .Where(e => e.ProductionYear == query.Years[0]);
+                .Where(e => e.ProductionYear == filter.Years[0]);
         }
-        else if (query.Years.Length > 1)
+        else if (filter.Years.Length > 1)
         {
             baseQuery = baseQuery
-                .Where(e => query.Years.Any(f => f == e.ProductionYear));
+                .Where(e => filter.Years.Any(f => f == e.ProductionYear));
         }
 
-        var isVirtualItem = query.IsVirtualItem ?? query.IsMissing;
+        var isVirtualItem = filter.IsVirtualItem ?? filter.IsMissing;
         if (isVirtualItem.HasValue)
         {
             baseQuery = baseQuery
                 .Where(e => e.IsVirtualItem == isVirtualItem.Value);
         }
 
-        if (query.IsSpecialSeason.HasValue)
+        if (filter.IsSpecialSeason.HasValue)
         {
-            if (query.IsSpecialSeason.Value)
+            if (filter.IsSpecialSeason.Value)
             {
                 baseQuery = baseQuery
                     .Where(e => e.IndexNumber == 0);
@@ -1136,9 +1190,9 @@ public class BaseItemManager : IItemRepository
             }
         }
 
-        if (query.IsUnaired.HasValue)
+        if (filter.IsUnaired.HasValue)
         {
-            if (query.IsUnaired.Value)
+            if (filter.IsUnaired.Value)
             {
                 baseQuery = baseQuery
                     .Where(e => e.PremiereDate >= now);
@@ -1150,60 +1204,60 @@ public class BaseItemManager : IItemRepository
             }
         }
 
-        if (query.MediaTypes.Length == 1)
+        if (filter.MediaTypes.Length == 1)
         {
             baseQuery = baseQuery
-                .Where(e => e.MediaType == query.MediaTypes[0].ToString());
+                .Where(e => e.MediaType == filter.MediaTypes[0].ToString());
         }
-        else if (query.MediaTypes.Length > 1)
+        else if (filter.MediaTypes.Length > 1)
         {
             baseQuery = baseQuery
-                .Where(e => query.MediaTypes.Select(f => f.ToString()).Contains(e.MediaType));
+                .Where(e => filter.MediaTypes.Select(f => f.ToString()).Contains(e.MediaType));
         }
 
-        if (query.ItemIds.Length > 0)
+        if (filter.ItemIds.Length > 0)
         {
             baseQuery = baseQuery
-                .Where(e => query.ItemIds.Contains(e.Id));
+                .Where(e => filter.ItemIds.Contains(e.Id));
         }
 
-        if (query.ExcludeItemIds.Length > 0)
+        if (filter.ExcludeItemIds.Length > 0)
         {
             baseQuery = baseQuery
-                .Where(e => !query.ItemIds.Contains(e.Id));
+                .Where(e => !filter.ItemIds.Contains(e.Id));
         }
 
-        if (query.ExcludeProviderIds is not null && query.ExcludeProviderIds.Count > 0)
+        if (filter.ExcludeProviderIds is not null && filter.ExcludeProviderIds.Count > 0)
         {
-            baseQuery = baseQuery.Where(e => !e.Provider!.All(f => !query.ExcludeProviderIds.All(w => f.ProviderId == w.Key && f.ProviderValue == w.Value)));
+            baseQuery = baseQuery.Where(e => !e.Provider!.All(f => !filter.ExcludeProviderIds.All(w => f.ProviderId == w.Key && f.ProviderValue == w.Value)));
         }
 
-        if (query.HasAnyProviderId is not null && query.HasAnyProviderId.Count > 0)
+        if (filter.HasAnyProviderId is not null && filter.HasAnyProviderId.Count > 0)
         {
-            baseQuery = baseQuery.Where(e => e.Provider!.Any(f => !query.HasAnyProviderId.Any(w => f.ProviderId == w.Key && f.ProviderValue == w.Value)));
+            baseQuery = baseQuery.Where(e => e.Provider!.Any(f => !filter.HasAnyProviderId.Any(w => f.ProviderId == w.Key && f.ProviderValue == w.Value)));
         }
 
-        if (query.HasImdbId.HasValue)
+        if (filter.HasImdbId.HasValue)
         {
             baseQuery = baseQuery.Where(e => e.Provider!.Any(f => f.ProviderId == "imdb"));
         }
 
-        if (query.HasTmdbId.HasValue)
+        if (filter.HasTmdbId.HasValue)
         {
             baseQuery = baseQuery.Where(e => e.Provider!.Any(f => f.ProviderId == "tmdb"));
         }
 
-        if (query.HasTvdbId.HasValue)
+        if (filter.HasTvdbId.HasValue)
         {
             baseQuery = baseQuery.Where(e => e.Provider!.Any(f => f.ProviderId == "tvdb"));
         }
 
-        var queryTopParentIds = query.TopParentIds;
+        var queryTopParentIds = filter.TopParentIds;
 
         if (queryTopParentIds.Length > 0)
         {
-            var includedItemByNameTypes = GetItemByNameTypesInQuery(query);
-            var enableItemsByName = (query.IncludeItemsByName ?? false) && includedItemByNameTypes.Count > 0;
+            var includedItemByNameTypes = GetItemByNameTypesInQuery(filter);
+            var enableItemsByName = (filter.IncludeItemsByName ?? false) && includedItemByNameTypes.Count > 0;
             if (enableItemsByName && includedItemByNameTypes.Count > 0)
             {
                 baseQuery = baseQuery.Where(e => includedItemByNameTypes.Contains(e.Type) || queryTopParentIds.Any(w => w.Equals(e.TopParentId!.Value)));
@@ -1214,31 +1268,31 @@ public class BaseItemManager : IItemRepository
             }
         }
 
-        if (query.AncestorIds.Length > 0)
+        if (filter.AncestorIds.Length > 0)
         {
-            baseQuery = baseQuery.Where(e => e.AncestorIds!.Any(f => query.AncestorIds.Contains(f.Id)));
+            baseQuery = baseQuery.Where(e => e.AncestorIds!.Any(f => filter.AncestorIds.Contains(f.Id)));
         }
 
-        if (!string.IsNullOrWhiteSpace(query.AncestorWithPresentationUniqueKey))
-        {
-            baseQuery = baseQuery
-                .Where(e => context.BaseItems.Where(f => f.PresentationUniqueKey == query.AncestorWithPresentationUniqueKey).Any(f => f.AncestorIds!.Any(w => w.ItemId.Equals(f.Id))));
-        }
-
-        if (!string.IsNullOrWhiteSpace(query.SeriesPresentationUniqueKey))
+        if (!string.IsNullOrWhiteSpace(filter.AncestorWithPresentationUniqueKey))
         {
             baseQuery = baseQuery
-                .Where(e => e.SeriesPresentationUniqueKey == query.SeriesPresentationUniqueKey);
+                .Where(e => context.BaseItems.Where(f => f.PresentationUniqueKey == filter.AncestorWithPresentationUniqueKey).Any(f => f.AncestorIds!.Any(w => w.ItemId.Equals(f.Id))));
         }
 
-        if (query.ExcludeInheritedTags.Length > 0)
+        if (!string.IsNullOrWhiteSpace(filter.SeriesPresentationUniqueKey))
+        {
+            baseQuery = baseQuery
+                .Where(e => e.SeriesPresentationUniqueKey == filter.SeriesPresentationUniqueKey);
+        }
+
+        if (filter.ExcludeInheritedTags.Length > 0)
         {
             baseQuery = baseQuery
                 .Where(e => !e.ItemValues!.Where(e => e.Type == 6)
-                    .Any(f => query.ExcludeInheritedTags.Contains(f.CleanValue)));
+                    .Any(f => filter.ExcludeInheritedTags.Contains(f.CleanValue)));
         }
 
-        if (query.IncludeInheritedTags.Length > 0)
+        if (filter.IncludeInheritedTags.Length > 0)
         {
             // Episodes do not store inherit tags from their parents in the database, and the tag may be still required by the client.
             // In addtion to the tags for the episodes themselves, we need to manually query its parent (the season)'s tags as well.
@@ -1246,10 +1300,10 @@ public class BaseItemManager : IItemRepository
             {
                 baseQuery = baseQuery
                     .Where(e => e.ItemValues!.Where(e => e.Type == 6)
-                        .Any(f => query.IncludeInheritedTags.Contains(f.CleanValue))
+                        .Any(f => filter.IncludeInheritedTags.Contains(f.CleanValue))
                         ||
                         (e.ParentId.HasValue && context.ItemValues.Where(w => w.ItemId.Equals(e.ParentId.Value))!.Where(e => e.Type == 6)
-                        .Any(f => query.IncludeInheritedTags.Contains(f.CleanValue))));
+                        .Any(f => filter.IncludeInheritedTags.Contains(f.CleanValue))));
             }
 
             // A playlist should be accessible to its owner regardless of allowed tags.
@@ -1257,39 +1311,39 @@ public class BaseItemManager : IItemRepository
             {
                 baseQuery = baseQuery
                     .Where(e => e.ItemValues!.Where(e => e.Type == 6)
-                        .Any(f => query.IncludeInheritedTags.Contains(f.CleanValue)) || e.Data!.Contains($"OwnerUserId\":\"{query.User!.Id:N}\""));
+                        .Any(f => filter.IncludeInheritedTags.Contains(f.CleanValue)) || e.Data!.Contains($"OwnerUserId\":\"{filter.User!.Id:N}\""));
                 // d                                                                      ^^ this is stupid it hate this.
             }
             else
             {
                 baseQuery = baseQuery
                     .Where(e => e.ItemValues!.Where(e => e.Type == 6)
-                        .Any(f => query.IncludeInheritedTags.Contains(f.CleanValue)));
+                        .Any(f => filter.IncludeInheritedTags.Contains(f.CleanValue)));
             }
         }
 
-        if (query.SeriesStatuses.Length > 0)
+        if (filter.SeriesStatuses.Length > 0)
         {
             baseQuery = baseQuery
-                .Where(e => query.SeriesStatuses.Any(f => e.Data!.Contains(f.ToString(), StringComparison.InvariantCultureIgnoreCase)));
+                .Where(e => filter.SeriesStatuses.Any(f => e.Data!.Contains(f.ToString(), StringComparison.InvariantCultureIgnoreCase)));
         }
 
-        if (query.BoxSetLibraryFolders.Length > 0)
+        if (filter.BoxSetLibraryFolders.Length > 0)
         {
             baseQuery = baseQuery
-                .Where(e => query.BoxSetLibraryFolders.Any(f => e.Data!.Contains(f.ToString("N", CultureInfo.InvariantCulture), StringComparison.InvariantCultureIgnoreCase)));
+                .Where(e => filter.BoxSetLibraryFolders.Any(f => e.Data!.Contains(f.ToString("N", CultureInfo.InvariantCulture), StringComparison.InvariantCultureIgnoreCase)));
         }
 
-        if (query.VideoTypes.Length > 0)
+        if (filter.VideoTypes.Length > 0)
         {
-            var videoTypeBs = query.VideoTypes.Select(e => $"\"VideoType\":\"" + e + "\"");
+            var videoTypeBs = filter.VideoTypes.Select(e => $"\"VideoType\":\"" + e + "\"");
             baseQuery = baseQuery
                 .Where(e => videoTypeBs.Any(f => e.Data!.Contains(f, StringComparison.InvariantCultureIgnoreCase)));
         }
 
-        if (query.Is3D.HasValue)
+        if (filter.Is3D.HasValue)
         {
-            if (query.Is3D.Value)
+            if (filter.Is3D.Value)
             {
                 baseQuery = baseQuery
                     .Where(e => e.Data!.Contains("Video3DFormat", StringComparison.InvariantCultureIgnoreCase));
@@ -1301,9 +1355,9 @@ public class BaseItemManager : IItemRepository
             }
         }
 
-        if (query.IsPlaceHolder.HasValue)
+        if (filter.IsPlaceHolder.HasValue)
         {
-            if (query.IsPlaceHolder.Value)
+            if (filter.IsPlaceHolder.Value)
             {
                 baseQuery = baseQuery
                     .Where(e => e.Data!.Contains("IsPlaceHolder\":true", StringComparison.InvariantCultureIgnoreCase));
@@ -1315,9 +1369,9 @@ public class BaseItemManager : IItemRepository
             }
         }
 
-        if (query.HasSpecialFeature.HasValue)
+        if (filter.HasSpecialFeature.HasValue)
         {
-            if (query.HasSpecialFeature.Value)
+            if (filter.HasSpecialFeature.Value)
             {
                 baseQuery = baseQuery
                     .Where(e => e.ExtraIds != null);
@@ -1329,9 +1383,9 @@ public class BaseItemManager : IItemRepository
             }
         }
 
-        if (query.HasTrailer.HasValue || query.HasThemeSong.HasValue || query.HasThemeVideo.HasValue)
+        if (filter.HasTrailer.HasValue || filter.HasThemeSong.HasValue || filter.HasThemeVideo.HasValue)
         {
-            if (query.HasTrailer.GetValueOrDefault() || query.HasThemeSong.GetValueOrDefault() || query.HasThemeVideo.GetValueOrDefault())
+            if (filter.HasTrailer.GetValueOrDefault() || filter.HasThemeSong.GetValueOrDefault() || filter.HasThemeVideo.GetValueOrDefault())
             {
                 baseQuery = baseQuery
                     .Where(e => e.ExtraIds != null);
@@ -1774,6 +1828,26 @@ public class BaseItemManager : IItemRepository
         }
 
         return entity;
+    }
+
+    private IReadOnlyList<string> GetItemValueNames(int[] itemValueTypes, IReadOnlyList<string> withItemTypes, IReadOnlyList<string> excludeItemTypes)
+    {
+        using var context = _dbProvider.CreateDbContext();
+
+        var query = context.ItemValues
+            .Where(e => itemValueTypes.Contains(e.Type));
+        if (withItemTypes.Count > 0)
+        {
+            query = query.Where(e => context.BaseItems.Where(e => withItemTypes.Contains(e.Type)).Any(f => f.ItemValues!.Any(w => w.ItemId.Equals(e.ItemId))));
+        }
+
+        if (excludeItemTypes.Count > 0)
+        {
+            query = query.Where(e => !context.BaseItems.Where(e => withItemTypes.Contains(e.Type)).Any(f => f.ItemValues!.Any(w => w.ItemId.Equals(e.ItemId))));
+        }
+
+        query = query.DistinctBy(e => e.CleanValue);
+        return query.Select(e => e.CleanValue).ToImmutableArray();
     }
 
     private BaseItemDto DeserialiseBaseItem(BaseItemEntity baseItemEntity)

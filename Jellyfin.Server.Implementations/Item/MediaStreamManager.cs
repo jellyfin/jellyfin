@@ -18,7 +18,7 @@ namespace Jellyfin.Server.Implementations.Item;
 /// <param name="dbProvider"></param>
 /// <param name="serverApplicationHost"></param>
 /// <param name="localization"></param>
-public class MediaStreamManager(IDbContextFactory<JellyfinDbContext> dbProvider, IServerApplicationHost serverApplicationHost, ILocalizationManager localization)
+public class MediaStreamManager(IDbContextFactory<JellyfinDbContext> dbProvider, IServerApplicationHost serverApplicationHost, ILocalizationManager localization) : IMediaStreamManager
 {
     /// <inheritdoc />
     public void SaveMediaStreams(Guid id, IReadOnlyList<MediaStream> streams, CancellationToken cancellationToken)
