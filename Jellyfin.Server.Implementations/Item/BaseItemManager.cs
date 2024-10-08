@@ -3,16 +3,24 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
+using System.Threading.Channels;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
+using MediaBrowser.Model.Querying;
 using Microsoft.EntityFrameworkCore;
 using BaseItemDto = MediaBrowser.Controller.Entities.BaseItem;
 using BaseItemEntity = Jellyfin.Data.Entities.BaseItem;
@@ -22,12 +30,105 @@ namespace Jellyfin.Server.Implementations.Item;
 /// <summary>
 /// Handles all storage logic for BaseItems.
 /// </summary>
-public class BaseItemManager
+public class BaseItemManager : IItemRepository
 {
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
     private readonly IServerApplicationHost _appHost;
 
-     /// <summary>
+
+
+    private readonly ItemFields[] _allItemFields = Enum.GetValues<ItemFields>();
+
+    private static readonly BaseItemKind[] _programTypes = new[]
+    {
+            BaseItemKind.Program,
+            BaseItemKind.TvChannel,
+            BaseItemKind.LiveTvProgram,
+            BaseItemKind.LiveTvChannel
+    };
+
+    private static readonly BaseItemKind[] _programExcludeParentTypes = new[]
+    {
+            BaseItemKind.Series,
+            BaseItemKind.Season,
+            BaseItemKind.MusicAlbum,
+            BaseItemKind.MusicArtist,
+            BaseItemKind.PhotoAlbum
+    };
+
+    private static readonly BaseItemKind[] _serviceTypes = new[]
+    {
+            BaseItemKind.TvChannel,
+            BaseItemKind.LiveTvChannel
+    };
+
+    private static readonly BaseItemKind[] _startDateTypes = new[]
+    {
+            BaseItemKind.Program,
+            BaseItemKind.LiveTvProgram
+    };
+
+    private static readonly BaseItemKind[] _seriesTypes = new[]
+    {
+            BaseItemKind.Book,
+            BaseItemKind.AudioBook,
+            BaseItemKind.Episode,
+            BaseItemKind.Season
+    };
+
+    private static readonly BaseItemKind[] _artistExcludeParentTypes = new[]
+    {
+            BaseItemKind.Series,
+            BaseItemKind.Season,
+            BaseItemKind.PhotoAlbum
+    };
+
+    private static readonly BaseItemKind[] _artistsTypes = new[]
+    {
+            BaseItemKind.Audio,
+            BaseItemKind.MusicAlbum,
+            BaseItemKind.MusicVideo,
+            BaseItemKind.AudioBook
+    };
+
+    private static readonly Dictionary<BaseItemKind, string?> _baseItemKindNames = new()
+        {
+            { BaseItemKind.AggregateFolder, typeof(AggregateFolder).FullName },
+            { BaseItemKind.Audio, typeof(Audio).FullName },
+            { BaseItemKind.AudioBook, typeof(AudioBook).FullName },
+            { BaseItemKind.BasePluginFolder, typeof(BasePluginFolder).FullName },
+            { BaseItemKind.Book, typeof(Book).FullName },
+            { BaseItemKind.BoxSet, typeof(BoxSet).FullName },
+            { BaseItemKind.Channel, typeof(Channel).FullName },
+            { BaseItemKind.CollectionFolder, typeof(CollectionFolder).FullName },
+            { BaseItemKind.Episode, typeof(Episode).FullName },
+            { BaseItemKind.Folder, typeof(Folder).FullName },
+            { BaseItemKind.Genre, typeof(Genre).FullName },
+            { BaseItemKind.Movie, typeof(Movie).FullName },
+            { BaseItemKind.LiveTvChannel, typeof(LiveTvChannel).FullName },
+            { BaseItemKind.LiveTvProgram, typeof(LiveTvProgram).FullName },
+            { BaseItemKind.MusicAlbum, typeof(MusicAlbum).FullName },
+            { BaseItemKind.MusicArtist, typeof(MusicArtist).FullName },
+            { BaseItemKind.MusicGenre, typeof(MusicGenre).FullName },
+            { BaseItemKind.MusicVideo, typeof(MusicVideo).FullName },
+            { BaseItemKind.Person, typeof(Person).FullName },
+            { BaseItemKind.Photo, typeof(Photo).FullName },
+            { BaseItemKind.PhotoAlbum, typeof(PhotoAlbum).FullName },
+            { BaseItemKind.Playlist, typeof(Playlist).FullName },
+            { BaseItemKind.PlaylistsFolder, typeof(PlaylistsFolder).FullName },
+            { BaseItemKind.Season, typeof(Season).FullName },
+            { BaseItemKind.Series, typeof(Series).FullName },
+            { BaseItemKind.Studio, typeof(Studio).FullName },
+            { BaseItemKind.Trailer, typeof(Trailer).FullName },
+            { BaseItemKind.TvChannel, typeof(LiveTvChannel).FullName },
+            { BaseItemKind.TvProgram, typeof(LiveTvProgram).FullName },
+            { BaseItemKind.UserRootFolder, typeof(UserRootFolder).FullName },
+            { BaseItemKind.UserView, typeof(UserView).FullName },
+            { BaseItemKind.Video, typeof(Video).FullName },
+            { BaseItemKind.Year, typeof(Year).FullName }
+        };
+
+    /// <summary>
     /// This holds all the types in the running assemblies
     /// so that we can de-serialize properly when we don't have strong types.
     /// </summary>
@@ -37,10 +138,1208 @@ public class BaseItemManager
     /// Initializes a new instance of the <see cref="BaseItemManager"/> class.
     /// </summary>
     /// <param name="dbProvider">The db factory.</param>
+    /// <param name="appHost">The Application host.</param>
     public BaseItemManager(IDbContextFactory<JellyfinDbContext> dbProvider, IServerApplicationHost appHost)
     {
         _dbProvider = dbProvider;
         _appHost = appHost;
+    }
+
+    public int GetCount(InternalItemsQuery query)
+    {
+        ArgumentNullException.ThrowIfNull(query);
+        // Hack for right now since we currently don't support filtering out these duplicates within a query
+        if (query.Limit.HasValue && query.EnableGroupByMetadataKey)
+        {
+            query.Limit = query.Limit.Value + 4;
+        }
+
+        if (query.IsResumable ?? false)
+        {
+            query.IsVirtualItem = false;
+        }
+
+
+
+    }
+
+    private IQueryable<BaseItemEntity> TranslateQuery(
+        IQueryable<BaseItemEntity> baseQuery,
+        JellyfinDbContext context,
+        InternalItemsQuery query)
+    {
+        var minWidth = query.MinWidth;
+        var maxWidth = query.MaxWidth;
+        var now = DateTime.UtcNow;
+
+        if (query.IsHD.HasValue)
+        {
+            const int Threshold = 1200;
+            if (query.IsHD.Value)
+            {
+                minWidth = Threshold;
+            }
+            else
+            {
+                maxWidth = Threshold - 1;
+            }
+        }
+
+        if (query.Is4K.HasValue)
+        {
+            const int Threshold = 3800;
+            if (query.Is4K.Value)
+            {
+                minWidth = Threshold;
+            }
+            else
+            {
+                maxWidth = Threshold - 1;
+            }
+        }
+
+        if (minWidth.HasValue)
+        {
+            baseQuery = baseQuery.Where(e => e.Width >= minWidth);
+        }
+
+        if (query.MinHeight.HasValue)
+        {
+            baseQuery = baseQuery.Where(e => e.Height >= query.MinHeight);
+        }
+
+        if (maxWidth.HasValue)
+        {
+            baseQuery = baseQuery.Where(e => e.Width >= maxWidth);
+        }
+
+        if (query.MaxHeight.HasValue)
+        {
+            baseQuery = baseQuery.Where(e => e.Height <= query.MaxHeight);
+        }
+
+        if (query.IsLocked.HasValue)
+        {
+            baseQuery = baseQuery.Where(e => e.IsLocked == query.IsLocked);
+        }
+
+        var tags = query.Tags.ToList();
+        var excludeTags = query.ExcludeTags.ToList();
+
+        if (query.IsMovie == true)
+        {
+            if (query.IncludeItemTypes.Length == 0
+                || query.IncludeItemTypes.Contains(BaseItemKind.Movie)
+                || query.IncludeItemTypes.Contains(BaseItemKind.Trailer))
+            {
+                baseQuery = baseQuery.Where(e => e.IsMovie);
+            }
+        }
+        else if (query.IsMovie.HasValue)
+        {
+            baseQuery = baseQuery.Where(e => e.IsMovie == query.IsMovie);
+        }
+
+        if (query.IsSeries.HasValue)
+        {
+            baseQuery = baseQuery.Where(e => e.IsSeries == query.IsSeries);
+        }
+
+        if (query.IsSports.HasValue)
+        {
+            if (query.IsSports.Value)
+            {
+                tags.Add("Sports");
+            }
+            else
+            {
+                excludeTags.Add("Sports");
+            }
+        }
+
+        if (query.IsNews.HasValue)
+        {
+            if (query.IsNews.Value)
+            {
+                tags.Add("News");
+            }
+            else
+            {
+                excludeTags.Add("News");
+            }
+        }
+
+        if (query.IsKids.HasValue)
+        {
+            if (query.IsKids.Value)
+            {
+                tags.Add("Kids");
+            }
+            else
+            {
+                excludeTags.Add("Kids");
+            }
+        }
+
+        if (query.SimilarTo is not null && query.MinSimilarityScore > 0)
+        {
+            // TODO support similarty score via CTE
+            baseQuery = baseQuery.Where(e => e.Sim == query.IsSeries);
+            whereClauses.Add("SimilarityScore > " + (query.MinSimilarityScore - 1).ToString(CultureInfo.InvariantCulture));
+        }
+
+        if (!string.IsNullOrEmpty(query.SearchTerm))
+        {
+            whereClauses.Add("SearchScore > 0");
+        }
+
+        if (query.IsFolder.HasValue)
+        {
+            baseQuery = baseQuery.Where(e => e.IsFolder == query.IsFolder);
+        }
+
+        var includeTypes = query.IncludeItemTypes;
+        // Only specify excluded types if no included types are specified
+        if (query.IncludeItemTypes.Length == 0)
+        {
+            var excludeTypes = query.ExcludeItemTypes;
+            if (excludeTypes.Length == 1)
+            {
+                if (_baseItemKindNames.TryGetValue(excludeTypes[0], out var excludeTypeName))
+                {
+                    baseQuery = baseQuery.Where(e => e.Type != excludeTypeName);
+                }
+            }
+            else if (excludeTypes.Length > 1)
+            {
+                var excludeTypeName = new List<string>();
+                foreach (var excludeType in excludeTypes)
+                {
+                    if (_baseItemKindNames.TryGetValue(excludeType, out var baseItemKindName))
+                    {
+                        excludeTypeName.Add(baseItemKindName!);
+                    }
+                }
+
+                baseQuery = baseQuery.Where(e => !excludeTypeName.Contains(e.Type));
+            }
+        }
+        else if (includeTypes.Length == 1)
+        {
+            if (_baseItemKindNames.TryGetValue(includeTypes[0], out var includeTypeName))
+            {
+                baseQuery = baseQuery.Where(e => e.Type == includeTypeName);
+            }
+        }
+        else if (includeTypes.Length > 1)
+        {
+            var includeTypeName = new List<string>();
+            foreach (var includeType in includeTypes)
+            {
+                if (_baseItemKindNames.TryGetValue(includeType, out var baseItemKindName))
+                {
+                    includeTypeName.Add(baseItemKindName!);
+                }
+            }
+
+            baseQuery = baseQuery.Where(e => includeTypeName.Contains(e.Type));
+        }
+
+        if (query.ChannelIds.Count == 1)
+        {
+            baseQuery = baseQuery.Where(e => e.ChannelId == query.ChannelIds[0].ToString("N", CultureInfo.InvariantCulture));
+        }
+        else if (query.ChannelIds.Count > 1)
+        {
+            baseQuery = baseQuery.Where(e => query.ChannelIds.Select(f => f.ToString("N", CultureInfo.InvariantCulture)).Contains(e.ChannelId));
+        }
+
+        if (!query.ParentId.IsEmpty())
+        {
+            baseQuery = baseQuery.Where(e => e.ParentId.Equals(query.ParentId));
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.Path))
+        {
+            baseQuery = baseQuery.Where(e => e.Path == query.Path);
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.PresentationUniqueKey))
+        {
+            baseQuery = baseQuery.Where(e => e.PresentationUniqueKey == query.PresentationUniqueKey);
+        }
+
+        if (query.MinCommunityRating.HasValue)
+        {
+            baseQuery = baseQuery.Where(e => e.CommunityRating >= query.MinCommunityRating);
+        }
+
+        if (query.MinIndexNumber.HasValue)
+        {
+            baseQuery = baseQuery.Where(e => e.IndexNumber >= query.MinIndexNumber);
+        }
+
+        if (query.MinParentAndIndexNumber.HasValue)
+        {
+            baseQuery = baseQuery
+                .Where(e => (e.ParentIndexNumber == query.MinParentAndIndexNumber.Value.ParentIndexNumber && e.IndexNumber >= query.MinParentAndIndexNumber.Value.IndexNumber) || e.ParentIndexNumber > query.MinParentAndIndexNumber.Value.ParentIndexNumber);
+        }
+
+        if (query.MinDateCreated.HasValue)
+        {
+            baseQuery = baseQuery.Where(e => e.DateCreated >= query.MinDateCreated);
+        }
+
+        if (query.MinDateLastSaved.HasValue)
+        {
+            baseQuery = baseQuery.Where(e => e.DateLastSaved != null && e.DateLastSaved >= query.MinDateLastSaved.Value);
+        }
+
+        if (query.MinDateLastSavedForUser.HasValue)
+        {
+            baseQuery = baseQuery.Where(e => e.DateLastSaved != null && e.DateLastSaved >= query.MinDateLastSavedForUser.Value);
+        }
+
+        if (query.IndexNumber.HasValue)
+        {
+            baseQuery = baseQuery.Where(e => e.IndexNumber == query.IndexNumber.Value);
+        }
+
+        if (query.ParentIndexNumber.HasValue)
+        {
+            baseQuery = baseQuery.Where(e => e.ParentIndexNumber == query.ParentIndexNumber.Value);
+        }
+
+        if (query.ParentIndexNumberNotEquals.HasValue)
+        {
+            baseQuery = baseQuery.Where(e => e.ParentIndexNumber != query.ParentIndexNumberNotEquals.Value || e.ParentIndexNumber == null);
+        }
+
+        var minEndDate = query.MinEndDate;
+        var maxEndDate = query.MaxEndDate;
+
+        if (query.HasAired.HasValue)
+        {
+            if (query.HasAired.Value)
+            {
+                maxEndDate = DateTime.UtcNow;
+            }
+            else
+            {
+                minEndDate = DateTime.UtcNow;
+            }
+        }
+
+        if (minEndDate.HasValue)
+        {
+            baseQuery = baseQuery.Where(e => e.EndDate >= minEndDate);
+        }
+
+        if (maxEndDate.HasValue)
+        {
+            baseQuery = baseQuery.Where(e => e.EndDate <= maxEndDate);
+        }
+
+        if (query.MinStartDate.HasValue)
+        {
+            baseQuery = baseQuery.Where(e => e.StartDate >= query.MinStartDate.Value);
+        }
+
+        if (query.MaxStartDate.HasValue)
+        {
+            baseQuery = baseQuery.Where(e => e.StartDate <= query.MaxStartDate.Value);
+        }
+
+        if (query.MinPremiereDate.HasValue)
+        {
+            baseQuery = baseQuery.Where(e => e.PremiereDate <= query.MinPremiereDate.Value);
+        }
+
+        if (query.MaxPremiereDate.HasValue)
+        {
+            baseQuery = baseQuery.Where(e => e.PremiereDate <= query.MaxPremiereDate.Value);
+        }
+
+        if (query.TrailerTypes.Length > 0)
+        {
+            baseQuery = baseQuery.Where(e => query.TrailerTypes.Any(f => e.TrailerTypes!.Contains(f.ToString(), StringComparison.OrdinalIgnoreCase)));
+        }
+
+        if (query.IsAiring.HasValue)
+        {
+            if (query.IsAiring.Value)
+            {
+                baseQuery = baseQuery.Where(e => e.StartDate <= now && e.EndDate >= now);
+            }
+            else
+            {
+                baseQuery = baseQuery.Where(e => e.StartDate > now && e.EndDate < now);
+            }
+        }
+
+        if (query.PersonIds.Length > 0)
+        {
+            baseQuery = baseQuery
+                .Where(e =>
+                    context.Peoples.Where(w => context.BaseItems.Where(w => query.PersonIds.Contains(w.Id)).Any(f => f.Name == w.Name))
+                        .Any(f => f.ItemId.Equals(e.Id)));
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.Person))
+        {
+            baseQuery = baseQuery.Where(e => e.Peoples!.Any(f => f.Name == query.Person));
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.MinSortName))
+        {
+            // this does not makes sense.
+            // baseQuery = baseQuery.Where(e => e.SortName >= query.MinSortName);
+            // whereClauses.Add("SortName>=@MinSortName");
+            // statement?.TryBind("@MinSortName", query.MinSortName);
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.ExternalSeriesId))
+        {
+            baseQuery = baseQuery.Where(e => e.ExternalSeriesId == query.ExternalSeriesId);
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.ExternalId))
+        {
+            baseQuery = baseQuery.Where(e => e.ExternalId == query.ExternalId);
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.Name))
+        {
+            var cleanName = GetCleanValue(query.Name);
+            baseQuery = baseQuery.Where(e => e.CleanName == cleanName);
+        }
+
+        // These are the same, for now
+        var nameContains = query.NameContains;
+        if (!string.IsNullOrWhiteSpace(nameContains))
+        {
+            baseQuery = baseQuery.Where(e =>
+                e.CleanName == query.NameContains
+                || e.OriginalTitle!.Contains(query.NameContains!, StringComparison.Ordinal));
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.NameStartsWith))
+        {
+            baseQuery = baseQuery.Where(e => e.SortName!.Contains(query.NameStartsWith, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.NameStartsWithOrGreater))
+        {
+            // i hate this
+            baseQuery = baseQuery.Where(e => e.SortName![0] > query.NameStartsWithOrGreater[0]);
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.NameLessThan))
+        {
+            // i hate this
+            baseQuery = baseQuery.Where(e => e.SortName![0] < query.NameLessThan[0]);
+        }
+
+        if (query.ImageTypes.Length > 0)
+        {
+            baseQuery = baseQuery.Where(e => query.ImageTypes.Any(f => e.Images!.Contains(f.ToString(), StringComparison.InvariantCulture)));
+        }
+
+        if (query.IsLiked.HasValue)
+        {
+            baseQuery = baseQuery
+                .Where(e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id) && f.Key == e.UserDataKey)!.Rating >= UserItemData.MinLikeValue);
+        }
+
+        if (query.IsFavoriteOrLiked.HasValue)
+        {
+            baseQuery = baseQuery
+                .Where(e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id) && f.Key == e.UserDataKey)!.IsFavorite == query.IsFavoriteOrLiked);
+        }
+
+        if (query.IsFavorite.HasValue)
+        {
+            baseQuery = baseQuery
+                .Where(e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id) && f.Key == e.UserDataKey)!.IsFavorite == query.IsFavorite);
+        }
+
+        if (query.IsPlayed.HasValue)
+        {
+            baseQuery = baseQuery
+                   .Where(e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id) && f.Key == e.UserDataKey)!.Played == query.IsPlayed.Value);
+        }
+
+        if (query.IsResumable.HasValue)
+        {
+            if (query.IsResumable.Value)
+            {
+                baseQuery = baseQuery
+                       .Where(e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id) && f.Key == e.UserDataKey)!.PlaybackPositionTicks > 0);
+            }
+            else
+            {
+                baseQuery = baseQuery
+                       .Where(e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id) && f.Key == e.UserDataKey)!.PlaybackPositionTicks == 0);
+            }
+        }
+
+        if (query.ArtistIds.Length > 0)
+        {
+            baseQuery = baseQuery
+                   .Where(e => e.ItemValues!.Any(f => f.Type <= 1 && context.BaseItems.Where(w => query.ArtistIds.Contains(w.Id)).Any(w => w.CleanName == f.CleanValue)));
+        }
+
+        if (query.AlbumArtistIds.Length > 0)
+        {
+            baseQuery = baseQuery
+               .Where(e => e.ItemValues!.Any(f => f.Type == 1 && context.BaseItems.Where(w => query.ArtistIds.Contains(w.Id)).Any(w => w.CleanName == f.CleanValue)));
+        }
+
+        if (query.ContributingArtistIds.Length > 0)
+        {
+            var contributingArtists = context.BaseItems.Where(e => query.ContributingArtistIds.Contains(e.Id));
+            baseQuery = baseQuery.Where(e => e.ItemValues!.Any(f => f.Type == 0 && contributingArtists.Any(w => w.CleanName == f.CleanValue)));
+
+            clauseBuilder.Append('(');
+            for (var i = 0; i < query.ContributingArtistIds.Length; i++)
+            {
+                clauseBuilder.Append("((select CleanName from TypedBaseItems where guid=@ArtistIds")
+                    .Append(i)
+                    .Append(") in (select CleanValue from ItemValues where ItemId=Guid and Type=0) AND (select CleanName from TypedBaseItems where guid=@ArtistIds")
+                    .Append(i)
+                    .Append(") not in (select CleanValue from ItemValues where ItemId=Guid and Type=1)) OR ");
+                statement?.TryBind("@ArtistIds" + i, query.ContributingArtistIds[i]);
+            }
+
+            clauseBuilder.Length -= Or.Length;
+            whereClauses.Add(clauseBuilder.Append(')').ToString());
+            clauseBuilder.Length = 0;
+        }
+
+        if (query.AlbumIds.Length > 0)
+        {
+            clauseBuilder.Append('(');
+            for (var i = 0; i < query.AlbumIds.Length; i++)
+            {
+                clauseBuilder.Append("Album in (select Name from typedbaseitems where guid=@AlbumIds")
+                    .Append(i)
+                    .Append(") OR ");
+                statement?.TryBind("@AlbumIds" + i, query.AlbumIds[i]);
+            }
+
+            clauseBuilder.Length -= Or.Length;
+            whereClauses.Add(clauseBuilder.Append(')').ToString());
+            clauseBuilder.Length = 0;
+        }
+
+        if (query.ExcludeArtistIds.Length > 0)
+        {
+            clauseBuilder.Append('(');
+            for (var i = 0; i < query.ExcludeArtistIds.Length; i++)
+            {
+                clauseBuilder.Append("(guid not in (select itemid from ItemValues where CleanValue = (select CleanName from TypedBaseItems where guid=@ExcludeArtistId")
+                    .Append(i)
+                    .Append(") and Type<=1)) OR ");
+                statement?.TryBind("@ExcludeArtistId" + i, query.ExcludeArtistIds[i]);
+            }
+
+            clauseBuilder.Length -= Or.Length;
+            whereClauses.Add(clauseBuilder.Append(')').ToString());
+            clauseBuilder.Length = 0;
+        }
+
+        if (query.GenreIds.Count > 0)
+        {
+            clauseBuilder.Append('(');
+            for (var i = 0; i < query.GenreIds.Count; i++)
+            {
+                clauseBuilder.Append("(guid in (select itemid from ItemValues where CleanValue = (select CleanName from TypedBaseItems where guid=@GenreId")
+                    .Append(i)
+                    .Append(") and Type=2)) OR ");
+                statement?.TryBind("@GenreId" + i, query.GenreIds[i]);
+            }
+
+            clauseBuilder.Length -= Or.Length;
+            whereClauses.Add(clauseBuilder.Append(')').ToString());
+            clauseBuilder.Length = 0;
+        }
+
+        if (query.Genres.Count > 0)
+        {
+            clauseBuilder.Append('(');
+            for (var i = 0; i < query.Genres.Count; i++)
+            {
+                clauseBuilder.Append("@Genre")
+                    .Append(i)
+                    .Append(" in (select CleanValue from ItemValues where ItemId=Guid and Type=2) OR ");
+                statement?.TryBind("@Genre" + i, GetCleanValue(query.Genres[i]));
+            }
+
+            clauseBuilder.Length -= Or.Length;
+            whereClauses.Add(clauseBuilder.Append(')').ToString());
+            clauseBuilder.Length = 0;
+        }
+
+        if (tags.Count > 0)
+        {
+            clauseBuilder.Append('(');
+            for (var i = 0; i < tags.Count; i++)
+            {
+                clauseBuilder.Append("@Tag")
+                    .Append(i)
+                    .Append(" in (select CleanValue from ItemValues where ItemId=Guid and Type=4) OR ");
+                statement?.TryBind("@Tag" + i, GetCleanValue(tags[i]));
+            }
+
+            clauseBuilder.Length -= Or.Length;
+            whereClauses.Add(clauseBuilder.Append(')').ToString());
+            clauseBuilder.Length = 0;
+        }
+
+        if (excludeTags.Count > 0)
+        {
+            clauseBuilder.Append('(');
+            for (var i = 0; i < excludeTags.Count; i++)
+            {
+                clauseBuilder.Append("@ExcludeTag")
+                    .Append(i)
+                    .Append(" not in (select CleanValue from ItemValues where ItemId=Guid and Type=4) OR ");
+                statement?.TryBind("@ExcludeTag" + i, GetCleanValue(excludeTags[i]));
+            }
+
+            clauseBuilder.Length -= Or.Length;
+            whereClauses.Add(clauseBuilder.Append(')').ToString());
+            clauseBuilder.Length = 0;
+        }
+
+        if (query.StudioIds.Length > 0)
+        {
+            clauseBuilder.Append('(');
+            for (var i = 0; i < query.StudioIds.Length; i++)
+            {
+                clauseBuilder.Append("(guid in (select itemid from ItemValues where CleanValue = (select CleanName from TypedBaseItems where guid=@StudioId")
+                    .Append(i)
+                    .Append(") and Type=3)) OR ");
+                statement?.TryBind("@StudioId" + i, query.StudioIds[i]);
+            }
+
+            clauseBuilder.Length -= Or.Length;
+            whereClauses.Add(clauseBuilder.Append(')').ToString());
+            clauseBuilder.Length = 0;
+        }
+
+        if (query.OfficialRatings.Length > 0)
+        {
+            clauseBuilder.Append('(');
+            for (var i = 0; i < query.OfficialRatings.Length; i++)
+            {
+                clauseBuilder.Append("OfficialRating=@OfficialRating").Append(i).Append(Or);
+                statement?.TryBind("@OfficialRating" + i, query.OfficialRatings[i]);
+            }
+
+            clauseBuilder.Length -= Or.Length;
+            whereClauses.Add(clauseBuilder.Append(')').ToString());
+            clauseBuilder.Length = 0;
+        }
+
+        clauseBuilder.Append('(');
+        if (query.HasParentalRating ?? false)
+        {
+            clauseBuilder.Append("InheritedParentalRatingValue not null");
+            if (query.MinParentalRating.HasValue)
+            {
+                clauseBuilder.Append(" AND InheritedParentalRatingValue >= @MinParentalRating");
+                statement?.TryBind("@MinParentalRating", query.MinParentalRating.Value);
+            }
+
+            if (query.MaxParentalRating.HasValue)
+            {
+                clauseBuilder.Append(" AND InheritedParentalRatingValue <= @MaxParentalRating");
+                statement?.TryBind("@MaxParentalRating", query.MaxParentalRating.Value);
+            }
+        }
+        else if (query.BlockUnratedItems.Length > 0)
+        {
+            const string ParamName = "@UnratedType";
+            clauseBuilder.Append("(InheritedParentalRatingValue is null AND UnratedType not in (");
+
+            for (int i = 0; i < query.BlockUnratedItems.Length; i++)
+            {
+                clauseBuilder.Append(ParamName).Append(i).Append(',');
+                statement?.TryBind(ParamName + i, query.BlockUnratedItems[i].ToString());
+            }
+
+            // Remove trailing comma
+            clauseBuilder.Length--;
+            clauseBuilder.Append("))");
+
+            if (query.MinParentalRating.HasValue || query.MaxParentalRating.HasValue)
+            {
+                clauseBuilder.Append(" OR (");
+            }
+
+            if (query.MinParentalRating.HasValue)
+            {
+                clauseBuilder.Append("InheritedParentalRatingValue >= @MinParentalRating");
+                statement?.TryBind("@MinParentalRating", query.MinParentalRating.Value);
+            }
+
+            if (query.MaxParentalRating.HasValue)
+            {
+                if (query.MinParentalRating.HasValue)
+                {
+                    clauseBuilder.Append(" AND ");
+                }
+
+                clauseBuilder.Append("InheritedParentalRatingValue <= @MaxParentalRating");
+                statement?.TryBind("@MaxParentalRating", query.MaxParentalRating.Value);
+            }
+
+            if (query.MinParentalRating.HasValue || query.MaxParentalRating.HasValue)
+            {
+                clauseBuilder.Append(')');
+            }
+
+            if (!(query.MinParentalRating.HasValue || query.MaxParentalRating.HasValue))
+            {
+                clauseBuilder.Append(" OR InheritedParentalRatingValue not null");
+            }
+        }
+        else if (query.MinParentalRating.HasValue)
+        {
+            clauseBuilder.Append("InheritedParentalRatingValue is null OR (InheritedParentalRatingValue >= @MinParentalRating");
+            statement?.TryBind("@MinParentalRating", query.MinParentalRating.Value);
+
+            if (query.MaxParentalRating.HasValue)
+            {
+                clauseBuilder.Append(" AND InheritedParentalRatingValue <= @MaxParentalRating");
+                statement?.TryBind("@MaxParentalRating", query.MaxParentalRating.Value);
+            }
+
+            clauseBuilder.Append(')');
+        }
+        else if (query.MaxParentalRating.HasValue)
+        {
+            clauseBuilder.Append("InheritedParentalRatingValue is null OR InheritedParentalRatingValue <= @MaxParentalRating");
+            statement?.TryBind("@MaxParentalRating", query.MaxParentalRating.Value);
+        }
+        else if (!query.HasParentalRating ?? false)
+        {
+            clauseBuilder.Append("InheritedParentalRatingValue is null");
+        }
+
+        if (clauseBuilder.Length > 1)
+        {
+            whereClauses.Add(clauseBuilder.Append(')').ToString());
+            clauseBuilder.Length = 0;
+        }
+
+        if (query.HasOfficialRating.HasValue)
+        {
+            if (query.HasOfficialRating.Value)
+            {
+                whereClauses.Add("(OfficialRating not null AND OfficialRating<>'')");
+            }
+            else
+            {
+                whereClauses.Add("(OfficialRating is null OR OfficialRating='')");
+            }
+        }
+
+        if (query.HasOverview.HasValue)
+        {
+            if (query.HasOverview.Value)
+            {
+                whereClauses.Add("(Overview not null AND Overview<>'')");
+            }
+            else
+            {
+                whereClauses.Add("(Overview is null OR Overview='')");
+            }
+        }
+
+        if (query.HasOwnerId.HasValue)
+        {
+            if (query.HasOwnerId.Value)
+            {
+                whereClauses.Add("OwnerId not null");
+            }
+            else
+            {
+                whereClauses.Add("OwnerId is null");
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.HasNoAudioTrackWithLanguage))
+        {
+            whereClauses.Add("((select language from MediaStreams where MediaStreams.ItemId=A.Guid and MediaStreams.StreamType='Audio' and MediaStreams.Language=@HasNoAudioTrackWithLanguage limit 1) is null)");
+            statement?.TryBind("@HasNoAudioTrackWithLanguage", query.HasNoAudioTrackWithLanguage);
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.HasNoInternalSubtitleTrackWithLanguage))
+        {
+            whereClauses.Add("((select language from MediaStreams where MediaStreams.ItemId=A.Guid and MediaStreams.StreamType='Subtitle' and MediaStreams.IsExternal=0 and MediaStreams.Language=@HasNoInternalSubtitleTrackWithLanguage limit 1) is null)");
+            statement?.TryBind("@HasNoInternalSubtitleTrackWithLanguage", query.HasNoInternalSubtitleTrackWithLanguage);
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.HasNoExternalSubtitleTrackWithLanguage))
+        {
+            whereClauses.Add("((select language from MediaStreams where MediaStreams.ItemId=A.Guid and MediaStreams.StreamType='Subtitle' and MediaStreams.IsExternal=1 and MediaStreams.Language=@HasNoExternalSubtitleTrackWithLanguage limit 1) is null)");
+            statement?.TryBind("@HasNoExternalSubtitleTrackWithLanguage", query.HasNoExternalSubtitleTrackWithLanguage);
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.HasNoSubtitleTrackWithLanguage))
+        {
+            whereClauses.Add("((select language from MediaStreams where MediaStreams.ItemId=A.Guid and MediaStreams.StreamType='Subtitle' and MediaStreams.Language=@HasNoSubtitleTrackWithLanguage limit 1) is null)");
+            statement?.TryBind("@HasNoSubtitleTrackWithLanguage", query.HasNoSubtitleTrackWithLanguage);
+        }
+
+        if (query.HasSubtitles.HasValue)
+        {
+            if (query.HasSubtitles.Value)
+            {
+                whereClauses.Add("((select type from MediaStreams where MediaStreams.ItemId=A.Guid and MediaStreams.StreamType='Subtitle' limit 1) not null)");
+            }
+            else
+            {
+                whereClauses.Add("((select type from MediaStreams where MediaStreams.ItemId=A.Guid and MediaStreams.StreamType='Subtitle' limit 1) is null)");
+            }
+        }
+
+        if (query.HasChapterImages.HasValue)
+        {
+            if (query.HasChapterImages.Value)
+            {
+                whereClauses.Add("((select imagepath from Chapters2 where Chapters2.ItemId=A.Guid and imagepath not null limit 1) not null)");
+            }
+            else
+            {
+                whereClauses.Add("((select imagepath from Chapters2 where Chapters2.ItemId=A.Guid and imagepath not null limit 1) is null)");
+            }
+        }
+
+        if (query.HasDeadParentId.HasValue && query.HasDeadParentId.Value)
+        {
+            whereClauses.Add("ParentId NOT NULL AND ParentId NOT IN (select guid from TypedBaseItems)");
+        }
+
+        if (query.IsDeadArtist.HasValue && query.IsDeadArtist.Value)
+        {
+            whereClauses.Add("CleanName not in (Select CleanValue From ItemValues where Type in (0,1))");
+        }
+
+        if (query.IsDeadStudio.HasValue && query.IsDeadStudio.Value)
+        {
+            whereClauses.Add("CleanName not in (Select CleanValue From ItemValues where Type = 3)");
+        }
+
+        if (query.IsDeadPerson.HasValue && query.IsDeadPerson.Value)
+        {
+            whereClauses.Add("Name not in (Select Name From People)");
+        }
+
+        if (query.Years.Length == 1)
+        {
+            whereClauses.Add("ProductionYear=@Years");
+            statement?.TryBind("@Years", query.Years[0].ToString(CultureInfo.InvariantCulture));
+        }
+        else if (query.Years.Length > 1)
+        {
+            var val = string.Join(',', query.Years);
+            whereClauses.Add("ProductionYear in (" + val + ")");
+        }
+
+        var isVirtualItem = query.IsVirtualItem ?? query.IsMissing;
+        if (isVirtualItem.HasValue)
+        {
+            whereClauses.Add("IsVirtualItem=@IsVirtualItem");
+            statement?.TryBind("@IsVirtualItem", isVirtualItem.Value);
+        }
+
+        if (query.IsSpecialSeason.HasValue)
+        {
+            if (query.IsSpecialSeason.Value)
+            {
+                whereClauses.Add("IndexNumber = 0");
+            }
+            else
+            {
+                whereClauses.Add("IndexNumber <> 0");
+            }
+        }
+
+        if (query.IsUnaired.HasValue)
+        {
+            if (query.IsUnaired.Value)
+            {
+                whereClauses.Add("PremiereDate >= DATETIME('now')");
+            }
+            else
+            {
+                whereClauses.Add("PremiereDate < DATETIME('now')");
+            }
+        }
+
+        if (query.MediaTypes.Length == 1)
+        {
+            whereClauses.Add("MediaType=@MediaTypes");
+            statement?.TryBind("@MediaTypes", query.MediaTypes[0].ToString());
+        }
+        else if (query.MediaTypes.Length > 1)
+        {
+            var val = string.Join(',', query.MediaTypes.Select(i => $"'{i}'"));
+            whereClauses.Add("MediaType in (" + val + ")");
+        }
+
+        if (query.ItemIds.Length > 0)
+        {
+            var includeIds = new List<string>();
+            var index = 0;
+            foreach (var id in query.ItemIds)
+            {
+                includeIds.Add("Guid = @IncludeId" + index);
+                statement?.TryBind("@IncludeId" + index, id);
+                index++;
+            }
+
+            whereClauses.Add("(" + string.Join(" OR ", includeIds) + ")");
+        }
+
+        if (query.ExcludeItemIds.Length > 0)
+        {
+            var excludeIds = new List<string>();
+            var index = 0;
+            foreach (var id in query.ExcludeItemIds)
+            {
+                excludeIds.Add("Guid <> @ExcludeId" + index);
+                statement?.TryBind("@ExcludeId" + index, id);
+                index++;
+            }
+
+            whereClauses.Add(string.Join(" AND ", excludeIds));
+        }
+
+        if (query.ExcludeProviderIds is not null && query.ExcludeProviderIds.Count > 0)
+        {
+            var excludeIds = new List<string>();
+
+            var index = 0;
+            foreach (var pair in query.ExcludeProviderIds)
+            {
+                if (string.Equals(pair.Key, nameof(MetadataProvider.TmdbCollection), StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                var paramName = "@ExcludeProviderId" + index;
+                excludeIds.Add("(ProviderIds is null or ProviderIds not like " + paramName + ")");
+                statement?.TryBind(paramName, "%" + pair.Key + "=" + pair.Value + "%");
+                index++;
+
+                break;
+            }
+
+            if (excludeIds.Count > 0)
+            {
+                whereClauses.Add(string.Join(" AND ", excludeIds));
+            }
+        }
+
+        if (query.HasAnyProviderId is not null && query.HasAnyProviderId.Count > 0)
+        {
+            var hasProviderIds = new List<string>();
+
+            var index = 0;
+            foreach (var pair in query.HasAnyProviderId)
+            {
+                if (string.Equals(pair.Key, nameof(MetadataProvider.TmdbCollection), StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                // TODO this seems to be an idea for a better schema where ProviderIds are their own table
+                //      but this is not implemented
+                // hasProviderIds.Add("(COALESCE((select value from ProviderIds where ItemId=Guid and Name = '" + pair.Key + "'), '') <> " + paramName + ")");
+
+                // TODO this is a really BAD way to do it since the pair:
+                //      Tmdb, 1234 matches Tmdb=1234 but also Tmdb=1234567
+                //      and maybe even NotTmdb=1234.
+
+                // this is a placeholder for this specific pair to correlate it in the bigger query
+                var paramName = "@HasAnyProviderId" + index;
+
+                // this is a search for the placeholder
+                hasProviderIds.Add("ProviderIds like " + paramName);
+
+                // this replaces the placeholder with a value, here: %key=val%
+                statement?.TryBind(paramName, "%" + pair.Key + "=" + pair.Value + "%");
+                index++;
+
+                break;
+            }
+
+            if (hasProviderIds.Count > 0)
+            {
+                whereClauses.Add("(" + string.Join(" OR ", hasProviderIds) + ")");
+            }
+        }
+
+        if (query.HasImdbId.HasValue)
+        {
+            whereClauses.Add(GetProviderIdClause(query.HasImdbId.Value, "imdb"));
+        }
+
+        if (query.HasTmdbId.HasValue)
+        {
+            whereClauses.Add(GetProviderIdClause(query.HasTmdbId.Value, "tmdb"));
+        }
+
+        if (query.HasTvdbId.HasValue)
+        {
+            whereClauses.Add(GetProviderIdClause(query.HasTvdbId.Value, "tvdb"));
+        }
+
+        var queryTopParentIds = query.TopParentIds;
+
+        if (queryTopParentIds.Length > 0)
+        {
+            var includedItemByNameTypes = GetItemByNameTypesInQuery(query);
+            var enableItemsByName = (query.IncludeItemsByName ?? false) && includedItemByNameTypes.Count > 0;
+
+            if (queryTopParentIds.Length == 1)
+            {
+                if (enableItemsByName && includedItemByNameTypes.Count == 1)
+                {
+                    whereClauses.Add("(TopParentId=@TopParentId or Type=@IncludedItemByNameType)");
+                    statement?.TryBind("@IncludedItemByNameType", includedItemByNameTypes[0]);
+                }
+                else if (enableItemsByName && includedItemByNameTypes.Count > 1)
+                {
+                    var itemByNameTypeVal = string.Join(',', includedItemByNameTypes.Select(i => "'" + i + "'"));
+                    whereClauses.Add("(TopParentId=@TopParentId or Type in (" + itemByNameTypeVal + "))");
+                }
+                else
+                {
+                    whereClauses.Add("(TopParentId=@TopParentId)");
+                }
+
+                statement?.TryBind("@TopParentId", queryTopParentIds[0].ToString("N", CultureInfo.InvariantCulture));
+            }
+            else if (queryTopParentIds.Length > 1)
+            {
+                var val = string.Join(',', queryTopParentIds.Select(i => "'" + i.ToString("N", CultureInfo.InvariantCulture) + "'"));
+
+                if (enableItemsByName && includedItemByNameTypes.Count == 1)
+                {
+                    whereClauses.Add("(Type=@IncludedItemByNameType or TopParentId in (" + val + "))");
+                    statement?.TryBind("@IncludedItemByNameType", includedItemByNameTypes[0]);
+                }
+                else if (enableItemsByName && includedItemByNameTypes.Count > 1)
+                {
+                    var itemByNameTypeVal = string.Join(',', includedItemByNameTypes.Select(i => "'" + i + "'"));
+                    whereClauses.Add("(Type in (" + itemByNameTypeVal + ") or TopParentId in (" + val + "))");
+                }
+                else
+                {
+                    whereClauses.Add("TopParentId in (" + val + ")");
+                }
+            }
+        }
+
+        if (query.AncestorIds.Length == 1)
+        {
+            whereClauses.Add("Guid in (select itemId from AncestorIds where AncestorId=@AncestorId)");
+            statement?.TryBind("@AncestorId", query.AncestorIds[0]);
+        }
+
+        if (query.AncestorIds.Length > 1)
+        {
+            var inClause = string.Join(',', query.AncestorIds.Select(i => "'" + i.ToString("N", CultureInfo.InvariantCulture) + "'"));
+            whereClauses.Add(string.Format(CultureInfo.InvariantCulture, "Guid in (select itemId from AncestorIds where AncestorIdText in ({0}))", inClause));
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.AncestorWithPresentationUniqueKey))
+        {
+            var inClause = "select guid from TypedBaseItems where PresentationUniqueKey=@AncestorWithPresentationUniqueKey";
+            whereClauses.Add(string.Format(CultureInfo.InvariantCulture, "Guid in (select itemId from AncestorIds where AncestorId in ({0}))", inClause));
+            statement?.TryBind("@AncestorWithPresentationUniqueKey", query.AncestorWithPresentationUniqueKey);
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.SeriesPresentationUniqueKey))
+        {
+            whereClauses.Add("SeriesPresentationUniqueKey=@SeriesPresentationUniqueKey");
+            statement?.TryBind("@SeriesPresentationUniqueKey", query.SeriesPresentationUniqueKey);
+        }
+
+        if (query.ExcludeInheritedTags.Length > 0)
+        {
+            var paramName = "@ExcludeInheritedTags";
+            if (statement is null)
+            {
+                int index = 0;
+                string excludedTags = string.Join(',', query.ExcludeInheritedTags.Select(_ => paramName + index++));
+                whereClauses.Add("((select CleanValue from ItemValues where ItemId=Guid and Type=6 and cleanvalue in (" + excludedTags + ")) is null)");
+            }
+            else
+            {
+                for (int index = 0; index < query.ExcludeInheritedTags.Length; index++)
+                {
+                    statement.TryBind(paramName + index, GetCleanValue(query.ExcludeInheritedTags[index]));
+                }
+            }
+        }
+
+        if (query.IncludeInheritedTags.Length > 0)
+        {
+            var paramName = "@IncludeInheritedTags";
+            if (statement is null)
+            {
+                int index = 0;
+                string includedTags = string.Join(',', query.IncludeInheritedTags.Select(_ => paramName + index++));
+                // Episodes do not store inherit tags from their parents in the database, and the tag may be still required by the client.
+                // In addtion to the tags for the episodes themselves, we need to manually query its parent (the season)'s tags as well.
+                if (includeTypes.Length == 1 && includeTypes.FirstOrDefault() is BaseItemKind.Episode)
+                {
+                    whereClauses.Add($"""
+                                          ((select CleanValue from ItemValues where ItemId=Guid and Type=6 and CleanValue in ({includedTags})) is not null
+                                          OR (select CleanValue from ItemValues where ItemId=ParentId and Type=6 and CleanValue in ({includedTags})) is not null)
+                                          """);
+                }
+
+                // A playlist should be accessible to its owner regardless of allowed tags.
+                else if (includeTypes.Length == 1 && includeTypes.FirstOrDefault() is BaseItemKind.Playlist)
+                {
+                    whereClauses.Add($"""
+                                          ((select CleanValue from ItemValues where ItemId=Guid and Type=6 and CleanValue in ({includedTags})) is not null
+                                          OR data like @PlaylistOwnerUserId)
+                                          """);
+                }
+                else
+                {
+                    whereClauses.Add("((select CleanValue from ItemValues where ItemId=Guid and Type=6 and cleanvalue in (" + includedTags + ")) is not null)");
+                }
+            }
+            else
+            {
+                for (int index = 0; index < query.IncludeInheritedTags.Length; index++)
+                {
+                    statement.TryBind(paramName + index, GetCleanValue(query.IncludeInheritedTags[index]));
+                }
+
+                if (query.User is not null)
+                {
+                    statement.TryBind("@PlaylistOwnerUserId", $"""%"OwnerUserId":"{query.User.Id.ToString("N")}"%""");
+                }
+            }
+        }
+
+        if (query.SeriesStatuses.Length > 0)
+        {
+            var statuses = new List<string>();
+
+            foreach (var seriesStatus in query.SeriesStatuses)
+            {
+                statuses.Add("data like  '%" + seriesStatus + "%'");
+            }
+
+            whereClauses.Add("(" + string.Join(" OR ", statuses) + ")");
+        }
+
+        if (query.BoxSetLibraryFolders.Length > 0)
+        {
+            var folderIdQueries = new List<string>();
+
+            foreach (var folderId in query.BoxSetLibraryFolders)
+            {
+                folderIdQueries.Add("data like '%" + folderId.ToString("N", CultureInfo.InvariantCulture) + "%'");
+            }
+
+            whereClauses.Add("(" + string.Join(" OR ", folderIdQueries) + ")");
+        }
+
+        if (query.VideoTypes.Length > 0)
+        {
+            var videoTypes = new List<string>();
+
+            foreach (var videoType in query.VideoTypes)
+            {
+                videoTypes.Add("data like '%\"VideoType\":\"" + videoType + "\"%'");
+            }
+
+            whereClauses.Add("(" + string.Join(" OR ", videoTypes) + ")");
+        }
+
+        if (query.Is3D.HasValue)
+        {
+            if (query.Is3D.Value)
+            {
+                whereClauses.Add("data like '%Video3DFormat%'");
+            }
+            else
+            {
+                whereClauses.Add("data not like '%Video3DFormat%'");
+            }
+        }
+
+        if (query.IsPlaceHolder.HasValue)
+        {
+            if (query.IsPlaceHolder.Value)
+            {
+                whereClauses.Add("data like '%\"IsPlaceHolder\":true%'");
+            }
+            else
+            {
+                whereClauses.Add("(data is null or data not like '%\"IsPlaceHolder\":true%')");
+            }
+        }
+
+        if (query.HasSpecialFeature.HasValue)
+        {
+            if (query.HasSpecialFeature.Value)
+            {
+                whereClauses.Add("ExtraIds not null");
+            }
+            else
+            {
+                whereClauses.Add("ExtraIds is null");
+            }
+        }
+
+        if (query.HasTrailer.HasValue)
+        {
+            if (query.HasTrailer.Value)
+            {
+                whereClauses.Add("ExtraIds not null");
+            }
+            else
+            {
+                whereClauses.Add("ExtraIds is null");
+            }
+        }
+
+        if (query.HasThemeSong.HasValue)
+        {
+            if (query.HasThemeSong.Value)
+            {
+                whereClauses.Add("ExtraIds not null");
+            }
+            else
+            {
+                whereClauses.Add("ExtraIds is null");
+            }
+        }
+
+        if (query.HasThemeVideo.HasValue)
+        {
+            if (query.HasThemeVideo.Value)
+            {
+                whereClauses.Add("ExtraIds not null");
+            }
+            else
+            {
+                whereClauses.Add("ExtraIds is null");
+            }
+        }
     }
 
     /// <summary>
@@ -58,14 +1357,26 @@ public class BaseItemManager
             .FirstOrDefault(t => t is not null));
     }
 
-    /// <summary>
-    /// Saves the items.
-    /// </summary>
-    /// <param name="items">The items.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <exception cref="ArgumentNullException">
-    /// <paramref name="items"/> or <paramref name="cancellationToken"/> is <c>null</c>.
-    /// </exception>
+    /// <inheritdoc cref="IItemRepository" />
+    public void SaveImages(BaseItem item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+
+        var images = SerializeImages(item.ImageInfos);
+        using var db = _dbProvider.CreateDbContext();
+
+        db.BaseItems
+            .Where(e => e.Id.Equals(item.Id))
+            .ExecuteUpdate(e => e.SetProperty(f => f.Images, images));
+    }
+
+    /// <inheritdoc cref="IItemRepository" />
+    public void SaveItems(IReadOnlyList<BaseItemDto> items, CancellationToken cancellationToken)
+    {
+        UpdateOrInsertItems(items, cancellationToken);
+    }
+
+    /// <inheritdoc cref="IItemRepository" />
     public void UpdateOrInsertItems(IReadOnlyList<BaseItemDto> items, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(items);
@@ -124,7 +1435,8 @@ public class BaseItemManager
         context.SaveChanges(true);
     }
 
-    public BaseItemDto? GetSingle(Guid id)
+    /// <inheritdoc cref="IItemRepository" />
+    public BaseItemDto? RetrieveItem(Guid id)
     {
         if (id.IsEmpty())
         {
@@ -139,13 +1451,6 @@ public class BaseItemManager
         }
 
         return DeserialiseBaseItem(item);
-    }
-
-    private BaseItemDto DeserialiseBaseItem(BaseItemEntity baseItemEntity)
-    {
-        var type = GetType(baseItemEntity.Type) ?? throw new InvalidOperationException("Cannot deserialise unkown type.");
-        var dto = Activator.CreateInstance(type) as BaseItemDto ?? throw new InvalidOperationException("Cannot deserialise unkown type.");;
-        return Map(baseItemEntity, dto);
     }
 
     /// <summary>
@@ -460,6 +1765,13 @@ public class BaseItemManager
         }
 
         return entity;
+    }
+
+    private BaseItemDto DeserialiseBaseItem(BaseItemEntity baseItemEntity)
+    {
+        var type = GetType(baseItemEntity.Type) ?? throw new InvalidOperationException("Cannot deserialise unkown type.");
+        var dto = Activator.CreateInstance(type) as BaseItemDto ?? throw new InvalidOperationException("Cannot deserialise unkown type."); ;
+        return Map(baseItemEntity, dto);
     }
 
     private string GetCleanValue(string value)

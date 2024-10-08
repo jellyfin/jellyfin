@@ -161,4 +161,10 @@ public class BaseItem
     public int? Height { get; set; }
 
     public long? Size { get; set; }
+
+    public ICollection<People>? Peoples { get; set; }
+
+    public ICollection<UserData>? UserData { get; set; }
+
+    public ICollection<ItemValue>? ItemValues { get; set; }
 }

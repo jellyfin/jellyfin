@@ -10,9 +10,7 @@ namespace MediaBrowser.Providers.Chapters
 {
     public class ChapterManager : IChapterManager
     {
-        private readonly IItemRepository _itemRepo;
-
-        public ChapterManager(IItemRepository itemRepo)
+        public ChapterManager(IDbContextFactory<JellyfinDbContext> dbProvider)
         {
             _itemRepo = itemRepo;
         }

@@ -7,6 +7,7 @@ namespace Jellyfin.Data.Entities;
 public class People
 {
     public Guid ItemId { get; set; }
+    public BaseItem Item { get; set; }
 
     public required string Name { get; set; }
     public string? Role { get; set; }

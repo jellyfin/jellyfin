@@ -40,28 +40,6 @@ namespace MediaBrowser.Controller.Persistence
         BaseItem RetrieveItem(Guid id);
 
         /// <summary>
-        /// Gets chapters for an item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>The list of chapter info.</returns>
-        List<ChapterInfo> GetChapters(BaseItem item);
-
-        /// <summary>
-        /// Gets a single chapter for an item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="index">The chapter index.</param>
-        /// <returns>The chapter info at the specified index.</returns>
-        ChapterInfo GetChapter(BaseItem item, int index);
-
-        /// <summary>
-        /// Saves the chapters.
-        /// </summary>
-        /// <param name="id">The item id.</param>
-        /// <param name="chapters">The list of chapters to save.</param>
-        void SaveChapters(Guid id, IReadOnlyList<ChapterInfo> chapters);
-
-        /// <summary>
         /// Gets the media streams.
         /// </summary>
         /// <param name="query">The query.</param>
