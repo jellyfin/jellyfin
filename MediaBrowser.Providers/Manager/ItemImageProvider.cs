@@ -68,16 +68,22 @@ namespace MediaBrowser.Providers.Manager
         /// Removes all existing images from the provided item.
         /// </summary>
         /// <param name="item">The <see cref="BaseItem"/> to remove images from.</param>
+        /// <param name="canDeleteLocal">Whether removing images outside metadata folder is allowed.</param>
         /// <returns><c>true</c> if changes were made to the item; otherwise <c>false</c>.</returns>
-        public bool RemoveImages(BaseItem item)
+        public bool RemoveImages(BaseItem item, bool canDeleteLocal = false)
         {
             var singular = new List<ItemImageInfo>();
+            var itemMetadataPath = item.GetInternalMetadataPath();
             for (var i = 0; i < _singularImages.Length; i++)
             {
                 var currentImage = item.GetImageInfo(_singularImages[i], 0);
                 if (currentImage is not null)
                 {
-                    singular.Add(currentImage);
+                    var imageInMetadataFolder = currentImage.Path.StartsWith(itemMetadataPath, StringComparison.OrdinalIgnoreCase);
+                    if (imageInMetadataFolder || canDeleteLocal || item.IsSaveLocalMetadataEnabled())
+                    {
+                        singular.Add(currentImage);
+                    }
                 }
             }
 

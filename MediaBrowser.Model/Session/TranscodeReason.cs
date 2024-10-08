@@ -18,6 +18,7 @@ namespace MediaBrowser.Model.Session
         // Video Constraints
         VideoProfileNotSupported = 1 << 6,
         VideoRangeTypeNotSupported = 1 << 24,
+        VideoCodecTagNotSupported = 1 << 25,
         VideoLevelNotSupported = 1 << 7,
         VideoResolutionNotSupported = 1 << 8,
         VideoBitDepthNotSupported = 1 << 9,

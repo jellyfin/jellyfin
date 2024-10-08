@@ -130,5 +130,7 @@
     "TaskCleanCollectionsAndPlaylistsDescription": "Esborra elements de col·leccions i llistes de reproducció que ja no existeixen.",
     "TaskCleanCollectionsAndPlaylists": "Neteja col·leccions i llistes de reproducció",
     "TaskAudioNormalization": "Normalització d'Àudio",
-    "TaskAudioNormalizationDescription": "Escaneja arxius per dades de normalització d'àudio."
+    "TaskAudioNormalizationDescription": "Escaneja arxius per dades de normalització d'àudio.",
+    "TaskDownloadMissingLyricsDescription": "Baixar lletres de les cançons",
+    "TaskDownloadMissingLyrics": "Baixar lletres que falten"
 }

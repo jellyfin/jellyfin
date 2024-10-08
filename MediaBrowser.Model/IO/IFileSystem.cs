@@ -34,6 +34,13 @@ namespace MediaBrowser.Model.IO
         string MakeAbsolutePath(string folderPath, string filePath);
 
         /// <summary>
+        /// Moves a directory to a new location.
+        /// </summary>
+        /// <param name="source">Source directory.</param>
+        /// <param name="destination">Destination directory.</param>
+        void MoveDirectory(string source, string destination);
+
+        /// <summary>
         /// Returns a <see cref="FileSystemMetadata" /> object for the specified file or directory path.
         /// </summary>
         /// <param name="path">A path to a file or directory.</param>

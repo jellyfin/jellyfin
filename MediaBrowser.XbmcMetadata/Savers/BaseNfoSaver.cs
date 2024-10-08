@@ -348,7 +348,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                     writer.WriteElementString("aspectratio", stream.AspectRatio);
                 }
 
-                var framerate = stream.AverageFrameRate ?? stream.RealFrameRate;
+                var framerate = stream.ReferenceFrameRate;
 
                 if (framerate.HasValue)
                 {

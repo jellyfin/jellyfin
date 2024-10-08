@@ -132,5 +132,7 @@
     "TaskAudioNormalization": "Normalizzazione dell'audio",
     "TaskAudioNormalizationDescription": "Scansiona i file alla ricerca dei dati per la normalizzazione dell'audio.",
     "TaskDownloadMissingLyricsDescription": "Scarica testi per le canzoni",
-    "TaskDownloadMissingLyrics": "Scarica testi mancanti"
+    "TaskDownloadMissingLyrics": "Scarica testi mancanti",
+    "TaskMoveTrickplayImages": "Sposta le immagini Trickplay",
+    "TaskMoveTrickplayImagesDescription": "Sposta le immagini Trickplay esistenti secondo la configurazione della libreria."
 }

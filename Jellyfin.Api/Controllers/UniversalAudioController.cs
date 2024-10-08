@@ -160,6 +160,7 @@ public class UniversalAudioController : BaseJellyfinApiController
                 true,
                 true,
                 true,
+                false,
                 Request.HttpContext.GetNormalizedRemoteIP());
         }
 

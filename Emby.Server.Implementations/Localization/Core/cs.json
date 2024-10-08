@@ -132,5 +132,9 @@
     "TaskAudioNormalization": "Normalizace zvuku",
     "TaskAudioNormalizationDescription": "Skenovat soubory za účelem normalizace zvuku.",
     "TaskDownloadMissingLyrics": "Stáhnout chybějící texty k písni",
-    "TaskDownloadMissingLyricsDescription": "Stáhne texty k písni"
+    "TaskDownloadMissingLyricsDescription": "Stáhne texty k písni",
+    "TaskExtractMediaSegments": "Skenování segmentů médií",
+    "TaskExtractMediaSegmentsDescription": "Extrahuje či získá segmenty médií pomocí zásuvných modulů MediaSegment.",
+    "TaskMoveTrickplayImages": "Přesunout úložiště obrázků Trickplay",
+    "TaskMoveTrickplayImagesDescription": "Přesune existující soubory Trickplay podle nastavení knihovny."
 }

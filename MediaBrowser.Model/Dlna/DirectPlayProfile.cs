@@ -1,36 +1,65 @@
-#pragma warning disable CS1591
-
 using System.Xml.Serialization;
+using MediaBrowser.Model.Extensions;
 
-namespace MediaBrowser.Model.Dlna
+namespace MediaBrowser.Model.Dlna;
+
+/// <summary>
+/// Defines the <see cref="DirectPlayProfile"/>.
+/// </summary>
+public class DirectPlayProfile
 {
-    public class DirectPlayProfile
+    /// <summary>
+    /// Gets or sets the container.
+    /// </summary>
+    [XmlAttribute("container")]
+    public string Container { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the audio codec.
+    /// </summary>
+    [XmlAttribute("audioCodec")]
+    public string? AudioCodec { get; set; }
+
+    /// <summary>
+    /// Gets or sets the video codec.
+    /// </summary>
+    [XmlAttribute("videoCodec")]
+    public string? VideoCodec { get; set; }
+
+    /// <summary>
+    /// Gets or sets the Dlna profile type.
+    /// </summary>
+    [XmlAttribute("type")]
+    public DlnaProfileType Type { get; set; }
+
+    /// <summary>
+    /// Returns whether the <see cref="Container"/> supports the <paramref name="container"/>.
+    /// </summary>
+    /// <param name="container">The container to match against.</param>
+    /// <returns>True if supported.</returns>
+    public bool SupportsContainer(string? container)
     {
-        [XmlAttribute("container")]
-        public string? Container { get; set; }
+        return ContainerHelper.ContainsContainer(Container, container);
+    }
 
-        [XmlAttribute("audioCodec")]
-        public string? AudioCodec { get; set; }
+    /// <summary>
+    /// Returns whether the <see cref="VideoCodec"/> supports the <paramref name="codec"/>.
+    /// </summary>
+    /// <param name="codec">The codec to match against.</param>
+    /// <returns>True if supported.</returns>
+    public bool SupportsVideoCodec(string? codec)
+    {
+        return Type == DlnaProfileType.Video && ContainerHelper.ContainsContainer(VideoCodec, codec);
+    }
 
-        [XmlAttribute("videoCodec")]
-        public string? VideoCodec { get; set; }
-
-        [XmlAttribute("type")]
-        public DlnaProfileType Type { get; set; }
-
-        public bool SupportsContainer(string? container)
-        {
-            return ContainerProfile.ContainsContainer(Container, container);
-        }
-
-        public bool SupportsVideoCodec(string? codec)
-        {
-            return Type == DlnaProfileType.Video && ContainerProfile.ContainsContainer(VideoCodec, codec);
-        }
-
-        public bool SupportsAudioCodec(string? codec)
-        {
-            return (Type == DlnaProfileType.Audio || Type == DlnaProfileType.Video) && ContainerProfile.ContainsContainer(AudioCodec, codec);
-        }
+    /// <summary>
+    /// Returns whether the <see cref="AudioCodec"/> supports the <paramref name="codec"/>.
+    /// </summary>
+    /// <param name="codec">The codec to match against.</param>
+    /// <returns>True if supported.</returns>
+    public bool SupportsAudioCodec(string? codec)
+    {
+        // Video profiles can have audio codec restrictions too, therefore incude Video as valid type.
+        return (Type == DlnaProfileType.Audio || Type == DlnaProfileType.Video) && ContainerHelper.ContainsContainer(AudioCodec, codec);
     }
 }
