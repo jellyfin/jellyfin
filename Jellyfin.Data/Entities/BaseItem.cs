@@ -171,4 +171,6 @@ public class BaseItem
     public ICollection<Chapter>? Chapters { get; set; }
 
     public ICollection<BaseItemProvider>? Provider { get; set; }
+
+    public ICollection<AncestorId>? AncestorIds { get; set; }
 }

@@ -888,68 +888,27 @@ public class BaseItemManager : IItemRepository
 
         if (query.ExcludeProviderIds is not null && query.ExcludeProviderIds.Count > 0)
         {
-            foreach (var item in query.ExcludeProviderIds.Where(e => e.Key != nameof(MetadataProvider.TmdbCollection))
-                .Select(e => $"{e.Key}={e.Value}"))
-            {
-                baseQuery = baseQuery
-                    .Where(e => e.ProviderIds == null || !e.ProviderIds.Contains(item));
-            }
+            baseQuery = baseQuery.Where(e => !e.Provider!.All(f => !query.ExcludeProviderIds.All(w => f.ProviderId == w.Key && f.ProviderValue == w.Value)));
         }
 
         if (query.HasAnyProviderId is not null && query.HasAnyProviderId.Count > 0)
         {
-            baseQuery = baseQuery
-                .Where(e => e.ProviderIds == null || !e.ProviderIds.Contains(item));
-            var hasProviderIds = new List<string>();
-
-            var index = 0;
-            foreach (var pair in query.HasAnyProviderId)
-            {
-                if (string.Equals(pair.Key, nameof(MetadataProvider.TmdbCollection), StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                // TODO this seems to be an idea for a better schema where ProviderIds are their own table
-                //      but this is not implemented
-                // hasProviderIds.Add("(COALESCE((select value from ProviderIds where ItemId=Guid and Name = '" + pair.Key + "'), '') <> " + paramName + ")");
-
-                // TODO this is a really BAD way to do it since the pair:
-                //      Tmdb, 1234 matches Tmdb=1234 but also Tmdb=1234567
-                //      and maybe even NotTmdb=1234.
-
-                // this is a placeholder for this specific pair to correlate it in the bigger query
-                var paramName = "@HasAnyProviderId" + index;
-
-                // this is a search for the placeholder
-                hasProviderIds.Add("ProviderIds like " + paramName);
-
-                // this replaces the placeholder with a value, here: %key=val%
-                statement?.TryBind(paramName, "%" + pair.Key + "=" + pair.Value + "%");
-                index++;
-
-                break;
-            }
-
-            if (hasProviderIds.Count > 0)
-            {
-                whereClauses.Add("(" + string.Join(" OR ", hasProviderIds) + ")");
-            }
+            baseQuery = baseQuery.Where(e => e.Provider!.Any(f => !query.HasAnyProviderId.Any(w => f.ProviderId == w.Key && f.ProviderValue == w.Value)));
         }
 
         if (query.HasImdbId.HasValue)
         {
-            whereClauses.Add(GetProviderIdClause(query.HasImdbId.Value, "imdb"));
+            baseQuery = baseQuery.Where(e => e.Provider!.Any(f => f.ProviderId == "imdb"));
         }
 
         if (query.HasTmdbId.HasValue)
         {
-            whereClauses.Add(GetProviderIdClause(query.HasTmdbId.Value, "tmdb"));
+            baseQuery = baseQuery.Where(e => e.Provider!.Any(f => f.ProviderId == "tmdb"));
         }
 
         if (query.HasTvdbId.HasValue)
         {
-            whereClauses.Add(GetProviderIdClause(query.HasTvdbId.Value, "tvdb"));
+            baseQuery = baseQuery.Where(e => e.Provider!.Any(f => f.ProviderId == "tvdb"));
         }
 
         var queryTopParentIds = query.TopParentIds;
@@ -999,16 +958,9 @@ public class BaseItemManager : IItemRepository
             }
         }
 
-        if (query.AncestorIds.Length == 1)
+        if (query.AncestorIds.Length > 0)
         {
-            whereClauses.Add("Guid in (select itemId from AncestorIds where AncestorId=@AncestorId)");
-            statement?.TryBind("@AncestorId", query.AncestorIds[0]);
-        }
-
-        if (query.AncestorIds.Length > 1)
-        {
-            var inClause = string.Join(',', query.AncestorIds.Select(i => "'" + i.ToString("N", CultureInfo.InvariantCulture) + "'"));
-            whereClauses.Add(string.Format(CultureInfo.InvariantCulture, "Guid in (select itemId from AncestorIds where AncestorIdText in ({0}))", inClause));
+            baseQuery = baseQuery.Where(e => e.AncestorIds!.Any(f => query.AncestorIds.Contains(f.Id)));
         }
 
         if (!string.IsNullOrWhiteSpace(query.AncestorWithPresentationUniqueKey))
