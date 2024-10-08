@@ -22,6 +22,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using BaseItemDto = MediaBrowser.Controller.Entities.BaseItem;
 using BaseItemEntity = Jellyfin.Data.Entities.BaseItem;
 
@@ -281,16 +282,9 @@ public class BaseItemManager : IItemRepository
             }
         }
 
-        if (query.SimilarTo is not null && query.MinSimilarityScore > 0)
-        {
-            // TODO support similarty score via CTE
-            baseQuery = baseQuery.Where(e => e.Sim == query.IsSeries);
-            whereClauses.Add("SimilarityScore > " + (query.MinSimilarityScore - 1).ToString(CultureInfo.InvariantCulture));
-        }
-
         if (!string.IsNullOrEmpty(query.SearchTerm))
         {
-            whereClauses.Add("SearchScore > 0");
+            baseQuery = baseQuery.Where(e => e.CleanName!.Contains(query.SearchTerm, StringComparison.InvariantCultureIgnoreCase) || (e.OriginalTitle != null && e.OriginalTitle.Contains(query.SearchTerm, StringComparison.InvariantCultureIgnoreCase)));
         }
 
         if (query.IsFolder.HasValue)
@@ -917,44 +911,13 @@ public class BaseItemManager : IItemRepository
         {
             var includedItemByNameTypes = GetItemByNameTypesInQuery(query);
             var enableItemsByName = (query.IncludeItemsByName ?? false) && includedItemByNameTypes.Count > 0;
-
-            if (queryTopParentIds.Length == 1)
+            if (enableItemsByName && includedItemByNameTypes.Count > 0)
             {
-                if (enableItemsByName && includedItemByNameTypes.Count == 1)
-                {
-                    whereClauses.Add("(TopParentId=@TopParentId or Type=@IncludedItemByNameType)");
-                    statement?.TryBind("@IncludedItemByNameType", includedItemByNameTypes[0]);
-                }
-                else if (enableItemsByName && includedItemByNameTypes.Count > 1)
-                {
-                    var itemByNameTypeVal = string.Join(',', includedItemByNameTypes.Select(i => "'" + i + "'"));
-                    whereClauses.Add("(TopParentId=@TopParentId or Type in (" + itemByNameTypeVal + "))");
-                }
-                else
-                {
-                    whereClauses.Add("(TopParentId=@TopParentId)");
-                }
-
-                statement?.TryBind("@TopParentId", queryTopParentIds[0].ToString("N", CultureInfo.InvariantCulture));
+                baseQuery = baseQuery.Where(e => includedItemByNameTypes.Contains(e.Type) || queryTopParentIds.Any(w => w.Equals(e.TopParentId!.Value)));
             }
-            else if (queryTopParentIds.Length > 1)
+            else
             {
-                var val = string.Join(',', queryTopParentIds.Select(i => "'" + i.ToString("N", CultureInfo.InvariantCulture) + "'"));
-
-                if (enableItemsByName && includedItemByNameTypes.Count == 1)
-                {
-                    whereClauses.Add("(Type=@IncludedItemByNameType or TopParentId in (" + val + "))");
-                    statement?.TryBind("@IncludedItemByNameType", includedItemByNameTypes[0]);
-                }
-                else if (enableItemsByName && includedItemByNameTypes.Count > 1)
-                {
-                    var itemByNameTypeVal = string.Join(',', includedItemByNameTypes.Select(i => "'" + i + "'"));
-                    whereClauses.Add("(Type in (" + itemByNameTypeVal + ") or TopParentId in (" + val + "))");
-                }
-                else
-                {
-                    whereClauses.Add("TopParentId in (" + val + ")");
-                }
+                baseQuery = baseQuery.Where(e => queryTopParentIds.Any(w => w.Equals(e.TopParentId!.Value)));
             }
         }
 
@@ -965,124 +928,83 @@ public class BaseItemManager : IItemRepository
 
         if (!string.IsNullOrWhiteSpace(query.AncestorWithPresentationUniqueKey))
         {
-            var inClause = "select guid from TypedBaseItems where PresentationUniqueKey=@AncestorWithPresentationUniqueKey";
-            whereClauses.Add(string.Format(CultureInfo.InvariantCulture, "Guid in (select itemId from AncestorIds where AncestorId in ({0}))", inClause));
-            statement?.TryBind("@AncestorWithPresentationUniqueKey", query.AncestorWithPresentationUniqueKey);
+            baseQuery = baseQuery
+                .Where(e => context.BaseItems.Where(f => f.PresentationUniqueKey == query.AncestorWithPresentationUniqueKey).Any(f => f.AncestorIds!.Any(w => w.ItemId.Equals(f.Id))));
         }
 
         if (!string.IsNullOrWhiteSpace(query.SeriesPresentationUniqueKey))
         {
-            whereClauses.Add("SeriesPresentationUniqueKey=@SeriesPresentationUniqueKey");
-            statement?.TryBind("@SeriesPresentationUniqueKey", query.SeriesPresentationUniqueKey);
+            baseQuery = baseQuery
+                .Where(e => e.SeriesPresentationUniqueKey == query.SeriesPresentationUniqueKey);
         }
 
         if (query.ExcludeInheritedTags.Length > 0)
         {
-            var paramName = "@ExcludeInheritedTags";
-            if (statement is null)
-            {
-                int index = 0;
-                string excludedTags = string.Join(',', query.ExcludeInheritedTags.Select(_ => paramName + index++));
-                whereClauses.Add("((select CleanValue from ItemValues where ItemId=Guid and Type=6 and cleanvalue in (" + excludedTags + ")) is null)");
-            }
-            else
-            {
-                for (int index = 0; index < query.ExcludeInheritedTags.Length; index++)
-                {
-                    statement.TryBind(paramName + index, GetCleanValue(query.ExcludeInheritedTags[index]));
-                }
-            }
+            baseQuery = baseQuery
+                .Where(e => !e.ItemValues!.Where(e => e.Type == 6)
+                    .Any(f => query.ExcludeInheritedTags.Contains(f.CleanValue)));
         }
 
         if (query.IncludeInheritedTags.Length > 0)
         {
-            var paramName = "@IncludeInheritedTags";
-            if (statement is null)
+            // Episodes do not store inherit tags from their parents in the database, and the tag may be still required by the client.
+            // In addtion to the tags for the episodes themselves, we need to manually query its parent (the season)'s tags as well.
+            if (includeTypes.Length == 1 && includeTypes.FirstOrDefault() is BaseItemKind.Episode)
             {
-                int index = 0;
-                string includedTags = string.Join(',', query.IncludeInheritedTags.Select(_ => paramName + index++));
-                // Episodes do not store inherit tags from their parents in the database, and the tag may be still required by the client.
-                // In addtion to the tags for the episodes themselves, we need to manually query its parent (the season)'s tags as well.
-                if (includeTypes.Length == 1 && includeTypes.FirstOrDefault() is BaseItemKind.Episode)
-                {
-                    whereClauses.Add($"""
-                                          ((select CleanValue from ItemValues where ItemId=Guid and Type=6 and CleanValue in ({includedTags})) is not null
-                                          OR (select CleanValue from ItemValues where ItemId=ParentId and Type=6 and CleanValue in ({includedTags})) is not null)
-                                          """);
-                }
+                baseQuery = baseQuery
+                    .Where(e => e.ItemValues!.Where(e => e.Type == 6)
+                        .Any(f => query.IncludeInheritedTags.Contains(f.CleanValue))
+                        ||
+                        (e.ParentId.HasValue && context.ItemValues.Where(w => w.ItemId.Equals(e.ParentId.Value))!.Where(e => e.Type == 6)
+                        .Any(f => query.IncludeInheritedTags.Contains(f.CleanValue))));
+            }
 
-                // A playlist should be accessible to its owner regardless of allowed tags.
-                else if (includeTypes.Length == 1 && includeTypes.FirstOrDefault() is BaseItemKind.Playlist)
-                {
-                    whereClauses.Add($"""
-                                          ((select CleanValue from ItemValues where ItemId=Guid and Type=6 and CleanValue in ({includedTags})) is not null
-                                          OR data like @PlaylistOwnerUserId)
-                                          """);
-                }
-                else
-                {
-                    whereClauses.Add("((select CleanValue from ItemValues where ItemId=Guid and Type=6 and cleanvalue in (" + includedTags + ")) is not null)");
-                }
+            // A playlist should be accessible to its owner regardless of allowed tags.
+            else if (includeTypes.Length == 1 && includeTypes.FirstOrDefault() is BaseItemKind.Playlist)
+            {
+                baseQuery = baseQuery
+                    .Where(e => e.ItemValues!.Where(e => e.Type == 6)
+                        .Any(f => query.IncludeInheritedTags.Contains(f.CleanValue)) || e.Data!.Contains($"OwnerUserId\":\"{query.User!.Id:N}\""));
+                // d                                                                      ^^ this is stupid it hate this.
             }
             else
             {
-                for (int index = 0; index < query.IncludeInheritedTags.Length; index++)
-                {
-                    statement.TryBind(paramName + index, GetCleanValue(query.IncludeInheritedTags[index]));
-                }
-
-                if (query.User is not null)
-                {
-                    statement.TryBind("@PlaylistOwnerUserId", $"""%"OwnerUserId":"{query.User.Id.ToString("N")}"%""");
-                }
+                baseQuery = baseQuery
+                    .Where(e => e.ItemValues!.Where(e => e.Type == 6)
+                        .Any(f => query.IncludeInheritedTags.Contains(f.CleanValue)));
             }
         }
 
         if (query.SeriesStatuses.Length > 0)
         {
-            var statuses = new List<string>();
-
-            foreach (var seriesStatus in query.SeriesStatuses)
-            {
-                statuses.Add("data like  '%" + seriesStatus + "%'");
-            }
-
-            whereClauses.Add("(" + string.Join(" OR ", statuses) + ")");
+            baseQuery = baseQuery
+                .Where(e => query.SeriesStatuses.Any(f => e.Data!.Contains(f.ToString(), StringComparison.InvariantCultureIgnoreCase)));
         }
 
         if (query.BoxSetLibraryFolders.Length > 0)
         {
-            var folderIdQueries = new List<string>();
-
-            foreach (var folderId in query.BoxSetLibraryFolders)
-            {
-                folderIdQueries.Add("data like '%" + folderId.ToString("N", CultureInfo.InvariantCulture) + "%'");
-            }
-
-            whereClauses.Add("(" + string.Join(" OR ", folderIdQueries) + ")");
+            baseQuery = baseQuery
+                .Where(e => query.BoxSetLibraryFolders.Any(f => e.Data!.Contains(f.ToString("N", CultureInfo.InvariantCulture), StringComparison.InvariantCultureIgnoreCase)));
         }
 
         if (query.VideoTypes.Length > 0)
         {
-            var videoTypes = new List<string>();
-
-            foreach (var videoType in query.VideoTypes)
-            {
-                videoTypes.Add("data like '%\"VideoType\":\"" + videoType + "\"%'");
-            }
-
-            whereClauses.Add("(" + string.Join(" OR ", videoTypes) + ")");
+            var videoTypeBs = query.VideoTypes.Select(e => $"\"VideoType\":\"" + e + "\"");
+            baseQuery = baseQuery
+                .Where(e => videoTypeBs.Any(f => e.Data!.Contains(f, StringComparison.InvariantCultureIgnoreCase)));
         }
 
         if (query.Is3D.HasValue)
         {
             if (query.Is3D.Value)
             {
-                whereClauses.Add("data like '%Video3DFormat%'");
+                baseQuery = baseQuery
+                    .Where(e => e.Data!.Contains("Video3DFormat", StringComparison.InvariantCultureIgnoreCase));
             }
             else
             {
-                whereClauses.Add("data not like '%Video3DFormat%'");
+                baseQuery = baseQuery
+                    .Where(e => !e.Data!.Contains("Video3DFormat", StringComparison.InvariantCultureIgnoreCase));
             }
         }
 
@@ -1090,11 +1012,13 @@ public class BaseItemManager : IItemRepository
         {
             if (query.IsPlaceHolder.Value)
             {
-                whereClauses.Add("data like '%\"IsPlaceHolder\":true%'");
+                baseQuery = baseQuery
+                    .Where(e => e.Data!.Contains("IsPlaceHolder\":true", StringComparison.InvariantCultureIgnoreCase));
             }
             else
             {
-                whereClauses.Add("(data is null or data not like '%\"IsPlaceHolder\":true%')");
+                baseQuery = baseQuery
+                    .Where(e => !e.Data!.Contains("IsPlaceHolder\":true", StringComparison.InvariantCultureIgnoreCase));
             }
         }
 
@@ -1102,47 +1026,27 @@ public class BaseItemManager : IItemRepository
         {
             if (query.HasSpecialFeature.Value)
             {
-                whereClauses.Add("ExtraIds not null");
+                baseQuery = baseQuery
+                    .Where(e => e.ExtraIds != null);
             }
             else
             {
-                whereClauses.Add("ExtraIds is null");
+                baseQuery = baseQuery
+                    .Where(e => e.ExtraIds == null);
             }
         }
 
-        if (query.HasTrailer.HasValue)
+        if (query.HasTrailer.HasValue || query.HasThemeSong.HasValue || query.HasThemeVideo.HasValue)
         {
-            if (query.HasTrailer.Value)
+            if (query.HasTrailer.GetValueOrDefault() || query.HasThemeSong.GetValueOrDefault() || query.HasThemeVideo.GetValueOrDefault())
             {
-                whereClauses.Add("ExtraIds not null");
+                baseQuery = baseQuery
+                    .Where(e => e.ExtraIds != null);
             }
             else
             {
-                whereClauses.Add("ExtraIds is null");
-            }
-        }
-
-        if (query.HasThemeSong.HasValue)
-        {
-            if (query.HasThemeSong.Value)
-            {
-                whereClauses.Add("ExtraIds not null");
-            }
-            else
-            {
-                whereClauses.Add("ExtraIds is null");
-            }
-        }
-
-        if (query.HasThemeVideo.HasValue)
-        {
-            if (query.HasThemeVideo.Value)
-            {
-                whereClauses.Add("ExtraIds not null");
-            }
-            else
-            {
-                whereClauses.Add("ExtraIds is null");
+                baseQuery = baseQuery
+                    .Where(e => e.ExtraIds == null);
             }
         }
     }
@@ -1867,4 +1771,47 @@ public class BaseItemManager : IItemRepository
 
         return image;
     }
+
+    private List<string> GetItemByNameTypesInQuery(InternalItemsQuery query)
+    {
+        var list = new List<string>();
+
+        if (IsTypeInQuery(BaseItemKind.Person, query))
+        {
+            list.Add(typeof(Person).FullName!);
+        }
+
+        if (IsTypeInQuery(BaseItemKind.Genre, query))
+        {
+            list.Add(typeof(Genre).FullName!);
+        }
+
+        if (IsTypeInQuery(BaseItemKind.MusicGenre, query))
+        {
+            list.Add(typeof(MusicGenre).FullName!);
+        }
+
+        if (IsTypeInQuery(BaseItemKind.MusicArtist, query))
+        {
+            list.Add(typeof(MusicArtist).FullName!);
+        }
+
+        if (IsTypeInQuery(BaseItemKind.Studio, query))
+        {
+            list.Add(typeof(Studio).FullName!);
+        }
+
+        return list;
+    }
+
+    private bool IsTypeInQuery(BaseItemKind type, InternalItemsQuery query)
+    {
+        if (query.ExcludeItemTypes.Contains(type))
+        {
+            return false;
+        }
+
+        return query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains(type);
+    }
+
 }

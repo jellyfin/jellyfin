@@ -14,7 +14,7 @@ public class BaseItem
 
     public required string Type { get; set; }
 
-    public IReadOnlyList<byte>? Data { get; set; }
+    public string? Data { get; set; }
 
     public Guid? ParentId { get; set; }
 
@@ -94,7 +94,7 @@ public class BaseItem
 
     public string? UnratedType { get; set; }
 
-    public string? TopParentId { get; set; }
+    public Guid? TopParentId { get; set; }
 
     public string? TrailerTypes { get; set; }
 
