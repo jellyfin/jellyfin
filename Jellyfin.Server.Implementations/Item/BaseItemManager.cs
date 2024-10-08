@@ -19,10 +19,12 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Playlists;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using BaseItemDto = MediaBrowser.Controller.Entities.BaseItem;
 using BaseItemEntity = Jellyfin.Data.Entities.BaseItem;
@@ -145,8 +147,72 @@ public class BaseItemManager : IItemRepository
         _appHost = appHost;
     }
 
-    private IQueryable<T> Pageinate<T>(IQueryable<T> query, InternalItemsQuery filter)
+    private QueryResult<(BaseItemDto Item, ItemCounts ItemCounts)> GetItemValues(InternalItemsQuery filter, int[] itemValueTypes, string returnType)
     {
+        ArgumentNullException.ThrowIfNull(filter);
+
+        if (!filter.Limit.HasValue)
+        {
+            filter.EnableTotalRecordCount = false;
+        }
+
+        using var context = _dbProvider.CreateDbContext();
+
+        var innerQuery = new InternalItemsQuery(filter.User)
+        {
+            ExcludeItemTypes = filter.ExcludeItemTypes,
+            IncludeItemTypes = filter.IncludeItemTypes,
+            MediaTypes = filter.MediaTypes,
+            AncestorIds = filter.AncestorIds,
+            ItemIds = filter.ItemIds,
+            TopParentIds = filter.TopParentIds,
+            ParentId = filter.ParentId,
+            IsAiring = filter.IsAiring,
+            IsMovie = filter.IsMovie,
+            IsSports = filter.IsSports,
+            IsKids = filter.IsKids,
+            IsNews = filter.IsNews,
+            IsSeries = filter.IsSeries
+        };
+        var query = TranslateQuery(context.BaseItems, context, innerQuery);
+
+        query = query.Where(e => e.Type == returnType && e.ItemValues!.Any(f => e.CleanName == f.CleanValue && itemValueTypes.Contains(f.Type)));
+
+        var outerQuery = new InternalItemsQuery(filter.User)
+        {
+            IsPlayed = filter.IsPlayed,
+            IsFavorite = filter.IsFavorite,
+            IsFavoriteOrLiked = filter.IsFavoriteOrLiked,
+            IsLiked = filter.IsLiked,
+            IsLocked = filter.IsLocked,
+            NameLessThan = filter.NameLessThan,
+            NameStartsWith = filter.NameStartsWith,
+            NameStartsWithOrGreater = filter.NameStartsWithOrGreater,
+            Tags = filter.Tags,
+            OfficialRatings = filter.OfficialRatings,
+            StudioIds = filter.StudioIds,
+            GenreIds = filter.GenreIds,
+            Genres = filter.Genres,
+            Years = filter.Years,
+            NameContains = filter.NameContains,
+            SearchTerm = filter.SearchTerm,
+            SimilarTo = filter.SimilarTo,
+            ExcludeItemIds = filter.ExcludeItemIds
+        };
+        query = TranslateQuery(query, context, outerQuery)
+            .OrderBy(e => e.PresentationUniqueKey);
+
+        if (filter.OrderBy.Count != 0
+            || filter.SimilarTo is not null
+            || !string.IsNullOrEmpty(filter.SearchTerm))
+        {
+            query = ApplyOrder(query, filter);
+        }
+        else
+        {
+            query = query.OrderBy(e => e.SortName);
+        }
+
         if (filter.Limit.HasValue || filter.StartIndex.HasValue)
         {
             var offset = filter.StartIndex ?? 0;
@@ -158,131 +224,96 @@ public class BaseItemManager : IItemRepository
 
             if (filter.Limit.HasValue)
             {
-                query = query.Take(filter.Limit.Value);
+                query.Take(filter.Limit.Value);
             }
         }
 
-        return query;
-    }
-
-    private Expression<Func<BaseItemEntity, object>> MapOrderByField(ItemSortBy sortBy, InternalItemsQuery query)
-    {
-#pragma warning disable CS8603 // Possible null reference return.
-        return sortBy switch
+        var result = new QueryResult<(BaseItem, ItemCounts)>();
+        string countText = string.Empty;
+        if (filter.EnableTotalRecordCount)
         {
-            ItemSortBy.AirTime => e => e.SortName, // TODO
-            ItemSortBy.Runtime => e => e.RunTimeTicks,
-            ItemSortBy.Random => e => EF.Functions.Random(),
-            ItemSortBy.DatePlayed => e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id) && f.Key == e.UserDataKey)!.LastPlayedDate,
-            ItemSortBy.PlayCount => e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id) && f.Key == e.UserDataKey)!.PlayCount,
-            ItemSortBy.IsFavoriteOrLiked => e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id) && f.Key == e.UserDataKey)!.IsFavorite,
-            ItemSortBy.IsFolder => e => e.IsFolder,
-            ItemSortBy.IsPlayed => e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id) && f.Key == e.UserDataKey)!.Played,
-            ItemSortBy.IsUnplayed => e => !e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id) && f.Key == e.UserDataKey)!.Played,
-            ItemSortBy.DateLastContentAdded => e => e.DateLastMediaAdded,
-            ItemSortBy.Artist => e => e.ItemValues!.Where(f => f.Type == 0).Select(f => f.CleanValue),
-            ItemSortBy.AlbumArtist => e => e.ItemValues!.Where(f => f.Type == 1).Select(f => f.CleanValue),
-            ItemSortBy.Studio => e => e.ItemValues!.Where(f => f.Type == 3).Select(f => f.CleanValue),
-            ItemSortBy.OfficialRating => e => e.InheritedParentalRatingValue,
-            // ItemSortBy.SeriesDatePlayed => "(Select MAX(LastPlayedDate) from TypedBaseItems B" + GetJoinUserDataText(query) + " where Played=1 and B.SeriesPresentationUniqueKey=A.PresentationUniqueKey)",
-            ItemSortBy.SeriesSortName => e => e.SeriesName,
-            // ItemSortBy.AiredEpisodeOrder => "AiredEpisodeOrder",
-            ItemSortBy.Album => e => e.Album,
-            ItemSortBy.DateCreated => e => e.DateCreated,
-            ItemSortBy.PremiereDate => e => e.PremiereDate,
-            ItemSortBy.StartDate => e => e.StartDate,
-            ItemSortBy.Name => e => e.Name,
-            ItemSortBy.CommunityRating => e => e.CommunityRating,
-            ItemSortBy.ProductionYear => e => e.ProductionYear,
-            ItemSortBy.CriticRating => e => e.CriticRating,
-            ItemSortBy.VideoBitRate => e => e.TotalBitrate,
-            ItemSortBy.ParentIndexNumber => e => e.ParentIndexNumber,
-            ItemSortBy.IndexNumber => e => e.IndexNumber,
-            _ => e => e.SortName
-        };
-#pragma warning restore CS8603 // Possible null reference return.
+            result.TotalRecordCount = query.DistinctBy(e => e.PresentationUniqueKey).Count();
+        }
 
-    }
-
-    private IQueryable<BaseItemEntity> MapOrderByField(IQueryable<BaseItemEntity> dbQuery, ItemSortBy sortBy, InternalItemsQuery query)
-    {
-        return sortBy switch
+        var resultQuery = query.Select(e => new
         {
-            ItemSortBy.AirTime => dbQuery.OrderBy(e => e.SortName), // TODO
-            ItemSortBy.Runtime => dbQuery.OrderBy(e => e.RunTimeTicks),
-            ItemSortBy.Random => dbQuery.OrderBy(e => EF.Functions.Random()),
-            ItemSortBy.DatePlayed => dbQuery.OrderBy(e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id) && f.Key == e.UserDataKey)!.LastPlayedDate),
-            ItemSortBy.PlayCount => dbQuery.OrderBy(e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id) && f.Key == e.UserDataKey)!.PlayCount),
-            ItemSortBy.IsFavoriteOrLiked => dbQuery.OrderBy(e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id) && f.Key == e.UserDataKey)!.IsFavorite),
-            ItemSortBy.IsFolder => dbQuery.OrderBy(e => e.IsFolder),
-            ItemSortBy.IsPlayed => dbQuery.OrderBy(e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id) && f.Key == e.UserDataKey)!.Played),
-            ItemSortBy.IsUnplayed => dbQuery.OrderBy(e => !e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id) && f.Key == e.UserDataKey)!.Played),
-            ItemSortBy.DateLastContentAdded => dbQuery.OrderBy(e => e.DateLastMediaAdded),
-            ItemSortBy.Artist => dbQuery.OrderBy(e => e.ItemValues!.Where(f => f.Type == 0).Select(f => f.CleanValue)),
-            ItemSortBy.AlbumArtist => dbQuery.OrderBy(e => e.ItemValues!.Where(f => f.Type == 1).Select(f => f.CleanValue)),
-            ItemSortBy.Studio => dbQuery.OrderBy(e => e.ItemValues!.Where(f => f.Type == 3).Select(f => f.CleanValue)),
-            ItemSortBy.OfficialRating => dbQuery.OrderBy(e => e.InheritedParentalRatingValue),
-            // ItemSortBy.SeriesDatePlayed => "(Select MAX(LastPlayedDate) from TypedBaseItems B" + GetJoinUserDataText(query) + " where Played=1 and B.SeriesPresentationUniqueKey=A.PresentationUniqueKey)",
-            ItemSortBy.SeriesSortName => dbQuery.OrderBy(e => e.SeriesName),
-            // ItemSortBy.AiredEpisodeOrder => "AiredEpisodeOrder",
-            ItemSortBy.Album => dbQuery.OrderBy(e => e.Album),
-            ItemSortBy.DateCreated => dbQuery.OrderBy(e => e.DateCreated),
-            ItemSortBy.PremiereDate => dbQuery.OrderBy(e => e.PremiereDate),
-            ItemSortBy.StartDate => dbQuery.OrderBy(e => e.StartDate),
-            ItemSortBy.Name => dbQuery.OrderBy(e => e.Name),
-            ItemSortBy.CommunityRating => dbQuery.OrderBy(e => e.CommunityRating),
-            ItemSortBy.ProductionYear => dbQuery.OrderBy(e => e.ProductionYear),
-            ItemSortBy.CriticRating => dbQuery.OrderBy(e => e.CriticRating),
-            ItemSortBy.VideoBitRate => dbQuery.OrderBy(e => e.TotalBitrate),
-            ItemSortBy.ParentIndexNumber => dbQuery.OrderBy(e => e.ParentIndexNumber),
-            ItemSortBy.IndexNumber => dbQuery.OrderBy(e => e.IndexNumber),
-            _ => dbQuery.OrderBy(e => e.SortName)
-        };
-    }
-
-    private IQueryable<BaseItemEntity> ApplyOrder(IQueryable<BaseItemEntity> query, InternalItemsQuery filter)
-    {
-        var orderBy = filter.OrderBy;
-        bool hasSearch = !string.IsNullOrEmpty(filter.SearchTerm);
-
-        if (hasSearch)
-        {
-            List<(ItemSortBy, SortOrder)> prepend = new List<(ItemSortBy, SortOrder)>(4);
-            if (hasSearch)
+            item = e,
+            itemCount = new ItemCounts()
             {
-                prepend.Add((ItemSortBy.SortName, SortOrder.Ascending));
+                SeriesCount = e.ItemValues!.Count(e => e.Type == (int)BaseItemKind.Series),
+                EpisodeCount = e.ItemValues!.Count(e => e.Type == (int)BaseItemKind.Episode),
+                MovieCount = e.ItemValues!.Count(e => e.Type == (int)BaseItemKind.Movie),
+                AlbumCount = e.ItemValues!.Count(e => e.Type == (int)BaseItemKind.MusicAlbum),
+                ArtistCount = e.ItemValues!.Count(e => e.Type == 0 || e.Type == 1),
+                SongCount = e.ItemValues!.Count(e => e.Type == (int)BaseItemKind.MusicAlbum),
+                TrailerCount = e.ItemValues!.Count(e => e.Type == (int)BaseItemKind.Trailer),
             }
+        });
 
-            orderBy = filter.OrderBy = [.. prepend, .. orderBy];
-        }
-        else if (orderBy.Count == 0)
+        result.StartIndex = filter.StartIndex ?? 0;
+        result.Items = resultQuery.ToImmutableArray().Select(e =>
         {
-            return query;
-        }
+            return (DeserialiseBaseItem(e.item), e.itemCount);
+        }).ToImmutableArray();
 
-        foreach (var item in orderBy)
-        {
-            var expression = MapOrderByField(item.OrderBy, filter);
-            if (item.SortOrder == SortOrder.Ascending)
-            {
-                query = query.OrderBy(expression);
-            }
-            else
-            {
-                query = query.OrderByDescending(expression);
-            }
-        }
-
-        return query;
+        return result;
     }
 
+    /// <inheritdoc />
+    public void DeleteItem(Guid id)
+    {
+        ArgumentNullException.ThrowIfNull(id.IsEmpty() ? null : id);
+
+        using var context = _dbProvider.CreateDbContext();
+        using var transaction = context.Database.BeginTransaction();
+        context.Peoples.Where(e => e.ItemId.Equals(id)).ExecuteDelete();
+        context.Chapters.Where(e => e.ItemId.Equals(id)).ExecuteDelete();
+        context.MediaStreamInfos.Where(e => e.ItemId.Equals(id)).ExecuteDelete();
+        context.AncestorIds.Where(e => e.ItemId.Equals(id)).ExecuteDelete();
+        context.ItemValues.Where(e => e.ItemId.Equals(id)).ExecuteDelete();
+        context.BaseItems.Where(e => e.Id.Equals(id)).ExecuteDelete();
+        context.SaveChanges();
+        transaction.Commit();
+    }
+
+    /// <inheritdoc />
+    public void UpdateInheritedValues()
+    {
+        using var context = _dbProvider.CreateDbContext();
+        using var transaction = context.Database.BeginTransaction();
+
+        context.ItemValues.Where(e => e.Type == 6).ExecuteDelete();
+        context.ItemValues.AddRange(context.ItemValues.Where(e => e.Type == 4).Select(e => new Data.Entities.ItemValue()
+        {
+            CleanValue = e.CleanValue,
+            ItemId = e.ItemId,
+            Type = 6,
+            Value = e.Value,
+            Item = null!
+        }));
+
+        context.ItemValues.AddRange(
+            context.AncestorIds.Where(e => e.AncestorIdText != null).Join(context.ItemValues.Where(e => e.Value != null && e.Type == 4), e => e.Id, e => e.ItemId, (e, f) => new Data.Entities.ItemValue()
+            {
+                CleanValue = f.CleanValue,
+                ItemId = e.ItemId,
+                Item = null!,
+                Type = 6,
+                Value = f.Value
+            }));
+        context.SaveChanges();
+
+        transaction.Commit();
+    }
+
+    /// <inheritdoc cref="IItemRepository"/>
     public IReadOnlyList<Guid> GetItemIdsList(InternalItemsQuery filter)
     {
         ArgumentNullException.ThrowIfNull(filter);
         PrepareFilterQuery(filter);
 
         using var context = _dbProvider.CreateDbContext();
-        var dbQuery = TranslateQuery(context.BaseItems, context, filter)
+        var dbQuery = TranslateQuery(context.BaseItems.AsNoTracking(), context, filter)
             .DistinctBy(e => e.Id);
 
         var enableGroupByPresentationUniqueKey = EnableGroupByPresentationUniqueKey(filter);
@@ -306,56 +337,57 @@ public class BaseItemManager : IItemRepository
         return Pageinate(dbQuery, filter).Select(e => e.Id).ToImmutableArray();
     }
 
-    private bool EnableGroupByPresentationUniqueKey(InternalItemsQuery query)
+    /// <inheritdoc />
+    public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAllArtists(InternalItemsQuery query)
     {
-        if (!query.GroupByPresentationUniqueKey)
-        {
-            return false;
-        }
+        return GetItemValues(query, new[] { 0, 1 }, typeof(MusicArtist).FullName);
+    }
 
-        if (query.GroupBySeriesPresentationUniqueKey)
-        {
-            return false;
-        }
+    /// <inheritdoc />
+    public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetArtists(InternalItemsQuery query)
+    {
+        return GetItemValues(query, new[] { 0 }, typeof(MusicArtist).FullName);
+    }
 
-        if (!string.IsNullOrWhiteSpace(query.PresentationUniqueKey))
-        {
-            return false;
-        }
+    /// <inheritdoc />
+    public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAlbumArtists(InternalItemsQuery query)
+    {
+        return GetItemValues(query, new[] { 1 }, typeof(MusicArtist).FullName);
+    }
 
-        if (query.User is null)
-        {
-            return false;
-        }
+    /// <inheritdoc />
+    public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetStudios(InternalItemsQuery query)
+    {
+        return GetItemValues(query, new[] { 3 }, typeof(Studio).FullName);
+    }
 
-        if (query.IncludeItemTypes.Length == 0)
-        {
-            return true;
-        }
+    /// <inheritdoc />
+    public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetGenres(InternalItemsQuery query)
+    {
+        return GetItemValues(query, new[] { 2 }, typeof(Genre).FullName);
+    }
 
-        return query.IncludeItemTypes.Contains(BaseItemKind.Episode)
-            || query.IncludeItemTypes.Contains(BaseItemKind.Video)
-            || query.IncludeItemTypes.Contains(BaseItemKind.Movie)
-            || query.IncludeItemTypes.Contains(BaseItemKind.MusicVideo)
-            || query.IncludeItemTypes.Contains(BaseItemKind.Series)
-            || query.IncludeItemTypes.Contains(BaseItemKind.Season);
+    /// <inheritdoc />
+    public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetMusicGenres(InternalItemsQuery query)
+    {
+        return GetItemValues(query, new[] { 2 }, typeof(MusicGenre).FullName);
     }
 
     /// <inheritdoc cref="IItemRepository"/>
-    public QueryResult<BaseItem> GetItems(InternalItemsQuery query)
+    public QueryResult<BaseItemDto> GetItems(InternalItemsQuery query)
     {
         ArgumentNullException.ThrowIfNull(query);
         if (!query.EnableTotalRecordCount || (!query.Limit.HasValue && (query.StartIndex ?? 0) == 0))
         {
             var returnList = GetItemList(query);
-            return new QueryResult<BaseItem>(
+            return new QueryResult<BaseItemDto>(
                 query.StartIndex,
                 returnList.Count,
                 returnList);
         }
 
         PrepareFilterQuery(query);
-        var result = new QueryResult<BaseItem>();
+        var result = new QueryResult<BaseItemDto>();
 
         using var context = _dbProvider.CreateDbContext();
         var dbQuery = TranslateQuery(context.BaseItems, context, query)
@@ -2093,5 +2125,135 @@ public class BaseItemManager : IItemRepository
         }
 
         return query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains(type);
+    }
+
+    private IQueryable<T> Pageinate<T>(IQueryable<T> query, InternalItemsQuery filter)
+    {
+        if (filter.Limit.HasValue || filter.StartIndex.HasValue)
+        {
+            var offset = filter.StartIndex ?? 0;
+
+            if (offset > 0)
+            {
+                query = query.Skip(offset);
+            }
+
+            if (filter.Limit.HasValue)
+            {
+                query = query.Take(filter.Limit.Value);
+            }
+        }
+
+        return query;
+    }
+
+    private Expression<Func<BaseItemEntity, object>> MapOrderByField(ItemSortBy sortBy, InternalItemsQuery query)
+    {
+#pragma warning disable CS8603 // Possible null reference return.
+        return sortBy switch
+        {
+            ItemSortBy.AirTime => e => e.SortName, // TODO
+            ItemSortBy.Runtime => e => e.RunTimeTicks,
+            ItemSortBy.Random => e => EF.Functions.Random(),
+            ItemSortBy.DatePlayed => e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id) && f.Key == e.UserDataKey)!.LastPlayedDate,
+            ItemSortBy.PlayCount => e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id) && f.Key == e.UserDataKey)!.PlayCount,
+            ItemSortBy.IsFavoriteOrLiked => e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id) && f.Key == e.UserDataKey)!.IsFavorite,
+            ItemSortBy.IsFolder => e => e.IsFolder,
+            ItemSortBy.IsPlayed => e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id) && f.Key == e.UserDataKey)!.Played,
+            ItemSortBy.IsUnplayed => e => !e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id) && f.Key == e.UserDataKey)!.Played,
+            ItemSortBy.DateLastContentAdded => e => e.DateLastMediaAdded,
+            ItemSortBy.Artist => e => e.ItemValues!.Where(f => f.Type == 0).Select(f => f.CleanValue),
+            ItemSortBy.AlbumArtist => e => e.ItemValues!.Where(f => f.Type == 1).Select(f => f.CleanValue),
+            ItemSortBy.Studio => e => e.ItemValues!.Where(f => f.Type == 3).Select(f => f.CleanValue),
+            ItemSortBy.OfficialRating => e => e.InheritedParentalRatingValue,
+            // ItemSortBy.SeriesDatePlayed => "(Select MAX(LastPlayedDate) from TypedBaseItems B" + GetJoinUserDataText(query) + " where Played=1 and B.SeriesPresentationUniqueKey=A.PresentationUniqueKey)",
+            ItemSortBy.SeriesSortName => e => e.SeriesName,
+            // ItemSortBy.AiredEpisodeOrder => "AiredEpisodeOrder",
+            ItemSortBy.Album => e => e.Album,
+            ItemSortBy.DateCreated => e => e.DateCreated,
+            ItemSortBy.PremiereDate => e => e.PremiereDate,
+            ItemSortBy.StartDate => e => e.StartDate,
+            ItemSortBy.Name => e => e.Name,
+            ItemSortBy.CommunityRating => e => e.CommunityRating,
+            ItemSortBy.ProductionYear => e => e.ProductionYear,
+            ItemSortBy.CriticRating => e => e.CriticRating,
+            ItemSortBy.VideoBitRate => e => e.TotalBitrate,
+            ItemSortBy.ParentIndexNumber => e => e.ParentIndexNumber,
+            ItemSortBy.IndexNumber => e => e.IndexNumber,
+            _ => e => e.SortName
+        };
+#pragma warning restore CS8603 // Possible null reference return.
+
+    }
+
+    private bool EnableGroupByPresentationUniqueKey(InternalItemsQuery query)
+    {
+        if (!query.GroupByPresentationUniqueKey)
+        {
+            return false;
+        }
+
+        if (query.GroupBySeriesPresentationUniqueKey)
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.PresentationUniqueKey))
+        {
+            return false;
+        }
+
+        if (query.User is null)
+        {
+            return false;
+        }
+
+        if (query.IncludeItemTypes.Length == 0)
+        {
+            return true;
+        }
+
+        return query.IncludeItemTypes.Contains(BaseItemKind.Episode)
+            || query.IncludeItemTypes.Contains(BaseItemKind.Video)
+            || query.IncludeItemTypes.Contains(BaseItemKind.Movie)
+            || query.IncludeItemTypes.Contains(BaseItemKind.MusicVideo)
+            || query.IncludeItemTypes.Contains(BaseItemKind.Series)
+            || query.IncludeItemTypes.Contains(BaseItemKind.Season);
+    }
+
+    private IQueryable<BaseItemEntity> ApplyOrder(IQueryable<BaseItemEntity> query, InternalItemsQuery filter)
+    {
+        var orderBy = filter.OrderBy;
+        bool hasSearch = !string.IsNullOrEmpty(filter.SearchTerm);
+
+        if (hasSearch)
+        {
+            List<(ItemSortBy, SortOrder)> prepend = new List<(ItemSortBy, SortOrder)>(4);
+            if (hasSearch)
+            {
+                prepend.Add((ItemSortBy.SortName, SortOrder.Ascending));
+            }
+
+            orderBy = filter.OrderBy = [.. prepend, .. orderBy];
+        }
+        else if (orderBy.Count == 0)
+        {
+            return query;
+        }
+
+        foreach (var item in orderBy)
+        {
+            var expression = MapOrderByField(item.OrderBy, filter);
+            if (item.SortOrder == SortOrder.Ascending)
+            {
+                query = query.OrderBy(expression);
+            }
+            else
+            {
+                query = query.OrderByDescending(expression);
+            }
+        }
+
+        return query;
     }
 }
