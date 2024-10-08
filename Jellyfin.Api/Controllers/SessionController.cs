@@ -62,7 +62,8 @@ public class SessionController : BaseJellyfinApiController
             User.GetUserId(),
             deviceId,
             activeWithinSeconds,
-            controllableUserToCheck);
+            controllableUserToCheck,
+            User.GetIsApiKey());
 
         return Ok(result);
     }

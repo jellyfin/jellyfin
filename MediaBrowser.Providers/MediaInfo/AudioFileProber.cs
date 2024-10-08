@@ -16,6 +16,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging;
 
@@ -27,6 +28,7 @@ namespace MediaBrowser.Providers.MediaInfo
     public class AudioFileProber
     {
         private const char InternalValueSeparator = '\u001F';
+
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IItemRepository _itemRepo;
         private readonly ILibraryManager _libraryManager;
@@ -62,6 +64,8 @@ namespace MediaBrowser.Providers.MediaInfo
             _lyricResolver = lyricResolver;
             _lyricManager = lyricManager;
             ATL.Settings.DisplayValueSeparator = InternalValueSeparator;
+            ATL.Settings.UseFileNameWhenNoTitle = false;
+            ATL.Settings.ID3v2_separatev2v3Values = false;
         }
 
         /// <summary>
@@ -160,12 +164,13 @@ namespace MediaBrowser.Providers.MediaInfo
             var libraryOptions = _libraryManager.GetLibraryOptions(audio);
             Track track = new Track(audio.Path);
 
-            // ATL will fall back to filename as title when it does not understand the metadata
-            if (track.MetadataFormats.All(mf => mf.Equals(ATL.Factory.UNKNOWN_FORMAT)))
+            if (track.MetadataFormats
+                .All(mf => string.Equals(mf.ShortName, "ID3v1", StringComparison.OrdinalIgnoreCase)))
             {
-                track.Title = mediaInfo.Name;
+                _logger.LogWarning("File {File} only has ID3v1 tags, some fields may be truncated", audio.Path);
             }
 
+            track.Title = string.IsNullOrEmpty(track.Title) ? mediaInfo.Name : track.Title;
             track.Album = string.IsNullOrEmpty(track.Album) ? mediaInfo.Album : track.Album;
             track.Year ??= mediaInfo.ProductionYear;
             track.TrackNumber ??= mediaInfo.IndexNumber;
@@ -178,7 +183,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 if (libraryOptions.UseCustomTagDelimiters)
                 {
-                    albumArtists = albumArtists.SelectMany(a => SplitWithCustomDelimiter(a, libraryOptions.CustomTagDelimiters, libraryOptions.DelimiterWhitelist)).ToArray();
+                    albumArtists = albumArtists.SelectMany(a => SplitWithCustomDelimiter(a, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist)).ToArray();
                 }
 
                 foreach (var albumArtist in albumArtists)
@@ -210,7 +215,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 if (libraryOptions.UseCustomTagDelimiters)
                 {
-                    performers = performers.SelectMany(p => SplitWithCustomDelimiter(p, libraryOptions.CustomTagDelimiters, libraryOptions.DelimiterWhitelist)).ToArray();
+                    performers = performers.SelectMany(p => SplitWithCustomDelimiter(p, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist)).ToArray();
                 }
 
                 foreach (var performer in performers)
@@ -313,7 +318,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 if (libraryOptions.UseCustomTagDelimiters)
                 {
-                    genres = genres.SelectMany(g => SplitWithCustomDelimiter(g, libraryOptions.CustomTagDelimiters, libraryOptions.DelimiterWhitelist)).ToArray();
+                    genres = genres.SelectMany(g => SplitWithCustomDelimiter(g, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist)).ToArray();
                 }
 
                 audio.Genres = options.ReplaceAllMetadata || audio.Genres is null || audio.Genres.Length == 0

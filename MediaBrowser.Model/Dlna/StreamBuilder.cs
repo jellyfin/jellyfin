@@ -65,7 +65,7 @@ namespace MediaBrowser.Model.Dlna
                 if (streamInfo is not null)
                 {
                     streamInfo.DeviceId = options.DeviceId;
-                    streamInfo.DeviceProfileId = options.Profile.Id.ToString("N", CultureInfo.InvariantCulture);
+                    streamInfo.DeviceProfileId = options.Profile.Id?.ToString("N", CultureInfo.InvariantCulture);
                     streams.Add(streamInfo);
                 }
             }
@@ -240,7 +240,7 @@ namespace MediaBrowser.Model.Dlna
             foreach (var stream in streams)
             {
                 stream.DeviceId = options.DeviceId;
-                stream.DeviceProfileId = options.Profile.Id.ToString("N", CultureInfo.InvariantCulture);
+                stream.DeviceProfileId = options.Profile.Id?.ToString("N", CultureInfo.InvariantCulture);
             }
 
             return GetOptimalStream(streams, options.GetMaxBitrate(false) ?? 0);
@@ -389,9 +389,10 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="type">The <see cref="DlnaProfileType"/>.</param>
         /// <param name="playProfile">The <see cref="DirectPlayProfile"/> object to get the video stream from.</param>
         /// <returns>The normalized input container.</returns>
-        public static string NormalizeMediaSourceFormatIntoSingleContainer(string inputContainer, DeviceProfile? profile, DlnaProfileType type, DirectPlayProfile? playProfile = null)
+        public static string? NormalizeMediaSourceFormatIntoSingleContainer(string inputContainer, DeviceProfile? profile, DlnaProfileType type, DirectPlayProfile? playProfile = null)
         {
-            if (profile is null || !inputContainer.Contains(',', StringComparison.OrdinalIgnoreCase))
+            // If the source is Live TV the inputContainer will be null until the mediasource is probed on first access
+            if (profile is null || string.IsNullOrEmpty(inputContainer) || !inputContainer.Contains(',', StringComparison.OrdinalIgnoreCase))
             {
                 return inputContainer;
             }
@@ -639,7 +640,8 @@ namespace MediaBrowser.Model.Dlna
                 RunTimeTicks = item.RunTimeTicks,
                 Context = options.Context,
                 DeviceProfile = options.Profile,
-                SubtitleStreamIndex = options.SubtitleStreamIndex ?? GetDefaultSubtitleStreamIndex(item, options.Profile.SubtitleProfiles)
+                SubtitleStreamIndex = options.SubtitleStreamIndex ?? GetDefaultSubtitleStreamIndex(item, options.Profile.SubtitleProfiles),
+                AlwaysBurnInSubtitleWhenTranscoding = options.AlwaysBurnInSubtitleWhenTranscoding
             };
 
             var subtitleStream = playlistItem.SubtitleStreamIndex.HasValue ? item.GetMediaStream(MediaStreamType.Subtitle, playlistItem.SubtitleStreamIndex.Value) : null;
@@ -767,20 +769,7 @@ namespace MediaBrowser.Model.Dlna
                     if (subtitleStream is not null)
                     {
                         var subtitleProfile = GetSubtitleProfile(item, subtitleStream, options.Profile.SubtitleProfiles, PlayMethod.Transcode, _transcoderSupport, transcodingProfile.Container, transcodingProfile.Protocol);
-
-                        if (options.AlwaysBurnInSubtitleWhenTranscoding && (playlistItem.TranscodeReasons & (VideoReasons | TranscodeReason.ContainerBitrateExceedsLimit)) != 0)
-                        {
-                            playlistItem.SubtitleDeliveryMethod = SubtitleDeliveryMethod.Encode;
-                            foreach (SubtitleProfile profile in options.Profile.SubtitleProfiles)
-                            {
-                                profile.Method = SubtitleDeliveryMethod.Encode;
-                            }
-                        }
-                        else
-                        {
-                            playlistItem.SubtitleDeliveryMethod = subtitleProfile.Method;
-                        }
-
+                        playlistItem.SubtitleDeliveryMethod = subtitleProfile.Method;
                         playlistItem.SubtitleFormat = subtitleProfile.Format;
                         playlistItem.SubtitleCodecs = [subtitleProfile.Format];
                     }

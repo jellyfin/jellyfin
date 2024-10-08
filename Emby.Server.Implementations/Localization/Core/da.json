@@ -132,5 +132,9 @@
     "TaskAudioNormalizationDescription": "Skanner filer for data vedrørende audio-normalisering.",
     "TaskAudioNormalization": "Audio-normalisering",
     "TaskDownloadMissingLyricsDescription": "Hentede sange mangler sangtekster",
-    "TaskDownloadMissingLyrics": "Hentede medie mangler sangtekster"
+    "TaskDownloadMissingLyrics": "Hentede medie mangler sangtekster",
+    "TaskExtractMediaSegments": "Scan mediesegment",
+    "TaskMoveTrickplayImages": "Migrer billedelokation for Trickplay",
+    "TaskMoveTrickplayImagesDescription": "Flyt eksisterende trickplay-filer jævnfør biblioteksindstillilnger.",
+    "TaskExtractMediaSegmentsDescription": "Ekstraherer eller henter mediesegmenter fra plugins som understøtter MediaSegment."
 }
