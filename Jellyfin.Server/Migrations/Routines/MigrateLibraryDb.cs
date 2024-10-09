@@ -227,7 +227,7 @@ public class MigrateLibraryDb : IMigrationRoutine
         return new ItemValue
         {
             ItemId = reader.GetGuid(0),
-            Type = reader.GetInt32(1),
+            Type = (ItemValueType)reader.GetInt32(1),
             Value = reader.GetString(2),
             CleanValue = reader.GetString(3),
             Item = null!

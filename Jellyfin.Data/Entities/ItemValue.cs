@@ -23,7 +23,7 @@ public class ItemValue
     /// <summary>
     /// Gets or Sets the Type.
     /// </summary>
-    public required int Type { get; set; }
+    public required ItemValueType Type { get; set; }
 
     /// <summary>
     /// Gets or Sets the Value.

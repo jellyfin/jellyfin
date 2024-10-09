@@ -21,6 +21,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
 using Microsoft.EntityFrameworkCore;
+using SQLitePCL;
 using BaseItemDto = MediaBrowser.Controller.Entities.BaseItem;
 using BaseItemEntity = Jellyfin.Data.Entities.BaseItemEntity;
 #pragma warning disable RS0030 // Do not use banned APIs
@@ -82,23 +83,23 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
         using var context = dbProvider.CreateDbContext();
         using var transaction = context.Database.BeginTransaction();
 
-        context.ItemValues.Where(e => e.Type == 6).ExecuteDelete();
-        context.ItemValues.AddRange(context.ItemValues.Where(e => e.Type == 4).Select(e => new ItemValue()
+        context.ItemValues.Where(e => e.Type == ItemValueType.InheritedTags).ExecuteDelete();
+        context.ItemValues.AddRange(context.ItemValues.Where(e => e.Type == ItemValueType.Tags).Select(e => new ItemValue()
         {
             CleanValue = e.CleanValue,
             ItemId = e.ItemId,
-            Type = 6,
+            Type = ItemValueType.InheritedTags,
             Value = e.Value,
             Item = null!
         }));
 
         context.ItemValues.AddRange(
-            context.AncestorIds.Join(context.ItemValues.Where(e => e.Value != null && e.Type == 4), e => e.ParentItemId, e => e.ItemId, (e, f) => new ItemValue()
+            context.AncestorIds.Join(context.ItemValues.Where(e => e.Value != null && e.Type == ItemValueType.Tags), e => e.ParentItemId, e => e.ItemId, (e, f) => new ItemValue()
             {
                 CleanValue = f.CleanValue,
                 ItemId = e.ItemId,
                 Item = null!,
-                Type = 6,
+                Type = ItemValueType.InheritedTags,
                 Value = f.Value
             }));
         context.SaveChanges();
@@ -721,13 +722,13 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
         if (filter.ArtistIds.Length > 0)
         {
             baseQuery = baseQuery
-                   .Where(e => e.ItemValues!.Any(f => f.Type <= 1 && artistQuery.Any(w => w.CleanName == f.CleanValue)));
+                   .Where(e => e.ItemValues!.Any(f => f.Type <= ItemValueType.Artist && artistQuery.Any(w => w.CleanName == f.CleanValue)));
         }
 
         if (filter.AlbumArtistIds.Length > 0)
         {
             baseQuery = baseQuery
-               .Where(e => e.ItemValues!.Any(f => f.Type == 1 && artistQuery.Any(w => w.CleanName == f.CleanValue)));
+               .Where(e => e.ItemValues!.Any(f => f.Type == ItemValueType.Artist && artistQuery.Any(w => w.CleanName == f.CleanValue)));
         }
 
         if (filter.ContributingArtistIds.Length > 0)
@@ -745,40 +746,40 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
         {
             var excludeArtistQuery = context.BaseItems.Where(w => filter.ExcludeArtistIds.Contains(w.Id));
             baseQuery = baseQuery
-                   .Where(e => !e.ItemValues!.Any(f => f.Type <= 1 && artistQuery.Any(w => w.CleanName == f.CleanValue)));
+                   .Where(e => !e.ItemValues!.Any(f => f.Type <= ItemValueType.Artist && artistQuery.Any(w => w.CleanName == f.CleanValue)));
         }
 
         if (filter.GenreIds.Count > 0)
         {
             baseQuery = baseQuery
-                   .Where(e => e.ItemValues!.Any(f => f.Type == 2 && context.BaseItems.Where(w => filter.GenreIds.Contains(w.Id)).Any(w => w.CleanName == f.CleanValue)));
+                   .Where(e => e.ItemValues!.Any(f => f.Type == ItemValueType.Genre && context.BaseItems.Where(w => filter.GenreIds.Contains(w.Id)).Any(w => w.CleanName == f.CleanValue)));
         }
 
         if (filter.Genres.Count > 0)
         {
             var cleanGenres = filter.Genres.Select(e => GetCleanValue(e)).ToArray();
             baseQuery = baseQuery
-                   .Where(e => e.ItemValues!.Any(f => f.Type == 2 && cleanGenres.Contains(f.CleanValue)));
+                   .Where(e => e.ItemValues!.Any(f => f.Type == ItemValueType.Genre && cleanGenres.Contains(f.CleanValue)));
         }
 
         if (tags.Count > 0)
         {
             var cleanValues = tags.Select(e => GetCleanValue(e)).ToArray();
             baseQuery = baseQuery
-                   .Where(e => e.ItemValues!.Any(f => f.Type == 4 && cleanValues.Contains(f.CleanValue)));
+                   .Where(e => e.ItemValues!.Any(f => f.Type == ItemValueType.Tags && cleanValues.Contains(f.CleanValue)));
         }
 
         if (excludeTags.Count > 0)
         {
             var cleanValues = excludeTags.Select(e => GetCleanValue(e)).ToArray();
             baseQuery = baseQuery
-                   .Where(e => !e.ItemValues!.Any(f => f.Type == 4 && cleanValues.Contains(f.CleanValue)));
+                   .Where(e => !e.ItemValues!.Any(f => f.Type == ItemValueType.Tags && cleanValues.Contains(f.CleanValue)));
         }
 
         if (filter.StudioIds.Length > 0)
         {
             baseQuery = baseQuery
-                   .Where(e => e.ItemValues!.Any(f => f.Type == 3 && context.BaseItems.Where(w => filter.StudioIds.Contains(w.Id)).Any(w => w.CleanName == f.CleanValue)));
+                   .Where(e => e.ItemValues!.Any(f => f.Type == ItemValueType.Studios && context.BaseItems.Where(w => filter.StudioIds.Contains(w.Id)).Any(w => w.CleanName == f.CleanValue)));
         }
 
         if (filter.OfficialRatings.Length > 0)
@@ -935,13 +936,13 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
         if (filter.IsDeadArtist.HasValue && filter.IsDeadArtist.Value)
         {
             baseQuery = baseQuery
-                .Where(e => e.ItemValues!.Any(f => (f.Type == 0 || f.Type == 1) && f.CleanValue == e.CleanName));
+                .Where(e => e.ItemValues!.Any(f => (f.Type == 0 || f.Type == ItemValueType.AlbumArtist) && f.CleanValue == e.CleanName));
         }
 
         if (filter.IsDeadStudio.HasValue && filter.IsDeadStudio.Value)
         {
             baseQuery = baseQuery
-                .Where(e => e.ItemValues!.Any(f => f.Type == 3 && f.CleanValue == e.CleanName));
+                .Where(e => e.ItemValues!.Any(f => f.Type == ItemValueType.Studios && f.CleanValue == e.CleanName));
         }
 
         if (filter.IsDeadPerson.HasValue && filter.IsDeadPerson.Value)
@@ -1080,7 +1081,7 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
         if (filter.ExcludeInheritedTags.Length > 0)
         {
             baseQuery = baseQuery
-                .Where(e => !e.ItemValues!.Where(e => e.Type == 6)
+                .Where(e => !e.ItemValues!.Where(e => e.Type == ItemValueType.InheritedTags)
                     .Any(f => filter.ExcludeInheritedTags.Contains(f.CleanValue)));
         }
 
@@ -1091,10 +1092,10 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
             if (includeTypes.Length == 1 && includeTypes.FirstOrDefault() is BaseItemKind.Episode)
             {
                 baseQuery = baseQuery
-                    .Where(e => e.ItemValues!.Where(e => e.Type == 6)
+                    .Where(e => e.ItemValues!.Where(e => e.Type == ItemValueType.InheritedTags)
                         .Any(f => filter.IncludeInheritedTags.Contains(f.CleanValue))
                         ||
-                        (e.ParentId.HasValue && context.ItemValues.Where(w => w.ItemId == e.ParentId.Value)!.Where(e => e.Type == 6)
+                        (e.ParentId.HasValue && context.ItemValues.Where(w => w.ItemId == e.ParentId.Value)!.Where(e => e.Type == ItemValueType.InheritedTags)
                         .Any(f => filter.IncludeInheritedTags.Contains(f.CleanValue))));
             }
 
@@ -1102,14 +1103,14 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
             else if (includeTypes.Length == 1 && includeTypes.FirstOrDefault() is BaseItemKind.Playlist)
             {
                 baseQuery = baseQuery
-                    .Where(e => e.ItemValues!.Where(e => e.Type == 6)
+                    .Where(e => e.ItemValues!.Where(e => e.Type == ItemValueType.InheritedTags)
                         .Any(f => filter.IncludeInheritedTags.Contains(f.CleanValue)) || e.Data!.Contains($"OwnerUserId\":\"{filter.User!.Id:N}\""));
                 // d                                                                      ^^ this is stupid it hate this.
             }
             else
             {
                 baseQuery = baseQuery
-                    .Where(e => e.ItemValues!.Where(e => e.Type == 6)
+                    .Where(e => e.ItemValues!.Where(e => e.Type == ItemValueType.InheritedTags)
                         .Any(f => filter.IncludeInheritedTags.Contains(f.CleanValue)));
             }
         }
@@ -1288,7 +1289,7 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
                 entity.ItemValues.Add(new()
                 {
                     Item = entity,
-                    Type = itemValue.MagicNumber,
+                    Type = (ItemValueType)itemValue.MagicNumber,
                     Value = itemValue.Value,
                     CleanValue = GetCleanValue(itemValue.Value),
                     ItemId = entity.Id
@@ -1643,7 +1644,7 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
         using var context = dbProvider.CreateDbContext();
 
         var query = context.ItemValues
-            .Where(e => itemValueTypes.Contains(e.Type));
+            .Where(e => itemValueTypes.Any(w => (ItemValueType)w == e.Type));
         if (withItemTypes.Count > 0)
         {
             query = query.Where(e => context.BaseItems.Where(e => withItemTypes.Contains(e.Type)).Any(f => f.ItemValues!.Any(w => w.ItemId == e.ItemId)));
@@ -1694,31 +1695,7 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
         };
         var query = TranslateQuery(context.BaseItems, context, innerQuery);
 
-        query = query.Where(e => e.Type == returnType && e.ItemValues!.Any(f => e.CleanName == f.CleanValue && itemValueTypes.Contains(f.Type)));
-
-        var outerQuery = new InternalItemsQuery(filter.User)
-        {
-            IsPlayed = filter.IsPlayed,
-            IsFavorite = filter.IsFavorite,
-            IsFavoriteOrLiked = filter.IsFavoriteOrLiked,
-            IsLiked = filter.IsLiked,
-            IsLocked = filter.IsLocked,
-            NameLessThan = filter.NameLessThan,
-            NameStartsWith = filter.NameStartsWith,
-            NameStartsWithOrGreater = filter.NameStartsWithOrGreater,
-            Tags = filter.Tags,
-            OfficialRatings = filter.OfficialRatings,
-            StudioIds = filter.StudioIds,
-            GenreIds = filter.GenreIds,
-            Genres = filter.Genres,
-            Years = filter.Years,
-            NameContains = filter.NameContains,
-            SearchTerm = filter.SearchTerm,
-            SimilarTo = filter.SimilarTo,
-            ExcludeItemIds = filter.ExcludeItemIds
-        };
-        query = TranslateQuery(query, context, outerQuery)
-            .OrderBy(e => e.PresentationUniqueKey);
+        query = query.Where(e => e.Type == returnType && e.ItemValues!.Any(f => e.CleanName == f.CleanValue && itemValueTypes.Any(w => (ItemValueType)w == f.Type)));
 
         if (filter.OrderBy.Count != 0
             || filter.SimilarTo is not null
@@ -1756,15 +1733,16 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
         var resultQuery = query.Select(e => new
         {
             item = e,
+            // TODO: This is bad refactor!
             itemCount = new ItemCounts()
             {
-                SeriesCount = e.ItemValues!.Count(e => e.Type == (int)BaseItemKind.Series),
-                EpisodeCount = e.ItemValues!.Count(e => e.Type == (int)BaseItemKind.Episode),
-                MovieCount = e.ItemValues!.Count(e => e.Type == (int)BaseItemKind.Movie),
-                AlbumCount = e.ItemValues!.Count(e => e.Type == (int)BaseItemKind.MusicAlbum),
-                ArtistCount = e.ItemValues!.Count(e => e.Type == 0 || e.Type == 1),
-                SongCount = e.ItemValues!.Count(e => e.Type == (int)BaseItemKind.MusicAlbum),
-                TrailerCount = e.ItemValues!.Count(e => e.Type == (int)BaseItemKind.Trailer),
+                SeriesCount = context.ItemValues.Count(f => e.ItemValues!.Any(w => w.Type == f.Type && w.CleanValue == f.CleanValue && f.Item.Type == typeof(Series).FullName)),
+                EpisodeCount = context.ItemValues.Count(f => e.ItemValues!.Any(w => w.Type == f.Type && w.CleanValue == f.CleanValue && f.Item.Type == typeof(Episode).FullName)),
+                MovieCount = context.ItemValues.Count(f => e.ItemValues!.Any(w => w.Type == f.Type && w.CleanValue == f.CleanValue && f.Item.Type == typeof(Data.Entities.Libraries.Movie).FullName)),
+                AlbumCount = context.ItemValues.Count(f => e.ItemValues!.Any(w => w.Type == f.Type && w.CleanValue == f.CleanValue && f.Item.Type == typeof(MusicAlbum).FullName)),
+                ArtistCount = context.ItemValues.Count(f => e.ItemValues!.Any(w => w.Type == f.Type && w.CleanValue == f.CleanValue && f.Item.Type == typeof(MusicArtist).FullName)),
+                SongCount = context.ItemValues.Count(f => e.ItemValues!.Any(w => w.Type == f.Type && w.CleanValue == f.CleanValue && f.Item.Type == typeof(Audio).FullName)),
+                TrailerCount = context.ItemValues.Count(f => e.ItemValues!.Any(w => w.Type == f.Type && w.CleanValue == f.CleanValue && f.Item.Type == typeof(Trailer).FullName)),
             }
         });
 
@@ -1995,8 +1973,8 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
             ItemSortBy.IsUnplayed => e => !e.UserData!.FirstOrDefault(f => f.UserId == query.User!.Id && f.Key == e.UserDataKey)!.Played,
             ItemSortBy.DateLastContentAdded => e => e.DateLastMediaAdded,
             ItemSortBy.Artist => e => e.ItemValues!.Where(f => f.Type == 0).Select(f => f.CleanValue),
-            ItemSortBy.AlbumArtist => e => e.ItemValues!.Where(f => f.Type == 1).Select(f => f.CleanValue),
-            ItemSortBy.Studio => e => e.ItemValues!.Where(f => f.Type == 3).Select(f => f.CleanValue),
+            ItemSortBy.AlbumArtist => e => e.ItemValues!.Where(f => f.Type == ItemValueType.AlbumArtist).Select(f => f.CleanValue),
+            ItemSortBy.Studio => e => e.ItemValues!.Where(f => f.Type == ItemValueType.Studios).Select(f => f.CleanValue),
             ItemSortBy.OfficialRating => e => e.InheritedParentalRatingValue,
             // ItemSortBy.SeriesDatePlayed => "(Select MAX(LastPlayedDate) from TypedBaseItems B" + GetJoinUserDataText(query) + " where Played=1 and B.SeriesPresentationUniqueKey=A.PresentationUniqueKey)",
             ItemSortBy.SeriesSortName => e => e.SeriesName,
