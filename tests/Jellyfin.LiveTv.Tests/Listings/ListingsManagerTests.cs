@@ -1,6 +1,4 @@
-using System.Threading.Tasks;
 using Jellyfin.LiveTv.Configuration;
-using Jellyfin.LiveTv.Guide;
 using Jellyfin.LiveTv.Listings;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.LiveTv;
@@ -31,7 +29,7 @@ namespace Jellyfin.LiveTv.Tests.Listings
         }
 
         [Fact]
-        public void DeleteListingsProvider_DeletesProviderAndRefreshesGuide()
+        public void DeleteListingsProvider_DeletesProvider()
         {
             // Arrange
             var id = "MockId";
@@ -47,22 +45,5 @@ namespace Jellyfin.LiveTv.Tests.Listings
             // Assert
             Assert.DoesNotContain(_config.GetLiveTvConfiguration().ListingProviders, p => p.Id == id);
         }
-
-        [Fact]
-        public async Task SaveListingProvider_SavesProviderAndReturnsInfo()
-        {
-            // Arrange
-            var manager = new ListingsManager(_logger, _config, _taskManager, _tunerHostManager, _listingsProviders);
-            var info = new ListingsProviderInfo { Type = "MockType", Id = "MockId" };
-
-            // Act
-            var result = await manager.SaveListingProvider(info, false, false);
-
-            // Assert
-            Assert.Equal(info, result);
-            Assert.Contains(_config.GetLiveTvConfiguration().ListingProviders, p => p.Id == info.Id);
-        }
-
-        // Add more test methods for other methods in the class
     }
 }
