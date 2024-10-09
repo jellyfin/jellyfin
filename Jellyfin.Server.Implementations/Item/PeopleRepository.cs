@@ -16,13 +16,13 @@ namespace Jellyfin.Server.Implementations.Item;
 /// </summary>
 /// <param name="dbProvider">Efcore Factory.</param>
 /// <remarks>
-/// Initializes a new instance of the <see cref="PeopleManager"/> class.
+/// Initializes a new instance of the <see cref="PeopleRepository"/> class.
 /// </remarks>
-/// <param name="dbProvider">The EFCore Context factory.</param>
-public class PeopleManager(IDbContextFactory<JellyfinDbContext> dbProvider) : IPeopleManager
+public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider) : IPeopleRepository
 {
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider = dbProvider;
 
+    /// <inheritdoc/>
     public IReadOnlyList<PersonInfo> GetPeople(InternalPeopleQuery filter)
     {
         using var context = _dbProvider.CreateDbContext();
@@ -37,6 +37,7 @@ public class PeopleManager(IDbContextFactory<JellyfinDbContext> dbProvider) : IP
         return dbQuery.ToList().Select(Map).ToImmutableArray();
     }
 
+    /// <inheritdoc/>
     public IReadOnlyList<string> GetPeopleNames(InternalPeopleQuery filter)
     {
         using var context = _dbProvider.CreateDbContext();

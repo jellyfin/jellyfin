@@ -13,7 +13,7 @@ public class BaseItemProviderConfiguration : IEntityTypeConfiguration<BaseItemPr
     /// <inheritdoc/>
     public void Configure(EntityTypeBuilder<BaseItemProvider> builder)
     {
-        builder.HasNoKey();
+        builder.HasKey(e => new { e.ItemId, e.ProviderId });
         builder.HasOne(e => e.Item);
         builder.HasIndex(e => new { e.ProviderId, e.ProviderValue, e.ItemId });
     }

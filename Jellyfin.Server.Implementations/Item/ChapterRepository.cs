@@ -14,46 +14,69 @@ namespace Jellyfin.Server.Implementations.Item;
 /// <summary>
 /// The Chapter manager.
 /// </summary>
-public class ChapterManager : IChapterManager
+public class ChapterRepository : IChapterRepository
 {
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
     private readonly IImageProcessor _imageProcessor;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ChapterManager"/> class.
+    /// Initializes a new instance of the <see cref="ChapterRepository"/> class.
     /// </summary>
     /// <param name="dbProvider">The EFCore provider.</param>
     /// <param name="imageProcessor">The Image Processor.</param>
-    public ChapterManager(IDbContextFactory<JellyfinDbContext> dbProvider, IImageProcessor imageProcessor)
+    public ChapterRepository(IDbContextFactory<JellyfinDbContext> dbProvider, IImageProcessor imageProcessor)
     {
         _dbProvider = dbProvider;
         _imageProcessor = imageProcessor;
     }
 
-    /// <inheritdoc cref="IChapterManager"/>
+    /// <inheritdoc cref="IChapterRepository"/>
     public ChapterInfo? GetChapter(BaseItemDto baseItem, int index)
     {
+        return GetChapter(baseItem.Id, index);
+    }
+
+    /// <inheritdoc cref="IChapterRepository"/>
+    public IReadOnlyList<ChapterInfo> GetChapters(BaseItemDto baseItem)
+    {
+        return GetChapters(baseItem.Id);
+    }
+
+    /// <inheritdoc cref="IChapterRepository"/>
+    public ChapterInfo? GetChapter(Guid baseItemId, int index)
+    {
         using var context = _dbProvider.CreateDbContext();
-        var chapter = context.Chapters.FirstOrDefault(e => e.ItemId.Equals(baseItem.Id) && e.ChapterIndex == index);
+        var chapter = context.Chapters
+            .Select(e => new
+            {
+                chapter = e,
+                baseItemPath = e.Item.Path
+            })
+            .FirstOrDefault(e => e.chapter.ItemId.Equals(baseItemId) && e.chapter.ChapterIndex == index);
         if (chapter is not null)
         {
-            return Map(chapter, baseItem);
+            return Map(chapter.chapter, chapter.baseItemPath!);
         }
 
         return null;
     }
 
-    /// <inheritdoc cref="IChapterManager"/>
-    public IReadOnlyList<ChapterInfo> GetChapters(BaseItemDto baseItem)
+    /// <inheritdoc cref="IChapterRepository"/>
+    public IReadOnlyList<ChapterInfo> GetChapters(Guid baseItemId)
     {
         using var context = _dbProvider.CreateDbContext();
-        return context.Chapters.Where(e => e.ItemId.Equals(baseItem.Id))
+        return context.Chapters.Where(e => e.ItemId.Equals(baseItemId))
+            .Select(e => new
+            {
+                chapter = e,
+                baseItemPath = e.Item.Path
+            })
             .ToList()
-            .Select(e => Map(e, baseItem))
+            .Select(e => Map(e.chapter, e.baseItemPath!))
             .ToImmutableArray();
     }
 
-    /// <inheritdoc cref="IChapterManager"/>
+    /// <inheritdoc cref="IChapterRepository"/>
     public void SaveChapters(Guid itemId, IReadOnlyList<ChapterInfo> chapters)
     {
         using var context = _dbProvider.CreateDbContext();
@@ -80,20 +103,21 @@ public class ChapterManager : IChapterManager
             ImageDateModified = chapterInfo.ImageDateModified,
             ImagePath = chapterInfo.ImagePath,
             ItemId = itemId,
-            Name = chapterInfo.Name
+            Name = chapterInfo.Name,
+            Item = null!
         };
     }
 
-    private ChapterInfo Map(Chapter chapterInfo, BaseItemDto baseItem)
+    private ChapterInfo Map(Chapter chapterInfo, string baseItemPath)
     {
-        var info = new ChapterInfo()
+        var chapterEntity = new ChapterInfo()
         {
             StartPositionTicks = chapterInfo.StartPositionTicks,
             ImageDateModified = chapterInfo.ImageDateModified.GetValueOrDefault(),
             ImagePath = chapterInfo.ImagePath,
             Name = chapterInfo.Name,
         };
-        info.ImageTag = _imageProcessor.GetImageCacheTag(baseItem, info);
-        return info;
+        chapterEntity.ImageTag = _imageProcessor.GetImageCacheTag(baseItemPath, chapterEntity.ImageDateModified);
+        return chapterEntity;
     }
 }

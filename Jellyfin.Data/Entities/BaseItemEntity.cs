@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Jellyfin.Data.Entities;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-public class BaseItem
+public class BaseItemEntity
 {
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 
@@ -160,6 +160,7 @@ public class BaseItem
 
     public long? Size { get; set; }
 
+#pragma warning disable CA2227 // Collection properties should be read only
     public ICollection<People>? Peoples { get; set; }
 
     public ICollection<UserData>? UserData { get; set; }

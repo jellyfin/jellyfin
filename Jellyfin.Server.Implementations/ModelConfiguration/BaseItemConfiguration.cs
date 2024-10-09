@@ -8,10 +8,10 @@ namespace Jellyfin.Server.Implementations.ModelConfiguration;
 /// <summary>
 /// Configuration for BaseItem.
 /// </summary>
-public class BaseItemConfiguration : IEntityTypeConfiguration<BaseItem>
+public class BaseItemConfiguration : IEntityTypeConfiguration<BaseItemEntity>
 {
     /// <inheritdoc/>
-    public void Configure(EntityTypeBuilder<BaseItem> builder)
+    public void Configure(EntityTypeBuilder<BaseItemEntity> builder)
     {
         builder.HasNoKey();
         builder.HasIndex(e => e.Path);

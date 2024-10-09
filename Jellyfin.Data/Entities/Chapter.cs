@@ -10,7 +10,7 @@ public class Chapter
 {
     public Guid ItemId { get; set; }
 
-    public required BaseItem Item { get; set; }
+    public required BaseItemEntity Item { get; set; }
 
     public required int ChapterIndex { get; set; }
 

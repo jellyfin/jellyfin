@@ -61,7 +61,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="encodingManager">Instance of the <see cref="IEncodingManager"/> interface.</param>
         /// <param name="config">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
         /// <param name="subtitleManager">Instance of the <see cref="ISubtitleManager"/> interface.</param>
-        /// <param name="chapterManager">Instance of the <see cref="IChapterManager"/> interface.</param>
+        /// <param name="chapterManager">Instance of the <see cref="IChapterRepository"/> interface.</param>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         /// <param name="loggerFactory">Instance of the <see cref="ILoggerFactory"/>.</param>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
@@ -76,7 +76,7 @@ namespace MediaBrowser.Providers.MediaInfo
             IEncodingManager encodingManager,
             IServerConfigurationManager config,
             ISubtitleManager subtitleManager,
-            IChapterManager chapterManager,
+            IChapterRepository chapterManager,
             ILibraryManager libraryManager,
             IFileSystem fileSystem,
             ILoggerFactory loggerFactory,

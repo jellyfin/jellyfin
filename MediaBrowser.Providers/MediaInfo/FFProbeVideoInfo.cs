@@ -38,7 +38,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IEncodingManager _encodingManager;
         private readonly IServerConfigurationManager _config;
         private readonly ISubtitleManager _subtitleManager;
-        private readonly IChapterManager _chapterManager;
+        private readonly IChapterRepository _chapterManager;
         private readonly ILibraryManager _libraryManager;
         private readonly AudioResolver _audioResolver;
         private readonly SubtitleResolver _subtitleResolver;
@@ -54,7 +54,7 @@ namespace MediaBrowser.Providers.MediaInfo
             IEncodingManager encodingManager,
             IServerConfigurationManager config,
             ISubtitleManager subtitleManager,
-            IChapterManager chapterManager,
+            IChapterRepository chapterManager,
             ILibraryManager libraryManager,
             AudioResolver audioResolver,
             SubtitleResolver subtitleResolver)

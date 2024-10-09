@@ -14,7 +14,7 @@ namespace Jellyfin.Server.Implementations.Item;
 /// Manager for handling Media Attachments.
 /// </summary>
 /// <param name="dbProvider">Efcore Factory.</param>
-public class MediaAttachmentManager(IDbContextFactory<JellyfinDbContext> dbProvider) : IMediaAttachmentManager
+public class MediaAttachmentRepository(IDbContextFactory<JellyfinDbContext> dbProvider) : IMediaAttachmentRepository
 {
     /// <inheritdoc />
     public void SaveMediaAttachments(

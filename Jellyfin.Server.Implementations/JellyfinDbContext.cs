@@ -106,7 +106,7 @@ public class JellyfinDbContext : DbContext
     /// <summary>
     /// Gets the <see cref="DbSet{TEntity}"/> containing the user data.
     /// </summary>
-    public DbSet<BaseItem> BaseItems => Set<BaseItem>();
+    public DbSet<BaseItemEntity> BaseItems => Set<BaseItemEntity>();
 
     /// <summary>
     /// Gets the <see cref="DbSet{TEntity}"/> containing the user data.

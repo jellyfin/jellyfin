@@ -24,129 +24,29 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
-using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using BaseItemDto = MediaBrowser.Controller.Entities.BaseItem;
-using BaseItemEntity = Jellyfin.Data.Entities.BaseItem;
+using BaseItemEntity = Jellyfin.Data.Entities.BaseItemEntity;
 
 namespace Jellyfin.Server.Implementations.Item;
 
 /// <summary>
 /// Handles all storage logic for BaseItems.
 /// </summary>
-public sealed class BaseItemManager : IItemRepository, IDisposable
+/// <remarks>
+/// Initializes a new instance of the <see cref="BaseItemRepository"/> class.
+/// </remarks>
+/// <param name="dbProvider">The db factory.</param>
+/// <param name="appHost">The Application host.</param>
+/// <param name="itemTypeLookup">The static type lookup.</param>
+public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbProvider, IServerApplicationHost appHost, IItemTypeLookup itemTypeLookup)
+    : IItemRepository, IDisposable
 {
-    private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
-    private readonly IServerApplicationHost _appHost;
-
-    private readonly ItemFields[] _allItemFields = Enum.GetValues<ItemFields>();
-
-    private static readonly BaseItemKind[] _programTypes = new[]
-    {
-            BaseItemKind.Program,
-            BaseItemKind.TvChannel,
-            BaseItemKind.LiveTvProgram,
-            BaseItemKind.LiveTvChannel
-    };
-
-    private static readonly BaseItemKind[] _programExcludeParentTypes = new[]
-    {
-            BaseItemKind.Series,
-            BaseItemKind.Season,
-            BaseItemKind.MusicAlbum,
-            BaseItemKind.MusicArtist,
-            BaseItemKind.PhotoAlbum
-    };
-
-    private static readonly BaseItemKind[] _serviceTypes = new[]
-    {
-            BaseItemKind.TvChannel,
-            BaseItemKind.LiveTvChannel
-    };
-
-    private static readonly BaseItemKind[] _startDateTypes = new[]
-    {
-            BaseItemKind.Program,
-            BaseItemKind.LiveTvProgram
-    };
-
-    private static readonly BaseItemKind[] _seriesTypes = new[]
-    {
-            BaseItemKind.Book,
-            BaseItemKind.AudioBook,
-            BaseItemKind.Episode,
-            BaseItemKind.Season
-    };
-
-    private static readonly BaseItemKind[] _artistExcludeParentTypes = new[]
-    {
-            BaseItemKind.Series,
-            BaseItemKind.Season,
-            BaseItemKind.PhotoAlbum
-    };
-
-    private static readonly BaseItemKind[] _artistsTypes = new[]
-    {
-            BaseItemKind.Audio,
-            BaseItemKind.MusicAlbum,
-            BaseItemKind.MusicVideo,
-            BaseItemKind.AudioBook
-    };
-
-    private static readonly Dictionary<BaseItemKind, string?> _baseItemKindNames = new()
-        {
-            { BaseItemKind.AggregateFolder, typeof(AggregateFolder).FullName },
-            { BaseItemKind.Audio, typeof(Audio).FullName },
-            { BaseItemKind.AudioBook, typeof(AudioBook).FullName },
-            { BaseItemKind.BasePluginFolder, typeof(BasePluginFolder).FullName },
-            { BaseItemKind.Book, typeof(Book).FullName },
-            { BaseItemKind.BoxSet, typeof(BoxSet).FullName },
-            { BaseItemKind.Channel, typeof(Channel).FullName },
-            { BaseItemKind.CollectionFolder, typeof(CollectionFolder).FullName },
-            { BaseItemKind.Episode, typeof(Episode).FullName },
-            { BaseItemKind.Folder, typeof(Folder).FullName },
-            { BaseItemKind.Genre, typeof(Genre).FullName },
-            { BaseItemKind.Movie, typeof(Movie).FullName },
-            { BaseItemKind.LiveTvChannel, typeof(LiveTvChannel).FullName },
-            { BaseItemKind.LiveTvProgram, typeof(LiveTvProgram).FullName },
-            { BaseItemKind.MusicAlbum, typeof(MusicAlbum).FullName },
-            { BaseItemKind.MusicArtist, typeof(MusicArtist).FullName },
-            { BaseItemKind.MusicGenre, typeof(MusicGenre).FullName },
-            { BaseItemKind.MusicVideo, typeof(MusicVideo).FullName },
-            { BaseItemKind.Person, typeof(Person).FullName },
-            { BaseItemKind.Photo, typeof(Photo).FullName },
-            { BaseItemKind.PhotoAlbum, typeof(PhotoAlbum).FullName },
-            { BaseItemKind.Playlist, typeof(Playlist).FullName },
-            { BaseItemKind.PlaylistsFolder, typeof(PlaylistsFolder).FullName },
-            { BaseItemKind.Season, typeof(Season).FullName },
-            { BaseItemKind.Series, typeof(Series).FullName },
-            { BaseItemKind.Studio, typeof(Studio).FullName },
-            { BaseItemKind.Trailer, typeof(Trailer).FullName },
-            { BaseItemKind.TvChannel, typeof(LiveTvChannel).FullName },
-            { BaseItemKind.TvProgram, typeof(LiveTvProgram).FullName },
-            { BaseItemKind.UserRootFolder, typeof(UserRootFolder).FullName },
-            { BaseItemKind.UserView, typeof(UserView).FullName },
-            { BaseItemKind.Video, typeof(Video).FullName },
-            { BaseItemKind.Year, typeof(Year).FullName }
-        };
-
     /// <summary>
     /// This holds all the types in the running assemblies
     /// so that we can de-serialize properly when we don't have strong types.
     /// </summary>
     private static readonly ConcurrentDictionary<string, Type?> _typeMap = new ConcurrentDictionary<string, Type?>();
     private bool _disposed;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="BaseItemManager"/> class.
-    /// </summary>
-    /// <param name="dbProvider">The db factory.</param>
-    /// <param name="appHost">The Application host.</param>
-    public BaseItemManager(IDbContextFactory<JellyfinDbContext> dbProvider, IServerApplicationHost appHost)
-    {
-        _dbProvider = dbProvider;
-        _appHost = appHost;
-    }
 
     /// <inheritdoc/>
     public void Dispose()
@@ -159,124 +59,12 @@ public sealed class BaseItemManager : IItemRepository, IDisposable
         _disposed = true;
     }
 
-    private QueryResult<(BaseItemDto Item, ItemCounts ItemCounts)> GetItemValues(InternalItemsQuery filter, int[] itemValueTypes, string returnType)
-    {
-        ArgumentNullException.ThrowIfNull(filter);
-
-        if (!filter.Limit.HasValue)
-        {
-            filter.EnableTotalRecordCount = false;
-        }
-
-        using var context = _dbProvider.CreateDbContext();
-
-        var innerQuery = new InternalItemsQuery(filter.User)
-        {
-            ExcludeItemTypes = filter.ExcludeItemTypes,
-            IncludeItemTypes = filter.IncludeItemTypes,
-            MediaTypes = filter.MediaTypes,
-            AncestorIds = filter.AncestorIds,
-            ItemIds = filter.ItemIds,
-            TopParentIds = filter.TopParentIds,
-            ParentId = filter.ParentId,
-            IsAiring = filter.IsAiring,
-            IsMovie = filter.IsMovie,
-            IsSports = filter.IsSports,
-            IsKids = filter.IsKids,
-            IsNews = filter.IsNews,
-            IsSeries = filter.IsSeries
-        };
-        var query = TranslateQuery(context.BaseItems, context, innerQuery);
-
-        query = query.Where(e => e.Type == returnType && e.ItemValues!.Any(f => e.CleanName == f.CleanValue && itemValueTypes.Contains(f.Type)));
-
-        var outerQuery = new InternalItemsQuery(filter.User)
-        {
-            IsPlayed = filter.IsPlayed,
-            IsFavorite = filter.IsFavorite,
-            IsFavoriteOrLiked = filter.IsFavoriteOrLiked,
-            IsLiked = filter.IsLiked,
-            IsLocked = filter.IsLocked,
-            NameLessThan = filter.NameLessThan,
-            NameStartsWith = filter.NameStartsWith,
-            NameStartsWithOrGreater = filter.NameStartsWithOrGreater,
-            Tags = filter.Tags,
-            OfficialRatings = filter.OfficialRatings,
-            StudioIds = filter.StudioIds,
-            GenreIds = filter.GenreIds,
-            Genres = filter.Genres,
-            Years = filter.Years,
-            NameContains = filter.NameContains,
-            SearchTerm = filter.SearchTerm,
-            SimilarTo = filter.SimilarTo,
-            ExcludeItemIds = filter.ExcludeItemIds
-        };
-        query = TranslateQuery(query, context, outerQuery)
-            .OrderBy(e => e.PresentationUniqueKey);
-
-        if (filter.OrderBy.Count != 0
-            || filter.SimilarTo is not null
-            || !string.IsNullOrEmpty(filter.SearchTerm))
-        {
-            query = ApplyOrder(query, filter);
-        }
-        else
-        {
-            query = query.OrderBy(e => e.SortName);
-        }
-
-        if (filter.Limit.HasValue || filter.StartIndex.HasValue)
-        {
-            var offset = filter.StartIndex ?? 0;
-
-            if (offset > 0)
-            {
-                query = query.Skip(offset);
-            }
-
-            if (filter.Limit.HasValue)
-            {
-                query.Take(filter.Limit.Value);
-            }
-        }
-
-        var result = new QueryResult<(BaseItem, ItemCounts)>();
-        string countText = string.Empty;
-        if (filter.EnableTotalRecordCount)
-        {
-            result.TotalRecordCount = query.DistinctBy(e => e.PresentationUniqueKey).Count();
-        }
-
-        var resultQuery = query.Select(e => new
-        {
-            item = e,
-            itemCount = new ItemCounts()
-            {
-                SeriesCount = e.ItemValues!.Count(e => e.Type == (int)BaseItemKind.Series),
-                EpisodeCount = e.ItemValues!.Count(e => e.Type == (int)BaseItemKind.Episode),
-                MovieCount = e.ItemValues!.Count(e => e.Type == (int)BaseItemKind.Movie),
-                AlbumCount = e.ItemValues!.Count(e => e.Type == (int)BaseItemKind.MusicAlbum),
-                ArtistCount = e.ItemValues!.Count(e => e.Type == 0 || e.Type == 1),
-                SongCount = e.ItemValues!.Count(e => e.Type == (int)BaseItemKind.MusicAlbum),
-                TrailerCount = e.ItemValues!.Count(e => e.Type == (int)BaseItemKind.Trailer),
-            }
-        });
-
-        result.StartIndex = filter.StartIndex ?? 0;
-        result.Items = resultQuery.ToImmutableArray().Select(e =>
-        {
-            return (DeserialiseBaseItem(e.item), e.itemCount);
-        }).ToImmutableArray();
-
-        return result;
-    }
-
     /// <inheritdoc />
     public void DeleteItem(Guid id)
     {
         ArgumentNullException.ThrowIfNull(id.IsEmpty() ? null : id);
 
-        using var context = _dbProvider.CreateDbContext();
+        using var context = dbProvider.CreateDbContext();
         using var transaction = context.Database.BeginTransaction();
         context.Peoples.Where(e => e.ItemId.Equals(id)).ExecuteDelete();
         context.Chapters.Where(e => e.ItemId.Equals(id)).ExecuteDelete();
@@ -291,7 +79,7 @@ public sealed class BaseItemManager : IItemRepository, IDisposable
     /// <inheritdoc />
     public void UpdateInheritedValues()
     {
-        using var context = _dbProvider.CreateDbContext();
+        using var context = dbProvider.CreateDbContext();
         using var transaction = context.Database.BeginTransaction();
 
         context.ItemValues.Where(e => e.Type == 6).ExecuteDelete();
@@ -324,7 +112,7 @@ public sealed class BaseItemManager : IItemRepository, IDisposable
         ArgumentNullException.ThrowIfNull(filter);
         PrepareFilterQuery(filter);
 
-        using var context = _dbProvider.CreateDbContext();
+        using var context = dbProvider.CreateDbContext();
         var dbQuery = TranslateQuery(context.BaseItems.AsNoTracking(), context, filter)
             .DistinctBy(e => e.Id);
 
@@ -352,56 +140,56 @@ public sealed class BaseItemManager : IItemRepository, IDisposable
     /// <inheritdoc />
     public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAllArtists(InternalItemsQuery filter)
     {
-        return GetItemValues(filter, new[] { 0, 1 }, typeof(MusicArtist).FullName!);
+        return GetItemValues(filter, [0, 1], typeof(MusicArtist).FullName!);
     }
 
     /// <inheritdoc />
     public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetArtists(InternalItemsQuery filter)
     {
-        return GetItemValues(filter, new[] { 0 }, typeof(MusicArtist).FullName!);
+        return GetItemValues(filter, [0], typeof(MusicArtist).FullName!);
     }
 
     /// <inheritdoc />
     public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAlbumArtists(InternalItemsQuery filter)
     {
-        return GetItemValues(filter, new[] { 1 }, typeof(MusicArtist).FullName!);
+        return GetItemValues(filter, [1], typeof(MusicArtist).FullName!);
     }
 
     /// <inheritdoc />
     public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetStudios(InternalItemsQuery filter)
     {
-        return GetItemValues(filter, new[] { 3 }, typeof(Studio).FullName!);
+        return GetItemValues(filter, [3], typeof(Studio).FullName!);
     }
 
     /// <inheritdoc />
     public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetGenres(InternalItemsQuery filter)
     {
-        return GetItemValues(filter, new[] { 2 }, typeof(Genre).FullName!);
+        return GetItemValues(filter, [2], typeof(Genre).FullName!);
     }
 
     /// <inheritdoc />
     public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetMusicGenres(InternalItemsQuery filter)
     {
-        return GetItemValues(filter, new[] { 2 }, typeof(MusicGenre).FullName!);
+        return GetItemValues(filter, [2], typeof(MusicGenre).FullName!);
     }
 
     /// <inheritdoc />
     public IReadOnlyList<string> GetStudioNames()
     {
-        return GetItemValueNames(new[] { 3 }, Array.Empty<string>(), Array.Empty<string>());
+        return GetItemValueNames([3], Array.Empty<string>(), Array.Empty<string>());
     }
 
     /// <inheritdoc />
     public IReadOnlyList<string> GetAllArtistNames()
     {
-        return GetItemValueNames(new[] { 0, 1 }, Array.Empty<string>(), Array.Empty<string>());
+        return GetItemValueNames([0, 1], Array.Empty<string>(), Array.Empty<string>());
     }
 
     /// <inheritdoc />
     public IReadOnlyList<string> GetMusicGenreNames()
     {
         return GetItemValueNames(
-            new[] { 2 },
+            [2],
             new string[]
             {
                     typeof(Audio).FullName!,
@@ -416,7 +204,7 @@ public sealed class BaseItemManager : IItemRepository, IDisposable
     public IReadOnlyList<string> GetGenreNames()
     {
         return GetItemValueNames(
-            new[] { 2 },
+            [2],
             Array.Empty<string>(),
             new string[]
             {
@@ -443,7 +231,7 @@ public sealed class BaseItemManager : IItemRepository, IDisposable
         PrepareFilterQuery(filter);
         var result = new QueryResult<BaseItemDto>();
 
-        using var context = _dbProvider.CreateDbContext();
+        using var context = dbProvider.CreateDbContext();
         var dbQuery = TranslateQuery(context.BaseItems, context, filter)
             .DistinctBy(e => e.Id);
         if (filter.EnableTotalRecordCount)
@@ -477,7 +265,7 @@ public sealed class BaseItemManager : IItemRepository, IDisposable
         ArgumentNullException.ThrowIfNull(filter);
         PrepareFilterQuery(filter);
 
-        using var context = _dbProvider.CreateDbContext();
+        using var context = dbProvider.CreateDbContext();
         var dbQuery = TranslateQuery(context.BaseItems, context, filter)
             .DistinctBy(e => e.Id);
         if (filter.Limit.HasValue || filter.StartIndex.HasValue)
@@ -505,7 +293,7 @@ public sealed class BaseItemManager : IItemRepository, IDisposable
         // Hack for right now since we currently don't support filtering out these duplicates within a query
         PrepareFilterQuery(filter);
 
-        using var context = _dbProvider.CreateDbContext();
+        using var context = dbProvider.CreateDbContext();
         var dbQuery = TranslateQuery(context.BaseItems, context, filter);
 
         return dbQuery.Count();
@@ -646,7 +434,7 @@ public sealed class BaseItemManager : IItemRepository, IDisposable
             var excludeTypes = filter.ExcludeItemTypes;
             if (excludeTypes.Length == 1)
             {
-                if (_baseItemKindNames.TryGetValue(excludeTypes[0], out var excludeTypeName))
+                if (itemTypeLookup.BaseItemKindNames.TryGetValue(excludeTypes[0], out var excludeTypeName))
                 {
                     baseQuery = baseQuery.Where(e => e.Type != excludeTypeName);
                 }
@@ -656,7 +444,7 @@ public sealed class BaseItemManager : IItemRepository, IDisposable
                 var excludeTypeName = new List<string>();
                 foreach (var excludeType in excludeTypes)
                 {
-                    if (_baseItemKindNames.TryGetValue(excludeType, out var baseItemKindName))
+                    if (itemTypeLookup.BaseItemKindNames.TryGetValue(excludeType, out var baseItemKindName))
                     {
                         excludeTypeName.Add(baseItemKindName!);
                     }
@@ -667,7 +455,7 @@ public sealed class BaseItemManager : IItemRepository, IDisposable
         }
         else if (includeTypes.Length == 1)
         {
-            if (_baseItemKindNames.TryGetValue(includeTypes[0], out var includeTypeName))
+            if (itemTypeLookup.BaseItemKindNames.TryGetValue(includeTypes[0], out var includeTypeName))
             {
                 baseQuery = baseQuery.Where(e => e.Type == includeTypeName);
             }
@@ -677,7 +465,7 @@ public sealed class BaseItemManager : IItemRepository, IDisposable
             var includeTypeName = new List<string>();
             foreach (var includeType in includeTypes)
             {
-                if (_baseItemKindNames.TryGetValue(includeType, out var baseItemKindName))
+                if (itemTypeLookup.BaseItemKindNames.TryGetValue(includeType, out var baseItemKindName))
                 {
                     includeTypeName.Add(baseItemKindName!);
                 }
@@ -1421,7 +1209,7 @@ public sealed class BaseItemManager : IItemRepository, IDisposable
         ArgumentNullException.ThrowIfNull(item);
 
         var images = SerializeImages(item.ImageInfos);
-        using var db = _dbProvider.CreateDbContext();
+        using var db = dbProvider.CreateDbContext();
 
         db.BaseItems
             .Where(e => e.Id.Equals(item.Id))
@@ -1457,7 +1245,7 @@ public sealed class BaseItemManager : IItemRepository, IDisposable
             tuples[i] = (item, ancestorIds, topParent, userdataKey, inheritedTags);
         }
 
-        using var context = _dbProvider.CreateDbContext();
+        using var context = dbProvider.CreateDbContext();
         foreach (var item in tuples)
         {
             var entity = Map(item.Item);
@@ -1501,7 +1289,7 @@ public sealed class BaseItemManager : IItemRepository, IDisposable
             throw new ArgumentException("Guid can't be empty", nameof(id));
         }
 
-        using var context = _dbProvider.CreateDbContext();
+        using var context = dbProvider.CreateDbContext();
         var item = context.BaseItems.FirstOrDefault(e => e.Id.Equals(id));
         if (item is null)
         {
@@ -1832,7 +1620,7 @@ public sealed class BaseItemManager : IItemRepository, IDisposable
 
     private IReadOnlyList<string> GetItemValueNames(int[] itemValueTypes, IReadOnlyList<string> withItemTypes, IReadOnlyList<string> excludeItemTypes)
     {
-        using var context = _dbProvider.CreateDbContext();
+        using var context = dbProvider.CreateDbContext();
 
         var query = context.ItemValues
             .Where(e => itemValueTypes.Contains(e.Type));
@@ -1855,6 +1643,118 @@ public sealed class BaseItemManager : IItemRepository, IDisposable
         var type = GetType(baseItemEntity.Type) ?? throw new InvalidOperationException("Cannot deserialise unkown type.");
         var dto = Activator.CreateInstance(type) as BaseItemDto ?? throw new InvalidOperationException("Cannot deserialise unkown type.");
         return Map(baseItemEntity, dto);
+    }
+
+    private QueryResult<(BaseItemDto Item, ItemCounts ItemCounts)> GetItemValues(InternalItemsQuery filter, int[] itemValueTypes, string returnType)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+
+        if (!filter.Limit.HasValue)
+        {
+            filter.EnableTotalRecordCount = false;
+        }
+
+        using var context = dbProvider.CreateDbContext();
+
+        var innerQuery = new InternalItemsQuery(filter.User)
+        {
+            ExcludeItemTypes = filter.ExcludeItemTypes,
+            IncludeItemTypes = filter.IncludeItemTypes,
+            MediaTypes = filter.MediaTypes,
+            AncestorIds = filter.AncestorIds,
+            ItemIds = filter.ItemIds,
+            TopParentIds = filter.TopParentIds,
+            ParentId = filter.ParentId,
+            IsAiring = filter.IsAiring,
+            IsMovie = filter.IsMovie,
+            IsSports = filter.IsSports,
+            IsKids = filter.IsKids,
+            IsNews = filter.IsNews,
+            IsSeries = filter.IsSeries
+        };
+        var query = TranslateQuery(context.BaseItems, context, innerQuery);
+
+        query = query.Where(e => e.Type == returnType && e.ItemValues!.Any(f => e.CleanName == f.CleanValue && itemValueTypes.Contains(f.Type)));
+
+        var outerQuery = new InternalItemsQuery(filter.User)
+        {
+            IsPlayed = filter.IsPlayed,
+            IsFavorite = filter.IsFavorite,
+            IsFavoriteOrLiked = filter.IsFavoriteOrLiked,
+            IsLiked = filter.IsLiked,
+            IsLocked = filter.IsLocked,
+            NameLessThan = filter.NameLessThan,
+            NameStartsWith = filter.NameStartsWith,
+            NameStartsWithOrGreater = filter.NameStartsWithOrGreater,
+            Tags = filter.Tags,
+            OfficialRatings = filter.OfficialRatings,
+            StudioIds = filter.StudioIds,
+            GenreIds = filter.GenreIds,
+            Genres = filter.Genres,
+            Years = filter.Years,
+            NameContains = filter.NameContains,
+            SearchTerm = filter.SearchTerm,
+            SimilarTo = filter.SimilarTo,
+            ExcludeItemIds = filter.ExcludeItemIds
+        };
+        query = TranslateQuery(query, context, outerQuery)
+            .OrderBy(e => e.PresentationUniqueKey);
+
+        if (filter.OrderBy.Count != 0
+            || filter.SimilarTo is not null
+            || !string.IsNullOrEmpty(filter.SearchTerm))
+        {
+            query = ApplyOrder(query, filter);
+        }
+        else
+        {
+            query = query.OrderBy(e => e.SortName);
+        }
+
+        if (filter.Limit.HasValue || filter.StartIndex.HasValue)
+        {
+            var offset = filter.StartIndex ?? 0;
+
+            if (offset > 0)
+            {
+                query = query.Skip(offset);
+            }
+
+            if (filter.Limit.HasValue)
+            {
+                query.Take(filter.Limit.Value);
+            }
+        }
+
+        var result = new QueryResult<(BaseItem, ItemCounts)>();
+        string countText = string.Empty;
+        if (filter.EnableTotalRecordCount)
+        {
+            result.TotalRecordCount = query.DistinctBy(e => e.PresentationUniqueKey).Count();
+        }
+
+        var resultQuery = query.Select(e => new
+        {
+            item = e,
+            itemCount = new ItemCounts()
+            {
+                SeriesCount = e.ItemValues!.Count(e => e.Type == (int)BaseItemKind.Series),
+                EpisodeCount = e.ItemValues!.Count(e => e.Type == (int)BaseItemKind.Episode),
+                MovieCount = e.ItemValues!.Count(e => e.Type == (int)BaseItemKind.Movie),
+                AlbumCount = e.ItemValues!.Count(e => e.Type == (int)BaseItemKind.MusicAlbum),
+                ArtistCount = e.ItemValues!.Count(e => e.Type == 0 || e.Type == 1),
+                SongCount = e.ItemValues!.Count(e => e.Type == (int)BaseItemKind.MusicAlbum),
+                TrailerCount = e.ItemValues!.Count(e => e.Type == (int)BaseItemKind.Trailer),
+            }
+        });
+
+        result.StartIndex = filter.StartIndex ?? 0;
+        result.Items = resultQuery.ToImmutableArray().Select(e =>
+        {
+            return (DeserialiseBaseItem(e.item), e.itemCount);
+        }).ToImmutableArray();
+
+        return result;
     }
 
     private static void PrepareFilterQuery(InternalItemsQuery query)
@@ -2046,12 +1946,12 @@ public sealed class BaseItemManager : IItemRepository, IDisposable
             return null;
         }
 
-        return _appHost.ReverseVirtualPath(path);
+        return appHost.ReverseVirtualPath(path);
     }
 
     private string RestorePath(string path)
     {
-        return _appHost.ExpandVirtualPath(path);
+        return appHost.ExpandVirtualPath(path);
     }
 
     internal ItemImageInfo? ItemImageInfoFromValueString(ReadOnlySpan<char> value)

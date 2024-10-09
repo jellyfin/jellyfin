@@ -13,12 +13,12 @@ using Microsoft.EntityFrameworkCore;
 namespace Jellyfin.Server.Implementations.Item;
 
 /// <summary>
-/// Initializes a new instance of the <see cref="MediaStreamManager"/> class.
+/// Initializes a new instance of the <see cref="MediaStreamRepository"/> class.
 /// </summary>
-/// <param name="dbProvider"></param>
-/// <param name="serverApplicationHost"></param>
-/// <param name="localization"></param>
-public class MediaStreamManager(IDbContextFactory<JellyfinDbContext> dbProvider, IServerApplicationHost serverApplicationHost, ILocalizationManager localization) : IMediaStreamManager
+/// <param name="dbProvider">The EFCore db factory.</param>
+/// <param name="serverApplicationHost">The Application host.</param>
+/// <param name="localization">The Localisation Provider.</param>
+public class MediaStreamRepository(IDbContextFactory<JellyfinDbContext> dbProvider, IServerApplicationHost serverApplicationHost, ILocalizationManager localization) : IMediaStreamRepository
 {
     /// <inheritdoc />
     public void SaveMediaStreams(Guid id, IReadOnlyList<MediaStream> streams, CancellationToken cancellationToken)

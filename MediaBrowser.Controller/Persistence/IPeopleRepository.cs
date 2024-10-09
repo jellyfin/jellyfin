@@ -8,7 +8,7 @@ using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Controller.Persistence;
 
-public interface IPeopleManager
+public interface IPeopleRepository
 {
     /// <summary>
     /// Gets the people.
@@ -30,5 +30,4 @@ public interface IPeopleManager
     /// <param name="filter">The query.</param>
     /// <returns>List&lt;System.String&gt;.</returns>
     IReadOnlyList<string> GetPeopleNames(InternalPeopleQuery filter);
-
 }

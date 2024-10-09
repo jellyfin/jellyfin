@@ -9,9 +9,8 @@ using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Persistence;
 
-public interface IMediaAttachmentManager
+public interface IMediaAttachmentRepository
 {
-
     /// <summary>
     /// Gets the media attachments.
     /// </summary>

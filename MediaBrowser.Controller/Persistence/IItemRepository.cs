@@ -52,7 +52,6 @@ public interface IItemRepository : IDisposable
     /// <returns>List&lt;Guid&gt;.</returns>
     IReadOnlyList<Guid> GetItemIdsList(InternalItemsQuery filter);
 
-
     /// <summary>
     /// Gets the item list.
     /// </summary>

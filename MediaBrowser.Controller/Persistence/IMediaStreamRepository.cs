@@ -9,14 +9,17 @@ using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Persistence;
 
-public interface IMediaStreamManager
+/// <summary>
+/// Provides methods for accessing MediaStreams.
+/// </summary>
+public interface IMediaStreamRepository
 {
     /// <summary>
     /// Gets the media streams.
     /// </summary>
     /// <param name="filter">The query.</param>
     /// <returns>IEnumerable{MediaStream}.</returns>
-    List<MediaStream> GetMediaStreams(MediaStreamQuery filter);
+    IReadOnlyList<MediaStream> GetMediaStreams(MediaStreamQuery filter);
 
     /// <summary>
     /// Saves the media streams.
