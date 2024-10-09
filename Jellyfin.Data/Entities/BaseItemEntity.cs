@@ -10,9 +10,7 @@ namespace Jellyfin.Data.Entities;
 
 public class BaseItemEntity
 {
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-
-    public Guid Id { get; set; }
+    public required Guid Id { get; set; }
 
     public required string Type { get; set; }
 
@@ -78,11 +76,7 @@ public class BaseItemEntity
 
     public bool IsInMixedFolder { get; set; }
 
-    public string? LockedFields { get; set; }
-
     public string? Studios { get; set; }
-
-    public string? Audio { get; set; }
 
     public string? ExternalServiceId { get; set; }
 
@@ -93,8 +87,6 @@ public class BaseItemEntity
     public int? InheritedParentalRatingValue { get; set; }
 
     public string? UnratedType { get; set; }
-
-    public string? TrailerTypes { get; set; }
 
     public float? CriticRating { get; set; }
 
@@ -126,15 +118,13 @@ public class BaseItemEntity
 
     public string? Tagline { get; set; }
 
-    public string? Images { get; set; }
-
     public string? ProductionLocations { get; set; }
 
     public string? ExtraIds { get; set; }
 
     public int? TotalBitrate { get; set; }
 
-    public string? ExtraType { get; set; }
+    public BaseItemExtraType? ExtraType { get; set; }
 
     public string? Artists { get; set; }
 
@@ -153,6 +143,8 @@ public class BaseItemEntity
     public int? Height { get; set; }
 
     public long? Size { get; set; }
+
+    public ProgramAudioEntity? Audio { get; set; }
 
     public Guid? ParentId { get; set; }
 
@@ -175,6 +167,12 @@ public class BaseItemEntity
     public ICollection<BaseItemProvider>? Provider { get; set; }
 
     public ICollection<AncestorId>? AncestorIds { get; set; }
+
+    public ICollection<BaseItemMetadataField>? LockedFields { get; set; }
+
+    public ICollection<BaseItemTrailerType>? TrailerTypes { get; set; }
+
+    public ICollection<BaseItemImageInfo>? Images { get; set; }
 
     // those are references to __LOCAL__ ids not DB ids ... TODO: Bring the whole folder structure into the DB
     // public ICollection<BaseItemEntity>? SeriesEpisodes { get; set; }

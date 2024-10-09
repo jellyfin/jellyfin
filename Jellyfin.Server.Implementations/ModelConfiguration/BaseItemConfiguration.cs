@@ -27,6 +27,9 @@ public class BaseItemConfiguration : IEntityTypeConfiguration<BaseItemEntity>
         builder.HasMany(e => e.Chapters);
         builder.HasMany(e => e.Provider);
         builder.HasMany(e => e.AncestorIds);
+        builder.HasMany(e => e.LockedFields);
+        builder.HasMany(e => e.TrailerTypes);
+        builder.HasMany(e => e.Images);
 
         builder.HasIndex(e => e.Path);
         builder.HasIndex(e => e.ParentId);

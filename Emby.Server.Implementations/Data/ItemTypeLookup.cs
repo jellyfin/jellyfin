@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Channels;
 using Emby.Server.Implementations.Playlists;
 using Jellyfin.Data.Enums;
+using Jellyfin.Server.Implementations;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
@@ -14,19 +15,13 @@ using MediaBrowser.Model.Querying;
 
 namespace Emby.Server.Implementations.Data;
 
-/// <summary>
-/// Provides static topic based lookups for the BaseItemKind.
-/// </summary>
+/// <inheritdoc />
 public class ItemTypeLookup : IItemTypeLookup
 {
-    /// <summary>
-    /// Gets all values of the ItemFields type.
-    /// </summary>
+    /// <inheritdoc />
     public IReadOnlyList<ItemFields> AllItemFields { get; } = Enum.GetValues<ItemFields>();
 
-    /// <summary>
-    /// Gets all BaseItemKinds that are considered Programs.
-    /// </summary>
+    /// <inheritdoc />
     public IReadOnlyList<BaseItemKind> ProgramTypes { get; } =
     [
             BaseItemKind.Program,
@@ -35,9 +30,7 @@ public class ItemTypeLookup : IItemTypeLookup
             BaseItemKind.LiveTvChannel
     ];
 
-    /// <summary>
-    /// Gets all BaseItemKinds that should be excluded from parent lookup.
-    /// </summary>
+    /// <inheritdoc />
     public IReadOnlyList<BaseItemKind> ProgramExcludeParentTypes { get; } =
     [
             BaseItemKind.Series,
@@ -47,27 +40,21 @@ public class ItemTypeLookup : IItemTypeLookup
             BaseItemKind.PhotoAlbum
     ];
 
-    /// <summary>
-    /// Gets all BaseItemKinds that are considered to be provided by services.
-    /// </summary>
+    /// <inheritdoc />
     public IReadOnlyList<BaseItemKind> ServiceTypes { get; } =
     [
             BaseItemKind.TvChannel,
             BaseItemKind.LiveTvChannel
     ];
 
-    /// <summary>
-    /// Gets all BaseItemKinds that have a StartDate.
-    /// </summary>
+    /// <inheritdoc />
     public IReadOnlyList<BaseItemKind> StartDateTypes { get; } =
     [
             BaseItemKind.Program,
             BaseItemKind.LiveTvProgram
     ];
 
-    /// <summary>
-    /// Gets all BaseItemKinds that are considered Series.
-    /// </summary>
+    /// <inheritdoc />
     public IReadOnlyList<BaseItemKind> SeriesTypes { get; } =
     [
             BaseItemKind.Book,
@@ -76,9 +63,7 @@ public class ItemTypeLookup : IItemTypeLookup
             BaseItemKind.Season
     ];
 
-    /// <summary>
-    /// Gets all BaseItemKinds that are not to be evaluated for Artists.
-    /// </summary>
+    /// <inheritdoc />
     public IReadOnlyList<BaseItemKind> ArtistExcludeParentTypes { get; } =
     [
             BaseItemKind.Series,
@@ -86,9 +71,7 @@ public class ItemTypeLookup : IItemTypeLookup
             BaseItemKind.PhotoAlbum
     ];
 
-    /// <summary>
-    /// Gets all BaseItemKinds that are considered Artists.
-    /// </summary>
+    /// <inheritdoc />
     public IReadOnlyList<BaseItemKind> ArtistsTypes { get; } =
     [
             BaseItemKind.Audio,
@@ -97,9 +80,7 @@ public class ItemTypeLookup : IItemTypeLookup
             BaseItemKind.AudioBook
     ];
 
-    /// <summary>
-    /// Gets mapping for all BaseItemKinds and their expected serialisaition target.
-    /// </summary>
+    /// <inheritdoc />
     public IDictionary<BaseItemKind, string?> BaseItemKindNames { get; } = new Dictionary<BaseItemKind, string?>()
     {
         { BaseItemKind.AggregateFolder, typeof(AggregateFolder).FullName },

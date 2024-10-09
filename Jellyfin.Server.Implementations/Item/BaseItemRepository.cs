@@ -7,6 +7,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading;
+using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller;
@@ -69,6 +70,8 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
         context.AncestorIds.Where(e => e.ItemId == id).ExecuteDelete();
         context.ItemValues.Where(e => e.ItemId == id).ExecuteDelete();
         context.BaseItems.Where(e => e.Id == id).ExecuteDelete();
+        context.BaseItemImageInfos.Where(e => e.ItemId == id).ExecuteDelete();
+        context.BaseItemProviders.Where(e => e.ItemId == id).ExecuteDelete();
         context.SaveChanges();
         transaction.Commit();
     }
@@ -229,7 +232,12 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
         var result = new QueryResult<BaseItemDto>();
 
         using var context = dbProvider.CreateDbContext();
-        var dbQuery = TranslateQuery(context.BaseItems, context, filter)
+        IQueryable<BaseItemEntity> dbQuery = context.BaseItems
+            .Include(e => e.ExtraType)
+            .Include(e => e.TrailerTypes)
+            .Include(e => e.Images)
+            .Include(e => e.LockedFields);
+        dbQuery = TranslateQuery(dbQuery, context, filter)
             .DistinctBy(e => e.Id);
         if (filter.EnableTotalRecordCount)
         {
@@ -585,8 +593,8 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
 
         if (filter.TrailerTypes.Length > 0)
         {
-            var trailerTypes = filter.TrailerTypes.Select(e => e.ToString()).ToArray();
-            baseQuery = baseQuery.Where(e => trailerTypes.Any(f => e.TrailerTypes!.Contains(f)));
+            var trailerTypes = filter.TrailerTypes.Select(e => (int)e).ToArray();
+            baseQuery = baseQuery.Where(e => trailerTypes.Any(f => e.TrailerTypes!.Any(w => w.Id == f)));
         }
 
         if (filter.IsAiring.HasValue)
@@ -666,8 +674,8 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
 
         if (filter.ImageTypes.Length > 0)
         {
-            var imgTypes = filter.ImageTypes.Select(e => e.ToString()).ToArray();
-            baseQuery = baseQuery.Where(e => imgTypes.Any(f => e.Images!.Contains(f)));
+            var imgTypes = filter.ImageTypes.Select(e => (ImageInfoImageType)e).ToArray();
+            baseQuery = baseQuery.Where(e => imgTypes.Any(f => e.Images!.Any(w => w.ImageType == f)));
         }
 
         if (filter.IsLiked.HasValue)
@@ -1206,12 +1214,12 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
     {
         ArgumentNullException.ThrowIfNull(item);
 
-        var images = SerializeImages(item.ImageInfos);
+        var images = item.ImageInfos.Select(e => Map(item.Id, e));
         using var db = dbProvider.CreateDbContext();
-
-        db.BaseItems
-            .Where(e => e.Id == item.Id)
-            .ExecuteUpdate(e => e.SetProperty(f => f.Images, images));
+        using var transaction = db.Database.BeginTransaction();
+        db.BaseItemImageInfos.Where(e => e.ItemId == item.Id).ExecuteDelete();
+        db.BaseItemImageInfos.AddRange(images);
+        transaction.Commit();
     }
 
     /// <inheritdoc cref="IItemRepository" />
@@ -1260,29 +1268,32 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
             context.AncestorIds.Where(e => e.ItemId == entity.Id).ExecuteDelete();
             if (item.Item.SupportsAncestors && item.AncestorIds != null)
             {
+                entity.AncestorIds = new List<AncestorId>();
                 foreach (var ancestorId in item.AncestorIds)
                 {
-                    context.AncestorIds.Add(new Data.Entities.AncestorId()
+                    entity.AncestorIds.Add(new AncestorId()
                     {
                         Item = entity,
                         AncestorIdText = ancestorId.ToString(),
                         Id = ancestorId,
-                        ItemId = Guid.Empty
+                        ItemId = entity.Id
                     });
                 }
             }
 
             var itemValues = GetItemValuesToSave(item.Item, item.InheritedTags);
             context.ItemValues.Where(e => e.ItemId == entity.Id).ExecuteDelete();
+            entity.ItemValues = new List<ItemValue>();
+
             foreach (var itemValue in itemValues)
             {
-                context.ItemValues.Add(new()
+                entity.ItemValues.Add(new()
                 {
                     Item = entity,
                     Type = itemValue.MagicNumber,
                     Value = itemValue.Value,
                     CleanValue = GetCleanValue(itemValue.Value),
-                    ItemId = Guid.Empty
+                    ItemId = entity.Id
                 });
             }
         }
@@ -1366,26 +1377,17 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
 
         if (entity.ExtraType is not null)
         {
-            dto.ExtraType = Enum.Parse<ExtraType>(entity.ExtraType);
+            dto.ExtraType = (ExtraType)entity.ExtraType;
         }
 
         if (entity.LockedFields is not null)
         {
-            List<MetadataField>? fields = null;
-            foreach (var i in entity.LockedFields.AsSpan().Split('|'))
-            {
-                if (Enum.TryParse(i, true, out MetadataField parsedValue))
-                {
-                    (fields ??= new List<MetadataField>()).Add(parsedValue);
-                }
-            }
-
-            dto.LockedFields = fields?.ToArray() ?? Array.Empty<MetadataField>();
+            dto.LockedFields = entity.LockedFields?.Select(e => (MetadataField)e.Id).ToArray() ?? [];
         }
 
         if (entity.Audio is not null)
         {
-            dto.Audio = Enum.Parse<ProgramAudio>(entity.Audio);
+            dto.Audio = (ProgramAudio)entity.Audio;
         }
 
         dto.ExtraIds = string.IsNullOrWhiteSpace(entity.ExtraIds) ? null : entity.ExtraIds.Split('|').Select(e => Guid.Parse(e)).ToArray();
@@ -1408,16 +1410,7 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
 
         if (dto is Trailer trailer)
         {
-            List<TrailerType>? types = null;
-            foreach (var i in entity.TrailerTypes.AsSpan().Split('|'))
-            {
-                if (Enum.TryParse(i, true, out TrailerType parsedValue))
-                {
-                    (types ??= new List<TrailerType>()).Add(parsedValue);
-                }
-            }
-
-            trailer.TrailerTypes = types?.ToArray() ?? Array.Empty<TrailerType>();
+            trailer.TrailerTypes = entity.TrailerTypes?.Select(e => (TrailerType)e.Id).ToArray() ?? [];
         }
 
         if (dto is Video video)
@@ -1455,7 +1448,7 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
 
         if (entity.Images is not null)
         {
-            dto.ImageInfos = DeserializeImages(entity.Images);
+            dto.ImageInfos = entity.Images.Select(Map).ToArray();
         }
 
         // dto.Type = entity.Type;
@@ -1490,8 +1483,8 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
         var entity = new BaseItemEntity()
         {
             Type = dto.GetType().ToString(),
+            Id = dto.Id
         };
-        entity.Id = dto.Id;
         entity.ParentId = dto.ParentId;
         entity.Path = GetPathToSave(dto.Path);
         entity.EndDate = dto.EndDate.GetValueOrDefault();
@@ -1533,21 +1526,35 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
         entity.OwnerId = dto.OwnerId.ToString();
         entity.Width = dto.Width;
         entity.Height = dto.Height;
-        entity.Provider = dto.ProviderIds.Select(e => new Data.Entities.BaseItemProvider()
+        entity.Provider = dto.ProviderIds.Select(e => new BaseItemProvider()
         {
             Item = entity,
             ProviderId = e.Key,
             ProviderValue = e.Value
         }).ToList();
 
-        entity.Audio = dto.Audio?.ToString();
-        entity.ExtraType = dto.ExtraType?.ToString();
+        if (dto.Audio.HasValue)
+        {
+            entity.Audio = (ProgramAudioEntity)dto.Audio;
+        }
+
+        if (dto.ExtraType.HasValue)
+        {
+            entity.ExtraType = (BaseItemExtraType)dto.ExtraType;
+        }
 
         entity.ExtraIds = dto.ExtraIds is not null ? string.Join('|', dto.ExtraIds) : null;
         entity.ProductionLocations = dto.ProductionLocations is not null ? string.Join('|', dto.ProductionLocations) : null;
         entity.Studios = dto.Studios is not null ? string.Join('|', dto.Studios) : null;
         entity.Tags = dto.Tags is not null ? string.Join('|', dto.Tags) : null;
-        entity.LockedFields = dto.LockedFields is not null ? string.Join('|', dto.LockedFields) : null;
+        entity.LockedFields = dto.LockedFields is not null ? dto.LockedFields
+            .Select(e => new BaseItemMetadataField()
+            {
+                Id = (int)e,
+                Item = entity,
+                ItemId = entity.Id
+            })
+            .ToArray() : null;
 
         if (dto is IHasProgramAttributes hasProgramAttributes)
         {
@@ -1560,11 +1567,6 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
         if (dto is LiveTvChannel liveTvChannel)
         {
             entity.ExternalServiceId = liveTvChannel.ServiceName;
-        }
-
-        if (dto is Trailer trailer)
-        {
-            entity.LockedFields = trailer.LockedFields is not null ? string.Join('|', trailer.LockedFields) : null;
         }
 
         if (dto is Video video)
@@ -1602,7 +1604,17 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
 
         if (dto.ImageInfos is not null)
         {
-            entity.Images = SerializeImages(dto.ImageInfos);
+            entity.Images = dto.ImageInfos.Select(f => Map(dto.Id, f)).ToArray();
+        }
+
+        if (dto is Trailer trailer)
+        {
+            entity.TrailerTypes = trailer.TrailerTypes?.Select(e => new BaseItemTrailerType()
+            {
+                Id = (int)e,
+                Item = entity,
+                ItemId = entity.Id
+            }).ToArray() ?? [];
         }
 
         // dto.Type = entity.Type;
@@ -1863,90 +1875,33 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
         }
     }
 
-    internal string? SerializeImages(ItemImageInfo[] images)
+    private static BaseItemImageInfo Map(Guid baseItemId, ItemImageInfo e)
     {
-        if (images.Length == 0)
+        return new BaseItemImageInfo()
         {
-            return null;
-        }
-
-        StringBuilder str = new StringBuilder();
-        foreach (var i in images)
-        {
-            if (string.IsNullOrWhiteSpace(i.Path))
-            {
-                continue;
-            }
-
-            AppendItemImageInfo(str, i);
-            str.Append('|');
-        }
-
-        str.Length -= 1; // Remove last |
-        return str.ToString();
+            ItemId = baseItemId,
+            Id = Guid.NewGuid(),
+            Path = e.Path,
+            Blurhash = e.BlurHash != null ? Encoding.UTF8.GetBytes(e.BlurHash) : null,
+            DateModified = e.DateModified,
+            Height = e.Height,
+            Width = e.Width,
+            ImageType = (ImageInfoImageType)e.Type,
+            Item = null!
+        };
     }
 
-    internal ItemImageInfo[] DeserializeImages(string value)
+    private static ItemImageInfo Map(BaseItemImageInfo e)
     {
-        if (string.IsNullOrWhiteSpace(value))
+        return new ItemImageInfo()
         {
-            return Array.Empty<ItemImageInfo>();
-        }
-
-        // TODO The following is an ugly performance optimization, but it's extremely unlikely that the data in the database would be malformed
-        var valueSpan = value.AsSpan();
-        var count = valueSpan.Count('|') + 1;
-
-        var position = 0;
-        var result = new ItemImageInfo[count];
-        foreach (var part in valueSpan.Split('|'))
-        {
-            var image = ItemImageInfoFromValueString(part);
-
-            if (image is not null)
-            {
-                result[position++] = image;
-            }
-        }
-
-        if (position == count)
-        {
-            return result;
-        }
-
-        if (position == 0)
-        {
-            return Array.Empty<ItemImageInfo>();
-        }
-
-        // Extremely unlikely, but somehow one or more of the image strings were malformed. Cut the array.
-        return result[..position];
-    }
-
-    private void AppendItemImageInfo(StringBuilder bldr, ItemImageInfo image)
-    {
-        const char Delimiter = '*';
-
-        var path = image.Path ?? string.Empty;
-
-        bldr.Append(GetPathToSave(path))
-            .Append(Delimiter)
-            .Append(image.DateModified.Ticks)
-            .Append(Delimiter)
-            .Append(image.Type)
-            .Append(Delimiter)
-            .Append(image.Width)
-            .Append(Delimiter)
-            .Append(image.Height);
-
-        var hash = image.BlurHash;
-        if (!string.IsNullOrEmpty(hash))
-        {
-            bldr.Append(Delimiter)
-                // Replace delimiters with other characters.
-                // This can be removed when we migrate to a proper DB.
-                .Append(hash.Replace(Delimiter, '/').Replace('|', '\\'));
-        }
+            Path = e.Path,
+            BlurHash = e.Blurhash != null ? Encoding.UTF8.GetString(e.Blurhash) : null,
+            DateModified = e.DateModified,
+            Height = e.Height,
+            Width = e.Width,
+            Type = (ImageType)e.ImageType
+        };
     }
 
     private string? GetPathToSave(string path)
@@ -1962,111 +1917,6 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
     private string RestorePath(string path)
     {
         return appHost.ExpandVirtualPath(path);
-    }
-
-    internal ItemImageInfo? ItemImageInfoFromValueString(ReadOnlySpan<char> value)
-    {
-        const char Delimiter = '*';
-
-        var nextSegment = value.IndexOf(Delimiter);
-        if (nextSegment == -1)
-        {
-            return null;
-        }
-
-        ReadOnlySpan<char> path = value[..nextSegment];
-        value = value[(nextSegment + 1)..];
-        nextSegment = value.IndexOf(Delimiter);
-        if (nextSegment == -1)
-        {
-            return null;
-        }
-
-        ReadOnlySpan<char> dateModified = value[..nextSegment];
-        value = value[(nextSegment + 1)..];
-        nextSegment = value.IndexOf(Delimiter);
-        if (nextSegment == -1)
-        {
-            nextSegment = value.Length;
-        }
-
-        ReadOnlySpan<char> imageType = value[..nextSegment];
-
-        var image = new ItemImageInfo
-        {
-            Path = RestorePath(path.ToString())
-        };
-
-        if (long.TryParse(dateModified, CultureInfo.InvariantCulture, out var ticks)
-            && ticks >= DateTime.MinValue.Ticks
-            && ticks <= DateTime.MaxValue.Ticks)
-        {
-            image.DateModified = new DateTime(ticks, DateTimeKind.Utc);
-        }
-        else
-        {
-            return null;
-        }
-
-        if (Enum.TryParse(imageType, true, out ImageType type))
-        {
-            image.Type = type;
-        }
-        else
-        {
-            return null;
-        }
-
-        // Optional parameters: width*height*blurhash
-        if (nextSegment + 1 < value.Length - 1)
-        {
-            value = value[(nextSegment + 1)..];
-            nextSegment = value.IndexOf(Delimiter);
-            if (nextSegment == -1 || nextSegment == value.Length)
-            {
-                return image;
-            }
-
-            ReadOnlySpan<char> widthSpan = value[..nextSegment];
-
-            value = value[(nextSegment + 1)..];
-            nextSegment = value.IndexOf(Delimiter);
-            if (nextSegment == -1)
-            {
-                nextSegment = value.Length;
-            }
-
-            ReadOnlySpan<char> heightSpan = value[..nextSegment];
-
-            if (int.TryParse(widthSpan, NumberStyles.Integer, CultureInfo.InvariantCulture, out var width)
-                && int.TryParse(heightSpan, NumberStyles.Integer, CultureInfo.InvariantCulture, out var height))
-            {
-                image.Width = width;
-                image.Height = height;
-            }
-
-            if (nextSegment < value.Length - 1)
-            {
-                value = value[(nextSegment + 1)..];
-                var length = value.Length;
-
-                Span<char> blurHashSpan = stackalloc char[length];
-                for (int i = 0; i < length; i++)
-                {
-                    var c = value[i];
-                    blurHashSpan[i] = c switch
-                    {
-                        '/' => Delimiter,
-                        '\\' => '|',
-                        _ => c
-                    };
-                }
-
-                image.BlurHash = new string(blurHashSpan);
-            }
-        }
-
-        return image;
     }
 
     private List<string> GetItemByNameTypesInQuery(InternalItemsQuery query)

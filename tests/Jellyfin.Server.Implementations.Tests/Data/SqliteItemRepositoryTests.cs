@@ -99,31 +99,6 @@ namespace Jellyfin.Server.Implementations.Tests.Data
             return data;
         }
 
-        [Theory]
-        [MemberData(nameof(ItemImageInfoFromValueString_Valid_TestData))]
-        public void ItemImageInfoFromValueString_Valid_Success(string value, ItemImageInfo expected)
-        {
-            var result = _sqliteItemRepository.ItemImageInfoFromValueString(value)!;
-            Assert.Equal(expected.Path, result.Path);
-            Assert.Equal(expected.Type, result.Type);
-            Assert.Equal(expected.DateModified, result.DateModified);
-            Assert.Equal(expected.Width, result.Width);
-            Assert.Equal(expected.Height, result.Height);
-            Assert.Equal(expected.BlurHash, result.BlurHash);
-        }
-
-        [Theory]
-        [InlineData("")]
-        [InlineData("*")]
-        [InlineData("https://image.tmdb.org/t/p/original/zhB5CHEgqqh4wnEqDNJLfWXJlcL.jpg*0")]
-        [InlineData("/mnt/series/Family Guy/Season 1/Family Guy - S01E01-thumb.jpg*6374520964785129080*WjQbtJtSO8nhNZ%L_Io#R/oaS<o}-;adXAoIn7j[%hW9s:WGw[nN")] // Invalid modified date
-        [InlineData("/mnt/series/Family Guy/Season 1/Family Guy - S01E01-thumb.jpg*-637452096478512963*WjQbtJtSO8nhNZ%L_Io#R/oaS<o}-;adXAoIn7j[%hW9s:WGw[nN")] // Negative modified date
-        [InlineData("/mnt/series/Family Guy/Season 1/Family Guy - S01E01-thumb.jpg*637452096478512963*Invalid*1920*1080*WjQbtJtSO8nhNZ%L_Io#R/oaS6o}-;adXAoIn7j[%hW9s:WGw[nN")] // Invalid type
-        public void ItemImageInfoFromValueString_Invalid_Null(string value)
-        {
-            Assert.Null(_sqliteItemRepository.ItemImageInfoFromValueString(value));
-        }
-
         public static TheoryData<string, ItemImageInfo[]> DeserializeImages_Valid_TestData()
         {
             var data = new TheoryData<string, ItemImageInfo[]>();
@@ -202,47 +177,6 @@ namespace Jellyfin.Server.Implementations.Tests.Data
                 Array.Empty<ItemImageInfo>());
 
             return data;
-        }
-
-        [Theory]
-        [MemberData(nameof(DeserializeImages_Valid_TestData))]
-        public void DeserializeImages_Valid_Success(string value, ItemImageInfo[] expected)
-        {
-            var result = _sqliteItemRepository.DeserializeImages(value);
-            Assert.Equal(expected.Length, result.Length);
-            for (int i = 0; i < expected.Length; i++)
-            {
-                Assert.Equal(expected[i].Path, result[i].Path);
-                Assert.Equal(expected[i].Type, result[i].Type);
-                Assert.Equal(expected[i].DateModified, result[i].DateModified);
-                Assert.Equal(expected[i].Width, result[i].Width);
-                Assert.Equal(expected[i].Height, result[i].Height);
-                Assert.Equal(expected[i].BlurHash, result[i].BlurHash);
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(DeserializeImages_ValidAndInvalid_TestData))]
-        public void DeserializeImages_ValidAndInvalid_Success(string value, ItemImageInfo[] expected)
-        {
-            var result = _sqliteItemRepository.DeserializeImages(value);
-            Assert.Equal(expected.Length, result.Length);
-            for (int i = 0; i < expected.Length; i++)
-            {
-                Assert.Equal(expected[i].Path, result[i].Path);
-                Assert.Equal(expected[i].Type, result[i].Type);
-                Assert.Equal(expected[i].DateModified, result[i].DateModified);
-                Assert.Equal(expected[i].Width, result[i].Width);
-                Assert.Equal(expected[i].Height, result[i].Height);
-                Assert.Equal(expected[i].BlurHash, result[i].BlurHash);
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(DeserializeImages_Valid_TestData))]
-        public void SerializeImages_Valid_Success(string expected, ItemImageInfo[] value)
-        {
-            Assert.Equal(expected, _sqliteItemRepository.SerializeImages(value));
         }
 
         private sealed class ProviderIdsExtensionsTestsObject : IHasProviderIds

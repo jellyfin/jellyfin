@@ -2,13 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Emby.Server.Implementations.Data;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Entities.Libraries;
+using Jellyfin.Extensions;
 using Jellyfin.Server.Implementations;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using Microsoft.Data.Sqlite;
@@ -503,293 +507,308 @@ public class MigrateLibraryDb : IMigrationRoutine
 
     private BaseItemEntity GetItem(SqliteDataReader reader)
     {
-        var item = new BaseItemEntity()
+        var entity = new BaseItemEntity()
         {
-            Type = reader.GetString(0)
+            Type = reader.GetString(0),
+            Id = Guid.NewGuid()
         };
 
         var index = 1;
 
         if (reader.TryGetString(index++, out var data))
         {
-            item.Data = data;
+            entity.Data = data;
         }
 
         if (reader.TryReadDateTime(index++, out var startDate))
         {
-            item.StartDate = startDate;
+            entity.StartDate = startDate;
         }
 
         if (reader.TryReadDateTime(index++, out var endDate))
         {
-            item.EndDate = endDate;
+            entity.EndDate = endDate;
         }
 
         if (reader.TryGetGuid(index++, out var guid))
         {
-            item.ChannelId = guid.ToString("N");
+            entity.ChannelId = guid.ToString("N");
         }
 
         if (reader.TryGetBoolean(index++, out var isMovie))
         {
-            item.IsMovie = isMovie;
+            entity.IsMovie = isMovie;
         }
 
         if (reader.TryGetBoolean(index++, out var isSeries))
         {
-            item.IsSeries = isSeries;
+            entity.IsSeries = isSeries;
         }
 
         if (reader.TryGetString(index++, out var episodeTitle))
         {
-            item.EpisodeTitle = episodeTitle;
+            entity.EpisodeTitle = episodeTitle;
         }
 
         if (reader.TryGetBoolean(index++, out var isRepeat))
         {
-            item.IsRepeat = isRepeat;
+            entity.IsRepeat = isRepeat;
         }
 
         if (reader.TryGetSingle(index++, out var communityRating))
         {
-            item.CommunityRating = communityRating;
+            entity.CommunityRating = communityRating;
         }
 
         if (reader.TryGetString(index++, out var customRating))
         {
-            item.CustomRating = customRating;
+            entity.CustomRating = customRating;
         }
 
         if (reader.TryGetInt32(index++, out var indexNumber))
         {
-            item.IndexNumber = indexNumber;
+            entity.IndexNumber = indexNumber;
         }
 
         if (reader.TryGetBoolean(index++, out var isLocked))
         {
-            item.IsLocked = isLocked;
+            entity.IsLocked = isLocked;
         }
 
         if (reader.TryGetString(index++, out var preferredMetadataLanguage))
         {
-            item.PreferredMetadataLanguage = preferredMetadataLanguage;
+            entity.PreferredMetadataLanguage = preferredMetadataLanguage;
         }
 
         if (reader.TryGetString(index++, out var preferredMetadataCountryCode))
         {
-            item.PreferredMetadataCountryCode = preferredMetadataCountryCode;
+            entity.PreferredMetadataCountryCode = preferredMetadataCountryCode;
         }
 
         if (reader.TryGetInt32(index++, out var width))
         {
-            item.Width = width;
+            entity.Width = width;
         }
 
         if (reader.TryGetInt32(index++, out var height))
         {
-            item.Height = height;
+            entity.Height = height;
         }
 
         if (reader.TryReadDateTime(index++, out var dateLastRefreshed))
         {
-            item.DateLastRefreshed = dateLastRefreshed;
+            entity.DateLastRefreshed = dateLastRefreshed;
         }
 
         if (reader.TryGetString(index++, out var name))
         {
-            item.Name = name;
+            entity.Name = name;
         }
 
         if (reader.TryGetString(index++, out var restorePath))
         {
-            item.Path = restorePath;
+            entity.Path = restorePath;
         }
 
         if (reader.TryReadDateTime(index++, out var premiereDate))
         {
-            item.PremiereDate = premiereDate;
+            entity.PremiereDate = premiereDate;
         }
 
         if (reader.TryGetString(index++, out var overview))
         {
-            item.Overview = overview;
+            entity.Overview = overview;
         }
 
         if (reader.TryGetInt32(index++, out var parentIndexNumber))
         {
-            item.ParentIndexNumber = parentIndexNumber;
+            entity.ParentIndexNumber = parentIndexNumber;
         }
 
         if (reader.TryGetInt32(index++, out var productionYear))
         {
-            item.ProductionYear = productionYear;
+            entity.ProductionYear = productionYear;
         }
 
         if (reader.TryGetString(index++, out var officialRating))
         {
-            item.OfficialRating = officialRating;
+            entity.OfficialRating = officialRating;
         }
 
         if (reader.TryGetString(index++, out var forcedSortName))
         {
-            item.ForcedSortName = forcedSortName;
+            entity.ForcedSortName = forcedSortName;
         }
 
         if (reader.TryGetInt64(index++, out var runTimeTicks))
         {
-            item.RunTimeTicks = runTimeTicks;
+            entity.RunTimeTicks = runTimeTicks;
         }
 
         if (reader.TryGetInt64(index++, out var size))
         {
-            item.Size = size;
+            entity.Size = size;
         }
 
         if (reader.TryReadDateTime(index++, out var dateCreated))
         {
-            item.DateCreated = dateCreated;
+            entity.DateCreated = dateCreated;
         }
 
         if (reader.TryReadDateTime(index++, out var dateModified))
         {
-            item.DateModified = dateModified;
+            entity.DateModified = dateModified;
         }
 
-        item.Id = reader.GetGuid(index++);
+        entity.Id = reader.GetGuid(index++);
 
         if (reader.TryGetString(index++, out var genres))
         {
-            item.Genres = genres;
+            entity.Genres = genres;
         }
 
         if (reader.TryGetGuid(index++, out var parentId))
         {
-            item.ParentId = parentId;
+            entity.ParentId = parentId;
         }
 
-        if (reader.TryGetString(index++, out var audioString))
+        if (reader.TryGetString(index++, out var audioString) && Enum.TryParse<ProgramAudioEntity>(audioString, out var audioType))
         {
-            item.Audio = audioString;
+            entity.Audio = audioType;
         }
 
         if (reader.TryGetString(index++, out var serviceName))
         {
-            item.ExternalServiceId = serviceName;
+            entity.ExternalServiceId = serviceName;
         }
 
         if (reader.TryGetBoolean(index++, out var isInMixedFolder))
         {
-            item.IsInMixedFolder = isInMixedFolder;
+            entity.IsInMixedFolder = isInMixedFolder;
         }
 
         if (reader.TryReadDateTime(index++, out var dateLastSaved))
         {
-            item.DateLastSaved = dateLastSaved;
+            entity.DateLastSaved = dateLastSaved;
         }
 
         if (reader.TryGetString(index++, out var lockedFields))
         {
-            item.LockedFields = lockedFields;
+            entity.LockedFields = lockedFields.Split('|').Select(Enum.Parse<MetadataField>)
+                .Select(e => new BaseItemMetadataField()
+                {
+                    Id = (int)e,
+                    Item = entity,
+                    ItemId = entity.Id
+                })
+                .ToArray();
         }
 
         if (reader.TryGetString(index++, out var studios))
         {
-            item.Studios = studios;
+            entity.Studios = studios;
         }
 
         if (reader.TryGetString(index++, out var tags))
         {
-            item.Tags = tags;
+            entity.Tags = tags;
         }
 
         if (reader.TryGetString(index++, out var trailerTypes))
         {
-            item.TrailerTypes = trailerTypes;
+            entity.TrailerTypes = trailerTypes.Split('|').Select(Enum.Parse<TrailerType>)
+                .Select(e => new BaseItemTrailerType()
+                {
+                    Id = (int)e,
+                    Item = entity,
+                    ItemId = entity.Id
+                })
+                .ToArray();
         }
 
         if (reader.TryGetString(index++, out var originalTitle))
         {
-            item.OriginalTitle = originalTitle;
+            entity.OriginalTitle = originalTitle;
         }
 
         if (reader.TryGetString(index++, out var primaryVersionId))
         {
-            item.PrimaryVersionId = primaryVersionId;
+            entity.PrimaryVersionId = primaryVersionId;
         }
 
         if (reader.TryReadDateTime(index++, out var dateLastMediaAdded))
         {
-            item.DateLastMediaAdded = dateLastMediaAdded;
+            entity.DateLastMediaAdded = dateLastMediaAdded;
         }
 
         if (reader.TryGetString(index++, out var album))
         {
-            item.Album = album;
+            entity.Album = album;
         }
 
         if (reader.TryGetSingle(index++, out var lUFS))
         {
-            item.LUFS = lUFS;
+            entity.LUFS = lUFS;
         }
 
         if (reader.TryGetSingle(index++, out var normalizationGain))
         {
-            item.NormalizationGain = normalizationGain;
+            entity.NormalizationGain = normalizationGain;
         }
 
         if (reader.TryGetSingle(index++, out var criticRating))
         {
-            item.CriticRating = criticRating;
+            entity.CriticRating = criticRating;
         }
 
         if (reader.TryGetBoolean(index++, out var isVirtualItem))
         {
-            item.IsVirtualItem = isVirtualItem;
+            entity.IsVirtualItem = isVirtualItem;
         }
 
         if (reader.TryGetString(index++, out var seriesName))
         {
-            item.SeriesName = seriesName;
+            entity.SeriesName = seriesName;
         }
 
         if (reader.TryGetString(index++, out var seasonName))
         {
-            item.SeasonName = seasonName;
+            entity.SeasonName = seasonName;
         }
 
         if (reader.TryGetGuid(index++, out var seasonId))
         {
-            item.SeasonId = seasonId;
+            entity.SeasonId = seasonId;
         }
 
         if (reader.TryGetGuid(index++, out var seriesId))
         {
-            item.SeriesId = seriesId;
+            entity.SeriesId = seriesId;
         }
 
         if (reader.TryGetString(index++, out var presentationUniqueKey))
         {
-            item.PresentationUniqueKey = presentationUniqueKey;
+            entity.PresentationUniqueKey = presentationUniqueKey;
         }
 
         if (reader.TryGetInt32(index++, out var parentalRating))
         {
-            item.InheritedParentalRatingValue = parentalRating;
+            entity.InheritedParentalRatingValue = parentalRating;
         }
 
         if (reader.TryGetString(index++, out var externalSeriesId))
         {
-            item.ExternalSeriesId = externalSeriesId;
+            entity.ExternalSeriesId = externalSeriesId;
         }
 
         if (reader.TryGetString(index++, out var tagLine))
         {
-            item.Tagline = tagLine;
+            entity.Tagline = tagLine;
         }
 
         if (reader.TryGetString(index++, out var providerIds))
         {
-            item.Provider = providerIds.Split('|').Select(e => e.Split("="))
+            entity.Provider = providerIds.Split('|').Select(e => e.Split("="))
             .Select(e => new BaseItemProvider()
             {
                 Item = null!,
@@ -800,59 +819,217 @@ public class MigrateLibraryDb : IMigrationRoutine
 
         if (reader.TryGetString(index++, out var imageInfos))
         {
-            item.Images = imageInfos;
+            entity.Images = DeserializeImages(imageInfos).Select(f => Map(entity.Id, f)).ToArray();
         }
 
         if (reader.TryGetString(index++, out var productionLocations))
         {
-            item.ProductionLocations = productionLocations;
+            entity.ProductionLocations = productionLocations;
         }
 
         if (reader.TryGetString(index++, out var extraIds))
         {
-            item.ExtraIds = extraIds;
+            entity.ExtraIds = extraIds;
         }
 
         if (reader.TryGetInt32(index++, out var totalBitrate))
         {
-            item.TotalBitrate = totalBitrate;
+            entity.TotalBitrate = totalBitrate;
         }
 
-        if (reader.TryGetString(index++, out var extraTypeString))
+        if (reader.TryGetString(index++, out var extraTypeString) && Enum.TryParse<BaseItemExtraType>(extraTypeString, out var extraType))
         {
-            item.ExtraType = extraTypeString;
+            entity.ExtraType = extraType;
         }
 
         if (reader.TryGetString(index++, out var artists))
         {
-            item.Artists = artists;
+            entity.Artists = artists;
         }
 
         if (reader.TryGetString(index++, out var albumArtists))
         {
-            item.AlbumArtists = albumArtists;
+            entity.AlbumArtists = albumArtists;
         }
 
         if (reader.TryGetString(index++, out var externalId))
         {
-            item.ExternalId = externalId;
+            entity.ExternalId = externalId;
         }
 
         if (reader.TryGetString(index++, out var seriesPresentationUniqueKey))
         {
-            item.SeriesPresentationUniqueKey = seriesPresentationUniqueKey;
+            entity.SeriesPresentationUniqueKey = seriesPresentationUniqueKey;
         }
 
         if (reader.TryGetString(index++, out var showId))
         {
-            item.ShowId = showId;
+            entity.ShowId = showId;
         }
 
         if (reader.TryGetGuid(index++, out var ownerId))
         {
-            item.OwnerId = ownerId.ToString("N");
+            entity.OwnerId = ownerId.ToString("N");
         }
 
-        return item;
+        return entity;
+    }
+
+    private static BaseItemImageInfo Map(Guid baseItemId, ItemImageInfo e)
+    {
+        return new BaseItemImageInfo()
+        {
+            ItemId = baseItemId,
+            Id = Guid.NewGuid(),
+            Path = e.Path,
+            Blurhash = e.BlurHash != null ? Encoding.UTF8.GetBytes(e.BlurHash) : null,
+            DateModified = e.DateModified,
+            Height = e.Height,
+            Width = e.Width,
+            ImageType = (ImageInfoImageType)e.Type,
+            Item = null!
+        };
+    }
+
+    internal ItemImageInfo[] DeserializeImages(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return Array.Empty<ItemImageInfo>();
+        }
+
+        // TODO The following is an ugly performance optimization, but it's extremely unlikely that the data in the database would be malformed
+        var valueSpan = value.AsSpan();
+        var count = valueSpan.Count('|') + 1;
+
+        var position = 0;
+        var result = new ItemImageInfo[count];
+        foreach (var part in valueSpan.Split('|'))
+        {
+            var image = ItemImageInfoFromValueString(part);
+
+            if (image is not null)
+            {
+                result[position++] = image;
+            }
+        }
+
+        if (position == count)
+        {
+            return result;
+        }
+
+        if (position == 0)
+        {
+            return Array.Empty<ItemImageInfo>();
+        }
+
+        // Extremely unlikely, but somehow one or more of the image strings were malformed. Cut the array.
+        return result[..position];
+    }
+
+    internal ItemImageInfo? ItemImageInfoFromValueString(ReadOnlySpan<char> value)
+    {
+        const char Delimiter = '*';
+
+        var nextSegment = value.IndexOf(Delimiter);
+        if (nextSegment == -1)
+        {
+            return null;
+        }
+
+        ReadOnlySpan<char> path = value[..nextSegment];
+        value = value[(nextSegment + 1)..];
+        nextSegment = value.IndexOf(Delimiter);
+        if (nextSegment == -1)
+        {
+            return null;
+        }
+
+        ReadOnlySpan<char> dateModified = value[..nextSegment];
+        value = value[(nextSegment + 1)..];
+        nextSegment = value.IndexOf(Delimiter);
+        if (nextSegment == -1)
+        {
+            nextSegment = value.Length;
+        }
+
+        ReadOnlySpan<char> imageType = value[..nextSegment];
+
+        var image = new ItemImageInfo
+        {
+            Path = path.ToString()
+        };
+
+        if (long.TryParse(dateModified, CultureInfo.InvariantCulture, out var ticks)
+            && ticks >= DateTime.MinValue.Ticks
+            && ticks <= DateTime.MaxValue.Ticks)
+        {
+            image.DateModified = new DateTime(ticks, DateTimeKind.Utc);
+        }
+        else
+        {
+            return null;
+        }
+
+        if (Enum.TryParse(imageType, true, out ImageType type))
+        {
+            image.Type = type;
+        }
+        else
+        {
+            return null;
+        }
+
+        // Optional parameters: width*height*blurhash
+        if (nextSegment + 1 < value.Length - 1)
+        {
+            value = value[(nextSegment + 1)..];
+            nextSegment = value.IndexOf(Delimiter);
+            if (nextSegment == -1 || nextSegment == value.Length)
+            {
+                return image;
+            }
+
+            ReadOnlySpan<char> widthSpan = value[..nextSegment];
+
+            value = value[(nextSegment + 1)..];
+            nextSegment = value.IndexOf(Delimiter);
+            if (nextSegment == -1)
+            {
+                nextSegment = value.Length;
+            }
+
+            ReadOnlySpan<char> heightSpan = value[..nextSegment];
+
+            if (int.TryParse(widthSpan, NumberStyles.Integer, CultureInfo.InvariantCulture, out var width)
+                && int.TryParse(heightSpan, NumberStyles.Integer, CultureInfo.InvariantCulture, out var height))
+            {
+                image.Width = width;
+                image.Height = height;
+            }
+
+            if (nextSegment < value.Length - 1)
+            {
+                value = value[(nextSegment + 1)..];
+                var length = value.Length;
+
+                Span<char> blurHashSpan = stackalloc char[length];
+                for (int i = 0; i < length; i++)
+                {
+                    var c = value[i];
+                    blurHashSpan[i] = c switch
+                    {
+                        '/' => Delimiter,
+                        '\\' => '|',
+                        _ => c
+                    };
+                }
+
+                image.BlurHash = new string(blurHashSpan);
+            }
+        }
+
+        return image;
     }
 }
