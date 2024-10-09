@@ -4,20 +4,18 @@ using Jellyfin.Data.Entities;
 using Jellyfin.Data.Entities.Security;
 using Jellyfin.Data.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Implementations;
 
 /// <inheritdoc/>
-public class JellyfinDbContext : DbContext
+/// <summary>
+/// Initializes a new instance of the <see cref="JellyfinDbContext"/> class.
+/// </summary>
+/// <param name="options">The database context options.</param>
+/// <param name="logger">Logger.</param>
+public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILogger<JellyfinDbContext> logger) : DbContext(options)
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="JellyfinDbContext"/> class.
-    /// </summary>
-    /// <param name="options">The database context options.</param>
-    public JellyfinDbContext(DbContextOptions<JellyfinDbContext> options) : base(options)
-    {
-    }
-
     /// <summary>
     /// Gets the <see cref="DbSet{TEntity}"/> containing the access schedules.
     /// </summary>
@@ -228,7 +226,15 @@ public class JellyfinDbContext : DbContext
             saveEntity.OnSavingChanges();
         }
 
-        return base.SaveChanges();
+        try
+        {
+            return base.SaveChanges();
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error trying to save changes.");
+            throw;
+        }
     }
 
     /// <inheritdoc />

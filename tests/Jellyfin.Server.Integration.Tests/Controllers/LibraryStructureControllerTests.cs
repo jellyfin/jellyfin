@@ -13,7 +13,7 @@ using Xunit.Priority;
 
 namespace Jellyfin.Server.Integration.Tests.Controllers;
 
-[TestCaseOrderer(PriorityOrderer.Name, PriorityOrderer.Assembly)]
+// [TestCaseOrderer(PriorityOrderer.Name, PriorityOrderer.Assembly)]
 public sealed class LibraryStructureControllerTests : IClassFixture<JellyfinApplicationFactory>
 {
     private readonly JellyfinApplicationFactory _factory;
@@ -62,11 +62,22 @@ public sealed class LibraryStructureControllerTests : IClassFixture<JellyfinAppl
     }
 
     [Fact]
-    [Priority(0)]
+    [Priority(-2)]
     public async Task UpdateLibraryOptions_Valid_Success()
     {
         var client = _factory.CreateClient();
         client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+
+        var createBody = new AddVirtualFolderDto()
+        {
+            LibraryOptions = new LibraryOptions()
+            {
+                Enabled = false
+            }
+        };
+
+        using var createResponse = await client.PostAsJsonAsync("Library/VirtualFolders?name=test&refreshLibrary=true", createBody, _jsonOptions);
+        Assert.Equal(HttpStatusCode.NoContent, createResponse.StatusCode);
 
         using var response = await client.GetAsync("Library/VirtualFolders");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -80,13 +91,13 @@ public sealed class LibraryStructureControllerTests : IClassFixture<JellyfinAppl
         Assert.False(options.Enabled);
         options.Enabled = true;
 
-        var body = new UpdateLibraryOptionsDto()
+        var existBody = new UpdateLibraryOptionsDto()
         {
             Id = Guid.Parse(library.ItemId),
             LibraryOptions = options
         };
 
-        using var response2 = await client.PostAsJsonAsync("Library/VirtualFolders/LibraryOptions", body, _jsonOptions);
+        using var response2 = await client.PostAsJsonAsync("Library/VirtualFolders/LibraryOptions", existBody, _jsonOptions);
         Assert.Equal(HttpStatusCode.NoContent, response2.StatusCode);
     }
 

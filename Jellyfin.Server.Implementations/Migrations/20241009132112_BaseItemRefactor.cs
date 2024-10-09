@@ -11,21 +11,6 @@ namespace Jellyfin.Server.Implementations.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropIndex(
-                name: "IX_UserData_Key_UserId",
-                table: "UserData");
-
-            migrationBuilder.AddColumn<Guid>(
-                name: "BaseItemEntityId",
-                table: "UserData",
-                type: "TEXT",
-                nullable: true);
-
-            migrationBuilder.AddPrimaryKey(
-                name: "PK_UserData",
-                table: "UserData",
-                columns: new[] { "Key", "UserId" });
-
             migrationBuilder.CreateTable(
                 name: "BaseItems",
                 columns: table => new
@@ -109,26 +94,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_BaseItems", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_BaseItems_BaseItems_ParentId",
-                        column: x => x.ParentId,
-                        principalTable: "BaseItems",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_BaseItems_BaseItems_SeasonId",
-                        column: x => x.SeasonId,
-                        principalTable: "BaseItems",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_BaseItems_BaseItems_SeriesId",
-                        column: x => x.SeriesId,
-                        principalTable: "BaseItems",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_BaseItems_BaseItems_TopParentId",
-                        column: x => x.TopParentId,
-                        principalTable: "BaseItems",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -318,10 +283,38 @@ namespace Jellyfin.Server.Implementations.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateIndex(
-                name: "IX_UserData_BaseItemEntityId",
-                table: "UserData",
-                column: "BaseItemEntityId");
+            migrationBuilder.CreateTable(
+                name: "UserData",
+                columns: table => new
+                {
+                    Key = table.Column<string>(type: "TEXT", nullable: false),
+                    UserId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Rating = table.Column<double>(type: "REAL", nullable: true),
+                    PlaybackPositionTicks = table.Column<long>(type: "INTEGER", nullable: false),
+                    PlayCount = table.Column<int>(type: "INTEGER", nullable: false),
+                    IsFavorite = table.Column<bool>(type: "INTEGER", nullable: false),
+                    LastPlayedDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    Played = table.Column<bool>(type: "INTEGER", nullable: false),
+                    AudioStreamIndex = table.Column<int>(type: "INTEGER", nullable: true),
+                    SubtitleStreamIndex = table.Column<int>(type: "INTEGER", nullable: true),
+                    Likes = table.Column<bool>(type: "INTEGER", nullable: true),
+                    BaseItemEntityId = table.Column<Guid>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserData", x => new { x.Key, x.UserId });
+                    table.ForeignKey(
+                        name: "FK_UserData_BaseItems_BaseItemEntityId",
+                        column: x => x.BaseItemEntityId,
+                        principalTable: "BaseItems",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_UserData_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AncestorIds_Id",
@@ -367,16 +360,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                 name: "IX_BaseItems_PresentationUniqueKey",
                 table: "BaseItems",
                 column: "PresentationUniqueKey");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_BaseItems_SeasonId",
-                table: "BaseItems",
-                column: "SeasonId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_BaseItems_SeriesId",
-                table: "BaseItems",
-                column: "SeriesId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_BaseItems_TopParentId_Id",
@@ -453,21 +436,40 @@ namespace Jellyfin.Server.Implementations.Migrations
                 table: "Peoples",
                 column: "Name");
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_UserData_BaseItems_BaseItemEntityId",
+            migrationBuilder.CreateIndex(
+                name: "IX_UserData_BaseItemEntityId",
                 table: "UserData",
-                column: "BaseItemEntityId",
-                principalTable: "BaseItems",
-                principalColumn: "Id");
+                column: "BaseItemEntityId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserData_Key_UserId_IsFavorite",
+                table: "UserData",
+                columns: new[] { "Key", "UserId", "IsFavorite" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserData_Key_UserId_LastPlayedDate",
+                table: "UserData",
+                columns: new[] { "Key", "UserId", "LastPlayedDate" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserData_Key_UserId_PlaybackPositionTicks",
+                table: "UserData",
+                columns: new[] { "Key", "UserId", "PlaybackPositionTicks" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserData_Key_UserId_Played",
+                table: "UserData",
+                columns: new[] { "Key", "UserId", "Played" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserData_UserId",
+                table: "UserData",
+                column: "UserId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_UserData_BaseItems_BaseItemEntityId",
-                table: "UserData");
-
             migrationBuilder.DropTable(
                 name: "AncestorIds");
 
@@ -490,25 +492,10 @@ namespace Jellyfin.Server.Implementations.Migrations
                 name: "Peoples");
 
             migrationBuilder.DropTable(
+                name: "UserData");
+
+            migrationBuilder.DropTable(
                 name: "BaseItems");
-
-            migrationBuilder.DropPrimaryKey(
-                name: "PK_UserData",
-                table: "UserData");
-
-            migrationBuilder.DropIndex(
-                name: "IX_UserData_BaseItemEntityId",
-                table: "UserData");
-
-            migrationBuilder.DropColumn(
-                name: "BaseItemEntityId",
-                table: "UserData");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserData_Key_UserId",
-                table: "UserData",
-                columns: new[] { "Key", "UserId" },
-                unique: true);
         }
     }
 }

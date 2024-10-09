@@ -36,7 +36,7 @@ namespace MediaBrowser.Controller.Providers
         public IReadOnlyList<PersonInfo> People
         {
             get => _people;
-            set => _people = value.ToList();
+            set => _people = value?.ToList();
         }
 
         public bool HasMetadata { get; set; }

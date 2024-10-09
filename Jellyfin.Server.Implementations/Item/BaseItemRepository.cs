@@ -5,20 +5,16 @@ using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
-using System.Threading.Channels;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
@@ -26,6 +22,7 @@ using MediaBrowser.Model.Querying;
 using Microsoft.EntityFrameworkCore;
 using BaseItemDto = MediaBrowser.Controller.Entities.BaseItem;
 using BaseItemEntity = Jellyfin.Data.Entities.BaseItemEntity;
+#pragma warning disable RS0030 // Do not use banned APIs
 
 namespace Jellyfin.Server.Implementations.Item;
 
@@ -66,12 +63,12 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
 
         using var context = dbProvider.CreateDbContext();
         using var transaction = context.Database.BeginTransaction();
-        context.Peoples.Where(e => e.ItemId.Equals(id)).ExecuteDelete();
-        context.Chapters.Where(e => e.ItemId.Equals(id)).ExecuteDelete();
-        context.MediaStreamInfos.Where(e => e.ItemId.Equals(id)).ExecuteDelete();
-        context.AncestorIds.Where(e => e.ItemId.Equals(id)).ExecuteDelete();
-        context.ItemValues.Where(e => e.ItemId.Equals(id)).ExecuteDelete();
-        context.BaseItems.Where(e => e.Id.Equals(id)).ExecuteDelete();
+        context.Peoples.Where(e => e.ItemId == id).ExecuteDelete();
+        context.Chapters.Where(e => e.ItemId == id).ExecuteDelete();
+        context.MediaStreamInfos.Where(e => e.ItemId == id).ExecuteDelete();
+        context.AncestorIds.Where(e => e.ItemId == id).ExecuteDelete();
+        context.ItemValues.Where(e => e.ItemId == id).ExecuteDelete();
+        context.BaseItems.Where(e => e.Id == id).ExecuteDelete();
         context.SaveChanges();
         transaction.Commit();
     }
@@ -113,8 +110,8 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
         PrepareFilterQuery(filter);
 
         using var context = dbProvider.CreateDbContext();
-        var dbQuery = TranslateQuery(context.BaseItems.AsNoTracking(), context, filter)
-            .DistinctBy(e => e.Id);
+        var dbQuery = TranslateQuery(context.BaseItems.AsNoTracking(), context, filter);
+        // .DistinctBy(e => e.Id);
 
         var enableGroupByPresentationUniqueKey = EnableGroupByPresentationUniqueKey(filter);
         if (enableGroupByPresentationUniqueKey && filter.GroupBySeriesPresentationUniqueKey)
@@ -266,8 +263,7 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
         PrepareFilterQuery(filter);
 
         using var context = dbProvider.CreateDbContext();
-        var dbQuery = TranslateQuery(context.BaseItems, context, filter)
-            .DistinctBy(e => e.Id);
+        var dbQuery = TranslateQuery(context.BaseItems, context, filter);
         if (filter.Limit.HasValue || filter.StartIndex.HasValue)
         {
             var offset = filter.StartIndex ?? 0;
@@ -299,6 +295,7 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
         return dbQuery.Count();
     }
 
+#pragma warning disable CA1307 // Specify StringComparison for clarity
     private IQueryable<BaseItemEntity> TranslateQuery(
         IQueryable<BaseItemEntity> baseQuery,
         JellyfinDbContext context,
@@ -419,7 +416,7 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
 
         if (!string.IsNullOrEmpty(filter.SearchTerm))
         {
-            baseQuery = baseQuery.Where(e => e.CleanName!.Contains(filter.SearchTerm, StringComparison.InvariantCultureIgnoreCase) || (e.OriginalTitle != null && e.OriginalTitle.Contains(filter.SearchTerm, StringComparison.InvariantCultureIgnoreCase)));
+            baseQuery = baseQuery.Where(e => e.CleanName!.Contains(filter.SearchTerm) || (e.OriginalTitle != null && e.OriginalTitle.Contains(filter.SearchTerm)));
         }
 
         if (filter.IsFolder.HasValue)
@@ -474,18 +471,15 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
             baseQuery = baseQuery.Where(e => includeTypeName.Contains(e.Type));
         }
 
-        if (filter.ChannelIds.Count == 1)
+        if (filter.ChannelIds.Count > 0)
         {
-            baseQuery = baseQuery.Where(e => e.ChannelId == filter.ChannelIds[0].ToString("N", CultureInfo.InvariantCulture));
-        }
-        else if (filter.ChannelIds.Count > 1)
-        {
-            baseQuery = baseQuery.Where(e => filter.ChannelIds.Select(f => f.ToString("N", CultureInfo.InvariantCulture)).Contains(e.ChannelId));
+            var channelIds = filter.ChannelIds.Select(e => e.ToString("N", CultureInfo.InvariantCulture)).ToArray();
+            baseQuery = baseQuery.Where(e => channelIds.Contains(e.ChannelId));
         }
 
         if (!filter.ParentId.IsEmpty())
         {
-            baseQuery = baseQuery.Where(e => e.ParentId.Equals(filter.ParentId));
+            baseQuery = baseQuery.Where(e => e.ParentId!.Value == filter.ParentId);
         }
 
         if (!string.IsNullOrWhiteSpace(filter.Path))
@@ -591,7 +585,8 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
 
         if (filter.TrailerTypes.Length > 0)
         {
-            baseQuery = baseQuery.Where(e => filter.TrailerTypes.Any(f => e.TrailerTypes!.Contains(f.ToString(), StringComparison.OrdinalIgnoreCase)));
+            var trailerTypes = filter.TrailerTypes.Select(e => e.ToString()).ToArray();
+            baseQuery = baseQuery.Where(e => trailerTypes.Any(f => e.TrailerTypes!.Contains(f)));
         }
 
         if (filter.IsAiring.HasValue)
@@ -611,7 +606,7 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
             baseQuery = baseQuery
                 .Where(e =>
                     context.Peoples.Where(w => context.BaseItems.Where(w => filter.PersonIds.Contains(w.Id)).Any(f => f.Name == w.Name))
-                        .Any(f => f.ItemId.Equals(e.Id)));
+                        .Any(f => f.ItemId == e.Id));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.Person))
@@ -649,12 +644,12 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
         {
             baseQuery = baseQuery.Where(e =>
                 e.CleanName == filter.NameContains
-                || e.OriginalTitle!.Contains(filter.NameContains!, StringComparison.Ordinal));
+                || e.OriginalTitle!.Contains(filter.NameContains!));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.NameStartsWith))
         {
-            baseQuery = baseQuery.Where(e => e.SortName!.Contains(filter.NameStartsWith, StringComparison.OrdinalIgnoreCase));
+            baseQuery = baseQuery.Where(e => e.SortName!.Contains(filter.NameStartsWith));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.NameStartsWithOrGreater))
@@ -671,31 +666,32 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
 
         if (filter.ImageTypes.Length > 0)
         {
-            baseQuery = baseQuery.Where(e => filter.ImageTypes.Any(f => e.Images!.Contains(f.ToString(), StringComparison.InvariantCulture)));
+            var imgTypes = filter.ImageTypes.Select(e => e.ToString()).ToArray();
+            baseQuery = baseQuery.Where(e => imgTypes.Any(f => e.Images!.Contains(f)));
         }
 
         if (filter.IsLiked.HasValue)
         {
             baseQuery = baseQuery
-                .Where(e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(filter.User!.Id) && f.Key == e.UserDataKey)!.Rating >= UserItemData.MinLikeValue);
+                .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id && f.Key == e.UserDataKey)!.Rating >= UserItemData.MinLikeValue);
         }
 
         if (filter.IsFavoriteOrLiked.HasValue)
         {
             baseQuery = baseQuery
-                .Where(e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(filter.User!.Id) && f.Key == e.UserDataKey)!.IsFavorite == filter.IsFavoriteOrLiked);
+                .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id && f.Key == e.UserDataKey)!.IsFavorite == filter.IsFavoriteOrLiked);
         }
 
         if (filter.IsFavorite.HasValue)
         {
             baseQuery = baseQuery
-                .Where(e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(filter.User!.Id) && f.Key == e.UserDataKey)!.IsFavorite == filter.IsFavorite);
+                .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id && f.Key == e.UserDataKey)!.IsFavorite == filter.IsFavorite);
         }
 
         if (filter.IsPlayed.HasValue)
         {
             baseQuery = baseQuery
-                   .Where(e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(filter.User!.Id) && f.Key == e.UserDataKey)!.Played == filter.IsPlayed.Value);
+                   .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id && f.Key == e.UserDataKey)!.Played == filter.IsPlayed.Value);
         }
 
         if (filter.IsResumable.HasValue)
@@ -703,12 +699,12 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
             if (filter.IsResumable.Value)
             {
                 baseQuery = baseQuery
-                       .Where(e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(filter.User!.Id) && f.Key == e.UserDataKey)!.PlaybackPositionTicks > 0);
+                       .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id && f.Key == e.UserDataKey)!.PlaybackPositionTicks > 0);
             }
             else
             {
                 baseQuery = baseQuery
-                       .Where(e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(filter.User!.Id) && f.Key == e.UserDataKey)!.PlaybackPositionTicks == 0);
+                       .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id && f.Key == e.UserDataKey)!.PlaybackPositionTicks == 0);
             }
         }
 
@@ -925,7 +921,7 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
         if (filter.HasDeadParentId.HasValue && filter.HasDeadParentId.Value)
         {
             baseQuery = baseQuery
-                .Where(e => e.ParentId.HasValue && context.BaseItems.Any(f => f.Id.Equals(e.ParentId.Value)));
+                .Where(e => e.ParentId.HasValue && context.BaseItems.Any(f => f.Id == e.ParentId.Value));
         }
 
         if (filter.IsDeadArtist.HasValue && filter.IsDeadArtist.Value)
@@ -1048,11 +1044,11 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
             var enableItemsByName = (filter.IncludeItemsByName ?? false) && includedItemByNameTypes.Count > 0;
             if (enableItemsByName && includedItemByNameTypes.Count > 0)
             {
-                baseQuery = baseQuery.Where(e => includedItemByNameTypes.Contains(e.Type) || queryTopParentIds.Any(w => w.Equals(e.TopParentId!.Value)));
+                baseQuery = baseQuery.Where(e => includedItemByNameTypes.Contains(e.Type) || queryTopParentIds.Any(w => w == e.TopParentId!.Value));
             }
             else
             {
-                baseQuery = baseQuery.Where(e => queryTopParentIds.Any(w => w.Equals(e.TopParentId!.Value)));
+                baseQuery = baseQuery.Where(e => queryTopParentIds.Any(w => w == e.TopParentId!.Value));
             }
         }
 
@@ -1064,7 +1060,7 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
         if (!string.IsNullOrWhiteSpace(filter.AncestorWithPresentationUniqueKey))
         {
             baseQuery = baseQuery
-                .Where(e => context.BaseItems.Where(f => f.PresentationUniqueKey == filter.AncestorWithPresentationUniqueKey).Any(f => f.AncestorIds!.Any(w => w.ItemId.Equals(f.Id))));
+                .Where(e => context.BaseItems.Where(f => f.PresentationUniqueKey == filter.AncestorWithPresentationUniqueKey).Any(f => f.AncestorIds!.Any(w => w.ItemId == f.Id)));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.SeriesPresentationUniqueKey))
@@ -1090,7 +1086,7 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
                     .Where(e => e.ItemValues!.Where(e => e.Type == 6)
                         .Any(f => filter.IncludeInheritedTags.Contains(f.CleanValue))
                         ||
-                        (e.ParentId.HasValue && context.ItemValues.Where(w => w.ItemId.Equals(e.ParentId.Value))!.Where(e => e.Type == 6)
+                        (e.ParentId.HasValue && context.ItemValues.Where(w => w.ItemId == e.ParentId.Value)!.Where(e => e.Type == 6)
                         .Any(f => filter.IncludeInheritedTags.Contains(f.CleanValue))));
             }
 
@@ -1112,21 +1108,23 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
 
         if (filter.SeriesStatuses.Length > 0)
         {
+            var seriesStatus = filter.SeriesStatuses.Select(e => e.ToString()).ToArray();
             baseQuery = baseQuery
-                .Where(e => filter.SeriesStatuses.Any(f => e.Data!.Contains(f.ToString(), StringComparison.InvariantCultureIgnoreCase)));
+                .Where(e => seriesStatus.Any(f => e.Data!.Contains(f)));
         }
 
         if (filter.BoxSetLibraryFolders.Length > 0)
         {
+            var boxsetFolders = filter.BoxSetLibraryFolders.Select(e => e.ToString("N", CultureInfo.InvariantCulture)).ToArray();
             baseQuery = baseQuery
-                .Where(e => filter.BoxSetLibraryFolders.Any(f => e.Data!.Contains(f.ToString("N", CultureInfo.InvariantCulture), StringComparison.InvariantCultureIgnoreCase)));
+                .Where(e => boxsetFolders.Any(f => e.Data!.Contains(f)));
         }
 
         if (filter.VideoTypes.Length > 0)
         {
             var videoTypeBs = filter.VideoTypes.Select(e => $"\"VideoType\":\"" + e + "\"");
             baseQuery = baseQuery
-                .Where(e => videoTypeBs.Any(f => e.Data!.Contains(f, StringComparison.InvariantCultureIgnoreCase)));
+                .Where(e => videoTypeBs.Any(f => e.Data!.Contains(f)));
         }
 
         if (filter.Is3D.HasValue)
@@ -1134,12 +1132,12 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
             if (filter.Is3D.Value)
             {
                 baseQuery = baseQuery
-                    .Where(e => e.Data!.Contains("Video3DFormat", StringComparison.InvariantCultureIgnoreCase));
+                    .Where(e => e.Data!.Contains("Video3DFormat"));
             }
             else
             {
                 baseQuery = baseQuery
-                    .Where(e => !e.Data!.Contains("Video3DFormat", StringComparison.InvariantCultureIgnoreCase));
+                    .Where(e => !e.Data!.Contains("Video3DFormat"));
             }
         }
 
@@ -1148,12 +1146,12 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
             if (filter.IsPlaceHolder.Value)
             {
                 baseQuery = baseQuery
-                    .Where(e => e.Data!.Contains("IsPlaceHolder\":true", StringComparison.InvariantCultureIgnoreCase));
+                    .Where(e => e.Data!.Contains("IsPlaceHolder\":true"));
             }
             else
             {
                 baseQuery = baseQuery
-                    .Where(e => !e.Data!.Contains("IsPlaceHolder\":true", StringComparison.InvariantCultureIgnoreCase));
+                    .Where(e => !e.Data!.Contains("IsPlaceHolder\":true"));
             }
         }
 
@@ -1212,7 +1210,7 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
         using var db = dbProvider.CreateDbContext();
 
         db.BaseItems
-            .Where(e => e.Id.Equals(item.Id))
+            .Where(e => e.Id == item.Id)
             .ExecuteUpdate(e => e.SetProperty(f => f.Images, images));
     }
 
@@ -1246,11 +1244,20 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
         }
 
         using var context = dbProvider.CreateDbContext();
+        using var transaction = context.Database.BeginTransaction();
         foreach (var item in tuples)
         {
             var entity = Map(item.Item);
-            context.BaseItems.Add(entity);
+            if (!context.BaseItems.Any(e => e.Id == entity.Id))
+            {
+                context.BaseItems.Add(entity);
+            }
+            else
+            {
+                context.BaseItems.Attach(entity).State = EntityState.Modified;
+            }
 
+            context.AncestorIds.Where(e => e.ItemId == entity.Id).ExecuteDelete();
             if (item.Item.SupportsAncestors && item.AncestorIds != null)
             {
                 foreach (var ancestorId in item.AncestorIds)
@@ -1260,13 +1267,13 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
                         Item = entity,
                         AncestorIdText = ancestorId.ToString(),
                         Id = ancestorId,
-                        ItemId = entity.Id
+                        ItemId = Guid.Empty
                     });
                 }
             }
 
             var itemValues = GetItemValuesToSave(item.Item, item.InheritedTags);
-            context.ItemValues.Where(e => e.ItemId.Equals(entity.Id)).ExecuteDelete();
+            context.ItemValues.Where(e => e.ItemId == entity.Id).ExecuteDelete();
             foreach (var itemValue in itemValues)
             {
                 context.ItemValues.Add(new()
@@ -1275,12 +1282,13 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
                     Type = itemValue.MagicNumber,
                     Value = itemValue.Value,
                     CleanValue = GetCleanValue(itemValue.Value),
-                    ItemId = entity.Id
+                    ItemId = Guid.Empty
                 });
             }
         }
 
-        context.SaveChanges(true);
+        context.SaveChanges();
+        transaction.Commit();
     }
 
     /// <inheritdoc cref="IItemRepository" />
@@ -1292,7 +1300,7 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
         }
 
         using var context = dbProvider.CreateDbContext();
-        var item = context.BaseItems.FirstOrDefault(e => e.Id.Equals(id));
+        var item = context.BaseItems.FirstOrDefault(e => e.Id == id);
         if (item is null)
         {
             return null;
@@ -1380,7 +1388,7 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
             dto.Audio = Enum.Parse<ProgramAudio>(entity.Audio);
         }
 
-        dto.ExtraIds = entity.ExtraIds?.Split('|').Select(e => Guid.Parse(e)).ToArray();
+        dto.ExtraIds = string.IsNullOrWhiteSpace(entity.ExtraIds) ? null : entity.ExtraIds.Split('|').Select(e => Guid.Parse(e)).ToArray();
         dto.ProductionLocations = entity.ProductionLocations?.Split('|');
         dto.Studios = entity.Studios?.Split('|');
         dto.Tags = entity.Tags?.Split('|');
@@ -1535,8 +1543,8 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
         entity.Audio = dto.Audio?.ToString();
         entity.ExtraType = dto.ExtraType?.ToString();
 
-        entity.ExtraIds = string.Join('|', dto.ExtraIds);
-        entity.ProductionLocations = string.Join('|', dto.ProductionLocations);
+        entity.ExtraIds = dto.ExtraIds is not null ? string.Join('|', dto.ExtraIds) : null;
+        entity.ProductionLocations = dto.ProductionLocations is not null ? string.Join('|', dto.ProductionLocations) : null;
         entity.Studios = dto.Studios is not null ? string.Join('|', dto.Studios) : null;
         entity.Tags = dto.Tags is not null ? string.Join('|', dto.Tags) : null;
         entity.LockedFields = dto.LockedFields is not null ? string.Join('|', dto.LockedFields) : null;
@@ -1628,15 +1636,15 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
             .Where(e => itemValueTypes.Contains(e.Type));
         if (withItemTypes.Count > 0)
         {
-            query = query.Where(e => context.BaseItems.Where(e => withItemTypes.Contains(e.Type)).Any(f => f.ItemValues!.Any(w => w.ItemId.Equals(e.ItemId))));
+            query = query.Where(e => context.BaseItems.Where(e => withItemTypes.Contains(e.Type)).Any(f => f.ItemValues!.Any(w => w.ItemId == e.ItemId)));
         }
 
         if (excludeItemTypes.Count > 0)
         {
-            query = query.Where(e => !context.BaseItems.Where(e => withItemTypes.Contains(e.Type)).Any(f => f.ItemValues!.Any(w => w.ItemId.Equals(e.ItemId))));
+            query = query.Where(e => !context.BaseItems.Where(e => withItemTypes.Contains(e.Type)).Any(f => f.ItemValues!.Any(w => w.ItemId == e.ItemId)));
         }
 
-        query = query.DistinctBy(e => e.CleanValue);
+        // query = query.DistinctBy(e => e.CleanValue);
         return query.Select(e => e.CleanValue).ToImmutableArray();
     }
 
@@ -2131,12 +2139,12 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
             ItemSortBy.AirTime => e => e.SortName, // TODO
             ItemSortBy.Runtime => e => e.RunTimeTicks,
             ItemSortBy.Random => e => EF.Functions.Random(),
-            ItemSortBy.DatePlayed => e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id) && f.Key == e.UserDataKey)!.LastPlayedDate,
-            ItemSortBy.PlayCount => e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id) && f.Key == e.UserDataKey)!.PlayCount,
-            ItemSortBy.IsFavoriteOrLiked => e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id) && f.Key == e.UserDataKey)!.IsFavorite,
+            ItemSortBy.DatePlayed => e => e.UserData!.FirstOrDefault(f => f.UserId == query.User!.Id && f.Key == e.UserDataKey)!.LastPlayedDate,
+            ItemSortBy.PlayCount => e => e.UserData!.FirstOrDefault(f => f.UserId == query.User!.Id && f.Key == e.UserDataKey)!.PlayCount,
+            ItemSortBy.IsFavoriteOrLiked => e => e.UserData!.FirstOrDefault(f => f.UserId == query.User!.Id && f.Key == e.UserDataKey)!.IsFavorite,
             ItemSortBy.IsFolder => e => e.IsFolder,
-            ItemSortBy.IsPlayed => e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id) && f.Key == e.UserDataKey)!.Played,
-            ItemSortBy.IsUnplayed => e => !e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id) && f.Key == e.UserDataKey)!.Played,
+            ItemSortBy.IsPlayed => e => e.UserData!.FirstOrDefault(f => f.UserId == query.User!.Id && f.Key == e.UserDataKey)!.Played,
+            ItemSortBy.IsUnplayed => e => !e.UserData!.FirstOrDefault(f => f.UserId == query.User!.Id && f.Key == e.UserDataKey)!.Played,
             ItemSortBy.DateLastContentAdded => e => e.DateLastMediaAdded,
             ItemSortBy.Artist => e => e.ItemValues!.Where(f => f.Type == 0).Select(f => f.CleanValue),
             ItemSortBy.AlbumArtist => e => e.ItemValues!.Where(f => f.Type == 1).Select(f => f.CleanValue),

@@ -376,10 +376,6 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("PresentationUniqueKey");
 
-                    b.HasIndex("SeasonId");
-
-                    b.HasIndex("SeriesId");
-
                     b.HasIndex("TopParentId", "Id");
 
                     b.HasIndex("UserDataKey", "Type");
@@ -1272,33 +1268,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Navigation("Item");
                 });
 
-            modelBuilder.Entity("Jellyfin.Data.Entities.BaseItemEntity", b =>
-                {
-                    b.HasOne("Jellyfin.Data.Entities.BaseItemEntity", "Parent")
-                        .WithMany("DirectChildren")
-                        .HasForeignKey("ParentId");
-
-                    b.HasOne("Jellyfin.Data.Entities.BaseItemEntity", "Season")
-                        .WithMany("SeasonEpisodes")
-                        .HasForeignKey("SeasonId");
-
-                    b.HasOne("Jellyfin.Data.Entities.BaseItemEntity", "Series")
-                        .WithMany("SeriesEpisodes")
-                        .HasForeignKey("SeriesId");
-
-                    b.HasOne("Jellyfin.Data.Entities.BaseItemEntity", "TopParent")
-                        .WithMany("AllChildren")
-                        .HasForeignKey("TopParentId");
-
-                    b.Navigation("Parent");
-
-                    b.Navigation("Season");
-
-                    b.Navigation("Series");
-
-                    b.Navigation("TopParent");
-                });
-
             modelBuilder.Entity("Jellyfin.Data.Entities.BaseItemProvider", b =>
                 {
                     b.HasOne("Jellyfin.Data.Entities.BaseItemEntity", "Item")
@@ -1433,13 +1402,9 @@ namespace Jellyfin.Server.Implementations.Migrations
 
             modelBuilder.Entity("Jellyfin.Data.Entities.BaseItemEntity", b =>
                 {
-                    b.Navigation("AllChildren");
-
                     b.Navigation("AncestorIds");
 
                     b.Navigation("Chapters");
-
-                    b.Navigation("DirectChildren");
 
                     b.Navigation("ItemValues");
 
@@ -1448,10 +1413,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Navigation("Peoples");
 
                     b.Navigation("Provider");
-
-                    b.Navigation("SeasonEpisodes");
-
-                    b.Navigation("SeriesEpisodes");
 
                     b.Navigation("UserData");
                 });

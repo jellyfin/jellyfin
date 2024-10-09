@@ -156,27 +156,11 @@ public class BaseItemEntity
 
     public Guid? ParentId { get; set; }
 
-    public BaseItemEntity? Parent { get; set; }
-
-    public ICollection<BaseItemEntity>? DirectChildren { get; set; }
-
     public Guid? TopParentId { get; set; }
-
-    public BaseItemEntity? TopParent { get; set; }
-
-    public ICollection<BaseItemEntity>? AllChildren { get; set; }
 
     public Guid? SeasonId { get; set; }
 
-    public BaseItemEntity? Season { get; set; }
-
-    public ICollection<BaseItemEntity>? SeasonEpisodes { get; set; }
-
     public Guid? SeriesId { get; set; }
-
-    public ICollection<BaseItemEntity>? SeriesEpisodes { get; set; }
-
-    public BaseItemEntity? Series { get; set; }
 
     public ICollection<People>? Peoples { get; set; }
 
@@ -191,4 +175,14 @@ public class BaseItemEntity
     public ICollection<BaseItemProvider>? Provider { get; set; }
 
     public ICollection<AncestorId>? AncestorIds { get; set; }
+
+    // those are references to __LOCAL__ ids not DB ids ... TODO: Bring the whole folder structure into the DB
+    // public ICollection<BaseItemEntity>? SeriesEpisodes { get; set; }
+    // public BaseItemEntity? Series { get; set; }
+    // public BaseItemEntity? Season { get; set; }
+    // public BaseItemEntity? Parent { get; set; }
+    // public ICollection<BaseItemEntity>? DirectChildren { get; set; }
+    // public BaseItemEntity? TopParent { get; set; }
+    // public ICollection<BaseItemEntity>? AllChildren { get; set; }
+    // public ICollection<BaseItemEntity>? SeasonEpisodes { get; set; }
 }
