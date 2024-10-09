@@ -16,8 +16,6 @@ public class BaseItemEntity
 
     public string? Data { get; set; }
 
-    public Guid? ParentId { get; set; }
-
     public string? Path { get; set; }
 
     public DateTime StartDate { get; set; }
@@ -94,8 +92,6 @@ public class BaseItemEntity
 
     public string? UnratedType { get; set; }
 
-    public Guid? TopParentId { get; set; }
-
     public string? TrailerTypes { get; set; }
 
     public float? CriticRating { get; set; }
@@ -123,10 +119,6 @@ public class BaseItemEntity
     public string? UserDataKey { get; set; }
 
     public string? SeasonName { get; set; }
-
-    public Guid? SeasonId { get; set; }
-
-    public Guid? SeriesId { get; set; }
 
     public string? ExternalSeriesId { get; set; }
 
@@ -159,6 +151,22 @@ public class BaseItemEntity
     public int? Height { get; set; }
 
     public long? Size { get; set; }
+
+    public Guid? ParentId { get; set; }
+
+    public BaseItemEntity? Parent { get; set; }
+
+    public Guid? TopParentId { get; set; }
+
+    public BaseItemEntity? TopParent { get; set; }
+
+    public Guid? SeasonId { get; set; }
+
+    public BaseItemEntity? Season { get; set; }
+
+    public Guid? SeriesId { get; set; }
+
+    public BaseItemEntity? Series { get; set; }
 
 #pragma warning disable CA2227 // Collection properties should be read only
     public ICollection<People>? Peoples { get; set; }

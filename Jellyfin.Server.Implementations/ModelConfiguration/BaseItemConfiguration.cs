@@ -13,7 +13,19 @@ public class BaseItemConfiguration : IEntityTypeConfiguration<BaseItemEntity>
     /// <inheritdoc/>
     public void Configure(EntityTypeBuilder<BaseItemEntity> builder)
     {
-        builder.HasNoKey();
+        builder.HasKey(e => e.Id);
+        builder.HasOne(e => e.Parent);
+        builder.HasOne(e => e.TopParent);
+        builder.HasOne(e => e.Season);
+        builder.HasOne(e => e.Series);
+        builder.HasMany(e => e.Peoples);
+        builder.HasMany(e => e.UserData);
+        builder.HasMany(e => e.ItemValues);
+        builder.HasMany(e => e.MediaStreams);
+        builder.HasMany(e => e.Chapters);
+        builder.HasMany(e => e.Provider);
+        builder.HasMany(e => e.AncestorIds);
+
         builder.HasIndex(e => e.Path);
         builder.HasIndex(e => e.ParentId);
         builder.HasIndex(e => e.PresentationUniqueKey);

@@ -13,7 +13,7 @@ public class ItemValue
     /// <summary>
     /// Gets or Sets the reference ItemId.
     /// </summary>
-    public Guid ItemId { get; set; }
+    public required Guid ItemId { get; set; }
 
     /// <summary>
     /// Gets or Sets the referenced BaseItem.

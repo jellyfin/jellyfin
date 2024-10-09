@@ -5,7 +5,7 @@ namespace Jellyfin.Data.Entities;
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 public class MediaStreamInfo
 {
-    public Guid ItemId { get; set; }
+    public required Guid ItemId { get; set; }
 
     public required BaseItemEntity Item { get; set; }
 
