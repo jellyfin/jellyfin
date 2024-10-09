@@ -3,6 +3,7 @@ using System;
 using Jellyfin.Server.Implementations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Jellyfin.Server.Implementations.Migrations
 {
     [DbContext(typeof(JellyfinDbContext))]
-    partial class JellyfinDbModelSnapshot : ModelSnapshot
+    [Migration("20241009231203_FixedAncestorIds")]
+    partial class FixedAncestorIds
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.10");
@@ -865,8 +868,8 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<int>("SampleRate")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("StreamType")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("StreamType")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("TimeBase")
                         .IsRequired()

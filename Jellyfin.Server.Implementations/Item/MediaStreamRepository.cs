@@ -70,7 +70,8 @@ public class MediaStreamRepository(IDbContextFactory<JellyfinDbContext> dbProvid
 
         if (filter.Type.HasValue)
         {
-            query = query.Where(e => e.StreamType == filter.Type.ToString());
+            var typeValue = (MediaStreamTypeEntity)filter.Type.Value;
+            query = query.Where(e => e.StreamType!.Value == typeValue);
         }
 
         return query;
@@ -82,7 +83,7 @@ public class MediaStreamRepository(IDbContextFactory<JellyfinDbContext> dbProvid
         dto.Index = entity.StreamIndex;
         if (entity.StreamType != null)
         {
-            dto.Type = Enum.Parse<MediaStreamType>(entity.StreamType);
+            dto.Type = (MediaStreamType)entity.StreamType;
         }
 
         dto.IsAVC = entity.IsAvc;
@@ -151,7 +152,7 @@ public class MediaStreamRepository(IDbContextFactory<JellyfinDbContext> dbProvid
             Item = null!,
             ItemId = itemId,
             StreamIndex = dto.Index,
-            StreamType = dto.Type.ToString(),
+            StreamType = (MediaStreamTypeEntity)dto.Type,
             IsAvc = dto.IsAVC.GetValueOrDefault(),
 
             Codec = dto.Codec,

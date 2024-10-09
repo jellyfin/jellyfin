@@ -184,10 +184,8 @@ public class MigrateLibraryDb : IMigrationRoutine
     {
         return new AncestorId()
         {
-            Item = null!,
             ItemId = reader.GetGuid(0),
-            Id = reader.GetGuid(1),
-            AncestorIdText = reader.GetString(2)
+            ParentItemId = reader.GetGuid(1)
         };
     }
 
@@ -273,7 +271,7 @@ public class MigrateLibraryDb : IMigrationRoutine
         var item = new MediaStreamInfo
         {
             StreamIndex = reader.GetInt32(1),
-            StreamType = reader.GetString(2),
+            StreamType = Enum.Parse<MediaStreamTypeEntity>(reader.GetString(2)),
             Item = null!,
             ItemId = reader.GetGuid(0),
             AverageFrameRate = 0,

@@ -1,19 +1,19 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Jellyfin.Data.Entities;
 
-#pragma warning disable CA1708 // Identifiers should differ by more than case
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+/// <summary>
+/// Represents the relational informations for an <see cref="BaseItemEntity"/>.
+/// </summary>
 public class AncestorId
 {
-    public Guid Id { get; set; }
+    /// <summary>
+    /// Gets or Sets the AncestorId that may or may not be an database managed Item or an materialised local item.
+    /// </summary>
+    public required Guid ParentItemId { get; set; }
 
+    /// <summary>
+    /// Gets or Sets the related that may or may not be an database managed Item or an materialised local item.
+    /// </summary>
     public required Guid ItemId { get; set; }
-
-    public required BaseItemEntity Item { get; set; }
-
-    public string? AncestorIdText { get; set; }
 }

@@ -40,7 +40,7 @@ public class MediaAttachmentRepository(IDbContextFactory<JellyfinDbContext> dbPr
             query = query.Where(e => e.Index == filter.Index);
         }
 
-        return query.ToList().Select(Map).ToImmutableArray();
+        return query.AsEnumerable().Select(Map).ToImmutableArray();
     }
 
     private MediaAttachment Map(AttachmentStreamInfo attachment)

@@ -83,7 +83,7 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
         using var transaction = context.Database.BeginTransaction();
 
         context.ItemValues.Where(e => e.Type == 6).ExecuteDelete();
-        context.ItemValues.AddRange(context.ItemValues.Where(e => e.Type == 4).Select(e => new Data.Entities.ItemValue()
+        context.ItemValues.AddRange(context.ItemValues.Where(e => e.Type == 4).Select(e => new ItemValue()
         {
             CleanValue = e.CleanValue,
             ItemId = e.ItemId,
@@ -93,7 +93,7 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
         }));
 
         context.ItemValues.AddRange(
-            context.AncestorIds.Where(e => e.AncestorIdText != null).Join(context.ItemValues.Where(e => e.Value != null && e.Type == 4), e => e.Id, e => e.ItemId, (e, f) => new Data.Entities.ItemValue()
+            context.AncestorIds.Join(context.ItemValues.Where(e => e.Value != null && e.Type == 4), e => e.ParentItemId, e => e.ItemId, (e, f) => new ItemValue()
             {
                 CleanValue = f.CleanValue,
                 ItemId = e.ItemId,
@@ -893,31 +893,31 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
         if (!string.IsNullOrWhiteSpace(filter.HasNoAudioTrackWithLanguage))
         {
             baseQuery = baseQuery
-                .Where(e => !e.MediaStreams!.Any(e => e.StreamType == "Audio" && e.Language == filter.HasNoAudioTrackWithLanguage));
+                .Where(e => !e.MediaStreams!.Any(e => e.StreamType == MediaStreamTypeEntity.Audio && e.Language == filter.HasNoAudioTrackWithLanguage));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.HasNoInternalSubtitleTrackWithLanguage))
         {
             baseQuery = baseQuery
-                .Where(e => !e.MediaStreams!.Any(e => e.StreamType == "Subtitle" && !e.IsExternal && e.Language == filter.HasNoInternalSubtitleTrackWithLanguage));
+                .Where(e => !e.MediaStreams!.Any(e => e.StreamType == MediaStreamTypeEntity.Subtitle && !e.IsExternal && e.Language == filter.HasNoInternalSubtitleTrackWithLanguage));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.HasNoExternalSubtitleTrackWithLanguage))
         {
             baseQuery = baseQuery
-                .Where(e => !e.MediaStreams!.Any(e => e.StreamType == "Subtitle" && e.IsExternal && e.Language == filter.HasNoExternalSubtitleTrackWithLanguage));
+                .Where(e => !e.MediaStreams!.Any(e => e.StreamType == MediaStreamTypeEntity.Subtitle && e.IsExternal && e.Language == filter.HasNoExternalSubtitleTrackWithLanguage));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.HasNoSubtitleTrackWithLanguage))
         {
             baseQuery = baseQuery
-                .Where(e => !e.MediaStreams!.Any(e => e.StreamType == "Subtitle" && e.Language == filter.HasNoSubtitleTrackWithLanguage));
+                .Where(e => !e.MediaStreams!.Any(e => e.StreamType == MediaStreamTypeEntity.Subtitle && e.Language == filter.HasNoSubtitleTrackWithLanguage));
         }
 
         if (filter.HasSubtitles.HasValue)
         {
             baseQuery = baseQuery
-                .Where(e => e.MediaStreams!.Any(e => e.StreamType == "Subtitle") == filter.HasSubtitles.Value);
+                .Where(e => e.MediaStreams!.Any(e => e.StreamType == MediaStreamTypeEntity.Subtitle) == filter.HasSubtitles.Value);
         }
 
         if (filter.HasChapterImages.HasValue)
@@ -1062,7 +1062,7 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
 
         if (filter.AncestorIds.Length > 0)
         {
-            baseQuery = baseQuery.Where(e => e.AncestorIds!.Any(f => filter.AncestorIds.Contains(f.Id)));
+            baseQuery = baseQuery.Where(e => e.AncestorIds!.Any(f => filter.AncestorIds.Contains(f.ParentItemId)));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.AncestorWithPresentationUniqueKey))
@@ -1273,9 +1273,7 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
                 {
                     entity.AncestorIds.Add(new AncestorId()
                     {
-                        Item = entity,
-                        AncestorIdText = ancestorId.ToString(),
-                        Id = ancestorId,
+                        ParentItemId = ancestorId,
                         ItemId = entity.Id
                     });
                 }

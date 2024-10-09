@@ -12,7 +12,7 @@ public class MediaStreamInfo
 
     public int StreamIndex { get; set; }
 
-    public string? StreamType { get; set; }
+    public MediaStreamTypeEntity? StreamType { get; set; }
 
     public string? Codec { get; set; }
 

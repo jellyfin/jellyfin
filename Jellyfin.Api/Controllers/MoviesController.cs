@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
 using Jellyfin.Api.Extensions;
@@ -120,7 +121,7 @@ public class MoviesController : BaseJellyfinApiController
             DtoOptions = dtoOptions
         });
 
-        var mostRecentMovies = recentlyPlayedMovies.Take(Math.Min(recentlyPlayedMovies.Count, 6));
+        var mostRecentMovies = recentlyPlayedMovies.Take(Math.Min(recentlyPlayedMovies.Count, 6)).ToImmutableList();
         // Get recently played directors
         var recentDirectors = GetDirectors(mostRecentMovies)
             .ToList();

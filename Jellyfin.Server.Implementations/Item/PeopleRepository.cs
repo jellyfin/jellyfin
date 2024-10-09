@@ -34,7 +34,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider) :
             dbQuery = dbQuery.Take(filter.Limit);
         }
 
-        return dbQuery.ToList().Select(Map).ToImmutableArray();
+        return dbQuery.AsEnumerable().Select(Map).ToImmutableArray();
     }
 
     /// <inheritdoc/>
