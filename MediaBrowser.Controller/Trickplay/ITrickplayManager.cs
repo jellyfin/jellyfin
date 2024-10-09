@@ -46,8 +46,10 @@ public interface ITrickplayManager
     /// <summary>
     /// Gets the item ids of all items with trickplay info.
     /// </summary>
+    /// <param name="limit">The limit of items to return.</param>
+    /// <param name="offset">The offset to start the query at.</param>
     /// <returns>The list of item ids that have trickplay info.</returns>
-    public Task<IReadOnlyList<Guid>> GetTrickplayItemsAsync();
+    Task<IReadOnlyList<TrickplayInfo>> GetTrickplayItemsAsync(int limit, int offset);
 
     /// <summary>
     /// Saves trickplay info.

@@ -650,6 +650,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             ArgumentException.ThrowIfNullOrEmpty(inputPath);
 
+            var useTradeoff = _config.GetFFmpegImgExtractPerfTradeoff();
+
             var outputExtension = targetFormat?.GetExtension() ?? ".jpg";
 
             var tempExtractPath = Path.Combine(_configurationManager.ApplicationPaths.TempDirectory, Guid.NewGuid() + outputExtension);
@@ -684,7 +686,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             // Use ffmpeg to sample 100 (we can drop this if required using thumbnail=50 for 50 frames) frames and pick the best thumbnail. Have a fall back just in case.
             // mpegts need larger batch size otherwise the corrupted thumbnail will be created. Larger batch size will lower the processing speed.
-            var enableThumbnail = useIFrame && !string.Equals("wtv", container, StringComparison.OrdinalIgnoreCase);
+            var enableThumbnail = !useTradeoff && useIFrame && !string.Equals("wtv", container, StringComparison.OrdinalIgnoreCase);
             if (enableThumbnail)
             {
                 var useLargerBatchSize = string.Equals("mpegts", container, StringComparison.OrdinalIgnoreCase);
@@ -699,8 +701,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 if (SupportsFilter("tonemapx"))
                 {
+                    var peak = videoStream.VideoRangeType == VideoRangeType.DOVI ? "400" : "100";
                     enableHdrExtraction = true;
-                    filters.Add("tonemapx=tonemap=bt2390:desat=0:peak=100:t=bt709:m=bt709:p=bt709:format=yuv420p");
+                    filters.Add($"tonemapx=tonemap=bt2390:desat=0:peak={peak}:t=bt709:m=bt709:p=bt709:format=yuv420p");
                 }
                 else if (SupportsFilter("zscale") && videoStream.VideoRangeType != VideoRangeType.DOVI)
                 {
@@ -716,6 +719,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             if (offset.HasValue)
             {
                 args = string.Format(CultureInfo.InvariantCulture, "-ss {0} ", GetTimeParameter(offset.Value)) + args;
+            }
+
+            if (useIFrame && useTradeoff)
+            {
+                args = "-skip_frame nokey " + args;
             }
 
             if (!string.IsNullOrWhiteSpace(container))
@@ -938,7 +946,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 vidEncoder,
                 encoderQualityOption + encoderQuality + " ",
                 vidEncoder.Contains("videotoolbox", StringComparison.InvariantCultureIgnoreCase) ? "-allow_sw 1 " : string.Empty, // allow_sw fallback for some intel macs
-                EncoderVersion >= new Version(5, 1) ? "-fps_mode passthrough " : "-vsync passthrough ", // passthrough timestamp
+                EncodingHelper.GetVideoSyncOption("0", EncoderVersion).Trim() + " ", // passthrough timestamp
                 "image2",
                 outputPath);
 
@@ -1104,7 +1112,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // https://ffmpeg.org/ffmpeg-filters.html#Notes-on-filtergraph-escaping
             // We need to double escape
 
-            return path.Replace('\\', '/').Replace(":", "\\:", StringComparison.Ordinal).Replace("'", @"'\\\''", StringComparison.Ordinal);
+            return path
+                .Replace('\\', '/')
+                .Replace(":", "\\:", StringComparison.Ordinal)
+                .Replace("'", @"'\\\''", StringComparison.Ordinal)
+                .Replace("\"", "\\\"", StringComparison.Ordinal);
         }
 
         /// <inheritdoc />

@@ -129,5 +129,6 @@
     "TaskCleanCollectionsAndPlaylistsDescription": "Poistaa kohteet kokoelmista ja soittolistoista joita ei ole enää olemassa.",
     "TaskCleanCollectionsAndPlaylists": "Puhdista kokoelmat ja soittolistat",
     "TaskAudioNormalization": "Äänenvoimakkuuden normalisointi",
-    "TaskAudioNormalizationDescription": "Etsii tiedostoista äänenvoimakkuuden normalisointitietoja."
+    "TaskAudioNormalizationDescription": "Etsii tiedostoista äänenvoimakkuuden normalisointitietoja.",
+    "TaskDownloadMissingLyrics": "Lataa puuttuva lyriikka"
 }

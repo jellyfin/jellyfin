@@ -1608,7 +1608,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             var parent = GetParents().FirstOrDefault() ?? this;
-            if (parent is UserRootFolder or AggregateFolder)
+            if (parent is UserRootFolder or AggregateFolder or UserView)
             {
                 return true;
             }

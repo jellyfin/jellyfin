@@ -105,7 +105,7 @@ public class TrickplayManager : ITrickplayManager
                     _logger.LogInformation("Moved trickplay images for {ItemName} to {Location}", video.Name, mediaOutputDir);
                 }
             }
-            else if (Directory.Exists(mediaOutputDir))
+            else if (!shouldBeSavedWithMedia && Directory.Exists(mediaOutputDir))
             {
                 var mediaDirFiles = Directory.GetFiles(mediaOutputDir);
                 var localDirExists = Directory.Exists(localOutputDir);
@@ -455,16 +455,18 @@ public class TrickplayManager : ITrickplayManager
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<Guid>> GetTrickplayItemsAsync()
+    public async Task<IReadOnlyList<TrickplayInfo>> GetTrickplayItemsAsync(int limit, int offset)
     {
-        List<Guid> trickplayItems;
+        IReadOnlyList<TrickplayInfo> trickplayItems;
 
         var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
         await using (dbContext.ConfigureAwait(false))
         {
             trickplayItems = await dbContext.TrickplayInfos
                 .AsNoTracking()
-                .Select(i => i.ItemId)
+                .OrderBy(i => i.ItemId)
+                .Skip(offset)
+                .Take(limit)
                 .ToListAsync()
                 .ConfigureAwait(false);
         }

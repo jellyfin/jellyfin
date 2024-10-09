@@ -1858,13 +1858,36 @@ namespace Emby.Server.Implementations.Session
             Guid userId,
             string deviceId,
             int? activeWithinSeconds,
-            Guid? controllableUserToCheck)
+            Guid? controllableUserToCheck,
+            bool isApiKey)
         {
             var result = Sessions;
-            var user = _userManager.GetUserById(userId);
             if (!string.IsNullOrEmpty(deviceId))
             {
                 result = result.Where(i => string.Equals(i.DeviceId, deviceId, StringComparison.OrdinalIgnoreCase));
+            }
+
+            var userCanControlOthers = false;
+            var userIsAdmin = false;
+            User user = null;
+
+            if (isApiKey)
+            {
+                userCanControlOthers = true;
+                userIsAdmin = true;
+            }
+            else if (!userId.IsEmpty())
+            {
+                user = _userManager.GetUserById(userId);
+                if (user is not null)
+                {
+                    userCanControlOthers = user.HasPermission(PermissionKind.EnableRemoteControlOfOtherUsers);
+                    userIsAdmin = user.HasPermission(PermissionKind.IsAdministrator);
+                }
+                else
+                {
+                    return [];
+                }
             }
 
             if (!controllableUserToCheck.IsNullOrEmpty())
@@ -1883,29 +1906,34 @@ namespace Emby.Server.Implementations.Session
                     result = result.Where(i => !i.UserId.IsEmpty());
                 }
 
-                if (!user.HasPermission(PermissionKind.EnableRemoteControlOfOtherUsers))
+                if (!userCanControlOthers)
                 {
                     // User cannot control other user's sessions, validate user id.
-                    result = result.Where(i => i.UserId.IsEmpty() || i.ContainsUser(user.Id));
+                    result = result.Where(i => i.UserId.IsEmpty() || i.ContainsUser(userId));
                 }
 
                 result = result.Where(i =>
                 {
-                    if (!string.IsNullOrWhiteSpace(i.DeviceId) && !_deviceManager.CanAccessDevice(user, i.DeviceId))
+                    if (isApiKey)
+                    {
+                        return true;
+                    }
+
+                    if (user is null)
                     {
                         return false;
                     }
 
-                    return true;
+                    return string.IsNullOrWhiteSpace(i.DeviceId) || _deviceManager.CanAccessDevice(user, i.DeviceId);
                 });
             }
-            else if (!user.HasPermission(PermissionKind.IsAdministrator))
+            else if (!userIsAdmin)
             {
                 // Request isn't from administrator, limit to "own" sessions.
                 result = result.Where(i => i.UserId.IsEmpty() || i.ContainsUser(userId));
             }
 
-            if (!user.HasPermission(PermissionKind.IsAdministrator))
+            if (!userIsAdmin)
             {
                 // Don't report acceleration type for non-admin users.
                 result = result.Select(r =>

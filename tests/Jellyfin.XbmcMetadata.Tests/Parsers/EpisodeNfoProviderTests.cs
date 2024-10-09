@@ -157,7 +157,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
 
             _parser.Fetch(result, "Test Data/Sonarr-Thumb.nfo", CancellationToken.None);
 
-            Assert.Single(result.RemoteImages.Where(x => x.Type == ImageType.Primary));
+            Assert.Single(result.RemoteImages, x => x.Type == ImageType.Primary);
             Assert.Equal("https://artworks.thetvdb.com/banners/episodes/359095/7081317.jpg", result.RemoteImages.First(x => x.Type == ImageType.Primary).Url);
         }
 
