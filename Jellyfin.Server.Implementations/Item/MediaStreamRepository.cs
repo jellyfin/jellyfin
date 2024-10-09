@@ -174,7 +174,7 @@ public class MediaStreamRepository(IDbContextFactory<JellyfinDbContext> dbProvid
             Level = (float)dto.Level.GetValueOrDefault(),
             PixelFormat = dto.PixelFormat,
             BitDepth = dto.BitDepth.GetValueOrDefault(0),
-            IsAnamorphic = dto.IsAnamorphic.GetValueOrDefault(0),
+            IsAnamorphic = dto.IsAnamorphic.GetValueOrDefault(),
             RefFrames = dto.RefFrames.GetValueOrDefault(0),
             CodecTag = dto.CodecTag,
             Comment = dto.Comment,

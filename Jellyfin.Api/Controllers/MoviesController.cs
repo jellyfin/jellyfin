@@ -97,7 +97,7 @@ public class MoviesController : BaseJellyfinApiController
             DtoOptions = dtoOptions
         };
 
-        var recentlyPlayedMovies = _libraryManager.GetItemList(query);
+        var recentlyPlayedMovies = _libraryManager.GetItemList(query)!;
 
         var itemTypes = new List<BaseItemKind> { BaseItemKind.Movie };
         if (_serverConfigurationManager.Configuration.EnableExternalContentInSuggestions)
@@ -120,7 +120,7 @@ public class MoviesController : BaseJellyfinApiController
             DtoOptions = dtoOptions
         });
 
-        var mostRecentMovies = recentlyPlayedMovies.GetRange(0, Math.Min(recentlyPlayedMovies.Count, 6));
+        var mostRecentMovies = recentlyPlayedMovies.Take(Math.Min(recentlyPlayedMovies.Count, 6));
         // Get recently played directors
         var recentDirectors = GetDirectors(mostRecentMovies)
             .ToList();

@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Jellyfin.Server.Implementations.ModelConfiguration;
 
-
 /// <summary>
 /// Chapter configuration.
 /// </summary>

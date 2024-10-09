@@ -51,7 +51,8 @@ namespace Emby.Server.Implementations.Library
         private readonly ILocalizationManager _localizationManager;
         private readonly IApplicationPaths _appPaths;
         private readonly IDirectoryService _directoryService;
-
+        private readonly IMediaStreamRepository _mediaStreamRepository;
+        private readonly IMediaAttachmentRepository _mediaAttachmentRepository;
         private readonly ConcurrentDictionary<string, ILiveStream> _openStreams = new ConcurrentDictionary<string, ILiveStream>(StringComparer.OrdinalIgnoreCase);
         private readonly AsyncNonKeyedLocker _liveStreamLocker = new(1);
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
@@ -69,7 +70,9 @@ namespace Emby.Server.Implementations.Library
             IFileSystem fileSystem,
             IUserDataManager userDataManager,
             IMediaEncoder mediaEncoder,
-            IDirectoryService directoryService)
+            IDirectoryService directoryService,
+            IMediaStreamRepository mediaStreamRepository,
+            IMediaAttachmentRepository mediaAttachmentRepository)
         {
             _appHost = appHost;
             _itemRepo = itemRepo;
@@ -82,6 +85,8 @@ namespace Emby.Server.Implementations.Library
             _localizationManager = localizationManager;
             _appPaths = applicationPaths;
             _directoryService = directoryService;
+            _mediaStreamRepository = mediaStreamRepository;
+            _mediaAttachmentRepository = mediaAttachmentRepository;
         }
 
         public void AddParts(IEnumerable<IMediaSourceProvider> providers)
@@ -89,9 +94,9 @@ namespace Emby.Server.Implementations.Library
             _providers = providers.ToArray();
         }
 
-        public List<MediaStream> GetMediaStreams(MediaStreamQuery query)
+        public IReadOnlyList<MediaStream> GetMediaStreams(MediaStreamQuery query)
         {
-            var list = _itemRepo.GetMediaStreams(query);
+            var list = _mediaStreamRepository.GetMediaStreams(query);
 
             foreach (var stream in list)
             {
@@ -121,7 +126,7 @@ namespace Emby.Server.Implementations.Library
             return false;
         }
 
-        public List<MediaStream> GetMediaStreams(Guid itemId)
+        public IReadOnlyList<MediaStream> GetMediaStreams(Guid itemId)
         {
             var list = GetMediaStreams(new MediaStreamQuery
             {
@@ -131,7 +136,7 @@ namespace Emby.Server.Implementations.Library
             return GetMediaStreamsForItem(list);
         }
 
-        private List<MediaStream> GetMediaStreamsForItem(List<MediaStream> streams)
+        private IReadOnlyList<MediaStream> GetMediaStreamsForItem(IReadOnlyList<MediaStream> streams)
         {
             foreach (var stream in streams)
             {
@@ -145,13 +150,13 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
-        public List<MediaAttachment> GetMediaAttachments(MediaAttachmentQuery query)
+        public IReadOnlyList<MediaAttachment> GetMediaAttachments(MediaAttachmentQuery query)
         {
-            return _itemRepo.GetMediaAttachments(query);
+            return _mediaAttachmentRepository.GetMediaAttachments(query);
         }
 
         /// <inheritdoc />
-        public List<MediaAttachment> GetMediaAttachments(Guid itemId)
+        public IReadOnlyList<MediaAttachment> GetMediaAttachments(Guid itemId)
         {
             return GetMediaAttachments(new MediaAttachmentQuery
             {
@@ -332,7 +337,7 @@ namespace Emby.Server.Implementations.Library
             return sources.FirstOrDefault(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase));
         }
 
-        public List<MediaSourceInfo> GetStaticMediaSources(BaseItem item, bool enablePathSubstitution, User user = null)
+        public IReadOnlyList<MediaSourceInfo> GetStaticMediaSources(BaseItem item, bool enablePathSubstitution, User user = null)
         {
             ArgumentNullException.ThrowIfNull(item);
 

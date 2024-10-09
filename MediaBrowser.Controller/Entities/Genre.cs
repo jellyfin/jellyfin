@@ -61,7 +61,7 @@ namespace MediaBrowser.Controller.Entities
             return false;
         }
 
-        public IList<BaseItem> GetTaggedItems(InternalItemsQuery query)
+        public IReadOnlyList<BaseItem> GetTaggedItems(InternalItemsQuery query)
         {
             query.GenreIds = new[] { Id };
             query.ExcludeItemTypes = new[]

@@ -171,7 +171,7 @@ namespace Emby.Server.Implementations.Library
                 }
             };
 
-            List<BaseItem> mediaItems;
+            IReadOnlyList<BaseItem> mediaItems;
 
             if (searchQuery.IncludeItemTypes.Length == 1 && searchQuery.IncludeItemTypes[0] == BaseItemKind.MusicArtist)
             {

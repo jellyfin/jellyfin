@@ -55,7 +55,7 @@ namespace MediaBrowser.Controller.Entities
             return true;
         }
 
-        public IList<BaseItem> GetTaggedItems(InternalItemsQuery query)
+        public IReadOnlyList<BaseItem> GetTaggedItems(InternalItemsQuery query)
         {
             if (!int.TryParse(Name, NumberStyles.Integer, CultureInfo.InvariantCulture, out var year))
             {

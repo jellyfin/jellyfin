@@ -17,7 +17,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="user">The user to use.</param>
         /// <param name="dtoOptions">The options to use.</param>
         /// <returns>List of items.</returns>
-        List<BaseItem> GetInstantMixFromItem(BaseItem item, User? user, DtoOptions dtoOptions);
+        IReadOnlyList<BaseItem> GetInstantMixFromItem(BaseItem item, User? user, DtoOptions dtoOptions);
 
         /// <summary>
         /// Gets the instant mix from artist.
@@ -26,7 +26,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="user">The user to use.</param>
         /// <param name="dtoOptions">The options to use.</param>
         /// <returns>List of items.</returns>
-        List<BaseItem> GetInstantMixFromArtist(MusicArtist artist, User? user, DtoOptions dtoOptions);
+        IReadOnlyList<BaseItem> GetInstantMixFromArtist(MusicArtist artist, User? user, DtoOptions dtoOptions);
 
         /// <summary>
         /// Gets the instant mix from genre.
@@ -35,6 +35,6 @@ namespace MediaBrowser.Controller.Library
         /// <param name="user">The user to use.</param>
         /// <param name="dtoOptions">The options to use.</param>
         /// <returns>List of items.</returns>
-        List<BaseItem> GetInstantMixFromGenres(IEnumerable<string> genres, User? user, DtoOptions dtoOptions);
+        IReadOnlyList<BaseItem> GetInstantMixFromGenres(IEnumerable<string> genres, User? user, DtoOptions dtoOptions);
     }
 }

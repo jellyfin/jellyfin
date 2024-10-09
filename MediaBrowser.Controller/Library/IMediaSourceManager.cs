@@ -29,28 +29,28 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="itemId">The item identifier.</param>
         /// <returns>IEnumerable&lt;MediaStream&gt;.</returns>
-        List<MediaStream> GetMediaStreams(Guid itemId);
+        IReadOnlyList<MediaStream> GetMediaStreams(Guid itemId);
 
         /// <summary>
         /// Gets the media streams.
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>IEnumerable&lt;MediaStream&gt;.</returns>
-        List<MediaStream> GetMediaStreams(MediaStreamQuery query);
+        IReadOnlyList<MediaStream> GetMediaStreams(MediaStreamQuery query);
 
         /// <summary>
         /// Gets the media attachments.
         /// </summary>
         /// <param name="itemId">The item identifier.</param>
         /// <returns>IEnumerable&lt;MediaAttachment&gt;.</returns>
-        List<MediaAttachment> GetMediaAttachments(Guid itemId);
+        IReadOnlyList<MediaAttachment> GetMediaAttachments(Guid itemId);
 
         /// <summary>
         /// Gets the media attachments.
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>IEnumerable&lt;MediaAttachment&gt;.</returns>
-        List<MediaAttachment> GetMediaAttachments(MediaAttachmentQuery query);
+        IReadOnlyList<MediaAttachment> GetMediaAttachments(MediaAttachmentQuery query);
 
         /// <summary>
         /// Gets the playack media sources.

@@ -62,7 +62,7 @@ namespace MediaBrowser.Controller.Entities
             return value;
         }
 
-        public IList<BaseItem> GetTaggedItems(InternalItemsQuery query)
+        public IReadOnlyList<BaseItem> GetTaggedItems(InternalItemsQuery query)
         {
             query.PersonIds = new[] { Id };
 

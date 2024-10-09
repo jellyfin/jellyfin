@@ -89,7 +89,9 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider) :
             Name = people.Name,
             Role = people.Role,
             SortOrder = people.SortOrder,
-            PersonType = people.Type.ToString()
+            PersonType = people.Type.ToString(),
+            Item = null!,
+            ListOrder = people.SortOrder
         };
 
         return personInfo;
