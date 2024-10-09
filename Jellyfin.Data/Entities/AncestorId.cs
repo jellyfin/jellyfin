@@ -11,7 +11,7 @@ public class AncestorId
 {
     public Guid Id { get; set; }
 
-    public Guid ItemId { get; set; }
+    public required Guid ItemId { get; set; }
 
     public required BaseItemEntity Item { get; set; }
 

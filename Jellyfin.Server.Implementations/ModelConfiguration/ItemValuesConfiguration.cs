@@ -13,8 +13,7 @@ public class ItemValuesConfiguration : IEntityTypeConfiguration<ItemValue>
     /// <inheritdoc/>
     public void Configure(EntityTypeBuilder<ItemValue> builder)
     {
-        builder.HasNoKey();
+        builder.HasKey(e => new { e.ItemId, e.Type, e.Value });
         builder.HasIndex(e => new { e.ItemId, e.Type, e.CleanValue });
-        builder.HasIndex(e => new { e.ItemId, e.Type, e.Value });
     }
 }

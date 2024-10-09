@@ -6,6 +6,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Jellyfin.Data.Entities;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+#pragma warning disable CA2227 // Collection properties should be read only
+
 public class BaseItemEntity
 {
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -156,19 +158,26 @@ public class BaseItemEntity
 
     public BaseItemEntity? Parent { get; set; }
 
+    public ICollection<BaseItemEntity>? DirectChildren { get; set; }
+
     public Guid? TopParentId { get; set; }
 
     public BaseItemEntity? TopParent { get; set; }
+
+    public ICollection<BaseItemEntity>? AllChildren { get; set; }
 
     public Guid? SeasonId { get; set; }
 
     public BaseItemEntity? Season { get; set; }
 
+    public ICollection<BaseItemEntity>? SeasonEpisodes { get; set; }
+
     public Guid? SeriesId { get; set; }
+
+    public ICollection<BaseItemEntity>? SeriesEpisodes { get; set; }
 
     public BaseItemEntity? Series { get; set; }
 
-#pragma warning disable CA2227 // Collection properties should be read only
     public ICollection<People>? Peoples { get; set; }
 
     public ICollection<UserData>? UserData { get; set; }

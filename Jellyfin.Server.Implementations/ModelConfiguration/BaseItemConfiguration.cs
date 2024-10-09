@@ -2,6 +2,7 @@ using System;
 using Jellyfin.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using SQLitePCL;
 
 namespace Jellyfin.Server.Implementations.ModelConfiguration;
 
@@ -14,10 +15,10 @@ public class BaseItemConfiguration : IEntityTypeConfiguration<BaseItemEntity>
     public void Configure(EntityTypeBuilder<BaseItemEntity> builder)
     {
         builder.HasKey(e => e.Id);
-        builder.HasOne(e => e.Parent);
-        builder.HasOne(e => e.TopParent);
-        builder.HasOne(e => e.Season);
-        builder.HasOne(e => e.Series);
+        builder.HasOne(e => e.Parent).WithMany(e => e.DirectChildren).HasForeignKey(e => e.ParentId);
+        builder.HasOne(e => e.TopParent).WithMany(e => e.AllChildren).HasForeignKey(e => e.TopParentId);
+        builder.HasOne(e => e.Season).WithMany(e => e.SeasonEpisodes).HasForeignKey(e => e.SeasonId);
+        builder.HasOne(e => e.Series).WithMany(e => e.SeriesEpisodes).HasForeignKey(e => e.SeriesId);
         builder.HasMany(e => e.Peoples);
         builder.HasMany(e => e.UserData);
         builder.HasMany(e => e.ItemValues);

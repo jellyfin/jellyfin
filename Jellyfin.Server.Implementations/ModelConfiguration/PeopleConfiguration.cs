@@ -13,7 +13,7 @@ public class PeopleConfiguration : IEntityTypeConfiguration<People>
     /// <inheritdoc/>
     public void Configure(EntityTypeBuilder<People> builder)
     {
-        builder.HasNoKey();
+        builder.HasKey(e => new { e.ItemId, e.Role, e.ListOrder });
         builder.HasIndex(e => new { e.ItemId, e.ListOrder });
         builder.HasIndex(e => e.Name);
     }

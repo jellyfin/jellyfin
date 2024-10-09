@@ -13,7 +13,7 @@ public class ChapterConfiguration : IEntityTypeConfiguration<Chapter>
     /// <inheritdoc/>
     public void Configure(EntityTypeBuilder<Chapter> builder)
     {
-        builder.HasNoKey();
-        builder.HasIndex(e => new { e.ItemId, e.ChapterIndex });
+        builder.HasKey(e => new { e.ItemId, e.ChapterIndex });
+        builder.HasOne(e => e.Item);
     }
 }

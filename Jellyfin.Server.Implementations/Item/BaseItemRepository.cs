@@ -1259,7 +1259,8 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
                     {
                         Item = entity,
                         AncestorIdText = ancestorId.ToString(),
-                        Id = ancestorId
+                        Id = ancestorId,
+                        ItemId = entity.Id
                     });
                 }
             }
@@ -1273,7 +1274,8 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
                     Item = entity,
                     Type = itemValue.MagicNumber,
                     Value = itemValue.Value,
-                    CleanValue = GetCleanValue(itemValue.Value)
+                    CleanValue = GetCleanValue(itemValue.Value),
+                    ItemId = entity.Id
                 });
             }
         }
