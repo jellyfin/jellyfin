@@ -51,7 +51,7 @@ public interface IItemTypeLookup
     public IReadOnlyList<BaseItemKind> ArtistsTypes { get; }
 
     /// <summary>
-    /// Gets mapping for all BaseItemKinds and their expected serialisaition target.
+    /// Gets mapping for all BaseItemKinds and their expected serialization target.
     /// </summary>
     public IDictionary<BaseItemKind, string?> BaseItemKindNames { get; }
 }

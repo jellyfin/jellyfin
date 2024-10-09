@@ -97,7 +97,7 @@ public class MoviesController : BaseJellyfinApiController
             DtoOptions = dtoOptions
         };
 
-        var recentlyPlayedMovies = _libraryManager.GetItemList(query)!;
+        var recentlyPlayedMovies = _libraryManager.GetItemList(query);
 
         var itemTypes = new List<BaseItemKind> { BaseItemKind.Movie };
         if (_serverConfigurationManager.Configuration.EnableExternalContentInSuggestions)

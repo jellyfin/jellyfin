@@ -37,7 +37,7 @@ public class MediaStreamRepository(IDbContextFactory<JellyfinDbContext> dbProvid
     public IReadOnlyList<MediaStream> GetMediaStreams(MediaStreamQuery filter)
     {
         using var context = dbProvider.CreateDbContext();
-        return TranslateQuery(context.MediaStreamInfos, filter).ToList().Select(Map).ToImmutableArray();
+        return TranslateQuery(context.MediaStreamInfos, filter).AsEnumerable().Select(Map).ToImmutableArray();
     }
 
     private string? GetPathToSave(string? path)

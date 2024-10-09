@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Jellyfin.Data.Entities;
 
 /// <summary>
-/// Represents an Key-Value relaten of an BaseItem's provider.
+/// Represents a Key-Value relation of an BaseItem's provider.
 /// </summary>
 public class BaseItemProvider
 {

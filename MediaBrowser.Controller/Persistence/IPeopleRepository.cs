@@ -14,7 +14,7 @@ public interface IPeopleRepository
     /// Gets the people.
     /// </summary>
     /// <param name="filter">The query.</param>
-    /// <returns>List&lt;PersonInfo&gt;.</returns>
+    /// <returns>The list of people matching the filter.</returns>
     IReadOnlyList<PersonInfo> GetPeople(InternalPeopleQuery filter);
 
     /// <summary>
@@ -28,6 +28,6 @@ public interface IPeopleRepository
     /// Gets the people names.
     /// </summary>
     /// <param name="filter">The query.</param>
-    /// <returns>List&lt;System.String&gt;.</returns>
+    /// <returns>The list of people names matching the filter.</returns>
     IReadOnlyList<string> GetPeopleNames(InternalPeopleQuery filter);
 }

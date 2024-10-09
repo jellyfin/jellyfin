@@ -12,7 +12,7 @@ using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Querying;
 
-namespace Jellyfin.Server.Implementations.Item;
+namespace Emby.Server.Implementations.Data;
 
 /// <summary>
 /// Provides static topic based lookups for the BaseItemKind.
