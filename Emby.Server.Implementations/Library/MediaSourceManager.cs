@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -164,7 +165,7 @@ namespace Emby.Server.Implementations.Library
             });
         }
 
-        public async Task<List<MediaSourceInfo>> GetPlaybackMediaSources(BaseItem item, User user, bool allowMediaProbe, bool enablePathSubstitution, CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<MediaSourceInfo>> GetPlaybackMediaSources(BaseItem item, User user, bool allowMediaProbe, bool enablePathSubstitution, CancellationToken cancellationToken)
         {
             var mediaSources = GetStaticMediaSources(item, enablePathSubstitution, user);
 
@@ -217,7 +218,7 @@ namespace Emby.Server.Implementations.Library
                 list.Add(source);
             }
 
-            return SortMediaSources(list);
+            return SortMediaSources(list).ToImmutableList();
         }
 
         /// <inheritdoc />>
@@ -458,7 +459,7 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        private static List<MediaSourceInfo> SortMediaSources(IEnumerable<MediaSourceInfo> sources)
+        private static IEnumerable<MediaSourceInfo> SortMediaSources(IEnumerable<MediaSourceInfo> sources)
         {
             return sources.OrderBy(i =>
             {
@@ -475,8 +476,7 @@ namespace Emby.Server.Implementations.Library
 
                 return stream?.Width ?? 0;
             })
-            .Where(i => i.Type != MediaSourceType.Placeholder)
-            .ToList();
+            .Where(i => i.Type != MediaSourceType.Placeholder);
         }
 
         public async Task<Tuple<LiveStreamResponse, IDirectStreamProvider>> OpenLiveStreamInternal(LiveStreamRequest request, CancellationToken cancellationToken)
@@ -811,7 +811,7 @@ namespace Emby.Server.Implementations.Library
             return result.Item1;
         }
 
-        public async Task<List<MediaSourceInfo>> GetRecordingStreamMediaSources(ActiveRecordingInfo info, CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<MediaSourceInfo>> GetRecordingStreamMediaSources(ActiveRecordingInfo info, CancellationToken cancellationToken)
         {
             var stream = new MediaSourceInfo
             {
@@ -834,10 +834,7 @@ namespace Emby.Server.Implementations.Library
             await new LiveStreamHelper(_mediaEncoder, _logger, _appPaths)
                 .AddMediaInfoWithProbe(stream, false, false, cancellationToken).ConfigureAwait(false);
 
-            return new List<MediaSourceInfo>
-            {
-                stream
-            };
+            return [stream];
         }
 
         public async Task CloseLiveStream(string id)

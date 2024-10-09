@@ -61,7 +61,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="enablePathSubstitution">Option to enable path substitution.</param>
         /// <param name="cancellationToken">CancellationToken to use for operation.</param>
         /// <returns>List of media sources wrapped in an awaitable task.</returns>
-        Task<List<MediaSourceInfo>> GetPlaybackMediaSources(BaseItem item, User user, bool allowMediaProbe, bool enablePathSubstitution, CancellationToken cancellationToken);
+        Task<IReadOnlyList<MediaSourceInfo>> GetPlaybackMediaSources(BaseItem item, User user, bool allowMediaProbe, bool enablePathSubstitution, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the static media sources.
@@ -70,7 +70,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="enablePathSubstitution">Option to enable path substitution.</param>
         /// <param name="user">User to use for operation.</param>
         /// <returns>List of media sources.</returns>
-        List<MediaSourceInfo> GetStaticMediaSources(BaseItem item, bool enablePathSubstitution, User user = null);
+        IReadOnlyList<MediaSourceInfo> GetStaticMediaSources(BaseItem item, bool enablePathSubstitution, User user = null);
 
         /// <summary>
         /// Gets the static media source.
@@ -123,7 +123,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="info">The <see cref="ActiveRecordingInfo"/>.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
         /// <returns>A task containing the <see cref="MediaSourceInfo"/>'s for the recording.</returns>
-        Task<List<MediaSourceInfo>> GetRecordingStreamMediaSources(ActiveRecordingInfo info, CancellationToken cancellationToken);
+        Task<IReadOnlyList<MediaSourceInfo>> GetRecordingStreamMediaSources(ActiveRecordingInfo info, CancellationToken cancellationToken);
 
         /// <summary>
         /// Closes the media source.

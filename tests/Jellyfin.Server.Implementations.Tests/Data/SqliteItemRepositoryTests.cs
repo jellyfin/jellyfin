@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using AutoFixture;
 using AutoFixture.AutoMoq;
 using Emby.Server.Implementations.Data;
+using Jellyfin.Server.Implementations.Item;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Configuration;
 using Moq;
@@ -18,7 +20,7 @@ namespace Jellyfin.Server.Implementations.Tests.Data
         public const string MetaDataPath = "/meta/data/path";
 
         private readonly IFixture _fixture;
-        private readonly SqliteItemRepository _sqliteItemRepository;
+        private readonly BaseItemRepository _sqliteItemRepository;
 
         public SqliteItemRepositoryTests()
         {
@@ -40,7 +42,7 @@ namespace Jellyfin.Server.Implementations.Tests.Data
             _fixture = new Fixture().Customize(new AutoMoqCustomization { ConfigureMembers = true });
             _fixture.Inject(appHost);
             _fixture.Inject(config);
-            _sqliteItemRepository = _fixture.Create<SqliteItemRepository>();
+            _sqliteItemRepository = _fixture.Create<BaseItemRepository>();
         }
 
         public static TheoryData<string, ItemImageInfo> ItemImageInfoFromValueString_Valid_TestData()
@@ -101,7 +103,7 @@ namespace Jellyfin.Server.Implementations.Tests.Data
         [MemberData(nameof(ItemImageInfoFromValueString_Valid_TestData))]
         public void ItemImageInfoFromValueString_Valid_Success(string value, ItemImageInfo expected)
         {
-            var result = _sqliteItemRepository.ItemImageInfoFromValueString(value);
+            var result = _sqliteItemRepository.ItemImageInfoFromValueString(value)!;
             Assert.Equal(expected.Path, result.Path);
             Assert.Equal(expected.Type, result.Type);
             Assert.Equal(expected.DateModified, result.DateModified);
@@ -241,56 +243,6 @@ namespace Jellyfin.Server.Implementations.Tests.Data
         public void SerializeImages_Valid_Success(string expected, ItemImageInfo[] value)
         {
             Assert.Equal(expected, _sqliteItemRepository.SerializeImages(value));
-        }
-
-        public static TheoryData<string, Dictionary<string, string>> DeserializeProviderIds_Valid_TestData()
-        {
-            var data = new TheoryData<string, Dictionary<string, string>>();
-
-            data.Add(
-                "Imdb=tt0119567",
-                new Dictionary<string, string>()
-                {
-                    { "Imdb", "tt0119567" },
-                });
-
-            data.Add(
-                "Imdb=tt0119567|Tmdb=330|TmdbCollection=328",
-                new Dictionary<string, string>()
-                {
-                    { "Imdb", "tt0119567" },
-                    { "Tmdb", "330" },
-                    { "TmdbCollection", "328" },
-                });
-
-            data.Add(
-                "MusicBrainzAlbum=9d363e43-f24f-4b39-bc5a-7ef305c677c7|MusicBrainzReleaseGroup=63eba062-847c-3b73-8b0f-6baf27bba6fa|AudioDbArtist=111352|AudioDbAlbum=2116560|MusicBrainzAlbumArtist=20244d07-534f-4eff-b4d4-930878889970",
-                new Dictionary<string, string>()
-                {
-                    { "MusicBrainzAlbum", "9d363e43-f24f-4b39-bc5a-7ef305c677c7" },
-                    { "MusicBrainzReleaseGroup", "63eba062-847c-3b73-8b0f-6baf27bba6fa" },
-                    { "AudioDbArtist", "111352" },
-                    { "AudioDbAlbum", "2116560" },
-                    { "MusicBrainzAlbumArtist", "20244d07-534f-4eff-b4d4-930878889970" },
-                });
-
-            return data;
-        }
-
-        [Theory]
-        [MemberData(nameof(DeserializeProviderIds_Valid_TestData))]
-        public void DeserializeProviderIds_Valid_Success(string value, Dictionary<string, string> expected)
-        {
-            var result = new ProviderIdsExtensionsTestsObject();
-            SqliteItemRepository.DeserializeProviderIds(value, result);
-            Assert.Equal(expected, result.ProviderIds);
-        }
-
-        [Theory]
-        [MemberData(nameof(DeserializeProviderIds_Valid_TestData))]
-        public void SerializeProviderIds_Valid_Success(string expected, Dictionary<string, string> values)
-        {
-            Assert.Equal(expected, SqliteItemRepository.SerializeProviderIds(values));
         }
 
         private sealed class ProviderIdsExtensionsTestsObject : IHasProviderIds
