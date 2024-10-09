@@ -46,7 +46,7 @@ public class ChapterRepository : IChapterRepository
     public ChapterInfo? GetChapter(Guid baseItemId, int index)
     {
         using var context = _dbProvider.CreateDbContext();
-        var chapter = context.Chapters
+        var chapter = context.Chapters.AsNoTracking()
             .Select(e => new
             {
                 chapter = e,
@@ -65,7 +65,7 @@ public class ChapterRepository : IChapterRepository
     public IReadOnlyList<ChapterInfo> GetChapters(Guid baseItemId)
     {
         using var context = _dbProvider.CreateDbContext();
-        return context.Chapters.Where(e => e.ItemId.Equals(baseItemId))
+        return context.Chapters.AsNoTracking().Where(e => e.ItemId.Equals(baseItemId))
             .Select(e => new
             {
                 chapter = e,

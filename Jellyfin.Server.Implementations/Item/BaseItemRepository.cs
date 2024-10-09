@@ -233,7 +233,7 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
         var result = new QueryResult<BaseItemDto>();
 
         using var context = dbProvider.CreateDbContext();
-        IQueryable<BaseItemEntity> dbQuery = context.BaseItems
+        IQueryable<BaseItemEntity> dbQuery = context.BaseItems.AsNoTracking()
             .Include(e => e.ExtraType)
             .Include(e => e.TrailerTypes)
             .Include(e => e.Images)
@@ -272,7 +272,7 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
         PrepareFilterQuery(filter);
 
         using var context = dbProvider.CreateDbContext();
-        var dbQuery = TranslateQuery(context.BaseItems, context, filter);
+        var dbQuery = TranslateQuery(context.BaseItems.AsNoTracking(), context, filter);
         if (filter.Limit.HasValue || filter.StartIndex.HasValue)
         {
             var offset = filter.StartIndex ?? 0;
@@ -299,7 +299,7 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
         PrepareFilterQuery(filter);
 
         using var context = dbProvider.CreateDbContext();
-        var dbQuery = TranslateQuery(context.BaseItems, context, filter);
+        var dbQuery = TranslateQuery(context.BaseItems.AsNoTracking(), context, filter);
 
         return dbQuery.Count();
     }
@@ -1310,7 +1310,7 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
         }
 
         using var context = dbProvider.CreateDbContext();
-        var item = context.BaseItems.FirstOrDefault(e => e.Id == id);
+        var item = context.BaseItems.AsNoTracking().FirstOrDefault(e => e.Id == id);
         if (item is null)
         {
             return null;
@@ -1644,6 +1644,7 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
         using var context = dbProvider.CreateDbContext();
 
         var query = context.ItemValues
+            .AsNoTracking()
             .Where(e => itemValueTypes.Any(w => (ItemValueType)w == e.Type));
         if (withItemTypes.Count > 0)
         {
@@ -1693,7 +1694,7 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
             IsNews = filter.IsNews,
             IsSeries = filter.IsSeries
         };
-        var query = TranslateQuery(context.BaseItems, context, innerQuery);
+        var query = TranslateQuery(context.BaseItems.AsNoTracking(), context, innerQuery);
 
         query = query.Where(e => e.Type == returnType && e.ItemValues!.Any(f => e.CleanName == f.CleanValue && itemValueTypes.Any(w => (ItemValueType)w == f.Type)));
 

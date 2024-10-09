@@ -34,7 +34,7 @@ public class MediaAttachmentRepository(IDbContextFactory<JellyfinDbContext> dbPr
     public IReadOnlyList<MediaAttachment> GetMediaAttachments(MediaAttachmentQuery filter)
     {
         using var context = dbProvider.CreateDbContext();
-        var query = context.AttachmentStreamInfos.Where(e => e.ItemId.Equals(filter.ItemId));
+        var query = context.AttachmentStreamInfos.AsNoTracking().Where(e => e.ItemId.Equals(filter.ItemId));
         if (filter.Index.HasValue)
         {
             query = query.Where(e => e.Index == filter.Index);
