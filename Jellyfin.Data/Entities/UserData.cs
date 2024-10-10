@@ -3,7 +3,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Jellyfin.Data.Entities;
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+/// <summary>
+/// Provides <see cref="BaseItemEntity"/> and <see cref="User"/> related data.
+/// </summary>
 public class UserData
 {
     /// <summary>
@@ -67,7 +69,13 @@ public class UserData
     /// <value><c>null</c> if [likes] contains no value, <c>true</c> if [likes]; otherwise, <c>false</c>.</value>
     public bool? Likes { get; set; }
 
+    /// <summary>
+    /// Gets or Sets the UserId.
+    /// </summary>
     public Guid UserId { get; set; }
 
+    /// <summary>
+    /// Gets or Sets the User.
+    /// </summary>
     public User? User { get; set; }
 }
