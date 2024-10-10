@@ -1,14 +1,19 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.IO.Hashing;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Extensions;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
@@ -21,7 +26,9 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
+using MediaBrowser.Model.Subtitles;
 using Microsoft.Extensions.Logging;
+using SixLabors.Fonts;
 
 namespace MediaBrowser.Providers.Subtitles
 {
@@ -31,15 +38,19 @@ namespace MediaBrowser.Providers.Subtitles
         private readonly IFileSystem _fileSystem;
         private readonly ILibraryMonitor _monitor;
         private readonly IMediaSourceManager _mediaSourceManager;
+        private readonly IServerConfigurationManager _serverConfigurationManager;
         private readonly ILocalizationManager _localization;
 
         private readonly ISubtitleProvider[] _subtitleProviders;
+
+        private readonly ConcurrentDictionary<ulong, string> _cachedFontFamilyNames = new();
 
         public SubtitleManager(
             ILogger<SubtitleManager> logger,
             IFileSystem fileSystem,
             ILibraryMonitor monitor,
             IMediaSourceManager mediaSourceManager,
+            IServerConfigurationManager serverConfigurationManager,
             ILocalizationManager localizationManager,
             IEnumerable<ISubtitleProvider> subtitleProviders)
         {
@@ -47,6 +58,7 @@ namespace MediaBrowser.Providers.Subtitles
             _fileSystem = fileSystem;
             _monitor = monitor;
             _mediaSourceManager = mediaSourceManager;
+            _serverConfigurationManager = serverConfigurationManager;
             _localization = localizationManager;
             _subtitleProviders = subtitleProviders
                 .OrderBy(i => i is IHasOrder hasOrder ? hasOrder.Order : 0)
@@ -409,6 +421,73 @@ namespace MediaBrowser.Providers.Subtitles
                     Name = i.Name,
                     Id = GetProviderId(i.Name)
                 }).ToArray();
+        }
+
+        public IEnumerable<FontFile> GetFallbackFontList(IProgress<double>? progress, CancellationToken cancellationToken)
+        {
+            var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
+            var fallbackFontPath = encodingOptions.FallbackFontPath;
+
+            if (!string.IsNullOrEmpty(fallbackFontPath))
+            {
+                var files = _fileSystem.GetFiles(fallbackFontPath, new[] { ".woff", ".woff2", ".ttf", ".otf" }, false, false);
+                var fontFiles = files
+                    .Select(i => new FontFile
+                    {
+                        Name = i.Name,
+                        Size = i.Length,
+                        DateCreated = _fileSystem.GetCreationTimeUtc(i),
+                        DateModified = _fileSystem.GetLastWriteTimeUtc(i)
+                    })
+                    .OrderBy(i => i.Size)
+                    .ThenBy(i => i.Name)
+                    .ThenByDescending(i => i.DateModified)
+                    .ThenByDescending(i => i.DateCreated)
+                    .ToList();
+                _logger.LogDebug("We have {Count} fallback font files", fontFiles.Count);
+
+                var index = 0;
+
+                foreach (var fontFile in fontFiles)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    if (progress is not null)
+                    {
+                        progress.Report(100D * (index + 1) / fontFiles.Count);
+                    }
+
+                    var crc = new Crc64();
+                    crc.Append(Encoding.UTF8.GetBytes(fontFile.Name ?? string.Empty));
+                    crc.Append(BitConverter.GetBytes(fontFile.Size));
+                    crc.Append(BitConverter.GetBytes(fontFile.DateCreated.ToBinary()));
+                    crc.Append(BitConverter.GetBytes(fontFile.DateModified.ToBinary()));
+                    var hash = crc.GetCurrentHashAsUInt64();
+
+                    string? familyName;
+                    if (_cachedFontFamilyNames.TryGetValue(hash, out familyName))
+                    {
+                        fontFile.FamilyName = familyName;
+                    }
+                    else
+                    {
+                        FontCollection collection = new();
+                        FontFamily family = collection.Add(fallbackFontPath + "/" + fontFile.Name, CultureInfo.InvariantCulture);
+                        fontFile.FamilyName = family.Name;
+                        _cachedFontFamilyNames.TryAdd(hash, fontFile.FamilyName);
+                        _logger.LogDebug("Fallback subtitles font file \"{FileName}\" has family name \"{FamilyName}\"", fontFile.Name, fontFile.FamilyName);
+                    }
+
+                    index++;
+
+                    yield return fontFile;
+                }
+            }
+            else
+            {
+                _logger.LogWarning("The path of fallback font folder has not been set");
+                encodingOptions.EnableFallbackFont = false;
+            }
         }
     }
 }
