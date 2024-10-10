@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Jellyfin.Server.Implementations.Migrations
 {
     /// <inheritdoc />
-    public partial class BaseItemRefactor : Migration
+    public partial class LibraryDbMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -48,15 +48,12 @@ namespace Jellyfin.Server.Implementations.Migrations
                     DateLastRefreshed = table.Column<DateTime>(type: "TEXT", nullable: true),
                     DateLastSaved = table.Column<DateTime>(type: "TEXT", nullable: true),
                     IsInMixedFolder = table.Column<bool>(type: "INTEGER", nullable: false),
-                    LockedFields = table.Column<string>(type: "TEXT", nullable: true),
                     Studios = table.Column<string>(type: "TEXT", nullable: true),
-                    Audio = table.Column<string>(type: "TEXT", nullable: true),
                     ExternalServiceId = table.Column<string>(type: "TEXT", nullable: true),
                     Tags = table.Column<string>(type: "TEXT", nullable: true),
                     IsFolder = table.Column<bool>(type: "INTEGER", nullable: false),
                     InheritedParentalRatingValue = table.Column<int>(type: "INTEGER", nullable: true),
                     UnratedType = table.Column<string>(type: "TEXT", nullable: true),
-                    TrailerTypes = table.Column<string>(type: "TEXT", nullable: true),
                     CriticRating = table.Column<float>(type: "REAL", nullable: true),
                     CleanName = table.Column<string>(type: "TEXT", nullable: true),
                     PresentationUniqueKey = table.Column<string>(type: "TEXT", nullable: true),
@@ -72,11 +69,10 @@ namespace Jellyfin.Server.Implementations.Migrations
                     SeasonName = table.Column<string>(type: "TEXT", nullable: true),
                     ExternalSeriesId = table.Column<string>(type: "TEXT", nullable: true),
                     Tagline = table.Column<string>(type: "TEXT", nullable: true),
-                    Images = table.Column<string>(type: "TEXT", nullable: true),
                     ProductionLocations = table.Column<string>(type: "TEXT", nullable: true),
                     ExtraIds = table.Column<string>(type: "TEXT", nullable: true),
                     TotalBitrate = table.Column<int>(type: "INTEGER", nullable: true),
-                    ExtraType = table.Column<string>(type: "TEXT", nullable: true),
+                    ExtraType = table.Column<int>(type: "INTEGER", nullable: true),
                     Artists = table.Column<string>(type: "TEXT", nullable: true),
                     AlbumArtists = table.Column<string>(type: "TEXT", nullable: true),
                     ExternalId = table.Column<string>(type: "TEXT", nullable: true),
@@ -86,6 +82,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                     Width = table.Column<int>(type: "INTEGER", nullable: true),
                     Height = table.Column<int>(type: "INTEGER", nullable: true),
                     Size = table.Column<long>(type: "INTEGER", nullable: true),
+                    Audio = table.Column<int>(type: "INTEGER", nullable: true),
                     ParentId = table.Column<Guid>(type: "TEXT", nullable: true),
                     TopParentId = table.Column<Guid>(type: "TEXT", nullable: true),
                     SeasonId = table.Column<Guid>(type: "TEXT", nullable: true),
@@ -97,19 +94,44 @@ namespace Jellyfin.Server.Implementations.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AncestorIds",
+                name: "ItemValues",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    ItemId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    AncestorIdText = table.Column<string>(type: "TEXT", nullable: true)
+                    ItemValueId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Type = table.Column<int>(type: "INTEGER", nullable: false),
+                    Value = table.Column<string>(type: "TEXT", nullable: false),
+                    CleanValue = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AncestorIds", x => new { x.ItemId, x.Id });
+                    table.PrimaryKey("PK_ItemValues", x => x.ItemValueId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AncestorIds",
+                columns: table => new
+                {
+                    ParentItemId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    ItemId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    BaseItemEntityId = table.Column<Guid>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AncestorIds", x => new { x.ItemId, x.ParentItemId });
+                    table.ForeignKey(
+                        name: "FK_AncestorIds_BaseItems_BaseItemEntityId",
+                        column: x => x.BaseItemEntityId,
+                        principalTable: "BaseItems",
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_AncestorIds_BaseItems_ItemId",
                         column: x => x.ItemId,
+                        principalTable: "BaseItems",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_AncestorIds_BaseItems_ParentItemId",
+                        column: x => x.ParentItemId,
                         principalTable: "BaseItems",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -139,6 +161,48 @@ namespace Jellyfin.Server.Implementations.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "BaseItemImageInfos",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Path = table.Column<string>(type: "TEXT", nullable: false),
+                    DateModified = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    ImageType = table.Column<int>(type: "INTEGER", nullable: false),
+                    Width = table.Column<int>(type: "INTEGER", nullable: false),
+                    Height = table.Column<int>(type: "INTEGER", nullable: false),
+                    Blurhash = table.Column<byte[]>(type: "BLOB", nullable: true),
+                    ItemId = table.Column<Guid>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BaseItemImageInfos", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_BaseItemImageInfos_BaseItems_ItemId",
+                        column: x => x.ItemId,
+                        principalTable: "BaseItems",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "BaseItemMetadataFields",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false),
+                    ItemId = table.Column<Guid>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BaseItemMetadataFields", x => new { x.Id, x.ItemId });
+                    table.ForeignKey(
+                        name: "FK_BaseItemMetadataFields_BaseItems_ItemId",
+                        column: x => x.ItemId,
+                        principalTable: "BaseItems",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "BaseItemProviders",
                 columns: table => new
                 {
@@ -151,6 +215,24 @@ namespace Jellyfin.Server.Implementations.Migrations
                     table.PrimaryKey("PK_BaseItemProviders", x => new { x.ItemId, x.ProviderId });
                     table.ForeignKey(
                         name: "FK_BaseItemProviders_BaseItems_ItemId",
+                        column: x => x.ItemId,
+                        principalTable: "BaseItems",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "BaseItemTrailerTypes",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false),
+                    ItemId = table.Column<Guid>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BaseItemTrailerTypes", x => new { x.Id, x.ItemId });
+                    table.ForeignKey(
+                        name: "FK_BaseItemTrailerTypes_BaseItems_ItemId",
                         column: x => x.ItemId,
                         principalTable: "BaseItems",
                         principalColumn: "Id",
@@ -180,32 +262,12 @@ namespace Jellyfin.Server.Implementations.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ItemValues",
-                columns: table => new
-                {
-                    ItemId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Type = table.Column<int>(type: "INTEGER", nullable: false),
-                    Value = table.Column<string>(type: "TEXT", nullable: false),
-                    CleanValue = table.Column<string>(type: "TEXT", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ItemValues", x => new { x.ItemId, x.Type, x.Value });
-                    table.ForeignKey(
-                        name: "FK_ItemValues_BaseItems_ItemId",
-                        column: x => x.ItemId,
-                        principalTable: "BaseItems",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "MediaStreamInfos",
                 columns: table => new
                 {
                     ItemId = table.Column<Guid>(type: "TEXT", nullable: false),
                     StreamIndex = table.Column<int>(type: "INTEGER", nullable: false),
-                    StreamType = table.Column<string>(type: "TEXT", nullable: true),
+                    StreamType = table.Column<int>(type: "INTEGER", nullable: true),
                     Codec = table.Column<string>(type: "TEXT", nullable: true),
                     Language = table.Column<string>(type: "TEXT", nullable: true),
                     ChannelLayout = table.Column<string>(type: "TEXT", nullable: true),
@@ -316,15 +378,49 @@ namespace Jellyfin.Server.Implementations.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateIndex(
-                name: "IX_AncestorIds_Id",
-                table: "AncestorIds",
-                column: "Id");
+            migrationBuilder.CreateTable(
+                name: "ItemValuesMap",
+                columns: table => new
+                {
+                    ItemId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    ItemValueId = table.Column<Guid>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ItemValuesMap", x => new { x.ItemValueId, x.ItemId });
+                    table.ForeignKey(
+                        name: "FK_ItemValuesMap_BaseItems_ItemId",
+                        column: x => x.ItemId,
+                        principalTable: "BaseItems",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ItemValuesMap_ItemValues_ItemValueId",
+                        column: x => x.ItemValueId,
+                        principalTable: "ItemValues",
+                        principalColumn: "ItemValueId",
+                        onDelete: ReferentialAction.Cascade);
+                });
 
             migrationBuilder.CreateIndex(
-                name: "IX_AncestorIds_ItemId_AncestorIdText",
+                name: "IX_AncestorIds_BaseItemEntityId",
                 table: "AncestorIds",
-                columns: new[] { "ItemId", "AncestorIdText" });
+                column: "BaseItemEntityId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AncestorIds_ParentItemId",
+                table: "AncestorIds",
+                column: "ParentItemId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BaseItemImageInfos_ItemId",
+                table: "BaseItemImageInfos",
+                column: "ItemId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BaseItemMetadataFields_ItemId",
+                table: "BaseItemMetadataFields",
+                column: "ItemId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_BaseItemProviders_ProviderId_ProviderValue_ItemId",
@@ -402,9 +498,19 @@ namespace Jellyfin.Server.Implementations.Migrations
                 columns: new[] { "UserDataKey", "Type" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_ItemValues_ItemId_Type_CleanValue",
+                name: "IX_BaseItemTrailerTypes_ItemId",
+                table: "BaseItemTrailerTypes",
+                column: "ItemId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ItemValues_Type_CleanValue",
                 table: "ItemValues",
-                columns: new[] { "ItemId", "Type", "CleanValue" });
+                columns: new[] { "Type", "CleanValue" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ItemValuesMap_ItemId",
+                table: "ItemValuesMap",
+                column: "ItemId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_MediaStreamInfos_StreamIndex",
@@ -477,13 +583,22 @@ namespace Jellyfin.Server.Implementations.Migrations
                 name: "AttachmentStreamInfos");
 
             migrationBuilder.DropTable(
+                name: "BaseItemImageInfos");
+
+            migrationBuilder.DropTable(
+                name: "BaseItemMetadataFields");
+
+            migrationBuilder.DropTable(
                 name: "BaseItemProviders");
+
+            migrationBuilder.DropTable(
+                name: "BaseItemTrailerTypes");
 
             migrationBuilder.DropTable(
                 name: "Chapters");
 
             migrationBuilder.DropTable(
-                name: "ItemValues");
+                name: "ItemValuesMap");
 
             migrationBuilder.DropTable(
                 name: "MediaStreamInfos");
@@ -493,6 +608,9 @@ namespace Jellyfin.Server.Implementations.Migrations
 
             migrationBuilder.DropTable(
                 name: "UserData");
+
+            migrationBuilder.DropTable(
+                name: "ItemValues");
 
             migrationBuilder.DropTable(
                 name: "BaseItems");

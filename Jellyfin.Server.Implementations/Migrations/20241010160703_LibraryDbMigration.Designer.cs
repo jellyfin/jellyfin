@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Jellyfin.Server.Implementations.Migrations
 {
     [DbContext(typeof(JellyfinDbContext))]
-    [Migration("20241010142722_FixedItemValueReferenceStyle")]
-    partial class FixedItemValueReferenceStyle
+    [Migration("20241010160703_LibraryDbMigration")]
+    partial class LibraryDbMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
