@@ -930,19 +930,19 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
         if (filter.HasDeadParentId.HasValue && filter.HasDeadParentId.Value)
         {
             baseQuery = baseQuery
-                .Where(e => e.ParentId.HasValue && context.BaseItems.Any(f => f.Id == e.ParentId.Value));
+                .Where(e => e.ParentId.HasValue && !context.BaseItems.Any(f => f.Id == e.ParentId.Value));
         }
 
         if (filter.IsDeadArtist.HasValue && filter.IsDeadArtist.Value)
         {
             baseQuery = baseQuery
-                .Where(e => e.ItemValues!.Any(f => (f.Type == 0 || f.Type == ItemValueType.AlbumArtist) && f.CleanValue == e.CleanName));
+                .Where(e => !e.ItemValues!.Any(f => (f.Type == ItemValueType.Artist || f.Type == ItemValueType.AlbumArtist) && f.CleanValue == e.CleanName));
         }
 
         if (filter.IsDeadStudio.HasValue && filter.IsDeadStudio.Value)
         {
             baseQuery = baseQuery
-                .Where(e => e.ItemValues!.Any(f => f.Type == ItemValueType.Studios && f.CleanValue == e.CleanName));
+                .Where(e => !e.ItemValues!.Any(f => f.Type == ItemValueType.Studios && f.CleanValue == e.CleanName));
         }
 
         if (filter.IsDeadPerson.HasValue && filter.IsDeadPerson.Value)
@@ -1252,53 +1252,61 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
             tuples[i] = (item, ancestorIds, topParent, userdataKey, inheritedTags);
         }
 
-        using var context = dbProvider.CreateDbContext();
-        using var transaction = context.Database.BeginTransaction();
-        foreach (var item in tuples)
+        try
         {
-            var entity = Map(item.Item);
-            if (!context.BaseItems.Any(e => e.Id == entity.Id))
+            using var context = dbProvider.CreateDbContext();
+            using var transaction = context.Database.BeginTransaction();
+            foreach (var item in tuples)
             {
-                context.BaseItems.Add(entity);
-            }
-            else
-            {
-                context.BaseItems.Attach(entity).State = EntityState.Modified;
-            }
-
-            context.AncestorIds.Where(e => e.ItemId == entity.Id).ExecuteDelete();
-            if (item.Item.SupportsAncestors && item.AncestorIds != null)
-            {
-                entity.AncestorIds = new List<AncestorId>();
-                foreach (var ancestorId in item.AncestorIds)
+                var entity = Map(item.Item);
+                if (!context.BaseItems.Any(e => e.Id == entity.Id))
                 {
-                    entity.AncestorIds.Add(new AncestorId()
+                    context.BaseItems.Add(entity);
+                }
+                else
+                {
+                    context.BaseItems.Attach(entity).State = EntityState.Modified;
+                }
+
+                context.AncestorIds.Where(e => e.ItemId == entity.Id).ExecuteDelete();
+                if (item.Item.SupportsAncestors && item.AncestorIds != null)
+                {
+                    entity.AncestorIds = new List<AncestorId>();
+                    foreach (var ancestorId in item.AncestorIds)
                     {
-                        ParentItemId = ancestorId,
+                        entity.AncestorIds.Add(new AncestorId()
+                        {
+                            ParentItemId = ancestorId,
+                            ItemId = entity.Id
+                        });
+                    }
+                }
+
+                var itemValues = GetItemValuesToSave(item.Item, item.InheritedTags);
+                context.ItemValues.Where(e => e.ItemId == entity.Id).ExecuteDelete();
+                entity.ItemValues = new List<ItemValue>();
+
+                foreach (var itemValue in itemValues)
+                {
+                    entity.ItemValues.Add(new()
+                    {
+                        Item = entity,
+                        Type = (ItemValueType)itemValue.MagicNumber,
+                        Value = itemValue.Value,
+                        CleanValue = GetCleanValue(itemValue.Value),
                         ItemId = entity.Id
                     });
                 }
             }
 
-            var itemValues = GetItemValuesToSave(item.Item, item.InheritedTags);
-            context.ItemValues.Where(e => e.ItemId == entity.Id).ExecuteDelete();
-            entity.ItemValues = new List<ItemValue>();
-
-            foreach (var itemValue in itemValues)
-            {
-                entity.ItemValues.Add(new()
-                {
-                    Item = entity,
-                    Type = (ItemValueType)itemValue.MagicNumber,
-                    Value = itemValue.Value,
-                    CleanValue = GetCleanValue(itemValue.Value),
-                    ItemId = entity.Id
-                });
-            }
+            context.SaveChanges();
+            transaction.Commit();
         }
-
-        context.SaveChanges();
-        transaction.Commit();
+        catch (System.Exception)
+        {
+            System.Console.WriteLine();
+            throw;
+        }
     }
 
     /// <inheritdoc cref="IItemRepository" />
@@ -1484,7 +1492,8 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
             Type = dto.GetType().ToString(),
             Id = dto.Id
         };
-        entity.ParentId = dto.ParentId;
+
+        entity.ParentId = !dto.ParentId.IsEmpty() ? dto.ParentId : null;
         entity.Path = GetPathToSave(dto.Path);
         entity.EndDate = dto.EndDate.GetValueOrDefault();
         entity.CommunityRating = dto.CommunityRating;
