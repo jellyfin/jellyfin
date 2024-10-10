@@ -3,14 +3,21 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
+using Jellyfin.Extensions.Json;
+using MediaBrowser.Common;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
@@ -21,7 +28,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
 using Microsoft.EntityFrameworkCore;
-using SQLitePCL;
+using Microsoft.Extensions.Logging;
 using BaseItemDto = MediaBrowser.Controller.Entities.BaseItem;
 using BaseItemEntity = Jellyfin.Data.Entities.BaseItemEntity;
 #pragma warning disable RS0030 // Do not use banned APIs
@@ -37,7 +44,14 @@ namespace Jellyfin.Server.Implementations.Item;
 /// <param name="dbProvider">The db factory.</param>
 /// <param name="appHost">The Application host.</param>
 /// <param name="itemTypeLookup">The static type lookup.</param>
-public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbProvider, IServerApplicationHost appHost, IItemTypeLookup itemTypeLookup)
+/// <param name="serverConfigurationManager">The server Configuration manager.</param>
+/// <param name="logger">System logger.</param>
+public sealed class BaseItemRepository(
+    IDbContextFactory<JellyfinDbContext> dbProvider,
+    IServerApplicationHost appHost,
+    IItemTypeLookup itemTypeLookup,
+    IServerConfigurationManager serverConfigurationManager,
+    ILogger<BaseItemRepository> logger)
     : IItemRepository, IDisposable
 {
     /// <summary>
@@ -244,7 +258,7 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
             }
         }
 
-        result.Items = dbQuery.ToList().Select(DeserialiseBaseItem).ToImmutableArray();
+        result.Items = dbQuery.ToList().Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToImmutableArray();
         result.StartIndex = filter.StartIndex ?? 0;
         return result;
     }
@@ -272,7 +286,7 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
             }
         }
 
-        return dbQuery.ToList().Select(DeserialiseBaseItem).ToImmutableArray();
+        return dbQuery.ToList().Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToImmutableArray();
     }
 
     /// <inheritdoc/>
@@ -1675,10 +1689,42 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
         return query.Select(e => e.ItemValue.CleanValue).ToImmutableArray();
     }
 
-    private BaseItemDto DeserialiseBaseItem(BaseItemEntity baseItemEntity)
+    private bool TypeRequiresDeserialization(Type type)
+    {
+        if (serverConfigurationManager.Configuration.SkipDeserializationForBasicTypes)
+        {
+            if (type == typeof(Channel)
+                || type == typeof(UserRootFolder))
+            {
+                return false;
+            }
+        }
+
+        return type.GetCustomAttribute<RequiresSourceSerialisationAttribute>() == null;
+    }
+
+    private BaseItemDto DeserialiseBaseItem(BaseItemEntity baseItemEntity, bool skipDeserialization = false)
     {
         var type = GetType(baseItemEntity.Type) ?? throw new InvalidOperationException("Cannot deserialise unkown type.");
-        var dto = Activator.CreateInstance(type) as BaseItemDto ?? throw new InvalidOperationException("Cannot deserialise unkown type.");
+        BaseItemDto? dto = null;
+        if (TypeRequiresDeserialization(type) && baseItemEntity.Data is not null && !skipDeserialization)
+        {
+            try
+            {
+                using var dataAsStream = new MemoryStream(Encoding.UTF8.GetBytes(baseItemEntity.Data!));
+                dto = JsonSerializer.Deserialize(dataAsStream, type, JsonDefaults.Options) as BaseItemDto;
+            }
+            catch (JsonException ex)
+            {
+                logger.LogError(ex, "Error deserializing item with JSON: {Data}", baseItemEntity.Data);
+            }
+        }
+
+        if (dto is null)
+        {
+            dto = Activator.CreateInstance(type) as BaseItemDto ?? throw new InvalidOperationException("Cannot deserialise unkown type.");
+        }
+
         return Map(baseItemEntity, dto);
     }
 
@@ -1764,7 +1810,7 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
         result.StartIndex = filter.StartIndex ?? 0;
         result.Items = resultQuery.ToImmutableArray().Select(e =>
         {
-            return (DeserialiseBaseItem(e.item), e.itemCount);
+            return (DeserialiseBaseItem(e.item, filter.SkipDeserialization), e.itemCount);
         }).ToImmutableArray();
 
         return result;

@@ -13,6 +13,7 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Class Studio.
     /// </summary>
+    [Common.RequiresSourceSerialisation]
     public class Studio : BaseItem, IItemByName
     {
         /// <summary>

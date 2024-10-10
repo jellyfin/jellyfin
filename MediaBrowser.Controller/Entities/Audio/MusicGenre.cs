@@ -14,6 +14,7 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// <summary>
     /// Class MusicGenre.
     /// </summary>
+    [Common.RequiresSourceSerialisation]
     public class MusicGenre : BaseItem, IItemByName
     {
         [JsonIgnore]

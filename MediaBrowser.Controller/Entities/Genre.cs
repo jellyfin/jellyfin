@@ -14,6 +14,7 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Class Genre.
     /// </summary>
+    [Common.RequiresSourceSerialisation]
     public class Genre : BaseItem, IItemByName
     {
         /// <summary>

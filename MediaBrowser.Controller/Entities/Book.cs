@@ -10,6 +10,7 @@ using MediaBrowser.Controller.Providers;
 
 namespace MediaBrowser.Controller.Entities
 {
+    [Common.RequiresSourceSerialisation]
     public class Book : BaseItem, IHasLookupInfo<BookInfo>, IHasSeries
     {
         public Book()

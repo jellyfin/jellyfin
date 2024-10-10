@@ -18,6 +18,7 @@ using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Controller.LiveTv
 {
+    [Common.RequiresSourceSerialisation]
     public class LiveTvProgram : BaseItem, IHasLookupInfo<ItemLookupInfo>, IHasStartDate, IHasProgramAttributes
     {
         private const string EmbyServiceName = "Emby";

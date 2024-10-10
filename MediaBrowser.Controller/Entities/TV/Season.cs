@@ -10,6 +10,7 @@ using System.Text.Json.Serialization;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
+using MediaBrowser.Common;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Querying;
@@ -19,6 +20,7 @@ namespace MediaBrowser.Controller.Entities.TV
     /// <summary>
     /// Class Season.
     /// </summary>
+    [RequiresSourceSerialisation]
     public class Season : Folder, IHasSeries, IHasLookupInfo<SeasonInfo>
     {
         [JsonIgnore]
