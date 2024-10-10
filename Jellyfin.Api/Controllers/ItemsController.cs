@@ -891,6 +891,28 @@ public class ItemsController : BaseJellyfinApiController
             ExcludeItemIds = excludeItemIds
         });
 
+        var videoItems = itemsResult.Items.Where(item => item.MediaType == MediaType.Video);
+
+        foreach (var videoItem in videoItems)
+        {
+            var childItemIds = ((Video)videoItem).GetLocalAlternateVersionIds();
+
+            foreach (var childItemId in childItemIds)
+            {
+                var item = _libraryManager.GetItemById(childItemId);
+
+                if (item != null)
+                {
+                    var userData = _userDataRepository.GetUserDataByPresentationUniqueKey(user, item);
+
+                    if (item != null && userData != null && userData.PlaybackPositionTicks > 0)
+                    {
+                        itemsResult.Items = itemsResult.Items.Append(item).ToList();
+                    }
+                }
+            }
+        }
+
         var returnItems = _dtoService.GetBaseItemDtos(itemsResult.Items, dtoOptions, user);
 
         return new QueryResult<BaseItemDto>(

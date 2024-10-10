@@ -176,6 +176,12 @@ namespace Emby.Server.Implementations.Library
             => GetUserDataDto(item, null, user, new DtoOptions());
 
         /// <inheritdoc />
+        public UserItemData GetUserDataByPresentationUniqueKey(User user, BaseItem item)
+        {
+            return _repository.GetUserDataByPresentationUniqueKey(user.InternalId, item.PresentationUniqueKey);
+        }
+
+        /// <inheritdoc />
         public UserItemDataDto GetUserDataDto(BaseItem item, BaseItemDto? itemDto, User user, DtoOptions options)
         {
             var userData = GetUserData(user, item);
