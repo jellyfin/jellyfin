@@ -25,7 +25,7 @@ namespace Jellyfin.Server.Integration.Tests
             var userResponse = await client.GetByteArrayAsync("/Startup/User");
             var user = JsonSerializer.Deserialize<StartupUserDto>(userResponse, jsonOptions);
 
-            using var completeResponse = await client.PostAsync("/Startup/Complete", new ByteArrayContent(Array.Empty<byte>()));
+            using var completeResponse = await client.PostAsync("/Startup/Complete", null);
             Assert.Equal(HttpStatusCode.NoContent, completeResponse.StatusCode);
 
             using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/Users/AuthenticateByName");

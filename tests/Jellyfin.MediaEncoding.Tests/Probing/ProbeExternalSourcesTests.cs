@@ -17,7 +17,7 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
         [Fact]
         public void GetExtraArguments_Forwards_UserAgent()
         {
-            var encoder = new MediaEncoder(
+            using var encoder = new MediaEncoder(
                 Mock.Of<ILogger<MediaEncoder>>(),
                 Mock.Of<IServerConfigurationManager>(),
                 Mock.Of<IFileSystem>(),
