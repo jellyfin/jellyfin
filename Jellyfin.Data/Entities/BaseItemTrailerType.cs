@@ -1,8 +1,7 @@
 using System;
-using System.Collections.Generic;
 
 namespace Jellyfin.Data.Entities;
-#pragma warning disable CA2227
+
 /// <summary>
 /// Enum TrailerTypes.
 /// </summary>

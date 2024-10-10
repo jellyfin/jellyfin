@@ -8,30 +8,30 @@ public enum MediaStreamTypeEntity
     /// <summary>
     /// The audio.
     /// </summary>
-    Audio,
+    Audio = 0,
 
     /// <summary>
     /// The video.
     /// </summary>
-    Video,
+    Video = 1,
 
     /// <summary>
     /// The subtitle.
     /// </summary>
-    Subtitle,
+    Subtitle = 2,
 
     /// <summary>
     /// The embedded image.
     /// </summary>
-    EmbeddedImage,
+    EmbeddedImage = 3,
 
     /// <summary>
     /// The data.
     /// </summary>
-    Data,
+    Data = 4,
 
     /// <summary>
     /// The lyric.
     /// </summary>
-    Lyric
+    Lyric = 5
 }

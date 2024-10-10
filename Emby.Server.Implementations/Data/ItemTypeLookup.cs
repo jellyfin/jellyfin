@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Threading.Channels;
 using Emby.Server.Implementations.Playlists;
@@ -116,5 +117,5 @@ public class ItemTypeLookup : IItemTypeLookup
         { BaseItemKind.UserView, typeof(UserView).FullName },
         { BaseItemKind.Video, typeof(Video).FullName },
         { BaseItemKind.Year, typeof(Year).FullName }
-    }.AsReadOnly();
+    }.ToFrozenDictionary();
 }

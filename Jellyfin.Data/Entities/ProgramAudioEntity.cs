@@ -8,30 +8,30 @@ public enum ProgramAudioEntity
     /// <summary>
     /// Mono.
     /// </summary>
-    Mono,
+    Mono = 0,
 
     /// <summary>
     /// Sterio.
     /// </summary>
-    Stereo,
+    Stereo = 1,
 
     /// <summary>
     /// Dolby.
     /// </summary>
-    Dolby,
+    Dolby = 2,
 
     /// <summary>
     /// DolbyDigital.
     /// </summary>
-    DolbyDigital,
+    DolbyDigital = 3,
 
     /// <summary>
     /// Thx.
     /// </summary>
-    Thx,
+    Thx = 4,
 
     /// <summary>
     /// Atmos.
     /// </summary>
-    Atmos
+    Atmos = 5
 }
