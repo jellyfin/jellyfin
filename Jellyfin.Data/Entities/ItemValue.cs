@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Jellyfin.Data.Entities;
 
@@ -11,14 +9,9 @@ namespace Jellyfin.Data.Entities;
 public class ItemValue
 {
     /// <summary>
-    /// Gets or Sets the reference ItemId.
+    /// Gets or Sets the ItemValueId.
     /// </summary>
-    public required Guid ItemId { get; set; }
-
-    /// <summary>
-    /// Gets or Sets the referenced BaseItem.
-    /// </summary>
-    public required BaseItemEntity Item { get; set; }
+    public required Guid ItemValueId { get; set; }
 
     /// <summary>
     /// Gets or Sets the Type.
@@ -34,4 +27,11 @@ public class ItemValue
     /// Gets or Sets the sanatised Value.
     /// </summary>
     public required string CleanValue { get; set; }
+
+    /// <summary>
+    /// Gets or Sets all associated BaseItems.
+    /// </summary>
+#pragma warning disable CA2227 // Collection properties should be read only
+    public ICollection<ItemValueMap>? BaseItemsMap { get; set; }
+#pragma warning restore CA2227 // Collection properties should be read only
 }

@@ -8,12 +8,22 @@ namespace Jellyfin.Data.Entities;
 public class AncestorId
 {
     /// <summary>
-    /// Gets or Sets the AncestorId that may or may not be an database managed Item or an materialised local item.
+    /// Gets or Sets the AncestorId.
     /// </summary>
     public required Guid ParentItemId { get; set; }
 
     /// <summary>
-    /// Gets or Sets the related that may or may not be an database managed Item or an materialised local item.
+    /// Gets or Sets the related BaseItem.
     /// </summary>
     public required Guid ItemId { get; set; }
+
+    /// <summary>
+    /// Gets or Sets the ParentItem.
+    /// </summary>
+    public required BaseItemEntity ParentItem { get; set; }
+
+    /// <summary>
+    /// Gets or Sets the Child item.
+    /// </summary>
+    public required BaseItemEntity Item { get; set; }
 }

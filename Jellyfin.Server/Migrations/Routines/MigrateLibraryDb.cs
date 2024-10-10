@@ -113,12 +113,31 @@ public class MigrateLibraryDb : IMigrationRoutine
 
         dbContext.SaveChanges();
 
-        var itemValueQuery = "select ItemId, Type, Value, CleanValue FROM ItemValues";
+        // do not migrate inherited types as they are now properly mapped in search and lookup.
+        var itemValueQuery = "select ItemId, Type, Value, CleanValue FROM ItemValues WHERE Type <> 6";
         dbContext.ItemValues.ExecuteDelete();
 
         foreach (SqliteDataReader dto in connection.Query(itemValueQuery))
         {
-            dbContext.ItemValues.Add(GetItemValue(dto));
+            var itemId = dto.GetGuid(0);
+            var entity = GetItemValue(dto);
+            var existingItemValue = dbContext.ItemValues.FirstOrDefault(f => f.Type == entity.Type && f.Value == entity.Value);
+            if (existingItemValue is null)
+            {
+                dbContext.ItemValues.Add(entity);
+            }
+            else
+            {
+                entity = existingItemValue;
+            }
+
+            dbContext.ItemValuesMap.Add(new ItemValueMap()
+            {
+                Item = null!,
+                ItemValue = null!,
+                ItemId = itemId,
+                ItemValueId = entity.ItemValueId
+            });
         }
 
         dbContext.SaveChanges();
@@ -185,7 +204,9 @@ public class MigrateLibraryDb : IMigrationRoutine
         return new AncestorId()
         {
             ItemId = reader.GetGuid(0),
-            ParentItemId = reader.GetGuid(1)
+            ParentItemId = reader.GetGuid(1),
+            Item = null!,
+            ParentItem = null!
         };
     }
 
@@ -226,11 +247,10 @@ public class MigrateLibraryDb : IMigrationRoutine
     {
         return new ItemValue
         {
-            ItemId = reader.GetGuid(0),
+            ItemValueId = Guid.NewGuid(),
             Type = (ItemValueType)reader.GetInt32(1),
             Value = reader.GetString(2),
             CleanValue = reader.GetString(3),
-            Item = null!
         };
     }
 

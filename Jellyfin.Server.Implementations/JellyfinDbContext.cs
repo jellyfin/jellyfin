@@ -117,6 +117,11 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
     public DbSet<ItemValue> ItemValues => Set<ItemValue>();
 
     /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/>.
+    /// </summary>
+    public DbSet<ItemValueMap> ItemValuesMap => Set<ItemValueMap>();
+
+    /// <summary>
     /// Gets the <see cref="DbSet{TEntity}"/> containing the user data.
     /// </summary>
     public DbSet<MediaStreamInfo> MediaStreamInfos => Set<MediaStreamInfo>();

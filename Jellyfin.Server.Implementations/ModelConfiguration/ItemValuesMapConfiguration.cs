@@ -8,12 +8,13 @@ namespace Jellyfin.Server.Implementations.ModelConfiguration;
 /// <summary>
 /// itemvalues Configuration.
 /// </summary>
-public class ItemValuesConfiguration : IEntityTypeConfiguration<ItemValue>
+public class ItemValuesMapConfiguration : IEntityTypeConfiguration<ItemValueMap>
 {
     /// <inheritdoc/>
-    public void Configure(EntityTypeBuilder<ItemValue> builder)
+    public void Configure(EntityTypeBuilder<ItemValueMap> builder)
     {
-        builder.HasKey(e => e.ItemValueId);
-        builder.HasIndex(e => new { e.Type, e.CleanValue });
+        builder.HasKey(e => new { e.ItemValueId, e.ItemId });
+        builder.HasOne(e => e.Item);
+        builder.HasOne(e => e.ItemValue);
     }
 }
