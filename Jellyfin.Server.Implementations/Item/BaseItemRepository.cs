@@ -1708,7 +1708,6 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
         query = query.Where(e => e.Type == returnType && e.ItemValues!.Any(f => e.CleanName == f.CleanValue && itemValueTypes.Any(w => (ItemValueType)w == f.Type)));
 
         if (filter.OrderBy.Count != 0
-            || filter.SimilarTo is not null
             || !string.IsNullOrEmpty(filter.SearchTerm))
         {
             query = ApplyOrder(query, filter);

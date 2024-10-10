@@ -277,7 +277,6 @@ public class MoviesController : BaseJellyfinApiController
                 Limit = itemLimit,
                 IncludeItemTypes = itemTypes.ToArray(),
                 IsMovie = true,
-                SimilarTo = item,
                 EnableGroupByMetadataKey = true,
                 DtoOptions = dtoOptions
             });
