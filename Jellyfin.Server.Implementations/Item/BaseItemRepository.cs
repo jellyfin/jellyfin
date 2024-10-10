@@ -1084,8 +1084,11 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
             else if (includeTypes.Length == 1 && includeTypes.FirstOrDefault() is BaseItemKind.Playlist)
             {
                 baseQuery = baseQuery
-                    .Where(e => e.AncestorIds!.Any(f => f.ParentItem.ItemValues!.Any(w => w.ItemValue.Type == ItemValueType.Tags && filter.IncludeInheritedTags.Contains(w.ItemValue.CleanValue))
-                         || e.Data!.Contains($"OwnerUserId\":\"{filter.User!.Id:N}\"")));
+                    .Where(e =>
+                    e.AncestorIds!
+                        .Any(f =>
+                            f.ParentItem.ItemValues!.Any(w => w.ItemValue.Type == ItemValueType.Tags && filter.IncludeInheritedTags.Contains(w.ItemValue.CleanValue))
+                            || e.Data!.Contains($"OwnerUserId\":\"{filter.User!.Id:N}\"")));
                 // d        ^^ this is stupid it hate this.
             }
             else
@@ -1111,7 +1114,7 @@ public sealed class BaseItemRepository(IDbContextFactory<JellyfinDbContext> dbPr
 
         if (filter.VideoTypes.Length > 0)
         {
-            var videoTypeBs = filter.VideoTypes.Select(e => $"\"VideoType\":\"" + e + "\"");
+            var videoTypeBs = filter.VideoTypes.Select(e => $"\"VideoType\":\"{e}\"");
             baseQuery = baseQuery
                 .Where(e => videoTypeBs.Any(f => e.Data!.Contains(f)));
         }
