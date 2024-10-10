@@ -137,6 +137,11 @@ public class NetworkManager : INetworkManager, IDisposable
     public bool TrustAllIPv6Interfaces { get; private set; }
 
     /// <summary>
+    /// Gets the IP LAN address of Jellyfin server usable for a Google cast receiver and such.
+    /// </summary>
+    public static string ServerLanAddress { get; private set; } = string.Empty;
+
+    /// <summary>
     /// Gets the Published server override list.
     /// </summary>
     public IReadOnlyList<PublishedServerUriOverride> PublishedServerUrls => _publishedServerUrls;
@@ -639,6 +644,8 @@ public class NetworkManager : INetworkManager, IDisposable
         InitializeOverrides(config);
 
         PrintNetworkInformation(config, false);
+
+        InitializeServerLanAddress(config);
     }
 
     /// <summary>
@@ -1149,5 +1156,81 @@ public class NetworkManager : INetworkManager, IDisposable
             _logger.Log(logLevel, "Remote IP filter is {Type}", config.IsRemoteIPFilterBlacklist ? "Blocklist" : "Allowlist");
             _logger.Log(logLevel, "Filtered subnets: {Subnets}", _remoteAddressFilter.Select(s => s.Prefix + "/" + s.PrefixLength));
         }
+    }
+
+    /// <summary>
+    /// Initializes the LAN IP address that the server advertises for cast receivers.
+    /// A LAN device like a Chromecast receiver needs an unique LAN address of the Jellyfin server.
+    /// For IPv4, a Private network address (like 192.168.0.0/16 )serves this purpose, and for IPv6
+    /// the Unique Local Address (ULA, fd00::/8) does. An IPv6 global address (2000::/3) also works
+    /// as unique server address but is ranked as less desirable than a local address.
+    /// See e.g. https://en.wikipedia.org/wiki/Private_network
+    ///
+    /// If multiple addresses are available:
+    /// - prefer Unique Local Addresses (ULA) or Site Local Addresses over other (global) addresses.
+    /// - all things equal, prefer IPv4 over IPv6 as the former in practice appears to be more stable.
+    /// </summary>
+    private void InitializeServerLanAddress(NetworkConfiguration config)
+    {
+        lock (_initLock)
+        {
+            int rank = 0;   // ranks most preferable ip address
+            IPAddress ipSrv = IPAddress.None;
+            NetworkInterface[] adapters = NetworkInterface.GetAllNetworkInterfaces();
+
+            foreach (var adapter in adapters)
+            {
+                if (adapter.NetworkInterfaceType == NetworkInterfaceType.Loopback)
+                {
+                    continue;
+                }
+
+                // check if the network interface serves as IPv4 gateway
+                bool haveIP4GateWay = false;
+                foreach (var address in adapter.GetIPProperties().GatewayAddresses)
+                {
+                    haveIP4GateWay = haveIP4GateWay || address.Address.AddressFamily == AddressFamily.InterNetwork;
+                }
+
+                // if the network interface is used as gateway, and has an acceptable IP address for this server,
+                // then this address is assumed to be accessible by other devices on the LAN.
+                foreach (var inf in _interfaces)
+                {
+                    IPAddress ip = inf.Address;
+
+                    if (!inf.Name.Equals(adapter.Name, StringComparison.OrdinalIgnoreCase) ||
+                        ip.Equals(IPAddress.Loopback) || ip.Equals(IPAddress.IPv6Loopback))
+                    {
+                        continue;
+                    }
+
+                    if (ip.AddressFamily == AddressFamily.InterNetworkV6)
+                    {
+                        if (IsIPv6Enabled)
+                        {
+                            if (rank < 2 && (ip.IsIPv6SiteLocal || ip.IsIPv6UniqueLocal))
+                            {
+                                rank = 2;
+                                ipSrv = ip;
+                            }
+                            else if (rank < 1)
+                            {
+                                rank = 1;
+                                ipSrv = ip;
+                            }
+                        }
+                    }
+                    else if (haveIP4GateWay && IsIPv4Enabled && rank < 3)
+                    {
+                        rank = 3;
+                        ipSrv = ip;
+                    }
+                }
+
+                ServerLanAddress = ipSrv.ToString();
+            }
+        }
+
+        _logger.LogInformation("ServerLanAddress: {0} ", ServerLanAddress);
     }
 }
