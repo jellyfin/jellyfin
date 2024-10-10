@@ -96,6 +96,8 @@ namespace MediaBrowser.XbmcMetadata.Savers
             "isuserfavorite",
             "userrating",
 
+            "iswatchlisted",
+
             "countrycode"
         };
 
@@ -879,6 +881,10 @@ namespace MediaBrowser.XbmcMetadata.Savers
                     "userrating",
                     userdata.Rating.Value.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
             }
+
+            writer.WriteElementString(
+                "iswatchlisted",
+                userdata.IsWatchlisted.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
 
             if (!item.IsFolder)
             {

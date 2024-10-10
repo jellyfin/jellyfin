@@ -108,6 +108,11 @@ namespace Jellyfin.Data.Enums
         /// <summary>
         /// Shows upcoming.
         /// </summary>
-        Upcoming = 20
+        Upcoming = 20,
+
+        /// <summary>
+        /// Shows watchlist.
+        /// </summary>
+        Watchlist = 21,
     }
 }

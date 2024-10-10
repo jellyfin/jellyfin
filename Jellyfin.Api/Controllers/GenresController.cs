@@ -57,6 +57,7 @@ public class GenresController : BaseJellyfinApiController
     /// <param name="excludeItemTypes">Optional. If specified, results will be filtered out based on item type. This allows multiple, comma delimited.</param>
     /// <param name="includeItemTypes">Optional. If specified, results will be filtered in based on item type. This allows multiple, comma delimited.</param>
     /// <param name="isFavorite">Optional filter by items that are marked as favorite, or not.</param>
+    /// <param name="isWatchlisted">Optional filter by items that are marked as watchlisted, or not.</param>
     /// <param name="imageTypeLimit">Optional, the max number of images to return, per image type.</param>
     /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
     /// <param name="userId">User id.</param>
@@ -80,6 +81,7 @@ public class GenresController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] excludeItemTypes,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
         [FromQuery] bool? isFavorite,
+        [FromQuery] bool? isWatchlisted,
         [FromQuery] int? imageTypeLimit,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
         [FromQuery] Guid? userId,
@@ -109,6 +111,7 @@ public class GenresController : BaseJellyfinApiController
             StartIndex = startIndex,
             Limit = limit,
             IsFavorite = isFavorite,
+            IsWatchlisted = isWatchlisted,
             NameLessThan = nameLessThan,
             NameStartsWith = nameStartsWith,
             NameStartsWithOrGreater = nameStartsWithOrGreater,
