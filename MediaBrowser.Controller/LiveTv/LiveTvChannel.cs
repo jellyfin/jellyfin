@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -122,7 +123,7 @@ namespace MediaBrowser.Controller.LiveTv
         public IEnumerable<BaseItem> GetTaggedItems()
             => Enumerable.Empty<BaseItem>();
 
-        public override List<MediaSourceInfo> GetMediaSources(bool enablePathSubstitution)
+        public override IReadOnlyList<MediaSourceInfo> GetMediaSources(bool enablePathSubstitution)
         {
             var list = new List<MediaSourceInfo>();
 
@@ -140,12 +141,12 @@ namespace MediaBrowser.Controller.LiveTv
 
             list.Add(info);
 
-            return list;
+            return list.ToImmutableList();
         }
 
-        public override List<MediaStream> GetMediaStreams()
+        public override IReadOnlyList<MediaStream> GetMediaStreams()
         {
-            return new List<MediaStream>();
+            return [];
         }
 
         protected override string GetInternalMetadataPath(string basePath)

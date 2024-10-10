@@ -76,6 +76,7 @@ namespace Emby.Server.Implementations.Library
         private readonly IItemRepository _itemRepository;
         private readonly IImageProcessor _imageProcessor;
         private readonly NamingOptions _namingOptions;
+        private readonly IPeopleRepository _peopleRepository;
         private readonly ExtraResolver _extraResolver;
 
         /// <summary>
@@ -112,6 +113,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="imageProcessor">The image processor.</param>
         /// <param name="namingOptions">The naming options.</param>
         /// <param name="directoryService">The directory service.</param>
+        /// <param name="peopleRepository">The People Repository.</param>
         public LibraryManager(
             IServerApplicationHost appHost,
             ILoggerFactory loggerFactory,
@@ -127,7 +129,8 @@ namespace Emby.Server.Implementations.Library
             IItemRepository itemRepository,
             IImageProcessor imageProcessor,
             NamingOptions namingOptions,
-            IDirectoryService directoryService)
+            IDirectoryService directoryService,
+            IPeopleRepository peopleRepository)
         {
             _appHost = appHost;
             _logger = loggerFactory.CreateLogger<LibraryManager>();
@@ -144,7 +147,7 @@ namespace Emby.Server.Implementations.Library
             _imageProcessor = imageProcessor;
             _cache = new ConcurrentDictionary<Guid, BaseItem>();
             _namingOptions = namingOptions;
-
+            _peopleRepository = peopleRepository;
             _extraResolver = new ExtraResolver(loggerFactory.CreateLogger<ExtraResolver>(), namingOptions, directoryService);
 
             _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
@@ -1274,7 +1277,7 @@ namespace Emby.Server.Implementations.Library
             return ItemIsVisible(item, user) ? item : null;
         }
 
-        public List<BaseItem> GetItemList(InternalItemsQuery query, bool allowExternalContent)
+        public IReadOnlyList<BaseItem> GetItemList(InternalItemsQuery query, bool allowExternalContent)
         {
             if (query.Recursive && !query.ParentId.IsEmpty())
             {
@@ -1300,7 +1303,7 @@ namespace Emby.Server.Implementations.Library
             return itemList;
         }
 
-        public List<BaseItem> GetItemList(InternalItemsQuery query)
+        public IReadOnlyList<BaseItem> GetItemList(InternalItemsQuery query)
         {
             return GetItemList(query, true);
         }
@@ -1324,7 +1327,7 @@ namespace Emby.Server.Implementations.Library
             return _itemRepository.GetCount(query);
         }
 
-        public List<BaseItem> GetItemList(InternalItemsQuery query, List<BaseItem> parents)
+        public IReadOnlyList<BaseItem> GetItemList(InternalItemsQuery query, List<BaseItem> parents)
         {
             SetTopParentIdsOrAncestors(query, parents);
 
@@ -1357,7 +1360,7 @@ namespace Emby.Server.Implementations.Library
                 _itemRepository.GetItemList(query));
         }
 
-        public List<Guid> GetItemIds(InternalItemsQuery query)
+        public IReadOnlyList<Guid> GetItemIds(InternalItemsQuery query)
         {
             if (query.User is not null)
             {
@@ -2736,12 +2739,12 @@ namespace Emby.Server.Implementations.Library
             return path;
         }
 
-        public List<PersonInfo> GetPeople(InternalPeopleQuery query)
+        public IReadOnlyList<PersonInfo> GetPeople(InternalPeopleQuery query)
         {
-            return _itemRepository.GetPeople(query);
+            return _peopleRepository.GetPeople(query);
         }
 
-        public List<PersonInfo> GetPeople(BaseItem item)
+        public IReadOnlyList<PersonInfo> GetPeople(BaseItem item)
         {
             if (item.SupportsPeople)
             {
@@ -2756,12 +2759,12 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            return new List<PersonInfo>();
+            return [];
         }
 
-        public List<Person> GetPeopleItems(InternalPeopleQuery query)
+        public IReadOnlyList<Person> GetPeopleItems(InternalPeopleQuery query)
         {
-            return _itemRepository.GetPeopleNames(query)
+            return _peopleRepository.GetPeopleNames(query)
             .Select(i =>
             {
                 try
@@ -2779,9 +2782,9 @@ namespace Emby.Server.Implementations.Library
             .ToList()!; // null values are filtered out
         }
 
-        public List<string> GetPeopleNames(InternalPeopleQuery query)
+        public IReadOnlyList<string> GetPeopleNames(InternalPeopleQuery query)
         {
-            return _itemRepository.GetPeopleNames(query);
+            return _peopleRepository.GetPeopleNames(query);
         }
 
         public void UpdatePeople(BaseItem item, List<PersonInfo> people)
@@ -2790,14 +2793,14 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
-        public async Task UpdatePeopleAsync(BaseItem item, List<PersonInfo> people, CancellationToken cancellationToken)
+        public async Task UpdatePeopleAsync(BaseItem item, IReadOnlyList<PersonInfo> people, CancellationToken cancellationToken)
         {
             if (!item.SupportsPeople)
             {
                 return;
             }
 
-            _itemRepository.UpdatePeople(item.Id, people);
+            _peopleRepository.UpdatePeople(item.Id, people);
             if (people is not null)
             {
                 await SavePeopleMetadataAsync(people, cancellationToken).ConfigureAwait(false);
