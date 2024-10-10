@@ -651,7 +651,7 @@ namespace MediaBrowser.Providers.Manager
 
         /// <inheritdoc/>
         public Task SaveMetadataAsync(BaseItem item, ItemUpdateType updateType, IEnumerable<string> savers)
-            => SaveMetadataAsync(item, updateType, _savers.Where(i => savers.Contains(i.Name, StringComparison.OrdinalIgnoreCase)));
+            => SaveMetadataAsync(item, updateType, _savers.Where(i => savers.Contains(i.Name, StringComparer.OrdinalIgnoreCase)));
 
         /// <summary>
         /// Saves the metadata.
