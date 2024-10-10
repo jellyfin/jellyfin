@@ -224,9 +224,16 @@ namespace Jellyfin.Server.Implementations.Users
             await using (dbContext.ConfigureAwait(false))
             {
                 newUser = await CreateUserInternalAsync(name, dbContext).ConfigureAwait(false);
-
-                dbContext.Users.Add(newUser);
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                try
+                {
+                    dbContext.Users.Add(newUser);
+                    await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                }
+                catch
+                {
+                    _users.Remove(newUser.Id);
+                    throw;
+                }
             }
 
             await _eventManager.PublishAsync(new UserCreatedEventArgs(newUser)).ConfigureAwait(false);
@@ -558,8 +565,16 @@ namespace Jellyfin.Server.Implementations.Users
                 newUser.SetPermission(PermissionKind.EnableContentDeletion, true);
                 newUser.SetPermission(PermissionKind.EnableRemoteControlOfOtherUsers, true);
 
-                dbContext.Users.Add(newUser);
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                try
+                {
+                    dbContext.Users.Add(newUser);
+                    await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                }
+                catch (System.Exception)
+                {
+                    _users.Remove(newUser.Id);
+                    throw;
+                }
             }
         }
 
