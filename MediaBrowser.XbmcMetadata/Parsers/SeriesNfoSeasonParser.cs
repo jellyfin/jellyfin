@@ -1,6 +1,5 @@
 using System.Globalization;
 using System.Xml;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;

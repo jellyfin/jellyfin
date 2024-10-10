@@ -1,14 +1,5 @@
 using System;
-using System.Threading;
-using System.Threading.Tasks;
-using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.XbmcMetadata.Configuration;
-using MediaBrowser.XbmcMetadata.Savers;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.XbmcMetadata;
 
@@ -35,30 +26,23 @@ public sealed class NfoUserDataSaver : IHostedService
         IUserDataManager userDataManager,
         IProviderManager providerManager)
     {
-        _logger = logger;
-        _config = config;
-        _userDataManager = userDataManager;
-        _providerManager = providerManager;
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _config = config ?? throw new ArgumentNullException(nameof(config));
+        _userDataManager = userDataManager ?? throw new ArgumentNullException(nameof(userDataManager));
+        _providerManager = providerManager ?? throw new ArgumentNullException(nameof(providerManager));
     }
 
     /// <inheritdoc />
-    public Task StartAsync(CancellationToken cancellationToken)
-    {
-        _userDataManager.UserDataSaved += OnUserDataSaved;
-        return Task.CompletedTask;
-    }
+    public Task StartAsync(CancellationToken cancellationToken) => Task.Run(() => _userDataManager.UserDataSaved += OnUserDataSaved, CancellationToken.None);
 
     /// <inheritdoc />
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
-        _userDataManager.UserDataSaved -= OnUserDataSaved;
-        return Task.CompletedTask;
-    }
+    public Task StopAsync(CancellationToken cancellationToken) => Task.Run(() => _userDataManager.UserDataSaved -= OnUserDataSaved, CancellationToken.None);
 
     private async void OnUserDataSaved(object? sender, UserDataSaveEventArgs e)
     {
         if (e.SaveReason is not (UserDataSaveReason.PlaybackFinished
-            or UserDataSaveReason.TogglePlayed or UserDataSaveReason.UpdateUserRating))
+            or UserDataSaveReason.TogglePlayed
+            or UserDataSaveReason.UpdateUserRating))
         {
             return;
         }
@@ -76,7 +60,7 @@ public sealed class NfoUserDataSaver : IHostedService
 
         try
         {
-            await _providerManager.SaveMetadataAsync(item, ItemUpdateType.MetadataDownload, [BaseNfoSaver.SaverName])
+            await _providerManager.SaveMetadataAsync(item, ItemUpdateType.MetadataDownload, new[] { BaseNfoSaver.SaverName })
                 .ConfigureAwait(false);
         }
         catch (Exception ex)
