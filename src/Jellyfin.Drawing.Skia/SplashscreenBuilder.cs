@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 using SkiaSharp;
 
 namespace Jellyfin.Drawing.Skia;
@@ -18,14 +19,17 @@ public class SplashscreenBuilder
     private const int Spacing = 20;
 
     private readonly SkiaEncoder _skiaEncoder;
+    private readonly ILogger _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SplashscreenBuilder"/> class.
     /// </summary>
     /// <param name="skiaEncoder">The SkiaEncoder.</param>
-    public SplashscreenBuilder(SkiaEncoder skiaEncoder)
+    /// <param name="logger">The logger.</param>
+    public SplashscreenBuilder(SkiaEncoder skiaEncoder, ILogger logger)
     {
         _skiaEncoder = skiaEncoder;
+        _logger = logger;
     }
 
     /// <summary>
@@ -55,65 +59,76 @@ public class SplashscreenBuilder
         var posterIndex = 0;
         var backdropIndex = 0;
 
-        var bitmap = new SKBitmap(WallWidth, WallHeight);
-        using var canvas = new SKCanvas(bitmap);
-        canvas.Clear(SKColors.Black);
-
-        int posterHeight = WallHeight / 6;
-
-        for (int i = 0; i < Rows; i++)
+        SKBitmap? bitmap = null;
+        try
         {
-            int imageCounter = Random.Shared.Next(0, 5);
-            int currentWidthPos = i * 75;
-            int currentHeight = i * (posterHeight + Spacing);
+            bitmap = new SKBitmap(WallWidth, WallHeight);
+            using var canvas = new SKCanvas(bitmap);
+            canvas.Clear(SKColors.Black);
 
-            while (currentWidthPos < WallWidth)
+            int posterHeight = WallHeight / 6;
+
+            for (int i = 0; i < Rows; i++)
             {
-                SKBitmap? currentImage;
+                int imageCounter = Random.Shared.Next(0, 5);
+                int currentWidthPos = i * 75;
+                int currentHeight = i * (posterHeight + Spacing);
 
-                switch (imageCounter)
+                while (currentWidthPos < WallWidth)
                 {
-                    case 0:
-                    case 2:
-                    case 3:
-                        currentImage = SkiaHelper.GetNextValidImage(_skiaEncoder, posters, posterIndex, out int newPosterIndex);
-                        posterIndex = newPosterIndex;
-                        break;
-                    default:
-                        currentImage = SkiaHelper.GetNextValidImage(_skiaEncoder, backdrops, backdropIndex, out int newBackdropIndex);
-                        backdropIndex = newBackdropIndex;
-                        break;
-                }
+                    SKBitmap? currentImage;
 
-                if (currentImage is null)
-                {
-                    throw new ArgumentException("Not enough valid pictures provided to create a splashscreen!");
-                }
+                    switch (imageCounter)
+                    {
+                        case 0:
+                        case 2:
+                        case 3:
+                            currentImage = SkiaHelper.GetNextValidImage(_skiaEncoder, posters, posterIndex, out int newPosterIndex);
+                            posterIndex = newPosterIndex;
+                            break;
+                        default:
+                            currentImage = SkiaHelper.GetNextValidImage(_skiaEncoder, backdrops, backdropIndex, out int newBackdropIndex);
+                            backdropIndex = newBackdropIndex;
+                            break;
+                    }
 
-                // resize to the same aspect as the original
-                var imageWidth = Math.Abs(posterHeight * currentImage.Width / currentImage.Height);
-                using var resizedBitmap = new SKBitmap(imageWidth, posterHeight);
-                currentImage.ScalePixels(resizedBitmap, SKFilterQuality.High);
+                    if (currentImage is null)
+                    {
+                        throw new ArgumentException("Not enough valid pictures provided to create a splashscreen!");
+                    }
 
-                // draw on canvas
-                canvas.DrawBitmap(resizedBitmap, currentWidthPos, currentHeight);
+                    using (currentImage)
+                    {
+                        var imageWidth = Math.Abs(posterHeight * currentImage.Width / currentImage.Height);
+                        using var resizedBitmap = new SKBitmap(imageWidth, posterHeight);
+                        currentImage.ScalePixels(resizedBitmap, SKFilterQuality.High);
 
-                currentWidthPos += imageWidth + Spacing;
+                        // draw on canvas
+                        canvas.DrawBitmap(resizedBitmap, currentWidthPos, currentHeight);
 
-                currentImage.Dispose();
+                        // resize to the same aspect as the original
+                        currentWidthPos += imageWidth + Spacing;
+                    }
 
-                if (imageCounter >= 4)
-                {
-                    imageCounter = 0;
-                }
-                else
-                {
-                    imageCounter++;
+                    if (imageCounter >= 4)
+                    {
+                        imageCounter = 0;
+                    }
+                    else
+                    {
+                        imageCounter++;
+                    }
                 }
             }
-        }
 
-        return bitmap;
+            return bitmap;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Detected intermediary error creating splashscreen image");
+            bitmap?.Dispose();
+            throw;
+        }
     }
 
     /// <summary>
@@ -123,25 +138,35 @@ public class SplashscreenBuilder
     /// <returns>The transformed image.</returns>
     private SKBitmap Transform3D(SKBitmap input)
     {
-        var bitmap = new SKBitmap(FinalWidth, FinalHeight);
-        using var canvas = new SKCanvas(bitmap);
-        canvas.Clear(SKColors.Black);
-        var matrix = new SKMatrix
+        SKBitmap? bitmap = null;
+        try
         {
-            ScaleX = 0.324108899f,
-            ScaleY = 0.563934922f,
-            SkewX = -0.244337708f,
-            SkewY = 0.0377609022f,
-            TransX = 42.0407715f,
-            TransY = -198.104706f,
-            Persp0 = -9.08959337E-05f,
-            Persp1 = 6.85242048E-05f,
-            Persp2 = 0.988209724f
-        };
+            bitmap = new SKBitmap(FinalWidth, FinalHeight);
+            using var canvas = new SKCanvas(bitmap);
+            canvas.Clear(SKColors.Black);
+            var matrix = new SKMatrix
+            {
+                ScaleX = 0.324108899f,
+                ScaleY = 0.563934922f,
+                SkewX = -0.244337708f,
+                SkewY = 0.0377609022f,
+                TransX = 42.0407715f,
+                TransY = -198.104706f,
+                Persp0 = -9.08959337E-05f,
+                Persp1 = 6.85242048E-05f,
+                Persp2 = 0.988209724f
+            };
 
-        canvas.SetMatrix(matrix);
-        canvas.DrawBitmap(input, 0, 0);
+            canvas.SetMatrix(matrix);
+            canvas.DrawBitmap(input, 0, 0);
 
-        return bitmap;
+            return bitmap;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Detected intermediary error creating splashscreen image transforming the image");
+            bitmap?.Dispose();
+            throw;
+        }
     }
 }
