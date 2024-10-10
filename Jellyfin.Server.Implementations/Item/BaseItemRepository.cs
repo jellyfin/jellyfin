@@ -23,6 +23,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
@@ -139,63 +140,57 @@ public sealed class BaseItemRepository(
     /// <inheritdoc />
     public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAllArtists(InternalItemsQuery filter)
     {
-        return GetItemValues(filter, [0, 1], typeof(MusicArtist).FullName!);
+        return GetItemValues(filter, [ItemValueType.Artist, ItemValueType.AlbumArtist], itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist]!);
     }
 
     /// <inheritdoc />
     public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetArtists(InternalItemsQuery filter)
     {
-        return GetItemValues(filter, [0], typeof(MusicArtist).FullName!);
+        return GetItemValues(filter, [ItemValueType.Artist], itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist]!);
     }
 
     /// <inheritdoc />
     public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAlbumArtists(InternalItemsQuery filter)
     {
-        return GetItemValues(filter, [1], typeof(MusicArtist).FullName!);
+        return GetItemValues(filter, [ItemValueType.AlbumArtist], itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist]!);
     }
 
     /// <inheritdoc />
     public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetStudios(InternalItemsQuery filter)
     {
-        return GetItemValues(filter, [3], typeof(Studio).FullName!);
+        return GetItemValues(filter, [ItemValueType.Studios], itemTypeLookup.BaseItemKindNames[BaseItemKind.Studio]!);
     }
 
     /// <inheritdoc />
     public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetGenres(InternalItemsQuery filter)
     {
-        return GetItemValues(filter, [2], typeof(Genre).FullName!);
+        return GetItemValues(filter, [ItemValueType.Genre], itemTypeLookup.BaseItemKindNames[BaseItemKind.Genre]!);
     }
 
     /// <inheritdoc />
     public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetMusicGenres(InternalItemsQuery filter)
     {
-        return GetItemValues(filter, [2], typeof(MusicGenre).FullName!);
+        return GetItemValues(filter, [ItemValueType.Genre], itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicGenre]!);
     }
 
     /// <inheritdoc />
     public IReadOnlyList<string> GetStudioNames()
     {
-        return GetItemValueNames([3], Array.Empty<string>(), Array.Empty<string>());
+        return GetItemValueNames([ItemValueType.Studios], Array.Empty<string>(), Array.Empty<string>());
     }
 
     /// <inheritdoc />
     public IReadOnlyList<string> GetAllArtistNames()
     {
-        return GetItemValueNames([0, 1], Array.Empty<string>(), Array.Empty<string>());
+        return GetItemValueNames([ItemValueType.Artist, ItemValueType.AlbumArtist], Array.Empty<string>(), Array.Empty<string>());
     }
 
     /// <inheritdoc />
     public IReadOnlyList<string> GetMusicGenreNames()
     {
         return GetItemValueNames(
-            [2],
-            new string[]
-            {
-                    typeof(Audio).FullName!,
-                    typeof(MusicVideo).FullName!,
-                    typeof(MusicAlbum).FullName!,
-                    typeof(MusicArtist).FullName!
-            },
+            [ItemValueType.Genre],
+            itemTypeLookup.MusicGenreTypes,
             Array.Empty<string>());
     }
 
@@ -203,15 +198,9 @@ public sealed class BaseItemRepository(
     public IReadOnlyList<string> GetGenreNames()
     {
         return GetItemValueNames(
-            [2],
+            [ItemValueType.Genre],
             Array.Empty<string>(),
-            new string[]
-            {
-                    typeof(Audio).FullName!,
-                    typeof(MusicVideo).FullName!,
-                    typeof(MusicAlbum).FullName!,
-                    typeof(MusicArtist).FullName!
-            });
+            itemTypeLookup.MusicGenreTypes);
     }
 
     /// <inheritdoc cref="IItemRepository"/>
@@ -1084,7 +1073,7 @@ public sealed class BaseItemRepository(
             if (includeTypes.Length == 1 && includeTypes.FirstOrDefault() is BaseItemKind.Episode)
             {
                 baseQuery = baseQuery
-                    .Where(e => e.ItemValues!.Where(e => e.ItemValue.Type == ItemValueType.InheritedTags)
+                    .Where(e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.InheritedTags)
                         .Any(f => filter.IncludeInheritedTags.Contains(f.ItemValue.CleanValue))
                         ||
                         (e.ParentId.HasValue && context.ItemValuesMap.Where(w => w.ItemId == e.ParentId.Value)!.Where(w => w.ItemValue.Type == ItemValueType.InheritedTags)
@@ -1246,84 +1235,76 @@ public sealed class BaseItemRepository(
             tuples[i] = (item, ancestorIds, topParent, userdataKey, inheritedTags);
         }
 
-        try
+        using var context = dbProvider.CreateDbContext();
+        using var transaction = context.Database.BeginTransaction();
+        foreach (var item in tuples)
         {
-            using var context = dbProvider.CreateDbContext();
-            using var transaction = context.Database.BeginTransaction();
-            foreach (var item in tuples)
+            var entity = Map(item.Item);
+            if (!context.BaseItems.Any(e => e.Id == entity.Id))
             {
-                var entity = Map(item.Item);
-                if (!context.BaseItems.Any(e => e.Id == entity.Id))
-                {
-                    context.BaseItems.Add(entity);
-                }
-                else
-                {
-                    context.BaseItems.Attach(entity).State = EntityState.Modified;
-                }
+                context.BaseItems.Add(entity);
+            }
+            else
+            {
+                context.BaseItems.Attach(entity).State = EntityState.Modified;
+            }
 
-                context.AncestorIds.Where(e => e.ItemId == entity.Id).ExecuteDelete();
-                if (item.Item.SupportsAncestors && item.AncestorIds != null)
+            context.AncestorIds.Where(e => e.ItemId == entity.Id).ExecuteDelete();
+            if (item.Item.SupportsAncestors && item.AncestorIds != null)
+            {
+                entity.AncestorIds = new List<AncestorId>();
+                foreach (var ancestorId in item.AncestorIds)
                 {
-                    entity.AncestorIds = new List<AncestorId>();
-                    foreach (var ancestorId in item.AncestorIds)
+                    entity.AncestorIds.Add(new AncestorId()
                     {
-                        entity.AncestorIds.Add(new AncestorId()
-                        {
-                            ParentItemId = ancestorId,
-                            ItemId = entity.Id,
-                            Item = null!,
-                            ParentItem = null!
-                        });
-                    }
-                }
-
-                var itemValuesToSave = GetItemValuesToSave(item.Item, item.InheritedTags);
-                var itemValues = itemValuesToSave.Select(e => e.Value).ToArray();
-                context.ItemValuesMap.Where(e => e.ItemId == entity.Id).ExecuteDelete();
-                entity.ItemValues = new List<ItemValueMap>();
-                var referenceValues = context.ItemValues.Where(e => itemValues.Any(f => f == e.CleanValue)).ToArray();
-
-                foreach (var itemValue in itemValuesToSave)
-                {
-                    var refValue = referenceValues.FirstOrDefault(f => f.CleanValue == itemValue.Value && (int)f.Type == itemValue.MagicNumber);
-                    if (refValue is not null)
-                    {
-                        entity.ItemValues.Add(new ItemValueMap()
-                        {
-                            Item = entity,
-                            ItemId = entity.Id,
-                            ItemValue = null!,
-                            ItemValueId = refValue.ItemValueId
-                        });
-                    }
-                    else
-                    {
-                        entity.ItemValues.Add(new ItemValueMap()
-                        {
-                            Item = entity,
-                            ItemId = entity.Id,
-                            ItemValue = new ItemValue()
-                            {
-                                CleanValue = GetCleanValue(itemValue.Value),
-                                Type = (ItemValueType)itemValue.MagicNumber,
-                                ItemValueId = Guid.NewGuid(),
-                                Value = itemValue.Value
-                            },
-                            ItemValueId = Guid.Empty
-                        });
-                    }
+                        ParentItemId = ancestorId,
+                        ItemId = entity.Id,
+                        Item = null!,
+                        ParentItem = null!
+                    });
                 }
             }
 
-            context.SaveChanges();
-            transaction.Commit();
+            var itemValuesToSave = GetItemValuesToSave(item.Item, item.InheritedTags);
+            var itemValues = itemValuesToSave.Select(e => e.Value).ToArray();
+            context.ItemValuesMap.Where(e => e.ItemId == entity.Id).ExecuteDelete();
+            entity.ItemValues = new List<ItemValueMap>();
+            var referenceValues = context.ItemValues.Where(e => itemValues.Any(f => f == e.CleanValue)).ToArray();
+
+            foreach (var itemValue in itemValuesToSave)
+            {
+                var refValue = referenceValues.FirstOrDefault(f => f.CleanValue == itemValue.Value && (int)f.Type == itemValue.MagicNumber);
+                if (refValue is not null)
+                {
+                    entity.ItemValues.Add(new ItemValueMap()
+                    {
+                        Item = entity,
+                        ItemId = entity.Id,
+                        ItemValue = null!,
+                        ItemValueId = refValue.ItemValueId
+                    });
+                }
+                else
+                {
+                    entity.ItemValues.Add(new ItemValueMap()
+                    {
+                        Item = entity,
+                        ItemId = entity.Id,
+                        ItemValue = new ItemValue()
+                        {
+                            CleanValue = GetCleanValue(itemValue.Value),
+                            Type = (ItemValueType)itemValue.MagicNumber,
+                            ItemValueId = Guid.NewGuid(),
+                            Value = itemValue.Value
+                        },
+                        ItemValueId = Guid.Empty
+                    });
+                }
+            }
         }
-        catch (System.Exception)
-        {
-            System.Console.WriteLine();
-            throw;
-        }
+
+        context.SaveChanges();
+        transaction.Commit();
     }
 
     /// <inheritdoc cref="IItemRepository" />
@@ -1665,7 +1646,7 @@ public sealed class BaseItemRepository(
         return entity;
     }
 
-    private IReadOnlyList<string> GetItemValueNames(int[] itemValueTypes, IReadOnlyList<string> withItemTypes, IReadOnlyList<string> excludeItemTypes)
+    private IReadOnlyList<string> GetItemValueNames(ItemValueType[] itemValueTypes, IReadOnlyList<string> withItemTypes, IReadOnlyList<string> excludeItemTypes)
     {
         using var context = dbProvider.CreateDbContext();
 
@@ -1725,7 +1706,7 @@ public sealed class BaseItemRepository(
         return Map(baseItemEntity, dto);
     }
 
-    private QueryResult<(BaseItemDto Item, ItemCounts ItemCounts)> GetItemValues(InternalItemsQuery filter, int[] itemValueTypes, string returnType)
+    private QueryResult<(BaseItemDto Item, ItemCounts ItemCounts)> GetItemValues(InternalItemsQuery filter, ItemValueType[] itemValueTypes, string returnType)
     {
         ArgumentNullException.ThrowIfNull(filter);
 
@@ -1787,19 +1768,27 @@ public sealed class BaseItemRepository(
             result.TotalRecordCount = query.DistinctBy(e => e.PresentationUniqueKey).Count();
         }
 
+        var seriesTypeName = itemTypeLookup.BaseItemKindNames[BaseItemKind.Series];
+        var movieTypeName = itemTypeLookup.BaseItemKindNames[BaseItemKind.Movie];
+        var episodeTypeName = itemTypeLookup.BaseItemKindNames[BaseItemKind.Episode];
+        var musicAlbumTypeName = itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicAlbum];
+        var musicArtistTypeName = itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist];
+        var audioTypeName = itemTypeLookup.BaseItemKindNames[BaseItemKind.Audio];
+        var trailerTypeName = itemTypeLookup.BaseItemKindNames[BaseItemKind.Trailer];
+
         var resultQuery = query.Select(e => new
         {
             item = e,
             // TODO: This is bad refactor!
             itemCount = new ItemCounts()
             {
-                SeriesCount = e.ItemValues!.Count(f => f.Item.Type == typeof(Series).FullName),
-                EpisodeCount = e.ItemValues!.Count(f => f.Item.Type == typeof(Data.Entities.Libraries.Movie).FullName),
-                MovieCount = e.ItemValues!.Count(f => f.Item.Type == typeof(Series).FullName),
-                AlbumCount = e.ItemValues!.Count(f => f.Item.Type == typeof(MusicAlbum).FullName),
-                ArtistCount = e.ItemValues!.Count(f => f.Item.Type == typeof(MusicArtist).FullName),
-                SongCount = e.ItemValues!.Count(f => f.Item.Type == typeof(Audio).FullName),
-                TrailerCount = e.ItemValues!.Count(f => f.Item.Type == typeof(Trailer).FullName),
+                SeriesCount = e.ItemValues!.Count(f => f.Item.Type == seriesTypeName),
+                EpisodeCount = e.ItemValues!.Count(f => f.Item.Type == episodeTypeName),
+                MovieCount = e.ItemValues!.Count(f => f.Item.Type == movieTypeName),
+                AlbumCount = e.ItemValues!.Count(f => f.Item.Type == musicAlbumTypeName),
+                ArtistCount = e.ItemValues!.Count(f => f.Item.Type == musicArtistTypeName),
+                SongCount = e.ItemValues!.Count(f => f.Item.Type == audioTypeName),
+                TrailerCount = e.ItemValues!.Count(f => f.Item.Type == trailerTypeName),
             }
         });
 
@@ -1958,27 +1947,27 @@ public sealed class BaseItemRepository(
 
         if (IsTypeInQuery(BaseItemKind.Person, query))
         {
-            list.Add(typeof(Person).FullName!);
+            list.Add(itemTypeLookup.BaseItemKindNames[BaseItemKind.Person]!);
         }
 
         if (IsTypeInQuery(BaseItemKind.Genre, query))
         {
-            list.Add(typeof(Genre).FullName!);
+            list.Add(itemTypeLookup.BaseItemKindNames[BaseItemKind.Genre]!);
         }
 
         if (IsTypeInQuery(BaseItemKind.MusicGenre, query))
         {
-            list.Add(typeof(MusicGenre).FullName!);
+            list.Add(itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicGenre]!);
         }
 
         if (IsTypeInQuery(BaseItemKind.MusicArtist, query))
         {
-            list.Add(typeof(MusicArtist).FullName!);
+            list.Add(itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist]!);
         }
 
         if (IsTypeInQuery(BaseItemKind.Studio, query))
         {
-            list.Add(typeof(Studio).FullName!);
+            list.Add(itemTypeLookup.BaseItemKindNames[BaseItemKind.Studio]!);
         }
 
         return list;
