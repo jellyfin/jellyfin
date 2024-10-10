@@ -28,6 +28,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using BaseItemDto = MediaBrowser.Controller.Entities.BaseItem;
@@ -1485,11 +1486,17 @@ public sealed class BaseItemRepository(
     /// <returns>The dto to map.</returns>
     public BaseItemEntity Map(BaseItemDto dto)
     {
+        var dtoType = dto.GetType();
         var entity = new BaseItemEntity()
         {
-            Type = dto.GetType().ToString(),
+            Type = dtoType.ToString(),
             Id = dto.Id
         };
+
+        if (TypeRequiresDeserialization(dtoType))
+        {
+            entity.Data = JsonSerializer.Serialize(dto, dtoType, JsonDefaults.Options);
+        }
 
         entity.ParentId = !dto.ParentId.IsEmpty() ? dto.ParentId : null;
         entity.Path = GetPathToSave(dto.Path);
