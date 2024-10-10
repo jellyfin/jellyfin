@@ -560,6 +560,7 @@ namespace Jellyfin.LiveTv
                         dto.ChannelName = liveChannel.Name;
                         dto.MediaType = liveChannel.MediaType;
                         dto.ChannelNumber = liveChannel.Number;
+                        dto.ChannelGroup = liveChannel.ChannelGroup;
 
                         if (hasChannelImage && liveChannel.HasImage(ImageType.Primary))
                         {
@@ -979,6 +980,7 @@ namespace Jellyfin.LiveTv
                 dto.Number = channel.Number;
                 dto.ChannelNumber = channel.Number;
                 dto.ChannelType = channel.ChannelType;
+                dto.ChannelGroup = channel.ChannelGroup;
 
                 currentChannelsDict[dto.Id] = dto;
 
