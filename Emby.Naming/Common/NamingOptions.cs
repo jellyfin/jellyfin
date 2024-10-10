@@ -144,10 +144,12 @@ namespace Emby.Naming.Common
                 new FileStackRule(@"^(?<filename>.*?)(?:(?<=[\]\)\}])|[ _.-]+)[\(\[]?(?<parttype>cd|dvd|part|pt|dis[ck])[ _.-]*(?<number>[a-d])[\)\]]?(?:\.[^.]+)?$", false)
             };
 
-            CleanDateTimes = new[]
+            NonTitleStrings = new[]
             {
-                @"(.+[^_\,\.\(\)\[\]\-])[_\.\(\)\[\]\-](19[0-9]{2}|20[0-9]{2})(?![0-9]+|\W[0-9]{2}\W[0-9]{2})([ _\,\.\(\)\[\]\-][^0-9]|).*(19[0-9]{2}|20[0-9]{2})*",
-                @"(.+[^_\,\.\(\)\[\]\-])[ _\.\(\)\[\]\-]+(19[0-9]{2}|20[0-9]{2})(?![0-9]+|\W[0-9]{2}\W[0-9]{2})([ _\,\.\(\)\[\]\-][^0-9]|).*(19[0-9]{2}|20[0-9]{2})*"
+                // The Not in title means they are very very unlikely to be in a title (especially with a delimitor before and after)
+                // If it helps far more than it hurts - it belongs here
+                @"(?<=(\s|\.|-|^|\(|\[|\""))(HDR|HD|HDC|UHD|UltraHD|4k|ac3|dts-hd|avi|dts-ma|master-audio|masteraudio|master audio|dolby|dolbydigital|dolby digital|dolby-digital|dolbyatmos|dolby-atmos|dolby atmos|atmos|trueHd|imax|divx|divx5|dsr|dsrip|dvd|dvdrip|dvdscr|dvdscreener|screener|dvdivx|cam|hdtv|hdrip|hdtvrip|MULTi|multisubs|Multi-Subs|dual-audio|dualaudio|dual audio|ntsc|ogg|ogm|pdtv|repack|rerip|cd[1-9]|bd5|se|Anniversary-Edition|AnniversaryEdition|svcd|read.nfo|nfofix|ws|telesync|ts|telecine|tc|brrip|bdrip|webdl|web-dl|webrip|web-rip|480p|480i|576p|576i|720p|720i|1080p|1080i|2160p|4320p|hrhd|hrhdtv|hddvd|bluray|blu-ray|blury|x264|x265|h264|h265|HEVC|Remastered|REMUX|xvid|xvidvd|xxx|uncut|Theatrical Cut|Theatrical-Cut|DirectorsCut|Directors Cut|Director'sCut|Director's Cut|Directors-Cut|Director's-Cut|www.www|AAC|DTS|\[.*\]|(?'resolution'([0-9]{2,4})x([0-9]{2,4})))(?=(\s|\.|-|\)|\]|\"")|$)",
+                @"(\(|\[|\"").*(\)|\]|\"")"
             };
 
             CleanStrings = new[]
@@ -855,9 +857,9 @@ namespace Emby.Naming.Common
         public FileStackRule[] VideoFileStackingRules { get; }
 
         /// <summary>
-        /// Gets or sets list of raw clean DateTimes regular expressions strings.
+        /// Gets or sets list of raw strings that are not associated with movie-titles regular expressions strings.
         /// </summary>
-        public string[] CleanDateTimes { get; set; }
+        public string[] NonTitleStrings { get; set; }
 
         /// <summary>
         /// Gets or sets list of raw clean strings regular expressions strings.
@@ -875,9 +877,9 @@ namespace Emby.Naming.Common
         public ExtraRule[] VideoExtraRules { get; set; }
 
         /// <summary>
-        /// Gets list of clean datetime regular expressions.
+        /// Gets list of raw strings that are not associated with movie-titles regular expressions.
         /// </summary>
-        public Regex[] CleanDateTimeRegexes { get; private set; } = Array.Empty<Regex>();
+        public Regex[] NonTitleStringsRegexes { get; private set; } = Array.Empty<Regex>();
 
         /// <summary>
         /// Gets list of clean string regular expressions.
@@ -889,7 +891,7 @@ namespace Emby.Naming.Common
         /// </summary>
         public void Compile()
         {
-            CleanDateTimeRegexes = CleanDateTimes.Select(Compile).ToArray();
+            NonTitleStringsRegexes = NonTitleStrings.Select(Compile).ToArray();
             CleanStringRegexes = CleanStrings.Select(Compile).ToArray();
         }
 
