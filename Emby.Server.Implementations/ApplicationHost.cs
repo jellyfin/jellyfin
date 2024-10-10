@@ -66,6 +66,7 @@ using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.QuickConnect;
 using MediaBrowser.Controller.Resolvers;
+using MediaBrowser.Controller.SearchExtension;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Controller.Subtitles;
@@ -331,6 +332,13 @@ namespace Emby.Server.Implementations
         /// <typeparam name="T">The type.</typeparam>
         /// <returns>``0.</returns>
         public T Resolve<T>() => ServiceProvider.GetService<T>();
+
+        /// <summary>
+        /// Resolves this instance.
+        /// </summary>
+        /// <typeparam name="T">The type.</typeparam>
+        /// <returns>``0.</returns>
+        public IEnumerable<T> ResolveMany<T>() => ServiceProvider.GetServices<T>();
 
         /// <inheritdoc/>
         public IEnumerable<Type> GetExportTypes<T>()
@@ -642,6 +650,7 @@ namespace Emby.Server.Implementations
             Folder.UserViewManager = Resolve<IUserViewManager>();
             UserView.TVSeriesManager = Resolve<ITVSeriesManager>();
             UserView.CollectionManager = Resolve<ICollectionManager>();
+            UserView.BaseItemSearchProviders = ResolveMany<IBaseItemSearchProvider>();
             BaseItem.MediaSourceManager = Resolve<IMediaSourceManager>();
             BaseItem.MediaSegmentManager = Resolve<IMediaSegmentManager>();
             CollectionFolder.XmlSerializer = _xmlSerializer;
