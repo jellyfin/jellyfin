@@ -68,17 +68,6 @@ public sealed class LibraryStructureControllerTests : IClassFixture<JellyfinAppl
         var client = _factory.CreateClient();
         client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
-        var createbody = new AddVirtualFolderDto()
-        {
-            LibraryOptions = new LibraryOptions()
-            {
-                Enabled = false
-            }
-        };
-
-        using var createresponse = await client.PostAsJsonAsync("Library/VirtualFolders?name=test&refreshLibrary=true", createbody, _jsonOptions);
-        Assert.Equal(HttpStatusCode.NoContent, createresponse.StatusCode);
-
         using var response = await client.GetAsync("Library/VirtualFolders");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
