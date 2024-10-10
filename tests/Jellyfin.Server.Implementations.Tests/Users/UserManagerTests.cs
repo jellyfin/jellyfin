@@ -9,7 +9,12 @@ namespace Jellyfin.Server.Implementations.Tests.Users
         [Theory]
         [InlineData("this_is_valid")]
         [InlineData("this is also valid")]
+        [InlineData("this+too")]
         [InlineData("0@_-' .")]
+        [InlineData("john+doe")]
+        [InlineData("JöhnDøë")]
+        [InlineData("Jö hn+Døë")]
+        [InlineData("Jö hn+Døë@")]
         public void ThrowIfInvalidUsername_WhenValidUsername_DoesNotThrowArgumentException(string username)
         {
             var ex = Record.Exception(() => UserManager.ThrowIfInvalidUsername(username));
