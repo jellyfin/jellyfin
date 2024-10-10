@@ -334,7 +334,8 @@ namespace Jellyfin.Server.Implementations.Users
                 },
                 Policy = new UserPolicy
                 {
-                    MaxParentalRating = user.MaxParentalAgeRating,
+                    MaxParentalRating = user.MaxParentalRatingScore,
+                    MaxParentalSubRating = user.MaxParentalRatingSubScore,
                     EnableUserPreferenceAccess = user.EnableUserPreferenceAccess,
                     RemoteClientBitrateLimit = user.RemoteClientBitrateLimit ?? 0,
                     AuthenticationProviderId = user.AuthenticationProviderId,
@@ -659,7 +660,8 @@ namespace Jellyfin.Server.Implementations.Users
                     _ => policy.LoginAttemptsBeforeLockout
                 };
 
-                user.MaxParentalAgeRating = policy.MaxParentalRating;
+                user.MaxParentalRatingScore = policy.MaxParentalRating;
+                user.MaxParentalRatingSubScore = policy.MaxParentalSubRating;
                 user.EnableUserPreferenceAccess = policy.EnableUserPreferenceAccess;
                 user.RemoteClientBitrateLimit = policy.RemoteClientBitrateLimit;
                 user.AuthenticationProviderId = policy.AuthenticationProviderId;
