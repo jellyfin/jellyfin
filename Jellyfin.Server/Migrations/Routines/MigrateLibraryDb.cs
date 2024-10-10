@@ -29,7 +29,7 @@ public class MigrateLibraryDb : IMigrationRoutine
 {
     private const string DbFilename = "library.db";
 
-    private readonly ILogger<MigrateUserDb> _logger;
+    private readonly ILogger<MigrateLibraryDb> _logger;
     private readonly IServerApplicationPaths _paths;
     private readonly IDbContextFactory<JellyfinDbContext> _provider;
 
@@ -40,7 +40,7 @@ public class MigrateLibraryDb : IMigrationRoutine
     /// <param name="provider">The database provider.</param>
     /// <param name="paths">The server application paths.</param>
     public MigrateLibraryDb(
-        ILogger<MigrateUserDb> logger,
+        ILogger<MigrateLibraryDb> logger,
         IDbContextFactory<JellyfinDbContext> provider,
         IServerApplicationPaths paths)
     {
