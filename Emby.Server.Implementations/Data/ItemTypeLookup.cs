@@ -22,68 +22,6 @@ namespace Emby.Server.Implementations.Data;
 public class ItemTypeLookup : IItemTypeLookup
 {
     /// <inheritdoc />
-    public IReadOnlyList<ItemFields> AllItemFields { get; } = Enum.GetValues<ItemFields>();
-
-    /// <inheritdoc />
-    public IReadOnlyList<BaseItemKind> ProgramTypes { get; } =
-    [
-            BaseItemKind.Program,
-            BaseItemKind.TvChannel,
-            BaseItemKind.LiveTvProgram,
-            BaseItemKind.LiveTvChannel
-    ];
-
-    /// <inheritdoc />
-    public IReadOnlyList<BaseItemKind> ProgramExcludeParentTypes { get; } =
-    [
-            BaseItemKind.Series,
-            BaseItemKind.Season,
-            BaseItemKind.MusicAlbum,
-            BaseItemKind.MusicArtist,
-            BaseItemKind.PhotoAlbum
-    ];
-
-    /// <inheritdoc />
-    public IReadOnlyList<BaseItemKind> ServiceTypes { get; } =
-    [
-            BaseItemKind.TvChannel,
-            BaseItemKind.LiveTvChannel
-    ];
-
-    /// <inheritdoc />
-    public IReadOnlyList<BaseItemKind> StartDateTypes { get; } =
-    [
-            BaseItemKind.Program,
-            BaseItemKind.LiveTvProgram
-    ];
-
-    /// <inheritdoc />
-    public IReadOnlyList<BaseItemKind> SeriesTypes { get; } =
-    [
-            BaseItemKind.Book,
-            BaseItemKind.AudioBook,
-            BaseItemKind.Episode,
-            BaseItemKind.Season
-    ];
-
-    /// <inheritdoc />
-    public IReadOnlyList<BaseItemKind> ArtistExcludeParentTypes { get; } =
-    [
-            BaseItemKind.Series,
-            BaseItemKind.Season,
-            BaseItemKind.PhotoAlbum
-    ];
-
-    /// <inheritdoc />
-    public IReadOnlyList<BaseItemKind> ArtistsTypes { get; } =
-    [
-            BaseItemKind.Audio,
-            BaseItemKind.MusicAlbum,
-            BaseItemKind.MusicVideo,
-            BaseItemKind.AudioBook
-    ];
-
-    /// <inheritdoc />
     public IReadOnlyList<string> MusicGenreTypes => BaseItemKindNames.Where(e => e.Key is BaseItemKind.Audio or BaseItemKind.MusicVideo or BaseItemKind.MusicAlbum or BaseItemKind.MusicArtist).Select(e => e.Value).ToImmutableArray();
 
     /// <inheritdoc />
