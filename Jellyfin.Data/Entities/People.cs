@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Jellyfin.Data.Entities;
+#pragma warning disable CA2227 // Collection properties should be read only
 
 /// <summary>
 /// People entity.
@@ -11,14 +10,9 @@ namespace Jellyfin.Data.Entities;
 public class People
 {
     /// <summary>
-    /// Gets or Sets The ItemId.
+    /// Gets or Sets the PeopleId.
     /// </summary>
-    public required Guid ItemId { get; set; }
-
-    /// <summary>
-    /// Gets or Sets Reference Item.
-    /// </summary>
-    public required BaseItemEntity Item { get; set; }
+    public required Guid Id { get; set; }
 
     /// <summary>
     /// Gets or Sets the Persons Name.
@@ -26,22 +20,12 @@ public class People
     public required string Name { get; set; }
 
     /// <summary>
-    /// Gets or Sets the Role.
-    /// </summary>
-    public string? Role { get; set; }
-
-    /// <summary>
     /// Gets or Sets the Type.
     /// </summary>
     public string? PersonType { get; set; }
 
     /// <summary>
-    /// Gets or Sets the SortOrder.
+    /// Gets or Sets the mapping of People to BaseItems.
     /// </summary>
-    public int? SortOrder { get; set; }
-
-    /// <summary>
-    /// Gets or Sets the ListOrder.
-    /// </summary>
-    public int? ListOrder { get; set; }
+    public ICollection<PeopleBaseItemMap>? BaseItems { get; set; }
 }

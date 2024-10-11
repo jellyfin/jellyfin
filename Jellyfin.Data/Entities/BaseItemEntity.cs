@@ -154,7 +154,7 @@ public class BaseItemEntity
 
     public Guid? SeriesId { get; set; }
 
-    public ICollection<People>? Peoples { get; set; }
+    public ICollection<PeopleBaseItemMap>? Peoples { get; set; }
 
     public ICollection<UserData>? UserData { get; set; }
 

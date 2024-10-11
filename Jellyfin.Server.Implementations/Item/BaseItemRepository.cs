@@ -81,7 +81,8 @@ public sealed class BaseItemRepository(
 
         using var context = dbProvider.CreateDbContext();
         using var transaction = context.Database.BeginTransaction();
-        context.Peoples.Where(e => e.ItemId == id).ExecuteDelete();
+        context.PeopleBaseItemMap.Where(e => e.ItemId == id).ExecuteDelete();
+        context.Peoples.Where(e => e.BaseItems!.Count == 0).ExecuteDelete();
         context.Chapters.Where(e => e.ItemId == id).ExecuteDelete();
         context.MediaStreamInfos.Where(e => e.ItemId == id).ExecuteDelete();
         context.AncestorIds.Where(e => e.ItemId == id).ExecuteDelete();
@@ -602,13 +603,13 @@ public sealed class BaseItemRepository(
         {
             baseQuery = baseQuery
                 .Where(e =>
-                    context.Peoples.Where(w => context.BaseItems.Where(r => filter.PersonIds.Contains(r.Id)).Any(f => f.Name == w.Name))
+                    context.PeopleBaseItemMap.Where(w => context.BaseItems.Where(r => filter.PersonIds.Contains(r.Id)).Any(f => f.Name == w.People.Name))
                         .Any(f => f.ItemId == e.Id));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.Person))
         {
-            baseQuery = baseQuery.Where(e => e.Peoples!.Any(f => f.Name == filter.Person));
+            baseQuery = baseQuery.Where(e => e.Peoples!.Any(f => f.People.Name == filter.Person));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.MinSortName))
@@ -934,7 +935,7 @@ public sealed class BaseItemRepository(
         if (filter.IsDeadPerson.HasValue && filter.IsDeadPerson.Value)
         {
             baseQuery = baseQuery
-                .Where(e => !e.Peoples!.Any(f => f.Name == e.Name));
+                .Where(e => !e.Peoples!.Any(f => f.People.Name == e.Name));
         }
 
         if (filter.Years.Length == 1)

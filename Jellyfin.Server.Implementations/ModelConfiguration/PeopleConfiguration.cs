@@ -13,8 +13,8 @@ public class PeopleConfiguration : IEntityTypeConfiguration<People>
     /// <inheritdoc/>
     public void Configure(EntityTypeBuilder<People> builder)
     {
-        builder.HasKey(e => new { e.ItemId, e.Role, e.ListOrder });
-        builder.HasIndex(e => new { e.ItemId, e.ListOrder });
+        builder.HasKey(e => e.Id);
         builder.HasIndex(e => e.Name);
+        builder.HasMany(e => e.BaseItems);
     }
 }

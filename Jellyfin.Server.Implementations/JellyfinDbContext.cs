@@ -112,7 +112,7 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
     public DbSet<Chapter> Chapters => Set<Chapter>();
 
     /// <summary>
-    /// Gets the <see cref="DbSet{TEntity}"/> containing the user data.
+    /// Gets the <see cref="DbSet{TEntity}"/>.
     /// </summary>
     public DbSet<ItemValue> ItemValues => Set<ItemValue>();
 
@@ -122,14 +122,19 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
     public DbSet<ItemValueMap> ItemValuesMap => Set<ItemValueMap>();
 
     /// <summary>
-    /// Gets the <see cref="DbSet{TEntity}"/> containing the user data.
+    /// Gets the <see cref="DbSet{TEntity}"/>.
     /// </summary>
     public DbSet<MediaStreamInfo> MediaStreamInfos => Set<MediaStreamInfo>();
 
     /// <summary>
-    /// Gets the <see cref="DbSet{TEntity}"/> containing the user data.
+    /// Gets the <see cref="DbSet{TEntity}"/>.
     /// </summary>
     public DbSet<People> Peoples => Set<People>();
+
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/>.
+    /// </summary>
+    public DbSet<PeopleBaseItemMap> PeopleBaseItemMap => Set<PeopleBaseItemMap>();
 
     /// <summary>
     /// Gets the <see cref="DbSet{TEntity}"/> containing the referenced Providers with ids.

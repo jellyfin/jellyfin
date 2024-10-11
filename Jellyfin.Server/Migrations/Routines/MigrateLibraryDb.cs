@@ -1,26 +1,25 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
+using System.Data;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using Emby.Server.Implementations.Data;
 using Jellyfin.Data.Entities;
-using Jellyfin.Data.Entities.Libraries;
 using Jellyfin.Extensions;
 using Jellyfin.Server.Implementations;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.LiveTv;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Chapter = Jellyfin.Data.Entities.Chapter;
 
 namespace Jellyfin.Server.Migrations.Routines;
+#pragma warning disable RS0030 // Do not use banned APIs
 
 /// <summary>
 /// The migration routine for migrating the userdata database to EF Core.
@@ -50,13 +49,13 @@ public class MigrateLibraryDb : IMigrationRoutine
     }
 
     /// <inheritdoc/>
-    public Guid Id => Guid.Parse("5bcb4197-e7c0-45aa-9902-963bceab5798");
+    public Guid Id => Guid.Parse("36445464-849f-429f-9ad0-bb130efa0664");
 
     /// <inheritdoc/>
-    public string Name => "MigrateUserData";
+    public string Name => "MigrateLibraryDbData";
 
     /// <inheritdoc/>
-    public bool PerformOnNewInstall => false;
+    public bool PerformOnNewInstall => false; // TODO Change back after testing
 
     /// <inheritdoc/>
     public void Perform()
@@ -66,24 +65,38 @@ public class MigrateLibraryDb : IMigrationRoutine
         var dataPath = _paths.DataPath;
         var libraryDbPath = Path.Combine(dataPath, DbFilename);
         using var connection = new SqliteConnection($"Filename={libraryDbPath}");
+        var stopwatch = new Stopwatch();
+        stopwatch.Start();
 
         connection.Open();
         using var dbContext = _provider.CreateDbContext();
 
+        _logger.LogInformation("Start moving UserData.");
         var queryResult = connection.Query("SELECT key, userId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex FROM UserDatas");
 
         dbContext.UserData.ExecuteDelete();
 
         var users = dbContext.Users.AsNoTracking().ToImmutableArray();
 
-        foreach (SqliteDataReader dto in queryResult)
+        foreach (var entity in queryResult)
         {
-            dbContext.UserData.Add(GetUserData(users, dto));
+            var userData = GetUserData(users, entity);
+            if (userData is null)
+            {
+                _logger.LogError("Was not able to migrate user data with key {0}", entity.GetString(0));
+                continue;
+            }
+
+            dbContext.UserData.Add(userData);
         }
 
+        _logger.LogInformation("Try saving {0} UserData entries.", dbContext.UserData.Local.Count);
         dbContext.SaveChanges();
+        var stepElapsed = stopwatch.Elapsed;
+        _logger.LogInformation("Saving UserData entries took {0}.", stepElapsed);
 
-        var typedBaseItemsQuery = "SELECT type, data, StartDate, EndDate, ChannelId, IsMovie, IsSeries, EpisodeTitle, IsRepeat, CommunityRating, CustomRating, IndexNumber, IsLocked, PreferredMetadataLanguage, PreferredMetadataCountryCode, Width, Height, DateLastRefreshed, Name, Path, PremiereDate, Overview, ParentIndexNumber, ProductionYear, OfficialRating, ForcedSortName, RunTimeTicks, Size, DateCreated, DateModified, guid, Genres, ParentId, Audio, ExternalServiceId, IsInMixedFolder, DateLastSaved, LockedFields, Studios, Tags, TrailerTypes, OriginalTitle, PrimaryVersionId, DateLastMediaAdded, Album, LUFS, NormalizationGain, CriticRating, IsVirtualItem, SeriesName, SeasonName, SeasonId, SeriesId, PresentationUniqueKey, InheritedParentalRatingValue, ExternalSeriesId, Tagline, ProviderIds, Images, ProductionLocations, ExtraIds, TotalBitrate, ExtraType, Artists, AlbumArtists, ExternalId, SeriesPresentationUniqueKey, ShowId, OwnerId FROM TypeBaseItems";
+        _logger.LogInformation("Start moving TypedBaseItem.");
+        var typedBaseItemsQuery = "SELECT type, data, StartDate, EndDate, ChannelId, IsMovie, IsSeries, EpisodeTitle, IsRepeat, CommunityRating, CustomRating, IndexNumber, IsLocked, PreferredMetadataLanguage, PreferredMetadataCountryCode, Width, Height, DateLastRefreshed, Name, Path, PremiereDate, Overview, ParentIndexNumber, ProductionYear, OfficialRating, ForcedSortName, RunTimeTicks, Size, DateCreated, DateModified, guid, Genres, ParentId, Audio, ExternalServiceId, IsInMixedFolder, DateLastSaved, LockedFields, Studios, Tags, TrailerTypes, OriginalTitle, PrimaryVersionId, DateLastMediaAdded, Album, LUFS, NormalizationGain, CriticRating, IsVirtualItem, SeriesName, SeasonName, SeasonId, SeriesId, PresentationUniqueKey, InheritedParentalRatingValue, ExternalSeriesId, Tagline, ProviderIds, Images, ProductionLocations, ExtraIds, TotalBitrate, ExtraType, Artists, AlbumArtists, ExternalId, SeriesPresentationUniqueKey, ShowId, OwnerId FROM TypedBaseItems";
         dbContext.BaseItems.ExecuteDelete();
 
         foreach (SqliteDataReader dto in connection.Query(typedBaseItemsQuery))
@@ -91,9 +104,13 @@ public class MigrateLibraryDb : IMigrationRoutine
             dbContext.BaseItems.Add(GetItem(dto));
         }
 
+        _logger.LogInformation("Try saving {0} BaseItem entries.", dbContext.BaseItems.Local.Count);
         dbContext.SaveChanges();
+        stepElapsed = stopwatch.Elapsed - stepElapsed;
+        _logger.LogInformation("Saving BaseItems entries took {0}.", stepElapsed);
 
-        var mediaStreamQuery = "SELECT ItemId, StreamIndex, StreamType, Codec, Language, ChannelLayout, Profile, AspectRatio, Path, IsInterlaced, BitRate, Channels, SampleRate, IsDefault, IsForced, IsExternal, Height, Width, AverageFrameRate, RealFrameRate, Level, PixelFormat, BitDepth, IsAnamorphic, RefFrames, CodecTag, Comment, NalLengthSize, IsAvc, Title, TimeBase, CodecTimeBase, ColorPrimaries, ColorSpace, ColorTransfer, DvVersionMajor, DvVersionMinor, DvProfile, DvLevel, RpuPresentFlag, ElPresentFlag, BlPresentFlag, DvBlSignalCompatibilityId, IsHearingImpaired, Rotation FROM MediaStreams";
+        _logger.LogInformation("Start moving MediaStreamInfos.");
+        var mediaStreamQuery = "SELECT ItemId, StreamIndex, StreamType, Codec, Language, ChannelLayout, Profile, AspectRatio, Path, IsInterlaced, BitRate, Channels, SampleRate, IsDefault, IsForced, IsExternal, Height, Width, AverageFrameRate, RealFrameRate, Level, PixelFormat, BitDepth, IsAnamorphic, RefFrames, CodecTag, Comment, NalLengthSize, IsAvc, Title, TimeBase, CodecTimeBase, ColorPrimaries, ColorSpace, ColorTransfer, DvVersionMajor, DvVersionMinor, DvProfile, DvLevel, RpuPresentFlag, ElPresentFlag, BlPresentFlag, DvBlSignalCompatibilityId, IsHearingImpaired FROM MediaStreams";
         dbContext.MediaStreamInfos.ExecuteDelete();
 
         foreach (SqliteDataReader dto in connection.Query(mediaStreamQuery))
@@ -101,18 +118,59 @@ public class MigrateLibraryDb : IMigrationRoutine
             dbContext.MediaStreamInfos.Add(GetMediaStream(dto));
         }
 
+        _logger.LogInformation("Try saving {0} MediaStreamInfos entries.", dbContext.MediaStreamInfos.Local.Count);
         dbContext.SaveChanges();
+        stepElapsed = stopwatch.Elapsed - stepElapsed;
+        _logger.LogInformation("Saving MediaStreamInfos entries took {0}.", stepElapsed);
 
+        _logger.LogInformation("Start moving People.");
         var personsQuery = "select ItemId, Name, Role, PersonType, SortOrder from People p";
         dbContext.Peoples.ExecuteDelete();
+        dbContext.PeopleBaseItemMap.ExecuteDelete();
 
-        foreach (SqliteDataReader dto in connection.Query(personsQuery))
+        foreach (SqliteDataReader reader in connection.Query(personsQuery))
         {
-            dbContext.Peoples.Add(GetPerson(dto));
+            var itemId = reader.GetGuid(0);
+            if (!dbContext.BaseItems.Any(f => f.Id == itemId))
+            {
+                _logger.LogError("Dont save person {0} because its not in use by any BaseItem", reader.GetString(1));
+                continue;
+            }
+
+            var entity = GetPerson(reader);
+            var existingPerson = dbContext.Peoples.FirstOrDefault(e => e.Name == entity.Name);
+            if (existingPerson is null)
+            {
+                dbContext.Peoples.Add(entity);
+                existingPerson = entity;
+            }
+
+            if (reader.TryGetString(2, out var role))
+            {
+            }
+
+            if (reader.TryGetInt32(4, out var sortOrder))
+            {
+            }
+
+            dbContext.PeopleBaseItemMap.Add(new PeopleBaseItemMap()
+            {
+                Item = null!,
+                ItemId = itemId,
+                People = existingPerson,
+                PeopleId = existingPerson.Id,
+                ListOrder = sortOrder,
+                SortOrder = sortOrder,
+                Role = role
+            });
         }
 
+        _logger.LogInformation("Try saving {0} People entries.", dbContext.MediaStreamInfos.Local.Count);
         dbContext.SaveChanges();
+        stepElapsed = stopwatch.Elapsed - stepElapsed;
+        _logger.LogInformation("Saving People entries took {0}.", stepElapsed);
 
+        _logger.LogInformation("Start moving ItemValues.");
         // do not migrate inherited types as they are now properly mapped in search and lookup.
         var itemValueQuery = "select ItemId, Type, Value, CleanValue FROM ItemValues WHERE Type <> 6";
         dbContext.ItemValues.ExecuteDelete();
@@ -140,32 +198,60 @@ public class MigrateLibraryDb : IMigrationRoutine
             });
         }
 
+        _logger.LogInformation("Try saving {0} ItemValues entries.", dbContext.ItemValues.Local.Count);
         dbContext.SaveChanges();
+        stepElapsed = stopwatch.Elapsed - stepElapsed;
+        _logger.LogInformation("Saving People ItemValues took {0}.", stepElapsed);
 
-        var chapterQuery = "select StartPositionTicks,Name,ImagePath,ImageDateModified from Chapters2";
+        _logger.LogInformation("Start moving Chapters.");
+        var chapterQuery = "select ItemId,StartPositionTicks,Name,ImagePath,ImageDateModified,ChapterIndex from Chapters2";
         dbContext.Chapters.ExecuteDelete();
 
         foreach (SqliteDataReader dto in connection.Query(chapterQuery))
         {
-            dbContext.Chapters.Add(GetChapter(dto));
+            var chapter = GetChapter(dto);
+            dbContext.Chapters.Add(chapter);
         }
 
+        _logger.LogInformation("Try saving {0} Chapters entries.", dbContext.Chapters.Local.Count);
         dbContext.SaveChanges();
+        stepElapsed = stopwatch.Elapsed - stepElapsed;
+        _logger.LogInformation("Saving Chapters took {0}.", stepElapsed);
 
+        _logger.LogInformation("Start moving AncestorIds.");
         var ancestorIdsQuery = "select ItemId, AncestorId, AncestorIdText from AncestorIds";
         dbContext.Chapters.ExecuteDelete();
 
         foreach (SqliteDataReader dto in connection.Query(ancestorIdsQuery))
         {
-            dbContext.AncestorIds.Add(GetAncestorId(dto));
+            var ancestorId = GetAncestorId(dto);
+            if (!dbContext.BaseItems.Any(e => e.Id == ancestorId.ItemId))
+            {
+                _logger.LogInformation("Dont move AncestorId ({0}, {1}) because no Item found.", ancestorId.ItemId, ancestorId.ParentItemId);
+                continue;
+            }
+
+            if (!dbContext.BaseItems.Any(e => e.Id == ancestorId.ParentItemId))
+            {
+                _logger.LogInformation("Dont move AncestorId ({0}, {1}) because no parent Item found.", ancestorId.ItemId, ancestorId.ParentItemId);
+                continue;
+            }
+
+            dbContext.AncestorIds.Add(ancestorId);
         }
 
+        _logger.LogInformation("Try saving {0} AncestorIds entries.", dbContext.Chapters.Local.Count);
+
         dbContext.SaveChanges();
+        stepElapsed = stopwatch.Elapsed - stepElapsed;
+        _logger.LogInformation("Saving AncestorIds took {0}.", stepElapsed);
 
         connection.Close();
-        _logger.LogInformation("Migration of the Library.db done.");
-        _logger.LogInformation("Move {0} to {1}.", libraryDbPath, libraryDbPath + ".old");
-        File.Move(libraryDbPath, libraryDbPath + ".old");
+        // _logger.LogInformation("Migration of the Library.db done.");
+        // _logger.LogInformation("Move {0} to {1}.", libraryDbPath, libraryDbPath + ".old");
+        // File.Move(libraryDbPath, libraryDbPath + ".old");
+
+        _logger.LogInformation("Migrating Library db took {0}.", stopwatch.Elapsed);
 
         if (dbContext.Database.IsSqlite())
         {
@@ -180,12 +266,18 @@ public class MigrateLibraryDb : IMigrationRoutine
         }
     }
 
-    private static UserData GetUserData(ImmutableArray<User> users, SqliteDataReader dto)
+    private static UserData? GetUserData(ImmutableArray<User> users, SqliteDataReader dto)
     {
+        var indexOfUser = dto.GetInt32(1);
+        if (users.Length < indexOfUser)
+        {
+            return null;
+        }
+
         return new UserData()
         {
             Key = dto.GetString(0),
-            UserId = users.ElementAt(dto.GetInt32(1)).Id,
+            UserId = users.ElementAt(indexOfUser).Id,
             Rating = dto.IsDBNull(2) ? null : dto.GetDouble(2),
             Played = dto.GetBoolean(3),
             PlayCount = dto.GetInt32(4),
@@ -219,23 +311,23 @@ public class MigrateLibraryDb : IMigrationRoutine
     {
         var chapter = new Chapter
         {
-            StartPositionTicks = reader.GetInt64(0),
-            ChapterIndex = 0,
+            StartPositionTicks = reader.GetInt64(1),
+            ChapterIndex = reader.GetInt32(5),
             Item = null!,
-            ItemId = Guid.Empty
+            ItemId = reader.GetGuid(0),
         };
 
-        if (reader.TryGetString(1, out var chapterName))
+        if (reader.TryGetString(2, out var chapterName))
         {
             chapter.Name = chapterName;
         }
 
-        if (reader.TryGetString(2, out var imagePath))
+        if (reader.TryGetString(3, out var imagePath))
         {
             chapter.ImagePath = imagePath;
         }
 
-        if (reader.TryReadDateTime(3, out var imageDateModified))
+        if (reader.TryReadDateTime(4, out var imageDateModified))
         {
             chapter.ImageDateModified = imageDateModified;
         }
@@ -258,24 +350,13 @@ public class MigrateLibraryDb : IMigrationRoutine
     {
         var item = new People
         {
-            ItemId = reader.GetGuid(0),
+            Id = Guid.NewGuid(),
             Name = reader.GetString(1),
-            Item = null!
         };
-
-        if (reader.TryGetString(2, out var role))
-        {
-            item.Role = role;
-        }
 
         if (reader.TryGetString(3, out var type))
         {
             item.PersonType = type;
-        }
-
-        if (reader.TryGetInt32(4, out var sortOrder))
-        {
-            item.SortOrder = sortOrder;
         }
 
         return item;
@@ -515,10 +596,10 @@ public class MigrateLibraryDb : IMigrationRoutine
 
         item.IsHearingImpaired = reader.TryGetBoolean(43, out var result) && result;
 
-        if (reader.TryGetInt32(44, out var rotation))
-        {
-            item.Rotation = rotation;
-        }
+        // if (reader.TryGetInt32(44, out var rotation))
+        // {
+        //     item.Rotation = rotation;
+        // }
 
         return item;
     }

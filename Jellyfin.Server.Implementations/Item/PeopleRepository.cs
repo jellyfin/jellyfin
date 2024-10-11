@@ -10,6 +10,7 @@ using MediaBrowser.Controller.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace Jellyfin.Server.Implementations.Item;
+#pragma warning disable RS0030 // Do not use banned APIs
 
 /// <summary>
 /// Manager for handling people.
@@ -28,7 +29,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider) :
         using var context = _dbProvider.CreateDbContext();
         var dbQuery = TranslateQuery(context.Peoples.AsNoTracking(), context, filter);
 
-        dbQuery = dbQuery.OrderBy(e => e.ListOrder);
+        // dbQuery = dbQuery.OrderBy(e => e.ListOrder);
         if (filter.Limit > 0)
         {
             dbQuery = dbQuery.Take(filter.Limit);
@@ -43,7 +44,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider) :
         using var context = _dbProvider.CreateDbContext();
         var dbQuery = TranslateQuery(context.Peoples.AsNoTracking(), context, filter);
 
-        dbQuery = dbQuery.OrderBy(e => e.ListOrder);
+        // dbQuery = dbQuery.OrderBy(e => e.ListOrder);
         if (filter.Limit > 0)
         {
             dbQuery = dbQuery.Take(filter.Limit);
@@ -58,7 +59,29 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider) :
         using var context = _dbProvider.CreateDbContext();
         using var transaction = context.Database.BeginTransaction();
 
-        context.Peoples.Where(e => e.ItemId.Equals(itemId)).ExecuteDelete();
+        context.PeopleBaseItemMap.Where(e => e.ItemId == itemId).ExecuteDelete();
+        foreach (var item in people)
+        {
+            var personEntity = Map(item);
+            var existingEntity = context.Peoples.FirstOrDefault(e => e.Id == personEntity.Id);
+            if (existingEntity is null)
+            {
+                context.Peoples.Add(personEntity);
+                existingEntity = personEntity;
+            }
+
+            context.PeopleBaseItemMap.Add(new PeopleBaseItemMap()
+            {
+                Item = null!,
+                ItemId = itemId,
+                People = existingEntity,
+                PeopleId = existingEntity.Id,
+                ListOrder = item.SortOrder,
+                SortOrder = item.SortOrder,
+                Role = item.Role
+            });
+        }
+
         context.Peoples.AddRange(people.Select(Map));
         context.SaveChanges();
         transaction.Commit();
@@ -68,10 +91,8 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider) :
     {
         var personInfo = new PersonInfo()
         {
-            ItemId = people.ItemId,
+            Id = people.Id,
             Name = people.Name,
-            Role = people.Role,
-            SortOrder = people.SortOrder,
         };
         if (Enum.TryParse<PersonKind>(people.PersonType, out var kind))
         {
@@ -85,13 +106,9 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider) :
     {
         var personInfo = new People()
         {
-            ItemId = people.ItemId,
             Name = people.Name,
-            Role = people.Role,
-            SortOrder = people.SortOrder,
             PersonType = people.Type.ToString(),
-            Item = null!,
-            ListOrder = people.SortOrder
+            Id = people.Id,
         };
 
         return personInfo;
@@ -108,12 +125,12 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider) :
 
         if (!filter.ItemId.IsEmpty())
         {
-            query = query.Where(e => e.ItemId.Equals(filter.ItemId));
+            query = query.Where(e => e.BaseItems!.Any(w => w.ItemId.Equals(filter.ItemId)));
         }
 
         if (!filter.AppearsInItemId.IsEmpty())
         {
-            query = query.Where(e => context.Peoples.Where(f => f.ItemId.Equals(filter.AppearsInItemId)).Select(e => e.Name).Contains(e.Name));
+            query = query.Where(e => e.BaseItems!.Any(w => w.ItemId.Equals(filter.AppearsInItemId)));
         }
 
         var queryPersonTypes = filter.PersonTypes.Where(IsValidPersonType).ToList();
@@ -129,9 +146,9 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider) :
             query = query.Where(e => !queryPersonTypes.Contains(e.PersonType));
         }
 
-        if (filter.MaxListOrder.HasValue)
+        if (filter.MaxListOrder.HasValue && !filter.ItemId.IsEmpty())
         {
-            query = query.Where(e => e.ListOrder <= filter.MaxListOrder.Value);
+            query = query.Where(e => e.BaseItems!.First(w => w.ItemId == filter.ItemId).ListOrder <= filter.MaxListOrder.Value);
         }
 
         if (!string.IsNullOrWhiteSpace(filter.NameContains))
