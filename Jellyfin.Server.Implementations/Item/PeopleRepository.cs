@@ -16,10 +16,11 @@ namespace Jellyfin.Server.Implementations.Item;
 /// Manager for handling people.
 /// </summary>
 /// <param name="dbProvider">Efcore Factory.</param>
+/// <param name="itemTypeLookup">Items lookup service.</param>
 /// <remarks>
 /// Initializes a new instance of the <see cref="PeopleRepository"/> class.
 /// </remarks>
-public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider) : IPeopleRepository
+public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, IItemTypeLookup itemTypeLookup) : IPeopleRepository
 {
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider = dbProvider;
 
@@ -118,8 +119,9 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider) :
     {
         if (filter.User is not null && filter.IsFavorite.HasValue)
         {
-            query = query.Where(e => e.PersonType == typeof(Person).FullName)
-                .Where(e => context.BaseItems.Where(d => context.UserData.Where(e => e.IsFavorite == filter.IsFavorite && e.UserId.Equals(filter.User.Id)).Any(f => f.Key == d.UserDataKey))
+            var personType = itemTypeLookup.BaseItemKindNames[BaseItemKind.Person];
+            query = query.Where(e => e.PersonType == personType)
+                .Where(e => context.BaseItems.Where(d => context.UserData.Where(w => w.IsFavorite == filter.IsFavorite && w.UserId.Equals(filter.User.Id)).Any(f => f.Key == d.UserDataKey))
                     .Select(f => f.Name).Contains(e.Name));
         }
 

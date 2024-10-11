@@ -22,10 +22,16 @@ namespace Emby.Server.Implementations.Data;
 public class ItemTypeLookup : IItemTypeLookup
 {
     /// <inheritdoc />
-    public IReadOnlyList<string> MusicGenreTypes => BaseItemKindNames.Where(e => e.Key is BaseItemKind.Audio or BaseItemKind.MusicVideo or BaseItemKind.MusicAlbum or BaseItemKind.MusicArtist).Select(e => e.Value).ToImmutableArray();
+    public IReadOnlyList<string> MusicGenreTypes { get; } = [
+
+         typeof(Audio).FullName!,
+         typeof(MusicVideo).FullName!,
+         typeof(MusicAlbum).FullName!,
+         typeof(MusicArtist).FullName!,
+    ];
 
     /// <inheritdoc />
-    public IDictionary<BaseItemKind, string> BaseItemKindNames { get; } = new Dictionary<BaseItemKind, string>()
+    public IReadOnlyDictionary<BaseItemKind, string> BaseItemKindNames { get; } = new Dictionary<BaseItemKind, string>()
     {
         { BaseItemKind.AggregateFolder, typeof(AggregateFolder).FullName! },
         { BaseItemKind.Audio, typeof(Audio).FullName! },
