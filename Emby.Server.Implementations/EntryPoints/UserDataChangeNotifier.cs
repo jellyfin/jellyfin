@@ -133,7 +133,8 @@ namespace Emby.Server.Implementations.EntryPoints
 
         private UserDataChangeInfo GetUserDataChangeInfo(Guid userId, List<BaseItem> changedItems)
         {
-            var user = _userManager.GetUserById(userId);
+            var user = _userManager.GetUserById(userId)
+                ?? throw new ArgumentException("Invalid user ID", nameof(userId));
 
             return new UserDataChangeInfo
             {

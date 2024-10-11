@@ -94,7 +94,7 @@ namespace Jellyfin.LiveTv.TunerHosts
 
             var mediaSource = sources[0];
 
-            if (mediaSource.Protocol == MediaProtocol.Http && !mediaSource.RequiresLooping)
+            if (tunerHost.AllowStreamSharing && mediaSource.Protocol == MediaProtocol.Http && !mediaSource.RequiresLooping)
             {
                 var extension = Path.GetExtension(new UriBuilder(mediaSource.Path).Path);
 
@@ -200,7 +200,9 @@ namespace Jellyfin.LiveTv.TunerHosts
                 SupportsDirectPlay = supportsDirectPlay,
                 SupportsDirectStream = supportsDirectStream,
 
-                RequiredHttpHeaders = httpHeaders
+                RequiredHttpHeaders = httpHeaders,
+                UseMostCompatibleTranscodingProfile = !info.AllowFmp4TranscodingContainer,
+                FallbackMaxStreamingBitrate = info.FallbackMaxStreamingBitrate
             };
 
             mediaSource.InferTotalBitrate();

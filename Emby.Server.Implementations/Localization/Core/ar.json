@@ -1,14 +1,14 @@
 {
-    "Albums": "البومات",
+    "Albums": "ألبومات",
     "AppDeviceValues": "تطبيق: {0}, جهاز: {1}",
     "Application": "تطبيق",
-    "Artists": "الفنانين",
+    "Artists": "الفنانون",
     "AuthenticationSucceededWithUserName": "نجحت عملية التوثيق بـ {0}",
     "Books": "الكتب",
     "CameraImageUploadedFrom": "رُفعت صورة الكاميرا الجديدة من {0}",
     "Channels": "القنوات",
     "ChapterNameValue": "الفصل {0}",
-    "Collections": "التجميعات",
+    "Collections": "المجموعات",
     "DeviceOfflineWithName": "قُطِع الاتصال ب{0}",
     "DeviceOnlineWithName": "{0} متصل",
     "FailedLoginAttemptWithUserName": "محاولة تسجيل الدخول فاشلة من {0}",
@@ -130,5 +130,6 @@
     "TaskCleanCollectionsAndPlaylists": "حذف المجموعات وقوائم التشغيل",
     "TaskCleanCollectionsAndPlaylistsDescription": "حذف عناصر من المجموعات وقوائم التشغيل التي لم تعد موجودة.",
     "TaskAudioNormalization": "تطبيع الصوت",
-    "TaskAudioNormalizationDescription": "مسح الملفات لتطبيع بيانات الصوت."
+    "TaskAudioNormalizationDescription": "مسح الملفات لتطبيع بيانات الصوت.",
+    "TaskDownloadMissingLyrics": "تنزيل عبارات القصيدة"
 }

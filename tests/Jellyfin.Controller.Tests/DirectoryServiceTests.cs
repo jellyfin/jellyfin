@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
 using Moq;

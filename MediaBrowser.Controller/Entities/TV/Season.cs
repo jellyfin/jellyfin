@@ -238,6 +238,7 @@ namespace MediaBrowser.Controller.Entities.TV
             if (series is not null)
             {
                 id.SeriesProviderIds = series.ProviderIds;
+                id.SeriesDisplayOrder = series.DisplayOrder;
             }
 
             return id;

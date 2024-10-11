@@ -129,5 +129,11 @@
     "TaskCleanCollectionsAndPlaylists": "清理系列和播放清單",
     "TaskCleanCollectionsAndPlaylistsDescription": "清理系列和播放清單中已不存在的項目。",
     "TaskAudioNormalization": "音量標準化",
-    "TaskAudioNormalizationDescription": "掃描文件以找出音量標準化資料。"
+    "TaskAudioNormalizationDescription": "掃描文件以找出音量標準化資料。",
+    "TaskDownloadMissingLyrics": "下載缺少的歌詞",
+    "TaskDownloadMissingLyricsDescription": "卡在歌曲歌詞",
+    "TaskExtractMediaSegments": "掃描媒體片段",
+    "TaskExtractMediaSegmentsDescription": "從使用媒體片段的擴充功能取得媒體片段。",
+    "TaskMoveTrickplayImages": "遷移快轉縮圖位置",
+    "TaskMoveTrickplayImagesDescription": "根據媒體庫的設定遷移快轉縮圖的檔案。"
 }

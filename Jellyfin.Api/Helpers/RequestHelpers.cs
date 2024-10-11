@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -86,18 +86,17 @@ public static class RequestHelpers
     /// <summary>
     /// Checks if the user can update an entry.
     /// </summary>
-    /// <param name="userManager">An instance of the <see cref="IUserManager"/> interface.</param>
     /// <param name="claimsPrincipal">The <see cref="ClaimsPrincipal"/> for the current request.</param>
-    /// <param name="userId">The user id.</param>
+    /// <param name="user">The user id.</param>
     /// <param name="restrictUserPreferences">Whether to restrict the user preferences.</param>
     /// <returns>A <see cref="bool"/> whether the user can update the entry.</returns>
-    internal static bool AssertCanUpdateUser(IUserManager userManager, ClaimsPrincipal claimsPrincipal, Guid userId, bool restrictUserPreferences)
+    internal static bool AssertCanUpdateUser(ClaimsPrincipal claimsPrincipal, User user, bool restrictUserPreferences)
     {
         var authenticatedUserId = claimsPrincipal.GetUserId();
         var isAdministrator = claimsPrincipal.IsInRole(UserRoles.Administrator);
 
         // If they're going to update the record of another user, they must be an administrator
-        if (!userId.Equals(authenticatedUserId) && !isAdministrator)
+        if (!user.Id.Equals(authenticatedUserId) && !isAdministrator)
         {
             return false;
         }
@@ -106,12 +105,6 @@ public static class RequestHelpers
         if (!restrictUserPreferences || isAdministrator)
         {
             return true;
-        }
-
-        var user = userManager.GetUserById(userId);
-        if (user is null)
-        {
-            throw new ResourceNotFoundException();
         }
 
         return user.EnableUserPreferenceAccess;

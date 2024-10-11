@@ -209,6 +209,7 @@ public class MediaInfoController : BaseJellyfinApiController
                     enableTranscoding.Value,
                     allowVideoStreamCopy.Value,
                     allowAudioStreamCopy.Value,
+                    playbackInfoDto?.AlwaysBurnInSubtitleWhenTranscoding ?? false,
                     Request.HttpContext.GetNormalizedRemoteIP());
             }
 
@@ -236,7 +237,8 @@ public class MediaInfoController : BaseJellyfinApiController
                         StartTimeTicks = startTimeTicks,
                         SubtitleStreamIndex = subtitleStreamIndex,
                         UserId = userId ?? Guid.Empty,
-                        OpenToken = mediaSource.OpenToken
+                        OpenToken = mediaSource.OpenToken,
+                        AlwaysBurnInSubtitleWhenTranscoding = playbackInfoDto?.AlwaysBurnInSubtitleWhenTranscoding ?? false
                     }).ConfigureAwait(false);
 
                 info.MediaSources = new[] { openStreamResult.MediaSource };
@@ -261,6 +263,7 @@ public class MediaInfoController : BaseJellyfinApiController
     /// <param name="openLiveStreamDto">The open live stream dto.</param>
     /// <param name="enableDirectPlay">Whether to enable direct play. Default: true.</param>
     /// <param name="enableDirectStream">Whether to enable direct stream. Default: true.</param>
+    /// <param name="alwaysBurnInSubtitleWhenTranscoding">Always burn-in subtitle when transcoding.</param>
     /// <response code="200">Media source opened.</response>
     /// <returns>A <see cref="Task"/> containing a <see cref="LiveStreamResponse"/>.</returns>
     [HttpPost("LiveStreams/Open")]
@@ -277,7 +280,8 @@ public class MediaInfoController : BaseJellyfinApiController
         [FromQuery] Guid? itemId,
         [FromBody] OpenLiveStreamDto? openLiveStreamDto,
         [FromQuery] bool? enableDirectPlay,
-        [FromQuery] bool? enableDirectStream)
+        [FromQuery] bool? enableDirectStream,
+        [FromQuery] bool? alwaysBurnInSubtitleWhenTranscoding)
     {
         userId ??= openLiveStreamDto?.UserId;
         userId = RequestHelpers.GetUserId(User, userId);
@@ -295,7 +299,8 @@ public class MediaInfoController : BaseJellyfinApiController
             DeviceProfile = openLiveStreamDto?.DeviceProfile,
             EnableDirectPlay = enableDirectPlay ?? openLiveStreamDto?.EnableDirectPlay ?? true,
             EnableDirectStream = enableDirectStream ?? openLiveStreamDto?.EnableDirectStream ?? true,
-            DirectPlayProtocols = openLiveStreamDto?.DirectPlayProtocols ?? new[] { MediaProtocol.Http }
+            DirectPlayProtocols = openLiveStreamDto?.DirectPlayProtocols ?? new[] { MediaProtocol.Http },
+            AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding ?? openLiveStreamDto?.AlwaysBurnInSubtitleWhenTranscoding ?? false
         };
         return await _mediaInfoHelper.OpenMediaSource(HttpContext, request).ConfigureAwait(false);
     }

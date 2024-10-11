@@ -80,7 +80,7 @@ public class TrickplayController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesImageFile]
-    public ActionResult GetTrickplayTileImage(
+    public async Task<ActionResult> GetTrickplayTileImage(
         [FromRoute, Required] Guid itemId,
         [FromRoute, Required] int width,
         [FromRoute, Required] int index,
@@ -92,9 +92,11 @@ public class TrickplayController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var path = _trickplayManager.GetTrickplayTilePath(item, width, index);
-        if (System.IO.File.Exists(path))
+        var saveWithMedia = _libraryManager.GetLibraryOptions(item).SaveTrickplayWithMedia;
+        var path = await _trickplayManager.GetTrickplayTilePathAsync(item, width, index, saveWithMedia).ConfigureAwait(false);
+        if (!string.IsNullOrEmpty(path) && System.IO.File.Exists(path))
         {
+            Response.Headers.ContentDisposition = "attachment";
             return PhysicalFile(path, MediaTypeNames.Image.Jpeg);
         }
 

@@ -1,10 +1,7 @@
-#nullable disable
-
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Threading;
 using Jellyfin.Data.Entities;
@@ -32,6 +29,12 @@ namespace Emby.Server.Implementations.Library
         private readonly IUserManager _userManager;
         private readonly IUserDataRepository _repository;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UserDataManager"/> class.
+        /// </summary>
+        /// <param name="config">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+        /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
+        /// <param name="repository">Instance of the <see cref="IUserDataRepository"/> interface.</param>
         public UserDataManager(
             IServerConfigurationManager config,
             IUserManager userManager,
@@ -42,15 +45,10 @@ namespace Emby.Server.Implementations.Library
             _repository = repository;
         }
 
-        public event EventHandler<UserDataSaveEventArgs> UserDataSaved;
+        /// <inheritdoc />
+        public event EventHandler<UserDataSaveEventArgs>? UserDataSaved;
 
-        public void SaveUserData(Guid userId, BaseItem item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken)
-        {
-            var user = _userManager.GetUserById(userId);
-
-            SaveUserData(user, item, userData, reason, cancellationToken);
-        }
-
+        /// <inheritdoc />
         public void SaveUserData(User user, BaseItem item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(userData);
@@ -81,6 +79,7 @@ namespace Emby.Server.Implementations.Library
             });
         }
 
+        /// <inheritdoc />
         public void SaveUserData(User user, BaseItem item, UpdateUserItemDataDto userDataDto, UserDataSaveReason reason)
         {
             ArgumentNullException.ThrowIfNull(user);
@@ -128,39 +127,7 @@ namespace Emby.Server.Implementations.Library
             SaveUserData(user, item, userData, reason, CancellationToken.None);
         }
 
-        /// <summary>
-        /// Save the provided user data for the given user.  Batch operation. Does not fire any events or update the cache.
-        /// </summary>
-        /// <param name="userId">The user id.</param>
-        /// <param name="userData">The user item data.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        public void SaveAllUserData(Guid userId, UserItemData[] userData, CancellationToken cancellationToken)
-        {
-            var user = _userManager.GetUserById(userId);
-
-            _repository.SaveAllUserData(user.InternalId, userData, cancellationToken);
-        }
-
-        /// <summary>
-        /// Retrieve all user data for the given user.
-        /// </summary>
-        /// <param name="userId">The user id.</param>
-        /// <returns>A <see cref="List{UserItemData}"/> containing all of the user's item data.</returns>
-        public List<UserItemData> GetAllUserData(Guid userId)
-        {
-            var user = _userManager.GetUserById(userId);
-
-            return _repository.GetAllUserData(user.InternalId);
-        }
-
-        public UserItemData GetUserData(Guid userId, Guid itemId, List<string> keys)
-        {
-            var user = _userManager.GetUserById(userId);
-
-            return GetUserData(user, itemId, keys);
-        }
-
-        public UserItemData GetUserData(User user, Guid itemId, List<string> keys)
+        private UserItemData GetUserData(User user, Guid itemId, List<string> keys)
         {
             var userId = user.InternalId;
 
@@ -186,7 +153,7 @@ namespace Emby.Server.Implementations.Library
                 };
             }
 
-            return null;
+            throw new UnreachableException();
         }
 
         /// <summary>
@@ -198,27 +165,18 @@ namespace Emby.Server.Implementations.Library
             return internalUserId.ToString(CultureInfo.InvariantCulture) + "-" + itemId.ToString("N", CultureInfo.InvariantCulture);
         }
 
+        /// <inheritdoc />
         public UserItemData GetUserData(User user, BaseItem item)
         {
             return GetUserData(user, item.Id, item.GetUserDataKeys());
         }
 
-        public UserItemData GetUserData(Guid userId, BaseItem item)
-        {
-            return GetUserData(userId, item.Id, item.GetUserDataKeys());
-        }
-
+        /// <inheritdoc />
         public UserItemDataDto GetUserDataDto(BaseItem item, User user)
-        {
-            var userData = GetUserData(user, item);
-            var dto = GetUserItemDataDto(userData);
-
-            item.FillUserDataDtoValues(dto, userData, null, user, new DtoOptions());
-            return dto;
-        }
+            => GetUserDataDto(item, null, user, new DtoOptions());
 
         /// <inheritdoc />
-        public UserItemDataDto GetUserDataDto(BaseItem item, BaseItemDto itemDto, User user, DtoOptions options)
+        public UserItemDataDto GetUserDataDto(BaseItem item, BaseItemDto? itemDto, User user, DtoOptions options)
         {
             var userData = GetUserData(user, item);
             var dto = GetUserItemDataDto(userData);

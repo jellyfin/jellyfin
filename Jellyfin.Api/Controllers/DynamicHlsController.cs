@@ -40,11 +40,12 @@ namespace Jellyfin.Api.Controllers;
 [Authorize]
 public class DynamicHlsController : BaseJellyfinApiController
 {
-    private const string DefaultVodEncoderPreset = "veryfast";
-    private const string DefaultEventEncoderPreset = "superfast";
+    private const EncoderPreset DefaultVodEncoderPreset = EncoderPreset.veryfast;
+    private const EncoderPreset DefaultEventEncoderPreset = EncoderPreset.superfast;
     private const TranscodingJobType TranscodingJobType = MediaBrowser.Controller.MediaEncoding.TranscodingJobType.Hls;
 
     private readonly Version _minFFmpegFlacInMp4 = new Version(6, 0);
+    private readonly Version _minFFmpegX265BframeInFmp4 = new Version(7, 0, 1);
 
     private readonly ILibraryManager _libraryManager;
     private readonly IUserManager _userManager;
@@ -116,7 +117,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="minSegments">The minimum number of segments.</param>
     /// <param name="mediaSourceId">The media version id, if playing an alternate version.</param>
     /// <param name="deviceId">The device id of the client requesting. Used to stop encoding processes when needed.</param>
-    /// <param name="audioCodec">Optional. Specify a audio codec to encode to, e.g. mp3. If omitted the server will auto-select using the url's extension. Options: aac, mp3, vorbis, wma.</param>
+    /// <param name="audioCodec">Optional. Specify an audio codec to encode to, e.g. mp3.</param>
     /// <param name="enableAutoStreamCopy">Whether or not to allow automatic stream copy if requested values match the original source. Defaults to true.</param>
     /// <param name="allowVideoStreamCopy">Whether or not to allow copying of the video stream url.</param>
     /// <param name="allowAudioStreamCopy">Whether or not to allow copying of the audio stream url.</param>
@@ -146,7 +147,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="cpuCoreLimit">Optional. The limit of how many cpu cores to use.</param>
     /// <param name="liveStreamId">The live stream id.</param>
     /// <param name="enableMpegtsM2TsMode">Optional. Whether to enable the MpegtsM2Ts mode.</param>
-    /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension. Options: h265, h264, mpeg4, theora, vp8, vp9, vpx (deprecated), wmv.</param>
+    /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264.</param>
     /// <param name="subtitleCodec">Optional. Specify a subtitle codec to encode to.</param>
     /// <param name="transcodeReasons">Optional. The transcoding reason.</param>
     /// <param name="audioStreamIndex">Optional. The index of the audio stream to use. If omitted the first audio stream will be used.</param>
@@ -157,6 +158,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="maxHeight">Optional. The max height.</param>
     /// <param name="enableSubtitlesInManifest">Optional. Whether to enable subtitles in the manifest.</param>
     /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
+    /// <param name="alwaysBurnInSubtitleWhenTranscoding">Whether to always burn in subtitles when transcoding.</param>
     /// <response code="200">Hls live stream retrieved.</response>
     /// <returns>A <see cref="FileResult"/> containing the hls file.</returns>
     [HttpGet("Videos/{itemId}/live.m3u8")]
@@ -215,7 +217,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? maxWidth,
         [FromQuery] int? maxHeight,
         [FromQuery] bool? enableSubtitlesInManifest,
-        [FromQuery] bool enableAudioVbrEncoding = true)
+        [FromQuery] bool enableAudioVbrEncoding = true,
+        [FromQuery] bool alwaysBurnInSubtitleWhenTranscoding = false)
     {
         VideoRequestDto streamingRequest = new VideoRequestDto
         {
@@ -250,7 +253,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             Height = height,
             VideoBitRate = videoBitRate,
             SubtitleStreamIndex = subtitleStreamIndex,
-            SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.Encode,
+            SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.External,
             MaxRefFrames = maxRefFrames,
             MaxVideoBitDepth = maxVideoBitDepth,
             RequireAvc = requireAvc ?? false,
@@ -270,7 +273,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             MaxHeight = maxHeight,
             MaxWidth = maxWidth,
             EnableSubtitlesInManifest = enableSubtitlesInManifest ?? true,
-            EnableAudioVbrEncoding = enableAudioVbrEncoding
+            EnableAudioVbrEncoding = enableAudioVbrEncoding,
+            AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding
         };
 
         // CTS lifecycle is managed internally.
@@ -355,7 +359,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="minSegments">The minimum number of segments.</param>
     /// <param name="mediaSourceId">The media version id, if playing an alternate version.</param>
     /// <param name="deviceId">The device id of the client requesting. Used to stop encoding processes when needed.</param>
-    /// <param name="audioCodec">Optional. Specify a audio codec to encode to, e.g. mp3. If omitted the server will auto-select using the url's extension. Options: aac, mp3, vorbis, wma.</param>
+    /// <param name="audioCodec">Optional. Specify an audio codec to encode to, e.g. mp3.</param>
     /// <param name="enableAutoStreamCopy">Whether or not to allow automatic stream copy if requested values match the original source. Defaults to true.</param>
     /// <param name="allowVideoStreamCopy">Whether or not to allow copying of the video stream url.</param>
     /// <param name="allowAudioStreamCopy">Whether or not to allow copying of the audio stream url.</param>
@@ -387,7 +391,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="cpuCoreLimit">Optional. The limit of how many cpu cores to use.</param>
     /// <param name="liveStreamId">The live stream id.</param>
     /// <param name="enableMpegtsM2TsMode">Optional. Whether to enable the MpegtsM2Ts mode.</param>
-    /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension. Options: h265, h264, mpeg4, theora, vp8, vp9, vpx (deprecated), wmv.</param>
+    /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264.</param>
     /// <param name="subtitleCodec">Optional. Specify a subtitle codec to encode to.</param>
     /// <param name="transcodeReasons">Optional. The transcoding reason.</param>
     /// <param name="audioStreamIndex">Optional. The index of the audio stream to use. If omitted the first audio stream will be used.</param>
@@ -397,6 +401,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="enableAdaptiveBitrateStreaming">Enable adaptive bitrate streaming.</param>
     /// <param name="enableTrickplay">Enable trickplay image playlists being added to master playlist.</param>
     /// <param name="enableAudioVbrEncoding">Whether to enable Audio Encoding.</param>
+    /// <param name="alwaysBurnInSubtitleWhenTranscoding">Whether to always burn in subtitles when transcoding.</param>
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the playlist file.</returns>
     [HttpGet("Videos/{itemId}/master.m3u8")]
@@ -456,7 +461,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] Dictionary<string, string> streamOptions,
         [FromQuery] bool enableAdaptiveBitrateStreaming = true,
         [FromQuery] bool enableTrickplay = true,
-        [FromQuery] bool enableAudioVbrEncoding = true)
+        [FromQuery] bool enableAudioVbrEncoding = true,
+        [FromQuery] bool alwaysBurnInSubtitleWhenTranscoding = false)
     {
         var streamingRequest = new HlsVideoRequestDto
         {
@@ -492,7 +498,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             MaxHeight = maxHeight,
             VideoBitRate = videoBitRate,
             SubtitleStreamIndex = subtitleStreamIndex,
-            SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.Encode,
+            SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.External,
             MaxRefFrames = maxRefFrames,
             MaxVideoBitDepth = maxVideoBitDepth,
             RequireAvc = requireAvc ?? false,
@@ -511,7 +517,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             StreamOptions = streamOptions,
             EnableAdaptiveBitrateStreaming = enableAdaptiveBitrateStreaming,
             EnableTrickplay = enableTrickplay,
-            EnableAudioVbrEncoding = enableAudioVbrEncoding
+            EnableAudioVbrEncoding = enableAudioVbrEncoding,
+            AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding
         };
 
         return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
@@ -531,7 +538,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="minSegments">The minimum number of segments.</param>
     /// <param name="mediaSourceId">The media version id, if playing an alternate version.</param>
     /// <param name="deviceId">The device id of the client requesting. Used to stop encoding processes when needed.</param>
-    /// <param name="audioCodec">Optional. Specify a audio codec to encode to, e.g. mp3. If omitted the server will auto-select using the url's extension. Options: aac, mp3, vorbis, wma.</param>
+    /// <param name="audioCodec">Optional. Specify an audio codec to encode to, e.g. mp3.</param>
     /// <param name="enableAutoStreamCopy">Whether or not to allow automatic stream copy if requested values match the original source. Defaults to true.</param>
     /// <param name="allowVideoStreamCopy">Whether or not to allow copying of the video stream url.</param>
     /// <param name="allowAudioStreamCopy">Whether or not to allow copying of the audio stream url.</param>
@@ -562,7 +569,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="cpuCoreLimit">Optional. The limit of how many cpu cores to use.</param>
     /// <param name="liveStreamId">The live stream id.</param>
     /// <param name="enableMpegtsM2TsMode">Optional. Whether to enable the MpegtsM2Ts mode.</param>
-    /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension. Options: h265, h264, mpeg4, theora, vp8, vp9, vpx (deprecated), wmv.</param>
+    /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264.</param>
     /// <param name="subtitleCodec">Optional. Specify a subtitle codec to encode to.</param>
     /// <param name="transcodeReasons">Optional. The transcoding reason.</param>
     /// <param name="audioStreamIndex">Optional. The index of the audio stream to use. If omitted the first audio stream will be used.</param>
@@ -662,7 +669,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             Height = height,
             VideoBitRate = videoBitRate,
             SubtitleStreamIndex = subtitleStreamIndex,
-            SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.Encode,
+            SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.External,
             MaxRefFrames = maxRefFrames,
             MaxVideoBitDepth = maxVideoBitDepth,
             RequireAvc = requireAvc ?? false,
@@ -680,7 +687,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             Context = context ?? EncodingContext.Streaming,
             StreamOptions = streamOptions,
             EnableAdaptiveBitrateStreaming = enableAdaptiveBitrateStreaming,
-            EnableAudioVbrEncoding = enableAudioVbrEncoding
+            EnableAudioVbrEncoding = enableAudioVbrEncoding,
+            AlwaysBurnInSubtitleWhenTranscoding = false
         };
 
         return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
@@ -700,7 +708,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="minSegments">The minimum number of segments.</param>
     /// <param name="mediaSourceId">The media version id, if playing an alternate version.</param>
     /// <param name="deviceId">The device id of the client requesting. Used to stop encoding processes when needed.</param>
-    /// <param name="audioCodec">Optional. Specify a audio codec to encode to, e.g. mp3. If omitted the server will auto-select using the url's extension. Options: aac, mp3, vorbis, wma.</param>
+    /// <param name="audioCodec">Optional. Specify an audio codec to encode to, e.g. mp3.</param>
     /// <param name="enableAutoStreamCopy">Whether or not to allow automatic stream copy if requested values match the original source. Defaults to true.</param>
     /// <param name="allowVideoStreamCopy">Whether or not to allow copying of the video stream url.</param>
     /// <param name="allowAudioStreamCopy">Whether or not to allow copying of the audio stream url.</param>
@@ -732,7 +740,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="cpuCoreLimit">Optional. The limit of how many cpu cores to use.</param>
     /// <param name="liveStreamId">The live stream id.</param>
     /// <param name="enableMpegtsM2TsMode">Optional. Whether to enable the MpegtsM2Ts mode.</param>
-    /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension. Options: h265, h264, mpeg4, theora, vp8, vp9, vpx (deprecated), wmv.</param>
+    /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264.</param>
     /// <param name="subtitleCodec">Optional. Specify a subtitle codec to encode to.</param>
     /// <param name="transcodeReasons">Optional. The transcoding reason.</param>
     /// <param name="audioStreamIndex">Optional. The index of the audio stream to use. If omitted the first audio stream will be used.</param>
@@ -740,6 +748,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
     /// <param name="streamOptions">Optional. The streaming options.</param>
     /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
+    /// <param name="alwaysBurnInSubtitleWhenTranscoding">Whether to always burn in subtitles when transcoding.</param>
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
     [HttpGet("Videos/{itemId}/main.m3u8")]
@@ -796,7 +805,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? videoStreamIndex,
         [FromQuery] EncodingContext? context,
         [FromQuery] Dictionary<string, string> streamOptions,
-        [FromQuery] bool enableAudioVbrEncoding = true)
+        [FromQuery] bool enableAudioVbrEncoding = true,
+        [FromQuery] bool alwaysBurnInSubtitleWhenTranscoding = false)
     {
         using var cancellationTokenSource = new CancellationTokenSource();
         var streamingRequest = new VideoRequestDto
@@ -833,7 +843,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             MaxHeight = maxHeight,
             VideoBitRate = videoBitRate,
             SubtitleStreamIndex = subtitleStreamIndex,
-            SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.Encode,
+            SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.External,
             MaxRefFrames = maxRefFrames,
             MaxVideoBitDepth = maxVideoBitDepth,
             RequireAvc = requireAvc ?? false,
@@ -850,7 +860,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             VideoStreamIndex = videoStreamIndex,
             Context = context ?? EncodingContext.Streaming,
             StreamOptions = streamOptions,
-            EnableAudioVbrEncoding = enableAudioVbrEncoding
+            EnableAudioVbrEncoding = enableAudioVbrEncoding,
+            AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding
         };
 
         return await GetVariantPlaylistInternal(streamingRequest, cancellationTokenSource)
@@ -871,7 +882,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="minSegments">The minimum number of segments.</param>
     /// <param name="mediaSourceId">The media version id, if playing an alternate version.</param>
     /// <param name="deviceId">The device id of the client requesting. Used to stop encoding processes when needed.</param>
-    /// <param name="audioCodec">Optional. Specify a audio codec to encode to, e.g. mp3. If omitted the server will auto-select using the url's extension. Options: aac, mp3, vorbis, wma.</param>
+    /// <param name="audioCodec">Optional. Specify an audio codec to encode to, e.g. mp3.</param>
     /// <param name="enableAutoStreamCopy">Whether or not to allow automatic stream copy if requested values match the original source. Defaults to true.</param>
     /// <param name="allowVideoStreamCopy">Whether or not to allow copying of the video stream url.</param>
     /// <param name="allowAudioStreamCopy">Whether or not to allow copying of the audio stream url.</param>
@@ -902,7 +913,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="cpuCoreLimit">Optional. The limit of how many cpu cores to use.</param>
     /// <param name="liveStreamId">The live stream id.</param>
     /// <param name="enableMpegtsM2TsMode">Optional. Whether to enable the MpegtsM2Ts mode.</param>
-    /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension. Options: h265, h264, mpeg4, theora, vpx, wmv.</param>
+    /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264.</param>
     /// <param name="subtitleCodec">Optional. Specify a subtitle codec to encode to.</param>
     /// <param name="transcodeReasons">Optional. The transcoding reason.</param>
     /// <param name="audioStreamIndex">Optional. The index of the audio stream to use. If omitted the first audio stream will be used.</param>
@@ -1000,7 +1011,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             Height = height,
             VideoBitRate = videoBitRate,
             SubtitleStreamIndex = subtitleStreamIndex,
-            SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.Encode,
+            SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.External,
             MaxRefFrames = maxRefFrames,
             MaxVideoBitDepth = maxVideoBitDepth,
             RequireAvc = requireAvc ?? false,
@@ -1017,7 +1028,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             VideoStreamIndex = videoStreamIndex,
             Context = context ?? EncodingContext.Streaming,
             StreamOptions = streamOptions,
-            EnableAudioVbrEncoding = enableAudioVbrEncoding
+            EnableAudioVbrEncoding = enableAudioVbrEncoding,
+            AlwaysBurnInSubtitleWhenTranscoding = false
         };
 
         return await GetVariantPlaylistInternal(streamingRequest, cancellationTokenSource)
@@ -1043,7 +1055,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="minSegments">The minimum number of segments.</param>
     /// <param name="mediaSourceId">The media version id, if playing an alternate version.</param>
     /// <param name="deviceId">The device id of the client requesting. Used to stop encoding processes when needed.</param>
-    /// <param name="audioCodec">Optional. Specify a audio codec to encode to, e.g. mp3. If omitted the server will auto-select using the url's extension. Options: aac, mp3, vorbis, wma.</param>
+    /// <param name="audioCodec">Optional. Specify an audio codec to encode to, e.g. mp3.</param>
     /// <param name="enableAutoStreamCopy">Whether or not to allow automatic stream copy if requested values match the original source. Defaults to true.</param>
     /// <param name="allowVideoStreamCopy">Whether or not to allow copying of the video stream url.</param>
     /// <param name="allowAudioStreamCopy">Whether or not to allow copying of the audio stream url.</param>
@@ -1075,7 +1087,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="cpuCoreLimit">Optional. The limit of how many cpu cores to use.</param>
     /// <param name="liveStreamId">The live stream id.</param>
     /// <param name="enableMpegtsM2TsMode">Optional. Whether to enable the MpegtsM2Ts mode.</param>
-    /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension. Options: h265, h264, mpeg4, theora, vp8, vp9, vpx (deprecated), wmv.</param>
+    /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264.</param>
     /// <param name="subtitleCodec">Optional. Specify a subtitle codec to encode to.</param>
     /// <param name="transcodeReasons">Optional. The transcoding reason.</param>
     /// <param name="audioStreamIndex">Optional. The index of the audio stream to use. If omitted the first audio stream will be used.</param>
@@ -1083,6 +1095,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
     /// <param name="streamOptions">Optional. The streaming options.</param>
     /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
+    /// <param name="alwaysBurnInSubtitleWhenTranscoding">Whether to always burn in subtitles when transcoding.</param>
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
     [HttpGet("Videos/{itemId}/hls1/{playlistId}/{segmentId}.{container}")]
@@ -1145,7 +1158,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? videoStreamIndex,
         [FromQuery] EncodingContext? context,
         [FromQuery] Dictionary<string, string> streamOptions,
-        [FromQuery] bool enableAudioVbrEncoding = true)
+        [FromQuery] bool enableAudioVbrEncoding = true,
+        [FromQuery] bool alwaysBurnInSubtitleWhenTranscoding = false)
     {
         var streamingRequest = new VideoRequestDto
         {
@@ -1184,7 +1198,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             MaxHeight = maxHeight,
             VideoBitRate = videoBitRate,
             SubtitleStreamIndex = subtitleStreamIndex,
-            SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.Encode,
+            SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.External,
             MaxRefFrames = maxRefFrames,
             MaxVideoBitDepth = maxVideoBitDepth,
             RequireAvc = requireAvc ?? false,
@@ -1201,7 +1215,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             VideoStreamIndex = videoStreamIndex,
             Context = context ?? EncodingContext.Streaming,
             StreamOptions = streamOptions,
-            EnableAudioVbrEncoding = enableAudioVbrEncoding
+            EnableAudioVbrEncoding = enableAudioVbrEncoding,
+            AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding
         };
 
         return await GetDynamicSegment(streamingRequest, segmentId)
@@ -1227,7 +1242,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="minSegments">The minimum number of segments.</param>
     /// <param name="mediaSourceId">The media version id, if playing an alternate version.</param>
     /// <param name="deviceId">The device id of the client requesting. Used to stop encoding processes when needed.</param>
-    /// <param name="audioCodec">Optional. Specify a audio codec to encode to, e.g. mp3. If omitted the server will auto-select using the url's extension. Options: aac, mp3, vorbis, wma.</param>
+    /// <param name="audioCodec">Optional. Specify an audio codec to encode to, e.g. mp3.</param>
     /// <param name="enableAutoStreamCopy">Whether or not to allow automatic stream copy if requested values match the original source. Defaults to true.</param>
     /// <param name="allowVideoStreamCopy">Whether or not to allow copying of the video stream url.</param>
     /// <param name="allowAudioStreamCopy">Whether or not to allow copying of the audio stream url.</param>
@@ -1258,7 +1273,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="cpuCoreLimit">Optional. The limit of how many cpu cores to use.</param>
     /// <param name="liveStreamId">The live stream id.</param>
     /// <param name="enableMpegtsM2TsMode">Optional. Whether to enable the MpegtsM2Ts mode.</param>
-    /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension. Options: h265, h264, mpeg4, theora, vpx, wmv.</param>
+    /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264.</param>
     /// <param name="subtitleCodec">Optional. Specify a subtitle codec to encode to.</param>
     /// <param name="transcodeReasons">Optional. The transcoding reason.</param>
     /// <param name="audioStreamIndex">Optional. The index of the audio stream to use. If omitted the first audio stream will be used.</param>
@@ -1364,7 +1379,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             Height = height,
             VideoBitRate = videoBitRate,
             SubtitleStreamIndex = subtitleStreamIndex,
-            SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.Encode,
+            SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.External,
             MaxRefFrames = maxRefFrames,
             MaxVideoBitDepth = maxVideoBitDepth,
             RequireAvc = requireAvc ?? false,
@@ -1381,7 +1396,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             VideoStreamIndex = videoStreamIndex,
             Context = context ?? EncodingContext.Streaming,
             StreamOptions = streamOptions,
-            EnableAudioVbrEncoding = enableAudioVbrEncoding
+            EnableAudioVbrEncoding = enableAudioVbrEncoding,
+            AlwaysBurnInSubtitleWhenTranscoding = false
         };
 
         return await GetDynamicSegment(streamingRequest, segmentId)
@@ -1796,10 +1812,11 @@ public class DynamicHlsController : BaseJellyfinApiController
 
         var args = "-codec:v:0 " + codec;
 
-        if (string.Equals(state.ActualOutputVideoCodec, "h265", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(codec, "h265", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase))
+        var isActualOutputVideoCodecAv1 = string.Equals(state.ActualOutputVideoCodec, "av1", StringComparison.OrdinalIgnoreCase);
+        var isActualOutputVideoCodecHevc = string.Equals(state.ActualOutputVideoCodec, "h265", StringComparison.OrdinalIgnoreCase)
+                                           || string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase);
+
+        if (isActualOutputVideoCodecHevc || isActualOutputVideoCodecAv1)
         {
             var requestedRange = state.GetRequestedRangeTypes(state.ActualOutputVideoCodec);
             var requestHasDOVI = requestedRange.Contains(VideoRangeType.DOVI.ToString(), StringComparison.OrdinalIgnoreCase);
@@ -1813,10 +1830,17 @@ public class DynamicHlsController : BaseJellyfinApiController
                     || (state.VideoStream.VideoRangeType == VideoRangeType.DOVIWithHLG && requestHasDOVIWithHLG)
                     || (state.VideoStream.VideoRangeType == VideoRangeType.DOVIWithSDR && requestHasDOVIWithSDR)))
             {
-                // Prefer dvh1 to dvhe
-                args += " -tag:v:0 dvh1 -strict -2";
+                if (isActualOutputVideoCodecHevc)
+                {
+                    // Prefer dvh1 to dvhe
+                    args += " -tag:v:0 dvh1 -strict -2";
+                }
+                else if (isActualOutputVideoCodecAv1)
+                {
+                    args += " -tag:v:0 dav1 -strict -2";
+                }
             }
-            else
+            else if (isActualOutputVideoCodecHevc)
             {
                 // Prefer hvc1 to hev1
                 args += " -tag:v:0 hvc1";
@@ -1851,12 +1875,11 @@ public class DynamicHlsController : BaseJellyfinApiController
             args += _encodingHelper.GetHlsVideoKeyFrameArguments(state, codec, state.SegmentLength, isEventPlaylist, startNumber);
 
             // Currently b-frames in libx265 breaks the FMP4-HLS playback on iOS, disable it for now.
-            if (string.Equals(codec, "libx265", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(codec, "libx265", StringComparison.OrdinalIgnoreCase)
+                && _mediaEncoder.EncoderVersion < _minFFmpegX265BframeInFmp4)
             {
                 args += " -bf 0";
             }
-
-            // args += " -mixed-refs 0 -refs 3 -x264opts b_pyramid=0:weightb=0:weightp=0";
 
             // video processing filters.
             var videoProcessParam = _encodingHelper.GetVideoProcessingFilterParam(state, _encodingOptions, codec);
@@ -1885,7 +1908,7 @@ public class DynamicHlsController : BaseJellyfinApiController
 
         if (!string.IsNullOrEmpty(state.OutputVideoSync))
         {
-            args += " -vsync " + state.OutputVideoSync;
+            args += EncodingHelper.GetVideoSyncOption(state.OutputVideoSync, _mediaEncoder.EncoderVersion);
         }
 
         args += _encodingHelper.GetOutputFFlags(state);

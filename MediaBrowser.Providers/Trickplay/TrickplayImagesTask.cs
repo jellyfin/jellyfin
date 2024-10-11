@@ -98,7 +98,8 @@ public class TrickplayImagesTask : IScheduledTask
 
                 try
                 {
-                    await _trickplayManager.RefreshTrickplayDataAsync(video, false, cancellationToken).ConfigureAwait(false);
+                    var libraryOptions = _libraryManager.GetLibraryOptions(video);
+                    await _trickplayManager.RefreshTrickplayDataAsync(video, false, libraryOptions, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {

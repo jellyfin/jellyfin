@@ -337,7 +337,7 @@ namespace MediaBrowser.Controller.Entities
                 {
                     Limit = query.Limit,
                     StartIndex = query.StartIndex,
-                    UserId = query.User.Id
+                    User = query.User
                 },
                 parentFolders,
                 query.DtoOptions);
@@ -430,8 +430,6 @@ namespace MediaBrowser.Controller.Entities
             InternalItemsQuery query,
             ILibraryManager libraryManager)
         {
-            var user = query.User;
-
             // This must be the last filter
             if (!query.AdjacentTo.IsNullOrEmpty())
             {

@@ -66,6 +66,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// Gets a value indicating whether the configured Vaapi device supports vulkan drm format modifier.
         /// </summary>
+        /// <value><c>true</c> if the Vaapi device supports vulkan drm format modifier, <c>false</c> otherwise.</value>
+        bool IsVaapiDeviceSupportVulkanDrmModifier { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the configured Vaapi device supports vulkan drm interop via dma-buf.
+        /// </summary>
         /// <value><c>true</c> if the Vaapi device supports vulkan drm interop, <c>false</c> otherwise.</value>
         bool IsVaapiDeviceSupportVulkanDrmInterop { get; }
 
@@ -223,14 +229,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// Sets the path to find FFmpeg.
         /// </summary>
-        void SetFFmpegPath();
-
-        /// <summary>
-        /// Updates the encoder path.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="pathType">The type of path.</param>
-        void UpdateEncoderPath(string path, string pathType);
+        /// <returns>bool indicates whether a valid ffmpeg is found.</returns>
+        bool SetFFmpegPath();
 
         /// <summary>
         /// Gets the primary playlist of .vob files.

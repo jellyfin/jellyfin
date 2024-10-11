@@ -675,6 +675,7 @@ namespace MediaBrowser.Providers.Manager
             };
             temp.Item.Path = item.Path;
             temp.Item.Id = item.Id;
+            temp.Item.ParentIndexNumber = item.ParentIndexNumber;
             temp.Item.PreferredMetadataCountryCode = item.PreferredMetadataCountryCode;
             temp.Item.PreferredMetadataLanguage = item.PreferredMetadataLanguage;
 
@@ -728,7 +729,7 @@ namespace MediaBrowser.Providers.Manager
                                 refreshResult.UpdateType |= ItemUpdateType.ImageUpdate;
                             }
 
-                            MergeData(localItem, temp, Array.Empty<MetadataField>(), false, true);
+                            MergeData(localItem, temp, [], false, true);
                             refreshResult.UpdateType |= ItemUpdateType.MetadataImport;
 
                             break;
@@ -768,7 +769,7 @@ namespace MediaBrowser.Providers.Manager
                     if (!options.RemoveOldMetadata)
                     {
                         // Add existing metadata to provider result if it does not exist there
-                        MergeData(metadata, temp, Array.Empty<MetadataField>(), false, false);
+                        MergeData(metadata, temp, [], false, false);
                     }
 
                     if (isLocalLocked)
@@ -837,7 +838,7 @@ namespace MediaBrowser.Providers.Manager
                     {
                         result.Provider = provider.Name;
 
-                        MergeData(result, temp, Array.Empty<MetadataField>(), replaceData, false);
+                        MergeData(result, temp, [], replaceData, false);
                         MergeNewData(temp.Item, id);
 
                         refreshResult.UpdateType |= ItemUpdateType.MetadataDownload;

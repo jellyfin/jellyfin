@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.MediaInfo;
@@ -64,6 +64,11 @@ public class OpenLiveStreamDto
     /// Gets or sets a value indicating whether to enale direct stream.
     /// </summary>
     public bool? EnableDirectStream { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether always burn in subtitles when transcoding.
+    /// </summary>
+    public bool? AlwaysBurnInSubtitleWhenTranscoding { get; set; }
 
     /// <summary>
     /// Gets or sets the device profile.

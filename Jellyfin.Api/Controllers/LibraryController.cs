@@ -857,6 +857,16 @@ public class LibraryController : BaseJellyfinApiController
             .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
+        result.LyricFetchers = plugins
+            .SelectMany(i => i.Plugins.Where(p => p.Type == MetadataPluginType.LyricFetcher))
+            .Select(i => new LibraryOptionInfoDto
+            {
+                Name = i.Name,
+                DefaultEnabled = true
+            })
+            .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
         var typeOptions = new List<LibraryTypeOptionsDto>();
 
         foreach (var type in types)

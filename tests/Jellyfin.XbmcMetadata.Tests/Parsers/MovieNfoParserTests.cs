@@ -220,7 +220,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
 
             _parser.Fetch(result, "Test Data/Fanart.nfo", CancellationToken.None);
 
-            Assert.Single(result.RemoteImages.Where(x => x.Type == ImageType.Backdrop));
+            Assert.Single(result.RemoteImages, x => x.Type == ImageType.Backdrop);
             Assert.Equal("https://assets.fanart.tv/fanart/movies/141052/moviebackground/justice-league-5a5332c7b5e77.jpg", result.RemoteImages.First(x => x.Type == ImageType.Backdrop).Url);
         }
 

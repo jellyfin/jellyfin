@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Tasks;
@@ -12,7 +10,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Triggers
     /// </summary>
     public sealed class StartupTrigger : ITaskTrigger
     {
-        public const int DelayMs = 3000;
+        private const int DelayMs = 3000;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StartupTrigger"/> class.
@@ -23,23 +21,13 @@ namespace Emby.Server.Implementations.ScheduledTasks.Triggers
             TaskOptions = taskOptions;
         }
 
-        /// <summary>
-        /// Occurs when [triggered].
-        /// </summary>
+        /// <inheritdoc />
         public event EventHandler<EventArgs>? Triggered;
 
-        /// <summary>
-        /// Gets the options of this task.
-        /// </summary>
+        /// <inheritdoc />
         public TaskOptions TaskOptions { get; }
 
-        /// <summary>
-        /// Stars waiting for the trigger action.
-        /// </summary>
-        /// <param name="lastResult">The last result.</param>
-        /// <param name="logger">The logger.</param>
-        /// <param name="taskName">The name of the task.</param>
-        /// <param name="isApplicationStartup">if set to <c>true</c> [is application startup].</param>
+        /// <inheritdoc />
         public async void Start(TaskResult? lastResult, ILogger logger, string taskName, bool isApplicationStartup)
         {
             if (isApplicationStartup)
@@ -50,9 +38,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Triggers
             }
         }
 
-        /// <summary>
-        /// Stops waiting for the trigger action.
-        /// </summary>
+        /// <inheritdoc />
         public void Stop()
         {
         }

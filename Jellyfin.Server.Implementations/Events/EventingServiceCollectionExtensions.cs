@@ -1,4 +1,4 @@
-﻿using Jellyfin.Data.Events.System;
+using Jellyfin.Data.Events.System;
 using Jellyfin.Data.Events.Users;
 using Jellyfin.Server.Implementations.Events.Consumers.Library;
 using Jellyfin.Server.Implementations.Events.Consumers.Security;

@@ -1,4 +1,4 @@
-﻿#nullable disable
+#nullable disable
 
 #pragma warning disable CS1591
 
@@ -192,6 +192,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         public Dictionary<string, string> StreamOptions { get; set; }
 
         public bool EnableAudioVbrEncoding { get; set; }
+
+        public bool AlwaysBurnInSubtitleWhenTranscoding { get; set; }
 
         public string GetOption(string qualifier, string name)
         {

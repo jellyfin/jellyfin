@@ -669,7 +669,7 @@ namespace Emby.Server.Implementations.Library
 
             if (parent is not null)
             {
-                var multiItemResolvers = resolvers is null ? MultiItemResolvers : resolvers.OfType<IMultiItemResolver>().ToArray();
+                var multiItemResolvers = resolvers is null ? MultiItemResolvers : resolvers.OfType<IMultiItemResolver>();
 
                 foreach (var resolver in multiItemResolvers)
                 {
@@ -1530,7 +1530,7 @@ namespace Emby.Server.Implementations.Library
             {
                 var userViews = UserViewManager.GetUserViews(new UserViewQuery
                 {
-                    UserId = user.Id,
+                    User = user,
                     IncludeHidden = true,
                     IncludeExternalContent = allowExternalContent
                 });
@@ -2725,33 +2725,9 @@ namespace Emby.Server.Implementations.Library
 
         public string GetPathAfterNetworkSubstitution(string path, BaseItem? ownerItem)
         {
-            string? newPath;
-            if (ownerItem is not null)
-            {
-                var libraryOptions = GetLibraryOptions(ownerItem);
-                if (libraryOptions is not null)
-                {
-                    foreach (var pathInfo in libraryOptions.PathInfos)
-                    {
-                        if (path.TryReplaceSubPath(pathInfo.Path, pathInfo.NetworkPath, out newPath))
-                        {
-                            return newPath;
-                        }
-                    }
-                }
-            }
-
-            var metadataPath = _configurationManager.Configuration.MetadataPath;
-            var metadataNetworkPath = _configurationManager.Configuration.MetadataNetworkPath;
-
-            if (path.TryReplaceSubPath(metadataPath, metadataNetworkPath, out newPath))
-            {
-                return newPath;
-            }
-
             foreach (var map in _configurationManager.Configuration.PathSubstitutions)
             {
-                if (path.TryReplaceSubPath(map.From, map.To, out newPath))
+                if (path.TryReplaceSubPath(map.From, map.To, out var newPath))
                 {
                     return newPath;
                 }
@@ -3069,15 +3045,6 @@ namespace Emby.Server.Implementations.Library
             var libraryOptions = CollectionFolder.GetLibraryOptions(virtualFolderPath);
 
             SyncLibraryOptionsToLocations(virtualFolderPath, libraryOptions);
-
-            foreach (var originalPathInfo in libraryOptions.PathInfos)
-            {
-                if (string.Equals(mediaPath.Path, originalPathInfo.Path, StringComparison.Ordinal))
-                {
-                    originalPathInfo.NetworkPath = mediaPath.NetworkPath;
-                    break;
-                }
-            }
 
             CollectionFolder.SaveLibraryOptions(virtualFolderPath, libraryOptions);
         }

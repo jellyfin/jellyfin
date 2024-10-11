@@ -62,10 +62,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "libx264",
             "libx265",
             "libsvtav1",
-            "mpeg4",
-            "msmpeg4",
-            "libvpx",
-            "libvpx-vp9",
             "aac",
             "aac_at",
             "libfdk_aac",
@@ -97,7 +93,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "hevc_videotoolbox",
             "mjpeg_videotoolbox",
             "h264_rkmpp",
-            "hevc_rkmpp"
+            "hevc_rkmpp",
+            "mjpeg_rkmpp"
         };
 
         private static readonly string[] _requiredFilters = new[]
@@ -114,27 +111,35 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // cuda
             "scale_cuda",
             "yadif_cuda",
+            "bwdif_cuda",
             "tonemap_cuda",
             "overlay_cuda",
+            "transpose_cuda",
             "hwupload_cuda",
             // opencl
             "scale_opencl",
             "tonemap_opencl",
             "overlay_opencl",
+            "transpose_opencl",
             // vaapi
             "scale_vaapi",
             "deinterlace_vaapi",
             "tonemap_vaapi",
             "procamp_vaapi",
             "overlay_vaapi",
+            "transpose_vaapi",
             "hwupload_vaapi",
             // vulkan
             "libplacebo",
             "scale_vulkan",
             "overlay_vulkan",
+            "transpose_vulkan",
+            "flip_vulkan",
             // videotoolbox
             "yadif_videotoolbox",
+            "bwdif_videotoolbox",
             "scale_vt",
+            "transpose_vt",
             "overlay_videotoolbox",
             "tonemap_videotoolbox",
             // rkrga
@@ -150,7 +155,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             { 2, new string[] { "tonemap_opencl", "bt2390" } },
             { 3, new string[] { "overlay_opencl", "Action to take when encountering EOF from secondary input" } },
             { 4, new string[] { "overlay_vaapi", "Action to take when encountering EOF from secondary input" } },
-            { 5, new string[] { "overlay_vulkan", "Action to take when encountering EOF from secondary input" } }
+            { 5, new string[] { "overlay_vulkan", "Action to take when encountering EOF from secondary input" } },
+            { 6, new string[] { "transpose_opencl", "rotate by half-turn" } }
         };
 
         // These are the library versions that corresponds to our minimum ffmpeg version 4.4 according to the version table below
