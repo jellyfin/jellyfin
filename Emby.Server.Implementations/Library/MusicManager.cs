@@ -34,7 +34,7 @@ namespace Emby.Server.Implementations.Library
 
             list.AddRange(GetInstantMixFromGenres(item.Genres, user, dtoOptions));
 
-            return list.ToImmutableList();
+            return [.. list];
         }
 
         /// <inheritdoc />

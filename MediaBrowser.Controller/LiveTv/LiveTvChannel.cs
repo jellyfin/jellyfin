@@ -120,13 +120,10 @@ namespace MediaBrowser.Controller.LiveTv
             return "TvChannel";
         }
 
-        public IEnumerable<BaseItem> GetTaggedItems()
-            => Enumerable.Empty<BaseItem>();
+        public IEnumerable<BaseItem> GetTaggedItems() => [];
 
         public override IReadOnlyList<MediaSourceInfo> GetMediaSources(bool enablePathSubstitution)
         {
-            var list = new List<MediaSourceInfo>();
-
             var info = new MediaSourceInfo
             {
                 Id = Id.ToString("N", CultureInfo.InvariantCulture),
@@ -139,9 +136,7 @@ namespace MediaBrowser.Controller.LiveTv
                 IsInfiniteStream = RunTimeTicks is null
             };
 
-            list.Add(info);
-
-            return list.ToImmutableList();
+            return [info];
         }
 
         public override IReadOnlyList<MediaStream> GetMediaStreams()

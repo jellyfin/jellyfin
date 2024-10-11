@@ -393,21 +393,17 @@ public class InstantMixController : BaseJellyfinApiController
 
     private QueryResult<BaseItemDto> GetResult(IReadOnlyList<BaseItem> items, User? user, int? limit, DtoOptions dtoOptions)
     {
-        var list = items;
+        var totalCount = items.Count;
 
-        var totalCount = list.Count;
-
-        if (limit.HasValue && limit < list.Count)
+        if (limit.HasValue && limit < items.Count)
         {
-            list = list.Take(limit.Value).ToImmutableArray();
+            items = items.Take(limit.Value).ToImmutableArray();
         }
-
-        var returnList = _dtoService.GetBaseItemDtos(list, dtoOptions, user);
 
         var result = new QueryResult<BaseItemDto>(
             0,
             totalCount,
-            returnList);
+            _dtoService.GetBaseItemDtos(items, dtoOptions, user));
 
         return result;
     }
