@@ -471,7 +471,7 @@ namespace Emby.Naming.Common
                 // Anime style expression
                 // "[Group][Series Name][21][1080p][FLAC][HASH]"
                 // "[Group] Series Name [04][BDRIP]"
-                new EpisodeExpression(@"(?:\[(?:[^\]]+)\]\s*)?(?<seriesname>\[[^\]]+\]|[^[\]]+)\s*\[(?<epnumber>\d+)\]")
+                new EpisodeExpression(@"(?:\[(?:[^\]]+)\]\s*)?(?<seriesname>\[[^\]]+\]|[^[\]]+)\s*\[(?<epnumber>[0-9]+)\]")
                 {
                     IsNamed = true
                 },
