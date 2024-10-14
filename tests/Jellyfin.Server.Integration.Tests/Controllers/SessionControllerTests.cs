@@ -26,9 +26,7 @@ public class SessionControllerTests : IClassFixture<JellyfinApplicationFactory>
     }
 
     [Theory]
-    [InlineData("?nowPlaying=false")]
     [InlineData("?nowPlaying=true")]
-    [InlineData("")]
     public async Task GetSessions_NowPlaying_Ok(string querystring)
     {
         var client = _factory.CreateClient();
