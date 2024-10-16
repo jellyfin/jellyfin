@@ -115,29 +115,29 @@ namespace Emby.Server.Implementations.AppBase
             CreateAndCheckMarker(LogDirectoryPath, "log");
             CreateAndCheckMarker(PluginsPath, "plugin");
             CreateAndCheckMarker(ProgramDataPath, "data");
-            CreateAndCheckMarker(CachePath, "cache");
+            CreateAndCheckMarker(CachePath, "cache", true);
             CreateAndCheckMarker(DataPath, "data");
         }
 
         /// <inheritdoc cref="IApplicationPaths"/>
-        public void CreateAndCheckMarker(string path, string markerName)
+        public void CreateAndCheckMarker(string path, string markerName, bool recursive = false)
         {
             if (!Directory.Exists(path))
             {
                 Directory.CreateDirectory(path);
             }
 
-            CheckOrCreateMarker(path, $".jf{markerName}");
+            CheckOrCreateMarker(path, $".jf{markerName}", recursive);
         }
 
-        private IEnumerable<string> GetMarkers(string path)
+        private IEnumerable<string> GetMarkers(string path, bool recursive = false)
         {
-            return Directory.EnumerateFiles(path, ".*");
+            return Directory.EnumerateFiles(path, ".*", recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
         }
 
-        private void CheckOrCreateMarker(string path, string markerName)
+        private void CheckOrCreateMarker(string path, string markerName, bool recursive = false)
         {
-            var otherMarkers = GetMarkers(path).FirstOrDefault(e => Path.GetFileName(e) != markerName);
+            var otherMarkers = GetMarkers(path, recursive).FirstOrDefault(e => Path.GetFileName(e) != markerName);
             if (otherMarkers != null)
             {
                 throw new InvalidOperationException($"Exepected to find only {markerName} but found marker for {otherMarkers}.");

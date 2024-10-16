@@ -95,6 +95,7 @@ namespace MediaBrowser.Common.Configuration
         /// </summary>
         /// <param name="path">The path to check.</param>
         /// <param name="markerName">The common marker file name.</param>
-        void CreateAndCheckMarker(string path, string markerName);
+        /// <param name="recursive">Check for other settings paths recursivly.</param>
+        void CreateAndCheckMarker(string path, string markerName, bool recursive = false);
     }
 }

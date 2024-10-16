@@ -35,7 +35,7 @@ namespace MediaBrowser.Common.Configuration
                 transcodingTempPath = Path.Combine(configurationManager.CommonApplicationPaths.CachePath, "transcodes");
             }
 
-            configurationManager.CommonApplicationPaths.CreateAndCheckMarker(transcodingTempPath, "transcode");
+            configurationManager.CommonApplicationPaths.CreateAndCheckMarker(transcodingTempPath, "transcode", true);
             return transcodingTempPath;
         }
     }
