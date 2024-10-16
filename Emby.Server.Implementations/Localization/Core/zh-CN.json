@@ -134,7 +134,7 @@
     "TaskDownloadMissingLyrics": "下载缺失的歌词",
     "TaskDownloadMissingLyricsDescription": "下载歌曲歌词",
     "TaskMoveTrickplayImages": "迁移进度条预览图的存储位置",
-    "TaskExtractMediaSegments": "媒体片段扫描",
-    "TaskExtractMediaSegmentsDescription": "从支持 MediaSegment 的插件中提取或获取媒体片段。",
+    "TaskExtractMediaSegments": "媒体分段扫描",
+    "TaskExtractMediaSegmentsDescription": "从支持 MediaSegment 的插件中提取或获取媒体分段。",
     "TaskMoveTrickplayImagesDescription": "根据媒体库设置移动现有的进度条预览图文件。"
 }

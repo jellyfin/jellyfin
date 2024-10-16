@@ -129,5 +129,7 @@
     "TaskAudioNormalization": "Hljóðstöðlun",
     "TaskAudioNormalizationDescription": "Leitar að hljóðstöðlunargögnum í skrám.",
     "TaskCleanCollectionsAndPlaylists": "Hreinsa söfn og spilunarlista",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Fjarlægir hluti úr söfnum og spilalistum sem eru ekki lengur til."
+    "TaskCleanCollectionsAndPlaylistsDescription": "Fjarlægir hluti úr söfnum og spilalistum sem eru ekki lengur til.",
+    "TaskDownloadMissingLyricsDescription": "Sækja söngtexta fyrir lög",
+    "TaskDownloadMissingLyrics": "Sækja söngtexta sem vantar"
 }
