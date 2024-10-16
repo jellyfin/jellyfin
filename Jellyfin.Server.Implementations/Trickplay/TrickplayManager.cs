@@ -498,12 +498,10 @@ public class TrickplayManager : ITrickplayManager
         var trickplayManifest = new Dictionary<string, Dictionary<int, TrickplayInfo>>();
         foreach (var mediaSource in item.GetMediaSources(false))
         {
-            if (mediaSource.IsRemote)
+            if (mediaSource.IsRemote || !Guid.TryParse(mediaSource.Id, out var mediaSourceId)
             {
                 continue;
             }
-
-            var mediaSourceId = Guid.Parse(mediaSource.Id);
             var trickplayResolutions = await GetTrickplayResolutions(mediaSourceId).ConfigureAwait(false);
 
             if (trickplayResolutions.Count > 0)
