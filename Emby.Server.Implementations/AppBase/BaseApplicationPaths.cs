@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using MediaBrowser.Common.Configuration;
 
 namespace Emby.Server.Implementations.AppBase
@@ -105,5 +107,47 @@ namespace Emby.Server.Implementations.AppBase
         /// </summary>
         /// <value>The temp directory.</value>
         public string TempDirectory => Path.Join(Path.GetTempPath(), "jellyfin");
+
+        /// <inheritdoc cref="IApplicationPaths"/>
+        public virtual void MakeSanityCheckOrThrow()
+        {
+            CreateAndCheckMarker(ConfigurationDirectoryPath, "config");
+            CreateAndCheckMarker(LogDirectoryPath, "log");
+            CreateAndCheckMarker(PluginsPath, "plugin");
+            CreateAndCheckMarker(ProgramDataPath, "data");
+            CreateAndCheckMarker(CachePath, "cache");
+            CreateAndCheckMarker(DataPath, "data");
+        }
+
+        /// <inheritdoc cref="IApplicationPaths"/>
+        public void CreateAndCheckMarker(string path, string markerName)
+        {
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+
+            CheckOrCreateMarker(path, $".jf{markerName}");
+        }
+
+        private IEnumerable<string> GetMarkers(string path)
+        {
+            return Directory.EnumerateFiles(path, ".*");
+        }
+
+        private void CheckOrCreateMarker(string path, string markerName)
+        {
+            var otherMarkers = GetMarkers(path).FirstOrDefault(e => Path.GetFileName(e) != markerName);
+            if (otherMarkers != null)
+            {
+                throw new InvalidOperationException($"Exepected to find only {markerName} but found marker for {otherMarkers}.");
+            }
+
+            var markerPath = Path.Combine(path, markerName);
+            if (!File.Exists(markerPath))
+            {
+                File.Create(markerPath);
+            }
+        }
     }
 }
