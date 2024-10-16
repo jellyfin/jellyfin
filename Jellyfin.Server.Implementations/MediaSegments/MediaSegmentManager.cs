@@ -143,7 +143,7 @@ public class MediaSegmentManager : IMediaSegmentManager
 
         using var db = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
         var segments = mediaSegments.Select(e => Map(e, segmentProviderId));
-        await db.MediaSegments.AddRangeAsync().ConfigureAwait(false);
+        await db.MediaSegments.AddRangeAsync(segments).ConfigureAwait(false);
         await db.SaveChangesAsync().ConfigureAwait(false);
         return [.. mediaSegments];
     }
