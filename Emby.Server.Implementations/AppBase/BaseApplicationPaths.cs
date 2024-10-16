@@ -12,6 +12,8 @@ namespace Emby.Server.Implementations.AppBase
     /// </summary>
     public abstract class BaseApplicationPaths : IApplicationPaths
     {
+        private readonly bool _noFolderCrossCheck;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationPaths"/> class.
         /// </summary>
@@ -20,19 +22,21 @@ namespace Emby.Server.Implementations.AppBase
         /// <param name="configurationDirectoryPath">The configuration directory path.</param>
         /// <param name="cacheDirectoryPath">The cache directory path.</param>
         /// <param name="webDirectoryPath">The web directory path.</param>
+        /// <param name="noFolderCrossCheck">Option to disable folder cross check.</param>
         protected BaseApplicationPaths(
             string programDataPath,
             string logDirectoryPath,
             string configurationDirectoryPath,
             string cacheDirectoryPath,
-            string webDirectoryPath)
+            string webDirectoryPath,
+            bool noFolderCrossCheck)
         {
             ProgramDataPath = programDataPath;
             LogDirectoryPath = logDirectoryPath;
             ConfigurationDirectoryPath = configurationDirectoryPath;
             CachePath = cacheDirectoryPath;
             WebPath = webDirectoryPath;
-
+            _noFolderCrossCheck = noFolderCrossCheck;
             DataPath = Directory.CreateDirectory(Path.Combine(ProgramDataPath, "data")).FullName;
         }
 
@@ -140,6 +144,11 @@ namespace Emby.Server.Implementations.AppBase
             var otherMarkers = GetMarkers(path, recursive).FirstOrDefault(e => Path.GetFileName(e) != markerName);
             if (otherMarkers != null)
             {
+                if (_noFolderCrossCheck)
+                {
+                    return;
+                }
+
                 throw new InvalidOperationException($"Exepected to find only {markerName} but found marker for {otherMarkers}.");
             }
 

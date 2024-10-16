@@ -17,18 +17,21 @@ namespace Emby.Server.Implementations
         /// <param name="configurationDirectoryPath">The path for Jellyfin's configuration directory.</param>
         /// <param name="cacheDirectoryPath">The path for Jellyfin's cache directory.</param>
         /// <param name="webDirectoryPath">The path for Jellyfin's web UI.</param>
+        /// <param name="noFolderCrossCheck">Option to disable folder cross check.</param>
         public ServerApplicationPaths(
             string programDataPath,
             string logDirectoryPath,
             string configurationDirectoryPath,
             string cacheDirectoryPath,
-            string webDirectoryPath)
+            string webDirectoryPath,
+            bool noFolderCrossCheck)
             : base(
                 programDataPath,
                 logDirectoryPath,
                 configurationDirectoryPath,
                 cacheDirectoryPath,
-                webDirectoryPath)
+                webDirectoryPath,
+                noFolderCrossCheck)
         {
             // ProgramDataPath cannot change when the server is running, so cache these to avoid allocations.
             RootFolderPath = Path.Join(ProgramDataPath, "root");
