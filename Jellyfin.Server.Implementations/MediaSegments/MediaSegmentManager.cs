@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
@@ -99,7 +100,7 @@ public class MediaSegmentManager : IMediaSegmentManager
             {
                 var segments = await provider.GetMediaSegments(requestItem, cancellationToken)
                     .ConfigureAwait(false);
-                if (segments.Count == 0)
+                if (segments is null || segments.Count == 0)
                 {
                     _logger.LogDebug("Media Segment provider {ProviderName} did not find any segments for {MediaPath}", provider.Name, baseItem.Path);
                     continue;
@@ -110,8 +111,9 @@ public class MediaSegmentManager : IMediaSegmentManager
                 foreach (var segment in segments)
                 {
                     segment.ItemId = baseItem.Id;
-                    await CreateSegmentAsync(segment, providerId).ConfigureAwait(false);
                 }
+
+                await CreateSegmentsAsync(segments, providerId).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -132,6 +134,21 @@ public class MediaSegmentManager : IMediaSegmentManager
     }
 
     /// <inheritdoc />
+    public async Task<IReadOnlyList<MediaSegmentDto>> CreateSegmentsAsync(IReadOnlyList<MediaSegmentDto> mediaSegments, string segmentProviderId)
+    {
+        foreach (var mediaSegment in mediaSegments)
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThan(mediaSegment.EndTicks, mediaSegment.StartTicks);
+        }
+
+        using var db = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+        var segments = mediaSegments.Select(e => Map(e, segmentProviderId));
+        await db.MediaSegments.AddRangeAsync().ConfigureAwait(false);
+        await db.SaveChangesAsync().ConfigureAwait(false);
+        return [.. mediaSegments];
+    }
+
+    /// <inheritdoc />
     public async Task DeleteSegmentAsync(Guid segmentId)
     {
         using var db = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
@@ -139,7 +156,7 @@ public class MediaSegmentManager : IMediaSegmentManager
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<MediaSegmentDto>> GetSegmentsAsync(Guid itemId, IEnumerable<MediaSegmentType>? typeFilter)
+    public async Task<IEnumerable<MediaSegmentDto>> GetSegmentsAsync(Guid itemId, IEnumerable<MediaSegmentType>? typeFilter, bool filterDuplicates)
     {
         using var db = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
 
@@ -151,11 +168,38 @@ public class MediaSegmentManager : IMediaSegmentManager
             query = query.Where(e => typeFilter.Contains(e.Type));
         }
 
-        return query
+        var result = query
             .OrderBy(e => e.StartTicks)
             .AsNoTracking()
-            .ToImmutableList()
-            .Select(Map);
+            .ToImmutableList();
+
+        if (filterDuplicates)
+        {
+            // filter those segments that are close to each other and of the same type.
+            var filteredList = new List<MediaSegment>();
+            var typedSegments = new List<MediaSegment>();
+
+            // yes this can be made with linq queries, no this is no longer readable.
+            foreach (var segment in result.GroupBy(e => e.Type))
+            {
+                foreach (var typedSegment in segment)
+                {
+                    if (filteredList.Any(f => Math.Abs(typedSegment.StartTicks - f.StartTicks) > 10_000_000 || Math.Abs(typedSegment.EndTicks - f.EndTicks) > 10_000_000))
+                    {
+                        continue;
+                    }
+
+                    typedSegments.Add(typedSegment);
+                }
+
+                filteredList.AddRange(typedSegments);
+                typedSegments.Clear();
+            }
+
+            return filteredList.Select(Map);
+        }
+
+        return result.Select(Map);
     }
 
     private static MediaSegmentDto Map(MediaSegment segment)

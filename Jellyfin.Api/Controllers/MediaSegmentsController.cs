@@ -41,13 +41,15 @@ public class MediaSegmentsController : BaseJellyfinApiController
     /// </summary>
     /// <param name="itemId">The ItemId.</param>
     /// <param name="includeSegmentTypes">Optional filter of requested segment types.</param>
+    /// <param name="filterDuplicates">Optional filter to remove same typed segments near each other.</param>
     /// <returns>A list of media segment objects related to the requested itemId.</returns>
     [HttpGet("{itemId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<QueryResult<MediaSegmentDto>>> GetItemSegments(
         [FromRoute, Required] Guid itemId,
-        [FromQuery] IEnumerable<MediaSegmentType>? includeSegmentTypes = null)
+        [FromQuery] IEnumerable<MediaSegmentType>? includeSegmentTypes = null,
+        [FromQuery] bool filterDuplicates = true)
     {
         var item = _libraryManager.GetItemById<BaseItem>(itemId, User.GetUserId());
         if (item is null)
@@ -55,7 +57,7 @@ public class MediaSegmentsController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var items = await _mediaSegmentManager.GetSegmentsAsync(item.Id, includeSegmentTypes).ConfigureAwait(false);
+        var items = await _mediaSegmentManager.GetSegmentsAsync(item.Id, includeSegmentTypes, filterDuplicates).ConfigureAwait(false);
         return Ok(new QueryResult<MediaSegmentDto>(items.ToArray()));
     }
 }
