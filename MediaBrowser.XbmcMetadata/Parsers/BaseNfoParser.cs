@@ -802,6 +802,10 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         {
                             video.Video3DFormat = Video3DFormat.MVC;
                         }
+                        else if (string.Equals("Spatial", format, StringComparison.OrdinalIgnoreCase))
+                        {
+                            video.Video3DFormat = Video3DFormat.Spatial;
+                        }
 
                         break;
                     case "aspect":

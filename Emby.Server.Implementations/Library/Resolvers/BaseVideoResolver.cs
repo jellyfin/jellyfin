@@ -234,6 +234,10 @@ namespace Emby.Server.Implementations.Library.Resolvers
                 {
                     video.Video3DFormat = Video3DFormat.MVC;
                 }
+                else if (string.Equals(format3D, "spatial", StringComparison.OrdinalIgnoreCase))
+                {
+                    video.Video3DFormat = Video3DFormat.Spatial;
+                }
             }
         }
 
