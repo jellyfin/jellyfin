@@ -1,15 +1,107 @@
 {
     "version": "2.0.0",
+    "inputs": [
+        {
+            "id": "buildConfig",
+            "type": "pickString",
+            "options": ["Debug", "Release"],
+            "default": "Release",
+            "description": "Build Config to use (Debug or Release)."
+        },
+        {
+            "id": "jellyfinWebDir",
+            "type": "promptString",
+            "default": "${env:JELLYFIN_WEB_DIR}",
+            "description": "Web Client content directory to use with server"
+        },
+        {
+            "id": "openapiJsonOutputDir",
+            "type": "promptString",
+            "default": "${workspaceFolder}",
+            "description": "Output Directory to output generated openapi.json file."
+        }
+    ],
     "tasks": [
+        {
+            "label": "build debug",
+            "command": "dotnet",
+            "type": "process",
+            "hide": true,
+            "args": [
+                "build",
+                "${workspaceFolder}/Jellyfin.Server/Jellyfin.Server.csproj",
+                "-c",
+                "Debug"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "build release",
+            "command": "dotnet",
+            "type": "process",
+            "hide": true,
+            "args": [
+                "build",
+                "${workspaceFolder}/Jellyfin.Server/Jellyfin.Server.csproj",
+                "-c",
+                "Release"
+            ],
+            "problemMatcher": "$msCompile"
+        },
         {
             "label": "build",
             "command": "dotnet",
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/Jellyfin.Server/Jellyfin.Server.csproj"
+                "${workspaceFolder}/Jellyfin.Server/Jellyfin.Server.csproj",
+                "-c",
+                "${input:buildConfig}"
             ],
             "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "launch (console)",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "run",
+                "--project", "Jellyfin.Server",
+                "-c",
+                "${input:buildConfig}"
+            ],
+            "options": {" cwd": "${workspaceFolder}/Jellyfin.Server"},
+            "dependsOn": ["build"]
+        },
+        {
+            "label": "launch (console + pick webdir)",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "run",
+                "--project", "Jellyfin.Server",
+                "-c",
+                "${input:buildConfig}",
+                "--webdir",
+                "${input:jellyfinWebDir}"
+
+            ],
+            "options": {" cwd": "${workspaceFolder}/Jellyfin.Server"},
+            "dependsOn": ["build"]
+        },
+        {
+            "label": "launch (nowebclient)",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "run",
+                "--project", "Jellyfin.Server",
+                "-c",
+                "${input:buildConfig}",
+                "--nowebclient"
+            ],
+            "options": {" cwd": "${workspaceFolder}/Jellyfin.Server"},
+            "dependsOn": ["build"]
         },
         {
             "label": "api tests",
@@ -20,7 +112,24 @@
                 "${workspaceFolder}/tests/Jellyfin.Api.Tests/Jellyfin.Api.Tests.csproj"
             ],
             "problemMatcher": "$msCompile"
-        }
+        },
+        {
+            "label": "openapi generate",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "swagger",
+                "tofile",
+                "--host",
+                "http://localhost",
+                "--output",
+                "${input:openapiJsonOutputDir}/openapi.json",
+                "${workspaceFolder}/Jellyfin.Server/bin/Release/net8.0/jellyfin.dll",
+                "api-docs",
+            ],
+            "problemMatcher":"$eslint-compact",
+            "dependsOn": ["build release"]
+        },
     ],
     "options": {
         "env": {
