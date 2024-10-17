@@ -1,5 +1,6 @@
 #pragma warning disable CS1591
 
+using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -28,7 +29,7 @@ namespace MediaBrowser.Providers.Music
         protected override void MergeData(
             MetadataResult<MusicVideo> source,
             MetadataResult<MusicVideo> target,
-            MetadataField[] lockedFields,
+            IReadOnlyList<MetadataField> lockedFields,
             bool replaceData,
             bool mergeMetadataSettings)
         {
