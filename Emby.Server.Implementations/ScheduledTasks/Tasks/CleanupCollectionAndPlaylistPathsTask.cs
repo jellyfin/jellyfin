@@ -135,6 +135,6 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
     /// <inheritdoc />
     public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
     {
-        return [new TaskTriggerInfo() { Type = TaskTriggerInfo.TriggerStartup }];
+        return [new TaskTriggerInfo() { Type = TaskTriggerInfoType.StartupTrigger }];
     }
 }
