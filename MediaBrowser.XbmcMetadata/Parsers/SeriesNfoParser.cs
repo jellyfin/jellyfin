@@ -1,7 +1,5 @@
-using System.Globalization;
 using System.Xml;
 using Emby.Naming.TV;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Library;
