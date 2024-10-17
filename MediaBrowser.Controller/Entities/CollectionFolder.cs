@@ -96,11 +96,11 @@ namespace MediaBrowser.Controller.Entities
             return GetLibraryOptions(Path);
         }
 
-        public override bool IsVisible(User user)
+        public override bool IsVisible(User user, bool skipAllowedTagsCheck = false)
         {
             if (GetLibraryOptions().Enabled)
             {
-                return base.IsVisible(user);
+                return base.IsVisible(user, skipAllowedTagsCheck);
             }
 
             return false;

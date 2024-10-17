@@ -144,14 +144,14 @@ namespace MediaBrowser.Controller.Entities.Movies
             return GetItemLookupInfo<BoxSetInfo>();
         }
 
-        public override bool IsVisible(User user)
+        public override bool IsVisible(User user, bool skipAllowedTagsCheck = false)
         {
             if (IsLegacyBoxSet)
             {
-                return base.IsVisible(user);
+                return base.IsVisible(user, skipAllowedTagsCheck);
             }
 
-            if (base.IsVisible(user))
+            if (base.IsVisible(user, skipAllowedTagsCheck))
             {
                 if (LinkedChildren.Length == 0)
                 {
