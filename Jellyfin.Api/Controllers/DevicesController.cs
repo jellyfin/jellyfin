@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
@@ -116,7 +117,6 @@ public class DevicesController : BaseJellyfinApiController
     /// <summary>
     /// Deletes devices.
     /// </summary>
-    /// <param name="id">Optional. Device Id.</param>
     /// <param name="ids">Device Ids.</param>
     /// <response code="204">Device deleted.</response>
     /// <response code="404">Device not found.</response>
@@ -124,19 +124,24 @@ public class DevicesController : BaseJellyfinApiController
     [HttpDelete]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult> DeleteDevice([FromQuery, ParameterObsolete] string? id, [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] ids)
+    public async Task<ActionResult> DeleteDevice([FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] ids)
     {
-        string[] allIDs = ids.Concat(id != null ? [id] : Array.Empty<string>()).ToArray();
+        List<DeviceInfoDto> devices = new List<DeviceInfoDto>();
 
-        foreach (var i in allIDs)
+        foreach (var id in ids)
         {
-            var existingDevice = _deviceManager.GetDevice(i);
+            var existingDevice = _deviceManager.GetDevice(id);
             if (existingDevice is null)
             {
                 return NotFound();
             }
 
-            var sessions = _deviceManager.GetDevices(new DeviceQuery { DeviceId = i });
+            devices.Append(existingDevice);
+        }
+
+        foreach (var device in devices)
+        {
+            var sessions = _deviceManager.GetDevices(new DeviceQuery { DeviceId = device.Id });
 
             foreach (var session in sessions.Items)
             {
