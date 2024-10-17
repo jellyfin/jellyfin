@@ -46,6 +46,12 @@ namespace MediaBrowser.Model.Configuration
         /// <value>The subtitle language preference.</value>
         public string? SubtitleLanguagePreference { get; set; }
 
+        /// <summary>
+        /// Gets or sets the subtitle codec preference.
+        /// </summary>
+        /// <value>The subtitle codec preference.</value>
+        public string? SubtitleCodecPreference { get; set; }
+
         public bool DisplayMissingEpisodes { get; set; }
 
         public Guid[] GroupedFolders { get; set; }

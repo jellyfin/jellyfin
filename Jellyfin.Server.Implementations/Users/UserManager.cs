@@ -323,6 +323,7 @@ namespace Jellyfin.Server.Implementations.Users
                     EnableNextEpisodeAutoPlay = user.EnableNextEpisodeAutoPlay,
                     RememberSubtitleSelections = user.RememberSubtitleSelections,
                     SubtitleLanguagePreference = user.SubtitleLanguagePreference ?? string.Empty,
+                    SubtitleCodecPreference = user.SubtitleCodecPreference ?? string.Empty,
                     OrderedViews = user.GetPreferenceValues<Guid>(PreferenceKind.OrderedViews),
                     GroupedFolders = user.GetPreferenceValues<Guid>(PreferenceKind.GroupedFolders),
                     MyMediaExcludes = user.GetPreferenceValues<Guid>(PreferenceKind.MyMediaExcludes),
@@ -618,6 +619,7 @@ namespace Jellyfin.Server.Implementations.Users
                 user.EnableNextEpisodeAutoPlay = config.EnableNextEpisodeAutoPlay;
                 user.RememberSubtitleSelections = config.RememberSubtitleSelections;
                 user.SubtitleLanguagePreference = config.SubtitleLanguagePreference;
+                user.SubtitleCodecPreference = config.SubtitleCodecPreference;
 
                 // Only set cast receiver id if it is passed in and it exists in the server config.
                 if (!string.IsNullOrEmpty(config.CastReceiverId)
