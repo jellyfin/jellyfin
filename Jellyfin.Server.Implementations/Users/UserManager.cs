@@ -110,10 +110,10 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public IEnumerable<Guid> UsersIds => _users.Keys;
 
-        // This is some regex that matches only on unicode "word" characters, as well as -, _ and @
+        // This is some regex that matches only on unicode "word" characters, as well as -, _, @, and +
         // In theory this will cut out most if not all 'control' characters which should help minimize any weirdness
-        // Usernames can contain letters (a-z + whatever else unicode is cool with), numbers (0-9), at-signs (@), dashes (-), underscores (_), apostrophes ('), periods (.) and spaces ( )
-        [GeneratedRegex(@"^[\w\ \-'._@]+$")]
+        // Usernames can contain letters (a-z + whatever else unicode is cool with), numbers (0-9), at-signs (@), dashes (-), underscores (_), apostrophes ('), periods (.), plus-signs (+), and spaces ( )
+        [GeneratedRegex("^[\\w\\ \\-\\+'._@]+$")]
         private static partial Regex ValidUsernameRegex();
 
         /// <inheritdoc/>
