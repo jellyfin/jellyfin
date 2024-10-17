@@ -54,9 +54,9 @@ namespace Emby.Server.Implementations.Library.Resolvers
             _ => _videoResolvers
         };
 
-        public bool TryGetExtraTypeForOwner(string path, VideoFileInfo ownerVideoFileInfo, [NotNullWhen(true)] out ExtraType? extraType)
+        public bool TryGetExtraTypeForOwner(string path, VideoFileInfo ownerVideoFileInfo, [NotNullWhen(true)] out ExtraType? extraType, string? libraryRoot = "")
         {
-            var extraResult = GetExtraInfo(path, _namingOptions);
+            var extraResult = GetExtraInfo(path, _namingOptions, libraryRoot);
             if (extraResult.ExtraType is null)
             {
                 extraType = null;
