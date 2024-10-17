@@ -126,7 +126,11 @@ public class DevicesController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> DeleteDevice([FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] ids)
     {
-        List<DeviceInfoDto> devices = new List<DeviceInfoDto>();
+        var devices = ids.Select(_deviceManager.GetDevice).ToArray();
+        if (devices.Any(f => f is null))
+        {
+        	return NotFound();
+        }
 
         foreach (var id in ids)
         {
