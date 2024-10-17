@@ -629,49 +629,21 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <returns>Codec string.</returns>
         public string InferAudioCodec(string container)
         {
-            var ext = "." + (container ?? string.Empty);
-
-            if (string.Equals(ext, ".mp3", StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrWhiteSpace(container))
             {
-                return "mp3";
-            }
-
-            if (string.Equals(ext, ".aac", StringComparison.OrdinalIgnoreCase))
-            {
+                // this may not work, but if the client is that broken we can not do anything better
                 return "aac";
             }
 
-            if (string.Equals(ext, ".wma", StringComparison.OrdinalIgnoreCase))
-            {
-                return "wma";
-            }
+            var inferredCodec = container.ToLowerInvariant();
 
-            if (string.Equals(ext, ".ogg", StringComparison.OrdinalIgnoreCase))
+            return inferredCodec switch
             {
-                return "vorbis";
-            }
-
-            if (string.Equals(ext, ".oga", StringComparison.OrdinalIgnoreCase))
-            {
-                return "vorbis";
-            }
-
-            if (string.Equals(ext, ".ogv", StringComparison.OrdinalIgnoreCase))
-            {
-                return "vorbis";
-            }
-
-            if (string.Equals(ext, ".webm", StringComparison.OrdinalIgnoreCase))
-            {
-                return "vorbis";
-            }
-
-            if (string.Equals(ext, ".webma", StringComparison.OrdinalIgnoreCase))
-            {
-                return "vorbis";
-            }
-
-            return "copy";
+                "ogg" or "oga" or "ogv" or "webm" or "webma" => "opus",
+                "m4a" or "m4b" or "mp4" or "mov" or "mkv" or "mka" => "aac",
+                "ts" or "avi" or "flv" or "f4v" or "swf" => "mp3",
+                _ => inferredCodec
+            };
         }
 
         /// <summary>
