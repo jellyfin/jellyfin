@@ -124,28 +124,17 @@ public class DevicesController : BaseJellyfinApiController
     [HttpDelete]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult> DeleteDevice([FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] ids)
+    public async Task<ActionResult> DeleteDevice([FromQuery] string[] ids)
     {
         var devices = ids.Select(_deviceManager.GetDevice).ToArray();
         if (devices.Any(f => f is null))
         {
-        	return NotFound();
-        }
-
-        foreach (var id in ids)
-        {
-            var existingDevice = _deviceManager.GetDevice(id);
-            if (existingDevice is null)
-            {
-                return NotFound();
-            }
-
-            devices.Add(existingDevice);
+            return NotFound();
         }
 
         foreach (var device in devices)
         {
-            var sessions = _deviceManager.GetDevices(new DeviceQuery { DeviceId = device.Id });
+            var sessions = _deviceManager.GetDevices(new DeviceQuery { DeviceId = device!.Id });
 
             foreach (var session in sessions.Items)
             {
