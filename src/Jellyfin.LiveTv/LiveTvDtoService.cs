@@ -53,7 +53,7 @@ namespace Jellyfin.LiveTv
         {
             var dto = new TimerInfoDto
             {
-                Id = GetInternalTimerId(info.Id),
+                Id = info.Id,
                 Overview = info.Overview,
                 EndDate = info.EndDate,
                 Name = info.Name,
@@ -61,7 +61,7 @@ namespace Jellyfin.LiveTv
                 ExternalId = info.Id,
                 ChannelId = GetInternalChannelId(service.Name, info.ChannelId),
                 Status = info.Status,
-                SeriesTimerId = string.IsNullOrEmpty(info.SeriesTimerId) ? null : GetInternalSeriesTimerId(info.SeriesTimerId).ToString("N", CultureInfo.InvariantCulture),
+                SeriesTimerId = info.SeriesTimerId.IsNullOrEmpty() ? null : GetInternalSeriesTimerId(info.SeriesTimerId.Value),
                 PrePaddingSeconds = info.PrePaddingSeconds,
                 PostPaddingSeconds = info.PostPaddingSeconds,
                 IsPostPaddingRequired = info.IsPostPaddingRequired,
@@ -93,7 +93,7 @@ namespace Jellyfin.LiveTv
 
                 dto.ProgramInfo.SeriesTimerId = dto.SeriesTimerId;
 
-                if (!string.IsNullOrEmpty(info.SeriesTimerId))
+                if (!info.SeriesTimerId.IsNullOrEmpty())
                 {
                     FillImages(dto.ProgramInfo, info.Name, info.SeriesId);
                 }
@@ -114,14 +114,15 @@ namespace Jellyfin.LiveTv
 
         public SeriesTimerInfoDto GetSeriesTimerInfoDto(SeriesTimerInfo info, ILiveTvService service, string channelName)
         {
+            ArgumentNullException.ThrowIfNull(info.Id);
             var dto = new SeriesTimerInfoDto
             {
-                Id = GetInternalSeriesTimerId(info.Id).ToString("N", CultureInfo.InvariantCulture),
+                Id = GetInternalSeriesTimerId(info.Id.Value),
                 Overview = info.Overview,
                 EndDate = info.EndDate,
                 Name = info.Name,
                 StartDate = info.StartDate,
-                ExternalId = info.Id,
+                ExternalId = info.Id.Value,
                 PrePaddingSeconds = info.PrePaddingSeconds,
                 PostPaddingSeconds = info.PostPaddingSeconds,
                 IsPostPaddingRequired = info.IsPostPaddingRequired,
@@ -407,16 +408,16 @@ namespace Jellyfin.LiveTv
             return _libraryManager.GetNewItemId(name.ToLowerInvariant(), typeof(LiveTvChannel));
         }
 
-        public string GetInternalTimerId(string externalId)
+        public Guid GetInternalTimerId(Guid? externalId)
         {
-            var name = ServiceName + externalId + InternalVersionNumber;
+            var name = ServiceName + externalId?.ToString("N") + InternalVersionNumber;
 
-            return name.ToLowerInvariant().GetMD5().ToString("N", CultureInfo.InvariantCulture);
+            return name.ToLowerInvariant().GetMD5();
         }
 
-        public Guid GetInternalSeriesTimerId(string externalId)
+        public Guid GetInternalSeriesTimerId(Guid? externalId)
         {
-            var name = ServiceName + externalId + InternalVersionNumber;
+            var name = ServiceName + externalId?.ToString("N") + InternalVersionNumber;
 
             return name.ToLowerInvariant().GetMD5();
         }
@@ -450,7 +451,7 @@ namespace Jellyfin.LiveTv
             };
 
             // Convert internal server id's to external tv provider id's
-            if (!isNew && !string.IsNullOrEmpty(dto.Id) && string.IsNullOrEmpty(info.Id))
+            if (!isNew && !dto.Id.IsEmpty() && info.Id.IsEmpty())
             {
                 var timer = await liveTv.GetSeriesTimer(dto.Id, cancellationToken).ConfigureAwait(false);
 
@@ -477,9 +478,9 @@ namespace Jellyfin.LiveTv
                 }
             }
 
-            if (!string.IsNullOrEmpty(dto.SeriesTimerId) && string.IsNullOrEmpty(info.SeriesTimerId))
+            if (!dto.SeriesTimerId.IsNullOrEmpty() && info.SeriesTimerId.IsNullOrEmpty())
             {
-                var timer = await liveTv.GetSeriesTimer(dto.SeriesTimerId, cancellationToken).ConfigureAwait(false);
+                var timer = await liveTv.GetSeriesTimer(dto.SeriesTimerId.Value, cancellationToken).ConfigureAwait(false);
 
                 if (timer is not null)
                 {
@@ -516,7 +517,7 @@ namespace Jellyfin.LiveTv
             };
 
             // Convert internal server id's to external tv provider id's
-            if (!isNew && !string.IsNullOrEmpty(dto.Id) && string.IsNullOrEmpty(info.Id))
+            if (!isNew && !dto.Id.IsEmpty() && info.Id.IsNullOrEmpty())
             {
                 var timer = await liveTv.GetSeriesTimer(dto.Id, cancellationToken).ConfigureAwait(false);
 
