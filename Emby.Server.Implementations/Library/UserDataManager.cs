@@ -3,15 +3,17 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 using Jellyfin.Data.Entities;
+using Jellyfin.Server.Implementations;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using Microsoft.EntityFrameworkCore;
 using AudioBook = MediaBrowser.Controller.Entities.AudioBook;
 using Book = MediaBrowser.Controller.Entities.Book;
 
@@ -26,22 +28,18 @@ namespace Emby.Server.Implementations.Library
             new ConcurrentDictionary<string, UserItemData>(StringComparer.OrdinalIgnoreCase);
 
         private readonly IServerConfigurationManager _config;
-        private readonly IUserManager _userManager;
-        private readonly IUserDataRepository _repository;
+        private readonly IDbContextFactory<JellyfinDbContext> _repository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserDataManager"/> class.
         /// </summary>
         /// <param name="config">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
-        /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
-        /// <param name="repository">Instance of the <see cref="IUserDataRepository"/> interface.</param>
+        /// <param name="repository">Instance of the <see cref="IDbContextFactory{JellyfinDbContext}"/> interface.</param>
         public UserDataManager(
             IServerConfigurationManager config,
-            IUserManager userManager,
-            IUserDataRepository repository)
+            IDbContextFactory<JellyfinDbContext> repository)
         {
             _config = config;
-            _userManager = userManager;
             _repository = repository;
         }
 
@@ -61,10 +59,15 @@ namespace Emby.Server.Implementations.Library
 
             var userId = user.InternalId;
 
+            using var repository = _repository.CreateDbContext();
+
             foreach (var key in keys)
             {
-                _repository.SaveUserData(userId, key, userData, cancellationToken);
+                userData.Key = key;
+                repository.UserData.Add(Map(userData, user.Id));
             }
+
+            repository.SaveChanges();
 
             var cacheKey = GetCacheKey(userId, item.Id);
             _userData.AddOrUpdate(cacheKey, userData, (_, _) => userData);
@@ -87,7 +90,7 @@ namespace Emby.Server.Implementations.Library
             ArgumentNullException.ThrowIfNull(reason);
             ArgumentNullException.ThrowIfNull(userDataDto);
 
-            var userData = GetUserData(user, item);
+            var userData = GetUserData(user, item) ?? throw new InvalidOperationException("Did not expect UserData to be null.");
 
             if (userDataDto.PlaybackPositionTicks.HasValue)
             {
@@ -127,22 +130,68 @@ namespace Emby.Server.Implementations.Library
             SaveUserData(user, item, userData, reason, CancellationToken.None);
         }
 
-        private UserItemData GetUserData(User user, Guid itemId, List<string> keys)
+        private UserData Map(UserItemData dto, Guid userId)
         {
-            var userId = user.InternalId;
-
-            var cacheKey = GetCacheKey(userId, itemId);
-
-            return _userData.GetOrAdd(cacheKey, _ => GetUserDataInternal(userId, keys));
+            return new UserData()
+            {
+                Key = dto.Key,
+                AudioStreamIndex = dto.AudioStreamIndex,
+                IsFavorite = dto.IsFavorite,
+                LastPlayedDate = dto.LastPlayedDate,
+                Likes = dto.Likes,
+                PlaybackPositionTicks = dto.PlaybackPositionTicks,
+                PlayCount = dto.PlayCount,
+                Played = dto.Played,
+                Rating = dto.Rating,
+                UserId = userId,
+                SubtitleStreamIndex = dto.SubtitleStreamIndex,
+            };
         }
 
-        private UserItemData GetUserDataInternal(long internalUserId, List<string> keys)
+        private UserItemData Map(UserData dto)
         {
-            var userData = _repository.GetUserData(internalUserId, keys);
+            return new UserItemData()
+            {
+                Key = dto.Key,
+                AudioStreamIndex = dto.AudioStreamIndex,
+                IsFavorite = dto.IsFavorite,
+                LastPlayedDate = dto.LastPlayedDate,
+                Likes = dto.Likes,
+                PlaybackPositionTicks = dto.PlaybackPositionTicks,
+                PlayCount = dto.PlayCount,
+                Played = dto.Played,
+                Rating = dto.Rating,
+                SubtitleStreamIndex = dto.SubtitleStreamIndex,
+            };
+        }
+
+        private UserItemData? GetUserData(User user, Guid itemId, List<string> keys)
+        {
+            var cacheKey = GetCacheKey(user.InternalId, itemId);
+            var data = GetUserDataInternal(user.Id, keys);
+
+            if (data is null)
+            {
+                return null;
+            }
+
+            return _userData.GetOrAdd(cacheKey, data);
+        }
+
+        private UserItemData? GetUserDataInternal(Guid userId, List<string> keys)
+        {
+            using var context = _repository.CreateDbContext();
+            var key = keys.FirstOrDefault();
+            if (key is null)
+            {
+                return null;
+            }
+
+            var userData = context.UserData.AsNoTracking().FirstOrDefault(e => e.Key == key && e.UserId.Equals(userId));
 
             if (userData is not null)
             {
-                return userData;
+                return Map(userData);
             }
 
             if (keys.Count > 0)
@@ -166,7 +215,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
-        public UserItemData GetUserData(User user, BaseItem item)
+        public UserItemData? GetUserData(User user, BaseItem item)
         {
             return GetUserData(user, item.Id, item.GetUserDataKeys());
         }
@@ -178,7 +227,7 @@ namespace Emby.Server.Implementations.Library
         /// <inheritdoc />
         public UserItemDataDto GetUserDataDto(BaseItem item, BaseItemDto? itemDto, User user, DtoOptions options)
         {
-            var userData = GetUserData(user, item);
+            var userData = GetUserData(user, item) ?? throw new InvalidOperationException("Did not expect UserData to be null.");
             var dto = GetUserItemDataDto(userData);
 
             item.FillUserDataDtoValues(dto, userData, itemDto, user, options);
