@@ -1,11 +1,13 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Providers;
+using MediaBrowser.Model.Subtitles;
 
 namespace MediaBrowser.Controller.Subtitles
 {
@@ -91,5 +93,13 @@ namespace MediaBrowser.Controller.Subtitles
         /// <param name="item">The media item.</param>
         /// <returns>Subtitles providers.</returns>
         SubtitleProviderInfo[] GetSupportedProviders(BaseItem item);
+
+        /// <summary>
+        /// Gets the fallback font list.
+        /// </summary>
+        /// <param name="progress">The progress of font family name extraction.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns><see cref="IEnumerable{FontFile}" />.</returns>
+        IEnumerable<FontFile> GetFallbackFontList(IProgress<double>? progress = null, CancellationToken cancellationToken = default);
     }
 }
