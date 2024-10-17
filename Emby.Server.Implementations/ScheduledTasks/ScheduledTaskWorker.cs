@@ -1,7 +1,9 @@
 #nullable disable
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -13,666 +15,717 @@ using Jellyfin.Data.Events;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace Emby.Server.Implementations.ScheduledTasks
+namespace Emby.Server.Implementations.ScheduledTasks;
+
+/// <summary>
+/// Class ScheduledTaskWorker.
+/// </summary>
+public class ScheduledTaskWorker : IScheduledTaskWorker
 {
     /// <summary>
-    /// Class ScheduledTaskWorker.
+    /// The options for the json Serializer.
     /// </summary>
-    public class ScheduledTaskWorker : IScheduledTaskWorker
+    private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
+
+    /// <summary>
+    /// Gets or sets the application paths.
+    /// </summary>
+    /// <value>The application paths.</value>
+    private readonly IApplicationPaths _applicationPaths;
+
+    /// <summary>
+    /// The _last execution result sync lock.
+    /// </summary>
+    private readonly object _lastExecutionResultSyncLock = new object();
+
+    private bool _readFromFile = false;
+
+    /// <summary>
+    /// The _last execution result.
+    /// </summary>
+    private TaskResult _lastExecutionResult;
+
+    /// <summary>
+    /// The _triggers.
+    /// </summary>
+    private IReadOnlyList<Tuple<TaskTriggerInfo, ITaskTrigger>> _triggers;
+
+    /// <summary>
+    /// The _id.
+    /// </summary>
+    private string _id;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ScheduledTaskWorker" /> class.
+    /// </summary>
+    /// <param name="scheduledTask">The scheduled task.</param>
+    /// <param name="applicationPaths">The application paths.</param>
+    /// <param name="taskManager">The task manager.</param>
+    /// <param name="logger">The logger.</param>
+    /// <exception cref="ArgumentNullException">
+    /// scheduledTask
+    /// or
+    /// applicationPaths
+    /// or
+    /// taskManager
+    /// or
+    /// jsonSerializer
+    /// or
+    /// logger.
+    /// </exception>
+    public ScheduledTaskWorker(IScheduledTask scheduledTask, IApplicationPaths applicationPaths, ITaskManager taskManager, ILogger logger)
     {
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
-        private readonly IApplicationPaths _applicationPaths;
-        private readonly ILogger _logger;
-        private readonly ITaskManager _taskManager;
-        private readonly object _lastExecutionResultSyncLock = new();
-        private bool _readFromFile;
-        private TaskResult _lastExecutionResult;
-        private Task _currentTask;
-        private Tuple<TaskTriggerInfo, ITaskTrigger>[] _triggers;
-        private string _id;
+        ArgumentNullException.ThrowIfNull(scheduledTask);
+        ArgumentNullException.ThrowIfNull(applicationPaths);
+        ArgumentNullException.ThrowIfNull(taskManager);
+        ArgumentNullException.ThrowIfNull(logger);
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ScheduledTaskWorker" /> class.
-        /// </summary>
-        /// <param name="scheduledTask">The scheduled task.</param>
-        /// <param name="applicationPaths">The application paths.</param>
-        /// <param name="taskManager">The task manager.</param>
-        /// <param name="logger">The logger.</param>
-        /// <exception cref="ArgumentNullException">
-        /// scheduledTask
-        /// or
-        /// applicationPaths
-        /// or
-        /// taskManager
-        /// or
-        /// jsonSerializer
-        /// or
-        /// logger.
-        /// </exception>
-        public ScheduledTaskWorker(IScheduledTask scheduledTask, IApplicationPaths applicationPaths, ITaskManager taskManager, ILogger logger)
+        ScheduledTask = scheduledTask;
+        _applicationPaths = applicationPaths;
+        TaskManager = taskManager;
+        Logger = logger;
+
+        InitTriggerEvents();
+    }
+
+    /// <inheritdoc/>
+    public event EventHandler<GenericEventArgs<double>> TaskProgress;
+
+    /// <summary>
+    /// Gets or sets the currently executed task.
+    /// </summary>
+    protected Task CurrentTask { get; set; }
+
+    /// <summary>
+    /// Gets the logger.
+    /// </summary>
+    /// <value>The logger.</value>
+    protected ILogger Logger { get; }
+
+    /// <summary>
+    /// Gets the task manager.
+    /// </summary>
+    /// <value>The task manager.</value>
+    protected ITaskManager TaskManager { get; }
+
+    /// <inheritdoc />
+    public IScheduledTask ScheduledTask { get; private set; }
+
+    /// <inheritdoc />
+    public TaskResult LastExecutionResult
+    {
+        get
         {
-            ArgumentNullException.ThrowIfNull(scheduledTask);
-            ArgumentNullException.ThrowIfNull(applicationPaths);
-            ArgumentNullException.ThrowIfNull(taskManager);
-            ArgumentNullException.ThrowIfNull(logger);
+            var path = GetHistoryFilePath();
 
-            ScheduledTask = scheduledTask;
-            _applicationPaths = applicationPaths;
-            _taskManager = taskManager;
-            _logger = logger;
-
-            InitTriggerEvents();
-        }
-
-        /// <inheritdoc />
-        public event EventHandler<GenericEventArgs<double>> TaskProgress;
-
-        /// <inheritdoc />
-        public IScheduledTask ScheduledTask { get; private set; }
-
-        /// <inheritdoc />
-        public TaskResult LastExecutionResult
-        {
-            get
+            lock (_lastExecutionResultSyncLock)
             {
-                var path = GetHistoryFilePath();
-
-                lock (_lastExecutionResultSyncLock)
+                if (_lastExecutionResult is null && !_readFromFile)
                 {
-                    if (_lastExecutionResult is null && !_readFromFile)
+                    if (File.Exists(path))
                     {
-                        if (File.Exists(path))
+                        var bytes = File.ReadAllBytes(path);
+                        if (bytes.Length > 0)
                         {
-                            var bytes = File.ReadAllBytes(path);
-                            if (bytes.Length > 0)
+                            try
                             {
-                                try
-                                {
-                                    _lastExecutionResult = JsonSerializer.Deserialize<TaskResult>(bytes, _jsonOptions);
-                                }
-                                catch (JsonException ex)
-                                {
-                                    _logger.LogError(ex, "Error deserializing {File}", path);
-                                }
+                                _lastExecutionResult = JsonSerializer.Deserialize<TaskResult>(bytes, _jsonOptions);
                             }
-                            else
+                            catch (JsonException ex)
                             {
-                                _logger.LogDebug("Scheduled Task history file {Path} is empty. Skipping deserialization.", path);
+                                Logger.LogError(ex, "Error deserializing {File}", path);
                             }
                         }
-
-                        _readFromFile = true;
+                        else
+                        {
+                            Logger.LogDebug("Scheduled Task history file {Path} is empty. Skipping deserialization.", path);
+                        }
                     }
-                }
 
-                return _lastExecutionResult;
-            }
-
-            private set
-            {
-                _lastExecutionResult = value;
-
-                var path = GetHistoryFilePath();
-                Directory.CreateDirectory(Path.GetDirectoryName(path));
-
-                lock (_lastExecutionResultSyncLock)
-                {
-                    using FileStream createStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
-                    using Utf8JsonWriter jsonStream = new Utf8JsonWriter(createStream);
-                    JsonSerializer.Serialize(jsonStream, value, _jsonOptions);
+                    _readFromFile = true;
                 }
             }
+
+            return _lastExecutionResult;
         }
 
-        /// <inheritdoc />
-        public string Name => ScheduledTask.Name;
-
-        /// <inheritdoc />
-        public string Description => ScheduledTask.Description;
-
-        /// <inheritdoc />
-        public string Category => ScheduledTask.Category;
-
-        /// <summary>
-        /// Gets or sets the current cancellation token.
-        /// </summary>
-        /// <value>The current cancellation token source.</value>
-        private CancellationTokenSource CurrentCancellationTokenSource { get; set; }
-
-        /// <summary>
-        /// Gets or sets the current execution start time.
-        /// </summary>
-        /// <value>The current execution start time.</value>
-        private DateTime CurrentExecutionStartTime { get; set; }
-
-        /// <inheritdoc />
-        public TaskState State
+        private set
         {
-            get
-            {
-                if (CurrentCancellationTokenSource is not null)
-                {
-                    return CurrentCancellationTokenSource.IsCancellationRequested
-                               ? TaskState.Cancelling
-                               : TaskState.Running;
-                }
+            _lastExecutionResult = value;
 
-                return TaskState.Idle;
+            var path = GetHistoryFilePath();
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+
+            lock (_lastExecutionResultSyncLock)
+            {
+                using FileStream createStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
+                using Utf8JsonWriter jsonStream = new Utf8JsonWriter(createStream);
+                JsonSerializer.Serialize(jsonStream, value, _jsonOptions);
             }
         }
+    }
 
-        /// <inheritdoc />
-        public double? CurrentProgress { get; private set; }
+    /// <inheritdoc />
+    public string Name => ScheduledTask.Name;
 
-        /// <summary>
-        /// Gets or sets the triggers that define when the task will run.
-        /// </summary>
-        /// <value>The triggers.</value>
-        private Tuple<TaskTriggerInfo, ITaskTrigger>[] InternalTriggers
+    /// <inheritdoc />
+    public string Description => ScheduledTask.Description;
+
+    /// <inheritdoc />
+    public string Category => ScheduledTask.Category;
+
+    /// <summary>
+    /// Gets or sets the current cancellation token.
+    /// </summary>
+    /// <value>The current cancellation token source.</value>
+    private CancellationTokenSource CurrentCancellationTokenSource { get; set; }
+
+    /// <summary>
+    /// Gets or sets the current execution start time.
+    /// </summary>
+    /// <value>The current execution start time.</value>
+    private DateTime CurrentExecutionStartTime { get; set; }
+
+    /// <inheritdoc />
+    public TaskState State
+    {
+        get
         {
-            get => _triggers;
-            set
+            if (CurrentCancellationTokenSource is not null)
             {
-                ArgumentNullException.ThrowIfNull(value);
-
-                // Cleanup current triggers
-                if (_triggers is not null)
-                {
-                    DisposeTriggers();
-                }
-
-                _triggers = value.ToArray();
-
-                ReloadTriggerEvents(false);
+                return CurrentCancellationTokenSource.IsCancellationRequested
+                           ? TaskState.Cancelling
+                           : TaskState.Running;
             }
-        }
 
-        /// <inheritdoc />
-        public IReadOnlyList<TaskTriggerInfo> Triggers
+            return TaskState.Idle;
+        }
+    }
+
+    /// <inheritdoc />
+    public double? CurrentProgress { get; private set; }
+
+    /// <summary>
+    /// Gets or sets the triggers that define when the task will run.
+    /// </summary>
+    /// <value>The triggers.</value>
+    protected IReadOnlyList<Tuple<TaskTriggerInfo, ITaskTrigger>> InternalTriggers
+    {
+        get => _triggers;
+        set
         {
-            get
+            ArgumentNullException.ThrowIfNull(value);
+
+            // Cleanup current triggers
+            if (_triggers is not null)
             {
-                return Array.ConvertAll(InternalTriggers, i => i.Item1);
+                DisposeTriggers();
             }
 
-            set
-            {
-                ArgumentNullException.ThrowIfNull(value);
+            _triggers = value.ToImmutableArray();
 
-                // This null check is not great, but is needed to handle bad user input, or user mucking with the config file incorrectly
-                var triggerList = value.Where(i => i is not null).ToArray();
-
-                SaveTriggers(triggerList);
-
-                InternalTriggers = Array.ConvertAll(triggerList, i => new Tuple<TaskTriggerInfo, ITaskTrigger>(i, GetTrigger(i)));
-            }
-        }
-
-        /// <inheritdoc />
-        public string Id
-        {
-            get
-            {
-                return _id ??= ScheduledTask.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture);
-            }
-        }
-
-        private void InitTriggerEvents()
-        {
-            _triggers = LoadTriggers();
-            ReloadTriggerEvents(true);
-        }
-
-        /// <inheritdoc />
-        public void ReloadTriggerEvents()
-        {
             ReloadTriggerEvents(false);
         }
+    }
 
-        /// <summary>
-        /// Reloads the trigger events.
-        /// </summary>
-        /// <param name="isApplicationStartup">if set to <c>true</c> [is application startup].</param>
-        private void ReloadTriggerEvents(bool isApplicationStartup)
+    /// <inheritdoc />
+    public IReadOnlyList<TaskTriggerInfo> Triggers
+    {
+        get
         {
-            foreach (var triggerInfo in InternalTriggers)
-            {
-                var trigger = triggerInfo.Item2;
-
-                trigger.Stop();
-
-                trigger.Triggered -= OnTriggerTriggered;
-                trigger.Triggered += OnTriggerTriggered;
-                trigger.Start(LastExecutionResult, _logger, Name, isApplicationStartup);
-            }
+            return InternalTriggers.Select(i => i.Item1).ToImmutableArray();
         }
 
-        /// <summary>
-        /// Handles the Triggered event of the trigger control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        private async void OnTriggerTriggered(object sender, EventArgs e)
+        set
         {
-            var trigger = (ITaskTrigger)sender;
+            ArgumentNullException.ThrowIfNull(value);
 
-            if (ScheduledTask is IConfigurableScheduledTask configurableTask && !configurableTask.IsEnabled)
-            {
-                return;
-            }
+            // This null check is not great, but is needed to handle bad user input, or user mucking with the config file incorrectly
+            var triggerList = value.Where(i => i is not null).ToArray();
 
-            _logger.LogDebug("{0} fired for task: {1}", trigger.GetType().Name, Name);
+            SaveTriggers(triggerList);
+
+            InternalTriggers = Array.ConvertAll(triggerList, i => new Tuple<TaskTriggerInfo, ITaskTrigger>(i, GetTrigger(i)));
+        }
+    }
+
+    /// <inheritdoc />
+    public string Id
+    {
+        get
+        {
+            return _id ??= ScheduledTask.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture);
+        }
+    }
+
+    private void InitTriggerEvents()
+    {
+        _triggers = LoadTriggers();
+        ReloadTriggerEvents(true);
+    }
+
+    /// <inheritdoc />
+    public void ReloadTriggerEvents()
+    {
+        ReloadTriggerEvents(false);
+    }
+
+    /// <summary>
+    /// Reloads the trigger events.
+    /// </summary>
+    /// <param name="isApplicationStartup">if set to <c>true</c> [is application startup].</param>
+    private void ReloadTriggerEvents(bool isApplicationStartup)
+    {
+        foreach (var triggerInfo in InternalTriggers)
+        {
+            var trigger = triggerInfo.Item2;
 
             trigger.Stop();
 
-            _taskManager.QueueScheduledTask(ScheduledTask, trigger.TaskOptions);
+            trigger.Triggered -= OnTriggerTriggered;
+            trigger.Triggered += OnTriggerTriggered;
+            trigger.Start(LastExecutionResult, Logger, Name, isApplicationStartup);
+        }
+    }
 
-            await Task.Delay(1000).ConfigureAwait(false);
+    /// <summary>
+    /// Handles the Triggered event of the trigger control.
+    /// </summary>
+    /// <param name="sender">The source of the event.</param>
+    /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+    protected virtual async void OnTriggerTriggered(object sender, EventArgs e)
+    {
+        var trigger = (ITaskTrigger)sender;
 
-            trigger.Start(LastExecutionResult, _logger, Name, false);
+        if (ScheduledTask is IConfigurableScheduledTask configurableTask && !configurableTask.IsEnabled)
+        {
+            return;
         }
 
-        /// <summary>
-        /// Executes the task.
-        /// </summary>
-        /// <param name="options">Task options.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="InvalidOperationException">Cannot execute a Task that is already running.</exception>
-        public async Task Execute(TaskOptions options)
+        Logger.LogDebug("{0} fired for task: {1}", trigger.GetType().Name, Name);
+
+        trigger.Stop();
+
+        TaskManager.QueueScheduledTask(ScheduledTask, trigger.TaskOptions);
+
+        await Task.Delay(1000).ConfigureAwait(false);
+
+        trigger.Start(LastExecutionResult, Logger, Name, false);
+    }
+
+    /// <summary>
+    /// Executes the task.
+    /// </summary>
+    /// <param name="options">Task options.</param>
+    /// <returns>Task.</returns>
+    /// <exception cref="InvalidOperationException">Cannot execute a Task that is already running.</exception>
+    public async Task Execute(TaskOptions options)
+    {
+        var task = Task.Run(async () => await ExecuteInternal(options).ConfigureAwait(false));
+
+        CurrentTask = task;
+
+        try
         {
-            var task = Task.Run(async () => await ExecuteInternal(options).ConfigureAwait(false));
+            await task.ConfigureAwait(false);
+        }
+        finally
+        {
+            CurrentTask = null;
+            GC.Collect();
+        }
+    }
 
-            _currentTask = task;
-
-            try
-            {
-                await task.ConfigureAwait(false);
-            }
-            finally
-            {
-                _currentTask = null;
-                GC.Collect();
-            }
+    private async Task ExecuteInternal(TaskOptions options)
+    {
+        // Cancel the current execution, if any
+        if (CurrentCancellationTokenSource is not null)
+        {
+            throw new InvalidOperationException("Cannot execute a Task that is already running");
         }
 
-        private async Task ExecuteInternal(TaskOptions options)
+        var progress = new Progress<double>();
+
+        CurrentCancellationTokenSource = new CancellationTokenSource();
+
+        Logger.LogDebug("Executing {0}", Name);
+
+        ((TaskManager)TaskManager).OnTaskExecuting(this);
+
+        progress.ProgressChanged += OnProgressChanged;
+
+        TaskCompletionStatus status;
+        CurrentExecutionStartTime = DateTime.UtcNow;
+
+        Exception failureException = null;
+
+        try
         {
-            // Cancel the current execution, if any
-            if (CurrentCancellationTokenSource is not null)
+            if (options is not null && options.MaxRuntimeTicks.HasValue)
             {
-                throw new InvalidOperationException("Cannot execute a Task that is already running");
-            }
-
-            var progress = new Progress<double>();
-
-            CurrentCancellationTokenSource = new CancellationTokenSource();
-
-            _logger.LogDebug("Executing {0}", Name);
-
-            ((TaskManager)_taskManager).OnTaskExecuting(this);
-
-            progress.ProgressChanged += OnProgressChanged;
-
-            TaskCompletionStatus status;
-            CurrentExecutionStartTime = DateTime.UtcNow;
-
-            Exception failureException = null;
-
-            try
-            {
-                if (options is not null && options.MaxRuntimeTicks.HasValue)
-                {
-                    CurrentCancellationTokenSource.CancelAfter(TimeSpan.FromTicks(options.MaxRuntimeTicks.Value));
-                }
-
-                await ScheduledTask.ExecuteAsync(progress, CurrentCancellationTokenSource.Token).ConfigureAwait(false);
-
-                status = TaskCompletionStatus.Completed;
-            }
-            catch (OperationCanceledException)
-            {
-                status = TaskCompletionStatus.Cancelled;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error executing Scheduled Task");
-
-                failureException = ex;
-
-                status = TaskCompletionStatus.Failed;
-            }
-
-            var startTime = CurrentExecutionStartTime;
-            var endTime = DateTime.UtcNow;
-
-            progress.ProgressChanged -= OnProgressChanged;
-            CurrentCancellationTokenSource.Dispose();
-            CurrentCancellationTokenSource = null;
-            CurrentProgress = null;
-
-            OnTaskCompleted(startTime, endTime, status, failureException);
-        }
-
-        /// <summary>
-        /// Progress_s the progress changed.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The e.</param>
-        private void OnProgressChanged(object sender, double e)
-        {
-            e = Math.Min(e, 100);
-
-            CurrentProgress = e;
-
-            TaskProgress?.Invoke(this, new GenericEventArgs<double>(e));
-        }
-
-        /// <summary>
-        /// Stops the task if it is currently executing.
-        /// </summary>
-        /// <exception cref="InvalidOperationException">Cannot cancel a Task unless it is in the Running state.</exception>
-        public void Cancel()
-        {
-            if (State != TaskState.Running)
-            {
-                throw new InvalidOperationException("Cannot cancel a Task unless it is in the Running state.");
+                CurrentCancellationTokenSource.CancelAfter(TimeSpan.FromTicks(options.MaxRuntimeTicks.Value));
             }
 
-            CancelIfRunning();
+            await ExecuteTask(progress, CurrentCancellationTokenSource).ConfigureAwait(false);
+
+            status = TaskCompletionStatus.Completed;
+        }
+        catch (OperationCanceledException)
+        {
+            status = TaskCompletionStatus.Cancelled;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error executing Scheduled Task");
+
+            failureException = ex;
+
+            status = TaskCompletionStatus.Failed;
         }
 
-        /// <summary>
-        /// Cancels if running.
-        /// </summary>
-        public void CancelIfRunning()
+        var startTime = CurrentExecutionStartTime;
+        var endTime = DateTime.UtcNow;
+
+        progress.ProgressChanged -= OnProgressChanged;
+        CurrentCancellationTokenSource.Dispose();
+        CurrentCancellationTokenSource = null;
+        CurrentProgress = null;
+
+        OnTaskCompleted(startTime, endTime, status, failureException);
+    }
+
+    /// <summary>
+    /// Runs the associated task.
+    /// </summary>
+    /// <param name="progress">The progress handler.</param>
+    /// <param name="cancellationTokenSource">The cancelation token.</param>
+    /// <returns>A task that gets resolved when the associated task finishes.</returns>
+    protected virtual async Task ExecuteTask(Progress<double> progress, CancellationTokenSource cancellationTokenSource)
+    {
+        await ScheduledTask.ExecuteAsync(progress, cancellationTokenSource.Token).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Progress_s the progress changed.
+    /// </summary>
+    /// <param name="sender">The sender.</param>
+    /// <param name="e">The e.</param>
+    private void OnProgressChanged(object sender, double e)
+    {
+        e = Math.Min(e, 100);
+
+        CurrentProgress = e;
+
+        TaskProgress?.Invoke(this, new GenericEventArgs<double>(e));
+    }
+
+    /// <summary>
+    /// Stops the task if it is currently executing.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Cannot cancel a Task unless it is in the Running state.</exception>
+    public void Cancel()
+    {
+        if (State != TaskState.Running)
         {
-            if (State == TaskState.Running)
-            {
-                _logger.LogInformation("Attempting to cancel Scheduled Task {0}", Name);
-                CurrentCancellationTokenSource.Cancel();
-            }
+            throw new InvalidOperationException("Cannot cancel a Task unless it is in the Running state.");
         }
 
-        /// <summary>
-        /// Gets the scheduled tasks configuration directory.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        private string GetScheduledTasksConfigurationDirectory()
+        CancelIfRunning();
+    }
+
+    /// <summary>
+    /// Cancels if running.
+    /// </summary>
+    public void CancelIfRunning()
+    {
+        if (State == TaskState.Running)
         {
-            return Path.Combine(_applicationPaths.ConfigurationDirectoryPath, "ScheduledTasks");
+            Logger.LogInformation("Attempting to cancel Scheduled Task {0}", Name);
+            CurrentCancellationTokenSource.Cancel();
+        }
+    }
+
+    /// <summary>
+    /// Gets the scheduled tasks configuration directory.
+    /// </summary>
+    /// <returns>System.String.</returns>
+    private string GetScheduledTasksConfigurationDirectory()
+    {
+        return Path.Combine(_applicationPaths.ConfigurationDirectoryPath, "ScheduledTasks");
+    }
+
+    /// <summary>
+    /// Gets the scheduled tasks data directory.
+    /// </summary>
+    /// <returns>System.String.</returns>
+    private string GetScheduledTasksDataDirectory()
+    {
+        return Path.Combine(_applicationPaths.DataPath, "ScheduledTasks");
+    }
+
+    /// <summary>
+    /// Gets the history file path.
+    /// </summary>
+    /// <value>The history file path.</value>
+    private string GetHistoryFilePath()
+    {
+        return Path.Combine(GetScheduledTasksDataDirectory(), new Guid(Id) + ".js");
+    }
+
+    /// <summary>
+    /// Gets the configuration file path.
+    /// </summary>
+    /// <returns>System.String.</returns>
+    private string GetConfigurationFilePath()
+    {
+        return Path.Combine(GetScheduledTasksConfigurationDirectory(), new Guid(Id) + ".js");
+    }
+
+    /// <summary>
+    /// Loads the triggers.
+    /// </summary>
+    /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
+    private Tuple<TaskTriggerInfo, ITaskTrigger>[] LoadTriggers()
+    {
+        // This null check is not great, but is needed to handle bad user input, or user mucking with the config file incorrectly
+        var settings = LoadTriggerSettings().Where(i => i is not null);
+
+        return settings.Select(i => new Tuple<TaskTriggerInfo, ITaskTrigger>(i, GetTrigger(i))).ToArray();
+    }
+
+    private TaskTriggerInfo[] LoadTriggerSettings()
+    {
+        string path = GetConfigurationFilePath();
+        TaskTriggerInfo[] list = null;
+        if (File.Exists(path))
+        {
+            var bytes = File.ReadAllBytes(path);
+            list = JsonSerializer.Deserialize<TaskTriggerInfo[]>(bytes, _jsonOptions);
         }
 
-        /// <summary>
-        /// Gets the scheduled tasks data directory.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        private string GetScheduledTasksDataDirectory()
+        // Return defaults if file doesn't exist.
+        return list ?? GetDefaultTriggers();
+    }
+
+    private TaskTriggerInfo[] GetDefaultTriggers()
+    {
+        try
         {
-            return Path.Combine(_applicationPaths.DataPath, "ScheduledTasks");
+            return ScheduledTask.GetDefaultTriggers().ToArray();
         }
-
-        /// <summary>
-        /// Gets the history file path.
-        /// </summary>
-        /// <value>The history file path.</value>
-        private string GetHistoryFilePath()
+        catch
         {
-            return Path.Combine(GetScheduledTasksDataDirectory(), new Guid(Id) + ".js");
-        }
-
-        /// <summary>
-        /// Gets the configuration file path.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        private string GetConfigurationFilePath()
-        {
-            return Path.Combine(GetScheduledTasksConfigurationDirectory(), new Guid(Id) + ".js");
-        }
-
-        /// <summary>
-        /// Loads the triggers.
-        /// </summary>
-        /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
-        private Tuple<TaskTriggerInfo, ITaskTrigger>[] LoadTriggers()
-        {
-            // This null check is not great, but is needed to handle bad user input, or user mucking with the config file incorrectly
-            var settings = LoadTriggerSettings().Where(i => i is not null);
-
-            return settings.Select(i => new Tuple<TaskTriggerInfo, ITaskTrigger>(i, GetTrigger(i))).ToArray();
-        }
-
-        private TaskTriggerInfo[] LoadTriggerSettings()
-        {
-            string path = GetConfigurationFilePath();
-            TaskTriggerInfo[] list = null;
-            if (File.Exists(path))
-            {
-                var bytes = File.ReadAllBytes(path);
-                list = JsonSerializer.Deserialize<TaskTriggerInfo[]>(bytes, _jsonOptions);
-            }
-
-            // Return defaults if file doesn't exist.
-            return list ?? GetDefaultTriggers();
-        }
-
-        private TaskTriggerInfo[] GetDefaultTriggers()
-        {
-            try
-            {
-                return ScheduledTask.GetDefaultTriggers().ToArray();
-            }
-            catch
-            {
-                return
-                [
-                    new()
+            return
+            [
+                new()
                     {
                         IntervalTicks = TimeSpan.FromDays(1).Ticks,
                         Type = TaskTriggerInfo.TriggerInterval
                     }
-                ];
-            }
+            ];
+        }
+    }
+
+    /// <summary>
+    /// Saves the triggers.
+    /// </summary>
+    /// <param name="triggers">The triggers.</param>
+    private void SaveTriggers(TaskTriggerInfo[] triggers)
+    {
+        var path = GetConfigurationFilePath();
+
+        Directory.CreateDirectory(Path.GetDirectoryName(path));
+        using FileStream createStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
+        using Utf8JsonWriter jsonWriter = new Utf8JsonWriter(createStream);
+        JsonSerializer.Serialize(jsonWriter, triggers, _jsonOptions);
+    }
+
+    /// <summary>
+    /// Called when [task completed].
+    /// </summary>
+    /// <param name="startTime">The start time.</param>
+    /// <param name="endTime">The end time.</param>
+    /// <param name="status">The status.</param>
+    /// <param name="ex">The exception.</param>
+    private void OnTaskCompleted(DateTime startTime, DateTime endTime, TaskCompletionStatus status, Exception ex)
+    {
+        var elapsedTime = endTime - startTime;
+
+        Logger.LogInformation("{0} {1} after {2} minute(s) and {3} seconds", Name, status, Math.Truncate(elapsedTime.TotalMinutes), elapsedTime.Seconds);
+
+        var result = new TaskResult
+        {
+            StartTimeUtc = startTime,
+            EndTimeUtc = endTime,
+            Status = status,
+            Name = Name,
+            Id = Id
+        };
+
+        result.Key = ScheduledTask.Key;
+
+        if (ex is not null)
+        {
+            result.ErrorMessage = ex.Message;
+            result.LongErrorMessage = ex.StackTrace;
         }
 
-        /// <summary>
-        /// Saves the triggers.
-        /// </summary>
-        /// <param name="triggers">The triggers.</param>
-        private void SaveTriggers(TaskTriggerInfo[] triggers)
+        LastExecutionResult = result;
+
+        ((TaskManager)TaskManager).OnTaskCompleted(this, result);
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Releases unmanaged and - optionally - managed resources.
+    /// </summary>
+    /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+    protected virtual void Dispose(bool dispose)
+    {
+        if (dispose)
         {
-            var path = GetConfigurationFilePath();
+            DisposeTriggers();
 
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
-            using FileStream createStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
-            using Utf8JsonWriter jsonWriter = new Utf8JsonWriter(createStream);
-            JsonSerializer.Serialize(jsonWriter, triggers, _jsonOptions);
-        }
+            var wassRunning = State == TaskState.Running;
+            var startTime = CurrentExecutionStartTime;
 
-        /// <summary>
-        /// Called when [task completed].
-        /// </summary>
-        /// <param name="startTime">The start time.</param>
-        /// <param name="endTime">The end time.</param>
-        /// <param name="status">The status.</param>
-        /// <param name="ex">The exception.</param>
-        private void OnTaskCompleted(DateTime startTime, DateTime endTime, TaskCompletionStatus status, Exception ex)
-        {
-            var elapsedTime = endTime - startTime;
-
-            _logger.LogInformation("{0} {1} after {2} minute(s) and {3} seconds", Name, status, Math.Truncate(elapsedTime.TotalMinutes), elapsedTime.Seconds);
-
-            var result = new TaskResult
+            var token = CurrentCancellationTokenSource;
+            if (token is not null)
             {
-                StartTimeUtc = startTime,
-                EndTimeUtc = endTime,
-                Status = status,
-                Name = Name,
-                Id = Id
-            };
-
-            result.Key = ScheduledTask.Key;
-
-            if (ex is not null)
-            {
-                result.ErrorMessage = ex.Message;
-                result.LongErrorMessage = ex.StackTrace;
+                try
+                {
+                    Logger.LogInformation("{Name}: Cancelling", Name);
+                    token.Cancel();
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "Error calling CancellationToken.Cancel();");
+                }
             }
 
-            LastExecutionResult = result;
-
-            ((TaskManager)_taskManager).OnTaskCompleted(this, result);
-        }
-
-        /// <inheritdoc />
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool dispose)
-        {
-            if (dispose)
+            var task = CurrentTask;
+            if (task is not null)
             {
-                DisposeTriggers();
-
-                var wassRunning = State == TaskState.Running;
-                var startTime = CurrentExecutionStartTime;
-
-                var token = CurrentCancellationTokenSource;
-                if (token is not null)
+                try
                 {
-                    try
+                    Logger.LogInformation("{Name}: Waiting on Task", Name);
+                    var exited = task.Wait(2000);
+
+                    if (exited)
                     {
-                        _logger.LogInformation("{Name}: Cancelling", Name);
-                        token.Cancel();
+                        Logger.LogInformation("{Name}: Task exited", Name);
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        _logger.LogError(ex, "Error calling CancellationToken.Cancel();");
+                        Logger.LogInformation("{Name}: Timed out waiting for task to stop", Name);
                     }
                 }
-
-                var task = _currentTask;
-                if (task is not null)
+                catch (Exception ex)
                 {
-                    try
-                    {
-                        _logger.LogInformation("{Name}: Waiting on Task", Name);
-                        var exited = task.Wait(2000);
-
-                        if (exited)
-                        {
-                            _logger.LogInformation("{Name}: Task exited", Name);
-                        }
-                        else
-                        {
-                            _logger.LogInformation("{Name}: Timed out waiting for task to stop", Name);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error calling Task.WaitAll();");
-                    }
+                    Logger.LogError(ex, "Error calling Task.WaitAll();");
                 }
+            }
 
-                if (token is not null)
+            if (token is not null)
+            {
+                try
                 {
-                    try
-                    {
-                        _logger.LogDebug("{Name}: Disposing CancellationToken", Name);
-                        token.Dispose();
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error calling CancellationToken.Dispose();");
-                    }
+                    Logger.LogDebug("{Name}: Disposing CancellationToken", Name);
+                    token.Dispose();
                 }
-
-                if (wassRunning)
+                catch (Exception ex)
                 {
-                    OnTaskCompleted(startTime, DateTime.UtcNow, TaskCompletionStatus.Aborted, null);
+                    Logger.LogError(ex, "Error calling CancellationToken.Dispose();");
                 }
+            }
+
+            if (wassRunning)
+            {
+                OnTaskCompleted(startTime, DateTime.UtcNow, TaskCompletionStatus.Aborted, null);
             }
         }
+    }
 
-        /// <summary>
-        /// Converts a TaskTriggerInfo into a concrete BaseTaskTrigger.
-        /// </summary>
-        /// <param name="info">The info.</param>
-        /// <returns>BaseTaskTrigger.</returns>
-        /// <exception cref="ArgumentException">Invalid trigger type:  + info.Type.</exception>
-        private ITaskTrigger GetTrigger(TaskTriggerInfo info)
+    /// <summary>
+    /// Converts a TaskTriggerInfo into a concrete BaseTaskTrigger.
+    /// </summary>
+    /// <param name="info">The info.</param>
+    /// <returns>BaseTaskTrigger.</returns>
+    /// <exception cref="ArgumentException">Invalid trigger type:  + info.Type.</exception>
+    private ITaskTrigger GetTrigger(TaskTriggerInfo info)
+    {
+        var options = new TaskOptions
         {
-            var options = new TaskOptions
-            {
-                MaxRuntimeTicks = info.MaxRuntimeTicks
-            };
+            MaxRuntimeTicks = info.MaxRuntimeTicks
+        };
 
-            if (info.Type.Equals(nameof(DailyTrigger), StringComparison.OrdinalIgnoreCase))
+        if (info.Type.Equals(nameof(DailyTrigger), StringComparison.OrdinalIgnoreCase))
+        {
+            if (!info.TimeOfDayTicks.HasValue)
             {
-                if (!info.TimeOfDayTicks.HasValue)
-                {
-                    throw new ArgumentException("Info did not contain a TimeOfDayTicks.", nameof(info));
-                }
-
-                return new DailyTrigger(TimeSpan.FromTicks(info.TimeOfDayTicks.Value), options);
+                throw new ArgumentException("Info did not contain a TimeOfDayTicks.", nameof(info));
             }
 
-            if (info.Type.Equals(nameof(WeeklyTrigger), StringComparison.OrdinalIgnoreCase))
-            {
-                if (!info.TimeOfDayTicks.HasValue)
-                {
-                    throw new ArgumentException("Info did not contain a TimeOfDayTicks.", nameof(info));
-                }
-
-                if (!info.DayOfWeek.HasValue)
-                {
-                    throw new ArgumentException("Info did not contain a DayOfWeek.", nameof(info));
-                }
-
-                return new WeeklyTrigger(TimeSpan.FromTicks(info.TimeOfDayTicks.Value), info.DayOfWeek.Value, options);
-            }
-
-            if (info.Type.Equals(nameof(IntervalTrigger), StringComparison.OrdinalIgnoreCase))
-            {
-                if (!info.IntervalTicks.HasValue)
-                {
-                    throw new ArgumentException("Info did not contain a IntervalTicks.", nameof(info));
-                }
-
-                return new IntervalTrigger(TimeSpan.FromTicks(info.IntervalTicks.Value), options);
-            }
-
-            if (info.Type.Equals(nameof(StartupTrigger), StringComparison.OrdinalIgnoreCase))
-            {
-                return new StartupTrigger(options);
-            }
-
-            throw new ArgumentException("Unrecognized trigger type: " + info.Type);
+            return new DailyTrigger(TimeSpan.FromTicks(info.TimeOfDayTicks.Value), options);
         }
 
-        /// <summary>
-        /// Disposes each trigger.
-        /// </summary>
-        private void DisposeTriggers()
+        if (info.Type.Equals(nameof(WeeklyTrigger), StringComparison.OrdinalIgnoreCase))
         {
-            foreach (var triggerInfo in InternalTriggers)
+            if (!info.TimeOfDayTicks.HasValue)
             {
-                var trigger = triggerInfo.Item2;
-                trigger.Triggered -= OnTriggerTriggered;
-                trigger.Stop();
-                if (trigger is IDisposable disposable)
-                {
-                    disposable.Dispose();
-                }
+                throw new ArgumentException("Info did not contain a TimeOfDayTicks.", nameof(info));
+            }
+
+            if (!info.DayOfWeek.HasValue)
+            {
+                throw new ArgumentException("Info did not contain a DayOfWeek.", nameof(info));
+            }
+
+            return new WeeklyTrigger(TimeSpan.FromTicks(info.TimeOfDayTicks.Value), info.DayOfWeek.Value, options);
+        }
+
+        if (info.Type.Equals(nameof(IntervalTrigger), StringComparison.OrdinalIgnoreCase))
+        {
+            if (!info.IntervalTicks.HasValue)
+            {
+                throw new ArgumentException("Info did not contain a IntervalTicks.", nameof(info));
+            }
+
+            return new IntervalTrigger(TimeSpan.FromTicks(info.IntervalTicks.Value), options);
+        }
+
+        if (info.Type.Equals(nameof(StartupTrigger), StringComparison.OrdinalIgnoreCase))
+        {
+            return new StartupTrigger(options);
+        }
+
+        throw new ArgumentException("Unrecognized trigger type: " + info.Type);
+    }
+
+    /// <summary>
+    /// Disposes each trigger.
+    /// </summary>
+    private void DisposeTriggers()
+    {
+        foreach (var triggerInfo in InternalTriggers)
+        {
+            var trigger = triggerInfo.Item2;
+            trigger.Triggered -= OnTriggerTriggered;
+            trigger.Stop();
+            if (trigger is IDisposable disposable)
+            {
+                disposable.Dispose();
             }
         }
     }
