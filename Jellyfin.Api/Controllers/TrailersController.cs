@@ -251,6 +251,7 @@ public class TrailersController : BaseJellyfinApiController
                 includeItemTypes,
                 filters,
                 isFavorite,
+                null,
                 mediaTypes,
                 imageTypes,
                 sortBy,
