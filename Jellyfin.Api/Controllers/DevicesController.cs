@@ -136,7 +136,7 @@ public class DevicesController : BaseJellyfinApiController
                 return NotFound();
             }
 
-            devices.Append(existingDevice);
+            devices.Add(existingDevice);
         }
 
         foreach (var device in devices)
