@@ -239,6 +239,7 @@ public class UserController : BaseJellyfinApiController
     /// <param name="request">The <see cref="QuickConnectDto"/> request.</param>
     /// <response code="200">User authenticated.</response>
     /// <response code="400">Missing token.</response>
+    /// <response code="404">Token not found.</response>
     /// <returns>A <see cref="Task"/> containing an <see cref="AuthenticationRequest"/> with information about the new session.</returns>
     [HttpPost("AuthenticateWithQuickConnect")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -248,10 +249,10 @@ public class UserController : BaseJellyfinApiController
         {
             return _quickConnectManager.GetAuthorizedRequest(request.Secret);
         }
-        catch (SecurityException e)
+        catch (ResourceNotFoundException e)
         {
             // rethrow adding IP address to message
-            throw new SecurityException($"[{HttpContext.GetNormalizedRemoteIP()}] {e.Message}", e);
+            throw new ResourceNotFoundException($"[{HttpContext.GetNormalizedRemoteIP()}] {e.Message}", e);
         }
     }
 
