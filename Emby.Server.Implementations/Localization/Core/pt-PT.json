@@ -135,5 +135,6 @@
     "TaskDownloadMissingLyrics": "Transferir letra em falta",
     "TaskMoveTrickplayImages": "Migrar a localização da imagem do Trickplay",
     "TaskDownloadMissingLyricsDescription": "Transferir letra para músicas",
-    "TaskExtractMediaSegmentsDescription": "Extrai ou obtém segmentos de multimédia a partir de plugins com suporte para MediaSegment."
+    "TaskExtractMediaSegmentsDescription": "Extrai ou obtém segmentos de multimédia a partir de plugins com suporte para MediaSegment.",
+    "TaskMoveTrickplayImagesDescription": "Move ficheiros do trickplay de acordo com as configurações da mediateca."
 }
