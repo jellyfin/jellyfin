@@ -131,7 +131,7 @@
     "TaskCleanCollectionsAndPlaylists": "Limpar coleções e listas de reprodução",
     "TaskAudioNormalizationDescription": "Analisa os ficheiros para obter dados de normalização de áudio.",
     "TaskAudioNormalization": "Normalização de áudio",
-    "TaskExtractMediaSegments": "Analisar segmentos de média",
+    "TaskExtractMediaSegments": "Analisar segmentos de multimédia",
     "TaskDownloadMissingLyrics": "Transferir letra em falta",
     "TaskMoveTrickplayImages": "Migrar a localização da imagem do Trickplay",
     "TaskDownloadMissingLyricsDescription": "Transferir letra para músicas",
