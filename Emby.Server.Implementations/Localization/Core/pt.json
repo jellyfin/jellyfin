@@ -132,7 +132,7 @@
     "TaskAudioNormalization": "Normalização de áudio",
     "TaskDownloadMissingLyrics": "Transferir letra em falta",
     "TaskDownloadMissingLyricsDescription": "Transferir letra para músicas",
-    "TaskMoveTrickplayImagesDescription": "Transfere ficheiros de miniatura de vídeo, conforme as definições da biblioteca.",
+    "TaskMoveTrickplayImagesDescription": "Move os ficheiros trickplay existentes de acordo com as definições da mediateca.",
     "TaskExtractMediaSegments": "Analisar segmentos de multimédia",
     "TaskExtractMediaSegmentsDescription": "Extrai ou obtém segmentos de multimédia a partir de plugins com suporte para MediaSegment.",
     "TaskMoveTrickplayImages": "Migrar a localização da imagem do Trickplay"
