@@ -8,7 +8,7 @@
     "CameraImageUploadedFrom": "Uma nova imagem de câmara foi enviada a partir de {0}",
     "Channels": "Canais",
     "ChapterNameValue": "Capítulo {0}",
-    "Collections": "Colecções",
+    "Collections": "Coleções",
     "DeviceOfflineWithName": "{0} desligou-se",
     "DeviceOnlineWithName": "{0} ligou-se",
     "FailedLoginAttemptWithUserName": "Tentativa de login falhada a partir de {0}",
@@ -136,5 +136,5 @@
     "TaskMoveTrickplayImages": "Migrar a localização da imagem do Trickplay",
     "TaskDownloadMissingLyricsDescription": "Transferir letra para músicas",
     "TaskExtractMediaSegmentsDescription": "Extrai ou obtém segmentos de multimédia a partir de plugins com suporte para MediaSegment.",
-    "TaskMoveTrickplayImagesDescription": "Move ficheiros do trickplay de acordo com as configurações da mediateca."
+    "TaskMoveTrickplayImagesDescription": "Move os ficheiros trickplay existentes de acordo com as definições da mediateca."
 }
