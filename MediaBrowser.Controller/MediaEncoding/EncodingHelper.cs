@@ -2668,6 +2668,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         public string GetFastSeekCommandLineParameter(EncodingJobInfo state, EncodingOptions options, string segmentContainer)
         {
             var time = state.BaseRequest.StartTimeTicks ?? 0;
+            var maxTime = state.RunTimeTicks ?? 0;
             var seekParam = string.Empty;
 
             if (time > 0)
@@ -2678,6 +2679,14 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // This will help subtitle syncing.
                 var isHlsRemuxing = state.IsVideoRequest && state.TranscodingType is TranscodingJobType.Hls && IsCopyCodec(state.OutputVideoCodec);
                 var seekTick = isHlsRemuxing ? time + 5000000L : time;
+
+                // Seeking beyond EOF makes no sense in transcoding. Clamp the seekTick value to
+                // [0, RuntimeTicks - 0.5s], so that the muxer gets packets and avoid error codes.
+                if (maxTime > 0)
+                {
+                    seekTick = Math.Clamp(seekTick, 0, Math.Max(maxTime - 5000000L, 0));
+                }
+
                 seekParam += string.Format(CultureInfo.InvariantCulture, "-ss {0}", _mediaEncoder.GetTimeParameter(seekTick));
 
                 if (state.IsVideoRequest)
