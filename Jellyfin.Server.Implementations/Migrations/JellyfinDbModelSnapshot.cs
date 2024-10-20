@@ -353,9 +353,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<string>("UnratedType")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("UserDataKey")
-                        .HasColumnType("TEXT");
-
                     b.Property<int?>("Width")
                         .HasColumnType("INTEGER");
 
@@ -368,8 +365,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasIndex("PresentationUniqueKey");
 
                     b.HasIndex("TopParentId", "Id");
-
-                    b.HasIndex("UserDataKey", "Type");
 
                     b.HasIndex("Type", "TopParentId", "Id");
 
@@ -1275,7 +1270,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
             modelBuilder.Entity("Jellyfin.Data.Entities.UserData", b =>
                 {
-                    b.Property<string>("Key")
+                    b.Property<Guid>("ItemId")
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("UserId")
@@ -1283,9 +1278,6 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.Property<int?>("AudioStreamIndex")
                         .HasColumnType("INTEGER");
-
-                    b.Property<Guid?>("BaseItemEntityId")
-                        .HasColumnType("TEXT");
 
                     b.Property<bool>("IsFavorite")
                         .HasColumnType("INTEGER");
@@ -1311,19 +1303,17 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<int?>("SubtitleStreamIndex")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("Key", "UserId");
-
-                    b.HasIndex("BaseItemEntityId");
+                    b.HasKey("ItemId", "UserId");
 
                     b.HasIndex("UserId");
 
-                    b.HasIndex("Key", "UserId", "IsFavorite");
+                    b.HasIndex("ItemId", "UserId", "IsFavorite");
 
-                    b.HasIndex("Key", "UserId", "LastPlayedDate");
+                    b.HasIndex("ItemId", "UserId", "LastPlayedDate");
 
-                    b.HasIndex("Key", "UserId", "PlaybackPositionTicks");
+                    b.HasIndex("ItemId", "UserId", "PlaybackPositionTicks");
 
-                    b.HasIndex("Key", "UserId", "Played");
+                    b.HasIndex("ItemId", "UserId", "Played");
 
                     b.ToTable("UserData");
                 });
@@ -1539,15 +1529,19 @@ namespace Jellyfin.Server.Implementations.Migrations
 
             modelBuilder.Entity("Jellyfin.Data.Entities.UserData", b =>
                 {
-                    b.HasOne("Jellyfin.Data.Entities.BaseItemEntity", null)
+                    b.HasOne("Jellyfin.Data.Entities.BaseItemEntity", "Item")
                         .WithMany("UserData")
-                        .HasForeignKey("BaseItemEntityId");
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Jellyfin.Data.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Item");
 
                     b.Navigation("User");
                 });

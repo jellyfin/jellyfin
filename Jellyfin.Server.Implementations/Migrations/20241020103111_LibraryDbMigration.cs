@@ -65,7 +65,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                     NormalizationGain = table.Column<float>(type: "REAL", nullable: true),
                     IsVirtualItem = table.Column<bool>(type: "INTEGER", nullable: false),
                     SeriesName = table.Column<string>(type: "TEXT", nullable: true),
-                    UserDataKey = table.Column<string>(type: "TEXT", nullable: true),
                     SeasonName = table.Column<string>(type: "TEXT", nullable: true),
                     ExternalSeriesId = table.Column<string>(type: "TEXT", nullable: true),
                     Tagline = table.Column<string>(type: "TEXT", nullable: true),
@@ -105,6 +104,19 @@ namespace Jellyfin.Server.Implementations.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ItemValues", x => x.ItemValueId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Peoples",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", nullable: false),
+                    PersonType = table.Column<string>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Peoples", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -324,32 +336,10 @@ namespace Jellyfin.Server.Implementations.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Peoples",
-                columns: table => new
-                {
-                    ItemId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Role = table.Column<string>(type: "TEXT", nullable: false),
-                    ListOrder = table.Column<int>(type: "INTEGER", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    PersonType = table.Column<string>(type: "TEXT", nullable: true),
-                    SortOrder = table.Column<int>(type: "INTEGER", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Peoples", x => new { x.ItemId, x.Role, x.ListOrder });
-                    table.ForeignKey(
-                        name: "FK_Peoples_BaseItems_ItemId",
-                        column: x => x.ItemId,
-                        principalTable: "BaseItems",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "UserData",
                 columns: table => new
                 {
-                    Key = table.Column<string>(type: "TEXT", nullable: false),
+                    ItemId = table.Column<Guid>(type: "TEXT", nullable: false),
                     UserId = table.Column<Guid>(type: "TEXT", nullable: false),
                     Rating = table.Column<double>(type: "REAL", nullable: true),
                     PlaybackPositionTicks = table.Column<long>(type: "INTEGER", nullable: false),
@@ -359,17 +349,17 @@ namespace Jellyfin.Server.Implementations.Migrations
                     Played = table.Column<bool>(type: "INTEGER", nullable: false),
                     AudioStreamIndex = table.Column<int>(type: "INTEGER", nullable: true),
                     SubtitleStreamIndex = table.Column<int>(type: "INTEGER", nullable: true),
-                    Likes = table.Column<bool>(type: "INTEGER", nullable: true),
-                    BaseItemEntityId = table.Column<Guid>(type: "TEXT", nullable: true)
+                    Likes = table.Column<bool>(type: "INTEGER", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserData", x => new { x.Key, x.UserId });
+                    table.PrimaryKey("PK_UserData", x => new { x.ItemId, x.UserId });
                     table.ForeignKey(
-                        name: "FK_UserData_BaseItems_BaseItemEntityId",
-                        column: x => x.BaseItemEntityId,
+                        name: "FK_UserData_BaseItems_ItemId",
+                        column: x => x.ItemId,
                         principalTable: "BaseItems",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_UserData_Users_UserId",
                         column: x => x.UserId,
@@ -399,6 +389,33 @@ namespace Jellyfin.Server.Implementations.Migrations
                         column: x => x.ItemValueId,
                         principalTable: "ItemValues",
                         principalColumn: "ItemValueId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PeopleBaseItemMap",
+                columns: table => new
+                {
+                    ItemId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    PeopleId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    SortOrder = table.Column<int>(type: "INTEGER", nullable: true),
+                    ListOrder = table.Column<int>(type: "INTEGER", nullable: true),
+                    Role = table.Column<string>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PeopleBaseItemMap", x => new { x.ItemId, x.PeopleId });
+                    table.ForeignKey(
+                        name: "FK_PeopleBaseItemMap_BaseItems_ItemId",
+                        column: x => x.ItemId,
+                        principalTable: "BaseItems",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PeopleBaseItemMap_Peoples_PeopleId",
+                        column: x => x.PeopleId,
+                        principalTable: "Peoples",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -493,11 +510,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                 columns: new[] { "Type", "TopParentId", "StartDate" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_BaseItems_UserDataKey_Type",
-                table: "BaseItems",
-                columns: new[] { "UserDataKey", "Type" });
-
-            migrationBuilder.CreateIndex(
                 name: "IX_BaseItemTrailerTypes_ItemId",
                 table: "BaseItemTrailerTypes",
                 column: "ItemId");
@@ -533,9 +545,19 @@ namespace Jellyfin.Server.Implementations.Migrations
                 column: "StreamType");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Peoples_ItemId_ListOrder",
-                table: "Peoples",
+                name: "IX_PeopleBaseItemMap_ItemId_ListOrder",
+                table: "PeopleBaseItemMap",
                 columns: new[] { "ItemId", "ListOrder" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PeopleBaseItemMap_ItemId_SortOrder",
+                table: "PeopleBaseItemMap",
+                columns: new[] { "ItemId", "SortOrder" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PeopleBaseItemMap_PeopleId",
+                table: "PeopleBaseItemMap",
+                column: "PeopleId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Peoples_Name",
@@ -543,29 +565,24 @@ namespace Jellyfin.Server.Implementations.Migrations
                 column: "Name");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserData_BaseItemEntityId",
+                name: "IX_UserData_ItemId_UserId_IsFavorite",
                 table: "UserData",
-                column: "BaseItemEntityId");
+                columns: new[] { "ItemId", "UserId", "IsFavorite" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserData_Key_UserId_IsFavorite",
+                name: "IX_UserData_ItemId_UserId_LastPlayedDate",
                 table: "UserData",
-                columns: new[] { "Key", "UserId", "IsFavorite" });
+                columns: new[] { "ItemId", "UserId", "LastPlayedDate" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserData_Key_UserId_LastPlayedDate",
+                name: "IX_UserData_ItemId_UserId_PlaybackPositionTicks",
                 table: "UserData",
-                columns: new[] { "Key", "UserId", "LastPlayedDate" });
+                columns: new[] { "ItemId", "UserId", "PlaybackPositionTicks" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserData_Key_UserId_PlaybackPositionTicks",
+                name: "IX_UserData_ItemId_UserId_Played",
                 table: "UserData",
-                columns: new[] { "Key", "UserId", "PlaybackPositionTicks" });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserData_Key_UserId_Played",
-                table: "UserData",
-                columns: new[] { "Key", "UserId", "Played" });
+                columns: new[] { "ItemId", "UserId", "Played" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserData_UserId",
@@ -604,13 +621,16 @@ namespace Jellyfin.Server.Implementations.Migrations
                 name: "MediaStreamInfos");
 
             migrationBuilder.DropTable(
-                name: "Peoples");
+                name: "PeopleBaseItemMap");
 
             migrationBuilder.DropTable(
                 name: "UserData");
 
             migrationBuilder.DropTable(
                 name: "ItemValues");
+
+            migrationBuilder.DropTable(
+                name: "Peoples");
 
             migrationBuilder.DropTable(
                 name: "BaseItems");
