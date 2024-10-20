@@ -185,7 +185,7 @@ namespace Emby.Server.Implementations.Library
         {
             using var context = _repository.CreateDbContext();
             var key = keys.FirstOrDefault();
-            if (key is null || Guid.TryParse(key, out var itemId))
+            if (key is null || !Guid.TryParse(key, out var itemId))
             {
                 return null;
             }
