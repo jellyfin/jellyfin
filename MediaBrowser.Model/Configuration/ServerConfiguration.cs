@@ -96,8 +96,6 @@ public class ServerConfiguration : BaseApplicationConfiguration
     /// <value>The metadata path.</value>
     public string MetadataPath { get; set; } = string.Empty;
 
-    public string MetadataNetworkPath { get; set; } = string.Empty;
-
     /// <summary>
     /// Gets or sets the preferred metadata language.
     /// </summary>

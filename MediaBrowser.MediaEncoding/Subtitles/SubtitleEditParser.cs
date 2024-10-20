@@ -54,12 +54,23 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 {
                     break;
                 }
-
-                _logger.LogError(
-                    "{ErrorCount} errors encountered while parsing '{FileExtension}' subtitle using the {SubtitleFormatParser} format parser",
-                    subtitleFormat.ErrorCount,
-                    fileExtension,
-                    subtitleFormat.Name);
+                else if (subtitleFormat.TryGetErrors(out var errors))
+                {
+                    _logger.LogError(
+                        "{ErrorCount} errors encountered while parsing '{FileExtension}' subtitle using the {SubtitleFormatParser} format parser, errors: {Errors}",
+                        subtitleFormat.ErrorCount,
+                        fileExtension,
+                        subtitleFormat.Name,
+                        errors);
+                }
+                else
+                {
+                    _logger.LogError(
+                        "{ErrorCount} errors encountered while parsing '{FileExtension}' subtitle using the {SubtitleFormatParser} format parser",
+                        subtitleFormat.ErrorCount,
+                        fileExtension,
+                        subtitleFormat.Name);
+                }
             }
 
             if (subtitle.Paragraphs.Count == 0)

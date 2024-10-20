@@ -23,7 +23,8 @@ namespace Jellyfin.Server.Migrations
         {
             typeof(PreStartupRoutines.CreateNetworkConfiguration),
             typeof(PreStartupRoutines.MigrateMusicBrainzTimeout),
-            typeof(PreStartupRoutines.MigrateNetworkConfiguration)
+            typeof(PreStartupRoutines.MigrateNetworkConfiguration),
+            typeof(PreStartupRoutines.MigrateEncodingOptions)
         };
 
         /// <summary>
@@ -46,6 +47,7 @@ namespace Jellyfin.Server.Migrations
             typeof(Routines.AddDefaultCastReceivers),
             typeof(Routines.UpdateDefaultPluginRepository),
             typeof(Routines.FixAudioData),
+            typeof(Routines.MoveTrickplayFiles)
         };
 
         /// <summary>

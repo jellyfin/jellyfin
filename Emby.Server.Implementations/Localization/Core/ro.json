@@ -129,5 +129,11 @@
     "TaskAudioNormalizationDescription": "Scanează fișiere pentru date necesare normalizării sunetului.",
     "TaskAudioNormalization": "Normalizare sunet",
     "TaskCleanCollectionsAndPlaylists": "Curăță colecțiile și listele de redare",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Elimină elementele care nu mai există din colecții și liste de redare."
+    "TaskCleanCollectionsAndPlaylistsDescription": "Elimină elementele care nu mai există din colecții și liste de redare.",
+    "TaskExtractMediaSegments": "Scanează segmentele media",
+    "TaskMoveTrickplayImagesDescription": "Mută fișierele trickplay existente conform setărilor librăriei.",
+    "TaskExtractMediaSegmentsDescription": "Extrage sau obține segmentele media de la pluginurile MediaSegment activate.",
+    "TaskMoveTrickplayImages": "Migrează locația imaginii Trickplay",
+    "TaskDownloadMissingLyrics": "Descarcă versurile lipsă",
+    "TaskDownloadMissingLyricsDescription": "Descarcă versuri pentru melodii"
 }

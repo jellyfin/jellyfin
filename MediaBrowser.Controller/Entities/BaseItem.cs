@@ -1087,12 +1087,7 @@ namespace MediaBrowser.Controller.Entities
 
                 return 1;
             }).ThenBy(i => i.Video3DFormat.HasValue ? 1 : 0)
-            .ThenByDescending(i =>
-            {
-                var stream = i.VideoStream;
-
-                return stream is null || stream.Width is null ? 0 : stream.Width.Value;
-            })
+            .ThenByDescending(i => i, new MediaSourceWidthComparator())
             .ToList();
         }
 
@@ -1185,28 +1180,29 @@ namespace MediaBrowser.Controller.Entities
             return info;
         }
 
-        private string GetMediaSourceName(BaseItem item)
+        internal string GetMediaSourceName(BaseItem item)
         {
             var terms = new List<string>();
 
             var path = item.Path;
             if (item.IsFileProtocol && !string.IsNullOrEmpty(path))
             {
+                var displayName = System.IO.Path.GetFileNameWithoutExtension(path);
                 if (HasLocalAlternateVersions)
                 {
-                    var displayName = System.IO.Path.GetFileNameWithoutExtension(path)
-                        .Replace(System.IO.Path.GetFileName(ContainingFolderPath), string.Empty, StringComparison.OrdinalIgnoreCase)
-                        .TrimStart(new char[] { ' ', '-' });
-
-                    if (!string.IsNullOrEmpty(displayName))
+                    var containingFolderName = System.IO.Path.GetFileName(ContainingFolderPath);
+                    if (displayName.Length > containingFolderName.Length && displayName.StartsWith(containingFolderName, StringComparison.OrdinalIgnoreCase))
                     {
-                        terms.Add(displayName);
+                        var name = displayName.AsSpan(containingFolderName.Length).TrimStart([' ', '-']);
+                        if (!name.IsWhiteSpace())
+                        {
+                            terms.Add(name.ToString());
+                        }
                     }
                 }
 
                 if (terms.Count == 0)
                 {
-                    var displayName = System.IO.Path.GetFileNameWithoutExtension(path);
                     terms.Add(displayName);
                 }
             }
@@ -1612,7 +1608,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             var parent = GetParents().FirstOrDefault() ?? this;
-            if (parent is UserRootFolder or AggregateFolder)
+            if (parent is UserRootFolder or AggregateFolder or UserView)
             {
                 return true;
             }

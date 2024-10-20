@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Implementations.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "8.0.7");
+            modelBuilder.HasAnnotation("ProductVersion", "8.0.8");
 
             modelBuilder.Entity("Jellyfin.Data.Entities.AccessSchedule", b =>
                 {
@@ -282,14 +282,15 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<Guid>("ItemId")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("SegmentProviderId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<long>("StartTicks")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("Type")
                         .HasColumnType("INTEGER");
-
-                    b.Property<string>("SegmentProviderId")
-                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 

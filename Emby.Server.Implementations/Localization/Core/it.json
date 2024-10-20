@@ -130,5 +130,9 @@
     "TaskCleanCollectionsAndPlaylists": "Ripulire le collezioni e le playlist",
     "TaskCleanCollectionsAndPlaylistsDescription": "Rimuove gli elementi dalle collezioni e dalle playlist che non esistono più.",
     "TaskAudioNormalization": "Normalizzazione dell'audio",
-    "TaskAudioNormalizationDescription": "Scansiona i file alla ricerca dei dati per la normalizzazione dell'audio."
+    "TaskAudioNormalizationDescription": "Scansiona i file alla ricerca dei dati per la normalizzazione dell'audio.",
+    "TaskDownloadMissingLyricsDescription": "Scarica testi per le canzoni",
+    "TaskDownloadMissingLyrics": "Scarica testi mancanti",
+    "TaskMoveTrickplayImages": "Sposta le immagini Trickplay",
+    "TaskMoveTrickplayImagesDescription": "Sposta le immagini Trickplay esistenti secondo la configurazione della libreria."
 }

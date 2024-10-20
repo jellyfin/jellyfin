@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using AsyncKeyedLock;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using Jellyfin.Extensions.Json.Converters;
@@ -79,7 +80,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private bool _isVaapiDeviceAmd = false;
         private bool _isVaapiDeviceInteliHD = false;
         private bool _isVaapiDeviceInteli965 = false;
+        private bool _isVaapiDeviceSupportVulkanDrmModifier = false;
         private bool _isVaapiDeviceSupportVulkanDrmInterop = false;
+
+        private static string[] _vulkanImageDrmFmtModifierExts =
+        {
+            "VK_EXT_image_drm_format_modifier",
+        };
 
         private static string[] _vulkanExternalMemoryDmaBufExts =
         {
@@ -139,6 +146,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         /// <inheritdoc />
         public bool IsVaapiDeviceInteli965 => _isVaapiDeviceInteli965;
+
+        /// <inheritdoc />
+        public bool IsVaapiDeviceSupportVulkanDrmModifier => _isVaapiDeviceSupportVulkanDrmModifier;
 
         /// <inheritdoc />
         public bool IsVaapiDeviceSupportVulkanDrmInterop => _isVaapiDeviceSupportVulkanDrmInterop;
@@ -214,11 +224,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 if (OperatingSystem.IsLinux()
                     && SupportsHwaccel("vaapi")
                     && !string.IsNullOrEmpty(options.VaapiDevice)
-                    && string.Equals(options.HardwareAccelerationType, "vaapi", StringComparison.OrdinalIgnoreCase))
+                    && options.HardwareAccelerationType == HardwareAccelerationType.vaapi)
                 {
                     _isVaapiDeviceAmd = validator.CheckVaapiDeviceByDriverName("Mesa Gallium driver", options.VaapiDevice);
                     _isVaapiDeviceInteliHD = validator.CheckVaapiDeviceByDriverName("Intel iHD driver", options.VaapiDevice);
                     _isVaapiDeviceInteli965 = validator.CheckVaapiDeviceByDriverName("Intel i965 driver", options.VaapiDevice);
+                    _isVaapiDeviceSupportVulkanDrmModifier = validator.CheckVulkanDrmDeviceByExtensionName(options.VaapiDevice, _vulkanImageDrmFmtModifierExts);
                     _isVaapiDeviceSupportVulkanDrmInterop = validator.CheckVulkanDrmDeviceByExtensionName(options.VaapiDevice, _vulkanExternalMemoryDmaBufExts);
 
                     if (_isVaapiDeviceAmd)
@@ -232,6 +243,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     else if (_isVaapiDeviceInteli965)
                     {
                         _logger.LogInformation("VAAPI device {RenderNodePath} is Intel GPU (i965)", options.VaapiDevice);
+                    }
+
+                    if (_isVaapiDeviceSupportVulkanDrmModifier)
+                    {
+                        _logger.LogInformation("VAAPI device {RenderNodePath} supports Vulkan DRM modifier", options.VaapiDevice);
                     }
 
                     if (_isVaapiDeviceSupportVulkanDrmInterop)
@@ -582,7 +598,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 try
                 {
-                    return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, true, targetFormat, cancellationToken).ConfigureAwait(false);
+                    return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, true, targetFormat, false, cancellationToken).ConfigureAwait(false);
                 }
                 catch (ArgumentException)
                 {
@@ -594,7 +610,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
-            return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, false, targetFormat, cancellationToken).ConfigureAwait(false);
+            return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, false, targetFormat, isAudio, cancellationToken).ConfigureAwait(false);
         }
 
         private string GetImageResolutionParameter()
@@ -620,9 +636,21 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return imageResolutionParameter;
         }
 
-        private async Task<string> ExtractImageInternal(string inputPath, string container, MediaStream videoStream, int? imageStreamIndex, Video3DFormat? threedFormat, TimeSpan? offset, bool useIFrame, ImageFormat? targetFormat, CancellationToken cancellationToken)
+        private async Task<string> ExtractImageInternal(
+            string inputPath,
+            string container,
+            MediaStream videoStream,
+            int? imageStreamIndex,
+            Video3DFormat? threedFormat,
+            TimeSpan? offset,
+            bool useIFrame,
+            ImageFormat? targetFormat,
+            bool isAudio,
+            CancellationToken cancellationToken)
         {
             ArgumentException.ThrowIfNullOrEmpty(inputPath);
+
+            var useTradeoff = _config.GetFFmpegImgExtractPerfTradeoff();
 
             var outputExtension = targetFormat?.GetExtension() ?? ".jpg";
 
@@ -658,25 +686,26 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             // Use ffmpeg to sample 100 (we can drop this if required using thumbnail=50 for 50 frames) frames and pick the best thumbnail. Have a fall back just in case.
             // mpegts need larger batch size otherwise the corrupted thumbnail will be created. Larger batch size will lower the processing speed.
-            var enableThumbnail = useIFrame && !string.Equals("wtv", container, StringComparison.OrdinalIgnoreCase);
+            var enableThumbnail = !useTradeoff && useIFrame && !string.Equals("wtv", container, StringComparison.OrdinalIgnoreCase);
             if (enableThumbnail)
             {
                 var useLargerBatchSize = string.Equals("mpegts", container, StringComparison.OrdinalIgnoreCase);
                 filters.Add("thumbnail=n=" + (useLargerBatchSize ? "50" : "24"));
             }
 
-            // Use SW tonemap on HDR10/HLG video stream only when the zscale or tonemapx filter is available.
+            // Use SW tonemap on HDR video stream only when the zscale or tonemapx filter is available.
+            // Only enable Dolby Vision tonemap when tonemapx is available
             var enableHdrExtraction = false;
 
-            if (string.Equals(videoStream?.ColorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(videoStream?.ColorTransfer, "arib-std-b67", StringComparison.OrdinalIgnoreCase))
+            if (videoStream?.VideoRange == VideoRange.HDR)
             {
                 if (SupportsFilter("tonemapx"))
                 {
+                    var peak = videoStream.VideoRangeType == VideoRangeType.DOVI ? "400" : "100";
                     enableHdrExtraction = true;
-                    filters.Add("tonemapx=tonemap=bt2390:desat=0:peak=100:t=bt709:m=bt709:p=bt709:format=yuv420p");
+                    filters.Add($"tonemapx=tonemap=bt2390:desat=0:peak={peak}:t=bt709:m=bt709:p=bt709:format=yuv420p");
                 }
-                else if (SupportsFilter("zscale"))
+                else if (SupportsFilter("zscale") && videoStream.VideoRangeType != VideoRangeType.DOVI)
                 {
                     enableHdrExtraction = true;
                     filters.Add("zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0:peak=100,zscale=t=bt709:m=bt709,format=yuv420p");
@@ -685,11 +714,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var vf = string.Join(',', filters);
             var mapArg = imageStreamIndex.HasValue ? (" -map 0:" + imageStreamIndex.Value.ToString(CultureInfo.InvariantCulture)) : string.Empty;
-            var args = string.Format(CultureInfo.InvariantCulture, "-i {0}{3} -threads {4} -v quiet -vframes 1 -vf {2}{5} -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg, _threads, GetImageResolutionParameter());
+            var args = string.Format(CultureInfo.InvariantCulture, "-i {0}{3} -threads {4} -v quiet -vframes 1 -vf {2}{5} -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg, _threads, isAudio ? string.Empty : GetImageResolutionParameter());
 
             if (offset.HasValue)
             {
                 args = string.Format(CultureInfo.InvariantCulture, "-ss {0} ", GetTimeParameter(offset.Value)) + args;
+            }
+
+            if (useIFrame && useTradeoff)
+            {
+                args = "-skip_frame nokey " + args;
             }
 
             if (!string.IsNullOrWhiteSpace(container))
@@ -773,11 +807,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (allowHwAccel && enableKeyFrameOnlyExtraction)
             {
-                var supportsKeyFrameOnly = (string.Equals(options.HardwareAccelerationType, "nvenc", StringComparison.OrdinalIgnoreCase) && options.EnableEnhancedNvdecDecoder)
-                                           || (string.Equals(options.HardwareAccelerationType, "amf", StringComparison.OrdinalIgnoreCase) && OperatingSystem.IsWindows())
-                                           || (string.Equals(options.HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase) && options.PreferSystemNativeHwDecoder)
-                                           || string.Equals(options.HardwareAccelerationType, "vaapi", StringComparison.OrdinalIgnoreCase)
-                                           || string.Equals(options.HardwareAccelerationType, "videotoolbox", StringComparison.OrdinalIgnoreCase);
+                var hardwareAccelerationType = options.HardwareAccelerationType;
+                var supportsKeyFrameOnly = (hardwareAccelerationType == HardwareAccelerationType.nvenc && options.EnableEnhancedNvdecDecoder)
+                                           || (hardwareAccelerationType == HardwareAccelerationType.amf && OperatingSystem.IsWindows())
+                                           || (hardwareAccelerationType == HardwareAccelerationType.qsv && options.PreferSystemNativeHwDecoder)
+                                           || hardwareAccelerationType == HardwareAccelerationType.vaapi
+                                           || hardwareAccelerationType == HardwareAccelerationType.videotoolbox
+                                           || hardwareAccelerationType == HardwareAccelerationType.rkmpp;
                 if (!supportsKeyFrameOnly)
                 {
                     // Disable hardware acceleration when the hardware decoder does not support keyframe only mode.
@@ -791,7 +827,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             if (!allowHwAccel)
             {
                 options.EnableHardwareEncoding = false;
-                options.HardwareAccelerationType = string.Empty;
+                options.HardwareAccelerationType = HardwareAccelerationType.none;
                 options.EnableTonemapping = false;
             }
 
@@ -835,7 +871,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 inputArg = "-threads " + threads + " " + inputArg; // HW accel args set a different input thread count, only set if disabled
             }
 
-            if (options.HardwareAccelerationType.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase) && _isLowPriorityHwDecodeSupported)
+            if (options.HardwareAccelerationType == HardwareAccelerationType.videotoolbox && _isLowPriorityHwDecodeSupported)
             {
                 // VideoToolbox supports low priority decoding, which is useful for trickplay
                 inputArg = "-hwaccel_flags +low_priority " + inputArg;
@@ -869,21 +905,30 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 throw new InvalidOperationException("Empty or invalid input argument.");
             }
 
-            float? encoderQuality = qualityScale;
-            if (vidEncoder.Contains("vaapi", StringComparison.OrdinalIgnoreCase))
+            // ffmpeg qscale is a value from 1-31, with 1 being best quality and 31 being worst
+            // jpeg quality is a value from 0-100, with 0 being worst quality and 100 being best
+            var encoderQuality = Math.Clamp(qualityScale ?? 4, 1, 31);
+            var encoderQualityOption = "-qscale:v ";
+
+            if (vidEncoder.Contains("vaapi", StringComparison.OrdinalIgnoreCase)
+                || vidEncoder.Contains("qsv", StringComparison.OrdinalIgnoreCase))
             {
-                // vaapi's mjpeg encoder uses jpeg quality divided by QP2LAMBDA (118) as input, instead of ffmpeg defined qscale
-                // ffmpeg qscale is a value from 1-31, with 1 being best quality and 31 being worst
-                // jpeg quality is a value from 0-100, with 0 being worst quality and 100 being best
-                encoderQuality = (100 - ((qualityScale - 1) * (100 / 30))) / 118;
+                // vaapi and qsv's mjpeg encoder use jpeg quality as input, instead of ffmpeg defined qscale
+                encoderQuality = 100 - ((encoderQuality - 1) * (100 / 30));
+                encoderQualityOption = "-global_quality:v ";
             }
 
             if (vidEncoder.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase))
             {
                 // videotoolbox's mjpeg encoder uses jpeg quality scaled to QP2LAMBDA (118) instead of ffmpeg defined qscale
-                // ffmpeg qscale is a value from 1-31, with 1 being best quality and 31 being worst
-                // jpeg quality is a value from 0-100, with 0 being worst quality and 100 being best
-                encoderQuality = 118 - ((qualityScale - 1) * (118 / 30));
+                encoderQuality = 118 - ((encoderQuality - 1) * (118 / 30));
+            }
+
+            if (vidEncoder.Contains("rkmpp", StringComparison.OrdinalIgnoreCase))
+            {
+                // rkmpp's mjpeg encoder uses jpeg quality as input (max is 99, not 100), instead of ffmpeg defined qscale
+                encoderQuality = 99 - ((encoderQuality - 1) * (99 / 30));
+                encoderQualityOption = "-qp_init:v ";
             }
 
             // Output arguments
@@ -894,13 +939,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // Final command arguments
             var args = string.Format(
                 CultureInfo.InvariantCulture,
-                "-loglevel error {0} -an -sn {1} -threads {2} -c:v {3} {4}{5}-f {6} \"{7}\"",
+                "-loglevel error {0} -an -sn {1} -threads {2} -c:v {3} {4}{5}{6}-f {7} \"{8}\"",
                 inputArg,
                 filterParam,
                 outputThreads.GetValueOrDefault(_threads),
                 vidEncoder,
-                qualityScale.HasValue ? "-qscale:v " + encoderQuality.Value.ToString(CultureInfo.InvariantCulture) + " " : string.Empty,
+                encoderQualityOption + encoderQuality + " ",
                 vidEncoder.Contains("videotoolbox", StringComparison.InvariantCultureIgnoreCase) ? "-allow_sw 1 " : string.Empty, // allow_sw fallback for some intel macs
+                EncodingHelper.GetVideoSyncOption("0", EncoderVersion).Trim() + " ", // passthrough timestamp
                 "image2",
                 outputPath);
 
@@ -1066,7 +1112,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // https://ffmpeg.org/ffmpeg-filters.html#Notes-on-filtergraph-escaping
             // We need to double escape
 
-            return path.Replace('\\', '/').Replace(":", "\\:", StringComparison.Ordinal).Replace("'", @"'\\\''", StringComparison.Ordinal);
+            return path
+                .Replace('\\', '/')
+                .Replace(":", "\\:", StringComparison.Ordinal)
+                .Replace("'", @"'\\\''", StringComparison.Ordinal)
+                .Replace("\"", "\\\"", StringComparison.Ordinal);
         }
 
         /// <inheritdoc />
@@ -1180,7 +1230,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             // Generate concat configuration entries for each file and write to file
             Directory.CreateDirectory(Path.GetDirectoryName(concatFilePath));
-            using StreamWriter sw = new StreamWriter(concatFilePath);
+            using var sw = new FormattingStreamWriter(concatFilePath, CultureInfo.InvariantCulture);
             foreach (var path in files)
             {
                 var mediaInfoResult = GetMediaInfo(

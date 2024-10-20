@@ -22,9 +22,9 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         /// <summary>
         /// Initializes a new instance of the <see cref="OptimizeDatabaseTask" /> class.
         /// </summary>
-        /// <param name="logger">The logger.</param>
-        /// <param name="localization">The localization manager.</param>
-        /// <param name="provider">The jellyfin DB context provider.</param>
+        /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
+        /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
+        /// <param name="provider">Instance of the <see cref="IDbContextFactory{JellyfinDbContext}"/> interface.</param>
         public OptimizeDatabaseTask(
             ILogger<OptimizeDatabaseTask> logger,
             ILocalizationManager localization,
@@ -56,17 +56,14 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         /// <inheritdoc />
         public bool IsLogged => true;
 
-        /// <summary>
-        /// Creates the triggers that define when the task will run.
-        /// </summary>
-        /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
+        /// <inheritdoc />
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
-            return new[]
-            {
+            return
+            [
                 // Every so often
                 new TaskTriggerInfo { Type = TaskTriggerInfo.TriggerInterval, IntervalTicks = TimeSpan.FromHours(24).Ticks }
-            };
+            ];
         }
 
         /// <inheritdoc />

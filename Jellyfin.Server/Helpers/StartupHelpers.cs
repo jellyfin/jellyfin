@@ -83,7 +83,7 @@ public static class StartupHelpers
         var dataDir = options.DataDir
             ?? Environment.GetEnvironmentVariable("JELLYFIN_DATA_DIR")
             ?? Path.Join(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData, Environment.SpecialFolderOption.DoNotVerify),
                 "jellyfin");
 
         var configDir = options.ConfigDir ?? Environment.GetEnvironmentVariable("JELLYFIN_CONFIG_DIR");
@@ -97,7 +97,7 @@ public static class StartupHelpers
             {
                 // UNIX: $XDG_CONFIG_HOME
                 configDir = Path.Join(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData, Environment.SpecialFolderOption.DoNotVerify),
                     "jellyfin");
             }
         }
@@ -163,7 +163,7 @@ public static class StartupHelpers
         if (cacheHome is null || !cacheHome.StartsWith('/'))
         {
             cacheHome = Path.Join(
-                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile, Environment.SpecialFolderOption.DoNotVerify),
                 ".cache");
         }
 

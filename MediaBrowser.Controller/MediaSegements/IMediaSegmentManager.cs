@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
@@ -13,6 +14,15 @@ namespace MediaBrowser.Controller;
 /// </summary>
 public interface IMediaSegmentManager
 {
+    /// <summary>
+    /// Uses all segment providers enabled for the <see cref="BaseItem"/>'s library to get the Media Segments.
+    /// </summary>
+    /// <param name="baseItem">The Item to evaluate.</param>
+    /// <param name="overwrite">If set, will remove existing segments and replace it with new ones otherwise will check for existing segments and if found any, stops.</param>
+    /// <param name="cancellationToken">stop request token.</param>
+    /// <returns>A task that indicates the Operation is finished.</returns>
+    Task RunSegmentPluginProviders(BaseItem baseItem, bool overwrite, CancellationToken cancellationToken);
+
     /// <summary>
     /// Returns if this item supports media segments.
     /// </summary>
@@ -50,4 +60,11 @@ public interface IMediaSegmentManager
     /// <returns>True if there are any segments stored for the item, otherwise false.</returns>
     /// TODO: this should be async but as the only caller BaseItem.GetVersionInfo isn't async, this is also not. Venson.
     bool HasSegments(Guid itemId);
+
+    /// <summary>
+    /// Gets a list of all registered Segment Providers and their IDs.
+    /// </summary>
+    /// <param name="item">The media item that should be tested for providers.</param>
+    /// <returns>A list of all providers for the tested item.</returns>
+    IEnumerable<(string Name, string Id)> GetSupportedProviders(BaseItem item);
 }

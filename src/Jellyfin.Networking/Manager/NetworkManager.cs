@@ -81,7 +81,6 @@ public class NetworkManager : INetworkManager, IDisposable
     /// <param name="configurationManager">The <see cref="IConfigurationManager"/> instance.</param>
     /// <param name="startupConfig">The <see cref="IConfiguration"/> instance holding startup parameters.</param>
     /// <param name="logger">Logger to use for messages.</param>
-#pragma warning disable CS8618 // Non-nullable field is uninitialized. : Values are set in UpdateSettings function. Compiler doesn't yet recognise this.
     public NetworkManager(IConfigurationManager configurationManager, IConfiguration startupConfig, ILogger<NetworkManager> logger)
     {
         ArgumentNullException.ThrowIfNull(logger);
@@ -97,14 +96,18 @@ public class NetworkManager : INetworkManager, IDisposable
         _networkEventLock = new object();
         _remoteAddressFilter = new List<IPNetwork>();
 
+        _ = bool.TryParse(startupConfig[DetectNetworkChangeKey], out var detectNetworkChange);
+
         UpdateSettings(_configurationManager.GetNetworkConfiguration());
 
-        NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
-        NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
+        if (detectNetworkChange)
+        {
+            NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
+            NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
+        }
 
         _configurationManager.NamedConfigurationUpdated += ConfigurationUpdated;
     }
-#pragma warning restore CS8618 // Non-nullable field is uninitialized.
 
     /// <summary>
     /// Event triggered on network changes.
@@ -307,6 +310,7 @@ public class NetworkManager : INetworkManager, IDisposable
     /// <summary>
     /// Initializes internal LAN cache.
     /// </summary>
+    [MemberNotNull(nameof(_lanSubnets), nameof(_excludedSubnets))]
     private void InitializeLan(NetworkConfiguration config)
     {
         lock (_initLock)
@@ -586,6 +590,7 @@ public class NetworkManager : INetworkManager, IDisposable
     /// Reloads all settings and re-Initializes the instance.
     /// </summary>
     /// <param name="configuration">The <see cref="NetworkConfiguration"/> to use.</param>
+    [MemberNotNull(nameof(_lanSubnets), nameof(_excludedSubnets))]
     public void UpdateSettings(object configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);

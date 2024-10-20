@@ -129,5 +129,11 @@
     "TaskCleanCollectionsAndPlaylistsDescription": "Remove itens de coleções e listas de reprodução que já não existem.",
     "TaskCleanCollectionsAndPlaylists": "Limpar coleções e listas de reprodução",
     "TaskAudioNormalizationDescription": "Analisa os ficheiros para obter dados de normalização de áudio.",
-    "TaskAudioNormalization": "Normalização de áudio"
+    "TaskAudioNormalization": "Normalização de áudio",
+    "TaskDownloadMissingLyrics": "Baixar letras faltantes",
+    "TaskDownloadMissingLyricsDescription": "Baixa letras para músicas",
+    "TaskMoveTrickplayImagesDescription": "Transfere ficheiros de miniatura de vídeo, conforme as definições da biblioteca.",
+    "TaskExtractMediaSegments": "Varrimento de segmentos da média",
+    "TaskExtractMediaSegmentsDescription": "Extrai ou obtém segmentos de média de extensões com suporte a MediaSegment.",
+    "TaskMoveTrickplayImages": "Migração de miniaturas de vídeo"
 }

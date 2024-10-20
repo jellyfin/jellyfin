@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -128,7 +128,7 @@ public class DynamicHlsPlaylistGenerator : IDynamicHlsPlaylistGenerator
         return false;
     }
 
-    internal static bool IsExtractionAllowedForFile(ReadOnlySpan<char> filePath, string[] allowedExtensions)
+    internal static bool IsExtractionAllowedForFile(ReadOnlySpan<char> filePath, IReadOnlyList<string> allowedExtensions)
     {
         var extension = Path.GetExtension(filePath);
         if (extension.IsEmpty)
@@ -138,7 +138,7 @@ public class DynamicHlsPlaylistGenerator : IDynamicHlsPlaylistGenerator
 
         // Remove the leading dot
         var extensionWithoutDot = extension[1..];
-        for (var i = 0; i < allowedExtensions.Length; i++)
+        for (var i = 0; i < allowedExtensions.Count; i++)
         {
             var allowedExtension = allowedExtensions[i].AsSpan().TrimStart('.');
             if (extensionWithoutDot.Equals(allowedExtension, StringComparison.OrdinalIgnoreCase))

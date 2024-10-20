@@ -1,7 +1,5 @@
 #nullable disable
 
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -68,13 +66,29 @@ namespace Emby.Server.Implementations.Session
         private Timer _inactiveTimer;
 
         private DtoOptions _itemInfoDtoOptions;
-        private bool _disposed = false;
+        private bool _disposed;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SessionManager"/> class.
+        /// </summary>
+        /// <param name="logger">Instance of <see cref="ILogger{SessionManager}"/> interface.</param>
+        /// <param name="eventManager">Instance of <see cref="IEventManager"/> interface.</param>
+        /// <param name="userDataManager">Instance of <see cref="IUserDataManager"/> interface.</param>
+        /// <param name="serverConfigurationManager">Instance of <see cref="IServerConfigurationManager"/> interface.</param>
+        /// <param name="libraryManager">Instance of <see cref="ILibraryManager"/> interface.</param>
+        /// <param name="userManager">Instance of <see cref="IUserManager"/> interface.</param>
+        /// <param name="musicManager">Instance of <see cref="IMusicManager"/> interface.</param>
+        /// <param name="dtoService">Instance of <see cref="IDtoService"/> interface.</param>
+        /// <param name="imageProcessor">Instance of <see cref="IImageProcessor"/> interface.</param>
+        /// <param name="appHost">Instance of <see cref="IServerApplicationHost"/> interface.</param>
+        /// <param name="deviceManager">Instance of <see cref="IDeviceManager"/> interface.</param>
+        /// <param name="mediaSourceManager">Instance of <see cref="IMediaSourceManager"/> interface.</param>
+        /// <param name="hostApplicationLifetime">Instance of <see cref="IHostApplicationLifetime"/> interface.</param>
         public SessionManager(
             ILogger<SessionManager> logger,
             IEventManager eventManager,
             IUserDataManager userDataManager,
-            IServerConfigurationManager config,
+            IServerConfigurationManager serverConfigurationManager,
             ILibraryManager libraryManager,
             IUserManager userManager,
             IMusicManager musicManager,
@@ -88,7 +102,7 @@ namespace Emby.Server.Implementations.Session
             _logger = logger;
             _eventManager = eventManager;
             _userDataManager = userDataManager;
-            _config = config;
+            _config = serverConfigurationManager;
             _libraryManager = libraryManager;
             _userManager = userManager;
             _musicManager = musicManager;
@@ -508,7 +522,10 @@ namespace Emby.Server.Implementations.Session
                 deviceName = "Network Device";
             }
 
-            var deviceOptions = _deviceManager.GetDeviceOptions(deviceId);
+            var deviceOptions = _deviceManager.GetDeviceOptions(deviceId) ?? new()
+            {
+                DeviceId = deviceId
+            };
             if (string.IsNullOrEmpty(deviceOptions.CustomName))
             {
                 sessionInfo.DeviceName = deviceName;
@@ -1076,6 +1093,42 @@ namespace Emby.Server.Implementations.Session
             return session;
         }
 
+        private SessionInfoDto ToSessionInfoDto(SessionInfo sessionInfo)
+        {
+            return new SessionInfoDto
+            {
+                PlayState = sessionInfo.PlayState,
+                AdditionalUsers = sessionInfo.AdditionalUsers,
+                Capabilities = _deviceManager.ToClientCapabilitiesDto(sessionInfo.Capabilities),
+                RemoteEndPoint = sessionInfo.RemoteEndPoint,
+                PlayableMediaTypes = sessionInfo.PlayableMediaTypes,
+                Id = sessionInfo.Id,
+                UserId = sessionInfo.UserId,
+                UserName = sessionInfo.UserName,
+                Client = sessionInfo.Client,
+                LastActivityDate = sessionInfo.LastActivityDate,
+                LastPlaybackCheckIn = sessionInfo.LastPlaybackCheckIn,
+                LastPausedDate = sessionInfo.LastPausedDate,
+                DeviceName = sessionInfo.DeviceName,
+                DeviceType = sessionInfo.DeviceType,
+                NowPlayingItem = sessionInfo.NowPlayingItem,
+                NowViewingItem = sessionInfo.NowViewingItem,
+                DeviceId = sessionInfo.DeviceId,
+                ApplicationVersion = sessionInfo.ApplicationVersion,
+                TranscodingInfo = sessionInfo.TranscodingInfo,
+                IsActive = sessionInfo.IsActive,
+                SupportsMediaControl = sessionInfo.SupportsMediaControl,
+                SupportsRemoteControl = sessionInfo.SupportsRemoteControl,
+                NowPlayingQueue = sessionInfo.NowPlayingQueue,
+                NowPlayingQueueFullItems = sessionInfo.NowPlayingQueueFullItems,
+                HasCustomDeviceName = sessionInfo.HasCustomDeviceName,
+                PlaylistItemId = sessionInfo.PlaylistItemId,
+                ServerId = sessionInfo.ServerId,
+                UserPrimaryImageTag = sessionInfo.UserPrimaryImageTag,
+                SupportedCommands = sessionInfo.SupportedCommands
+            };
+        }
+
         /// <inheritdoc />
         public Task SendMessageCommand(string controllingSessionId, string sessionId, MessageCommand command, CancellationToken cancellationToken)
         {
@@ -1393,7 +1446,7 @@ namespace Emby.Server.Implementations.Session
                     UserName = user.Username
                 };
 
-                session.AdditionalUsers = [..session.AdditionalUsers, newUser];
+                session.AdditionalUsers = [.. session.AdditionalUsers, newUser];
             }
         }
 
@@ -1468,7 +1521,6 @@ namespace Emby.Server.Implementations.Session
                 user = await _userManager.AuthenticateUser(
                     request.Username,
                     request.Password,
-                    null,
                     request.RemoteEndPoint,
                     true).ConfigureAwait(false);
             }
@@ -1506,7 +1558,7 @@ namespace Emby.Server.Implementations.Session
             var returnResult = new AuthenticationResult
             {
                 User = _userManager.GetUserDto(user, request.RemoteEndPoint),
-                SessionInfo = session,
+                SessionInfo = ToSessionInfoDto(session),
                 AccessToken = token,
                 ServerId = _appHost.SystemId
             };
@@ -1799,6 +1851,105 @@ namespace Emby.Server.Implementations.Session
             }
 
             return await GetSessionByAuthenticationToken(items[0], deviceId, remoteEndpoint, null).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public IReadOnlyList<SessionInfoDto> GetSessions(
+            Guid userId,
+            string deviceId,
+            int? activeWithinSeconds,
+            Guid? controllableUserToCheck,
+            bool isApiKey)
+        {
+            var result = Sessions;
+            if (!string.IsNullOrEmpty(deviceId))
+            {
+                result = result.Where(i => string.Equals(i.DeviceId, deviceId, StringComparison.OrdinalIgnoreCase));
+            }
+
+            var userCanControlOthers = false;
+            var userIsAdmin = false;
+            User user = null;
+
+            if (isApiKey)
+            {
+                userCanControlOthers = true;
+                userIsAdmin = true;
+            }
+            else if (!userId.IsEmpty())
+            {
+                user = _userManager.GetUserById(userId);
+                if (user is not null)
+                {
+                    userCanControlOthers = user.HasPermission(PermissionKind.EnableRemoteControlOfOtherUsers);
+                    userIsAdmin = user.HasPermission(PermissionKind.IsAdministrator);
+                }
+                else
+                {
+                    return [];
+                }
+            }
+
+            if (!controllableUserToCheck.IsNullOrEmpty())
+            {
+                result = result.Where(i => i.SupportsRemoteControl);
+
+                var controlledUser = _userManager.GetUserById(controllableUserToCheck.Value);
+                if (controlledUser is null)
+                {
+                    return [];
+                }
+
+                if (!controlledUser.HasPermission(PermissionKind.EnableSharedDeviceControl))
+                {
+                    // Controlled user has device sharing disabled
+                    result = result.Where(i => !i.UserId.IsEmpty());
+                }
+
+                if (!userCanControlOthers)
+                {
+                    // User cannot control other user's sessions, validate user id.
+                    result = result.Where(i => i.UserId.IsEmpty() || i.ContainsUser(userId));
+                }
+
+                result = result.Where(i =>
+                {
+                    if (isApiKey)
+                    {
+                        return true;
+                    }
+
+                    if (user is null)
+                    {
+                        return false;
+                    }
+
+                    return string.IsNullOrWhiteSpace(i.DeviceId) || _deviceManager.CanAccessDevice(user, i.DeviceId);
+                });
+            }
+            else if (!userIsAdmin)
+            {
+                // Request isn't from administrator, limit to "own" sessions.
+                result = result.Where(i => i.UserId.IsEmpty() || i.ContainsUser(userId));
+            }
+
+            if (!userIsAdmin)
+            {
+                // Don't report acceleration type for non-admin users.
+                result = result.Select(r =>
+                {
+                    r.TranscodingInfo.HardwareAccelerationType = HardwareAccelerationType.none;
+                    return r;
+                });
+            }
+
+            if (activeWithinSeconds.HasValue && activeWithinSeconds.Value > 0)
+            {
+                var minActiveDate = DateTime.UtcNow.AddSeconds(0 - activeWithinSeconds.Value);
+                result = result.Where(i => i.LastActivityDate >= minActiveDate);
+            }
+
+            return result.Select(ToSessionInfoDto).ToList();
         }
 
         /// <inheritdoc />

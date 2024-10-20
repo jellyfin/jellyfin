@@ -93,7 +93,7 @@
     "ValueSpecialEpisodeName": "Special - {0}",
     "VersionNumber": "Version {0}",
     "TaskDownloadMissingSubtitlesDescription": "Søger på internettet efter manglende undertekster baseret på metadata-konfigurationen.",
-    "TaskDownloadMissingSubtitles": "Hent manglende undertekster",
+    "TaskDownloadMissingSubtitles": "Hentede medie mangler undertekster",
     "TaskUpdatePluginsDescription": "Henter og installerer opdateringer for plugins, som er konfigurerede til at blive opdateret automatisk.",
     "TaskUpdatePlugins": "Opdater Plugins",
     "TaskCleanLogsDescription": "Sletter log-filer som er mere end {0} dage gamle.",
@@ -130,5 +130,11 @@
     "TaskCleanCollectionsAndPlaylists": "Ryd op i samlinger og afspilningslister",
     "TaskCleanCollectionsAndPlaylistsDescription": "Fjerner elementer fra samlinger og afspilningslister der ikke eksisterer længere.",
     "TaskAudioNormalizationDescription": "Skanner filer for data vedrørende audio-normalisering.",
-    "TaskAudioNormalization": "Audio-normalisering"
+    "TaskAudioNormalization": "Audio-normalisering",
+    "TaskDownloadMissingLyricsDescription": "Hentede sange mangler sangtekster",
+    "TaskDownloadMissingLyrics": "Hentede medie mangler sangtekster",
+    "TaskExtractMediaSegments": "Scan mediesegment",
+    "TaskMoveTrickplayImages": "Migrer billedelokation for Trickplay",
+    "TaskMoveTrickplayImagesDescription": "Flyt eksisterende trickplay-filer jævnfør biblioteksindstillilnger.",
+    "TaskExtractMediaSegmentsDescription": "Ekstraherer eller henter mediesegmenter fra plugins som understøtter MediaSegment."
 }
