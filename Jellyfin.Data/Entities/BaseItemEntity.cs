@@ -110,8 +110,6 @@ public class BaseItemEntity
 
     public string? SeriesName { get; set; }
 
-    public string? UserDataKey { get; set; }
-
     public string? SeasonName { get; set; }
 
     public string? ExternalSeriesId { get; set; }

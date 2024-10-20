@@ -9,12 +9,6 @@ namespace Jellyfin.Data.Entities;
 public class UserData
 {
     /// <summary>
-    /// Gets or sets the key.
-    /// </summary>
-    /// <value>The key.</value>
-    public required string Key { get; set; }
-
-    /// <summary>
     /// Gets or sets the users 0-10 rating.
     /// </summary>
     /// <value>The rating.</value>
@@ -70,12 +64,23 @@ public class UserData
     public bool? Likes { get; set; }
 
     /// <summary>
+    /// Gets or sets the key.
+    /// </summary>
+    /// <value>The key.</value>
+    public required Guid ItemId { get; set; }
+
+    /// <summary>
+    /// Gets or Sets the BaseItem.
+    /// </summary>
+    public required BaseItemEntity? Item { get; set; }
+
+    /// <summary>
     /// Gets or Sets the UserId.
     /// </summary>
-    public Guid UserId { get; set; }
+    public required Guid UserId { get; set; }
 
     /// <summary>
     /// Gets or Sets the User.
     /// </summary>
-    public User? User { get; set; }
+    public required User? User { get; set; }
 }

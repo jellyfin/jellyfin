@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Data;
 using System.Diagnostics;
@@ -71,43 +72,55 @@ public class MigrateLibraryDb : IMigrationRoutine
         connection.Open();
         using var dbContext = _provider.CreateDbContext();
 
-        _logger.LogInformation("Start moving UserData.");
-        var queryResult = connection.Query("SELECT key, userId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex FROM UserDatas");
-
-        dbContext.UserData.ExecuteDelete();
-
-        var users = dbContext.Users.AsNoTracking().ToImmutableArray();
-
-        foreach (var entity in queryResult)
-        {
-            var userData = GetUserData(users, entity);
-            if (userData is null)
-            {
-                _logger.LogError("Was not able to migrate user data with key {0}", entity.GetString(0));
-                continue;
-            }
-
-            dbContext.UserData.Add(userData);
-        }
-
-        _logger.LogInformation("Try saving {0} UserData entries.", dbContext.UserData.Local.Count);
-        dbContext.SaveChanges();
         var stepElapsed = stopwatch.Elapsed;
         _logger.LogInformation("Saving UserData entries took {0}.", stepElapsed);
 
         _logger.LogInformation("Start moving TypedBaseItem.");
-        var typedBaseItemsQuery = "SELECT type, data, StartDate, EndDate, ChannelId, IsMovie, IsSeries, EpisodeTitle, IsRepeat, CommunityRating, CustomRating, IndexNumber, IsLocked, PreferredMetadataLanguage, PreferredMetadataCountryCode, Width, Height, DateLastRefreshed, Name, Path, PremiereDate, Overview, ParentIndexNumber, ProductionYear, OfficialRating, ForcedSortName, RunTimeTicks, Size, DateCreated, DateModified, guid, Genres, ParentId, Audio, ExternalServiceId, IsInMixedFolder, DateLastSaved, LockedFields, Studios, Tags, TrailerTypes, OriginalTitle, PrimaryVersionId, DateLastMediaAdded, Album, LUFS, NormalizationGain, CriticRating, IsVirtualItem, SeriesName, SeasonName, SeasonId, SeriesId, PresentationUniqueKey, InheritedParentalRatingValue, ExternalSeriesId, Tagline, ProviderIds, Images, ProductionLocations, ExtraIds, TotalBitrate, ExtraType, Artists, AlbumArtists, ExternalId, SeriesPresentationUniqueKey, ShowId, OwnerId FROM TypedBaseItems";
+        var typedBaseItemsQuery = "SELECT type, data, StartDate, EndDate, ChannelId, IsMovie, IsSeries, EpisodeTitle, IsRepeat, CommunityRating, CustomRating, IndexNumber, IsLocked, PreferredMetadataLanguage, PreferredMetadataCountryCode, Width, Height, DateLastRefreshed, Name, Path, PremiereDate, Overview, ParentIndexNumber, ProductionYear, OfficialRating, ForcedSortName, RunTimeTicks, Size, DateCreated, DateModified, guid, Genres, ParentId, Audio, ExternalServiceId, IsInMixedFolder, DateLastSaved, LockedFields, Studios, Tags, TrailerTypes, OriginalTitle, PrimaryVersionId, DateLastMediaAdded, Album, LUFS, NormalizationGain, CriticRating, IsVirtualItem, SeriesName, UserDataKey, SeasonName, SeasonId, SeriesId, PresentationUniqueKey, InheritedParentalRatingValue, ExternalSeriesId, Tagline, ProviderIds, Images, ProductionLocations, ExtraIds, TotalBitrate, ExtraType, Artists, AlbumArtists, ExternalId, SeriesPresentationUniqueKey, ShowId, OwnerId FROM TypedBaseItems";
         dbContext.BaseItems.ExecuteDelete();
 
+        var legacyBaseItemWithUserKeys = new Dictionary<string, BaseItemEntity>();
         foreach (SqliteDataReader dto in connection.Query(typedBaseItemsQuery))
         {
-            dbContext.BaseItems.Add(GetItem(dto));
+            var baseItem = GetItem(dto);
+            dbContext.BaseItems.Add(baseItem.BaseItem);
+            legacyBaseItemWithUserKeys[baseItem.LegacyUserDataKey] = baseItem.BaseItem;
         }
 
         _logger.LogInformation("Try saving {0} BaseItem entries.", dbContext.BaseItems.Local.Count);
         dbContext.SaveChanges();
         stepElapsed = stopwatch.Elapsed - stepElapsed;
         _logger.LogInformation("Saving BaseItems entries took {0}.", stepElapsed);
+
+        _logger.LogInformation("Start moving UserData.");
+        var queryResult = connection.Query("SELECT key, userId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex FROM UserDatas");
+
+        dbContext.UserData.ExecuteDelete();
+
+        var users = dbContext.Users.AsNoTracking().ToImmutableArray();
+        var oldUserdata = new Dictionary<string, UserData>();
+
+        foreach (var entity in queryResult)
+        {
+            var userData = GetUserData(users, entity);
+            if (userData.Data is null)
+            {
+                _logger.LogError("Was not able to migrate user data with key {0}", entity.GetString(0));
+                continue;
+            }
+
+            if (!legacyBaseItemWithUserKeys.TryGetValue(userData.LegacyUserDataKey!, out var refItem))
+            {
+                _logger.LogError("Was not able to migrate user data with key {0} because it does not reference a valid BaseItem.", entity.GetString(0));
+                continue;
+            }
+
+            userData.Data.ItemId = refItem.Id;
+            dbContext.UserData.Add(userData.Data);
+        }
+
+        _logger.LogInformation("Try saving {0} UserData entries.", dbContext.UserData.Local.Count);
+        dbContext.SaveChanges();
 
         _logger.LogInformation("Start moving MediaStreamInfos.");
         var mediaStreamQuery = "SELECT ItemId, StreamIndex, StreamType, Codec, Language, ChannelLayout, Profile, AspectRatio, Path, IsInterlaced, BitRate, Channels, SampleRate, IsDefault, IsForced, IsExternal, Height, Width, AverageFrameRate, RealFrameRate, Level, PixelFormat, BitDepth, IsAnamorphic, RefFrames, CodecTag, Comment, NalLengthSize, IsAvc, Title, TimeBase, CodecTimeBase, ColorPrimaries, ColorSpace, ColorTransfer, DvVersionMajor, DvVersionMinor, DvProfile, DvLevel, RpuPresentFlag, ElPresentFlag, BlPresentFlag, DvBlSignalCompatibilityId, IsHearingImpaired FROM MediaStreams";
@@ -266,17 +279,19 @@ public class MigrateLibraryDb : IMigrationRoutine
         }
     }
 
-    private static UserData? GetUserData(ImmutableArray<User> users, SqliteDataReader dto)
+    private static (UserData? Data, string? LegacyUserDataKey) GetUserData(ImmutableArray<User> users, SqliteDataReader dto)
     {
         var indexOfUser = dto.GetInt32(1);
         if (users.Length < indexOfUser)
         {
-            return null;
+            return (null, null);
         }
 
-        return new UserData()
+        var oldKey = dto.GetString(0);
+
+        return (new UserData()
         {
-            Key = dto.GetString(0),
+            ItemId = Guid.NewGuid(),
             UserId = users.ElementAt(indexOfUser).Id,
             Rating = dto.IsDBNull(2) ? null : dto.GetDouble(2),
             Played = dto.GetBoolean(3),
@@ -288,7 +303,8 @@ public class MigrateLibraryDb : IMigrationRoutine
             SubtitleStreamIndex = dto.IsDBNull(9) ? null : dto.GetInt32(9),
             Likes = null,
             User = null!,
-        };
+            Item = null!
+        }, oldKey);
     }
 
     private AncestorId GetAncestorId(SqliteDataReader reader)
@@ -604,7 +620,7 @@ public class MigrateLibraryDb : IMigrationRoutine
         return item;
     }
 
-    private BaseItemEntity GetItem(SqliteDataReader reader)
+    private (BaseItemEntity BaseItem, string LegacyUserDataKey) GetItem(SqliteDataReader reader)
     {
         var entity = new BaseItemEntity()
         {
@@ -870,6 +886,10 @@ public class MigrateLibraryDb : IMigrationRoutine
             entity.SeriesName = seriesName;
         }
 
+        if (reader.TryGetString(index++, out var userDataKey))
+        {
+        }
+
         if (reader.TryGetString(index++, out var seasonName))
         {
             entity.SeasonName = seasonName;
@@ -971,7 +991,7 @@ public class MigrateLibraryDb : IMigrationRoutine
             entity.OwnerId = ownerId.ToString("N");
         }
 
-        return entity;
+        return (entity, userDataKey);
     }
 
     private static BaseItemImageInfo Map(Guid baseItemId, ItemImageInfo e)

@@ -121,7 +121,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         {
             var personType = itemTypeLookup.BaseItemKindNames[BaseItemKind.Person];
             query = query.Where(e => e.PersonType == personType)
-                .Where(e => context.BaseItems.Where(d => context.UserData.Where(w => w.IsFavorite == filter.IsFavorite && w.UserId.Equals(filter.User.Id)).Any(f => f.Key == d.UserDataKey))
+                .Where(e => context.BaseItems.Where(d => d.UserData!.Any(w => w.IsFavorite == filter.IsFavorite && w.UserId.Equals(filter.User.Id)))
                     .Select(f => f.Name).Contains(e.Name));
         }
 

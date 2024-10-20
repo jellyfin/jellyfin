@@ -16,6 +16,7 @@ using MediaBrowser.Model.Entities;
 using Microsoft.EntityFrameworkCore;
 using AudioBook = MediaBrowser.Controller.Entities.AudioBook;
 using Book = MediaBrowser.Controller.Entities.Book;
+#pragma warning disable RS0030 // Do not use banned APIs
 
 namespace Emby.Server.Implementations.Library
 {
@@ -134,7 +135,9 @@ namespace Emby.Server.Implementations.Library
         {
             return new UserData()
             {
-                Key = dto.Key,
+                ItemId = Guid.Parse(dto.Key),
+                Item = null!,
+                User = null!,
                 AudioStreamIndex = dto.AudioStreamIndex,
                 IsFavorite = dto.IsFavorite,
                 LastPlayedDate = dto.LastPlayedDate,
@@ -152,7 +155,7 @@ namespace Emby.Server.Implementations.Library
         {
             return new UserItemData()
             {
-                Key = dto.Key,
+                Key = dto.ItemId.ToString("D"),
                 AudioStreamIndex = dto.AudioStreamIndex,
                 IsFavorite = dto.IsFavorite,
                 LastPlayedDate = dto.LastPlayedDate,
@@ -182,12 +185,12 @@ namespace Emby.Server.Implementations.Library
         {
             using var context = _repository.CreateDbContext();
             var key = keys.FirstOrDefault();
-            if (key is null)
+            if (key is null || Guid.TryParse(key, out var itemId))
             {
                 return null;
             }
 
-            var userData = context.UserData.AsNoTracking().FirstOrDefault(e => e.Key == key && e.UserId.Equals(userId));
+            var userData = context.UserData.AsNoTracking().FirstOrDefault(e => e.ItemId == itemId && e.UserId.Equals(userId));
 
             if (userData is not null)
             {

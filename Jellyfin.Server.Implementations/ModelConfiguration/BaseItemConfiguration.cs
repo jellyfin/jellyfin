@@ -35,7 +35,6 @@ public class BaseItemConfiguration : IEntityTypeConfiguration<BaseItemEntity>
         builder.HasIndex(e => e.ParentId);
         builder.HasIndex(e => e.PresentationUniqueKey);
         builder.HasIndex(e => new { e.Id, e.Type, e.IsFolder, e.IsVirtualItem });
-        builder.HasIndex(e => new { e.UserDataKey, e.Type });
 
         // covering index
         builder.HasIndex(e => new { e.TopParentId, e.Id });

@@ -671,25 +671,25 @@ public sealed class BaseItemRepository(
         if (filter.IsLiked.HasValue)
         {
             baseQuery = baseQuery
-                .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id && f.Key == e.UserDataKey)!.Rating >= UserItemData.MinLikeValue);
+                .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id)!.Rating >= UserItemData.MinLikeValue);
         }
 
         if (filter.IsFavoriteOrLiked.HasValue)
         {
             baseQuery = baseQuery
-                .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id && f.Key == e.UserDataKey)!.IsFavorite == filter.IsFavoriteOrLiked);
+                .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id)!.IsFavorite == filter.IsFavoriteOrLiked);
         }
 
         if (filter.IsFavorite.HasValue)
         {
             baseQuery = baseQuery
-                .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id && f.Key == e.UserDataKey)!.IsFavorite == filter.IsFavorite);
+                .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id)!.IsFavorite == filter.IsFavorite);
         }
 
         if (filter.IsPlayed.HasValue)
         {
             baseQuery = baseQuery
-                   .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id && f.Key == e.UserDataKey)!.Played == filter.IsPlayed.Value);
+                   .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id)!.Played == filter.IsPlayed.Value);
         }
 
         if (filter.IsResumable.HasValue)
@@ -697,12 +697,12 @@ public sealed class BaseItemRepository(
             if (filter.IsResumable.Value)
             {
                 baseQuery = baseQuery
-                       .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id && f.Key == e.UserDataKey)!.PlaybackPositionTicks > 0);
+                       .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id)!.PlaybackPositionTicks > 0);
             }
             else
             {
                 baseQuery = baseQuery
-                       .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id && f.Key == e.UserDataKey)!.PlaybackPositionTicks == 0);
+                       .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id)!.PlaybackPositionTicks == 0);
             }
         }
 
@@ -2019,12 +2019,12 @@ public sealed class BaseItemRepository(
             ItemSortBy.AirTime => e => e.SortName, // TODO
             ItemSortBy.Runtime => e => e.RunTimeTicks,
             ItemSortBy.Random => e => EF.Functions.Random(),
-            ItemSortBy.DatePlayed => e => e.UserData!.FirstOrDefault(f => f.UserId == query.User!.Id && f.Key == e.UserDataKey)!.LastPlayedDate,
-            ItemSortBy.PlayCount => e => e.UserData!.FirstOrDefault(f => f.UserId == query.User!.Id && f.Key == e.UserDataKey)!.PlayCount,
-            ItemSortBy.IsFavoriteOrLiked => e => e.UserData!.FirstOrDefault(f => f.UserId == query.User!.Id && f.Key == e.UserDataKey)!.IsFavorite,
+            ItemSortBy.DatePlayed => e => e.UserData!.FirstOrDefault(f => f.UserId == query.User!.Id)!.LastPlayedDate,
+            ItemSortBy.PlayCount => e => e.UserData!.FirstOrDefault(f => f.UserId == query.User!.Id)!.PlayCount,
+            ItemSortBy.IsFavoriteOrLiked => e => e.UserData!.FirstOrDefault(f => f.UserId == query.User!.Id)!.IsFavorite,
             ItemSortBy.IsFolder => e => e.IsFolder,
-            ItemSortBy.IsPlayed => e => e.UserData!.FirstOrDefault(f => f.UserId == query.User!.Id && f.Key == e.UserDataKey)!.Played,
-            ItemSortBy.IsUnplayed => e => !e.UserData!.FirstOrDefault(f => f.UserId == query.User!.Id && f.Key == e.UserDataKey)!.Played,
+            ItemSortBy.IsPlayed => e => e.UserData!.FirstOrDefault(f => f.UserId == query.User!.Id)!.Played,
+            ItemSortBy.IsUnplayed => e => !e.UserData!.FirstOrDefault(f => f.UserId == query.User!.Id)!.Played,
             ItemSortBy.DateLastContentAdded => e => e.DateLastMediaAdded,
             ItemSortBy.Artist => e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.Artist).Select(f => f.ItemValue.CleanValue),
             ItemSortBy.AlbumArtist => e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.AlbumArtist).Select(f => f.ItemValue.CleanValue),
