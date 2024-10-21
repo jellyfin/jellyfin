@@ -39,6 +39,14 @@ public interface IMediaSegmentManager
     Task<MediaSegmentDto> CreateSegmentAsync(MediaSegmentDto mediaSegment, string segmentProviderId);
 
     /// <summary>
+    /// Creates a number of new Media Segment associated with an Item.
+    /// </summary>
+    /// <param name="mediaSegments">The segments to create.</param>
+    /// <param name="segmentProviderId">The id of the Provider who created this segment.</param>
+    /// <returns>The created Segment entities.</returns>
+    Task<IReadOnlyList<MediaSegmentDto>> CreateSegmentsAsync(IReadOnlyList<MediaSegmentDto> mediaSegments, string segmentProviderId);
+
+    /// <summary>
     /// Deletes a single media segment.
     /// </summary>
     /// <param name="segmentId">The <see cref="MediaSegment.Id"/> to delete.</param>
@@ -50,8 +58,9 @@ public interface IMediaSegmentManager
     /// </summary>
     /// <param name="itemId">The id of the <see cref="BaseItem"/>.</param>
     /// <param name="typeFilter">filteres all media segments of the given type to be included. If null all types are included.</param>
+    /// <param name="filterDuplicates">Checks for duplicates of same typed segments near each other.</param>
     /// <returns>An enumerator of <see cref="MediaSegmentDto"/>'s.</returns>
-    Task<IEnumerable<MediaSegmentDto>> GetSegmentsAsync(Guid itemId, IEnumerable<MediaSegmentType>? typeFilter);
+    Task<IEnumerable<MediaSegmentDto>> GetSegmentsAsync(Guid itemId, IEnumerable<MediaSegmentType>? typeFilter, bool filterDuplicates);
 
     /// <summary>
     /// Gets information about any media segments stored for the given itemId.
