@@ -161,8 +161,6 @@ namespace Emby.Server.Implementations
                 ConfigurationManager.Configuration,
                 ApplicationPaths.PluginsPath,
                 ApplicationVersion);
-
-            _disposableParts.Add(_pluginManager);
         }
 
         /// <summary>
@@ -610,6 +608,7 @@ namespace Emby.Server.Implementations
                 var localCert = new X509Certificate2(path, password, X509KeyStorageFlags.UserKeySet);
                 if (!localCert.HasPrivateKey)
                 {
+                    localCert.Dispose();
                     Logger.LogError("No private key included in SSL cert {CertificateLocation}.", path);
                     return null;
                 }
@@ -971,6 +970,7 @@ namespace Emby.Server.Implementations
 
             if (dispose)
             {
+                _pluginManager?.Dispose();
                 var type = GetType();
 
                 Logger.LogInformation("Disposing {Type}", type.Name);
