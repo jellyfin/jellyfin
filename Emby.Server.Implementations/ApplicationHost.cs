@@ -888,7 +888,14 @@ namespace Emby.Server.Implementations
                 return GetLocalApiUrl(request.Host.Host, request.Scheme, requestPort);
             }
 
-            return GetSmartApiUrl(request.HttpContext.Connection.RemoteIpAddress ?? IPAddress.Loopback);
+            // Gets the server URL that can also be used by applications not on the server, for instance
+            // a cast receiver device. In case the request has a localhost url, LocalAddress will be set to a
+            // server Private network address (IPv4) or Unique Local Address (ULA, IPv6) which is valid for all
+            // devices on the LAN.
+            IPAddress localAddress = request.HttpContext.Connection.RemoteIpAddress ?? IPAddress.Loopback;
+            return NetworkConstants.IPv4RFC5735Loopback.Contains(localAddress) || NetworkConstants.IPv6RFC4291Loopback.Contains(localAddress)
+                ? GetSmartApiUrl(NetworkManager.ServerLanAddress)
+                : GetSmartApiUrl(localAddress);
         }
 
         /// <inheritdoc/>
