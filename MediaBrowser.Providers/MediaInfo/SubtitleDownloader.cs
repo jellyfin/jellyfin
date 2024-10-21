@@ -31,7 +31,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
         public async Task<List<string>> DownloadSubtitles(
             Video video,
-            List<MediaStream> mediaStreams,
+            IReadOnlyList<MediaStream> mediaStreams,
             bool skipIfEmbeddedSubtitlesPresent,
             bool skipIfAudioTrackMatches,
             bool requirePerfectMatch,
@@ -68,7 +68,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
         public Task<bool> DownloadSubtitles(
             Video video,
-            List<MediaStream> mediaStreams,
+            IReadOnlyList<MediaStream> mediaStreams,
             bool skipIfEmbeddedSubtitlesPresent,
             bool skipIfAudioTrackMatches,
             bool requirePerfectMatch,
@@ -120,7 +120,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
         private async Task<bool> DownloadSubtitles(
             Video video,
-            List<MediaStream> mediaStreams,
+            IReadOnlyList<MediaStream> mediaStreams,
             bool skipIfEmbeddedSubtitlesPresent,
             bool skipIfAudioTrackMatches,
             bool requirePerfectMatch,

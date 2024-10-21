@@ -322,17 +322,17 @@ namespace MediaBrowser.Providers.Manager
             return false;
         }
 
-        protected virtual IList<BaseItem> GetChildrenForMetadataUpdates(TItemType item)
+        protected virtual IReadOnlyList<BaseItem> GetChildrenForMetadataUpdates(TItemType item)
         {
             if (item is Folder folder)
             {
                 return folder.GetRecursiveChildren();
             }
 
-            return Array.Empty<BaseItem>();
+            return [];
         }
 
-        protected virtual ItemUpdateType UpdateMetadataFromChildren(TItemType item, IList<BaseItem> children, bool isFullRefresh, ItemUpdateType currentUpdateType)
+        protected virtual ItemUpdateType UpdateMetadataFromChildren(TItemType item, IReadOnlyList<BaseItem> children, bool isFullRefresh, ItemUpdateType currentUpdateType)
         {
             var updateType = ItemUpdateType.None;
 
@@ -371,7 +371,7 @@ namespace MediaBrowser.Providers.Manager
             return updateType;
         }
 
-        private ItemUpdateType UpdateCumulativeRunTimeTicks(TItemType item, IList<BaseItem> children)
+        private ItemUpdateType UpdateCumulativeRunTimeTicks(TItemType item, IReadOnlyList<BaseItem> children)
         {
             if (item is Folder folder && folder.SupportsCumulativeRunTimeTicks)
             {
@@ -395,7 +395,7 @@ namespace MediaBrowser.Providers.Manager
             return ItemUpdateType.None;
         }
 
-        private ItemUpdateType UpdateDateLastMediaAdded(TItemType item, IList<BaseItem> children)
+        private ItemUpdateType UpdateDateLastMediaAdded(TItemType item, IReadOnlyList<BaseItem> children)
         {
             var updateType = ItemUpdateType.None;
 
@@ -429,7 +429,7 @@ namespace MediaBrowser.Providers.Manager
             return updateType;
         }
 
-        private ItemUpdateType UpdatePremiereDate(TItemType item, IList<BaseItem> children)
+        private ItemUpdateType UpdatePremiereDate(TItemType item, IReadOnlyList<BaseItem> children)
         {
             var updateType = ItemUpdateType.None;
 
@@ -467,7 +467,7 @@ namespace MediaBrowser.Providers.Manager
             return updateType;
         }
 
-        private ItemUpdateType UpdateGenres(TItemType item, IList<BaseItem> children)
+        private ItemUpdateType UpdateGenres(TItemType item, IReadOnlyList<BaseItem> children)
         {
             var updateType = ItemUpdateType.None;
 
@@ -488,7 +488,7 @@ namespace MediaBrowser.Providers.Manager
             return updateType;
         }
 
-        private ItemUpdateType UpdateStudios(TItemType item, IList<BaseItem> children)
+        private ItemUpdateType UpdateStudios(TItemType item, IReadOnlyList<BaseItem> children)
         {
             var updateType = ItemUpdateType.None;
 
@@ -509,7 +509,7 @@ namespace MediaBrowser.Providers.Manager
             return updateType;
         }
 
-        private ItemUpdateType UpdateOfficialRating(TItemType item, IList<BaseItem> children)
+        private ItemUpdateType UpdateOfficialRating(TItemType item, IReadOnlyList<BaseItem> children)
         {
             var updateType = ItemUpdateType.None;
 
@@ -1142,13 +1142,8 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        private static void MergePeople(List<PersonInfo> source, List<PersonInfo> target)
+        private static void MergePeople(IReadOnlyList<PersonInfo> source, IReadOnlyList<PersonInfo> target)
         {
-            if (target is null)
-            {
-                target = new List<PersonInfo>();
-            }
-
             foreach (var person in target)
             {
                 var normalizedName = person.Name.RemoveDiacritics();
