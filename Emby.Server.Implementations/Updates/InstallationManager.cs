@@ -123,6 +123,12 @@ namespace Emby.Server.Implementations.Updates
                             continue;
                         }
 
+                        // Only show plugins that are less than or equal to maximumAbi.
+                        if (Version.TryParse(ver.MaximumAbi, out var maximumAbi) && _applicationHost.ApplicationVersion <= maximumAbi)
+                        {
+                            continue;
+                        }
+
                         if (!Version.TryParse(ver.TargetAbi, out var targetAbi))
                         {
                             targetAbi = minimumVersion;
@@ -185,6 +191,13 @@ namespace Emby.Server.Implementations.Updates
                             if (plugin is not null)
                             {
                                 await _pluginManager.PopulateManifest(package, version.VersionNumber, plugin.Path, plugin.Manifest.Status).ConfigureAwait(false);
+                            }
+
+                            // Remove versions with a maximum ABI greater then the current application version.
+                            if (Version.TryParse(version.MaximumAbi, out var maximumAbi) && _applicationHost.ApplicationVersion > maximumAbi)
+                            {
+                                package.Versions.RemoveAt(i);
+                                continue;
                             }
 
                             // Remove versions with a target ABI greater then the current application version.
@@ -259,7 +272,8 @@ namespace Emby.Server.Implementations.Updates
 
             var appVer = _applicationHost.ApplicationVersion;
             var availableVersions = package.Versions
-                .Where(x => string.IsNullOrEmpty(x.TargetAbi) || Version.Parse(x.TargetAbi) <= appVer);
+                .Where(x => string.IsNullOrEmpty(x.TargetAbi) || Version.Parse(x.TargetAbi) <= appVer)
+                .Where(x => string.IsNullOrEmpty(x.MaximumAbi) || Version.Parse(x.MaximumAbi) >= appVer);
 
             if (specificVersion is not null)
             {
