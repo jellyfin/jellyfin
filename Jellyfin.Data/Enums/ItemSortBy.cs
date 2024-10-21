@@ -164,4 +164,9 @@ public enum ItemSortBy
     /// The search score.
     /// </summary>
     SearchScore = 31,
+
+    /// <summary>
+    /// The IsWatchlisted boolean.
+    /// </summary>
+    IsWatchlisted = 32,
 }
