@@ -236,6 +236,7 @@ public class ItemUpdateController : BaseJellyfinApiController
         item.ForcedSortName = request.ForcedSortName;
 
         item.OriginalTitle = string.IsNullOrWhiteSpace(request.OriginalTitle) ? null : request.OriginalTitle;
+        item.OriginalLanguage = string.IsNullOrWhiteSpace(request.OriginalLanguage) ? null : request.OriginalLanguage;
 
         item.CriticRating = request.CriticRating;
 
