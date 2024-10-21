@@ -38,5 +38,5 @@ public class PlaylistCreationRequest
     /// <summary>
     /// Gets or sets a value indicating whether the playlist is public.
     /// </summary>
-    public bool? Public { get; set; } = true;
+    public bool? Public { get; set; } = false;
 }
