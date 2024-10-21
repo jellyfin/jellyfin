@@ -81,7 +81,7 @@ namespace MediaBrowser.Model.Tasks
         /// Adds the tasks.
         /// </summary>
         /// <param name="tasks">The tasks.</param>
-        void AddTasks(IEnumerable<IScheduledTask> tasks);
+        void AddTasks(IReadOnlyList<IScheduledTask> tasks);
 
         /// <summary>
         /// Adds the tasks.

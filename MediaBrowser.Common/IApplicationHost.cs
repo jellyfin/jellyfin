@@ -90,8 +90,8 @@ namespace MediaBrowser.Common
         /// </summary>
         /// <typeparam name="T">The type.</typeparam>
         /// <param name="manageLifetime">If set to <c>true</c> [manage lifetime].</param>
-        /// <returns><see cref="IReadOnlyCollection{T}" />.</returns>
-        IReadOnlyCollection<T> GetExports<T>(bool manageLifetime = true);
+        /// <returns><see cref="IReadOnlyList{T}" />.</returns>
+        IReadOnlyList<T> GetExports<T>(bool manageLifetime = true);
 
         /// <summary>
         /// Gets the exports.
@@ -99,8 +99,8 @@ namespace MediaBrowser.Common
         /// <typeparam name="T">The type.</typeparam>
         /// <param name="defaultFunc">Delegate function that gets called to create the object.</param>
         /// <param name="manageLifetime">If set to <c>true</c> [manage lifetime].</param>
-        /// <returns><see cref="IReadOnlyCollection{T}" />.</returns>
-        IReadOnlyCollection<T> GetExports<T>(CreationDelegateFactory defaultFunc, bool manageLifetime = true);
+        /// <returns><see cref="IReadOnlyList{T}" />.</returns>
+        IReadOnlyList<T> GetExports<T>(CreationDelegateFactory defaultFunc, bool manageLifetime = true);
 
         /// <summary>
         /// Gets the export types.
