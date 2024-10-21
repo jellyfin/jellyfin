@@ -1,24 +1,22 @@
-#pragma warning disable CS1591
+global using System.Collections.Generic;
 
-using System.Collections.Generic;
-using MediaBrowser.Common.Configuration;
-using MediaBrowser.Model.Configuration;
+namespace MediaBrowser.XbmcMetadata.Configuration;
 
-namespace MediaBrowser.XbmcMetadata.Configuration
+/// <summary>
+/// Factory class for XBMC metadata configuration.
+/// </summary>
+public class NfoConfigurationFactory : IConfigurationFactory
 {
-    public class NfoConfigurationFactory : IConfigurationFactory
+    /// <inheritdoc />
+    public IEnumerable<ConfigurationStore> GetConfigurations()
     {
-        /// <inheritdoc />
-        public IEnumerable<ConfigurationStore> GetConfigurations()
+        return new[]
         {
-            return new[]
+            new ConfigurationStore
             {
-                new ConfigurationStore
-                {
-                    ConfigurationType = typeof(XbmcMetadataOptions),
-                    Key = "xbmcmetadata"
-                }
-            };
-        }
+                ConfigurationType = typeof(XbmcMetadataOptions),
+                Key = "xbmcmetadata"
+            }
+        };
     }
 }
