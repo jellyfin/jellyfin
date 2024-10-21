@@ -2866,7 +2866,7 @@ namespace Emby.Server.Implementations.Data
                 ItemSortBy.AiredEpisodeOrder => "AiredEpisodeOrder",
                 ItemSortBy.Album => "Album",
                 ItemSortBy.DateCreated => "DateCreated",
-                ItemSortBy.PremiereDate => "PremiereDate",
+                ItemSortBy.PremiereDate => "COALESCE(PremiereDate, DATE(ProductionYear||'-01-01'))",
                 ItemSortBy.StartDate => "StartDate",
                 ItemSortBy.Name => "Name",
                 ItemSortBy.CommunityRating => "CommunityRating",
