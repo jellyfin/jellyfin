@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -244,30 +245,30 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 _libraryManager.UpdatePeople(audio, people);
 
-                if (options.ReplaceAllMetadata && performers.Length != 0)
+                if (options.ReplaceAllMetadata && performers.Count != 0)
                 {
-                    audio.Artists = performers;
+                    audio.Artists = performers.ToImmutableList();
                 }
                 else if (!options.ReplaceAllMetadata
                          && (audio.Artists is null || audio.Artists.Count == 0))
                 {
-                    audio.Artists = performers;
+                    audio.Artists = performers.ToImmutableList();
                 }
 
-                if (albumArtists.Length == 0)
+                if (albumArtists.Count == 0)
                 {
                     // Album artists not provided, fall back to performers (artists).
                     albumArtists = performers;
                 }
 
-                if (options.ReplaceAllMetadata && albumArtists.Length != 0)
+                if (options.ReplaceAllMetadata && albumArtists.Count != 0)
                 {
-                    audio.AlbumArtists = albumArtists;
+                    audio.AlbumArtists = albumArtists.ToImmutableList();
                 }
                 else if (!options.ReplaceAllMetadata
                          && (audio.AlbumArtists is null || audio.AlbumArtists.Count == 0))
                 {
-                    audio.AlbumArtists = albumArtists;
+                    audio.AlbumArtists = albumArtists.ToImmutableList();
                 }
             }
 
@@ -315,15 +316,9 @@ namespace MediaBrowser.Providers.MediaInfo
             if (!audio.LockedFields.Contains(MetadataField.Genres))
             {
                 var genres = string.IsNullOrEmpty(track.Genre) ? mediaInfo.Genres : track.Genre.Split(InternalValueSeparator).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
-
-                if (libraryOptions.UseCustomTagDelimiters)
-                {
-                    genres = genres.SelectMany(g => SplitWithCustomDelimiter(g, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist)).ToArray();
-                }
-
-                audio.Genres = options.ReplaceAllMetadata || audio.Genres is null || audio.Genres.Length == 0
+                audio.Genres = (options.ReplaceAllMetadata || audio.Genres == null || audio.Genres.Count == 0
                     ? genres
-                    : audio.Genres;
+                    : audio.Genres).ToImmutableList();
             }
 
             track.AdditionalFields.TryGetValue("REPLAYGAIN_TRACK_GAIN", out var trackGainTag);

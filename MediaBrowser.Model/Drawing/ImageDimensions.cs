@@ -1,5 +1,6 @@
 #pragma warning disable CS1591
 
+using System;
 using System.Globalization;
 
 namespace MediaBrowser.Model.Drawing
@@ -7,7 +8,7 @@ namespace MediaBrowser.Model.Drawing
     /// <summary>
     /// Struct ImageDimensions.
     /// </summary>
-    public readonly struct ImageDimensions
+    public readonly struct ImageDimensions : IEquatable<ImageDimensions>
     {
         public ImageDimensions(int width, int height)
         {
@@ -27,9 +28,19 @@ namespace MediaBrowser.Model.Drawing
         /// <value>The width.</value>
         public int Width { get; }
 
-        public bool Equals(ImageDimensions size)
+        public static bool operator ==(ImageDimensions left, ImageDimensions right)
         {
-            return Width.Equals(size.Width) && Height.Equals(size.Height);
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(ImageDimensions left, ImageDimensions right)
+        {
+            return !(left == right);
+        }
+
+        public bool Equals(ImageDimensions other)
+        {
+            return Width.Equals(other.Width) && Height.Equals(other.Height);
         }
 
         /// <inheritdoc />
@@ -40,6 +51,23 @@ namespace MediaBrowser.Model.Drawing
                 "{0}-{1}",
                 Width,
                 Height);
+        }
+
+        /// <inheritdoc />
+        public override bool Equals(object? obj)
+        {
+            if (obj is not ImageDimensions other)
+            {
+                return false;
+            }
+
+            return Equals(other);
+        }
+
+        /// <inheritdoc />
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Width, Height);
         }
     }
 }
