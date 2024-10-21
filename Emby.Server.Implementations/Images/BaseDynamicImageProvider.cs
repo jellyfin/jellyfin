@@ -60,6 +60,11 @@ namespace Emby.Server.Implementations.Images
                 return ItemUpdateType.None;
             }
 
+            if (!options.ReplaceAllImages)
+            {
+                return ItemUpdateType.None;
+            }
+
             var updateType = ItemUpdateType.None;
 
             if (SupportedImages.Contains(ImageType.Primary))
