@@ -30,11 +30,10 @@ namespace Emby.Server.Implementations.Data
 
         public Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            CleanDeadItems(cancellationToken, progress);
-            return Task.CompletedTask;
+            return CleanDeadItems(cancellationToken, progress);
         }
 
-        private void CleanDeadItems(CancellationToken cancellationToken, IProgress<double> progress)
+        private async Task CleanDeadItems(CancellationToken cancellationToken, IProgress<double> progress)
         {
             var itemIds = _libraryManager.GetItemIds(new InternalItemsQuery
             {
@@ -68,10 +67,10 @@ namespace Emby.Server.Implementations.Data
                 progress.Report(percent * 100);
             }
 
-            using var context = _dbProvider.CreateDbContext();
-            using var transaction = context.Database.BeginTransaction();
-            context.ItemValues.Where(e => e.BaseItemsMap!.Count == 0).ExecuteDelete();
-            transaction.Commit();
+            using var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+            using var transaction = await context.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
+            await context.ItemValues.Where(e => e.BaseItemsMap!.Count == 0).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+            await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
 
             progress.Report(100);
         }
