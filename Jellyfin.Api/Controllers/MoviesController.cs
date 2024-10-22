@@ -121,7 +121,7 @@ public class MoviesController : BaseJellyfinApiController
             DtoOptions = dtoOptions
         });
 
-        var mostRecentMovies = recentlyPlayedMovies.Take(Math.Min(recentlyPlayedMovies.Count, 6));
+        var mostRecentMovies = recentlyPlayedMovies.Take(Math.Min(recentlyPlayedMovies.Count, 6)).ToList();
         // Get recently played directors
         var recentDirectors = GetDirectors(mostRecentMovies)
             .ToList();
