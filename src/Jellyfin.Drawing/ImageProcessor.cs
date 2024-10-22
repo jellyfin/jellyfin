@@ -424,12 +424,7 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
             return null;
         }
 
-        return GetImageCacheTag(item, new ItemImageInfo
-        {
-            Path = chapter.ImagePath,
-            Type = ImageType.Chapter,
-            DateModified = chapter.ImageDateModified
-        });
+        return (item.Path + chapter.ImageDateModified.Ticks).GetMD5().ToString("N", CultureInfo.InvariantCulture);
     }
 
     /// <inheritdoc />
