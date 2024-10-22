@@ -183,13 +183,13 @@ namespace Emby.Server.Implementations.Library
 
         private UserItemData? GetUserDataInternal(Guid userId, List<string> keys)
         {
-            using var context = _repository.CreateDbContext();
             var key = keys.FirstOrDefault();
             if (key is null || !Guid.TryParse(key, out var itemId))
             {
                 return null;
             }
 
+            using var context = _repository.CreateDbContext();
             var userData = context.UserData.AsNoTracking().FirstOrDefault(e => e.ItemId == itemId && e.UserId.Equals(userId));
 
             if (userData is not null)
