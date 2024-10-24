@@ -30,7 +30,7 @@ namespace Jellyfin.Server.Migrations.Routines
         }
 
         /// <inheritdoc/>
-        public Guid Id => Guid.Parse("{67445D54-B895-4B24-9F4C-35CE0690EA07}");
+        public Guid Id => Guid.Parse("{1AD09875-7E12-4366-9781-5E18D74F8B09}");
 
         /// <inheritdoc/>
         public string Name => "MigrateRatingLevels";
@@ -78,12 +78,16 @@ namespace Jellyfin.Server.Migrations.Routines
                     }
                     else
                     {
-                        var ratingValue = _localizationManager.GetRatingLevel(ratingString)?.ToString(CultureInfo.InvariantCulture) ?? "NULL";
+                        var ratingValue = _localizationManager.GetRatingScore(ratingString);
 
                         using var statement = connection.PrepareStatement("UPDATE TypedBaseItems SET InheritedParentalRatingValue = @Value WHERE OfficialRating = @Rating;");
-                        statement.TryBind("@Value", ratingValue);
+                        statement.TryBind("@Value", ratingValue?.Score.ToString(CultureInfo.InvariantCulture) ?? "NULL");
                         statement.TryBind("@Rating", ratingString);
                         statement.ExecuteNonQuery();
+                        using var statement2 = connection.PrepareStatement("UPDATE TypedBaseItems SET InheritedParentalRatingSubValue = @Value WHERE OfficialRating = @Rating;");
+                        statement2.TryBind("@Value", ratingValue?.SubScore?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
+                        statement2.TryBind("@Rating", ratingString);
+                        statement2.ExecuteNonQuery();
                     }
                 }
 

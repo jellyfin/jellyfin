@@ -10,7 +10,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library;
@@ -57,7 +56,7 @@ public class SplashscreenPostScanTask : ILibraryPostScanTask
         return Task.CompletedTask;
     }
 
-    private IReadOnlyList<BaseItem> GetItemsWithImageType(ImageType imageType)
+    private List<BaseItem> GetItemsWithImageType(ImageType imageType)
     {
         // TODO make included libraries configurable
         return _itemRepository.GetItemList(new InternalItemsQuery
@@ -65,15 +64,15 @@ public class SplashscreenPostScanTask : ILibraryPostScanTask
             CollapseBoxSetItems = false,
             Recursive = true,
             DtoOptions = new DtoOptions(false),
-            ImageTypes = new[] { imageType },
+            ImageTypes = [imageType],
             Limit = 30,
             // TODO max parental rating configurable
-            MaxParentalRating = 10,
-            OrderBy = new[]
-            {
+            MaxParentalRating = new(10, null),
+            OrderBy =
+            [
                 (ItemSortBy.Random, SortOrder.Ascending)
-            },
-            IncludeItemTypes = new[] { BaseItemKind.Movie, BaseItemKind.Series }
+            ],
+            IncludeItemTypes = [BaseItemKind.Movie, BaseItemKind.Series]
         });
     }
 }
