@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
