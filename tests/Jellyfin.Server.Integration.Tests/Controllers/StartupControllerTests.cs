@@ -99,7 +99,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         {
             var client = _factory.CreateClient();
 
-            var response = await client.PostAsync("/Startup/Complete", new ByteArrayContent(Array.Empty<byte>()));
+            var response = await client.PostAsync("/Startup/Complete", null);
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         }
 
