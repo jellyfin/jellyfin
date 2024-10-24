@@ -1299,7 +1299,7 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            if (GetParents().Any(i => !i.IsVisible(user)))
+            if (GetParents().Any(i => !i.IsVisible(user, true)))
             {
                 return false;
             }
@@ -1521,13 +1521,14 @@ namespace MediaBrowser.Controller.Entities
         /// Determines if a given user has access to this item.
         /// </summary>
         /// <param name="user">The user.</param>
+        /// <param name="skipAllowedTagsCheck">Don't check for allowed tags.</param>
         /// <returns><c>true</c> if [is parental allowed] [the specified user]; otherwise, <c>false</c>.</returns>
         /// <exception cref="ArgumentNullException">If user is null.</exception>
-        public bool IsParentalAllowed(User user)
+        public bool IsParentalAllowed(User user, bool skipAllowedTagsCheck)
         {
             ArgumentNullException.ThrowIfNull(user);
 
-            if (!IsVisibleViaTags(user))
+            if (!IsVisibleViaTags(user, skipAllowedTagsCheck))
             {
                 return false;
             }
@@ -1599,7 +1600,7 @@ namespace MediaBrowser.Controller.Entities
             return list.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         }
 
-        private bool IsVisibleViaTags(User user)
+        private bool IsVisibleViaTags(User user, bool skipAllowedTagsCheck)
         {
             var allTags = GetInheritedTags();
             if (user.GetPreference(PreferenceKind.BlockedTags).Any(i => allTags.Contains(i, StringComparison.OrdinalIgnoreCase)))
@@ -1614,7 +1615,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             var allowedTagsPreference = user.GetPreference(PreferenceKind.AllowedTags);
-            if (allowedTagsPreference.Length != 0 && !allowedTagsPreference.Any(i => allTags.Contains(i, StringComparison.OrdinalIgnoreCase)))
+            if (!skipAllowedTagsCheck && allowedTagsPreference.Length != 0 && !allowedTagsPreference.Any(i => allTags.Contains(i, StringComparison.OrdinalIgnoreCase)))
             {
                 return false;
             }
@@ -1654,13 +1655,14 @@ namespace MediaBrowser.Controller.Entities
         /// Default is just parental allowed. Can be overridden for more functionality.
         /// </summary>
         /// <param name="user">The user.</param>
+        /// <param name="skipAllowedTagsCheck">Don't check for allowed tags.</param>
         /// <returns><c>true</c> if the specified user is visible; otherwise, <c>false</c>.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="user" /> is <c>null</c>.</exception>
-        public virtual bool IsVisible(User user)
+        public virtual bool IsVisible(User user, bool skipAllowedTagsCheck = false)
         {
             ArgumentNullException.ThrowIfNull(user);
 
-            return IsParentalAllowed(user);
+            return IsParentalAllowed(user, skipAllowedTagsCheck);
         }
 
         public virtual bool IsVisibleStandalone(User user)
