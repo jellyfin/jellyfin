@@ -92,6 +92,8 @@ namespace MediaBrowser.XbmcMetadata.Savers
             "musicbrainzreleasegroupid",
             "tvdbid",
             "collectionitem",
+            "jellyfinid",
+            "uniqueid",
 
             "isuserfavorite",
             "userrating",
@@ -296,6 +298,11 @@ namespace MediaBrowser.XbmcMetadata.Savers
             }
         }
 
+        protected virtual MetadataProvider? GetDefaultProvider()
+        {
+            return null;
+        }
+
         protected abstract void WriteCustomElements(BaseItem item, XmlWriter writer);
 
         public static void AddMediaInfo<T>(T item, XmlWriter writer)
@@ -439,6 +446,17 @@ namespace MediaBrowser.XbmcMetadata.Savers
         {
             var writtenProviderIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
+            var defaultProvider = GetDefaultProvider();
+
+            if (defaultProvider != null)
+            {
+                var defaultProviderId = item.GetProviderId((MetadataProvider)defaultProvider);
+                if (!string.IsNullOrEmpty(defaultProviderId))
+                {
+                    writer.WriteElementString("id", defaultProviderId);
+                }
+            }
+
             var overview = (item.Overview ?? string.Empty)
                 .StripHtml()
                 .Replace("&quot;", "'", StringComparison.Ordinal);
@@ -544,46 +562,17 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteElementString("aspectratio", hasAspectRatio.AspectRatio);
             }
 
-            var tmdbCollection = item.GetProviderId(MetadataProvider.TmdbCollection);
+            AddProviderId(writer, item, MetadataProvider.TmdbCollection, writtenProviderIds, "collectionnumber");
 
-            if (!string.IsNullOrEmpty(tmdbCollection))
+            var imdbTagName = "imdbid";
+            if (item is Series)
             {
-                writer.WriteElementString("collectionnumber", tmdbCollection);
-                writtenProviderIds.Add(MetadataProvider.TmdbCollection.ToString());
+                imdbTagName = "imdb_id";
             }
 
-            var imdb = item.GetProviderId(MetadataProvider.Imdb);
-            if (!string.IsNullOrEmpty(imdb))
-            {
-                if (item is Series)
-                {
-                    writer.WriteElementString("imdb_id", imdb);
-                }
-                else
-                {
-                    writer.WriteElementString("imdbid", imdb);
-                }
-
-                writtenProviderIds.Add(MetadataProvider.Imdb.ToString());
-            }
-
-            // Series xml saver already saves this
-            if (item is not Series)
-            {
-                var tvdb = item.GetProviderId(MetadataProvider.Tvdb);
-                if (!string.IsNullOrEmpty(tvdb))
-                {
-                    writer.WriteElementString("tvdbid", tvdb);
-                    writtenProviderIds.Add(MetadataProvider.Tvdb.ToString());
-                }
-            }
-
-            var tmdb = item.GetProviderId(MetadataProvider.Tmdb);
-            if (!string.IsNullOrEmpty(tmdb))
-            {
-                writer.WriteElementString("tmdbid", tmdb);
-                writtenProviderIds.Add(MetadataProvider.Tmdb.ToString());
-            }
+            AddProviderIdAndUniqueId(writer, item, MetadataProvider.Imdb, writtenProviderIds, false, imdbTagName);
+            AddProviderIdAndUniqueId(writer, item, MetadataProvider.Tvdb, writtenProviderIds);
+            AddProviderIdAndUniqueId(writer, item, MetadataProvider.Tmdb, writtenProviderIds);
 
             if (!string.IsNullOrEmpty(item.PreferredMetadataLanguage))
             {
@@ -687,68 +676,16 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 }
             }
 
-            var externalId = item.GetProviderId(MetadataProvider.AudioDbArtist);
+            AddProviderId(writer, item, MetadataProvider.AudioDbArtist, writtenProviderIds);
+            AddProviderId(writer, item, MetadataProvider.AudioDbAlbum, writtenProviderIds);
+            AddProviderId(writer, item, MetadataProvider.Zap2It, writtenProviderIds);
+            AddProviderId(writer, item, MetadataProvider.MusicBrainzAlbum, writtenProviderIds);
+            AddProviderId(writer, item, MetadataProvider.MusicBrainzAlbumArtist, writtenProviderIds);
+            AddProviderId(writer, item, MetadataProvider.MusicBrainzArtist, writtenProviderIds);
+            AddProviderId(writer, item, MetadataProvider.MusicBrainzReleaseGroup, writtenProviderIds);
+            AddProviderId(writer, item, MetadataProvider.TvRage, writtenProviderIds);
 
-            if (!string.IsNullOrEmpty(externalId))
-            {
-                writer.WriteElementString("audiodbartistid", externalId);
-                writtenProviderIds.Add(MetadataProvider.AudioDbArtist.ToString());
-            }
-
-            externalId = item.GetProviderId(MetadataProvider.AudioDbAlbum);
-
-            if (!string.IsNullOrEmpty(externalId))
-            {
-                writer.WriteElementString("audiodbalbumid", externalId);
-                writtenProviderIds.Add(MetadataProvider.AudioDbAlbum.ToString());
-            }
-
-            externalId = item.GetProviderId(MetadataProvider.Zap2It);
-
-            if (!string.IsNullOrEmpty(externalId))
-            {
-                writer.WriteElementString("zap2itid", externalId);
-                writtenProviderIds.Add(MetadataProvider.Zap2It.ToString());
-            }
-
-            externalId = item.GetProviderId(MetadataProvider.MusicBrainzAlbum);
-
-            if (!string.IsNullOrEmpty(externalId))
-            {
-                writer.WriteElementString("musicbrainzalbumid", externalId);
-                writtenProviderIds.Add(MetadataProvider.MusicBrainzAlbum.ToString());
-            }
-
-            externalId = item.GetProviderId(MetadataProvider.MusicBrainzAlbumArtist);
-
-            if (!string.IsNullOrEmpty(externalId))
-            {
-                writer.WriteElementString("musicbrainzalbumartistid", externalId);
-                writtenProviderIds.Add(MetadataProvider.MusicBrainzAlbumArtist.ToString());
-            }
-
-            externalId = item.GetProviderId(MetadataProvider.MusicBrainzArtist);
-
-            if (!string.IsNullOrEmpty(externalId))
-            {
-                writer.WriteElementString("musicbrainzartistid", externalId);
-                writtenProviderIds.Add(MetadataProvider.MusicBrainzArtist.ToString());
-            }
-
-            externalId = item.GetProviderId(MetadataProvider.MusicBrainzReleaseGroup);
-
-            if (!string.IsNullOrEmpty(externalId))
-            {
-                writer.WriteElementString("musicbrainzreleasegroupid", externalId);
-                writtenProviderIds.Add(MetadataProvider.MusicBrainzReleaseGroup.ToString());
-            }
-
-            externalId = item.GetProviderId(MetadataProvider.TvRage);
-            if (!string.IsNullOrEmpty(externalId))
-            {
-                writer.WriteElementString("tvrageid", externalId);
-                writtenProviderIds.Add(MetadataProvider.TvRage.ToString());
-            }
+            AddProviderIdAndUniqueId(writer, item, MetadataProvider.Jellyfin, writtenProviderIds, true, null, item.Id.ToString("N", CultureInfo.InvariantCulture));
 
             if (item.ProviderIds is not null)
             {
@@ -764,7 +701,10 @@ namespace MediaBrowser.XbmcMetadata.Savers
                             XmlConvert.VerifyName(tagName);
                             Logger.LogDebug("Saving custom provider tagname {0}", tagName);
 
-                            writer.WriteElementString(GetTagForProviderKey(providerKey), providerId);
+                            writer.WriteElementString(tagName, providerId);
+
+                            var typeName = GetUniqueIdTypeForProviderKey(providerKey);
+                            AddUniqueId(writer, item, typeName, providerId, IsDefaultProvider(providerKey));
                         }
                         catch (ArgumentException)
                         {
@@ -791,6 +731,56 @@ namespace MediaBrowser.XbmcMetadata.Savers
             {
                 AddCollectionItems(folder, writer);
             }
+        }
+
+        private void AddProviderIdAndUniqueId(XmlWriter writer, BaseItem item, MetadataProvider provider, HashSet<string> writtenProviderIds, bool isDefault = false, string? tagName = null, string? externalId = null)
+        {
+            AddProviderIdImpl(writer, item, provider, writtenProviderIds, true, isDefault, tagName, externalId);
+        }
+
+        private void AddProviderId(XmlWriter writer, BaseItem item, MetadataProvider provider, HashSet<string> writtenProviderIds, string? tagName = null, string? externalId = null)
+        {
+            AddProviderIdImpl(writer, item, provider, writtenProviderIds, false, false, tagName, externalId);
+        }
+
+        private void AddProviderIdImpl(XmlWriter writer, BaseItem item, MetadataProvider provider, HashSet<string> writtenProviderIds, bool addUniqueId, bool isDefault, string? tagName = null, string? externalId = null)
+        {
+            if (string.IsNullOrEmpty(externalId))
+            {
+                externalId = item.GetProviderId(provider);
+            }
+
+            if (!string.IsNullOrEmpty(externalId))
+            {
+                var providerKey = provider.ToString();
+
+                if (tagName is null)
+                {
+                    tagName = GetTagForProviderKey(providerKey);
+                }
+
+                writer.WriteElementString(tagName, externalId);
+                writtenProviderIds.Add(providerKey);
+
+                if (addUniqueId)
+                {
+                    AddUniqueId(writer, item, GetUniqueIdTypeForProviderKey(providerKey), externalId, isDefault);
+                }
+            }
+        }
+
+        private void AddUniqueId(XmlWriter writer, BaseItem item, string providerTypeName, string externalId, bool isDefault)
+        {
+            writer.WriteStartElement("uniqueid");
+            writer.WriteAttributeString("type", providerTypeName);
+
+            if (isDefault)
+            {
+                writer.WriteAttributeString("default", "true");
+            }
+
+            writer.WriteString(externalId);
+            writer.WriteEndElement();
         }
 
         private void AddCollectionItems(Folder item, XmlWriter writer)
@@ -1024,5 +1014,31 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         private string GetTagForProviderKey(string providerKey)
             => providerKey.ToLowerInvariant() + "id";
+
+        private string GetUniqueIdTypeForProviderKey(string providerKey)
+            => providerKey.ToLowerInvariant();
+
+        private bool IsDefaultProvider(string providerKey)
+        {
+            var defaultProvider = GetDefaultProvider();
+            if (defaultProvider != null)
+            {
+                var defaultProviderKey = defaultProvider.ToString();
+                return providerKey.Equals(defaultProviderKey, StringComparison.OrdinalIgnoreCase);
+            }
+
+            return false;
+        }
+
+        private bool IsDefaultProvider(MetadataProvider provider)
+        {
+            var defaultProvider = GetDefaultProvider();
+            if (defaultProvider != null)
+            {
+                return provider == defaultProvider;
+            }
+
+            return false;
+        }
     }
 }
