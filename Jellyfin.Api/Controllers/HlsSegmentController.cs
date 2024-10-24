@@ -5,6 +5,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Helpers;
+using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
@@ -20,6 +21,7 @@ namespace Jellyfin.Api.Controllers;
 /// The hls segment controller.
 /// </summary>
 [Route("")]
+[Authorize(Policy = Policies.Playback)]
 public class HlsSegmentController : BaseJellyfinApiController
 {
     private readonly IFileSystem _fileSystem;
