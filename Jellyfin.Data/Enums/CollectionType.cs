@@ -161,5 +161,23 @@ public enum CollectionType
     /// Movie genre collection.
     /// </summary>
     [OpenApiIgnoreEnum]
-    moviegenre = 115
+    moviegenre = 115,
+
+    /// <summary>
+    /// Tv watchlist series collection.
+    /// </summary>
+    [OpenApiIgnoreEnum]
+    tvwatchlistseries = 116,
+
+    /// <summary>
+    /// Tv watchlist episodes collection.
+    /// </summary>
+    [OpenApiIgnoreEnum]
+    tvwatchlistepisodes = 117,
+
+    /// <summary>
+    /// Movie watchlist collection.
+    /// </summary>
+    [OpenApiIgnoreEnum]
+    moviewatchlist = 118,
 }

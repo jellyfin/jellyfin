@@ -47,7 +47,7 @@ namespace Emby.Server.Implementations.Data
                 using var transaction = connection.BeginTransaction();
                 connection.Execute(string.Join(
                     ';',
-                    "create table if not exists UserDatas (key nvarchar not null, userId INT not null, rating float null, played bit not null, playCount int not null, isFavorite bit not null, playbackPositionTicks bigint not null, lastPlayedDate datetime null, AudioStreamIndex INT, SubtitleStreamIndex INT)",
+                    "create table if not exists UserDatas (key nvarchar not null, userId INT not null, rating float null, played bit not null, playCount int not null, isFavorite bit not null, playbackPositionTicks bigint not null, lastPlayedDate datetime null, AudioStreamIndex INT, SubtitleStreamIndex INT, isWatchlisted bit not null)",
                     "drop index if exists idx_userdata",
                     "drop index if exists idx_userdata1",
                     "drop index if exists idx_userdata2",
@@ -55,11 +55,13 @@ namespace Emby.Server.Implementations.Data
                     "drop index if exists userdataindex",
                     "drop index if exists userdataindex3",
                     "drop index if exists userdataindex4",
+                    "drop index if exists userdataindex5",
                     "create unique index if not exists UserDatasIndex1 on UserDatas (key, userId)",
                     "create index if not exists UserDatasIndex2 on UserDatas (key, userId, played)",
                     "create index if not exists UserDatasIndex3 on UserDatas (key, userId, playbackPositionTicks)",
                     "create index if not exists UserDatasIndex4 on UserDatas (key, userId, isFavorite)",
-                    "create index if not exists UserDatasIndex5 on UserDatas (key, userId, lastPlayedDate)"));
+                    "create index if not exists UserDatasIndex5 on UserDatas (key, userId, lastPlayedDate)",
+                    "create index if not exists UserDatasIndex6 on UserDatas (key, userId, isWatchlisted)"));
 
                 if (!userDataTableExists)
                 {
@@ -80,7 +82,7 @@ namespace Emby.Server.Implementations.Data
 
                 ImportUserIds(connection, users);
 
-                connection.Execute("INSERT INTO UserDatas (key, userId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex) SELECT key, InternalUserId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex from userdata where InternalUserId not null");
+                connection.Execute("INSERT INTO UserDatas (key, userId, rating, played, playCount, isFavorite, isWatchlisted, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex) SELECT key, InternalUserId, rating, played, playCount, isFavorite, isWatchlisted, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex from userdata where InternalUserId not null");
 
                 transaction.Commit();
             }
@@ -178,7 +180,7 @@ namespace Emby.Server.Implementations.Data
 
         private static void SaveUserData(ManagedConnection db, long internalUserId, string key, UserItemData userData)
         {
-            using (var statement = db.PrepareStatement("replace into UserDatas (key, userId, rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex) values (@key, @userId, @rating,@played,@playCount,@isFavorite,@playbackPositionTicks,@lastPlayedDate,@AudioStreamIndex,@SubtitleStreamIndex)"))
+            using (var statement = db.PrepareStatement("replace into UserDatas (key, userId, rating,played,playCount,isFavorite,isWatchlisted,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex) values (@key, @userId, @rating,@played,@playCount,@isFavorite, @isWatchlisted,@playbackPositionTicks,@lastPlayedDate,@AudioStreamIndex,@SubtitleStreamIndex)"))
             {
                 statement.TryBind("@userId", internalUserId);
                 statement.TryBind("@key", key);
@@ -195,6 +197,7 @@ namespace Emby.Server.Implementations.Data
                 statement.TryBind("@played", userData.Played);
                 statement.TryBind("@playCount", userData.PlayCount);
                 statement.TryBind("@isFavorite", userData.IsFavorite);
+                statement.TryBind("@isWatchlisted", userData.IsWatchlisted);
                 statement.TryBind("@playbackPositionTicks", userData.PlaybackPositionTicks);
 
                 if (userData.LastPlayedDate.HasValue)
@@ -269,7 +272,7 @@ namespace Emby.Server.Implementations.Data
 
             using (var connection = GetConnection(true))
             {
-                using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from UserDatas where key =@Key and userId=@UserId"))
+                using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,isWatchlisted,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from UserDatas where key =@Key and userId=@UserId"))
                 {
                     statement.TryBind("@UserId", userId);
                     statement.TryBind("@Key", key);
@@ -312,7 +315,7 @@ namespace Emby.Server.Implementations.Data
 
             using (var connection = GetConnection())
             {
-                using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from UserDatas where userId=@UserId"))
+                using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,isWatchlisted,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from UserDatas where userId=@UserId"))
                 {
                     statement.TryBind("@UserId", userId);
 
@@ -361,6 +364,11 @@ namespace Emby.Server.Implementations.Data
             if (reader.TryGetInt32(9, out var subtitleStreamIndex))
             {
                 userData.SubtitleStreamIndex = subtitleStreamIndex;
+            }
+
+            if (reader.TryGetBoolean(10, out var isWatchlisted))
+            {
+                userData.IsWatchlisted = isWatchlisted;
             }
 
             return userData;
