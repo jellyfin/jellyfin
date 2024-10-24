@@ -348,7 +348,7 @@ namespace Emby.Server.Implementations
         }
 
         /// <inheritdoc />
-        public IReadOnlyCollection<T> GetExports<T>(bool manageLifetime = true)
+        public IReadOnlyList<T> GetExports<T>(bool manageLifetime = true)
         {
             // Convert to list so this isn't executed for each iteration
             var parts = GetExportTypes<T>()
@@ -369,7 +369,7 @@ namespace Emby.Server.Implementations
         }
 
         /// <inheritdoc />
-        public IReadOnlyCollection<T> GetExports<T>(CreationDelegateFactory defaultFunc, bool manageLifetime = true)
+        public IReadOnlyList<T> GetExports<T>(CreationDelegateFactory defaultFunc, bool manageLifetime = true)
         {
             // Convert to list so this isn't executed for each iteration
             var parts = GetExportTypes<T>()
