@@ -438,7 +438,7 @@ namespace MediaBrowser.Providers.Manager
                 return updateType;
             }
 
-            var date = children.Select(i => i.PremiereDate ?? DateTime.MaxValue).Min();
+            var date = children.Select(i => i.PremiereDate ?? DateTime.MinValue).Max();
 
             var originalPremiereDate = item.PremiereDate;
             var originalProductionYear = item.ProductionYear;
@@ -450,7 +450,7 @@ namespace MediaBrowser.Providers.Manager
             }
             else
             {
-                var year = children.Select(i => i.ProductionYear ?? 0).Min();
+                var year = children.Select(i => i.ProductionYear ?? 0).Max();
 
                 if (year > 0)
                 {
