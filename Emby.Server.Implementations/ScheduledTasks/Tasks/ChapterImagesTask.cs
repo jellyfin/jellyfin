@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -32,6 +33,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         private readonly IEncodingManager _encodingManager;
         private readonly IFileSystem _fileSystem;
         private readonly ILocalizationManager _localization;
+        private readonly IChapterRepository _chapterRepository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChapterImagesTask" /> class.
@@ -43,6 +45,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         /// <param name="encodingManager">Instance of the <see cref="IEncodingManager"/> interface.</param>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
         /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
+        /// <param name="chapterRepository">Instance of the <see cref="IChapterRepository"/> interface.</param>
         public ChapterImagesTask(
             ILogger<ChapterImagesTask> logger,
             ILibraryManager libraryManager,
@@ -50,7 +53,8 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
             IApplicationPaths appPaths,
             IEncodingManager encodingManager,
             IFileSystem fileSystem,
-            ILocalizationManager localization)
+            ILocalizationManager localization,
+            IChapterRepository chapterRepository)
         {
             _logger = logger;
             _libraryManager = libraryManager;
@@ -59,6 +63,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
             _encodingManager = encodingManager;
             _fileSystem = fileSystem;
             _localization = localization;
+            _chapterRepository = chapterRepository;
         }
 
         /// <inheritdoc />
@@ -141,7 +146,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
 
                 try
                 {
-                    var chapters = _itemRepo.GetChapters(video);
+                    var chapters = _chapterRepository.GetChapters(video.Id);
 
                     var success = await _encodingManager.RefreshChapterImages(video, directoryService, chapters, extract, true, cancellationToken).ConfigureAwait(false);
 

@@ -330,7 +330,7 @@ namespace Jellyfin.Providers.Tests.Manager
             MetadataService<Movie, MovieInfo>.MergeBaseItemData(source, target, lockedFields, replaceData, false);
 
             actualValue = target.People;
-            return newValue?.Equals(actualValue) ?? actualValue is null;
+            return newValue?.SequenceEqual((IEnumerable<PersonInfo>)actualValue!) ?? actualValue is null;
         }
 
         /// <summary>
