@@ -432,13 +432,39 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            if (user.AudioLanguagePreference == "OriginalLanguage" && originalLanguage is not null)
+            if (user.PlayDefaultAudioTrack)
+            {
+                source.DefaultAudioStreamIndex = MediaStreamSelector.GetDefaultAudioStreamIndex(source.MediaStreams, [], user.PlayDefaultAudioTrack);
+                return;
+            }
+
+            if (user.AudioLanguagePreference == "OriginalLanguage" && !string.IsNullOrWhiteSpace(originalLanguage))
             {
                 // If there are multiple original languages, use the first language
                 originalLanguage = originalLanguage.Split(',').FirstOrDefault();
             }
 
-            var preferredAudio = user.AudioLanguagePreference == "OriginalLanguage" && originalLanguage is not null
+            if (user.AudioLanguagePreference == "OriginalLanguage")
+            {
+                var originalIndex = source.MediaStreams.FindIndex(i => i.Type == MediaStreamType.Audio && i.IsOriginal);
+                // If original language and the language name with the original indicator
+                if (!string.IsNullOrWhiteSpace(originalLanguage) && originalIndex != -1)
+                {
+                    var mediaLanguageOriginal = source.MediaStreams[originalIndex].Language;
+                    if (NormalizeLanguage(mediaLanguageOriginal).Contains(NormalizeLanguage(originalLanguage).FirstOrDefault()))
+                    {
+                        source.DefaultAudioStreamIndex = originalIndex;
+                        return;
+                    }
+                }
+                else if (originalIndex != -1)
+                {
+                    source.DefaultAudioStreamIndex = originalIndex;
+                    return;
+                }
+            }
+
+            var preferredAudio = user.AudioLanguagePreference == "OriginalLanguage" && !string.IsNullOrWhiteSpace(originalLanguage)
                 ? NormalizeLanguage(originalLanguage)
                 : NormalizeLanguage(user.AudioLanguagePreference);
 
