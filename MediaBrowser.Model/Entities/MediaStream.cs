@@ -259,6 +259,8 @@ namespace MediaBrowser.Model.Entities
 
         public string LocalizedHearingImpaired { get; set; }
 
+        public string LocalizedOriginal { get; set; }
+
         public string DisplayTitle
         {
             get
@@ -306,6 +308,11 @@ namespace MediaBrowser.Model.Entities
                         if (IsExternal)
                         {
                             attributes.Add(string.IsNullOrEmpty(LocalizedExternal) ? "External" : LocalizedExternal);
+                        }
+
+                        if (IsOriginal)
+                        {
+                            attributes.Add(string.IsNullOrEmpty(LocalizedOriginal) ? "Original" : LocalizedOriginal);
                         }
 
                         if (!string.IsNullOrEmpty(Title))
@@ -505,6 +512,12 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value><c>true</c> if this instance is for the hearing impaired; otherwise, <c>false</c>.</value>
         public bool IsHearingImpaired { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is original.
+        /// </summary>
+        /// <value><c>true</c> if this instance is original; otherwise, <c>false</c>.</value>
+        public bool IsOriginal { get; set; }
 
         /// <summary>
         /// Gets or sets the height.
