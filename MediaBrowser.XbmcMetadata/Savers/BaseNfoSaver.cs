@@ -377,6 +377,11 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteElementString("default", stream.IsDefault.ToString(CultureInfo.InvariantCulture));
                 writer.WriteElementString("forced", stream.IsForced.ToString(CultureInfo.InvariantCulture));
 
+                if (stream.IsOriginal)
+                {
+                    writer.WriteElementString("original", stream.IsOriginal.ToString(CultureInfo.InvariantCulture));
+                }
+
                 if (stream.Type == MediaStreamType.Video)
                 {
                     var runtimeTicks = item.RunTimeTicks;
