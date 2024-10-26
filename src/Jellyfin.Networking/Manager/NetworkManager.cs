@@ -922,19 +922,6 @@ public class NetworkManager : INetworkManager, IDisposable
     /// <inheritdoc/>
     public bool IsInLocalNetwork(IPAddress address)
     {
-        return NetworkManager.IsInLocalNetwork(address, TrustAllIPv6Interfaces, _lanSubnets, _excludedSubnets);
-    }
-
-    /// <summary>
-    /// Checks a ip address to match any lansubnet given but not to be in any excluded subnet.
-    /// </summary>
-    /// <param name="address">The IP address to checl.</param>
-    /// <param name="trustAllIpv6">Whenever all IPV6 subnet address shall be permitted.</param>
-    /// <param name="lanSubnets">The list of subnets to permit.</param>
-    /// <param name="excludedSubnets">The list of subnets to never permit.</param>
-    /// <returns>The check if the given IP address is in any provided subnet.</returns>
-    public static bool IsInLocalNetwork(IPAddress address, bool trustAllIpv6, IReadOnlyList<IPNetwork> lanSubnets, IReadOnlyList<IPNetwork> excludedSubnets)
-    {
         ArgumentNullException.ThrowIfNull(address);
 
         // Map IPv6 mapped IPv4 back to IPv4 (happens if Kestrel runs in dual-socket mode)
@@ -943,23 +930,23 @@ public class NetworkManager : INetworkManager, IDisposable
             address = address.MapToIPv4();
         }
 
-        if ((trustAllIpv6 && address.AddressFamily == AddressFamily.InterNetworkV6)
+        if ((TrustAllIPv6Interfaces && address.AddressFamily == AddressFamily.InterNetworkV6)
             || IPAddress.IsLoopback(address))
         {
             return true;
         }
 
         // As private addresses can be redefined by Configuration.LocalNetworkAddresses
-        return CheckIfLanAndNotExcluded(address, lanSubnets, excludedSubnets);
+        return CheckIfLanAndNotExcluded(address);
     }
 
-    private static bool CheckIfLanAndNotExcluded(IPAddress address, IReadOnlyList<IPNetwork> lanSubnets, IReadOnlyList<IPNetwork> excludedSubnets)
+    private bool CheckIfLanAndNotExcluded(IPAddress address)
     {
-        foreach (var lanSubnet in lanSubnets)
+        foreach (var lanSubnet in _lanSubnets)
         {
             if (lanSubnet.Contains(address))
             {
-                foreach (var excludedSubnet in excludedSubnets)
+                foreach (var excludedSubnet in _excludedSubnets)
                 {
                     if (excludedSubnet.Contains(address))
                     {
