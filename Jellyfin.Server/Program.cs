@@ -46,7 +46,7 @@ namespace Jellyfin.Server
 
         private static readonly SerilogLoggerFactory _loggerFactory = new SerilogLoggerFactory();
         private static SetupServer? _setupServer = new();
-
+        private static CoreAppHost? _appHost;
         private static IHost? _jfHost = null;
         private static long _startTimestamp;
         private static ILogger _logger = NullLogger.Instance;
@@ -74,7 +74,7 @@ namespace Jellyfin.Server
         {
             _startTimestamp = Stopwatch.GetTimestamp();
             ServerApplicationPaths appPaths = StartupHelpers.CreateApplicationPaths(options);
-            await _setupServer!.RunAsync(static () => _jfHost?.Services?.GetService<INetworkManager>(), appPaths).ConfigureAwait(false);
+            await _setupServer!.RunAsync(static () => _jfHost?.Services?.GetService<INetworkManager>(), appPaths, static () => _appHost).ConfigureAwait(false);
 
             // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
             Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", appPaths.LogDirectoryPath);
@@ -130,18 +130,19 @@ namespace Jellyfin.Server
                 {
                     _startTimestamp = Stopwatch.GetTimestamp();
                     _setupServer = new SetupServer();
-                    await _setupServer.RunAsync(static () => _jfHost?.Services?.GetService<INetworkManager>(), appPaths).ConfigureAwait(false);
+                    await _setupServer.RunAsync(static () => _jfHost?.Services?.GetService<INetworkManager>(), appPaths, static () => _appHost).ConfigureAwait(false);
                 }
             } while (_restartOnShutdown);
         }
 
         private static async Task StartServer(IServerApplicationPaths appPaths, StartupOptions options, IConfiguration startupConfig)
         {
-            using var appHost = new CoreAppHost(
-                appPaths,
-                _loggerFactory,
-                options,
-                startupConfig);
+            using CoreAppHost appHost = new CoreAppHost(
+                            appPaths,
+                            _loggerFactory,
+                            options,
+                            startupConfig);
+            _appHost = appHost;
             try
             {
                 _jfHost = Host.CreateDefaultBuilder()
@@ -215,6 +216,7 @@ namespace Jellyfin.Server
                     }
                 }
 
+                _appHost = null;
                 _jfHost?.Dispose();
             }
         }

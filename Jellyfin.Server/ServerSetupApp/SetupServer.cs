@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using Jellyfin.Networking.Manager;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller;
+using MediaBrowser.Model.System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
@@ -31,8 +33,12 @@ public sealed class SetupServer : IDisposable
     /// </summary>
     /// <param name="networkManagerFactory">The networkmanager.</param>
     /// <param name="applicationPaths">The application paths.</param>
+    /// <param name="serverApplicationHost">The servers application host.</param>
     /// <returns>A Task.</returns>
-    public async Task RunAsync(Func<INetworkManager?> networkManagerFactory, IApplicationPaths applicationPaths)
+    public async Task RunAsync(
+        Func<INetworkManager?> networkManagerFactory,
+        IApplicationPaths applicationPaths,
+        Func<IServerApplicationHost?> serverApplicationHost)
     {
         ThrowIfDisposed();
         _startupServer = Host.CreateDefaultBuilder()
@@ -66,6 +72,41 @@ public sealed class SetupServer : IDisposable
                                             {
                                                 await context.Response.SendFileAsync(logfilePath, CancellationToken.None).ConfigureAwait(false);
                                             }
+                                        });
+                                    });
+
+                                    app.Map("/System/Info/Public", systemRoute =>
+                                    {
+                                        systemRoute.Run(async context =>
+                                        {
+                                            var jfApplicationHost = serverApplicationHost();
+
+                                            var retryCounter = 0;
+                                            while (jfApplicationHost is null && retryCounter < 5)
+                                            {
+                                                await Task.Delay(500).ConfigureAwait(false);
+                                                jfApplicationHost = serverApplicationHost();
+                                                retryCounter++;
+                                            }
+
+                                            if (jfApplicationHost is null)
+                                            {
+                                                context.Response.StatusCode = (int)HttpStatusCode.ServiceUnavailable;
+                                                context.Response.Headers.RetryAfter = new Microsoft.Extensions.Primitives.StringValues("60");
+                                                return;
+                                            }
+
+                                            var sysInfo = new PublicSystemInfo
+                                            {
+                                                Version = jfApplicationHost.ApplicationVersionString,
+                                                ProductName = jfApplicationHost.Name,
+                                                Id = jfApplicationHost.SystemId,
+                                                ServerName = jfApplicationHost.FriendlyName,
+                                                LocalAddress = jfApplicationHost.GetSmartApiUrl(context.Request),
+                                                StartupWizardCompleted = false
+                                            };
+
+                                            await context.Response.WriteAsJsonAsync(sysInfo).ConfigureAwait(false);
                                         });
                                     });
 
