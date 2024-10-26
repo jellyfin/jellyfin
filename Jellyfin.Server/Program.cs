@@ -168,7 +168,6 @@ namespace Jellyfin.Server
 
                 try
                 {
-                    await Task.Delay(50000).ConfigureAwait(false);
                     await _setupServer!.StopAsync().ConfigureAwait(false);
                     _setupServer.Dispose();
                     _setupServer = null!;
