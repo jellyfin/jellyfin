@@ -101,7 +101,6 @@ public sealed class SetupServer : IDisposable
         }
 
         await _startupServer.StopAsync().ConfigureAwait(false);
-        _startupServer.Dispose();
     }
 
     /// <inheritdoc/>
