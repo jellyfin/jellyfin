@@ -198,7 +198,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             };
 
             movie.SetProviderId(MetadataProvider.Tmdb, tmdbId);
-            movie.SetProviderId(MetadataProvider.Imdb, movieResult.ImdbId);
+            movie.TrySetProviderId(MetadataProvider.Imdb, movieResult.ImdbId);
             if (movieResult.BelongsToCollection is not null)
             {
                 movie.SetProviderId(MetadataProvider.TmdbCollection, movieResult.BelongsToCollection.Id.ToString(CultureInfo.InvariantCulture));
