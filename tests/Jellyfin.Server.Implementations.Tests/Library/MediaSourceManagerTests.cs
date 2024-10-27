@@ -1,3 +1,4 @@
+using System;
 using AutoFixture;
 using AutoFixture.AutoMoq;
 using Castle.Components.DictionaryAdapter;
@@ -20,7 +21,6 @@ namespace Jellyfin.Server.Implementations.Tests.Library
     {
         private readonly MediaSourceManager _mediaSourceManager;
         private readonly Mock<IUserDataManager> _mockUserDataManager;
-
         private readonly Mock<ILocalizationManager> _mockLocalizationManager;
         private Video _item;
         private User _user;
@@ -40,6 +40,7 @@ namespace Jellyfin.Server.Implementations.Tests.Library
             _mediaSourceManager = fixture.Create<MediaSourceManager>();
 
             _item = fixture.Create<Video>();
+            _item.ParentId = Guid.Empty;
             _user = fixture.Create<User>();
         }
 
@@ -60,7 +61,7 @@ namespace Jellyfin.Server.Implementations.Tests.Library
         [InlineData(3, "OriginalLanguage", "eng", false, false)]
         [InlineData(4, "OriginalLanguage", "eng", false, true)]
         [InlineData(1, "OriginalLanguage", "jpn", true, true)]
-        [InlineData(2, "OriginalLanguage", "jpn", false, false)]
+        [InlineData(2, "OriginalLanguage", "jpn,eng", false, false)]
         [InlineData(2, "OriginalLanguage", "jpn", false, true)]
         [InlineData(4, "OriginalLanguage", null, false, true)]
         [InlineData(4, "OriginalLanguage", "", false, true)]

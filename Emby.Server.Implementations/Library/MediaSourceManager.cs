@@ -491,7 +491,13 @@ namespace Emby.Server.Implementations.Library
 
                 var allowRememberingSelection = item is null || item.EnableRememberingTrackSelections;
 
-                var originalLanguage = item is null ? null : item.OriginalLanguage;
+                var originalLanguage = item?.OriginalLanguage;
+                var parent = item?.DisplayParent;
+                while (originalLanguage is null && parent is not null && !parent.IsTopParent)
+                {
+                    originalLanguage = parent?.OriginalLanguage;
+                    parent = parent?.DisplayParent;
+                }
 
                 SetDefaultAudioStreamIndex(source, userData, user, allowRememberingSelection, originalLanguage);
                 SetDefaultSubtitleStreamIndex(source, userData, user, allowRememberingSelection);
