@@ -1092,7 +1092,7 @@ namespace MediaBrowser.Controller.Entities
                 return 1;
             }).ThenBy(i => i.Video3DFormat.HasValue ? 1 : 0)
             .ThenByDescending(i => i, new MediaSourceWidthComparator())
-            .ToImmutableList();
+            .ToImmutableArray();
         }
 
         protected virtual IEnumerable<(BaseItem Item, MediaSourceType MediaSourceType)> GetAllItemsForMediaSources()

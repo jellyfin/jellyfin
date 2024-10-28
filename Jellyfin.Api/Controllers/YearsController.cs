@@ -113,11 +113,11 @@ public class YearsController : BaseJellyfinApiController
 
             if (userId.IsNullOrEmpty())
             {
-                items = recursive ? folder.GetRecursiveChildren(Filter) : folder.Children.Where(Filter).ToImmutableList();
+                items = recursive ? folder.GetRecursiveChildren(Filter) : folder.Children.Where(Filter).ToImmutableArray();
             }
             else
             {
-                items = recursive ? folder.GetRecursiveChildren(user, query) : folder.GetChildren(user, true).Where(Filter).ToImmutableList();
+                items = recursive ? folder.GetRecursiveChildren(user, query) : folder.GetChildren(user, true).Where(Filter).ToImmutableArray();
             }
         }
         else

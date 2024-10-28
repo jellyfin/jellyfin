@@ -1306,7 +1306,7 @@ namespace MediaBrowser.Controller.Entities
 
             AddChildren(user, includeLinkedChildren, result, false, query);
 
-            return result.Values.ToImmutableList();
+            return result.Values.ToImmutableArray();
         }
 
         protected virtual IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
@@ -1379,7 +1379,7 @@ namespace MediaBrowser.Controller.Entities
 
             AddChildren(user, true, result, true, query);
 
-            return result.Values.ToImmutableList();
+            return result.Values.ToImmutableArray();
         }
 
         /// <summary>
@@ -1407,7 +1407,7 @@ namespace MediaBrowser.Controller.Entities
 
             AddChildrenToList(result, includeLinkedChildren, true, filter);
 
-            return result.Values.ToImmutableList();
+            return result.Values.ToImmutableArray();
         }
 
         /// <summary>
@@ -1563,7 +1563,7 @@ namespace MediaBrowser.Controller.Entities
             return LinkedChildren
                 .Select(i => new Tuple<LinkedChild, BaseItem>(i, GetLinkedChild(i)))
                 .Where(i => i.Item2 is not null)
-                .ToImmutableList();
+                .ToImmutableArray();
         }
 
         protected override async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, IReadOnlyList<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
