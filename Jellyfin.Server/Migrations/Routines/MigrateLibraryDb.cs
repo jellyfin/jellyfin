@@ -645,9 +645,9 @@ public class MigrateLibraryDb : IMigrationRoutine
             entity.EndDate = endDate;
         }
 
-        if (reader.TryGetGuid(index++, out var guid))
+        if (reader.TryGetString(index++, out var guid))
         {
-            entity.ChannelId = guid.ToString("N");
+            entity.ChannelId = guid;
         }
 
         if (reader.TryGetBoolean(index++, out var isMovie))
@@ -986,9 +986,9 @@ public class MigrateLibraryDb : IMigrationRoutine
             entity.ShowId = showId;
         }
 
-        if (reader.TryGetGuid(index++, out var ownerId))
+        if (reader.TryGetString(index++, out var ownerId))
         {
-            entity.OwnerId = ownerId.ToString("N");
+            entity.OwnerId = ownerId;
         }
 
         return (entity, userDataKey);
