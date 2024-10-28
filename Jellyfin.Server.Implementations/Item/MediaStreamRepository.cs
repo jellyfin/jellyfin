@@ -13,17 +13,31 @@ using Microsoft.EntityFrameworkCore;
 namespace Jellyfin.Server.Implementations.Item;
 
 /// <summary>
-/// Initializes a new instance of the <see cref="MediaStreamRepository"/> class.
+/// Repository for obtaining MediaStreams.
 /// </summary>
-/// <param name="dbProvider">The EFCore db factory.</param>
-/// <param name="serverApplicationHost">The Application host.</param>
-/// <param name="localization">The Localisation Provider.</param>
-public class MediaStreamRepository(IDbContextFactory<JellyfinDbContext> dbProvider, IServerApplicationHost serverApplicationHost, ILocalizationManager localization) : IMediaStreamRepository
+public class MediaStreamRepository : IMediaStreamRepository
 {
+    private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
+    private readonly IServerApplicationHost _serverApplicationHost;
+    private readonly ILocalizationManager _localization;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MediaStreamRepository"/> class.
+    /// </summary>
+    /// <param name="dbProvider">The EFCore db factory.</param>
+    /// <param name="serverApplicationHost">The Application host.</param>
+    /// <param name="localization">The Localisation Provider.</param>
+    public MediaStreamRepository(IDbContextFactory<JellyfinDbContext> dbProvider, IServerApplicationHost serverApplicationHost, ILocalizationManager localization)
+    {
+        _dbProvider = dbProvider;
+        _serverApplicationHost = serverApplicationHost;
+        _localization = localization;
+    }
+
     /// <inheritdoc />
     public void SaveMediaStreams(Guid id, IReadOnlyList<MediaStream> streams, CancellationToken cancellationToken)
     {
-        using var context = dbProvider.CreateDbContext();
+        using var context = _dbProvider.CreateDbContext();
         using var transaction = context.Database.BeginTransaction();
 
         context.MediaStreamInfos.Where(e => e.ItemId.Equals(id)).ExecuteDelete();
@@ -36,7 +50,7 @@ public class MediaStreamRepository(IDbContextFactory<JellyfinDbContext> dbProvid
     /// <inheritdoc />
     public IReadOnlyList<MediaStream> GetMediaStreams(MediaStreamQuery filter)
     {
-        using var context = dbProvider.CreateDbContext();
+        using var context = _dbProvider.CreateDbContext();
         return TranslateQuery(context.MediaStreamInfos.AsNoTracking(), filter).AsEnumerable().Select(Map).ToImmutableArray();
     }
 
@@ -47,7 +61,7 @@ public class MediaStreamRepository(IDbContextFactory<JellyfinDbContext> dbProvid
             return null;
         }
 
-        return serverApplicationHost.ReverseVirtualPath(path);
+        return _serverApplicationHost.ReverseVirtualPath(path);
     }
 
     private string? RestorePath(string? path)
@@ -57,7 +71,7 @@ public class MediaStreamRepository(IDbContextFactory<JellyfinDbContext> dbProvid
             return null;
         }
 
-        return serverApplicationHost.ExpandVirtualPath(path);
+        return _serverApplicationHost.ExpandVirtualPath(path);
     }
 
     private IQueryable<MediaStreamInfo> TranslateQuery(IQueryable<MediaStreamInfo> query, MediaStreamQuery filter)
@@ -131,14 +145,14 @@ public class MediaStreamRepository(IDbContextFactory<JellyfinDbContext> dbProvid
 
         if (dto.Type is MediaStreamType.Audio or MediaStreamType.Subtitle)
         {
-            dto.LocalizedDefault = localization.GetLocalizedString("Default");
-            dto.LocalizedExternal = localization.GetLocalizedString("External");
+            dto.LocalizedDefault = _localization.GetLocalizedString("Default");
+            dto.LocalizedExternal = _localization.GetLocalizedString("External");
 
             if (dto.Type is MediaStreamType.Subtitle)
             {
-                dto.LocalizedUndefined = localization.GetLocalizedString("Undefined");
-                dto.LocalizedForced = localization.GetLocalizedString("Forced");
-                dto.LocalizedHearingImpaired = localization.GetLocalizedString("HearingImpaired");
+                dto.LocalizedUndefined = _localization.GetLocalizedString("Undefined");
+                dto.LocalizedForced = _localization.GetLocalizedString("Forced");
+                dto.LocalizedHearingImpaired = _localization.GetLocalizedString("HearingImpaired");
             }
         }
 
