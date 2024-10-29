@@ -152,7 +152,7 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                return GetMediaSourceCount(new Stack<Guid>());
+                return GetMediaSourceCount(new HashSet<Guid>());
             }
         }
 
@@ -542,7 +542,7 @@ namespace MediaBrowser.Controller.Entities
             return list;
         }
 
-        private int GetMediaSourceCount(Stack<Guid> callstack)
+        private int GetMediaSourceCount(HashSet<Guid> callstack)
         {
             if (!string.IsNullOrEmpty(PrimaryVersionId))
             {
@@ -554,7 +554,7 @@ namespace MediaBrowser.Controller.Entities
                         return video.LinkedAlternateVersions.Length + video.LocalAlternateVersions.Length + 1;
                     }
 
-                    callstack.Push(video.Id);
+                    callstack.Add(video.Id);
                     return video.GetMediaSourceCount(callstack);
                 }
             }
