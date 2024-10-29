@@ -64,7 +64,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                     break;
                 case Season season:
                     // Only default order is supported
-                    if (season.Series.TryGetProviderId(MetadataProvider.Tmdb, out externalId) && string.IsNullOrEmpty(season.Series.DisplayOrder))
+                    if (season.Series.TryGetProviderId(MetadataProvider.Tmdb, out externalId) && string.IsNullOrEmpty(season.Series.DisplayOrder) && season.TryGetProviderId(MetadataProvider.Tmdb, out externalId))
                     {
                         yield return TmdbUtils.BaseTmdbUrl + $"tv/{externalId}/season/{season.IndexNumber}";
                     }
@@ -72,7 +72,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                     break;
                 case Episode episode:
                     // Only default order is supported
-                    if (episode.Series.TryGetProviderId(MetadataProvider.Tmdb, out externalId) && string.IsNullOrEmpty(episode.Series.DisplayOrder))
+                    if (episode.Series.TryGetProviderId(MetadataProvider.Tmdb, out externalId) && string.IsNullOrEmpty(episode.Series.DisplayOrder) && episode.TryGetProviderId(MetadataProvider.Tmdb, out externalId))
                     {
                         yield return TmdbUtils.BaseTmdbUrl + $"tv/{externalId}/season/{episode.ParentIndexNumber}/episode/{episode.IndexNumber}";
                     }

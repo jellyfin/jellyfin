@@ -13,6 +13,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
+using MediaBrowser.Providers.Music;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 {
@@ -74,6 +75,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             }
 
             result.Item.TrySetProviderId(MetadataProvider.Tvdb, seasonResult.ExternalIds.TvdbId);
+            // Dummy TMDb Id to indicate that there is a TMDb entry for this episode
+            result.Item.TrySetProviderId(MetadataProvider.Tmdb, $"{seriesTmdbId}-{info.IndexNumber}");
 
             // TODO why was this disabled?
             var credits = seasonResult.Credits;

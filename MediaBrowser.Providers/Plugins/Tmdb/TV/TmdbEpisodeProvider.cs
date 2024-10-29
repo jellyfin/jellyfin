@@ -190,7 +190,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             item.TrySetProviderId(MetadataProvider.Tvdb, externalIds?.TvdbId);
             item.TrySetProviderId(MetadataProvider.Imdb, externalIds?.ImdbId);
             item.TrySetProviderId(MetadataProvider.TvRage, externalIds?.TvrageId);
-
+            // Dummy TMDb Id to indicate that there is a TMDb entry for this episode
+            item.TrySetProviderId(MetadataProvider.Tmdb, $"{tmdbId}-{info.ParentIndexNumber}-{info.IndexNumber}");
             if (episodeResult.Videos?.Results is not null)
             {
                 foreach (var video in episodeResult.Videos.Results)
