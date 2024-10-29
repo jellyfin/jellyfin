@@ -79,6 +79,7 @@ public class ArtistsController : BaseJellyfinApiController
     /// <param name="nameLessThan">Optional filter by items whose name is equally or lesser than a given input string.</param>
     /// <param name="sortBy">Optional. Specify one or more sort orders, comma delimited.</param>
     /// <param name="sortOrder">Sort Order - Ascending,Descending.</param>
+    /// <param name="minSongCount">Optional. Filter by artists which have at least the given amount of songs.</param>
     /// <param name="enableImages">Optional, include image information in output.</param>
     /// <param name="enableTotalRecordCount">Total record count.</param>
     /// <response code="200">Artists returned.</response>
@@ -116,6 +117,7 @@ public class ArtistsController : BaseJellyfinApiController
         [FromQuery] string? nameLessThan,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemSortBy[] sortBy,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] SortOrder[] sortOrder,
+        [FromQuery] int? minSongCount,
         [FromQuery] bool? enableImages = true,
         [FromQuery] bool enableTotalRecordCount = true)
     {
@@ -153,6 +155,7 @@ public class ArtistsController : BaseJellyfinApiController
             PersonTypes = personTypes,
             Years = years,
             MinCommunityRating = minCommunityRating,
+            MinSongCount = minSongCount,
             DtoOptions = dtoOptions,
             SearchTerm = searchTerm,
             EnableTotalRecordCount = enableTotalRecordCount,
