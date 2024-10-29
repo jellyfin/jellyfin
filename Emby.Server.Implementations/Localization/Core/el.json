@@ -130,5 +130,11 @@
     "TaskAudioNormalization": "Ομοιομορφία ήχου",
     "TaskAudioNormalizationDescription": "Ανίχνευση αρχείων για δεδομένα ομοιομορφίας ήχου.",
     "TaskCleanCollectionsAndPlaylists": "Καθαρισμός συλλογών και λιστών αναπαραγωγής",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Αφαιρούνται στοιχεία από τις συλλογές και τις λίστες αναπαραγωγής που δεν υπάρχουν πλέον."
+    "TaskCleanCollectionsAndPlaylistsDescription": "Αφαιρούνται στοιχεία από τις συλλογές και τις λίστες αναπαραγωγής που δεν υπάρχουν πλέον.",
+    "TaskMoveTrickplayImages": "Αλλαγή τοποθεσίας εικόνων Trickplay",
+    "TaskDownloadMissingLyrics": "Λήψη στίχων που λείπουν",
+    "TaskMoveTrickplayImagesDescription": "Μετακινεί τα υπάρχοντα αρχεία trickplay σύμφωνα με τις ρυθμίσεις της βιβλιοθήκης.",
+    "TaskDownloadMissingLyricsDescription": "Κατεβάζει στίχους για τραγούδια",
+    "TaskExtractMediaSegments": "Σάρωση τμημάτων πολυμέσων",
+    "TaskExtractMediaSegmentsDescription": "Εξάγει ή βρίσκει τμήματα πολυμέσων από επεκτάσεις που χρησιμοποιούν το MediaSegment."
 }
