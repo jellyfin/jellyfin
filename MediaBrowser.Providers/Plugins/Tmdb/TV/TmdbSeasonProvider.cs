@@ -74,8 +74,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             }
 
             result.Item.TrySetProviderId(MetadataProvider.Tvdb, seasonResult.ExternalIds.TvdbId);
-            // Dummy TMDb Id to indicate that there is a TMDb entry for this season
-            result.Item.TrySetProviderId(MetadataProvider.Tmdb, $"{seriesTmdbId}-{info.IndexNumber}");
+            result.Item.TrySetProviderId(MetadataProvider.Tmdb, seasonResult.Id?.ToString(CultureInfo.InvariantCulture));
 
             // TODO why was this disabled?
             var credits = seasonResult.Credits;
