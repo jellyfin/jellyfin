@@ -74,7 +74,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             }
 
             result.Item.TrySetProviderId(MetadataProvider.Tvdb, seasonResult.ExternalIds.TvdbId);
-            // Dummy TMDb Id to indicate that there is a TMDb entry for this episode
+            // Dummy TMDb Id to indicate that there is a TMDb entry for this season
             result.Item.TrySetProviderId(MetadataProvider.Tmdb, $"{seriesTmdbId}-{info.IndexNumber}");
 
             // TODO why was this disabled?
