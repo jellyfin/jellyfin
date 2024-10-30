@@ -165,6 +165,11 @@ public class MediaSegmentManager : IMediaSegmentManager
             var providers = _segmentProviders
                 .Where(e => !libraryOptions.DisabledMediaSegmentProviders.Contains(GetProviderId(e.Name)))
                 .ToArray();
+            if (providers.Length == 0)
+            {
+                return [];
+            }
+
             var providerIds = providers.Select(f => GetProviderId(f.Name)).ToArray();
             query = query.Where(e => providerIds.Contains(e.SegmentProviderId));
         }
