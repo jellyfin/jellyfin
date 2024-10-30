@@ -201,8 +201,6 @@ namespace Jellyfin.Server.Implementations.Users
             user.AddDefaultPermissions();
             user.AddDefaultPreferences();
 
-            _users.Add(user.Id, user);
-
             return user;
         }
 
@@ -227,6 +225,7 @@ namespace Jellyfin.Server.Implementations.Users
 
                 dbContext.Users.Add(newUser);
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                _users.Add(newUser.Id, newUser);
             }
 
             await _eventManager.PublishAsync(new UserCreatedEventArgs(newUser)).ConfigureAwait(false);
@@ -560,6 +559,7 @@ namespace Jellyfin.Server.Implementations.Users
 
                 dbContext.Users.Add(newUser);
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                _users.Add(newUser.Id, newUser);
             }
         }
 
