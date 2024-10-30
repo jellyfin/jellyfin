@@ -63,18 +63,25 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
                     break;
                 case Season season:
-                    // Only default order is supported
-                    if (season.Series.TryGetProviderId(MetadataProvider.Tmdb, out externalId) && string.IsNullOrEmpty(season.Series.DisplayOrder) && season.TryGetProviderId(MetadataProvider.Tmdb, out externalId))
+                    if (season.Series.TryGetProviderId(MetadataProvider.Tmdb, out var seriesExternalId) && season.TryGetProviderId(MetadataProvider.Tmdb, out externalId))
                     {
-                        yield return TmdbUtils.BaseTmdbUrl + $"tv/{externalId}/season/{season.IndexNumber}";
+                        if (string.IsNullOrEmpty(season.Series.DisplayOrder))
+                        {
+                            yield return TmdbUtils.BaseTmdbUrl + $"tv/{seriesExternalId}/season/{season.IndexNumber}";
+                        }
+
+                        if (season.TryGetProviderId(TmdbUtils.EpisodeGroupProviderId, out var episodeGroupId))
+                        {
+                            yield return TmdbUtils.BaseTmdbUrl + $"tv/{seriesExternalId}/episode_group/{episodeGroupId}/group/{externalId}";
+                        }
                     }
 
                     break;
                 case Episode episode:
                     // Only default order is supported
-                    if (episode.Series.TryGetProviderId(MetadataProvider.Tmdb, out externalId) && string.IsNullOrEmpty(episode.Series.DisplayOrder) && episode.TryGetProviderId(MetadataProvider.Tmdb, out externalId))
+                    if (episode.Series.TryGetProviderId(MetadataProvider.Tmdb, out seriesExternalId) && string.IsNullOrEmpty(episode.Series.DisplayOrder) && episode.TryGetProviderId(MetadataProvider.Tmdb, out externalId))
                     {
-                        yield return TmdbUtils.BaseTmdbUrl + $"tv/{externalId}/season/{episode.ParentIndexNumber}/episode/{episode.IndexNumber}";
+                        yield return TmdbUtils.BaseTmdbUrl + $"tv/{seriesExternalId}/season/{episode.ParentIndexNumber}/episode/{episode.IndexNumber}";
                     }
 
                     break;
