@@ -55,6 +55,15 @@ public interface IMediaSegmentManager
     Task<IEnumerable<MediaSegmentDto>> GetSegmentsAsync(Guid itemId, IEnumerable<MediaSegmentType>? typeFilter, bool filterByProvider = true);
 
     /// <summary>
+    /// Obtains all segments accociated with the itemId.
+    /// </summary>
+    /// <param name="itemId">The <see cref="BaseItem"/>.</param>
+    /// <param name="typeFilter">filteres all media segments of the given type to be included. If null all types are included.</param>
+    /// <param name="filterByProvider">When set filteres the segments to only return those that which providers are currently enabled on their library.</param>
+    /// <returns>An enumerator of <see cref="MediaSegmentDto"/>'s.</returns>
+    Task<IEnumerable<MediaSegmentDto>> GetSegmentsAsync(BaseItem itemId, IEnumerable<MediaSegmentType>? typeFilter, bool filterByProvider = true);
+
+    /// <summary>
     /// Gets information about any media segments stored for the given itemId.
     /// </summary>
     /// <param name="itemId">The id of the <see cref="BaseItem"/>.</param>

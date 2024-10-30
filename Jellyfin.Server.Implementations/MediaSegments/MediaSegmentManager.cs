@@ -139,20 +139,26 @@ public class MediaSegmentManager : IMediaSegmentManager
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<MediaSegmentDto>> GetSegmentsAsync(Guid itemId, IEnumerable<MediaSegmentType>? typeFilter, bool filterByProvider = true)
+    public Task<IEnumerable<MediaSegmentDto>> GetSegmentsAsync(Guid itemId, IEnumerable<MediaSegmentType>? typeFilter, bool filterByProvider = true)
     {
         var baseItem = _libraryManager.GetItemById(itemId);
 
         if (baseItem is null)
         {
             _logger.LogError("Tried to request segments for an invalid item");
-            return [];
+            return Task.FromResult<IEnumerable<MediaSegmentDto>>([]);
         }
 
+        return GetSegmentsAsync(baseItem, typeFilter, filterByProvider);
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<MediaSegmentDto>> GetSegmentsAsync(BaseItem item, IEnumerable<MediaSegmentType>? typeFilter, bool filterByProvider = true)
+    {
         using var db = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
 
         var query = db.MediaSegments
-            .Where(e => e.ItemId.Equals(itemId));
+            .Where(e => e.ItemId.Equals(item.Id));
 
         if (typeFilter is not null)
         {
@@ -161,7 +167,7 @@ public class MediaSegmentManager : IMediaSegmentManager
 
         if (filterByProvider)
         {
-            var libraryOptions = _libraryManager.GetLibraryOptions(baseItem);
+            var libraryOptions = _libraryManager.GetLibraryOptions(item);
             var providers = _segmentProviders
                 .Where(e => !libraryOptions.DisabledMediaSegmentProviders.Contains(GetProviderId(e.Name)))
                 .ToArray();
