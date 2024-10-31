@@ -208,6 +208,10 @@ namespace MediaBrowser.Model.Dlna
 
                 var longBitrate = Math.Min(transcodingBitrate, playlistItem.AudioBitrate ?? transcodingBitrate);
                 playlistItem.AudioBitrate = longBitrate > int.MaxValue ? int.MaxValue : Convert.ToInt32(longBitrate);
+                if (playlistItem.AudioCodecs.Count == 0 && !string.IsNullOrWhiteSpace(transcodingProfile.AudioCodec))
+                {
+                    playlistItem.AudioCodecs = [transcodingProfile.AudioCodec];
+                }
             }
 
             playlistItem.TranscodeReasons = transcodeReasons;
