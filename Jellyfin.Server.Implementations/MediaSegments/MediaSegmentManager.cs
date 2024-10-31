@@ -183,8 +183,9 @@ public class MediaSegmentManager : IMediaSegmentManager
         return query
             .OrderBy(e => e.StartTicks)
             .AsNoTracking()
-            .ToImmutableList()
-            .Select(Map);
+            .AsEnumerable()
+            .Select(Map)
+            .ToImmutableArray();
     }
 
     private static MediaSegmentDto Map(MediaSegment segment)
