@@ -168,15 +168,15 @@ public class MediaSegmentManager : IMediaSegmentManager
         if (filterByProvider)
         {
             var libraryOptions = _libraryManager.GetLibraryOptions(item);
-            var providers = _segmentProviders
+            var providerIds = _segmentProviders
                 .Where(e => !libraryOptions.DisabledMediaSegmentProviders.Contains(GetProviderId(e.Name)))
+                .Select(f => GetProviderId(f.Name))
                 .ToArray();
-            if (providers.Length == 0)
+            if (providerIds.Length == 0)
             {
                 return [];
             }
 
-            var providerIds = providers.Select(f => GetProviderId(f.Name)).ToArray();
             query = query.Where(e => providerIds.Contains(e.SegmentProviderId));
         }
 
