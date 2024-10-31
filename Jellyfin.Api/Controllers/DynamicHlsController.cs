@@ -2059,16 +2059,16 @@ public class DynamicHlsController : BaseJellyfinApiController
         }
     }
 
-    private Task DeleteLastFile(string playlistPath, string segmentExtension, int retryCount)
+    private async Task DeleteLastFile(string playlistPath, string segmentExtension, int retryCount)
     {
         var file = GetLastTranscodingFile(playlistPath, segmentExtension, _fileSystem);
 
         if (file is null)
         {
-            return Task.CompletedTask;
+            return;
         }
 
-        return DeleteFile(file.FullName, retryCount);
+        await DeleteFile(file.FullName, retryCount).ConfigureAwait(false);
     }
 
     private async Task DeleteFile(string path, int retryCount)
