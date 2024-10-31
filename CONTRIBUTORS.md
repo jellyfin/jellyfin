@@ -193,6 +193,7 @@
  - [oxixes](https://github.com/oxixes)
  - [elfalem](https://github.com/elfalem)
  - [benedikt257](https://github.com/benedikt257)
+ - [revam](https://github.com/revam)
 
 # Emby Contributors
 
