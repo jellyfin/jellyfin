@@ -286,26 +286,39 @@ namespace Emby.Server.Implementations.Playlists
                 RefreshPriority.High);
         }
 
-        public async Task MoveItemAsync(string playlistId, string entryId, int newIndex)
+        public async Task MoveItemAsync(string playlistId, string entryId, int newIndex, Guid callingUserId)
         {
             if (_libraryManager.GetItemById(playlistId) is not Playlist playlist)
             {
                 throw new ArgumentException("No Playlist exists with the supplied Id");
             }
 
+            var user = _userManager.GetUserById(callingUserId);
             var children = playlist.GetManageableItems().ToList();
+            var accessibleChildren = children.Where(c => c.Item2.IsVisible(user)).ToArray();
 
-            var oldIndex = children.FindIndex(i => string.Equals(entryId, i.Item1.ItemId?.ToString("N", CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase));
+            var oldIndexAll = children.FindIndex(i => string.Equals(entryId, i.Item1.ItemId?.ToString("N", CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase));
+            var oldIndexAccessible = accessibleChildren.FindIndex(i => string.Equals(entryId, i.Item1.ItemId?.ToString("N", CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase));
 
-            if (oldIndex == newIndex)
+            if (oldIndexAccessible == newIndex)
             {
                 return;
             }
 
-            var item = playlist.LinkedChildren[oldIndex];
+            var newPriorItemIndex = newIndex > oldIndexAccessible ? newIndex : newIndex - 1;
+            var newPriorItemId = accessibleChildren[newPriorItemIndex].Item1.ItemId;
+            var newPriorItemIndexOnAllChildren = children.FindIndex(c => c.Item1.ItemId.Equals(newPriorItemId));
+            var adjustedNewIndex = newPriorItemIndexOnAllChildren + 1;
+
+            var item = playlist.LinkedChildren.FirstOrDefault(i => string.Equals(entryId, i.ItemId?.ToString("N", CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase));
+            if (item is null)
+            {
+                _logger.LogWarning("Modified item not found in playlist. ItemId: {ItemId}, PlaylistId: {PlaylistId}", item.ItemId, playlistId);
+
+                return;
+            }
 
             var newList = playlist.LinkedChildren.ToList();
-
             newList.Remove(item);
 
             if (newIndex >= newList.Count)
@@ -314,7 +327,7 @@ namespace Emby.Server.Implementations.Playlists
             }
             else
             {
-                newList.Insert(newIndex, item);
+                newList.Insert(adjustedNewIndex, item);
             }
 
             playlist.LinkedChildren = [.. newList];

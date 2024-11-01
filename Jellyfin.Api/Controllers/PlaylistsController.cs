@@ -427,7 +427,7 @@ public class PlaylistsController : BaseJellyfinApiController
             return Forbid();
         }
 
-        await _playlistManager.MoveItemAsync(playlistId, itemId, newIndex).ConfigureAwait(false);
+        await _playlistManager.MoveItemAsync(playlistId, itemId, newIndex, callingUserId).ConfigureAwait(false);
         return NoContent();
     }
 
