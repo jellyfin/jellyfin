@@ -295,7 +295,7 @@ namespace Emby.Server.Implementations.Playlists
 
             var children = playlist.GetManageableItems().ToList();
 
-            var oldIndex = children.FindIndex(i => string.Equals(entryId, i.Item1.Id, StringComparison.OrdinalIgnoreCase));
+            var oldIndex = children.FindIndex(i => string.Equals(entryId, i.Item1.ItemId?.ToString("N", CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase));
 
             if (oldIndex == newIndex)
             {
