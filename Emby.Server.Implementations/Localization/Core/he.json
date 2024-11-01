@@ -16,7 +16,7 @@
     "Folders": "תיקיות",
     "Genres": "ז׳אנרים",
     "HeaderAlbumArtists": "אמני האלבום",
-    "HeaderContinueWatching": "להמשיך לצפות",
+    "HeaderContinueWatching": "המשך צפייה",
     "HeaderFavoriteAlbums": "אלבומים מועדפים",
     "HeaderFavoriteArtists": "אמנים מועדפים",
     "HeaderFavoriteEpisodes": "פרקים מועדפים",
@@ -133,8 +133,8 @@
     "TaskCleanCollectionsAndPlaylists": "מנקה אוספים ורשימות השמעה",
     "TaskDownloadMissingLyrics": "הורדת מילים חסרות",
     "TaskDownloadMissingLyricsDescription": "הורדת מילים לשירים",
-    "TaskMoveTrickplayImages": "מעביר את מיקום תמונות Trickplay",
+    "TaskMoveTrickplayImages": "העברת מיקום התמונות",
     "TaskExtractMediaSegments": "סריקת מדיה",
     "TaskExtractMediaSegmentsDescription": "מחלץ חלקי מדיה מתוספים המאפשרים זאת.",
-    "TaskMoveTrickplayImagesDescription": "מזיז קבצי trickplay קיימים בהתאם להגדרות הספרייה."
+    "TaskMoveTrickplayImagesDescription": "הזזת קבצי trickplay קיימים בהתאם להגדרות הספרייה."
 }
