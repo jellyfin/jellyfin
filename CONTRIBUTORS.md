@@ -192,6 +192,7 @@
  - [jaina heartles](https://github.com/heartles)
  - [oxixes](https://github.com/oxixes)
  - [elfalem](https://github.com/elfalem)
+ - [Tharun Prabhu](https://github.com/tharunprabhu)
 
 # Emby Contributors
 
