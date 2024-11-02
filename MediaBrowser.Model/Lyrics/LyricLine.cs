@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace MediaBrowser.Model.Lyrics;
 
 /// <summary>
@@ -10,10 +12,12 @@ public class LyricLine
     /// </summary>
     /// <param name="text">The lyric text.</param>
     /// <param name="start">The lyric start time in ticks.</param>
-    public LyricLine(string text, long? start = null)
+    /// <param name="timetags">The Enhanced LRC timestamps for the song.</param>
+    public LyricLine(string text, long? start = null, Dictionary<int, int?>? timetags = null)
     {
         Text = text;
         Start = start;
+        TimeTags = timetags;
     }
 
     /// <summary>
@@ -25,4 +29,9 @@ public class LyricLine
     /// Gets the start time in ticks.
     /// </summary>
     public long? Start { get; }
+
+    /// <summary>
+    /// Gets the Enhanced LRC timestamps for the song.
+    /// </summary>
+    public Dictionary<int, int?>? TimeTags { get; }
 }
