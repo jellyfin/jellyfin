@@ -251,7 +251,7 @@ namespace MediaBrowser.Providers.Manager
         }
 
         /// <inheritdoc/>
-        public Task SaveImage(BaseItem item, string source, string mimeType, ImageType type, int? imageIndex, bool? saveLocallyWithMedia, CancellationToken cancellationToken)
+        public async Task SaveImage(BaseItem item, string source, string mimeType, ImageType type, int? imageIndex, bool? saveLocallyWithMedia, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(source))
             {
@@ -259,7 +259,15 @@ namespace MediaBrowser.Providers.Manager
             }
 
             var fileStream = AsyncFile.OpenRead(source);
-            return new ImageSaver(_configurationManager, _libraryMonitor, _fileSystem, _logger).SaveImage(item, fileStream, mimeType, type, imageIndex, saveLocallyWithMedia, cancellationToken);
+            await new ImageSaver(_configurationManager, _libraryMonitor, _fileSystem, _logger).SaveImage(item, fileStream, mimeType, type, imageIndex, saveLocallyWithMedia, cancellationToken);
+            try
+            {
+                File.Delete(source);
+            }
+            catch (IOException ex)
+            {
+                _logger.LogError(ex, "Source file {Source} not found or in use, skip removing", source);
+            }
         }
 
         /// <inheritdoc/>
