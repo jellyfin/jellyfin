@@ -258,15 +258,37 @@ namespace MediaBrowser.Providers.Manager
                 throw new ArgumentNullException(nameof(source));
             }
 
-            var fileStream = AsyncFile.OpenRead(source);
-            await new ImageSaver(_configurationManager, _libraryMonitor, _fileSystem, _logger).SaveImage(item, fileStream, mimeType, type, imageIndex, saveLocallyWithMedia, cancellationToken);
+            Exception? saveException = null;
+
             try
             {
-                File.Delete(source);
+                var fileStream = AsyncFile.OpenRead(source);
+                await new ImageSaver(_configurationManager, _libraryMonitor, _fileSystem, _logger).SaveImage(item, fileStream, mimeType, type, imageIndex, saveLocallyWithMedia, cancellationToken);
             }
-            catch (IOException ex)
+            catch (Exception ex)
             {
-                _logger.LogError(ex, "Source file {Source} not found or in use, skip removing", source);
+                saveException = ex;
+                _logger.LogError(ex, "Unable to save image {Source}", source);
+            }
+            finally
+            {
+                try
+                {
+                    File.Delete(source);
+                }
+                catch (IOException ex)
+                {
+                    _logger.LogError(ex, "Source file {Source} not found or in use, skip removing", source);
+                }
+                catch (Exception ex)
+                {
+                    saveException ??= ex;
+                }
+            }
+
+            if (saveException is not null)
+            {
+                throw saveException;
             }
         }
 
