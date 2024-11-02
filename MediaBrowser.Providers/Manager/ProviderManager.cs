@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Mime;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using AsyncKeyedLock;
@@ -258,7 +259,7 @@ namespace MediaBrowser.Providers.Manager
                 throw new ArgumentNullException(nameof(source));
             }
 
-            Exception? saveException = null;
+            ExceptionDispatchInfo? saveException = null;
 
             try
             {
@@ -267,7 +268,7 @@ namespace MediaBrowser.Providers.Manager
             }
             catch (Exception ex)
             {
-                saveException = ex;
+                saveException = ExceptionDispatchInfo.Capture(ex);
                 _logger.LogError(ex, "Unable to save image {Source}", source);
             }
             finally
@@ -282,14 +283,11 @@ namespace MediaBrowser.Providers.Manager
                 }
                 catch (Exception ex)
                 {
-                    saveException ??= ex;
+                    saveException ??= ExceptionDispatchInfo.Capture(ex);
                 }
             }
 
-            if (saveException is not null)
-            {
-                throw saveException;
-            }
+            saveException?.Throw();
         }
 
         /// <inheritdoc/>
