@@ -232,6 +232,8 @@ namespace MediaBrowser.Providers.Manager
                                     var stream = AsyncFile.OpenRead(response.Path);
 
                                     await _providerManager.SaveImage(item, stream, mimeType, imageType, null, cancellationToken).ConfigureAwait(false);
+
+                                    File.Delete(response.Path);
                                 }
                             }
 
