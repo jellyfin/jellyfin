@@ -259,17 +259,10 @@ namespace MediaBrowser.Providers.Manager
                 throw new ArgumentNullException(nameof(source));
             }
 
-            ExceptionDispatchInfo? saveException = null;
-
             try
             {
                 var fileStream = AsyncFile.OpenRead(source);
                 await new ImageSaver(_configurationManager, _libraryMonitor, _fileSystem, _logger).SaveImage(item, fileStream, mimeType, type, imageIndex, saveLocallyWithMedia, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                saveException = ExceptionDispatchInfo.Capture(ex);
-                _logger.LogError(ex, "Unable to save image {Source}", source);
             }
             finally
             {
@@ -281,13 +274,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     _logger.LogError(ex, "Source file {Source} not found or in use, skip removing", source);
                 }
-                catch (Exception ex)
-                {
-                    saveException ??= ExceptionDispatchInfo.Capture(ex);
-                }
             }
-
-            saveException?.Throw();
         }
 
         /// <inheritdoc/>
