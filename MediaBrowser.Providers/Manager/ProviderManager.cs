@@ -270,7 +270,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     File.Delete(source);
                 }
-                catch (IOException ex)
+                catch (Exception ex)
                 {
                     _logger.LogError(ex, "Source file {Source} not found or in use, skip removing", source);
                 }
