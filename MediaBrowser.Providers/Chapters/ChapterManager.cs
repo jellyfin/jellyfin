@@ -28,11 +28,11 @@ namespace MediaBrowser.Providers.Chapters
         }
 
         /// <summary>
-        /// Reads chapter information from a external JSON file.
+        /// Reads chapter information from external XML file.
         /// </summary>
         /// <param name="video">The video item.</param>
         /// <param name="chapters">The set of chapters.</param>
-        /// <returns>A list of ChapterInfo objects read from the local XML file.</returns>
+        /// <returns>A list of ChapterInfo objects created using data read from the local XML file.</returns>
         public ChapterInfo[] AddExternalChapters(Video video, IReadOnlyList<ChapterInfo> chapters)
         {
             string? xmlFilePath = null;
