@@ -387,8 +387,8 @@ namespace MediaBrowser.Providers.Manager
 
             item.RemoveImages(images);
 
-            // Cleanup old metadata directory for episodes if empty
-            if (item is Episode)
+            // Cleanup old metadata directory for episodes if empty, as long as it's not a virtual item
+            if (item is Episode && !item.IsVirtualItem)
             {
                 var oldLocalMetadataDirectory = Path.Combine(item.ContainingFolderPath, "metadata");
                 if (_fileSystem.DirectoryExists(oldLocalMetadataDirectory) && !_fileSystem.GetFiles(oldLocalMetadataDirectory).Any())
