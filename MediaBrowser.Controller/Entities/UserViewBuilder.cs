@@ -88,6 +88,9 @@ namespace MediaBrowser.Controller.Entities
                 case CollectionType.moviefavorites:
                     return GetFavoriteMovies(queryParent, user, query);
 
+                case CollectionType.moviewatchlist:
+                    return GetWatchlistMovies(queryParent, user, query);
+
                 case CollectionType.movielatest:
                     return GetMovieLatest(queryParent, user, query);
 
@@ -109,8 +112,14 @@ namespace MediaBrowser.Controller.Entities
                 case CollectionType.tvfavoriteepisodes:
                     return GetFavoriteEpisodes(queryParent, user, query);
 
+                case CollectionType.tvwatchlistepisodes:
+                    return GetWatchlistEpisodes(queryParent, user, query);
+
                 case CollectionType.tvfavoriteseries:
                     return GetFavoriteSeries(queryParent, user, query);
+
+                case CollectionType.tvwatchlistseries:
+                    return GetWatchlistSeries(queryParent, user, query);
 
                 default:
                     {
@@ -186,6 +195,39 @@ namespace MediaBrowser.Controller.Entities
             query.SetUser(user);
             query.IsFavorite = true;
             query.IncludeItemTypes = new[] { BaseItemKind.Episode };
+
+            return _libraryManager.GetItemsResult(query);
+        }
+
+        private QueryResult<BaseItem> GetWatchlistMovies(Folder parent, User user, InternalItemsQuery query)
+        {
+            query.Recursive = true;
+            query.Parent = parent;
+            query.SetUser(user);
+            query.IsWatchlisted = true;
+            query.IncludeItemTypes = new[] { BaseItemKind.Movie };
+
+            return _libraryManager.GetItemsResult(query);
+        }
+
+        private QueryResult<BaseItem> GetWatchlistEpisodes(Folder parent, User user, InternalItemsQuery query)
+        {
+            query.Recursive = true;
+            query.Parent = parent;
+            query.SetUser(user);
+            query.IsWatchlisted = true;
+            query.IncludeItemTypes = new[] { BaseItemKind.Episode };
+
+            return _libraryManager.GetItemsResult(query);
+        }
+
+        private QueryResult<BaseItem> GetWatchlistSeries(Folder parent, User user, InternalItemsQuery query)
+        {
+            query.Recursive = true;
+            query.Parent = parent;
+            query.SetUser(user);
+            query.IsWatchlisted = true;
+            query.IncludeItemTypes = new[] { BaseItemKind.Series };
 
             return _libraryManager.GetItemsResult(query);
         }

@@ -192,6 +192,9 @@
  - [jaina heartles](https://github.com/heartles)
  - [oxixes](https://github.com/oxixes)
  - [elfalem](https://github.com/elfalem)
+ - [simlar-0](https://github.com/simlar-0)
+ - [yuvve](https://github.com/yuvve)
+
 
 # Emby Contributors
 
