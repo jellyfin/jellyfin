@@ -297,6 +297,8 @@ namespace MediaBrowser.Controller.Entities
 
         public int MinSimilarityScore { get; set; }
 
+        public int? MinSongCount { get; set; }
+
         public string? HasNoAudioTrackWithLanguage { get; set; }
 
         public string? HasNoInternalSubtitleTrackWithLanguage { get; set; }

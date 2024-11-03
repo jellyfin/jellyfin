@@ -3673,6 +3673,13 @@ namespace Emby.Server.Implementations.Data
                 clauseBuilder.Length = 0;
             }
 
+            if (query.MinSongCount is > 0)
+            {
+                whereClauses.Add("(SELECT COUNT(*) FROM TypedBaseItems WHERE TYPE=@AudioType AND ',' || Artists || ',' LIKE '%,' || A.CleanName || ',%') >= @MinSongCount");
+                statement?.TryBind("@AudioType", typeof(Audio).FullName);
+                statement?.TryBind("@MinSongCount", query.MinSongCount);
+            }
+
             if (tags.Count > 0)
             {
                 clauseBuilder.Append('(');
@@ -4938,7 +4945,8 @@ AND Type = @InternalPersonType)");
                 NameContains = query.NameContains,
                 SearchTerm = query.SearchTerm,
                 SimilarTo = query.SimilarTo,
-                ExcludeItemIds = query.ExcludeItemIds
+                ExcludeItemIds = query.ExcludeItemIds,
+                MinSongCount = query.MinSongCount
             };
 
             var outerWhereClauses = GetWhereClauses(outerQuery, null);
