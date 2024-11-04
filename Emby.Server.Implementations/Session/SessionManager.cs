@@ -1938,7 +1938,11 @@ namespace Emby.Server.Implementations.Session
                 // Don't report acceleration type for non-admin users.
                 result = result.Select(r =>
                 {
-                    r.TranscodingInfo.HardwareAccelerationType = HardwareAccelerationType.none;
+                    if (r.TranscodingInfo is not null)
+                    {
+                        r.TranscodingInfo.HardwareAccelerationType = HardwareAccelerationType.none;
+                    }
+
                     return r;
                 });
             }
