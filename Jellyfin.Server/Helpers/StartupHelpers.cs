@@ -149,12 +149,7 @@ public static class StartupHelpers
             Environment.Exit(1);
         }
 
-        if (options.NoFolderCrossCheck)
-        {
-            Console.WriteLine("Disabled folder cross check. Overlapping folder configurations will be ignored and might result in data loss if inproper configured.");
-        }
-
-        return new ServerApplicationPaths(dataDir, logDir, configDir, cacheDir, webDir, options.NoFolderCrossCheck);
+        return new ServerApplicationPaths(dataDir, logDir, configDir, cacheDir, webDir);
     }
 
     private static string GetXdgCacheHome()

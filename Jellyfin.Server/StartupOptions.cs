@@ -74,12 +74,6 @@ namespace Jellyfin.Server
         public bool NoDetectNetworkChange { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the server should not detect folders that are merged by configuration.
-        /// </summary>
-        [Option("nocrossaccesscheck", Required = false, HelpText = "Indicates that the server should not detect overlapping folder.")]
-        public bool NoFolderCrossCheck { get; set; }
-
-        /// <summary>
         /// Gets the command line options as a dictionary that can be used in the .NET configuration system.
         /// </summary>
         /// <returns>The configuration dictionary.</returns>
