@@ -4,7 +4,7 @@
   </PropertyGroup>
   <!-- Run "dotnet list package (dash,dash)outdated" to see the latest versions of each package.-->
   <ItemGroup Label="Package Dependencies">
-    <PackageVersion Include="AsyncKeyedLock" Version="7.0.1" />
+    <PackageVersion Include="AsyncKeyedLock" Version="7.0.2" />
     <PackageVersion Include="AutoFixture.AutoMoq" Version="4.18.1" />
     <PackageVersion Include="AutoFixture.Xunit2" Version="4.18.1" />
     <PackageVersion Include="AutoFixture" Version="4.18.1" />
@@ -60,7 +60,7 @@
     <PackageVersion Include="Serilog.AspNetCore" Version="8.0.3" />
     <PackageVersion Include="Serilog.Enrichers.Thread" Version="4.0.0" />
     <PackageVersion Include="Serilog.Settings.Configuration" Version="8.0.4" />
-    <PackageVersion Include="Serilog.Sinks.Async" Version="2.0.0" />
+    <PackageVersion Include="Serilog.Sinks.Async" Version="2.1.0" />
     <PackageVersion Include="Serilog.Sinks.Console" Version="6.0.0" />
     <PackageVersion Include="Serilog.Sinks.File" Version="6.0.0" />
     <PackageVersion Include="Serilog.Sinks.Graylog" Version="3.1.1" />
@@ -71,7 +71,7 @@
     <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="2.88.8" />
     <PackageVersion Include="SmartAnalyzers.MultithreadingAnalyzer" Version="1.1.31" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.556" />
-    <PackageVersion Include="Svg.Skia" Version="2.0.0.1" />
+    <PackageVersion Include="Svg.Skia" Version="2.0.0.2" />
     <PackageVersion Include="Swashbuckle.AspNetCore.ReDoc" Version="6.5.0" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.2.3" />
     <PackageVersion Include="System.Globalization" Version="4.3.0" />
@@ -80,7 +80,7 @@
     <PackageVersion Include="System.Text.Json" Version="8.0.5" />
     <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="8.0.1" />
     <PackageVersion Include="TagLibSharp" Version="2.3.0" />
-    <PackageVersion Include="z440.atl.core" Version="6.5.0" />
+    <PackageVersion Include="z440.atl.core" Version="6.7.0" />
     <PackageVersion Include="TMDbLib" Version="2.2.0" />
     <PackageVersion Include="UTF.Unknown" Version="2.5.1" />
     <PackageVersion Include="Xunit.Priority" Version="1.1.6" />

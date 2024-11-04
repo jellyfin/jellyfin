@@ -126,5 +126,11 @@
     "External": "Външен",
     "HearingImpaired": "Увреден слух",
     "TaskRefreshTrickplayImages": "Генерирай изображение",
-    "TaskRefreshTrickplayImagesDescription": "Създава прегледи на Trickplay за видеа в активирани библиотеки."
+    "TaskRefreshTrickplayImagesDescription": "Създава прегледи на Trickplay за видеа в активирани библиотеки.",
+    "TaskDownloadMissingLyrics": "Свали липсващи текстове",
+    "TaskDownloadMissingLyricsDescription": "Свали текстове за песни",
+    "TaskCleanCollectionsAndPlaylists": "Изчисти колекциите и плейлистовете",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Премахни несъществуващи файлове в колекциите и плейлистите.",
+    "TaskAudioNormalization": "Нормализиране на звука",
+    "TaskAudioNormalizationDescription": "Сканирай файловете за нормализация на звука."
 }
