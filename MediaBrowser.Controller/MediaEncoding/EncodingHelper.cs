@@ -2196,7 +2196,10 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 var videoFrameRate = videoStream.ReferenceFrameRate;
 
-                if (!videoFrameRate.HasValue || videoFrameRate.Value > requestedFramerate.Value)
+                // Add a little tolerance to the framerate check because some videos might record a framerate
+                // that is slightly higher than the intended framerate, but the device can still play it correctly.
+                // 0.05 fps tolerance should be safe enough.
+                if (!videoFrameRate.HasValue || videoFrameRate.Value > requestedFramerate.Value + 0.05f)
                 {
                     return false;
                 }
