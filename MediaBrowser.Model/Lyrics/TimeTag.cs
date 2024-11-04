@@ -9,8 +9,8 @@ public class TimeTag
     /// Initializes a new instance of the <see cref="TimeTag"/> class.
     /// </summary>
     /// <param name="position">The character index of the lyric.</param>
-    /// <param name="timestamp">The timestamp the lyric is synced to.</param>
-    public TimeTag(int position, int? timestamp = null)
+    /// <param name="timestamp">The timestamp the lyric is synced to in ticks.</param>
+    public TimeTag(int position, long timestamp)
     {
         Position = position;
         Timestamp = timestamp;
@@ -22,7 +22,7 @@ public class TimeTag
     public int Position { get; }
 
     /// <summary>
-    /// Gets the timestamp the lyric is synced to.
+    /// Gets the timestamp the lyric is synced to in ticks.
     /// </summary>
-    public int? Timestamp { get; }
+    public long Timestamp { get; }
 }

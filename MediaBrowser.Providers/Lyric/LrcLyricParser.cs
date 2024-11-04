@@ -68,11 +68,19 @@ public class LrcLyricParser : ILyricParser
 
         for (int i = 0; i < sortedLyricData.Count; i++)
         {
-            List<TimeTag> timeTags = sortedLyricData[i].TimeTags
-                .Select(kvp => new TimeTag(position: kvp.Key.Index + (kvp.Key.Index == -1 ? 1 : 0), timestamp: kvp.Value * 10000)).ToList();
+            List<TimeTag>? timeTags = null;
+            if (sortedLyricData[i].TimeTags.Count != 0)
+            {
+                timeTags = sortedLyricData[i].TimeTags
+                    .Where(kvp => kvp.Value.HasValue)
+                    .Select(kvp => new TimeTag(
+                        position: Math.Max(kvp.Key.Index, 0),
+                        timestamp: TimeSpan.FromMilliseconds(kvp.Value ?? 0).Ticks))
+                    .ToList();
+            }
 
             long ticks = TimeSpan.FromMilliseconds(sortedLyricData[i].StartTime).Ticks;
-            lyricList.Add(new LyricLine(sortedLyricData[i].Text.Trim(), ticks, timeTags.Count > 0 ? timeTags : null));
+            lyricList.Add(new LyricLine(sortedLyricData[i].Text.Trim(), ticks, timeTags));
         }
 
         return new LyricDto { Lyrics = lyricList };

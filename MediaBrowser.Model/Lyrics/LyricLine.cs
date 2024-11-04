@@ -5,7 +5,6 @@ namespace MediaBrowser.Model.Lyrics;
 /// <summary>
 /// Lyric model.
 /// </summary>
-///
 public class LyricLine
 {
     /// <summary>
@@ -14,7 +13,7 @@ public class LyricLine
     /// <param name="text">The lyric text.</param>
     /// <param name="start">The lyric start time in ticks.</param>
     /// <param name="timetags">The Enhanced LRC timestamps for the song.</param>
-    public LyricLine(string text, long? start = null, List<TimeTag>? timetags = null)
+    public LyricLine(string text, long? start = null, IReadOnlyList<TimeTag>? timetags = null)
     {
         Text = text;
         Start = start;
@@ -34,5 +33,5 @@ public class LyricLine
     /// <summary>
     /// Gets the Enhanced LRC timestamps for the song.
     /// </summary>
-    public List<TimeTag>? TimeTags { get; }
+    public IReadOnlyList<TimeTag>? TimeTags { get; }
 }
