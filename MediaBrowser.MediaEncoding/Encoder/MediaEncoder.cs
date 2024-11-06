@@ -221,7 +221,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 _isLowPriorityHwDecodeSupported = validator.CheckSupportedHwaccelFlag("low_priority");
 
                 // Check the Vaapi device vendor
-                if (OperatingSystem.IsLinux()
+                if ((OperatingSystem.IsLinux() || OperatingSystem.IsFreeBSD())
                     && SupportsHwaccel("vaapi")
                     && !string.IsNullOrEmpty(options.VaapiDevice)
                     && options.HardwareAccelerationType == HardwareAccelerationType.vaapi)
