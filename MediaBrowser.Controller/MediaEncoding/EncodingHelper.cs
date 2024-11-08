@@ -3527,11 +3527,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // tonemapx requires yuv420p10 input for dovi reshaping, let ffmpeg convert the frame when necessary
                 var tonemapFormat = requireDoviReshaping ? "yuv420p" : outFormat;
 
-                var tonemapArgs = $"tonemapx=tonemap={options.TonemappingAlgorithm}:desat={options.TonemappingDesat}:peak={options.TonemappingPeak}:t=bt709:m=bt709:p=bt709:format={tonemapFormat}";
+                var tonemapArgs = $"tonemapx=tonemap={options.TonemappingAlgorithm}:desat={options.TonemappingDesat.ToString(CultureInfo.InvariantCulture)}:peak={options.TonemappingPeak.ToString(CultureInfo.InvariantCulture)}:t=bt709:m=bt709:p=bt709:format={tonemapFormat}";
 
                 if (options.TonemappingParam != 0)
                 {
-                    tonemapArgs += $":param={options.TonemappingParam}";
+                    tonemapArgs += $":param={options.TonemappingParam.ToString(CultureInfo.InvariantCulture)}";
                 }
 
                 var range = options.TonemappingRange;
