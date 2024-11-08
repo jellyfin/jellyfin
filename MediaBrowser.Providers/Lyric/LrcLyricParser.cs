@@ -68,14 +68,14 @@ public class LrcLyricParser : ILyricParser
 
         for (int i = 0; i < sortedLyricData.Count; i++)
         {
-            List<TimeTag>? timeTags = null;
+            List<LyricLineTimeTag>? timeTags = null;
             if (sortedLyricData[i].TimeTags.Count != 0)
             {
                 timeTags = sortedLyricData[i].TimeTags
                     .Where(kvp => kvp.Value.HasValue)
-                    .Select(kvp => new TimeTag(
+                    .Select(kvp => new LyricLineTimeTag(
                         position: Math.Max(kvp.Key.Index, 0),
-                        timestamp: TimeSpan.FromMilliseconds(kvp.Value ?? 0).Ticks))
+                        start: TimeSpan.FromMilliseconds(kvp.Value ?? 0).Ticks))
                     .ToList();
             }
 

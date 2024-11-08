@@ -12,12 +12,12 @@ public class LyricLine
     /// </summary>
     /// <param name="text">The lyric text.</param>
     /// <param name="start">The lyric start time in ticks.</param>
-    /// <param name="timetags">The Enhanced LRC timestamps for the song.</param>
-    public LyricLine(string text, long? start = null, IReadOnlyList<TimeTag>? timetags = null)
+    /// <param name="cues">The time-aligned cues for the song's lyrics.</param>
+    public LyricLine(string text, long? start = null, IReadOnlyList<LyricLineTimeTag>? cues = null)
     {
         Text = text;
         Start = start;
-        TimeTags = timetags;
+        Cues = cues;
     }
 
     /// <summary>
@@ -31,7 +31,7 @@ public class LyricLine
     public long? Start { get; }
 
     /// <summary>
-    /// Gets the Enhanced LRC timestamps for the song.
+    /// Gets the time-aligned cues for the song's lyrics.
     /// </summary>
-    public IReadOnlyList<TimeTag>? TimeTags { get; }
+    public IReadOnlyList<LyricLineTimeTag>? Cues { get; }
 }
