@@ -269,7 +269,7 @@ namespace Emby.Server.Implementations.Playlists
 
             var idList = entryIds.ToList();
 
-            var removals = children.Where(i => idList.Contains(i.Item1.Id));
+            var removals = children.Where(i => idList.Contains(i.Item1.ItemId?.ToString("N", CultureInfo.InvariantCulture)));
 
             playlist.LinkedChildren = children.Except(removals)
                 .Select(i => i.Item1)
