@@ -224,6 +224,7 @@ public sealed class BaseItemRepository(
         using var context = dbProvider.CreateDbContext();
         IQueryable<BaseItemEntity> dbQuery = context.BaseItems.AsNoTracking()
             .Include(e => e.TrailerTypes)
+            .Include(e => e.Provider)
             .Include(e => e.Images)
             .Include(e => e.LockedFields);
         dbQuery = TranslateQuery(dbQuery, context, filter)
