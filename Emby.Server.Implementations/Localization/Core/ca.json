@@ -132,5 +132,6 @@
     "TaskAudioNormalization": "Normalització d'Àudio",
     "TaskAudioNormalizationDescription": "Escaneja arxius per dades de normalització d'àudio.",
     "TaskDownloadMissingLyricsDescription": "Baixar lletres de les cançons",
-    "TaskDownloadMissingLyrics": "Baixar lletres que falten"
+    "TaskDownloadMissingLyrics": "Baixar lletres que falten",
+    "TaskExtractMediaSegments": "Escaneig de segments multimèdia"
 }
