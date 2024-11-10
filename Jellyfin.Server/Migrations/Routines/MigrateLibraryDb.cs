@@ -282,7 +282,7 @@ public class MigrateLibraryDb : IMigrationRoutine
     private (UserData? Data, string? LegacyUserDataKey) GetUserData(ImmutableArray<User> users, SqliteDataReader dto)
     {
         var indexOfUser = dto.GetInt32(1);
-        var user = users.ElementAtOrDefault(indexOfUser);
+        var user = users.ElementAtOrDefault(indexOfUser - 1);
 
         if (user is null)
         {
