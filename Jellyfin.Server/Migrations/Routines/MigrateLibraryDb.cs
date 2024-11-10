@@ -624,8 +624,8 @@ public class MigrateLibraryDb : IMigrationRoutine
     {
         var entity = new BaseItemEntity()
         {
-            Type = reader.GetString(0),
-            Id = reader.GetGuid(1)
+            Id = reader.GetGuid(0),
+            Type = reader.GetString(1),
         };
 
         var index = 2;
