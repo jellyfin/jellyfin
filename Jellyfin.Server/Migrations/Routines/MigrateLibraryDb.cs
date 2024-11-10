@@ -279,11 +279,14 @@ public class MigrateLibraryDb : IMigrationRoutine
         }
     }
 
-    private static (UserData? Data, string? LegacyUserDataKey) GetUserData(ImmutableArray<User> users, SqliteDataReader dto)
+    private (UserData? Data, string? LegacyUserDataKey) GetUserData(ImmutableArray<User> users, SqliteDataReader dto)
     {
         var indexOfUser = dto.GetInt32(1);
-        if (users.Length < indexOfUser)
+        var user = users.ElementAtOrDefault(indexOfUser);
+
+        if (user is null)
         {
+            _logger.LogError("Tried to find user with index '{Idx}' but there are only '{MaxIdx}' users.", indexOfUser, users.Length);
             return (null, null);
         }
 
@@ -292,7 +295,7 @@ public class MigrateLibraryDb : IMigrationRoutine
         return (new UserData()
         {
             ItemId = Guid.NewGuid(),
-            UserId = users.ElementAt(indexOfUser).Id,
+            UserId = user.Id,
             Rating = dto.IsDBNull(2) ? null : dto.GetDouble(2),
             Played = dto.GetBoolean(3),
             PlayCount = dto.GetInt32(4),
