@@ -1368,7 +1368,7 @@ public sealed class BaseItemRepository(
         dto.TotalBitrate = entity.TotalBitrate;
         dto.ExternalId = entity.ExternalId;
         dto.Size = entity.Size;
-        dto.Genres = entity.Genres?.Split('|');
+        dto.Genres = entity.Genres?.Split('|') ?? [];
         dto.DateCreated = entity.DateCreated.GetValueOrDefault();
         dto.DateModified = entity.DateModified.GetValueOrDefault();
         dto.ChannelId = string.IsNullOrWhiteSpace(entity.ChannelId) ? Guid.Empty : Guid.Parse(entity.ChannelId);
@@ -1398,9 +1398,9 @@ public sealed class BaseItemRepository(
         }
 
         dto.ExtraIds = string.IsNullOrWhiteSpace(entity.ExtraIds) ? null : entity.ExtraIds.Split('|').Select(e => Guid.Parse(e)).ToArray();
-        dto.ProductionLocations = entity.ProductionLocations?.Split('|');
-        dto.Studios = entity.Studios?.Split('|');
-        dto.Tags = entity.Tags?.Split('|');
+        dto.ProductionLocations = entity.ProductionLocations?.Split('|') ?? [];
+        dto.Studios = entity.Studios?.Split('|') ?? [];
+        dto.Tags = entity.Tags?.Split('|') ?? [];
 
         if (dto is IHasProgramAttributes hasProgramAttributes)
         {
@@ -1440,12 +1440,12 @@ public sealed class BaseItemRepository(
 
         if (dto is IHasArtist hasArtists)
         {
-            hasArtists.Artists = entity.Artists?.Split('|', StringSplitOptions.RemoveEmptyEntries);
+            hasArtists.Artists = entity.Artists?.Split('|', StringSplitOptions.RemoveEmptyEntries) ?? [];
         }
 
         if (dto is IHasAlbumArtist hasAlbumArtists)
         {
-            hasAlbumArtists.AlbumArtists = entity.AlbumArtists?.Split('|', StringSplitOptions.RemoveEmptyEntries);
+            hasAlbumArtists.AlbumArtists = entity.AlbumArtists?.Split('|', StringSplitOptions.RemoveEmptyEntries) ?? [];
         }
 
         if (dto is LiveTvProgram program)
