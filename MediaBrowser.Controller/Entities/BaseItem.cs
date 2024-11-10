@@ -1588,16 +1588,26 @@ namespace MediaBrowser.Controller.Entities
         public List<string> GetInheritedTags()
         {
             var list = new List<string>();
-            list.AddRange(Tags);
+            if (Tags is not null)
+            {
+                list.AddRange(Tags);
+            }
 
             foreach (var parent in GetParents())
             {
-                list.AddRange(parent.Tags);
+                if (parent.Tags is not null)
+                {
+                    list.AddRange(parent.Tags);
+                }
             }
 
             foreach (var folder in LibraryManager.GetCollectionFolders(this))
             {
-                list.AddRange(folder.Tags);
+                if (folder.Tags is not null)
+                {
+                    list.AddRange(folder.Tags);
+                }
+
             }
 
             return list.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
@@ -1785,7 +1795,7 @@ namespace MediaBrowser.Controller.Entities
                 }
                 else
                 {
-                    Studios = [..current, name];
+                    Studios = [.. current, name];
                 }
             }
         }
@@ -1807,7 +1817,7 @@ namespace MediaBrowser.Controller.Entities
             var genres = Genres;
             if (!genres.Contains(name, StringComparison.OrdinalIgnoreCase))
             {
-                Genres = [..genres, name];
+                Genres = [.. genres, name];
             }
         }
 
@@ -1978,7 +1988,7 @@ namespace MediaBrowser.Controller.Entities
 
         public void AddImage(ItemImageInfo image)
         {
-            ImageInfos = [..ImageInfos, image];
+            ImageInfos = [.. ImageInfos, image];
         }
 
         public virtual Task UpdateToRepositoryAsync(ItemUpdateType updateReason, CancellationToken cancellationToken)
