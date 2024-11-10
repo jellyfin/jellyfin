@@ -1588,26 +1588,16 @@ namespace MediaBrowser.Controller.Entities
         public List<string> GetInheritedTags()
         {
             var list = new List<string>();
-            if (Tags is not null)
-            {
-                list.AddRange(Tags);
-            }
+            list.AddRange(Tags);
 
             foreach (var parent in GetParents())
             {
-                if (parent.Tags is not null)
-                {
-                    list.AddRange(parent.Tags);
-                }
+                list.AddRange(parent.Tags);
             }
 
             foreach (var folder in LibraryManager.GetCollectionFolders(this))
             {
-                if (folder.Tags is not null)
-                {
-                    list.AddRange(folder.Tags);
-                }
-
+                list.AddRange(folder.Tags);
             }
 
             return list.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
