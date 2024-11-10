@@ -1397,7 +1397,7 @@ public sealed class BaseItemRepository(
             dto.Audio = (ProgramAudio)entity.Audio;
         }
 
-        dto.ExtraIds = string.IsNullOrWhiteSpace(entity.ExtraIds) ? null : entity.ExtraIds.Split('|').Select(e => Guid.Parse(e)).ToArray();
+        dto.ExtraIds = string.IsNullOrWhiteSpace(entity.ExtraIds) ? [] : entity.ExtraIds.Split('|').Select(e => Guid.Parse(e)).ToArray();
         dto.ProductionLocations = entity.ProductionLocations?.Split('|') ?? [];
         dto.Studios = entity.Studios?.Split('|') ?? [];
         dto.Tags = entity.Tags?.Split('|') ?? [];
