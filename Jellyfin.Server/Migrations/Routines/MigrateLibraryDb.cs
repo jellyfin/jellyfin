@@ -66,14 +66,17 @@ public class MigrateLibraryDb : IMigrationRoutine
         var dataPath = _paths.DataPath;
         var libraryDbPath = Path.Combine(dataPath, DbFilename);
         using var connection = new SqliteConnection($"Filename={libraryDbPath}");
+        var migrationTotalTime = TimeSpan.Zero;
+
         var stopwatch = new Stopwatch();
         stopwatch.Start();
 
         connection.Open();
         using var dbContext = _provider.CreateDbContext();
 
-        var stepElapsed = stopwatch.Elapsed;
-        _logger.LogInformation("Saving UserData entries took {0}.", stepElapsed);
+        migrationTotalTime += stopwatch.Elapsed;
+        _logger.LogInformation("Saving UserData entries took {0}.", stopwatch.Elapsed);
+        stopwatch.Restart();
 
         _logger.LogInformation("Start moving TypedBaseItem.");
         var typedBaseItemsQuery = "SELECT guid, type, data, StartDate, EndDate, ChannelId, IsMovie, IsSeries, EpisodeTitle, IsRepeat, CommunityRating, CustomRating, IndexNumber, IsLocked, PreferredMetadataLanguage, PreferredMetadataCountryCode, Width, Height, DateLastRefreshed, Name, Path, PremiereDate, Overview, ParentIndexNumber, ProductionYear, OfficialRating, ForcedSortName, RunTimeTicks, Size, DateCreated, DateModified, Genres, ParentId, Audio, ExternalServiceId, IsInMixedFolder, DateLastSaved, LockedFields, Studios, Tags, TrailerTypes, OriginalTitle, PrimaryVersionId, DateLastMediaAdded, Album, LUFS, NormalizationGain, CriticRating, IsVirtualItem, SeriesName, UserDataKey, SeasonName, SeasonId, SeriesId, PresentationUniqueKey, InheritedParentalRatingValue, ExternalSeriesId, Tagline, ProviderIds, Images, ProductionLocations, ExtraIds, TotalBitrate, ExtraType, Artists, AlbumArtists, ExternalId, SeriesPresentationUniqueKey, ShowId, OwnerId FROM TypedBaseItems";
@@ -89,8 +92,9 @@ public class MigrateLibraryDb : IMigrationRoutine
 
         _logger.LogInformation("Try saving {0} BaseItem entries.", dbContext.BaseItems.Local.Count);
         dbContext.SaveChanges();
-        stepElapsed = stopwatch.Elapsed - stepElapsed;
-        _logger.LogInformation("Saving BaseItems entries took {0}.", stepElapsed);
+        migrationTotalTime += stopwatch.Elapsed;
+        _logger.LogInformation("Saving BaseItems entries took {0}.", stopwatch.Elapsed);
+        stopwatch.Restart();
 
         _logger.LogInformation("Start moving UserData.");
         var queryResult = connection.Query("SELECT key, userId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex FROM UserDatas");
@@ -133,8 +137,10 @@ public class MigrateLibraryDb : IMigrationRoutine
 
         _logger.LogInformation("Try saving {0} MediaStreamInfos entries.", dbContext.MediaStreamInfos.Local.Count);
         dbContext.SaveChanges();
-        stepElapsed = stopwatch.Elapsed - stepElapsed;
-        _logger.LogInformation("Saving MediaStreamInfos entries took {0}.", stepElapsed);
+
+        migrationTotalTime += stopwatch.Elapsed;
+        _logger.LogInformation("Saving MediaStreamInfos entries took {0}.", stopwatch.Elapsed);
+        stopwatch.Reset();
 
         _logger.LogInformation("Start moving People.");
         var personsQuery = "select ItemId, Name, Role, PersonType, SortOrder from People p";
@@ -180,8 +186,9 @@ public class MigrateLibraryDb : IMigrationRoutine
 
         _logger.LogInformation("Try saving {0} People entries.", dbContext.MediaStreamInfos.Local.Count);
         dbContext.SaveChanges();
-        stepElapsed = stopwatch.Elapsed - stepElapsed;
-        _logger.LogInformation("Saving People entries took {0}.", stepElapsed);
+        migrationTotalTime += stopwatch.Elapsed;
+        _logger.LogInformation("Saving People entries took {0}.", stopwatch.Elapsed);
+        stopwatch.Reset();
 
         _logger.LogInformation("Start moving ItemValues.");
         // do not migrate inherited types as they are now properly mapped in search and lookup.
@@ -213,8 +220,9 @@ public class MigrateLibraryDb : IMigrationRoutine
 
         _logger.LogInformation("Try saving {0} ItemValues entries.", dbContext.ItemValues.Local.Count);
         dbContext.SaveChanges();
-        stepElapsed = stopwatch.Elapsed - stepElapsed;
-        _logger.LogInformation("Saving People ItemValues took {0}.", stepElapsed);
+        migrationTotalTime += stopwatch.Elapsed;
+        _logger.LogInformation("Saving People ItemValues took {0}.", stopwatch.Elapsed);
+        stopwatch.Reset();
 
         _logger.LogInformation("Start moving Chapters.");
         var chapterQuery = "select ItemId,StartPositionTicks,Name,ImagePath,ImageDateModified,ChapterIndex from Chapters2";
@@ -228,8 +236,9 @@ public class MigrateLibraryDb : IMigrationRoutine
 
         _logger.LogInformation("Try saving {0} Chapters entries.", dbContext.Chapters.Local.Count);
         dbContext.SaveChanges();
-        stepElapsed = stopwatch.Elapsed - stepElapsed;
-        _logger.LogInformation("Saving Chapters took {0}.", stepElapsed);
+        migrationTotalTime += stopwatch.Elapsed;
+        _logger.LogInformation("Saving Chapters took {0}.", stopwatch.Elapsed);
+        stopwatch.Reset();
 
         _logger.LogInformation("Start moving AncestorIds.");
         var ancestorIdsQuery = "select ItemId, AncestorId, AncestorIdText from AncestorIds";
@@ -256,8 +265,9 @@ public class MigrateLibraryDb : IMigrationRoutine
         _logger.LogInformation("Try saving {0} AncestorIds entries.", dbContext.Chapters.Local.Count);
 
         dbContext.SaveChanges();
-        stepElapsed = stopwatch.Elapsed - stepElapsed;
-        _logger.LogInformation("Saving AncestorIds took {0}.", stepElapsed);
+        migrationTotalTime += stopwatch.Elapsed;
+        _logger.LogInformation("Saving AncestorIds took {0}.", stopwatch.Elapsed);
+        stopwatch.Reset();
 
         connection.Close();
         _logger.LogInformation("Migration of the Library.db done.");
