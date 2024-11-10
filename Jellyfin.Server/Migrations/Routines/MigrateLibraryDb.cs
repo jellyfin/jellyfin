@@ -140,7 +140,7 @@ public class MigrateLibraryDb : IMigrationRoutine
 
         migrationTotalTime += stopwatch.Elapsed;
         _logger.LogInformation("Saving MediaStreamInfos entries took {0}.", stopwatch.Elapsed);
-        stopwatch.Reset();
+        stopwatch.Restart();
 
         _logger.LogInformation("Start moving People.");
         var personsQuery = "select ItemId, Name, Role, PersonType, SortOrder from People p";
@@ -188,7 +188,7 @@ public class MigrateLibraryDb : IMigrationRoutine
         dbContext.SaveChanges();
         migrationTotalTime += stopwatch.Elapsed;
         _logger.LogInformation("Saving People entries took {0}.", stopwatch.Elapsed);
-        stopwatch.Reset();
+        stopwatch.Restart();
 
         _logger.LogInformation("Start moving ItemValues.");
         // do not migrate inherited types as they are now properly mapped in search and lookup.
@@ -222,7 +222,7 @@ public class MigrateLibraryDb : IMigrationRoutine
         dbContext.SaveChanges();
         migrationTotalTime += stopwatch.Elapsed;
         _logger.LogInformation("Saving People ItemValues took {0}.", stopwatch.Elapsed);
-        stopwatch.Reset();
+        stopwatch.Restart();
 
         _logger.LogInformation("Start moving Chapters.");
         var chapterQuery = "select ItemId,StartPositionTicks,Name,ImagePath,ImageDateModified,ChapterIndex from Chapters2";
@@ -238,7 +238,7 @@ public class MigrateLibraryDb : IMigrationRoutine
         dbContext.SaveChanges();
         migrationTotalTime += stopwatch.Elapsed;
         _logger.LogInformation("Saving Chapters took {0}.", stopwatch.Elapsed);
-        stopwatch.Reset();
+        stopwatch.Restart();
 
         _logger.LogInformation("Start moving AncestorIds.");
         var ancestorIdsQuery = "select ItemId, AncestorId, AncestorIdText from AncestorIds";
@@ -267,14 +267,14 @@ public class MigrateLibraryDb : IMigrationRoutine
         dbContext.SaveChanges();
         migrationTotalTime += stopwatch.Elapsed;
         _logger.LogInformation("Saving AncestorIds took {0}.", stopwatch.Elapsed);
-        stopwatch.Reset();
+        stopwatch.Restart();
 
         connection.Close();
         _logger.LogInformation("Migration of the Library.db done.");
         _logger.LogInformation("Move {0} to {1}.", libraryDbPath, libraryDbPath + ".old");
         File.Move(libraryDbPath, libraryDbPath + ".old");
 
-        _logger.LogInformation("Migrating Library db took {0}.", stopwatch.Elapsed);
+        _logger.LogInformation("Migrating Library db took {0}.", migrationTotalTime);
 
         if (dbContext.Database.IsSqlite())
         {
