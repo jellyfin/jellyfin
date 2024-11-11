@@ -227,8 +227,8 @@ public sealed class BaseItemRepository(
             .Include(e => e.Provider)
             .Include(e => e.Images)
             .Include(e => e.LockedFields);
-        dbQuery = TranslateQuery(dbQuery, context, filter)
-            .DistinctBy(e => e.Id);
+        dbQuery = TranslateQuery(dbQuery, context, filter);
+            // .DistinctBy(e => e.Id);
         if (filter.EnableTotalRecordCount)
         {
             result.TotalRecordCount = dbQuery.Count();
@@ -1040,7 +1040,7 @@ public sealed class BaseItemRepository(
             }
             else
             {
-                baseQuery = baseQuery.Where(e => queryTopParentIds.Any(w => w == e.TopParentId!.Value));
+                baseQuery = baseQuery.Where(e => queryTopParentIds.Contains(e.TopParentId!.Value));
             }
         }
 

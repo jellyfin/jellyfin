@@ -224,13 +224,18 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
-        public UserItemDataDto GetUserDataDto(BaseItem item, User user)
+        public UserItemDataDto? GetUserDataDto(BaseItem item, User user)
             => GetUserDataDto(item, null, user, new DtoOptions());
 
         /// <inheritdoc />
-        public UserItemDataDto GetUserDataDto(BaseItem item, BaseItemDto? itemDto, User user, DtoOptions options)
+        public UserItemDataDto? GetUserDataDto(BaseItem item, BaseItemDto? itemDto, User user, DtoOptions options)
         {
-            var userData = GetUserData(user, item) ?? throw new InvalidOperationException("Did not expect UserData to be null.");
+            var userData = GetUserData(user, item);
+            if (userData is null)
+            {
+                return null;
+            }
+
             var dto = GetUserItemDataDto(userData);
 
             item.FillUserDataDtoValues(dto, userData, itemDto, user, options);
