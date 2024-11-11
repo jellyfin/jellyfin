@@ -115,29 +115,7 @@ public sealed class BaseItemRepository(
         PrepareFilterQuery(filter);
 
         using var context = dbProvider.CreateDbContext();
-        var dbQuery = TranslateQuery(context.BaseItems.AsNoTracking(), context, filter);
-
-        var enableGroupByPresentationUniqueKey = EnableGroupByPresentationUniqueKey(filter);
-        if (enableGroupByPresentationUniqueKey && filter.GroupBySeriesPresentationUniqueKey)
-        {
-            dbQuery = dbQuery.GroupBy(e => new { e.PresentationUniqueKey, e.SeriesPresentationUniqueKey }).Select(e => e.First());
-        }
-        else if (enableGroupByPresentationUniqueKey)
-        {
-            dbQuery = dbQuery.GroupBy(e => e.PresentationUniqueKey).Select(e => e.First());
-        }
-        else if (filter.GroupBySeriesPresentationUniqueKey)
-        {
-            dbQuery = dbQuery.GroupBy(e => e.SeriesPresentationUniqueKey).Select(e => e.First());
-        }
-        else
-        {
-            dbQuery = dbQuery.Distinct();
-        }
-
-        dbQuery = ApplyOrder(dbQuery, filter);
-
-        return Pageinate(dbQuery, filter).Select(e => e.Id).ToImmutableArray();
+        return ApplyQueryFilter(context.BaseItems.AsNoTracking(), context, filter).Select(e => e.Id).ToImmutableArray();
     }
 
     /// <inheritdoc />
@@ -223,42 +201,8 @@ public sealed class BaseItemRepository(
         var result = new QueryResult<BaseItemDto>();
 
         using var context = dbProvider.CreateDbContext();
-        IQueryable<BaseItemEntity> dbQuery = context.BaseItems.AsNoTracking()
-            .Include(e => e.TrailerTypes)
-            .Include(e => e.Provider)
-            .Include(e => e.LockedFields);
 
-        if (filter.DtoOptions.EnableImages)
-        {
-            dbQuery = dbQuery.Include(e => e.Images);
-        }
-
-        dbQuery = TranslateQuery(dbQuery, context, filter);
-        dbQuery = dbQuery.Distinct();
-        // .DistinctBy(e => e.Id);
-        if (filter.EnableTotalRecordCount)
-        {
-            result.TotalRecordCount = dbQuery.Count();
-        }
-
-        dbQuery = ApplyOrder(dbQuery, filter);
-
-        if (filter.Limit.HasValue || filter.StartIndex.HasValue)
-        {
-            var offset = filter.StartIndex ?? 0;
-
-            if (offset > 0)
-            {
-                dbQuery = dbQuery.Skip(offset);
-            }
-
-            if (filter.Limit.HasValue)
-            {
-                dbQuery = dbQuery.Take(filter.Limit.Value);
-            }
-        }
-
-        result.Items = dbQuery.AsEnumerable().Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToImmutableArray();
+        result.Items = PrepareItemQuery(context, filter).AsEnumerable().Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToImmutableArray();
         result.StartIndex = filter.StartIndex ?? 0;
         return result;
     }
@@ -270,16 +214,12 @@ public sealed class BaseItemRepository(
         PrepareFilterQuery(filter);
 
         using var context = dbProvider.CreateDbContext();
-        IQueryable<BaseItemEntity> dbQuery = context.BaseItems.AsNoTracking()
-            .Include(e => e.TrailerTypes)
-            .Include(e => e.Provider)
-            .Include(e => e.LockedFields);
 
-        if (filter.DtoOptions.EnableImages)
-        {
-            dbQuery = dbQuery.Include(e => e.Images);
-        }
+        return PrepareItemQuery(context, filter).AsEnumerable().Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToImmutableArray();
+    }
 
+    private IQueryable<BaseItemEntity> ApplyQueryFilter(IQueryable<BaseItemEntity> dbQuery, JellyfinDbContext context, InternalItemsQuery filter)
+    {
         dbQuery = TranslateQuery(dbQuery, context, filter);
         dbQuery = ApplyOrder(dbQuery, filter);
 
@@ -316,7 +256,22 @@ public sealed class BaseItemRepository(
             }
         }
 
-        return dbQuery.AsEnumerable().Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToImmutableArray();
+        return dbQuery;
+    }
+
+    private IQueryable<BaseItemEntity> PrepareItemQuery(JellyfinDbContext context, InternalItemsQuery filter)
+    {
+        IQueryable<BaseItemEntity> dbQuery = context.BaseItems.AsNoTracking()
+            .Include(e => e.TrailerTypes)
+            .Include(e => e.Provider)
+            .Include(e => e.LockedFields);
+
+        if (filter.DtoOptions.EnableImages)
+        {
+            dbQuery = dbQuery.Include(e => e.Images);
+        }
+
+        return ApplyQueryFilter(dbQuery, context, filter);
     }
 
     /// <inheritdoc/>
@@ -2036,26 +1991,6 @@ public sealed class BaseItemRepository(
         }
 
         return query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains(type);
-    }
-
-    private IQueryable<T> Pageinate<T>(IQueryable<T> query, InternalItemsQuery filter)
-    {
-        if (filter.Limit.HasValue || filter.StartIndex.HasValue)
-        {
-            var offset = filter.StartIndex ?? 0;
-
-            if (offset > 0)
-            {
-                query = query.Skip(offset);
-            }
-
-            if (filter.Limit.HasValue)
-            {
-                query = query.Take(filter.Limit.Value);
-            }
-        }
-
-        return query;
     }
 
     private Expression<Func<BaseItemEntity, object>> MapOrderByField(ItemSortBy sortBy, InternalItemsQuery query)
