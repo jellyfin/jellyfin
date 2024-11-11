@@ -50,11 +50,6 @@ namespace MediaBrowser.Controller.Extensions
         public const string FfmpegPathKey = "ffmpeg";
 
         /// <summary>
-        /// The key for a setting that indicates whether playlists should allow duplicate entries.
-        /// </summary>
-        public const string PlaylistsAllowDuplicatesKey = "playlists:allowDuplicates";
-
-        /// <summary>
         /// The key for a setting that indicates whether kestrel should bind to a unix socket.
         /// </summary>
         public const string BindToUnixSocketKey = "kestrel:socket";
