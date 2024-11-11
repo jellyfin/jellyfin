@@ -1326,7 +1326,11 @@ public sealed class BaseItemRepository(
         }
 
         using var context = dbProvider.CreateDbContext();
-        var item = context.BaseItems.AsNoTracking().FirstOrDefault(e => e.Id == id);
+        var item = context.BaseItems
+            .Include(e => e.TrailerTypes)
+            .Include(e => e.Provider)
+            .Include(e => e.Images)
+            .Include(e => e.LockedFields).AsNoTracking().FirstOrDefault(e => e.Id == id);
         if (item is null)
         {
             return null;
@@ -1464,6 +1468,10 @@ public sealed class BaseItemRepository(
         if (entity.Images is not null)
         {
             dto.ImageInfos = entity.Images.Select(Map).ToArray();
+        }
+        else
+        {
+            System.Console.WriteLine();
         }
 
         // dto.Type = entity.Type;
