@@ -228,11 +228,13 @@ public sealed class BaseItemRepository(
             .Include(e => e.Images)
             .Include(e => e.LockedFields);
         dbQuery = TranslateQuery(dbQuery, context, filter);
-            // .DistinctBy(e => e.Id);
+        // .DistinctBy(e => e.Id);
         if (filter.EnableTotalRecordCount)
         {
             result.TotalRecordCount = dbQuery.Count();
         }
+
+        dbQuery = ApplyOrder(dbQuery, filter);
 
         if (filter.Limit.HasValue || filter.StartIndex.HasValue)
         {
@@ -267,6 +269,7 @@ public sealed class BaseItemRepository(
             .Include(e => e.Images)
             .Include(e => e.LockedFields);
         dbQuery = TranslateQuery(dbQuery, context, filter);
+        dbQuery = ApplyOrder(dbQuery, filter);
         if (filter.Limit.HasValue || filter.StartIndex.HasValue)
         {
             var offset = filter.StartIndex ?? 0;
@@ -2110,19 +2113,35 @@ public sealed class BaseItemRepository(
             return query;
         }
 
-        foreach (var item in orderBy)
+        IOrderedQueryable<BaseItemEntity>? orderedQuery = null;
+
+        var firstOrdering = orderBy.FirstOrDefault();
+        if (firstOrdering != default)
+        {
+            var expression = MapOrderByField(firstOrdering.OrderBy, filter);
+            if (firstOrdering.SortOrder == SortOrder.Ascending)
+            {
+                orderedQuery = query.OrderBy(expression);
+            }
+            else
+            {
+                orderedQuery = query.OrderByDescending(expression);
+            }
+        }
+
+        foreach (var item in orderBy.Skip(1))
         {
             var expression = MapOrderByField(item.OrderBy, filter);
             if (item.SortOrder == SortOrder.Ascending)
             {
-                query = query.OrderBy(expression);
+                orderedQuery = orderedQuery!.ThenBy(expression);
             }
             else
             {
-                query = query.OrderByDescending(expression);
+                orderedQuery = orderedQuery!.ThenByDescending(expression);
             }
         }
 
-        return query;
+        return orderedQuery ?? query;
     }
 }
