@@ -3,6 +3,7 @@ using System;
 using Jellyfin.Server.Implementations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Jellyfin.Server.Implementations.Migrations
 {
     [DbContext(typeof(JellyfinDbContext))]
-    partial class JellyfinDbModelSnapshot : ModelSnapshot
+    [Migration("20241111131257_AddedCustomDataKey")]
+    partial class AddedCustomDataKey
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.10");
@@ -1276,11 +1279,11 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("CustomDataKey")
-                        .HasColumnType("TEXT");
-
                     b.Property<int?>("AudioStreamIndex")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("CustomDataKey")
+                        .HasColumnType("TEXT");
 
                     b.Property<bool>("IsFavorite")
                         .HasColumnType("INTEGER");
@@ -1306,7 +1309,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<int?>("SubtitleStreamIndex")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("ItemId", "UserId", "CustomDataKey");
+                    b.HasKey("ItemId", "UserId");
 
                     b.HasIndex("UserId");
 

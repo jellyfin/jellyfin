@@ -107,20 +107,20 @@ public class MigrateLibraryDb : IMigrationRoutine
         foreach (var entity in queryResult)
         {
             var userData = GetUserData(users, entity);
-            if (userData.Data is null)
+            if (userData is null)
             {
                 _logger.LogError("Was not able to migrate user data with key {0}", entity.GetString(0));
                 continue;
             }
 
-            if (!legacyBaseItemWithUserKeys.TryGetValue(userData.LegacyUserDataKey!, out var refItem))
+            if (!legacyBaseItemWithUserKeys.TryGetValue(userData.CustomDataKey!, out var refItem))
             {
                 _logger.LogError("Was not able to migrate user data with key {0} because it does not reference a valid BaseItem.", entity.GetString(0));
                 continue;
             }
 
-            userData.Data.ItemId = refItem.Id;
-            dbContext.UserData.Add(userData.Data);
+            userData.ItemId = refItem.Id;
+            dbContext.UserData.Add(userData);
         }
 
         _logger.LogInformation("Try saving {0} UserData entries.", dbContext.UserData.Local.Count);
@@ -289,7 +289,7 @@ public class MigrateLibraryDb : IMigrationRoutine
         }
     }
 
-    private (UserData? Data, string? LegacyUserDataKey) GetUserData(ImmutableArray<User> users, SqliteDataReader dto)
+    private UserData? GetUserData(ImmutableArray<User> users, SqliteDataReader dto)
     {
         var indexOfUser = dto.GetInt32(1);
         var user = users.ElementAtOrDefault(indexOfUser - 1);
@@ -297,14 +297,15 @@ public class MigrateLibraryDb : IMigrationRoutine
         if (user is null)
         {
             _logger.LogError("Tried to find user with index '{Idx}' but there are only '{MaxIdx}' users.", indexOfUser, users.Length);
-            return (null, null);
+            return null;
         }
 
         var oldKey = dto.GetString(0);
 
-        return (new UserData()
+        return new UserData()
         {
             ItemId = Guid.NewGuid(),
+            CustomDataKey = oldKey,
             UserId = user.Id,
             Rating = dto.IsDBNull(2) ? null : dto.GetDouble(2),
             Played = dto.GetBoolean(3),
@@ -317,7 +318,7 @@ public class MigrateLibraryDb : IMigrationRoutine
             Likes = null,
             User = null!,
             Item = null!
-        }, oldKey);
+        };
     }
 
     private AncestorId GetAncestorId(SqliteDataReader reader)

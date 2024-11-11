@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using Jellyfin.Data.Entities;
+using Jellyfin.Extensions;
 using Jellyfin.Server.Implementations;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
@@ -65,7 +66,15 @@ namespace Emby.Server.Implementations.Library
             foreach (var key in keys)
             {
                 userData.Key = key;
-                repository.UserData.Add(Map(userData, user.Id));
+                var userDataEntry = Map(userData, user.Id, item.Id);
+                if (repository.UserData.Any(f => f.ItemId == item.Id && f.UserId == user.Id && f.CustomDataKey == key))
+                {
+                    repository.UserData.Attach(userDataEntry).State = EntityState.Modified;
+                }
+                else
+                {
+                    repository.UserData.Add(userDataEntry);
+                }
             }
 
             repository.SaveChanges();
@@ -131,11 +140,12 @@ namespace Emby.Server.Implementations.Library
             SaveUserData(user, item, userData, reason, CancellationToken.None);
         }
 
-        private UserData Map(UserItemData dto, Guid userId)
+        private UserData Map(UserItemData dto, Guid userId, Guid itemId)
         {
             return new UserData()
             {
-                ItemId = Guid.Parse(dto.Key),
+                ItemId = itemId,
+                CustomDataKey = dto.Key,
                 Item = null!,
                 User = null!,
                 AudioStreamIndex = dto.AudioStreamIndex,
@@ -155,7 +165,7 @@ namespace Emby.Server.Implementations.Library
         {
             return new UserItemData()
             {
-                Key = dto.ItemId.ToString("D"),
+                Key = dto.CustomDataKey!,
                 AudioStreamIndex = dto.AudioStreamIndex,
                 IsFavorite = dto.IsFavorite,
                 LastPlayedDate = dto.LastPlayedDate,
@@ -175,7 +185,10 @@ namespace Emby.Server.Implementations.Library
 
             if (data is null)
             {
-                return null;
+                return new UserItemData()
+                {
+                    Key = keys[0],
+                };
             }
 
             return _userData.GetOrAdd(cacheKey, data);
@@ -184,13 +197,9 @@ namespace Emby.Server.Implementations.Library
         private UserItemData? GetUserDataInternal(Guid userId, List<string> keys)
         {
             var key = keys.FirstOrDefault();
-            if (key is null || !Guid.TryParse(key, out var itemId))
-            {
-                return null;
-            }
 
             using var context = _repository.CreateDbContext();
-            var userData = context.UserData.AsNoTracking().FirstOrDefault(e => e.ItemId == itemId && e.UserId.Equals(userId));
+            var userData = context.UserData.AsNoTracking().FirstOrDefault(e => e.CustomDataKey == key && e.UserId.Equals(userId));
 
             if (userData is not null)
             {
@@ -236,7 +245,7 @@ namespace Emby.Server.Implementations.Library
                 return null;
             }
 
-            var dto = GetUserItemDataDto(userData);
+            var dto = GetUserItemDataDto(userData, item.Id);
 
             item.FillUserDataDtoValues(dto, userData, itemDto, user, options);
             return dto;
@@ -246,9 +255,10 @@ namespace Emby.Server.Implementations.Library
         /// Converts a UserItemData to a DTOUserItemData.
         /// </summary>
         /// <param name="data">The data.</param>
+        /// <param name="itemId">The the reference key to an Item.</param>
         /// <returns>DtoUserItemData.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="data"/> is <c>null</c>.</exception>
-        private UserItemDataDto GetUserItemDataDto(UserItemData data)
+        private UserItemDataDto GetUserItemDataDto(UserItemData data, Guid itemId)
         {
             ArgumentNullException.ThrowIfNull(data);
 
@@ -261,6 +271,7 @@ namespace Emby.Server.Implementations.Library
                 Rating = data.Rating,
                 Played = data.Played,
                 LastPlayedDate = data.LastPlayedDate,
+                ItemId = itemId,
                 Key = data.Key
             };
         }

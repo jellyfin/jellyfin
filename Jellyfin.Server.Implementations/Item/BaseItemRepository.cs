@@ -116,22 +116,23 @@ public sealed class BaseItemRepository(
 
         using var context = dbProvider.CreateDbContext();
         var dbQuery = TranslateQuery(context.BaseItems.AsNoTracking(), context, filter);
-        // .DistinctBy(e => e.Id);
 
         var enableGroupByPresentationUniqueKey = EnableGroupByPresentationUniqueKey(filter);
         if (enableGroupByPresentationUniqueKey && filter.GroupBySeriesPresentationUniqueKey)
         {
-            dbQuery = dbQuery.GroupBy(e => new { e.PresentationUniqueKey, e.SeriesPresentationUniqueKey }).SelectMany(e => e);
+            dbQuery = dbQuery.GroupBy(e => new { e.PresentationUniqueKey, e.SeriesPresentationUniqueKey }).Select(e => e.First());
         }
-
-        if (enableGroupByPresentationUniqueKey)
+        else if (enableGroupByPresentationUniqueKey)
         {
-            dbQuery = dbQuery.GroupBy(e => e.PresentationUniqueKey).SelectMany(e => e);
+            dbQuery = dbQuery.GroupBy(e => e.PresentationUniqueKey).Select(e => e.First());
         }
-
-        if (filter.GroupBySeriesPresentationUniqueKey)
+        else if (filter.GroupBySeriesPresentationUniqueKey)
         {
-            dbQuery = dbQuery.GroupBy(e => e.SeriesPresentationUniqueKey).SelectMany(e => e);
+            dbQuery = dbQuery.GroupBy(e => e.SeriesPresentationUniqueKey).Select(e => e.First());
+        }
+        else
+        {
+            dbQuery = dbQuery.Distinct();
         }
 
         dbQuery = ApplyOrder(dbQuery, filter);
@@ -225,9 +226,15 @@ public sealed class BaseItemRepository(
         IQueryable<BaseItemEntity> dbQuery = context.BaseItems.AsNoTracking()
             .Include(e => e.TrailerTypes)
             .Include(e => e.Provider)
-            .Include(e => e.Images)
             .Include(e => e.LockedFields);
+
+        if (filter.DtoOptions.EnableImages)
+        {
+            dbQuery = dbQuery.Include(e => e.Images);
+        }
+
         dbQuery = TranslateQuery(dbQuery, context, filter);
+        dbQuery = dbQuery.Distinct();
         // .DistinctBy(e => e.Id);
         if (filter.EnableTotalRecordCount)
         {
@@ -266,10 +273,34 @@ public sealed class BaseItemRepository(
         IQueryable<BaseItemEntity> dbQuery = context.BaseItems.AsNoTracking()
             .Include(e => e.TrailerTypes)
             .Include(e => e.Provider)
-            .Include(e => e.Images)
             .Include(e => e.LockedFields);
+
+        if (filter.DtoOptions.EnableImages)
+        {
+            dbQuery = dbQuery.Include(e => e.Images);
+        }
+
         dbQuery = TranslateQuery(dbQuery, context, filter);
         dbQuery = ApplyOrder(dbQuery, filter);
+
+        var enableGroupByPresentationUniqueKey = EnableGroupByPresentationUniqueKey(filter);
+        if (enableGroupByPresentationUniqueKey && filter.GroupBySeriesPresentationUniqueKey)
+        {
+            dbQuery = dbQuery.GroupBy(e => new { e.PresentationUniqueKey, e.SeriesPresentationUniqueKey }).Select(e => e.First());
+        }
+        else if (enableGroupByPresentationUniqueKey)
+        {
+            dbQuery = dbQuery.GroupBy(e => e.PresentationUniqueKey).Select(e => e.First());
+        }
+        else if (filter.GroupBySeriesPresentationUniqueKey)
+        {
+            dbQuery = dbQuery.GroupBy(e => e.SeriesPresentationUniqueKey).Select(e => e.First());
+        }
+        else
+        {
+            dbQuery = dbQuery.Distinct();
+        }
+
         if (filter.Limit.HasValue || filter.StartIndex.HasValue)
         {
             var offset = filter.StartIndex ?? 0;
@@ -1330,7 +1361,7 @@ public sealed class BaseItemRepository(
             .Include(e => e.TrailerTypes)
             .Include(e => e.Provider)
             .Include(e => e.Images)
-            .Include(e => e.LockedFields).AsNoTracking().FirstOrDefault(e => e.Id == id);
+            .Include(e => e.LockedFields).AsNoTracking().AsSingleQuery().FirstOrDefault(e => e.Id == id);
         if (item is null)
         {
             return null;

@@ -1825,7 +1825,10 @@ namespace MediaBrowser.Controller.Entities
         {
             ArgumentNullException.ThrowIfNull(user);
 
-            var data = UserDataManager.GetUserData(user, this);
+            var data = UserDataManager.GetUserData(user, this) ?? new UserItemData()
+            {
+                Key = GetUserDataKeys().First(),
+            };
 
             if (datePlayed.HasValue)
             {

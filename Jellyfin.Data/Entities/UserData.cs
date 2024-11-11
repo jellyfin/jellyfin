@@ -9,6 +9,12 @@ namespace Jellyfin.Data.Entities;
 public class UserData
 {
     /// <summary>
+    /// Gets or sets the custom data key.
+    /// </summary>
+    /// <value>The rating.</value>
+    public required string CustomDataKey { get; set; }
+
+    /// <summary>
     /// Gets or sets the users 0-10 rating.
     /// </summary>
     /// <value>The rating.</value>
