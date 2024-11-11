@@ -1195,10 +1195,11 @@ public sealed class BaseItemRepository(
         ArgumentNullException.ThrowIfNull(item);
 
         var images = item.ImageInfos.Select(e => Map(item.Id, e));
-        using var db = dbProvider.CreateDbContext();
-        using var transaction = db.Database.BeginTransaction();
-        db.BaseItemImageInfos.Where(e => e.ItemId == item.Id).ExecuteDelete();
-        db.BaseItemImageInfos.AddRange(images);
+        using var context = dbProvider.CreateDbContext();
+        using var transaction = context.Database.BeginTransaction();
+        context.BaseItemImageInfos.Where(e => e.ItemId == item.Id).ExecuteDelete();
+        context.BaseItemImageInfos.AddRange(images);
+        context.SaveChanges();
         transaction.Commit();
     }
 
