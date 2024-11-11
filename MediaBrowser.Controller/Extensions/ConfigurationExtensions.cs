@@ -121,14 +121,6 @@ namespace MediaBrowser.Controller.Extensions
             => configuration.GetValue<bool>(FfmpegImgExtractPerfTradeoffKey);
 
         /// <summary>
-        /// Gets a value indicating whether playlists should allow duplicate entries from the <see cref="IConfiguration"/>.
-        /// </summary>
-        /// <param name="configuration">The configuration to read the setting from.</param>
-        /// <returns>True if playlists should allow duplicates, otherwise false.</returns>
-        public static bool DoPlaylistsAllowDuplicates(this IConfiguration configuration)
-            => configuration.GetValue<bool>(PlaylistsAllowDuplicatesKey);
-
-        /// <summary>
         /// Gets a value indicating whether kestrel should bind to a unix socket from the <see cref="IConfiguration" />.
         /// </summary>
         /// <param name="configuration">The configuration to read the setting from.</param>

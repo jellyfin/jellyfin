@@ -216,14 +216,11 @@ namespace Emby.Server.Implementations.Playlists
             var newItems = GetPlaylistItems(newItemIds, user, options)
                 .Where(i => i.SupportsAddingToPlaylist);
 
-            // Filter out duplicate items, if necessary
-            if (!_appConfig.DoPlaylistsAllowDuplicates())
-            {
-                var existingIds = playlist.LinkedChildren.Select(c => c.ItemId).ToHashSet();
-                newItems = newItems
-                    .Where(i => !existingIds.Contains(i.Id))
-                    .Distinct();
-            }
+            // Filter out duplicate items
+            var existingIds = playlist.LinkedChildren.Select(c => c.ItemId).ToHashSet();
+            newItems = newItems
+                .Where(i => !existingIds.Contains(i.Id))
+                .Distinct();
 
             // Create a list of the new linked children to add to the playlist
             var childrenToAdd = newItems
