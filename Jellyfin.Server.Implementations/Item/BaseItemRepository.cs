@@ -261,7 +261,12 @@ public sealed class BaseItemRepository(
         PrepareFilterQuery(filter);
 
         using var context = dbProvider.CreateDbContext();
-        var dbQuery = TranslateQuery(context.BaseItems.AsNoTracking(), context, filter);
+        IQueryable<BaseItemEntity> dbQuery = context.BaseItems.AsNoTracking()
+            .Include(e => e.TrailerTypes)
+            .Include(e => e.Provider)
+            .Include(e => e.Images)
+            .Include(e => e.LockedFields);
+        dbQuery = TranslateQuery(dbQuery, context, filter);
         if (filter.Limit.HasValue || filter.StartIndex.HasValue)
         {
             var offset = filter.StartIndex ?? 0;
