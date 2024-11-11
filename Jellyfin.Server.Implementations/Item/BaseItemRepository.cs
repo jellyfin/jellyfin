@@ -157,13 +157,13 @@ public sealed class BaseItemRepository(
     /// <inheritdoc />
     public IReadOnlyList<string> GetStudioNames()
     {
-        return GetItemValueNames([ItemValueType.Studios], Array.Empty<string>(), Array.Empty<string>());
+        return GetItemValueNames([ItemValueType.Studios], [], []);
     }
 
     /// <inheritdoc />
     public IReadOnlyList<string> GetAllArtistNames()
     {
-        return GetItemValueNames([ItemValueType.Artist, ItemValueType.AlbumArtist], Array.Empty<string>(), Array.Empty<string>());
+        return GetItemValueNames([ItemValueType.Artist, ItemValueType.AlbumArtist], [], []);
     }
 
     /// <inheritdoc />
@@ -172,7 +172,7 @@ public sealed class BaseItemRepository(
         return GetItemValueNames(
             [ItemValueType.Genre],
             itemTypeLookup.MusicGenreTypes,
-            Array.Empty<string>());
+            []);
     }
 
     /// <inheritdoc />
@@ -180,7 +180,7 @@ public sealed class BaseItemRepository(
     {
         return GetItemValueNames(
             [ItemValueType.Genre],
-            Array.Empty<string>(),
+            [],
             itemTypeLookup.MusicGenreTypes);
     }
 
