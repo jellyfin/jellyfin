@@ -684,19 +684,19 @@ public sealed class BaseItemRepository(
 
         if (!string.IsNullOrWhiteSpace(filter.NameStartsWith))
         {
-            baseQuery = baseQuery.Where(e => e.SortName!.Contains(filter.NameStartsWith));
+            baseQuery = baseQuery.Where(e => e.SortName!.StartsWith(filter.NameStartsWith) || e.Name!.StartsWith(filter.NameStartsWith));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.NameStartsWithOrGreater))
         {
             // i hate this
-            baseQuery = baseQuery.Where(e => e.SortName![0] > filter.NameStartsWithOrGreater[0]);
+            baseQuery = baseQuery.Where(e => e.SortName!.FirstOrDefault() > filter.NameStartsWithOrGreater[0] || e.Name!.FirstOrDefault() > filter.NameStartsWithOrGreater[0]);
         }
 
         if (!string.IsNullOrWhiteSpace(filter.NameLessThan))
         {
             // i hate this
-            baseQuery = baseQuery.Where(e => e.SortName![0] < filter.NameLessThan[0]);
+            baseQuery = baseQuery.Where(e => e.SortName!.FirstOrDefault() < filter.NameLessThan[0] || e.Name!.FirstOrDefault() < filter.NameLessThan[0]);
         }
 
         if (filter.ImageTypes.Length > 0)
