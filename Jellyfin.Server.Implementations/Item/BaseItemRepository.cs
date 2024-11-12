@@ -23,12 +23,10 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
-using Microsoft.AspNetCore.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using BaseItemDto = MediaBrowser.Controller.Entities.BaseItem;
@@ -202,44 +200,25 @@ public sealed class BaseItemRepository(
 
         using var context = dbProvider.CreateDbContext();
 
-        result.Items = PrepareItemQuery(context, filter).AsEnumerable().Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToImmutableArray();
-        result.StartIndex = filter.StartIndex ?? 0;
-        return result;
-    }
+        IQueryable<BaseItemEntity> dbQuery = context.BaseItems.AsNoTracking()
+            .Include(e => e.TrailerTypes)
+            .Include(e => e.Provider)
+            .Include(e => e.LockedFields);
 
-    /// <inheritdoc cref="IItemRepository"/>
-    public IReadOnlyList<BaseItemDto> GetItemList(InternalItemsQuery filter)
-    {
-        ArgumentNullException.ThrowIfNull(filter);
-        PrepareFilterQuery(filter);
+        if (filter.DtoOptions.EnableImages)
+        {
+            dbQuery = dbQuery.Include(e => e.Images);
+        }
 
-        using var context = dbProvider.CreateDbContext();
-
-        return PrepareItemQuery(context, filter).AsEnumerable().Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToImmutableArray();
-    }
-
-    private IQueryable<BaseItemEntity> ApplyQueryFilter(IQueryable<BaseItemEntity> dbQuery, JellyfinDbContext context, InternalItemsQuery filter)
-    {
         dbQuery = TranslateQuery(dbQuery, context, filter);
-        dbQuery = ApplyOrder(dbQuery, filter);
+        dbQuery = dbQuery.Distinct();
+        // .DistinctBy(e => e.Id);
+        if (filter.EnableTotalRecordCount)
+        {
+            result.TotalRecordCount = dbQuery.Count();
+        }
 
-        var enableGroupByPresentationUniqueKey = EnableGroupByPresentationUniqueKey(filter);
-        if (enableGroupByPresentationUniqueKey && filter.GroupBySeriesPresentationUniqueKey)
-        {
-            dbQuery = dbQuery.GroupBy(e => new { e.PresentationUniqueKey, e.SeriesPresentationUniqueKey }).Select(e => e.First());
-        }
-        else if (enableGroupByPresentationUniqueKey)
-        {
-            dbQuery = dbQuery.GroupBy(e => e.PresentationUniqueKey).Select(e => e.First());
-        }
-        else if (filter.GroupBySeriesPresentationUniqueKey)
-        {
-            dbQuery = dbQuery.GroupBy(e => e.SeriesPresentationUniqueKey).Select(e => e.First());
-        }
-        else
-        {
-            dbQuery = dbQuery.Distinct();
-        }
+        dbQuery = ApplyOrder(dbQuery, filter);
 
         if (filter.Limit.HasValue || filter.StartIndex.HasValue)
         {
@@ -256,6 +235,73 @@ public sealed class BaseItemRepository(
             }
         }
 
+        result.Items = dbQuery.AsEnumerable().Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToImmutableArray();
+        result.StartIndex = filter.StartIndex ?? 0;
+        return result;
+    }
+
+    /// <inheritdoc cref="IItemRepository"/>
+    public IReadOnlyList<BaseItemDto> GetItemList(InternalItemsQuery filter)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        PrepareFilterQuery(filter);
+
+        using var context = dbProvider.CreateDbContext();
+
+        return PrepareItemQuery(context, filter).AsEnumerable().Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToImmutableArray();
+    }
+
+    private IQueryable<BaseItemEntity> ApplyGroupingFilter(IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
+    {
+        dbQuery = dbQuery.Distinct();
+
+        // var enableGroupByPresentationUniqueKey = EnableGroupByPresentationUniqueKey(filter);
+        // if (enableGroupByPresentationUniqueKey && filter.GroupBySeriesPresentationUniqueKey)
+        // {
+        //     dbQuery = dbQuery.GroupBy(e => new { e.PresentationUniqueKey, e.SeriesPresentationUniqueKey }).Select(e => e.First());
+        // }
+        // else if (enableGroupByPresentationUniqueKey)
+        // {
+        //     dbQuery = dbQuery.GroupBy(e => e.PresentationUniqueKey).Select(e => e.First());
+        // }
+        // else if (filter.GroupBySeriesPresentationUniqueKey)
+        // {
+        //     dbQuery = dbQuery.GroupBy(e => e.SeriesPresentationUniqueKey).Select(e => e.First());
+        // }
+        // else
+        // {
+        //     dbQuery = dbQuery.Distinct();
+        // }
+
+        return dbQuery;
+    }
+
+    private IQueryable<BaseItemEntity> ApplyQueryPageing(IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
+    {
+        if (filter.Limit.HasValue || filter.StartIndex.HasValue)
+        {
+            var offset = filter.StartIndex ?? 0;
+
+            if (offset > 0)
+            {
+                dbQuery = dbQuery.Skip(offset);
+            }
+
+            if (filter.Limit.HasValue)
+            {
+                dbQuery = dbQuery.Take(filter.Limit.Value);
+            }
+        }
+
+        return dbQuery;
+    }
+
+    private IQueryable<BaseItemEntity> ApplyQueryFilter(IQueryable<BaseItemEntity> dbQuery, JellyfinDbContext context, InternalItemsQuery filter)
+    {
+        dbQuery = TranslateQuery(dbQuery, context, filter);
+        dbQuery = ApplyOrder(dbQuery, filter);
+        dbQuery = ApplyGroupingFilter(dbQuery, filter);
+        dbQuery = ApplyQueryPageing(dbQuery, filter);
         return dbQuery;
     }
 
@@ -1455,10 +1501,6 @@ public sealed class BaseItemRepository(
         if (entity.Images is not null)
         {
             dto.ImageInfos = entity.Images.Select(Map).ToArray();
-        }
-        else
-        {
-            System.Console.WriteLine();
         }
 
         // dto.Type = entity.Type;
