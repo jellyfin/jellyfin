@@ -8,7 +8,7 @@ namespace Jellyfin.Extensions.Tests.Json.Models
     /// The generic body model.
     /// </summary>
     /// <typeparam name="T">The value type.</typeparam>
-    public class GenericBodyArrayModel<T>
+    public sealed class GenericBodyArrayModel<T>
     {
         /// <summary>
         /// Gets or sets the value.

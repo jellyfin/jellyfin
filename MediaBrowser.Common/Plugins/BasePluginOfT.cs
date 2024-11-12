@@ -193,7 +193,7 @@ namespace MediaBrowser.Common.Plugins
             }
             catch
             {
-                var config = (TConfigurationType)Activator.CreateInstance(typeof(TConfigurationType));
+                var config = Activator.CreateInstance<TConfigurationType>();
                 SaveConfiguration(config);
                 return config;
             }
