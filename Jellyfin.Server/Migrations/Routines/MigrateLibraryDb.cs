@@ -272,6 +272,8 @@ public class MigrateLibraryDb : IMigrationRoutine
         connection.Close();
         _logger.LogInformation("Migration of the Library.db done.");
         _logger.LogInformation("Move {0} to {1}.", libraryDbPath, libraryDbPath + ".old");
+
+        SqliteConnection.ClearAllPools();
         File.Move(libraryDbPath, libraryDbPath + ".old");
 
         _logger.LogInformation("Migrating Library db took {0}.", migrationTotalTime);
