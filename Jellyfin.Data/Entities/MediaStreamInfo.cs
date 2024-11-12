@@ -12,7 +12,7 @@ public class MediaStreamInfo
 
     public int StreamIndex { get; set; }
 
-    public MediaStreamTypeEntity? StreamType { get; set; }
+    public required MediaStreamTypeEntity StreamType { get; set; }
 
     public string? Codec { get; set; }
 
@@ -26,13 +26,13 @@ public class MediaStreamInfo
 
     public string? Path { get; set; }
 
-    public bool IsInterlaced { get; set; }
+    public bool? IsInterlaced { get; set; }
 
-    public required int BitRate { get; set; }
+    public int? BitRate { get; set; }
 
-    public required int Channels { get; set; }
+    public int? Channels { get; set; }
 
-    public required int SampleRate { get; set; }
+    public int? SampleRate { get; set; }
 
     public bool IsDefault { get; set; }
 
@@ -40,63 +40,63 @@ public class MediaStreamInfo
 
     public bool IsExternal { get; set; }
 
-    public required int Height { get; set; }
+    public int? Height { get; set; }
 
-    public required int Width { get; set; }
+    public int? Width { get; set; }
 
-    public required float AverageFrameRate { get; set; }
+    public float? AverageFrameRate { get; set; }
 
-    public required float RealFrameRate { get; set; }
+    public float? RealFrameRate { get; set; }
 
-    public required float Level { get; set; }
+    public float? Level { get; set; }
 
     public string? PixelFormat { get; set; }
 
-    public required int BitDepth { get; set; }
+    public int? BitDepth { get; set; }
 
-    public required bool IsAnamorphic { get; set; }
+    public bool? IsAnamorphic { get; set; }
 
-    public required int RefFrames { get; set; }
+    public int? RefFrames { get; set; }
 
-    public required string CodecTag { get; set; }
+    public string? CodecTag { get; set; }
 
-    public required string Comment { get; set; }
+    public string? Comment { get; set; }
 
-    public required string NalLengthSize { get; set; }
+    public string? NalLengthSize { get; set; }
 
-    public required bool IsAvc { get; set; }
+    public bool? IsAvc { get; set; }
 
-    public required string Title { get; set; }
+    public string? Title { get; set; }
 
-    public required string TimeBase { get; set; }
+    public string? TimeBase { get; set; }
 
-    public required string CodecTimeBase { get; set; }
+    public string? CodecTimeBase { get; set; }
 
-    public required string ColorPrimaries { get; set; }
+    public string? ColorPrimaries { get; set; }
 
-    public required string ColorSpace { get; set; }
+    public string? ColorSpace { get; set; }
 
-    public required string ColorTransfer { get; set; }
+    public string? ColorTransfer { get; set; }
 
-    public required int DvVersionMajor { get; set; }
+    public int? DvVersionMajor { get; set; }
 
-    public required int DvVersionMinor { get; set; }
+    public int? DvVersionMinor { get; set; }
 
-    public required int DvProfile { get; set; }
+    public int? DvProfile { get; set; }
 
-    public required int DvLevel { get; set; }
+    public int? DvLevel { get; set; }
 
-    public required int RpuPresentFlag { get; set; }
+    public int? RpuPresentFlag { get; set; }
 
-    public required int ElPresentFlag { get; set; }
+    public int? ElPresentFlag { get; set; }
 
-    public required int BlPresentFlag { get; set; }
+    public int? BlPresentFlag { get; set; }
 
-    public required int DvBlSignalCompatibilityId { get; set; }
+    public int? DvBlSignalCompatibilityId { get; set; }
 
-    public required bool IsHearingImpaired { get; set; }
+    public bool? IsHearingImpaired { get; set; }
 
-    public required int Rotation { get; set; }
+    public int? Rotation { get; set; }
 
     public string? KeyFrames { get; set; }
 }

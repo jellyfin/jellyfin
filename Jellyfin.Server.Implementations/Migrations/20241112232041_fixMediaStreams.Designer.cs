@@ -3,6 +3,7 @@ using System;
 using Jellyfin.Server.Implementations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Jellyfin.Server.Implementations.Migrations
 {
     [DbContext(typeof(JellyfinDbContext))]
-    partial class JellyfinDbModelSnapshot : ModelSnapshot
+    [Migration("20241112232041_FixMediaStreams")]
+    partial class FixMediaStreams
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.10");
@@ -746,6 +749,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("AspectRatio")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<float?>("AverageFrameRate")
@@ -761,12 +765,14 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("ChannelLayout")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<int?>("Channels")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Codec")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("CodecTag")
@@ -826,13 +832,14 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<bool?>("IsHearingImpaired")
                         .HasColumnType("INTEGER");
 
-                    b.Property<bool?>("IsInterlaced")
+                    b.Property<bool>("IsInterlaced")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("KeyFrames")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Language")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<float?>("Level")
@@ -842,12 +849,14 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Path")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PixelFormat")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Profile")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<float?>("RealFrameRate")

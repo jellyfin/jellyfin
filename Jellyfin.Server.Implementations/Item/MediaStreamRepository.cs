@@ -85,7 +85,7 @@ public class MediaStreamRepository : IMediaStreamRepository
         if (filter.Type.HasValue)
         {
             var typeValue = (MediaStreamTypeEntity)filter.Type.Value;
-            query = query.Where(e => e.StreamType!.Value == typeValue);
+            query = query.Where(e => e.StreamType == typeValue);
         }
 
         return query;
@@ -95,10 +95,7 @@ public class MediaStreamRepository : IMediaStreamRepository
     {
         var dto = new MediaStream();
         dto.Index = entity.StreamIndex;
-        if (entity.StreamType != null)
-        {
-            dto.Type = (MediaStreamType)entity.StreamType;
-        }
+        dto.Type = (MediaStreamType)entity.StreamType;
 
         dto.IsAVC = entity.IsAvc;
         dto.Codec = entity.Codec;
@@ -107,7 +104,7 @@ public class MediaStreamRepository : IMediaStreamRepository
         dto.Profile = entity.Profile;
         dto.AspectRatio = entity.AspectRatio;
         dto.Path = RestorePath(entity.Path);
-        dto.IsInterlaced = entity.IsInterlaced;
+        dto.IsInterlaced = entity.IsInterlaced.GetValueOrDefault();
         dto.BitRate = entity.BitRate;
         dto.Channels = entity.Channels;
         dto.SampleRate = entity.SampleRate;
@@ -167,30 +164,30 @@ public class MediaStreamRepository : IMediaStreamRepository
             ItemId = itemId,
             StreamIndex = dto.Index,
             StreamType = (MediaStreamTypeEntity)dto.Type,
-            IsAvc = dto.IsAVC.GetValueOrDefault(),
+            IsAvc = dto.IsAVC,
 
             Codec = dto.Codec,
             Language = dto.Language,
             ChannelLayout = dto.ChannelLayout,
             Profile = dto.Profile,
             AspectRatio = dto.AspectRatio,
-            Path = GetPathToSave(dto.Path),
+            Path = GetPathToSave(dto.Path) ?? dto.Path,
             IsInterlaced = dto.IsInterlaced,
-            BitRate = dto.BitRate.GetValueOrDefault(0),
-            Channels = dto.Channels.GetValueOrDefault(0),
-            SampleRate = dto.SampleRate.GetValueOrDefault(0),
+            BitRate = dto.BitRate,
+            Channels = dto.Channels,
+            SampleRate = dto.SampleRate,
             IsDefault = dto.IsDefault,
             IsForced = dto.IsForced,
             IsExternal = dto.IsExternal,
-            Height = dto.Height.GetValueOrDefault(0),
-            Width = dto.Width.GetValueOrDefault(0),
-            AverageFrameRate = dto.AverageFrameRate.GetValueOrDefault(0),
-            RealFrameRate = dto.RealFrameRate.GetValueOrDefault(0),
-            Level = (float)dto.Level.GetValueOrDefault(),
+            Height = dto.Height,
+            Width = dto.Width,
+            AverageFrameRate = dto.AverageFrameRate,
+            RealFrameRate = dto.RealFrameRate,
+            Level = dto.Level.HasValue ? (float)dto.Level : null,
             PixelFormat = dto.PixelFormat,
-            BitDepth = dto.BitDepth.GetValueOrDefault(0),
-            IsAnamorphic = dto.IsAnamorphic.GetValueOrDefault(),
-            RefFrames = dto.RefFrames.GetValueOrDefault(0),
+            BitDepth = dto.BitDepth,
+            IsAnamorphic = dto.IsAnamorphic,
+            RefFrames = dto.RefFrames,
             CodecTag = dto.CodecTag,
             Comment = dto.Comment,
             NalLengthSize = dto.NalLengthSize,
@@ -200,16 +197,16 @@ public class MediaStreamRepository : IMediaStreamRepository
             ColorPrimaries = dto.ColorPrimaries,
             ColorSpace = dto.ColorSpace,
             ColorTransfer = dto.ColorTransfer,
-            DvVersionMajor = dto.DvVersionMajor.GetValueOrDefault(0),
-            DvVersionMinor = dto.DvVersionMinor.GetValueOrDefault(0),
-            DvProfile = dto.DvProfile.GetValueOrDefault(0),
-            DvLevel = dto.DvLevel.GetValueOrDefault(0),
-            RpuPresentFlag = dto.RpuPresentFlag.GetValueOrDefault(0),
-            ElPresentFlag = dto.ElPresentFlag.GetValueOrDefault(0),
-            BlPresentFlag = dto.BlPresentFlag.GetValueOrDefault(0),
-            DvBlSignalCompatibilityId = dto.DvBlSignalCompatibilityId.GetValueOrDefault(0),
+            DvVersionMajor = dto.DvVersionMajor,
+            DvVersionMinor = dto.DvVersionMinor,
+            DvProfile = dto.DvProfile,
+            DvLevel = dto.DvLevel,
+            RpuPresentFlag = dto.RpuPresentFlag,
+            ElPresentFlag = dto.ElPresentFlag,
+            BlPresentFlag = dto.BlPresentFlag,
+            DvBlSignalCompatibilityId = dto.DvBlSignalCompatibilityId,
             IsHearingImpaired = dto.IsHearingImpaired,
-            Rotation = dto.Rotation.GetValueOrDefault(0)
+            Rotation = dto.Rotation
         };
         return entity;
     }
