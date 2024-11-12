@@ -1028,7 +1028,7 @@ public class MigrateLibraryDb : IMigrationRoutine
             entity.MediaType = mediaType;
         }
 
-        var baseItem = BaseItemRepository.DeserialiseBaseItem(entity, _logger, false);
+        var baseItem = BaseItemRepository.DeserialiseBaseItem(entity, _logger, null, false);
         var dataKeys = baseItem.GetUserDataKeys();
         userDataKeys.AddRange(dataKeys);
 

@@ -1373,12 +1373,13 @@ public sealed class BaseItemRepository(
     /// </summary>
     /// <param name="entity">The entity.</param>
     /// <param name="dto">The dto base instance.</param>
+    /// <param name="appHost">The Application server Host.</param>
     /// <returns>The dto to map.</returns>
-    public static BaseItemDto Map(BaseItemEntity entity, BaseItemDto dto)
+    public static BaseItemDto Map(BaseItemEntity entity, BaseItemDto dto, IServerApplicationHost? appHost)
     {
         dto.Id = entity.Id;
         dto.ParentId = entity.ParentId.GetValueOrDefault();
-        dto.Path = entity.Path;
+        dto.Path = appHost?.ExpandVirtualPath(entity.Path) ?? entity.Path;
         dto.EndDate = entity.EndDate;
         dto.CommunityRating = entity.CommunityRating;
         dto.CustomRating = entity.CustomRating;
@@ -1496,7 +1497,7 @@ public sealed class BaseItemRepository(
 
         if (entity.Images is not null)
         {
-            dto.ImageInfos = entity.Images.Select(Map).ToArray();
+            dto.ImageInfos = entity.Images.Select(e => Map(e, appHost)).ToArray();
         }
 
         // dto.Type = entity.Type;
@@ -1727,6 +1728,7 @@ public sealed class BaseItemRepository(
         return BaseItemRepository.DeserialiseBaseItem(
             baseItemEntity,
             logger,
+            appHost,
             skipDeserialization || (serverConfigurationManager.Configuration.SkipDeserializationForBasicTypes && (typeToSerialise == typeof(Channel) || typeToSerialise == typeof(UserRootFolder))));
     }
 
@@ -1735,10 +1737,11 @@ public sealed class BaseItemRepository(
     /// </summary>
     /// <param name="baseItemEntity">The DB entity.</param>
     /// <param name="logger">Logger.</param>
+    /// <param name="appHost">The application server Host.</param>
     /// <param name="skipDeserialization">If only mapping should be processed.</param>
     /// <returns>A mapped BaseItem.</returns>
     /// <exception cref="InvalidOperationException">Will be thrown if an invalid serialisation is requested.</exception>
-    public static BaseItemDto DeserialiseBaseItem(BaseItemEntity baseItemEntity, ILogger logger, bool skipDeserialization = false)
+    public static BaseItemDto DeserialiseBaseItem(BaseItemEntity baseItemEntity, ILogger logger, IServerApplicationHost? appHost, bool skipDeserialization = false)
     {
         var type = GetType(baseItemEntity.Type) ?? throw new InvalidOperationException("Cannot deserialise unkown type.");
         BaseItemDto? dto = null;
@@ -1760,7 +1763,7 @@ public sealed class BaseItemRepository(
             dto = Activator.CreateInstance(type) as BaseItemDto ?? throw new InvalidOperationException("Cannot deserialise unkown type.");
         }
 
-        return Map(baseItemEntity, dto);
+        return Map(baseItemEntity, dto, appHost);
     }
 
     private QueryResult<(BaseItemDto Item, ItemCounts ItemCounts)> GetItemValues(InternalItemsQuery filter, ItemValueType[] itemValueTypes, string returnType)
@@ -1909,51 +1912,6 @@ public sealed class BaseItemRepository(
         return list;
     }
 
-    internal static string? SerializeProviderIds(Dictionary<string, string> providerIds)
-    {
-        StringBuilder str = new StringBuilder();
-        foreach (var i in providerIds)
-        {
-            // Ideally we shouldn't need this IsNullOrWhiteSpace check,
-            // but we're seeing some cases of bad data slip through
-            if (string.IsNullOrWhiteSpace(i.Value))
-            {
-                continue;
-            }
-
-            str.Append(i.Key)
-                .Append('=')
-                .Append(i.Value)
-                .Append('|');
-        }
-
-        if (str.Length == 0)
-        {
-            return null;
-        }
-
-        str.Length -= 1; // Remove last |
-        return str.ToString();
-    }
-
-    internal static void DeserializeProviderIds(string value, IHasProviderIds item)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return;
-        }
-
-        foreach (var part in value.SpanSplit('|'))
-        {
-            var providerDelimiterIndex = part.IndexOf('=');
-            // Don't let empty values through
-            if (providerDelimiterIndex != -1 && part.Length != providerDelimiterIndex + 1)
-            {
-                item.SetProviderId(part[..providerDelimiterIndex].ToString(), part[(providerDelimiterIndex + 1)..].ToString());
-            }
-        }
-    }
-
     private static BaseItemImageInfo Map(Guid baseItemId, ItemImageInfo e)
     {
         return new BaseItemImageInfo()
@@ -1970,11 +1928,11 @@ public sealed class BaseItemRepository(
         };
     }
 
-    private static ItemImageInfo Map(BaseItemImageInfo e)
+    private static ItemImageInfo Map(BaseItemImageInfo e, IServerApplicationHost? appHost)
     {
         return new ItemImageInfo()
         {
-            Path = e.Path,
+            Path = appHost?.ExpandVirtualPath(e.Path) ?? e.Path,
             BlurHash = e.Blurhash != null ? Encoding.UTF8.GetString(e.Blurhash) : null,
             DateModified = e.DateModified,
             Height = e.Height,
@@ -1991,11 +1949,6 @@ public sealed class BaseItemRepository(
         }
 
         return appHost.ReverseVirtualPath(path);
-    }
-
-    private string RestorePath(string path)
-    {
-        return appHost.ExpandVirtualPath(path);
     }
 
     private List<string> GetItemByNameTypesInQuery(InternalItemsQuery query)

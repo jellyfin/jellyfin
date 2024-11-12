@@ -268,6 +268,11 @@ namespace Emby.Server.Implementations
 
         public string ExpandVirtualPath(string path)
         {
+            if (path is null)
+            {
+                return null;
+            }
+
             var appPaths = ApplicationPaths;
 
             return path.Replace(appPaths.VirtualDataPath, appPaths.DataPath, StringComparison.OrdinalIgnoreCase)
