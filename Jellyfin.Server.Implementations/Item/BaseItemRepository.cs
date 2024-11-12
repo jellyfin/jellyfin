@@ -117,37 +117,37 @@ public sealed class BaseItemRepository(
     }
 
     /// <inheritdoc />
-    public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAllArtists(InternalItemsQuery filter)
+    public QueryResult<(BaseItemDto Item, ItemCounts ItemCounts)> GetAllArtists(InternalItemsQuery filter)
     {
         return GetItemValues(filter, [ItemValueType.Artist, ItemValueType.AlbumArtist], itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist]!);
     }
 
     /// <inheritdoc />
-    public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetArtists(InternalItemsQuery filter)
+    public QueryResult<(BaseItemDto Item, ItemCounts ItemCounts)> GetArtists(InternalItemsQuery filter)
     {
         return GetItemValues(filter, [ItemValueType.Artist], itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist]!);
     }
 
     /// <inheritdoc />
-    public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAlbumArtists(InternalItemsQuery filter)
+    public QueryResult<(BaseItemDto Item, ItemCounts ItemCounts)> GetAlbumArtists(InternalItemsQuery filter)
     {
         return GetItemValues(filter, [ItemValueType.AlbumArtist], itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist]!);
     }
 
     /// <inheritdoc />
-    public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetStudios(InternalItemsQuery filter)
+    public QueryResult<(BaseItemDto Item, ItemCounts ItemCounts)> GetStudios(InternalItemsQuery filter)
     {
         return GetItemValues(filter, [ItemValueType.Studios], itemTypeLookup.BaseItemKindNames[BaseItemKind.Studio]!);
     }
 
     /// <inheritdoc />
-    public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetGenres(InternalItemsQuery filter)
+    public QueryResult<(BaseItemDto Item, ItemCounts ItemCounts)> GetGenres(InternalItemsQuery filter)
     {
         return GetItemValues(filter, [ItemValueType.Genre], itemTypeLookup.BaseItemKindNames[BaseItemKind.Genre]!);
     }
 
     /// <inheritdoc />
-    public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetMusicGenres(InternalItemsQuery filter)
+    public QueryResult<(BaseItemDto Item, ItemCounts ItemCounts)> GetMusicGenres(InternalItemsQuery filter)
     {
         return GetItemValues(filter, [ItemValueType.Genre], itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicGenre]!);
     }
@@ -200,7 +200,7 @@ public sealed class BaseItemRepository(
 
         using var context = dbProvider.CreateDbContext();
 
-        IQueryable<BaseItemEntity> dbQuery = context.BaseItems.AsNoTracking()
+        IQueryable<BaseItemEntity> dbQuery = context.BaseItems.AsNoTracking().AsSingleQuery()
             .Include(e => e.TrailerTypes)
             .Include(e => e.Provider)
             .Include(e => e.LockedFields);
@@ -212,28 +212,13 @@ public sealed class BaseItemRepository(
 
         dbQuery = TranslateQuery(dbQuery, context, filter);
         dbQuery = dbQuery.Distinct();
-        // .DistinctBy(e => e.Id);
         if (filter.EnableTotalRecordCount)
         {
             result.TotalRecordCount = dbQuery.Count();
         }
 
         dbQuery = ApplyOrder(dbQuery, filter);
-
-        if (filter.Limit.HasValue || filter.StartIndex.HasValue)
-        {
-            var offset = filter.StartIndex ?? 0;
-
-            if (offset > 0)
-            {
-                dbQuery = dbQuery.Skip(offset);
-            }
-
-            if (filter.Limit.HasValue)
-            {
-                dbQuery = dbQuery.Take(filter.Limit.Value);
-            }
-        }
+        dbQuery = ApplyQueryPageing(dbQuery, filter);
 
         result.Items = dbQuery.AsEnumerable().Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToImmutableArray();
         result.StartIndex = filter.StartIndex ?? 0;
@@ -247,31 +232,43 @@ public sealed class BaseItemRepository(
         PrepareFilterQuery(filter);
 
         using var context = dbProvider.CreateDbContext();
+        IQueryable<BaseItemEntity> dbQuery = context.BaseItems.AsNoTracking().AsSingleQuery()
+           .Include(e => e.TrailerTypes)
+           .Include(e => e.Provider)
+           .Include(e => e.LockedFields);
 
-        return PrepareItemQuery(context, filter).AsEnumerable().Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToImmutableArray();
+        if (filter.DtoOptions.EnableImages)
+        {
+            dbQuery = dbQuery.Include(e => e.Images);
+        }
+
+        dbQuery = TranslateQuery(dbQuery, context, filter);
+        dbQuery = dbQuery.Distinct();
+        dbQuery = ApplyOrder(dbQuery, filter);
+        dbQuery = ApplyGroupingFilter(dbQuery, filter);
+
+        return dbQuery.AsEnumerable().Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToImmutableArray();
     }
 
     private IQueryable<BaseItemEntity> ApplyGroupingFilter(IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
     {
-        dbQuery = dbQuery.Distinct();
-
-        // var enableGroupByPresentationUniqueKey = EnableGroupByPresentationUniqueKey(filter);
-        // if (enableGroupByPresentationUniqueKey && filter.GroupBySeriesPresentationUniqueKey)
-        // {
-        //     dbQuery = dbQuery.GroupBy(e => new { e.PresentationUniqueKey, e.SeriesPresentationUniqueKey }).Select(e => e.First());
-        // }
-        // else if (enableGroupByPresentationUniqueKey)
-        // {
-        //     dbQuery = dbQuery.GroupBy(e => e.PresentationUniqueKey).Select(e => e.First());
-        // }
-        // else if (filter.GroupBySeriesPresentationUniqueKey)
-        // {
-        //     dbQuery = dbQuery.GroupBy(e => e.SeriesPresentationUniqueKey).Select(e => e.First());
-        // }
-        // else
-        // {
-        //     dbQuery = dbQuery.Distinct();
-        // }
+        var enableGroupByPresentationUniqueKey = EnableGroupByPresentationUniqueKey(filter);
+        if (enableGroupByPresentationUniqueKey && filter.GroupBySeriesPresentationUniqueKey)
+        {
+            dbQuery = dbQuery.GroupBy(e => new { e.PresentationUniqueKey, e.SeriesPresentationUniqueKey }).Select(e => e.First());
+        }
+        else if (enableGroupByPresentationUniqueKey)
+        {
+            dbQuery = dbQuery.GroupBy(e => e.PresentationUniqueKey).Select(e => e.First());
+        }
+        else if (filter.GroupBySeriesPresentationUniqueKey)
+        {
+            dbQuery = dbQuery.GroupBy(e => e.SeriesPresentationUniqueKey).Select(e => e.First());
+        }
+        else
+        {
+            dbQuery = dbQuery.Distinct();
+        }
 
         return dbQuery;
     }
@@ -307,7 +304,7 @@ public sealed class BaseItemRepository(
 
     private IQueryable<BaseItemEntity> PrepareItemQuery(JellyfinDbContext context, InternalItemsQuery filter)
     {
-        IQueryable<BaseItemEntity> dbQuery = context.BaseItems.AsNoTracking()
+        IQueryable<BaseItemEntity> dbQuery = context.BaseItems.AsNoTracking().AsSingleQuery()
             .Include(e => e.TrailerTypes)
             .Include(e => e.Provider)
             .Include(e => e.LockedFields);
@@ -1086,13 +1083,13 @@ public sealed class BaseItemRepository(
 
         if (filter.AncestorIds.Length > 0)
         {
-            baseQuery = baseQuery.Where(e => e.AncestorIds!.Any(f => filter.AncestorIds.Contains(f.ParentItemId)));
+            baseQuery = baseQuery.Where(e => e.Children!.Any(f => filter.AncestorIds.Contains(f.ParentItemId)));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.AncestorWithPresentationUniqueKey))
         {
             baseQuery = baseQuery
-                .Where(e => context.BaseItems.Where(f => f.PresentationUniqueKey == filter.AncestorWithPresentationUniqueKey).Any(f => f.AncestorIds!.Any(w => w.ItemId == f.Id)));
+                .Where(e => context.BaseItems.Where(f => f.PresentationUniqueKey == filter.AncestorWithPresentationUniqueKey).Any(f => f.ParentAncestors!.Any(w => w.ItemId == f.Id)));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.SeriesPresentationUniqueKey))
@@ -1127,7 +1124,7 @@ public sealed class BaseItemRepository(
             {
                 baseQuery = baseQuery
                     .Where(e =>
-                    e.AncestorIds!
+                    e.ParentAncestors!
                         .Any(f =>
                             f.ParentItem.ItemValues!.Any(w => w.ItemValue.Type == ItemValueType.Tags && filter.IncludeInheritedTags.Contains(w.ItemValue.CleanValue))
                             || e.Data!.Contains($"OwnerUserId\":\"{filter.User!.Id:N}\"")));
@@ -1136,7 +1133,7 @@ public sealed class BaseItemRepository(
             else
             {
                 baseQuery = baseQuery
-                    .Where(e => e.AncestorIds!.Any(f => f.ParentItem.ItemValues!.Any(w => w.ItemValue.Type == ItemValueType.Tags && filter.IncludeInheritedTags.Contains(w.ItemValue.CleanValue))));
+                    .Where(e => e.ParentAncestors!.Any(f => f.ParentItem.ItemValues!.Any(w => w.ItemValue.Type == ItemValueType.Tags && filter.IncludeInheritedTags.Contains(w.ItemValue.CleanValue))));
             }
         }
 
@@ -1236,7 +1233,7 @@ public sealed class BaseItemRepository(
     }
 
     /// <inheritdoc cref="IItemRepository" />
-    public void SaveImages(BaseItem item)
+    public void SaveImages(BaseItemDto item)
     {
         ArgumentNullException.ThrowIfNull(item);
 
@@ -1295,10 +1292,9 @@ public sealed class BaseItemRepository(
             context.AncestorIds.Where(e => e.ItemId == entity.Id).ExecuteDelete();
             if (item.Item.SupportsAncestors && item.AncestorIds != null)
             {
-                entity.AncestorIds = new List<AncestorId>();
                 foreach (var ancestorId in item.AncestorIds)
                 {
-                    entity.AncestorIds.Add(new AncestorId()
+                    context.AncestorIds.Add(new AncestorId()
                     {
                         ParentItemId = ancestorId,
                         ItemId = entity.Id,
@@ -1378,7 +1374,7 @@ public sealed class BaseItemRepository(
     /// <param name="entity">The entity.</param>
     /// <param name="dto">The dto base instance.</param>
     /// <returns>The dto to map.</returns>
-    public BaseItemDto Map(BaseItemEntity entity, BaseItemDto dto)
+    public static BaseItemDto Map(BaseItemEntity entity, BaseItemDto dto)
     {
         dto.Id = entity.Id;
         dto.ParentId = entity.ParentId.GetValueOrDefault();
@@ -1416,10 +1412,10 @@ public sealed class BaseItemRepository(
         dto.Genres = entity.Genres?.Split('|') ?? [];
         dto.DateCreated = entity.DateCreated.GetValueOrDefault();
         dto.DateModified = entity.DateModified.GetValueOrDefault();
-        dto.ChannelId = string.IsNullOrWhiteSpace(entity.ChannelId) ? Guid.Empty : Guid.Parse(entity.ChannelId);
+        dto.ChannelId = string.IsNullOrWhiteSpace(entity.ChannelId) ? Guid.Empty : (Guid.TryParse(entity.ChannelId, out var channelId) ? channelId : Guid.Empty);
         dto.DateLastRefreshed = entity.DateLastRefreshed.GetValueOrDefault();
         dto.DateLastSaved = entity.DateLastSaved.GetValueOrDefault();
-        dto.OwnerId = string.IsNullOrWhiteSpace(entity.OwnerId) ? Guid.Empty : Guid.Parse(entity.OwnerId);
+        dto.OwnerId = string.IsNullOrWhiteSpace(entity.OwnerId) ? Guid.Empty : (Guid.TryParse(entity.OwnerId, out var ownerId) ? ownerId : Guid.Empty);
         dto.Width = entity.Width.GetValueOrDefault();
         dto.Height = entity.Height.GetValueOrDefault();
         if (entity.Provider is not null)
@@ -1720,21 +1716,29 @@ public sealed class BaseItemRepository(
         return query.Select(e => e.ItemValue.CleanValue).ToImmutableArray();
     }
 
-    private bool TypeRequiresDeserialization(Type type)
+    private static bool TypeRequiresDeserialization(Type type)
     {
-        if (serverConfigurationManager.Configuration.SkipDeserializationForBasicTypes)
-        {
-            if (type == typeof(Channel)
-                || type == typeof(UserRootFolder))
-            {
-                return false;
-            }
-        }
-
         return type.GetCustomAttribute<RequiresSourceSerialisationAttribute>() == null;
     }
 
     private BaseItemDto DeserialiseBaseItem(BaseItemEntity baseItemEntity, bool skipDeserialization = false)
+    {
+        var typeToSerialise = GetType(baseItemEntity.Type);
+        return BaseItemRepository.DeserialiseBaseItem(
+            baseItemEntity,
+            logger,
+            skipDeserialization || (serverConfigurationManager.Configuration.SkipDeserializationForBasicTypes && (typeToSerialise == typeof(Channel) || typeToSerialise == typeof(UserRootFolder))));
+    }
+
+    /// <summary>
+    /// Deserialises a BaseItemEntity and sets all properties.
+    /// </summary>
+    /// <param name="baseItemEntity">The DB entity.</param>
+    /// <param name="logger">Logger.</param>
+    /// <param name="skipDeserialization">If only mapping should be processed.</param>
+    /// <returns>A mapped BaseItem.</returns>
+    /// <exception cref="InvalidOperationException">Will be thrown if an invalid serialisation is requested.</exception>
+    public static BaseItemDto DeserialiseBaseItem(BaseItemEntity baseItemEntity, ILogger logger, bool skipDeserialization = false)
     {
         var type = GetType(baseItemEntity.Type) ?? throw new InvalidOperationException("Cannot deserialise unkown type.");
         BaseItemDto? dto = null;
@@ -1815,7 +1819,7 @@ public sealed class BaseItemRepository(
             }
         }
 
-        var result = new QueryResult<(BaseItem, ItemCounts)>();
+        var result = new QueryResult<(BaseItemDto, ItemCounts)>();
         if (filter.EnableTotalRecordCount)
         {
             result.TotalRecordCount = query.DistinctBy(e => e.PresentationUniqueKey).Count();
@@ -1877,7 +1881,7 @@ public sealed class BaseItemRepository(
         return value.RemoveDiacritics().ToLowerInvariant();
     }
 
-    private List<(int MagicNumber, string Value)> GetItemValuesToSave(BaseItem item, List<string> inheritedTags)
+    private List<(int MagicNumber, string Value)> GetItemValuesToSave(BaseItemDto item, List<string> inheritedTags)
     {
         var list = new List<(int, string)>();
 
@@ -2143,6 +2147,18 @@ public sealed class BaseItemRepository(
             else
             {
                 orderedQuery = query.OrderByDescending(expression);
+            }
+
+            if (firstOrdering.OrderBy is ItemSortBy.Default or ItemSortBy.SortName)
+            {
+                if (firstOrdering.SortOrder is SortOrder.Ascending)
+                {
+                    orderedQuery = orderedQuery.ThenBy(e => e.Name);
+                }
+                else
+                {
+                    orderedQuery = orderedQuery.ThenByDescending(e => e.Name);
+                }
             }
         }
 

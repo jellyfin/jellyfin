@@ -11,6 +11,7 @@ using Emby.Server.Implementations.Data;
 using Jellyfin.Data.Entities;
 using Jellyfin.Extensions;
 using Jellyfin.Server.Implementations;
+using Jellyfin.Server.Implementations.Item;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
@@ -79,7 +80,14 @@ public class MigrateLibraryDb : IMigrationRoutine
         stopwatch.Restart();
 
         _logger.LogInformation("Start moving TypedBaseItem.");
-        var typedBaseItemsQuery = "SELECT guid, type, data, StartDate, EndDate, ChannelId, IsMovie, IsSeries, EpisodeTitle, IsRepeat, CommunityRating, CustomRating, IndexNumber, IsLocked, PreferredMetadataLanguage, PreferredMetadataCountryCode, Width, Height, DateLastRefreshed, Name, Path, PremiereDate, Overview, ParentIndexNumber, ProductionYear, OfficialRating, ForcedSortName, RunTimeTicks, Size, DateCreated, DateModified, Genres, ParentId, TopParentId, Audio, ExternalServiceId, IsInMixedFolder, DateLastSaved, LockedFields, Studios, Tags, TrailerTypes, OriginalTitle, PrimaryVersionId, DateLastMediaAdded, Album, LUFS, NormalizationGain, CriticRating, IsVirtualItem, SeriesName, UserDataKey, SeasonName, SeasonId, SeriesId, PresentationUniqueKey, InheritedParentalRatingValue, ExternalSeriesId, Tagline, ProviderIds, Images, ProductionLocations, ExtraIds, TotalBitrate, ExtraType, Artists, AlbumArtists, ExternalId, SeriesPresentationUniqueKey, ShowId, OwnerId FROM TypedBaseItems";
+        var typedBaseItemsQuery = "SELECT guid, type, data, StartDate, EndDate, ChannelId, IsMovie, " +
+         "IsSeries, EpisodeTitle, IsRepeat, CommunityRating, CustomRating, IndexNumber, IsLocked, PreferredMetadataLanguage, " +
+         "PreferredMetadataCountryCode, Width, Height, DateLastRefreshed, Name, Path, PremiereDate, Overview, ParentIndexNumber, " +
+         "ProductionYear, OfficialRating, ForcedSortName, RunTimeTicks, Size, DateCreated, DateModified, Genres, ParentId, TopParentId, " +
+         "Audio, ExternalServiceId, IsInMixedFolder, DateLastSaved, LockedFields, Studios, Tags, TrailerTypes, OriginalTitle, PrimaryVersionId, " +
+         "DateLastMediaAdded, Album, LUFS, NormalizationGain, CriticRating, IsVirtualItem, SeriesName, UserDataKey, SeasonName, SeasonId, SeriesId, " +
+         "PresentationUniqueKey, InheritedParentalRatingValue, ExternalSeriesId, Tagline, ProviderIds, Images, ProductionLocations, ExtraIds, TotalBitrate, " +
+         "ExtraType, Artists, AlbumArtists, ExternalId, SeriesPresentationUniqueKey, ShowId, OwnerId, MediaType FROM TypedBaseItems";
         dbContext.BaseItems.ExecuteDelete();
 
         var legacyBaseItemWithUserKeys = new Dictionary<string, BaseItemEntity>();
@@ -87,7 +95,10 @@ public class MigrateLibraryDb : IMigrationRoutine
         {
             var baseItem = GetItem(dto);
             dbContext.BaseItems.Add(baseItem.BaseItem);
-            legacyBaseItemWithUserKeys[baseItem.LegacyUserDataKey] = baseItem.BaseItem;
+            foreach (var dataKey in baseItem.LegacyUserDataKey)
+            {
+                legacyBaseItemWithUserKeys[dataKey] = baseItem.BaseItem;
+            }
         }
 
         _logger.LogInformation("Try saving {0} BaseItem entries.", dbContext.BaseItems.Local.Count);
@@ -636,7 +647,7 @@ public class MigrateLibraryDb : IMigrationRoutine
         return item;
     }
 
-    private (BaseItemEntity BaseItem, string LegacyUserDataKey) GetItem(SqliteDataReader reader)
+    private (BaseItemEntity BaseItem, string[] LegacyUserDataKey) GetItem(SqliteDataReader reader)
     {
         var entity = new BaseItemEntity()
         {
@@ -905,8 +916,10 @@ public class MigrateLibraryDb : IMigrationRoutine
             entity.SeriesName = seriesName;
         }
 
-        if (reader.TryGetString(index++, out var userDataKey))
+        var userDataKeys = new List<string>();
+        if (reader.TryGetString(index++, out var directUserDataKey))
         {
+            userDataKeys.Add(directUserDataKey);
         }
 
         if (reader.TryGetString(index++, out var seasonName))
@@ -1010,7 +1023,16 @@ public class MigrateLibraryDb : IMigrationRoutine
             entity.OwnerId = ownerId;
         }
 
-        return (entity, userDataKey);
+        if (reader.TryGetString(index++, out var mediaType))
+        {
+            entity.MediaType = mediaType;
+        }
+
+        var baseItem = BaseItemRepository.DeserialiseBaseItem(entity, _logger, false);
+        var dataKeys = baseItem.GetUserDataKeys();
+        userDataKeys.AddRange(dataKeys);
+
+        return (entity, userDataKeys.ToArray());
     }
 
     private static BaseItemImageInfo Map(Guid baseItemId, ItemImageInfo e)

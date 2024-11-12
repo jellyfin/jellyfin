@@ -164,7 +164,9 @@ public class BaseItemEntity
 
     public ICollection<BaseItemProvider>? Provider { get; set; }
 
-    public ICollection<AncestorId>? AncestorIds { get; set; }
+    public ICollection<AncestorId>? ParentAncestors { get; set; }
+
+    public ICollection<AncestorId>? Children { get; set; }
 
     public ICollection<BaseItemMetadataField>? LockedFields { get; set; }
 
