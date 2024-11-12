@@ -181,7 +181,7 @@ namespace Emby.Server.Implementations.Library
         private UserItemData? GetUserData(User user, Guid itemId, List<string> keys)
         {
             var cacheKey = GetCacheKey(user.InternalId, itemId);
-            var data = GetUserDataInternal(user.Id, keys);
+            var data = GetUserDataInternal(user.Id, itemId, keys);
 
             if (data is null)
             {
@@ -194,27 +194,31 @@ namespace Emby.Server.Implementations.Library
             return _userData.GetOrAdd(cacheKey, data);
         }
 
-        private UserItemData? GetUserDataInternal(Guid userId, List<string> keys)
+        private UserItemData? GetUserDataInternal(Guid userId, Guid itemId, List<string> keys)
         {
-            var key = keys.FirstOrDefault();
+            if (keys.Count == 0)
+            {
+                return null;
+            }
 
             using var context = _repository.CreateDbContext();
-            var userData = context.UserData.AsNoTracking().FirstOrDefault(e => e.CustomDataKey == key && e.UserId.Equals(userId));
+            var userData = context.UserData.AsNoTracking().Where(e => e.ItemId == itemId && keys.Contains(e.CustomDataKey) && e.UserId.Equals(userId)).ToArray();
 
-            if (userData is not null)
+            if (userData.Length > 0)
             {
-                return Map(userData);
-            }
-
-            if (keys.Count > 0)
-            {
-                return new UserItemData
+                var directDataReference = userData.FirstOrDefault(e => e.CustomDataKey == itemId.ToString("N"));
+                if (directDataReference is not null)
                 {
-                    Key = keys[0]
-                };
+                    return Map(directDataReference);
+                }
+
+                return Map(userData.First());
             }
 
-            throw new UnreachableException();
+            return new UserItemData
+            {
+                Key = keys.Last()!
+            };
         }
 
         /// <summary>
