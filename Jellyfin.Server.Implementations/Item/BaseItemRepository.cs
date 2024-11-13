@@ -32,7 +32,6 @@ using Microsoft.Extensions.Logging;
 using BaseItemDto = MediaBrowser.Controller.Entities.BaseItem;
 using BaseItemEntity = Jellyfin.Data.Entities.BaseItemEntity;
 #pragma warning disable RS0030 // Do not use banned APIs
-#pragma warning disable CA1307 // Specify StringComparison for clarity
 
 namespace Jellyfin.Server.Implementations.Item;
 
@@ -299,6 +298,26 @@ public sealed class BaseItemRepository(
             dbQuery = dbQuery.Include(e => e.Images);
         }
 
+        if (filter.DtoOptions.ContainsField(ItemFields.MediaStreams))
+        {
+            dbQuery = dbQuery.Include(e => e.MediaStreams);
+        }
+
+        if (filter.DtoOptions.ContainsField(ItemFields.Chapters))
+        {
+            dbQuery = dbQuery.Include(e => e.Chapters);
+        }
+
+        if (filter.DtoOptions.ContainsField(ItemFields.People))
+        {
+            dbQuery = dbQuery.Include(e => e.Peoples);
+        }
+
+        if (filter.DtoOptions.ContainsField(ItemFields.SeasonUserData))
+        {
+            dbQuery = dbQuery.Include(e => e.UserData);
+        }
+
         return dbQuery;
     }
 
@@ -315,6 +334,7 @@ public sealed class BaseItemRepository(
         return dbQuery.Count();
     }
 
+#pragma warning disable CA1307 // Specify StringComparison for clarity
     private IQueryable<BaseItemEntity> TranslateQuery(
         IQueryable<BaseItemEntity> baseQuery,
         JellyfinDbContext context,
@@ -1343,9 +1363,7 @@ public sealed class BaseItemRepository(
             .Include(e => e.TrailerTypes)
             .Include(e => e.Provider)
             .Include(e => e.Images)
-            .Include(e => e.LockedFields)
-            .AsNoTracking().AsSingleQuery().FirstOrDefault(e => e.Id == id);
-
+            .Include(e => e.LockedFields).AsNoTracking().AsSingleQuery().FirstOrDefault(e => e.Id == id);
         if (item is null)
         {
             return null;
