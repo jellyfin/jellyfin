@@ -298,26 +298,6 @@ public sealed class BaseItemRepository(
             dbQuery = dbQuery.Include(e => e.Images);
         }
 
-        if (filter.DtoOptions.ContainsField(ItemFields.MediaStreams))
-        {
-            dbQuery = dbQuery.Include(e => e.MediaStreams);
-        }
-
-        if (filter.DtoOptions.ContainsField(ItemFields.Chapters))
-        {
-            dbQuery = dbQuery.Include(e => e.Chapters);
-        }
-
-        if (filter.DtoOptions.ContainsField(ItemFields.People))
-        {
-            dbQuery = dbQuery.Include(e => e.Peoples);
-        }
-
-        if (filter.DtoOptions.ContainsField(ItemFields.SeasonUserData))
-        {
-            dbQuery = dbQuery.Include(e => e.UserData);
-        }
-
         return dbQuery;
     }
 
