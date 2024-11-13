@@ -2917,8 +2917,6 @@ namespace Emby.Server.Implementations.Library
 
         private async Task SavePeopleMetadataAsync(IEnumerable<PersonInfo> people, CancellationToken cancellationToken)
         {
-            List<BaseItem>? personsToSave = null;
-
             foreach (var person in people)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -2968,14 +2966,9 @@ namespace Emby.Server.Implementations.Library
 
                 if (saveEntity)
                 {
-                    (personsToSave ??= new()).Add(personEntity);
+                    CreateItems([personEntity], null, CancellationToken.None);
                     await RunMetadataSavers(personEntity, itemUpdateType).ConfigureAwait(false);
                 }
-            }
-
-            if (personsToSave is not null)
-            {
-                CreateItems(personsToSave, null, CancellationToken.None);
             }
         }
 

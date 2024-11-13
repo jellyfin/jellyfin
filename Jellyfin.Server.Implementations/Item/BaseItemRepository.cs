@@ -1339,11 +1339,13 @@ public sealed class BaseItemRepository(
         }
 
         using var context = dbProvider.CreateDbContext();
-        var item = context.BaseItems
-            .Include(e => e.TrailerTypes)
-            .Include(e => e.Provider)
-            .Include(e => e.Images)
-            .Include(e => e.LockedFields).AsNoTracking().AsSingleQuery().FirstOrDefault(e => e.Id == id);
+        var item = PrepareItemQuery(context, new()
+        {
+            DtoOptions = new()
+            {
+                EnableImages = true
+            }
+        }).FirstOrDefault(e => e.Id == id);
         if (item is null)
         {
             return null;
