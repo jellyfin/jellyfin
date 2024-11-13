@@ -220,7 +220,7 @@ public sealed class BaseItemRepository(
         dbQuery = ApplyOrder(dbQuery, filter);
         dbQuery = ApplyQueryPageing(dbQuery, filter);
 
-        result.Items = dbQuery.AsEnumerable().Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToImmutableArray();
+        result.Items = dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToImmutableArray();
         result.StartIndex = filter.StartIndex ?? 0;
         return result;
     }
@@ -247,7 +247,7 @@ public sealed class BaseItemRepository(
         dbQuery = ApplyOrder(dbQuery, filter);
         dbQuery = ApplyGroupingFilter(dbQuery, filter);
 
-        return dbQuery.AsEnumerable().Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToImmutableArray();
+        return dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToImmutableArray();
     }
 
     private IQueryable<BaseItemEntity> ApplyGroupingFilter(IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
@@ -1859,7 +1859,7 @@ public sealed class BaseItemRepository(
         });
 
         result.StartIndex = filter.StartIndex ?? 0;
-        result.Items = resultQuery.ToImmutableArray().Select(e =>
+        result.Items = resultQuery.ToImmutableArray().Where(e => e is not null).Select(e =>
         {
             return (DeserialiseBaseItem(e.item, filter.SkipDeserialization), e.itemCount);
         }).ToImmutableArray();
