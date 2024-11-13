@@ -83,7 +83,18 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
             });
         }
 
-        context.Peoples.AddRange(people.Select(Map));
+        foreach (var person in people.Select(Map))
+        {
+            if (context.Peoples.Any(f => f.Id == person.Id))
+            {
+                context.Peoples.Attach(person).State = EntityState.Modified;
+            }
+            else
+            {
+                context.Peoples.Add(person);
+            }
+        }
+
         context.SaveChanges();
         transaction.Commit();
     }
