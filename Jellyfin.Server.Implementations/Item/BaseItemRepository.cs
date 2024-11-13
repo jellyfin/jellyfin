@@ -1219,15 +1219,23 @@ public sealed class BaseItemRepository(
     /// <inheritdoc cref="IItemRepository" />
     public void SaveImages(BaseItemDto item)
     {
-        ArgumentNullException.ThrowIfNull(item);
+        try
+        {
+            ArgumentNullException.ThrowIfNull(item);
 
-        var images = item.ImageInfos.Select(e => Map(item.Id, e));
-        using var context = dbProvider.CreateDbContext();
-        using var transaction = context.Database.BeginTransaction();
-        context.BaseItemImageInfos.Where(e => e.ItemId == item.Id).ExecuteDelete();
-        context.BaseItemImageInfos.AddRange(images);
-        context.SaveChanges();
-        transaction.Commit();
+            var images = item.ImageInfos.Select(e => Map(item.Id, e));
+            using var context = dbProvider.CreateDbContext();
+            using var transaction = context.Database.BeginTransaction();
+            context.BaseItemImageInfos.Where(e => e.ItemId == item.Id).ExecuteDelete();
+            context.BaseItemImageInfos.AddRange(images);
+            context.SaveChanges();
+            transaction.Commit();
+        }
+        catch (System.Exception ex)
+        {
+            System.Console.WriteLine(ex);
+            throw;
+        }
     }
 
     /// <inheritdoc cref="IItemRepository" />
@@ -1291,40 +1299,30 @@ public sealed class BaseItemRepository(
 
             var itemValuesToSave = GetItemValuesToSave(item.Item, item.InheritedTags);
             context.ItemValuesMap.Where(e => e.ItemId == entity.Id).ExecuteDelete();
-            entity.ItemValues = new List<ItemValueMap>();
-
             foreach (var itemValue in itemValuesToSave)
             {
                 var refValue = context.ItemValues
                     .Where(f => f.CleanValue == GetCleanValue(itemValue.Value) && (int)f.Type == itemValue.MagicNumber)
                     .Select(e => e.ItemValueId)
                     .FirstOrDefault();
-                if (!refValue.IsEmpty())
+                if (refValue.IsEmpty())
                 {
-                    entity.ItemValues.Add(new ItemValueMap()
+                    context.ItemValues.Add(new ItemValue()
                     {
-                        Item = entity,
-                        ItemId = entity.Id,
-                        ItemValue = null!,
-                        ItemValueId = refValue
+                        CleanValue = GetCleanValue(itemValue.Value),
+                        Type = (ItemValueType)itemValue.MagicNumber,
+                        ItemValueId = refValue = Guid.NewGuid(),
+                        Value = itemValue.Value
                     });
                 }
-                else
+
+                context.ItemValuesMap.Add(new ItemValueMap()
                 {
-                    entity.ItemValues.Add(new ItemValueMap()
-                    {
-                        Item = entity,
-                        ItemId = entity.Id,
-                        ItemValue = new ItemValue()
-                        {
-                            CleanValue = GetCleanValue(itemValue.Value),
-                            Type = (ItemValueType)itemValue.MagicNumber,
-                            ItemValueId = Guid.NewGuid(),
-                            Value = itemValue.Value
-                        },
-                        ItemValueId = Guid.Empty
-                    });
-                }
+                    Item = null!,
+                    ItemId = entity.Id,
+                    ItemValue = null!,
+                    ItemValueId = refValue
+                });
             }
         }
 

@@ -61,7 +61,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         using var transaction = context.Database.BeginTransaction();
 
         context.PeopleBaseItemMap.Where(e => e.ItemId == itemId).ExecuteDelete();
-        foreach (var item in people)
+        foreach (var item in people.DistinctBy(e => e.Id)) // yes for __SOME__ reason there can be duplicates.
         {
             var personEntity = Map(item);
             var existingEntity = context.Peoples.FirstOrDefault(e => e.Id == personEntity.Id);
@@ -69,10 +69,6 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
             {
                 context.Peoples.Add(personEntity);
                 existingEntity = personEntity;
-            }
-            else
-            {
-                context.Peoples.Attach(personEntity).State = EntityState.Modified;
             }
 
             context.PeopleBaseItemMap.Add(new PeopleBaseItemMap()
