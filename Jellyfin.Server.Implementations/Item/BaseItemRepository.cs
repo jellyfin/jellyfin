@@ -200,15 +200,7 @@ public sealed class BaseItemRepository(
 
         using var context = dbProvider.CreateDbContext();
 
-        IQueryable<BaseItemEntity> dbQuery = context.BaseItems.AsNoTracking().AsSingleQuery()
-            .Include(e => e.TrailerTypes)
-            .Include(e => e.Provider)
-            .Include(e => e.LockedFields);
-
-        if (filter.DtoOptions.EnableImages)
-        {
-            dbQuery = dbQuery.Include(e => e.Images);
-        }
+        IQueryable<BaseItemEntity> dbQuery = PrepareItemQuery(context, filter);
 
         dbQuery = TranslateQuery(dbQuery, context, filter);
         dbQuery = dbQuery.Distinct();
@@ -232,15 +224,7 @@ public sealed class BaseItemRepository(
         PrepareFilterQuery(filter);
 
         using var context = dbProvider.CreateDbContext();
-        IQueryable<BaseItemEntity> dbQuery = context.BaseItems.AsNoTracking().AsSingleQuery()
-           .Include(e => e.TrailerTypes)
-           .Include(e => e.Provider)
-           .Include(e => e.LockedFields);
-
-        if (filter.DtoOptions.EnableImages)
-        {
-            dbQuery = dbQuery.Include(e => e.Images);
-        }
+        IQueryable<BaseItemEntity> dbQuery = PrepareItemQuery(context, filter);
 
         dbQuery = TranslateQuery(dbQuery, context, filter);
         dbQuery = dbQuery.Distinct();
@@ -314,7 +298,27 @@ public sealed class BaseItemRepository(
             dbQuery = dbQuery.Include(e => e.Images);
         }
 
-        return ApplyQueryFilter(dbQuery, context, filter);
+        if (filter.DtoOptions.ContainsField(ItemFields.MediaStreams))
+        {
+            dbQuery = dbQuery.Include(e => e.MediaStreams);
+        }
+
+        if (filter.DtoOptions.ContainsField(ItemFields.Chapters))
+        {
+            dbQuery = dbQuery.Include(e => e.Chapters);
+        }
+
+        if (filter.DtoOptions.ContainsField(ItemFields.People))
+        {
+            dbQuery = dbQuery.Include(e => e.Peoples);
+        }
+
+        if (filter.DtoOptions.ContainsField(ItemFields.SeasonUserData))
+        {
+            dbQuery = dbQuery.Include(e => e.UserData);
+        }
+
+        return dbQuery;
     }
 
     /// <inheritdoc/>
