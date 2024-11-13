@@ -956,7 +956,7 @@ public sealed class BaseItemRepository(
         if (filter.IsDeadPerson.HasValue && filter.IsDeadPerson.Value)
         {
             baseQuery = baseQuery
-                .Where(e => !e.Peoples!.Any(f => f.People.Name == e.Name));
+                .Where(e => !context.Peoples.Any(f => f.Name == e.Name));
         }
 
         if (filter.Years.Length == 1)
