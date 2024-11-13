@@ -20,6 +20,8 @@ local.properties
 .settings/
 .loadpath
 
+TestData
+
 # External tool builders
 .externalToolBuilders/
 

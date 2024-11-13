@@ -24,5 +24,8 @@
     "hostRequirements": {
         "memory": "8gb",
         "cpus": 4
-    }
+    },
+    "mounts": [
+        "source=/opt/docker/data/jellyfin/config10.9.11/metadata/,target=/workspaces/jellyfin/TestData/metadata,type=bind,consistency=cached"
+    ]
 }
