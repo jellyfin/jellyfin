@@ -1272,6 +1272,9 @@ public sealed class BaseItemRepository(
         foreach (var item in tuples)
         {
             var entity = Map(item.Item);
+            // TODO: refactor this "inconsistency"
+            entity.TopParentId = item.TopParent?.Id;
+
             if (!context.BaseItems.Any(e => e.Id == entity.Id))
             {
                 context.BaseItems.Add(entity);
@@ -1488,7 +1491,7 @@ public sealed class BaseItemRepository(
 
         // dto.Type = entity.Type;
         // dto.Data = entity.Data;
-        // dto.MediaType = entity.MediaType;
+        // dto.MediaType = Enum.TryParse<MediaType>(entity.MediaType);
         if (dto is IHasStartDate hasStartDate)
         {
             hasStartDate.StartDate = entity.StartDate;
@@ -1661,7 +1664,7 @@ public sealed class BaseItemRepository(
 
         // dto.Type = entity.Type;
         // dto.Data = entity.Data;
-        // dto.MediaType = entity.MediaType;
+        entity.MediaType = dto.MediaType.ToString();
         if (dto is IHasStartDate hasStartDate)
         {
             entity.StartDate = hasStartDate.StartDate;
