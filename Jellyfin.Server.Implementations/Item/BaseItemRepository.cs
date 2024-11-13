@@ -32,6 +32,7 @@ using Microsoft.Extensions.Logging;
 using BaseItemDto = MediaBrowser.Controller.Entities.BaseItem;
 using BaseItemEntity = Jellyfin.Data.Entities.BaseItemEntity;
 #pragma warning disable RS0030 // Do not use banned APIs
+#pragma warning disable CA1307 // Specify StringComparison for clarity
 
 namespace Jellyfin.Server.Implementations.Item;
 
@@ -314,7 +315,6 @@ public sealed class BaseItemRepository(
         return dbQuery.Count();
     }
 
-#pragma warning disable CA1307 // Specify StringComparison for clarity
     private IQueryable<BaseItemEntity> TranslateQuery(
         IQueryable<BaseItemEntity> baseQuery,
         JellyfinDbContext context,
