@@ -70,6 +70,10 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
                 context.Peoples.Add(personEntity);
                 existingEntity = personEntity;
             }
+            else
+            {
+                context.Peoples.Attach(personEntity).State = EntityState.Modified;
+            }
 
             context.PeopleBaseItemMap.Add(new PeopleBaseItemMap()
             {
@@ -81,18 +85,6 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
                 SortOrder = item.SortOrder,
                 Role = item.Role
             });
-        }
-
-        foreach (var person in people.Select(Map))
-        {
-            if (context.Peoples.Any(f => f.Id == person.Id))
-            {
-                context.Peoples.Attach(person).State = EntityState.Modified;
-            }
-            else
-            {
-                context.Peoples.Add(person);
-            }
         }
 
         context.SaveChanges();
