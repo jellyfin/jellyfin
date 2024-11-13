@@ -2923,6 +2923,7 @@ namespace Emby.Server.Implementations.Library
 
                 var itemUpdateType = ItemUpdateType.MetadataDownload;
                 var saveEntity = false;
+                var createEntity = false;
                 var personEntity = GetPerson(person.Name);
 
                 if (personEntity is null)
@@ -2939,6 +2940,7 @@ namespace Emby.Server.Implementations.Library
 
                     personEntity.PresentationUniqueKey = personEntity.CreatePresentationUniqueKey();
                     saveEntity = true;
+                    createEntity = true;
                 }
 
                 foreach (var id in person.ProviderIds)
@@ -2966,7 +2968,11 @@ namespace Emby.Server.Implementations.Library
 
                 if (saveEntity)
                 {
-                    CreateItems([personEntity], null, CancellationToken.None);
+                    if (createEntity)
+                    {
+                        CreateItems([personEntity], null, CancellationToken.None);
+                    }
+
                     await RunMetadataSavers(personEntity, itemUpdateType).ConfigureAwait(false);
                 }
             }
@@ -3023,7 +3029,7 @@ namespace Emby.Server.Implementations.Library
             {
                 var libraryOptions = CollectionFolder.GetLibraryOptions(virtualFolderPath);
 
-                libraryOptions.PathInfos = [..libraryOptions.PathInfos, pathInfo];
+                libraryOptions.PathInfos = [.. libraryOptions.PathInfos, pathInfo];
 
                 SyncLibraryOptionsToLocations(virtualFolderPath, libraryOptions);
 
