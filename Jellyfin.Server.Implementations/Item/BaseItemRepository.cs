@@ -1724,6 +1724,12 @@ public sealed class BaseItemRepository(
 
     private BaseItemDto DeserialiseBaseItem(BaseItemEntity baseItemEntity, bool skipDeserialization = false)
     {
+        ArgumentNullException.ThrowIfNull(baseItemEntity, nameof(baseItemEntity));
+        if (serverConfigurationManager?.Configuration is null)
+        {
+            throw new InvalidOperationException("Server Configuration manager or configuration is null");
+        }
+
         var typeToSerialise = GetType(baseItemEntity.Type);
         return BaseItemRepository.DeserialiseBaseItem(
             baseItemEntity,
