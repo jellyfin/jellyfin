@@ -1270,6 +1270,7 @@ public sealed class BaseItemRepository(
             }
             else
             {
+                context.BaseItemProviders.Where(e => e.ItemId == entity.Id).ExecuteDelete();
                 context.BaseItems.Attach(entity).State = EntityState.Modified;
             }
 
@@ -1289,22 +1290,23 @@ public sealed class BaseItemRepository(
             }
 
             var itemValuesToSave = GetItemValuesToSave(item.Item, item.InheritedTags);
-            var itemValues = itemValuesToSave.Select(e => e.Value).ToArray();
             context.ItemValuesMap.Where(e => e.ItemId == entity.Id).ExecuteDelete();
             entity.ItemValues = new List<ItemValueMap>();
-            var referenceValues = context.ItemValues.Where(e => itemValues.Any(f => f == e.CleanValue)).ToArray();
 
             foreach (var itemValue in itemValuesToSave)
             {
-                var refValue = referenceValues.FirstOrDefault(f => f.CleanValue == itemValue.Value && (int)f.Type == itemValue.MagicNumber);
-                if (refValue is not null)
+                var refValue = context.ItemValues
+                    .Where(f => f.CleanValue == GetCleanValue(itemValue.Value) && (int)f.Type == itemValue.MagicNumber)
+                    .Select(e => e.ItemValueId)
+                    .FirstOrDefault();
+                if (!refValue.IsEmpty())
                 {
                     entity.ItemValues.Add(new ItemValueMap()
                     {
                         Item = entity,
                         ItemId = entity.Id,
                         ItemValue = null!,
-                        ItemValueId = refValue.ItemValueId
+                        ItemValueId = refValue
                     });
                 }
                 else

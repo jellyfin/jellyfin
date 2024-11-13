@@ -107,6 +107,45 @@ public class MigrateLibraryDb : IMigrationRoutine
         _logger.LogInformation("Saving BaseItems entries took {0}.", stopwatch.Elapsed);
         stopwatch.Restart();
 
+        _logger.LogInformation("Start moving ItemValues.");
+        // do not migrate inherited types as they are now properly mapped in search and lookup.
+        var itemValueQuery = "select ItemId, Type, Value, CleanValue FROM ItemValues WHERE Type <> 6";
+        dbContext.ItemValues.ExecuteDelete();
+
+        // EFCores local lookup sucks.
+        var localItems = new Dictionary<(int Type, string CleanValue), (ItemValue ItemValue, List<Guid> ItemIds)>();
+
+        foreach (SqliteDataReader dto in connection.Query(itemValueQuery))
+        {
+            var itemId = dto.GetGuid(0);
+            var entity = GetItemValue(dto);
+            var key = ((int)entity.Type, entity.CleanValue);
+            if (!localItems.TryGetValue(key, out var existing))
+            {
+                localItems[key] = existing = (entity, []);
+            }
+
+            existing.ItemIds.Add(itemId);
+        }
+
+        foreach (var item in localItems)
+        {
+            dbContext.ItemValues.Add(item.Value.ItemValue);
+            dbContext.ItemValuesMap.AddRange(item.Value.ItemIds.Distinct().Select(f => new ItemValueMap()
+            {
+                Item = null!,
+                ItemValue = null!,
+                ItemId = f,
+                ItemValueId = item.Value.ItemValue.ItemValueId
+            }));
+        }
+
+        _logger.LogInformation("Try saving {0} ItemValues entries.", dbContext.ItemValues.Local.Count);
+        dbContext.SaveChanges();
+        migrationTotalTime += stopwatch.Elapsed;
+        _logger.LogInformation("Saving People ItemValues took {0}.", stopwatch.Elapsed);
+        stopwatch.Restart();
+
         _logger.LogInformation("Start moving UserData.");
         var queryResult = connection.Query("SELECT key, userId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex FROM UserDatas");
 
@@ -158,6 +197,8 @@ public class MigrateLibraryDb : IMigrationRoutine
         dbContext.Peoples.ExecuteDelete();
         dbContext.PeopleBaseItemMap.ExecuteDelete();
 
+        var peopleCache = new Dictionary<string, (People Person, List<PeopleBaseItemMap> Items)>();
+
         foreach (SqliteDataReader reader in connection.Query(personsQuery))
         {
             var itemId = reader.GetGuid(0);
@@ -168,11 +209,9 @@ public class MigrateLibraryDb : IMigrationRoutine
             }
 
             var entity = GetPerson(reader);
-            var existingPerson = dbContext.Peoples.FirstOrDefault(e => e.Name == entity.Name);
-            if (existingPerson is null)
+            if (!peopleCache.TryGetValue(entity.Name, out var personCache))
             {
-                dbContext.Peoples.Add(entity);
-                existingPerson = entity;
+                peopleCache[entity.Name] = personCache = (entity, []);
             }
 
             if (reader.TryGetString(2, out var role))
@@ -183,56 +222,28 @@ public class MigrateLibraryDb : IMigrationRoutine
             {
             }
 
-            dbContext.PeopleBaseItemMap.Add(new PeopleBaseItemMap()
+            personCache.Items.Add(new PeopleBaseItemMap()
             {
                 Item = null!,
                 ItemId = itemId,
-                People = existingPerson,
-                PeopleId = existingPerson.Id,
+                People = null!,
+                PeopleId = personCache.Person.Id,
                 ListOrder = sortOrder,
                 SortOrder = sortOrder,
                 Role = role
             });
         }
 
+        foreach (var item in peopleCache)
+        {
+            dbContext.Peoples.Add(item.Value.Person);
+            dbContext.PeopleBaseItemMap.AddRange(item.Value.Items.DistinctBy(e => (e.ItemId, e.PeopleId)));
+        }
+
         _logger.LogInformation("Try saving {0} People entries.", dbContext.MediaStreamInfos.Local.Count);
         dbContext.SaveChanges();
         migrationTotalTime += stopwatch.Elapsed;
         _logger.LogInformation("Saving People entries took {0}.", stopwatch.Elapsed);
-        stopwatch.Restart();
-
-        _logger.LogInformation("Start moving ItemValues.");
-        // do not migrate inherited types as they are now properly mapped in search and lookup.
-        var itemValueQuery = "select ItemId, Type, Value, CleanValue FROM ItemValues WHERE Type <> 6";
-        dbContext.ItemValues.ExecuteDelete();
-
-        foreach (SqliteDataReader dto in connection.Query(itemValueQuery))
-        {
-            var itemId = dto.GetGuid(0);
-            var entity = GetItemValue(dto);
-            var existingItemValue = dbContext.ItemValues.FirstOrDefault(f => f.Type == entity.Type && f.Value == entity.Value);
-            if (existingItemValue is null)
-            {
-                dbContext.ItemValues.Add(entity);
-            }
-            else
-            {
-                entity = existingItemValue;
-            }
-
-            dbContext.ItemValuesMap.Add(new ItemValueMap()
-            {
-                Item = null!,
-                ItemValue = null!,
-                ItemId = itemId,
-                ItemValueId = entity.ItemValueId
-            });
-        }
-
-        _logger.LogInformation("Try saving {0} ItemValues entries.", dbContext.ItemValues.Local.Count);
-        dbContext.SaveChanges();
-        migrationTotalTime += stopwatch.Elapsed;
-        _logger.LogInformation("Saving People ItemValues took {0}.", stopwatch.Elapsed);
         stopwatch.Restart();
 
         _logger.LogInformation("Start moving Chapters.");
