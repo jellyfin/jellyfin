@@ -77,7 +77,7 @@ public sealed class LibraryStructureControllerTests : IClassFixture<JellyfinAppl
         };
 
         using var createResponse = await client.PostAsJsonAsync("Library/VirtualFolders?name=test&refreshLibrary=true", createBody, _jsonOptions);
-        Assert.Equal(HttpStatusCode.NoContent, createResponse.StatusCode);
+        Assert.True(createResponse.StatusCode == HttpStatusCode.NoContent, $"Error: {await createResponse.Content.ReadAsStringAsync()}");
 
         using var response = await client.GetAsync("Library/VirtualFolders");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);

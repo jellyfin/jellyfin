@@ -83,7 +83,7 @@ public sealed class BaseItemRepository(
         context.Peoples.Where(e => e.BaseItems!.Count == 0).ExecuteDelete();
         context.Chapters.Where(e => e.ItemId == id).ExecuteDelete();
         context.MediaStreamInfos.Where(e => e.ItemId == id).ExecuteDelete();
-        context.AncestorIds.Where(e => e.ItemId == id).ExecuteDelete();
+        context.AncestorIds.Where(e => e.ItemId == id || e.ParentItemId == id).ExecuteDelete();
         context.ItemValuesMap.Where(e => e.ItemId == id).ExecuteDelete();
         context.ItemValues.Where(e => e.BaseItemsMap!.Count == 0).ExecuteDelete();
         context.BaseItemImageInfos.Where(e => e.ItemId == id).ExecuteDelete();
@@ -1292,7 +1292,7 @@ public sealed class BaseItemRepository(
                 {
                     if (!context.BaseItems.Any(f => f.Id == ancestorId))
                     {
-                        throw new InvalidOperationException($"Cannot link non-existent parent: {ancestorId}");
+                        continue;
                     }
 
                     context.AncestorIds.Add(new AncestorId()

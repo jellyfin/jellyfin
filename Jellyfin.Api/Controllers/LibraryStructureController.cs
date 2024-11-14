@@ -88,7 +88,14 @@ public class LibraryStructureController : BaseJellyfinApiController
             libraryOptions.PathInfos = Array.ConvertAll(paths, i => new MediaPathInfo(i));
         }
 
-        await _libraryManager.AddVirtualFolder(name, collectionType, libraryOptions, refreshLibrary).ConfigureAwait(false);
+        try
+        {
+            await _libraryManager.AddVirtualFolder(name, collectionType, libraryOptions, refreshLibrary).ConfigureAwait(false);
+        }
+        catch (System.Exception ex)
+        {
+            return BadRequest(ex.ToString());
+        }
 
         return NoContent();
     }
