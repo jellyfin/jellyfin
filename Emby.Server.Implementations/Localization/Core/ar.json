@@ -131,5 +131,8 @@
     "TaskCleanCollectionsAndPlaylistsDescription": "حذف عناصر من المجموعات وقوائم التشغيل التي لم تعد موجودة.",
     "TaskAudioNormalization": "تطبيع الصوت",
     "TaskAudioNormalizationDescription": "مسح الملفات لتطبيع بيانات الصوت.",
-    "TaskDownloadMissingLyrics": "تنزيل عبارات القصيدة"
+    "TaskDownloadMissingLyrics": "تنزيل عبارات القصيدة",
+    "TaskDownloadMissingLyricsDescription": "كلمات",
+    "TaskExtractMediaSegments": "فحص مقاطع الوسائط",
+    "TaskExtractMediaSegmentsDescription": "وسائط"
 }

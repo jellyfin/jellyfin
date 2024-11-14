@@ -229,9 +229,7 @@ namespace MediaBrowser.Providers.Manager
                                 {
                                     var mimeType = MimeTypes.GetMimeType(response.Path);
 
-                                    var stream = AsyncFile.OpenRead(response.Path);
-
-                                    await _providerManager.SaveImage(item, stream, mimeType, imageType, null, cancellationToken).ConfigureAwait(false);
+                                    await _providerManager.SaveImage(item, response.Path, mimeType, imageType, null, null, cancellationToken).ConfigureAwait(false);
                                 }
                             }
 
@@ -387,8 +385,8 @@ namespace MediaBrowser.Providers.Manager
 
             item.RemoveImages(images);
 
-            // Cleanup old metadata directory for episodes if empty
-            if (item is Episode)
+            // Cleanup old metadata directory for episodes if empty, as long as it's not a virtual item
+            if (item is Episode && !item.IsVirtualItem)
             {
                 var oldLocalMetadataDirectory = Path.Combine(item.ContainingFolderPath, "metadata");
                 if (_fileSystem.DirectoryExists(oldLocalMetadataDirectory) && !_fileSystem.GetFiles(oldLocalMetadataDirectory).Any())
