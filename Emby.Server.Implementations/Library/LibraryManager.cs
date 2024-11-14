@@ -2802,6 +2802,7 @@ namespace Emby.Server.Implementations.Library
 
             if (people is not null)
             {
+                people = people.Where(e => e is not null).ToArray();
                 _peopleRepository.UpdatePeople(item.Id, people);
                 await SavePeopleMetadataAsync(people, cancellationToken).ConfigureAwait(false);
             }
