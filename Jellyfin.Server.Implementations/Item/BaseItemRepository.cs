@@ -373,6 +373,8 @@ public sealed class BaseItemRepository(
             tuples[i] = (item, ancestorIds, topParent, userdataKey, inheritedTags);
         }
 
+        var localFuckingItemValueCache = new Dictionary<(int MagicNumber, string Value), Guid>();
+
         using var context = dbProvider.CreateDbContext();
         using var transaction = context.Database.BeginTransaction();
         foreach (var item in tuples)
@@ -416,10 +418,14 @@ public sealed class BaseItemRepository(
             context.ItemValuesMap.Where(e => e.ItemId == entity.Id).ExecuteDelete();
             foreach (var itemValue in itemValuesToSave)
             {
-                var refValue = context.ItemValues
-                    .Where(f => f.CleanValue == GetCleanValue(itemValue.Value) && (int)f.Type == itemValue.MagicNumber)
-                    .Select(e => e.ItemValueId)
-                    .FirstOrDefault();
+                if (!localFuckingItemValueCache.TryGetValue(itemValue, out var refValue))
+                {
+                    refValue = context.ItemValues
+                                .Where(f => f.CleanValue == GetCleanValue(itemValue.Value) && (int)f.Type == itemValue.MagicNumber)
+                                .Select(e => e.ItemValueId)
+                                .FirstOrDefault();
+                }
+
                 if (refValue.IsEmpty())
                 {
                     context.ItemValues.Add(new ItemValue()
@@ -429,6 +435,7 @@ public sealed class BaseItemRepository(
                         ItemValueId = refValue = Guid.NewGuid(),
                         Value = itemValue.Value
                     });
+                    localFuckingItemValueCache[itemValue] = refValue;
                 }
 
                 context.ItemValuesMap.Add(new ItemValueMap()
