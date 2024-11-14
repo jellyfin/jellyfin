@@ -77,7 +77,7 @@ public sealed class LibraryStructureControllerTests : IClassFixture<JellyfinAppl
         };
 
         using var createResponse = await client.PostAsJsonAsync("Library/VirtualFolders?name=test&refreshLibrary=true", createBody, _jsonOptions);
-        Assert.True(createResponse.StatusCode == HttpStatusCode.NoContent, $"Error: {await createResponse.Content.ReadAsStringAsync()}");
+        Assert.Equal(HttpStatusCode.NoContent, createResponse.StatusCode);
 
         using var response = await client.GetAsync("Library/VirtualFolders");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -120,6 +120,6 @@ public sealed class LibraryStructureControllerTests : IClassFixture<JellyfinAppl
         client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
         using var response = await client.DeleteAsync("Library/VirtualFolders?name=test&refreshLibrary=true");
-        Assert.True(response.StatusCode == HttpStatusCode.NoContent, "DeleteFailed: " + await response.Content.ReadAsStringAsync());
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
 }
