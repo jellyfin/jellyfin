@@ -120,6 +120,6 @@ public sealed class LibraryStructureControllerTests : IClassFixture<JellyfinAppl
         client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
         using var response = await client.DeleteAsync("Library/VirtualFolders?name=test&refreshLibrary=true");
-        Assert.True(response.StatusCode == HttpStatusCode.NoContent, "DeleteFailed: " + response.Content.ReadAsStringAsync());
+        Assert.True(response.StatusCode == HttpStatusCode.NoContent, "DeleteFailed: " + await response.Content.ReadAsStringAsync());
     }
 }
