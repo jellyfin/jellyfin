@@ -2800,9 +2800,9 @@ namespace Emby.Server.Implementations.Library
                 return;
             }
 
-            _peopleRepository.UpdatePeople(item.Id, people);
             if (people is not null)
             {
+                _peopleRepository.UpdatePeople(item.Id, people);
                 await SavePeopleMetadataAsync(people, cancellationToken).ConfigureAwait(false);
             }
         }
