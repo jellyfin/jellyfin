@@ -1219,23 +1219,15 @@ public sealed class BaseItemRepository(
     /// <inheritdoc cref="IItemRepository" />
     public void SaveImages(BaseItemDto item)
     {
-        try
-        {
-            ArgumentNullException.ThrowIfNull(item);
+        ArgumentNullException.ThrowIfNull(item);
 
-            var images = item.ImageInfos.Select(e => Map(item.Id, e));
-            using var context = dbProvider.CreateDbContext();
-            using var transaction = context.Database.BeginTransaction();
-            context.BaseItemImageInfos.Where(e => e.ItemId == item.Id).ExecuteDelete();
-            context.BaseItemImageInfos.AddRange(images);
-            context.SaveChanges();
-            transaction.Commit();
-        }
-        catch (System.Exception ex)
-        {
-            System.Console.WriteLine(ex);
-            throw;
-        }
+        var images = item.ImageInfos.Select(e => Map(item.Id, e));
+        using var context = dbProvider.CreateDbContext();
+        using var transaction = context.Database.BeginTransaction();
+        context.BaseItemImageInfos.Where(e => e.ItemId == item.Id).ExecuteDelete();
+        context.BaseItemImageInfos.AddRange(images);
+        context.SaveChanges();
+        transaction.Commit();
     }
 
     /// <inheritdoc cref="IItemRepository" />
