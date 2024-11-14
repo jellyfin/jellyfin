@@ -710,7 +710,7 @@ public sealed class BaseItemRepository(
         if (filter.IsPlayed.HasValue)
         {
             baseQuery = baseQuery
-                   .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id)!.Played == filter.IsPlayed.Value);
+                   .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id)!.Played == filter.IsPlayed.Value || e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id) == null);
         }
 
         if (filter.IsResumable.HasValue)
