@@ -112,7 +112,7 @@ public class MigrateLibraryDb : IMigrationRoutine
         var itemValueQuery = "select ItemId, Type, Value, CleanValue FROM ItemValues WHERE Type <> 6";
         dbContext.ItemValues.ExecuteDelete();
 
-        // EFCores local lookup sucks.
+        // EFCores local lookup sucks. We cannot use context.ItemValues.Local here because its just super slow.
         var localItems = new Dictionary<(int Type, string CleanValue), (ItemValue ItemValue, List<Guid> ItemIds)>();
 
         foreach (SqliteDataReader dto in connection.Query(itemValueQuery))
