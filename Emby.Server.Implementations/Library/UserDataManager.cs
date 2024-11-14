@@ -59,26 +59,27 @@ namespace Emby.Server.Implementations.Library
 
             var keys = item.GetUserDataKeys();
 
-            var userId = user.InternalId;
-
-            using var repository = _repository.CreateDbContext();
+            using var dbContext = _repository.CreateDbContext();
+            using var transaction = dbContext.Database.BeginTransaction();
 
             foreach (var key in keys)
             {
                 userData.Key = key;
                 var userDataEntry = Map(userData, user.Id, item.Id);
-                if (repository.UserData.Any(f => f.ItemId == item.Id && f.UserId == user.Id && f.CustomDataKey == key))
+                if (dbContext.UserData.Any(f => f.ItemId == userDataEntry.ItemId && f.UserId == userDataEntry.UserId && f.CustomDataKey == userDataEntry.CustomDataKey))
                 {
-                    repository.UserData.Attach(userDataEntry).State = EntityState.Modified;
+                    dbContext.UserData.Attach(userDataEntry).State = EntityState.Modified;
                 }
                 else
                 {
-                    repository.UserData.Add(userDataEntry);
+                    dbContext.UserData.Add(userDataEntry);
                 }
             }
 
-            repository.SaveChanges();
+            dbContext.SaveChanges();
+            transaction.Commit();
 
+            var userId = user.InternalId;
             var cacheKey = GetCacheKey(userId, item.Id);
             _userData.AddOrUpdate(cacheKey, userData, (_, _) => userData);
 
