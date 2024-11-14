@@ -61,7 +61,8 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         using var transaction = context.Database.BeginTransaction();
 
         context.PeopleBaseItemMap.Where(e => e.ItemId == itemId).ExecuteDelete();
-        foreach (var item in people.DistinctBy(e => e.Id)) // yes for __SOME__ reason there can be duplicates.
+        // TODO: yes for __SOME__ reason there can be duplicates.
+        foreach (var item in people.DistinctBy(e => e.Id))
         {
             var personEntity = Map(item);
             var existingEntity = context.Peoples.FirstOrDefault(e => e.Id == personEntity.Id);
