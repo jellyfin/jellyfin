@@ -106,7 +106,15 @@ public class LibraryStructureController : BaseJellyfinApiController
         [FromQuery] string name,
         [FromQuery] bool refreshLibrary = false)
     {
-        await _libraryManager.RemoveVirtualFolder(name, refreshLibrary).ConfigureAwait(false);
+        try
+        {
+            await _libraryManager.RemoveVirtualFolder(name, refreshLibrary).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.ToString());
+        }
+
         return NoContent();
     }
 
