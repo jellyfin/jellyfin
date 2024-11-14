@@ -1290,6 +1290,11 @@ public sealed class BaseItemRepository(
             {
                 foreach (var ancestorId in item.AncestorIds)
                 {
+                    if (!context.BaseItems.Any(f => f.Id == ancestorId))
+                    {
+                        throw new InvalidOperationException($"Cannot link non-existent parent: {ancestorId}");
+                    }
+
                     context.AncestorIds.Add(new AncestorId()
                     {
                         ParentItemId = ancestorId,
