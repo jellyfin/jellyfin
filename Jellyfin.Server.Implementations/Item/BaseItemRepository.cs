@@ -1300,7 +1300,8 @@ public sealed class BaseItemRepository(
                 }
             }
 
-            var itemValuesToSave = GetItemValuesToSave(item.Item, item.InheritedTags);
+            // Never save duplicate itemValues as they are now mapped anyway.
+            var itemValuesToSave = GetItemValuesToSave(item.Item, item.InheritedTags).DistinctBy(e => (GetCleanValue(e.Value), e.MagicNumber));
             context.ItemValuesMap.Where(e => e.ItemId == entity.Id).ExecuteDelete();
             foreach (var itemValue in itemValuesToSave)
             {
