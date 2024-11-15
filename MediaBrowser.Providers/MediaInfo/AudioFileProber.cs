@@ -347,7 +347,8 @@ namespace MediaBrowser.Providers.MediaInfo
                      || track.AdditionalFields.TryGetValue("MusicBrainz Artist Id", out musicBrainzArtistTag))
                     && !string.IsNullOrEmpty(musicBrainzArtistTag))
                 {
-                    audio.TrySetProviderId(MetadataProvider.MusicBrainzArtist, musicBrainzArtistTag);
+                    var id = GetFirstMusicBrainzId(musicBrainzArtistTag, libraryOptions.UseCustomTagDelimiters, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist);
+                    audio.TrySetProviderId(MetadataProvider.MusicBrainzArtist, id);
                 }
             }
 
@@ -357,7 +358,8 @@ namespace MediaBrowser.Providers.MediaInfo
                      || track.AdditionalFields.TryGetValue("MusicBrainz Album Artist Id", out musicBrainzReleaseArtistIdTag))
                     && !string.IsNullOrEmpty(musicBrainzReleaseArtistIdTag))
                 {
-                    audio.TrySetProviderId(MetadataProvider.MusicBrainzAlbumArtist, musicBrainzReleaseArtistIdTag);
+                    var id = GetFirstMusicBrainzId(musicBrainzReleaseArtistIdTag, libraryOptions.UseCustomTagDelimiters, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist);
+                    audio.TrySetProviderId(MetadataProvider.MusicBrainzAlbumArtist, id);
                 }
             }
 
@@ -367,7 +369,8 @@ namespace MediaBrowser.Providers.MediaInfo
                      || track.AdditionalFields.TryGetValue("MusicBrainz Album Id", out musicBrainzReleaseIdTag))
                     && !string.IsNullOrEmpty(musicBrainzReleaseIdTag))
                 {
-                    audio.TrySetProviderId(MetadataProvider.MusicBrainzAlbum, musicBrainzReleaseIdTag);
+                    var id = GetFirstMusicBrainzId(musicBrainzReleaseIdTag, libraryOptions.UseCustomTagDelimiters, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist);
+                    audio.TrySetProviderId(MetadataProvider.MusicBrainzAlbum, id);
                 }
             }
 
@@ -377,7 +380,8 @@ namespace MediaBrowser.Providers.MediaInfo
                      || track.AdditionalFields.TryGetValue("MusicBrainz Release Group Id", out musicBrainzReleaseGroupIdTag))
                     && !string.IsNullOrEmpty(musicBrainzReleaseGroupIdTag))
                 {
-                    audio.TrySetProviderId(MetadataProvider.MusicBrainzReleaseGroup, musicBrainzReleaseGroupIdTag);
+                    var id = GetFirstMusicBrainzId(musicBrainzReleaseGroupIdTag, libraryOptions.UseCustomTagDelimiters, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist);
+                    audio.TrySetProviderId(MetadataProvider.MusicBrainzReleaseGroup, id);
                 }
             }
 
@@ -387,7 +391,8 @@ namespace MediaBrowser.Providers.MediaInfo
                      || track.AdditionalFields.TryGetValue("MusicBrainz Release Track Id", out trackMbId))
                     && !string.IsNullOrEmpty(trackMbId))
                 {
-                    audio.TrySetProviderId(MetadataProvider.MusicBrainzTrack, trackMbId);
+                    var id = GetFirstMusicBrainzId(trackMbId, libraryOptions.UseCustomTagDelimiters, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist);
+                    audio.TrySetProviderId(MetadataProvider.MusicBrainzTrack, id);
                 }
             }
 
@@ -440,6 +445,19 @@ namespace MediaBrowser.Providers.MediaInfo
             items.AddRange(items2);
 
             return items;
+        }
+
+        // MusicBrainz IDs are multi-value tags, so we need to split them
+        // However, our current provider can only have one single ID, which means we need to pick the first one
+        private string? GetFirstMusicBrainzId(string tag, bool useCustomTagDelimiters, char[] tagDelimiters, string[] whitelist)
+        {
+            var val = tag.Split(InternalValueSeparator).FirstOrDefault();
+            if (val is not null && useCustomTagDelimiters)
+            {
+                val = SplitWithCustomDelimiter(val, tagDelimiters, whitelist).FirstOrDefault();
+            }
+
+            return val;
         }
     }
 }
