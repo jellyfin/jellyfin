@@ -3332,7 +3332,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     doVaVppProcamp = true;
                 }
 
-                args = "{2}tonemap_vaapi=format={3}:p=bt709:t=bt709:m=bt709:extra_hw_frames=32";
+                args = procampParams + "{2}tonemap_vaapi=format={3}:p=bt709:t=bt709:m=bt709:extra_hw_frames=32";
 
                 return string.Format(
                         CultureInfo.InvariantCulture,
