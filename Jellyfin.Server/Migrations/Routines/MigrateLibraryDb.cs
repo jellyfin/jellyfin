@@ -80,14 +80,16 @@ public class MigrateLibraryDb : IMigrationRoutine
         stopwatch.Restart();
 
         _logger.LogInformation("Start moving TypedBaseItem.");
-        var typedBaseItemsQuery = "SELECT guid, type, data, StartDate, EndDate, ChannelId, IsMovie, " +
-         "IsSeries, EpisodeTitle, IsRepeat, CommunityRating, CustomRating, IndexNumber, IsLocked, PreferredMetadataLanguage, " +
-         "PreferredMetadataCountryCode, Width, Height, DateLastRefreshed, Name, Path, PremiereDate, Overview, ParentIndexNumber, " +
-         "ProductionYear, OfficialRating, ForcedSortName, RunTimeTicks, Size, DateCreated, DateModified, Genres, ParentId, TopParentId, " +
-         "Audio, ExternalServiceId, IsInMixedFolder, DateLastSaved, LockedFields, Studios, Tags, TrailerTypes, OriginalTitle, PrimaryVersionId, " +
-         "DateLastMediaAdded, Album, LUFS, NormalizationGain, CriticRating, IsVirtualItem, SeriesName, UserDataKey, SeasonName, SeasonId, SeriesId, " +
-         "PresentationUniqueKey, InheritedParentalRatingValue, ExternalSeriesId, Tagline, ProviderIds, Images, ProductionLocations, ExtraIds, TotalBitrate, " +
-         "ExtraType, Artists, AlbumArtists, ExternalId, SeriesPresentationUniqueKey, ShowId, OwnerId, MediaType FROM TypedBaseItems";
+        var typedBaseItemsQuery = """
+         SELECT guid, type, data, StartDate, EndDate, ChannelId, IsMovie,
+         IsSeries, EpisodeTitle, IsRepeat, CommunityRating, CustomRating, IndexNumber, IsLocked, PreferredMetadataLanguage, 
+         PreferredMetadataCountryCode, Width, Height, DateLastRefreshed, Name, Path, PremiereDate, Overview, ParentIndexNumber, 
+         ProductionYear, OfficialRating, ForcedSortName, RunTimeTicks, Size, DateCreated, DateModified, Genres, ParentId, TopParentId, 
+         Audio, ExternalServiceId, IsInMixedFolder, DateLastSaved, LockedFields, Studios, Tags, TrailerTypes, OriginalTitle, PrimaryVersionId, 
+         DateLastMediaAdded, Album, LUFS, NormalizationGain, CriticRating, IsVirtualItem, SeriesName, UserDataKey, SeasonName, SeasonId, SeriesId, 
+         PresentationUniqueKey, InheritedParentalRatingValue, ExternalSeriesId, Tagline, ProviderIds, Images, ProductionLocations, ExtraIds, TotalBitrate, 
+         ExtraType, Artists, AlbumArtists, ExternalId, SeriesPresentationUniqueKey, ShowId, OwnerId, MediaType FROM TypedBaseItems
+         """;
         dbContext.BaseItems.ExecuteDelete();
 
         var legacyBaseItemWithUserKeys = new Dictionary<string, BaseItemEntity>();
@@ -151,7 +153,11 @@ public class MigrateLibraryDb : IMigrationRoutine
         stopwatch.Restart();
 
         _logger.LogInformation("Start moving UserData.");
-        var queryResult = connection.Query("SELECT key, userId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex FROM UserDatas");
+        var queryResult = connection.Query("""
+        SELECT key, userId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex FROM UserDatas
+        
+        WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.UserDataKey = UserDatas.key)
+        """);
 
         dbContext.UserData.ExecuteDelete();
 
@@ -181,7 +187,15 @@ public class MigrateLibraryDb : IMigrationRoutine
         dbContext.SaveChanges();
 
         _logger.LogInformation("Start moving MediaStreamInfos.");
-        var mediaStreamQuery = "SELECT ItemId, StreamIndex, StreamType, Codec, Language, ChannelLayout, Profile, AspectRatio, Path, IsInterlaced, BitRate, Channels, SampleRate, IsDefault, IsForced, IsExternal, Height, Width, AverageFrameRate, RealFrameRate, Level, PixelFormat, BitDepth, IsAnamorphic, RefFrames, CodecTag, Comment, NalLengthSize, IsAvc, Title, TimeBase, CodecTimeBase, ColorPrimaries, ColorSpace, ColorTransfer, DvVersionMajor, DvVersionMinor, DvProfile, DvLevel, RpuPresentFlag, ElPresentFlag, BlPresentFlag, DvBlSignalCompatibilityId, IsHearingImpaired FROM MediaStreams";
+        var mediaStreamQuery = """
+        SELECT ItemId, StreamIndex, StreamType, Codec, Language, ChannelLayout, Profile, AspectRatio, Path, 
+        IsInterlaced, BitRate, Channels, SampleRate, IsDefault, IsForced, IsExternal, Height, Width, 
+        AverageFrameRate, RealFrameRate, Level, PixelFormat, BitDepth, IsAnamorphic, RefFrames, CodecTag, 
+        Comment, NalLengthSize, IsAvc, Title, TimeBase, CodecTimeBase, ColorPrimaries, ColorSpace, ColorTransfer, 
+        DvVersionMajor, DvVersionMinor, DvProfile, DvLevel, RpuPresentFlag, ElPresentFlag, BlPresentFlag, DvBlSignalCompatibilityId, IsHearingImpaired
+        FROM MediaStreams        
+        WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = MediaStreams.ItemId)
+        """;
         dbContext.MediaStreamInfos.ExecuteDelete();
 
         foreach (SqliteDataReader dto in connection.Query(mediaStreamQuery))
@@ -197,7 +211,10 @@ public class MigrateLibraryDb : IMigrationRoutine
         stopwatch.Restart();
 
         _logger.LogInformation("Start moving People.");
-        var personsQuery = "select ItemId, Name, Role, PersonType, SortOrder from People p";
+        var personsQuery = """
+        SELECT ItemId, Name, Role, PersonType, SortOrder FROM People 
+        WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = People.ItemId)
+        """;
         dbContext.Peoples.ExecuteDelete();
         dbContext.PeopleBaseItemMap.ExecuteDelete();
 
@@ -251,7 +268,10 @@ public class MigrateLibraryDb : IMigrationRoutine
         stopwatch.Restart();
 
         _logger.LogInformation("Start moving Chapters.");
-        var chapterQuery = "select ItemId,StartPositionTicks,Name,ImagePath,ImageDateModified,ChapterIndex from Chapters2";
+        var chapterQuery = """
+        SELECT ItemId,StartPositionTicks,Name,ImagePath,ImageDateModified,ChapterIndex from Chapters2
+        WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = Chapters2.ItemId)
+        """;
         dbContext.Chapters.ExecuteDelete();
 
         foreach (SqliteDataReader dto in connection.Query(chapterQuery))
@@ -267,24 +287,18 @@ public class MigrateLibraryDb : IMigrationRoutine
         stopwatch.Restart();
 
         _logger.LogInformation("Start moving AncestorIds.");
-        var ancestorIdsQuery = "select ItemId, AncestorId, AncestorIdText from AncestorIds";
+        var ancestorIdsQuery = """
+        SELECT ItemId, AncestorId, AncestorIdText FROM AncestorIds        
+        WHERE 
+        EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = AncestorIds.ItemId)
+        AND
+        EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = AncestorIds.AncestorId)
+        """;
         dbContext.Chapters.ExecuteDelete();
 
         foreach (SqliteDataReader dto in connection.Query(ancestorIdsQuery))
         {
             var ancestorId = GetAncestorId(dto);
-            if (!dbContext.BaseItems.Any(e => e.Id == ancestorId.ItemId))
-            {
-                _logger.LogInformation("Dont move AncestorId ({0}, {1}) because no Item found.", ancestorId.ItemId, ancestorId.ParentItemId);
-                continue;
-            }
-
-            if (!dbContext.BaseItems.Any(e => e.Id == ancestorId.ParentItemId))
-            {
-                _logger.LogInformation("Dont move AncestorId ({0}, {1}) because no parent Item found.", ancestorId.ItemId, ancestorId.ParentItemId);
-                continue;
-            }
-
             dbContext.AncestorIds.Add(ancestorId);
         }
 
