@@ -358,10 +358,9 @@ public sealed class BaseItemRepository(
         cancellationToken.ThrowIfCancellationRequested();
 
         var itemsLen = items.Count;
-        var tuples = new (BaseItemDto Item, List<Guid>? AncestorIds, BaseItemDto TopParent, IEnumerable<string> UserDataKey, List<string> InheritedTags)[itemsLen];
-        for (int i = 0; i < itemsLen; i++)
+        var tuples = new List<(BaseItemDto Item, List<Guid>? AncestorIds, BaseItemDto TopParent, IEnumerable<string> UserDataKey, List<string> InheritedTags)>();
+        foreach (var item in items.GroupBy(e => e.Id).Select(e => e.Last()))
         {
-            var item = items[i];
             var ancestorIds = item.SupportsAncestors ?
                 item.GetAncestorIds().Distinct().ToList() :
                 null;
@@ -371,7 +370,7 @@ public sealed class BaseItemRepository(
             var userdataKey = item.GetUserDataKeys();
             var inheritedTags = item.GetInheritedTags();
 
-            tuples[i] = (item, ancestorIds, topParent, userdataKey, inheritedTags);
+            tuples.Add((item, ancestorIds, topParent, userdataKey, inheritedTags));
         }
 
         var localFuckingItemValueCache = new Dictionary<(int MagicNumber, string Value), Guid>();
