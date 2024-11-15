@@ -14,6 +14,12 @@ namespace MediaBrowser.Model.Subtitles
         public string? Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the font family name.
+        /// </summary>
+        /// <value>The font family name.</value>
+        public string? FamilyName { get; set; }
+
+        /// <summary>
         /// Gets or sets the size.
         /// </summary>
         /// <value>The size.</value>

@@ -12,7 +12,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Extensions;
-using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.SubtitleDtos;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
@@ -499,44 +498,7 @@ public class SubtitleController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public IEnumerable<FontFile> GetFallbackFontList()
     {
-        var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
-        var fallbackFontPath = encodingOptions.FallbackFontPath;
-
-        if (!string.IsNullOrEmpty(fallbackFontPath))
-        {
-            var files = _fileSystem.GetFiles(fallbackFontPath, new[] { ".woff", ".woff2", ".ttf", ".otf" }, false, false);
-            var fontFiles = files
-                .Select(i => new FontFile
-                {
-                    Name = i.Name,
-                    Size = i.Length,
-                    DateCreated = _fileSystem.GetCreationTimeUtc(i),
-                    DateModified = _fileSystem.GetLastWriteTimeUtc(i)
-                })
-                .OrderBy(i => i.Size)
-                .ThenBy(i => i.Name)
-                .ThenByDescending(i => i.DateModified)
-                .ThenByDescending(i => i.DateCreated);
-            // max total size 20M
-            const int MaxSize = 20971520;
-            var sizeCounter = 0L;
-            foreach (var fontFile in fontFiles)
-            {
-                sizeCounter += fontFile.Size;
-                if (sizeCounter >= MaxSize)
-                {
-                    _logger.LogWarning("Some fonts will not be sent due to size limitations");
-                    yield break;
-                }
-
-                yield return fontFile;
-            }
-        }
-        else
-        {
-            _logger.LogWarning("The path of fallback font folder has not been set");
-            encodingOptions.EnableFallbackFont = false;
-        }
+        return _subtitleManager.GetFallbackFontList();
     }
 
     /// <summary>
