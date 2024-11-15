@@ -109,7 +109,11 @@ public class MigrateLibraryDb : IMigrationRoutine
 
         _logger.LogInformation("Start moving ItemValues.");
         // do not migrate inherited types as they are now properly mapped in search and lookup.
-        var itemValueQuery = "select ItemId, Type, Value, CleanValue FROM ItemValues WHERE Type <> 6";
+        var itemValueQuery =
+        """
+        SELECT ItemId, Type, Value, CleanValue FROM ItemValues
+                    WHERE Type <> 6 AND EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = ItemValues.ItemId)
+        """;
         dbContext.ItemValues.ExecuteDelete();
 
         // EFCores local lookup sucks. We cannot use context.ItemValues.Local here because its just super slow.
