@@ -940,7 +940,7 @@ public sealed class BaseItemRepository(
         var result = new QueryResult<(BaseItemDto, ItemCounts)>();
         if (filter.EnableTotalRecordCount)
         {
-            result.TotalRecordCount = query.DistinctBy(e => e.PresentationUniqueKey).Count();
+            result.TotalRecordCount = query.GroupBy(e => e.PresentationUniqueKey).Select(e => e.First()).Count();
         }
 
         var seriesTypeName = itemTypeLookup.BaseItemKindNames[BaseItemKind.Series];
