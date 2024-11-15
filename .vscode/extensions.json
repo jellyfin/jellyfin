@@ -4,7 +4,8 @@
         "editorconfig.editorconfig",
         "github.vscode-github-actions",
         "ms-dotnettools.vscode-dotnet-runtime",
-        "ms-dotnettools.csdevkit"
+        "ms-dotnettools.csdevkit",
+        "alexcvzz.vscode-sqlite"
 	],
 	"unwantedRecommendations": [
 
