@@ -230,6 +230,7 @@ public sealed class BaseItemRepository(
         // dbQuery = dbQuery.Distinct();
         dbQuery = ApplyOrder(dbQuery, filter);
         dbQuery = ApplyGroupingFilter(dbQuery, filter);
+        dbQuery = ApplyQueryPageing(dbQuery, filter);
 
         return dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToImmutableArray();
     }
