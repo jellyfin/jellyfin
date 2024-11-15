@@ -203,7 +203,7 @@ public sealed class BaseItemRepository(
         IQueryable<BaseItemEntity> dbQuery = PrepareItemQuery(context, filter);
 
         dbQuery = TranslateQuery(dbQuery, context, filter);
-        dbQuery = dbQuery.Distinct();
+        // dbQuery = dbQuery.Distinct();
         if (filter.EnableTotalRecordCount)
         {
             result.TotalRecordCount = dbQuery.Count();
