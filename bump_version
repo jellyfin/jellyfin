@@ -28,6 +28,7 @@ jellyfin_subprojects=(
   Emby.Naming/Emby.Naming.csproj
   src/Jellyfin.Extensions/Jellyfin.Extensions.csproj
 )
+issue_template_file="./.github/ISSUE_TEMPLATE/issue report.yml"
 
 new_version="$1"
 new_version_sed="$( cut -f1 -d'-' <<<"${new_version}" )"
@@ -55,6 +56,9 @@ for subproject in ${jellyfin_subprojects[@]}; do
     # Set the nuget version to the specified new_version
     sed -i "s|${old_version}|${new_version_sed}|g" ${subproject}
 done
+
+# Set the version in the GitHub issue template file
+sed -i "s|${old_version}|${new_version_sed}|g" ${issue_template_file}
 
 # Stage the changed files for commit
 git add .

@@ -132,5 +132,9 @@
     "TaskAudioNormalization": "Audio Normalisierung",
     "TaskAudioNormalizationDescription": "Durchsucht Dateien nach Audionormalisierungsdaten.",
     "TaskDownloadMissingLyricsDescription": "Lädt Songtexte herunter",
-    "TaskDownloadMissingLyrics": "Fehlende Songtexte herunterladen"
+    "TaskDownloadMissingLyrics": "Fehlende Songtexte herunterladen",
+    "TaskExtractMediaSegments": "Scanne Mediensegmente",
+    "TaskExtractMediaSegmentsDescription": "Extrahiert oder empfängt Mediensegmente von Plugins die Mediensegmente nutzen.",
+    "TaskMoveTrickplayImages": "Verzeichnis für Trickplay-Bilder migrieren",
+    "TaskMoveTrickplayImagesDescription": "Trickplay-Bilder werden entsprechend der Bibliothekseinstellungen verschoben."
 }

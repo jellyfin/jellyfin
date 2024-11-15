@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Mime;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using AsyncKeyedLock;
@@ -62,7 +63,7 @@ namespace MediaBrowser.Providers.Manager
         private readonly CancellationTokenSource _disposeCancellationTokenSource = new();
         private readonly PriorityQueue<(Guid ItemId, MetadataRefreshOptions RefreshOptions), RefreshPriority> _refreshQueue = new();
         private readonly IMemoryCache _memoryCache;
-
+        private readonly IMediaSegmentManager _mediaSegmentManager;
         private readonly AsyncKeyedLocker<string> _imageSaveLock = new(o =>
         {
             o.PoolSize = 20;
@@ -92,6 +93,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="baseItemManager">The BaseItem manager.</param>
         /// <param name="lyricManager">The lyric manager.</param>
         /// <param name="memoryCache">The memory cache.</param>
+        /// <param name="mediaSegmentManager">The media segment manager.</param>
         public ProviderManager(
             IHttpClientFactory httpClientFactory,
             ISubtitleManager subtitleManager,
@@ -103,7 +105,8 @@ namespace MediaBrowser.Providers.Manager
             ILibraryManager libraryManager,
             IBaseItemManager baseItemManager,
             ILyricManager lyricManager,
-            IMemoryCache memoryCache)
+            IMemoryCache memoryCache,
+            IMediaSegmentManager mediaSegmentManager)
         {
             _logger = logger;
             _httpClientFactory = httpClientFactory;
@@ -116,6 +119,7 @@ namespace MediaBrowser.Providers.Manager
             _baseItemManager = baseItemManager;
             _lyricManager = lyricManager;
             _memoryCache = memoryCache;
+            _mediaSegmentManager = mediaSegmentManager;
         }
 
         /// <inheritdoc/>
@@ -248,15 +252,29 @@ namespace MediaBrowser.Providers.Manager
         }
 
         /// <inheritdoc/>
-        public Task SaveImage(BaseItem item, string source, string mimeType, ImageType type, int? imageIndex, bool? saveLocallyWithMedia, CancellationToken cancellationToken)
+        public async Task SaveImage(BaseItem item, string source, string mimeType, ImageType type, int? imageIndex, bool? saveLocallyWithMedia, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(source))
             {
                 throw new ArgumentNullException(nameof(source));
             }
 
-            var fileStream = AsyncFile.OpenRead(source);
-            return new ImageSaver(_configurationManager, _libraryMonitor, _fileSystem, _logger).SaveImage(item, fileStream, mimeType, type, imageIndex, saveLocallyWithMedia, cancellationToken);
+            try
+            {
+                var fileStream = AsyncFile.OpenRead(source);
+                await new ImageSaver(_configurationManager, _libraryMonitor, _fileSystem, _logger).SaveImage(item, fileStream, mimeType, type, imageIndex, saveLocallyWithMedia, cancellationToken);
+            }
+            finally
+            {
+                try
+                {
+                    File.Delete(source);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Source file {Source} not found or in use, skip removing", source);
+                }
+            }
         }
 
         /// <inheritdoc/>
@@ -570,6 +588,14 @@ namespace MediaBrowser.Providers.Manager
             {
                 Name = i.Name,
                 Type = MetadataPluginType.LyricFetcher
+            }));
+
+            // Media segment providers
+            var mediaSegmentProviders = _mediaSegmentManager.GetSupportedProviders(dummy);
+            pluginList.AddRange(mediaSegmentProviders.Select(i => new MetadataPlugin
+            {
+                Name = i.Name,
+                Type = MetadataPluginType.MediaSegmentProvider
             }));
 
             summary.Plugins = pluginList.ToArray();

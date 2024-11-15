@@ -132,5 +132,9 @@
     "TaskAudioNormalizationDescription": "بررسی فایل برای داده‌های نرمال کردن صدا.",
     "TaskDownloadMissingLyrics": "دانلود متن‌های ناموجود",
     "TaskDownloadMissingLyricsDescription": "دانلود متن شعر‌ها",
-    "TaskAudioNormalization": "نرمال کردن صدا"
+    "TaskAudioNormalization": "نرمال کردن صدا",
+    "TaskExtractMediaSegments": "بررسی بخش محتوا",
+    "TaskExtractMediaSegmentsDescription": "بخش‌های محتوا را از افزونه‌های مربوط استخراح می‌کند.",
+    "TaskMoveTrickplayImages": "جابه‌جایی عکس‌های Trickplay",
+    "TaskMoveTrickplayImagesDescription": "داده‌های Trickplay را با توجه به تنظیمات کتاب‌خانه جابه‌جا می‌کند."
 }

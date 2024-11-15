@@ -18,9 +18,10 @@ public interface ITrickplayManager
     /// </summary>
     /// <param name="video">The video.</param>
     /// <param name="replace">Whether or not existing data should be replaced.</param>
+    /// <param name="libraryOptions">The library options.</param>
     /// <param name="cancellationToken">CancellationToken to use for operation.</param>
     /// <returns>Task.</returns>
-    Task RefreshTrickplayDataAsync(Video video, bool replace, CancellationToken cancellationToken);
+    Task RefreshTrickplayDataAsync(Video video, bool replace, LibraryOptions? libraryOptions, CancellationToken cancellationToken);
 
     /// <summary>
     /// Creates trickplay tiles out of individual thumbnails.
@@ -33,7 +34,7 @@ public interface ITrickplayManager
     /// <remarks>
     /// The output directory will be DELETED and replaced if it already exists.
     /// </remarks>
-    TrickplayInfo CreateTiles(List<string> images, int width, TrickplayOptions options, string outputDir);
+    TrickplayInfo CreateTiles(IReadOnlyList<string> images, int width, TrickplayOptions options, string outputDir);
 
     /// <summary>
     /// Get available trickplay resolutions and corresponding info.
@@ -41,6 +42,14 @@ public interface ITrickplayManager
     /// <param name="itemId">The item.</param>
     /// <returns>Map of width resolutions to trickplay tiles info.</returns>
     Task<Dictionary<int, TrickplayInfo>> GetTrickplayResolutions(Guid itemId);
+
+    /// <summary>
+    /// Gets the item ids of all items with trickplay info.
+    /// </summary>
+    /// <param name="limit">The limit of items to return.</param>
+    /// <param name="offset">The offset to start the query at.</param>
+    /// <returns>The list of item ids that have trickplay info.</returns>
+    Task<IReadOnlyList<TrickplayInfo>> GetTrickplayItemsAsync(int limit, int offset);
 
     /// <summary>
     /// Saves trickplay info.
@@ -62,8 +71,29 @@ public interface ITrickplayManager
     /// <param name="item">The item.</param>
     /// <param name="width">The width of a single thumbnail.</param>
     /// <param name="index">The tile's index.</param>
+    /// <param name="saveWithMedia">Whether or not the tile should be saved next to the media file.</param>
     /// <returns>The absolute path.</returns>
-    string GetTrickplayTilePath(BaseItem item, int width, int index);
+    Task<string> GetTrickplayTilePathAsync(BaseItem item, int width, int index, bool saveWithMedia);
+
+    /// <summary>
+    /// Gets the path to a trickplay tile image.
+    /// </summary>
+    /// <param name="item">The item.</param>
+    /// <param name="tileWidth">The amount of images for the tile width.</param>
+    /// <param name="tileHeight">The amount of images for the tile height.</param>
+    /// <param name="width">The width of a single thumbnail.</param>
+    /// <param name="saveWithMedia">Whether or not the tile should be saved next to the media file.</param>
+    /// <returns>The absolute path.</returns>
+    string GetTrickplayDirectory(BaseItem item, int tileWidth, int tileHeight, int width, bool saveWithMedia = false);
+
+    /// <summary>
+    /// Migrates trickplay images between local and media directories.
+    /// </summary>
+    /// <param name="video">The video.</param>
+    /// <param name="libraryOptions">The library options.</param>
+    /// <param name="cancellationToken">CancellationToken to use for operation.</param>
+    /// <returns>Task.</returns>
+    Task MoveGeneratedTrickplayDataAsync(Video video, LibraryOptions? libraryOptions, CancellationToken cancellationToken);
 
     /// <summary>
     /// Gets the trickplay HLS playlist.

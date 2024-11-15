@@ -91,12 +91,41 @@ namespace Emby.Server.Implementations.MediaEncoder
             return video.DefaultVideoStreamIndex.HasValue;
         }
 
+        private long GetAverageDurationBetweenChapters(IReadOnlyList<ChapterInfo> chapters)
+        {
+            if (chapters.Count < 2)
+            {
+                return 0;
+            }
+
+            long sum = 0;
+            for (int i = 1; i < chapters.Count; i++)
+            {
+                sum += chapters[i].StartPositionTicks - chapters[i - 1].StartPositionTicks;
+            }
+
+            return sum / chapters.Count;
+        }
+
         public async Task<bool> RefreshChapterImages(Video video, IDirectoryService directoryService, IReadOnlyList<ChapterInfo> chapters, bool extractImages, bool saveChapters, CancellationToken cancellationToken)
         {
+            if (chapters.Count == 0)
+            {
+                return true;
+            }
+
             var libraryOptions = _libraryManager.GetLibraryOptions(video);
 
             if (!IsEligibleForChapterImageExtraction(video, libraryOptions))
             {
+                extractImages = false;
+            }
+
+            var averageChapterDuration = GetAverageDurationBetweenChapters(chapters);
+            var threshold = TimeSpan.FromSeconds(1).Ticks;
+            if (averageChapterDuration < threshold)
+            {
+                _logger.LogInformation("Skipping chapter image extraction for {Video} as the average chapter duration {AverageDuration} was lower than the minimum threshold {Threshold}", video.Name, averageChapterDuration, threshold);
                 extractImages = false;
             }
 

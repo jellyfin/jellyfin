@@ -129,5 +129,10 @@
     "TaskCleanCollectionsAndPlaylists": "コレクションとプレイリストをクリーンアップ",
     "TaskAudioNormalization": "音声の正規化",
     "TaskAudioNormalizationDescription": "音声の正規化データのためにファイルをスキャンします。",
-    "TaskCleanCollectionsAndPlaylistsDescription": "在しなくなったコレクションやプレイリストからアイテムを削除します。"
+    "TaskCleanCollectionsAndPlaylistsDescription": "在しなくなったコレクションやプレイリストからアイテムを削除します。",
+    "TaskDownloadMissingLyricsDescription": "歌詞をダウンロード",
+    "TaskExtractMediaSegments": "メディアセグメントを読み取る",
+    "TaskMoveTrickplayImages": "Trickplayの画像を移動",
+    "TaskMoveTrickplayImagesDescription": "ライブラリ設定によりTrickplayのファイルを移動。",
+    "TaskDownloadMissingLyrics": "記録されていない歌詞をダウンロード"
 }

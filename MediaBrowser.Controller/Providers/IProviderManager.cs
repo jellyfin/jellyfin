@@ -77,7 +77,8 @@ namespace MediaBrowser.Controller.Providers
         Task SaveImage(BaseItem item, Stream source, string mimeType, ImageType type, int? imageIndex, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Saves the image.
+        /// Saves the image by giving the image path on filesystem.
+        /// This method will remove the image on the source path after saving it to the destination.
         /// </summary>
         /// <param name="item">Image to save.</param>
         /// <param name="source">Source of image.</param>

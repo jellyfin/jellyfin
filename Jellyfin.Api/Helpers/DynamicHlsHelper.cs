@@ -304,6 +304,8 @@ public class DynamicHlsHelper
 
         AppendPlaylistCodecsField(playlistBuilder, state);
 
+        AppendPlaylistSupplementalCodecsField(playlistBuilder, state);
+
         AppendPlaylistResolutionField(playlistBuilder, state);
 
         AppendPlaylistFramerateField(playlistBuilder, state);
@@ -404,6 +406,48 @@ public class DynamicHlsHelper
                 .Append(codecs)
                 .Append('"');
         }
+    }
+
+    /// <summary>
+    /// Appends a SUPPLEMENTAL-CODECS field containing formatted strings of
+    /// the active streams output Dolby Vision Videos.
+    /// </summary>
+    /// <seealso cref="AppendPlaylist(StringBuilder, StreamState, string, int, string)"/>
+    /// <seealso cref="GetPlaylistVideoCodecs(StreamState, string, int)"/>
+    /// <param name="builder">StringBuilder to append the field to.</param>
+    /// <param name="state">StreamState of the current stream.</param>
+    private void AppendPlaylistSupplementalCodecsField(StringBuilder builder, StreamState state)
+    {
+        // Dolby Vision currently cannot exist when transcoding
+        if (!EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
+        {
+            return;
+        }
+
+        var dvProfile = state.VideoStream.DvProfile;
+        var dvLevel = state.VideoStream.DvLevel;
+        var dvRangeString = state.VideoStream.VideoRangeType switch
+        {
+            VideoRangeType.DOVIWithHDR10 => "db1p",
+            VideoRangeType.DOVIWithHLG => "db4h",
+            _ => string.Empty
+        };
+
+        if (dvProfile is null || dvLevel is null || string.IsNullOrEmpty(dvRangeString))
+        {
+            return;
+        }
+
+        var dvFourCc = string.Equals(state.ActualOutputVideoCodec, "av1", StringComparison.OrdinalIgnoreCase) ? "dav1" : "dvh1";
+        builder.Append(",SUPPLEMENTAL-CODECS=\"")
+            .Append(dvFourCc)
+            .Append('.')
+            .Append(dvProfile.Value.ToString("D2", CultureInfo.InvariantCulture))
+            .Append('.')
+            .Append(dvLevel.Value.ToString("D2", CultureInfo.InvariantCulture))
+            .Append('/')
+            .Append(dvRangeString)
+            .Append('"');
     }
 
     /// <summary>
@@ -738,7 +782,7 @@ public class DynamicHlsHelper
         {
             var width = state.VideoStream.Width ?? 0;
             var height = state.VideoStream.Height ?? 0;
-            var framerate = state.VideoStream.AverageFrameRate ?? 30;
+            var framerate = state.VideoStream.ReferenceFrameRate ?? 30;
             var bitDepth = state.VideoStream.BitDepth ?? 8;
             return HlsCodecStringHelpers.GetVp9String(
                 width,
