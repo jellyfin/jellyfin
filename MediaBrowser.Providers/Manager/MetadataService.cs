@@ -135,27 +135,7 @@ namespace MediaBrowser.Providers.Manager
             var beforeSaveResult = BeforeSave(itemOfType, isFirstRefresh || refreshOptions.ReplaceAllMetadata || refreshOptions.MetadataRefreshMode == MetadataRefreshMode.FullRefresh || requiresRefresh || refreshOptions.ForceSave, updateType);
             updateType |= beforeSaveResult;
 
-            // Save if changes were made, or it's never been saved before
-            if (refreshOptions.ForceSave || updateType > ItemUpdateType.None || isFirstRefresh || refreshOptions.ReplaceAllMetadata || requiresRefresh)
-            {
-                if (item.IsFileProtocol)
-                {
-                    var file = TryGetFile(item.Path, refreshOptions.DirectoryService);
-                    if (file is not null)
-                    {
-                        item.DateModified = file.LastWriteTimeUtc;
-                    }
-                }
-
-                // If any of these properties are set then make sure the updateType is not None, just to force everything to save
-                if (refreshOptions.ForceSave || refreshOptions.ReplaceAllMetadata)
-                {
-                    updateType |= ItemUpdateType.MetadataDownload;
-                }
-
-                // Save to database
-                await SaveItemAsync(metadataResult, updateType, cancellationToken).ConfigureAwait(false);
-            }
+            updateType = await SaveInternal(item, refreshOptions, updateType, isFirstRefresh, requiresRefresh, metadataResult, cancellationToken).ConfigureAwait(false);
 
             // Next run metadata providers
             if (refreshOptions.MetadataRefreshMode != MetadataRefreshMode.None)
@@ -213,12 +193,40 @@ namespace MediaBrowser.Providers.Manager
             if (hasRefreshedMetadata && hasRefreshedImages)
             {
                 item.DateLastRefreshed = DateTime.UtcNow;
-                await SaveItemAsync(metadataResult, updateType, cancellationToken).ConfigureAwait(false);
             }
+
+            updateType = await SaveInternal(item, refreshOptions, updateType, isFirstRefresh, requiresRefresh, metadataResult, cancellationToken).ConfigureAwait(false);
 
             await AfterMetadataRefresh(itemOfType, refreshOptions, cancellationToken).ConfigureAwait(false);
 
             return updateType;
+
+            async Task<ItemUpdateType> SaveInternal(BaseItem item, MetadataRefreshOptions refreshOptions, ItemUpdateType updateType, bool isFirstRefresh, bool requiresRefresh, MetadataResult<TItemType> metadataResult, CancellationToken cancellationToken)
+            {
+                // Save if changes were made, or it's never been saved before
+                if (refreshOptions.ForceSave || updateType > ItemUpdateType.None || isFirstRefresh || refreshOptions.ReplaceAllMetadata || requiresRefresh)
+                {
+                    if (item.IsFileProtocol)
+                    {
+                        var file = TryGetFile(item.Path, refreshOptions.DirectoryService);
+                        if (file is not null)
+                        {
+                            item.DateModified = file.LastWriteTimeUtc;
+                        }
+                    }
+
+                    // If any of these properties are set then make sure the updateType is not None, just to force everything to save
+                    if (refreshOptions.ForceSave || refreshOptions.ReplaceAllMetadata)
+                    {
+                        updateType |= ItemUpdateType.MetadataDownload;
+                    }
+
+                    // Save to database
+                    await SaveItemAsync(metadataResult, updateType, cancellationToken).ConfigureAwait(false);
+                }
+
+                return updateType;
+            }
         }
 
         private void ApplySearchResult(ItemLookupInfo lookupInfo, RemoteSearchResult result)

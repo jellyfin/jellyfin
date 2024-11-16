@@ -209,7 +209,7 @@ public sealed class BaseItemRepository(
             result.TotalRecordCount = dbQuery.Count();
         }
 
-        dbQuery = ApplyOrder(dbQuery, filter);
+        dbQuery = ApplyGroupingFilter(dbQuery, filter);
         dbQuery = ApplyQueryPageing(dbQuery, filter);
 
         result.Items = dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToImmutableArray();
@@ -228,7 +228,6 @@ public sealed class BaseItemRepository(
 
         dbQuery = TranslateQuery(dbQuery, context, filter);
         // dbQuery = dbQuery.Distinct();
-        dbQuery = ApplyOrder(dbQuery, filter);
         dbQuery = ApplyGroupingFilter(dbQuery, filter);
         dbQuery = ApplyQueryPageing(dbQuery, filter);
 
@@ -253,6 +252,7 @@ public sealed class BaseItemRepository(
         else
         {
             dbQuery = dbQuery.Distinct();
+            dbQuery = ApplyOrder(dbQuery, filter);
         }
 
         return dbQuery;
