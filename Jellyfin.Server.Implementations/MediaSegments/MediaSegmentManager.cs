@@ -139,17 +139,17 @@ public class MediaSegmentManager : IMediaSegmentManager
     }
 
     /// <inheritdoc />
-    public Task<IEnumerable<MediaSegmentDto>> GetSegmentsAsync(Guid itemId, IEnumerable<MediaSegmentType>? typeFilter, bool filterByProvider = true)
+    public async Task<IEnumerable<MediaSegmentDto>> GetSegmentsAsync(Guid itemId, IEnumerable<MediaSegmentType>? typeFilter, bool filterByProvider = true)
     {
         var baseItem = _libraryManager.GetItemById(itemId);
 
         if (baseItem is null)
         {
             _logger.LogError("Tried to request segments for an invalid item");
-            return Task.FromResult<IEnumerable<MediaSegmentDto>>([]);
+            return [];
         }
 
-        return GetSegmentsAsync(baseItem, typeFilter, filterByProvider);
+        return await GetSegmentsAsync(baseItem, typeFilter, filterByProvider).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -185,7 +185,7 @@ public class MediaSegmentManager : IMediaSegmentManager
             .AsNoTracking()
             .AsEnumerable()
             .Select(Map)
-            .ToImmutableArray();
+            .ToArray();
     }
 
     private static MediaSegmentDto Map(MediaSegment segment)
