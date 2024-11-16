@@ -124,7 +124,7 @@
                 "http://localhost",
                 "--output",
                 "${input:openapiJsonOutputDir}/openapi.json",
-                "${workspaceFolder}/Jellyfin.Server/bin/Release/net8.0/jellyfin.dll",
+                "${workspaceFolder}/Jellyfin.Server/bin/Release/net9.0/jellyfin.dll",
                 "api-docs",
             ],
             "problemMatcher":"$eslint-compact",
