@@ -32,6 +32,10 @@ using Microsoft.Extensions.Logging;
 using BaseItemDto = MediaBrowser.Controller.Entities.BaseItem;
 using BaseItemEntity = Jellyfin.Data.Entities.BaseItemEntity;
 #pragma warning disable RS0030 // Do not use banned APIs
+// Do not enforce that because EFCore cannot deal with cultures well.
+#pragma warning disable CA1304 // Specify CultureInfo
+#pragma warning disable CA1311 // Specify a culture or use an invariant version
+#pragma warning disable CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
 
 namespace Jellyfin.Server.Implementations.Item;
 
@@ -1365,7 +1369,8 @@ public sealed class BaseItemRepository(
 
         if (!string.IsNullOrEmpty(filter.SearchTerm))
         {
-            baseQuery = baseQuery.Where(e => e.CleanName!.Contains(filter.SearchTerm) || (e.OriginalTitle != null && e.OriginalTitle.Contains(filter.SearchTerm)));
+            var searchTerm = filter.SearchTerm.ToLower();
+            baseQuery = baseQuery.Where(e => e.CleanName!.ToLower().Contains(searchTerm) || (e.OriginalTitle != null && e.OriginalTitle.ToLower().Contains(searchTerm)));
         }
 
         if (filter.IsFolder.HasValue)
@@ -1592,8 +1597,8 @@ public sealed class BaseItemRepository(
         if (!string.IsNullOrWhiteSpace(nameContains))
         {
             baseQuery = baseQuery.Where(e =>
-                e.CleanName == filter.NameContains
-                || e.OriginalTitle!.Contains(filter.NameContains!));
+                e.CleanName!.Contains(nameContains)
+                || e.OriginalTitle!.ToLower().Contains(nameContains!));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.NameStartsWith))
