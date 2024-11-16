@@ -240,24 +240,29 @@ public sealed class BaseItemRepository(
 
     private IQueryable<BaseItemEntity> ApplyGroupingFilter(IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
     {
-        var enableGroupByPresentationUniqueKey = EnableGroupByPresentationUniqueKey(filter);
-        if (enableGroupByPresentationUniqueKey && filter.GroupBySeriesPresentationUniqueKey)
-        {
-            dbQuery = dbQuery.GroupBy(e => new { e.PresentationUniqueKey, e.SeriesPresentationUniqueKey }).Select(e => e.First());
-        }
-        else if (enableGroupByPresentationUniqueKey)
-        {
-            dbQuery = dbQuery.GroupBy(e => e.PresentationUniqueKey).Select(e => e.First());
-        }
-        else if (filter.GroupBySeriesPresentationUniqueKey)
-        {
-            dbQuery = dbQuery.GroupBy(e => e.SeriesPresentationUniqueKey).Select(e => e.First());
-        }
-        else
-        {
-            dbQuery = dbQuery.Distinct();
-            dbQuery = ApplyOrder(dbQuery, filter);
-        }
+        // var enableGroupByPresentationUniqueKey = EnableGroupByPresentationUniqueKey(filter);
+        // if (enableGroupByPresentationUniqueKey && filter.GroupBySeriesPresentationUniqueKey)
+        // {
+        //     dbQuery = ApplyOrder(dbQuery, filter);
+        //     dbQuery = dbQuery.GroupBy(e => new { e.PresentationUniqueKey, e.SeriesPresentationUniqueKey }).Select(e => e.First());
+        // }
+        // else if (enableGroupByPresentationUniqueKey)
+        // {
+        //     dbQuery = ApplyOrder(dbQuery, filter);
+        //     dbQuery = dbQuery.GroupBy(e => e.PresentationUniqueKey).Select(e => e.First());
+        // }
+        // else if (filter.GroupBySeriesPresentationUniqueKey)
+        // {
+        //     dbQuery = ApplyOrder(dbQuery, filter);
+        //     dbQuery = dbQuery.GroupBy(e => e.SeriesPresentationUniqueKey).Select(e => e.First());
+        // }
+        // else
+        // {
+        //     dbQuery = dbQuery.Distinct();
+        //     dbQuery = ApplyOrder(dbQuery, filter);
+        // }
+        dbQuery = dbQuery.Distinct();
+        dbQuery = ApplyOrder(dbQuery, filter);
 
         return dbQuery;
     }
@@ -293,7 +298,7 @@ public sealed class BaseItemRepository(
 
     private IQueryable<BaseItemEntity> PrepareItemQuery(JellyfinDbContext context, InternalItemsQuery filter)
     {
-        IQueryable<BaseItemEntity> dbQuery = context.BaseItems.AsNoTracking().AsSingleQuery()
+        IQueryable<BaseItemEntity> dbQuery = context.BaseItems.AsNoTracking().AsSplitQuery()
             .Include(e => e.TrailerTypes)
             .Include(e => e.Provider)
             .Include(e => e.LockedFields);
