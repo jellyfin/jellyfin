@@ -813,7 +813,7 @@ public sealed class BaseItemRepository(
         return entity;
     }
 
-    private IReadOnlyList<string> GetItemValueNames(ItemValueType[] itemValueTypes, IReadOnlyList<string> withItemTypes, IReadOnlyList<string> excludeItemTypes)
+    private string[] GetItemValueNames(ItemValueType[] itemValueTypes, IReadOnlyList<string> withItemTypes, IReadOnlyList<string> excludeItemTypes)
     {
         using var context = dbProvider.CreateDbContext();
 
