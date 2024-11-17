@@ -150,7 +150,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private static readonly Dictionary<int, string[]> _filterOptionsDict = new Dictionary<int, string[]>
         {
-            { 0, new string[] { "scale_cuda", "Output format (default \"same\")" } },
+            { 0, new string[] { "scale_cuda", "format" } },
             { 1, new string[] { "tonemap_cuda", "GPU accelerated HDR to SDR tonemapping" } },
             { 2, new string[] { "tonemap_opencl", "bt2390" } },
             { 3, new string[] { "overlay_opencl", "Action to take when encountering EOF from secondary input" } },

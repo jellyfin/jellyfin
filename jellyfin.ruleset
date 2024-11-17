@@ -154,6 +154,8 @@
     <!-- TODO: enable when false positives are fixed -->
     <!-- disable warning CA1508: Avoid dead conditional code -->
     <Rule Id="CA1508" Action="Info" />
+    <!-- disable warning CA1515: Consider making public types internal -->
+    <Rule Id="CA1515" Action="Info" />
     <!-- disable warning CA1716: Identifiers should not match keywords -->
     <Rule Id="CA1716" Action="Info" />
     <!-- disable warning CA1720: Identifiers should not contain type names -->
@@ -168,6 +170,8 @@
     <Rule Id="CA1812" Action="Info" />
     <!-- disable warning CA1822: Member does not access instance data and can be marked as static -->
     <Rule Id="CA1822" Action="Info" />
+    <!-- CA1859: Use concrete types when possible for improved performance -->
+    <Rule Id="CA1859" Action="Info" />
     <!-- TODO: Enable -->
     <!-- CA1861: Prefer 'static readonly' fields over constant array arguments if the called method is called repeatedly and is not mutating the passed array -->
     <Rule Id="CA1861" Action="Info" />
