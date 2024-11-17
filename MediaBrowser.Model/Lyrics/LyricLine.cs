@@ -13,7 +13,7 @@ public class LyricLine
     /// <param name="text">The lyric text.</param>
     /// <param name="start">The lyric start time in ticks.</param>
     /// <param name="cues">The time-aligned cues for the song's lyrics.</param>
-    public LyricLine(string text, long? start = null, IReadOnlyList<LyricLineTimeTag>? cues = null)
+    public LyricLine(string text, long? start = null, IReadOnlyList<LyricLineCue>? cues = null)
     {
         Text = text;
         Start = start;
@@ -33,5 +33,5 @@ public class LyricLine
     /// <summary>
     /// Gets the time-aligned cues for the song's lyrics.
     /// </summary>
-    public IReadOnlyList<LyricLineTimeTag>? Cues { get; }
+    public IReadOnlyList<LyricLineCue>? Cues { get; }
 }
