@@ -639,6 +639,7 @@ namespace Emby.Server.Implementations
             BaseItem.ProviderManager = Resolve<IProviderManager>();
             BaseItem.LocalizationManager = Resolve<ILocalizationManager>();
             BaseItem.ItemRepository = Resolve<IItemRepository>();
+            BaseItem.ChapterRepository = Resolve<IChapterRepository>();
             BaseItem.FileSystem = Resolve<IFileSystem>();
             BaseItem.UserDataManager = Resolve<IUserDataManager>();
             BaseItem.ChannelManager = Resolve<IChannelManager>();
