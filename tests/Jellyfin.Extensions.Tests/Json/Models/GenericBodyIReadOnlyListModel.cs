@@ -8,7 +8,7 @@ namespace Jellyfin.Extensions.Tests.Json.Models
     /// The generic body <c>IReadOnlyList</c> model.
     /// </summary>
     /// <typeparam name="T">The value type.</typeparam>
-    public class GenericBodyIReadOnlyListModel<T>
+    public sealed class GenericBodyIReadOnlyListModel<T>
     {
         /// <summary>
         /// Gets or sets the value.
