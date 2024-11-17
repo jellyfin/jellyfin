@@ -867,7 +867,7 @@ public class LibraryController : BaseJellyfinApiController
             .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
-        result.MediaSgementProviders = plugins
+        result.MediaSegmentProviders = plugins
             .SelectMany(i => i.Plugins.Where(p => p.Type == MetadataPluginType.MediaSegmentProvider))
             .Select(i => new LibraryOptionInfoDto
             {

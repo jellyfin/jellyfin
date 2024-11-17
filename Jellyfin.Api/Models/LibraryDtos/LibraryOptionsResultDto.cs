@@ -31,7 +31,7 @@ public class LibraryOptionsResultDto
     /// <summary>
     /// Gets or sets the list of MediaSegment Providers.
     /// </summary>
-    public IReadOnlyList<LibraryOptionInfoDto> MediaSgementProviders { get; set; } = Array.Empty<LibraryOptionInfoDto>();
+    public IReadOnlyList<LibraryOptionInfoDto> MediaSegmentProviders { get; set; } = Array.Empty<LibraryOptionInfoDto>();
 
     /// <summary>
     /// Gets or sets the type options.
