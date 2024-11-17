@@ -258,7 +258,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="items">Items to create.</param>
         /// <param name="parent">Parent of new items.</param>
         /// <param name="cancellationToken">CancellationToken to use for operation.</param>
-        void CreateItems(IReadOnlyList<BaseItem> items, BaseItem? parent, CancellationToken cancellationToken);
+        void CreateOrUpdateItems(IReadOnlyList<BaseItem> items, BaseItem? parent, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates the item.

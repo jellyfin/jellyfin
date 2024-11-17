@@ -131,13 +131,13 @@ namespace MediaBrowser.Controller.Entities.Movies
         public override IReadOnlyList<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
         {
             var children = base.GetChildren(user, includeLinkedChildren, query);
-            return Sort(children, user).ToImmutableArray();
+            return Sort(children, user).ToArray();
         }
 
         public override IReadOnlyList<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)
         {
             var children = base.GetRecursiveChildren(user, query);
-            return Sort(children, user).ToImmutableArray();
+            return Sort(children, user).ToArray();
         }
 
         public BoxSetInfo GetLookupInfo()

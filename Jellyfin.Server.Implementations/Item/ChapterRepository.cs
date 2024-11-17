@@ -73,7 +73,7 @@ public class ChapterRepository : IChapterRepository
             })
             .ToList()
             .Select(e => Map(e.chapter, e.baseItemPath!))
-            .ToImmutableArray();
+            .ToArray();
     }
 
     /// <inheritdoc cref="IChapterRepository"/>

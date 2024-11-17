@@ -51,7 +51,7 @@ public class MediaStreamRepository : IMediaStreamRepository
     public IReadOnlyList<MediaStream> GetMediaStreams(MediaStreamQuery filter)
     {
         using var context = _dbProvider.CreateDbContext();
-        return TranslateQuery(context.MediaStreamInfos.AsNoTracking(), filter).AsEnumerable().Select(Map).ToImmutableArray();
+        return TranslateQuery(context.MediaStreamInfos.AsNoTracking(), filter).AsEnumerable().Select(Map).ToArray();
     }
 
     private string? GetPathToSave(string? path)

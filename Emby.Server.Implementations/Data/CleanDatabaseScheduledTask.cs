@@ -28,9 +28,9 @@ namespace Emby.Server.Implementations.Data
             _dbProvider = dbProvider;
         }
 
-        public Task Run(IProgress<double> progress, CancellationToken cancellationToken)
+        public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            return CleanDeadItems(cancellationToken, progress);
+            await CleanDeadItems(cancellationToken, progress).ConfigureAwait(false);
         }
 
         private async Task CleanDeadItems(CancellationToken cancellationToken, IProgress<double> progress)

@@ -397,7 +397,7 @@ public class InstantMixController : BaseJellyfinApiController
 
         if (limit.HasValue && limit < items.Count)
         {
-            items = items.Take(limit.Value).ToImmutableArray();
+            items = items.Take(limit.Value).ToArray();
         }
 
         var result = new QueryResult<BaseItemDto>(

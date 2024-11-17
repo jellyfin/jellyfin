@@ -265,7 +265,7 @@ public class GuideManager : IGuideManager
 
                 if (newPrograms.Count > 0)
                 {
-                    _libraryManager.CreateItems(newPrograms, null, cancellationToken);
+                    _libraryManager.CreateOrUpdateItems(newPrograms, null, cancellationToken);
                     await PrecacheImages(newPrograms, maxCacheDate).ConfigureAwait(false);
                 }
 

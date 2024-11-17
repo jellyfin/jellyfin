@@ -1,12 +1,8 @@
-using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
 using System.Threading.Channels;
 using Emby.Server.Implementations.Playlists;
 using Jellyfin.Data.Enums;
-using Jellyfin.Server.Implementations;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
@@ -14,7 +10,6 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Playlists;
-using MediaBrowser.Model.Querying;
 
 namespace Emby.Server.Implementations.Data;
 
@@ -23,7 +18,6 @@ public class ItemTypeLookup : IItemTypeLookup
 {
     /// <inheritdoc />
     public IReadOnlyList<string> MusicGenreTypes { get; } = [
-
          typeof(Audio).FullName!,
          typeof(MusicVideo).FullName!,
          typeof(MusicAlbum).FullName!,

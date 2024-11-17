@@ -117,7 +117,7 @@ public sealed class BaseItemRepository(
         PrepareFilterQuery(filter);
 
         using var context = dbProvider.CreateDbContext();
-        return ApplyQueryFilter(context.BaseItems.AsNoTracking(), context, filter).Select(e => e.Id).ToImmutableArray();
+        return ApplyQueryFilter(context.BaseItems.AsNoTracking(), context, filter).Select(e => e.Id).ToArray();
     }
 
     /// <inheritdoc />
@@ -216,7 +216,7 @@ public sealed class BaseItemRepository(
         dbQuery = ApplyGroupingFilter(dbQuery, filter);
         dbQuery = ApplyQueryPageing(dbQuery, filter);
 
-        result.Items = dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToImmutableArray();
+        result.Items = dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToArray();
         result.StartIndex = filter.StartIndex ?? 0;
         return result;
     }
@@ -235,7 +235,7 @@ public sealed class BaseItemRepository(
         dbQuery = ApplyGroupingFilter(dbQuery, filter);
         dbQuery = ApplyQueryPageing(dbQuery, filter);
 
-        return dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToImmutableArray();
+        return dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToArray();
     }
 
     private IQueryable<BaseItemEntity> ApplyGroupingFilter(IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
@@ -831,7 +831,7 @@ public sealed class BaseItemRepository(
         }
 
         // query = query.DistinctBy(e => e.CleanValue);
-        return query.Select(e => e.ItemValue.CleanValue).ToImmutableArray();
+        return query.Select(e => e.ItemValue.CleanValue).ToArray();
     }
 
     private static bool TypeRequiresDeserialization(Type type)
@@ -976,10 +976,10 @@ public sealed class BaseItemRepository(
         });
 
         result.StartIndex = filter.StartIndex ?? 0;
-        result.Items = resultQuery.ToImmutableArray().Where(e => e is not null).Select(e =>
+        result.Items = resultQuery.ToArray().Where(e => e is not null).Select(e =>
         {
             return (DeserialiseBaseItem(e.item, filter.SkipDeserialization), e.itemCount);
-        }).ToImmutableArray();
+        }).ToArray();
 
         return result;
     }

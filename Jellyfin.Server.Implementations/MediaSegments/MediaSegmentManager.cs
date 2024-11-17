@@ -154,7 +154,7 @@ public class MediaSegmentManager : IMediaSegmentManager
         return query
             .OrderBy(e => e.StartTicks)
             .AsNoTracking()
-            .ToImmutableArray()
+            .ToArray()
             .Select(Map);
     }
 

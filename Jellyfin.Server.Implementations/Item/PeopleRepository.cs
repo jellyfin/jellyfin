@@ -36,7 +36,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
             dbQuery = dbQuery.Take(filter.Limit);
         }
 
-        return dbQuery.AsEnumerable().Select(Map).ToImmutableArray();
+        return dbQuery.AsEnumerable().Select(Map).ToArray();
     }
 
     /// <inheritdoc/>
@@ -51,7 +51,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
             dbQuery = dbQuery.Take(filter.Limit);
         }
 
-        return dbQuery.Select(e => e.Name).ToImmutableArray();
+        return dbQuery.Select(e => e.Name).ToArray();
     }
 
     /// <inheritdoc />

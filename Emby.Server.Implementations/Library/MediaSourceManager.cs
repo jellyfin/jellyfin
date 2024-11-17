@@ -218,7 +218,7 @@ namespace Emby.Server.Implementations.Library
                 list.Add(source);
             }
 
-            return SortMediaSources(list).ToImmutableArray();
+            return SortMediaSources(list).ToArray();
         }
 
         /// <inheritdoc />>

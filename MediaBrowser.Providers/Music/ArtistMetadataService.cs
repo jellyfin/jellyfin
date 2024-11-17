@@ -37,7 +37,7 @@ namespace MediaBrowser.Providers.Music
                     Recursive = true,
                     IsFolder = false
                 })
-                : item.GetRecursiveChildren(i => i is IHasArtist && !i.IsFolder).ToImmutableArray();
+                : item.GetRecursiveChildren(i => i is IHasArtist && !i.IsFolder);
         }
     }
 }
