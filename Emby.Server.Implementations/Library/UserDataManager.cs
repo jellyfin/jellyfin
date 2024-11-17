@@ -98,7 +98,6 @@ namespace Emby.Server.Implementations.Library
         {
             ArgumentNullException.ThrowIfNull(user);
             ArgumentNullException.ThrowIfNull(item);
-            ArgumentNullException.ThrowIfNull(reason);
             ArgumentNullException.ThrowIfNull(userDataDto);
 
             var userData = GetUserData(user, item) ?? throw new InvalidOperationException("Did not expect UserData to be null.");
