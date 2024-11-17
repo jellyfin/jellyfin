@@ -117,7 +117,7 @@ namespace Emby.Server.Implementations.TV
                 .ToList();
 
             // Avoid implicitly captured closure
-            var episodes = GetNextUpEpisodes(request, user, items, options);
+            var episodes = GetNextUpEpisodes(request, user, items.Distinct().ToArray(), options);
 
             return GetResult(episodes, request);
         }
