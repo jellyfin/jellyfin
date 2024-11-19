@@ -4131,7 +4131,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             else if (isD3d11vaDecoder || isQsvDecoder)
             {
                 var isRext = IsVideoStreamHevcRext(state);
-                var twoPassVppTonemap = isRext;
+                var twoPassVppTonemap = false;
                 var doVppFullRangeOut = isMjpegEncoder
                     && _mediaEncoder.EncoderVersion >= _minFFmpegQsvVppOutRangeOption;
                 var doVppScaleModeHq = isMjpegEncoder
@@ -4140,6 +4140,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var procampParams = string.Empty;
                 if (doVppTonemap)
                 {
+                    if (isRext)
+                    {
+                        // VPP tonemap requires p010 input
+                        twoPassVppTonemap = true;
+                    }
+
                     if (options.VppTonemappingBrightness != 0
                         && options.VppTonemappingBrightness >= -100
                         && options.VppTonemappingBrightness <= 100)
