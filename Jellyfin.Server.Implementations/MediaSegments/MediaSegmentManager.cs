@@ -139,23 +139,53 @@ public class MediaSegmentManager : IMediaSegmentManager
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<MediaSegmentDto>> GetSegmentsAsync(Guid itemId, IEnumerable<MediaSegmentType>? typeFilter)
+    public async Task<IEnumerable<MediaSegmentDto>> GetSegmentsAsync(Guid itemId, IEnumerable<MediaSegmentType>? typeFilter, bool filterByProvider = true)
+    {
+        var baseItem = _libraryManager.GetItemById(itemId);
+
+        if (baseItem is null)
+        {
+            _logger.LogError("Tried to request segments for an invalid item");
+            return [];
+        }
+
+        return await GetSegmentsAsync(baseItem, typeFilter, filterByProvider).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<MediaSegmentDto>> GetSegmentsAsync(BaseItem item, IEnumerable<MediaSegmentType>? typeFilter, bool filterByProvider = true)
     {
         using var db = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
 
         var query = db.MediaSegments
-            .Where(e => e.ItemId.Equals(itemId));
+            .Where(e => e.ItemId.Equals(item.Id));
 
         if (typeFilter is not null)
         {
             query = query.Where(e => typeFilter.Contains(e.Type));
         }
 
+        if (filterByProvider)
+        {
+            var libraryOptions = _libraryManager.GetLibraryOptions(item);
+            var providerIds = _segmentProviders
+                .Where(e => !libraryOptions.DisabledMediaSegmentProviders.Contains(GetProviderId(e.Name)))
+                .Select(f => GetProviderId(f.Name))
+                .ToArray();
+            if (providerIds.Length == 0)
+            {
+                return [];
+            }
+
+            query = query.Where(e => providerIds.Contains(e.SegmentProviderId));
+        }
+
         return query
             .OrderBy(e => e.StartTicks)
             .AsNoTracking()
-            .ToImmutableList()
-            .Select(Map);
+            .AsEnumerable()
+            .Select(Map)
+            .ToArray();
     }
 
     private static MediaSegmentDto Map(MediaSegment segment)
