@@ -46,6 +46,7 @@ internal class RemoveDuplicatePlaylistChildren : IMigrationRoutine
             IncludeItemTypes = [BaseItemKind.Playlist]
         })
         .Cast<Playlist>()
+        .Where(p => !p.OpenAccess || !p.OwnerUserId.Equals(Guid.Empty))
         .ToArray();
 
         if (playlists.Length > 0)
