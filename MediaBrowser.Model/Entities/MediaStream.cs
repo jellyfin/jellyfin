@@ -2,6 +2,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
@@ -34,28 +35,28 @@ namespace MediaBrowser.Model.Entities
         };
 
         // Transformation table from ISO-639-2/B to ISO-639-2/T
-        private static readonly string[][] _iso6392BtoT =
-        [
-            ["alb", "sqi"], // Albanian
-            ["arm", "hye"], // Armenian
-            ["baq", "eus"], // Basque
-            ["bur", "mya"], // Burmese
-            ["chi", "zho"], // Chinese
-            ["cze", "ces"], // Czech
-            ["dut", "nld"], // Dutch; Flemish
-            ["ger", "deu"], // German
-            ["geo", "kat"], // Georgian
-            ["gre", "ell"], // Greek, Modern
-            ["ice", "isl"], // Icelandic
-            ["mac", "mkd"], // Macedonian
-            ["mao", "mri"], // Maori
-            ["may", "msa"], // Malay
-            ["per", "fas"], // Persian
-            ["rum", "ron"], // Romanian; Moldavian; Moldovan
-            ["slo", "slk"], // Slovak
-            ["tib", "bod"], // Tibetan
-            ["wel", "cym"], // Welsh
-        ];
+        private static readonly FrozenDictionary<string, string> _iso6392BtoT = new KeyValuePair<string, string>[]
+        {
+            new("alb", "sqi"), // Albanian
+            new("arm", "hye"), // Armenian
+            new("baq", "eus"), // Basque
+            new("bur", "mya"), // Burmese
+            new("chi", "zho"), // Chinese
+            new("cze", "ces"), // Czech
+            new("dut", "nld"), // Dutch; Flemish
+            new("ger", "deu"), // German
+            new("geo", "kat"), // Georgian
+            new("gre", "ell"), // Greek, Modern
+            new("ice", "isl"), // Icelandic
+            new("mac", "mkd"), // Macedonian
+            new("mao", "mri"), // Maori
+            new("may", "msa"), // Malay
+            new("per", "fas"), // Persian
+            new("rum", "ron"), // Romanian; Moldavian; Moldovan
+            new("slo", "slk"), // Slovak
+            new("tib", "bod"), // Tibetan
+            new("wel", "cym"), // Welsh
+        }.ToFrozenDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Gets or sets the codec.
@@ -862,12 +863,9 @@ namespace MediaBrowser.Model.Entities
 
         private string GetISOTFromB(string isoB)
         {
-            for (int i = 0; i < _iso6392BtoT.Length; i++)
+            if (_iso6392BtoT.TryGetValue(isoB, out string result) && !string.IsNullOrEmpty(result))
             {
-                if (isoB.Equals(_iso6392BtoT[i][0], StringComparison.OrdinalIgnoreCase))
-                {
-                    return _iso6392BtoT[i][1];
-                }
+                return result;
             }
 
             return isoB;
