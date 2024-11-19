@@ -131,5 +131,9 @@
     "TaskCleanCollectionsAndPlaylists": "Glanhe kuntellow ha rolyow-gwari",
     "TaskKeyframeExtractor": "Estennell Framalhwedh",
     "TaskCleanCollectionsAndPlaylistsDescription": "Y hwra dilea taklow a-dhyworth kuntellow ha rolyow-gwari na vos na moy.",
-    "TaskKeyframeExtractorDescription": "Y hwra kuntel framyowalhwedh a-dhyworth restrennow gwydhyowyow rag gul rolyow-gwari HLS moy poran. Martesen y hwra an oberen ma ow ponya rag termyn hir."
+    "TaskKeyframeExtractorDescription": "Y hwra kuntel framyowalhwedh a-dhyworth restrennow gwydhyowyow rag gul rolyow-gwari HLS moy poran. Martesen y hwra an oberen ma ow ponya rag termyn hir.",
+    "TaskExtractMediaSegments": "Arhwilas Rann Media",
+    "TaskExtractMediaSegmentsDescription": "Kavos rannow media a-dhyworth ystynansow gallosegys MediaSegment.",
+    "TaskMoveTrickplayImages": "Divroa Tyller Imach TrickPlay",
+    "TaskMoveTrickplayImagesDescription": "Y hwra movya restrennow a-lemmyn trickplay herwydh settyansow lyverva."
 }

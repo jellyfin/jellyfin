@@ -122,7 +122,6 @@ namespace Emby.Server.Implementations.Images
             }
 
             await ProviderManager.SaveImage(item, outputPath, mimeType, imageType, null, false, cancellationToken).ConfigureAwait(false);
-            File.Delete(outputPath);
 
             return ItemUpdateType.ImageUpdate;
         }

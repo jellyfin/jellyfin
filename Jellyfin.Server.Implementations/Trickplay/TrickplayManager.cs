@@ -105,7 +105,7 @@ public class TrickplayManager : ITrickplayManager
                     _logger.LogInformation("Moved trickplay images for {ItemName} to {Location}", video.Name, mediaOutputDir);
                 }
             }
-            else if (Directory.Exists(mediaOutputDir))
+            else if (!shouldBeSavedWithMedia && Directory.Exists(mediaOutputDir))
             {
                 var mediaDirFiles = Directory.GetFiles(mediaOutputDir);
                 var localDirExists = Directory.Exists(localOutputDir);
@@ -238,7 +238,7 @@ public class TrickplayManager : ITrickplayManager
                         foreach (var tile in existingFiles)
                         {
                             var image = _imageEncoder.GetImageSize(tile);
-                            localTrickplayInfo.Height = Math.Max(localTrickplayInfo.Height, image.Height);
+                            localTrickplayInfo.Height = Math.Max(localTrickplayInfo.Height, (int)Math.Ceiling((double)image.Height / localTrickplayInfo.TileHeight));
                             var bitrate = (int)Math.Ceiling((decimal)new FileInfo(tile).Length * 8 / localTrickplayInfo.TileWidth / localTrickplayInfo.TileHeight / (localTrickplayInfo.Interval / 1000));
                             localTrickplayInfo.Bandwidth = Math.Max(localTrickplayInfo.Bandwidth, bitrate);
                         }
@@ -455,16 +455,18 @@ public class TrickplayManager : ITrickplayManager
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<Guid>> GetTrickplayItemsAsync()
+    public async Task<IReadOnlyList<TrickplayInfo>> GetTrickplayItemsAsync(int limit, int offset)
     {
-        List<Guid> trickplayItems;
+        IReadOnlyList<TrickplayInfo> trickplayItems;
 
         var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
         await using (dbContext.ConfigureAwait(false))
         {
             trickplayItems = await dbContext.TrickplayInfos
                 .AsNoTracking()
-                .Select(i => i.ItemId)
+                .OrderBy(i => i.ItemId)
+                .Skip(offset)
+                .Take(limit)
                 .ToListAsync()
                 .ConfigureAwait(false);
         }
@@ -496,7 +498,11 @@ public class TrickplayManager : ITrickplayManager
         var trickplayManifest = new Dictionary<string, Dictionary<int, TrickplayInfo>>();
         foreach (var mediaSource in item.GetMediaSources(false))
         {
-            var mediaSourceId = Guid.Parse(mediaSource.Id);
+            if (mediaSource.IsRemote || !Guid.TryParse(mediaSource.Id, out var mediaSourceId))
+            {
+                continue;
+            }
+
             var trickplayResolutions = await GetTrickplayResolutions(mediaSourceId).ConfigureAwait(false);
 
             if (trickplayResolutions.Count > 0)

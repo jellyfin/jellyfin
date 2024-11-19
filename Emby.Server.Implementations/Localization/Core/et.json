@@ -102,7 +102,7 @@
     "Forced": "Sunnitud",
     "Folders": "Kaustad",
     "Favorites": "Lemmikud",
-    "FailedLoginAttemptWithUserName": "{0} - sisselogimine nurjus",
+    "FailedLoginAttemptWithUserName": "Sisselogimine nurjus aadressilt {0}",
     "DeviceOnlineWithName": "{0} on ühendatud",
     "DeviceOfflineWithName": "{0} katkestas ühenduse",
     "Default": "Vaikimisi",
@@ -129,5 +129,11 @@
     "TaskAudioNormalization": "Heli Normaliseerimine",
     "TaskAudioNormalizationDescription": "Skaneerib faile heli normaliseerimise andmete jaoks.",
     "TaskCleanCollectionsAndPlaylistsDescription": "Eemaldab kogumikest ja esitusloenditest asjad, mida enam ei eksisteeri.",
-    "TaskCleanCollectionsAndPlaylists": "Puhasta kogumikud ja esitusloendid"
+    "TaskCleanCollectionsAndPlaylists": "Puhasta kogumikud ja esitusloendid",
+    "TaskDownloadMissingLyrics": "Lae alla puuduolev lüürika",
+    "TaskDownloadMissingLyricsDescription": "Lae lauludele alla lüürika",
+    "TaskMoveTrickplayImagesDescription": "Liigutab trickplay pildid meediakogu sätete kohaselt.",
+    "TaskExtractMediaSegments": "Meediasegmentide skaneerimine",
+    "TaskExtractMediaSegmentsDescription": "Eraldab või võtab meediasegmendid MediaSegment'i lubavatest pluginatest.",
+    "TaskMoveTrickplayImages": "Migreeri trickplay piltide asukoht"
 }

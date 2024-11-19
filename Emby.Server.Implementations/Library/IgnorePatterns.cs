@@ -50,6 +50,10 @@ namespace Emby.Server.Implementations.Library
             "**/lost+found/**",
             "**/lost+found",
 
+            // Trickplay files
+            "**/*.trickplay",
+            "**/*.trickplay/**",
+
             // WMC temp recording directories that will constantly be written to
             "**/TempRec/**",
             "**/TempRec",

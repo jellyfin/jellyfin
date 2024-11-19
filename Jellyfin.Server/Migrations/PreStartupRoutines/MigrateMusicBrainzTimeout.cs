@@ -48,9 +48,11 @@ public class MigrateMusicBrainzTimeout : IMigrationRoutine
 
         if (oldPluginConfiguration is not null)
         {
-            var newPluginConfiguration = new PluginConfiguration();
-            newPluginConfiguration.Server = oldPluginConfiguration.Server;
-            newPluginConfiguration.ReplaceArtistName = oldPluginConfiguration.ReplaceArtistName;
+            var newPluginConfiguration = new PluginConfiguration
+            {
+                Server = oldPluginConfiguration.Server,
+                ReplaceArtistName = oldPluginConfiguration.ReplaceArtistName
+            };
             var newRateLimit = oldPluginConfiguration.RateLimit / 1000.0;
             newPluginConfiguration.RateLimit = newRateLimit < 1.0 ? 1.0 : newRateLimit;
             WriteNew(path, newPluginConfiguration);
@@ -93,6 +95,4 @@ public class MigrateMusicBrainzTimeout : IMigrationRoutine
 
         public bool ReplaceArtistName { get; set; }
     }
-#pragma warning restore
-
 }

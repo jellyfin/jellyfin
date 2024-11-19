@@ -224,7 +224,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 if (OperatingSystem.IsLinux()
                     && SupportsHwaccel("vaapi")
                     && !string.IsNullOrEmpty(options.VaapiDevice)
-                    && string.Equals(options.HardwareAccelerationType, "vaapi", StringComparison.OrdinalIgnoreCase))
+                    && options.HardwareAccelerationType == HardwareAccelerationType.vaapi)
                 {
                     _isVaapiDeviceAmd = validator.CheckVaapiDeviceByDriverName("Mesa Gallium driver", options.VaapiDevice);
                     _isVaapiDeviceInteliHD = validator.CheckVaapiDeviceByDriverName("Intel iHD driver", options.VaapiDevice);
@@ -650,6 +650,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             ArgumentException.ThrowIfNullOrEmpty(inputPath);
 
+            var useTradeoff = _config.GetFFmpegImgExtractPerfTradeoff();
+
             var outputExtension = targetFormat?.GetExtension() ?? ".jpg";
 
             var tempExtractPath = Path.Combine(_configurationManager.ApplicationPaths.TempDirectory, Guid.NewGuid() + outputExtension);
@@ -684,7 +686,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             // Use ffmpeg to sample 100 (we can drop this if required using thumbnail=50 for 50 frames) frames and pick the best thumbnail. Have a fall back just in case.
             // mpegts need larger batch size otherwise the corrupted thumbnail will be created. Larger batch size will lower the processing speed.
-            var enableThumbnail = useIFrame && !string.Equals("wtv", container, StringComparison.OrdinalIgnoreCase);
+            var enableThumbnail = !useTradeoff && useIFrame && !string.Equals("wtv", container, StringComparison.OrdinalIgnoreCase);
             if (enableThumbnail)
             {
                 var useLargerBatchSize = string.Equals("mpegts", container, StringComparison.OrdinalIgnoreCase);
@@ -699,8 +701,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 if (SupportsFilter("tonemapx"))
                 {
+                    var peak = videoStream.VideoRangeType == VideoRangeType.DOVI ? "400" : "100";
                     enableHdrExtraction = true;
-                    filters.Add("tonemapx=tonemap=bt2390:desat=0:peak=100:t=bt709:m=bt709:p=bt709:format=yuv420p");
+                    filters.Add($"tonemapx=tonemap=bt2390:desat=0:peak={peak}:t=bt709:m=bt709:p=bt709:format=yuv420p");
                 }
                 else if (SupportsFilter("zscale") && videoStream.VideoRangeType != VideoRangeType.DOVI)
                 {
@@ -716,6 +719,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             if (offset.HasValue)
             {
                 args = string.Format(CultureInfo.InvariantCulture, "-ss {0} ", GetTimeParameter(offset.Value)) + args;
+            }
+
+            if (useIFrame && useTradeoff)
+            {
+                args = "-skip_frame nokey " + args;
             }
 
             if (!string.IsNullOrWhiteSpace(container))
@@ -799,11 +807,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (allowHwAccel && enableKeyFrameOnlyExtraction)
             {
-                var supportsKeyFrameOnly = (string.Equals(options.HardwareAccelerationType, "nvenc", StringComparison.OrdinalIgnoreCase) && options.EnableEnhancedNvdecDecoder)
-                                           || (string.Equals(options.HardwareAccelerationType, "amf", StringComparison.OrdinalIgnoreCase) && OperatingSystem.IsWindows())
-                                           || (string.Equals(options.HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase) && options.PreferSystemNativeHwDecoder)
-                                           || string.Equals(options.HardwareAccelerationType, "vaapi", StringComparison.OrdinalIgnoreCase)
-                                           || string.Equals(options.HardwareAccelerationType, "videotoolbox", StringComparison.OrdinalIgnoreCase);
+                var hardwareAccelerationType = options.HardwareAccelerationType;
+                var supportsKeyFrameOnly = (hardwareAccelerationType == HardwareAccelerationType.nvenc && options.EnableEnhancedNvdecDecoder)
+                                           || (hardwareAccelerationType == HardwareAccelerationType.amf && OperatingSystem.IsWindows())
+                                           || (hardwareAccelerationType == HardwareAccelerationType.qsv && options.PreferSystemNativeHwDecoder)
+                                           || hardwareAccelerationType == HardwareAccelerationType.vaapi
+                                           || hardwareAccelerationType == HardwareAccelerationType.videotoolbox
+                                           || hardwareAccelerationType == HardwareAccelerationType.rkmpp;
                 if (!supportsKeyFrameOnly)
                 {
                     // Disable hardware acceleration when the hardware decoder does not support keyframe only mode.
@@ -817,7 +827,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             if (!allowHwAccel)
             {
                 options.EnableHardwareEncoding = false;
-                options.HardwareAccelerationType = string.Empty;
+                options.HardwareAccelerationType = HardwareAccelerationType.none;
                 options.EnableTonemapping = false;
             }
 
@@ -861,7 +871,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 inputArg = "-threads " + threads + " " + inputArg; // HW accel args set a different input thread count, only set if disabled
             }
 
-            if (options.HardwareAccelerationType.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase) && _isLowPriorityHwDecodeSupported)
+            if (options.HardwareAccelerationType == HardwareAccelerationType.videotoolbox && _isLowPriorityHwDecodeSupported)
             {
                 // VideoToolbox supports low priority decoding, which is useful for trickplay
                 inputArg = "-hwaccel_flags +low_priority " + inputArg;
@@ -895,21 +905,30 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 throw new InvalidOperationException("Empty or invalid input argument.");
             }
 
-            float? encoderQuality = qualityScale;
-            if (vidEncoder.Contains("vaapi", StringComparison.OrdinalIgnoreCase))
+            // ffmpeg qscale is a value from 1-31, with 1 being best quality and 31 being worst
+            // jpeg quality is a value from 0-100, with 0 being worst quality and 100 being best
+            var encoderQuality = Math.Clamp(qualityScale ?? 4, 1, 31);
+            var encoderQualityOption = "-qscale:v ";
+
+            if (vidEncoder.Contains("vaapi", StringComparison.OrdinalIgnoreCase)
+                || vidEncoder.Contains("qsv", StringComparison.OrdinalIgnoreCase))
             {
-                // vaapi's mjpeg encoder uses jpeg quality divided by QP2LAMBDA (118) as input, instead of ffmpeg defined qscale
-                // ffmpeg qscale is a value from 1-31, with 1 being best quality and 31 being worst
-                // jpeg quality is a value from 0-100, with 0 being worst quality and 100 being best
-                encoderQuality = (100 - ((qualityScale - 1) * (100 / 30))) / 118;
+                // vaapi and qsv's mjpeg encoder use jpeg quality as input, instead of ffmpeg defined qscale
+                encoderQuality = 100 - ((encoderQuality - 1) * (100 / 30));
+                encoderQualityOption = "-global_quality:v ";
             }
 
             if (vidEncoder.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase))
             {
                 // videotoolbox's mjpeg encoder uses jpeg quality scaled to QP2LAMBDA (118) instead of ffmpeg defined qscale
-                // ffmpeg qscale is a value from 1-31, with 1 being best quality and 31 being worst
-                // jpeg quality is a value from 0-100, with 0 being worst quality and 100 being best
-                encoderQuality = 118 - ((qualityScale - 1) * (118 / 30));
+                encoderQuality = 118 - ((encoderQuality - 1) * (118 / 30));
+            }
+
+            if (vidEncoder.Contains("rkmpp", StringComparison.OrdinalIgnoreCase))
+            {
+                // rkmpp's mjpeg encoder uses jpeg quality as input (max is 99, not 100), instead of ffmpeg defined qscale
+                encoderQuality = 99 - ((encoderQuality - 1) * (99 / 30));
+                encoderQualityOption = "-qp_init:v ";
             }
 
             // Output arguments
@@ -920,13 +939,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // Final command arguments
             var args = string.Format(
                 CultureInfo.InvariantCulture,
-                "-loglevel error {0} -an -sn {1} -threads {2} -c:v {3} {4}{5}-f {6} \"{7}\"",
+                "-loglevel error {0} -an -sn {1} -threads {2} -c:v {3} {4}{5}{6}-f {7} \"{8}\"",
                 inputArg,
                 filterParam,
                 outputThreads.GetValueOrDefault(_threads),
                 vidEncoder,
-                qualityScale.HasValue ? "-qscale:v " + encoderQuality.Value.ToString(CultureInfo.InvariantCulture) + " " : string.Empty,
+                encoderQualityOption + encoderQuality + " ",
                 vidEncoder.Contains("videotoolbox", StringComparison.InvariantCultureIgnoreCase) ? "-allow_sw 1 " : string.Empty, // allow_sw fallback for some intel macs
+                EncodingHelper.GetVideoSyncOption("0", EncoderVersion).Trim() + " ", // passthrough timestamp
                 "image2",
                 outputPath);
 
@@ -1015,6 +1035,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 if (exitCode == -1)
                 {
                     _logger.LogError("ffmpeg image extraction failed for {ProcessDescription}", processDescription);
+                    // Cleanup temp folder here, because the targetDirectory is not returned and the cleanup for failed ffmpeg process is not possible for caller.
+                    // Ideally the ffmpeg should not write any files if it fails, but it seems like it is not guaranteed.
+                    try
+                    {
+                        Directory.Delete(targetDirectory, true);
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError(e, "Failed to delete ffmpeg temp directory {TargetDirectory}", targetDirectory);
+                    }
 
                     throw new FfmpegException(string.Format(CultureInfo.InvariantCulture, "ffmpeg image extraction failed for {0}", processDescription));
                 }
@@ -1092,7 +1122,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // https://ffmpeg.org/ffmpeg-filters.html#Notes-on-filtergraph-escaping
             // We need to double escape
 
-            return path.Replace('\\', '/').Replace(":", "\\:", StringComparison.Ordinal).Replace("'", @"'\\\''", StringComparison.Ordinal);
+            return path
+                .Replace('\\', '/')
+                .Replace(":", "\\:", StringComparison.Ordinal)
+                .Replace("'", @"'\\\''", StringComparison.Ordinal)
+                .Replace("\"", "\\\"", StringComparison.Ordinal);
         }
 
         /// <inheritdoc />

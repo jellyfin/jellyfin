@@ -902,6 +902,13 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
         }
 
+        public async Task<string> GetSubtitleFilePath(MediaStream subtitleStream, MediaSourceInfo mediaSource, CancellationToken cancellationToken)
+        {
+            var info = await GetReadableFile(mediaSource, subtitleStream, cancellationToken)
+                .ConfigureAwait(false);
+            return info.Path;
+        }
+
         /// <inheritdoc />
         public void Dispose()
         {
