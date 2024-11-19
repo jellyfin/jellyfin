@@ -3321,24 +3321,25 @@ namespace MediaBrowser.Controller.MediaEncoding
                     && options.VppTonemappingBrightness >= -100
                     && options.VppTonemappingBrightness <= 100)
                 {
-                    procampParams += $"=b={options.VppTonemappingBrightness}";
+                    procampParams += "procamp_vaapi=b={0}";
                     doVaVppProcamp = true;
                 }
 
                 if (options.VppTonemappingContrast > 1
                     && options.VppTonemappingContrast <= 10)
                 {
-                    procampParams += doVaVppProcamp ? ":" : "=";
-                    procampParams += $"c={options.VppTonemappingContrast}";
+                    procampParams += doVaVppProcamp ? ":c={1}" : "procamp_vaapi=c={1}";
                     doVaVppProcamp = true;
                 }
 
-                args = "{0}tonemap_vaapi=format={1}:p=bt709:t=bt709:m=bt709:extra_hw_frames=32";
+                args = "{2}tonemap_vaapi=format={3}:p=bt709:t=bt709:m=bt709:extra_hw_frames=32";
 
                 return string.Format(
                         CultureInfo.InvariantCulture,
                         args,
-                        doVaVppProcamp ? $"procamp_vaapi{procampParams}," : string.Empty,
+                        options.VppTonemappingBrightness,
+                        options.VppTonemappingContrast,
+                        doVaVppProcamp ? "," : string.Empty,
                         videoFormat ?? "nv12");
             }
             else
@@ -4138,6 +4139,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     && _mediaEncoder.EncoderVersion >= _minFFmpegQsvVppScaleModeOption;
                 var doVppProcamp = false;
                 var procampParams = string.Empty;
+                var procampParamsString = string.Empty;
                 if (doVppTonemap)
                 {
                     if (isRext)
@@ -4150,18 +4152,26 @@ namespace MediaBrowser.Controller.MediaEncoding
                         && options.VppTonemappingBrightness >= -100
                         && options.VppTonemappingBrightness <= 100)
                     {
-                        procampParams += $":brightness={options.VppTonemappingBrightness}";
+                        procampParamsString += ":brightness={0}";
                         twoPassVppTonemap = doVppProcamp = true;
                     }
 
                     if (options.VppTonemappingContrast > 1
                         && options.VppTonemappingContrast <= 10)
                     {
-                        procampParams += $":contrast={options.VppTonemappingContrast}";
+                        procampParamsString += ":contrast={1}";
                         twoPassVppTonemap = doVppProcamp = true;
                     }
 
-                    procampParams += doVppProcamp ? ":procamp=1:async_depth=2" : string.Empty;
+                    if (doVppProcamp)
+                    {
+                        procampParamsString += ":procamp=1:async_depth=2";
+                        procampParams = string.Format(
+                            CultureInfo.InvariantCulture,
+                            procampParamsString,
+                            options.VppTonemappingBrightness,
+                            options.VppTonemappingContrast);
+                    }
                 }
 
                 var outFormat = doOclTonemap ? ((doVppTranspose || isRext) ? "p010" : string.Empty) : "nv12";
