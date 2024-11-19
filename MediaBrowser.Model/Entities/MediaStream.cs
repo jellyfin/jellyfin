@@ -33,6 +33,30 @@ namespace MediaBrowser.Model.Entities
             "zxx"
         };
 
+        // Transformation table from ISO-639-2/B to ISO-639-2/T
+        private static readonly string[][] _iso6392BtoT =
+        [
+            ["alb", "sqi"], // Albanian
+            ["arm", "hye"], // Armenian
+            ["baq", "eus"], // Basque
+            ["bur", "mya"], // Burmese
+            ["chi", "zho"], // Chinese
+            ["cze", "ces"], // Czech
+            ["dut", "nld"], // Dutch; Flemish
+            ["ger", "deu"], // German
+            ["geo", "kat"], // Georgian
+            ["gre", "ell"], // Greek, Modern
+            ["ice", "isl"], // Icelandic
+            ["mac", "mkd"], // Macedonian
+            ["mao", "mri"], // Maori
+            ["may", "msa"], // Malay
+            ["per", "fas"], // Persian
+            ["rum", "ron"], // Romanian; Moldavian; Moldovan
+            ["slo", "slk"], // Slovak
+            ["tib", "bod"], // Tibetan
+            ["wel", "cym"], // Welsh
+        ];
+
         /// <summary>
         /// Gets or sets the codec.
         /// </summary>
@@ -268,7 +292,10 @@ namespace MediaBrowser.Model.Entities
                         // Do not display the language code in display titles if unset or set to a special code. Show it in all other cases (possibly expanded).
                         if (!string.IsNullOrEmpty(Language) && !_specialCodes.Contains(Language, StringComparison.OrdinalIgnoreCase))
                         {
-                            // Get full language string i.e. eng -> English. Will not work for some languages which use ISO 639-2/B instead of /T codes.
+                            // Transform ISO 639-2/B to ISO 639-2/T
+                            Language = GetISOTFromB(Language);
+
+                            // Get full language string i.e. eng -> English.
                             string fullLanguage = CultureInfo
                                 .GetCultures(CultureTypes.NeutralCultures)
                                 .FirstOrDefault(r => r.ThreeLetterISOLanguageName.Equals(Language, StringComparison.OrdinalIgnoreCase))
@@ -371,7 +398,10 @@ namespace MediaBrowser.Model.Entities
 
                         if (!string.IsNullOrEmpty(Language))
                         {
-                            // Get full language string i.e. eng -> English. Will not work for some languages which use ISO 639-2/B instead of /T codes.
+                            // Transform ISO 639-2/B to ISO 639-2/T
+                            Language = GetISOTFromB(Language);
+
+                            // Get full language string i.e. eng -> English.
                             string fullLanguage = CultureInfo
                                 .GetCultures(CultureTypes.NeutralCultures)
                                 .FirstOrDefault(r => r.ThreeLetterISOLanguageName.Equals(Language, StringComparison.OrdinalIgnoreCase))
@@ -828,6 +858,19 @@ namespace MediaBrowser.Model.Entities
             }
 
             return (VideoRange.SDR, VideoRangeType.SDR);
+        }
+
+        private string GetISOTFromB(string isoB)
+        {
+            for (int i = 0; i < _iso6392BtoT.Length; i++)
+            {
+                if (isoB.Equals(_iso6392BtoT[i][0], StringComparison.OrdinalIgnoreCase))
+                {
+                    return _iso6392BtoT[i][1];
+                }
+            }
+
+            return isoB;
         }
     }
 }
