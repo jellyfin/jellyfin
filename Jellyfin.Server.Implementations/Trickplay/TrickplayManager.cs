@@ -238,7 +238,7 @@ public class TrickplayManager : ITrickplayManager
                         foreach (var tile in existingFiles)
                         {
                             var image = _imageEncoder.GetImageSize(tile);
-                            localTrickplayInfo.Height = Math.Max(localTrickplayInfo.Height, image.Height);
+                            localTrickplayInfo.Height = Math.Max(localTrickplayInfo.Height, (int)Math.Ceiling((double)image.Height / localTrickplayInfo.TileHeight));
                             var bitrate = (int)Math.Ceiling((decimal)new FileInfo(tile).Length * 8 / localTrickplayInfo.TileWidth / localTrickplayInfo.TileHeight / (localTrickplayInfo.Interval / 1000));
                             localTrickplayInfo.Bandwidth = Math.Max(localTrickplayInfo.Bandwidth, bitrate);
                         }
