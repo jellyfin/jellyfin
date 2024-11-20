@@ -203,7 +203,7 @@ namespace MediaBrowser.Providers.Manager
                     // First, check for imagecache special case
                     if (url.Contains("/imagecache/", StringComparison.OrdinalIgnoreCase))
                     {
-                        contentType = "image/png";
+                        contentType = MediaTypeNames.Image.Png;
                         return;
                     }
 
@@ -211,9 +211,9 @@ namespace MediaBrowser.Providers.Manager
                     var fileExtension = Path.GetExtension(url)?.ToLowerInvariant();
                     contentType = fileExtension switch
                     {
-                        ".jpg" or ".jpeg" => "image/jpeg",
-                        ".png" => "image/png",
-                        ".gif" => "image/gif",
+                        ".jpg" or ".jpeg" => MediaTypeNames.Image.Jpeg,
+                        ".png" => MediaTypeNames.Image.Png,
+                        ".gif" => MediaTypeNames.Image.Gif,
                         ".webp" => "image/webp",
                         _ => null
                     };
