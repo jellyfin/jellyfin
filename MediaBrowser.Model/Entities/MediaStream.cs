@@ -44,6 +44,7 @@ namespace MediaBrowser.Model.Entities
             new("chi", "zho"), // Chinese
             new("cze", "ces"), // Czech
             new("dut", "nld"), // Dutch; Flemish
+            new("fre", "fra"), // French
             new("ger", "deu"), // German
             new("geo", "kat"), // Georgian
             new("gre", "ell"), // Greek, Modern
