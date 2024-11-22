@@ -18,7 +18,7 @@ public static class LibraryOptionsExtension
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        return options.CustomTagDelimiters.Select<string, char?>(x =>
+        var delimiterList = options.CustomTagDelimiters.Select<string, char?>(x =>
         {
             var isChar = char.TryParse(x, out var c);
             if (isChar)
@@ -27,6 +27,8 @@ public static class LibraryOptionsExtension
             }
 
             return null;
-        }).Where(x => x is not null).Select(x => x!.Value).ToArray();
+        }).Where(x => x is not null).Select(x => x!.Value).ToList();
+        delimiterList.Add('\0');
+        return delimiterList.ToArray();
     }
 }
