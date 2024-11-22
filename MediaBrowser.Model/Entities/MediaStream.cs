@@ -295,14 +295,14 @@ namespace MediaBrowser.Model.Entities
                         if (!string.IsNullOrEmpty(Language) && !_specialCodes.Contains(Language, StringComparison.OrdinalIgnoreCase))
                         {
                             // Transform ISO 639-2/B to ISO 639-2/T
-                            Language = GetISOTFromB(Language);
+                            var iSO6392TLanguage = GetISOTFromB(Language);
 
                             // Get full language string i.e. eng -> English.
                             string fullLanguage = CultureInfo
                                 .GetCultures(CultureTypes.NeutralCultures)
-                                .FirstOrDefault(r => r.ThreeLetterISOLanguageName.Equals(Language, StringComparison.OrdinalIgnoreCase))
+                                .FirstOrDefault(r => r.ThreeLetterISOLanguageName.Equals(iSO6392TLanguage, StringComparison.OrdinalIgnoreCase))
                                 ?.DisplayName;
-                            attributes.Add(StringHelper.FirstToUpper(fullLanguage ?? Language));
+                            attributes.Add(StringHelper.FirstToUpper(fullLanguage ?? iSO6392TLanguage));
                         }
 
                         if (!string.IsNullOrEmpty(Profile) && !string.Equals(Profile, "lc", StringComparison.OrdinalIgnoreCase))
@@ -401,14 +401,14 @@ namespace MediaBrowser.Model.Entities
                         if (!string.IsNullOrEmpty(Language))
                         {
                             // Transform ISO 639-2/B to ISO 639-2/T
-                            Language = GetISOTFromB(Language);
+                            var iSO6392TLanguage = GetISOTFromB(Language);
 
                             // Get full language string i.e. eng -> English.
                             string fullLanguage = CultureInfo
                                 .GetCultures(CultureTypes.NeutralCultures)
-                                .FirstOrDefault(r => r.ThreeLetterISOLanguageName.Equals(Language, StringComparison.OrdinalIgnoreCase))
+                                .FirstOrDefault(r => r.ThreeLetterISOLanguageName.Equals(iSO6392TLanguage, StringComparison.OrdinalIgnoreCase))
                                 ?.DisplayName;
-                            attributes.Add(StringHelper.FirstToUpper(fullLanguage ?? Language));
+                            attributes.Add(StringHelper.FirstToUpper(fullLanguage ?? iSO6392TLanguage));
                         }
                         else
                         {
