@@ -82,12 +82,12 @@ public class MigrateLibraryDb : IMigrationRoutine
         _logger.LogInformation("Start moving TypedBaseItem.");
         var typedBaseItemsQuery = """
          SELECT guid, type, data, StartDate, EndDate, ChannelId, IsMovie,
-         IsSeries, EpisodeTitle, IsRepeat, CommunityRating, CustomRating, IndexNumber, IsLocked, PreferredMetadataLanguage, 
-         PreferredMetadataCountryCode, Width, Height, DateLastRefreshed, Name, Path, PremiereDate, Overview, ParentIndexNumber, 
-         ProductionYear, OfficialRating, ForcedSortName, RunTimeTicks, Size, DateCreated, DateModified, Genres, ParentId, TopParentId, 
-         Audio, ExternalServiceId, IsInMixedFolder, DateLastSaved, LockedFields, Studios, Tags, TrailerTypes, OriginalTitle, PrimaryVersionId, 
-         DateLastMediaAdded, Album, LUFS, NormalizationGain, CriticRating, IsVirtualItem, SeriesName, UserDataKey, SeasonName, SeasonId, SeriesId, 
-         PresentationUniqueKey, InheritedParentalRatingValue, ExternalSeriesId, Tagline, ProviderIds, Images, ProductionLocations, ExtraIds, TotalBitrate, 
+         IsSeries, EpisodeTitle, IsRepeat, CommunityRating, CustomRating, IndexNumber, IsLocked, PreferredMetadataLanguage,
+         PreferredMetadataCountryCode, Width, Height, DateLastRefreshed, Name, Path, PremiereDate, Overview, ParentIndexNumber,
+         ProductionYear, OfficialRating, ForcedSortName, RunTimeTicks, Size, DateCreated, DateModified, Genres, ParentId, TopParentId,
+         Audio, ExternalServiceId, IsInMixedFolder, DateLastSaved, LockedFields, Studios, Tags, TrailerTypes, OriginalTitle, PrimaryVersionId,
+         DateLastMediaAdded, Album, LUFS, NormalizationGain, CriticRating, IsVirtualItem, SeriesName, UserDataKey, SeasonName, SeasonId, SeriesId,
+         PresentationUniqueKey, InheritedParentalRatingValue, ExternalSeriesId, Tagline, ProviderIds, Images, ProductionLocations, ExtraIds, TotalBitrate,
          ExtraType, Artists, AlbumArtists, ExternalId, SeriesPresentationUniqueKey, ShowId, OwnerId, MediaType FROM TypedBaseItems
          """;
         dbContext.BaseItems.ExecuteDelete();
@@ -155,7 +155,7 @@ public class MigrateLibraryDb : IMigrationRoutine
         _logger.LogInformation("Start moving UserData.");
         var queryResult = connection.Query("""
         SELECT key, userId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex FROM UserDatas
-        
+
         WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.UserDataKey = UserDatas.key)
         """);
 
@@ -188,12 +188,12 @@ public class MigrateLibraryDb : IMigrationRoutine
 
         _logger.LogInformation("Start moving MediaStreamInfos.");
         var mediaStreamQuery = """
-        SELECT ItemId, StreamIndex, StreamType, Codec, Language, ChannelLayout, Profile, AspectRatio, Path, 
-        IsInterlaced, BitRate, Channels, SampleRate, IsDefault, IsForced, IsExternal, Height, Width, 
-        AverageFrameRate, RealFrameRate, Level, PixelFormat, BitDepth, IsAnamorphic, RefFrames, CodecTag, 
-        Comment, NalLengthSize, IsAvc, Title, TimeBase, CodecTimeBase, ColorPrimaries, ColorSpace, ColorTransfer, 
+        SELECT ItemId, StreamIndex, StreamType, Codec, Language, ChannelLayout, Profile, AspectRatio, Path,
+        IsInterlaced, BitRate, Channels, SampleRate, IsDefault, IsForced, IsExternal, Height, Width,
+        AverageFrameRate, RealFrameRate, Level, PixelFormat, BitDepth, IsAnamorphic, RefFrames, CodecTag,
+        Comment, NalLengthSize, IsAvc, Title, TimeBase, CodecTimeBase, ColorPrimaries, ColorSpace, ColorTransfer,
         DvVersionMajor, DvVersionMinor, DvProfile, DvLevel, RpuPresentFlag, ElPresentFlag, BlPresentFlag, DvBlSignalCompatibilityId, IsHearingImpaired
-        FROM MediaStreams        
+        FROM MediaStreams
         WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = MediaStreams.ItemId)
         """;
         dbContext.MediaStreamInfos.ExecuteDelete();
@@ -212,7 +212,7 @@ public class MigrateLibraryDb : IMigrationRoutine
 
         _logger.LogInformation("Start moving People.");
         var personsQuery = """
-        SELECT ItemId, Name, Role, PersonType, SortOrder FROM People 
+        SELECT ItemId, Name, Role, PersonType, SortOrder FROM People
         WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = People.ItemId)
         """;
         dbContext.Peoples.ExecuteDelete();
@@ -288,8 +288,8 @@ public class MigrateLibraryDb : IMigrationRoutine
 
         _logger.LogInformation("Start moving AncestorIds.");
         var ancestorIdsQuery = """
-        SELECT ItemId, AncestorId, AncestorIdText FROM AncestorIds        
-        WHERE 
+        SELECT ItemId, AncestorId, AncestorIdText FROM AncestorIds
+        WHERE
         EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = AncestorIds.ItemId)
         AND
         EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = AncestorIds.AncestorId)
@@ -333,12 +333,12 @@ public class MigrateLibraryDb : IMigrationRoutine
 
     private UserData? GetUserData(ImmutableArray<User> users, SqliteDataReader dto)
     {
-        var indexOfUser = dto.GetInt32(1);
-        var user = users.ElementAtOrDefault(indexOfUser - 1);
+        var internalUserId = dto.GetInt32(1);
+        var user = users.FirstOrDefault(e => e.InternalId == internalUserId);
 
         if (user is null)
         {
-            _logger.LogError("Tried to find user with index '{Idx}' but there are only '{MaxIdx}' users.", indexOfUser, users.Length);
+            _logger.LogError("Tried to find user with index '{Idx}' but there are only '{MaxIdx}' users.", internalUserId, users.Length);
             return null;
         }
 
