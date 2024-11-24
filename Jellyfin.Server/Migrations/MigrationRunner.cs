@@ -88,6 +88,12 @@ namespace Jellyfin.Server.Migrations
                  ? (MigrationOptions)xmlSerializer.DeserializeFromFile(typeof(MigrationOptions), migrationConfigPath)!
                  : new MigrationOptions();
 
+            // 10.10 specific EFCore migration check.
+            if (migrationOptions.Applied.Any(f => f.Id.ToString("D") == "5C4B82A2-F053-4009-BD05-B6FCAD82F14C" || f.Name == "MigrateUserDatabase"))
+            {
+                throw new InvalidOperationException("You cannot downgrade your jellyfin install from the library.db migration.");
+            }
+
             // We have to deserialize it manually since the configuration manager may overwrite it
             var serverConfig = File.Exists(appPaths.SystemConfigurationFilePath)
                 ? (ServerConfiguration)xmlSerializer.DeserializeFromFile(typeof(ServerConfiguration), appPaths.SystemConfigurationFilePath)!
