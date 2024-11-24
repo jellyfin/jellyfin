@@ -18,5 +18,5 @@ public interface IItemTypeLookup
     /// <summary>
     /// Gets mapping for all BaseItemKinds and their expected serialization target.
     /// </summary>
-    public IReadOnlyDictionary<BaseItemKind, string> BaseItemKindNames { get; }
+    IReadOnlyDictionary<BaseItemKind, string> BaseItemKindNames { get; }
 }
