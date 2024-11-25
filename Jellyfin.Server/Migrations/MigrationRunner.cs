@@ -89,7 +89,7 @@ namespace Jellyfin.Server.Migrations
                  : new MigrationOptions();
 
             // 10.10 specific EFCore migration check.
-            if (migrationOptions.Applied.Any(f => f.Id.ToString("D") == "5C4B82A2-F053-4009-BD05-B6FCAD82F14C" || f.Name == "MigrateUserDatabase"))
+            if (migrationOptions.Applied.Any(f => f.Id.ToString("D").Equals("36445464-849f-429f-9ad0-bb130efa0664", StringComparison.InvariantCulture) || f.Name == "MigrateLibraryDbData"))
             {
                 throw new InvalidOperationException("You cannot downgrade your jellyfin install from the library.db migration.");
             }
