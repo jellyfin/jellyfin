@@ -457,7 +457,7 @@ public class ItemUpdateController : BaseJellyfinApiController
             return null;
         }
 
-        return (SeriesStatus)Enum.Parse(typeof(SeriesStatus), item.Status, true);
+        return Enum.Parse<SeriesStatus>(item.Status, true);
     }
 
     private DateTime NormalizeDateTime(DateTime val)

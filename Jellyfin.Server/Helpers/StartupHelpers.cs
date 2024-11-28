@@ -292,13 +292,5 @@ public static class StartupHelpers
         // Make sure we have all the code pages we can get
         // Ref: https://docs.microsoft.com/en-us/dotnet/api/system.text.codepagesencodingprovider.instance?view=netcore-3.0#remarks
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-
-        // Increase the max http request limit
-        // The default connection limit is 10 for ASP.NET hosted applications and 2 for all others.
-        ServicePointManager.DefaultConnectionLimit = Math.Max(96, ServicePointManager.DefaultConnectionLimit);
-
-        // Disable the "Expect: 100-Continue" header by default
-        // http://stackoverflow.com/questions/566437/http-post-returns-the-error-417-expectation-failed-c
-        ServicePointManager.Expect100Continue = false;
     }
 }
