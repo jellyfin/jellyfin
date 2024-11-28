@@ -246,7 +246,7 @@ public class ServerConfiguration : BaseApplicationConfiguration
     /// <summary>
     /// Gets or sets a value indicating whether older plugins should automatically be deleted from the plugin folder.
     /// </summary>
-    public bool RemoveOldPlugins { get; set; }
+    public bool RemoveOldPlugins { get; set; } = true;
 
     /// <summary>
     /// Gets or sets a value indicating whether clients should be allowed to upload logs.
