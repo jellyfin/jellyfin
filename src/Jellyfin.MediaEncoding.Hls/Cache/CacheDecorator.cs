@@ -48,17 +48,19 @@ public class CacheDecorator : IKeyframeExtractor
     public bool TryExtractKeyframes(string filePath, [NotNullWhen(true)] out KeyframeData? keyframeData)
     {
         keyframeData = null;
-        var cachePathData = GetCachePath(_keyframeDataPath, filePath);
-        if (TryReadFromCache(cachePathData, out var cachedResultData))
-        {
-            keyframeData = cachedResultData;
-            return true;
-        }
-
         var cachePath = GetCachePath(_keyframeCachePath, filePath);
         if (TryReadFromCache(cachePath, out var cachedResult))
         {
             keyframeData = cachedResult;
+            return true;
+        }
+        
+        // TODO remove when reading old json files is no longer wanted
+        var cachePathData = GetCachePath(_keyframeDataPath, filePath);
+        if (TryReadFromCache(cachePathData, out var cachedResultData))
+        {
+            _logger.LogDebug("Used cached keyframes result from data path.");
+            keyframeData = cachedResultData;
             return true;
         }
 
