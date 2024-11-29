@@ -54,7 +54,7 @@ public class CacheDecorator : IKeyframeExtractor
             keyframeData = cachedResult;
             return true;
         }
-        
+
         // TODO remove when reading old json files is no longer wanted
         var cachePathData = GetCachePath(_keyframeDataPath, filePath);
         if (TryReadFromCache(cachePathData, out var cachedResultData))
