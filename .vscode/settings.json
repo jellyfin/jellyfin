@@ -1,0 +1,8 @@
+{
+  "files.eol": "\n",
+  "editor.renderWhitespace": "boundary",
+  "files.exclude": {
+    "*/jellyfin-web": true,
+    "**/obj": true
+  }
+}

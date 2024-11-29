@@ -110,11 +110,15 @@ To run the project with Visual Studio you can open the Solution (`.sln`) file an
 
 #### Running With Visual Studio Code
 
-To run the project with Visual Studio Code you will first need to open the repository directory with Visual Studio Code using the `Open Folder...` option.
+In Visual Studio Code, open the workspace by choosing `File` > `Open Folder...` and selecting the repository directory.
 
-Second, you need to [install the recommended extensions for the workspace](https://code.visualstudio.com/docs/editor/extension-gallery#_recommended-extensions). Note that extension recommendations are classified as either "Workspace Recommendations" or "Other Recommendations", but only the "Workspace Recommendations" are required.
+Next, [install the recommended extensions for the workspace](https://code.visualstudio.com/docs/editor/extension-gallery#_recommended-extensions). When you first open the workspace, Visual Studio Code may prompt you to install recommended extensions. Another way to find these is to navigate to `View` > `Extensions`, and then type `@recommended` in the filter. Note that extension recommendations are classified as either "Workspace Recommendations" or "Other Recommendations", but only the "Workspace Recommendations" are required. If you don't already have the [.NET SDK](https://dotnet.microsoft.com/en-us/download) installed, the extension setup will guide you through installing it.
 
-After the required extensions are installed, you can run the server by pressing `F5`.
+Build the project by choosing `Terminal` > `Run Build Task...`. The integrated terminal will appear and show the progress of the build. After it completes, press any key to close the terminal.
+
+Lastly, you need to reference the [web client static files](#installing-the-web-client). The initial build will have created a directory in the repository at path `Jellyfin.Server/bin/Debug/net8.0` (or similar, based on your SDK version). You may place the web client static files in a subdirectory called `jellyfin-web`. Another option that you might prefer if you need to clean your build directory often is to update the `.vscode/launch.json` config to add an argument in the `"args"` array that specifies where the web client static files can be found, i.e. `"--webdir some/path/to/webui"`.
+
+Run the server for debugging by pressing `F5`.
 
 #### Running From the Command Line
 
