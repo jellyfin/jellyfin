@@ -51,6 +51,11 @@ public class CacheDecorator : IKeyframeExtractor
         var cachePath = GetCachePath(_keyframeCachePath, filePath);
         if (TryReadFromCache(cachePath, out var cachedResult))
         {
+            // touch the used files to avoid cleanup
+            // unreferenced files should be cleaned up eventually
+            var fi = new FileInfo(cachePath);
+            fi.LastWriteTime = DateTime.Now;
+
             keyframeData = cachedResult;
             return true;
         }
