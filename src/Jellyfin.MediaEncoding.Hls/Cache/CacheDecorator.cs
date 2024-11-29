@@ -20,6 +20,7 @@ public class CacheDecorator : IKeyframeExtractor
     private readonly string _keyframeExtractorName;
     private static readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
     private readonly string _keyframeCachePath;
+    private readonly string _keyframeDataPath;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CacheDecorator"/> class.
@@ -36,7 +37,8 @@ public class CacheDecorator : IKeyframeExtractor
         _logger = logger;
         _keyframeExtractorName = keyframeExtractor.GetType().Name;
         // TODO make the dir configurable
-        _keyframeCachePath = Path.Combine(applicationPaths.DataPath, "keyframes");
+        _keyframeCachePath = Path.Combine(applicationPaths.CachePath, "keyframes");
+        _keyframeDataPath = Path.Combine(applicationPaths.DataPath, "keyframes");
     }
 
     /// <inheritdoc />
@@ -46,7 +48,14 @@ public class CacheDecorator : IKeyframeExtractor
     public bool TryExtractKeyframes(string filePath, [NotNullWhen(true)] out KeyframeData? keyframeData)
     {
         keyframeData = null;
-        var cachePath = GetCachePath(_keyframeCachePath, filePath);
+        var cachePath = GetCachePath(_keyframeDataPath, filePath);
+        if (TryReadFromCache(cachePath, out var cachedResult))
+        {
+            keyframeData = cachedResult;
+            return true;
+        }
+
+        cachePath = GetCachePath(_keyframeCachePath, filePath);
         if (TryReadFromCache(cachePath, out var cachedResult))
         {
             keyframeData = cachedResult;
