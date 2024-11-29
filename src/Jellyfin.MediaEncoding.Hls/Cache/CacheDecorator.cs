@@ -48,14 +48,14 @@ public class CacheDecorator : IKeyframeExtractor
     public bool TryExtractKeyframes(string filePath, [NotNullWhen(true)] out KeyframeData? keyframeData)
     {
         keyframeData = null;
-        var cachePath = GetCachePath(_keyframeDataPath, filePath);
-        if (TryReadFromCache(cachePath, out var cachedResult))
+        var cachePathData = GetCachePath(_keyframeDataPath, filePath);
+        if (TryReadFromCache(cachePathData, out var cachedResultData))
         {
-            keyframeData = cachedResult;
+            keyframeData = cachedResultData;
             return true;
         }
 
-        cachePath = GetCachePath(_keyframeCachePath, filePath);
+        var cachePath = GetCachePath(_keyframeCachePath, filePath);
         if (TryReadFromCache(cachePath, out var cachedResult))
         {
             keyframeData = cachedResult;
