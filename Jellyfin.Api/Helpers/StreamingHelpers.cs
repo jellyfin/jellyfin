@@ -238,7 +238,7 @@ public static class StreamingHelpers
 
             if (!EncodingHelper.IsCopyCodec(state.OutputAudioCodec) && EncodingHelper.LosslessAudioCodecs.Contains(state.OutputAudioCodec) && state.OutputAudioBitrate.HasValue)
             {
-                state.OutputAudioCodec = state.SupportedAudioCodecs.FirstOrDefault(c => !EncodingHelper.LosslessAudioCodecs.Contains(c));
+                state.OutputAudioCodec = state.SupportedAudioCodecs.Where(c => !EncodingHelper.LosslessAudioCodecs.Contains(c)).FirstOrDefault(mediaEncoder.CanEncodeToAudioCodec);
             }
         }
 
