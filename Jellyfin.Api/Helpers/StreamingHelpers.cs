@@ -235,6 +235,11 @@ public static class StreamingHelpers
                     state.VideoRequest.MaxHeight = resolution.MaxHeight;
                 }
             }
+
+            if (!EncodingHelper.IsCopyCodec(state.OutputAudioCodec) && EncodingHelper.LosslessAudioCodecs.Contains(state.OutputAudioCodec) && state.OutputAudioBitrate.HasValue)
+            {
+                state.OutputAudioCodec = state.SupportedAudioCodecs.FirstOrDefault(c => !EncodingHelper.LosslessAudioCodecs.Contains(c));
+            }
         }
 
         var ext = string.IsNullOrWhiteSpace(state.OutputContainer)
