@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Emby.Naming.Common;
 using Emby.Naming.Video;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Entities;
 using Xunit;
 
@@ -26,7 +27,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result = VideoListResolver.Resolve(
                 files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions,
-                CollectionType.Movies).ToList();
+                CollectionType.movies).ToList();
 
             Assert.Single(result, v => v.ExtraType is null);
             Assert.Single(result, v => v.ExtraType is not null);
@@ -46,7 +47,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result = VideoListResolver.Resolve(
                 files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions,
-                CollectionType.Movies).ToList();
+                CollectionType.movies).ToList();
 
             Assert.Single(result, v => v.ExtraType is null);
             Assert.Single(result, v => v.ExtraType is not null);
@@ -65,7 +66,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result = VideoListResolver.Resolve(
                 files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions,
-                CollectionType.Movies).ToList();
+                CollectionType.movies).ToList();
 
             Assert.Single(result);
             Assert.Single(result[0].AlternateVersions);
@@ -88,7 +89,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result = VideoListResolver.Resolve(
                 files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions,
-                CollectionType.Movies).ToList();
+                CollectionType.movies).ToList();
 
             Assert.Equal(7, result.Count);
             Assert.Empty(result[0].AlternateVersions);
@@ -112,7 +113,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result = VideoListResolver.Resolve(
                 files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions,
-                CollectionType.Movies).ToList();
+                CollectionType.movies).ToList();
 
             Assert.Single(result);
             Assert.Equal(7, result[0].AlternateVersions.Count);
@@ -137,7 +138,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result = VideoListResolver.Resolve(
                 files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions,
-                CollectionType.Movies).ToList();
+                CollectionType.movies).ToList();
 
             Assert.Equal(9, result.Count);
             Assert.Empty(result[0].AlternateVersions);
@@ -158,7 +159,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result = VideoListResolver.Resolve(
                 files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions,
-                CollectionType.Movies).ToList();
+                CollectionType.movies).ToList();
 
             Assert.Equal(5, result.Count);
             Assert.Empty(result[0].AlternateVersions);
@@ -181,7 +182,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result = VideoListResolver.Resolve(
                 files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions,
-                CollectionType.Movies).ToList();
+                CollectionType.movies).ToList();
 
             Assert.Equal(5, result.Count);
             Assert.Empty(result[0].AlternateVersions);
@@ -204,7 +205,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result = VideoListResolver.Resolve(
                 files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions,
-                CollectionType.Movies).ToList();
+                CollectionType.movies).ToList();
 
             Assert.Single(result);
             Assert.Equal("/movies/Iron Man/Iron Man.mkv", result[0].Files[0].Path);
@@ -234,7 +235,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result = VideoListResolver.Resolve(
                 files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions,
-                CollectionType.Movies).ToList();
+                CollectionType.movies).ToList();
 
             Assert.Single(result);
             Assert.Equal("/movies/Iron Man/Iron Man.mkv", result[0].Files[0].Path);
@@ -259,7 +260,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result = VideoListResolver.Resolve(
                 files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions,
-                CollectionType.Movies).ToList();
+                CollectionType.movies).ToList();
 
             Assert.Equal(2, result.Count);
         }
@@ -281,7 +282,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result = VideoListResolver.Resolve(
                 files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions,
-                CollectionType.Movies).ToList();
+                CollectionType.movies).ToList();
 
             Assert.Equal(7, result.Count);
             Assert.Empty(result[0].AlternateVersions);
@@ -304,7 +305,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result = VideoListResolver.Resolve(
                 files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions,
-                CollectionType.Movies).ToList();
+                CollectionType.movies).ToList();
 
             Assert.Equal(5, result.Count);
             Assert.Empty(result[0].AlternateVersions);
@@ -322,7 +323,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result = VideoListResolver.Resolve(
                 files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions,
-                CollectionType.Movies);
+                CollectionType.movies);
 
             Assert.Single(result);
             Assert.Single(result[0].AlternateVersions);
@@ -340,7 +341,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result = VideoListResolver.Resolve(
                 files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions,
-                CollectionType.Movies);
+                CollectionType.movies);
 
             Assert.Single(result);
             Assert.Single(result[0].AlternateVersions);
@@ -362,7 +363,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result = VideoListResolver.Resolve(
                 files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions,
-                CollectionType.Movies);
+                CollectionType.movies);
 
             Assert.Single(result);
             Assert.Equal("/movies/X-Men Apocalypse (2016)/X-Men Apocalypse (2016).mkv", result[0].Files[0].Path);
@@ -395,7 +396,8 @@ namespace Jellyfin.Naming.Tests.Video
 
             var result = VideoListResolver.Resolve(
                 files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
-                _namingOptions).ToList();
+                _namingOptions,
+                CollectionType.movies).ToList();
 
             Assert.Single(result);
             Assert.Equal("/movies/X-Men Apocalypse (2016)/X-Men Apocalypse (2016).mkv", result[0].Files[0].Path);
@@ -425,7 +427,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result = VideoListResolver.Resolve(
                 files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions,
-                CollectionType.Movies);
+                CollectionType.movies);
 
             Assert.Single(result);
             Assert.Single(result[0].AlternateVersions);
@@ -443,7 +445,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result = VideoListResolver.Resolve(
                 files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions,
-                CollectionType.Movies);
+                CollectionType.movies);
 
             Assert.Equal(2, result.Count);
         }
@@ -451,7 +453,7 @@ namespace Jellyfin.Naming.Tests.Video
         [Fact]
         public void TestEmptyList()
         {
-            var result = VideoListResolver.Resolve(new List<VideoFileInfo>(), _namingOptions, string.Empty).ToList();
+            var result = VideoListResolver.Resolve(new List<VideoFileInfo>(), _namingOptions, null).ToList();
 
             Assert.Empty(result);
         }
@@ -473,7 +475,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result = VideoListResolver.Resolve(
                 files.Select(i => VideoResolver.Resolve(i, false, _namingOptions, false)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions,
-                CollectionType.TvShows);
+                CollectionType.tvshows);
 
             Assert.Equal(5, result.Count);
             Assert.Empty(result[0].AlternateVersions);
@@ -499,7 +501,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result = VideoListResolver.Resolve(
                 files.Select(i => VideoResolver.Resolve(i, false, _namingOptions, false)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions,
-                CollectionType.TvShows);
+                CollectionType.tvshows);
 
             Assert.Equal(8, result.Count);
             Assert.Empty(result[0].AlternateVersions);
@@ -517,7 +519,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result = VideoListResolver.Resolve(
                 files.Select(i => VideoResolver.Resolve(i, false, _namingOptions, false)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions,
-                CollectionType.TvShows);
+                CollectionType.tvshows);
 
             Assert.Single(result);
             Assert.Single(result[0].AlternateVersions);
@@ -540,7 +542,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result = VideoListResolver.Resolve(
                 files.Select(i => VideoResolver.Resolve(i, false, _namingOptions, false)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions,
-                CollectionType.TvShows);
+                CollectionType.tvshows);
 
             Assert.Equal(5, result.Count);
             Assert.Single(result[0].AlternateVersions);
@@ -566,7 +568,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result = VideoListResolver.Resolve(
                 files.Select(i => VideoResolver.Resolve(i, false, _namingOptions, false)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions,
-                CollectionType.TvShows);
+                CollectionType.tvshows);
 
             Assert.Equal(2, result.Count);
             Assert.Single(result[0].AlternateVersions);
@@ -586,7 +588,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result = VideoListResolver.Resolve(
                 files.Select(i => VideoResolver.Resolve(i, false, _namingOptions, false)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions,
-                CollectionType.TvShows);
+                CollectionType.tvshows);
 
             Assert.Equal(2, result.Count);
             Assert.Single(result[0].AlternateVersions);
@@ -606,7 +608,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result = VideoListResolver.Resolve(
                 files.Select(i => VideoResolver.Resolve(i, false, _namingOptions, false)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions,
-                CollectionType.TvShows);
+                CollectionType.tvshows);
 
             Assert.Equal(2, result.Count);
             Assert.Single(result[0].AlternateVersions);
@@ -627,7 +629,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result = VideoListResolver.Resolve(
                 files.Select(i => VideoResolver.Resolve(i, false, _namingOptions, false)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions,
-                CollectionType.TvShows);
+                CollectionType.tvshows);
 
             Assert.Single(result);
             Assert.Equal(3, result[0].AlternateVersions.Count);
