@@ -63,6 +63,7 @@ namespace MediaBrowser.Model.Users
             EnableContentDownloading = true;
             EnablePublicSharing = true;
             EnableRemoteAccess = true;
+            EnableNoPassword = true;
             SyncPlayAccess = SyncPlayUserAccessType.CreateAndJoinGroups;
         }
 
@@ -125,6 +126,8 @@ namespace MediaBrowser.Model.Users
         public bool EnableSharedDeviceControl { get; set; }
 
         public bool EnableRemoteAccess { get; set; }
+
+        public bool EnableNoPassword { get; set; }
 
         public bool EnableLiveTvManagement { get; set; }
 

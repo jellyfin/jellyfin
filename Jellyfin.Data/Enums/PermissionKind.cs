@@ -124,5 +124,10 @@ namespace Jellyfin.Data.Enums
         /// Whether the user can edit lyrics.
         /// </summary>
         EnableLyricManagement = 23,
+
+        /// <summary>
+        /// Whether the user can log without a password.
+        /// </summary>
+        EnableNoPassword = 24,
     }
 }
