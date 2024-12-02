@@ -785,30 +785,27 @@ namespace Emby.Server.Implementations.Plugins
 
                 var cleaned = false;
                 var path = entry.Path;
-                if (_config.RemoveOldPlugins)
+                // Attempt a cleanup of old folders.
+                try
                 {
-                    // Attempt a cleanup of old folders.
-                    try
-                    {
-                        _logger.LogDebug("Deleting {Path}", path);
-                        Directory.Delete(path, true);
-                        cleaned = true;
-                    }
+                    _logger.LogDebug("Deleting {Path}", path);
+                    Directory.Delete(path, true);
+                    cleaned = true;
+                }
 #pragma warning disable CA1031 // Do not catch general exception types
-                    catch (Exception e)
+                catch (Exception e)
 #pragma warning restore CA1031 // Do not catch general exception types
-                    {
-                        _logger.LogWarning(e, "Unable to delete {Path}", path);
-                    }
+                {
+                    _logger.LogWarning(e, "Unable to delete {Path}", path);
+                }
 
-                    if (cleaned)
-                    {
-                        versions.RemoveAt(x);
-                    }
-                    else
-                    {
-                        ChangePluginState(entry, PluginStatus.Deleted);
-                    }
+                if (cleaned)
+                {
+                    versions.RemoveAt(x);
+                }
+                else
+                {
+                    ChangePluginState(entry, PluginStatus.Deleted);
                 }
             }
 

@@ -48,7 +48,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="9.0.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
-    <PackageVersion Include="MimeTypes" Version="2.4.0" />
+    <PackageVersion Include="MimeTypes" Version="2.5.2" />
     <PackageVersion Include="Mono.Nat" Version="3.0.4" />
     <PackageVersion Include="Moq" Version="4.18.4" />
     <PackageVersion Include="NEbml" Version="0.11.0" />
@@ -85,7 +85,7 @@
     <PackageVersion Include="UTF.Unknown" Version="2.5.1" />
     <PackageVersion Include="Xunit.Priority" Version="1.1.6" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
-    <PackageVersion Include="Xunit.SkippableFact" Version="1.4.13" />
+    <PackageVersion Include="Xunit.SkippableFact" Version="1.5.23" />
     <PackageVersion Include="xunit" Version="2.9.2" />
   </ItemGroup>
 </Project>

@@ -1,12 +1,13 @@
 {
-	"recommendations": [
+    "recommendations": [
         "ms-dotnettools.csharp",
         "editorconfig.editorconfig",
         "github.vscode-github-actions",
         "ms-dotnettools.vscode-dotnet-runtime",
-        "ms-dotnettools.csdevkit"
-	],
-	"unwantedRecommendations": [
+        "ms-dotnettools.csdevkit",
+        "alexcvzz.vscode-sqlite"
+    ],
+    "unwantedRecommendations": [
 
-	]
+    ]
 }
