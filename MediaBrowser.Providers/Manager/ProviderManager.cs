@@ -208,15 +208,8 @@ namespace MediaBrowser.Providers.Manager
                     }
 
                     // Deduce content type from file extension
-                    var fileExtension = Path.GetExtension(url)?.ToLowerInvariant();
-                    contentType = fileExtension switch
-                    {
-                        ".jpg" or ".jpeg" => MediaTypeNames.Image.Jpeg,
-                        ".png" => MediaTypeNames.Image.Png,
-                        ".gif" => MediaTypeNames.Image.Gif,
-                        ".webp" => "image/webp",
-                        _ => null
-                    };
+                    var fileExtension = MimeTypes.GetMimeType(new Uri(url).GetLeftPart(UriPartial.Path));
+                    contentType = fileExtension;
 
                     if (string.IsNullOrEmpty(contentType))
                     {
