@@ -68,13 +68,12 @@ public class LrcLyricParser : ILyricParser
 
         for (int i = 0; i < sortedLyricData.Count; i++)
         {
-            List<LyricLineCue>? timeTags = null;
+            List<LyricLineCue>? timeTags = [];
             if (sortedLyricData[i].TimeTags.Count != 0)
             {
                 timeTags = sortedLyricData[i].TimeTags
                     .Zip(sortedLyricData[i].TimeTags.Skip(1), (current, next) => new LyricLineCue(
                         position: Math.Max(current.Key.Index, 0),
-                        width: Math.Max(next.Key.Index, 0) - Math.Max(current.Key.Index, 0),
                         start: TimeSpan.FromMilliseconds(current.Value ?? 0).Ticks,
                         end: TimeSpan.FromMilliseconds(next.Value ?? 0).Ticks))
                     .ToList();
@@ -82,7 +81,6 @@ public class LrcLyricParser : ILyricParser
                 var lastItem = sortedLyricData[i].TimeTags.LastOrDefault();
                 timeTags.Add(new LyricLineCue(
                     position: Math.Max(lastItem.Key.Index, 0),
-                    width: sortedLyricData[i].Text.Length - Math.Max(lastItem.Key.Index, 0),
                     start: TimeSpan.FromMilliseconds(lastItem.Value ?? 0).Ticks,
                     end: TimeSpan.FromMilliseconds(sortedLyricData[i + 1].TimeTags.FirstOrDefault().Value ?? 0).Ticks));
             }
