@@ -11,16 +11,16 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.Server.Migrations.Routines;
 
 /// <summary>
-/// Properly set playlist owner.
+/// Remove duplicate playlist entries.
 /// </summary>
-internal class FixPlaylistOwner : IMigrationRoutine
+internal class RemoveDuplicatePlaylistChildren : IMigrationRoutine
 {
-    private readonly ILogger<FixPlaylistOwner> _logger;
+    private readonly ILogger<RemoveDuplicatePlaylistChildren> _logger;
     private readonly ILibraryManager _libraryManager;
     private readonly IPlaylistManager _playlistManager;
 
-    public FixPlaylistOwner(
-        ILogger<FixPlaylistOwner> logger,
+    public RemoveDuplicatePlaylistChildren(
+        ILogger<RemoveDuplicatePlaylistChildren> logger,
         ILibraryManager libraryManager,
         IPlaylistManager playlistManager)
     {
@@ -30,10 +30,10 @@ internal class FixPlaylistOwner : IMigrationRoutine
     }
 
     /// <inheritdoc/>
-    public Guid Id => Guid.Parse("{615DFA9E-2497-4DBB-A472-61938B752C5B}");
+    public Guid Id => Guid.Parse("{96C156A2-7A13-4B3B-A8B8-FB80C94D20C0}");
 
     /// <inheritdoc/>
-    public string Name => "FixPlaylistOwner";
+    public string Name => "RemoveDuplicatePlaylistChildren";
 
     /// <inheritdoc/>
     public bool PerformOnNewInstall => false;
@@ -43,32 +43,25 @@ internal class FixPlaylistOwner : IMigrationRoutine
     {
         var playlists = _libraryManager.GetItemList(new InternalItemsQuery
         {
-            IncludeItemTypes = new[] { BaseItemKind.Playlist }
+            IncludeItemTypes = [BaseItemKind.Playlist]
         })
         .Cast<Playlist>()
-        .Where(x => x.OwnerUserId.Equals(Guid.Empty))
+        .Where(p => !p.OpenAccess || !p.OwnerUserId.Equals(Guid.Empty))
         .ToArray();
 
         if (playlists.Length > 0)
         {
             foreach (var playlist in playlists)
             {
-                var shares = playlist.Shares;
-                if (shares.Count > 0)
+                var linkedChildren = playlist.LinkedChildren;
+                if (linkedChildren.Length > 0)
                 {
-                    var firstEditShare = shares.First(x => x.CanEdit);
-                    if (firstEditShare is not null)
-                    {
-                        playlist.OwnerUserId = firstEditShare.UserId;
-                        playlist.Shares = shares.Where(x => x != firstEditShare).ToArray();
-                        playlist.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).GetAwaiter().GetResult();
-                        _playlistManager.SavePlaylistFile(playlist);
-                    }
-                }
-                else
-                {
-                    playlist.OpenAccess = true;
+                    var nullItemChildren = linkedChildren.Where(c => c.ItemId is null);
+                    var deduplicatedChildren = linkedChildren.DistinctBy(c => c.ItemId);
+                    var newLinkedChildren = nullItemChildren.Concat(deduplicatedChildren);
+                    playlist.LinkedChildren = linkedChildren;
                     playlist.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).GetAwaiter().GetResult();
+                    _playlistManager.SavePlaylistFile(playlist);
                 }
             }
         }

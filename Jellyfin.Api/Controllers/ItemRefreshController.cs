@@ -50,6 +50,7 @@ public class ItemRefreshController : BaseJellyfinApiController
     /// <param name="imageRefreshMode">(Optional) Specifies the image refresh mode.</param>
     /// <param name="replaceAllMetadata">(Optional) Determines if metadata should be replaced. Only applicable if mode is FullRefresh.</param>
     /// <param name="replaceAllImages">(Optional) Determines if images should be replaced. Only applicable if mode is FullRefresh.</param>
+    /// <param name="regenerateTrickplay">(Optional) Determines if trickplay images should be replaced. Only applicable if mode is FullRefresh.</param>
     /// <response code="204">Item metadata refresh queued.</response>
     /// <response code="404">Item to refresh not found.</response>
     /// <returns>An <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if the item could not be found.</returns>
@@ -62,7 +63,8 @@ public class ItemRefreshController : BaseJellyfinApiController
         [FromQuery] MetadataRefreshMode metadataRefreshMode = MetadataRefreshMode.None,
         [FromQuery] MetadataRefreshMode imageRefreshMode = MetadataRefreshMode.None,
         [FromQuery] bool replaceAllMetadata = false,
-        [FromQuery] bool replaceAllImages = false)
+        [FromQuery] bool replaceAllImages = false,
+        [FromQuery] bool regenerateTrickplay = false)
     {
         var item = _libraryManager.GetItemById<BaseItem>(itemId, User.GetUserId());
         if (item is null)
@@ -81,7 +83,8 @@ public class ItemRefreshController : BaseJellyfinApiController
                 || replaceAllImages
                 || replaceAllMetadata,
             IsAutomated = false,
-            RemoveOldMetadata = replaceAllMetadata
+            RemoveOldMetadata = replaceAllMetadata,
+            RegenerateTrickplay = regenerateTrickplay
         };
 
         _providerManager.QueueRefresh(item.Id, refreshOptions, RefreshPriority.High);

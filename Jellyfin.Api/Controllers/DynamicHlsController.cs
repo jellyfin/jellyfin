@@ -1819,16 +1819,13 @@ public class DynamicHlsController : BaseJellyfinApiController
         if (isActualOutputVideoCodecHevc || isActualOutputVideoCodecAv1)
         {
             var requestedRange = state.GetRequestedRangeTypes(state.ActualOutputVideoCodec);
-            var requestHasDOVI = requestedRange.Contains(VideoRangeType.DOVI.ToString(), StringComparison.OrdinalIgnoreCase);
-            var requestHasDOVIWithHDR10 = requestedRange.Contains(VideoRangeType.DOVIWithHDR10.ToString(), StringComparison.OrdinalIgnoreCase);
-            var requestHasDOVIWithHLG = requestedRange.Contains(VideoRangeType.DOVIWithHLG.ToString(), StringComparison.OrdinalIgnoreCase);
-            var requestHasDOVIWithSDR = requestedRange.Contains(VideoRangeType.DOVIWithSDR.ToString(), StringComparison.OrdinalIgnoreCase);
+            // Clients reporting Dolby Vision capabilities with fallbacks may only support the fallback layer.
+            // Only enable Dolby Vision remuxing if the client explicitly declares support for profiles without fallbacks.
+            var clientSupportsDoVi = requestedRange.Contains(VideoRangeType.DOVI.ToString(), StringComparison.OrdinalIgnoreCase);
+            var videoIsDoVi = state.VideoStream.VideoRangeType is VideoRangeType.DOVI or VideoRangeType.DOVIWithHDR10 or VideoRangeType.DOVIWithHLG or VideoRangeType.DOVIWithSDR;
 
             if (EncodingHelper.IsCopyCodec(codec)
-                && ((state.VideoStream.VideoRangeType == VideoRangeType.DOVI && requestHasDOVI)
-                    || (state.VideoStream.VideoRangeType == VideoRangeType.DOVIWithHDR10 && requestHasDOVIWithHDR10)
-                    || (state.VideoStream.VideoRangeType == VideoRangeType.DOVIWithHLG && requestHasDOVIWithHLG)
-                    || (state.VideoStream.VideoRangeType == VideoRangeType.DOVIWithSDR && requestHasDOVIWithSDR)))
+                && (videoIsDoVi && clientSupportsDoVi))
             {
                 if (isActualOutputVideoCodecHevc)
                 {
