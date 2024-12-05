@@ -197,6 +197,8 @@ public class ServerConfiguration : BaseApplicationConfiguration
 
     public int RemoteClientBitrateLimit { get; set; }
 
+    public int ExperimentalFfmpegSetCopytb { get; set; } = -1;
+
     public bool EnableFolderView { get; set; } = false;
 
     public bool EnableGroupingIntoCollections { get; set; } = false;
