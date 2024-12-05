@@ -200,17 +200,18 @@ namespace MediaBrowser.Providers.Manager
                 // TODO: Isolate this hack into the tvh plugin
                 if (string.IsNullOrEmpty(contentType))
                 {
-                    // First, check for imagecache special case
+                    // Special case for imagecache
                     if (url.Contains("/imagecache/", StringComparison.OrdinalIgnoreCase))
                     {
                         contentType = MediaTypeNames.Image.Png;
-                        return;
+                    }
+                    else
+                    {
+                        // Deduce content type from file extension
+                        contentType = MimeTypes.GetMimeType(new Uri(url).GetLeftPart(UriPartial.Path));
                     }
 
-                    // Deduce content type from file extension
-                    var fileExtension = MimeTypes.GetMimeType(new Uri(url).GetLeftPart(UriPartial.Path));
-                    contentType = fileExtension;
-
+                    // Throw if we still can't determine the content type
                     if (string.IsNullOrEmpty(contentType))
                     {
                         throw new HttpRequestException("Invalid image received: contentType not set.", null, response.StatusCode);
