@@ -85,7 +85,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
             [
                 new TaskTriggerInfo
                 {
-                    Type = TaskTriggerInfo.TriggerDaily,
+                    Type = TaskTriggerInfoType.DailyTrigger,
                     TimeOfDayTicks = TimeSpan.FromHours(2).Ticks,
                     MaxRuntimeTicks = TimeSpan.FromHours(4).Ticks
                 }
