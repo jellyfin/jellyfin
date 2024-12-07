@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.Serialization;
-using Jellyfin.LiveTv.Guide;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Configuration;
 using Microsoft.Extensions.DependencyInjection;
