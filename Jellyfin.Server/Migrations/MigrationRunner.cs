@@ -52,7 +52,7 @@ namespace Jellyfin.Server.Migrations
             typeof(Routines.RemoveDuplicatePlaylistChildren)
         };
 
-        private static readonly Guid _downgradeCheckMigration = Guid.Parse("5C4B82A2-F053-4009-BD05-B6FCAD82F14C");
+        private static readonly Guid _downgradeCheckMigration = Guid.Parse("36445464-849f-429f-9ad0-bb130efa0664");
 
         /// <summary>
         /// Run all needed migrations.
