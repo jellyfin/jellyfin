@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.Serialization;
+using Jellyfin.LiveTv.Guide;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -51,6 +52,8 @@ namespace Jellyfin.Server.Migrations
             typeof(Routines.RemoveDuplicatePlaylistChildren)
         };
 
+        private static readonly Guid _downgradeCheckMigration = Guid.Parse("5C4B82A2-F053-4009-BD05-B6FCAD82F14C");
+
         /// <summary>
         /// Run all needed migrations.
         /// </summary>
@@ -89,7 +92,7 @@ namespace Jellyfin.Server.Migrations
                  : new MigrationOptions();
 
             // 10.10 specific EFCore migration check.
-            if (migrationOptions.Applied.Any(f => f.Id.ToString("D") == "5C4B82A2-F053-4009-BD05-B6FCAD82F14C" || f.Name == "MigrateUserDatabase"))
+            if (migrationOptions.Applied.Any(f => f.Id.Equals(_downgradeCheckMigration)))
             {
                 throw new InvalidOperationException("You cannot downgrade your jellyfin install from the library.db migration.");
             }
