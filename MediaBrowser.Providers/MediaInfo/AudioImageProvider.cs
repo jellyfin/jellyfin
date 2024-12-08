@@ -76,29 +76,28 @@ namespace MediaBrowser.Providers.MediaInfo
 
         private async Task<DynamicImageResponse> GetImage(Audio item, List<MediaStream> imageStreams, CancellationToken cancellationToken)
         {
-            var path = GetAudioImagePath(item);
+            var imageStream = imageStreams.FirstOrDefault(i => (i.Comment ?? string.Empty).Contains("front", StringComparison.OrdinalIgnoreCase)) ??
+                    imageStreams.FirstOrDefault(i => (i.Comment ?? string.Empty).Contains("cover", StringComparison.OrdinalIgnoreCase)) ??
+                    imageStreams.FirstOrDefault();
+
+            var imageStreamIndex = imageStream?.Index;
+
+            var tempFile = await _mediaEncoder.ExtractAudioImage(item.Path, imageStreamIndex, cancellationToken).ConfigureAwait(false);
+
+            var path = GetAudioImagePath(item, tempFile);
 
             if (!File.Exists(path))
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
-
-                var imageStream = imageStreams.FirstOrDefault(i => (i.Comment ?? string.Empty).Contains("front", StringComparison.OrdinalIgnoreCase)) ??
-                    imageStreams.FirstOrDefault(i => (i.Comment ?? string.Empty).Contains("cover", StringComparison.OrdinalIgnoreCase)) ??
-                    imageStreams.FirstOrDefault();
-
-                var imageStreamIndex = imageStream?.Index;
-
-                var tempFile = await _mediaEncoder.ExtractAudioImage(item.Path, imageStreamIndex, cancellationToken).ConfigureAwait(false);
-
                 File.Copy(tempFile, path, true);
+            }
 
-                try
-                {
-                    _fileSystem.DeleteFile(tempFile);
-                }
-                catch
-                {
-                }
+            try
+            {
+                _fileSystem.DeleteFile(tempFile);
+            }
+            catch
+            {
             }
 
             return new DynamicImageResponse
@@ -108,21 +107,19 @@ namespace MediaBrowser.Providers.MediaInfo
             };
         }
 
-        private string GetAudioImagePath(Audio item)
+        private string GetAudioImagePath(Audio item, string newImagePath)
         {
             string filename;
-
+            long newImageLength = _fileSystem.GetFileInfo(newImagePath).Length;
             if (item.GetType() == typeof(Audio))
             {
-                if (item.AlbumArtists.Count > 0
-                    && !string.IsNullOrWhiteSpace(item.Album)
-                    && !string.IsNullOrWhiteSpace(item.AlbumArtists[0]))
+                if (!string.IsNullOrWhiteSpace(item.Album))
                 {
-                    filename = (item.Album + "-" + item.AlbumArtists[0]).GetMD5().ToString("N", CultureInfo.InvariantCulture);
+                    filename = (item.Album + newImageLength).GetMD5().ToString("N", CultureInfo.InvariantCulture);
                 }
                 else
                 {
-                    filename = item.Id.ToString("N", CultureInfo.InvariantCulture);
+                    filename = newImageLength.ToString("N", CultureInfo.InvariantCulture);
                 }
 
                 filename += ".jpg";
