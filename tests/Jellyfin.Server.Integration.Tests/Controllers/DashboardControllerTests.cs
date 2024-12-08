@@ -14,7 +14,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
     public sealed class DashboardControllerTests : IClassFixture<JellyfinApplicationFactory>
     {
         private readonly JellyfinApplicationFactory _factory;
-        private readonly JsonSerializerOptions _jsonOpions = JsonDefaults.Options;
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
         private static string? _accessToken;
 
         public DashboardControllerTests(JellyfinApplicationFactory factory)
@@ -65,7 +65,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            _ = await response.Content.ReadFromJsonAsync<ConfigurationPageInfo[]>(_jsonOpions);
+            _ = await response.Content.ReadFromJsonAsync<ConfigurationPageInfo[]>(_jsonOptions);
             // TODO: check content
         }
 
@@ -81,7 +81,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
             Assert.Equal(MediaTypeNames.Application.Json, response.Content.Headers.ContentType?.MediaType);
             Assert.Equal(Encoding.UTF8.BodyName, response.Content.Headers.ContentType?.CharSet);
 
-            var data = await response.Content.ReadFromJsonAsync<ConfigurationPageInfo[]>(_jsonOpions);
+            var data = await response.Content.ReadFromJsonAsync<ConfigurationPageInfo[]>(_jsonOptions);
             Assert.NotNull(data);
             Assert.Empty(data);
         }

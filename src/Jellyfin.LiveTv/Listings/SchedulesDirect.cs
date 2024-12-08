@@ -138,7 +138,7 @@ namespace Jellyfin.LiveTv.Listings
             var programsInfo = new List<ProgramInfo>();
             foreach (ProgramDto schedule in dailySchedules.SelectMany(d => d.Programs))
             {
-                // _logger.LogDebug("Proccesing Schedule for statio ID " + stationID +
+                // _logger.LogDebug("Processing Schedule for station ID " + stationID +
                 //              " which corresponds to channel " + channelNumber + " and program id " +
                 //              schedule.ProgramId + " which says it has images? " +
                 //              programDict[schedule.ProgramId].hasImageArtwork);
