@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -132,6 +133,14 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="query">The query.</param>
         /// <returns>List&lt;BaseItem&gt;.</returns>
         List<BaseItem> GetItemList(InternalItemsQuery query);
+
+        /// <summary>
+        /// Gets the item list. Used mainly by the latest api endpoint.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="collectionType">Collection Type.</param>
+        /// <returns>List&lt;BaseItem&gt;.</returns>
+        IReadOnlyList<BaseItem> GetLatestItemList(InternalItemsQuery query, CollectionType collectionType);
 
         /// <summary>
         /// Updates the inherited values.
