@@ -543,7 +543,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             {
                 DisposeTriggers();
 
-                var wassRunning = State == TaskState.Running;
+                var wasRunning = State == TaskState.Running;
                 var startTime = CurrentExecutionStartTime;
 
                 var token = CurrentCancellationTokenSource;
@@ -596,7 +596,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                     }
                 }
 
-                if (wassRunning)
+                if (wasRunning)
                 {
                     OnTaskCompleted(startTime, DateTime.UtcNow, TaskCompletionStatus.Aborted, null);
                 }

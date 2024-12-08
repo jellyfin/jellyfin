@@ -1303,7 +1303,7 @@ namespace Emby.Server.Implementations.Session
 
             if (item is null)
             {
-                _logger.LogError("A non-existent item Id {0} was passed into TranslateItemForPlayback", id);
+                _logger.LogError("A nonexistent item Id {0} was passed into TranslateItemForPlayback", id);
                 return Array.Empty<BaseItem>();
             }
 
@@ -1356,7 +1356,7 @@ namespace Emby.Server.Implementations.Session
 
             if (item is null)
             {
-                _logger.LogError("A non-existent item Id {0} was passed into TranslateItemForInstantMix", id);
+                _logger.LogError("A nonexistent item Id {0} was passed into TranslateItemForInstantMix", id);
                 return new List<BaseItem>();
             }
 

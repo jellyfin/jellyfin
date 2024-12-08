@@ -2065,7 +2065,7 @@ public sealed class BaseItemRepository
         if (filter.IncludeInheritedTags.Length > 0)
         {
             // Episodes do not store inherit tags from their parents in the database, and the tag may be still required by the client.
-            // In addtion to the tags for the episodes themselves, we need to manually query its parent (the season)'s tags as well.
+            // In addition to the tags for the episodes themselves, we need to manually query its parent (the season)'s tags as well.
             if (includeTypes.Length == 1 && includeTypes.FirstOrDefault() is BaseItemKind.Episode)
             {
                 baseQuery = baseQuery
