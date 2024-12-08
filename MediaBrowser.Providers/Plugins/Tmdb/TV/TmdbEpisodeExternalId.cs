@@ -1,24 +1,23 @@
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 
-namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
+namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 {
     /// <summary>
-    /// External id for a TMDb box set.
+    /// External id for a TMDb series.
     /// </summary>
-    public class TmdbBoxSetExternalId : IExternalId
+    public class TmdbEpisodeExternalId : IExternalId
     {
         /// <inheritdoc />
         public string ProviderName => TmdbUtils.ProviderName;
 
         /// <inheritdoc />
-        public string Key => MetadataProvider.TmdbCollection.ToString();
+        public string Key => MetadataProvider.Tmdb.ToString();
 
         /// <inheritdoc />
-        public ExternalIdMediaType? Type => ExternalIdMediaType.BoxSet;
+        public ExternalIdMediaType? Type => ExternalIdMediaType.Episode;
 
         /// <inheritdoc />
         public string? UrlFormatString => null;
@@ -26,7 +25,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
         /// <inheritdoc />
         public bool Supports(IHasProviderIds item)
         {
-            return item is Movie || item is MusicVideo || item is Trailer;
+            return item is Episode;
         }
     }
 }
