@@ -14,10 +14,13 @@ using Xunit;
 
 namespace Jellyfin.LiveTv.Tests
 {
-    public class HdHomerunHostTests
+    public sealed class HdHomerunHostTests : IDisposable
     {
         private readonly Fixture _fixture;
         private readonly HdHomerunHost _hdHomerunHost;
+        private readonly HttpClient _httpClient;
+
+        private bool _disposed;
 
         public HdHomerunHostTests()
         {
@@ -33,9 +36,10 @@ namespace Jellyfin.LiveTv.Tests
                         });
                     });
 
+            _httpClient = new HttpClient(messageHandler.Object);
             var http = new Mock<IHttpClientFactory>();
             http.Setup(x => x.CreateClient(It.IsAny<string>()))
-                .Returns(new HttpClient(messageHandler.Object));
+                .Returns(_httpClient);
             _fixture = new Fixture();
             _fixture.Customize(new AutoMoqCustomization
             {
@@ -151,6 +155,17 @@ namespace Jellyfin.LiveTv.Tests
             Assert.Equal("HDHomeRun PRIME", host.FriendlyName);
             Assert.Equal("FFFFFFFF", host.DeviceId);
             Assert.Equal(3, host.TunerCount);
+        }
+
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _httpClient.Dispose();
+            _disposed = true;
         }
     }
 }

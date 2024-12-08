@@ -93,6 +93,8 @@
     <Rule Id="CA1727" Action="Error" />
     <!-- error on CA1813: Avoid unsealed attributes -->
     <Rule Id="CA1813" Action="Error" />
+    <!-- error on CA1816: Call GC.SuppressFinalize correctly -->
+    <Rule Id="CA1816" Action="Error" />
     <!-- error on CA1834: Use 'StringBuilder.Append(char)' instead of 'StringBuilder.Append(string)' when the input is a constant unit string -->
     <Rule Id="CA1834" Action="Error" />
     <!-- error on CA1843: Do not use 'WaitAll' with a single task -->
@@ -132,8 +134,12 @@
     <Rule Id="CA2016" Action="Error" />
     <!-- error on CA2201: Exception type System.Exception is not sufficiently specific -->
     <Rule Id="CA2201" Action="Error" />
+    <!-- error on CA2213: Disposable fields should be disposed -->
+    <Rule Id="CA2213" Action="Error" />
     <!-- error on CA2215: Dispose methods should call base class dispose -->
     <Rule Id="CA2215" Action="Error" />
+    <!-- error on CA2216: Disposable types should declare finalizer -->
+    <Rule Id="CA2216" Action="Error" />
     <!-- error on CA2249: Use 'string.Contains' instead of 'string.IndexOf' to improve readability -->
     <Rule Id="CA2249" Action="Error" />
     <!-- error on CA2254: Template should be a static expression -->
