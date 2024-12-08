@@ -721,7 +721,8 @@ namespace Emby.Naming.Common
                 new Format3DRule("htab"),
                 new Format3DRule("tab"),
                 new Format3DRule("sbs3d"),
-                new Format3DRule("mvc")
+                new Format3DRule("mvc"),
+                new Format3DRule("spatial")
             };
 
             AudioBookPartsExpressions = new[]
