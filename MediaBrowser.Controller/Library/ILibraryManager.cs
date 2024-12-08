@@ -258,7 +258,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="items">Items to create.</param>
         /// <param name="parent">Parent of new items.</param>
         /// <param name="cancellationToken">CancellationToken to use for operation.</param>
-        void CreateItems(IReadOnlyList<BaseItem> items, BaseItem? parent, CancellationToken cancellationToken);
+        void CreateOrUpdateItems(IReadOnlyList<BaseItem> items, BaseItem? parent, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates the item.
@@ -483,21 +483,21 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>List&lt;PersonInfo&gt;.</returns>
-        List<PersonInfo> GetPeople(BaseItem item);
+        IReadOnlyList<PersonInfo> GetPeople(BaseItem item);
 
         /// <summary>
         /// Gets the people.
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>List&lt;PersonInfo&gt;.</returns>
-        List<PersonInfo> GetPeople(InternalPeopleQuery query);
+        IReadOnlyList<PersonInfo> GetPeople(InternalPeopleQuery query);
 
         /// <summary>
         /// Gets the people items.
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>List&lt;Person&gt;.</returns>
-        List<Person> GetPeopleItems(InternalPeopleQuery query);
+        IReadOnlyList<Person> GetPeopleItems(InternalPeopleQuery query);
 
         /// <summary>
         /// Updates the people.
@@ -513,21 +513,21 @@ namespace MediaBrowser.Controller.Library
         /// <param name="people">The people.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The async task.</returns>
-        Task UpdatePeopleAsync(BaseItem item, List<PersonInfo> people, CancellationToken cancellationToken);
+        Task UpdatePeopleAsync(BaseItem item, IReadOnlyList<PersonInfo> people, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the item ids.
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>List&lt;Guid&gt;.</returns>
-        List<Guid> GetItemIds(InternalItemsQuery query);
+        IReadOnlyList<Guid> GetItemIds(InternalItemsQuery query);
 
         /// <summary>
         /// Gets the people names.
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>List&lt;System.String&gt;.</returns>
-        List<string> GetPeopleNames(InternalPeopleQuery query);
+        IReadOnlyList<string> GetPeopleNames(InternalPeopleQuery query);
 
         /// <summary>
         /// Queries the items.
@@ -553,9 +553,9 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>QueryResult&lt;BaseItem&gt;.</returns>
-        List<BaseItem> GetItemList(InternalItemsQuery query);
+        IReadOnlyList<BaseItem> GetItemList(InternalItemsQuery query);
 
-        List<BaseItem> GetItemList(InternalItemsQuery query, bool allowExternalContent);
+        IReadOnlyList<BaseItem> GetItemList(InternalItemsQuery query, bool allowExternalContent);
 
         /// <summary>
         /// Gets the items.
@@ -563,7 +563,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="query">The query to use.</param>
         /// <param name="parents">Items to use for query.</param>
         /// <returns>List of items.</returns>
-        List<BaseItem> GetItemList(InternalItemsQuery query, List<BaseItem> parents);
+        IReadOnlyList<BaseItem> GetItemList(InternalItemsQuery query, List<BaseItem> parents);
 
         /// <summary>
         /// Gets the items result.

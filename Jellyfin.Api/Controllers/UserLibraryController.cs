@@ -662,12 +662,15 @@ public class UserLibraryController : BaseJellyfinApiController
         // Get the user data for this item
         var data = _userDataRepository.GetUserData(user, item);
 
-        // Set favorite status
-        data.IsFavorite = isFavorite;
+        if (data is not null)
+        {
+            // Set favorite status
+            data.IsFavorite = isFavorite;
 
-        _userDataRepository.SaveUserData(user, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
+            _userDataRepository.SaveUserData(user, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
+        }
 
-        return _userDataRepository.GetUserDataDto(item, user);
+        return _userDataRepository.GetUserDataDto(item, user)!;
     }
 
     /// <summary>
@@ -681,10 +684,13 @@ public class UserLibraryController : BaseJellyfinApiController
         // Get the user data for this item
         var data = _userDataRepository.GetUserData(user, item);
 
-        data.Likes = likes;
+        if (data is not null)
+        {
+            data.Likes = likes;
 
-        _userDataRepository.SaveUserData(user, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
+            _userDataRepository.SaveUserData(user, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
+        }
 
-        return _userDataRepository.GetUserDataDto(item, user);
+        return _userDataRepository.GetUserDataDto(item, user)!;
     }
 }

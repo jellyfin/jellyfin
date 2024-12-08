@@ -117,7 +117,7 @@ namespace Emby.Server.Implementations.TV
                 .ToList();
 
             // Avoid implicitly captured closure
-            var episodes = GetNextUpEpisodes(request, user, items, options);
+            var episodes = GetNextUpEpisodes(request, user, items.Distinct().ToArray(), options);
 
             return GetResult(episodes, request);
         }
@@ -262,7 +262,7 @@ namespace Emby.Server.Implementations.TV
                 {
                     var userData = _userDataManager.GetUserData(user, nextEpisode);
 
-                    if (userData.PlaybackPositionTicks > 0)
+                    if (userData?.PlaybackPositionTicks > 0)
                     {
                         return null;
                     }
@@ -274,6 +274,11 @@ namespace Emby.Server.Implementations.TV
             if (lastWatchedEpisode is not null)
             {
                 var userData = _userDataManager.GetUserData(user, lastWatchedEpisode);
+
+                if (userData is null)
+                {
+                    return (DateTime.MinValue, GetEpisode);
+                }
 
                 var lastWatchedDate = userData.LastPlayedDate ?? DateTime.MinValue.AddDays(1);
 

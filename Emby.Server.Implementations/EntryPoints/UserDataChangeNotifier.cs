@@ -144,9 +144,15 @@ namespace Emby.Server.Implementations.EntryPoints
                     .Select(i =>
                     {
                         var dto = _userDataManager.GetUserDataDto(i, user);
+                        if (dto is null)
+                        {
+                            return null!;
+                        }
+
                         dto.ItemId = i.Id;
                         return dto;
                     })
+                    .Where(e => e is not null)
                     .ToArray()
             };
         }
