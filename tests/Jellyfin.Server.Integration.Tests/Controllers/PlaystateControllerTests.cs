@@ -16,7 +16,7 @@ public class PlaystateControllerTests : IClassFixture<JellyfinApplicationFactory
     }
 
     [Fact]
-    public async Task DeleteMarkUnplayedItem_NonExistentUserId_NotFound()
+    public async Task DeleteMarkUnplayedItem_NonexistentUserId_NotFound()
     {
         var client = _factory.CreateClient();
         client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
@@ -26,7 +26,7 @@ public class PlaystateControllerTests : IClassFixture<JellyfinApplicationFactory
     }
 
     [Fact]
-    public async Task PostMarkPlayedItem_NonExistentUserId_NotFound()
+    public async Task PostMarkPlayedItem_NonexistentUserId_NotFound()
     {
         var client = _factory.CreateClient();
         client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
@@ -36,7 +36,7 @@ public class PlaystateControllerTests : IClassFixture<JellyfinApplicationFactory
     }
 
     [Fact]
-    public async Task DeleteMarkUnplayedItem_NonExistentItemId_NotFound()
+    public async Task DeleteMarkUnplayedItem_NonexistentItemId_NotFound()
     {
         var client = _factory.CreateClient();
         client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
@@ -48,7 +48,7 @@ public class PlaystateControllerTests : IClassFixture<JellyfinApplicationFactory
     }
 
     [Fact]
-    public async Task PostMarkPlayedItem_NonExistentItemId_NotFound()
+    public async Task PostMarkPlayedItem_NonexistentItemId_NotFound()
     {
         var client = _factory.CreateClient();
         client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));

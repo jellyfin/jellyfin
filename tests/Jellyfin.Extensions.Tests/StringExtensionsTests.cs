@@ -6,8 +6,8 @@ namespace Jellyfin.Extensions.Tests
     public class StringExtensionsTests
     {
         [Theory]
-        [InlineData("", "")] // Identity edge-case (no diactritics)
-        [InlineData("Indiana Jones", "Indiana Jones")] // Identity (no diactritics)
+        [InlineData("", "")] // Identity edge-case (no diacritics)
+        [InlineData("Indiana Jones", "Indiana Jones")] // Identity (no diacritics)
         [InlineData("a\ud800b", "ab")] // Invalid UTF-16 char stripping
         [InlineData("åäö", "aao")] // Issue #7484
         [InlineData("Jön", "Jon")] // Issue #7484
@@ -25,8 +25,8 @@ namespace Jellyfin.Extensions.Tests
         }
 
         [Theory]
-        [InlineData("", false)] // Identity edge-case (no diactritics)
-        [InlineData("Indiana Jones", false)] // Identity (no diactritics)
+        [InlineData("", false)] // Identity edge-case (no diacritics)
+        [InlineData("Indiana Jones", false)] // Identity (no diacritics)
         [InlineData("a\ud800b", true)] // Invalid UTF-16 char stripping
         [InlineData("åäö", true)] // Issue #7484
         [InlineData("Jön", true)] // Issue #7484
