@@ -395,6 +395,21 @@ namespace Emby.Server.Implementations.Library
             }
 
             var preferredSubs = NormalizeLanguage(user.SubtitleLanguagePreference);
+            var preferredCodec = user.SubtitleCodecPreference;
+            var preferredCodecs = preferredCodec switch
+            {
+                SubtitleFormat.SRT => [SubtitleFormat.SRT, SubtitleFormat.SUBRIP],
+                SubtitleFormat.SUBRIP => [SubtitleFormat.SRT, SubtitleFormat.SUBRIP],
+                SubtitleFormat.SSA => [SubtitleFormat.SSA, SubtitleFormat.ASS],
+                SubtitleFormat.ASS => [SubtitleFormat.SSA, SubtitleFormat.ASS],
+                SubtitleFormat.VTT => [SubtitleFormat.VTT, SubtitleFormat.WEBVTT],
+                SubtitleFormat.WEBVTT => [SubtitleFormat.VTT, SubtitleFormat.WEBVTT],
+                SubtitleFormat.TTML => [SubtitleFormat.TTML],
+                SubtitleFormat.DVBSUB => [SubtitleFormat.DVBSUB],
+                SubtitleFormat.DVDSUB => [SubtitleFormat.DVDSUB],
+                SubtitleFormat.PGSSUB => [SubtitleFormat.PGSSUB],
+                _ => Array.Empty<string>()
+            };
 
             var defaultAudioIndex = source.DefaultAudioStreamIndex;
             var audioLanguage = defaultAudioIndex is null
@@ -405,7 +420,8 @@ namespace Emby.Server.Implementations.Library
                 source.MediaStreams,
                 preferredSubs,
                 user.SubtitleMode,
-                audioLanguage);
+                audioLanguage,
+                preferredCodecs);
 
             MediaStreamSelector.SetSubtitleStreamScores(source.MediaStreams, preferredSubs, user.SubtitleMode, audioLanguage);
         }
