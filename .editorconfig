@@ -193,11 +193,9 @@ csharp_space_between_method_call_empty_parameter_list_parentheses = false
 csharp_preserve_single_line_statements = true
 csharp_preserve_single_line_blocks = true
 
-
 ###############################
 # C# Analyzer Rules           #
 ###############################
-###########
 ### ERROR #
 ###########
 # error on SA1000: The keyword 'new' should be followed by a space
@@ -241,8 +239,6 @@ dotnet_diagnostic.SA1518.severity = error
 
 # error on SA1629: Documentation text should end with a period
 dotnet_diagnostic.SA1629.severity = error
-
-####
 
 # error on CA1001: Types that own disposable fields should be disposable
 dotnet_diagnostic.CA1001.severity = error
@@ -517,17 +513,17 @@ dotnet_diagnostic.IDISP007.severity = suggestion
 dotnet_diagnostic.IDISP008.severity = suggestion
 
 [tests/**.{cs,vb}]
-# SA0001: XML comment analysis is disabled due to project configuration
+# disable warning SA0001: XML comment analysis is disabled due to project configuration
 dotnet_diagnostic.SA0001.severity = none
 
-# CA1707: Identifiers should not contain underscores -->
+# Cdisable warning A1707: Identifiers should not contain underscores
 dotnet_diagnostic.CA1707.severity = none
 
-# CA2007: Consider calling ConfigureAwait on the awaited task -->
+# disable warning CA2007: Consider calling ConfigureAwait on the awaited task
 dotnet_diagnostic.CA2007.severity = none
 
-# CA2234: Pass system uri objects instead of strings -->
+# disable warning CA2234: Pass system uri objects instead of strings
 dotnet_diagnostic.CA2234.severity = suggestion
 
-# xUnit1028: Test methods must have a supported return type.
+# disable warning xUnit1028: Test methods must have a supported return type.
 dotnet_diagnostic.xUnit1028.severity = none
