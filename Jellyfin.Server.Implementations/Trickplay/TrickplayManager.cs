@@ -194,6 +194,14 @@ public class TrickplayManager : ITrickplayManager
                     return;
                 }
 
+                // We support video backdrops, but we should not generate trickplay images for them
+                var parentDirectory = Directory.GetParent(mediaPath);
+                if (parentDirectory is not null && string.Equals(parentDirectory.Name, "backdrops", StringComparison.OrdinalIgnoreCase))
+                {
+                    _logger.LogDebug("Ignoring backdrop media found at {Path} for item {ItemID}", mediaPath, video.Id);
+                    return;
+                }
+
                 // The width has to be even, otherwise a lot of filters will not be able to sample it
                 var actualWidth = 2 * (width / 2);
 
