@@ -3,7 +3,6 @@
 
   <PropertyGroup>
     <Nullable>enable</Nullable>
-    <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)/jellyfin.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <PropertyGroup>
