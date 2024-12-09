@@ -309,7 +309,6 @@ namespace MediaBrowser.Controller.MediaEncoding
         private bool IsSwTonemapAvailable(EncodingJobInfo state, EncodingOptions options)
         {
             if (state.VideoStream is null
-                || !options.EnableTonemapping
                 || GetVideoColorBitDepth(state) < 10
                 || !_mediaEncoder.SupportsFilter("tonemapx"))
             {
