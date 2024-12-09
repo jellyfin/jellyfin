@@ -437,6 +437,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
         }
 
+        public bool CheckIsVideoToolboxAv1DecodeAvailable()
+        {
+            return ApplePlatformHelper.HasAv1HardwareAccel(_logger);
+        }
+
         private IEnumerable<string> GetHwaccelTypes()
         {
             string? output = null;
