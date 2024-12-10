@@ -158,6 +158,11 @@ namespace Jellyfin.Data.Entities
         public int MaxActiveSessions { get; set; }
 
         /// <summary>
+        /// Gets or sets the maximum number of active streams the user can have at once.
+        /// </summary>
+        public int MaxActiveStreams { get; set; }
+
+        /// <summary>
         /// Gets or sets the subtitle mode.
         /// </summary>
         /// <remarks>
