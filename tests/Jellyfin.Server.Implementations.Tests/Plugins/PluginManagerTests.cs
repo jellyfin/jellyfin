@@ -38,7 +38,7 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
         [Fact]
         public void SaveManifest_RoundTrip_Success()
         {
-            var pluginManager = new PluginManager(new NullLogger<PluginManager>(), null!, null!, null!, new Version(1, 0));
+            using var pluginManager = GetTestPluginManager(null);
             var manifest = new PluginManifest()
             {
                 Version = "1.0"
@@ -85,12 +85,12 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
             var dllPath = Path.GetDirectoryName(Path.Combine(_pluginPath, dllFile))!;
 
             Directory.CreateDirectory(dllPath);
-            File.Create(Path.Combine(dllPath, filename));
+            File.Create(Path.Combine(dllPath, filename)).Dispose();
             var metafilePath = Path.Combine(_pluginPath, "meta.json");
 
             File.WriteAllText(metafilePath, JsonSerializer.Serialize(manifest, _options));
 
-            var pluginManager = new PluginManager(new NullLogger<PluginManager>(), null!, null!, _tempPath, new Version(1, 0));
+            using var pluginManager = GetTestPluginManager();
 
             var res = JsonSerializer.Deserialize<PluginManifest>(File.ReadAllText(metafilePath), _options);
 
@@ -141,14 +141,14 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
 
             foreach (var file in files)
             {
-                File.Create(Path.Combine(_pluginPath, file));
+                File.Create(Path.Combine(_pluginPath, file)).Dispose();
             }
 
             var metafilePath = Path.Combine(_pluginPath, "meta.json");
 
             File.WriteAllText(metafilePath, JsonSerializer.Serialize(manifest, _options));
 
-            var pluginManager = new PluginManager(new NullLogger<PluginManager>(), null!, null!, _tempPath, new Version(1, 0));
+            using var pluginManager = GetTestPluginManager();
 
             var res = JsonSerializer.Deserialize<PluginManifest>(File.ReadAllText(metafilePath), _options);
 
@@ -193,7 +193,7 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
             var metafilePath = Path.Combine(_pluginPath, "meta.json");
             await File.WriteAllTextAsync(metafilePath, JsonSerializer.Serialize(partial, _options));
 
-            var pluginManager = new PluginManager(new NullLogger<PluginManager>(), null!, null!, _tempPath, new Version(1, 0));
+            using var pluginManager = GetTestPluginManager();
 
             await pluginManager.PopulateManifest(packageInfo, new Version(1, 0), _pluginPath, PluginStatus.Active);
 
@@ -226,7 +226,7 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
                 ImagePath = string.Empty
             };
 
-            var pluginManager = new PluginManager(new NullLogger<PluginManager>(), null!, null!, null!, new Version(1, 0));
+            using var pluginManager = GetTestPluginManager(null);
 
             await pluginManager.PopulateManifest(packageInfo, new Version(1, 0), _pluginPath, PluginStatus.Active);
 
@@ -253,7 +253,7 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
             var metafilePath = Path.Combine(_pluginPath, "meta.json");
             await File.WriteAllTextAsync(metafilePath, JsonSerializer.Serialize(partial, _options));
 
-            var pluginManager = new PluginManager(new NullLogger<PluginManager>(), null!, null!, _tempPath, new Version(1, 0));
+            using var pluginManager = GetTestPluginManager();
 
             await pluginManager.PopulateManifest(packageInfo, new Version(1, 0), _pluginPath, PluginStatus.Active);
 
@@ -279,7 +279,7 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
             var metafilePath = Path.Combine(_pluginPath, "meta.json");
             await File.WriteAllTextAsync(metafilePath, JsonSerializer.Serialize(partial, _options));
 
-            var pluginManager = new PluginManager(new NullLogger<PluginManager>(), null!, null!, _tempPath, new Version(1, 0));
+            using var pluginManager = GetTestPluginManager();
 
             await pluginManager.PopulateManifest(packageInfo, new Version(1, 0), _pluginPath, PluginStatus.Active);
 
@@ -334,5 +334,12 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
 
             return (tempPath, pluginPath);
         }
+
+        private static PluginManager GetTestPluginManager(string? pluginsPath)
+        {
+            return new PluginManager(new NullLogger<PluginManager>(), null!, null!, pluginsPath!, new Version(1, 0));
+        }
+
+        private PluginManager GetTestPluginManager() => GetTestPluginManager(_tempPath);
     }
 }

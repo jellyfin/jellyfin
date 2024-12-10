@@ -124,7 +124,8 @@ namespace MediaBrowser.MediaEncoding.Attachments
         {
             using (await _semaphoreLocks.LockAsync(outputPath, cancellationToken).ConfigureAwait(false))
             {
-                if (!File.Exists(Path.Join(outputPath, id)))
+                var outputIdPath = Path.Join(outputPath, id);
+                if (!File.Exists(outputIdPath))
                 {
                     await ExtractAllAttachmentsInternal(
                         inputArgument,
@@ -134,7 +135,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
                     if (Directory.Exists(outputPath))
                     {
-                        File.Create(Path.Join(outputPath, id));
+                        await File.Create(outputIdPath).DisposeAsync().ConfigureAwait(false);
                     }
                 }
             }
