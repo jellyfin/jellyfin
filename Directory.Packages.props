@@ -74,6 +74,7 @@
     <PackageVersion Include="Svg.Skia" Version="2.0.0.4" />
     <PackageVersion Include="Swashbuckle.AspNetCore.ReDoc" Version="6.5.0" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.2.3" />
+    <PackageVersion Include="Swashbuckle.AspNetCore.Swagger" Version="6.7.0" />
     <PackageVersion Include="System.Globalization" Version="4.3.0" />
     <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
     <PackageVersion Include="System.Text.Encoding.CodePages" Version="9.0.0" />
