@@ -24,7 +24,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             if (result.Streams is not null)
             {
-                // Convert all dictionaries to case insensitive
+                // Convert all dictionaries to case-insensitive
                 foreach (var stream in result.Streams)
                 {
                     if (stream.Tags is not null)
@@ -70,7 +70,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         }
 
         /// <summary>
-        /// Converts a dictionary to case insensitive.
+        /// Converts a dictionary to case-insensitive.
         /// </summary>
         /// <param name="dict">The dict.</param>
         /// <returns>Dictionary{System.StringSystem.String}.</returns>

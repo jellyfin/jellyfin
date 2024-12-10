@@ -35,7 +35,7 @@ public sealed class ItemsControllerTests : IClassFixture<JellyfinApplicationFact
     [Theory]
     [InlineData("Users/{0}/Items")]
     [InlineData("Users/{0}/Items/Resume")]
-    public async Task GetUserItems_NonExistentUserId_NotFound(string format)
+    public async Task GetUserItems_NonexistentUserId_NotFound(string format)
     {
         var client = _factory.CreateClient();
         client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));

@@ -59,7 +59,7 @@ public class DirectPlayProfile
     /// <returns>True if supported.</returns>
     public bool SupportsAudioCodec(string? codec)
     {
-        // Video profiles can have audio codec restrictions too, therefore incude Video as valid type.
+        // Video profiles can have audio codec restrictions too, therefore include Video as valid type.
         return (Type == DlnaProfileType.Audio || Type == DlnaProfileType.Video) && ContainerHelper.ContainsContainer(AudioCodec, codec);
     }
 }
