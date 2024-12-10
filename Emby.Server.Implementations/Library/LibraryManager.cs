@@ -1339,6 +1339,21 @@ namespace Emby.Server.Implementations.Library
             return _itemRepository.GetItemList(query);
         }
 
+        public IReadOnlyList<BaseItem> GetItemList(InternalItemsQuery query, IReadOnlyList<BaseItem> parents, CollectionType collectionType)
+        {
+            SetTopParentIdsOrAncestors(query, parents);
+
+            if (query.AncestorIds.Length == 0 && query.TopParentIds.Length == 0)
+            {
+                if (query.User is not null)
+                {
+                    AddUserToQuery(query, query.User);
+                }
+            }
+
+            return _itemRepository.GetLatestItemList(query, collectionType);
+        }
+
         public QueryResult<BaseItem> QueryItems(InternalItemsQuery query)
         {
             if (query.User is not null)
