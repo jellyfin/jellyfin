@@ -513,7 +513,7 @@ public class PlaystateController : BaseJellyfinApiController
             item.MarkUnplayed(user);
         }
 
-        return _userDataRepository.GetUserDataDto(item, user);
+        return _userDataRepository.GetUserDataDto(item, user)!;
     }
 
     private PlayMethod ValidatePlayMethod(PlayMethod method, string? playSessionId)
