@@ -862,6 +862,10 @@ namespace MediaBrowser.Model.Dlna
 
                     if (options.AllowAudioStreamCopy)
                     {
+                        // For Audio stream, we prefer the audio codec that can be directly copied, then the codec that can otherwise satisfies
+                        // the transcoding conditions, then the one does not satisfy the transcoding conditions.
+                        // For example: A client can support both aac and flac, but flac only supports 2 channels while aac supports 6.
+                        // When the source audio is 6 channel flac, we should transcode to 6 channel aac, instead of down-mix to 2 channel flac.
                         if (ContainerHelper.ContainsContainer(transcodingProfile.AudioCodec, audioCodec))
                         {
                             var appliedVideoConditions = options.Profile.CodecProfiles
@@ -873,7 +877,20 @@ namespace MediaBrowser.Model.Dlna
 
                             // An empty appliedVideoConditions means that the codec has no conditions for the current audio stream
                             var conditionsSatisfied = appliedVideoConditions.All(satisfied => satisfied);
-                            rank.Audio = conditionsSatisfied ? 1 : 2;
+                            rank.Audio = conditionsSatisfied ? 1 : 3;
+                        }
+                        else
+                        {
+                            var appliedVideoConditions = options.Profile.CodecProfiles
+                                .Where(i => i.Type == CodecType.VideoAudio &&
+                                            i.ContainsAnyCodec(transcodingProfile.AudioCodec, container) &&
+                                            i.ApplyConditions.All(applyCondition => ConditionProcessor.IsVideoAudioConditionSatisfied(applyCondition, audioChannels, audioBitrate, audioSampleRate, audioBitDepth, audioProfile, false)))
+                                .Select(i =>
+                                    i.Conditions.All(condition => ConditionProcessor.IsVideoAudioConditionSatisfied(condition, audioChannels, audioBitrate, audioSampleRate, audioBitDepth, audioProfile, false)));
+
+                            // An empty appliedVideoConditions means that the codec has no conditions for the current audio stream
+                            var conditionsSatisfied = appliedVideoConditions.All(satisfied => satisfied);
+                            rank.Audio = conditionsSatisfied ? 2 : 3;
                         }
                     }
 
