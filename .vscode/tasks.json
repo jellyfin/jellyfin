@@ -20,6 +20,26 @@
                 "${workspaceFolder}/tests/Jellyfin.Api.Tests/Jellyfin.Api.Tests.csproj"
             ],
             "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "mediabrowser build",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/Mediabrowser.Server/Mediabrowser.Server.csproj"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "mediabrowser tests",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "test",
+                "${workspaceFolder}/tests/Mediabrowser.Tests/Mediabrowser.Tests.csproj"
+            ],
+            "problemMatcher": "$msCompile"
         }
     ],
     "options": {
@@ -28,3 +48,4 @@
         }
     }
 }
+ 
