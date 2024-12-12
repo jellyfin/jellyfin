@@ -846,6 +846,12 @@ namespace MediaBrowser.Model.Dlna
                         return transcodingProfile;
                     }
 
+                    // Directly return the transcoding profile if the audio codec is already on its own
+                    if (string.Equals(transcodingProfile.AudioCodec, audioStream.Codec, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return transcodingProfile;
+                    }
+
                     var targetAudioCodecTranscodingProfile = new TranscodingProfile(transcodingProfile)
                     {
                         AudioCodec = audioStream.Codec
@@ -2297,6 +2303,11 @@ namespace MediaBrowser.Model.Dlna
                 if (string.Equals(profile.AudioCodec, audioCodec, StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(profile.Container, audioCodec, StringComparison.OrdinalIgnoreCase))
                 {
+                    if (string.Equals("opus", audioCodec, StringComparison.OrdinalIgnoreCase) && audioStream?.Channels > 2)
+                    {
+                        return false;
+                    }
+
                     return true;
                 }
             }
