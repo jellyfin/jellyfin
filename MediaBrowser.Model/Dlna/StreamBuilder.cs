@@ -816,11 +816,48 @@ namespace MediaBrowser.Model.Dlna
             }
 
             var transcodingProfiles = options.Profile.TranscodingProfiles
-                .Where(i => i.Type == playlistItem.MediaType && i.Context == options.Context);
+                .Where(i => i.Type == playlistItem.MediaType && i.Context == options.Context).ToList();
 
             if (item.UseMostCompatibleTranscodingProfile)
             {
-                transcodingProfiles = transcodingProfiles.Where(i => string.Equals(i.Container, "ts", StringComparison.OrdinalIgnoreCase));
+                transcodingProfiles = transcodingProfiles.Where(i => string.Equals(i.Container, "ts", StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+
+            // Pre-process the transcoding profiles to split the audio codec if the audio stream is going to be checked for direct streaming.
+            // This is to ensure that the audio codec conditions are checked against the transcoding profile that can directly stream the audio codec,
+            // instead of other codecs carried within the same transcoding profile.
+            // For example: the transcoding profile has aac and flac, and the audio stream is flac. The transcoding profile should be split into an aac profile and a flac profile.
+            // So that the conditions for flac will not be applied to aac.
+            if (options.AllowAudioStreamCopy && audioStream is not null)
+            {
+                var splitTranscodingProfiles = new List<TranscodingProfile>();
+                transcodingProfiles = transcodingProfiles.Select(transcodingProfile =>
+                {
+                    if (!ContainerHelper.ContainsContainer(transcodingProfile.AudioCodec, audioStream.Codec))
+                    {
+                        return transcodingProfile;
+                    }
+
+                    var hasTargetAudioConditions = options.Profile.CodecProfiles
+                        .Any(i => i.Type == CodecType.VideoAudio && i.ContainsAnyCodec(audioStream.Codec, transcodingProfile.Container));
+
+                    if (!hasTargetAudioConditions)
+                    {
+                        return transcodingProfile;
+                    }
+
+                    var targetAudioCodecTranscodingProfile = new TranscodingProfile(transcodingProfile)
+                    {
+                        AudioCodec = audioStream.Codec
+                    };
+
+                    transcodingProfile.AudioCodec = string.Join(',', ContainerHelper.Split(transcodingProfile.AudioCodec)
+                        .Where(c => !string.Equals(c, audioStream.Codec, StringComparison.OrdinalIgnoreCase)));
+
+                    splitTranscodingProfiles.Add(targetAudioCodecTranscodingProfile);
+                    return transcodingProfile;
+                }).ToList();
+                transcodingProfiles.AddRange(splitTranscodingProfiles);
             }
 
             var videoCodec = videoStream?.Codec;
