@@ -62,6 +62,9 @@ namespace Emby.Server.Implementations.Session
         private readonly ConcurrentDictionary<string, SessionInfo> _activeConnections
             = new(StringComparer.OrdinalIgnoreCase);
 
+        private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, string>> _activeLiveStreamSessions
+            = new(StringComparer.OrdinalIgnoreCase);
+
         private Timer _idleTimer;
         private Timer _inactiveTimer;
 
@@ -309,10 +312,46 @@ namespace Emby.Server.Implementations.Session
                 _activeConnections.TryRemove(key, out _);
                 if (!string.IsNullOrEmpty(session.PlayState?.LiveStreamId))
                 {
-                    await _mediaSourceManager.CloseLiveStream(session.PlayState.LiveStreamId).ConfigureAwait(false);
+                    await CloseLiveStreamIfNeededAsync(session.PlayState.LiveStreamId, session.Id).ConfigureAwait(false);
                 }
 
                 await OnSessionEnded(session).ConfigureAwait(false);
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task CloseLiveStreamIfNeededAsync(string liveStreamId, string sessionIdOrPlaySessionId)
+        {
+            bool liveStreamNeedsToBeClosed = false;
+
+            if (_activeLiveStreamSessions.TryGetValue(liveStreamId, out var activeSessionMappings))
+            {
+                if (activeSessionMappings.TryRemove(sessionIdOrPlaySessionId, out var correspondingId))
+                {
+                    if (!string.IsNullOrEmpty(correspondingId))
+                    {
+                        activeSessionMappings.TryRemove(correspondingId, out _);
+                    }
+
+                    liveStreamNeedsToBeClosed = true;
+                }
+
+                if (activeSessionMappings.IsEmpty)
+                {
+                    _activeLiveStreamSessions.TryRemove(liveStreamId, out _);
+                }
+            }
+
+            if (liveStreamNeedsToBeClosed)
+            {
+                try
+                {
+                    await _mediaSourceManager.CloseLiveStream(liveStreamId).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error closing live stream");
+                }
             }
         }
 
@@ -725,6 +764,11 @@ namespace Emby.Server.Implementations.Session
                 }
             }
 
+            if (!string.IsNullOrEmpty(info.LiveStreamId))
+            {
+                UpdateLiveStreamActiveSessionMappings(info.LiveStreamId, info.SessionId, info.PlaySessionId);
+            }
+
             var eventArgs = new PlaybackStartEventArgs
             {
                 Item = libraryItem,
@@ -782,6 +826,32 @@ namespace Emby.Server.Implementations.Session
             return OnPlaybackProgress(info, false);
         }
 
+        private void UpdateLiveStreamActiveSessionMappings(string liveStreamId, string sessionId, string playSessionId)
+        {
+            var activeSessionMappings = _activeLiveStreamSessions.GetOrAdd(liveStreamId, _ => new ConcurrentDictionary<string, string>());
+
+            if (!string.IsNullOrEmpty(playSessionId))
+            {
+                if (!activeSessionMappings.TryGetValue(sessionId, out var currentPlaySessionId) || currentPlaySessionId != playSessionId)
+                {
+                    if (!string.IsNullOrEmpty(currentPlaySessionId))
+                    {
+                        activeSessionMappings.TryRemove(currentPlaySessionId, out _);
+                    }
+
+                    activeSessionMappings[sessionId] = playSessionId;
+                    activeSessionMappings[playSessionId] = sessionId;
+                }
+            }
+            else
+            {
+                if (!activeSessionMappings.TryGetValue(sessionId, out _))
+                {
+                    activeSessionMappings[sessionId] = string.Empty;
+                }
+            }
+        }
+
         /// <summary>
         /// Used to report playback progress for an item.
         /// </summary>
@@ -816,6 +886,11 @@ namespace Emby.Server.Implementations.Session
                 {
                     OnPlaybackProgress(user, libraryItem, info);
                 }
+            }
+
+            if (!string.IsNullOrEmpty(info.LiveStreamId))
+            {
+                UpdateLiveStreamActiveSessionMappings(info.LiveStreamId, info.SessionId, info.PlaySessionId);
             }
 
             var eventArgs = new PlaybackProgressEventArgs
@@ -1000,14 +1075,7 @@ namespace Emby.Server.Implementations.Session
 
             if (!string.IsNullOrEmpty(info.LiveStreamId))
             {
-                try
-                {
-                    await _mediaSourceManager.CloseLiveStream(info.LiveStreamId).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error closing live stream");
-                }
+                await CloseLiveStreamIfNeededAsync(info.LiveStreamId, session.Id).ConfigureAwait(false);
             }
 
             var eventArgs = new PlaybackStopEventArgs
@@ -2055,6 +2123,7 @@ namespace Emby.Server.Implementations.Session
             }
 
             _activeConnections.Clear();
+            _activeLiveStreamSessions.Clear();
         }
     }
 }
