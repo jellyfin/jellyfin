@@ -62,6 +62,9 @@ namespace Emby.Server.Implementations.Session
         private readonly ConcurrentDictionary<string, SessionInfo> _activeConnections
             = new(StringComparer.OrdinalIgnoreCase);
 
+        private readonly ConcurrentDictionary<string, HashSet<string>> _activeLiveStreamSessions
+            = new(StringComparer.OrdinalIgnoreCase);
+
         private Timer _idleTimer;
         private Timer _inactiveTimer;
 
@@ -309,10 +312,44 @@ namespace Emby.Server.Implementations.Session
                 _activeConnections.TryRemove(key, out _);
                 if (!string.IsNullOrEmpty(session.PlayState?.LiveStreamId))
                 {
-                    await _mediaSourceManager.CloseLiveStream(session.PlayState.LiveStreamId).ConfigureAwait(false);
+                    await CloseLiveStreamIfNeededAsync(session.PlayState.LiveStreamId, session.Id).ConfigureAwait(false);
                 }
 
                 await OnSessionEnded(session).ConfigureAwait(false);
+            }
+        }
+
+        private async Task CloseLiveStreamIfNeededAsync(string liveStreamId, string sessionId)
+        {
+            bool liveStreamNeedsToBeClosed = false;
+
+            if (_activeLiveStreamSessions.TryGetValue(liveStreamId, out var sessionIds))
+            {
+                lock (sessionIds)
+                {
+                    if (sessionIds.Contains(sessionId))
+                    {
+                        liveStreamNeedsToBeClosed = true;
+                        sessionIds.Remove(sessionId);
+                    }
+
+                    if (sessionIds.Count == 0)
+                    {
+                        _activeLiveStreamSessions.TryRemove(liveStreamId, out _);
+                    }
+                }
+            }
+
+            if (liveStreamNeedsToBeClosed)
+            {
+                try
+                {
+                    await _mediaSourceManager.CloseLiveStream(liveStreamId).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error closing live stream");
+                }
             }
         }
 
@@ -725,6 +762,20 @@ namespace Emby.Server.Implementations.Session
                 }
             }
 
+            if (!string.IsNullOrEmpty(info.LiveStreamId))
+            {
+                var liveStreamId = info.LiveStreamId;
+                var sessionIds = _activeLiveStreamSessions.GetOrAdd(liveStreamId, _ => new HashSet<string>());
+
+                lock (sessionIds)
+                {
+                    if (!sessionIds.Contains(info.SessionId))
+                    {
+                        sessionIds.Add(session.Id);
+                    }
+                }
+            }
+
             var eventArgs = new PlaybackStartEventArgs
             {
                 Item = libraryItem,
@@ -1000,14 +1051,7 @@ namespace Emby.Server.Implementations.Session
 
             if (!string.IsNullOrEmpty(info.LiveStreamId))
             {
-                try
-                {
-                    await _mediaSourceManager.CloseLiveStream(info.LiveStreamId).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error closing live stream");
-                }
+                await CloseLiveStreamIfNeededAsync(info.LiveStreamId, session.Id).ConfigureAwait(false);
             }
 
             var eventArgs = new PlaybackStopEventArgs
@@ -2055,6 +2099,7 @@ namespace Emby.Server.Implementations.Session
             }
 
             _activeConnections.Clear();
+            _activeLiveStreamSessions.Clear();
         }
     }
 }
