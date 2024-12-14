@@ -14,10 +14,13 @@ using Xunit;
 
 namespace Jellyfin.LiveTv.Tests.Listings;
 
-public class XmlTvListingsProviderTests
+public sealed class XmlTvListingsProviderTests : IDisposable
 {
     private readonly Fixture _fixture;
     private readonly XmlTvListingsProvider _xmlTvListingsProvider;
+    private readonly HttpClient _httpClient;
+
+    private bool _disposed;
 
     public XmlTvListingsProviderTests()
     {
@@ -33,9 +36,10 @@ public class XmlTvListingsProviderTests
                     });
                 });
 
+        _httpClient = new HttpClient(messageHandler.Object);
         var http = new Mock<IHttpClientFactory>();
         http.Setup(x => x.CreateClient(It.IsAny<string>()))
-            .Returns(new HttpClient(messageHandler.Object));
+            .Returns(_httpClient);
         _fixture = new Fixture();
         _fixture.Customize(new AutoMoqCustomization
         {
@@ -85,5 +89,16 @@ public class XmlTvListingsProviderTests
         var program = programsList[0];
         Assert.DoesNotContain(program.Genres, g => string.IsNullOrEmpty(g));
         Assert.Equal("3297", program.ChannelId);
+    }
+
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _httpClient.Dispose();
+        _disposed = true;
     }
 }

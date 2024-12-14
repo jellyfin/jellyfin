@@ -425,7 +425,7 @@ public class VideosController : BaseJellyfinApiController
             EnableAudioVbrEncoding = enableAudioVbrEncoding
         };
 
-        var state = await StreamingHelpers.GetStreamingState(
+        using var state = await StreamingHelpers.GetStreamingState(
                 streamingRequest,
                 HttpContext,
                 _mediaSourceManager,

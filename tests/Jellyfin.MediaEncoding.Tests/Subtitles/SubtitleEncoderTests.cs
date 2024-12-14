@@ -96,7 +96,7 @@ namespace Jellyfin.MediaEncoding.Subtitles.Tests
         public async Task GetReadableFile_Valid_Success(MediaSourceInfo mediaSource, MediaStream subtitleStream, SubtitleEncoder.SubtitleInfo subtitleInfo)
         {
             var fixture = new Fixture().Customize(new AutoMoqCustomization { ConfigureMembers = true });
-            var subtitleEncoder = fixture.Create<SubtitleEncoder>();
+            using var subtitleEncoder = fixture.Create<SubtitleEncoder>();
             var result = await subtitleEncoder.GetReadableFile(mediaSource, subtitleStream, CancellationToken.None);
             Assert.Equal(subtitleInfo.Path, result.Path);
             Assert.Equal(subtitleInfo.Protocol, result.Protocol);
