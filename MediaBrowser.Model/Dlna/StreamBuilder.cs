@@ -816,54 +816,11 @@ namespace MediaBrowser.Model.Dlna
             }
 
             var transcodingProfiles = options.Profile.TranscodingProfiles
-                .Where(i => i.Type == playlistItem.MediaType && i.Context == options.Context).ToList();
+                .Where(i => i.Type == playlistItem.MediaType && i.Context == options.Context);
 
             if (item.UseMostCompatibleTranscodingProfile)
             {
-                transcodingProfiles = transcodingProfiles.Where(i => string.Equals(i.Container, "ts", StringComparison.OrdinalIgnoreCase)).ToList();
-            }
-
-            // Pre-process the transcoding profiles to split the audio codec if the audio stream is going to be checked for direct streaming.
-            // This is to ensure that the audio codec conditions are checked against the transcoding profile that can directly stream the audio codec,
-            // instead of other codecs carried within the same transcoding profile.
-            // For example: the transcoding profile has aac and flac, and the audio stream is flac. The transcoding profile should be split into an aac profile and a flac profile.
-            // So that the conditions for flac will not be applied to aac.
-            if (options.AllowAudioStreamCopy && audioStream is not null)
-            {
-                var splitTranscodingProfiles = new List<TranscodingProfile>();
-                transcodingProfiles = transcodingProfiles.Select(transcodingProfile =>
-                {
-                    if (!ContainerHelper.ContainsContainer(transcodingProfile.AudioCodec, audioStream.Codec))
-                    {
-                        return transcodingProfile;
-                    }
-
-                    var hasTargetAudioConditions = options.Profile.CodecProfiles
-                        .Any(i => i.Type == CodecType.VideoAudio && i.ContainsAnyCodec(audioStream.Codec, transcodingProfile.Container));
-
-                    if (!hasTargetAudioConditions)
-                    {
-                        return transcodingProfile;
-                    }
-
-                    // Directly return the transcoding profile if the audio codec is already on its own
-                    if (string.Equals(transcodingProfile.AudioCodec, audioStream.Codec, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return transcodingProfile;
-                    }
-
-                    var targetAudioCodecTranscodingProfile = new TranscodingProfile(transcodingProfile)
-                    {
-                        AudioCodec = audioStream.Codec
-                    };
-
-                    transcodingProfile.AudioCodec = string.Join(',', ContainerHelper.Split(transcodingProfile.AudioCodec)
-                        .Where(c => !string.Equals(c, audioStream.Codec, StringComparison.OrdinalIgnoreCase)));
-
-                    splitTranscodingProfiles.Add(targetAudioCodecTranscodingProfile);
-                    return transcodingProfile;
-                }).ToList();
-                transcodingProfiles.AddRange(splitTranscodingProfiles);
+                transcodingProfiles = transcodingProfiles.Where(i => string.Equals(i.Container, "ts", StringComparison.OrdinalIgnoreCase));
             }
 
             var videoCodec = videoStream?.Codec;
@@ -909,31 +866,33 @@ namespace MediaBrowser.Model.Dlna
                         // the transcoding conditions, then the one does not satisfy the transcoding conditions.
                         // For example: A client can support both aac and flac, but flac only supports 2 channels while aac supports 6.
                         // When the source audio is 6 channel flac, we should transcode to 6 channel aac, instead of down-mix to 2 channel flac.
-                        if (ContainerHelper.ContainsContainer(transcodingProfile.AudioCodec, audioCodec))
-                        {
-                            var appliedVideoConditions = options.Profile.CodecProfiles
-                                .Where(i => i.Type == CodecType.VideoAudio &&
-                                    i.ContainsAnyCodec(audioCodec, container) &&
-                                    i.ApplyConditions.All(applyCondition => ConditionProcessor.IsVideoAudioConditionSatisfied(applyCondition, audioChannels, audioBitrate, audioSampleRate, audioBitDepth, audioProfile, false)))
-                                .Select(i =>
-                                    i.Conditions.All(condition => ConditionProcessor.IsVideoAudioConditionSatisfied(condition, audioChannels, audioBitrate, audioSampleRate, audioBitDepth, audioProfile, false)));
+                        var transcodingAudioCodecs = ContainerHelper.Split(transcodingProfile.AudioCodec);
 
-                            // An empty appliedVideoConditions means that the codec has no conditions for the current audio stream
-                            var conditionsSatisfied = appliedVideoConditions.All(satisfied => satisfied);
-                            rank.Audio = conditionsSatisfied ? 1 : 3;
-                        }
-                        else
+                        foreach (var transcodingAudioCodec in transcodingAudioCodecs)
                         {
                             var appliedVideoConditions = options.Profile.CodecProfiles
                                 .Where(i => i.Type == CodecType.VideoAudio &&
-                                            i.ContainsAnyCodec(transcodingProfile.AudioCodec, container) &&
+                                            i.ContainsAnyCodec(transcodingAudioCodec, container) &&
                                             i.ApplyConditions.All(applyCondition => ConditionProcessor.IsVideoAudioConditionSatisfied(applyCondition, audioChannels, audioBitrate, audioSampleRate, audioBitDepth, audioProfile, false)))
                                 .Select(i =>
                                     i.Conditions.All(condition => ConditionProcessor.IsVideoAudioConditionSatisfied(condition, audioChannels, audioBitrate, audioSampleRate, audioBitDepth, audioProfile, false)));
 
                             // An empty appliedVideoConditions means that the codec has no conditions for the current audio stream
                             var conditionsSatisfied = appliedVideoConditions.All(satisfied => satisfied);
-                            rank.Audio = conditionsSatisfied ? 2 : 3;
+
+                            var rankAudio = 3;
+
+                            if (conditionsSatisfied)
+                            {
+                                rankAudio = string.Equals(transcodingAudioCodec, audioCodec, StringComparison.OrdinalIgnoreCase) ? 1 : 2;
+                            }
+
+                            rank.Audio = Math.Min(rank.Audio, rankAudio);
+
+                            if (rank.Audio == 1)
+                            {
+                                break;
+                            }
                         }
                     }
 
@@ -1023,9 +982,36 @@ namespace MediaBrowser.Model.Dlna
 
             var audioStreamWithSupportedCodec = candidateAudioStreams.Where(stream => ContainerHelper.ContainsContainer(audioCodecs, false, stream.Codec)).FirstOrDefault();
 
-            var directAudioStream = audioStreamWithSupportedCodec?.Channels is not null && audioStreamWithSupportedCodec.Channels.Value <= (playlistItem.TranscodingMaxAudioChannels ?? int.MaxValue) ? audioStreamWithSupportedCodec : null;
+            var channelsExceedsLimit = audioStreamWithSupportedCodec is not null && audioStreamWithSupportedCodec.Channels > (playlistItem.TranscodingMaxAudioChannels ?? int.MaxValue);
 
-            var channelsExceedsLimit = audioStreamWithSupportedCodec is not null && directAudioStream is null;
+            var directAudioStreamSatisfied = audioStreamWithSupportedCodec is not null && !channelsExceedsLimit &&
+                                             options.Profile.CodecProfiles
+                                                 .Where(i => i.Type == CodecType.VideoAudio &&
+                                                             i.ContainsAnyCodec(audioStreamWithSupportedCodec.Codec, container) &&
+                                                             i.ApplyConditions.All(applyCondition =>
+                                                             {
+                                                                 var satisfied = ConditionProcessor.IsVideoAudioConditionSatisfied(applyCondition, audioStreamWithSupportedCodec.Channels, audioStreamWithSupportedCodec.BitRate, audioStreamWithSupportedCodec.SampleRate, audioStreamWithSupportedCodec.BitDepth, audioStreamWithSupportedCodec.Profile, false);
+                                                                 if (!satisfied)
+                                                                 {
+                                                                     playlistItem.TranscodeReasons |= GetTranscodeReasonForFailedCondition(applyCondition);
+                                                                 }
+
+                                                                 return satisfied;
+                                                             }))
+                                                .Select(i =>
+                                                            i.Conditions.All(condition =>
+                                                            {
+                                                                var satisfied = ConditionProcessor.IsVideoAudioConditionSatisfied(condition, audioStreamWithSupportedCodec.Channels, audioStreamWithSupportedCodec.BitRate, audioStreamWithSupportedCodec.SampleRate, audioStreamWithSupportedCodec.BitDepth, audioStreamWithSupportedCodec.Profile, false);
+                                                                if (!satisfied)
+                                                                {
+                                                                    playlistItem.TranscodeReasons |= GetTranscodeReasonForFailedCondition(condition);
+                                                                }
+
+                                                                return satisfied;
+                                                            }))
+                                                 .All(satisfied => satisfied);
+
+            var directAudioStream = directAudioStreamSatisfied ? audioStreamWithSupportedCodec : null;
 
             if (channelsExceedsLimit && playlistItem.TargetAudioStream is not null)
             {
@@ -2303,11 +2289,6 @@ namespace MediaBrowser.Model.Dlna
                 if (string.Equals(profile.AudioCodec, audioCodec, StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(profile.Container, audioCodec, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (string.Equals("opus", audioCodec, StringComparison.OrdinalIgnoreCase) && audioStream?.Channels > 2)
-                    {
-                        return false;
-                    }
-
                     return true;
                 }
             }
