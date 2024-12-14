@@ -30,7 +30,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{41093F42-C7CC-4D07-956B-6182CBEDE2EC}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
-		jellyfin.ruleset = jellyfin.ruleset
 		SharedVersion.cs = SharedVersion.cs
 	EndProjectSection
 EndProject
@@ -39,9 +38,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Api", "Jellyfin.Api\Jellyfin.Api.csproj", "{DFBEFB4C-DA19-4143-98B7-27320C7F7163}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{FBBB5129-006E-4AD7-BAD5-8B7CA1D10ED6}"
-	ProjectSection(SolutionItems) = preProject
-		tests\jellyfin-tests.ruleset = tests\jellyfin-tests.ruleset
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Common.Tests", "tests\Jellyfin.Common.Tests\Jellyfin.Common.Tests.csproj", "{DF194677-DFD3-42AF-9F75-D44D5A416478}"
 EndProject
