@@ -51,7 +51,7 @@ public class SkiaEncoder : IImageEncoder
 
         // Initialize the list of typefaces
         // We have to statically build a list of typefaces because MatchCharacter only accepts a single character or code point
-        // But in reality a  human-readable character (grapheme cluster) could be multiple code points. For example, 🚵🏻‍♀️ is a single emoji but 5 code points (U+1F6B5 + U+1F3FB + U+200D + U+2640 + U+FE0F)
+        // But in reality a human-readable character (grapheme cluster) could be multiple code points. For example, 🚵🏻‍♀️ is a single emoji but 5 code points (U+1F6B5 + U+1F3FB + U+200D + U+2640 + U+FE0F)
         _typefaces =
         [
             SKFontManager.Default.MatchCharacter(null, SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright, null, '鸡'), // CJK Simplified Chinese
