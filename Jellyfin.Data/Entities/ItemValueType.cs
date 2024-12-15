@@ -10,9 +10,7 @@ public enum ItemValueType
     /// <summary>
     /// Artists.
     /// </summary>
-#pragma warning disable CA1008 // Enums should have zero value. Cannot apply here.
     Artist = 0,
-#pragma warning restore CA1008 // Enums should have zero value
 
     /// <summary>
     /// Album.

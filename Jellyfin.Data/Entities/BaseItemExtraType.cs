@@ -1,6 +1,6 @@
+#pragma warning disable CS1591
 namespace Jellyfin.Data.Entities;
 
-#pragma warning disable CS1591
 public enum BaseItemExtraType
 {
     Unknown = 0,

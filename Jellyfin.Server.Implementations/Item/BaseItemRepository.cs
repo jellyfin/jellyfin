@@ -1,3 +1,9 @@
+#pragma warning disable RS0030 // Do not use banned APIs
+// Do not enforce that because EFCore cannot deal with cultures well.
+#pragma warning disable CA1304 // Specify CultureInfo
+#pragma warning disable CA1311 // Specify a culture or use an invariant version
+#pragma warning disable CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -31,14 +37,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using BaseItemDto = MediaBrowser.Controller.Entities.BaseItem;
 using BaseItemEntity = Jellyfin.Data.Entities.BaseItemEntity;
-#pragma warning disable RS0030 // Do not use banned APIs
-// Do not enforce that because EFCore cannot deal with cultures well.
-#pragma warning disable CA1304 // Specify CultureInfo
-#pragma warning disable CA1311 // Specify a culture or use an invariant version
-#pragma warning disable CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
 
 namespace Jellyfin.Server.Implementations.Item;
 
+
+/*
+    All queries in this class and all other nullable enabled EFCore repository classes will make libraral use of the null-forgiving operator "!".
+    This is done as the code isn't actually executed client side, but only the expressions are interpretet and the compiler cannot know that.
+    This is your only warning/message regarding this topic.
+*/
 /// <summary>
 /// Handles all storage logic for BaseItems.
 /// </summary>
@@ -1065,7 +1072,7 @@ public sealed class BaseItemRepository
             ItemId = baseItemId,
             Id = Guid.NewGuid(),
             Path = e.Path,
-            Blurhash = e.BlurHash != null ? Encoding.UTF8.GetBytes(e.BlurHash) : null,
+            Blurhash = e.BlurHash is null ? null : Encoding.UTF8.GetBytes(e.BlurHash),
             DateModified = e.DateModified,
             Height = e.Height,
             Width = e.Width,
@@ -1079,7 +1086,7 @@ public sealed class BaseItemRepository
         return new ItemImageInfo()
         {
             Path = appHost?.ExpandVirtualPath(e.Path) ?? e.Path,
-            BlurHash = e.Blurhash != null ? Encoding.UTF8.GetString(e.Blurhash) : null,
+            BlurHash = e.Blurhash is null ? null : Encoding.UTF8.GetString(e.Blurhash),
             DateModified = e.DateModified,
             Height = e.Height,
             Width = e.Width,

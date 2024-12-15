@@ -88,6 +88,7 @@ namespace MediaBrowser.Providers.MediaInfo
                                   : TimeSpan.FromSeconds(10);
 
             var query = new MediaStreamQuery { ItemId = item.Id, Index = item.DefaultVideoStreamIndex };
+#pragma warning disable CA1826
             var videoStream = _mediaSourceManager.GetMediaStreams(query).FirstOrDefault();
             if (videoStream is null)
             {
@@ -95,7 +96,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 query.Index = null;
                 videoStream = _mediaSourceManager.GetMediaStreams(query).FirstOrDefault();
             }
-
+#pragma warning restore CA1826
             if (videoStream is null)
             {
                 _logger.LogInformation("Skipping image extraction: no video stream found for {Path}.", item.Path ?? string.Empty);

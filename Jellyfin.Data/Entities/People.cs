@@ -1,8 +1,9 @@
+#pragma warning disable CA2227 // Collection properties should be read only
+
 using System;
 using System.Collections.Generic;
 
 namespace Jellyfin.Data.Entities;
-#pragma warning disable CA2227 // Collection properties should be read only
 
 /// <summary>
 /// People entity.

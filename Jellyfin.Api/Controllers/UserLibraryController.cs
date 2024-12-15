@@ -305,7 +305,7 @@ public class UserLibraryController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
     [HttpDelete("UserItems/{itemId}/Rating")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<UserItemDataDto> DeleteUserItemRating(
+    public ActionResult<UserItemDataDto?> DeleteUserItemRating(
         [FromQuery] Guid? userId,
         [FromRoute, Required] Guid itemId)
     {
@@ -338,7 +338,7 @@ public class UserLibraryController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Obsolete("Kept for backwards compatibility")]
     [ApiExplorerSettings(IgnoreApi = true)]
-    public ActionResult<UserItemDataDto> DeleteUserItemRatingLegacy(
+    public ActionResult<UserItemDataDto?> DeleteUserItemRatingLegacy(
         [FromRoute, Required] Guid userId,
         [FromRoute, Required] Guid itemId)
         => DeleteUserItemRating(userId, itemId);
@@ -353,7 +353,7 @@ public class UserLibraryController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
     [HttpPost("UserItems/{itemId}/Rating")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<UserItemDataDto> UpdateUserItemRating(
+    public ActionResult<UserItemDataDto?> UpdateUserItemRating(
         [FromQuery] Guid? userId,
         [FromRoute, Required] Guid itemId,
         [FromQuery] bool? likes)
@@ -388,7 +388,7 @@ public class UserLibraryController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Obsolete("Kept for backwards compatibility")]
     [ApiExplorerSettings(IgnoreApi = true)]
-    public ActionResult<UserItemDataDto> UpdateUserItemRatingLegacy(
+    public ActionResult<UserItemDataDto?> UpdateUserItemRatingLegacy(
         [FromRoute, Required] Guid userId,
         [FromRoute, Required] Guid itemId,
         [FromQuery] bool? likes)
@@ -679,7 +679,7 @@ public class UserLibraryController : BaseJellyfinApiController
     /// <param name="user">The user.</param>
     /// <param name="item">The item.</param>
     /// <param name="likes">if set to <c>true</c> [likes].</param>
-    private UserItemDataDto UpdateUserItemRatingInternal(User user, BaseItem item, bool? likes)
+    private UserItemDataDto? UpdateUserItemRatingInternal(User user, BaseItem item, bool? likes)
     {
         // Get the user data for this item
         var data = _userDataRepository.GetUserData(user, item);
@@ -691,6 +691,6 @@ public class UserLibraryController : BaseJellyfinApiController
             _userDataRepository.SaveUserData(user, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
         }
 
-        return _userDataRepository.GetUserDataDto(item, user)!;
+        return _userDataRepository.GetUserDataDto(item, user);
     }
 }

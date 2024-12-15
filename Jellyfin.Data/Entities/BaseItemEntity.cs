@@ -1,12 +1,12 @@
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+#pragma warning disable CA2227 // Collection properties should be read only
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Jellyfin.Data.Entities;
-
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-#pragma warning disable CA2227 // Collection properties should be read only
 
 public class BaseItemEntity
 {
