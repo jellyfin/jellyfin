@@ -1060,11 +1060,6 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            if (queryParent is Series)
-            {
-                return false;
-            }
-
             if (queryParent is Season)
             {
                 return false;
@@ -1084,12 +1079,15 @@ namespace MediaBrowser.Controller.Entities
 
             if (!param.HasValue)
             {
-                if (user is not null && !configurationManager.Configuration.EnableGroupingIntoCollections)
+                if (user is not null && query.IncludeItemTypes.Any(type =>
+                    (type == BaseItemKind.Movie && !configurationManager.Configuration.EnableGroupingMoviesIntoCollections) ||
+                    (type == BaseItemKind.Series && !configurationManager.Configuration.EnableGroupingShowsIntoCollections)))
                 {
                     return false;
                 }
 
-                if (query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains(BaseItemKind.Movie))
+                if (query.IncludeItemTypes.Length == 0
+                    || query.IncludeItemTypes.Any(type => type == BaseItemKind.Movie || type == BaseItemKind.Series))
                 {
                     param = true;
                 }

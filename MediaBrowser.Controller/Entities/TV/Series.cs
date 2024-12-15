@@ -23,7 +23,7 @@ namespace MediaBrowser.Controller.Entities.TV
     /// <summary>
     /// Class Series.
     /// </summary>
-    public class Series : Folder, IHasTrailers, IHasDisplayOrder, IHasLookupInfo<SeriesInfo>, IMetadataContainer
+    public class Series : Folder, IHasTrailers, IHasDisplayOrder, IHasLookupInfo<SeriesInfo>, IMetadataContainer, ISupportsBoxSetGrouping
     {
         public Series()
         {
