@@ -25,7 +25,7 @@ public class SkiaEncoder : IImageEncoder
     private readonly ILogger<SkiaEncoder> _logger;
     private readonly IApplicationPaths _appPaths;
     private static readonly SKImageFilter _imageFilter;
-    private static readonly List<SKTypeface> _typefaces;
+    private static readonly SKTypeface[] _typefaces;
 
 #pragma warning disable CA1810
     static SkiaEncoder()
