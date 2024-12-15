@@ -668,13 +668,40 @@ public class GuideManager : IGuideManager
     private static bool UpdateImages(BaseItem item, ProgramInfo info)
     {
         var updated = false;
+
         // Primary
-        var image = item.GetImages(ImageType.Primary).FirstOrDefault();
+        updated |= UpdateImage(ImageType.Primary, item, info);
+
+        // Thumbnail
+        updated |= UpdateImage(ImageType.Thumb, item, info);
+
+        // Logo
+        updated |= UpdateImage(ImageType.Logo, item, info);
+
+        // Backdrop
+        return updated || UpdateImage(ImageType.Backdrop, item, info);
+    }
+
+    private static bool UpdateImage(ImageType imageType, BaseItem item, ProgramInfo info)
+    {
+        var image = item.GetImages(imageType).FirstOrDefault();
         var currentImagePath = image?.Path;
-        var newImagePath = info.ImagePath;
-        var newImageUrl = info.ImageUrl;
-        var sameImage = !newImagePath.Equals(currentImagePath, StringComparison.OrdinalIgnoreCase)
-                         || newImageUrl.Equals(currentImagePath, StringComparison.OrdinalIgnoreCase);
+        var newImagePath = imageType switch
+        {
+            ImageType.Primary => info.ImagePath,
+            _ => string.Empty
+        };
+        var newImageUrl = imageType switch
+        {
+            ImageType.Backdrop => info.BackdropImageUrl,
+            ImageType.Logo => info.LogoImageUrl,
+            ImageType.Primary => info.ImageUrl,
+            ImageType.Thumb => info.ThumbImageUrl,
+            _ => string.Empty
+        };
+
+        var sameImage = newImageUrl.Equals(currentImagePath, StringComparison.OrdinalIgnoreCase)
+                         || newImagePath.Equals(currentImagePath, StringComparison.OrdinalIgnoreCase);
         if (!sameImage)
         {
             if (!string.IsNullOrWhiteSpace(newImagePath))
@@ -683,11 +710,11 @@ public class GuideManager : IGuideManager
                     new ItemImageInfo
                     {
                         Path = newImagePath,
-                        Type = ImageType.Primary
+                        Type = imageType
                     },
                     0);
 
-                updated = true;
+                return true;
             }
             else if (!string.IsNullOrWhiteSpace(newImageUrl))
             {
@@ -695,11 +722,11 @@ public class GuideManager : IGuideManager
                     new ItemImageInfo
                     {
                         Path = newImageUrl,
-                        Type = ImageType.Primary
+                        Type = imageType
                     },
                     0);
 
-                updated = true;
+                return true;
             }
             else
             {
@@ -707,82 +734,7 @@ public class GuideManager : IGuideManager
             }
         }
 
-        // Thumbnail
-        image = item.GetImages(ImageType.Thumb).FirstOrDefault();
-        currentImagePath = image?.Path;
-        newImageUrl = info.ThumbImageUrl;
-        sameImage = !newImageUrl.Equals(currentImagePath, StringComparison.OrdinalIgnoreCase);
-        if (!sameImage)
-        {
-            if (!string.IsNullOrWhiteSpace(newImageUrl))
-            {
-                item.SetImage(
-                    new ItemImageInfo
-                    {
-                        Path = newImageUrl,
-                        Type = ImageType.Thumb
-                    },
-                    0);
-
-                updated = true;
-            }
-            else
-            {
-                item.RemoveImage(image);
-            }
-        }
-
-        // Logo
-        image = item.GetImages(ImageType.Logo).FirstOrDefault();
-        currentImagePath = image?.Path;
-        newImageUrl = info.LogoImageUrl;
-        sameImage = !newImageUrl.Equals(currentImagePath, StringComparison.OrdinalIgnoreCase);
-        if (!sameImage)
-        {
-            if (!string.IsNullOrWhiteSpace(newImageUrl))
-            {
-                item.SetImage(
-                    new ItemImageInfo
-                    {
-                        Path = newImageUrl,
-                        Type = ImageType.Logo
-                    },
-                    0);
-
-                updated = true;
-            }
-            else
-            {
-                item.RemoveImage(image);
-            }
-        }
-
-        // Backdrop
-        image = item.GetImages(ImageType.Backdrop).FirstOrDefault();
-        currentImagePath = image?.Path;
-        newImageUrl = info.BackdropImageUrl;
-        sameImage = !newImageUrl.Equals(currentImagePath, StringComparison.OrdinalIgnoreCase);
-        if (!sameImage)
-        {
-            if (!string.IsNullOrWhiteSpace(newImageUrl))
-            {
-                item.SetImage(
-                    new ItemImageInfo
-                    {
-                        Path = newImageUrl,
-                        Type = ImageType.Backdrop
-                    },
-                    0);
-
-                updated = true;
-            }
-            else
-            {
-                item.RemoveImage(image);
-            }
-        }
-
-        return updated;
+        return false;
     }
 
     private async Task PreCacheImages(IReadOnlyList<BaseItem> programs, DateTime maxCacheDate)
