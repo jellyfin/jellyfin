@@ -27,6 +27,11 @@ public class GuideManager : IGuideManager
     private const string EtagKey = "ProgramEtag";
     private const string ExternalServiceTag = "ExternalServiceId";
 
+    /// <summary>
+    /// Amount of days images are pre-cached from external sources.
+    /// </summary>
+    public const int MaxCacheDays = 2;
+
     private static readonly ParallelOptions _cacheParallelOptions = new() { MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 10) };
 
     private readonly ILogger<GuideManager> _logger;
