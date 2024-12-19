@@ -59,6 +59,18 @@ namespace Jellyfin.Server
                 return Task.CompletedTask;
             }
 
+            // The dotnet swagger tool passes in an --applicationName that isn't allowed by the CLI parser
+            // Skip over it and add the "nowebclient" option to the server to allow it to start successfully
+            // Swagger is used to generate the OpenAPI document using the startup assembly and then exit the app
+            if (Assembly.GetEntryAssembly()?.GetName().Name == "dotnet-swagger")
+            {
+                var startupOptions = new StartupOptions
+                {
+                    NoWebClient = true
+                };
+                return StartApp(startupOptions);
+            }
+
             // Parse the command line arguments and either start the app or exit indicating error
             return Parser.Default.ParseArguments<StartupOptions>(args)
                 .MapResult(StartApp, ErrorParsingArguments);
