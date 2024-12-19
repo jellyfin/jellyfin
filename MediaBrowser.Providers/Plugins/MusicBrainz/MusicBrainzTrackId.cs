@@ -20,8 +20,5 @@ public class MusicBrainzTrackId : IExternalId
     public ExternalIdMediaType? Type => ExternalIdMediaType.Track;
 
     /// <inheritdoc />
-    public string UrlFormatString => Plugin.Instance!.Configuration.Server + "/track/{0}";
-
-    /// <inheritdoc />
     public bool Supports(IHasProviderIds item) => item is Audio;
 }

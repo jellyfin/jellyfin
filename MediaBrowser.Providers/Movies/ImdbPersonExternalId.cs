@@ -19,9 +19,6 @@ namespace MediaBrowser.Providers.Movies
         public ExternalIdMediaType? Type => ExternalIdMediaType.Person;
 
         /// <inheritdoc />
-        public string UrlFormatString => "https://www.imdb.com/name/{0}";
-
-        /// <inheritdoc />
         public bool Supports(IHasProviderIds item) => item is Person;
     }
 }
