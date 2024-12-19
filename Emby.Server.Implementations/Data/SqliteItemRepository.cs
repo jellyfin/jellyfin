@@ -1132,13 +1132,22 @@ namespace Emby.Server.Implementations.Data
                 .Append(Delimiter)
                 .Append(image.Height);
 
-            var hash = image.BlurHash;
+            var blurHash = image.BlurHash;
+            if (!string.IsNullOrEmpty(blurHash))
+            {
+                bldr.Append(Delimiter)
+                    // Replace delimiters with other characters.
+                    // This can be removed when we migrate to a proper DB.
+                    .Append(blurHash.Replace(Delimiter, '/').Replace('|', '\\'));
+            }
+
+            var hash = image.FileHash;
             if (!string.IsNullOrEmpty(hash))
             {
                 bldr.Append(Delimiter)
                     // Replace delimiters with other characters.
                     // This can be removed when we migrate to a proper DB.
-                    .Append(hash.Replace(Delimiter, '/').Replace('|', '\\'));
+                    .Append(hash);
             }
         }
 
@@ -1195,7 +1204,7 @@ namespace Emby.Server.Implementations.Data
                 return null;
             }
 
-            // Optional parameters: width*height*blurhash
+            // Optional parameters: width*height*blurhash*filehash
             if (nextSegment + 1 < value.Length - 1)
             {
                 value = value[(nextSegment + 1)..];
@@ -1226,10 +1235,14 @@ namespace Emby.Server.Implementations.Data
                 if (nextSegment < value.Length - 1)
                 {
                     value = value[(nextSegment + 1)..];
-                    var length = value.Length;
+                    nextSegment = value.IndexOf(Delimiter);
+                    if (nextSegment == -1)
+                    {
+                        nextSegment = value.Length;
+                    }
 
-                    Span<char> blurHashSpan = stackalloc char[length];
-                    for (int i = 0; i < length; i++)
+                    Span<char> blurHashSpan = stackalloc char[nextSegment];
+                    for (int i = 0; i < nextSegment; i++)
                     {
                         var c = value[i];
                         blurHashSpan[i] = c switch
@@ -1240,7 +1253,19 @@ namespace Emby.Server.Implementations.Data
                         };
                     }
 
-                    image.BlurHash = new string(blurHashSpan);
+                    image.BlurHash = nextSegment > 0 ? new string(blurHashSpan) : null;
+                }
+
+                if (nextSegment < value.Length - 1)
+                {
+                    value = value[(nextSegment + 1)..];
+                    nextSegment = value.IndexOf(Delimiter);
+                    if (nextSegment == -1)
+                    {
+                        nextSegment = value.Length;
+                    }
+
+                    image.FileHash = value[..nextSegment].ToString();
                 }
             }
 
