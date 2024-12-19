@@ -47,11 +47,11 @@ namespace MediaBrowser.Providers.Music
         protected override bool EnableUpdatingStudiosFromChildren => true;
 
         /// <inheritdoc />
-        protected override IList<BaseItem> GetChildrenForMetadataUpdates(MusicAlbum item)
+        protected override IReadOnlyList<BaseItem> GetChildrenForMetadataUpdates(MusicAlbum item)
             => item.GetRecursiveChildren(i => i is Audio);
 
         /// <inheritdoc />
-        protected override ItemUpdateType UpdateMetadataFromChildren(MusicAlbum item, IList<BaseItem> children, bool isFullRefresh, ItemUpdateType currentUpdateType)
+        protected override ItemUpdateType UpdateMetadataFromChildren(MusicAlbum item, IReadOnlyList<BaseItem> children, bool isFullRefresh, ItemUpdateType currentUpdateType)
         {
             var updateType = base.UpdateMetadataFromChildren(item, children, isFullRefresh, currentUpdateType);
 

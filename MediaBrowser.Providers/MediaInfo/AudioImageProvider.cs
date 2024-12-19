@@ -74,18 +74,18 @@ namespace MediaBrowser.Providers.MediaInfo
             return GetImage((Audio)item, imageStreams, cancellationToken);
         }
 
-        private async Task<DynamicImageResponse> GetImage(Audio item, List<MediaStream> imageStreams, CancellationToken cancellationToken)
+        private async Task<DynamicImageResponse> GetImage(Audio item, IReadOnlyList<MediaStream> imageStreams, CancellationToken cancellationToken)
         {
             var path = GetAudioImagePath(item);
 
             if (!File.Exists(path))
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
-
+#pragma warning disable CA1826
                 var imageStream = imageStreams.FirstOrDefault(i => (i.Comment ?? string.Empty).Contains("front", StringComparison.OrdinalIgnoreCase)) ??
                     imageStreams.FirstOrDefault(i => (i.Comment ?? string.Empty).Contains("cover", StringComparison.OrdinalIgnoreCase)) ??
                     imageStreams.FirstOrDefault();
-
+#pragma warning restore CA1826
                 var imageStreamIndex = imageStream?.Index;
 
                 var tempFile = await _mediaEncoder.ExtractAudioImage(item.Path, imageStreamIndex, cancellationToken).ConfigureAwait(false);
