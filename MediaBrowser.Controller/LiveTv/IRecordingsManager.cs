@@ -16,7 +16,7 @@ public interface IRecordingsManager
     /// </summary>
     /// <param name="id">The timer id.</param>
     /// <returns>The recording path, or <c>null</c> if none exists.</returns>
-    string? GetActiveRecordingPath(string id);
+    string? GetActiveRecordingPath(Guid id);
 
     /// <summary>
     /// Gets the information for an active recording.
@@ -42,7 +42,7 @@ public interface IRecordingsManager
     /// </summary>
     /// <param name="timerId">The timer id.</param>
     /// <param name="timer">The timer.</param>
-    void CancelRecording(string timerId, TimerInfo? timer);
+    void CancelRecording(Guid timerId, TimerInfo? timer);
 
     /// <summary>
     /// Records a stream.
