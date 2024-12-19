@@ -24,7 +24,7 @@ namespace Emby.Server.Implementations.EntryPoints
         private readonly IUserManager _userManager;
 
         private readonly Dictionary<Guid, List<BaseItem>> _changedItems = new();
-        private readonly object _syncLock = new();
+        private readonly Lock _syncLock = new();
 
         private Timer? _updateTimer;
 

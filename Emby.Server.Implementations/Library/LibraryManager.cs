@@ -81,8 +81,8 @@ namespace Emby.Server.Implementations.Library
         /// <summary>
         /// The _root folder sync lock.
         /// </summary>
-        private readonly object _rootFolderSyncLock = new object();
-        private readonly object _userRootFolderSyncLock = new object();
+        private readonly Lock _rootFolderSyncLock = new();
+        private readonly Lock _userRootFolderSyncLock = new();
 
         private readonly TimeSpan _viewRefreshInterval = TimeSpan.FromHours(24);
 

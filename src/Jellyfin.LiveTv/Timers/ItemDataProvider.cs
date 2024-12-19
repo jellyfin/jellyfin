@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using Jellyfin.Extensions.Json;
 using Microsoft.Extensions.Logging;
 
@@ -15,7 +16,7 @@ namespace Jellyfin.LiveTv.Timers
         where T : class
     {
         private readonly string _dataPath;
-        private readonly object _fileDataLock = new object();
+        private readonly Lock _fileDataLock = new();
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
         private T[]? _items;
 
