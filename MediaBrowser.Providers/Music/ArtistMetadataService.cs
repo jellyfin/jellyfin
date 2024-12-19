@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -28,7 +29,7 @@ namespace MediaBrowser.Providers.Music
         protected override bool EnableUpdatingGenresFromChildren => true;
 
         /// <inheritdoc />
-        protected override IList<BaseItem> GetChildrenForMetadataUpdates(MusicArtist item)
+        protected override IReadOnlyList<BaseItem> GetChildrenForMetadataUpdates(MusicArtist item)
         {
             return item.IsAccessedByName
                 ? item.GetTaggedItems(new InternalItemsQuery

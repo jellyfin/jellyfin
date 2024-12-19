@@ -52,7 +52,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        protected override List<BaseItem> LoadChildren()
+        protected override IReadOnlyList<BaseItem> LoadChildren()
         {
             lock (_childIdsLock)
             {

@@ -80,11 +80,11 @@ namespace MediaBrowser.Providers.TV
         }
 
         /// <inheritdoc />
-        protected override IList<BaseItem> GetChildrenForMetadataUpdates(Season item)
+        protected override IReadOnlyList<BaseItem> GetChildrenForMetadataUpdates(Season item)
             => item.GetEpisodes();
 
         /// <inheritdoc />
-        protected override ItemUpdateType UpdateMetadataFromChildren(Season item, IList<BaseItem> children, bool isFullRefresh, ItemUpdateType currentUpdateType)
+        protected override ItemUpdateType UpdateMetadataFromChildren(Season item, IReadOnlyList<BaseItem> children, bool isFullRefresh, ItemUpdateType currentUpdateType)
         {
             var updateType = base.UpdateMetadataFromChildren(item, children, isFullRefresh, currentUpdateType);
 
@@ -96,7 +96,7 @@ namespace MediaBrowser.Providers.TV
             return updateType;
         }
 
-        private ItemUpdateType SaveIsVirtualItem(Season item, IList<BaseItem> episodes)
+        private ItemUpdateType SaveIsVirtualItem(Season item, IReadOnlyList<BaseItem> episodes)
         {
             var isVirtualItem = item.LocationType == LocationType.Virtual && (episodes.Count == 0 || episodes.All(i => i.LocationType == LocationType.Virtual));
 
