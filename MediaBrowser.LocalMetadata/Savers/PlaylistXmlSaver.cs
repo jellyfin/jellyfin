@@ -45,16 +45,16 @@ namespace MediaBrowser.LocalMetadata.Savers
         }
 
         /// <inheritdoc />
-        protected override Task WriteCustomElementsAsync(BaseItem item, XmlWriter writer)
+        protected override async Task WriteCustomElementsAsync(BaseItem item, XmlWriter writer)
         {
             var game = (Playlist)item;
 
             if (game.PlaylistMediaType == MediaType.Unknown)
             {
-                return Task.CompletedTask;
+                return;
             }
 
-            return writer.WriteElementStringAsync(null, "PlaylistMediaType", null, game.PlaylistMediaType.ToString());
+            await writer.WriteElementStringAsync(null, "PlaylistMediaType", null, game.PlaylistMediaType.ToString()).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
