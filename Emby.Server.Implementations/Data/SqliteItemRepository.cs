@@ -1253,7 +1253,7 @@ namespace Emby.Server.Implementations.Data
         /// <param name="id">The id.</param>
         /// <returns>BaseItem.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="id"/> is <c>null</c>.</exception>
-        /// <exception cref="ArgumentException"><paramr name="id"/> is <seealso cref="Guid.Empty"/>.</exception>
+        /// <exception cref="ArgumentException"><paramref name="id"/> is <seealso cref="Guid.Empty"/>.</exception>
         public BaseItem RetrieveItem(Guid id)
         {
             if (id.IsEmpty())
@@ -4190,7 +4190,7 @@ namespace Emby.Server.Implementations.Data
                     int index = 0;
                     string includedTags = string.Join(',', query.IncludeInheritedTags.Select(_ => paramName + index++));
                     // Episodes do not store inherit tags from their parents in the database, and the tag may be still required by the client.
-                    // In addtion to the tags for the episodes themselves, we need to manually query its parent (the season)'s tags as well.
+                    // In addition to the tags for the episodes themselves, we need to manually query its parent (the season)'s tags as well.
                     if (includeTypes.Length == 1 && includeTypes.FirstOrDefault() is BaseItemKind.Episode)
                     {
                         whereClauses.Add($"""

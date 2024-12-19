@@ -973,7 +973,7 @@ public class NetworkManager : INetworkManager, IDisposable
         bindPreference = string.Empty;
         int? port = null;
 
-        // Only consider subnets including the source IP, prefering specific overrides
+        // Only consider subnets including the source IP, preferring specific overrides
         List<PublishedServerUriOverride> validPublishedServerUrls;
         if (!isInExternalSubnet)
         {

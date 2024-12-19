@@ -232,7 +232,7 @@ namespace Jellyfin.LiveTv.Tests.SchedulesDirect
             Assert.Equal(2, channelDto!.Map.Count);
             Assert.Equal("24326", channelDto.Map[0].StationId);
             Assert.Equal("001", channelDto.Map[0].Channel);
-            Assert.Equal("BBC ONE South", channelDto.Map[0].ProvderCallsign);
+            Assert.Equal("BBC ONE South", channelDto.Map[0].ProviderCallsign);
             Assert.Equal("1", channelDto.Map[0].LogicalChannelNumber);
             Assert.Equal("providerCallsign", channelDto.Map[0].MatchType);
         }
