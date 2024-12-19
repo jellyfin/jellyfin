@@ -34,7 +34,7 @@ public sealed class LibraryChangedNotifier : IHostedService, IDisposable
     private readonly IUserManager _userManager;
     private readonly ILogger<LibraryChangedNotifier> _logger;
 
-    private readonly object _libraryChangedSyncLock = new();
+    private readonly Lock _libraryChangedSyncLock = new();
     private readonly List<Folder> _foldersAddedTo = new();
     private readonly List<Folder> _foldersRemovedFrom = new();
     private readonly List<BaseItem> _itemsAdded = new();

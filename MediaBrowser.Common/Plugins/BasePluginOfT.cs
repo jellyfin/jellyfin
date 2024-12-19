@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
@@ -20,12 +21,12 @@ namespace MediaBrowser.Common.Plugins
         /// <summary>
         /// The configuration sync lock.
         /// </summary>
-        private readonly object _configurationSyncLock = new object();
+        private readonly Lock _configurationSyncLock = new();
 
         /// <summary>
         /// The configuration save lock.
         /// </summary>
-        private readonly object _configurationSaveLock = new object();
+        private readonly Lock _configurationSaveLock = new();
 
         /// <summary>
         /// The configuration.

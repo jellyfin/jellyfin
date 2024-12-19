@@ -48,7 +48,7 @@ namespace Emby.Server.Implementations.Updates
         /// </summary>
         /// <value>The application host.</value>
         private readonly IServerApplicationHost _applicationHost;
-        private readonly object _currentInstallationsLock = new object();
+        private readonly Lock _currentInstallationsLock = new();
 
         /// <summary>
         /// The current installations.
