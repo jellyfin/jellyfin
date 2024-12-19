@@ -2588,6 +2588,106 @@ namespace Emby.Server.Implementations.Data
             return items;
         }
 
+        public IReadOnlyList<BaseItem> GetLatestItemList(InternalItemsQuery query, CollectionType collectionType)
+        {
+            ArgumentNullException.ThrowIfNull(query);
+
+            CheckDisposed();
+            // Create a with statement to get the unique names for SeriesName if CollectionType is tvshow and for Album if CollectionType is music
+            var distintColumn = collectionType switch
+            {
+                CollectionType.tvshows => "SeriesName",
+                CollectionType.music => "Album",
+                _ => null
+            };
+
+            // Early exit if the distinct column is null
+            if (string.IsNullOrEmpty(distintColumn))
+            {
+                return Array.Empty<BaseItem>();
+            }
+
+            var commandTextBuilder = new StringBuilder("WITH DistinctNames AS (SELECT ", 2048)
+                .AppendJoin(',', [distintColumn, "MAX(DateCreated) as MaxDate"])
+                .Append(FromText)
+                .Append(GetJoinUserDataText(query));
+
+            var whereClauses = GetWhereClauses(query, null);
+
+            if (whereClauses.Count != 0)
+            {
+                commandTextBuilder.Append(" where ")
+                    .AppendJoin(" AND ", whereClauses);
+            }
+
+            // Group by the distinct column
+            commandTextBuilder.Append(" GROUP BY ")
+                .Append(distintColumn);
+
+            // Order by the date created
+            commandTextBuilder.Append(" ORDER BY DateCreated DESC");
+
+            // Limit the number of results then close the with statement
+            commandTextBuilder.Append(" LIMIT ")
+                .Append(query.Limit ?? int.MaxValue)
+                .Append(") ");
+
+            // Select the columns to return
+            var columns = _retrieveItemColumns.ToList();
+            SetFinalColumnsToSelect(query, columns);
+            commandTextBuilder.Append("SELECT ")
+                .AppendJoin(',', columns)
+                .Append(FromText)
+                .Append(GetJoinUserDataText(query));
+            if (whereClauses.Count != 0)
+            {
+                commandTextBuilder.Append(" where ")
+                    .AppendJoin(" AND ", whereClauses);
+            }
+
+            // Add last where clause to filter by the min MaxDate value
+            commandTextBuilder.Append(" AND DateCreated >= (SELECT MIN(MaxDate) FROM DistinctNames)");
+            // Add orderby
+            commandTextBuilder.Append(GetOrderByText(query));
+
+            var commandText = commandTextBuilder.ToString();
+            var items = new List<BaseItem>();
+            using (new QueryTimeLogger(Logger, commandText))
+            using (var connection = GetConnection(true))
+            using (var statement = PrepareStatement(connection, commandText))
+            {
+                if (EnableJoinUserData(query))
+                {
+                    statement.TryBind("@UserId", query.User.InternalId);
+                }
+
+                BindSimilarParams(query, statement);
+                BindSearchParams(query, statement);
+
+                // Running this again will bind the params
+                GetWhereClauses(query, statement);
+
+                var hasEpisodeAttributes = HasEpisodeAttributes(query);
+                var hasServiceName = HasServiceName(query);
+                var hasProgramAttributes = HasProgramAttributes(query);
+                var hasStartDate = HasStartDate(query);
+                var hasTrailerTypes = HasTrailerTypes(query);
+                var hasArtistFields = HasArtistFields(query);
+                var hasSeriesFields = HasSeriesFields(query);
+
+                foreach (var row in statement.ExecuteQuery())
+                {
+                    var item = GetItem(row, query, hasProgramAttributes, hasEpisodeAttributes, hasServiceName, hasStartDate, hasTrailerTypes, hasArtistFields, hasSeriesFields, query.SkipDeserialization);
+                    if (item is not null)
+                    {
+                        items.Add(item);
+                    }
+                }
+            }
+
+            return items;
+        }
+
         private string FixUnicodeChars(string buffer)
         {
             buffer = buffer.Replace('\u2013', '-'); // en dash
