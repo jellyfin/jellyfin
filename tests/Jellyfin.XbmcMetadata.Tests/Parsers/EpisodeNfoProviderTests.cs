@@ -85,7 +85,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             Assert.Contains("Bryan Fuller", writers.Select(x => x.Name));
             Assert.Contains("Michael Green", writers.Select(x => x.Name));
 
-            // Direcotrs
+            // Directors
             var directors = result.People.Where(x => x.Type == PersonKind.Director).ToArray();
             Assert.Single(directors);
             Assert.Contains("David Slade", directors.Select(x => x.Name));
