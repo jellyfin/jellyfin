@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -77,7 +78,7 @@ namespace MediaBrowser.Providers.TV
         }
 
         /// <inheritdoc />
-        protected override void MergeData(MetadataResult<Episode> source, MetadataResult<Episode> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<Episode> source, MetadataResult<Episode> target, IReadOnlyList<MetadataField> lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             base.MergeData(source, target, lockedFields, replaceData, mergeMetadataSettings);
 
