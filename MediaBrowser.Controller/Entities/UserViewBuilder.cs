@@ -681,18 +681,6 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            if (query.HasSubtitles.HasValue)
-            {
-                var val = query.HasSubtitles.Value;
-
-                var video = item as Video;
-
-                if (video is null || val != video.HasSubtitles)
-                {
-                    return false;
-                }
-            }
-
             if (query.HasParentalRating.HasValue)
             {
                 var val = query.HasParentalRating.Value;
