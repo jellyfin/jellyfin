@@ -894,7 +894,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         private string GetQsvDeviceArgs(string renderNodePath, string alias)
         {
             var arg = " -init_hw_device qsv=" + (alias ?? QsvAlias);
-            if (OperatingSystem.IsLinux())
+            if (OperatingSystem.IsLinux() || OperatingSystem.IsFreeBSD())
             {
                 // derive qsv from vaapi device
                 return GetVaapiDeviceArgs(renderNodePath, "iHD", "i915", "0x8086", null, VaapiAlias) + arg + "@" + VaapiAlias;
@@ -970,7 +970,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var args = new StringBuilder();
             var isWindows = OperatingSystem.IsWindows();
-            var isLinux = OperatingSystem.IsLinux();
+            var isLinux = OperatingSystem.IsLinux() || OperatingSystem.IsFreeBSD();
             var isMacOS = OperatingSystem.IsMacOS();
             var optHwaccelType = options.HardwareAccelerationType;
             var vidDecoder = GetHardwareVideoDecoder(state, options) ?? string.Empty;
@@ -1807,13 +1807,13 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
             else if (hardwareAccelerationType == HardwareAccelerationType.qsv)
             {
-                if (OperatingSystem.IsLinux())
+                if (OperatingSystem.IsLinux() || OperatingSystem.IsFreeBSD())
                 {
                     var ver = Environment.OSVersion.Version;
                     var isFixedKernel60 = ver.Major == 6 && ver.Minor == 0 && ver >= _minFixedKernel60i915Hang;
                     var isUnaffectedKernel = ver < _minKerneli915Hang || ver > _maxKerneli915Hang;
 
-                    if (!(isUnaffectedKernel || isFixedKernel60))
+                    if (!(isUnaffectedKernel || isFixedKernel60 || OperatingSystem.IsFreeBSD()))
                     {
                         var vidDecoder = GetHardwareVideoDecoder(state, encodingOptions) ?? string.Empty;
                         var isIntelDecoder = vidDecoder.Contains("qsv", StringComparison.OrdinalIgnoreCase)
@@ -4022,7 +4022,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             var isWindows = OperatingSystem.IsWindows();
-            var isLinux = OperatingSystem.IsLinux();
+            var isLinux = OperatingSystem.IsLinux() || OperatingSystem.IsFreeBSD();
             var vidDecoder = GetHardwareVideoDecoder(state, options) ?? string.Empty;
             var isSwDecoder = string.IsNullOrEmpty(vidDecoder);
             var isSwEncoder = !vidEncoder.Contains("qsv", StringComparison.OrdinalIgnoreCase);
@@ -4626,7 +4626,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return (null, null, null);
             }
 
-            var isLinux = OperatingSystem.IsLinux();
+            var isLinux = OperatingSystem.IsLinux() || OperatingSystem.IsFreeBSD();
             var vidDecoder = GetHardwareVideoDecoder(state, options) ?? string.Empty;
             var isSwDecoder = string.IsNullOrEmpty(vidDecoder);
             var isSwEncoder = !vidEncoder.Contains("vaapi", StringComparison.OrdinalIgnoreCase);
@@ -5563,7 +5563,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return (null, null, null);
             }
 
-            var isLinux = OperatingSystem.IsLinux();
+            var isLinux = OperatingSystem.IsLinux() || OperatingSystem.IsFreeBSD();
             var vidDecoder = GetHardwareVideoDecoder(state, options) ?? string.Empty;
             var isSwDecoder = string.IsNullOrEmpty(vidDecoder);
             var isSwEncoder = !vidEncoder.Contains("rkmpp", StringComparison.OrdinalIgnoreCase);
@@ -6156,7 +6156,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         public string GetHwaccelType(EncodingJobInfo state, EncodingOptions options, string videoCodec, int bitDepth, bool outputHwSurface)
         {
             var isWindows = OperatingSystem.IsWindows();
-            var isLinux = OperatingSystem.IsLinux();
+            var isLinux = OperatingSystem.IsLinux() || OperatingSystem.IsFreeBSD();
             var isMacOS = OperatingSystem.IsMacOS();
             var isD3d11Supported = isWindows && _mediaEncoder.SupportsHwaccel("d3d11va");
             var isVaapiSupported = isLinux && IsVaapiSupported(state);
@@ -6309,7 +6309,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         public string GetQsvHwVidDecoder(EncodingJobInfo state, EncodingOptions options, MediaStream videoStream, int bitDepth)
         {
             var isWindows = OperatingSystem.IsWindows();
-            var isLinux = OperatingSystem.IsLinux();
+            var isLinux = OperatingSystem.IsLinux() || OperatingSystem.IsFreeBSD();
 
             if ((!isWindows && !isLinux)
                 || options.HardwareAccelerationType != HardwareAccelerationType.qsv)
@@ -6391,7 +6391,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public string GetNvdecVidDecoder(EncodingJobInfo state, EncodingOptions options, MediaStream videoStream, int bitDepth)
         {
-            if ((!OperatingSystem.IsWindows() && !OperatingSystem.IsLinux())
+            if ((!OperatingSystem.IsWindows() && (!OperatingSystem.IsLinux() && !OperatingSystem.IsFreeBSD()))
                 || options.HardwareAccelerationType != HardwareAccelerationType.nvenc)
             {
                 return null;
@@ -6520,7 +6520,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public string GetVaapiVidDecoder(EncodingJobInfo state, EncodingOptions options, MediaStream videoStream, int bitDepth)
         {
-            if (!OperatingSystem.IsLinux()
+            if ((!OperatingSystem.IsLinux() && !OperatingSystem.IsFreeBSD())
                 || options.HardwareAccelerationType != HardwareAccelerationType.vaapi)
             {
                 return null;
@@ -6650,7 +6650,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public string GetRkmppVidDecoder(EncodingJobInfo state, EncodingOptions options, MediaStream videoStream, int bitDepth)
         {
-            var isLinux = OperatingSystem.IsLinux();
+            var isLinux = OperatingSystem.IsLinux() || OperatingSystem.IsFreeBSD();
 
             if (!isLinux
                 || options.HardwareAccelerationType != HardwareAccelerationType.rkmpp)
