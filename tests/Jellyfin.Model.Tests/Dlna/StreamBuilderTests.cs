@@ -180,6 +180,10 @@ namespace Jellyfin.Model.Tests
         [InlineData("Tizen3-stereo", "mkv-vp9-aac-srt-2600k", PlayMethod.DirectPlay)]
         [InlineData("Tizen3-stereo", "mkv-vp9-ac3-srt-2600k", PlayMethod.DirectPlay)]
         [InlineData("Tizen3-stereo", "mkv-vp9-vorbis-vtt-2600k", PlayMethod.DirectPlay)]
+        [InlineData("Tizen3-stereo", "mkv-dvhe.08-eac3-15200k", PlayMethod.Transcode, TranscodeReason.AudioChannelsNotSupported, "DirectStream")]
+        [InlineData("Tizen3-stereo", "mp4-dvh1.05-eac3-15200k", PlayMethod.Transcode, TranscodeReason.VideoRangeTypeNotSupported | TranscodeReason.AudioChannelsNotSupported, "Transcode")]
+        [InlineData("Tizen3-stereo", "mp4-dvhe.08-eac3-15200k", PlayMethod.Transcode, TranscodeReason.AudioChannelsNotSupported, "DirectStream")]
+        [InlineData("Tizen3-stereo", "mkv-dvhe.05-eac3-28000k", PlayMethod.Transcode, TranscodeReason.VideoBitrateNotSupported | TranscodeReason.VideoRangeTypeNotSupported | TranscodeReason.AudioChannelsNotSupported, "Transcode")]
         // Tizen 4 4K 5.1
         [InlineData("Tizen4-4K-5.1", "mp4-h264-aac-vtt-2600k", PlayMethod.DirectPlay)]
         [InlineData("Tizen4-4K-5.1", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.DirectPlay)]
@@ -191,6 +195,10 @@ namespace Jellyfin.Model.Tests
         [InlineData("Tizen4-4K-5.1", "mkv-vp9-aac-srt-2600k", PlayMethod.DirectPlay)]
         [InlineData("Tizen4-4K-5.1", "mkv-vp9-ac3-srt-2600k", PlayMethod.DirectPlay)]
         [InlineData("Tizen4-4K-5.1", "mkv-vp9-vorbis-vtt-2600k", PlayMethod.DirectPlay)]
+        [InlineData("Tizen4-4K-5.1", "mkv-dvhe.08-eac3-15200k", PlayMethod.DirectPlay)]
+        [InlineData("Tizen4-4K-5.1", "mp4-dvh1.05-eac3-15200k", PlayMethod.Transcode, TranscodeReason.VideoRangeTypeNotSupported, "Transcode")]
+        [InlineData("Tizen4-4K-5.1", "mp4-dvhe.08-eac3-15200k", PlayMethod.DirectPlay)]
+        [InlineData("Tizen4-4K-5.1", "mkv-dvhe.05-eac3-28000k", PlayMethod.Transcode, TranscodeReason.VideoRangeTypeNotSupported, "Transcode")]
         // WebOS 23
         [InlineData("WebOS-23", "mkv-dvhe.08-eac3-15200k", PlayMethod.Transcode, TranscodeReason.VideoRangeTypeNotSupported, "Remux")]
         [InlineData("WebOS-23", "mp4-dvh1.05-eac3-15200k", PlayMethod.DirectPlay)]
