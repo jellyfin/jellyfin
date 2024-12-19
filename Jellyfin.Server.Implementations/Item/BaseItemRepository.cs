@@ -40,12 +40,12 @@ using BaseItemEntity = Jellyfin.Data.Entities.BaseItemEntity;
 
 namespace Jellyfin.Server.Implementations.Item;
 
-
 /*
     All queries in this class and all other nullable enabled EFCore repository classes will make libraral use of the null-forgiving operator "!".
     This is done as the code isn't actually executed client side, but only the expressions are interpretet and the compiler cannot know that.
     This is your only warning/message regarding this topic.
 */
+
 /// <summary>
 /// Handles all storage logic for BaseItems.
 /// </summary>
