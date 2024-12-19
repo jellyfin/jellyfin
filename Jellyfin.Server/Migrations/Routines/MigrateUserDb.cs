@@ -127,6 +127,7 @@ namespace Jellyfin.Server.Migrations.Routines
                         EnableNextEpisodeAutoPlay = config.EnableNextEpisodeAutoPlay,
                         RememberSubtitleSelections = config.RememberSubtitleSelections,
                         SubtitleLanguagePreference = config.SubtitleLanguagePreference,
+                        SubtitleCodecPreference = config.SubtitleCodecPreference,
                         Password = mockup.Password,
                         LastLoginDate = mockup.LastLoginDate,
                         LastActivityDate = mockup.LastActivityDate
