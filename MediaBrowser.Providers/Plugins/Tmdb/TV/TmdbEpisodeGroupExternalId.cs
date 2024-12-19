@@ -8,16 +8,16 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
     /// <summary>
     /// External id for a TMDb series.
     /// </summary>
-    public class TmdbSeriesExternalId : IExternalId
+    public class TmdbEpisodeGroupExternalId : IExternalId
     {
         /// <inheritdoc />
-        public string ProviderName => TmdbUtils.ProviderName;
+        public string ProviderName => TmdbUtils.ProviderName + " Episode Group";
 
         /// <inheritdoc />
-        public string Key => MetadataProvider.Tmdb.ToString();
+        public string Key => TmdbUtils.EpisodeGroupProviderId;
 
         /// <inheritdoc />
-        public ExternalIdMediaType? Type => ExternalIdMediaType.Series;
+        public ExternalIdMediaType? Type => null;
 
         /// <inheritdoc />
         public string? UrlFormatString => null;
@@ -25,7 +25,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         /// <inheritdoc />
         public bool Supports(IHasProviderIds item)
         {
-            return item is Series;
+            return item is Season;
         }
     }
 }
