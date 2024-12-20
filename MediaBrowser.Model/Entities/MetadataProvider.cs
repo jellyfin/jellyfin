@@ -27,7 +27,7 @@ namespace MediaBrowser.Model.Entities
         Tvdb = 4,
 
         /// <summary>
-        /// The tvcom providerd.
+        /// The tvcom provider.
         /// </summary>
         Tvcom = 5,
 

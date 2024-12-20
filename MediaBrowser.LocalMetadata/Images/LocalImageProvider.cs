@@ -320,7 +320,7 @@ namespace MediaBrowser.LocalMetadata.Images
                 {
                     AddImage(files, images, name + "-fanart", ImageType.Backdrop, imagePrefix);
 
-                    // Support without the prefix if it's in it's own folder
+                    // Support without the prefix if it's in its own folder
                     if (!isInMixedFolder)
                     {
                         AddImage(files, images, name + "-fanart", ImageType.Backdrop);
