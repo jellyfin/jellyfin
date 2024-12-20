@@ -1,3 +1,5 @@
+#pragma warning disable CS0618 // obsolete
+
 using System;
 using System.IO;
 using System.Xml;
