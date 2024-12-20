@@ -40,6 +40,12 @@ namespace MediaBrowser.Controller.LiveTv
         /// <value>The type of the channel.</value>
         public ChannelType ChannelType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the group of the channel.
+        /// </summary>
+        /// <value>The name of the group that the channel is a part of.</value>
+        public string ChannelGroup { get; set; }
+
         [JsonIgnore]
         public override LocationType LocationType => LocationType.Remote;
 
