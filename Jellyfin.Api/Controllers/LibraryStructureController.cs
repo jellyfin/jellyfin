@@ -99,6 +99,7 @@ public class LibraryStructureController : BaseJellyfinApiController
     /// <param name="name">The name of the folder.</param>
     /// <param name="refreshLibrary">Whether to refresh the library.</param>
     /// <response code="204">Folder removed.</response>
+    /// <response code="404">Folder not found.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpDelete]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -106,7 +107,9 @@ public class LibraryStructureController : BaseJellyfinApiController
         [FromQuery] string name,
         [FromQuery] bool refreshLibrary = false)
     {
+        // TODO: refactor! this relies on an FileNotFound exception to return NotFound when attempting to remove a library that does not exist.
         await _libraryManager.RemoveVirtualFolder(name, refreshLibrary).ConfigureAwait(false);
+
         return NoContent();
     }
 

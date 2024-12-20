@@ -31,6 +31,7 @@ namespace MediaBrowser.Providers.MediaInfo
     public class FFProbeVideoInfo
     {
         private readonly ILogger<FFProbeVideoInfo> _logger;
+        private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IItemRepository _itemRepo;
         private readonly IBlurayExaminer _blurayExaminer;
@@ -38,11 +39,12 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IEncodingManager _encodingManager;
         private readonly IServerConfigurationManager _config;
         private readonly ISubtitleManager _subtitleManager;
-        private readonly IChapterManager _chapterManager;
+        private readonly IChapterRepository _chapterManager;
         private readonly ILibraryManager _libraryManager;
         private readonly AudioResolver _audioResolver;
         private readonly SubtitleResolver _subtitleResolver;
-        private readonly IMediaSourceManager _mediaSourceManager;
+        private readonly IMediaAttachmentRepository _mediaAttachmentRepository;
+        private readonly IMediaStreamRepository _mediaStreamRepository;
 
         public FFProbeVideoInfo(
             ILogger<FFProbeVideoInfo> logger,
@@ -54,10 +56,12 @@ namespace MediaBrowser.Providers.MediaInfo
             IEncodingManager encodingManager,
             IServerConfigurationManager config,
             ISubtitleManager subtitleManager,
-            IChapterManager chapterManager,
+            IChapterRepository chapterManager,
             ILibraryManager libraryManager,
             AudioResolver audioResolver,
-            SubtitleResolver subtitleResolver)
+            SubtitleResolver subtitleResolver,
+            IMediaAttachmentRepository mediaAttachmentRepository,
+            IMediaStreamRepository mediaStreamRepository)
         {
             _logger = logger;
             _mediaSourceManager = mediaSourceManager;
@@ -72,6 +76,9 @@ namespace MediaBrowser.Providers.MediaInfo
             _libraryManager = libraryManager;
             _audioResolver = audioResolver;
             _subtitleResolver = subtitleResolver;
+            _mediaAttachmentRepository = mediaAttachmentRepository;
+            _mediaStreamRepository = mediaStreamRepository;
+            _mediaStreamRepository = mediaStreamRepository;
         }
 
         public async Task<ItemUpdateType> ProbeVideo<T>(
@@ -267,11 +274,11 @@ namespace MediaBrowser.Providers.MediaInfo
 
             video.HasSubtitles = mediaStreams.Any(i => i.Type == MediaStreamType.Subtitle);
 
-            _itemRepo.SaveMediaStreams(video.Id, mediaStreams, cancellationToken);
+            _mediaStreamRepository.SaveMediaStreams(video.Id, mediaStreams, cancellationToken);
 
             if (mediaAttachments.Any())
             {
-                _itemRepo.SaveMediaAttachments(video.Id, mediaAttachments, cancellationToken);
+                _mediaAttachmentRepository.SaveMediaAttachments(video.Id, mediaAttachments, cancellationToken);
             }
 
             if (options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh

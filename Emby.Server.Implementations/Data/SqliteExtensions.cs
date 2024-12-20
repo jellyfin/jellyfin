@@ -127,8 +127,16 @@ namespace Emby.Server.Implementations.Data
                 return false;
             }
 
-            result = reader.GetGuid(index);
-            return true;
+            try
+            {
+                result = reader.GetGuid(index);
+                return true;
+            }
+            catch
+            {
+                result = Guid.Empty;
+                return false;
+            }
         }
 
         public static bool TryGetString(this SqliteDataReader reader, int index, out string result)
