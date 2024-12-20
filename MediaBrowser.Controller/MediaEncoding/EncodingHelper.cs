@@ -2277,7 +2277,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             // Source and target codecs must match
             if (string.IsNullOrEmpty(audioStream.Codec)
-                || !supportedAudioCodecs.Contains(audioStream.Codec, StringComparison.OrdinalIgnoreCase))
+                || !supportedAudioCodecs.Contains(audioStream.Codec, StringComparer.OrdinalIgnoreCase))
             {
                 return false;
             }
