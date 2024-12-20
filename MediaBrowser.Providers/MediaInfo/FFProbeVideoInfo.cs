@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -125,7 +126,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     blurayDiscInfo = GetBDInfo(item.Path);
 
                     // Return if no playable .m2ts files are found
-                    if (blurayDiscInfo is null || blurayDiscInfo.Files.Length == 0)
+                    if (blurayDiscInfo is null || blurayDiscInfo.Files.Count == 0)
                     {
                         _logger.LogError("No playable .m2ts files found in Blu-ray structure, skipping FFprobe.");
                         return ItemUpdateType.MetadataImport;
@@ -192,7 +193,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             List<MediaStream> mediaStreams = new List<MediaStream>();
             IReadOnlyList<MediaAttachment> mediaAttachments;
-            ChapterInfo[] chapters;
+            IList<ChapterInfo> chapters;
 
             // Add external streams before adding the streams from the file to preserve stream IDs on remote videos
             await AddExternalSubtitlesAsync(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
@@ -215,10 +216,10 @@ namespace MediaBrowser.Providers.MediaInfo
                 video.Size = mediaInfo.Size;
                 video.Container = mediaInfo.Container;
 
-                chapters = mediaInfo.Chapters ?? Array.Empty<ChapterInfo>();
+                chapters = mediaInfo.Chapters.ToList() ?? new List<ChapterInfo>();
                 if (blurayInfo is not null)
                 {
-                    FetchBdInfo(video, ref chapters, mediaStreams, blurayInfo);
+                    FetchBdInfo(video, chapters, mediaStreams, blurayInfo);
                 }
             }
             else
@@ -277,7 +278,7 @@ namespace MediaBrowser.Providers.MediaInfo
             if (options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh
                 || options.MetadataRefreshMode == MetadataRefreshMode.Default)
             {
-                if (_config.Configuration.DummyChapterDuration > 0 && chapters.Length == 0 && mediaStreams.Any(i => i.Type == MediaStreamType.Video))
+                if (_config.Configuration.DummyChapterDuration > 0 && chapters.Count == 0 && mediaStreams.Any(i => i.Type == MediaStreamType.Video))
                 {
                     chapters = CreateDummyChapters(video);
                 }
@@ -290,15 +291,16 @@ namespace MediaBrowser.Providers.MediaInfo
                     extractDuringScan = libraryOptions.ExtractChapterImagesDuringLibraryScan;
                 }
 
-                await _encodingManager.RefreshChapterImages(video, options.DirectoryService, chapters, extractDuringScan, false, cancellationToken).ConfigureAwait(false);
+                var chapterlist = chapters.ToImmutableList();
+                await _encodingManager.RefreshChapterImages(video, options.DirectoryService, chapterlist, extractDuringScan, false, cancellationToken).ConfigureAwait(false);
 
-                _chapterManager.SaveChapters(video.Id, chapters);
+                _chapterManager.SaveChapters(video.Id, chapterlist);
             }
         }
 
-        private void NormalizeChapterNames(ChapterInfo[] chapters)
+        private void NormalizeChapterNames(IList<ChapterInfo> chapters)
         {
-            for (int i = 0; i < chapters.Length; i++)
+            for (int i = 0; i < chapters.Count; i++)
             {
                 string? name = chapters[i].Name;
                 // Check if the name is empty and/or if the name is a time
@@ -314,9 +316,9 @@ namespace MediaBrowser.Providers.MediaInfo
             }
         }
 
-        private void FetchBdInfo(Video video, ref ChapterInfo[] chapters, List<MediaStream> mediaStreams, BlurayDiscInfo blurayInfo)
+        private void FetchBdInfo(Video video, IList<ChapterInfo> chapters, List<MediaStream> mediaStreams, BlurayDiscInfo blurayInfo)
         {
-            if (blurayInfo.Files.Length <= 1)
+            if (blurayInfo.Files.Count <= 1)
             {
                 return;
             }
@@ -334,9 +336,9 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (blurayInfo.Chapters is not null)
             {
-                double[] brChapter = blurayInfo.Chapters;
-                chapters = new ChapterInfo[brChapter.Length];
-                for (int i = 0; i < brChapter.Length; i++)
+                var brChapter = blurayInfo.Chapters;
+                chapters = new ChapterInfo[brChapter.Count];
+                for (int i = 0; i < brChapter.Count; i++)
                 {
                     chapters[i] = new ChapterInfo
                     {
@@ -396,7 +398,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (!video.IsLocked && !video.LockedFields.Contains(MetadataField.Genres))
             {
-                if (video.Genres.Length == 0 || replaceData)
+                if (video.Genres.Count == 0 || replaceData)
                 {
                     video.Genres = Array.Empty<string>();
 
@@ -409,7 +411,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (!video.IsLocked && !video.LockedFields.Contains(MetadataField.Studios))
             {
-                if (video.Studios.Length == 0 || replaceData)
+                if (video.Studios.Count == 0 || replaceData)
                 {
                     video.SetStudios(data.Studios);
                 }
@@ -496,7 +498,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             if (video.IsLocked
                 || video.LockedFields.Contains(MetadataField.Cast)
-                || data.People.Length == 0)
+                || data.People.Count == 0)
             {
                 return;
             }
