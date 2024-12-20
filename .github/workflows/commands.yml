@@ -124,7 +124,7 @@ jobs:
 
   rename:
     name: Rename
-    if: contains(github.event.comment.body, '@jellyfin-bot rename') && github.event.comment.author_association == 'MEMBER'
+    if: contains(github.event.comment.body, '@jellyfin-bot rename')
     runs-on: ubuntu-latest
     steps:
       - name: pull in script
