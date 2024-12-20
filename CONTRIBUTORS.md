@@ -268,3 +268,4 @@
  - [0x25CBFC4F](https://github.com/0x25CBFC4F)
  - [Robert Lützner](https://github.com/rluetzner)
  - [Nathan McCrina](https://github.com/nfmccrina)
+ - [breakid](https://github.com/breakid)
