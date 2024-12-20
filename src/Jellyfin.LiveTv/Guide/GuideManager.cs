@@ -432,14 +432,19 @@ public class GuideManager : IGuideManager
 
         item.Name = channelInfo.Name;
 
-        if (!item.HasImage(ImageType.Primary))
+        var currentPrimary = item.GetImageInfo(ImageType.Primary, 0);
+        var imageUrlIsNull = string.IsNullOrWhiteSpace(channelInfo.ImageUrl);
+
+        // Update channel image if image URL has changed
+        if (currentPrimary is null
+            || (!imageUrlIsNull && currentPrimary.Path != channelInfo.ImageUrl))
         {
             if (!string.IsNullOrWhiteSpace(channelInfo.ImagePath))
             {
                 item.SetImagePath(ImageType.Primary, channelInfo.ImagePath);
                 forceUpdate = true;
             }
-            else if (!string.IsNullOrWhiteSpace(channelInfo.ImageUrl))
+            else if (!imageUrlIsNull)
             {
                 item.SetImagePath(ImageType.Primary, channelInfo.ImageUrl);
                 forceUpdate = true;
