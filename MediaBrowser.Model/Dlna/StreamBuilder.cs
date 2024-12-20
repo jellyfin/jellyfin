@@ -984,32 +984,22 @@ namespace MediaBrowser.Model.Dlna
 
             var channelsExceedsLimit = audioStreamWithSupportedCodec is not null && audioStreamWithSupportedCodec.Channels > (playlistItem.TranscodingMaxAudioChannels ?? int.MaxValue);
 
-            var directAudioStreamSatisfied = audioStreamWithSupportedCodec is not null && !channelsExceedsLimit &&
-                                             options.Profile.CodecProfiles
-                                                 .Where(i => i.Type == CodecType.VideoAudio &&
-                                                             i.ContainsAnyCodec(audioStreamWithSupportedCodec.Codec, container) &&
-                                                             i.ApplyConditions.All(applyCondition =>
-                                                             {
-                                                                 var satisfied = ConditionProcessor.IsVideoAudioConditionSatisfied(applyCondition, audioStreamWithSupportedCodec.Channels, audioStreamWithSupportedCodec.BitRate, audioStreamWithSupportedCodec.SampleRate, audioStreamWithSupportedCodec.BitDepth, audioStreamWithSupportedCodec.Profile, false);
-                                                                 if (!satisfied)
-                                                                 {
-                                                                     playlistItem.TranscodeReasons |= GetTranscodeReasonForFailedCondition(applyCondition);
-                                                                 }
+            var directAudioStreamSatisfied = audioStreamWithSupportedCodec is not null && !channelsExceedsLimit
+                && options.Profile.CodecProfiles
+                    .Where(i => i.Type == CodecType.VideoAudio
+                        && i.ContainsAnyCodec(audioStreamWithSupportedCodec.Codec, container)
+                        && i.ApplyConditions.All(applyCondition => ConditionProcessor.IsVideoAudioConditionSatisfied(applyCondition, audioStreamWithSupportedCodec.Channels, audioStreamWithSupportedCodec.BitRate, audioStreamWithSupportedCodec.SampleRate, audioStreamWithSupportedCodec.BitDepth, audioStreamWithSupportedCodec.Profile, false)))
+                    .Select(i => i.Conditions.All(condition =>
+                    {
+                        var satisfied = ConditionProcessor.IsVideoAudioConditionSatisfied(condition, audioStreamWithSupportedCodec.Channels, audioStreamWithSupportedCodec.BitRate, audioStreamWithSupportedCodec.SampleRate, audioStreamWithSupportedCodec.BitDepth, audioStreamWithSupportedCodec.Profile, false);
+                        if (!satisfied)
+                        {
+                            playlistItem.TranscodeReasons |= GetTranscodeReasonForFailedCondition(condition);
+                        }
 
-                                                                 return satisfied;
-                                                             }))
-                                                .Select(i =>
-                                                            i.Conditions.All(condition =>
-                                                            {
-                                                                var satisfied = ConditionProcessor.IsVideoAudioConditionSatisfied(condition, audioStreamWithSupportedCodec.Channels, audioStreamWithSupportedCodec.BitRate, audioStreamWithSupportedCodec.SampleRate, audioStreamWithSupportedCodec.BitDepth, audioStreamWithSupportedCodec.Profile, false);
-                                                                if (!satisfied)
-                                                                {
-                                                                    playlistItem.TranscodeReasons |= GetTranscodeReasonForFailedCondition(condition);
-                                                                }
-
-                                                                return satisfied;
-                                                            }))
-                                                 .All(satisfied => satisfied);
+                        return satisfied;
+                    }))
+                    .All(satisfied => satisfied);
 
             var directAudioStream = directAudioStreamSatisfied ? audioStreamWithSupportedCodec : null;
 
