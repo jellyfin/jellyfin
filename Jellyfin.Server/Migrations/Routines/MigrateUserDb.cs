@@ -147,6 +147,7 @@ namespace Jellyfin.Server.Migrations.Routines
                     user.SetPermission(PermissionKind.IsDisabled, policy.IsDisabled);
                     user.SetPermission(PermissionKind.EnableSharedDeviceControl, policy.EnableSharedDeviceControl);
                     user.SetPermission(PermissionKind.EnableRemoteAccess, policy.EnableRemoteAccess);
+                    user.SetPermission(PermissionKind.EnableNoPassword, policy.EnableNoPassword);
                     user.SetPermission(PermissionKind.EnableLiveTvManagement, policy.EnableLiveTvManagement);
                     user.SetPermission(PermissionKind.EnableLiveTvAccess, policy.EnableLiveTvAccess);
                     user.SetPermission(PermissionKind.EnableMediaPlayback, policy.EnableMediaPlayback);
