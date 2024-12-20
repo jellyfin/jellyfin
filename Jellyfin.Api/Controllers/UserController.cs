@@ -171,12 +171,10 @@ public class UserController : BaseJellyfinApiController
     /// <param name="userId">The user id.</param>
     /// <param name="pw">The password as plain text.</param>
     /// <response code="200">User authenticated.</response>
-    /// <response code="403">Sha1-hashed password only is not allowed.</response>
     /// <response code="404">User not found.</response>
     /// <returns>A <see cref="Task"/> containing an <see cref="AuthenticationResult"/>.</returns>
     [HttpPost("{userId}/Authenticate")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ApiExplorerSettings(IgnoreApi = true)]
     [Obsolete("Authenticate with username instead")]
@@ -261,13 +259,11 @@ public class UserController : BaseJellyfinApiController
     /// <param name="userId">The user id.</param>
     /// <param name="request">The <see cref="UpdateUserPassword"/> request.</param>
     /// <response code="204">Password successfully reset.</response>
-    /// <response code="403">User is not allowed to update the password.</response>
     /// <response code="404">User not found.</response>
     /// <returns>A <see cref="NoContentResult"/> indicating success or a <see cref="ForbidResult"/> or a <see cref="NotFoundResult"/> on failure.</returns>
     [HttpPost("Password")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> UpdateUserPassword(
         [FromQuery] Guid? userId,
@@ -342,7 +338,6 @@ public class UserController : BaseJellyfinApiController
     /// <param name="userId">The user id.</param>
     /// <param name="request">The <see cref="UpdateUserEasyPassword"/> request.</param>
     /// <response code="204">Password successfully reset.</response>
-    /// <response code="403">User is not allowed to update the password.</response>
     /// <response code="404">User not found.</response>
     /// <returns>A <see cref="NoContentResult"/> indicating success or a <see cref="ForbidResult"/> or a <see cref="NotFoundResult"/> on failure.</returns>
     [HttpPost("{userId}/EasyPassword")]
@@ -350,7 +345,6 @@ public class UserController : BaseJellyfinApiController
     [ApiExplorerSettings(IgnoreApi = true)]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult UpdateUserEasyPassword(
         [FromRoute, Required] Guid userId,
@@ -366,13 +360,11 @@ public class UserController : BaseJellyfinApiController
     /// <param name="updateUser">The updated user model.</param>
     /// <response code="204">User updated.</response>
     /// <response code="400">User information was not supplied.</response>
-    /// <response code="403">User update forbidden.</response>
     /// <returns>A <see cref="NoContentResult"/> indicating success or a <see cref="BadRequestResult"/> or a <see cref="ForbidResult"/> on failure.</returns>
     [HttpPost]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult> UpdateUser(
         [FromQuery] Guid? userId,
         [FromBody, Required] UserDto updateUser)
@@ -427,13 +419,11 @@ public class UserController : BaseJellyfinApiController
     /// <param name="newPolicy">The new user policy.</param>
     /// <response code="204">User policy updated.</response>
     /// <response code="400">User policy was not supplied.</response>
-    /// <response code="403">User policy update forbidden.</response>
     /// <returns>A <see cref="NoContentResult"/> indicating success or a <see cref="BadRequestResult"/> or a <see cref="ForbidResult"/> on failure..</returns>
     [HttpPost("{userId}/Policy")]
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult> UpdateUserPolicy(
         [FromRoute, Required] Guid userId,
         [FromBody, Required] UserPolicy newPolicy)
@@ -482,12 +472,10 @@ public class UserController : BaseJellyfinApiController
     /// <param name="userId">The user id.</param>
     /// <param name="userConfig">The new user configuration.</param>
     /// <response code="204">User configuration updated.</response>
-    /// <response code="403">User configuration update forbidden.</response>
     /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
     [HttpPost("Configuration")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult> UpdateUserConfiguration(
         [FromQuery] Guid? userId,
         [FromBody, Required] UserConfiguration userConfig)
@@ -515,14 +503,12 @@ public class UserController : BaseJellyfinApiController
     /// <param name="userId">The user id.</param>
     /// <param name="userConfig">The new user configuration.</param>
     /// <response code="204">User configuration updated.</response>
-    /// <response code="403">User configuration update forbidden.</response>
     /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
     [HttpPost("{userId}/Configuration")]
     [Authorize]
     [Obsolete("Kept for backwards compatibility")]
     [ApiExplorerSettings(IgnoreApi = true)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public Task<ActionResult> UpdateUserConfigurationLegacy(
         [FromRoute, Required] Guid userId,
         [FromBody, Required] UserConfiguration userConfig)
