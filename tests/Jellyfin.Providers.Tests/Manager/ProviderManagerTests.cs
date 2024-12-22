@@ -570,6 +570,7 @@ namespace Jellyfin.Providers.Tests.Manager
                 Mock.Of<ILibraryMonitor>(),
                 _logger,
                 Mock.Of<IFileSystem>(),
+                Mock.Of<IDirectoryService>(),
                 Mock.Of<IServerApplicationPaths>(),
                 libraryManager.Object,
                 baseItemManager!,

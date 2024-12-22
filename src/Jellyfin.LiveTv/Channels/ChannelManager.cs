@@ -48,6 +48,7 @@ namespace Jellyfin.LiveTv.Channels
         private readonly ILogger<ChannelManager> _logger;
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
+        private readonly IDirectoryService _directoryService;
         private readonly IProviderManager _providerManager;
         private readonly IMemoryCache _memoryCache;
         private readonly AsyncNonKeyedLocker _resourcePool = new(1);
@@ -63,6 +64,7 @@ namespace Jellyfin.LiveTv.Channels
         /// <param name="logger">The logger.</param>
         /// <param name="config">The server configuration manager.</param>
         /// <param name="fileSystem">The filesystem.</param>
+        /// <param name="directoryService">The directory service.</param>
         /// <param name="userDataManager">The user data manager.</param>
         /// <param name="providerManager">The provider manager.</param>
         /// <param name="memoryCache">The memory cache.</param>
@@ -74,6 +76,7 @@ namespace Jellyfin.LiveTv.Channels
             ILogger<ChannelManager> logger,
             IServerConfigurationManager config,
             IFileSystem fileSystem,
+            IDirectoryService directoryService,
             IUserDataManager userDataManager,
             IProviderManager providerManager,
             IMemoryCache memoryCache,
@@ -88,6 +91,7 @@ namespace Jellyfin.LiveTv.Channels
             _userDataManager = userDataManager;
             _providerManager = providerManager;
             _memoryCache = memoryCache;
+            _directoryService = directoryService;
             Channels = channels.ToArray();
         }
 
@@ -491,7 +495,7 @@ namespace Jellyfin.LiveTv.Channels
             }
 
             await item.RefreshMetadata(
-                new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+                new MetadataRefreshOptions(_directoryService)
                 {
                     ForceSave = !isNew && forceUpdate
                 },
@@ -1166,7 +1170,7 @@ namespace Jellyfin.LiveTv.Channels
 
             if (isNew || forceUpdate || item.DateLastRefreshed == default)
             {
-                _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.Normal);
+                _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions(_directoryService), RefreshPriority.Normal);
             }
 
             return item;

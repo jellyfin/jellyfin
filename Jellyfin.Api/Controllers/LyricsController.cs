@@ -32,8 +32,7 @@ public class LyricsController : BaseJellyfinApiController
     private readonly ILibraryManager _libraryManager;
     private readonly ILyricManager _lyricManager;
     private readonly IProviderManager _providerManager;
-    private readonly IFileSystem _fileSystem;
-    private readonly IUserManager _userManager;
+    private readonly IDirectoryService _directoryService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LyricsController"/> class.
@@ -41,20 +40,17 @@ public class LyricsController : BaseJellyfinApiController
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="lyricManager">Instance of the <see cref="ILyricManager"/> interface.</param>
     /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
-    /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
-    /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
+    /// <param name="directoryService">Instance of the <see cref="IDirectoryService"/> interface.</param>
     public LyricsController(
         ILibraryManager libraryManager,
         ILyricManager lyricManager,
         IProviderManager providerManager,
-        IFileSystem fileSystem,
-        IUserManager userManager)
+        IDirectoryService directoryService)
     {
         _libraryManager = libraryManager;
         _lyricManager = lyricManager;
         _providerManager = providerManager;
-        _fileSystem = fileSystem;
-        _userManager = userManager;
+        _directoryService = directoryService;
     }
 
     /// <summary>
@@ -137,7 +133,7 @@ public class LyricsController : BaseJellyfinApiController
                 return BadRequest();
             }
 
-            _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.High);
+            _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions(_directoryService), RefreshPriority.High);
             return Ok(uploadedLyric);
         }
     }
@@ -217,7 +213,7 @@ public class LyricsController : BaseJellyfinApiController
             return NotFound();
         }
 
-        _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.High);
+        _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions(_directoryService), RefreshPriority.High);
         return Ok(downloadedLyrics);
     }
 

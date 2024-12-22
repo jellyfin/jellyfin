@@ -31,7 +31,7 @@ public class GuideManager : IGuideManager
 
     private readonly ILogger<GuideManager> _logger;
     private readonly IConfigurationManager _config;
-    private readonly IFileSystem _fileSystem;
+    private readonly IDirectoryService _directoryService;
     private readonly IItemRepository _itemRepo;
     private readonly ILibraryManager _libraryManager;
     private readonly ILiveTvManager _liveTvManager;
@@ -44,7 +44,7 @@ public class GuideManager : IGuideManager
     /// </summary>
     /// <param name="logger">The <see cref="ILogger{TCategoryName}"/>.</param>
     /// <param name="config">The <see cref="IConfigurationManager"/>.</param>
-    /// <param name="fileSystem">The <see cref="IFileSystem"/>.</param>
+    /// <param name="directoryService">The <see cref="IDirectoryService"/>.</param>
     /// <param name="itemRepo">The <see cref="IItemRepository"/>.</param>
     /// <param name="libraryManager">The <see cref="ILibraryManager"/>.</param>
     /// <param name="liveTvManager">The <see cref="ILiveTvManager"/>.</param>
@@ -54,7 +54,7 @@ public class GuideManager : IGuideManager
     public GuideManager(
         ILogger<GuideManager> logger,
         IConfigurationManager config,
-        IFileSystem fileSystem,
+        IDirectoryService directoryService,
         IItemRepository itemRepo,
         ILibraryManager libraryManager,
         ILiveTvManager liveTvManager,
@@ -64,7 +64,7 @@ public class GuideManager : IGuideManager
     {
         _logger = logger;
         _config = config;
-        _fileSystem = fileSystem;
+        _directoryService = directoryService;
         _itemRepo = itemRepo;
         _libraryManager = libraryManager;
         _liveTvManager = liveTvManager;
@@ -291,7 +291,7 @@ public class GuideManager : IGuideManager
 
                 await currentChannel.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
                 await currentChannel.RefreshMetadata(
-                    new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+                    new MetadataRefreshOptions(_directoryService)
                     {
                         ForceSave = true
                     },

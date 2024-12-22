@@ -53,6 +53,7 @@ namespace MediaBrowser.Providers.Manager
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILibraryMonitor _libraryMonitor;
         private readonly IFileSystem _fileSystem;
+        private readonly IDirectoryService _directoryService;
         private readonly IServerApplicationPaths _appPaths;
         private readonly ILibraryManager _libraryManager;
         private readonly ISubtitleManager _subtitleManager;
@@ -88,6 +89,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="libraryMonitor">The library monitor.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="fileSystem">The filesystem.</param>
+        /// <param name="directoryService">The directories.</param>
         /// <param name="appPaths">The server application paths.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="baseItemManager">The BaseItem manager.</param>
@@ -101,6 +103,7 @@ namespace MediaBrowser.Providers.Manager
             ILibraryMonitor libraryMonitor,
             ILogger<ProviderManager> logger,
             IFileSystem fileSystem,
+            IDirectoryService directoryService,
             IServerApplicationPaths appPaths,
             ILibraryManager libraryManager,
             IBaseItemManager baseItemManager,
@@ -113,6 +116,7 @@ namespace MediaBrowser.Providers.Manager
             _configurationManager = configurationManager;
             _libraryMonitor = libraryMonitor;
             _fileSystem = fileSystem;
+            _directoryService = directoryService;
             _appPaths = appPaths;
             _libraryManager = libraryManager;
             _subtitleManager = subtitleManager;
@@ -385,7 +389,7 @@ namespace MediaBrowser.Providers.Manager
                 item,
                 libraryOptions,
                 options,
-                new ImageRefreshOptions(new DirectoryService(_fileSystem)),
+                new ImageRefreshOptions(_directoryService),
                 includeDisabled).OfType<IRemoteImageProvider>();
         }
 
@@ -574,7 +578,7 @@ namespace MediaBrowser.Providers.Manager
                 dummy,
                 libraryOptions,
                 options,
-                new ImageRefreshOptions(new DirectoryService(_fileSystem)),
+                new ImageRefreshOptions(_directoryService),
                 true).ToList();
 
             var pluginList = summary.Plugins.ToList();

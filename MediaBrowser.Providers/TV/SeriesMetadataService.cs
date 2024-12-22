@@ -23,6 +23,7 @@ namespace MediaBrowser.Providers.TV
     /// </summary>
     public class SeriesMetadataService : MetadataService<Series, SeriesInfo>
     {
+        private readonly IDirectoryService _directoryService;
         private readonly ILocalizationManager _localizationManager;
 
         /// <summary>
@@ -32,6 +33,7 @@ namespace MediaBrowser.Providers.TV
         /// <param name="logger">Instance of the <see cref="ILogger{SeasonMetadataService}"/> interface.</param>
         /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
+        /// <param name="directoryService">Instance of the <see cref="IDirectoryService"/> interface.</param>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         /// <param name="localizationManager">Instance of the <see cref="ILocalizationManager"/> interface.</param>
         public SeriesMetadataService(
@@ -39,10 +41,12 @@ namespace MediaBrowser.Providers.TV
             ILogger<SeriesMetadataService> logger,
             IProviderManager providerManager,
             IFileSystem fileSystem,
+            IDirectoryService directoryService,
             ILibraryManager libraryManager,
             ILocalizationManager localizationManager)
             : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
         {
+            _directoryService = directoryService;
             _localizationManager = localizationManager;
         }
 
@@ -262,7 +266,7 @@ namespace MediaBrowser.Providers.TV
             };
 
             series.AddChild(season);
-            await season.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(FileSystem)), cancellationToken).ConfigureAwait(false);
+            await season.RefreshMetadata(new MetadataRefreshOptions(_directoryService), cancellationToken).ConfigureAwait(false);
         }
 
         private string GetValidSeasonNameForSeries(Series series, string? seasonName, int? seasonNumber)

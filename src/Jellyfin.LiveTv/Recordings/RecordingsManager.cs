@@ -40,6 +40,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
     private readonly IServerConfigurationManager _config;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IFileSystem _fileSystem;
+    private readonly IDirectoryService _directoryService;
     private readonly ILibraryManager _libraryManager;
     private readonly ILibraryMonitor _libraryMonitor;
     private readonly IProviderManager _providerManager;
@@ -61,6 +62,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
     /// <param name="config">The <see cref="IServerConfigurationManager"/>.</param>
     /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/>.</param>
     /// <param name="fileSystem">The <see cref="IFileSystem"/>.</param>
+    /// <param name="directoryService">The <see cref="IDirectoryService"/>.</param>
     /// <param name="libraryManager">The <see cref="ILibraryManager"/>.</param>
     /// <param name="libraryMonitor">The <see cref="ILibraryMonitor"/>.</param>
     /// <param name="providerManager">The <see cref="IProviderManager"/>.</param>
@@ -75,6 +77,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
         IServerConfigurationManager config,
         IHttpClientFactory httpClientFactory,
         IFileSystem fileSystem,
+        IDirectoryService directoryService,
         ILibraryManager libraryManager,
         ILibraryMonitor libraryMonitor,
         IProviderManager providerManager,
@@ -98,6 +101,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
         _timerManager = timerManager;
         _seriesTimerManager = seriesTimerManager;
         _recordingsMetadataManager = recordingsMetadataManager;
+        _directoryService = directoryService;
 
         _config.NamedConfigurationUpdated += OnNamedConfigurationUpdated;
     }
@@ -613,7 +617,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
         _logger.LogInformation("Refreshing recording parent {Path}", item.Path);
         _providerManager.QueueRefresh(
             item.Id,
-            new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+            new MetadataRefreshOptions(_directoryService)
             {
                 RefreshPaths =
                 [

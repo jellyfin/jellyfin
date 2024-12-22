@@ -261,7 +261,7 @@ namespace MediaBrowser.Controller.Entities
 
         public Task ValidateChildren(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            return ValidateChildren(progress, new MetadataRefreshOptions(new DirectoryService(FileSystem)), cancellationToken: cancellationToken);
+            return ValidateChildren(progress, new MetadataRefreshOptions(DirectoryService), cancellationToken: cancellationToken);
         }
 
         /// <summary>

@@ -38,6 +38,7 @@ public class UserLibraryController : BaseJellyfinApiController
     private readonly IDtoService _dtoService;
     private readonly IUserViewManager _userViewManager;
     private readonly IFileSystem _fileSystem;
+    private readonly IDirectoryService _directoryService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UserLibraryController"/> class.
@@ -48,13 +49,15 @@ public class UserLibraryController : BaseJellyfinApiController
     /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
     /// <param name="userViewManager">Instance of the <see cref="IUserViewManager"/> interface.</param>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
+    /// <param name="directoryService">Instance of the <see cref="IDirectoryService"/> interface.</param>
     public UserLibraryController(
         IUserManager userManager,
         IUserDataManager userDataRepository,
         ILibraryManager libraryManager,
         IDtoService dtoService,
         IUserViewManager userViewManager,
-        IFileSystem fileSystem)
+        IFileSystem fileSystem,
+        IDirectoryService directoryService)
     {
         _userManager = userManager;
         _userDataRepository = userDataRepository;
@@ -62,6 +65,7 @@ public class UserLibraryController : BaseJellyfinApiController
         _dtoService = dtoService;
         _userViewManager = userViewManager;
         _fileSystem = fileSystem;
+        _directoryService = directoryService;
     }
 
     /// <summary>
@@ -639,7 +643,7 @@ public class UserLibraryController : BaseJellyfinApiController
 
             if (!hasMetdata)
             {
-                var options = new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+                var options = new MetadataRefreshOptions(_directoryService)
                 {
                     MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
                     ImageRefreshMode = MetadataRefreshMode.FullRefresh,

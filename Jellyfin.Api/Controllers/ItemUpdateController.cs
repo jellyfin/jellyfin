@@ -36,29 +36,29 @@ public class ItemUpdateController : BaseJellyfinApiController
     private readonly ILibraryManager _libraryManager;
     private readonly IProviderManager _providerManager;
     private readonly ILocalizationManager _localizationManager;
-    private readonly IFileSystem _fileSystem;
+    private readonly IDirectoryService _directoryService;
     private readonly IServerConfigurationManager _serverConfigurationManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ItemUpdateController"/> class.
     /// </summary>
-    /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
+    /// <param name="directoryService">Instance of the <see cref="IDirectoryService"/> interface.</param>
     /// <param name="localizationManager">Instance of the <see cref="ILocalizationManager"/> interface.</param>
     /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
     public ItemUpdateController(
-        IFileSystem fileSystem,
         ILibraryManager libraryManager,
         IProviderManager providerManager,
+        IDirectoryService directoryService,
         ILocalizationManager localizationManager,
         IServerConfigurationManager serverConfigurationManager)
     {
         _libraryManager = libraryManager;
         _providerManager = providerManager;
         _localizationManager = localizationManager;
-        _fileSystem = fileSystem;
         _serverConfigurationManager = serverConfigurationManager;
+        _directoryService = directoryService;
     }
 
     /// <summary>
@@ -123,7 +123,7 @@ public class ItemUpdateController : BaseJellyfinApiController
         {
             _providerManager.QueueRefresh(
                 series!.Id,
-                new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+                new MetadataRefreshOptions(_directoryService)
                 {
                     MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
                     ImageRefreshMode = MetadataRefreshMode.FullRefresh,

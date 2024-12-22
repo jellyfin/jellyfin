@@ -30,7 +30,7 @@ namespace Jellyfin.Api.Controllers;
 public class ItemLookupController : BaseJellyfinApiController
 {
     private readonly IProviderManager _providerManager;
-    private readonly IFileSystem _fileSystem;
+    private readonly IDirectoryService _directoryService;
     private readonly ILibraryManager _libraryManager;
     private readonly ILogger<ItemLookupController> _logger;
 
@@ -38,18 +38,18 @@ public class ItemLookupController : BaseJellyfinApiController
     /// Initializes a new instance of the <see cref="ItemLookupController"/> class.
     /// </summary>
     /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
-    /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
+    /// <param name="directoryService">Instance of the <see cref="IDirectoryService"/> interface.</param>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger{ItemLookupController}"/> interface.</param>
     public ItemLookupController(
         IProviderManager providerManager,
-        IFileSystem fileSystem,
+        IDirectoryService directoryService,
         ILibraryManager libraryManager,
         ILogger<ItemLookupController> logger)
     {
         _providerManager = providerManager;
-        _fileSystem = fileSystem;
         _libraryManager = libraryManager;
+        _directoryService = directoryService;
         _logger = logger;
     }
 
@@ -266,7 +266,7 @@ public class ItemLookupController : BaseJellyfinApiController
         item.ProviderIds = searchResult.ProviderIds;
         await _providerManager.RefreshFullItem(
             item,
-            new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+            new MetadataRefreshOptions(_directoryService)
             {
                 MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
                 ImageRefreshMode = MetadataRefreshMode.FullRefresh,

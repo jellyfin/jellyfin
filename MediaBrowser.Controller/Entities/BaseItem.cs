@@ -481,6 +481,8 @@ namespace MediaBrowser.Controller.Entities
 
         public static IFileSystem FileSystem { get; set; }
 
+        public static IDirectoryService DirectoryService { get; set; }
+
         public static IUserDataManager UserDataManager { get; set; }
 
         public static IChannelManager ChannelManager { get; set; }
@@ -1252,7 +1254,7 @@ namespace MediaBrowser.Controller.Entities
 
         public Task RefreshMetadata(CancellationToken cancellationToken)
         {
-            return RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(FileSystem)), cancellationToken);
+            return RefreshMetadata(new MetadataRefreshOptions(DirectoryService), cancellationToken);
         }
 
         /// <summary>
@@ -1870,7 +1872,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         public virtual void ChangedExternally()
         {
-            ProviderManager.QueueRefresh(Id, new MetadataRefreshOptions(new DirectoryService(FileSystem)), RefreshPriority.High);
+            ProviderManager.QueueRefresh(Id, new MetadataRefreshOptions(DirectoryService), RefreshPriority.High);
         }
 
         /// <summary>

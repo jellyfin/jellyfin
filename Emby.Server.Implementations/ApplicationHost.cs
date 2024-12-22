@@ -636,6 +636,7 @@ namespace Emby.Server.Implementations
             BaseItem.LocalizationManager = Resolve<ILocalizationManager>();
             BaseItem.ItemRepository = Resolve<IItemRepository>();
             BaseItem.FileSystem = Resolve<IFileSystem>();
+            BaseItem.DirectoryService = Resolve<IDirectoryService>();
             BaseItem.UserDataManager = Resolve<IUserDataManager>();
             BaseItem.ChannelManager = Resolve<IChannelManager>();
             Video.RecordingsManager = Resolve<IRecordingsManager>();
