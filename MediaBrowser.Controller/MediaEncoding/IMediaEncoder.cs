@@ -110,6 +110,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <returns><c>true</c> if the filter is supported, <c>false</c> otherwise.</returns>
         bool SupportsFilterWithOption(FilterOptionType option);
 
+        public bool SupportsBitStreamFilterWithOption(BitStreamFilterOptionType option);
+
         /// <summary>
         /// Extracts the audio image.
         /// </summary>

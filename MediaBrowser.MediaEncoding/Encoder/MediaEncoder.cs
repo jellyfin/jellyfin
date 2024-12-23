@@ -73,6 +73,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private List<string> _hwaccels = new List<string>();
         private List<string> _filters = new List<string>();
         private IDictionary<int, bool> _filtersWithOption = new Dictionary<int, bool>();
+        private IDictionary<int, bool> _bitStreamFiltersWithOption = new Dictionary<int, bool>();
 
         private bool _isPkeyPauseSupported = false;
         private bool _isLowPriorityHwDecodeSupported = false;
@@ -212,6 +213,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 SetAvailableEncoders(validator.GetEncoders());
                 SetAvailableFilters(validator.GetFilters());
                 SetAvailableFiltersWithOption(validator.GetFiltersWithOption());
+                SetAvailableBitStreamFiltersWithOption(validator.GetBitStreamFiltersWithOption());
                 SetAvailableHwaccels(validator.GetHwaccels());
                 SetMediaEncoderVersion(validator);
 
@@ -326,6 +328,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _filtersWithOption = dict;
         }
 
+        public void SetAvailableBitStreamFiltersWithOption(IDictionary<int, bool> dict)
+        {
+            _bitStreamFiltersWithOption = dict;
+        }
+
         public void SetMediaEncoderVersion(EncoderValidator validator)
         {
             _ffmpegVersion = validator.GetFFmpegVersion();
@@ -364,6 +371,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             return false;
+        }
+
+        public bool SupportsBitStreamFilterWithOption(BitStreamFilterOptionType option)
+        {
+            return _bitStreamFiltersWithOption.TryGetValue((int)option, out var val) && val;
         }
 
         public bool CanEncodeToAudioCodec(string codec)
