@@ -820,7 +820,7 @@ namespace MediaBrowser.Model.Entities
 
             if (string.Equals(colorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase))
             {
-                return (VideoRange.HDR, VideoRangeType.HDR10);
+                return ElPresentFlag == 1 ? (VideoRange.HDR, VideoRangeType.HDR10Plus) : (VideoRange.HDR, VideoRangeType.HDR10);
             }
             else if (string.Equals(colorTransfer, "arib-std-b67", StringComparison.OrdinalIgnoreCase))
             {

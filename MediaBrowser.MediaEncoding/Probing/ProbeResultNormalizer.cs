@@ -104,8 +104,9 @@ namespace MediaBrowser.MediaEncoding.Probing
             SetSize(data, info);
 
             var internalStreams = data.Streams ?? Array.Empty<MediaStreamInfo>();
+            var internalFrames = data.Frames ?? Array.Empty<MediaFrameInfo>();
 
-            info.MediaStreams = internalStreams.Select(s => GetMediaStream(isAudio, s, data.Format))
+            info.MediaStreams = internalStreams.Select(s => GetMediaStream(isAudio, s, data.Format, internalFrames))
                 .Where(i => i is not null)
                 // Drop subtitle streams if we don't know the codec because it will just cause failures if we don't know how to handle them
                 .Where(i => i.Type != MediaStreamType.Subtitle || !string.IsNullOrWhiteSpace(i.Codec))
@@ -682,8 +683,9 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// <param name="isAudio">if set to <c>true</c> [is info].</param>
         /// <param name="streamInfo">The stream info.</param>
         /// <param name="formatInfo">The format info.</param>
+        /// <param name="frameInfoList">The frame info.</param>
         /// <returns>MediaStream.</returns>
-        private MediaStream GetMediaStream(bool isAudio, MediaStreamInfo streamInfo, MediaFormatInfo formatInfo)
+        private MediaStream GetMediaStream(bool isAudio, MediaStreamInfo streamInfo, MediaFormatInfo formatInfo, IReadOnlyList<MediaFrameInfo> frameInfoList)
         {
             // These are mp4 chapters
             if (string.Equals(streamInfo.CodecName, "mov_text", StringComparison.OrdinalIgnoreCase))
@@ -899,6 +901,16 @@ namespace MediaBrowser.MediaEncoding.Probing
                         {
                             stream.Rotation = data.Rotation;
                         }
+                    }
+                }
+
+                var frameInfo = frameInfoList?.FirstOrDefault(i => i.StreamIndex == stream.Index);
+                if (frameInfo?.SideDataList != null)
+                {
+                    if (frameInfo.SideDataList.Any(data => string.Equals(data.SideDataType, "HDR Dynamic Metadata SMPTE2094-40 (HDR10+)", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        // HACK: To not change the DB schema, abuse DV El flag for now until the EFCore migration is merged.
+                        stream.ElPresentFlag = 1;
                     }
                 }
             }
