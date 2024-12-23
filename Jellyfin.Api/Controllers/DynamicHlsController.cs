@@ -1825,7 +1825,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             var videoIsDoVi = state.VideoStream.VideoRangeType is VideoRangeType.DOVI or VideoRangeType.DOVIWithHDR10 or VideoRangeType.DOVIWithHLG or VideoRangeType.DOVIWithSDR;
 
             if (EncodingHelper.IsCopyCodec(codec)
-                && (videoIsDoVi && clientSupportsDoVi))
+                && (videoIsDoVi && clientSupportsDoVi)
+                && !_encodingHelper.IsDoviRemoved(state))
             {
                 if (isActualOutputVideoCodecHevc)
                 {

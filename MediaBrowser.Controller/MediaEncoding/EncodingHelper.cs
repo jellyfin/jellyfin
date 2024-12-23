@@ -1379,6 +1379,12 @@ namespace MediaBrowser.Controller.MediaEncoding
             };
         }
 
+        public bool IsDoviRemoved(EncodingJobInfo state)
+        {
+            return state?.VideoStream is not null && ShouldRemoveDynamicHdrMetadata(state) == DynamicHdrMetadataRemovalPlan.RemoveDovi
+                                              && CanEncoderRemoveDynamicHdrMetadata(DynamicHdrMetadataRemovalPlan.RemoveDovi, state.VideoStream);
+        }
+
         public string GetBitStreamArgs(EncodingJobInfo state, MediaStreamType streamType)
         {
             if (state is null)
