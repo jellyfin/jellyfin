@@ -160,6 +160,13 @@ namespace MediaBrowser.Controller.MediaEncoding
             _configurationManager = configurationManager;
         }
 
+        private enum DynamicHdrMetadataRemovalPlan
+        {
+            None,
+            RemoveDovi,
+            RemoveHdr10Plus,
+        }
+
         [GeneratedRegex(@"\s+")]
         private static partial Regex WhiteSpaceRegex();
 
@@ -340,11 +347,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return isSwDecoder || isNvdecDecoder || isVaapiDecoder || isD3d11vaDecoder || isVideoToolBoxDecoder;
             }
 
-            return state.VideoStream.VideoRange == VideoRange.HDR
-                   && (state.VideoStream.VideoRangeType == VideoRangeType.HDR10
-                       || state.VideoStream.VideoRangeType == VideoRangeType.HLG
-                       || state.VideoStream.VideoRangeType == VideoRangeType.DOVIWithHDR10
-                       || state.VideoStream.VideoRangeType == VideoRangeType.DOVIWithHLG);
+            // GPU tonemapping supports all HDR RangeTypes
+            return state.VideoStream.VideoRange == VideoRange.HDR;
         }
 
         private bool IsVulkanHwTonemapAvailable(EncodingJobInfo state, EncodingOptions options)
@@ -379,8 +383,12 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             return state.VideoStream.VideoRange == VideoRange.HDR
-                   && (state.VideoStream.VideoRangeType == VideoRangeType.HDR10
-                       || state.VideoStream.VideoRangeType == VideoRangeType.DOVIWithHDR10);
+                   && state.VideoStream.VideoRangeType is VideoRangeType.HDR10
+                       or VideoRangeType.DOVIWithHDR10
+                       or VideoRangeType.DOVIWithEL
+                       or VideoRangeType.DOVIInvalid
+                       or VideoRangeType.DOVIWithHDR10Plus
+                       or VideoRangeType.HDR10Plus;
         }
 
         private bool IsVideoToolboxTonemapAvailable(EncodingJobInfo state, EncodingOptions options)
@@ -395,7 +403,14 @@ namespace MediaBrowser.Controller.MediaEncoding
             // Certain DV profile 5 video works in Safari with direct playing, but the VideoToolBox does not produce correct mapping results with transcoding.
             // All other HDR formats working.
             return state.VideoStream.VideoRange == VideoRange.HDR
-                   && state.VideoStream.VideoRangeType is VideoRangeType.HDR10 or VideoRangeType.HLG or VideoRangeType.HDR10Plus or VideoRangeType.DOVIWithHDR10 or VideoRangeType.DOVIWithHLG;
+                   && state.VideoStream.VideoRangeType is VideoRangeType.HDR10
+                       or VideoRangeType.HLG
+                       or VideoRangeType.HDR10Plus
+                       or VideoRangeType.DOVIWithHDR10
+                       or VideoRangeType.DOVIWithHLG
+                       or VideoRangeType.DOVIWithEL
+                       or VideoRangeType.DOVIInvalid
+                       or VideoRangeType.DOVIWithHDR10Plus;
         }
 
         private bool IsVideoStreamHevcRext(EncodingJobInfo state)
@@ -1299,6 +1314,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                 || codec.Contains("hevc", StringComparison.OrdinalIgnoreCase);
         }
 
+        public static bool IsAv1(MediaStream stream)
+        {
+            var codec = stream.Codec ?? string.Empty;
+
+            return codec.Contains("av1", StringComparison.OrdinalIgnoreCase);
+        }
+
         public static bool IsAAC(MediaStream stream)
         {
             var codec = stream.Codec ?? string.Empty;
@@ -1306,18 +1328,75 @@ namespace MediaBrowser.Controller.MediaEncoding
             return codec.Contains("aac", StringComparison.OrdinalIgnoreCase);
         }
 
-        public static string GetBitStreamArgs(MediaStream stream)
+        /// <summary>
+        /// Check if dynamic HDR metadata should be removed during stream copy.
+        /// Please note this check assumes the range check has already been done
+        /// and trivial fallbacks like HDR10+ to HDR10, DOVIWithHDR10 to HDR10 is already checked.
+        /// </summary>
+        private static DynamicHdrMetadataRemovalPlan ShouldRemoveDynamicHdrMetadata(EncodingJobInfo state)
         {
+            var videoStream = state.VideoStream;
+            if (videoStream.VideoRange is not VideoRange.HDR)
+            {
+                return DynamicHdrMetadataRemovalPlan.None;
+            }
+
+            var requestedRangeTypes = state.GetRequestedRangeTypes(state.VideoStream.Codec);
+            if (requestedRangeTypes.Length == 0)
+            {
+                return DynamicHdrMetadataRemovalPlan.None;
+            }
+
+            var requestHasHDR10 = requestedRangeTypes.Contains(VideoRangeType.HDR10.ToString(), StringComparison.OrdinalIgnoreCase);
+            var requestHasDOVI = requestedRangeTypes.Contains(VideoRangeType.DOVI.ToString(), StringComparison.OrdinalIgnoreCase);
+
+            // Case 1: Client supports HDR10, does not support DOVI with EL but EL presets
+            var shouldRemoveDovi = requestHasHDR10 && videoStream.VideoRangeType == VideoRangeType.DOVIWithEL;
+
+            // Case 2: Client supports DOVI, does not support broken DOVI config
+            // Client does not report DOVI support should be allowed to copy bad data for remuxing as HDR10 players would not crash
+            shouldRemoveDovi = shouldRemoveDovi || (requestHasDOVI && videoStream.VideoRangeType == VideoRangeType.DOVIInvalid);
+            if (shouldRemoveDovi)
+            {
+                return DynamicHdrMetadataRemovalPlan.RemoveDovi;
+            }
+
+            // If the client is a Dolby Vision Player, remove the HDR10+ metadata to avoid playback issues
+            var shouldRemoveHdr10Plus = requestHasDOVI && videoStream.VideoRangeType == VideoRangeType.DOVIWithHDR10Plus;
+            return shouldRemoveHdr10Plus ? DynamicHdrMetadataRemovalPlan.RemoveHdr10Plus : DynamicHdrMetadataRemovalPlan.None;
+        }
+
+        private bool CanEncoderRemoveDynamicHdrMetadata(DynamicHdrMetadataRemovalPlan plan, MediaStream videoStream)
+        {
+            return plan switch
+            {
+                DynamicHdrMetadataRemovalPlan.RemoveDovi => _mediaEncoder.SupportsBitStreamFilterWithOption(BitStreamFilterOptionType.DoviRpuStrip)
+                                                            || (IsH265(videoStream) && _mediaEncoder.SupportsBitStreamFilterWithOption(BitStreamFilterOptionType.HevcMetadataRemoveDovi))
+                                                            || (IsAv1(videoStream) && _mediaEncoder.SupportsBitStreamFilterWithOption(BitStreamFilterOptionType.Av1MetadataRemoveDovi)),
+                DynamicHdrMetadataRemovalPlan.RemoveHdr10Plus => (IsH265(videoStream) && _mediaEncoder.SupportsBitStreamFilterWithOption(BitStreamFilterOptionType.HevcMetadataRemoveHdr10Plus))
+                                                                 || (IsAv1(videoStream) && _mediaEncoder.SupportsBitStreamFilterWithOption(BitStreamFilterOptionType.Av1MetadataRemoveHdr10Plus)),
+                _ => true,
+            };
+        }
+
+        public string GetBitStreamArgs(EncodingJobInfo state, MediaStreamType streamType)
+        {
+            if (state is null)
+            {
+                return null;
+            }
+
+            var stream = streamType switch
+            {
+                MediaStreamType.Audio => state.AudioStream,
+                MediaStreamType.Video => state.VideoStream,
+                _ => state.VideoStream
+            };
             // TODO This is auto inserted into the mpegts mux so it might not be needed.
             // https://www.ffmpeg.org/ffmpeg-bitstream-filters.html#h264_005fmp4toannexb
             if (IsH264(stream))
             {
                 return "-bsf:v h264_mp4toannexb";
-            }
-
-            if (IsH265(stream))
-            {
-                return "-bsf:v hevc_mp4toannexb";
             }
 
             if (IsAAC(stream))
@@ -1326,10 +1405,49 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return "-bsf:a aac_adtstoasc";
             }
 
+            if (IsH265(stream))
+            {
+                var filter = "-bsf:v hevc_mp4toannexb";
+
+                // The following checks are not complete because the copy would be rejected
+                // if the encoder cannot remove required metadata.
+                // And if bsf is used, we must already be using copy codec.
+                switch (ShouldRemoveDynamicHdrMetadata(state))
+                {
+                    default:
+                    case DynamicHdrMetadataRemovalPlan.None:
+                        break;
+                    case DynamicHdrMetadataRemovalPlan.RemoveDovi:
+                        filter += _mediaEncoder.SupportsBitStreamFilterWithOption(BitStreamFilterOptionType.HevcMetadataRemoveDovi)
+                            ? ",hevc_metadata=remove_dovi=1"
+                            : ",dovi_rpu=strip=1";
+                        break;
+                    case DynamicHdrMetadataRemovalPlan.RemoveHdr10Plus:
+                        filter += ",hevc_metadata=remove_hdr10plus=1";
+                        break;
+                }
+
+                return filter;
+            }
+
+            if (IsAv1(stream))
+            {
+                switch (ShouldRemoveDynamicHdrMetadata(state))
+                {
+                    default:
+                    case DynamicHdrMetadataRemovalPlan.None:
+                        return null;
+                    case DynamicHdrMetadataRemovalPlan.RemoveDovi:
+                        return "-bsf:v av1_metadata=remove_dovi=1";
+                    case DynamicHdrMetadataRemovalPlan.RemoveHdr10Plus:
+                        return "-bsf:v av1_metadata=remove_hdr10plus=1";
+                }
+            }
+
             return null;
         }
 
-        public static string GetAudioBitStreamArguments(EncodingJobInfo state, string segmentContainer, string mediaSourceContainer)
+        public string GetAudioBitStreamArguments(EncodingJobInfo state, string segmentContainer, string mediaSourceContainer)
         {
             var bitStreamArgs = string.Empty;
             var segmentFormat = GetSegmentFileExtension(segmentContainer).TrimStart('.');
@@ -1340,7 +1458,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     || string.Equals(mediaSourceContainer, "aac", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(mediaSourceContainer, "hls", StringComparison.OrdinalIgnoreCase)))
             {
-                bitStreamArgs = GetBitStreamArgs(state.AudioStream);
+                bitStreamArgs = GetBitStreamArgs(state, MediaStreamType.Audio);
                 bitStreamArgs = string.IsNullOrEmpty(bitStreamArgs) ? string.Empty : " " + bitStreamArgs;
             }
 
@@ -2175,9 +2293,17 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (!requestedRangeTypes.Contains(videoStream.VideoRangeType.ToString(), StringComparison.OrdinalIgnoreCase)
                      && !((requestHasHDR10 && videoStream.VideoRangeType == VideoRangeType.DOVIWithHDR10)
                             || (requestHasHLG && videoStream.VideoRangeType == VideoRangeType.DOVIWithHLG)
-                            || (requestHasSDR && videoStream.VideoRangeType == VideoRangeType.DOVIWithSDR)))
+                            || (requestHasSDR && videoStream.VideoRangeType == VideoRangeType.DOVIWithSDR)
+                            || (requestHasHDR10 && videoStream.VideoRangeType == VideoRangeType.HDR10Plus)))
                 {
-                    return false;
+                    // Check complicated cases where we need to remove dynamic metadata
+                    // Conservatively refuse to copy if the encoder can't remove dynamic metadata,
+                    // but a removal is required for compatability reasons.
+                    var dynamicHdrMetadataRemovalPlan = ShouldRemoveDynamicHdrMetadata(state);
+                    if (!CanEncoderRemoveDynamicHdrMetadata(dynamicHdrMetadataRemovalPlan, videoStream))
+                    {
+                        return false;
+                    }
                 }
             }
 
@@ -7234,7 +7360,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     && string.Equals(state.OutputContainer, "ts", StringComparison.OrdinalIgnoreCase)
                     && !string.Equals(state.VideoStream.NalLengthSize, "0", StringComparison.OrdinalIgnoreCase))
                 {
-                    string bitStreamArgs = GetBitStreamArgs(state.VideoStream);
+                    string bitStreamArgs = GetBitStreamArgs(state, MediaStreamType.Video);
                     if (!string.IsNullOrEmpty(bitStreamArgs))
                     {
                         args += " " + bitStreamArgs;
