@@ -77,6 +77,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private bool _isPkeyPauseSupported = false;
         private bool _isLowPriorityHwDecodeSupported = false;
+        private bool _proberSupportsFirstVideoFrame = false;
 
         private bool _isVaapiDeviceAmd = false;
         private bool _isVaapiDeviceInteliHD = false;
@@ -221,6 +222,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 _isPkeyPauseSupported = validator.CheckSupportedRuntimeKey("p      pause transcoding", _ffmpegVersion);
                 _isLowPriorityHwDecodeSupported = validator.CheckSupportedHwaccelFlag("low_priority");
+                _proberSupportsFirstVideoFrame = validator.CheckSupportedProberOption("only_first_vframe", _ffprobePath);
 
                 // Check the Vaapi device vendor
                 if (OperatingSystem.IsLinux()
@@ -497,6 +499,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var args = extractChapters
                 ? "{0} -i {1} -threads {2} -v warning -print_format json -show_streams -show_chapters -show_format"
                 : "{0} -i {1} -threads {2} -v warning -print_format json -show_streams -show_format";
+
+            if (_proberSupportsFirstVideoFrame)
+            {
+                args += " -show_frames -only_first_vframe";
+            }
+
             args = string.Format(CultureInfo.InvariantCulture, args, probeSizeArgument, inputPath, _threads).Trim();
 
             var process = new Process
