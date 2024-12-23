@@ -778,8 +778,8 @@ namespace MediaBrowser.Model.Entities
             var blPresentFlag = BlPresentFlag == 1;
             var dvBlCompatId = DvBlSignalCompatibilityId;
 
-            var isDoViProfile = dvProfile == 5 || dvProfile == 7 || dvProfile == 8 || dvProfile == 10;
-            var isDoViFlag = rpuPresentFlag && blPresentFlag && (dvBlCompatId == 0 || dvBlCompatId == 1 || dvBlCompatId == 4 || dvBlCompatId == 2 || dvBlCompatId == 6);
+            var isDoViProfile = dvProfile is 5 or 7 or 8 or 10;
+            var isDoViFlag = rpuPresentFlag && blPresentFlag && dvBlCompatId is 0 or 1 or 4 or 2 or 6;
 
             if ((isDoViProfile && isDoViFlag)
                 || string.Equals(codecTag, "dovi", StringComparison.OrdinalIgnoreCase)
@@ -787,7 +787,7 @@ namespace MediaBrowser.Model.Entities
                 || string.Equals(codecTag, "dvhe", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codecTag, "dav1", StringComparison.OrdinalIgnoreCase))
             {
-                return dvProfile switch
+                var dvRangeSet = dvProfile switch
                 {
                     5 => (VideoRange.HDR, VideoRangeType.DOVI),
                     8 => dvBlCompatId switch
@@ -795,25 +795,28 @@ namespace MediaBrowser.Model.Entities
                         1 => (VideoRange.HDR, VideoRangeType.DOVIWithHDR10),
                         4 => (VideoRange.HDR, VideoRangeType.DOVIWithHLG),
                         2 => (VideoRange.SDR, VideoRangeType.DOVIWithSDR),
-                        // While not in Dolby Spec, Profile 8 CCid 6 media are possible to create, and since CCid 6 stems from Bluray (Profile 7 originally) an HDR10 base layer is guaranteed to exist.
-                        6 => (VideoRange.HDR, VideoRangeType.DOVIWithHDR10),
-                        // There is no other case to handle here as per Dolby Spec. Default case included for completeness and linting purposes
-                        _ => (VideoRange.SDR, VideoRangeType.SDR)
+                        // Out of Dolby Spec files should be marked as invalid
+                        _ => (VideoRange.HDR, VideoRangeType.DOVIInvalid)
                     },
-                    7 => (VideoRange.HDR, VideoRangeType.HDR10),
+                    7 => (VideoRange.HDR, VideoRangeType.DOVIWithEL),
                     10 => dvBlCompatId switch
                     {
                         0 => (VideoRange.HDR, VideoRangeType.DOVI),
                         1 => (VideoRange.HDR, VideoRangeType.DOVIWithHDR10),
                         2 => (VideoRange.SDR, VideoRangeType.DOVIWithSDR),
                         4 => (VideoRange.HDR, VideoRangeType.DOVIWithHLG),
-                        // While not in Dolby Spec, Profile 8 CCid 6 media are possible to create, and since CCid 6 stems from Bluray (Profile 7 originally) an HDR10 base layer is guaranteed to exist.
-                        6 => (VideoRange.HDR, VideoRangeType.DOVIWithHDR10),
-                        // There is no other case to handle here as per Dolby Spec. Default case included for completeness and linting purposes
-                        _ => (VideoRange.SDR, VideoRangeType.SDR)
+                        // Out of Dolby Spec files should be marked as invalid
+                        _ => (VideoRange.HDR, VideoRangeType.DOVIInvalid)
                     },
                     _ => (VideoRange.SDR, VideoRangeType.SDR)
                 };
+
+                if (ElPresentFlag == 1 && dvRangeSet.Item2 == VideoRangeType.DOVIWithHDR10)
+                {
+                    return (VideoRange.HDR, VideoRangeType.DOVIWithHDR10Plus);
+                }
+
+                return dvRangeSet;
             }
 
             var colorTransfer = ColorTransfer;
