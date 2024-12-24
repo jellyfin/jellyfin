@@ -816,6 +816,11 @@ namespace MediaBrowser.Model.Entities
                     return (VideoRange.HDR, VideoRangeType.DOVIWithHDR10Plus);
                 }
 
+                if (ElPresentFlag > 1 && dvRangeSet.Item2 == VideoRangeType.DOVIWithEL)
+                {
+                    return (VideoRange.HDR, VideoRangeType.DOVIWithELHDR10Plus);
+                }
+
                 return dvRangeSet;
             }
 

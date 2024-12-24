@@ -1822,7 +1822,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             // Clients reporting Dolby Vision capabilities with fallbacks may only support the fallback layer.
             // Only enable Dolby Vision remuxing if the client explicitly declares support for profiles without fallbacks.
             var clientSupportsDoVi = requestedRange.Contains(VideoRangeType.DOVI.ToString(), StringComparison.OrdinalIgnoreCase);
-            var videoIsDoVi = state.VideoStream.VideoRangeType is VideoRangeType.DOVI or VideoRangeType.DOVIWithHDR10 or VideoRangeType.DOVIWithHLG or VideoRangeType.DOVIWithSDR;
+            var videoIsDoVi = EncodingHelper.IsDovi(state.VideoStream);
 
             if (EncodingHelper.IsCopyCodec(codec)
                 && (videoIsDoVi && clientSupportsDoVi)

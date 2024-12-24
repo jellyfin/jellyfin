@@ -383,12 +383,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             return state.VideoStream.VideoRange == VideoRange.HDR
-                   && state.VideoStream.VideoRangeType is VideoRangeType.HDR10
-                       or VideoRangeType.DOVIWithHDR10
-                       or VideoRangeType.DOVIWithEL
-                       or VideoRangeType.DOVIInvalid
-                       or VideoRangeType.DOVIWithHDR10Plus
-                       or VideoRangeType.HDR10Plus;
+                   && IsDoviWithHdr10Bl(state.VideoStream);
         }
 
         private bool IsVideoToolboxTonemapAvailable(EncodingJobInfo state, EncodingOptions options)
@@ -403,14 +398,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             // Certain DV profile 5 video works in Safari with direct playing, but the VideoToolBox does not produce correct mapping results with transcoding.
             // All other HDR formats working.
             return state.VideoStream.VideoRange == VideoRange.HDR
-                   && state.VideoStream.VideoRangeType is VideoRangeType.HDR10
-                       or VideoRangeType.HLG
-                       or VideoRangeType.HDR10Plus
-                       or VideoRangeType.DOVIWithHDR10
-                       or VideoRangeType.DOVIWithHLG
-                       or VideoRangeType.DOVIWithEL
-                       or VideoRangeType.DOVIInvalid
-                       or VideoRangeType.DOVIWithHDR10Plus;
+                   && (IsDoviWithHdr10Bl(state.VideoStream)
+                       || state.VideoStream.VideoRangeType is VideoRangeType.HLG);
         }
 
         private bool IsVideoStreamHevcRext(EncodingJobInfo state)
@@ -1328,6 +1317,27 @@ namespace MediaBrowser.Controller.MediaEncoding
             return codec.Contains("aac", StringComparison.OrdinalIgnoreCase);
         }
 
+        public static bool IsDoviWithHdr10Bl(MediaStream stream)
+        {
+            var rangeType = stream?.VideoRangeType;
+
+            return rangeType is VideoRangeType.DOVIWithHDR10
+                or VideoRangeType.DOVIWithEL
+                or VideoRangeType.DOVIWithHDR10Plus
+                or VideoRangeType.DOVIWithELHDR10Plus
+                or VideoRangeType.DOVIInvalid;
+        }
+
+        public static bool IsDovi(MediaStream stream)
+        {
+            var rangeType = stream?.VideoRangeType;
+
+            return IsDoviWithHdr10Bl(stream)
+                   || (rangeType is VideoRangeType.DOVI
+                       or VideoRangeType.DOVIWithHLG
+                       or VideoRangeType.DOVIWithSDR);
+        }
+
         /// <summary>
         /// Check if dynamic HDR metadata should be removed during stream copy.
         /// Please note this check assumes the range check has already been done
@@ -1349,20 +1359,33 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var requestHasHDR10 = requestedRangeTypes.Contains(VideoRangeType.HDR10.ToString(), StringComparison.OrdinalIgnoreCase);
             var requestHasDOVI = requestedRangeTypes.Contains(VideoRangeType.DOVI.ToString(), StringComparison.OrdinalIgnoreCase);
+            var requestHasDOVIwithEL = requestedRangeTypes.Contains(VideoRangeType.DOVIWithEL.ToString(), StringComparison.OrdinalIgnoreCase);
+            var requestHasDOVIwithELHDR10plus = requestedRangeTypes.Contains(VideoRangeType.DOVIWithELHDR10Plus.ToString(), StringComparison.OrdinalIgnoreCase);
 
+            var shouldRemoveHdr10Plus = false;
             // Case 1: Client supports HDR10, does not support DOVI with EL but EL presets
-            var shouldRemoveDovi = requestHasHDR10 && videoStream.VideoRangeType == VideoRangeType.DOVIWithEL;
+            var shouldRemoveDovi = (!requestHasDOVIwithEL && requestHasHDR10) && videoStream.VideoRangeType == VideoRangeType.DOVIWithEL;
 
             // Case 2: Client supports DOVI, does not support broken DOVI config
             // Client does not report DOVI support should be allowed to copy bad data for remuxing as HDR10 players would not crash
             shouldRemoveDovi = shouldRemoveDovi || (requestHasDOVI && videoStream.VideoRangeType == VideoRangeType.DOVIInvalid);
+
+            // Special case: we have a video with both EL and HDR10+
+            // If the client supports EL but not in the case of coexistence with HDR10+, remove HDR10+ for compatibility reasons.
+            // Otherwise, remove DOVI if the client is not a DOVI player
+            if (videoStream.VideoRangeType == VideoRangeType.DOVIWithELHDR10Plus)
+            {
+                shouldRemoveHdr10Plus = requestHasDOVIwithEL && !requestHasDOVIwithELHDR10plus;
+                shouldRemoveDovi = shouldRemoveDovi || !shouldRemoveHdr10Plus;
+            }
+
             if (shouldRemoveDovi)
             {
                 return DynamicHdrMetadataRemovalPlan.RemoveDovi;
             }
 
             // If the client is a Dolby Vision Player, remove the HDR10+ metadata to avoid playback issues
-            var shouldRemoveHdr10Plus = requestHasDOVI && videoStream.VideoRangeType == VideoRangeType.DOVIWithHDR10Plus;
+            shouldRemoveHdr10Plus = shouldRemoveHdr10Plus || (requestHasDOVI && videoStream.VideoRangeType == VideoRangeType.DOVIWithHDR10Plus);
             return shouldRemoveHdr10Plus ? DynamicHdrMetadataRemovalPlan.RemoveHdr10Plus : DynamicHdrMetadataRemovalPlan.None;
         }
 
@@ -2291,7 +2314,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
 
                 // DOVIWithHDR10 should be compatible with HDR10 supporting players. Same goes with HLG and of course SDR. So allow copy of those formats
-
                 var requestHasHDR10 = requestedRangeTypes.Contains(VideoRangeType.HDR10.ToString(), StringComparison.OrdinalIgnoreCase);
                 var requestHasHLG = requestedRangeTypes.Contains(VideoRangeType.HLG.ToString(), StringComparison.OrdinalIgnoreCase);
                 var requestHasSDR = requestedRangeTypes.Contains(VideoRangeType.SDR.ToString(), StringComparison.OrdinalIgnoreCase);

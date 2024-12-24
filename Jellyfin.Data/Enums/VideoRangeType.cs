@@ -56,6 +56,11 @@ public enum VideoRangeType
     DOVIWithHDR10Plus,
 
     /// <summary>
+    /// Dolby Vision with Enhancment Layer (Profile 7) and HDR10+ Metadata coexists.
+    /// </summary>
+    DOVIWithELHDR10Plus,
+
+    /// <summary>
     /// Dolby Vision with invalid configuration. e.g. Profile 8 compat id 6.
     /// When using this range, the server would assume the video is still HDR10 after removing the Dolby Vision metadata.
     /// </summary>

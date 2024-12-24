@@ -910,7 +910,11 @@ namespace MediaBrowser.MediaEncoding.Probing
                     if (frameInfo.SideDataList.Any(data => string.Equals(data.SideDataType, "HDR Dynamic Metadata SMPTE2094-40 (HDR10+)", StringComparison.OrdinalIgnoreCase)))
                     {
                         // HACK: To not change the DB schema, abuse DV El flag for now until the EFCore migration is merged.
-                        stream.ElPresentFlag = 1;
+                        // Current flag usage:
+                        // Store as 2bit bitmask
+                        // With the lower bit as DV EL present
+                        // And the higher bit as HDR10+ present
+                        stream.ElPresentFlag = (stream.ElPresentFlag ?? 0) + 2;
                     }
                 }
             }
