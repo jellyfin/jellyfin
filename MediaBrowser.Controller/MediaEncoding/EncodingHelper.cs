@@ -1338,6 +1338,15 @@ namespace MediaBrowser.Controller.MediaEncoding
                        or VideoRangeType.DOVIWithSDR);
         }
 
+        public static bool IsHdr10Plus(MediaStream stream)
+        {
+            var rangeType = stream?.VideoRangeType;
+
+            return rangeType is VideoRangeType.HDR10Plus
+                       or VideoRangeType.DOVIWithHDR10Plus
+                       or VideoRangeType.DOVIWithELHDR10Plus;
+        }
+
         /// <summary>
         /// Check if dynamic HDR metadata should be removed during stream copy.
         /// Please note this check assumes the range check has already been done
@@ -1406,6 +1415,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             return state?.VideoStream is not null && ShouldRemoveDynamicHdrMetadata(state) == DynamicHdrMetadataRemovalPlan.RemoveDovi
                                               && CanEncoderRemoveDynamicHdrMetadata(DynamicHdrMetadataRemovalPlan.RemoveDovi, state.VideoStream);
+        }
+
+        public bool IsHdr10PlusRemoved(EncodingJobInfo state)
+        {
+            return state?.VideoStream is not null && ShouldRemoveDynamicHdrMetadata(state) == DynamicHdrMetadataRemovalPlan.RemoveHdr10Plus
+                                                  && CanEncoderRemoveDynamicHdrMetadata(DynamicHdrMetadataRemovalPlan.RemoveHdr10Plus, state.VideoStream);
         }
 
         public string GetBitStreamArgs(EncodingJobInfo state, MediaStreamType streamType)
