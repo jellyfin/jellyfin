@@ -811,7 +811,7 @@ namespace MediaBrowser.Model.Entities
                     _ => (VideoRange.SDR, VideoRangeType.SDR)
                 };
 
-                if (ElPresentFlag == 1 && dvRangeSet.Item2 == VideoRangeType.DOVIWithHDR10)
+                if (ElPresentFlag > 1 && dvRangeSet.Item2 == VideoRangeType.DOVIWithHDR10)
                 {
                     return (VideoRange.HDR, VideoRangeType.DOVIWithHDR10Plus);
                 }
@@ -828,7 +828,7 @@ namespace MediaBrowser.Model.Entities
 
             if (string.Equals(colorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase))
             {
-                return ElPresentFlag == 1 ? (VideoRange.HDR, VideoRangeType.HDR10Plus) : (VideoRange.HDR, VideoRangeType.HDR10);
+                return ElPresentFlag > 1 ? (VideoRange.HDR, VideoRangeType.HDR10Plus) : (VideoRange.HDR, VideoRangeType.HDR10);
             }
             else if (string.Equals(colorTransfer, "arib-std-b67", StringComparison.OrdinalIgnoreCase))
             {
