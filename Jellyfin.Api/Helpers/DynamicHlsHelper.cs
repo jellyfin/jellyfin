@@ -345,13 +345,15 @@ public class DynamicHlsHelper
 
                 if (videoRange == VideoRange.HDR)
                 {
-                    if (videoRangeType == VideoRangeType.HLG)
+                    switch (videoRangeType)
                     {
-                        builder.Append(",VIDEO-RANGE=HLG");
-                    }
-                    else
-                    {
-                        builder.Append(",VIDEO-RANGE=PQ");
+                        case VideoRangeType.HLG:
+                        case VideoRangeType.DOVIWithHLG:
+                            builder.Append(",VIDEO-RANGE=HLG");
+                            break;
+                        default:
+                            builder.Append(",VIDEO-RANGE=PQ");
+                            break;
                     }
                 }
             }
