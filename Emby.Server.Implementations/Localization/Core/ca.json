@@ -133,5 +133,8 @@
     "TaskAudioNormalizationDescription": "Escaneja arxius per dades de normalització d'àudio.",
     "TaskDownloadMissingLyricsDescription": "Baixar lletres de les cançons",
     "TaskDownloadMissingLyrics": "Baixar lletres que falten",
-    "TaskExtractMediaSegments": "Escaneig de segments multimèdia"
+    "TaskExtractMediaSegments": "Escaneig de segments multimèdia",
+    "TaskExtractMediaSegmentsDescription": "Extreu o obté segments multimèdia usant els connectors MediaSegment activats.",
+    "TaskMoveTrickplayImages": "Migra la ubicació de la imatge de Trickplay",
+    "TaskMoveTrickplayImagesDescription": "Mou els fitxers trickplay existents segons la configuració de la biblioteca."
 }
