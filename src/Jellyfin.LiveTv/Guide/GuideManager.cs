@@ -700,39 +700,40 @@ public class GuideManager : IGuideManager
             _ => string.Empty
         };
 
-        var sameImage = newImageUrl.Equals(currentImagePath, StringComparison.OrdinalIgnoreCase)
-                         || newImagePath.Equals(currentImagePath, StringComparison.OrdinalIgnoreCase);
-        if (!sameImage)
+        var differentImage = newImageUrl?.Equals(currentImagePath, StringComparison.OrdinalIgnoreCase) == false
+                                || newImagePath?.Equals(currentImagePath, StringComparison.OrdinalIgnoreCase) == false;
+        if (!differentImage)
         {
-            if (!string.IsNullOrWhiteSpace(newImagePath))
-            {
-                item.SetImage(
-                    new ItemImageInfo
-                    {
-                        Path = newImagePath,
-                        Type = imageType
-                    },
-                    0);
-
-                return true;
-            }
-            else if (!string.IsNullOrWhiteSpace(newImageUrl))
-            {
-                item.SetImage(
-                    new ItemImageInfo
-                    {
-                        Path = newImageUrl,
-                        Type = imageType
-                    },
-                    0);
-
-                return true;
-            }
-            else
-            {
-                item.RemoveImage(image);
-            }
+            return false;
         }
+
+        if (!string.IsNullOrWhiteSpace(newImagePath))
+        {
+            item.SetImage(
+                new ItemImageInfo
+                {
+                    Path = newImagePath,
+                    Type = imageType
+                },
+                0);
+
+            return true;
+        }
+
+        if (!string.IsNullOrWhiteSpace(newImageUrl))
+        {
+            item.SetImage(
+                new ItemImageInfo
+                {
+                    Path = newImageUrl,
+                    Type = imageType
+                },
+                0);
+
+            return true;
+        }
+
+        item.RemoveImage(image);
 
         return false;
     }
