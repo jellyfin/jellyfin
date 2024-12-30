@@ -147,23 +147,32 @@ namespace MediaBrowser.Providers.TV
 
             foreach (var seasonEpisodes in episodesBySeason)
             {
-                // Only consider non-physical episodes
-                var nonPhysicalEpisodes = seasonEpisodes.Where(e => e.IsVirtualItem || e.IsMissingEpisode).ToList();
-                var physicalEpisodes = seasonEpisodes.Except(nonPhysicalEpisodes);
-                foreach (var episode in nonPhysicalEpisodes)
+                List<Episode> nonPhysicalEpisodes = [];
+                List<Episode> physicalEpisodes = [];
+                foreach (var episode in seasonEpisodes)
                 {
-                    // Episodes without an episode number are practically orphaned and should be deleted
-                    if (!episode.IndexNumber.HasValue)
+                    if (episode.IsVirtualItem || episode.IsMissingEpisode)
                     {
-                        DeleteEpisode(episode);
+                        nonPhysicalEpisodes.Add(episode);
                         continue;
                     }
 
-                    var physicalEpisodeFound = physicalEpisodes.Any(e => e.ContainsEpisodeNumber(episode.IndexNumber.Value));
-                    if (physicalEpisodeFound)
+                    physicalEpisodes.Add(episode);
+                }
+
+                // Only consider non-physical episodes
+                foreach (var episode in nonPhysicalEpisodes)
+                {
+                    // Episodes without an episode number are practically orphaned and should be deleted
+                    // Episodes with a physical equivalent should be deleted (they are no longer missing)
+                    var shouldKeep = episode.IndexNumber.HasValue && !physicalEpisodes.Any(e => e.ContainsEpisodeNumber(episode.IndexNumber.Value));
+
+                    if (shouldKeep)
                     {
-                        DeleteEpisode(episode);
+                        continue;
                     }
+
+                    DeleteEpisode(episode);
                 }
             }
         }
