@@ -1484,7 +1484,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     case DynamicHdrMetadataRemovalPlan.RemoveDovi:
                         return _mediaEncoder.SupportsBitStreamFilterWithOption(BitStreamFilterOptionType.Av1MetadataRemoveDovi)
                             ? "-bsf:v av1_metadata=remove_dovi=1"
-                            : "dovi_rpu=strip=1";
+                            : "-bsf:v dovi_rpu=strip=1";
                     case DynamicHdrMetadataRemovalPlan.RemoveHdr10Plus:
                         return "-bsf:v av1_metadata=remove_hdr10plus=1";
                 }
