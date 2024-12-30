@@ -872,8 +872,8 @@ namespace MediaBrowser.Model.Dlna
                         {
                             var appliedVideoConditions = options.Profile.CodecProfiles
                                 .Where(i => i.Type == CodecType.VideoAudio &&
-                                            i.ContainsAnyCodec(transcodingAudioCodec, container) &&
-                                            i.ApplyConditions.All(applyCondition => ConditionProcessor.IsVideoAudioConditionSatisfied(applyCondition, audioChannels, audioBitrate, audioSampleRate, audioBitDepth, audioProfile, false)))
+                                    i.ContainsAnyCodec(transcodingAudioCodec, container) &&
+                                    i.ApplyConditions.All(applyCondition => ConditionProcessor.IsVideoAudioConditionSatisfied(applyCondition, audioChannels, audioBitrate, audioSampleRate, audioBitDepth, audioProfile, false)))
                                 .Select(i =>
                                     i.Conditions.All(condition => ConditionProcessor.IsVideoAudioConditionSatisfied(condition, audioChannels, audioBitrate, audioSampleRate, audioBitDepth, audioProfile, false)));
 
