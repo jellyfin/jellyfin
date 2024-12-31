@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities.Libraries;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using Jellyfin.LiveTv.Configuration;
@@ -38,6 +39,11 @@ public class GuideManager : IGuideManager
     private readonly ITunerHostManager _tunerHostManager;
     private readonly IRecordingsManager _recordingsManager;
     private readonly LiveTvDtoService _tvDtoService;
+
+    /// <summary>
+    /// Amount of days images are pre-cached from external sources.
+    /// </summary>
+    public const int MaxCacheDays = 2;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GuideManager"/> class.
@@ -204,14 +210,14 @@ public class GuideManager : IGuideManager
         progress.Report(15);
 
         numComplete = 0;
-        var programs = new List<Guid>();
+        var programs = new List<LiveTvProgram>();
         var channels = new List<Guid>();
 
         var guideDays = GetGuideDays();
 
-        _logger.LogInformation("Refreshing guide with {0} days of guide data", guideDays);
+        _logger.LogInformation("Refreshing guide with {Days} days of guide data", guideDays);
 
-        var maxCacheDate = DateTime.UtcNow.AddDays(2);
+        var maxCacheDate = DateTime.UtcNow.AddDays(MaxCacheDays);
         foreach (var currentChannel in list)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -237,22 +243,23 @@ public class GuideManager : IGuideManager
                     DtoOptions = new DtoOptions(true)
                 }).Cast<LiveTvProgram>().ToDictionary(i => i.Id);
 
-                var newPrograms = new List<LiveTvProgram>();
-                var updatedPrograms = new List<BaseItem>();
+                var newPrograms = new List<Guid>();
+                var updatedPrograms = new List<Guid>();
 
                 foreach (var program in channelPrograms)
                 {
                     var (programItem, isNew, isUpdated) = GetProgram(program, existingPrograms, currentChannel);
+                    var id = programItem.Id;
                     if (isNew)
                     {
-                        newPrograms.Add(programItem);
+                        newPrograms.Add(id);
                     }
                     else if (isUpdated)
                     {
-                        updatedPrograms.Add(programItem);
+                        updatedPrograms.Add(id);
                     }
 
-                    programs.Add(programItem.Id);
+                    programs.Add(programItem);
 
                     isMovie |= program.IsMovie;
                     isSeries |= program.IsSeries;
@@ -261,23 +268,29 @@ public class GuideManager : IGuideManager
                     isKids |= program.IsKids;
                 }
 
-                _logger.LogDebug("Channel {0} has {1} new programs and {2} updated programs", currentChannel.Name, newPrograms.Count, updatedPrograms.Count);
+                _logger.LogDebug(
+                    "Channel {Name} has {NewCount} new programs and {UpdatedCount} updated programs",
+                    currentChannel.Name,
+                    newPrograms.Count,
+                    updatedPrograms.Count);
 
                 if (newPrograms.Count > 0)
                 {
-                    _libraryManager.CreateItems(newPrograms, null, cancellationToken);
-                    await PrecacheImages(newPrograms, maxCacheDate).ConfigureAwait(false);
+                    var newProgramDtos = programs.Where(b => newPrograms.Contains(b.Id)).ToList();
+                    _libraryManager.CreateItems(newProgramDtos, null, cancellationToken);
                 }
 
                 if (updatedPrograms.Count > 0)
                 {
+                    var updatedProgramDtos = programs.Where(b => updatedPrograms.Contains(b.Id)).ToList();
                     await _libraryManager.UpdateItemsAsync(
-                        updatedPrograms,
+                        updatedProgramDtos,
                         currentChannel,
                         ItemUpdateType.MetadataImport,
                         cancellationToken).ConfigureAwait(false);
-                    await PrecacheImages(updatedPrograms, maxCacheDate).ConfigureAwait(false);
                 }
+
+                await PreCacheImages(programs, maxCacheDate).ConfigureAwait(false);
 
                 currentChannel.IsMovie = isMovie;
                 currentChannel.IsNews = isNews;
@@ -313,7 +326,8 @@ public class GuideManager : IGuideManager
         }
 
         progress.Report(100);
-        return new Tuple<List<Guid>, List<Guid>>(channels, programs);
+        var programIds = programs.Select(p => p.Id).ToList();
+        return new Tuple<List<Guid>, List<Guid>>(channels, programIds);
     }
 
     private void CleanDatabase(Guid[] currentIdList, BaseItemKind[] validTypes, IProgress<double> progress, CancellationToken cancellationToken)
@@ -618,77 +632,17 @@ public class GuideManager : IGuideManager
         item.IndexNumber = info.EpisodeNumber;
         item.ParentIndexNumber = info.SeasonNumber;
 
-        if (!item.HasImage(ImageType.Primary))
-        {
-            if (!string.IsNullOrWhiteSpace(info.ImagePath))
-            {
-                item.SetImage(
-                    new ItemImageInfo
-                    {
-                        Path = info.ImagePath,
-                        Type = ImageType.Primary
-                    },
-                    0);
-            }
-            else if (!string.IsNullOrWhiteSpace(info.ImageUrl))
-            {
-                item.SetImage(
-                    new ItemImageInfo
-                    {
-                        Path = info.ImageUrl,
-                        Type = ImageType.Primary
-                    },
-                    0);
-            }
-        }
+        forceUpdate = forceUpdate || UpdateImages(item, info);
 
-        if (!item.HasImage(ImageType.Thumb))
+        if (isNew)
         {
-            if (!string.IsNullOrWhiteSpace(info.ThumbImageUrl))
-            {
-                item.SetImage(
-                    new ItemImageInfo
-                    {
-                        Path = info.ThumbImageUrl,
-                        Type = ImageType.Thumb
-                    },
-                    0);
-            }
-        }
+            item.OnMetadataChanged();
 
-        if (!item.HasImage(ImageType.Logo))
-        {
-            if (!string.IsNullOrWhiteSpace(info.LogoImageUrl))
-            {
-                item.SetImage(
-                    new ItemImageInfo
-                    {
-                        Path = info.LogoImageUrl,
-                        Type = ImageType.Logo
-                    },
-                    0);
-            }
-        }
-
-        if (!item.HasImage(ImageType.Backdrop))
-        {
-            if (!string.IsNullOrWhiteSpace(info.BackdropImageUrl))
-            {
-                item.SetImage(
-                    new ItemImageInfo
-                    {
-                        Path = info.BackdropImageUrl,
-                        Type = ImageType.Backdrop
-                    },
-                    0);
-            }
+            return (item, isNew, false);
         }
 
         var isUpdated = false;
-        if (isNew)
-        {
-        }
-        else if (forceUpdate || string.IsNullOrWhiteSpace(info.Etag))
+        if (forceUpdate || string.IsNullOrWhiteSpace(info.Etag))
         {
             isUpdated = true;
         }
@@ -703,7 +657,7 @@ public class GuideManager : IGuideManager
             }
         }
 
-        if (isNew || isUpdated)
+        if (isUpdated)
         {
             item.OnMetadataChanged();
         }
@@ -711,7 +665,80 @@ public class GuideManager : IGuideManager
         return (item, isNew, isUpdated);
     }
 
-    private async Task PrecacheImages(IReadOnlyList<BaseItem> programs, DateTime maxCacheDate)
+    private static bool UpdateImages(BaseItem item, ProgramInfo info)
+    {
+        var updated = false;
+
+        // Primary
+        updated |= UpdateImage(ImageType.Primary, item, info);
+
+        // Thumbnail
+        updated |= UpdateImage(ImageType.Thumb, item, info);
+
+        // Logo
+        updated |= UpdateImage(ImageType.Logo, item, info);
+
+        // Backdrop
+        return updated || UpdateImage(ImageType.Backdrop, item, info);
+    }
+
+    private static bool UpdateImage(ImageType imageType, BaseItem item, ProgramInfo info)
+    {
+        var image = item.GetImages(imageType).FirstOrDefault();
+        var currentImagePath = image?.Path;
+        var newImagePath = imageType switch
+        {
+            ImageType.Primary => info.ImagePath,
+            _ => string.Empty
+        };
+        var newImageUrl = imageType switch
+        {
+            ImageType.Backdrop => info.BackdropImageUrl,
+            ImageType.Logo => info.LogoImageUrl,
+            ImageType.Primary => info.ImageUrl,
+            ImageType.Thumb => info.ThumbImageUrl,
+            _ => string.Empty
+        };
+
+        var differentImage = newImageUrl?.Equals(currentImagePath, StringComparison.OrdinalIgnoreCase) == false
+                                || newImagePath?.Equals(currentImagePath, StringComparison.OrdinalIgnoreCase) == false;
+        if (!differentImage)
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(newImagePath))
+        {
+            item.SetImage(
+                new ItemImageInfo
+                {
+                    Path = newImagePath,
+                    Type = imageType
+                },
+                0);
+
+            return true;
+        }
+
+        if (!string.IsNullOrWhiteSpace(newImageUrl))
+        {
+            item.SetImage(
+                new ItemImageInfo
+                {
+                    Path = newImageUrl,
+                    Type = imageType
+                },
+                0);
+
+            return true;
+        }
+
+        item.RemoveImage(image);
+
+        return false;
+    }
+
+    private async Task PreCacheImages(IReadOnlyList<BaseItem> programs, DateTime maxCacheDate)
     {
         await Parallel.ForEachAsync(
             programs
@@ -741,7 +768,7 @@ public class GuideManager : IGuideManager
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogWarning(ex, "Unable to precache {Url}", imageInfo.Path);
+                            _logger.LogWarning(ex, "Unable to pre-cache {Url}", imageInfo.Path);
                         }
                     }
                 }
