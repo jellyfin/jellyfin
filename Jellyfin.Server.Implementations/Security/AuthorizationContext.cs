@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Jellyfin.Data.Queries;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
@@ -22,17 +23,20 @@ namespace Jellyfin.Server.Implementations.Security
         private readonly IUserManager _userManager;
         private readonly IDeviceManager _deviceManager;
         private readonly IServerApplicationHost _serverApplicationHost;
+        private readonly IServerConfigurationManager _configurationManager;
 
         public AuthorizationContext(
             IDbContextFactory<JellyfinDbContext> jellyfinDb,
             IUserManager userManager,
             IDeviceManager deviceManager,
-            IServerApplicationHost serverApplicationHost)
+            IServerApplicationHost serverApplicationHost,
+            IServerConfigurationManager configurationManager)
         {
             _jellyfinDbProvider = jellyfinDb;
             _userManager = userManager;
             _deviceManager = deviceManager;
             _serverApplicationHost = serverApplicationHost;
+            _configurationManager = configurationManager;
         }
 
         public Task<AuthorizationInfo> GetAuthorizationInfo(HttpContext requestContext)
@@ -85,12 +89,12 @@ namespace Jellyfin.Server.Implementations.Security
                 auth.TryGetValue("Token", out token);
             }
 
-            if (string.IsNullOrEmpty(token))
+            if (_configurationManager.Configuration.EnableLegacyAuthorization && string.IsNullOrEmpty(token))
             {
                 token = headers["X-Emby-Token"];
             }
 
-            if (string.IsNullOrEmpty(token))
+            if (_configurationManager.Configuration.EnableLegacyAuthorization && string.IsNullOrEmpty(token))
             {
                 token = headers["X-MediaBrowser-Token"];
             }
@@ -100,8 +104,7 @@ namespace Jellyfin.Server.Implementations.Security
                 token = queryString["ApiKey"];
             }
 
-            // TODO deprecate this query parameter.
-            if (string.IsNullOrEmpty(token))
+            if (_configurationManager.Configuration.EnableLegacyAuthorization && string.IsNullOrEmpty(token))
             {
                 token = queryString["api_key"];
             }
@@ -128,10 +131,7 @@ namespace Jellyfin.Server.Implementations.Security
             await using (dbContext.ConfigureAwait(false))
             {
                 var device = _deviceManager.GetDevices(
-                    new DeviceQuery
-                    {
-                        AccessToken = token
-                    }).Items.FirstOrDefault();
+                    new DeviceQuery { AccessToken = token }).Items.FirstOrDefault();
 
                 if (device is not null)
                 {
@@ -227,13 +227,13 @@ namespace Jellyfin.Server.Implementations.Security
         /// </summary>
         /// <param name="httpReq">The HTTP request.</param>
         /// <returns>Dictionary{System.StringSystem.String}.</returns>
-        private static Dictionary<string, string>? GetAuthorizationDictionary(HttpRequest httpReq)
+        private Dictionary<string, string>? GetAuthorizationDictionary(HttpRequest httpReq)
         {
-            var auth = httpReq.Headers["X-Emby-Authorization"];
+            var auth = httpReq.Headers[HeaderNames.Authorization];
 
-            if (string.IsNullOrEmpty(auth))
+            if (_configurationManager.Configuration.EnableLegacyAuthorization && string.IsNullOrEmpty(auth))
             {
-                auth = httpReq.Headers[HeaderNames.Authorization];
+                auth = httpReq.Headers["X-Emby-Authorization"];
             }
 
             return auth.Count > 0 ? GetAuthorization(auth[0]) : null;
@@ -244,7 +244,7 @@ namespace Jellyfin.Server.Implementations.Security
         /// </summary>
         /// <param name="authorizationHeader">The authorization header.</param>
         /// <returns>Dictionary{System.StringSystem.String}.</returns>
-        private static Dictionary<string, string>? GetAuthorization(ReadOnlySpan<char> authorizationHeader)
+        private Dictionary<string, string>? GetAuthorization(ReadOnlySpan<char> authorizationHeader)
         {
             var firstSpace = authorizationHeader.IndexOf(' ');
 
@@ -256,8 +256,10 @@ namespace Jellyfin.Server.Implementations.Security
 
             var name = authorizationHeader[..firstSpace];
 
-            if (!name.Equals("MediaBrowser", StringComparison.OrdinalIgnoreCase)
-                && !name.Equals("Emby", StringComparison.OrdinalIgnoreCase))
+            var validName = name.Equals("MediaBrowser", StringComparison.OrdinalIgnoreCase);
+            validName = validName || (_configurationManager.Configuration.EnableLegacyAuthorization && name.Equals("Emby", StringComparison.OrdinalIgnoreCase));
+
+            if (!validName)
             {
                 return null;
             }
