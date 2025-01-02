@@ -187,7 +187,8 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
                 Timestamp = DateTime.Parse(packageInfo.Versions[0].Timestamp!, CultureInfo.InvariantCulture),
                 Changelog = packageInfo.Versions[0].Changelog!,
                 Version = new Version(1, 0).ToString(),
-                ImagePath = string.Empty
+                ImagePath = string.Empty,
+                MaximumAbi = packageInfo.Versions[0].MaximumAbi!
             };
 
             var metafilePath = Path.Combine(_pluginPath, "meta.json");
@@ -223,7 +224,8 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
                 Timestamp = DateTime.Parse(packageInfo.Versions[0].Timestamp!, CultureInfo.InvariantCulture),
                 Changelog = packageInfo.Versions[0].Changelog!,
                 Version = packageInfo.Versions[0].Version,
-                ImagePath = string.Empty
+                ImagePath = string.Empty,
+                MaximumAbi = packageInfo.Versions[0].MaximumAbi!
             };
 
             var pluginManager = new PluginManager(new NullLogger<PluginManager>(), null!, null!, null!, new Version(1, 0));
