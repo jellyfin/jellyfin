@@ -56,6 +56,8 @@ namespace MediaBrowser.Model.Configuration
 
         public bool ExtractTrickplayImagesDuringLibraryScan { get; set; }
 
+        public bool EnableVersionGrouping { get; set; }
+
         public MediaPathInfo[] PathInfos { get; set; }
 
         public bool SaveLocalMetadata { get; set; }

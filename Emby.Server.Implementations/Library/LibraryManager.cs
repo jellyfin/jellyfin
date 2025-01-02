@@ -673,7 +673,7 @@ namespace Emby.Server.Implementations.Library
 
                 foreach (var resolver in multiItemResolvers)
                 {
-                    var result = resolver.ResolveMultiple(parent, fileList, collectionType, directoryService);
+                    var result = resolver.ResolveMultiple(parent, fileList, collectionType, directoryService, libraryOptions);
 
                     if (result?.Items.Count > 0)
                     {
