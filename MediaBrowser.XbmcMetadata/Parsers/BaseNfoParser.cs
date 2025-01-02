@@ -312,8 +312,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         if (user is not null)
                         {
                             userData = _userDataManager.GetUserData(user, item);
-                            userData.Played = played;
-                            _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+                            if (userData is not null)
+                            {
+                                userData.Played = played;
+                                _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+                            }
                         }
                     }
 
@@ -326,8 +329,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         if (user is not null)
                         {
                             userData = _userDataManager.GetUserData(user, item);
-                            userData.PlayCount = count;
-                            _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+                            if (userData is not null)
+                            {
+                                userData.PlayCount = count;
+                                _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+                            }
                         }
                     }
 
@@ -340,8 +346,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         if (user is not null)
                         {
                             userData = _userDataManager.GetUserData(user, item);
-                            userData.LastPlayedDate = lastPlayed;
-                            _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+                            if (userData is not null)
+                            {
+                                userData.LastPlayedDate = lastPlayed;
+                                _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+                            }
                         }
                     }
 
