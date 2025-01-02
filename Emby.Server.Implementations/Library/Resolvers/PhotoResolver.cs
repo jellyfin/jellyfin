@@ -4,13 +4,11 @@ using System.Linq;
 using Emby.Naming.Common;
 using Emby.Naming.Video;
 using Jellyfin.Data.Enums;
-using Jellyfin.Extensions;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
-using MediaBrowser.Model.Entities;
 
 namespace Emby.Server.Implementations.Library.Resolvers
 {
@@ -103,8 +101,8 @@ namespace Emby.Server.Implementations.Library.Resolvers
         {
             ArgumentNullException.ThrowIfNull(path);
 
-            var extension = Path.GetExtension(path.AsSpan()).TrimStart('.');
-            if (!imageProcessor.SupportedInputFormats.Contains(extension, StringComparison.OrdinalIgnoreCase))
+            var extension = Path.GetExtension(path.AsSpan()).TrimStart('.').ToString();
+            if (!imageProcessor.SupportedInputFormats.Contains(extension))
             {
                 return false;
             }
