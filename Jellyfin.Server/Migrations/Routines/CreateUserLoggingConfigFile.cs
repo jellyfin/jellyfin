@@ -46,7 +46,7 @@ namespace Jellyfin.Server.Migrations.Routines
         public Guid Id => Guid.Parse("{EF103419-8451-40D8-9F34-D1A8E93A1679}");
 
         /// <inheritdoc/>
-        public string Name => "CreateLoggingConfigHeirarchy";
+        public string Name => "CreateLoggingConfigHierarchy";
 
         /// <inheritdoc/>
         public bool PerformOnNewInstall => false;
