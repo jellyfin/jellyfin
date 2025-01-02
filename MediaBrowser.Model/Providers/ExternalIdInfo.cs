@@ -1,5 +1,3 @@
-using System;
-
 namespace MediaBrowser.Model.Providers
 {
     /// <summary>
@@ -13,15 +11,11 @@ namespace MediaBrowser.Model.Providers
         /// <param name="name">Name of the external id provider (IE: IMDB, MusicBrainz, etc).</param>
         /// <param name="key">Key for this id. This key should be unique across all providers.</param>
         /// <param name="type">Specific media type for this id.</param>
-        /// <param name="urlFormatString">URL format string.</param>
-        public ExternalIdInfo(string name, string key, ExternalIdMediaType? type, string? urlFormatString)
+        public ExternalIdInfo(string name, string key, ExternalIdMediaType? type)
         {
             Name = name;
             Key = key;
             Type = type;
-#pragma warning disable CS0618 // Type or member is obsolete - Remove 10.11
-            UrlFormatString = urlFormatString;
-#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         /// <summary>
@@ -46,11 +40,5 @@ namespace MediaBrowser.Model.Providers
         /// This can be used along with the <see cref="Name"/> to localize the external id on the client.
         /// </remarks>
         public ExternalIdMediaType? Type { get; set; }
-
-        /// <summary>
-        /// Gets or sets the URL format string.
-        /// </summary>
-        [Obsolete("Obsolete in 10.10, to be removed in 10.11")]
-        public string? UrlFormatString { get; set; }
     }
 }
