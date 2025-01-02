@@ -5695,7 +5695,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     if (!string.IsNullOrEmpty(doScaling)
                         && !IsScaleRatioSupported(inW, inH, reqW, reqH, reqMaxW, reqMaxH, 8.0f))
                     {
-                        // RKRGA is expecting NV15(P010 with 0 padding bits) when doing 2-pass scaling. Not setting this will cause distorted frames.
+                        // RKRGA is expecting NV15(P010 with no zero padding bits) when doing 2-pass scaling. Not setting this will cause distorted frames.
                         // SDR inputs are using BGRA formats already which is not affected.
                         var intermediateFormat = string.Equals(outFormat, "p010", StringComparison.OrdinalIgnoreCase) ? "nv15" : outFormat;
                         var hwScaleFilterFirstPass = $"scale_rkrga=w=iw/7.9:h=ih/7.9:format={intermediateFormat}:afbc=1";
