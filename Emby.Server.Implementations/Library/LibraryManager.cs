@@ -1053,19 +1053,16 @@ namespace Emby.Server.Implementations.Library
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
             // Quickly scan CollectionFolders for changes
-            foreach (var child in GetUserRootFolder().Children)
+            foreach (var child in GetUserRootFolder().Children.OfType<Folder>())
             {
-                if (child is Folder folder)
+                // If the user has somehow deleted the collection directory, remove the metadata from the database.
+                if (child is CollectionFolder collectionFolder && !Directory.Exists(collectionFolder.Path))
                 {
-                    // If the user has somehow deleted the collection directory, remove the metadata from the database.
-                    if (folder is CollectionFolder collectionFolder && !Directory.Exists(collectionFolder.Path))
-                    {
-                        _itemRepository.DeleteItem(collectionFolder.Id);
-                    }
-                    else
-                    {
-                        await folder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
-                    }
+                    _itemRepository.DeleteItem(collectionFolder.Id);
+                }
+                else
+                {
+                    await child.RefreshMetadata(cancellationToken).ConfigureAwait(false);
                 }
             }
         }
