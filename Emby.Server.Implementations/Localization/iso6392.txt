@@ -10,7 +10,7 @@ afr||af|Afrikaans|afrikaans
 ain|||Ainu|aïnou
 aka||ak|Akan|akan
 akk|||Akkadian|akkadien
-alb|sqi|sq|Albanian|albanais
+sqi|alb|sq|Albanian|albanais
 ale|||Aleut|aléoute
 alg|||Algonquian languages|algonquines, langues
 alt|||Southern Altai|altai du Sud
@@ -21,7 +21,7 @@ apa|||Apache languages|apaches, langues
 ara||ar|Arabic|arabe
 arc|||Official Aramaic (700-300 BCE); Imperial Aramaic (700-300 BCE)|araméen d'empire (700-300 BCE)
 arg||an|Aragonese|aragonais
-arm|hye|hy|Armenian|arménien
+hye|arm|hy|Armenian|arménien
 arn|||Mapudungun; Mapuche|mapudungun; mapuche; mapuce
 arp|||Arapaho|arapaho
 art|||Artificial languages|artificielles, langues
@@ -41,7 +41,7 @@ bak||ba|Bashkir|bachkir
 bal|||Baluchi|baloutchi
 bam||bm|Bambara|bambara
 ban|||Balinese|balinais
-baq|eus|eu|Basque|basque
+eus|baq|eu|Basque|basque
 bas|||Basa|basa
 bat|||Baltic languages|baltes, langues
 bej|||Beja; Bedawiyet|bedja
@@ -63,7 +63,7 @@ btk|||Batak languages|batak, langues
 bua|||Buriat|bouriate
 bug|||Buginese|bugi
 bul||bg|Bulgarian|bulgare
-bur|mya|my|Burmese|birman
+mya|bur|my|Burmese|birman
 byn|||Blin; Bilin|blin; bilen
 cad|||Caddo|caddo
 cai|||Central American Indian languages|amérindiennes de L'Amérique centrale, langues
@@ -76,10 +76,10 @@ cha||ch|Chamorro|chamorro
 chb|||Chibcha|chibcha
 che||ce|Chechen|tchétchène
 chg|||Chagatai|djaghataï
-chi|zho|zh|Chinese|chinois
-chi|zho|ze|Chinese; Bilingual|chinois
-chi|zho|zh-tw|Chinese; Traditional|chinois
-chi|zho|zh-hk|Chinese; Hong Kong|chinois
+zho|chi|zh|Chinese|chinois
+zho|chi|ze|Chinese; Bilingual|chinois
+zho|chi|zh-tw|Chinese; Traditional|chinois
+zho|chi|zh-hk|Chinese; Hong Kong|chinois
 chk|||Chuukese|chuuk
 chm|||Mari|mari
 chn|||Chinook jargon|chinook, jargon
@@ -101,7 +101,7 @@ crh|||Crimean Tatar; Crimean Turkish|tatar de Crimé
 crp|||Creoles and pidgins |créoles et pidgins
 csb|||Kashubian|kachoube
 cus|||Cushitic languages|couchitiques, langues
-cze|ces|cs|Czech|tchèque
+ces|cze|cs|Czech|tchèque
 dak|||Dakota|dakota
 dan||da|Danish|danois
 dar|||Dargwa|dargwa
@@ -116,7 +116,7 @@ dra|||Dravidian languages|dravidiennes, langues
 dsb|||Lower Sorbian|bas-sorabe
 dua|||Duala|douala
 dum|||Dutch, Middle (ca.1050-1350)|néerlandais moyen (ca. 1050-1350)
-dut|nld|nl|Dutch; Flemish|néerlandais; flamand
+nld|dut|nl|Dutch; Flemish|néerlandais; flamand
 dyu|||Dyula|dioula
 dzo||dz|Dzongkha|dzongkha
 efi|||Efik|efik
@@ -137,7 +137,7 @@ fil|||Filipino; Pilipino|filipino; pilipino
 fin||fi|Finnish|finnois
 fiu|||Finno-Ugrian languages|finno-ougriennes, langues
 fon|||Fon|fon
-fre|fra|fr|French|français
+fra|fre|fr|French|français
 frm|||French, Middle (ca.1400-1600)|français moyen (1400-1600)
 fro|||French, Old (842-ca.1400)|français ancien (842-ca.1400)
 frc||fr-ca|French (Canada)|french
@@ -150,8 +150,8 @@ gaa|||Ga|ga
 gay|||Gayo|gayo
 gba|||Gbaya|gbaya
 gem|||Germanic languages|germaniques, langues
-geo|kat|ka|Georgian|géorgien
-ger|deu|de|German|allemand
+kat|geo|ka|Georgian|géorgien
+deu|ger|de|German|allemand
 gez|||Geez|guèze
 gil|||Gilbertese|kiribati
 gla||gd|Gaelic; Scottish Gaelic|gaélique; gaélique écossais
@@ -165,7 +165,7 @@ gor|||Gorontalo|gorontalo
 got|||Gothic|gothique
 grb|||Grebo|grebo
 grc|||Greek, Ancient (to 1453)|grec ancien (jusqu'à 1453)
-gre|ell|el|Greek, Modern (1453-)|grec moderne (après 1453)
+ell|gre|el|Greek, Modern (1453-)|grec moderne (après 1453)
 grn||gn|Guarani|guarani
 gsw|||Swiss German; Alemannic; Alsatian|suisse alémanique; alémanique; alsacien
 guj||gu|Gujarati|goudjrati
@@ -188,7 +188,7 @@ hun||hu|Hungarian|hongrois
 hup|||Hupa|hupa
 iba|||Iban|iban
 ibo||ig|Igbo|igbo
-ice|isl|is|Icelandic|islandais
+isl|ice|is|Icelandic|islandais
 ido||io|Ido|ido
 iii||ii|Sichuan Yi; Nuosu|yi de Sichuan
 ijo|||Ijo languages|ijo, langues
@@ -263,7 +263,7 @@ lui|||Luiseno|luiseno
 lun|||Lunda|lunda
 luo|||Luo (Kenya and Tanzania)|luo (Kenya et Tanzanie)
 lus|||Lushai|lushai
-mac|mkd|mk|Macedonian|macédonien
+mkd|mac|mk|Macedonian|macédonien
 mad|||Madurese|madourais
 mag|||Magahi|magahi
 mah||mh|Marshallese|marshall
@@ -271,11 +271,11 @@ mai|||Maithili|maithili
 mak|||Makasar|makassar
 mal||ml|Malayalam|malayalam
 man|||Mandingo|mandingue
-mao|mri|mi|Maori|maori
+mri|mao|mi|Maori|maori
 map|||Austronesian languages|austronésiennes, langues
 mar||mr|Marathi|marathe
 mas|||Masai|massaï
-may|msa|ms|Malay|malais
+msa|may|ms|Malay|malais
 mdf|||Moksha|moksa
 mdr|||Mandar|mandar
 men|||Mende|mendé
@@ -343,7 +343,7 @@ pan||pa|Panjabi; Punjabi|pendjabi
 pap|||Papiamento|papiamento
 pau|||Palauan|palau
 peo|||Persian, Old (ca.600-400 B.C.)|perse, vieux (ca. 600-400 av. J.-C.)
-per|fas|fa|Persian|persan
+fas|per|fa|Persian|persan
 phi|||Philippine languages|philippines, langues
 phn|||Phoenician|phénicien
 pli||pi|Pali|pali
@@ -363,7 +363,7 @@ rar|||Rarotongan; Cook Islands Maori|rarotonga; maori des îles Cook
 roa|||Romance languages|romanes, langues
 roh||rm|Romansh|romanche
 rom|||Romany|tsigane
-rum|ron|ro|Romanian; Moldavian; Moldovan|roumain; moldave
+ron|rum|ro|Romanian; Moldavian; Moldovan|roumain; moldave
 run||rn|Rundi|rundi
 rup|||Aromanian; Arumanian; Macedo-Romanian|aroumain; macédo-roumain
 rus||ru|Russian|russe
@@ -388,7 +388,7 @@ sin||si|Sinhala; Sinhalese|singhalais
 sio|||Siouan languages|sioux, langues
 sit|||Sino-Tibetan languages|sino-tibétaines, langues
 sla|||Slavic languages|slaves, langues
-slo|slk|sk|Slovak|slovaque
+slk|slo|sk|Slovak|slovaque
 slv||sl|Slovenian|slovène
 sma|||Southern Sami|sami du Sud
 sme||se|Northern Sami|sami du Nord
@@ -408,7 +408,7 @@ spa||es-mx|Spanish; Latin|espagnol; Latin
 spa||es|Spanish; Castilian|espagnol; castillan
 srd||sc|Sardinian|sarde
 srn|||Sranan Tongo|sranan tongo
-srp|scc|sr|Serbian|serbe
+scc|srp|sr|Serbian|serbe
 srr|||Serer|sérère
 ssa|||Nilo-Saharan languages|nilo-sahariennes, langues
 ssw||ss|Swati|swati
@@ -431,7 +431,7 @@ tet|||Tetum|tetum
 tgk||tg|Tajik|tadjik
 tgl||tl|Tagalog|tagalog
 tha||th|Thai|thaï
-tib|bod|bo|Tibetan|tibétain
+bod|tib|bo|Tibetan|tibétain
 tig|||Tigre|tigré
 tir||ti|Tigrinya|tigrigna
 tiv|||Tiv|tiv
@@ -470,7 +470,7 @@ wak|||Wakashan languages|wakashanes, langues
 wal|||Walamo|walamo
 war|||Waray|waray
 was|||Washo|washo
-wel|cym|cy|Welsh|gallois
+cym|wel|cy|Welsh|gallois
 wen|||Sorbian languages|sorabes, langues
 wln||wa|Walloon|wallon
 wol||wo|Wolof|wolof
