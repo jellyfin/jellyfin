@@ -115,7 +115,9 @@ namespace MediaBrowser.XbmcMetadata.Savers
             {
                 if (!string.IsNullOrEmpty(movie.CollectionName))
                 {
-                    writer.WriteElementString("set", movie.CollectionName);
+                    writer.WriteStartElement("set");
+                    writer.WriteElementString("name", movie.CollectionName);
+                    writer.WriteEndElement();
                 }
             }
         }

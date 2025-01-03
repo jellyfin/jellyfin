@@ -79,21 +79,13 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(val) && movie is not null)
                         {
-                            // TODO Handle this better later
-                            if (!val.Contains('<', StringComparison.Ordinal))
+                            try
                             {
-                                movie.CollectionName = val;
+                                ParseSetXml(val, movie);
                             }
-                            else
+                            catch (Exception ex)
                             {
-                                try
-                                {
-                                    ParseSetXml(val, movie);
-                                }
-                                catch (Exception ex)
-                                {
-                                    Logger.LogError(ex, "Error parsing set node");
-                                }
+                                Logger.LogError(ex, "Error parsing set node");
                             }
                         }
 
@@ -136,7 +128,12 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     // Loop through each element
                     while (!reader.EOF && reader.ReadState == ReadState.Interactive)
                     {
-                        if (reader.NodeType == XmlNodeType.Element)
+                        if (reader.NodeType == XmlNodeType.Text && reader.Depth == 1)
+                        {
+                            movie.CollectionName = reader.Value;
+                            break;
+                        }
+                        else if (reader.NodeType == XmlNodeType.Element)
                         {
                             switch (reader.Name)
                             {
