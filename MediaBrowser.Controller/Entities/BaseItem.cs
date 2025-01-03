@@ -1915,7 +1915,7 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentException("Cannot set chapter images using SetImagePath");
             }
 
-            var image = GetImageInfo(type, index);
+            var image = GetImageInfo(type, index, false);
 
             if (image is null)
             {
@@ -2026,8 +2026,9 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="imageType">Type of the image.</param>
         /// <param name="imageIndex">Index of the image.</param>
+        /// <param name="includeDerived">Whether derived (i.e., inherited) images should be returned.</param>
         /// <returns>ItemImageInfo.</returns>
-        public ItemImageInfo GetImageInfo(ImageType imageType, int imageIndex)
+        public ItemImageInfo GetImageInfo(ImageType imageType, int imageIndex, bool includeDerived = true)
         {
             if (imageType == ImageType.Chapter)
             {
@@ -2053,8 +2054,10 @@ namespace MediaBrowser.Controller.Entities
                 };
             }
 
+            var result = GetImages(imageType).ElementAtOrDefault(imageIndex);
+
             // Music albums usually don't have dedicated backdrops, so return one from the artist instead
-            if (GetType() == typeof(MusicAlbum) && imageType == ImageType.Backdrop)
+            if (result == null && includeDerived && GetType() == typeof(MusicAlbum) && imageType == ImageType.Backdrop)
             {
                 var artist = FindParent<MusicArtist>();
 
@@ -2064,8 +2067,7 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            return GetImages(imageType)
-                .ElementAtOrDefault(imageIndex);
+            return result;
         }
 
         /// <summary>
