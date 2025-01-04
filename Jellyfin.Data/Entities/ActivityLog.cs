@@ -31,6 +31,27 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="ActivityLog"/> class.
+        /// Public constructor with required data and itemId.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="type">The type.</param>
+        /// <param name="userId">The user id.</param>
+        /// <param name="itemId">The item id this is related to.</param>
+        public ActivityLog(string name, string type, Guid userId, string itemId)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(name);
+            ArgumentException.ThrowIfNullOrEmpty(type);
+
+            Name = name;
+            Type = type;
+            UserId = userId;
+            ItemId = itemId;
+            DateCreated = DateTime.UtcNow;
+            LogSeverity = LogLevel.Information;
+        }
+
+        /// <summary>
         /// Gets the identity of this instance.
         /// </summary>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

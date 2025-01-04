@@ -66,7 +66,8 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
                     GetItemName(eventArgs.MediaInfo),
                     eventArgs.DeviceName),
                 GetPlaybackNotificationType(eventArgs.MediaInfo.MediaType),
-                user.Id)
+                user.Id,
+                eventArgs.MediaInfo.Id)
             {
                 ItemId = eventArgs.Item?.Id.ToString("N", CultureInfo.InvariantCulture),
             })

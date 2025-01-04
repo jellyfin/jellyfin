@@ -74,7 +74,8 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
                         GetItemName(item),
                         eventArgs.DeviceName),
                     notificationType,
-                    user.Id)
+                    user.Id,
+                    eventArgs.MediaInfo.Id)
                 {
                     ItemId = eventArgs.Item?.Id.ToString("N", CultureInfo.InvariantCulture),
                 })
