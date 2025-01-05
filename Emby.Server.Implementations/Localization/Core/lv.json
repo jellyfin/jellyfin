@@ -123,7 +123,7 @@
     "External": "Ārējais",
     "HearingImpaired": "Ar dzirdes traucējumiem",
     "TaskKeyframeExtractor": "Atslēgkadru ekstraktors",
-    "TaskKeyframeExtractorDescription": "Ekstraktē atslēgkadrus no video failiem lai izveidotu precīzākus HLS atskaņošanas sarakstus. Šis process var būt ilgs.",
+    "TaskKeyframeExtractorDescription": "Izvelk atslēgkadrus no video failiem lai izveidotu precīzākus HLS atskaņošanas sarakstus. Šis process var būt ilgs.",
     "TaskRefreshTrickplayImages": "Ģenerēt partīšanas attēlus",
     "TaskRefreshTrickplayImagesDescription": "Izveido priekšskatījumus videoklipu pārtīšanai iespējotajās bibliotēkās.",
     "TaskAudioNormalization": "Audio normalizācija",
