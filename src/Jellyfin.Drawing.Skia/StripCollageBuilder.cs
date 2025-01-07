@@ -235,7 +235,7 @@ public partial class StripCollageBuilder
         if (textPaint.ContainsGlyphs(text))
         {
             // Current font can render all characters in text
-            return DrawTextWithoutFallback(canvas, x, y, text, textPaint);
+            return MeasureAndDrawText(canvas, x, y, text, textPaint);
         }
 
         // Iterate over all text elements using TextElementEnumerator
@@ -258,7 +258,7 @@ public partial class StripCollageBuilder
             if (start != enumerator.ElementIndex)
             {
                 var regularText = text.Substring(start, enumerator.ElementIndex - start);
-                width += DrawTextWithoutFallback(canvas, MoveX(x, width), y, regularText, textPaint);
+                width += MeasureAndDrawText(canvas, MoveX(x, width), y, regularText, textPaint);
                 start = enumerator.ElementIndex;
             }
 
@@ -292,7 +292,7 @@ public partial class StripCollageBuilder
             else
             {
                 // Used up all fonts and no fonts can be found, just use current font
-                width += DrawTextWithoutFallback(canvas, MoveX(x, width), y, text[start..], textPaint);
+                width += MeasureAndDrawText(canvas, MoveX(x, width), y, text[start..], textPaint);
             }
 
             start = notAtEnd ? enumerator.ElementIndex : text.Length;
@@ -301,7 +301,7 @@ public partial class StripCollageBuilder
         // Render the remaining text that current fonts can render
         if (start < text.Length)
         {
-            width += DrawTextWithoutFallback(canvas, MoveX(x, width), y, text[start..], textPaint);
+            width += MeasureAndDrawText(canvas, MoveX(x, width), y, text[start..], textPaint);
         }
 
         return width;
