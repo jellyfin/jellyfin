@@ -211,7 +211,7 @@ public partial class StripCollageBuilder
     /// <param name="text">The text to draw.</param>
     /// <param name="textPaint">The SKPaint to style the text.</param>
     /// <returns>The width of the text.</returns>
-    private static float DrawTextWithoutFallback(SKCanvas? canvas, float x, float y, string text, SKPaint textPaint)
+    private static float MeasureAndDrawText(SKCanvas? canvas, float x, float y, string text, SKPaint textPaint)
     {
         var width = textPaint.MeasureText(text);
         canvas?.DrawShapedText(text, x, y, textPaint);
