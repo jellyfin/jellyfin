@@ -1648,7 +1648,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 1))
             {
-                fs.Read(packetBuffer);
+                fs.ReadExactly(packetBuffer);
             }
 
             if (packetBuffer[0] == 71)

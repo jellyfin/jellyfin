@@ -50,11 +50,6 @@ namespace MediaBrowser.Controller.Extensions
         public const string FfmpegPathKey = "ffmpeg";
 
         /// <summary>
-        /// The key for a setting that indicates whether playlists should allow duplicate entries.
-        /// </summary>
-        public const string PlaylistsAllowDuplicatesKey = "playlists:allowDuplicates";
-
-        /// <summary>
         /// The key for a setting that indicates whether kestrel should bind to a unix socket.
         /// </summary>
         public const string BindToUnixSocketKey = "kestrel:socket";
@@ -119,14 +114,6 @@ namespace MediaBrowser.Controller.Extensions
         /// <returns><c>true</c> if the server should trade off for performance during FFmpeg image extraction, otherwise <c>false</c>.</returns>
         public static bool GetFFmpegImgExtractPerfTradeoff(this IConfiguration configuration)
             => configuration.GetValue<bool>(FfmpegImgExtractPerfTradeoffKey);
-
-        /// <summary>
-        /// Gets a value indicating whether playlists should allow duplicate entries from the <see cref="IConfiguration"/>.
-        /// </summary>
-        /// <param name="configuration">The configuration to read the setting from.</param>
-        /// <returns>True if playlists should allow duplicates, otherwise false.</returns>
-        public static bool DoPlaylistsAllowDuplicates(this IConfiguration configuration)
-            => configuration.GetValue<bool>(PlaylistsAllowDuplicatesKey);
 
         /// <summary>
         /// Gets a value indicating whether kestrel should bind to a unix socket from the <see cref="IConfiguration" />.

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
@@ -426,7 +427,7 @@ public class PlaylistsController : BaseJellyfinApiController
             return Forbid();
         }
 
-        await _playlistManager.MoveItemAsync(playlistId, itemId, newIndex).ConfigureAwait(false);
+        await _playlistManager.MoveItemAsync(playlistId, itemId, newIndex, callingUserId).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -514,7 +515,8 @@ public class PlaylistsController : BaseJellyfinApiController
             return Forbid();
         }
 
-        var items = playlist.GetManageableItems().ToArray();
+        var user = _userManager.GetUserById(callingUserId);
+        var items = playlist.GetManageableItems().Where(i => i.Item2.IsVisible(user)).ToArray();
         var count = items.Length;
         if (startIndex.HasValue)
         {
@@ -529,11 +531,11 @@ public class PlaylistsController : BaseJellyfinApiController
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
-        var user = _userManager.GetUserById(callingUserId);
+
         var dtos = _dtoService.GetBaseItemDtos(items.Select(i => i.Item2).ToList(), dtoOptions, user);
         for (int index = 0; index < dtos.Count; index++)
         {
-            dtos[index].PlaylistItemId = items[index].Item1.Id;
+            dtos[index].PlaylistItemId = items[index].Item1.ItemId?.ToString("N", CultureInfo.InvariantCulture);
         }
 
         var result = new QueryResult<BaseItemDto>(

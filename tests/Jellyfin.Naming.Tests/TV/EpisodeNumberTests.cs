@@ -77,6 +77,8 @@ namespace Jellyfin.Naming.Tests.TV
         [InlineData("Season 3/The Series S3 E9 - The title.avi", 9)]
         [InlineData("Season 3/S003 E009.avi", 9)]
         [InlineData("Season 3/Season 3 Episode 9.avi", 9)]
+        [InlineData("[VCB-Studio] Re Zero kara Hajimeru Isekai Seikatsu [21][Ma10p_1080p][x265_flac].mkv", 21)]
+        [InlineData("[CASO&Sumisora][Oda_Nobuna_no_Yabou][04][BDRIP][1920x1080][x264_AAC][7620E503].mp4", 4)]
 
         // [InlineData("Case Closed (1996-2007)/Case Closed - 317.mkv", 317)] // triple digit episode number
         // TODO: [InlineData("Season 2/16 12 Some Title.avi", 16)]

@@ -962,9 +962,9 @@ public class LiveTvController : BaseJellyfinApiController
     }
 
     /// <summary>
-    /// Get guid info.
+    /// Get guide info.
     /// </summary>
-    /// <response code="200">Guid info returned.</response>
+    /// <response code="200">Guide info returned.</response>
     /// <returns>An <see cref="OkResult"/> containing the guide info.</returns>
     [HttpGet("GuideInfo")]
     [Authorize(Policy = Policies.LiveTvAccess)]

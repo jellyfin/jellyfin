@@ -126,5 +126,13 @@
     "External": "外部",
     "HearingImpaired": "聽力障礙",
     "TaskRefreshTrickplayImages": "建立 Trickplay 圖像",
-    "TaskRefreshTrickplayImagesDescription": "為已啟用 Trickplay 的媒體庫內的影片建立 Trickplay 預覽圖。"
+    "TaskRefreshTrickplayImagesDescription": "為已啟用 Trickplay 的媒體庫內的影片建立 Trickplay 預覽圖。",
+    "TaskExtractMediaSegments": "掃描媒體段落",
+    "TaskExtractMediaSegmentsDescription": "從MediaSegment中被允許的插件獲取媒體段落。",
+    "TaskDownloadMissingLyrics": "下載欠缺歌詞",
+    "TaskDownloadMissingLyricsDescription": "下載歌詞",
+    "TaskCleanCollectionsAndPlaylists": "整理媒體與播放清單",
+    "TaskAudioNormalization": "音訊同等化",
+    "TaskAudioNormalizationDescription": "掃描檔案裏的音訊同等化資料。",
+    "TaskCleanCollectionsAndPlaylistsDescription": "從資料庫及播放清單中移除已不存在的項目。"
 }

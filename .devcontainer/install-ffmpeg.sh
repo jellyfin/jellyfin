@@ -29,4 +29,4 @@ Signed-By: /etc/apt/keyrings/jellyfin.gpg
 EOF
 
 sudo apt update -y
-sudo apt install jellyfin-ffmpeg6 -y
+sudo apt install jellyfin-ffmpeg7 -y

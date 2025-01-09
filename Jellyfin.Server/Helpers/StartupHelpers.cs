@@ -83,7 +83,7 @@ public static class StartupHelpers
         var dataDir = options.DataDir
             ?? Environment.GetEnvironmentVariable("JELLYFIN_DATA_DIR")
             ?? Path.Join(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData, Environment.SpecialFolderOption.DoNotVerify),
                 "jellyfin");
 
         var configDir = options.ConfigDir ?? Environment.GetEnvironmentVariable("JELLYFIN_CONFIG_DIR");
@@ -97,7 +97,7 @@ public static class StartupHelpers
             {
                 // UNIX: $XDG_CONFIG_HOME
                 configDir = Path.Join(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData, Environment.SpecialFolderOption.DoNotVerify),
                     "jellyfin");
             }
         }
@@ -163,7 +163,7 @@ public static class StartupHelpers
         if (cacheHome is null || !cacheHome.StartsWith('/'))
         {
             cacheHome = Path.Join(
-                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile, Environment.SpecialFolderOption.DoNotVerify),
                 ".cache");
         }
 
@@ -292,13 +292,5 @@ public static class StartupHelpers
         // Make sure we have all the code pages we can get
         // Ref: https://docs.microsoft.com/en-us/dotnet/api/system.text.codepagesencodingprovider.instance?view=netcore-3.0#remarks
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-
-        // Increase the max http request limit
-        // The default connection limit is 10 for ASP.NET hosted applications and 2 for all others.
-        ServicePointManager.DefaultConnectionLimit = Math.Max(96, ServicePointManager.DefaultConnectionLimit);
-
-        // Disable the "Expect: 100-Continue" header by default
-        // http://stackoverflow.com/questions/566437/http-post-returns-the-error-417-expectation-failed-c
-        ServicePointManager.Expect100Continue = false;
     }
 }
