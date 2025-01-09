@@ -536,7 +536,7 @@ public class TrickplayManager : ITrickplayManager
 
             if (trickplayInfo.ThumbnailCount > 0)
             {
-                const string urlFormat = "{0}.jpg?MediaSourceId={1}&api_key={2}";
+                const string urlFormat = "{0}.jpg?MediaSourceId={1}&ApiKey={2}";
                 const string decimalFormat = "{0:0.###}";
 
                 var resolution = $"{trickplayInfo.Width}x{trickplayInfo.Height}";
