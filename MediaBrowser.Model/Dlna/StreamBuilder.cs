@@ -2249,10 +2249,24 @@ namespace MediaBrowser.Model.Dlna
             }
         }
 
-        private static bool IsAudioDirectPlaySupported(DirectPlayProfile profile, MediaSourceInfo item, MediaStream audioStream)
+        private static bool IsAudioContainerSupported(DirectPlayProfile profile, MediaSourceInfo item)
         {
             // Check container type
             if (!profile.SupportsContainer(item.Container))
+            {
+                return false;
+            }
+
+            // Never direct play audio in matroska when the device only declare support for webm.
+            // The first check is not enough because mkv is assumed can be webm.
+            // See https://github.com/jellyfin/jellyfin/issues/13344
+            return !ContainerHelper.ContainsContainer("mkv", item.Container)
+                   || profile.SupportsContainer("mkv");
+        }
+
+        private static bool IsAudioDirectPlaySupported(DirectPlayProfile profile, MediaSourceInfo item, MediaStream audioStream)
+        {
+            if (!IsAudioContainerSupported(profile, item))
             {
                 return false;
             }
@@ -2271,19 +2285,16 @@ namespace MediaBrowser.Model.Dlna
         {
             // Check container type, this should NOT be supported
             // If the container is supported, the file should be directly played
-            if (!profile.SupportsContainer(item.Container))
+            if (IsAudioContainerSupported(profile, item))
             {
-                // Check audio codec, we cannot use the SupportsAudioCodec here
-                // Because that one assumes empty container supports all codec, which is just useless
-                string? audioCodec = audioStream?.Codec;
-                if (string.Equals(profile.AudioCodec, audioCodec, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(profile.Container, audioCodec, StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
+                return false;
             }
 
-            return false;
+            // Check audio codec, we cannot use the SupportsAudioCodec here
+            // Because that one assumes empty container supports all codec, which is just useless
+            string? audioCodec = audioStream?.Codec;
+            return string.Equals(profile.AudioCodec, audioCodec, StringComparison.OrdinalIgnoreCase)
+                   || string.Equals(profile.Container, audioCodec, StringComparison.OrdinalIgnoreCase);
         }
 
         private int GetRank(ref TranscodeReason a, TranscodeReason[] rankings)
