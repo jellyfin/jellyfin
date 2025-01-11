@@ -14,7 +14,7 @@ namespace MediaBrowser.Controller.Persistence;
 /// <summary>
 /// Provides an interface to implement an Item repository.
 /// </summary>
-public interface IItemRepository : IDisposable
+public interface IItemRepository
 {
     /// <summary>
     /// Deletes the item.

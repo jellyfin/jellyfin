@@ -41,8 +41,8 @@ using BaseItemEntity = Jellyfin.Data.Entities.BaseItemEntity;
 namespace Jellyfin.Server.Implementations.Item;
 
 /*
-    All queries in this class and all other nullable enabled EFCore repository classes will make libraral use of the null-forgiving operator "!".
-    This is done as the code isn't actually executed client side, but only the expressions are interpretet and the compiler cannot know that.
+    All queries in this class and all other nullable enabled EFCore repository classes will make liberal use of the null-forgiving operator "!".
+    This is done as the code isn't actually executed client side, but only the expressions are interpret and the compiler cannot know that.
     This is your only warning/message regarding this topic.
 */
 
@@ -50,7 +50,7 @@ namespace Jellyfin.Server.Implementations.Item;
 /// Handles all storage logic for BaseItems.
 /// </summary>
 public sealed class BaseItemRepository
-    : IItemRepository, IDisposable
+    : IItemRepository
 {
     /// <summary>
     /// This holds all the types in the running assemblies
@@ -62,7 +62,6 @@ public sealed class BaseItemRepository
     private readonly IItemTypeLookup _itemTypeLookup;
     private readonly IServerConfigurationManager _serverConfigurationManager;
     private readonly ILogger<BaseItemRepository> _logger;
-    private bool _disposed;
 
     private static readonly IReadOnlyList<ItemValueType> _getAllArtistsValueTypes = [ItemValueType.Artist, ItemValueType.AlbumArtist];
     private static readonly IReadOnlyList<ItemValueType> _getArtistValueTypes = [ItemValueType.Artist];
@@ -90,17 +89,6 @@ public sealed class BaseItemRepository
         _itemTypeLookup = itemTypeLookup;
         _serverConfigurationManager = serverConfigurationManager;
         _logger = logger;
-    }
-
-    /// <inheritdoc/>
-    public void Dispose()
-    {
-        if (_disposed)
-        {
-            return;
-        }
-
-        _disposed = true;
     }
 
     /// <inheritdoc />
