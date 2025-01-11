@@ -83,6 +83,7 @@
  - [Matt07211](https://github.com/Matt07211)
  - [Maxr1998](https://github.com/Maxr1998)
  - [mcarlton00](https://github.com/mcarlton00)
+ - [michaelkrieger](https://github.com/michaelkrieger)
  - [mitchfizz05](https://github.com/mitchfizz05)
  - [mohd-akram](https://github.com/mohd-akram)
  - [MrTimscampi](https://github.com/MrTimscampi)
