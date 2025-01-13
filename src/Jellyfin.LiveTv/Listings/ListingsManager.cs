@@ -230,8 +230,8 @@ public class ListingsManager : IListingsManager
         var listingsProviderInfo = config.ListingProviders
             .First(info => string.Equals(providerId, info.Id, StringComparison.OrdinalIgnoreCase));
 
-        var existingChannelMapping = listingsProviderInfo.ChannelMappings
-            .Count(pair => string.Equals(pair.Name, tunerChannelNumber, StringComparison.OrdinalIgnoreCase)
+        var channelMappingExists = listingsProviderInfo.ChannelMappings
+            .Any(pair => string.Equals(pair.Name, tunerChannelNumber, StringComparison.OrdinalIgnoreCase)
                         && string.Equals(pair.Value, providerChannelNumber, StringComparison.OrdinalIgnoreCase));
 
         listingsProviderInfo.ChannelMappings = listingsProviderInfo.ChannelMappings
