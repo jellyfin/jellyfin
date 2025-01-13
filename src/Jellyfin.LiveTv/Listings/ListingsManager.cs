@@ -238,7 +238,7 @@ public class ListingsManager : IListingsManager
             .Where(pair => !string.Equals(pair.Name, tunerChannelNumber, StringComparison.OrdinalIgnoreCase)).ToArray();
 
         if (!string.Equals(tunerChannelNumber, providerChannelNumber, StringComparison.OrdinalIgnoreCase)
-            && existingChannelMapping < 1)
+            && !channelMappingExists)
         {
             var newItem = new NameValuePair
             {
