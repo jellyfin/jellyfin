@@ -51,6 +51,8 @@ namespace Jellyfin.Server.Migrations
             typeof(Routines.RemoveDuplicatePlaylistChildren)
         };
 
+        private static readonly Guid _downgradeCheckMigration = Guid.Parse("36445464-849f-429f-9ad0-bb130efa0664");
+
         /// <summary>
         /// Run all needed migrations.
         /// </summary>
@@ -87,6 +89,12 @@ namespace Jellyfin.Server.Migrations
             var migrationOptions = File.Exists(migrationConfigPath)
                  ? (MigrationOptions)xmlSerializer.DeserializeFromFile(typeof(MigrationOptions), migrationConfigPath)!
                  : new MigrationOptions();
+
+            // 10.10 specific EFCore migration check.
+            if (migrationOptions.Applied.Any(f => f.Id.Equals(_downgradeCheckMigration)))
+            {
+                throw new InvalidOperationException("You cannot downgrade your jellyfin install from the library.db migration.");
+            }
 
             // We have to deserialize it manually since the configuration manager may overwrite it
             var serverConfig = File.Exists(appPaths.SystemConfigurationFilePath)
