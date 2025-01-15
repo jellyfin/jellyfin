@@ -527,3 +527,6 @@ dotnet_diagnostic.CA2234.severity = suggestion
 
 # disable warning xUnit1028: Test methods must have a supported return type.
 dotnet_diagnostic.xUnit1028.severity = none
+
+# CA1826: Do not use Enumerable methods on indexable collections
+dotnet_diagnostic.CA1826.severity = suggestion

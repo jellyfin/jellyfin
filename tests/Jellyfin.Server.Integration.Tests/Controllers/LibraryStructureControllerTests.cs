@@ -45,7 +45,7 @@ public sealed class LibraryStructureControllerTests : IClassFixture<JellyfinAppl
     }
 
     [Fact]
-    [Priority(0)]
+    [Priority(-2)]
     public async Task UpdateLibraryOptions_Invalid_NotFound()
     {
         var client = _factory.CreateClient();
@@ -62,11 +62,22 @@ public sealed class LibraryStructureControllerTests : IClassFixture<JellyfinAppl
     }
 
     [Fact]
-    [Priority(0)]
+    [Priority(-2)]
     public async Task UpdateLibraryOptions_Valid_Success()
     {
         var client = _factory.CreateClient();
         client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+
+        var createBody = new AddVirtualFolderDto()
+        {
+            LibraryOptions = new LibraryOptions()
+            {
+                Enabled = false
+            }
+        };
+
+        using var createResponse = await client.PostAsJsonAsync("Library/VirtualFolders?name=test&refreshLibrary=true", createBody, _jsonOptions);
+        Assert.Equal(HttpStatusCode.NoContent, createResponse.StatusCode);
 
         using var response = await client.GetAsync("Library/VirtualFolders");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);

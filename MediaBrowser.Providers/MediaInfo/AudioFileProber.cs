@@ -36,6 +36,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly LyricResolver _lyricResolver;
         private readonly ILyricManager _lyricManager;
+        private readonly IMediaStreamRepository _mediaStreamRepository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AudioFileProber"/> class.
@@ -47,6 +48,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         /// <param name="lyricResolver">Instance of the <see cref="LyricResolver"/> interface.</param>
         /// <param name="lyricManager">Instance of the <see cref="ILyricManager"/> interface.</param>
+        /// <param name="mediaStreamRepository">Instance of the <see cref="IMediaStreamRepository"/>.</param>
         public AudioFileProber(
             ILogger<AudioFileProber> logger,
             IMediaSourceManager mediaSourceManager,
@@ -54,7 +56,8 @@ namespace MediaBrowser.Providers.MediaInfo
             IItemRepository itemRepo,
             ILibraryManager libraryManager,
             LyricResolver lyricResolver,
-            ILyricManager lyricManager)
+            ILyricManager lyricManager,
+            IMediaStreamRepository mediaStreamRepository)
         {
             _mediaEncoder = mediaEncoder;
             _itemRepo = itemRepo;
@@ -63,6 +66,7 @@ namespace MediaBrowser.Providers.MediaInfo
             _mediaSourceManager = mediaSourceManager;
             _lyricResolver = lyricResolver;
             _lyricManager = lyricManager;
+            _mediaStreamRepository = mediaStreamRepository;
             ATL.Settings.DisplayValueSeparator = InternalValueSeparator;
             ATL.Settings.UseFileNameWhenNoTitle = false;
             ATL.Settings.ID3v2_separatev2v3Values = false;
@@ -149,7 +153,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             audio.HasLyrics = mediaStreams.Any(s => s.Type == MediaStreamType.Lyric);
 
-            _itemRepo.SaveMediaStreams(audio.Id, mediaStreams, cancellationToken);
+            _mediaStreamRepository.SaveMediaStreams(audio.Id, mediaStreams, cancellationToken);
         }
 
         /// <summary>

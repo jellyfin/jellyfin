@@ -48,7 +48,8 @@ namespace Jellyfin.Server.Migrations
             typeof(Routines.UpdateDefaultPluginRepository),
             typeof(Routines.FixAudioData),
             typeof(Routines.MoveTrickplayFiles),
-            typeof(Routines.RemoveDuplicatePlaylistChildren)
+            typeof(Routines.RemoveDuplicatePlaylistChildren),
+            typeof(Routines.MigrateLibraryDb),
         };
 
         /// <summary>

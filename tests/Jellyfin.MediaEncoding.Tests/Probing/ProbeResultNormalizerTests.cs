@@ -65,7 +65,7 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
             Assert.True(res.VideoStream.IsDefault);
             Assert.False(res.VideoStream.IsExternal);
             Assert.False(res.VideoStream.IsForced);
-            Assert.False(res.VideoStream.IsHearingImpaired);
+            Assert.False(res.VideoStream.IsHearingImpaired.GetValueOrDefault());
             Assert.False(res.VideoStream.IsInterlaced);
             Assert.False(res.VideoStream.IsTextSubtitleStream);
             Assert.Equal(13d, res.VideoStream.Level);
@@ -152,19 +152,19 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
             Assert.Equal(MediaStreamType.Subtitle, res.MediaStreams[3].Type);
             Assert.Equal("DVDSUB", res.MediaStreams[3].Codec);
             Assert.Null(res.MediaStreams[3].Title);
-            Assert.False(res.MediaStreams[3].IsHearingImpaired);
+            Assert.False(res.MediaStreams[3].IsHearingImpaired.GetValueOrDefault());
 
             Assert.Equal("eng", res.MediaStreams[4].Language);
             Assert.Equal(MediaStreamType.Subtitle, res.MediaStreams[4].Type);
             Assert.Equal("mov_text", res.MediaStreams[4].Codec);
             Assert.Null(res.MediaStreams[4].Title);
-            Assert.True(res.MediaStreams[4].IsHearingImpaired);
+            Assert.True(res.MediaStreams[4].IsHearingImpaired.GetValueOrDefault());
 
             Assert.Equal("eng", res.MediaStreams[5].Language);
             Assert.Equal(MediaStreamType.Subtitle, res.MediaStreams[5].Type);
             Assert.Equal("mov_text", res.MediaStreams[5].Codec);
             Assert.Equal("Commentary", res.MediaStreams[5].Title);
-            Assert.False(res.MediaStreams[5].IsHearingImpaired);
+            Assert.False(res.MediaStreams[5].IsHearingImpaired.GetValueOrDefault());
         }
 
         [Fact]
