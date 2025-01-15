@@ -93,7 +93,6 @@ public class StartupController : BaseJellyfinApiController
     {
         NetworkConfiguration settings = _config.GetNetworkConfiguration();
         settings.EnableRemoteAccess = startupRemoteAccessDto.EnableRemoteAccess;
-        settings.EnableUPnP = startupRemoteAccessDto.EnableAutomaticPortMapping;
         _config.SaveConfiguration(NetworkConfigurationStore.StoreKey, settings);
         return NoContent();
     }

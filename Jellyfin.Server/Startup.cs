@@ -129,7 +129,6 @@ namespace Jellyfin.Server
 
             services.AddHostedService<RecordingsHost>();
             services.AddHostedService<AutoDiscoveryHost>();
-            services.AddHostedService<PortForwardingHost>();
             services.AddHostedService<NfoUserDataSaver>();
             services.AddHostedService<LibraryChangedNotifier>();
             services.AddHostedService<UserDataChangeNotifier>();
