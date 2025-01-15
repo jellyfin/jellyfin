@@ -381,7 +381,7 @@ public sealed class BaseItemRepository
         UpdateOrInsertItems(items, cancellationToken);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc cref="IItemRepository"/>
     public void UpdateOrInsertItems(IReadOnlyList<BaseItemDto> items, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(items);
