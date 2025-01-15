@@ -2974,6 +2974,10 @@ namespace Emby.Server.Implementations.Data
 #nullable enable
         private List<string> GetWhereClauses(InternalItemsQuery query, SqliteCommand? statement)
         {
+            const int HDWidth = 1200;
+            const int UHDWidth = 3800;
+            const int UHDHeight = 2100;
+
             if (query.IsResumable ?? false)
             {
                 query.IsVirtualItem = false;
@@ -2981,34 +2985,38 @@ namespace Emby.Server.Implementations.Data
 
             var minWidth = query.MinWidth;
             var maxWidth = query.MaxWidth;
+            var whereClauses = new List<string>();
+
+            if (query.IsHD.HasValue || query.Is4K.HasValue)
+            {
+                statement?.TryBind("@UHDWidth", UHDWidth);
+                statement?.TryBind("@UHDHeight", UHDHeight);
+            }
 
             if (query.IsHD.HasValue)
             {
-                const int Threshold = 1200;
                 if (query.IsHD.Value)
                 {
-                    minWidth = Threshold;
+                    whereClauses.Add("(Width >= @HDWidth AND NOT (Width >= @UHDWidth OR Height >= @UHDHeight))");
+                    statement?.TryBind("@HDWidth", HDWidth);
                 }
                 else
                 {
-                    maxWidth = Threshold - 1;
+                    maxWidth = HDWidth - 1;
                 }
             }
 
             if (query.Is4K.HasValue)
             {
-                const int Threshold = 3800;
                 if (query.Is4K.Value)
                 {
-                    minWidth = Threshold;
+                    whereClauses.Add("(Width >= @UHDWidth OR Height >= @UHDHeight)");
                 }
                 else
                 {
-                    maxWidth = Threshold - 1;
+                    whereClauses.Add("(Width < @UHDWidth OR Height < @UHDHeight)");
                 }
             }
-
-            var whereClauses = new List<string>();
 
             if (minWidth.HasValue)
             {
