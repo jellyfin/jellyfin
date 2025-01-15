@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Mime;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -410,11 +411,11 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
 
     /// <inheritdoc />
     public string GetImageCacheTag(BaseItem item, ItemImageInfo image)
-        => (item.Path + image.DateModified.Ticks).GetMD5().ToString("N", CultureInfo.InvariantCulture);
+        => GetImageCacheTag(item.Path, image.DateModified);
 
     /// <inheritdoc />
     public string GetImageCacheTag(BaseItemDto item, ItemImageInfo image)
-        => (item.Path + image.DateModified.Ticks).GetMD5().ToString("N", CultureInfo.InvariantCulture);
+        => GetImageCacheTag(item.Path, image.DateModified);
 
     /// <inheritdoc />
     public string? GetImageCacheTag(BaseItemDto item, ChapterInfo chapter)
@@ -424,7 +425,7 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
             return null;
         }
 
-        return (item.Path + chapter.ImageDateModified.Ticks).GetMD5().ToString("N", CultureInfo.InvariantCulture);
+        return GetImageCacheTag(item.Path, chapter.ImageDateModified);
     }
 
     /// <inheritdoc />
@@ -451,8 +452,7 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
             return null;
         }
 
-        return (user.ProfileImage.Path + user.ProfileImage.LastModified.Ticks).GetMD5()
-            .ToString("N", CultureInfo.InvariantCulture);
+        return GetImageCacheTag(user.ProfileImage.Path, user.ProfileImage.LastModified);
     }
 
     private Task<(string Path, DateTime DateModified)> GetSupportedImage(string originalImagePath, DateTime dateModified)

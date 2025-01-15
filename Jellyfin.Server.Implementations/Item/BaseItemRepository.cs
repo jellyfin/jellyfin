@@ -125,7 +125,7 @@ public sealed class BaseItemRepository
         transaction.Commit();
     }
 
-    /// <inheritdoc cref="IItemRepository"/>
+    /// <inheritdoc />
     public IReadOnlyList<Guid> GetItemIdsList(InternalItemsQuery filter)
     {
         ArgumentNullException.ThrowIfNull(filter);
@@ -201,7 +201,7 @@ public sealed class BaseItemRepository
             _itemTypeLookup.MusicGenreTypes);
     }
 
-    /// <inheritdoc cref="IItemRepository"/>
+    /// <inheritdoc />
     public QueryResult<BaseItemDto> GetItems(InternalItemsQuery filter)
     {
         ArgumentNullException.ThrowIfNull(filter);
@@ -235,7 +235,7 @@ public sealed class BaseItemRepository
         return result;
     }
 
-    /// <inheritdoc cref="IItemRepository"/>
+    /// <inheritdoc />
     public IReadOnlyList<BaseItemDto> GetItemList(InternalItemsQuery filter)
     {
         ArgumentNullException.ThrowIfNull(filter);
@@ -354,12 +354,14 @@ public sealed class BaseItemRepository
     {
         ArgumentException.ThrowIfNullOrEmpty(typeName);
 
+        // TODO: this isn't great. Refactor later to be both globally handled by a dedicated service not just an static variable and be loaded eagar.
+        // currently this is done so that plugins may introduce their own type of baseitems as we dont know when we are first called, before or after plugins are loaded
         return _typeMap.GetOrAdd(typeName, k => AppDomain.CurrentDomain.GetAssemblies()
             .Select(a => a.GetType(k))
             .FirstOrDefault(t => t is not null));
     }
 
-    /// <inheritdoc cref="IItemRepository" />
+    /// <inheritdoc  />
     public void SaveImages(BaseItemDto item)
     {
         ArgumentNullException.ThrowIfNull(item);
@@ -373,13 +375,13 @@ public sealed class BaseItemRepository
         transaction.Commit();
     }
 
-    /// <inheritdoc cref="IItemRepository" />
+    /// <inheritdoc  />
     public void SaveItems(IReadOnlyList<BaseItemDto> items, CancellationToken cancellationToken)
     {
         UpdateOrInsertItems(items, cancellationToken);
     }
 
-    /// <inheritdoc cref="IItemRepository" />
+    /// <inheritdoc />
     public void UpdateOrInsertItems(IReadOnlyList<BaseItemDto> items, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(items);
@@ -479,7 +481,7 @@ public sealed class BaseItemRepository
         transaction.Commit();
     }
 
-    /// <inheritdoc cref="IItemRepository" />
+    /// <inheritdoc  />
     public BaseItemDto? RetrieveItem(Guid id)
     {
         if (id.IsEmpty())
@@ -890,8 +892,7 @@ public sealed class BaseItemRepository
         {
             try
             {
-                using var dataAsStream = new MemoryStream(Encoding.UTF8.GetBytes(baseItemEntity.Data!));
-                dto = JsonSerializer.Deserialize(dataAsStream, type, JsonDefaults.Options) as BaseItemDto;
+                dto = JsonSerializer.Deserialize(baseItemEntity.Data, type, JsonDefaults.Options) as BaseItemDto;
             }
             catch (JsonException ex)
             {

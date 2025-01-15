@@ -71,7 +71,7 @@ public class ChapterRepository : IChapterRepository
                 chapter = e,
                 baseItemPath = e.Item.Path
             })
-            .ToList()
+            .AsEnumerable()
             .Select(e => Map(e.chapter, e.baseItemPath!))
             .ToArray();
     }

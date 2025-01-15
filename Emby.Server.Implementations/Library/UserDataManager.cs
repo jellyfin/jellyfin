@@ -146,8 +146,8 @@ namespace Emby.Server.Implementations.Library
             {
                 ItemId = itemId,
                 CustomDataKey = dto.Key,
-                Item = null!,
-                User = null!,
+                Item = null,
+                User = null,
                 AudioStreamIndex = dto.AudioStreamIndex,
                 IsFavorite = dto.IsFavorite,
                 LastPlayedDate = dto.LastPlayedDate,
@@ -181,7 +181,13 @@ namespace Emby.Server.Implementations.Library
         private UserItemData? GetUserData(User user, Guid itemId, List<string> keys)
         {
             var cacheKey = GetCacheKey(user.InternalId, itemId);
-            var data = GetUserDataInternal(user.Id, itemId, keys);
+
+            if (_userData.TryGetValue(cacheKey, out var data))
+            {
+                return data;
+            }
+
+            data = GetUserDataInternal(user.Id, itemId, keys);
 
             if (data is null)
             {

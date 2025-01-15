@@ -1,3 +1,5 @@
+#pragma warning disable RS0030 // Do not use banned APIs
+
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -21,7 +23,6 @@ using Microsoft.Extensions.Logging;
 using Chapter = Jellyfin.Data.Entities.Chapter;
 
 namespace Jellyfin.Server.Migrations.Routines;
-#pragma warning disable RS0030 // Do not use banned APIs
 
 /// <summary>
 /// The migration routine for migrating the userdata database to EF Core.
@@ -80,7 +81,7 @@ public class MigrateLibraryDb : IMigrationRoutine
         stopwatch.Restart();
 
         _logger.LogInformation("Start moving TypedBaseItem.");
-        var typedBaseItemsQuery = """
+        const string typedBaseItemsQuery = """
          SELECT guid, type, data, StartDate, EndDate, ChannelId, IsMovie,
          IsSeries, EpisodeTitle, IsRepeat, CommunityRating, CustomRating, IndexNumber, IsLocked, PreferredMetadataLanguage,
          PreferredMetadataCountryCode, Width, Height, DateLastRefreshed, Name, Path, PremiereDate, Overview, ParentIndexNumber,
@@ -111,7 +112,7 @@ public class MigrateLibraryDb : IMigrationRoutine
 
         _logger.LogInformation("Start moving ItemValues.");
         // do not migrate inherited types as they are now properly mapped in search and lookup.
-        var itemValueQuery =
+        const string itemValueQuery =
         """
         SELECT ItemId, Type, Value, CleanValue FROM ItemValues
                     WHERE Type <> 6 AND EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = ItemValues.ItemId)
@@ -187,7 +188,7 @@ public class MigrateLibraryDb : IMigrationRoutine
         dbContext.SaveChanges();
 
         _logger.LogInformation("Start moving MediaStreamInfos.");
-        var mediaStreamQuery = """
+        const string mediaStreamQuery = """
         SELECT ItemId, StreamIndex, StreamType, Codec, Language, ChannelLayout, Profile, AspectRatio, Path,
         IsInterlaced, BitRate, Channels, SampleRate, IsDefault, IsForced, IsExternal, Height, Width,
         AverageFrameRate, RealFrameRate, Level, PixelFormat, BitDepth, IsAnamorphic, RefFrames, CodecTag,
@@ -211,7 +212,7 @@ public class MigrateLibraryDb : IMigrationRoutine
         stopwatch.Restart();
 
         _logger.LogInformation("Start moving People.");
-        var personsQuery = """
+        const string personsQuery = """
         SELECT ItemId, Name, Role, PersonType, SortOrder FROM People
         WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = People.ItemId)
         """;
@@ -268,7 +269,7 @@ public class MigrateLibraryDb : IMigrationRoutine
         stopwatch.Restart();
 
         _logger.LogInformation("Start moving Chapters.");
-        var chapterQuery = """
+        const string chapterQuery = """
         SELECT ItemId,StartPositionTicks,Name,ImagePath,ImageDateModified,ChapterIndex from Chapters2
         WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = Chapters2.ItemId)
         """;
@@ -287,7 +288,7 @@ public class MigrateLibraryDb : IMigrationRoutine
         stopwatch.Restart();
 
         _logger.LogInformation("Start moving AncestorIds.");
-        var ancestorIdsQuery = """
+        const string ancestorIdsQuery = """
         SELECT ItemId, AncestorId, AncestorIdText FROM AncestorIds
         WHERE
         EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = AncestorIds.ItemId)

@@ -45,7 +45,7 @@ public sealed class LibraryStructureControllerTests : IClassFixture<JellyfinAppl
     }
 
     [Fact]
-    [Priority(0)]
+    [Priority(-2)]
     public async Task UpdateLibraryOptions_Invalid_NotFound()
     {
         var client = _factory.CreateClient();
