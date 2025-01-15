@@ -255,7 +255,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
             if (!IndexNumber.HasValue && !string.IsNullOrEmpty(Path))
             {
-                IndexNumber ??= LibraryManager.GetSeasonNumberFromPath(Path);
+                IndexNumber ??= LibraryManager.GetSeasonNumberFromPath(Path, ParentId);
 
                 // If a change was made record it
                 if (IndexNumber.HasValue)
