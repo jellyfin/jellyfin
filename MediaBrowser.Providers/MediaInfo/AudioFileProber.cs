@@ -13,6 +13,7 @@ using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -188,11 +189,11 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 foreach (var albumArtist in albumArtists)
                 {
-                    if (!string.IsNullOrEmpty(albumArtist))
+                    if (!string.IsNullOrWhiteSpace(albumArtist))
                     {
                         PeopleHelper.AddPerson(people, new PersonInfo
                         {
-                            Name = albumArtist,
+                            Name = albumArtist.Trim(),
                             Type = PersonKind.AlbumArtist
                         });
                     }
@@ -220,11 +221,11 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 foreach (var performer in performers)
                 {
-                    if (!string.IsNullOrEmpty(performer))
+                    if (!string.IsNullOrWhiteSpace(performer))
                     {
                         PeopleHelper.AddPerson(people, new PersonInfo
                         {
-                            Name = performer,
+                            Name = performer.Trim(),
                             Type = PersonKind.Artist
                         });
                     }
@@ -232,11 +233,11 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 foreach (var composer in track.Composer.Split(InternalValueSeparator))
                 {
-                    if (!string.IsNullOrEmpty(composer))
+                    if (!string.IsNullOrWhiteSpace(composer))
                     {
                         PeopleHelper.AddPerson(people, new PersonInfo
                         {
-                            Name = composer,
+                            Name = composer.Trim(),
                             Type = PersonKind.Composer
                         });
                     }
@@ -278,13 +279,13 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (options.ReplaceAllMetadata)
             {
-                audio.Album = track.Album;
+                audio.Album = track.Album.Trim();
                 audio.IndexNumber = track.TrackNumber;
                 audio.ParentIndexNumber = track.DiscNumber;
             }
             else
             {
-                audio.Album ??= track.Album;
+                audio.Album ??= track.Album.Trim();
                 audio.IndexNumber ??= track.TrackNumber;
                 audio.ParentIndexNumber ??= track.DiscNumber;
             }
@@ -314,12 +315,14 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (!audio.LockedFields.Contains(MetadataField.Genres))
             {
-                var genres = string.IsNullOrEmpty(track.Genre) ? mediaInfo.Genres : track.Genre.Split(InternalValueSeparator).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+                var genres = string.IsNullOrEmpty(track.Genre) ? mediaInfo.Genres : track.Genre.Split(InternalValueSeparator);
 
                 if (libraryOptions.UseCustomTagDelimiters)
                 {
                     genres = genres.SelectMany(g => SplitWithCustomDelimiter(g, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist)).ToArray();
                 }
+
+                genres = genres.Trimmed().Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
 
                 audio.Genres = options.ReplaceAllMetadata || audio.Genres is null || audio.Genres.Length == 0
                     ? genres
