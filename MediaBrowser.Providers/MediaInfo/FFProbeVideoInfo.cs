@@ -236,6 +236,8 @@ namespace MediaBrowser.Providers.MediaInfo
                 chapters = Array.Empty<ChapterInfo>();
             }
 
+            chapters = _chapterManager.AddExternalChapters(video, chapters);
+
             var libraryOptions = _libraryManager.GetLibraryOptions(video);
 
             if (mediaInfo is not null)
