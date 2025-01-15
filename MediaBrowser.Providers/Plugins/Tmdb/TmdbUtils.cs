@@ -24,6 +24,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         public const string ProviderName = "TheMovieDb";
 
         /// <summary>
+        /// Episode Group Provider Id.
+        /// </summary>
+        public const string EpisodeGroupProviderId = "TmdbEpisodeGroup";
+
+        /// <summary>
         /// API key to use when performing an API call.
         /// </summary>
         public const string ApiKey = "4219e299c89411838049ab0dab19ebd5";
