@@ -396,6 +396,28 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
+            if (options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzRecording, out _))
+            {
+                if ((track.AdditionalFields.TryGetValue("MUSICBRAINZ_TRACKID", out var recordingMbId)
+                     || track.AdditionalFields.TryGetValue("MusicBrainz Track Id", out recordingMbId))
+                    && !string.IsNullOrEmpty(recordingMbId))
+                {
+                    audio.TrySetProviderId(MetadataProvider.MusicBrainzTrack, recordingMbId);
+                }
+                else if (track.AdditionalFields.TryGetValue("UFID", out var ufIdValue) && !string.IsNullOrEmpty(ufIdValue))
+                {
+                    // If tagged with MB Picard, the format is 'http://musicbrainz.org\0<recording MBID>
+                    if (ufIdValue.Contains("musicbrainz.org", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var ufidParts = ufIdValue.Split('\0');
+                        if (ufidParts.Length > 1)
+                        {
+                            audio.TrySetProviderId(MetadataProvider.MusicBrainzRecording, ufidParts[1]);
+                        }
+                    }
+                }
+            }
+
             // Save extracted lyrics if they exist,
             // and if the audio doesn't yet have lyrics.
             var lyrics = track.Lyrics.SynchronizedLyrics.Count > 0 ? track.Lyrics.FormatSynchToLRC() : track.Lyrics.UnsynchronizedLyrics;
