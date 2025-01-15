@@ -53,7 +53,7 @@ namespace MediaBrowser.Controller.Library
         List<MediaAttachment> GetMediaAttachments(MediaAttachmentQuery query);
 
         /// <summary>
-        /// Gets the playack media sources.
+        /// Gets the playback media sources.
         /// </summary>
         /// <param name="item">Item to use.</param>
         /// <param name="user">User to use for operation.</param>

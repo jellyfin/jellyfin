@@ -64,7 +64,7 @@ namespace Jellyfin.LiveTv.Listings.SchedulesDirectDtos
         public IReadOnlyList<MetadataProgramsDto> Metadata { get; set; } = Array.Empty<MetadataProgramsDto>();
 
         /// <summary>
-        /// Gets or sets the list of content raitings.
+        /// Gets or sets the list of content ratings.
         /// </summary>
         [JsonPropertyName("contentRating")]
         public IReadOnlyList<ContentRatingDto> ContentRating { get; set; } = Array.Empty<ContentRatingDto>();
