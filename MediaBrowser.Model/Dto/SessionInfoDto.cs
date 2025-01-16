@@ -1,6 +1,10 @@
+#pragma warning disable CA1819 // Properties should not return arrays
+
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions.Json.Converters;
 using MediaBrowser.Model.Session;
 
 namespace MediaBrowser.Model.Dto;
@@ -20,7 +24,7 @@ public class SessionInfoDto
     /// Gets or sets the additional users.
     /// </summary>
     /// <value>The additional users.</value>
-    public IReadOnlyList<SessionUserInfo>? AdditionalUsers { get; set; }
+    public SessionUserInfo[]? AdditionalUsers { get; set; }
 
     /// <summary>
     /// Gets or sets the client capabilities.
@@ -38,7 +42,7 @@ public class SessionInfoDto
     /// Gets or sets the playable media types.
     /// </summary>
     /// <value>The playable media types.</value>
-    public IReadOnlyList<MediaType> PlayableMediaTypes { get; set; } = [];
+    public MediaType[] PlayableMediaTypes { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the id.
@@ -146,13 +150,13 @@ public class SessionInfoDto
     /// Gets or sets the now playing queue.
     /// </summary>
     /// <value>The now playing queue.</value>
-    public IReadOnlyList<QueueItem>? NowPlayingQueue { get; set; }
+    public QueueItem[]? NowPlayingQueue { get; set; }
 
     /// <summary>
     /// Gets or sets the now playing queue full items.
     /// </summary>
     /// <value>The now playing queue full items.</value>
-    public IReadOnlyList<BaseItemDto>? NowPlayingQueueFullItems { get; set; }
+    public BaseItemDto[]? NowPlayingQueueFullItems { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether the session has a custom device name.
@@ -182,5 +186,5 @@ public class SessionInfoDto
     /// Gets or sets the supported commands.
     /// </summary>
     /// <value>The supported commands.</value>
-    public IReadOnlyList<GeneralCommandType> SupportedCommands { get; set; } = [];
+    public GeneralCommandType[] SupportedCommands { get; set; } = [];
 }
