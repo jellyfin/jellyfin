@@ -1098,10 +1098,10 @@ namespace Emby.Server.Implementations.Session
             return new SessionInfoDto
             {
                 PlayState = sessionInfo.PlayState,
-                AdditionalUsers = sessionInfo.AdditionalUsers.ToArray(),
+                AdditionalUsers = sessionInfo.AdditionalUsers?.ToArray(),
                 Capabilities = _deviceManager.ToClientCapabilitiesDto(sessionInfo.Capabilities),
                 RemoteEndPoint = sessionInfo.RemoteEndPoint,
-                PlayableMediaTypes = sessionInfo.PlayableMediaTypes.ToArray(),
+                PlayableMediaTypes = sessionInfo.PlayableMediaTypes?.ToArray() ?? [],
                 Id = sessionInfo.Id,
                 UserId = sessionInfo.UserId,
                 UserName = sessionInfo.UserName,
@@ -1119,13 +1119,13 @@ namespace Emby.Server.Implementations.Session
                 IsActive = sessionInfo.IsActive,
                 SupportsMediaControl = sessionInfo.SupportsMediaControl,
                 SupportsRemoteControl = sessionInfo.SupportsRemoteControl,
-                NowPlayingQueue = sessionInfo.NowPlayingQueue.ToArray(),
-                NowPlayingQueueFullItems = sessionInfo.NowPlayingQueueFullItems.ToArray(),
+                NowPlayingQueue = sessionInfo.NowPlayingQueue?.ToArray(),
+                NowPlayingQueueFullItems = sessionInfo.NowPlayingQueueFullItems?.ToArray(),
                 HasCustomDeviceName = sessionInfo.HasCustomDeviceName,
                 PlaylistItemId = sessionInfo.PlaylistItemId,
                 ServerId = sessionInfo.ServerId,
                 UserPrimaryImageTag = sessionInfo.UserPrimaryImageTag,
-                SupportedCommands = sessionInfo.SupportedCommands.ToArray()
+                SupportedCommands = sessionInfo.SupportedCommands?.ToArray() ?? []
             };
         }
 
