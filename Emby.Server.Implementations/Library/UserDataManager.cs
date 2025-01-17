@@ -265,7 +265,7 @@ namespace Emby.Server.Implementations.Library
         /// Converts a UserItemData to a DTOUserItemData.
         /// </summary>
         /// <param name="data">The data.</param>
-        /// <param name="itemId">The the reference key to an Item.</param>
+        /// <param name="itemId">The reference key to an Item.</param>
         /// <returns>DtoUserItemData.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="data"/> is <c>null</c>.</exception>
         private UserItemDataDto GetUserItemDataDto(UserItemData data, Guid itemId)
