@@ -20,7 +20,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         private const string TestUsername = "testUser01";
 
         private readonly JellyfinApplicationFactory _factory;
-        private readonly JsonSerializerOptions _jsonOpions = JsonDefaults.Options;
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
         private static string? _accessToken;
         private static Guid _testUserId = Guid.Empty;
 
@@ -30,10 +30,10 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         }
 
         private Task<HttpResponseMessage> CreateUserByName(HttpClient httpClient, CreateUserByName request)
-            => httpClient.PostAsJsonAsync("Users/New", request, _jsonOpions);
+            => httpClient.PostAsJsonAsync("Users/New", request, _jsonOptions);
 
         private Task<HttpResponseMessage> UpdateUserPassword(HttpClient httpClient, Guid userId, UpdateUserPassword request)
-            => httpClient.PostAsJsonAsync("Users/" + userId.ToString("N", CultureInfo.InvariantCulture) + "/Password", request, _jsonOpions);
+            => httpClient.PostAsJsonAsync("Users/" + userId.ToString("N", CultureInfo.InvariantCulture) + "/Password", request, _jsonOptions);
 
         [Fact]
         [Priority(-1)]
@@ -43,7 +43,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
 
             using var response = await client.GetAsync("Users/Public");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            var users = await response.Content.ReadFromJsonAsync<UserDto[]>(_jsonOpions);
+            var users = await response.Content.ReadFromJsonAsync<UserDto[]>(_jsonOptions);
             // User are hidden by default
             Assert.NotNull(users);
             Assert.Empty(users);
@@ -58,7 +58,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
 
             using var response = await client.GetAsync("Users");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            var users = await response.Content.ReadFromJsonAsync<UserDto[]>(_jsonOpions);
+            var users = await response.Content.ReadFromJsonAsync<UserDto[]>(_jsonOptions);
             Assert.NotNull(users);
             Assert.Single(users);
             Assert.False(users![0].HasConfiguredPassword);
@@ -90,7 +90,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
 
             using var response = await CreateUserByName(client, createRequest);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            var user = await response.Content.ReadFromJsonAsync<UserDto>(_jsonOpions);
+            var user = await response.Content.ReadFromJsonAsync<UserDto>(_jsonOptions);
             Assert.Equal(TestUsername, user!.Name);
             Assert.False(user.HasPassword);
             Assert.False(user.HasConfiguredPassword);
@@ -151,7 +151,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
             var users = await JsonSerializer.DeserializeAsync<UserDto[]>(
-                await client.GetStreamAsync("Users"), _jsonOpions);
+                await client.GetStreamAsync("Users"), _jsonOptions);
             var user = users!.First(x => x.Id.Equals(_testUserId));
             Assert.True(user.HasPassword);
             Assert.True(user.HasConfiguredPassword);
@@ -174,7 +174,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
             var users = await JsonSerializer.DeserializeAsync<UserDto[]>(
-                await client.GetStreamAsync("Users"), _jsonOpions);
+                await client.GetStreamAsync("Users"), _jsonOptions);
             var user = users!.First(x => x.Id.Equals(_testUserId));
             Assert.False(user.HasPassword);
             Assert.False(user.HasConfiguredPassword);

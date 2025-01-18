@@ -46,7 +46,7 @@ public class TrickplayManager : ITrickplayManager
     /// </summary>
     /// <param name="logger">The logger.</param>
     /// <param name="mediaEncoder">The media encoder.</param>
-    /// <param name="fileSystem">The file systen.</param>
+    /// <param name="fileSystem">The file system.</param>
     /// <param name="encodingHelper">The encoding helper.</param>
     /// <param name="libraryManager">The library manager.</param>
     /// <param name="config">The server configuration manager.</param>

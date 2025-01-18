@@ -192,7 +192,7 @@ public class JellyfinDbContext : DbContext
         modelBuilder.SetDefaultDateTimeKind(DateTimeKind.Utc);
         base.OnModelCreating(modelBuilder);
 
-        // Configuration for each entity is in it's own class inside 'ModelConfiguration'.
+        // Configuration for each entity is in its own class inside 'ModelConfiguration'.
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(JellyfinDbContext).Assembly);
     }
 }

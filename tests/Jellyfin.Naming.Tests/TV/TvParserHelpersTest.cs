@@ -15,17 +15,17 @@ public class TvParserHelpersTest
     [InlineData("Unreleased", SeriesStatus.Unreleased)]
     public void SeriesStatusParserTest_Valid(string statusString, SeriesStatus? status)
     {
-        var successful = TvParserHelpers.TryParseSeriesStatus(statusString, out var parsered);
+        var successful = TvParserHelpers.TryParseSeriesStatus(statusString, out var parsed);
         Assert.True(successful);
-        Assert.Equal(status, parsered);
+        Assert.Equal(status, parsed);
     }
 
     [Theory]
     [InlineData("XXX")]
     public void SeriesStatusParserTest_InValid(string statusString)
     {
-        var successful = TvParserHelpers.TryParseSeriesStatus(statusString, out var parsered);
+        var successful = TvParserHelpers.TryParseSeriesStatus(statusString, out var parsed);
         Assert.False(successful);
-        Assert.Null(parsered);
+        Assert.Null(parsed);
     }
 }

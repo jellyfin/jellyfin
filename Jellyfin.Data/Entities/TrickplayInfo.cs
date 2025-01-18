@@ -66,7 +66,7 @@ public class TrickplayInfo
     public int Interval { get; set; }
 
     /// <summary>
-    /// Gets or sets peak bandwith usage in bits per second.
+    /// Gets or sets peak bandwidth usage in bits per second.
     /// </summary>
     /// <remarks>
     /// Required.
