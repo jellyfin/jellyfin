@@ -30,7 +30,7 @@ namespace Jellyfin.Server.Migrations.Routines
         }
 
         /// <inheritdoc/>
-        public Guid Id => Guid.Parse("{67445D54-B895-4B24-9F4C-35CE0690EA07}");
+        public Guid Id => Guid.Parse("{D34BFC33-5D2E-4790-8085-069EF6EECB4E}");
 
         /// <inheritdoc/>
         public string Name => "MigrateRatingLevels";
