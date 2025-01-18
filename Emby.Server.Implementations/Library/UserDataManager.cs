@@ -1,7 +1,8 @@
+#pragma warning disable RS0030 // Do not use banned APIs
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -17,7 +18,6 @@ using MediaBrowser.Model.Entities;
 using Microsoft.EntityFrameworkCore;
 using AudioBook = MediaBrowser.Controller.Entities.AudioBook;
 using Book = MediaBrowser.Controller.Entities.Book;
-#pragma warning disable RS0030 // Do not use banned APIs
 
 namespace Emby.Server.Implementations.Library
 {
@@ -100,7 +100,7 @@ namespace Emby.Server.Implementations.Library
             ArgumentNullException.ThrowIfNull(item);
             ArgumentNullException.ThrowIfNull(userDataDto);
 
-            var userData = GetUserData(user, item) ?? throw new InvalidOperationException("Did not expect UserData to be null.");
+            var userData = GetUserData(user, item) ?? throw new InvalidOperationException("UserData should not be null.");
 
             if (userDataDto.PlaybackPositionTicks.HasValue)
             {
