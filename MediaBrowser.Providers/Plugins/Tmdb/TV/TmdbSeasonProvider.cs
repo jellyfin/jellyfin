@@ -52,70 +52,103 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 return result;
             }
 
-            var seasonResult = await _tmdbClientManager
-                .GetSeasonAsync(Convert.ToInt32(seriesTmdbId, CultureInfo.InvariantCulture), seasonNumber.Value, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken)
+            var episodeGroup = await _tmdbClientManager
+                .GetSeriesGroupAsync(Convert.ToInt32(seriesTmdbId, CultureInfo.InvariantCulture), info.SeriesDisplayOrder, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken)
                 .ConfigureAwait(false);
-
-            if (seasonResult is null)
+            if (episodeGroup is not null)
             {
+                var season = episodeGroup.Groups.FirstOrDefault(s => s.Order == seasonNumber);
+                if (season is not null)
+                {
+                    result.HasMetadata = true;
+                    result.Item = new Season
+                    {
+                        IndexNumber = seasonNumber,
+                    };
+
+                    if (Plugin.Instance.Configuration.ImportSeasonName)
+                    {
+                        result.Item.Name = season.Name;
+                    }
+
+                    result.Item.TrySetProviderId(TmdbUtils.EpisodeGroupProviderId, episodeGroup.Id);
+                    result.Item.TrySetProviderId(MetadataProvider.Tmdb, season.Id);
+                }
+
                 return result;
             }
 
-            result.HasMetadata = true;
-            result.Item = new Season
+            // If default order
+            else if (string.IsNullOrEmpty(info.SeriesDisplayOrder))
             {
-                IndexNumber = seasonNumber,
-                Overview = seasonResult.Overview
-            };
+                var seasonResult = await _tmdbClientManager
+                    .GetSeasonAsync(Convert.ToInt32(seriesTmdbId, CultureInfo.InvariantCulture), seasonNumber.Value, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken)
+                    .ConfigureAwait(false);
 
-            if (Plugin.Instance.Configuration.ImportSeasonName)
-            {
-                result.Item.Name = seasonResult.Name;
-            }
-
-            result.Item.TrySetProviderId(MetadataProvider.Tvdb, seasonResult.ExternalIds.TvdbId);
-
-            // TODO why was this disabled?
-            var credits = seasonResult.Credits;
-            if (credits?.Cast is not null)
-            {
-                var cast = credits.Cast.OrderBy(c => c.Order).Take(Plugin.Instance.Configuration.MaxCastMembers).ToList();
-                for (var i = 0; i < cast.Count; i++)
+                if (seasonResult is null)
                 {
-                    result.AddPerson(new PersonInfo
-                    {
-                        Name = cast[i].Name.Trim(),
-                        Role = cast[i].Character,
-                        Type = PersonKind.Actor,
-                        SortOrder = cast[i].Order
-                    });
+                    return result;
                 }
-            }
 
-            if (credits?.Crew is not null)
-            {
-                foreach (var person in credits.Crew)
+                result.HasMetadata = true;
+                result.Item = new Season
                 {
-                    // Normalize this
-                    var type = TmdbUtils.MapCrewToPersonType(person);
+                    IndexNumber = seasonNumber,
+                    Overview = seasonResult.Overview
+                };
 
-                    if (!TmdbUtils.WantedCrewKinds.Contains(type)
-                        && !TmdbUtils.WantedCrewTypes.Contains(person.Job ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+                if (Plugin.Instance.Configuration.ImportSeasonName)
+                {
+                    result.Item.Name = seasonResult.Name;
+                }
+
+                result.Item.TrySetProviderId(MetadataProvider.Tvdb, seasonResult.ExternalIds.TvdbId);
+                result.Item.TrySetProviderId(MetadataProvider.Tmdb, seasonResult.Id?.ToString(CultureInfo.InvariantCulture));
+
+                // TODO why was this disabled?
+                var credits = seasonResult.Credits;
+                if (credits?.Cast is not null)
+                {
+                    var cast = credits.Cast.OrderBy(c => c.Order).Take(Plugin.Instance.Configuration.MaxCastMembers).ToList();
+                    for (var i = 0; i < cast.Count; i++)
                     {
-                        continue;
+                        result.AddPerson(new PersonInfo
+                        {
+                            Name = cast[i].Name.Trim(),
+                            Role = cast[i].Character,
+                            Type = PersonKind.Actor,
+                            SortOrder = cast[i].Order
+                        });
                     }
-
-                    result.AddPerson(new PersonInfo
-                    {
-                        Name = person.Name.Trim(),
-                        Role = person.Job,
-                        Type = type
-                    });
                 }
-            }
 
-            result.Item.PremiereDate = seasonResult.AirDate;
-            result.Item.ProductionYear = seasonResult.AirDate?.Year;
+                if (credits?.Crew is not null)
+                {
+                    foreach (var person in credits.Crew)
+                    {
+                        // Normalize this
+                        var type = TmdbUtils.MapCrewToPersonType(person);
+
+                        if (!TmdbUtils.WantedCrewKinds.Contains(type)
+                            && !TmdbUtils.WantedCrewTypes.Contains(person.Job ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+                        {
+                            continue;
+                        }
+
+                        result.AddPerson(new PersonInfo
+                        {
+                            Name = person.Name.Trim(),
+                            Role = person.Job,
+                            Type = type
+                        });
+                    }
+                }
+
+                result.Item.PremiereDate = seasonResult.AirDate;
+                result.Item.ProductionYear = seasonResult.AirDate?.Year;
+
+                return result;
+            }
 
             return result;
         }
