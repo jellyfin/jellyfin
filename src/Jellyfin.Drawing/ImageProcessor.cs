@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.IO.Hashing;
 using System.Linq;
 using System.Net.Mime;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using AsyncKeyedLock;
 using Jellyfin.Data.Entities;
@@ -38,7 +38,6 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
     private readonly IFileSystem _fileSystem;
     private readonly IServerApplicationPaths _appPaths;
     private readonly IImageEncoder _imageEncoder;
-
     private readonly AsyncNonKeyedLocker _parallelEncodingLimit;
 
     private bool _disposed;
@@ -404,8 +403,35 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
     }
 
     /// <inheritdoc />
+    public string GetImageFileHash(string path)
+    {
+        var fileInfo = new FileInfo(path);
+        if (fileInfo.Exists)
+        {
+            using (FileStream fileStream = fileInfo.Open(FileMode.Open, FileAccess.Read))
+            {
+                fileStream.Position = 0;
+                var hasher = new XxHash3();
+                hasher.Append(fileStream);
+
+                return BitConverter.ToString(hasher.GetCurrentHash()).Replace("-", string.Empty, StringComparison.Ordinal);
+            }
+        }
+
+        return string.Empty;
+    }
+
+    /// <inheritdoc />
     public string GetImageCacheTag(BaseItem item, ItemImageInfo image)
-        => (item.Path + image.DateModified.Ticks).GetMD5().ToString("N", CultureInfo.InvariantCulture);
+    {
+        var fileHash = image.FileHash;
+        if (!string.IsNullOrEmpty(fileHash))
+        {
+            return fileHash;
+        }
+
+        return (item.Path + image.DateModified.Ticks).GetMD5().ToString("N", CultureInfo.InvariantCulture);
+    }
 
     /// <inheritdoc />
     public string? GetImageCacheTag(BaseItem item, ChapterInfo chapter)
