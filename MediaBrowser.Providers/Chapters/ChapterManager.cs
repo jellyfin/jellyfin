@@ -38,8 +38,14 @@ namespace MediaBrowser.Providers.Chapters
             string? xmlFilePath = null;
 
             // Look for the XML Chapter file.
-            string[] matchingFiles = Directory.GetFiles(video.ContainingFolderPath, "*chapters.xml");
-            xmlFilePath = matchingFiles.FirstOrDefault(f => f.EndsWith("chapters.xml", StringComparison.OrdinalIgnoreCase));
+            string[] matchingFiles = Directory.GetFiles(video.ContainingFolderPath, "*.chapters.xml");
+            xmlFilePath = matchingFiles.FirstOrDefault(f =>
+            {
+                ReadOnlySpan<char> fileName = Path.GetFileName(f.AsSpan());
+                ReadOnlySpan<char> expectedFileName = video.FileNameWithoutExtension;
+                return fileName.StartsWith(expectedFileName, StringComparison.Ordinal)
+                    && fileName.Slice(expectedFileName.Length).SequenceEqual(".chapters.xml");
+            });
 
             // Use embedded chapters if local chapter file doesn't exist
             if (!File.Exists(xmlFilePath))
