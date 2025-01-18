@@ -97,6 +97,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 query.Index = null;
                 videoStream = _mediaSourceManager.GetMediaStreams(query).FirstOrDefault();
             }
+
             if (videoStream is null)
             {
                 _logger.LogInformation("Skipping image extraction: no video stream found for {Path}.", item.Path ?? string.Empty);
