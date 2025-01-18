@@ -373,7 +373,7 @@ public class ItemsController : BaseJellyfinApiController
                 EnableTotalRecordCount = enableTotalRecordCount,
                 ExcludeItemIds = excludeItemIds,
                 DtoOptions = dtoOptions,
-                SearchTerm = searchTerm,
+                SearchTerm = !string.IsNullOrEmpty(searchTerm) ? searchTerm.Trim() : searchTerm,
                 MinDateLastSaved = minDateLastSaved?.ToUniversalTime(),
                 MinDateLastSavedForUser = minDateLastSavedForUser?.ToUniversalTime(),
                 MinPremiereDate = minPremiereDate?.ToUniversalTime(),
