@@ -67,38 +67,40 @@ namespace Jellyfin.Server.Infrastructure
         }
 
         /// <inheritdoc />
-        protected override Task WriteFileAsync(ActionContext context, PhysicalFileResult result, RangeItemHeaderValue? range, long rangeLength)
+        protected override async Task WriteFileAsync(ActionContext context, PhysicalFileResult result, RangeItemHeaderValue? range, long rangeLength)
         {
             ArgumentNullException.ThrowIfNull(context);
             ArgumentNullException.ThrowIfNull(result);
 
             if (range is not null && rangeLength == 0)
             {
-                return Task.CompletedTask;
+                return;
             }
 
             // It's a bit of wasted IO to perform this check again, but non-symlinks shouldn't use this code
             if (!IsSymLink(result.FileName))
             {
-                return base.WriteFileAsync(context, result, range, rangeLength);
+                await base.WriteFileAsync(context, result, range, rangeLength).ConfigureAwait(false);
+                return;
             }
 
             var response = context.HttpContext.Response;
 
             if (range is not null)
             {
-                return SendFileAsync(
+                await SendFileAsync(
                     result.FileName,
                     response,
                     offset: range.From ?? 0L,
-                    count: rangeLength);
+                    count: rangeLength).ConfigureAwait(false);
+                return;
             }
 
-            return SendFileAsync(
+            await SendFileAsync(
                 result.FileName,
                 response,
                 offset: 0,
-                count: null);
+                count: null).ConfigureAwait(false);
         }
 
         private async Task SendFileAsync(string filePath, HttpResponse response, long offset, long? count, CancellationToken cancellationToken = default)

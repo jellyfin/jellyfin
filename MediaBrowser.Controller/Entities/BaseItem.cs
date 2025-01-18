@@ -1977,8 +1977,8 @@ namespace MediaBrowser.Controller.Entities
             ImageInfos = [..ImageInfos, image];
         }
 
-        public virtual Task UpdateToRepositoryAsync(ItemUpdateType updateReason, CancellationToken cancellationToken)
-         => LibraryManager.UpdateItemAsync(this, GetParent(), updateReason, cancellationToken);
+        public virtual async Task UpdateToRepositoryAsync(ItemUpdateType updateReason, CancellationToken cancellationToken)
+         => await LibraryManager.UpdateItemAsync(this, GetParent(), updateReason, cancellationToken).ConfigureAwait(false);
 
         /// <summary>
         /// Validates that images within the item are still on the filesystem.
@@ -2367,7 +2367,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        protected Task RefreshMetadataForOwnedItem(BaseItem ownedItem, bool copyTitleMetadata, MetadataRefreshOptions options, CancellationToken cancellationToken)
+        protected async Task RefreshMetadataForOwnedItem(BaseItem ownedItem, bool copyTitleMetadata, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             var newOptions = new MetadataRefreshOptions(options)
             {
@@ -2428,10 +2428,10 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            return ownedItem.RefreshMetadata(newOptions, cancellationToken);
+            await ownedItem.RefreshMetadata(newOptions, cancellationToken).ConfigureAwait(false);
         }
 
-        protected Task RefreshMetadataForOwnedVideo(MetadataRefreshOptions options, bool copyTitleMetadata, string path, CancellationToken cancellationToken)
+        protected async Task RefreshMetadataForOwnedVideo(MetadataRefreshOptions options, bool copyTitleMetadata, string path, CancellationToken cancellationToken)
         {
             var newOptions = new MetadataRefreshOptions(options)
             {
@@ -2441,9 +2441,7 @@ namespace MediaBrowser.Controller.Entities
             var id = LibraryManager.GetNewItemId(path, typeof(Video));
 
             // Try to retrieve it from the db. If we don't find it, use the resolved version
-            var video = LibraryManager.GetItemById(id) as Video;
-
-            if (video is null)
+            if (LibraryManager.GetItemById(id) is not Video video)
             {
                 video = LibraryManager.ResolvePath(FileSystem.GetFileSystemInfo(path)) as Video;
 
@@ -2452,15 +2450,15 @@ namespace MediaBrowser.Controller.Entities
 
             if (video is null)
             {
-                return Task.FromResult(true);
+                return;
             }
 
             if (video.OwnerId.IsEmpty())
             {
-                video.OwnerId = this.Id;
+                video.OwnerId = Id;
             }
 
-            return RefreshMetadataForOwnedItem(video, copyTitleMetadata, newOptions, cancellationToken);
+            await RefreshMetadataForOwnedItem(video, copyTitleMetadata, newOptions, cancellationToken).ConfigureAwait(false);
         }
 
         public string GetEtag(User user)
