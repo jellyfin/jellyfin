@@ -78,12 +78,16 @@ namespace Jellyfin.Server.Migrations.Routines
                     }
                     else
                     {
-                        var ratingValue = _localizationManager.GetRatingLevel(ratingString)?.ToString(CultureInfo.InvariantCulture) ?? "NULL";
+                        var ratingValue = _localizationManager.GetRatingScore(ratingString);
 
                         using var statement = connection.PrepareStatement("UPDATE TypedBaseItems SET InheritedParentalRatingValue = @Value WHERE OfficialRating = @Rating;");
-                        statement.TryBind("@Value", ratingValue);
+                        statement.TryBind("@Value", ratingValue?.Score.ToString(CultureInfo.InvariantCulture) ?? "NULL");
                         statement.TryBind("@Rating", ratingString);
                         statement.ExecuteNonQuery();
+                        using var statement2 = connection.PrepareStatement("UPDATE TypedBaseItems SET InheritedParentalRatingSubValue = @Value WHERE OfficialRating = @Rating;");
+                        statement2.TryBind("@Value", ratingValue?.SubScore?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
+                        statement2.TryBind("@Rating", ratingString);
+                        statement2.ExecuteNonQuery();
                     }
                 }
 

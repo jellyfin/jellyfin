@@ -47,8 +47,8 @@ namespace Emby.Server.Implementations.Data
 
         private const string SaveItemCommandText =
             @"replace into TypedBaseItems
-            (guid,type,data,Path,StartDate,EndDate,ChannelId,IsMovie,IsSeries,EpisodeTitle,IsRepeat,CommunityRating,CustomRating,IndexNumber,IsLocked,Name,OfficialRating,MediaType,Overview,ParentIndexNumber,PremiereDate,ProductionYear,ParentId,Genres,InheritedParentalRatingValue,SortName,ForcedSortName,RunTimeTicks,Size,DateCreated,DateModified,PreferredMetadataLanguage,PreferredMetadataCountryCode,Width,Height,DateLastRefreshed,DateLastSaved,IsInMixedFolder,LockedFields,Studios,Audio,ExternalServiceId,Tags,IsFolder,UnratedType,TopParentId,TrailerTypes,CriticRating,CleanName,PresentationUniqueKey,OriginalTitle,PrimaryVersionId,DateLastMediaAdded,Album,LUFS,NormalizationGain,IsVirtualItem,SeriesName,UserDataKey,SeasonName,SeasonId,SeriesId,ExternalSeriesId,Tagline,ProviderIds,Images,ProductionLocations,ExtraIds,TotalBitrate,ExtraType,Artists,AlbumArtists,ExternalId,SeriesPresentationUniqueKey,ShowId,OwnerId)
-            values (@guid,@type,@data,@Path,@StartDate,@EndDate,@ChannelId,@IsMovie,@IsSeries,@EpisodeTitle,@IsRepeat,@CommunityRating,@CustomRating,@IndexNumber,@IsLocked,@Name,@OfficialRating,@MediaType,@Overview,@ParentIndexNumber,@PremiereDate,@ProductionYear,@ParentId,@Genres,@InheritedParentalRatingValue,@SortName,@ForcedSortName,@RunTimeTicks,@Size,@DateCreated,@DateModified,@PreferredMetadataLanguage,@PreferredMetadataCountryCode,@Width,@Height,@DateLastRefreshed,@DateLastSaved,@IsInMixedFolder,@LockedFields,@Studios,@Audio,@ExternalServiceId,@Tags,@IsFolder,@UnratedType,@TopParentId,@TrailerTypes,@CriticRating,@CleanName,@PresentationUniqueKey,@OriginalTitle,@PrimaryVersionId,@DateLastMediaAdded,@Album,@LUFS,@NormalizationGain,@IsVirtualItem,@SeriesName,@UserDataKey,@SeasonName,@SeasonId,@SeriesId,@ExternalSeriesId,@Tagline,@ProviderIds,@Images,@ProductionLocations,@ExtraIds,@TotalBitrate,@ExtraType,@Artists,@AlbumArtists,@ExternalId,@SeriesPresentationUniqueKey,@ShowId,@OwnerId)";
+            (guid,type,data,Path,StartDate,EndDate,ChannelId,IsMovie,IsSeries,EpisodeTitle,IsRepeat,CommunityRating,CustomRating,IndexNumber,IsLocked,Name,OfficialRating,MediaType,Overview,ParentIndexNumber,PremiereDate,ProductionYear,ParentId,Genres,InheritedParentalRatingValue,InheritedParentalRatingSubValue,SortName,ForcedSortName,RunTimeTicks,Size,DateCreated,DateModified,PreferredMetadataLanguage,PreferredMetadataCountryCode,Width,Height,DateLastRefreshed,DateLastSaved,IsInMixedFolder,LockedFields,Studios,Audio,ExternalServiceId,Tags,IsFolder,UnratedType,TopParentId,TrailerTypes,CriticRating,CleanName,PresentationUniqueKey,OriginalTitle,PrimaryVersionId,DateLastMediaAdded,Album,LUFS,NormalizationGain,IsVirtualItem,SeriesName,UserDataKey,SeasonName,SeasonId,SeriesId,ExternalSeriesId,Tagline,ProviderIds,Images,ProductionLocations,ExtraIds,TotalBitrate,ExtraType,Artists,AlbumArtists,ExternalId,SeriesPresentationUniqueKey,ShowId,OwnerId)
+            values (@guid,@type,@data,@Path,@StartDate,@EndDate,@ChannelId,@IsMovie,@IsSeries,@EpisodeTitle,@IsRepeat,@CommunityRating,@CustomRating,@IndexNumber,@IsLocked,@Name,@OfficialRating,@MediaType,@Overview,@ParentIndexNumber,@PremiereDate,@ProductionYear,@ParentId,@Genres,@InheritedParentalRatingValue,@InheritedParentalRatingSubValue,@SortName,@ForcedSortName,@RunTimeTicks,@Size,@DateCreated,@DateModified,@PreferredMetadataLanguage,@PreferredMetadataCountryCode,@Width,@Height,@DateLastRefreshed,@DateLastSaved,@IsInMixedFolder,@LockedFields,@Studios,@Audio,@ExternalServiceId,@Tags,@IsFolder,@UnratedType,@TopParentId,@TrailerTypes,@CriticRating,@CleanName,@PresentationUniqueKey,@OriginalTitle,@PrimaryVersionId,@DateLastMediaAdded,@Album,@LUFS,@NormalizationGain,@IsVirtualItem,@SeriesName,@UserDataKey,@SeasonName,@SeasonId,@SeriesId,@ExternalSeriesId,@Tagline,@ProviderIds,@Images,@ProductionLocations,@ExtraIds,@TotalBitrate,@ExtraType,@Artists,@AlbumArtists,@ExternalId,@SeriesPresentationUniqueKey,@ShowId,@OwnerId)";
 
         private readonly IServerConfigurationManager _config;
         private readonly IServerApplicationHost _appHost;
@@ -118,6 +118,7 @@ namespace Emby.Server.Implementations.Data
             "SeriesId",
             "PresentationUniqueKey",
             "InheritedParentalRatingValue",
+            "InheritedParentalRatingSubValue",
             "ExternalSeriesId",
             "Tagline",
             "ProviderIds",
@@ -466,6 +467,7 @@ namespace Emby.Server.Implementations.Data
                 AddColumn(connection, "TypedBaseItems", "Tags", "Text", existingColumnNames);
                 AddColumn(connection, "TypedBaseItems", "IsFolder", "BIT", existingColumnNames);
                 AddColumn(connection, "TypedBaseItems", "InheritedParentalRatingValue", "INT", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "InheritedParentalRatingSubValue", "INT", existingColumnNames);
                 AddColumn(connection, "TypedBaseItems", "UnratedType", "Text", existingColumnNames);
                 AddColumn(connection, "TypedBaseItems", "TopParentId", "Text", existingColumnNames);
                 AddColumn(connection, "TypedBaseItems", "TrailerTypes", "Text", existingColumnNames);
@@ -736,6 +738,7 @@ namespace Emby.Server.Implementations.Data
             }
 
             saveItemStatement.TryBind("@InheritedParentalRatingValue", item.InheritedParentalRatingValue);
+            saveItemStatement.TryBind("@InheritedParentalRatingSubValue", item.InheritedParentalRatingSubValue);
 
             saveItemStatement.TryBind("@SortName", item.SortName);
 
@@ -1748,9 +1751,17 @@ namespace Emby.Server.Implementations.Data
 
             if (HasField(query, ItemFields.InheritedParentalRatingValue))
             {
-                if (reader.TryGetInt32(index++, out var parentalRating))
+                if (reader.TryGetInt32(index++, out var value))
                 {
-                    item.InheritedParentalRatingValue = parentalRating;
+                    item.InheritedParentalRatingValue = value;
+                }
+            }
+
+            if (HasField(query, ItemFields.InheritedParentalRatingSubValue))
+            {
+                if (reader.TryGetInt32(index++, out var value))
+                {
+                    item.InheritedParentalRatingSubValue = value;
                 }
             }
 
@@ -2071,6 +2082,7 @@ namespace Emby.Server.Implementations.Data
                 case ItemFields.DateLastMediaAdded:
                 case ItemFields.PresentationUniqueKey:
                 case ItemFields.InheritedParentalRatingValue:
+                case ItemFields.InheritedParentalRatingSubValue:
                 case ItemFields.ExternalSeriesId:
                 case ItemFields.SeriesPresentationUniqueKey:
                 case ItemFields.DateLastRefreshed:
@@ -2292,6 +2304,19 @@ namespace Emby.Server.Implementations.Data
                                 END)");
                 }
 
+                if (item.InheritedParentalRatingSubValue == 0)
+                {
+                    builder.Append("((InheritedParentalRatingSubValue=0) * 10)");
+                }
+                else
+                {
+                    builder.Append(
+                        @"(SELECT CASE WHEN COALESCE(InheritedParentalRatingSubValue, 0)=0
+                                THEN 0
+                                ELSE 10.0 / (1.0 + ABS(InheritedParentalRatingSubValue - @InheritedParentalRatingSubValue))
+                                END)");
+                }
+
                 if (item.ProductionYear.HasValue)
                 {
                     builder.Append("+(Select Case When Abs(COALESCE(ProductionYear, 0) - @ItemProductionYear) < 10 Then 10 Else 0 End )");
@@ -2400,6 +2425,11 @@ namespace Emby.Server.Implementations.Data
             if (commandText.Contains("@InheritedParentalRatingValue", StringComparison.OrdinalIgnoreCase))
             {
                 statement.TryBind("@InheritedParentalRatingValue", item.InheritedParentalRatingValue);
+            }
+
+            if (commandText.Contains("@InheritedParentalRatingSubValue", StringComparison.OrdinalIgnoreCase))
+            {
+                statement.TryBind("@InheritedParentalRatingSubValue", item.InheritedParentalRatingSubValue);
             }
         }
 
@@ -3739,16 +3769,28 @@ namespace Emby.Server.Implementations.Data
             if (query.HasParentalRating ?? false)
             {
                 clauseBuilder.Append("InheritedParentalRatingValue not null");
-                if (query.MinParentalRating.HasValue)
+                var minParentalRating = query.MinParentalRating;
+                if (minParentalRating is not null)
                 {
-                    clauseBuilder.Append(" AND InheritedParentalRatingValue >= @MinParentalRating");
-                    statement?.TryBind("@MinParentalRating", query.MinParentalRating.Value);
+                    clauseBuilder.Append(" AND InheritedParentalRatingValue >= @MinParentalRatingScore");
+                    statement?.TryBind("@MinParentalRatingScore", minParentalRating.Score);
+                    if (minParentalRating.SubScore is not null)
+                    {
+                        clauseBuilder.Append(" AND InheritedParentalRatingSubValue >= @MinParentalSubRating");
+                        statement?.TryBind("@MinParentalSubRating", minParentalRating.SubScore);
+                    }
                 }
 
-                if (query.MaxParentalRating.HasValue)
+                var maxParentalRating = query.MaxParentalRating;
+                if (maxParentalRating is not null)
                 {
-                    clauseBuilder.Append(" AND InheritedParentalRatingValue <= @MaxParentalRating");
-                    statement?.TryBind("@MaxParentalRating", query.MaxParentalRating.Value);
+                    clauseBuilder.Append(" AND InheritedParentalRatingValue >= @MaxParentalRating");
+                    statement?.TryBind("@MaxParentalRating", maxParentalRating.Score);
+                    if (maxParentalRating.SubScore is not null)
+                    {
+                        clauseBuilder.Append(" AND InheritedParentalRatingSubValue >= @MaxParentalSubRating");
+                        statement?.TryBind("@MaxParentalSubRating", maxParentalRating.SubScore);
+                    }
                 }
             }
             else if (query.BlockUnratedItems.Length > 0)
@@ -3766,55 +3808,91 @@ namespace Emby.Server.Implementations.Data
                 clauseBuilder.Length--;
                 clauseBuilder.Append("))");
 
-                if (query.MinParentalRating.HasValue || query.MaxParentalRating.HasValue)
+                if (query.MinParentalRating is not null || query.MaxParentalRating is not null)
                 {
                     clauseBuilder.Append(" OR (");
                 }
 
-                if (query.MinParentalRating.HasValue)
+                var minParentalRating = query.MinParentalRating;
+                if (minParentalRating is not null)
                 {
-                    clauseBuilder.Append("InheritedParentalRatingValue >= @MinParentalRating");
-                    statement?.TryBind("@MinParentalRating", query.MinParentalRating.Value);
+                    clauseBuilder.Append("(InheritedParentalRatingValue >= @MinParentalRating");
+                    statement?.TryBind("@MinParentalRating", minParentalRating.Score);
+                    if (minParentalRating.SubScore is not null)
+                    {
+                        clauseBuilder.Append(" AND InheritedParentalRatingSubValue >= @MinParentalSubRating");
+                        statement?.TryBind("@MinParentalSubRating", minParentalRating.SubScore);
+                    }
+
+                    clauseBuilder.Append(')');
                 }
 
-                if (query.MaxParentalRating.HasValue)
+                var maxParentalRating = query.MaxParentalRating;
+                if (maxParentalRating is not null)
                 {
-                    if (query.MinParentalRating.HasValue)
+                    if (minParentalRating is not null && maxParentalRating is not null)
                     {
                         clauseBuilder.Append(" AND ");
                     }
 
-                    clauseBuilder.Append("InheritedParentalRatingValue <= @MaxParentalRating");
-                    statement?.TryBind("@MaxParentalRating", query.MaxParentalRating.Value);
+                    clauseBuilder.Append("(InheritedParentalRatingValue <= @MaxParentalRating");
+                    statement?.TryBind("@MaxParentalRating", maxParentalRating!.Score);
+                    if (maxParentalRating!.SubScore is not null)
+                    {
+                        clauseBuilder.Append(" AND InheritedParentalRatingSubValue >= @MaxParentalSubRating");
+                        statement?.TryBind("@MaxParentalSubRating", maxParentalRating.SubScore);
+                    }
+
+                    clauseBuilder.Append(')');
                 }
 
-                if (query.MinParentalRating.HasValue || query.MaxParentalRating.HasValue)
+                if (query.MinParentalRating is not null || query.MaxParentalRating is not null)
                 {
                     clauseBuilder.Append(')');
                 }
 
-                if (!(query.MinParentalRating.HasValue || query.MaxParentalRating.HasValue))
+                if (!(query.MinParentalRating is not null || query.MaxParentalRating is not null))
                 {
                     clauseBuilder.Append(" OR InheritedParentalRatingValue not null");
                 }
             }
-            else if (query.MinParentalRating.HasValue)
+            else if (query.MinParentalRating is not null)
             {
+                var minParentalRating = query.MinParentalRating;
                 clauseBuilder.Append("InheritedParentalRatingValue is null OR (InheritedParentalRatingValue >= @MinParentalRating");
-                statement?.TryBind("@MinParentalRating", query.MinParentalRating.Value);
+                statement?.TryBind("@MinParentalRating", minParentalRating.Score);
+                if (minParentalRating.SubScore is not null)
+                {
+                    clauseBuilder.Append(" AND InheritedParentalRatingSubValue >= @MinParentalSubRating");
+                    statement?.TryBind("@MinParentalSubRating", minParentalRating.SubScore);
+                }
 
-                if (query.MaxParentalRating.HasValue)
+                var maxParentalRating = query.MaxParentalRating;
+                if (maxParentalRating is not null)
                 {
                     clauseBuilder.Append(" AND InheritedParentalRatingValue <= @MaxParentalRating");
-                    statement?.TryBind("@MaxParentalRating", query.MaxParentalRating.Value);
+                    statement?.TryBind("@MaxParentalRating", maxParentalRating.Score);
+                    if (maxParentalRating.SubScore is not null)
+                    {
+                        clauseBuilder.Append(" AND InheritedParentalRatingSubValue >= @MaxParentalSubRating");
+                        statement?.TryBind("@MaxParentalSubRating", maxParentalRating.SubScore);
+                    }
                 }
 
                 clauseBuilder.Append(')');
             }
-            else if (query.MaxParentalRating.HasValue)
+            else if (query.MaxParentalRating is not null)
             {
-                clauseBuilder.Append("InheritedParentalRatingValue is null OR InheritedParentalRatingValue <= @MaxParentalRating");
-                statement?.TryBind("@MaxParentalRating", query.MaxParentalRating.Value);
+                var maxParentalRating = query.MaxParentalRating;
+                clauseBuilder.Append("InheritedParentalRatingValue is null OR (InheritedParentalRatingValue <= @MaxParentalRating");
+                statement?.TryBind("@MaxParentalRating", maxParentalRating.Score);
+                if (maxParentalRating.SubScore is not null)
+                {
+                    clauseBuilder.Append(" AND InheritedParentalRatingSubValue >= @MaxParentalSubRating");
+                    statement?.TryBind("@MaxParentalSubRating", maxParentalRating.SubScore);
+                }
+
+                clauseBuilder.Append(')');
             }
             else if (!query.HasParentalRating ?? false)
             {

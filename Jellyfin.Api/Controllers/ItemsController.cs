@@ -446,13 +446,13 @@ public class ItemsController : BaseJellyfinApiController
             // Min official rating
             if (!string.IsNullOrWhiteSpace(minOfficialRating))
             {
-                query.MinParentalRating = _localization.GetRatingLevel(minOfficialRating);
+                query.MinParentalRating = _localization.GetRatingScore(minOfficialRating);
             }
 
             // Max official rating
             if (!string.IsNullOrWhiteSpace(maxOfficialRating))
             {
-                query.MaxParentalRating = _localization.GetRatingLevel(maxOfficialRating);
+                query.MaxParentalRating = _localization.GetRatingScore(maxOfficialRating);
             }
 
             // Artists
