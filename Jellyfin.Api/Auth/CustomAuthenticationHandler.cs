@@ -1,7 +1,9 @@
+using System;
 using System.Globalization;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Jellyfin.Api.Auth.JwtAuth;
 using Jellyfin.Api.Constants;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Authentication;
@@ -19,6 +21,7 @@ namespace Jellyfin.Api.Auth
     {
         private readonly IAuthService _authService;
         private readonly ILogger<CustomAuthenticationHandler> _logger;
+        private readonly JwtAuthenticationHandler? _jwtHandler;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CustomAuthenticationHandler" /> class.
@@ -31,15 +34,40 @@ namespace Jellyfin.Api.Auth
             IAuthService authService,
             IOptionsMonitor<AuthenticationSchemeOptions> options,
             ILoggerFactory logger,
-            UrlEncoder encoder)
+            UrlEncoder encoder,
+            IOptions<JwtOptions>? jwtOptions = null)
             : base(options, logger, encoder)
         {
             _authService = authService;
             _logger = logger.CreateLogger<CustomAuthenticationHandler>();
+            
+            if (jwtOptions?.Value.JwksUrl != null)
+            {
+                _jwtHandler = new JwtAuthenticationHandler(
+                    jwtOptions,
+                    Options,
+                    logger,
+                    encoder);
+            }
         }
 
         /// <inheritdoc />
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
+        {
+            // Try JWT authentication first if configured
+            if (_jwtHandler != null)
+            {
+                var jwtResult = await _jwtHandler.HandleAuthenticateAsync().ConfigureAwait(false);
+                if (jwtResult.Succeeded)
+                {
+                    return jwtResult;
+                }
+            }
+
+            return await HandleLegacyAuthenticateAsync().ConfigureAwait(false);
+        }
+
+        private async Task<AuthenticateResult> HandleLegacyAuthenticateAsync()
         {
             try
             {
