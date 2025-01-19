@@ -94,7 +94,10 @@ public sealed class BaseItemRepository
     /// <inheritdoc />
     public void DeleteItem(Guid id)
     {
-        ArgumentNullException.ThrowIfNull(id.IsEmpty() ? null : id);
+        if (id.IsEmpty())
+        {
+            throw new ArgumentException("Guid can't be empty", nameof(id));
+        }
 
         using var context = _dbProvider.CreateDbContext();
         using var transaction = context.Database.BeginTransaction();
