@@ -62,7 +62,7 @@ public sealed class LibraryStructureControllerTests : IClassFixture<JellyfinAppl
     }
 
     [Fact]
-    [Priority(-2)]
+    [Priority(0)]
     public async Task UpdateLibraryOptions_Valid_Success()
     {
         var client = _factory.CreateClient();

@@ -1216,13 +1216,7 @@ public sealed class BaseItemRepository
 
         if (hasSearch)
         {
-            List<(ItemSortBy, SortOrder)> prepend = new List<(ItemSortBy, SortOrder)>(4);
-            if (hasSearch)
-            {
-                prepend.Add((ItemSortBy.SortName, SortOrder.Ascending));
-            }
-
-            orderBy = filter.OrderBy = [.. prepend, .. orderBy];
+            orderBy = filter.OrderBy = [(ItemSortBy.SortName, SortOrder.Ascending), .. orderBy];
         }
         else if (orderBy.Count == 0)
         {
