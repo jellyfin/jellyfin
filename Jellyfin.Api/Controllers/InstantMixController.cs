@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
@@ -389,23 +391,19 @@ public class InstantMixController : BaseJellyfinApiController
         return GetResult(items, user, limit, dtoOptions);
     }
 
-    private QueryResult<BaseItemDto> GetResult(List<BaseItem> items, User? user, int? limit, DtoOptions dtoOptions)
+    private QueryResult<BaseItemDto> GetResult(IReadOnlyList<BaseItem> items, User? user, int? limit, DtoOptions dtoOptions)
     {
-        var list = items;
+        var totalCount = items.Count;
 
-        var totalCount = list.Count;
-
-        if (limit.HasValue && limit < list.Count)
+        if (limit.HasValue && limit < items.Count)
         {
-            list = list.GetRange(0, limit.Value);
+            items = items.Take(limit.Value).ToArray();
         }
-
-        var returnList = _dtoService.GetBaseItemDtos(list, dtoOptions, user);
 
         var result = new QueryResult<BaseItemDto>(
             0,
             totalCount,
-            returnList);
+            _dtoService.GetBaseItemDtos(items, dtoOptions, user));
 
         return result;
     }
