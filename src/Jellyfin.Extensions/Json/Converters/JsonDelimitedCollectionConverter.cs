@@ -10,14 +10,14 @@ namespace Jellyfin.Extensions.Json.Converters
     /// Convert delimited string to array of type.
     /// </summary>
     /// <typeparam name="T">Type to convert to.</typeparam>
-    public abstract class JsonDelimitedArrayConverter<T> : JsonConverter<T[]>
+    public abstract class JsonDelimitedCollectionConverter<T> : JsonConverter<IReadOnlyCollection<T>>
     {
         private readonly TypeConverter _typeConverter;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="JsonDelimitedArrayConverter{T}"/> class.
+        /// Initializes a new instance of the <see cref="JsonDelimitedCollectionConverter{T}"/> class.
         /// </summary>
-        protected JsonDelimitedArrayConverter()
+        protected JsonDelimitedCollectionConverter()
         {
             _typeConverter = TypeDescriptor.GetConverter(typeof(T));
         }
@@ -28,7 +28,7 @@ namespace Jellyfin.Extensions.Json.Converters
         protected virtual char Delimiter { get; }
 
         /// <inheritdoc />
-        public override T[]? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override IReadOnlyCollection<T>? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             if (reader.TokenType == JsonTokenType.String)
             {
@@ -56,35 +56,21 @@ namespace Jellyfin.Extensions.Json.Converters
                     }
                 }
 
-                return typedValues.ToArray();
+                if (typeToConvert.IsArray)
+                {
+                    return typedValues.ToArray();
+                }
+
+                return typedValues;
             }
 
             return JsonSerializer.Deserialize<T[]>(ref reader, options);
         }
 
         /// <inheritdoc />
-        public override void Write(Utf8JsonWriter writer, T[]? value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, IReadOnlyCollection<T>? value, JsonSerializerOptions options)
         {
-            if (value is not null)
-            {
-                writer.WriteStartArray();
-                if (value.Length > 0)
-                {
-                    foreach (var it in value)
-                    {
-                        if (it is not null)
-                        {
-                            writer.WriteStringValue(it.ToString());
-                        }
-                    }
-                }
-
-                writer.WriteEndArray();
-            }
-            else
-            {
-                writer.WriteNullValue();
-            }
+            JsonSerializer.Serialize(writer, value, options);
         }
     }
 }
