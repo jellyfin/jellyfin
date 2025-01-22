@@ -257,5 +257,23 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
 
             Assert.Throws<ArgumentException>(() => _parser.Fetch(result, string.Empty, CancellationToken.None));
         }
+
+        [Fact]
+        public void Parsing_Fields_With_Escaped_Xml_Special_Characters_Success()
+        {
+            var result = new MetadataResult<Video>()
+            {
+                Item = new Movie()
+            };
+
+            _parser.Fetch(result, "Test Data/Lilo & Stitch.nfo", CancellationToken.None);
+            var item = (Movie)result.Item;
+
+            Assert.Equal("Lilo & Stitch", item.Name);
+            Assert.Equal("Lilo & Stitch", item.OriginalTitle);
+            Assert.Equal("Lilo & Stitch Collection", item.CollectionName);
+            Assert.StartsWith(">>", item.Overview, StringComparison.InvariantCulture);
+            Assert.EndsWith("<<", item.Overview, StringComparison.InvariantCulture);
+        }
     }
 }
