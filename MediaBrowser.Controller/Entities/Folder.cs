@@ -1240,11 +1240,6 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            if (request.GenreIds.Count > 0)
-            {
-                return false;
-            }
-
             if (request.VideoTypes.Length > 0)
             {
                 return false;

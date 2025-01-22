@@ -354,7 +354,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 blurayVideoStream.Codec = ffmpegVideoStream.Codec;
                 blurayVideoStream.BitRate = blurayVideoStream.BitRate.GetValueOrDefault() == 0 ? ffmpegVideoStream.BitRate : blurayVideoStream.BitRate;
                 blurayVideoStream.Width = blurayVideoStream.Width.GetValueOrDefault() == 0 ? ffmpegVideoStream.Width : blurayVideoStream.Width;
-                blurayVideoStream.Height = blurayVideoStream.Height.GetValueOrDefault() == 0 ? ffmpegVideoStream.Width : blurayVideoStream.Height;
+                blurayVideoStream.Height = blurayVideoStream.Height.GetValueOrDefault() == 0 ? ffmpegVideoStream.Height : blurayVideoStream.Height;
                 blurayVideoStream.ColorRange = ffmpegVideoStream.ColorRange;
                 blurayVideoStream.ColorSpace = ffmpegVideoStream.ColorSpace;
                 blurayVideoStream.ColorTransfer = ffmpegVideoStream.ColorTransfer;

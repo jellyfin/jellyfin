@@ -132,7 +132,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 var series = Series;
                 if (series is not null)
                 {
-                    return series.PresentationUniqueKey + "-" + (IndexNumber ?? 0).ToString("000", CultureInfo.InvariantCulture);
+                    return series.PresentationUniqueKey + "-" + IndexNumber.Value.ToString("000", CultureInfo.InvariantCulture);
                 }
             }
 
