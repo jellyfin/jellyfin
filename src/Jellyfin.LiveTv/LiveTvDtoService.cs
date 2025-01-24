@@ -229,7 +229,7 @@ namespace Jellyfin.LiveTv
                     }
                 }
 
-                if (dto.ParentBackdropImageTags is null || dto.ParentBackdropImageTags.Length == 0)
+                if (dto.ParentBackdropImageTags is null || dto.ParentBackdropImageTags.Count == 0)
                 {
                     image = program.GetImageInfo(ImageType.Backdrop, 0);
                     if (image is not null)

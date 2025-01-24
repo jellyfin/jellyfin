@@ -95,7 +95,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             Assert.Equal("tt0974015", item.ProviderIds[MetadataProvider.Imdb.ToString()]);
             Assert.Equal("141052", item.ProviderIds[MetadataProvider.Tmdb.ToString()]);
 
-            Assert.Equal(4, item.Genres.Length);
+            Assert.Equal(4, item.Genres.Count);
             Assert.Contains("Action", item.Genres);
             Assert.Contains("Adventure", item.Genres);
             Assert.Contains("Fantasy", item.Genres);

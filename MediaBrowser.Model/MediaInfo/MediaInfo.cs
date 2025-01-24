@@ -21,7 +21,7 @@ namespace MediaBrowser.Model.MediaInfo
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
-        public ChapterInfo[] Chapters { get; set; }
+        public IReadOnlyList<ChapterInfo> Chapters { get; set; }
 
         /// <summary>
         /// Gets or sets the album.
@@ -33,21 +33,21 @@ namespace MediaBrowser.Model.MediaInfo
         /// Gets or sets the artists.
         /// </summary>
         /// <value>The artists.</value>
-        public string[] Artists { get; set; }
+        public IReadOnlyList<string> Artists { get; set; }
 
         /// <summary>
         /// Gets or sets the album artists.
         /// </summary>
         /// <value>The album artists.</value>
-        public string[] AlbumArtists { get; set; }
+        public IReadOnlyList<string> AlbumArtists { get; set; }
 
         /// <summary>
         /// Gets or sets the studios.
         /// </summary>
         /// <value>The studios.</value>
-        public string[] Studios { get; set; }
+        public IReadOnlyList<string> Studios { get; set; }
 
-        public string[] Genres { get; set; }
+        public IReadOnlyList<string> Genres { get; set; }
 
         public string ShowName { get; set; }
 
@@ -61,7 +61,7 @@ namespace MediaBrowser.Model.MediaInfo
 
         public DateTime? PremiereDate { get; set; }
 
-        public BaseItemPerson[] People { get; set; }
+        public IReadOnlyList<BaseItemPerson> People { get; set; }
 
         public Dictionary<string, string> ProviderIds { get; set; }
 

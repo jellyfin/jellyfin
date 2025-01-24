@@ -1305,7 +1305,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 : Array.Empty<string>();
 
             // Set album artist to artist if empty
-            if (audio.AlbumArtists.Length == 0)
+            if (audio.AlbumArtists.Count == 0)
             {
                 audio.AlbumArtists = audio.Artists;
             }

@@ -25,7 +25,7 @@ namespace MediaBrowser.Controller.LiveTv
 
         public Dictionary<string, string> SeriesProviderIds { get; set; }
 
-        public string[] Tags { get; set; }
+        public IReadOnlyList<string> Tags { get; set; }
 
         /// <summary>
         /// Gets or sets the id of the recording.

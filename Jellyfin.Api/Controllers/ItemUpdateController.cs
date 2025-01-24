@@ -8,6 +8,7 @@ using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Data.Enums;
+using Jellyfin.Data.Extensions;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -264,7 +265,7 @@ public class ItemUpdateController : BaseJellyfinApiController
 
         if (request.Studios is not null)
         {
-            item.Studios = Array.ConvertAll(request.Studios, x => x.Name);
+            item.Studios = request.Studios.ConvertAll(x => x.Name);
         }
 
         if (request.DateCreated.HasValue)
@@ -415,7 +416,7 @@ public class ItemUpdateController : BaseJellyfinApiController
         {
             if (item is IHasAlbumArtist hasAlbumArtists)
             {
-                hasAlbumArtists.AlbumArtists = Array.ConvertAll(request.AlbumArtists, i => i.Name);
+                hasAlbumArtists.AlbumArtists = request.AlbumArtists.ConvertAll(i => i.Name);
             }
         }
 
@@ -423,7 +424,7 @@ public class ItemUpdateController : BaseJellyfinApiController
         {
             if (item is IHasArtist hasArtists)
             {
-                hasArtists.Artists = Array.ConvertAll(request.ArtistItems, i => i.Name);
+                hasArtists.Artists = request.ArtistItems.ConvertAll(i => i.Name);
             }
         }
 
