@@ -3,9 +3,11 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
@@ -236,7 +238,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 chapters = Array.Empty<ChapterInfo>();
             }
 
-            chapters = _chapterManager.AddExternalChapters(video, chapters);
+            chapters = await AddExternalChapters(video, chapters).ConfigureAwait(false);
 
             var libraryOptions = _libraryManager.GetLibraryOptions(video);
 
@@ -618,6 +620,57 @@ namespace MediaBrowser.Providers.MediaInfo
             video.AudioFiles = externalAudioStreams.Select(i => i.Path).Distinct().ToArray();
 
             currentStreams.AddRange(externalAudioStreams);
+        }
+
+        /// <summary>
+        /// Reads chapter information from external XML file.
+        /// </summary>
+        /// <param name="video">The video item.</param>
+        /// <param name="chapters">The set of chapters.</param>
+        /// <returns>A list of ChapterInfo objects read from the local XML file.</returns>
+        private static Task<ChapterInfo[]> AddExternalChapters(Video video, IReadOnlyList<ChapterInfo> chapters)
+        {
+            var xmlFilePath = MediaInfoResolver.GetExternalChapterFile(video);
+
+            // Save the chapter paths.
+            video.ChapterFiles = new[] { xmlFilePath };
+
+            // Use embedded chapters if local chapter file doesn't exist
+            if (!File.Exists(xmlFilePath))
+            {
+                return Task.FromResult(chapters.ToArray());
+            }
+
+            var chapterInfos = new List<ChapterInfo>();
+
+            // Load and parse the XML file
+            var xmlDoc = new XmlDocument();
+            xmlDoc.Load(xmlFilePath);
+
+            // Navigate to the "chapters" node
+            XmlNodeList chapterNodes = xmlDoc.GetElementsByTagName("chapter");
+
+            foreach (XmlNode chapterNode in chapterNodes)
+            {
+                // Parse the "time" attribute as the chapter start time
+                var startTime = chapterNode.Attributes?["time"]?.InnerText;
+                // Parse the "name" attribute as the chapter name
+                var name = chapterNode.Attributes?["name"]?.InnerText;
+
+                // Create and populate a ChapterInfo object
+                var chapterInfo = new ChapterInfo();
+
+                if (startTime != null && TimeSpan.TryParse(startTime, out var timeSpan))
+                {
+                    chapterInfo.StartPositionTicks = timeSpan.Ticks;
+                }
+
+                chapterInfo.Name = name;
+
+                chapterInfos.Add(chapterInfo);
+            }
+
+            return Task.FromResult(chapterInfos.ToArray());
         }
 
         /// <summary>

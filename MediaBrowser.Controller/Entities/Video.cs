@@ -36,6 +36,7 @@ namespace MediaBrowser.Controller.Entities
             LocalAlternateVersions = Array.Empty<string>();
             SubtitleFiles = Array.Empty<string>();
             AudioFiles = Array.Empty<string>();
+            ChapterFiles = Array.Empty<string>();
             LinkedAlternateVersions = Array.Empty<LinkedChild>();
         }
 
@@ -105,6 +106,12 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The audio paths.</value>
         public string[] AudioFiles { get; set; }
+
+        /// <summary>
+        /// Gets or sets the chapter paths.
+        /// </summary>
+        /// <value>The chapter paths.</value>
+        public string[] ChapterFiles { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance has subtitles.
