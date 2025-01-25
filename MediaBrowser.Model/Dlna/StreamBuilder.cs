@@ -1001,6 +1001,9 @@ namespace MediaBrowser.Model.Dlna
                     }))
                     .All(satisfied => satisfied);
 
+            var containerBitrateExceed = (playlistItem.TranscodeReasons & TranscodeReason.ContainerBitrateExceedsLimit) != 0;
+            directAudioStreamSatisfied = directAudioStreamSatisfied && !containerBitrateExceed;
+
             var directAudioStream = directAudioStreamSatisfied ? audioStreamWithSupportedCodec : null;
 
             if (channelsExceedsLimit && playlistItem.TargetAudioStream is not null)
