@@ -134,7 +134,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <inheritdoc />
-        public override IEnumerable<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)
+        public override IReadOnlyList<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)
         {
             query.SetUser(user);
             query.Recursive = true;
@@ -145,7 +145,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <inheritdoc />
-        protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
+        protected override IReadOnlyList<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
         {
             return GetChildren(user, false);
         }

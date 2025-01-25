@@ -1,10 +1,13 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Server.Implementations;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Data
@@ -13,20 +16,24 @@ namespace Emby.Server.Implementations.Data
     {
         private readonly ILibraryManager _libraryManager;
         private readonly ILogger<CleanDatabaseScheduledTask> _logger;
+        private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
 
-        public CleanDatabaseScheduledTask(ILibraryManager libraryManager, ILogger<CleanDatabaseScheduledTask> logger)
+        public CleanDatabaseScheduledTask(
+            ILibraryManager libraryManager,
+            ILogger<CleanDatabaseScheduledTask> logger,
+            IDbContextFactory<JellyfinDbContext> dbProvider)
         {
             _libraryManager = libraryManager;
             _logger = logger;
+            _dbProvider = dbProvider;
         }
 
-        public Task Run(IProgress<double> progress, CancellationToken cancellationToken)
+        public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            CleanDeadItems(cancellationToken, progress);
-            return Task.CompletedTask;
+            await CleanDeadItems(cancellationToken, progress).ConfigureAwait(false);
         }
 
-        private void CleanDeadItems(CancellationToken cancellationToken, IProgress<double> progress)
+        private async Task CleanDeadItems(CancellationToken cancellationToken, IProgress<double> progress)
         {
             var itemIds = _libraryManager.GetItemIds(new InternalItemsQuery
             {
@@ -34,7 +41,7 @@ namespace Emby.Server.Implementations.Data
             });
 
             var numComplete = 0;
-            var numItems = itemIds.Count;
+            var numItems = itemIds.Count + 1;
 
             _logger.LogDebug("Cleaning {0} items with dead parent links", numItems);
 
@@ -58,6 +65,17 @@ namespace Emby.Server.Implementations.Data
                 double percent = numComplete;
                 percent /= numItems;
                 progress.Report(percent * 100);
+            }
+
+            var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+            await using (context.ConfigureAwait(false))
+            {
+                var transaction = await context.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
+                await using (transaction.ConfigureAwait(false))
+                {
+                    await context.ItemValues.Where(e => e.BaseItemsMap!.Count == 0).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+                    await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+                }
             }
 
             progress.Report(100);

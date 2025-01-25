@@ -64,7 +64,7 @@ namespace MediaBrowser.Controller.Entities
             return CreateResolveArgs(directoryService, true).FileSystemChildren;
         }
 
-        protected override List<BaseItem> LoadChildren()
+        protected override IReadOnlyList<BaseItem> LoadChildren()
         {
             lock (_childIdsLock)
             {

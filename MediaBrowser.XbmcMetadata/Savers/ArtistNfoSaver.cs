@@ -67,7 +67,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             AddAlbums(albums, writer);
         }
 
-        private void AddAlbums(IList<BaseItem> albums, XmlWriter writer)
+        private void AddAlbums(IReadOnlyList<BaseItem> albums, XmlWriter writer)
         {
             foreach (var album in albums)
             {

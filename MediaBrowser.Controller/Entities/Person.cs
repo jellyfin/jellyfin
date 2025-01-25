@@ -14,6 +14,7 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// This is the full Person object that can be retrieved with all of it's data.
     /// </summary>
+    [Common.RequiresSourceSerialisation]
     public class Person : BaseItem, IItemByName, IHasLookupInfo<PersonLookupInfo>
     {
         /// <summary>
@@ -62,7 +63,7 @@ namespace MediaBrowser.Controller.Entities
             return value;
         }
 
-        public IList<BaseItem> GetTaggedItems(InternalItemsQuery query)
+        public IReadOnlyList<BaseItem> GetTaggedItems(InternalItemsQuery query)
         {
             query.PersonIds = new[] { Id };
 

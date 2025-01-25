@@ -383,7 +383,7 @@ namespace MediaBrowser.Model.Entities
                             attributes.Add(string.IsNullOrEmpty(LocalizedUndefined) ? "Und" : LocalizedUndefined);
                         }
 
-                        if (IsHearingImpaired)
+                        if (IsHearingImpaired == true)
                         {
                             attributes.Add(string.IsNullOrEmpty(LocalizedHearingImpaired) ? "Hearing Impaired" : LocalizedHearingImpaired);
                         }
@@ -500,7 +500,7 @@ namespace MediaBrowser.Model.Entities
         /// Gets or sets a value indicating whether this instance is for the hearing impaired.
         /// </summary>
         /// <value><c>true</c> if this instance is for the hearing impaired; otherwise, <c>false</c>.</value>
-        public bool IsHearingImpaired { get; set; }
+        public bool? IsHearingImpaired { get; set; }
 
         /// <summary>
         /// Gets or sets the height.
