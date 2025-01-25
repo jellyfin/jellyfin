@@ -23,6 +23,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
@@ -491,13 +492,17 @@ namespace Emby.Server.Implementations.Library
 
                 var allowRememberingSelection = item is null || item.EnableRememberingTrackSelections;
 
-                var originalLanguage = item?.OriginalLanguage;
-                var parent = item?.DisplayParent;
-                while (originalLanguage is null && parent is not null && !parent.IsTopParent)
+                var originalLanguage = item?.OriginalLanguage ?? item switch
                 {
-                    originalLanguage = parent?.OriginalLanguage;
-                    parent = parent?.DisplayParent;
-                }
+                    Episode episode => episode.Series.OriginalLanguage,
+                    Video video => video.GetOwner() switch
+                    {
+                        Episode ownerEpisode => ownerEpisode.OriginalLanguage ?? ownerEpisode.Series.OriginalLanguage,
+                        BaseItem owner => owner.OriginalLanguage,
+                        null => null
+                    },
+                    _ => null
+                };
 
                 SetDefaultAudioStreamIndex(source, userData, user, allowRememberingSelection, originalLanguage);
                 SetDefaultSubtitleStreamIndex(source, userData, user, allowRememberingSelection);

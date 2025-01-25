@@ -39,8 +39,11 @@ namespace Jellyfin.Server.Implementations.Tests.Library
 
             _mediaSourceManager = fixture.Create<MediaSourceManager>();
 
-            _item = fixture.Create<Video>();
-            _item.ParentId = Guid.Empty;
+            _item = fixture.Build<Video>()
+                .With(v => v.OwnerId, Guid.Empty)
+                .With(v => v.ParentId, Guid.Empty)
+                .Create();
+
             _user = fixture.Create<User>();
         }
 
