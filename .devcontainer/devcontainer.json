@@ -1,15 +1,15 @@
 {
     "name": "Development Jellyfin Server",
-    "image":"mcr.microsoft.com/devcontainers/dotnet:8.0-jammy",
+    "image":"mcr.microsoft.com/devcontainers/dotnet:9.0-bookworm",
     // restores nuget packages, installs the dotnet workloads and installs the dev https certificate
-    "postStartCommand": "dotnet restore; dotnet workload update; dotnet dev-certs https --trust",
+    "postStartCommand": "sudo dotnet restore; sudo dotnet workload update; sudo dotnet dev-certs https --trust; sudo bash \"./.devcontainer/install-ffmpeg.sh\"",
     // reads the extensions list and installs them
     "postAttachCommand": "cat .vscode/extensions.json | jq -r .recommendations[] | xargs -n 1 code --install-extension",
     "features": {
         "ghcr.io/devcontainers/features/dotnet:2": {
             "version": "none",
-            "dotnetRuntimeVersions": "8.0",
-            "aspNetCoreRuntimeVersions": "8.0"
+            "dotnetRuntimeVersions": "9.0",
+            "aspNetCoreRuntimeVersions": "9.0"
         },
         "ghcr.io/devcontainers-contrib/features/apt-packages:1": {
             "preserve_apt_list": false,

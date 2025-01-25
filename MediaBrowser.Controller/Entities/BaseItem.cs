@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -16,6 +17,7 @@ using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities.Audio;
@@ -478,6 +480,8 @@ namespace MediaBrowser.Controller.Entities
         public static ILocalizationManager LocalizationManager { get; set; }
 
         public static IItemRepository ItemRepository { get; set; }
+
+        public static IChapterRepository ChapterRepository { get; set; }
 
         public static IFileSystem FileSystem { get; set; }
 
@@ -1041,7 +1045,7 @@ namespace MediaBrowser.Controller.Entities
             return PlayAccess.Full;
         }
 
-        public virtual List<MediaStream> GetMediaStreams()
+        public virtual IReadOnlyList<MediaStream> GetMediaStreams()
         {
             return MediaSourceManager.GetMediaStreams(new MediaStreamQuery
             {
@@ -1054,7 +1058,7 @@ namespace MediaBrowser.Controller.Entities
             return false;
         }
 
-        public virtual List<MediaSourceInfo> GetMediaSources(bool enablePathSubstitution)
+        public virtual IReadOnlyList<MediaSourceInfo> GetMediaSources(bool enablePathSubstitution)
         {
             if (SourceType == SourceType.Channel)
             {
@@ -1088,7 +1092,7 @@ namespace MediaBrowser.Controller.Entities
                 return 1;
             }).ThenBy(i => i.Video3DFormat.HasValue ? 1 : 0)
             .ThenByDescending(i => i, new MediaSourceWidthComparator())
-            .ToList();
+            .ToArray();
         }
 
         protected virtual IEnumerable<(BaseItem Item, MediaSourceType MediaSourceType)> GetAllItemsForMediaSources()
@@ -1781,7 +1785,7 @@ namespace MediaBrowser.Controller.Entities
                 }
                 else
                 {
-                    Studios = [..current, name];
+                    Studios = [.. current, name];
                 }
             }
         }
@@ -1803,7 +1807,7 @@ namespace MediaBrowser.Controller.Entities
             var genres = Genres;
             if (!genres.Contains(name, StringComparison.OrdinalIgnoreCase))
             {
-                Genres = [..genres, name];
+                Genres = [.. genres, name];
             }
         }
 
@@ -1821,7 +1825,10 @@ namespace MediaBrowser.Controller.Entities
         {
             ArgumentNullException.ThrowIfNull(user);
 
-            var data = UserDataManager.GetUserData(user, this);
+            var data = UserDataManager.GetUserData(user, this) ?? new UserItemData()
+            {
+                Key = GetUserDataKeys().First(),
+            };
 
             if (datePlayed.HasValue)
             {
@@ -1974,7 +1981,7 @@ namespace MediaBrowser.Controller.Entities
 
         public void AddImage(ItemImageInfo image)
         {
-            ImageInfos = [..ImageInfos, image];
+            ImageInfos = [.. ImageInfos, image];
         }
 
         public virtual Task UpdateToRepositoryAsync(ItemUpdateType updateReason, CancellationToken cancellationToken)
@@ -2031,7 +2038,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (imageType == ImageType.Chapter)
             {
-                var chapter = ItemRepository.GetChapter(this, imageIndex);
+                var chapter = ChapterRepository.GetChapter(this.Id, imageIndex);
 
                 if (chapter is null)
                 {
@@ -2081,7 +2088,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (image.Type == ImageType.Chapter)
             {
-                var chapters = ItemRepository.GetChapters(this);
+                var chapters = ChapterRepository.GetChapters(this.Id);
                 for (var i = 0; i < chapters.Count; i++)
                 {
                     if (chapters[i].ImagePath == image.Path)
@@ -2524,7 +2531,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="children">Media children.</param>
         /// <returns><c>true</c> if the rating was updated; otherwise <c>false</c>.</returns>
-        public bool UpdateRatingToItems(IList<BaseItem> children)
+        public bool UpdateRatingToItems(IReadOnlyList<BaseItem> children)
         {
             var currentOfficialRating = OfficialRating;
 

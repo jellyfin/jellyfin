@@ -44,7 +44,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="user">User to use.</param>
         /// <param name="item">Item to use.</param>
         /// <returns>User data.</returns>
-        UserItemData GetUserData(User user, BaseItem item);
+        UserItemData? GetUserData(User user, BaseItem item);
 
         /// <summary>
         /// Gets the user data dto.
@@ -52,7 +52,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="item">Item to use.</param>
         /// <param name="user">User to use.</param>
         /// <returns>User data dto.</returns>
-        UserItemDataDto GetUserDataDto(BaseItem item, User user);
+        UserItemDataDto? GetUserDataDto(BaseItem item, User user);
 
         /// <summary>
         /// Gets the user data dto.
@@ -62,7 +62,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="user">User to use.</param>
         /// <param name="options">Dto options to use.</param>
         /// <returns>User data dto.</returns>
-        UserItemDataDto GetUserDataDto(BaseItem item, BaseItemDto? itemDto, User user, DtoOptions options);
+        UserItemDataDto? GetUserDataDto(BaseItem item, BaseItemDto? itemDto, User user, DtoOptions options);
 
         /// <summary>
         /// Updates playstate for an item and returns true or false indicating if it was played to completion.

@@ -125,5 +125,11 @@
     "TaskKeyframeExtractor": "কি-ফ্রেম নিষ্কাশক",
     "TaskKeyframeExtractorDescription": "ভিডিয়ো থেকে কি-ফ্রেম নিষ্কাশনের মাধ্যমে অধিকতর সঠিক HLS প্লে লিস্ট তৈরী করে। এই প্রক্রিয়া দীর্ঘ সময় ধরে চলতে পারে।",
     "TaskRefreshTrickplayImages": "ট্রিকপ্লে ইমেজ তৈরি করুন",
-    "TaskRefreshTrickplayImagesDescription": "সক্ষম লাইব্রেরিতে ভিডিওর জন্য ট্রিকপ্লে প্রিভিউ তৈরি করে।"
+    "TaskRefreshTrickplayImagesDescription": "সক্ষম লাইব্রেরিতে ভিডিওর জন্য ট্রিকপ্লে প্রিভিউ তৈরি করে।",
+    "TaskDownloadMissingLyricsDescription": "গানের লিরিক্স ডাউনলোড করে",
+    "TaskCleanCollectionsAndPlaylists": "সংগ্রহ এবং প্লেলিস্ট পরিষ্কার করুন",
+    "TaskCleanCollectionsAndPlaylistsDescription": "সংগ্রহ এবং প্লেলিস্ট থেকে আইটেমগুলি সরিয়ে দেয় যা আর বিদ্যমান নেই।",
+    "TaskExtractMediaSegments": "মিডিয়া সেগমেন্ট স্ক্যান",
+    "TaskExtractMediaSegmentsDescription": "MediaSegment সক্ষম প্লাগইনগুলি থেকে মিডিয়া সেগমেন্টগুলি বের করে বা প্রাপ্ত করে।",
+    "TaskDownloadMissingLyrics": "অনুপস্থিত গান ডাউনলোড করুন"
 }

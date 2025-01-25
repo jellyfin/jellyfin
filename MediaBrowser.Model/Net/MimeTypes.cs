@@ -125,6 +125,7 @@ namespace MediaBrowser.Model.Net
             new("audio/vorbis", ".vorbis"),
             new("audio/x-ape", ".ape"),
             new("audio/xsp", ".xsp"),
+            new("audio/x-aac", ".aac"),
             new("audio/x-wavpack", ".wv"),
 
             // Type image

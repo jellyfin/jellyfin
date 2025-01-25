@@ -2196,7 +2196,10 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 var videoFrameRate = videoStream.ReferenceFrameRate;
 
-                if (!videoFrameRate.HasValue || videoFrameRate.Value > requestedFramerate.Value)
+                // Add a little tolerance to the framerate check because some videos might record a framerate
+                // that is slightly higher than the intended framerate, but the device can still play it correctly.
+                // 0.05 fps tolerance should be safe enough.
+                if (!videoFrameRate.HasValue || videoFrameRate.Value > requestedFramerate.Value + 0.05f)
                 {
                     return false;
                 }
@@ -3318,24 +3321,25 @@ namespace MediaBrowser.Controller.MediaEncoding
                     && options.VppTonemappingBrightness >= -100
                     && options.VppTonemappingBrightness <= 100)
                 {
-                    procampParams += $"=b={options.VppTonemappingBrightness}";
+                    procampParams += "procamp_vaapi=b={0}";
                     doVaVppProcamp = true;
                 }
 
                 if (options.VppTonemappingContrast > 1
                     && options.VppTonemappingContrast <= 10)
                 {
-                    procampParams += doVaVppProcamp ? ":" : "=";
-                    procampParams += $"c={options.VppTonemappingContrast}";
+                    procampParams += doVaVppProcamp ? ":c={1}" : "procamp_vaapi=c={1}";
                     doVaVppProcamp = true;
                 }
 
-                args = "{0}tonemap_vaapi=format={1}:p=bt709:t=bt709:m=bt709:extra_hw_frames=32";
+                args = procampParams + "{2}tonemap_vaapi=format={3}:p=bt709:t=bt709:m=bt709:extra_hw_frames=32";
 
                 return string.Format(
                         CultureInfo.InvariantCulture,
                         args,
-                        doVaVppProcamp ? $"procamp_vaapi{procampParams}," : string.Empty,
+                        options.VppTonemappingBrightness,
+                        options.VppTonemappingContrast,
+                        doVaVppProcamp ? "," : string.Empty,
                         videoFormat ?? "nv12");
             }
             else
@@ -3523,19 +3527,28 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 // tonemapx requires yuv420p10 input for dovi reshaping, let ffmpeg convert the frame when necessary
                 var tonemapFormat = requireDoviReshaping ? "yuv420p" : outFormat;
-
-                var tonemapArgs = $"tonemapx=tonemap={options.TonemappingAlgorithm}:desat={options.TonemappingDesat}:peak={options.TonemappingPeak}:t=bt709:m=bt709:p=bt709:format={tonemapFormat}";
+                var tonemapArgString = "tonemapx=tonemap={0}:desat={1}:peak={2}:t=bt709:m=bt709:p=bt709:format={3}";
 
                 if (options.TonemappingParam != 0)
                 {
-                    tonemapArgs += $":param={options.TonemappingParam}";
+                    tonemapArgString += ":param={4}";
                 }
 
                 var range = options.TonemappingRange;
                 if (range == TonemappingRange.tv || range == TonemappingRange.pc)
                 {
-                    tonemapArgs += $":range={options.TonemappingRange}";
+                    tonemapArgString += ":range={5}";
                 }
+
+                var tonemapArgs = string.Format(
+                    CultureInfo.InvariantCulture,
+                    tonemapArgString,
+                    options.TonemappingAlgorithm,
+                    options.TonemappingDesat,
+                    options.TonemappingPeak,
+                    tonemapFormat,
+                    options.TonemappingParam,
+                    options.TonemappingRange);
 
                 mainFilters.Add(tonemapArgs);
             }
@@ -4128,31 +4141,46 @@ namespace MediaBrowser.Controller.MediaEncoding
             else if (isD3d11vaDecoder || isQsvDecoder)
             {
                 var isRext = IsVideoStreamHevcRext(state);
-                var twoPassVppTonemap = isRext;
+                var twoPassVppTonemap = false;
                 var doVppFullRangeOut = isMjpegEncoder
                     && _mediaEncoder.EncoderVersion >= _minFFmpegQsvVppOutRangeOption;
                 var doVppScaleModeHq = isMjpegEncoder
                     && _mediaEncoder.EncoderVersion >= _minFFmpegQsvVppScaleModeOption;
                 var doVppProcamp = false;
                 var procampParams = string.Empty;
+                var procampParamsString = string.Empty;
                 if (doVppTonemap)
                 {
+                    if (isRext)
+                    {
+                        // VPP tonemap requires p010 input
+                        twoPassVppTonemap = true;
+                    }
+
                     if (options.VppTonemappingBrightness != 0
                         && options.VppTonemappingBrightness >= -100
                         && options.VppTonemappingBrightness <= 100)
                     {
-                        procampParams += $":brightness={options.VppTonemappingBrightness}";
+                        procampParamsString += ":brightness={0}";
                         twoPassVppTonemap = doVppProcamp = true;
                     }
 
                     if (options.VppTonemappingContrast > 1
                         && options.VppTonemappingContrast <= 10)
                     {
-                        procampParams += $":contrast={options.VppTonemappingContrast}";
+                        procampParamsString += ":contrast={1}";
                         twoPassVppTonemap = doVppProcamp = true;
                     }
 
-                    procampParams += doVppProcamp ? ":procamp=1:async_depth=2" : string.Empty;
+                    if (doVppProcamp)
+                    {
+                        procampParamsString += ":procamp=1:async_depth=2";
+                        procampParams = string.Format(
+                            CultureInfo.InvariantCulture,
+                            procampParamsString,
+                            options.VppTonemappingBrightness,
+                            options.VppTonemappingContrast);
+                    }
                 }
 
                 var outFormat = doOclTonemap ? ((doVppTranspose || isRext) ? "p010" : string.Empty) : "nv12";

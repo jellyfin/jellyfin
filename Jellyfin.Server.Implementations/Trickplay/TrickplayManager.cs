@@ -179,7 +179,7 @@ public class TrickplayManager : ITrickplayManager
             {
                 // Extract images
                 // Note: Media sources under parent items exist as their own video/item as well. Only use this video stream for trickplay.
-                var mediaSource = video.GetMediaSources(false).Find(source => Guid.Parse(source.Id).Equals(video.Id));
+                var mediaSource = video.GetMediaSources(false).FirstOrDefault(source => Guid.Parse(source.Id).Equals(video.Id));
 
                 if (mediaSource is null)
                 {
@@ -238,7 +238,7 @@ public class TrickplayManager : ITrickplayManager
                         foreach (var tile in existingFiles)
                         {
                             var image = _imageEncoder.GetImageSize(tile);
-                            localTrickplayInfo.Height = Math.Max(localTrickplayInfo.Height, image.Height);
+                            localTrickplayInfo.Height = Math.Max(localTrickplayInfo.Height, (int)Math.Ceiling((double)image.Height / localTrickplayInfo.TileHeight));
                             var bitrate = (int)Math.Ceiling((decimal)new FileInfo(tile).Length * 8 / localTrickplayInfo.TileWidth / localTrickplayInfo.TileHeight / (localTrickplayInfo.Interval / 1000));
                             localTrickplayInfo.Bandwidth = Math.Max(localTrickplayInfo.Bandwidth, bitrate);
                         }
@@ -536,7 +536,7 @@ public class TrickplayManager : ITrickplayManager
 
             if (trickplayInfo.ThumbnailCount > 0)
             {
-                const string urlFormat = "{0}.jpg?MediaSourceId={1}&api_key={2}";
+                const string urlFormat = "{0}.jpg?MediaSourceId={1}&ApiKey={2}";
                 const string decimalFormat = "{0:0.###}";
 
                 var resolution = $"{trickplayInfo.Width}x{trickplayInfo.Height}";

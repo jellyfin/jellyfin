@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Mime;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,6 +16,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Drawing;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
@@ -404,8 +406,27 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
     }
 
     /// <inheritdoc />
+    public string GetImageCacheTag(string baseItemPath, DateTime imageDateModified)
+        => (baseItemPath + imageDateModified.Ticks).GetMD5().ToString("N", CultureInfo.InvariantCulture);
+
+    /// <inheritdoc />
     public string GetImageCacheTag(BaseItem item, ItemImageInfo image)
-        => (item.Path + image.DateModified.Ticks).GetMD5().ToString("N", CultureInfo.InvariantCulture);
+        => GetImageCacheTag(item.Path, image.DateModified);
+
+    /// <inheritdoc />
+    public string GetImageCacheTag(BaseItemDto item, ItemImageInfo image)
+        => GetImageCacheTag(item.Path, image.DateModified);
+
+    /// <inheritdoc />
+    public string? GetImageCacheTag(BaseItemDto item, ChapterInfo chapter)
+    {
+        if (chapter.ImagePath is null)
+        {
+            return null;
+        }
+
+        return GetImageCacheTag(item.Path, chapter.ImageDateModified);
+    }
 
     /// <inheritdoc />
     public string? GetImageCacheTag(BaseItem item, ChapterInfo chapter)
@@ -431,8 +452,7 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
             return null;
         }
 
-        return (user.ProfileImage.Path + user.ProfileImage.LastModified.Ticks).GetMD5()
-            .ToString("N", CultureInfo.InvariantCulture);
+        return GetImageCacheTag(user.ProfileImage.Path, user.ProfileImage.LastModified);
     }
 
     private Task<(string Path, DateTime DateModified)> GetSupportedImage(string originalImagePath, DateTime dateModified)

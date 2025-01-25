@@ -27,7 +27,7 @@ public class NetworkManager : INetworkManager, IDisposable
     /// <summary>
     /// Threading lock for network properties.
     /// </summary>
-    private readonly object _initLock;
+    private readonly Lock _initLock;
 
     private readonly ILogger<NetworkManager> _logger;
 
@@ -35,7 +35,7 @@ public class NetworkManager : INetworkManager, IDisposable
 
     private readonly IConfiguration _startupConfig;
 
-    private readonly object _networkEventLock;
+    private readonly Lock _networkEventLock;
 
     /// <summary>
     /// Holds the published server URLs and the IPs to use them on.
@@ -57,7 +57,7 @@ public class NetworkManager : INetworkManager, IDisposable
     /// <summary>
     /// Dictionary containing interface addresses and their subnets.
     /// </summary>
-    private IReadOnlyList<IPData> _interfaces;
+    private List<IPData> _interfaces;
 
     /// <summary>
     /// Unfiltered user defined LAN subnets (<see cref="NetworkConfiguration.LocalNetworkSubnets"/>)
@@ -93,7 +93,7 @@ public class NetworkManager : INetworkManager, IDisposable
         _interfaces = new List<IPData>();
         _macAddresses = new List<PhysicalAddress>();
         _publishedServerUrls = new List<PublishedServerUriOverride>();
-        _networkEventLock = new object();
+        _networkEventLock = new();
         _remoteAddressFilter = new List<IPNetwork>();
 
         _ = bool.TryParse(startupConfig[DetectNetworkChangeKey], out var detectNetworkChange);

@@ -130,5 +130,10 @@
     "TaskCleanCollectionsAndPlaylists": "Puhdista kokoelmat ja soittolistat",
     "TaskAudioNormalization": "Äänenvoimakkuuden normalisointi",
     "TaskAudioNormalizationDescription": "Etsii tiedostoista äänenvoimakkuuden normalisointitietoja.",
-    "TaskDownloadMissingLyrics": "Lataa puuttuva lyriikka"
+    "TaskDownloadMissingLyrics": "Lataa puuttuva lyriikka",
+    "TaskExtractMediaSegments": "Mediasegmentin skannaus",
+    "TaskDownloadMissingLyricsDescription": "Ladataan sanoituksia",
+    "TaskExtractMediaSegmentsDescription": "Poimii tai hankkii mediasegmenttejä MediaSegment-yhteensopivista laajennuksista.",
+    "TaskMoveTrickplayImages": "Siirrä Trickplay-kuvien sijainti",
+    "TaskMoveTrickplayImagesDescription": "Siirtää olemassa olevia trickplay-tiedostoja kirjaston asetusten mukaan."
 }

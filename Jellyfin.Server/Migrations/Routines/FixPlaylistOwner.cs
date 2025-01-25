@@ -15,12 +15,12 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// </summary>
 internal class FixPlaylistOwner : IMigrationRoutine
 {
-    private readonly ILogger<RemoveDuplicateExtras> _logger;
+    private readonly ILogger<FixPlaylistOwner> _logger;
     private readonly ILibraryManager _libraryManager;
     private readonly IPlaylistManager _playlistManager;
 
     public FixPlaylistOwner(
-        ILogger<RemoveDuplicateExtras> logger,
+        ILogger<FixPlaylistOwner> logger,
         ILibraryManager libraryManager,
         IPlaylistManager playlistManager)
     {

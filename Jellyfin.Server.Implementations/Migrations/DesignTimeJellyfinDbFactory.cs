@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Jellyfin.Server.Implementations.Migrations
 {
@@ -14,7 +15,7 @@ namespace Jellyfin.Server.Implementations.Migrations
             var optionsBuilder = new DbContextOptionsBuilder<JellyfinDbContext>();
             optionsBuilder.UseSqlite("Data Source=jellyfin.db");
 
-            return new JellyfinDbContext(optionsBuilder.Options);
+            return new JellyfinDbContext(optionsBuilder.Options, NullLogger<JellyfinDbContext>.Instance);
         }
     }
 }

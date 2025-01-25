@@ -35,7 +35,7 @@ namespace Jellyfin.Server.Implementations.Tests.TypedBaseItem
         public void EnumParse_GivenValidBaseItemType_ReturnsEnumValue(Type baseItemDescendantType)
         {
             var enumValue = Enum.Parse<BaseItemKind>(baseItemDescendantType.Name);
-            Assert.True(Enum.IsDefined(typeof(BaseItemKind), enumValue));
+            Assert.True(Enum.IsDefined(enumValue));
         }
 
         [Theory]

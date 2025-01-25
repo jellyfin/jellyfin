@@ -78,7 +78,7 @@
     "Genres": "Жанрови",
     "Folders": "Фасцикле",
     "Favorites": "Омиљено",
-    "FailedLoginAttemptWithUserName": "Неуспела пријава са {0}",
+    "FailedLoginAttemptWithUserName": "Неуспели покушај пријавe са {0}",
     "DeviceOnlineWithName": "{0} је повезан",
     "DeviceOfflineWithName": "{0} је прекинуо везу",
     "Collections": "Колекције",
@@ -121,7 +121,10 @@
     "TaskOptimizeDatabase": "Оптимизуј банку података",
     "TaskOptimizeDatabaseDescription": "Сажима базу података и скраћује слободан простор. Покретање овог задатка након скенирања библиотеке или других промена које подразумевају измене базе података које могу побољшати перформансе.",
     "External": "Спољно",
-    "TaskKeyframeExtractorDescription": "Екстрактује кљулне сличице из видео датотека да би креирао више преицзну HLS плеј-листу. Овај задатак може да потраје дуже време.",
+    "TaskKeyframeExtractorDescription": "Екстрактује кључне сличице из видео датотека да би креирао више прецизнију HLS плејлисту. Овај задатак може да потраје дуже време.",
     "TaskKeyframeExtractor": "Екстрактор кључних сличица",
-    "HearingImpaired": "ослабљен слух"
+    "HearingImpaired": "ослабљен слух",
+    "TaskAudioNormalization": "Нормализација звука",
+    "TaskCleanCollectionsAndPlaylists": "Очистите колекције и плејлисте",
+    "TaskAudioNormalizationDescription": "Скенира датотеке за податке о нормализацији звука."
 }
