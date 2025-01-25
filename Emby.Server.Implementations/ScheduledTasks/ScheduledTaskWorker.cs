@@ -27,7 +27,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         private readonly IApplicationPaths _applicationPaths;
         private readonly ILogger _logger;
         private readonly ITaskManager _taskManager;
-        private readonly object _lastExecutionResultSyncLock = new();
+        private readonly Lock _lastExecutionResultSyncLock = new();
         private bool _readFromFile;
         private TaskResult _lastExecutionResult;
         private Task _currentTask;
@@ -471,7 +471,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                     new()
                     {
                         IntervalTicks = TimeSpan.FromDays(1).Ticks,
-                        Type = TaskTriggerInfo.TriggerInterval
+                        Type = TaskTriggerInfoType.IntervalTrigger
                     }
                 ];
             }
@@ -616,7 +616,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 MaxRuntimeTicks = info.MaxRuntimeTicks
             };
 
-            if (info.Type.Equals(nameof(DailyTrigger), StringComparison.OrdinalIgnoreCase))
+            if (info.Type == TaskTriggerInfoType.DailyTrigger)
             {
                 if (!info.TimeOfDayTicks.HasValue)
                 {
@@ -626,7 +626,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 return new DailyTrigger(TimeSpan.FromTicks(info.TimeOfDayTicks.Value), options);
             }
 
-            if (info.Type.Equals(nameof(WeeklyTrigger), StringComparison.OrdinalIgnoreCase))
+            if (info.Type == TaskTriggerInfoType.WeeklyTrigger)
             {
                 if (!info.TimeOfDayTicks.HasValue)
                 {
@@ -641,7 +641,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 return new WeeklyTrigger(TimeSpan.FromTicks(info.TimeOfDayTicks.Value), info.DayOfWeek.Value, options);
             }
 
-            if (info.Type.Equals(nameof(IntervalTrigger), StringComparison.OrdinalIgnoreCase))
+            if (info.Type == TaskTriggerInfoType.IntervalTrigger)
             {
                 if (!info.IntervalTicks.HasValue)
                 {
@@ -651,7 +651,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 return new IntervalTrigger(TimeSpan.FromTicks(info.IntervalTicks.Value), options);
             }
 
-            if (info.Type.Equals(nameof(StartupTrigger), StringComparison.OrdinalIgnoreCase))
+            if (info.Type == TaskTriggerInfoType.StartupTrigger)
             {
                 return new StartupTrigger(options);
             }

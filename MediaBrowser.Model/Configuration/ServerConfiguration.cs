@@ -244,11 +244,6 @@ public class ServerConfiguration : BaseApplicationConfiguration
     public int LibraryMetadataRefreshConcurrency { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether older plugins should automatically be deleted from the plugin folder.
-    /// </summary>
-    public bool RemoveOldPlugins { get; set; }
-
-    /// <summary>
     /// Gets or sets a value indicating whether clients should be allowed to upload logs.
     /// </summary>
     public bool AllowClientLogUpload { get; set; } = true;
@@ -281,4 +276,9 @@ public class ServerConfiguration : BaseApplicationConfiguration
     /// </summary>
     /// <value>The trickplay options.</value>
     public TrickplayOptions TrickplayOptions { get; set; } = new TrickplayOptions();
+
+    /// <summary>
+    /// Gets or sets a value indicating whether old authorization methods are allowed.
+    /// </summary>
+    public bool EnableLegacyAuthorization { get; set; } = true;
 }

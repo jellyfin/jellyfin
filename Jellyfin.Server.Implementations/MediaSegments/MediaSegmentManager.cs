@@ -61,7 +61,7 @@ public class MediaSegmentManager : IMediaSegmentManager
             .Where(e => !libraryOptions.DisabledMediaSegmentProviders.Contains(GetProviderId(e.Name)))
             .OrderBy(i =>
                 {
-                    var index = libraryOptions.MediaSegmentProvideOrder.IndexOf(i.Name);
+                    var index = libraryOptions.MediaSegmentProviderOrder.IndexOf(i.Name);
                     return index == -1 ? int.MaxValue : index;
                 })
             .ToList();

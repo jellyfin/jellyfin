@@ -193,6 +193,7 @@
  - [jaina heartles](https://github.com/heartles)
  - [oxixes](https://github.com/oxixes)
  - [elfalem](https://github.com/elfalem)
+ - [Kenneth Cochran](https://github.com/kennethcochran)
  - [benedikt257](https://github.com/benedikt257)
  - [revam](https://github.com/revam)
 
@@ -268,3 +269,4 @@
  - [0x25CBFC4F](https://github.com/0x25CBFC4F)
  - [Robert Lützner](https://github.com/rluetzner)
  - [Nathan McCrina](https://github.com/nfmccrina)
+ - [Martin Reuter](https://github.com/reuterma24)

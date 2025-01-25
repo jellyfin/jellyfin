@@ -69,11 +69,11 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
             [
                 new TaskTriggerInfo
                 {
-                    Type = TaskTriggerInfo.TriggerStartup
+                    Type = TaskTriggerInfoType.StartupTrigger
                 },
                 new TaskTriggerInfo
                 {
-                    Type = TaskTriggerInfo.TriggerInterval,
+                    Type = TaskTriggerInfoType.IntervalTrigger,
                     IntervalTicks = TimeSpan.FromHours(24).Ticks
                 }
             ];

@@ -49,7 +49,7 @@ namespace Jellyfin.Server.Migrations
             typeof(Routines.FixAudioData),
             typeof(Routines.MoveTrickplayFiles),
             typeof(Routines.RemoveDuplicatePlaylistChildren),
-            typeof(Routines.ChangeTypeOfTypedBaseItemsOwnerIdToGuid)
+            typeof(Routines.MigrateLibraryDb),
         };
 
         /// <summary>

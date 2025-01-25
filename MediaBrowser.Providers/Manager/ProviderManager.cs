@@ -48,7 +48,7 @@ namespace MediaBrowser.Providers.Manager
     /// </summary>
     public class ProviderManager : IProviderManager, IDisposable
     {
-        private readonly object _refreshQueueLock = new();
+        private readonly Lock _refreshQueueLock = new();
         private readonly ILogger<ProviderManager> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILibraryMonitor _libraryMonitor;
@@ -200,11 +200,19 @@ namespace MediaBrowser.Providers.Manager
                 // TODO: Isolate this hack into the tvh plugin
                 if (string.IsNullOrEmpty(contentType))
                 {
+                    // Special case for imagecache
                     if (url.Contains("/imagecache/", StringComparison.OrdinalIgnoreCase))
                     {
                         contentType = MediaTypeNames.Image.Png;
                     }
                     else
+                    {
+                        // Deduce content type from file extension
+                        contentType = MimeTypes.GetMimeType(new Uri(url).GetLeftPart(UriPartial.Path));
+                    }
+
+                    // Throw if we still can't determine the content type
+                    if (string.IsNullOrEmpty(contentType))
                     {
                         throw new HttpRequestException("Invalid image received: contentType not set.", null, response.StatusCode);
                     }
@@ -262,7 +270,9 @@ namespace MediaBrowser.Providers.Manager
             try
             {
                 var fileStream = AsyncFile.OpenRead(source);
-                await new ImageSaver(_configurationManager, _libraryMonitor, _fileSystem, _logger).SaveImage(item, fileStream, mimeType, type, imageIndex, saveLocallyWithMedia, cancellationToken).ConfigureAwait(false);
+                await new ImageSaver(_configurationManager, _libraryMonitor, _fileSystem, _logger)
+                    .SaveImage(item, fileStream, mimeType, type, imageIndex, saveLocallyWithMedia, cancellationToken)
+                    .ConfigureAwait(false);
             }
             finally
             {

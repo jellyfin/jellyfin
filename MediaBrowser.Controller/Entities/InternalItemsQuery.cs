@@ -37,7 +37,6 @@ namespace MediaBrowser.Controller.Entities
             IncludeItemTypes = Array.Empty<BaseItemKind>();
             ItemIds = Array.Empty<Guid>();
             MediaTypes = Array.Empty<MediaType>();
-            MinSimilarityScore = 20;
             OfficialRatings = Array.Empty<string>();
             OrderBy = Array.Empty<(ItemSortBy, SortOrder)>();
             PersonIds = Array.Empty<Guid>();
@@ -72,8 +71,6 @@ namespace MediaBrowser.Controller.Entities
         public int? Limit { get; set; }
 
         public User? User { get; set; }
-
-        public BaseItem? SimilarTo { get; set; }
 
         public bool? IsFolder { get; set; }
 
@@ -296,8 +293,6 @@ namespace MediaBrowser.Controller.Entities
         public DateTime? MinDateLastSavedForUser { get; set; }
 
         public DtoOptions DtoOptions { get; set; }
-
-        public int MinSimilarityScore { get; set; }
 
         public string? HasNoAudioTrackWithLanguage { get; set; }
 
