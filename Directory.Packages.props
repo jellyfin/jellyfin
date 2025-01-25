@@ -9,8 +9,8 @@
     <PackageVersion Include="AutoFixture.Xunit2" Version="4.18.1" />
     <PackageVersion Include="AutoFixture" Version="4.18.1" />
     <PackageVersion Include="BDInfo" Version="0.8.0" />
-    <PackageVersion Include="BlurHashSharp.SkiaSharp" Version="1.3.3" />
-    <PackageVersion Include="BlurHashSharp" Version="1.3.3" />
+    <PackageVersion Include="BlurHashSharp.SkiaSharp" Version="1.3.4" />
+    <PackageVersion Include="BlurHashSharp" Version="1.3.4" />
     <PackageVersion Include="CommandLineParser" Version="2.9.1" />
     <PackageVersion Include="coverlet.collector" Version="6.0.2" />
     <PackageVersion Include="Diacritics" Version="3.3.29" />

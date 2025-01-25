@@ -195,8 +195,10 @@ public class SkiaEncoder : IImageEncoder
             return string.Empty;
         }
 
+        // Use FileStream with FileShare.Read instead of having Skia open the file to allow concurrent read access
+        using var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
         // Any larger than 128x128 is too slow and there's no visually discernible difference
-        return BlurHashEncoder.Encode(xComp, yComp, path, 128, 128);
+        return BlurHashEncoder.Encode(xComp, yComp, fileStream, 128, 128);
     }
 
     private bool RequiresSpecialCharacterHack(string path)
