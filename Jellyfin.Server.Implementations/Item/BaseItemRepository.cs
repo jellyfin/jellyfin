@@ -1304,34 +1304,39 @@ public sealed class BaseItemRepository
         JellyfinDbContext context,
         InternalItemsQuery filter)
     {
+        const int HDWidth = 1200;
+        const int UHDWidth = 3800;
+        const int UHDHeight = 2100;
+
         var minWidth = filter.MinWidth;
         var maxWidth = filter.MaxWidth;
         var now = DateTime.UtcNow;
 
-        if (filter.IsHD.HasValue)
+        if (filter.IsHD.HasValue || filter.Is4K.HasValue)
         {
-            const int Threshold = 1200;
-            if (filter.IsHD.Value)
-            {
-                minWidth = Threshold;
-            }
-            else
-            {
-                maxWidth = Threshold - 1;
-            }
-        }
+            bool includeSD = false;
+            bool includeHD = false;
+            bool include4K = false;
 
-        if (filter.Is4K.HasValue)
-        {
-            const int Threshold = 3800;
-            if (filter.Is4K.Value)
+            if (filter.IsHD.HasValue && !filter.IsHD.Value)
             {
-                minWidth = Threshold;
+                includeSD = true;
             }
-            else
+
+            if (filter.IsHD.HasValue && filter.IsHD.Value)
             {
-                maxWidth = Threshold - 1;
+                includeHD = true;
             }
+
+            if (filter.Is4K.HasValue && filter.Is4K.Value)
+            {
+                include4K = true;
+            }
+
+            baseQuery = baseQuery.Where(e =>
+                (includeSD && e.Width < HDWidth) ||
+                (includeHD && e.Width >= HDWidth && !(e.Width >= UHDWidth || e.Height >= UHDHeight)) ||
+                (include4K && (e.Width >= UHDWidth || e.Height >= UHDHeight)));
         }
 
         if (minWidth.HasValue)
