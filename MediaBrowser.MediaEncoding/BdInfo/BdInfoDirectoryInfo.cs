@@ -96,7 +96,7 @@ public class BdInfoDirectoryInfo : IDirectoryInfo
     /// Gets the files matching a pattern and search options.
     /// </summary>
     /// <param name="searchPattern">The search pattern.</param>
-    /// <param name="searchOption">The search optin.</param>
+    /// <param name="searchOption">The search option.</param>
     /// <returns>All files of the directory matching the search pattern and options.</returns>
     public IFileInfo[] GetFiles(string searchPattern, SearchOption searchOption)
     {

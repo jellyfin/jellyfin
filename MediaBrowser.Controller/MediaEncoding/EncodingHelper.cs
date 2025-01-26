@@ -3608,7 +3608,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return GetSwVidFilterChain(state, options, vidEncoder);
             }
 
-            // prefered nvdec/cuvid + cuda filters + nvenc pipeline
+            // preferred nvdec/cuvid + cuda filters + nvenc pipeline
             return GetNvidiaVidFiltersPrefered(state, options, vidDecoder, vidEncoder);
         }
 
@@ -3816,7 +3816,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return GetSwVidFilterChain(state, options, vidEncoder);
             }
 
-            // prefered d3d11va + opencl filters + amf pipeline
+            // preferred d3d11va + opencl filters + amf pipeline
             return GetAmdDx11VidFiltersPrefered(state, options, vidDecoder, vidEncoder);
         }
 
@@ -4042,13 +4042,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return GetSwVidFilterChain(state, options, vidEncoder);
             }
 
-            // prefered qsv(vaapi) + opencl filters pipeline
+            // preferred qsv(vaapi) + opencl filters pipeline
             if (isIntelVaapiOclSupported)
             {
                 return GetIntelQsvVaapiVidFiltersPrefered(state, options, vidDecoder, vidEncoder);
             }
 
-            // prefered qsv(d3d11) + opencl filters pipeline
+            // preferred qsv(d3d11) + opencl filters pipeline
             if (isIntelDx11OclSupported)
             {
                 return GetIntelQsvDx11VidFiltersPrefered(state, options, vidDecoder, vidEncoder);
@@ -4656,14 +4656,14 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return swFilterChain;
             }
 
-            // prefered vaapi + opencl filters pipeline
+            // preferred vaapi + opencl filters pipeline
             if (_mediaEncoder.IsVaapiDeviceInteliHD)
             {
                 // Intel iHD path, with extra vpp tonemap and overlay support.
                 return GetIntelVaapiFullVidFiltersPrefered(state, options, vidDecoder, vidEncoder);
             }
 
-            // prefered vaapi + vulkan filters pipeline
+            // preferred vaapi + vulkan filters pipeline
             if (_mediaEncoder.IsVaapiDeviceAmd
                 && isVaapiVkSupported
                 && _mediaEncoder.IsVaapiDeviceSupportVulkanDrmInterop
@@ -5576,7 +5576,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return GetSwVidFilterChain(state, options, vidEncoder);
             }
 
-            // prefered rkmpp + rkrga + opencl filters pipeline
+            // preferred rkmpp + rkrga + opencl filters pipeline
             if (isRkmppOclSupported)
             {
                 return GetRkmppVidFiltersPrefered(state, options, vidDecoder, vidEncoder);
