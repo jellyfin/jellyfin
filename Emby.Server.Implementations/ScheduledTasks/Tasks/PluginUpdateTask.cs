@@ -88,7 +88,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
                 }
                 catch (OperationCanceledException)
                 {
-                    // InstallPackage has it's own inner cancellation token, so only throw this if it's ours
+                    // InstallPackage has its own inner cancellation token, so only throw this if it's ours
                     if (cancellationToken.IsCancellationRequested)
                     {
                         throw;
