@@ -88,7 +88,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (!File.Exists(path))
             {
-              var directoryName = Path.GetDirectoryName(path) ?? throw new InvalidOperationException($"Invalid path '{path}'");
+                var directoryName = Path.GetDirectoryName(path) ?? throw new InvalidOperationException($"Invalid path '{path}'");
                 Directory.CreateDirectory(directoryName);
                 File.Copy(tempFile, path, true);
             }
