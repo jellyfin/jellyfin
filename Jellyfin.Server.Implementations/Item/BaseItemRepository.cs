@@ -231,7 +231,7 @@ public sealed class BaseItemRepository
         }
 
         dbQuery = ApplyGroupingFilter(dbQuery, filter);
-        dbQuery = ApplyQueryPageing(dbQuery, filter);
+        dbQuery = ApplyQueryPaging(dbQuery, filter);
 
         result.Items = dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToArray();
         result.StartIndex = filter.StartIndex ?? 0;
@@ -250,7 +250,7 @@ public sealed class BaseItemRepository
         dbQuery = TranslateQuery(dbQuery, context, filter);
 
         dbQuery = ApplyGroupingFilter(dbQuery, filter);
-        dbQuery = ApplyQueryPageing(dbQuery, filter);
+        dbQuery = ApplyQueryPaging(dbQuery, filter);
 
         return dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToArray();
     }
@@ -289,7 +289,7 @@ public sealed class BaseItemRepository
         return dbQuery;
     }
 
-    private IQueryable<BaseItemEntity> ApplyQueryPageing(IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
+    private IQueryable<BaseItemEntity> ApplyQueryPaging(IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
     {
         if (filter.Limit.HasValue || filter.StartIndex.HasValue)
         {
@@ -314,7 +314,7 @@ public sealed class BaseItemRepository
         dbQuery = TranslateQuery(dbQuery, context, filter);
         dbQuery = ApplyOrder(dbQuery, filter);
         dbQuery = ApplyGroupingFilter(dbQuery, filter);
-        dbQuery = ApplyQueryPageing(dbQuery, filter);
+        dbQuery = ApplyQueryPaging(dbQuery, filter);
         return dbQuery;
     }
 
