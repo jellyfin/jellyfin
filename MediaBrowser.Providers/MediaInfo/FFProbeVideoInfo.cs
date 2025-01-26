@@ -634,7 +634,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var runtime = video.RunTimeTicks.GetValueOrDefault();
 
-            // Only process files with a runtime higher than 0 and lower than 12h. The latter are likely corrupted.
+            // Only process files with a runtime greater than 0 and less than 12h. The latter are likely corrupted.
             if (runtime < 0 || runtime > TimeSpan.FromHours(12).Ticks)
             {
                 throw new ArgumentException(
