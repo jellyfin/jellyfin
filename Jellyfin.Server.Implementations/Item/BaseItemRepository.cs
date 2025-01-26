@@ -357,7 +357,7 @@ public sealed class BaseItemRepository
     {
         ArgumentException.ThrowIfNullOrEmpty(typeName);
 
-        // TODO: this isn't great. Refactor later to be both globally handled by a dedicated service not just an static variable and be loaded eagar.
+        // TODO: this isn't great. Refactor later to be both globally handled by a dedicated service not just an static variable and be loaded eagerly.
         // currently this is done so that plugins may introduce their own type of baseitems as we dont know when we are first called, before or after plugins are loaded
         return _typeMap.GetOrAdd(typeName, k => AppDomain.CurrentDomain.GetAssemblies()
             .Select(a => a.GetType(k))
