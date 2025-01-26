@@ -1212,6 +1212,11 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
+            if (request.IsSD.HasValue)
+            {
+                return false;
+            }
+
             if (request.IsLocked.HasValue)
             {
                 return false;
