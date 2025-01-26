@@ -24,7 +24,7 @@ public class ItemValue
     public required string Value { get; set; }
 
     /// <summary>
-    /// Gets or Sets the sanatised Value.
+    /// Gets or Sets the sanitized Value.
     /// </summary>
     public required string CleanValue { get; set; }
 
