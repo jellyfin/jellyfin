@@ -548,13 +548,26 @@ namespace MediaBrowser.Providers.Manager
                         break;
                     }
 
+                    var contentType = response.Content.Headers.ContentType?.MediaType;
+
+                    if (!contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+                    {
+                    contentType = MimeTypes.GetMimeType(new Uri(url).GetLeftPart(UriPartial.Path));
+
+                    if (!contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+                    {
+                        _logger.LogWarning("Unable to determine content type for {Url}. Defaulting to jpeg", url);
+                        contentType = "image/jpeg";
+                    }
+                    }
+
                     var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
                     await using (stream.ConfigureAwait(false))
                     {
                         await _providerManager.SaveImage(
                             item,
                             stream,
-                            response.Content.Headers.ContentType?.MediaType,
+                            contentType,
                             type,
                             null,
                             cancellationToken).ConfigureAwait(false);
