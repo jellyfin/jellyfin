@@ -24,5 +24,19 @@
     "hostRequirements": {
         "memory": "8gb",
         "cpus": 4
+    },  "remoteEnv": {
+        "JELLYFIN_DATA_DIR": "/config"
+    },
+    "mounts": [
+        "source=/opt/docker/data/jellyfin/testConfig/,target=/config,type=bind,consistency=cached",
+        "source=/opt/docker/data/jellyfin/config10.9.11/metadata,target=/config/metadata,type=bind,consistency=cached",
+        "source=/mnt/video,target=/media,type=bind,consistency=cached"
+    ],
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "alexcvzz.vscode-sqlite"
+            ]
+        }
     }
 }

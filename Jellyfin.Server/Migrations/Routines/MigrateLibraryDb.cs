@@ -9,6 +9,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Emby.Server.Implementations.Data;
 using Jellyfin.Data.Entities;
 using Jellyfin.Extensions;
@@ -33,6 +34,7 @@ public class MigrateLibraryDb : IMigrationRoutine
 
     private readonly ILogger<MigrateLibraryDb> _logger;
     private readonly IServerApplicationPaths _paths;
+    private readonly IJellyfinDatabaseProvider _jellyfinDatabaseProvider;
     private readonly IDbContextFactory<JellyfinDbContext> _provider;
 
     /// <summary>
@@ -41,14 +43,17 @@ public class MigrateLibraryDb : IMigrationRoutine
     /// <param name="logger">The logger.</param>
     /// <param name="provider">The database provider.</param>
     /// <param name="paths">The server application paths.</param>
+    /// <param name="jellyfinDatabaseProvider">The database provider for special access.</param>
     public MigrateLibraryDb(
         ILogger<MigrateLibraryDb> logger,
         IDbContextFactory<JellyfinDbContext> provider,
-        IServerApplicationPaths paths)
+        IServerApplicationPaths paths,
+        IJellyfinDatabaseProvider jellyfinDatabaseProvider)
     {
         _logger = logger;
         _provider = provider;
         _paths = paths;
+        _jellyfinDatabaseProvider = jellyfinDatabaseProvider;
     }
 
     /// <inheritdoc/>
@@ -319,17 +324,7 @@ public class MigrateLibraryDb : IMigrationRoutine
 
         _logger.LogInformation("Migrating Library db took {0}.", migrationTotalTime);
 
-        if (dbContext.Database.IsSqlite())
-        {
-            _logger.LogInformation("Vaccum and Optimise jellyfin.db now.");
-            dbContext.Database.ExecuteSqlRaw("PRAGMA optimize");
-            dbContext.Database.ExecuteSqlRaw("VACUUM");
-            _logger.LogInformation("jellyfin.db optimized successfully!");
-        }
-        else
-        {
-            _logger.LogInformation("This database doesn't support optimization");
-        }
+        _jellyfinDatabaseProvider.RunScheduledOptimisation(CancellationToken.None).ConfigureAwait(false).GetAwaiter().GetResult();
     }
 
     private UserData? GetUserData(ImmutableArray<User> users, SqliteDataReader dto)

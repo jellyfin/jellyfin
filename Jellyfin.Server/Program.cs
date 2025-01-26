@@ -194,23 +194,11 @@ namespace Jellyfin.Server
                 // Don't throw additional exception if startup failed.
                 if (appHost.ServiceProvider is not null)
                 {
-                    var isSqlite = false;
                     _logger.LogInformation("Running query planner optimizations in the database... This might take a while");
-                    // Run before disposing the application
-                    var context = await appHost.ServiceProvider.GetRequiredService<IDbContextFactory<JellyfinDbContext>>().CreateDbContextAsync().ConfigureAwait(false);
-                    await using (context.ConfigureAwait(false))
-                    {
-                        if (context.Database.IsSqlite())
-                        {
-                            isSqlite = true;
-                            await context.Database.ExecuteSqlRawAsync("PRAGMA optimize").ConfigureAwait(false);
-                        }
-                    }
 
-                    if (isSqlite)
-                    {
-                        SqliteConnection.ClearAllPools();
-                    }
+                    var databaseProvider = appHost.ServiceProvider.GetRequiredService<IJellyfinDatabaseProvider>();
+
+                    await databaseProvider.DisposeAsync().ConfigureAwait(false);
                 }
 
                 host?.Dispose();

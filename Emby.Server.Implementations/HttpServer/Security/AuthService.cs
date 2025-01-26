@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 
 using System.Threading.Tasks;
+using Jellyfin.Data;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Net;
 using Microsoft.AspNetCore.Http;

@@ -59,18 +59,6 @@ namespace Jellyfin.Data.Entities
         /// </summary>
         public virtual ICollection<Preference> Preferences { get; private set; }
 
-        /// <inheritdoc/>
-        public bool HasPermission(PermissionKind kind)
-        {
-            return Permissions.First(p => p.Kind == kind).Value;
-        }
-
-        /// <inheritdoc/>
-        public void SetPermission(PermissionKind kind, bool value)
-        {
-            Permissions.First(p => p.Kind == kind).Value = value;
-        }
-
         /// <inheritdoc />
         public void OnSavingChanges()
         {

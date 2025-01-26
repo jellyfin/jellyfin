@@ -14,7 +14,8 @@ namespace Jellyfin.Server.Implementations;
 /// </summary>
 /// <param name="options">The database context options.</param>
 /// <param name="logger">Logger.</param>
-public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILogger<JellyfinDbContext> logger) : DbContext(options)
+/// <param name="jellyfinDatabaseProvider">The provider for the database engine specific operations.</param>
+public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILogger<JellyfinDbContext> logger, IJellyfinDatabaseProvider jellyfinDatabaseProvider) : DbContext(options)
 {
     /// <summary>
     /// Gets the <see cref="DbSet{TEntity}"/> containing the access schedules.
@@ -265,7 +266,7 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.SetDefaultDateTimeKind(DateTimeKind.Utc);
+        jellyfinDatabaseProvider.OnModelCreating(modelBuilder);
         base.OnModelCreating(modelBuilder);
 
         // Configuration for each entity is in it's own class inside 'ModelConfiguration'.
