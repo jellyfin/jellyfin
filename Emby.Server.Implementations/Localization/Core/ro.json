@@ -77,8 +77,8 @@
     "HeaderAlbumArtists": "Artiști album",
     "Genres": "Genuri",
     "Folders": "Dosare",
-    "Favorites": "Favorite",
-    "FailedLoginAttemptWithUserName": "Încercare de conectare nereușită de la {0}",
+    "Favorites": "Preferate",
+    "FailedLoginAttemptWithUserName": "Încercare de conectare eșuată pentru {0}",
     "DeviceOnlineWithName": "{0} este conectat",
     "DeviceOfflineWithName": "{0} s-a deconectat",
     "Collections": "Colecții",
@@ -125,5 +125,15 @@
     "TaskKeyframeExtractor": "Extractor de cadre cheie",
     "HearingImpaired": "Ascultare Impară",
     "TaskRefreshTrickplayImages": "Generează imagini Trickplay",
-    "TaskRefreshTrickplayImagesDescription": "Generează previzualizările trickplay pentru videourile din librăriile selectate."
+    "TaskRefreshTrickplayImagesDescription": "Generează previzualizările trickplay pentru videourile din librăriile selectate.",
+    "TaskAudioNormalizationDescription": "Scanează fișiere pentru date necesare normalizării sunetului.",
+    "TaskAudioNormalization": "Normalizare sunet",
+    "TaskCleanCollectionsAndPlaylists": "Curăță colecțiile și listele de redare",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Elimină elementele care nu mai există din colecții și liste de redare.",
+    "TaskExtractMediaSegments": "Scanează segmentele media",
+    "TaskMoveTrickplayImagesDescription": "Mută fișierele trickplay existente conform setărilor librăriei.",
+    "TaskExtractMediaSegmentsDescription": "Extrage sau obține segmentele media de la pluginurile MediaSegment activate.",
+    "TaskMoveTrickplayImages": "Migrează locația imaginii Trickplay",
+    "TaskDownloadMissingLyrics": "Descarcă versurile lipsă",
+    "TaskDownloadMissingLyricsDescription": "Descarcă versuri pentru melodii"
 }

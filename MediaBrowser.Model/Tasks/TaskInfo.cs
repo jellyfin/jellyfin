@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Tasks
 {
@@ -13,7 +14,7 @@ namespace MediaBrowser.Model.Tasks
         /// </summary>
         public TaskInfo()
         {
-            Triggers = Array.Empty<TaskTriggerInfo>();
+            Triggers = [];
         }
 
         /// <summary>
@@ -50,7 +51,7 @@ namespace MediaBrowser.Model.Tasks
         /// Gets or sets the triggers.
         /// </summary>
         /// <value>The triggers.</value>
-        public TaskTriggerInfo[] Triggers { get; set; }
+        public IReadOnlyList<TaskTriggerInfo> Triggers { get; set; }
 
         /// <summary>
         /// Gets or sets the description.

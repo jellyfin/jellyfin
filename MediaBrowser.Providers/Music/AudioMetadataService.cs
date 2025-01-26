@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
@@ -59,6 +60,10 @@ namespace MediaBrowser.Providers.Music
             if (replaceData || targetItem.Artists.Count == 0)
             {
                 targetItem.Artists = sourceItem.Artists;
+            }
+            else
+            {
+                targetItem.Artists = targetItem.Artists.Concat(sourceItem.Artists).Distinct().ToArray();
             }
 
             if (replaceData || string.IsNullOrEmpty(targetItem.Album))

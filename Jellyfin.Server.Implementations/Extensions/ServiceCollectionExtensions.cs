@@ -1,6 +1,5 @@
-﻿using System;
+using System;
 using System.IO;
-using EFCoreSecondLevelCacheInterceptor;
 using MediaBrowser.Common.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,18 +18,10 @@ public static class ServiceCollectionExtensions
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddJellyfinDbContext(this IServiceCollection serviceCollection)
     {
-        serviceCollection.AddEFSecondLevelCache(options =>
-            options.UseMemoryCacheProvider()
-                .CacheAllQueries(CacheExpirationMode.Sliding, TimeSpan.FromMinutes(10))
-                .UseCacheKeyPrefix("EF_")
-                // Don't cache null values. Remove this optional setting if it's not necessary.
-                .SkipCachingResults(result => result.Value is null or EFTableRows { RowsCount: 0 }));
-
         serviceCollection.AddPooledDbContextFactory<JellyfinDbContext>((serviceProvider, opt) =>
         {
             var applicationPaths = serviceProvider.GetRequiredService<IApplicationPaths>();
-            opt.UseSqlite($"Filename={Path.Combine(applicationPaths.DataPath, "jellyfin.db")}")
-                .AddInterceptors(serviceProvider.GetRequiredService<SecondLevelCacheInterceptor>());
+            opt.UseSqlite($"Filename={Path.Combine(applicationPaths.DataPath, "jellyfin.db")};Pooling=false");
         });
 
         return serviceCollection;

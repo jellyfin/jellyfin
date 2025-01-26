@@ -305,7 +305,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (BaseRequest.Static
                     || EncodingHelper.IsCopyCodec(OutputVideoCodec))
                 {
-                    return VideoStream is null ? null : (VideoStream.AverageFrameRate ?? VideoStream.RealFrameRate);
+                    return VideoStream?.ReferenceFrameRate;
                 }
 
                 return BaseRequest.MaxFramerate ?? BaseRequest.Framerate;
@@ -507,6 +507,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return GetMediaStreamCount(MediaStreamType.Audio, 1);
             }
         }
+
+        public bool EnableAudioVbrEncoding => BaseRequest.EnableAudioVbrEncoding;
 
         public int HlsListSize => 0;
 

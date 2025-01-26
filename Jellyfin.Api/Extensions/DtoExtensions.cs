@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using Jellyfin.Extensions;
@@ -26,8 +26,6 @@ public static class DtoExtensions
     internal static DtoOptions AddClientFields(
         this DtoOptions dtoOptions, ClaimsPrincipal user)
     {
-        dtoOptions.Fields ??= Array.Empty<ItemFields>();
-
         string? client = user.GetClient();
 
         // No client in claim

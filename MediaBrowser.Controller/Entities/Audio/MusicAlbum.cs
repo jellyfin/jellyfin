@@ -21,6 +21,7 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// <summary>
     /// Class MusicAlbum.
     /// </summary>
+    [Common.RequiresSourceSerialisation]
     public class MusicAlbum : Folder, IHasAlbumArtist, IHasArtist, IHasMusicGenres, IHasLookupInfo<AlbumInfo>, IMetadataContainer
     {
         public MusicAlbum()
@@ -169,8 +170,7 @@ namespace MediaBrowser.Controller.Entities.Audio
 
             var childUpdateType = ItemUpdateType.None;
 
-            // Refresh songs only and not m3u files in album folder
-            foreach (var item in items.OfType<Audio>())
+            foreach (var item in items)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 

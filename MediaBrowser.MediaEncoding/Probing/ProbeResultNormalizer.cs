@@ -280,8 +280,8 @@ namespace MediaBrowser.MediaEncoding.Probing
                     splitFormat[i] = "mpeg";
                 }
 
-                // Handle MPEG-2 container
-                else if (string.Equals(splitFormat[i], "mpeg", StringComparison.OrdinalIgnoreCase))
+                // Handle MPEG-TS container
+                else if (string.Equals(splitFormat[i], "mpegts", StringComparison.OrdinalIgnoreCase))
                 {
                     splitFormat[i] = "ts";
                 }
@@ -624,15 +624,19 @@ namespace MediaBrowser.MediaEncoding.Probing
         {
             if (string.Equals(codec, "dvb_subtitle", StringComparison.OrdinalIgnoreCase))
             {
-                codec = "dvbsub";
+                codec = "DVBSUB";
             }
-            else if ((codec ?? string.Empty).Contains("PGS", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(codec, "dvb_teletext", StringComparison.OrdinalIgnoreCase))
             {
-                codec = "PGSSUB";
+                codec = "DVBTXT";
             }
-            else if ((codec ?? string.Empty).Contains("DVD", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(codec, "dvd_subtitle", StringComparison.OrdinalIgnoreCase))
             {
-                codec = "DVDSUB";
+                codec = "DVDSUB"; // .sub+.idx
+            }
+            else if (string.Equals(codec, "hdmv_pgs_subtitle", StringComparison.OrdinalIgnoreCase))
+            {
+                codec = "PGSSUB"; // .sup
             }
 
             return codec;
@@ -717,6 +721,8 @@ namespace MediaBrowser.MediaEncoding.Probing
             if (streamInfo.CodecType == CodecType.Audio)
             {
                 stream.Type = MediaStreamType.Audio;
+                stream.LocalizedDefault = _localization.GetLocalizedString("Default");
+                stream.LocalizedExternal = _localization.GetLocalizedString("External");
 
                 stream.Channels = streamInfo.Channels;
 
@@ -779,11 +785,10 @@ namespace MediaBrowser.MediaEncoding.Probing
                     && !string.Equals(streamInfo.FieldOrder, "progressive", StringComparison.OrdinalIgnoreCase);
 
                 if (isAudio
-                    && (string.Equals(stream.Codec, "bmp", StringComparison.OrdinalIgnoreCase)
-                        || string.Equals(stream.Codec, "gif", StringComparison.OrdinalIgnoreCase)
-                        || string.Equals(stream.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase)
-                        || string.Equals(stream.Codec, "png", StringComparison.OrdinalIgnoreCase)
-                        || string.Equals(stream.Codec, "webp", StringComparison.OrdinalIgnoreCase)))
+                    || string.Equals(stream.Codec, "bmp", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(stream.Codec, "gif", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(stream.Codec, "png", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(stream.Codec, "webp", StringComparison.OrdinalIgnoreCase))
                 {
                     stream.Type = MediaStreamType.EmbeddedImage;
                 }
@@ -887,8 +892,12 @@ namespace MediaBrowser.MediaEncoding.Probing
                             stream.ElPresentFlag = data.ElPresentFlag;
                             stream.BlPresentFlag = data.BlPresentFlag;
                             stream.DvBlSignalCompatibilityId = data.DvBlSignalCompatibilityId;
+                        }
 
-                            break;
+                        // Parse video rotation metadata from side_data
+                        else if (string.Equals(data.SideDataType, "Display Matrix", StringComparison.OrdinalIgnoreCase))
+                        {
+                            stream.Rotation = data.Rotation;
                         }
                     }
                 }
@@ -1316,23 +1325,23 @@ namespace MediaBrowser.MediaEncoding.Probing
             // These support multiple values, but for now we only store the first.
             var mb = GetMultipleMusicBrainzId(tags.GetValueOrDefault("MusicBrainz Album Artist Id"))
                 ?? GetMultipleMusicBrainzId(tags.GetValueOrDefault("MUSICBRAINZ_ALBUMARTISTID"));
-            audio.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, mb);
+            audio.TrySetProviderId(MetadataProvider.MusicBrainzAlbumArtist, mb);
 
             mb = GetMultipleMusicBrainzId(tags.GetValueOrDefault("MusicBrainz Artist Id"))
                 ?? GetMultipleMusicBrainzId(tags.GetValueOrDefault("MUSICBRAINZ_ARTISTID"));
-            audio.SetProviderId(MetadataProvider.MusicBrainzArtist, mb);
+            audio.TrySetProviderId(MetadataProvider.MusicBrainzArtist, mb);
 
             mb = GetMultipleMusicBrainzId(tags.GetValueOrDefault("MusicBrainz Album Id"))
                 ?? GetMultipleMusicBrainzId(tags.GetValueOrDefault("MUSICBRAINZ_ALBUMID"));
-            audio.SetProviderId(MetadataProvider.MusicBrainzAlbum, mb);
+            audio.TrySetProviderId(MetadataProvider.MusicBrainzAlbum, mb);
 
             mb = GetMultipleMusicBrainzId(tags.GetValueOrDefault("MusicBrainz Release Group Id"))
                  ?? GetMultipleMusicBrainzId(tags.GetValueOrDefault("MUSICBRAINZ_RELEASEGROUPID"));
-            audio.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, mb);
+            audio.TrySetProviderId(MetadataProvider.MusicBrainzReleaseGroup, mb);
 
             mb = GetMultipleMusicBrainzId(tags.GetValueOrDefault("MusicBrainz Release Track Id"))
                  ?? GetMultipleMusicBrainzId(tags.GetValueOrDefault("MUSICBRAINZ_RELEASETRACKID"));
-            audio.SetProviderId(MetadataProvider.MusicBrainzTrack, mb);
+            audio.TrySetProviderId(MetadataProvider.MusicBrainzTrack, mb);
         }
 
         private string GetMultipleMusicBrainzId(string value)
@@ -1639,7 +1648,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 1))
             {
-                fs.Read(packetBuffer);
+                fs.ReadExactly(packetBuffer);
             }
 
             if (packetBuffer[0] == 71)

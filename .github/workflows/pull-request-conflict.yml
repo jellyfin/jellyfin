@@ -15,7 +15,7 @@ jobs:
     if: ${{ github.repository == 'jellyfin/jellyfin' }}
     steps:
       - name: Apply label
-        uses: eps1lon/actions-label-merge-conflict@6d74047dcef155976a15e4a124dde2c7fe0c5522 # v3.0.1
+        uses: eps1lon/actions-label-merge-conflict@1df065ebe6e3310545d4f4c4e862e43bdca146f0 # v3.0.3
         if: ${{ github.event_name == 'push' || github.event_name == 'pull_request_target'}}
         with:
           dirtyLabel: 'merge conflict'

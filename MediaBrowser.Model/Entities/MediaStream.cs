@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Model.Dlna;
@@ -123,6 +124,12 @@ namespace MediaBrowser.Model.Entities
         public int? DvBlSignalCompatibilityId { get; set; }
 
         /// <summary>
+        /// Gets or sets the Rotation in degrees.
+        /// </summary>
+        /// <value>The video rotation.</value>
+        public int? Rotation { get; set; }
+
+        /// <summary>
         /// Gets or sets the comment.
         /// </summary>
         /// <value>The comment.</value>
@@ -193,9 +200,10 @@ namespace MediaBrowser.Model.Entities
                         || dvProfile == 5
                         || dvProfile == 7
                         || dvProfile == 8
-                        || dvProfile == 9))
+                        || dvProfile == 9
+                        || dvProfile == 10))
                 {
-                    var title = "DV Profile " + dvProfile;
+                    var title = "Dolby Vision Profile " + dvProfile;
 
                     if (dvBlCompatId > 0)
                     {
@@ -207,6 +215,7 @@ namespace MediaBrowser.Model.Entities
                         1 => title + " (HDR10)",
                         2 => title + " (SDR)",
                         4 => title + " (HLG)",
+                        6 => title + " (HDR10)", // Technically means Blu-ray, but practically always HDR10
                         _ => title
                     };
                 }
@@ -267,13 +276,13 @@ namespace MediaBrowser.Model.Entities
                             attributes.Add(StringHelper.FirstToUpper(fullLanguage ?? Language));
                         }
 
-                        if (!string.IsNullOrEmpty(Codec) && !string.Equals(Codec, "dca", StringComparison.OrdinalIgnoreCase) && !string.Equals(Codec, "dts", StringComparison.OrdinalIgnoreCase))
-                        {
-                            attributes.Add(AudioCodec.GetFriendlyName(Codec));
-                        }
-                        else if (!string.IsNullOrEmpty(Profile) && !string.Equals(Profile, "lc", StringComparison.OrdinalIgnoreCase))
+                        if (!string.IsNullOrEmpty(Profile) && !string.Equals(Profile, "lc", StringComparison.OrdinalIgnoreCase))
                         {
                             attributes.Add(Profile);
+                        }
+                        else if (!string.IsNullOrEmpty(Codec))
+                        {
+                            attributes.Add(AudioCodec.GetFriendlyName(Codec));
                         }
 
                         if (!string.IsNullOrEmpty(ChannelLayout))
@@ -329,7 +338,11 @@ namespace MediaBrowser.Model.Entities
                             attributes.Add(Codec.ToUpperInvariant());
                         }
 
-                        if (VideoRange != VideoRange.Unknown)
+                        if (VideoDoViTitle is not null)
+                        {
+                            attributes.Add(VideoDoViTitle);
+                        }
+                        else if (VideoRange != VideoRange.Unknown)
                         {
                             attributes.Add(VideoRange.ToString());
                         }
@@ -370,7 +383,7 @@ namespace MediaBrowser.Model.Entities
                             attributes.Add(string.IsNullOrEmpty(LocalizedUndefined) ? "Und" : LocalizedUndefined);
                         }
 
-                        if (IsHearingImpaired)
+                        if (IsHearingImpaired == true)
                         {
                             attributes.Add(string.IsNullOrEmpty(LocalizedHearingImpaired) ? "Hearing Impaired" : LocalizedHearingImpaired);
                         }
@@ -487,7 +500,7 @@ namespace MediaBrowser.Model.Entities
         /// Gets or sets a value indicating whether this instance is for the hearing impaired.
         /// </summary>
         /// <value><c>true</c> if this instance is for the hearing impaired; otherwise, <c>false</c>.</value>
-        public bool IsHearingImpaired { get; set; }
+        public bool? IsHearingImpaired { get; set; }
 
         /// <summary>
         /// Gets or sets the height.
@@ -512,6 +525,23 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The real frame rate.</value>
         public float? RealFrameRate { get; set; }
+
+        /// <summary>
+        /// Gets the framerate used as reference.
+        /// Prefer AverageFrameRate, if that is null or an unrealistic value
+        /// then fallback to RealFrameRate.
+        /// </summary>
+        /// <value>The reference frame rate.</value>
+        public float? ReferenceFrameRate
+        {
+            get
+            {
+                // In some cases AverageFrameRate for videos will be read as 1000fps even if it is not.
+                // This is probably due to a library compatability issue.
+                // See https://github.com/jellyfin/jellyfin/pull/12603#discussion_r1748044018 for more info.
+                return AverageFrameRate < 1000 ? AverageFrameRate : RealFrameRate;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the profile.
@@ -585,6 +615,33 @@ namespace MediaBrowser.Model.Entities
             }
         }
 
+        [JsonIgnore]
+        public bool IsPgsSubtitleStream
+        {
+            get
+            {
+                if (Type != MediaStreamType.Subtitle)
+                {
+                    return false;
+                }
+
+                if (string.IsNullOrEmpty(Codec) && !IsExternal)
+                {
+                    return false;
+                }
+
+                return IsPgsFormat(Codec);
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this is a subtitle steam that is extractable by ffmpeg.
+        /// All text-based and pgs subtitles can be extracted.
+        /// </summary>
+        /// <value><c>true</c> if this is a extractable subtitle steam otherwise, <c>false</c>.</value>
+        [JsonIgnore]
+        public bool IsExtractableSubtitleStream => IsTextSubtitleStream || IsPgsSubtitleStream;
+
         /// <summary>
         /// Gets or sets a value indicating whether [supports external stream].
         /// </summary>
@@ -656,14 +713,22 @@ namespace MediaBrowser.Model.Entities
         {
             string codec = format ?? string.Empty;
 
-            // sub = external .sub file
+            // microdvd and dvdsub/vobsub share the ".sub" file extension, but it's text-based.
 
-            return !codec.Contains("pgs", StringComparison.OrdinalIgnoreCase)
-                   && !codec.Contains("dvd", StringComparison.OrdinalIgnoreCase)
-                   && !codec.Contains("dvbsub", StringComparison.OrdinalIgnoreCase)
-                   && !string.Equals(codec, "sub", StringComparison.OrdinalIgnoreCase)
-                   && !string.Equals(codec, "sup", StringComparison.OrdinalIgnoreCase)
-                   && !string.Equals(codec, "dvb_subtitle", StringComparison.OrdinalIgnoreCase);
+            return codec.Contains("microdvd", StringComparison.OrdinalIgnoreCase)
+                   || (!codec.Contains("pgs", StringComparison.OrdinalIgnoreCase)
+                       && !codec.Contains("dvdsub", StringComparison.OrdinalIgnoreCase)
+                       && !codec.Contains("dvbsub", StringComparison.OrdinalIgnoreCase)
+                       && !string.Equals(codec, "sup", StringComparison.OrdinalIgnoreCase)
+                       && !string.Equals(codec, "sub", StringComparison.OrdinalIgnoreCase));
+        }
+
+        public static bool IsPgsFormat(string format)
+        {
+            string codec = format ?? string.Empty;
+
+            return codec.Contains("pgs", StringComparison.OrdinalIgnoreCase)
+                   || string.Equals(codec, "sup", StringComparison.OrdinalIgnoreCase);
         }
 
         public bool SupportsSubtitleConversionTo(string toCodec)
@@ -713,7 +778,7 @@ namespace MediaBrowser.Model.Entities
             var blPresentFlag = BlPresentFlag == 1;
             var dvBlCompatId = DvBlSignalCompatibilityId;
 
-            var isDoViProfile = dvProfile == 5 || dvProfile == 7 || dvProfile == 8;
+            var isDoViProfile = dvProfile == 5 || dvProfile == 7 || dvProfile == 8 || dvProfile == 10;
             var isDoViFlag = rpuPresentFlag && blPresentFlag && (dvBlCompatId == 0 || dvBlCompatId == 1 || dvBlCompatId == 4 || dvBlCompatId == 2 || dvBlCompatId == 6);
 
             if ((isDoViProfile && isDoViFlag)
@@ -736,6 +801,17 @@ namespace MediaBrowser.Model.Entities
                         _ => (VideoRange.SDR, VideoRangeType.SDR)
                     },
                     7 => (VideoRange.HDR, VideoRangeType.HDR10),
+                    10 => dvBlCompatId switch
+                    {
+                        0 => (VideoRange.HDR, VideoRangeType.DOVI),
+                        1 => (VideoRange.HDR, VideoRangeType.DOVIWithHDR10),
+                        2 => (VideoRange.SDR, VideoRangeType.DOVIWithSDR),
+                        4 => (VideoRange.HDR, VideoRangeType.DOVIWithHLG),
+                        // While not in Dolby Spec, Profile 8 CCid 6 media are possible to create, and since CCid 6 stems from Bluray (Profile 7 originally) an HDR10 base layer is guaranteed to exist.
+                        6 => (VideoRange.HDR, VideoRangeType.DOVIWithHDR10),
+                        // There is no other case to handle here as per Dolby Spec. Default case included for completeness and linting purposes
+                        _ => (VideoRange.SDR, VideoRangeType.SDR)
+                    },
                     _ => (VideoRange.SDR, VideoRangeType.SDR)
                 };
             }

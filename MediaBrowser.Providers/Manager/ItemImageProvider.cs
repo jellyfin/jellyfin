@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
@@ -67,16 +68,22 @@ namespace MediaBrowser.Providers.Manager
         /// Removes all existing images from the provided item.
         /// </summary>
         /// <param name="item">The <see cref="BaseItem"/> to remove images from.</param>
+        /// <param name="canDeleteLocal">Whether removing images outside metadata folder is allowed.</param>
         /// <returns><c>true</c> if changes were made to the item; otherwise <c>false</c>.</returns>
-        public bool RemoveImages(BaseItem item)
+        public bool RemoveImages(BaseItem item, bool canDeleteLocal = false)
         {
             var singular = new List<ItemImageInfo>();
+            var itemMetadataPath = item.GetInternalMetadataPath();
             for (var i = 0; i < _singularImages.Length; i++)
             {
                 var currentImage = item.GetImageInfo(_singularImages[i], 0);
                 if (currentImage is not null)
                 {
-                    singular.Add(currentImage);
+                    var imageInMetadataFolder = currentImage.Path.StartsWith(itemMetadataPath, StringComparison.OrdinalIgnoreCase);
+                    if (imageInMetadataFolder || canDeleteLocal || item.IsSaveLocalMetadataEnabled())
+                    {
+                        singular.Add(currentImage);
+                    }
                 }
             }
 
@@ -96,7 +103,7 @@ namespace MediaBrowser.Providers.Manager
         public bool ValidateImages(BaseItem item, IEnumerable<IImageProvider> providers, ImageRefreshOptions refreshOptions)
         {
             var hasChanges = false;
-            IDirectoryService directoryService = refreshOptions?.DirectoryService;
+            var directoryService = refreshOptions?.DirectoryService;
 
             if (item is not Photo)
             {
@@ -158,7 +165,7 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            // only delete existing multi-images if new ones were added
+            // Only delete existing multi-images if new ones were added
             if (oldBackdropImages.Length > 0 && oldBackdropImages.Length < item.GetImages(ImageType.Backdrop).Count())
             {
                 PruneImages(item, oldBackdropImages);
@@ -222,9 +229,7 @@ namespace MediaBrowser.Providers.Manager
                                 {
                                     var mimeType = MimeTypes.GetMimeType(response.Path);
 
-                                    var stream = AsyncFile.OpenRead(response.Path);
-
-                                    await _providerManager.SaveImage(item, stream, mimeType, imageType, null, cancellationToken).ConfigureAwait(false);
+                                    await _providerManager.SaveImage(item, response.Path, mimeType, imageType, null, null, cancellationToken).ConfigureAwait(false);
                                 }
                             }
 
@@ -359,10 +364,8 @@ namespace MediaBrowser.Providers.Manager
 
         private void PruneImages(BaseItem item, IReadOnlyList<ItemImageInfo> images)
         {
-            for (var i = 0; i < images.Count; i++)
+            foreach (var image in images)
             {
-                var image = images[i];
-
                 if (image.IsLocalFile)
                 {
                     try
@@ -371,7 +374,7 @@ namespace MediaBrowser.Providers.Manager
                     }
                     catch (FileNotFoundException)
                     {
-                        // nothing to do, already gone
+                        // Nothing to do, already gone
                     }
                     catch (UnauthorizedAccessException ex)
                     {
@@ -381,6 +384,16 @@ namespace MediaBrowser.Providers.Manager
             }
 
             item.RemoveImages(images);
+
+            // Cleanup old metadata directory for episodes if empty, as long as it's not a virtual item
+            if (item is Episode && !item.IsVirtualItem)
+            {
+                var oldLocalMetadataDirectory = Path.Combine(item.ContainingFolderPath, "metadata");
+                if (_fileSystem.DirectoryExists(oldLocalMetadataDirectory) && !_fileSystem.GetFiles(oldLocalMetadataDirectory).Any())
+                {
+                    Directory.Delete(oldLocalMetadataDirectory);
+                }
+            }
         }
 
         /// <summary>
@@ -413,12 +426,10 @@ namespace MediaBrowser.Providers.Manager
         {
             var changed = item.ValidateImages();
             var foundImageTypes = new List<ImageType>();
-
             for (var i = 0; i < _singularImages.Length; i++)
             {
                 var type = _singularImages[i];
                 var image = GetFirstLocalImageInfoByType(images, type);
-
                 if (image is not null)
                 {
                     var currentImage = item.GetImageInfo(type, 0);

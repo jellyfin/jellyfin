@@ -41,7 +41,7 @@ namespace Emby.Server.Implementations.Session
         /// <summary>
         /// Lock used for accessing the WebSockets watchlist.
         /// </summary>
-        private readonly object _webSocketsLock = new object();
+        private readonly Lock _webSocketsLock = new();
 
         private readonly ISessionManager _sessionManager;
         private readonly ILogger<SessionWebSocketListener> _logger;

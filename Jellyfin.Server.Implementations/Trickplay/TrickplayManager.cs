@@ -76,11 +76,75 @@ public class TrickplayManager : ITrickplayManager
     }
 
     /// <inheritdoc />
-    public async Task RefreshTrickplayDataAsync(Video video, bool replace, CancellationToken cancellationToken)
+    public async Task MoveGeneratedTrickplayDataAsync(Video video, LibraryOptions? libraryOptions, CancellationToken cancellationToken)
+    {
+        var options = _config.Configuration.TrickplayOptions;
+        if (!CanGenerateTrickplay(video, options.Interval))
+        {
+            return;
+        }
+
+        var existingTrickplayResolutions = await GetTrickplayResolutions(video.Id).ConfigureAwait(false);
+        foreach (var resolution in existingTrickplayResolutions)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var existingResolution = resolution.Key;
+            var tileWidth = resolution.Value.TileWidth;
+            var tileHeight = resolution.Value.TileHeight;
+            var shouldBeSavedWithMedia = libraryOptions is null ? false : libraryOptions.SaveTrickplayWithMedia;
+            var localOutputDir = GetTrickplayDirectory(video, tileWidth, tileHeight, existingResolution, false);
+            var mediaOutputDir = GetTrickplayDirectory(video, tileWidth, tileHeight, existingResolution, true);
+            if (shouldBeSavedWithMedia && Directory.Exists(localOutputDir))
+            {
+                var localDirFiles = Directory.GetFiles(localOutputDir);
+                var mediaDirExists = Directory.Exists(mediaOutputDir);
+                if (localDirFiles.Length > 0 && ((mediaDirExists && Directory.GetFiles(mediaOutputDir).Length == 0) || !mediaDirExists))
+                {
+                    // Move images from local dir to media dir
+                    MoveContent(localOutputDir, mediaOutputDir);
+                    _logger.LogInformation("Moved trickplay images for {ItemName} to {Location}", video.Name, mediaOutputDir);
+                }
+            }
+            else if (!shouldBeSavedWithMedia && Directory.Exists(mediaOutputDir))
+            {
+                var mediaDirFiles = Directory.GetFiles(mediaOutputDir);
+                var localDirExists = Directory.Exists(localOutputDir);
+                if (mediaDirFiles.Length > 0 && ((localDirExists && Directory.GetFiles(localOutputDir).Length == 0) || !localDirExists))
+                {
+                    // Move images from media dir to local dir
+                    MoveContent(mediaOutputDir, localOutputDir);
+                    _logger.LogInformation("Moved trickplay images for {ItemName} to {Location}", video.Name, localOutputDir);
+                }
+            }
+        }
+    }
+
+    private void MoveContent(string sourceFolder, string destinationFolder)
+    {
+        _fileSystem.MoveDirectory(sourceFolder, destinationFolder);
+        var parent = Directory.GetParent(sourceFolder);
+        if (parent is not null)
+        {
+            var parentContent = Directory.GetDirectories(parent.FullName);
+            if (parentContent.Length == 0)
+            {
+                Directory.Delete(parent.FullName);
+            }
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task RefreshTrickplayDataAsync(Video video, bool replace, LibraryOptions? libraryOptions, CancellationToken cancellationToken)
     {
         _logger.LogDebug("Trickplay refresh for {ItemId} (replace existing: {Replace})", video.Id, replace);
 
         var options = _config.Configuration.TrickplayOptions;
+        if (options.Interval < 1000)
+        {
+            _logger.LogWarning("Trickplay image interval {Interval} is too small, reset to the minimum valid value of 1000", options.Interval);
+            options.Interval = 1000;
+        }
+
         foreach (var width in options.WidthResolutions)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -89,6 +153,7 @@ public class TrickplayManager : ITrickplayManager
                 replace,
                 width,
                 options,
+                libraryOptions,
                 cancellationToken).ConfigureAwait(false);
         }
     }
@@ -98,6 +163,7 @@ public class TrickplayManager : ITrickplayManager
         bool replace,
         int width,
         TrickplayOptions options,
+        LibraryOptions? libraryOptions,
         CancellationToken cancellationToken)
     {
         if (!CanGenerateTrickplay(video, options.Interval))
@@ -113,11 +179,18 @@ public class TrickplayManager : ITrickplayManager
             {
                 // Extract images
                 // Note: Media sources under parent items exist as their own video/item as well. Only use this video stream for trickplay.
-                var mediaSource = video.GetMediaSources(false).Find(source => Guid.Parse(source.Id).Equals(video.Id));
+                var mediaSource = video.GetMediaSources(false).FirstOrDefault(source => Guid.Parse(source.Id).Equals(video.Id));
 
                 if (mediaSource is null)
                 {
                     _logger.LogDebug("Found no matching media source for item {ItemId}", video.Id);
+                    return;
+                }
+
+                var mediaPath = mediaSource.Path;
+                if (!File.Exists(mediaPath))
+                {
+                    _logger.LogWarning("Media not found at {Path} for item {ItemID}", mediaPath, video.Id);
                     return;
                 }
 
@@ -131,15 +204,53 @@ public class TrickplayManager : ITrickplayManager
                     actualWidth = 2 * ((int)mediaSource.VideoStream.Width / 2);
                 }
 
-                var outputDir = GetTrickplayDirectory(video, actualWidth);
+                var tileWidth = options.TileWidth;
+                var tileHeight = options.TileHeight;
+                var saveWithMedia = libraryOptions is null ? false : libraryOptions.SaveTrickplayWithMedia;
+                var outputDir = GetTrickplayDirectory(video, tileWidth, tileHeight, actualWidth, saveWithMedia);
 
-                if (!replace && Directory.Exists(outputDir) && (await GetTrickplayResolutions(video.Id).ConfigureAwait(false)).ContainsKey(actualWidth))
+                // Import existing trickplay tiles
+                if (!replace && Directory.Exists(outputDir))
                 {
-                    _logger.LogDebug("Found existing trickplay files for {ItemId}. Exiting", video.Id);
-                    return;
+                    var existingFiles = Directory.GetFiles(outputDir);
+                    if (existingFiles.Length > 0)
+                    {
+                        var hasTrickplayResolution = await HasTrickplayResolutionAsync(video.Id, actualWidth).ConfigureAwait(false);
+                        if (hasTrickplayResolution)
+                        {
+                            _logger.LogDebug("Found existing trickplay files for {ItemId}.", video.Id);
+                            return;
+                        }
+
+                        // Import tiles
+                        var localTrickplayInfo = new TrickplayInfo
+                        {
+                            ItemId = video.Id,
+                            Width = width,
+                            Interval = options.Interval,
+                            TileWidth = options.TileWidth,
+                            TileHeight = options.TileHeight,
+                            ThumbnailCount = existingFiles.Length,
+                            Height = 0,
+                            Bandwidth = 0
+                        };
+
+                        foreach (var tile in existingFiles)
+                        {
+                            var image = _imageEncoder.GetImageSize(tile);
+                            localTrickplayInfo.Height = Math.Max(localTrickplayInfo.Height, (int)Math.Ceiling((double)image.Height / localTrickplayInfo.TileHeight));
+                            var bitrate = (int)Math.Ceiling((decimal)new FileInfo(tile).Length * 8 / localTrickplayInfo.TileWidth / localTrickplayInfo.TileHeight / (localTrickplayInfo.Interval / 1000));
+                            localTrickplayInfo.Bandwidth = Math.Max(localTrickplayInfo.Bandwidth, bitrate);
+                        }
+
+                        await SaveTrickplayInfo(localTrickplayInfo).ConfigureAwait(false);
+
+                        _logger.LogDebug("Imported existing trickplay files for {ItemId}.", video.Id);
+                        return;
+                    }
                 }
 
-                var mediaPath = mediaSource.Path;
+                // Generate trickplay tiles
                 var mediaStream = mediaSource.VideoStream;
                 var container = mediaSource.Container;
 
@@ -156,6 +267,7 @@ public class TrickplayManager : ITrickplayManager
                     options.ProcessThreads,
                     options.Qscale,
                     options.ProcessPriority,
+                    options.EnableKeyFrameOnlyExtraction,
                     _encodingHelper,
                     cancellationToken).ConfigureAwait(false);
 
@@ -211,14 +323,14 @@ public class TrickplayManager : ITrickplayManager
     }
 
     /// <inheritdoc />
-    public TrickplayInfo CreateTiles(List<string> images, int width, TrickplayOptions options, string outputDir)
+    public TrickplayInfo CreateTiles(IReadOnlyList<string> images, int width, TrickplayOptions options, string outputDir)
     {
         if (images.Count == 0)
         {
             throw new ArgumentException("Can't create trickplay from 0 images.");
         }
 
-        var workDir = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid().ToString("N"));
+        var workDir = Path.Combine(_appPaths.TempDirectory, "trickplay_" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(workDir);
 
         var trickplayInfo = new TrickplayInfo
@@ -251,7 +363,7 @@ public class TrickplayManager : ITrickplayManager
             var tilePath = Path.Combine(workDir, $"{i}.jpg");
 
             imageOptions.OutputPath = tilePath;
-            imageOptions.InputPaths = images.GetRange(i * thumbnailsPerTile, Math.Min(thumbnailsPerTile, images.Count - (i * thumbnailsPerTile)));
+            imageOptions.InputPaths = images.Skip(i * thumbnailsPerTile).Take(Math.Min(thumbnailsPerTile, images.Count - (i * thumbnailsPerTile))).ToList();
 
             // Generate image and use returned height for tiles info
             var height = _imageEncoder.CreateTrickplayTile(imageOptions, options.JpegQuality, trickplayInfo.Width, trickplayInfo.Height != 0 ? trickplayInfo.Height : null);
@@ -261,7 +373,7 @@ public class TrickplayManager : ITrickplayManager
             }
 
             // Update bitrate
-            var bitrate = (int)Math.Ceiling((decimal)new FileInfo(tilePath).Length * 8 / trickplayInfo.TileWidth / trickplayInfo.TileHeight / (trickplayInfo.Interval / 1000));
+            var bitrate = (int)Math.Ceiling(new FileInfo(tilePath).Length * 8m / trickplayInfo.TileWidth / trickplayInfo.TileHeight / (trickplayInfo.Interval / 1000m));
             trickplayInfo.Bandwidth = Math.Max(trickplayInfo.Bandwidth, bitrate);
         }
 
@@ -276,7 +388,7 @@ public class TrickplayManager : ITrickplayManager
             Directory.Delete(outputDir, true);
         }
 
-        MoveDirectory(workDir, outputDir);
+        _fileSystem.MoveDirectory(workDir, outputDir);
 
         return trickplayInfo;
     }
@@ -343,6 +455,26 @@ public class TrickplayManager : ITrickplayManager
     }
 
     /// <inheritdoc />
+    public async Task<IReadOnlyList<TrickplayInfo>> GetTrickplayItemsAsync(int limit, int offset)
+    {
+        IReadOnlyList<TrickplayInfo> trickplayItems;
+
+        var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+        await using (dbContext.ConfigureAwait(false))
+        {
+            trickplayItems = await dbContext.TrickplayInfos
+                .AsNoTracking()
+                .OrderBy(i => i.ItemId)
+                .Skip(offset)
+                .Take(limit)
+                .ToListAsync()
+                .ConfigureAwait(false);
+        }
+
+        return trickplayItems;
+    }
+
+    /// <inheritdoc />
     public async Task SaveTrickplayInfo(TrickplayInfo info)
     {
         var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
@@ -366,7 +498,11 @@ public class TrickplayManager : ITrickplayManager
         var trickplayManifest = new Dictionary<string, Dictionary<int, TrickplayInfo>>();
         foreach (var mediaSource in item.GetMediaSources(false))
         {
-            var mediaSourceId = Guid.Parse(mediaSource.Id);
+            if (mediaSource.IsRemote || !Guid.TryParse(mediaSource.Id, out var mediaSourceId))
+            {
+                continue;
+            }
+
             var trickplayResolutions = await GetTrickplayResolutions(mediaSourceId).ConfigureAwait(false);
 
             if (trickplayResolutions.Count > 0)
@@ -379,9 +515,15 @@ public class TrickplayManager : ITrickplayManager
     }
 
     /// <inheritdoc />
-    public string GetTrickplayTilePath(BaseItem item, int width, int index)
+    public async Task<string> GetTrickplayTilePathAsync(BaseItem item, int width, int index, bool saveWithMedia)
     {
-        return Path.Combine(GetTrickplayDirectory(item, width), index + ".jpg");
+        var trickplayResolutions = await GetTrickplayResolutions(item.Id).ConfigureAwait(false);
+        if (trickplayResolutions is not null && trickplayResolutions.TryGetValue(width, out var trickplayInfo))
+        {
+            return Path.Combine(GetTrickplayDirectory(item, trickplayInfo.TileWidth, trickplayInfo.TileHeight, width, saveWithMedia), index + ".jpg");
+        }
+
+        return string.Empty;
     }
 
     /// <inheritdoc />
@@ -394,7 +536,7 @@ public class TrickplayManager : ITrickplayManager
 
             if (trickplayInfo.ThumbnailCount > 0)
             {
-                const string urlFormat = "{0}.jpg?MediaSourceId={1}&api_key={2}";
+                const string urlFormat = "{0}.jpg?MediaSourceId={1}&ApiKey={2}";
                 const string decimalFormat = "{0:0.###}";
 
                 var resolution = $"{trickplayInfo.Width}x{trickplayInfo.Height}";
@@ -457,29 +599,33 @@ public class TrickplayManager : ITrickplayManager
         return null;
     }
 
-    private string GetTrickplayDirectory(BaseItem item, int? width = null)
+    /// <inheritdoc />
+    public string GetTrickplayDirectory(BaseItem item, int tileWidth, int tileHeight, int width, bool saveWithMedia = false)
     {
-        var path = Path.Combine(item.GetInternalMetadataPath(), "trickplay");
+        var path = saveWithMedia
+            ? Path.Combine(item.ContainingFolderPath, Path.ChangeExtension(item.Path, ".trickplay"))
+            : Path.Combine(item.GetInternalMetadataPath(), "trickplay");
 
-        return width.HasValue ? Path.Combine(path, width.Value.ToString(CultureInfo.InvariantCulture)) : path;
+        var subdirectory = string.Format(
+            CultureInfo.InvariantCulture,
+            "{0} - {1}x{2}",
+            width.ToString(CultureInfo.InvariantCulture),
+            tileWidth.ToString(CultureInfo.InvariantCulture),
+            tileHeight.ToString(CultureInfo.InvariantCulture));
+
+        return Path.Combine(path, subdirectory);
     }
 
-    private void MoveDirectory(string source, string destination)
+    private async Task<bool> HasTrickplayResolutionAsync(Guid itemId, int width)
     {
-        try
+        var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+        await using (dbContext.ConfigureAwait(false))
         {
-            Directory.Move(source, destination);
-        }
-        catch (IOException)
-        {
-            // Cross device move requires a copy
-            Directory.CreateDirectory(destination);
-            foreach (string file in Directory.GetFiles(source))
-            {
-                File.Copy(file, Path.Join(destination, Path.GetFileName(file)), true);
-            }
-
-            Directory.Delete(source, true);
+            return await dbContext.TrickplayInfos
+                .AsNoTracking()
+                .Where(i => i.ItemId.Equals(itemId))
+                .AnyAsync(i => i.Width == width)
+                .ConfigureAwait(false);
         }
     }
 }

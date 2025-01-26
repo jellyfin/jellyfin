@@ -132,7 +132,7 @@ public static class StreamingHelpers
 
                 mediaSource = string.IsNullOrEmpty(streamingRequest.MediaSourceId)
                     ? mediaSources[0]
-                    : mediaSources.Find(i => string.Equals(i.Id, streamingRequest.MediaSourceId, StringComparison.Ordinal));
+                    : mediaSources.FirstOrDefault(i => string.Equals(i.Id, streamingRequest.MediaSourceId, StringComparison.Ordinal));
 
                 if (mediaSource is null && Guid.Parse(streamingRequest.MediaSourceId).Equals(streamingRequest.Id))
                 {
@@ -145,6 +145,12 @@ public static class StreamingHelpers
             var liveStreamInfo = await mediaSourceManager.GetLiveStreamWithDirectStreamProvider(streamingRequest.LiveStreamId, cancellationToken).ConfigureAwait(false);
             mediaSource = liveStreamInfo.Item1;
             state.DirectStreamProvider = liveStreamInfo.Item2;
+
+            // Cap the max bitrate when it is too high. This is usually due to ffmpeg is unable to probe the source liveTV streams' bitrate.
+            if (mediaSource.FallbackMaxStreamingBitrate is not null && streamingRequest.VideoBitRate is not null)
+            {
+                streamingRequest.VideoBitRate = Math.Min(streamingRequest.VideoBitRate.Value, mediaSource.FallbackMaxStreamingBitrate.Value);
+            }
         }
 
         var encodingOptions = serverConfigurationManager.GetEncodingOptions();
@@ -213,11 +219,17 @@ public static class StreamingHelpers
                 }
                 else
                 {
+                    var h264EquivalentBitrate = EncodingHelper.ScaleBitrate(
+                        state.OutputVideoBitrate.Value,
+                        state.ActualOutputVideoCodec,
+                        "h264");
                     var resolution = ResolutionNormalizer.Normalize(
                         state.VideoStream?.BitRate,
                         state.OutputVideoBitrate.Value,
+                        h264EquivalentBitrate,
                         state.VideoRequest.MaxWidth,
-                        state.VideoRequest.MaxHeight);
+                        state.VideoRequest.MaxHeight,
+                        state.TargetFramerate);
 
                     state.VideoRequest.MaxWidth = resolution.MaxWidth;
                     state.VideoRequest.MaxHeight = resolution.MaxHeight;

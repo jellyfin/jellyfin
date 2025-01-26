@@ -129,5 +129,11 @@
     "TaskCleanCollectionsAndPlaylists": "Очистити колекції і списки відтворення",
     "TaskCleanCollectionsAndPlaylistsDescription": "Видаляє елементи з колекцій і списків відтворення, які більше не існують.",
     "TaskAudioNormalizationDescription": "Сканує файли на наявність даних для нормалізації звуку.",
-    "TaskAudioNormalization": "Нормалізація аудіо"
+    "TaskAudioNormalization": "Нормалізація аудіо",
+    "TaskDownloadMissingLyrics": "Завантажити відсутні тексти пісень",
+    "TaskDownloadMissingLyricsDescription": "Завантаження текстів пісень",
+    "TaskMoveTrickplayImagesDescription": "Переміщує наявні Trickplay-зображення відповідно до налаштувань медіатеки.",
+    "TaskExtractMediaSegments": "Сканування медіа-сегментів",
+    "TaskMoveTrickplayImages": "Змінити місце розташування Trickplay-зображень",
+    "TaskExtractMediaSegmentsDescription": "Витягує або отримує медіа-сегменти з плагінів з підтримкою MediaSegment."
 }

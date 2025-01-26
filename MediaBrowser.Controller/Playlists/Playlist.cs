@@ -137,27 +137,27 @@ namespace MediaBrowser.Controller.Playlists
             return Task.CompletedTask;
         }
 
-        public override List<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
+        public override IReadOnlyList<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
         {
             return GetPlayableItems(user, query);
         }
 
-        protected override IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
+        protected override IReadOnlyList<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
         {
             return [];
         }
 
-        public override IEnumerable<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)
+        public override IReadOnlyList<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)
         {
             return GetPlayableItems(user, query);
         }
 
-        public IEnumerable<Tuple<LinkedChild, BaseItem>> GetManageableItems()
+        public IReadOnlyList<Tuple<LinkedChild, BaseItem>> GetManageableItems()
         {
             return GetLinkedChildrenInfos();
         }
 
-        private List<BaseItem> GetPlayableItems(User user, InternalItemsQuery query)
+        private IReadOnlyList<BaseItem> GetPlayableItems(User user, InternalItemsQuery query)
         {
             query ??= new InternalItemsQuery(user);
 
@@ -166,7 +166,7 @@ namespace MediaBrowser.Controller.Playlists
             return base.GetChildren(user, true, query);
         }
 
-        public static IReadOnlyList<BaseItem> GetPlaylistItems(MediaType playlistMediaType, IEnumerable<BaseItem> inputItems, User user, DtoOptions options)
+        public static IReadOnlyList<BaseItem> GetPlaylistItems(IEnumerable<BaseItem> inputItems, User user, DtoOptions options)
         {
             if (user is not null)
             {
@@ -177,14 +177,14 @@ namespace MediaBrowser.Controller.Playlists
 
             foreach (var item in inputItems)
             {
-                var playlistItems = GetPlaylistItems(item, user, playlistMediaType, options);
+                var playlistItems = GetPlaylistItems(item, user, options);
                 list.AddRange(playlistItems);
             }
 
             return list;
         }
 
-        private static IEnumerable<BaseItem> GetPlaylistItems(BaseItem item, User user, MediaType mediaType, DtoOptions options)
+        private static IEnumerable<BaseItem> GetPlaylistItems(BaseItem item, User user, DtoOptions options)
         {
             if (item is MusicGenre musicGenre)
             {
@@ -216,7 +216,7 @@ namespace MediaBrowser.Controller.Playlists
                 {
                     Recursive = true,
                     IsFolder = false,
-                    MediaTypes = [mediaType],
+                    MediaTypes = [MediaType.Audio, MediaType.Video],
                     EnableTotalRecordCount = false,
                     DtoOptions = options
                 };

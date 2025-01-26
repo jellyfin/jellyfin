@@ -81,11 +81,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                     }
 
                     remoteResult.SetProviderId(MetadataProvider.Tmdb, movie.Id.ToString(CultureInfo.InvariantCulture));
-
-                    if (!string.IsNullOrWhiteSpace(movie.ImdbId))
-                    {
-                        remoteResult.SetProviderId(MetadataProvider.Imdb, movie.ImdbId);
-                    }
+                    remoteResult.TrySetProviderId(MetadataProvider.Imdb, movie.ImdbId);
 
                     return new[] { remoteResult };
                 }
@@ -202,7 +198,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             };
 
             movie.SetProviderId(MetadataProvider.Tmdb, tmdbId);
-            movie.SetProviderId(MetadataProvider.Imdb, movieResult.ImdbId);
+            movie.TrySetProviderId(MetadataProvider.Imdb, movieResult.ImdbId);
             if (movieResult.BelongsToCollection is not null)
             {
                 movie.SetProviderId(MetadataProvider.TmdbCollection, movieResult.BelongsToCollection.Id.ToString(CultureInfo.InvariantCulture));

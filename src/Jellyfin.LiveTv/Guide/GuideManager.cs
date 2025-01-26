@@ -265,7 +265,7 @@ public class GuideManager : IGuideManager
 
                 if (newPrograms.Count > 0)
                 {
-                    _libraryManager.CreateItems(newPrograms, null, cancellationToken);
+                    _libraryManager.CreateOrUpdateItems(newPrograms, null, cancellationToken);
                     await PrecacheImages(newPrograms, maxCacheDate).ConfigureAwait(false);
                 }
 
@@ -479,10 +479,7 @@ public class GuideManager : IGuideManager
                 DateModified = DateTime.UtcNow
             };
 
-            if (!string.IsNullOrEmpty(info.Etag))
-            {
-                item.SetProviderId(EtagKey, info.Etag);
-            }
+            item.TrySetProviderId(EtagKey, info.Etag);
         }
 
         if (!string.Equals(info.ShowId, item.ShowId, StringComparison.OrdinalIgnoreCase))

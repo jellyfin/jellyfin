@@ -348,7 +348,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                     writer.WriteElementString("aspectratio", stream.AspectRatio);
                 }
 
-                var framerate = stream.AverageFrameRate ?? stream.RealFrameRate;
+                var framerate = stream.ReferenceFrameRate;
 
                 if (framerate.HasValue)
                 {
@@ -825,7 +825,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
         private string GetOutputTrailerUrl(string url)
         {
             // This is what xbmc expects
-            return url.Replace(YouTubeWatchUrl, "plugin://plugin.video.youtube/?action=play_video&videoid=", StringComparison.OrdinalIgnoreCase);
+            return url.Replace(YouTubeWatchUrl, "plugin://plugin.video.youtube/play/?video_id=", StringComparison.OrdinalIgnoreCase);
         }
 
         private void AddImages(BaseItem item, XmlWriter writer, ILibraryManager libraryManager)
@@ -869,49 +869,52 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             var userdata = userDataRepo.GetUserData(user, item);
 
-            writer.WriteElementString(
+            if (userdata is not null)
+            {
+                writer.WriteElementString(
                 "isuserfavorite",
                 userdata.IsFavorite.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
 
-            if (userdata.Rating.HasValue)
-            {
-                writer.WriteElementString(
-                    "userrating",
-                    userdata.Rating.Value.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
-            }
-
-            if (!item.IsFolder)
-            {
-                writer.WriteElementString(
-                    "playcount",
-                    userdata.PlayCount.ToString(CultureInfo.InvariantCulture));
-                writer.WriteElementString(
-                    "watched",
-                    userdata.Played.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
-
-                if (userdata.LastPlayedDate.HasValue)
+                if (userdata.Rating.HasValue)
                 {
                     writer.WriteElementString(
-                        "lastplayed",
-                        userdata.LastPlayedDate.Value.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture).ToLowerInvariant());
+                        "userrating",
+                        userdata.Rating.Value.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
                 }
 
-                writer.WriteStartElement("resume");
+                if (!item.IsFolder)
+                {
+                    writer.WriteElementString(
+                        "playcount",
+                        userdata.PlayCount.ToString(CultureInfo.InvariantCulture));
+                    writer.WriteElementString(
+                        "watched",
+                        userdata.Played.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
 
-                var runTimeTicks = item.RunTimeTicks ?? 0;
+                    if (userdata.LastPlayedDate.HasValue)
+                    {
+                        writer.WriteElementString(
+                            "lastplayed",
+                            userdata.LastPlayedDate.Value.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture).ToLowerInvariant());
+                    }
 
-                writer.WriteElementString(
-                    "position",
-                    TimeSpan.FromTicks(userdata.PlaybackPositionTicks).TotalSeconds.ToString(CultureInfo.InvariantCulture));
-                writer.WriteElementString(
-                    "total",
-                    TimeSpan.FromTicks(runTimeTicks).TotalSeconds.ToString(CultureInfo.InvariantCulture));
+                    writer.WriteStartElement("resume");
+
+                    var runTimeTicks = item.RunTimeTicks ?? 0;
+
+                    writer.WriteElementString(
+                        "position",
+                        TimeSpan.FromTicks(userdata.PlaybackPositionTicks).TotalSeconds.ToString(CultureInfo.InvariantCulture));
+                    writer.WriteElementString(
+                        "total",
+                        TimeSpan.FromTicks(runTimeTicks).TotalSeconds.ToString(CultureInfo.InvariantCulture));
+                }
             }
 
             writer.WriteEndElement();
         }
 
-        private void AddActors(List<PersonInfo> people, XmlWriter writer, ILibraryManager libraryManager, bool saveImagePath)
+        private void AddActors(IReadOnlyList<PersonInfo> people, XmlWriter writer, ILibraryManager libraryManager, bool saveImagePath)
         {
             foreach (var person in people)
             {

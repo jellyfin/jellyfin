@@ -130,7 +130,7 @@ namespace Jellyfin.LiveTv.IO
                 const int MaxBitrate = 25000000;
                 videoArgs = string.Format(
                     CultureInfo.InvariantCulture,
-                    "-codec:v:0 libx264 -force_key_frames \"expr:gte(t,n_forced*5)\" {0} -pix_fmt yuv420p -preset superfast -crf 23 -b:v {1} -maxrate {1} -bufsize ({1}*2) -vsync -1 -profile:v high -level 41",
+                    "-codec:v:0 libx264 -force_key_frames \"expr:gte(t,n_forced*5)\" {0} -pix_fmt yuv420p -preset superfast -crf 23 -b:v {1} -maxrate {1} -bufsize ({1}*2) -profile:v high -level 41",
                     GetOutputSizeParam(),
                     MaxBitrate);
             }
@@ -157,7 +157,7 @@ namespace Jellyfin.LiveTv.IO
                 flags.Add("+genpts");
             }
 
-            var inputModifier = "-async 1 -vsync -1";
+            var inputModifier = "-async 1";
 
             if (flags.Count > 0)
             {

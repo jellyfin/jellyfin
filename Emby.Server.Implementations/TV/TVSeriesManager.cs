@@ -19,14 +19,12 @@ namespace Emby.Server.Implementations.TV
 {
     public class TVSeriesManager : ITVSeriesManager
     {
-        private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataManager;
         private readonly ILibraryManager _libraryManager;
         private readonly IServerConfigurationManager _configurationManager;
 
-        public TVSeriesManager(IUserManager userManager, IUserDataManager userDataManager, ILibraryManager libraryManager, IServerConfigurationManager configurationManager)
+        public TVSeriesManager(IUserDataManager userDataManager, ILibraryManager libraryManager, IServerConfigurationManager configurationManager)
         {
-            _userManager = userManager;
             _userDataManager = userDataManager;
             _libraryManager = libraryManager;
             _configurationManager = configurationManager;
@@ -34,12 +32,7 @@ namespace Emby.Server.Implementations.TV
 
         public QueryResult<BaseItem> GetNextUp(NextUpQuery query, DtoOptions options)
         {
-            var user = _userManager.GetUserById(query.UserId);
-
-            if (user is null)
-            {
-                throw new ArgumentException("User not found");
-            }
+            var user = query.User;
 
             string? presentationUniqueKey = null;
             if (!query.SeriesId.IsNullOrEmpty())
@@ -83,12 +76,7 @@ namespace Emby.Server.Implementations.TV
 
         public QueryResult<BaseItem> GetNextUp(NextUpQuery request, BaseItem[] parentsFolders, DtoOptions options)
         {
-            var user = _userManager.GetUserById(request.UserId);
-
-            if (user is null)
-            {
-                throw new ArgumentException("User not found");
-            }
+            var user = request.User;
 
             string? presentationUniqueKey = null;
             int? limit = null;
@@ -129,7 +117,7 @@ namespace Emby.Server.Implementations.TV
                 .ToList();
 
             // Avoid implicitly captured closure
-            var episodes = GetNextUpEpisodes(request, user, items, options);
+            var episodes = GetNextUpEpisodes(request, user, items.Distinct().ToArray(), options);
 
             return GetResult(episodes, request);
         }
@@ -274,7 +262,7 @@ namespace Emby.Server.Implementations.TV
                 {
                     var userData = _userDataManager.GetUserData(user, nextEpisode);
 
-                    if (userData.PlaybackPositionTicks > 0)
+                    if (userData?.PlaybackPositionTicks > 0)
                     {
                         return null;
                     }
@@ -286,6 +274,11 @@ namespace Emby.Server.Implementations.TV
             if (lastWatchedEpisode is not null)
             {
                 var userData = _userDataManager.GetUserData(user, lastWatchedEpisode);
+
+                if (userData is null)
+                {
+                    return (DateTime.MinValue, GetEpisode);
+                }
 
                 var lastWatchedDate = userData.LastPlayedDate ?? DateTime.MinValue.AddDays(1);
 

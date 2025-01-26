@@ -26,7 +26,7 @@ public class PhotoProvider : ICustomMetadataProvider<Photo>, IForcedProvider, IH
     private readonly ILogger<PhotoProvider> _logger;
     private readonly IImageProcessor _imageProcessor;
 
-    // These are causing taglib to hang
+    // Other extensions might cause taglib to hang
     private readonly string[] _includeExtensions = [".jpg", ".jpeg", ".png", ".tiff", ".cr2", ".webp", ".avif"];
 
     /// <summary>

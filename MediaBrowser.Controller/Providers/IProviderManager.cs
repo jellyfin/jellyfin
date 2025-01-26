@@ -77,7 +77,8 @@ namespace MediaBrowser.Controller.Providers
         Task SaveImage(BaseItem item, Stream source, string mimeType, ImageType type, int? imageIndex, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Saves the image.
+        /// Saves the image by giving the image path on filesystem.
+        /// This method will remove the image on the source path after saving it to the destination.
         /// </summary>
         /// <param name="item">Image to save.</param>
         /// <param name="source">Source of image.</param>
@@ -99,12 +100,14 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="metadataProviders">Metadata providers to use.</param>
         /// <param name="metadataSavers">Metadata savers to use.</param>
         /// <param name="externalIds">External IDs to use.</param>
+        /// <param name="externalUrlProviders">The list of external url providers.</param>
         void AddParts(
             IEnumerable<IImageProvider> imageProviders,
             IEnumerable<IMetadataService> metadataServices,
             IEnumerable<IMetadataProvider> metadataProviders,
             IEnumerable<IMetadataSaver> metadataSavers,
-            IEnumerable<IExternalId> externalIds);
+            IEnumerable<IExternalId> externalIds,
+            IEnumerable<IExternalUrlProvider> externalUrlProviders);
 
         /// <summary>
         /// Gets the available remote images.
@@ -139,6 +142,14 @@ namespace MediaBrowser.Controller.Providers
         /// <returns>The metadata providers.</returns>
         IEnumerable<IMetadataProvider<T>> GetMetadataProviders<T>(BaseItem item, LibraryOptions libraryOptions)
             where T : BaseItem;
+
+        /// <summary>
+        /// Gets the metadata savers for the provided item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="libraryOptions">The library options.</param>
+        /// <returns>The metadata savers.</returns>
+        IEnumerable<IMetadataSaver> GetMetadataSavers(BaseItem item, LibraryOptions libraryOptions);
 
         /// <summary>
         /// Gets all metadata plugins.

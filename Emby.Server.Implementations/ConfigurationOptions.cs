@@ -17,9 +17,11 @@ namespace Emby.Server.Implementations
             { DefaultRedirectKey, "web/" },
             { FfmpegProbeSizeKey, "1G" },
             { FfmpegAnalyzeDurationKey, "200M" },
-            { PlaylistsAllowDuplicatesKey, bool.FalseString },
             { BindToUnixSocketKey, bool.FalseString },
-            { SqliteCacheSizeKey, "20000" }
+            { SqliteCacheSizeKey, "20000" },
+            { FfmpegSkipValidationKey, bool.FalseString },
+            { FfmpegImgExtractPerfTradeoffKey, bool.FalseString },
+            { DetectNetworkChangeKey, bool.TrueString }
         };
     }
 }

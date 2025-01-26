@@ -1,4 +1,4 @@
-﻿using System.Threading;
+using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
@@ -60,10 +60,10 @@ public sealed class DeviceAccessHost : IHostedService
 
     private async Task UpdateDeviceAccess(User user)
     {
-        var existing = (await _deviceManager.GetDevices(new DeviceQuery
+        var existing = _deviceManager.GetDevices(new DeviceQuery
         {
             UserId = user.Id
-        }).ConfigureAwait(false)).Items;
+        }).Items;
 
         foreach (var device in existing)
         {

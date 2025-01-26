@@ -66,7 +66,7 @@ public class RefreshGuideScheduledTask : IScheduledTask, IConfigurableScheduledT
         {
             new TaskTriggerInfo
             {
-                Type = TaskTriggerInfo.TriggerInterval,
+                Type = TaskTriggerInfoType.IntervalTrigger,
                 IntervalTicks = TimeSpan.FromHours(24).Ticks
             }
         };

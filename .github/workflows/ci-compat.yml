@@ -1,0 +1,159 @@
+﻿name: ABI Compatibility
+on:
+  pull_request_target:
+
+permissions: {}
+
+jobs:
+  abi-head:
+    name: ABI - HEAD
+    runs-on: ubuntu-latest
+    permissions: read-all
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@87b7050bc53ea08284295505d98d2aa94301e852 # v4.2.0
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Build
+        run: |
+          dotnet build Jellyfin.Server -o ./out
+
+      - name: Upload Head
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        with:
+          name: abi-head
+          retention-days: 14
+          if-no-files-found: error
+          path: out/
+
+  abi-base:
+    name: ABI - BASE
+    if: ${{ github.base_ref != '' }}
+    runs-on: ubuntu-latest
+    permissions: read-all
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@87b7050bc53ea08284295505d98d2aa94301e852 # v4.2.0
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Checkout common ancestor
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          git remote add upstream https://github.com/${{ github.event.pull_request.base.repo.full_name }}
+          git -c protocol.version=2 fetch --prune --progress --no-recurse-submodules upstream +refs/heads/*:refs/remotes/upstream/* +refs/tags/*:refs/tags/*
+          ANCESTOR_REF=$(git merge-base upstream/${{ github.base_ref }} origin/$HEAD_REF)
+          git checkout --progress --force $ANCESTOR_REF
+
+      - name: Build
+        run: |
+          dotnet build Jellyfin.Server -o ./out
+
+      - name: Upload Head
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        with:
+          name: abi-base
+          retention-days: 14
+          if-no-files-found: error
+          path: out/
+
+  abi-diff:
+    permissions:
+      pull-requests: write  #  to create or update comment (peter-evans/create-or-update-comment)
+
+    name: ABI - Difference
+    if: ${{ github.event_name == 'pull_request_target' }}
+    runs-on: ubuntu-latest
+    needs:
+      - abi-head
+      - abi-base
+
+    steps:
+      - name: Download abi-head
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: abi-head
+          path: abi-head
+
+      - name: Download abi-base
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: abi-base
+          path: abi-base
+
+      - name: Setup ApiCompat
+        run: |
+          dotnet tool install --global Microsoft.DotNet.ApiCompat.Tool
+
+      - name: Run ApiCompat
+        id: diff
+        run: |
+          {
+            echo 'body<<EOF'
+            for file in Jellyfin.Data.dll MediaBrowser.Common.dll MediaBrowser.Controller.dll MediaBrowser.Model.dll Emby.Naming.dll Jellyfin.Extensions.dll; do
+              COMPAT_OUTPUT="$( { apicompat --left ./abi-base/${file} --right ./abi-head/${file}; } 2>&1 )"
+              if [ "APICompat ran successfully without finding any breaking changes." != "${COMPAT_OUTPUT}" ]; then
+                printf "\n${file}\n${COMPAT_OUTPUT}\n"
+              fi
+            done
+            echo EOF
+          } >> $GITHUB_OUTPUT
+
+      - name: Find difference comment
+        uses: peter-evans/find-comment@3eae4d37986fb5a8592848f6a574fdf654e61f9e # v3.1.0
+        id: find-comment
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          direction: last
+          body-includes: abi-diff-workflow-comment
+
+      - name: Reply or edit difference comment (changed)
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        if: ${{ steps.diff.outputs.body != '' }}
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          edit-mode: replace
+          token: ${{ secrets.JF_BOT_TOKEN }}
+          body: |
+            <!--abi-diff-workflow-comment-->
+            <details>
+            <summary>ABI Difference</summary>
+
+            ```
+            ${{ steps.diff.outputs.body }}
+            ```
+
+            </details>
+
+      - name: Reply or edit difference comment (unchanged)
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        if: ${{ steps.diff.outputs.body == '' && steps.find-comment.outputs.comment-id != '' }}
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          edit-mode: replace
+          token: ${{ secrets.JF_BOT_TOKEN }}
+          body: |
+            <!--abi-diff-workflow-comment-->
+            <details>
+            <summary>ABI Difference</summary>
+
+            No changes to the ABI found. See history of this comment for previous changes.
+
+            </details>

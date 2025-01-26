@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using Emby.Server.Implementations.Data;
 using Jellyfin.Data.Entities;
@@ -67,7 +67,7 @@ namespace Jellyfin.Server.Migrations.Routines
             using (var connection = new SqliteConnection($"Filename={Path.Combine(dataPath, DbFilename)}"))
             {
                 connection.Open();
-                var dbContext = _provider.CreateDbContext();
+                using var dbContext = _provider.CreateDbContext();
 
                 var queryResult = connection.Query("SELECT * FROM LocalUsersv2");
 

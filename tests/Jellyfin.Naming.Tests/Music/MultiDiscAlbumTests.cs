@@ -1,4 +1,4 @@
-﻿using Emby.Naming.Audio;
+using Emby.Naming.Audio;
 using Emby.Naming.Common;
 using Xunit;
 

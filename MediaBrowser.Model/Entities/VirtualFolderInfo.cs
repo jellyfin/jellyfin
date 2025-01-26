@@ -2,8 +2,6 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Text.Json.Serialization;
-using Jellyfin.Extensions.Json.Converters;
 using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Model.Entities

@@ -170,8 +170,13 @@ namespace Emby.Server.Implementations.Playlists
         private List<Playlist> GetUserPlaylists(Guid userId)
         {
             var user = _userManager.GetUserById(userId);
+            var playlistsFolder = GetPlaylistsFolder(userId);
+            if (playlistsFolder is null)
+            {
+                return [];
+            }
 
-            return GetPlaylistsFolder(userId).GetChildren(user, true).OfType<Playlist>().ToList();
+            return playlistsFolder.GetChildren(user, true).OfType<Playlist>().ToList();
         }
 
         private static string GetTargetPath(string path)
@@ -184,11 +189,11 @@ namespace Emby.Server.Implementations.Playlists
             return path;
         }
 
-        private IReadOnlyList<BaseItem> GetPlaylistItems(IEnumerable<Guid> itemIds, MediaType playlistMediaType, User user, DtoOptions options)
+        private IReadOnlyList<BaseItem> GetPlaylistItems(IEnumerable<Guid> itemIds, User user, DtoOptions options)
         {
             var items = itemIds.Select(_libraryManager.GetItemById).Where(i => i is not null);
 
-            return Playlist.GetPlaylistItems(playlistMediaType, items, user, options);
+            return Playlist.GetPlaylistItems(items, user, options);
         }
 
         public Task AddItemToPlaylistAsync(Guid playlistId, IReadOnlyCollection<Guid> itemIds, Guid userId)
@@ -208,17 +213,14 @@ namespace Emby.Server.Implementations.Playlists
                 ?? throw new ArgumentException("No Playlist exists with Id " + playlistId);
 
             // Retrieve all the items to be added to the playlist
-            var newItems = GetPlaylistItems(newItemIds, playlist.MediaType, user, options)
+            var newItems = GetPlaylistItems(newItemIds, user, options)
                 .Where(i => i.SupportsAddingToPlaylist);
 
-            // Filter out duplicate items, if necessary
-            if (!_appConfig.DoPlaylistsAllowDuplicates())
-            {
-                var existingIds = playlist.LinkedChildren.Select(c => c.ItemId).ToHashSet();
-                newItems = newItems
-                    .Where(i => !existingIds.Contains(i.Id))
-                    .Distinct();
-            }
+            // Filter out duplicate items
+            var existingIds = playlist.LinkedChildren.Select(c => c.ItemId).ToHashSet();
+            newItems = newItems
+                .Where(i => !existingIds.Contains(i.Id))
+                .Distinct();
 
             // Create a list of the new linked children to add to the playlist
             var childrenToAdd = newItems
@@ -264,7 +266,7 @@ namespace Emby.Server.Implementations.Playlists
 
             var idList = entryIds.ToList();
 
-            var removals = children.Where(i => idList.Contains(i.Item1.Id));
+            var removals = children.Where(i => idList.Contains(i.Item1.ItemId?.ToString("N", CultureInfo.InvariantCulture)));
 
             playlist.LinkedChildren = children.Except(removals)
                 .Select(i => i.Item1)
@@ -281,26 +283,39 @@ namespace Emby.Server.Implementations.Playlists
                 RefreshPriority.High);
         }
 
-        public async Task MoveItemAsync(string playlistId, string entryId, int newIndex)
+        public async Task MoveItemAsync(string playlistId, string entryId, int newIndex, Guid callingUserId)
         {
             if (_libraryManager.GetItemById(playlistId) is not Playlist playlist)
             {
                 throw new ArgumentException("No Playlist exists with the supplied Id");
             }
 
+            var user = _userManager.GetUserById(callingUserId);
             var children = playlist.GetManageableItems().ToList();
+            var accessibleChildren = children.Where(c => c.Item2.IsVisible(user)).ToArray();
 
-            var oldIndex = children.FindIndex(i => string.Equals(entryId, i.Item1.Id, StringComparison.OrdinalIgnoreCase));
+            var oldIndexAll = children.FindIndex(i => string.Equals(entryId, i.Item1.ItemId?.ToString("N", CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase));
+            var oldIndexAccessible = accessibleChildren.FindIndex(i => string.Equals(entryId, i.Item1.ItemId?.ToString("N", CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase));
 
-            if (oldIndex == newIndex)
+            if (oldIndexAccessible == newIndex)
             {
                 return;
             }
 
-            var item = playlist.LinkedChildren[oldIndex];
+            var newPriorItemIndex = newIndex > oldIndexAccessible ? newIndex : newIndex - 1 < 0 ? 0 : newIndex - 1;
+            var newPriorItemId = accessibleChildren[newPriorItemIndex].Item1.ItemId;
+            var newPriorItemIndexOnAllChildren = children.FindIndex(c => c.Item1.ItemId.Equals(newPriorItemId));
+            var adjustedNewIndex = newPriorItemIndexOnAllChildren + 1;
+
+            var item = playlist.LinkedChildren.FirstOrDefault(i => string.Equals(entryId, i.ItemId?.ToString("N", CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase));
+            if (item is null)
+            {
+                _logger.LogWarning("Modified item not found in playlist. ItemId: {ItemId}, PlaylistId: {PlaylistId}", item.ItemId, playlistId);
+
+                return;
+            }
 
             var newList = playlist.LinkedChildren.ToList();
-
             newList.Remove(item);
 
             if (newIndex >= newList.Count)
@@ -309,7 +324,7 @@ namespace Emby.Server.Implementations.Playlists
             }
             else
             {
-                newList.Insert(newIndex, item);
+                newList.Insert(adjustedNewIndex, item);
             }
 
             playlist.LinkedChildren = [.. newList];

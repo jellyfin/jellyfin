@@ -1,4 +1,4 @@
-﻿using System.Threading;
+using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Events.System;
 using MediaBrowser.Controller.Events;

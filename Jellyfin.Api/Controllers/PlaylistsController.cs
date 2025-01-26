@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
@@ -147,6 +148,37 @@ public class PlaylistsController : BaseJellyfinApiController
         }).ConfigureAwait(false);
 
         return NoContent();
+    }
+
+    /// <summary>
+    /// Get a playlist.
+    /// </summary>
+    /// <param name="playlistId">The playlist id.</param>
+    /// <response code="200">The playlist.</response>
+    /// <response code="404">Playlist not found.</response>
+    /// <returns>
+    /// A <see cref="Playlist"/> objects.
+    /// </returns>
+    [HttpGet("{playlistId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public ActionResult<PlaylistDto> GetPlaylist(
+        [FromRoute, Required] Guid playlistId)
+    {
+        var userId = User.GetUserId();
+
+        var playlist = _playlistManager.GetPlaylistForUser(playlistId, userId);
+        if (playlist is null)
+        {
+            return NotFound("Playlist not found");
+        }
+
+        return new PlaylistDto()
+        {
+            Shares = playlist.Shares,
+            OpenAccess = playlist.OpenAccess,
+            ItemIds = playlist.GetManageableItems().Select(t => t.Item2.Id).ToList()
+        };
     }
 
     /// <summary>
@@ -395,7 +427,7 @@ public class PlaylistsController : BaseJellyfinApiController
             return Forbid();
         }
 
-        await _playlistManager.MoveItemAsync(playlistId, itemId, newIndex).ConfigureAwait(false);
+        await _playlistManager.MoveItemAsync(playlistId, itemId, newIndex, callingUserId).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -467,32 +499,24 @@ public class PlaylistsController : BaseJellyfinApiController
         [FromQuery] int? imageTypeLimit,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
     {
-        userId = RequestHelpers.GetUserId(User, userId);
-        var playlist = _playlistManager.GetPlaylistForUser(playlistId, userId.Value);
+        var callingUserId = userId ?? User.GetUserId();
+        var playlist = _playlistManager.GetPlaylistForUser(playlistId, callingUserId);
         if (playlist is null)
         {
             return NotFound("Playlist not found");
         }
 
         var isPermitted = playlist.OpenAccess
-            || playlist.OwnerUserId.Equals(userId.Value)
-            || playlist.Shares.Any(s => s.UserId.Equals(userId.Value));
+            || playlist.OwnerUserId.Equals(callingUserId)
+            || playlist.Shares.Any(s => s.UserId.Equals(callingUserId));
 
         if (!isPermitted)
         {
             return Forbid();
         }
 
-        var user = userId.IsNullOrEmpty()
-            ? null
-            : _userManager.GetUserById(userId.Value);
-        var item = _libraryManager.GetItemById<Playlist>(playlistId, user);
-        if (item is null)
-        {
-            return NotFound();
-        }
-
-        var items = item.GetManageableItems().ToArray();
+        var user = _userManager.GetUserById(callingUserId);
+        var items = playlist.GetManageableItems().Where(i => i.Item2.IsVisible(user)).ToArray();
         var count = items.Length;
         if (startIndex.HasValue)
         {
@@ -511,7 +535,7 @@ public class PlaylistsController : BaseJellyfinApiController
         var dtos = _dtoService.GetBaseItemDtos(items.Select(i => i.Item2).ToList(), dtoOptions, user);
         for (int index = 0; index < dtos.Count; index++)
         {
-            dtos[index].PlaylistItemId = items[index].Item1.Id;
+            dtos[index].PlaylistItemId = items[index].Item1.ItemId?.ToString("N", CultureInfo.InvariantCulture);
         }
 
         var result = new QueryResult<BaseItemDto>(
