@@ -11,7 +11,7 @@ public enum ProgramAudioEntity
     Mono = 0,
 
     /// <summary>
-    /// Sterio.
+    /// Stereo.
     /// </summary>
     Stereo = 1,
 
