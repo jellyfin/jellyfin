@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Jellyfin.Database.Providers.SqLite;
 using Jellyfin.Server.Implementations.DatabaseConfiguration;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
@@ -17,14 +18,15 @@ namespace Jellyfin.Server.Implementations.Extensions;
 /// </summary>
 public static class ServiceCollectionExtensions
 {
+    private static IEnumerable<Type> DatabaseProviderTypes()
+    {
+        yield return typeof(SqliteDatabaseProvider);
+    }
+
     private static IDictionary<string, JellyfinDbProviderFactory> GetSupportedDbProviders()
     {
         var items = new Dictionary<string, JellyfinDbProviderFactory>();
-        foreach (var providerType in AppDomain
-            .CurrentDomain
-            .GetAssemblies()
-            .SelectMany(f => f.GetTypes())
-            .Where(e => e.IsClass && typeof(IJellyfinDatabaseProvider).IsAssignableFrom(e)))
+        foreach (var providerType in DatabaseProviderTypes())
         {
             var keyAttribute = providerType.GetCustomAttribute<JellyfinDatabaseProviderKeyAttribute>();
             if (keyAttribute is null || string.IsNullOrWhiteSpace(keyAttribute.DatabaseProviderKey))
@@ -51,15 +53,16 @@ public static class ServiceCollectionExtensions
         var providers = GetSupportedDbProviders();
         JellyfinDbProviderFactory? providerFactory = null;
 
-        if (efCoreConfiguration is null)
+        if (efCoreConfiguration?.DatabaseType is null)
         {
             // when nothing is setup via new Database configuration, fallback to SqLite with default settings.
             efCoreConfiguration = new DatabaseConfigurationOptions()
             {
-                DatabaseType = "SqLite",
+                DatabaseType = "Jellyfin-SqLite",
             };
         }
-        else if (!providers.TryGetValue(efCoreConfiguration.DatabaseType, out providerFactory!))
+
+        if (!providers.TryGetValue(efCoreConfiguration.DatabaseType, out providerFactory!))
         {
             throw new InvalidOperationException($"Jellyfin cannot find the database provider of type '{efCoreConfiguration.DatabaseType}'. Supported types are {string.Join(", ", providers.Keys)}");
         }

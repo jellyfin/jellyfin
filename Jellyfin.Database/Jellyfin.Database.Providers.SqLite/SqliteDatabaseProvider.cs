@@ -10,6 +10,7 @@ namespace Jellyfin.Database.Providers.SqLite;
 /// <summary>
 /// Configures jellyfin to use an SqLite database.
 /// </summary>
+[JellyfinDatabaseProviderKey("Jellyfin-SqLite")]
 public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
 {
     private readonly IApplicationPaths _applicationPaths;
@@ -18,17 +19,16 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     /// <summary>
     /// Initializes a new instance of the <see cref="SqliteDatabaseProvider"/> class.
     /// </summary>
-    /// <param name="dbContextFactory">The Db context to interact with the database.</param>
     /// <param name="applicationPaths">Service to construct the fallback when the old data path configuration is used.</param>
     /// <param name="logger">A logger.</param>
-    public SqliteDatabaseProvider(IDbContextFactory<JellyfinDbContext> dbContextFactory, IApplicationPaths applicationPaths, ILogger<SqliteDatabaseProvider> logger)
+    public SqliteDatabaseProvider(IApplicationPaths applicationPaths, ILogger<SqliteDatabaseProvider> logger)
     {
-        DbContextFactory = dbContextFactory;
         _applicationPaths = applicationPaths;
         _logger = logger;
     }
 
-    private IDbContextFactory<JellyfinDbContext> DbContextFactory { get; }
+    /// <inheritdoc/>
+    public IDbContextFactory<JellyfinDbContext>? DbContextFactory { get; set; }
 
     /// <inheritdoc/>
     public void Initialise(DbContextOptionsBuilder options)
@@ -41,7 +41,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     /// <inheritdoc/>
     public async Task RunScheduledOptimisation(CancellationToken cancellationToken)
     {
-        var context = await DbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        var context = await DbContextFactory!.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (context.ConfigureAwait(false))
         {
             if (context.Database.IsSqlite())
@@ -67,7 +67,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     public async ValueTask DisposeAsync()
     {
         // Run before disposing the application
-        var context = await DbContextFactory.CreateDbContextAsync().ConfigureAwait(false);
+        var context = await DbContextFactory!.CreateDbContextAsync().ConfigureAwait(false);
         await using (context.ConfigureAwait(false))
         {
             await context.Database.ExecuteSqlRawAsync("PRAGMA optimize").ConfigureAwait(false);

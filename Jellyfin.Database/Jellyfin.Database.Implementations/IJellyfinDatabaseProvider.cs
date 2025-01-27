@@ -11,6 +11,11 @@ namespace Jellyfin.Server.Implementations;
 public interface IJellyfinDatabaseProvider : IAsyncDisposable
 {
     /// <summary>
+    /// Gets or Sets the Database Factory when initialisaition is done.
+    /// </summary>
+    IDbContextFactory<JellyfinDbContext>? DbContextFactory { get; set; }
+
+    /// <summary>
     /// Initialises jellyfins EFCore database access.
     /// </summary>
     /// <param name="options">The EFCore database options.</param>

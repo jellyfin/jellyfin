@@ -11,6 +11,7 @@ using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Activity;
 using Jellyfin.Server.Implementations.Devices;
 using Jellyfin.Server.Implementations.Events;
+using Jellyfin.Server.Implementations.Extensions;
 using Jellyfin.Server.Implementations.Security;
 using Jellyfin.Server.Implementations.Trickplay;
 using Jellyfin.Server.Implementations.Users;
@@ -116,8 +117,11 @@ namespace Jellyfin.Server
             // Jellyfin.Server
             yield return typeof(CoreAppHost).Assembly;
 
-            // Jellyfin.Server.Implementations
+            // Jellyfin.Database.Implementations
             yield return typeof(JellyfinDbContext).Assembly;
+
+            // Jellyfin.Server.Implementations
+            yield return typeof(ServiceCollectionExtensions).Assembly;
 
             // Jellyfin.LiveTv
             yield return typeof(LiveTvManager).Assembly;
