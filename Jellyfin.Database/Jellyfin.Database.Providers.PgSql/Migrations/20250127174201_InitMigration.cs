@@ -12,6 +12,9 @@ namespace Jellyfin.Database.Providers.PgSql.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            // shim NOCASE collation with an undefined locale and case-insensitive matching rules.
+            migrationBuilder.Sql("CREATE COLLATION NOCASE (provider = icu, locale = 'und-x-icu.utf8', deterministic = false)");
+
             migrationBuilder.CreateTable(
                 name: "ActivityLogs",
                 columns: table => new

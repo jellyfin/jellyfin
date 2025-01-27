@@ -22,13 +22,13 @@ services:
     # (Adding the "ports" property to this file will not forward from a Codespace.)
 
   db:
-    image: postgres:14.3
+    image: postgres:17.2
     restart: unless-stopped
     volumes:
       - postgres-data:/var/lib/postgresql/data
     environment:
       POSTGRES_PASSWORD: jellyfin
-      POSTGRES_USER: password
+      POSTGRES_USER: jellyfin
       POSTGRES_DB: Jellyfin
   pgadmin:
     image: dpage/pgadmin4
