@@ -8,6 +8,7 @@ using Jellyfin.Server.Implementations.DatabaseConfiguration;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using JellyfinDbProviderFactory = System.Func<System.IServiceProvider, Jellyfin.Server.Implementations.IJellyfinDatabaseProvider>;
 
@@ -46,8 +47,12 @@ public static class ServiceCollectionExtensions
     /// </summary>
     /// <param name="serviceCollection">An instance of the <see cref="IServiceCollection"/> interface.</param>
     /// <param name="configurationManager">The server configuration manager.</param>
+    /// <param name="configuration">The startup Configuration.</param>
     /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddJellyfinDbContext(this IServiceCollection serviceCollection, IServerConfigurationManager configurationManager)
+    public static IServiceCollection AddJellyfinDbContext(
+        this IServiceCollection serviceCollection,
+        IServerConfigurationManager configurationManager,
+        IConfiguration configuration)
     {
         var efCoreConfiguration = configurationManager.GetConfiguration<DatabaseConfigurationOptions>("database");
         var providers = GetSupportedDbProviders();
@@ -55,11 +60,22 @@ public static class ServiceCollectionExtensions
 
         if (efCoreConfiguration?.DatabaseType is null)
         {
-            // when nothing is setup via new Database configuration, fallback to SqLite with default settings.
-            efCoreConfiguration = new DatabaseConfigurationOptions()
+            var cmdMigrationArgument = configuration.GetValue<string>("migration-provider");
+            if (!string.IsNullOrWhiteSpace(cmdMigrationArgument))
             {
-                DatabaseType = "Jellyfin-SqLite",
-            };
+                efCoreConfiguration = new DatabaseConfigurationOptions()
+                {
+                    DatabaseType = cmdMigrationArgument,
+                };
+            }
+            else
+            {
+                // when nothing is setup via new Database configuration, fallback to SqLite with default settings.
+                efCoreConfiguration = new DatabaseConfigurationOptions()
+                {
+                    DatabaseType = "Jellyfin-SqLite",
+                };
+            }
         }
 
         if (!providers.TryGetValue(efCoreConfiguration.DatabaseType, out providerFactory!))

@@ -14,7 +14,7 @@ namespace Jellyfin.Server.Implementations.Migrations
         public JellyfinDbContext CreateDbContext(string[] args)
         {
             var optionsBuilder = new DbContextOptionsBuilder<JellyfinDbContext>();
-            optionsBuilder.UseSqlite("Data Source=jellyfin.db");
+            optionsBuilder.UseSqlite("Data Source=jellyfin.db", f => f.MigrationsAssembly(GetType().Assembly));
 
             return new JellyfinDbContext(
                 optionsBuilder.Options,
