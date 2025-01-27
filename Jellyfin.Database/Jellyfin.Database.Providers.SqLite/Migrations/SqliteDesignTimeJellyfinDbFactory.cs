@@ -9,7 +9,7 @@ namespace Jellyfin.Server.Implementations.Migrations
     /// The design time factory for <see cref="JellyfinDbContext"/>.
     /// This is only used for the creation of migrations and not during runtime.
     /// </summary>
-    internal sealed class DesignTimeJellyfinDbFactory : IDesignTimeDbContextFactory<JellyfinDbContext>
+    internal sealed class SqliteDesignTimeJellyfinDbFactory : IDesignTimeDbContextFactory<JellyfinDbContext>
     {
         public JellyfinDbContext CreateDbContext(string[] args)
         {
