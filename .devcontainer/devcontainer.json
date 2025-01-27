@@ -1,6 +1,6 @@
 {
     "name": "Development Jellyfin Server",
-    "image":"mcr.microsoft.com/devcontainers/dotnet:9.0-bookworm",
+    "image": "mcr.microsoft.com/devcontainers/dotnet:9.0-bookworm",
     // restores nuget packages, installs the dotnet workloads and installs the dev https certificate
     "postStartCommand": "sudo dotnet restore; sudo dotnet workload update; sudo dotnet dev-certs https --trust; sudo bash \"./.devcontainer/install-ffmpeg.sh\"",
     // reads the extensions list and installs them
@@ -13,7 +13,9 @@
         },
         "ghcr.io/devcontainers-contrib/features/apt-packages:1": {
             "preserve_apt_list": false,
-            "packages": ["libfontconfig1"]
+            "packages": [
+                "libfontconfig1"
+            ]
         },
         "ghcr.io/devcontainers/features/docker-in-docker:2": {
             "dockerDashComposeVersion": "v2"
@@ -24,19 +26,5 @@
     "hostRequirements": {
         "memory": "8gb",
         "cpus": 4
-    },  "remoteEnv": {
-        "JELLYFIN_DATA_DIR": "/config"
-    },
-    "mounts": [
-        "source=/opt/docker/data/jellyfin/testConfig/,target=/config,type=bind,consistency=cached",
-        "source=/opt/docker/data/jellyfin/config10.9.11/metadata,target=/config/metadata,type=bind,consistency=cached",
-        "source=/mnt/video,target=/media,type=bind,consistency=cached"
-    ],
-    "customizations": {
-        "vscode": {
-            "extensions": [
-                "alexcvzz.vscode-sqlite"
-            ]
-        }
     }
 }

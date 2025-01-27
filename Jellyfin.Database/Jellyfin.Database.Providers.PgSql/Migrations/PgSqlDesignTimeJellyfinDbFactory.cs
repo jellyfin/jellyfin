@@ -1,4 +1,3 @@
-using Jellyfin.Database.Providers.SqLite;
 using Jellyfin.Server.Implementations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
@@ -20,7 +19,7 @@ namespace Jellyfin.Database.Providers.PgSql
             return new JellyfinDbContext(
                 optionsBuilder.Options,
                 NullLogger<JellyfinDbContext>.Instance,
-                new SqliteDatabaseProvider(null!, NullLogger<SqliteDatabaseProvider>.Instance));
+                new PgSqlDatabaseProvider(null!, NullLogger<PgSqlDatabaseProvider>.Instance));
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Jellyfin.Database.Providers.PgSql;
 using Jellyfin.Database.Providers.SqLite;
 using Jellyfin.Server.Implementations.DatabaseConfiguration;
 using MediaBrowser.Common.Configuration;
@@ -22,6 +23,7 @@ public static class ServiceCollectionExtensions
     private static IEnumerable<Type> DatabaseProviderTypes()
     {
         yield return typeof(SqliteDatabaseProvider);
+        yield return typeof(PgSqlDatabaseProvider);
     }
 
     private static IDictionary<string, JellyfinDbProviderFactory> GetSupportedDbProviders()
@@ -75,6 +77,7 @@ public static class ServiceCollectionExtensions
                 {
                     DatabaseType = "Jellyfin-SqLite",
                 };
+                configurationManager.SaveConfiguration("database", efCoreConfiguration);
             }
         }
 
