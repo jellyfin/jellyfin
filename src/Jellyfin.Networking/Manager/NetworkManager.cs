@@ -1066,6 +1066,7 @@ public class NetworkManager : INetworkManager, IDisposable
                 // If none exists, this will select the first external interface if there is one.
                 bindAddress = externalInterfaces
                     .OrderByDescending(x => x.Subnet.Contains(source))
+                    .ThenByDescending(x => x.Subnet.PrefixLength)
                     .ThenBy(x => x.Index)
                     .Select(x => x.Address)
                     .First();
@@ -1083,6 +1084,7 @@ public class NetworkManager : INetworkManager, IDisposable
             // If none exists, this will select the first internal interface if there is one.
             bindAddress = _interfaces.Where(x => IsInLocalNetwork(x.Address))
                 .OrderByDescending(x => x.Subnet.Contains(source))
+                .ThenByDescending(x => x.Subnet.PrefixLength)
                 .ThenBy(x => x.Index)
                 .Select(x => x.Address)
                 .FirstOrDefault();
