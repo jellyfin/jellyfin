@@ -324,7 +324,7 @@ namespace MediaBrowser.Controller.Session
         Task<SessionInfo> GetSessionByAuthenticationToken(Device info, string deviceId, string remoteEndpoint, string appVersion);
 
         /// <summary>
-        /// Logouts the specified access token.
+        /// Logs out the specified access token.
         /// </summary>
         /// <param name="accessToken">The access token.</param>
         /// <returns>A <see cref="Task"/> representing the log out process.</returns>

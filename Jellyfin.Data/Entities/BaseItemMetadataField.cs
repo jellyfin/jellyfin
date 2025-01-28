@@ -8,7 +8,7 @@ namespace Jellyfin.Data.Entities;
 public class BaseItemMetadataField
 {
     /// <summary>
-    /// Gets or Sets Numerical ID of this enumeratable.
+    /// Gets or Sets Numerical ID of this enumerable.
     /// </summary>
     public required int Id { get; set; }
 
