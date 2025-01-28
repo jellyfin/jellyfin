@@ -321,7 +321,7 @@ public class MigrateLibraryDb : IMigrationRoutine
 
         if (dbContext.Database.IsSqlite())
         {
-            _logger.LogInformation("Vaccum and Optimise jellyfin.db now.");
+            _logger.LogInformation("Vacuum and Optimise jellyfin.db now.");
             dbContext.Database.ExecuteSqlRaw("PRAGMA optimize");
             dbContext.Database.ExecuteSqlRaw("VACUUM");
             _logger.LogInformation("jellyfin.db optimized successfully!");

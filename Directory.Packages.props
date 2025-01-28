@@ -49,7 +49,6 @@
     <PackageVersion Include="Microsoft.Extensions.Options" Version="9.0.1" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageVersion Include="MimeTypes" Version="2.5.2" />
-    <PackageVersion Include="Mono.Nat" Version="3.0.4" />
     <PackageVersion Include="Moq" Version="4.18.4" />
     <PackageVersion Include="NEbml" Version="0.11.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
@@ -80,7 +79,7 @@
     <PackageVersion Include="System.Text.Json" Version="9.0.1" />
     <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="9.0.1" />
     <PackageVersion Include="TagLibSharp" Version="2.3.0" />
-    <PackageVersion Include="z440.atl.core" Version="6.13.0" />
+    <PackageVersion Include="z440.atl.core" Version="6.14.0" />
     <PackageVersion Include="TMDbLib" Version="2.2.0" />
     <PackageVersion Include="UTF.Unknown" Version="2.5.1" />
     <PackageVersion Include="Xunit.Priority" Version="1.1.6" />

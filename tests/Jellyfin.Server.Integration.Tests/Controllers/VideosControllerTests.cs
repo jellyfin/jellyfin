@@ -16,7 +16,7 @@ public sealed class VideosControllerTests : IClassFixture<JellyfinApplicationFac
     }
 
     [Fact]
-    public async Task DeleteAlternateSources_NonExistentItemId_NotFound()
+    public async Task DeleteAlternateSources_NonexistentItemId_NotFound()
     {
         var client = _factory.CreateClient();
         client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));

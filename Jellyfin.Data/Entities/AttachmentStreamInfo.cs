@@ -3,7 +3,7 @@ using System;
 namespace Jellyfin.Data.Entities;
 
 /// <summary>
-/// Provides informations about an Attachment to an <see cref="BaseItemEntity"/>.
+/// Provides information about an Attachment to an <see cref="BaseItemEntity"/>.
 /// </summary>
 public class AttachmentStreamInfo
 {
@@ -18,7 +18,7 @@ public class AttachmentStreamInfo
     public required BaseItemEntity Item { get; set; }
 
     /// <summary>
-    /// Gets or Sets The index within the source file.
+    /// Gets or Sets the index within the source file.
     /// </summary>
     public required int Index { get; set; }
 

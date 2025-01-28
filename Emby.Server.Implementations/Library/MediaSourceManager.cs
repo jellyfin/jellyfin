@@ -39,7 +39,7 @@ namespace Emby.Server.Implementations.Library
     public class MediaSourceManager : IMediaSourceManager, IDisposable
     {
         // Do not use a pipe here because Roku http requests to the server will fail, without any explicit error message.
-        private const char LiveStreamIdDelimeter = '_';
+        private const char LiveStreamIdDelimiter = '_';
 
         private readonly IServerApplicationHost _appHost;
         private readonly IItemRepository _itemRepo;
@@ -313,7 +313,7 @@ namespace Emby.Server.Implementations.Library
 
         private static void SetKeyProperties(IMediaSourceProvider provider, MediaSourceInfo mediaSource)
         {
-            var prefix = provider.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture) + LiveStreamIdDelimeter;
+            var prefix = provider.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture) + LiveStreamIdDelimiter;
 
             if (!string.IsNullOrEmpty(mediaSource.OpenToken) && !mediaSource.OpenToken.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
             {
@@ -866,11 +866,11 @@ namespace Emby.Server.Implementations.Library
         {
             ArgumentException.ThrowIfNullOrEmpty(key);
 
-            var keys = key.Split(LiveStreamIdDelimeter, 2);
+            var keys = key.Split(LiveStreamIdDelimiter, 2);
 
             var provider = _providers.FirstOrDefault(i => string.Equals(i.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture), keys[0], StringComparison.OrdinalIgnoreCase));
 
-            var splitIndex = key.IndexOf(LiveStreamIdDelimeter, StringComparison.Ordinal);
+            var splitIndex = key.IndexOf(LiveStreamIdDelimiter, StringComparison.Ordinal);
             var keyId = key.Substring(splitIndex + 1);
 
             return (provider, keyId);

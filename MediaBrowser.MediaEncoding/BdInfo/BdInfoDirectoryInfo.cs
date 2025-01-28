@@ -84,7 +84,7 @@ public class BdInfoDirectoryInfo : IDirectoryInfo
     /// Gets the files matching a pattern.
     /// </summary>
     /// <param name="searchPattern">The search pattern.</param>
-    /// <returns>All files of the directory matchign the search pattern.</returns>
+    /// <returns>All files of the directory matching the search pattern.</returns>
     public IFileInfo[] GetFiles(string searchPattern)
     {
         return _fileSystem.GetFiles(_impl.FullName, new[] { searchPattern }, false, false)
@@ -96,8 +96,8 @@ public class BdInfoDirectoryInfo : IDirectoryInfo
     /// Gets the files matching a pattern and search options.
     /// </summary>
     /// <param name="searchPattern">The search pattern.</param>
-    /// <param name="searchOption">The search optin.</param>
-    /// <returns>All files of the directory matchign the search pattern and options.</returns>
+    /// <param name="searchOption">The search option.</param>
+    /// <returns>All files of the directory matching the search pattern and options.</returns>
     public IFileInfo[] GetFiles(string searchPattern, SearchOption searchOption)
     {
         return _fileSystem.GetFiles(

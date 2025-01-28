@@ -258,7 +258,7 @@ public sealed class BaseItemRepository
     private IQueryable<BaseItemEntity> ApplyGroupingFilter(IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
     {
         // This whole block is needed to filter duplicate entries on request
-        // for the time beeing it cannot be used because it would destroy the ordering
+        // for the time being it cannot be used because it would destroy the ordering
         // this results in "duplicate" responses for queries that try to lookup individual series or multiple versions but
         // for that case the invoker has to run a DistinctBy(e => e.PresentationUniqueKey) on their own
 
@@ -889,7 +889,7 @@ public sealed class BaseItemRepository
     /// <exception cref="InvalidOperationException">Will be thrown if an invalid serialisation is requested.</exception>
     public static BaseItemDto DeserialiseBaseItem(BaseItemEntity baseItemEntity, ILogger logger, IServerApplicationHost? appHost, bool skipDeserialization = false)
     {
-        var type = GetType(baseItemEntity.Type) ?? throw new InvalidOperationException("Cannot deserialise unkown type.");
+        var type = GetType(baseItemEntity.Type) ?? throw new InvalidOperationException("Cannot deserialise unknown type.");
         BaseItemDto? dto = null;
         if (TypeRequiresDeserialization(type) && baseItemEntity.Data is not null && !skipDeserialization)
         {
@@ -905,7 +905,7 @@ public sealed class BaseItemRepository
 
         if (dto is null)
         {
-            dto = Activator.CreateInstance(type) as BaseItemDto ?? throw new InvalidOperationException("Cannot deserialise unkown type.");
+            dto = Activator.CreateInstance(type) as BaseItemDto ?? throw new InvalidOperationException("Cannot deserialise unknown type.");
         }
 
         return Map(baseItemEntity, dto, appHost);
@@ -2065,7 +2065,7 @@ public sealed class BaseItemRepository
         if (filter.IncludeInheritedTags.Length > 0)
         {
             // Episodes do not store inherit tags from their parents in the database, and the tag may be still required by the client.
-            // In addtion to the tags for the episodes themselves, we need to manually query its parent (the season)'s tags as well.
+            // In addition to the tags for the episodes themselves, we need to manually query its parent (the season)'s tags as well.
             if (includeTypes.Length == 1 && includeTypes.FirstOrDefault() is BaseItemKind.Episode)
             {
                 baseQuery = baseQuery

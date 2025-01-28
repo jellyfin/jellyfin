@@ -73,7 +73,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         protected IProviderManager ProviderManager { get; }
 
         /// <summary>
-        /// Gets a value indicating whether URLs after a closing XML tag are supporrted.
+        /// Gets a value indicating whether URLs after a closing XML tag are supported.
         /// </summary>
         protected virtual bool SupportsUrlAfterClosingXmlTag => false;
 
@@ -672,7 +672,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 }
 
                 var fileSystemMetadata = _directoryService.GetFile(val);
-                // non existing file returns null
+                // nonexistent file returns null
                 if (fileSystemMetadata is null || !fileSystemMetadata.Exists)
                 {
                     Logger.LogWarning("Artwork file {Path} specified in nfo file for {ItemName} does not exist.", uri, itemResult.Item.Name);
