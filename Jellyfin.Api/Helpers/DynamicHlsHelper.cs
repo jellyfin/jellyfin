@@ -267,7 +267,7 @@ public class DynamicHlsHelper
 
         if (EnableAdaptiveBitrateStreaming(state, isLiveStream, enableAdaptiveBitrateStreaming, _httpContextAccessor.HttpContext.GetNormalizedRemoteIP()))
         {
-            var requestedVideoBitrate = state.VideoRequest is null ? 0 : state.VideoRequest.VideoBitRate ?? 0;
+            var requestedVideoBitrate = state.VideoRequest?.VideoBitRate ?? 0;
 
             // By default, vary by just 200k
             var variation = GetBitrateVariation(totalBitrate);
@@ -526,9 +526,7 @@ public class DynamicHlsHelper
             return false;
         }
 
-        // Having problems in android
-        return false;
-        // return state.VideoRequest.VideoBitRate.HasValue;
+        return state.VideoRequest?.VideoBitRate.HasValue ?? false;
     }
 
     private void AddSubtitles(StreamState state, IEnumerable<MediaStream> subtitles, StringBuilder builder, ClaimsPrincipal user)
@@ -616,7 +614,7 @@ public class DynamicHlsHelper
             && state.VideoStream is not null
             && state.VideoStream.Level.HasValue)
         {
-            levelString = state.VideoStream.Level.Value.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
+            levelString = state.VideoStream.Level.Value.ToString(CultureInfo.InvariantCulture);
         }
         else
         {

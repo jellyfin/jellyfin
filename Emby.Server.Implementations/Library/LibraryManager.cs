@@ -754,14 +754,7 @@ namespace Emby.Server.Implementations.Library
 
             if (folder.Id.IsEmpty())
             {
-                if (string.IsNullOrEmpty(folder.Path))
-                {
-                    folder.Id = GetNewItemId(folder.GetType().Name, folder.GetType());
-                }
-                else
-                {
-                    folder.Id = GetNewItemId(folder.Path, folder.GetType());
-                }
+                folder.Id = GetNewItemId(folder.Path, folder.GetType());
             }
 
             var dbItem = GetItemById(folder.Id) as BasePluginFolder;

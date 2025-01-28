@@ -308,39 +308,40 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            var mediaTypes = new List<MediaType>();
+            MediaType[] mediaTypes = [];
 
             if (includeItemTypes.Length == 0)
             {
+                HashSet<MediaType> tmpMediaTypes = [];
                 foreach (var parent in parents.OfType<ICollectionFolder>())
                 {
                     switch (parent.CollectionType)
                     {
                         case CollectionType.books:
-                            mediaTypes.Add(MediaType.Book);
-                            mediaTypes.Add(MediaType.Audio);
+                            tmpMediaTypes.Add(MediaType.Book);
+                            tmpMediaTypes.Add(MediaType.Audio);
                             break;
                         case CollectionType.music:
-                            mediaTypes.Add(MediaType.Audio);
+                            tmpMediaTypes.Add(MediaType.Audio);
                             break;
                         case CollectionType.photos:
-                            mediaTypes.Add(MediaType.Photo);
-                            mediaTypes.Add(MediaType.Video);
+                            tmpMediaTypes.Add(MediaType.Photo);
+                            tmpMediaTypes.Add(MediaType.Video);
                             break;
                         case CollectionType.homevideos:
-                            mediaTypes.Add(MediaType.Photo);
-                            mediaTypes.Add(MediaType.Video);
+                            tmpMediaTypes.Add(MediaType.Photo);
+                            tmpMediaTypes.Add(MediaType.Video);
                             break;
                         default:
-                            mediaTypes.Add(MediaType.Video);
+                            tmpMediaTypes.Add(MediaType.Video);
                             break;
                     }
                 }
 
-                mediaTypes = mediaTypes.Distinct().ToList();
+                mediaTypes = tmpMediaTypes.ToArray();
             }
 
-            var excludeItemTypes = includeItemTypes.Length == 0 && mediaTypes.Count == 0
+            var excludeItemTypes = includeItemTypes.Length == 0 && mediaTypes.Length == 0
                 ? new[]
                 {
                     BaseItemKind.Person,
@@ -366,13 +367,8 @@ namespace Emby.Server.Implementations.Library
                 Limit = limit * 5,
                 IsPlayed = isPlayed,
                 DtoOptions = options,
-                MediaTypes = mediaTypes.ToArray()
+                MediaTypes = mediaTypes
             };
-
-            if (parents.Count == 0)
-            {
-                return _libraryManager.GetItemList(query, false);
-            }
 
             return _libraryManager.GetItemList(query, parents);
         }

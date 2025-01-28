@@ -459,7 +459,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? videoStreamIndex,
         [FromQuery] EncodingContext? context,
         [FromQuery] Dictionary<string, string> streamOptions,
-        [FromQuery] bool enableAdaptiveBitrateStreaming = true,
+        [FromQuery] bool enableAdaptiveBitrateStreaming = false,
         [FromQuery] bool enableTrickplay = true,
         [FromQuery] bool enableAudioVbrEncoding = true,
         [FromQuery] bool alwaysBurnInSubtitleWhenTranscoding = false)
@@ -634,7 +634,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? videoStreamIndex,
         [FromQuery] EncodingContext? context,
         [FromQuery] Dictionary<string, string> streamOptions,
-        [FromQuery] bool enableAdaptiveBitrateStreaming = true,
+        [FromQuery] bool enableAdaptiveBitrateStreaming = false,
         [FromQuery] bool enableAudioVbrEncoding = true)
     {
         var streamingRequest = new HlsAudioRequestDto
