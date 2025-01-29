@@ -147,7 +147,7 @@ namespace Jellyfin.Server.Implementations.Users
 
             ThrowIfInvalidUsername(newName);
 
-            if (user.Username.Equals(newName, StringComparison.Ordinal))
+            if (user.Username.Equals(newName, StringComparison.OrdinalIgnoreCase))
             {
                 throw new ArgumentException("The new and old names must be different.");
             }
@@ -155,8 +155,11 @@ namespace Jellyfin.Server.Implementations.Users
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
+#pragma warning disable CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
+#pragma warning disable CA1311 // Specify a culture or use an invariant version to avoid implicit dependency on current culture
+#pragma warning disable CA1304 // The behavior of 'string.ToUpper()' could vary based on the current user's locale settings
                 if (await dbContext.Users
-                        .AnyAsync(u => u.Username == newName && !u.Id.Equals(user.Id))
+                        .AnyAsync(u => u.Username.ToUpper() == newName.ToUpper() && !u.Id.Equals(user.Id))
                         .ConfigureAwait(false))
                 {
                     throw new ArgumentException(string.Format(
@@ -164,6 +167,9 @@ namespace Jellyfin.Server.Implementations.Users
                         "A user with the name '{0}' already exists.",
                         newName));
                 }
+#pragma warning restore CA1304 // The behavior of 'string.ToUpper()' could vary based on the current user's locale settings
+#pragma warning restore CA1311 // Specify a culture or use an invariant version to avoid implicit dependency on current culture
+#pragma warning restore CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
 
                 user.Username = newName;
                 await UpdateUserInternalAsync(dbContext, user).ConfigureAwait(false);
