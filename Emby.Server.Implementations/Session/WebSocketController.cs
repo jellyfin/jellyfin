@@ -21,6 +21,7 @@ namespace Emby.Server.Implementations.Session
         private readonly SessionInfo _session;
 
         private readonly List<IWebSocketConnection> _sockets;
+        private readonly ReaderWriterLockSlim _socketsLock;
         private bool _disposed = false;
 
         public WebSocketController(
@@ -31,10 +32,26 @@ namespace Emby.Server.Implementations.Session
             _logger = logger;
             _session = session;
             _sessionManager = sessionManager;
-            _sockets = new List<IWebSocketConnection>();
+            _sockets = new();
+            _socketsLock = new();
         }
 
-        private bool HasOpenSockets => GetActiveSockets().Any();
+        private bool HasOpenSockets
+        {
+            get
+            {
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                try
+                {
+                    _socketsLock.EnterReadLock();
+                    return _sockets.Where(i => i.State == WebSocketState.Open).Any();
+                }
+                finally
+                {
+                    _socketsLock.ExitReadLock();
+                }
+            }
+        }
 
         /// <inheritdoc />
         public bool SupportsMediaControl => HasOpenSockets;
@@ -42,13 +59,19 @@ namespace Emby.Server.Implementations.Session
         /// <inheritdoc />
         public bool IsSessionActive => HasOpenSockets;
 
-        private IEnumerable<IWebSocketConnection> GetActiveSockets()
-            => _sockets.Where(i => i.State == WebSocketState.Open);
-
         public void AddWebSocket(IWebSocketConnection connection)
         {
             _logger.LogDebug("Adding websocket to session {Session}", _session.Id);
-            _sockets.Add(connection);
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            try
+            {
+                _socketsLock.EnterWriteLock();
+                _sockets.Add(connection);
+            }
+            finally
+            {
+                _socketsLock.ExitWriteLock();
+            }
 
             connection.Closed += OnConnectionClosed;
         }
@@ -57,7 +80,17 @@ namespace Emby.Server.Implementations.Session
         {
             var connection = sender as IWebSocketConnection ?? throw new ArgumentException($"{nameof(sender)} is not of type {nameof(IWebSocketConnection)}", nameof(sender));
             _logger.LogDebug("Removing websocket from session {Session}", _session.Id);
-            _sockets.Remove(connection);
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            try
+            {
+                _socketsLock.EnterWriteLock();
+                _sockets.Remove(connection);
+            }
+            finally
+            {
+                _socketsLock.ExitWriteLock();
+            }
+
             connection.Closed -= OnConnectionClosed;
             await _sessionManager.CloseIfNeededAsync(_session).ConfigureAwait(false);
         }
@@ -69,7 +102,17 @@ namespace Emby.Server.Implementations.Session
             T data,
             CancellationToken cancellationToken)
         {
-            var socket = GetActiveSockets().MaxBy(i => i.LastActivityDate);
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            IWebSocketConnection? socket;
+            try
+            {
+                _socketsLock.EnterReadLock();
+                socket = _sockets.Where(i => i.State == WebSocketState.Open).MaxBy(i => i.LastActivityDate);
+            }
+            finally
+            {
+                _socketsLock.ExitReadLock();
+            }
 
             if (socket is null)
             {
@@ -94,12 +137,23 @@ namespace Emby.Server.Implementations.Session
                 return;
             }
 
-            foreach (var socket in _sockets)
+            try
             {
-                socket.Closed -= OnConnectionClosed;
-                socket.Dispose();
+                _socketsLock.EnterWriteLock();
+                foreach (var socket in _sockets)
+                {
+                    socket.Closed -= OnConnectionClosed;
+                    socket.Dispose();
+                }
+
+                _sockets.Clear();
+            }
+            finally
+            {
+                _socketsLock.ExitWriteLock();
             }
 
+            _socketsLock.Dispose();
             _disposed = true;
         }
 
@@ -110,12 +164,23 @@ namespace Emby.Server.Implementations.Session
                 return;
             }
 
-            foreach (var socket in _sockets)
+            try
             {
-                socket.Closed -= OnConnectionClosed;
-                await socket.DisposeAsync().ConfigureAwait(false);
+                _socketsLock.EnterWriteLock();
+                foreach (var socket in _sockets)
+                {
+                    socket.Closed -= OnConnectionClosed;
+                    await socket.DisposeAsync().ConfigureAwait(false);
+                }
+
+                _sockets.Clear();
+            }
+            finally
+            {
+                _socketsLock.ExitWriteLock();
             }
 
+            _socketsLock.Dispose();
             _disposed = true;
         }
     }
