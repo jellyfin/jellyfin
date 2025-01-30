@@ -23,7 +23,7 @@
     <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="PlaylistsNET" />
-    <PackageReference Include="z440.atl.core"/>
+    <PackageReference Include="z440.atl.core" />
     <PackageReference Include="TMDbLib" />
   </ItemGroup>
 
@@ -31,7 +31,6 @@
     <TargetFramework>net9.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <CodeAnalysisRuleSet>../jellyfin.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <!-- Code Analyzers -->

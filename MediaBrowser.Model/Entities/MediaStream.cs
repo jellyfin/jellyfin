@@ -383,7 +383,7 @@ namespace MediaBrowser.Model.Entities
                             attributes.Add(string.IsNullOrEmpty(LocalizedUndefined) ? "Und" : LocalizedUndefined);
                         }
 
-                        if (IsHearingImpaired)
+                        if (IsHearingImpaired == true)
                         {
                             attributes.Add(string.IsNullOrEmpty(LocalizedHearingImpaired) ? "Hearing Impaired" : LocalizedHearingImpaired);
                         }
@@ -500,7 +500,7 @@ namespace MediaBrowser.Model.Entities
         /// Gets or sets a value indicating whether this instance is for the hearing impaired.
         /// </summary>
         /// <value><c>true</c> if this instance is for the hearing impaired; otherwise, <c>false</c>.</value>
-        public bool IsHearingImpaired { get; set; }
+        public bool? IsHearingImpaired { get; set; }
 
         /// <summary>
         /// Gets or sets the height.
@@ -537,7 +537,7 @@ namespace MediaBrowser.Model.Entities
             get
             {
                 // In some cases AverageFrameRate for videos will be read as 1000fps even if it is not.
-                // This is probably due to a library compatability issue.
+                // This is probably due to a library compatibility issue.
                 // See https://github.com/jellyfin/jellyfin/pull/12603#discussion_r1748044018 for more info.
                 return AverageFrameRate < 1000 ? AverageFrameRate : RealFrameRate;
             }

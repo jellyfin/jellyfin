@@ -459,7 +459,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? videoStreamIndex,
         [FromQuery] EncodingContext? context,
         [FromQuery] Dictionary<string, string> streamOptions,
-        [FromQuery] bool enableAdaptiveBitrateStreaming = true,
+        [FromQuery] bool enableAdaptiveBitrateStreaming = false,
         [FromQuery] bool enableTrickplay = true,
         [FromQuery] bool enableAudioVbrEncoding = true,
         [FromQuery] bool alwaysBurnInSubtitleWhenTranscoding = false)
@@ -634,7 +634,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? videoStreamIndex,
         [FromQuery] EncodingContext? context,
         [FromQuery] Dictionary<string, string> streamOptions,
-        [FromQuery] bool enableAdaptiveBitrateStreaming = true,
+        [FromQuery] bool enableAdaptiveBitrateStreaming = false,
         [FromQuery] bool enableAudioVbrEncoding = true)
     {
         var streamingRequest = new HlsAudioRequestDto
@@ -1778,7 +1778,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         }
         else if (state.AudioStream?.CodecTag is not null && state.AudioStream.CodecTag.Equals("ac-4", StringComparison.Ordinal))
         {
-            // ac-4 audio tends to hava a super weird sample rate that will fail most encoders
+            // ac-4 audio tends to have a super weird sample rate that will fail most encoders
             // force resample it to 48KHz
             args += " -ar 48000";
         }
@@ -1819,16 +1819,13 @@ public class DynamicHlsController : BaseJellyfinApiController
         if (isActualOutputVideoCodecHevc || isActualOutputVideoCodecAv1)
         {
             var requestedRange = state.GetRequestedRangeTypes(state.ActualOutputVideoCodec);
-            var requestHasDOVI = requestedRange.Contains(VideoRangeType.DOVI.ToString(), StringComparison.OrdinalIgnoreCase);
-            var requestHasDOVIWithHDR10 = requestedRange.Contains(VideoRangeType.DOVIWithHDR10.ToString(), StringComparison.OrdinalIgnoreCase);
-            var requestHasDOVIWithHLG = requestedRange.Contains(VideoRangeType.DOVIWithHLG.ToString(), StringComparison.OrdinalIgnoreCase);
-            var requestHasDOVIWithSDR = requestedRange.Contains(VideoRangeType.DOVIWithSDR.ToString(), StringComparison.OrdinalIgnoreCase);
+            // Clients reporting Dolby Vision capabilities with fallbacks may only support the fallback layer.
+            // Only enable Dolby Vision remuxing if the client explicitly declares support for profiles without fallbacks.
+            var clientSupportsDoVi = requestedRange.Contains(VideoRangeType.DOVI.ToString(), StringComparison.OrdinalIgnoreCase);
+            var videoIsDoVi = state.VideoStream.VideoRangeType is VideoRangeType.DOVI or VideoRangeType.DOVIWithHDR10 or VideoRangeType.DOVIWithHLG or VideoRangeType.DOVIWithSDR;
 
             if (EncodingHelper.IsCopyCodec(codec)
-                && ((state.VideoStream.VideoRangeType == VideoRangeType.DOVI && requestHasDOVI)
-                    || (state.VideoStream.VideoRangeType == VideoRangeType.DOVIWithHDR10 && requestHasDOVIWithHDR10)
-                    || (state.VideoStream.VideoRangeType == VideoRangeType.DOVIWithHLG && requestHasDOVIWithHLG)
-                    || (state.VideoStream.VideoRangeType == VideoRangeType.DOVIWithSDR && requestHasDOVIWithSDR)))
+                && (videoIsDoVi && clientSupportsDoVi))
             {
                 if (isActualOutputVideoCodecHevc)
                 {
@@ -2059,16 +2056,16 @@ public class DynamicHlsController : BaseJellyfinApiController
         }
     }
 
-    private Task DeleteLastFile(string playlistPath, string segmentExtension, int retryCount)
+    private async Task DeleteLastFile(string playlistPath, string segmentExtension, int retryCount)
     {
         var file = GetLastTranscodingFile(playlistPath, segmentExtension, _fileSystem);
 
         if (file is null)
         {
-            return Task.CompletedTask;
+            return;
         }
 
-        return DeleteFile(file.FullName, retryCount);
+        await DeleteFile(file.FullName, retryCount).ConfigureAwait(false);
     }
 
     private async Task DeleteFile(string path, int retryCount)

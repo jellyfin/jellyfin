@@ -52,7 +52,7 @@ namespace Jellyfin.Extensions.Json.Converters
                     }
                     catch (FormatException)
                     {
-                        // Ignore unconvertable inputs
+                        // Ignore unconvertible inputs
                     }
                 }
 

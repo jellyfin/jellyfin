@@ -222,7 +222,7 @@ public class UniversalAudioController : BaseJellyfinApiController
                 TranscodeReasons = mediaSource.TranscodeReasons == 0 ? null : mediaSource.TranscodeReasons.ToString(),
                 Context = EncodingContext.Static,
                 StreamOptions = new Dictionary<string, string>(),
-                EnableAdaptiveBitrateStreaming = true,
+                EnableAdaptiveBitrateStreaming = false,
                 EnableAudioVbrEncoding = enableAudioVbrEncoding
             };
 

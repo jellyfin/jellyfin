@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Implementations.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "8.0.8");
+            modelBuilder.HasAnnotation("ProductVersion", "8.0.10");
 
             modelBuilder.Entity("Jellyfin.Data.Entities.AccessSchedule", b =>
                 {
@@ -88,6 +88,407 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasIndex("DateCreated");
 
                     b.ToTable("ActivityLogs");
+                });
+
+            modelBuilder.Entity("Jellyfin.Data.Entities.AncestorId", b =>
+                {
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ParentItemId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("ItemId", "ParentItemId");
+
+                    b.HasIndex("ParentItemId");
+
+                    b.ToTable("AncestorIds");
+                });
+
+            modelBuilder.Entity("Jellyfin.Data.Entities.AttachmentStreamInfo", b =>
+                {
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Index")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Codec")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CodecTag")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Comment")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Filename")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("MimeType")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("ItemId", "Index");
+
+                    b.ToTable("AttachmentStreamInfos");
+                });
+
+            modelBuilder.Entity("Jellyfin.Data.Entities.BaseItemEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Album")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AlbumArtists")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Artists")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("Audio")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ChannelId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CleanName")
+                        .HasColumnType("TEXT");
+
+                    b.Property<float?>("CommunityRating")
+                        .HasColumnType("REAL");
+
+                    b.Property<float?>("CriticRating")
+                        .HasColumnType("REAL");
+
+                    b.Property<string>("CustomRating")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Data")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DateCreated")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DateLastMediaAdded")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DateLastRefreshed")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DateLastSaved")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DateModified")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("EpisodeTitle")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ExternalId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ExternalSeriesId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ExternalServiceId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ExtraIds")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("ExtraType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ForcedSortName")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Genres")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("Height")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("IndexNumber")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("InheritedParentalRatingValue")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsFolder")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsInMixedFolder")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsLocked")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsMovie")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsRepeat")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsSeries")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsVirtualItem")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<float?>("LUFS")
+                        .HasColumnType("REAL");
+
+                    b.Property<string>("MediaType")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("TEXT");
+
+                    b.Property<float?>("NormalizationGain")
+                        .HasColumnType("REAL");
+
+                    b.Property<string>("OfficialRating")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("OriginalTitle")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Overview")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("OwnerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ParentId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("ParentIndexNumber")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Path")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PreferredMetadataCountryCode")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PreferredMetadataLanguage")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("PremiereDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PresentationUniqueKey")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PrimaryVersionId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ProductionLocations")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("ProductionYear")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long?>("RunTimeTicks")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid?>("SeasonId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SeasonName")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("SeriesId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SeriesName")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SeriesPresentationUniqueKey")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ShowId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long?>("Size")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("SortName")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Studios")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Tagline")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Tags")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("TopParentId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("TotalBitrate")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UnratedType")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("Width")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParentId");
+
+                    b.HasIndex("Path");
+
+                    b.HasIndex("PresentationUniqueKey");
+
+                    b.HasIndex("TopParentId", "Id");
+
+                    b.HasIndex("Type", "TopParentId", "Id");
+
+                    b.HasIndex("Type", "TopParentId", "PresentationUniqueKey");
+
+                    b.HasIndex("Type", "TopParentId", "StartDate");
+
+                    b.HasIndex("Id", "Type", "IsFolder", "IsVirtualItem");
+
+                    b.HasIndex("MediaType", "TopParentId", "IsVirtualItem", "PresentationUniqueKey");
+
+                    b.HasIndex("Type", "SeriesPresentationUniqueKey", "IsFolder", "IsVirtualItem");
+
+                    b.HasIndex("Type", "SeriesPresentationUniqueKey", "PresentationUniqueKey", "SortName");
+
+                    b.HasIndex("IsFolder", "TopParentId", "IsVirtualItem", "PresentationUniqueKey", "DateCreated");
+
+                    b.HasIndex("Type", "TopParentId", "IsVirtualItem", "PresentationUniqueKey", "DateCreated");
+
+                    b.ToTable("BaseItems");
+                });
+
+            modelBuilder.Entity("Jellyfin.Data.Entities.BaseItemImageInfo", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<byte[]>("Blurhash")
+                        .HasColumnType("BLOB");
+
+                    b.Property<DateTime>("DateModified")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Height")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ImageType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Width")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ItemId");
+
+                    b.ToTable("BaseItemImageInfos");
+                });
+
+            modelBuilder.Entity("Jellyfin.Data.Entities.BaseItemMetadataField", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id", "ItemId");
+
+                    b.HasIndex("ItemId");
+
+                    b.ToTable("BaseItemMetadataFields");
+                });
+
+            modelBuilder.Entity("Jellyfin.Data.Entities.BaseItemProvider", b =>
+                {
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ProviderId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ProviderValue")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("ItemId", "ProviderId");
+
+                    b.HasIndex("ProviderId", "ProviderValue", "ItemId");
+
+                    b.ToTable("BaseItemProviders");
+                });
+
+            modelBuilder.Entity("Jellyfin.Data.Entities.BaseItemTrailerType", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id", "ItemId");
+
+                    b.HasIndex("ItemId");
+
+                    b.ToTable("BaseItemTrailerTypes");
+                });
+
+            modelBuilder.Entity("Jellyfin.Data.Entities.Chapter", b =>
+                {
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ChapterIndex")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("ImageDateModified")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ImagePath")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("StartPositionTicks")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("ItemId", "ChapterIndex");
+
+                    b.ToTable("Chapters");
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.CustomItemDisplayPreferences", b =>
@@ -270,6 +671,46 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.ToTable("ItemDisplayPreferences");
                 });
 
+            modelBuilder.Entity("Jellyfin.Data.Entities.ItemValue", b =>
+                {
+                    b.Property<Guid>("ItemValueId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CleanValue")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("ItemValueId");
+
+                    b.HasIndex("Type", "CleanValue")
+                        .IsUnique();
+
+                    b.ToTable("ItemValues");
+                });
+
+            modelBuilder.Entity("Jellyfin.Data.Entities.ItemValueMap", b =>
+                {
+                    b.Property<Guid>("ItemValueId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("ItemValueId", "ItemId");
+
+                    b.HasIndex("ItemId");
+
+                    b.ToTable("ItemValuesMap");
+                });
+
             modelBuilder.Entity("Jellyfin.Data.Entities.MediaSegment", b =>
                 {
                     b.Property<Guid>("Id")
@@ -295,6 +736,207 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("MediaSegments");
+                });
+
+            modelBuilder.Entity("Jellyfin.Data.Entities.MediaStreamInfo", b =>
+                {
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("StreamIndex")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("AspectRatio")
+                        .HasColumnType("TEXT");
+
+                    b.Property<float?>("AverageFrameRate")
+                        .HasColumnType("REAL");
+
+                    b.Property<int?>("BitDepth")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("BitRate")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("BlPresentFlag")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ChannelLayout")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("Channels")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Codec")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CodecTag")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CodecTimeBase")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ColorPrimaries")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ColorSpace")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ColorTransfer")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Comment")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("DvBlSignalCompatibilityId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("DvLevel")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("DvProfile")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("DvVersionMajor")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("DvVersionMinor")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("ElPresentFlag")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("Height")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool?>("IsAnamorphic")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool?>("IsAvc")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsExternal")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsForced")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool?>("IsHearingImpaired")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool?>("IsInterlaced")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("KeyFrames")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Language")
+                        .HasColumnType("TEXT");
+
+                    b.Property<float?>("Level")
+                        .HasColumnType("REAL");
+
+                    b.Property<string>("NalLengthSize")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Path")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PixelFormat")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Profile")
+                        .HasColumnType("TEXT");
+
+                    b.Property<float?>("RealFrameRate")
+                        .HasColumnType("REAL");
+
+                    b.Property<int?>("RefFrames")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("Rotation")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("RpuPresentFlag")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("SampleRate")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("StreamType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("TimeBase")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("Width")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("ItemId", "StreamIndex");
+
+                    b.HasIndex("StreamIndex");
+
+                    b.HasIndex("StreamType");
+
+                    b.HasIndex("StreamIndex", "StreamType");
+
+                    b.HasIndex("StreamIndex", "StreamType", "Language");
+
+                    b.ToTable("MediaStreamInfos");
+                });
+
+            modelBuilder.Entity("Jellyfin.Data.Entities.People", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PersonType")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name");
+
+                    b.ToTable("Peoples");
+                });
+
+            modelBuilder.Entity("Jellyfin.Data.Entities.PeopleBaseItemMap", b =>
+                {
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("PeopleId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("ListOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Role")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("ItemId", "PeopleId");
+
+                    b.HasIndex("PeopleId");
+
+                    b.HasIndex("ItemId", "ListOrder");
+
+                    b.HasIndex("ItemId", "SortOrder");
+
+                    b.ToTable("PeopleBaseItemMap");
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.Permission", b =>
@@ -613,6 +1255,59 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("Jellyfin.Data.Entities.UserData", b =>
+                {
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CustomDataKey")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("AudioStreamIndex")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsFavorite")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("LastPlayedDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool?>("Likes")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("PlayCount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("PlaybackPositionTicks")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("Played")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<double?>("Rating")
+                        .HasColumnType("REAL");
+
+                    b.Property<int?>("SubtitleStreamIndex")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("ItemId", "UserId", "CustomDataKey");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("ItemId", "UserId", "IsFavorite");
+
+                    b.HasIndex("ItemId", "UserId", "LastPlayedDate");
+
+                    b.HasIndex("ItemId", "UserId", "PlaybackPositionTicks");
+
+                    b.HasIndex("ItemId", "UserId", "Played");
+
+                    b.ToTable("UserData");
+                });
+
             modelBuilder.Entity("Jellyfin.Data.Entities.AccessSchedule", b =>
                 {
                     b.HasOne("Jellyfin.Data.Entities.User", null)
@@ -620,6 +1315,91 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Jellyfin.Data.Entities.AncestorId", b =>
+                {
+                    b.HasOne("Jellyfin.Data.Entities.BaseItemEntity", "Item")
+                        .WithMany("Children")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Jellyfin.Data.Entities.BaseItemEntity", "ParentItem")
+                        .WithMany("ParentAncestors")
+                        .HasForeignKey("ParentItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Item");
+
+                    b.Navigation("ParentItem");
+                });
+
+            modelBuilder.Entity("Jellyfin.Data.Entities.AttachmentStreamInfo", b =>
+                {
+                    b.HasOne("Jellyfin.Data.Entities.BaseItemEntity", "Item")
+                        .WithMany()
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Item");
+                });
+
+            modelBuilder.Entity("Jellyfin.Data.Entities.BaseItemImageInfo", b =>
+                {
+                    b.HasOne("Jellyfin.Data.Entities.BaseItemEntity", "Item")
+                        .WithMany("Images")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Item");
+                });
+
+            modelBuilder.Entity("Jellyfin.Data.Entities.BaseItemMetadataField", b =>
+                {
+                    b.HasOne("Jellyfin.Data.Entities.BaseItemEntity", "Item")
+                        .WithMany("LockedFields")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Item");
+                });
+
+            modelBuilder.Entity("Jellyfin.Data.Entities.BaseItemProvider", b =>
+                {
+                    b.HasOne("Jellyfin.Data.Entities.BaseItemEntity", "Item")
+                        .WithMany("Provider")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Item");
+                });
+
+            modelBuilder.Entity("Jellyfin.Data.Entities.BaseItemTrailerType", b =>
+                {
+                    b.HasOne("Jellyfin.Data.Entities.BaseItemEntity", "Item")
+                        .WithMany("TrailerTypes")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Item");
+                });
+
+            modelBuilder.Entity("Jellyfin.Data.Entities.Chapter", b =>
+                {
+                    b.HasOne("Jellyfin.Data.Entities.BaseItemEntity", "Item")
+                        .WithMany("Chapters")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Item");
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.DisplayPreferences", b =>
@@ -657,6 +1437,55 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Jellyfin.Data.Entities.ItemValueMap", b =>
+                {
+                    b.HasOne("Jellyfin.Data.Entities.BaseItemEntity", "Item")
+                        .WithMany("ItemValues")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Jellyfin.Data.Entities.ItemValue", "ItemValue")
+                        .WithMany("BaseItemsMap")
+                        .HasForeignKey("ItemValueId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Item");
+
+                    b.Navigation("ItemValue");
+                });
+
+            modelBuilder.Entity("Jellyfin.Data.Entities.MediaStreamInfo", b =>
+                {
+                    b.HasOne("Jellyfin.Data.Entities.BaseItemEntity", "Item")
+                        .WithMany("MediaStreams")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Item");
+                });
+
+            modelBuilder.Entity("Jellyfin.Data.Entities.PeopleBaseItemMap", b =>
+                {
+                    b.HasOne("Jellyfin.Data.Entities.BaseItemEntity", "Item")
+                        .WithMany("Peoples")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Jellyfin.Data.Entities.People", "People")
+                        .WithMany("BaseItems")
+                        .HasForeignKey("PeopleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Item");
+
+                    b.Navigation("People");
+                });
+
             modelBuilder.Entity("Jellyfin.Data.Entities.Permission", b =>
                 {
                     b.HasOne("Jellyfin.Data.Entities.User", null)
@@ -684,9 +1513,63 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Jellyfin.Data.Entities.UserData", b =>
+                {
+                    b.HasOne("Jellyfin.Data.Entities.BaseItemEntity", "Item")
+                        .WithMany("UserData")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Jellyfin.Data.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Item");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Jellyfin.Data.Entities.BaseItemEntity", b =>
+                {
+                    b.Navigation("Chapters");
+
+                    b.Navigation("Children");
+
+                    b.Navigation("Images");
+
+                    b.Navigation("ItemValues");
+
+                    b.Navigation("LockedFields");
+
+                    b.Navigation("MediaStreams");
+
+                    b.Navigation("ParentAncestors");
+
+                    b.Navigation("Peoples");
+
+                    b.Navigation("Provider");
+
+                    b.Navigation("TrailerTypes");
+
+                    b.Navigation("UserData");
+                });
+
             modelBuilder.Entity("Jellyfin.Data.Entities.DisplayPreferences", b =>
                 {
                     b.Navigation("HomeSections");
+                });
+
+            modelBuilder.Entity("Jellyfin.Data.Entities.ItemValue", b =>
+                {
+                    b.Navigation("BaseItemsMap");
+                });
+
+            modelBuilder.Entity("Jellyfin.Data.Entities.People", b =>
+                {
+                    b.Navigation("BaseItems");
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.User", b =>

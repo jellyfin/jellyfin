@@ -979,7 +979,7 @@ public class StreamInfo
         }
 
         list.Add(new NameValuePair("PlaySessionId", item.PlaySessionId ?? string.Empty));
-        list.Add(new NameValuePair("api_key", accessToken ?? string.Empty));
+        list.Add(new NameValuePair("ApiKey", accessToken ?? string.Empty));
 
         string? liveStreamId = item.MediaSource?.LiveStreamId;
         list.Add(new NameValuePair("LiveStreamId", liveStreamId ?? string.Empty));
@@ -1189,7 +1189,7 @@ public class StreamInfo
 
                 if (!string.IsNullOrEmpty(accessToken))
                 {
-                    info.Url += "?api_key=" + accessToken;
+                    info.Url += "?ApiKey=" + accessToken;
                 }
 
                 info.IsExternalUrl = false;

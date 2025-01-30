@@ -134,5 +134,7 @@
     "TaskDownloadMissingLyricsDescription": "Scarica testi per le canzoni",
     "TaskDownloadMissingLyrics": "Scarica testi mancanti",
     "TaskMoveTrickplayImages": "Sposta le immagini Trickplay",
-    "TaskMoveTrickplayImagesDescription": "Sposta le immagini Trickplay esistenti secondo la configurazione della libreria."
+    "TaskMoveTrickplayImagesDescription": "Sposta le immagini Trickplay esistenti secondo la configurazione della libreria.",
+    "TaskExtractMediaSegmentsDescription": "Estrae o ottiene segmenti multimediali dai plugin abilitati MediaSegment.",
+    "TaskExtractMediaSegments": "Scansiona Segmento Media"
 }
