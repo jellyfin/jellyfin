@@ -1,4 +1,4 @@
-﻿namespace MediaBrowser.Controller.Providers
+namespace MediaBrowser.Controller.Providers
 {
     /// <summary>
     /// Provider refresh priority.

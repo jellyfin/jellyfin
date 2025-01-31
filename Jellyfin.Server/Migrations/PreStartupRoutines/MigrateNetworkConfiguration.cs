@@ -1,3 +1,5 @@
+#pragma warning disable CS0618 // obsolete
+
 using System;
 using System.IO;
 using System.Xml;
@@ -55,49 +57,53 @@ public class MigrateNetworkConfiguration : IMigrationRoutine
             _logger.LogError(ex, "Migrate NetworkConfiguration deserialize error");
         }
 
-        if (oldNetworkConfiguration is not null)
+        if (oldNetworkConfiguration is null)
         {
-            // Migrate network config values to new config schema
-            var networkConfiguration = new NetworkConfiguration();
-            networkConfiguration.AutoDiscovery = oldNetworkConfiguration.AutoDiscovery;
-            networkConfiguration.BaseUrl = oldNetworkConfiguration.BaseUrl;
-            networkConfiguration.CertificatePassword = oldNetworkConfiguration.CertificatePassword;
-            networkConfiguration.CertificatePath = oldNetworkConfiguration.CertificatePath;
-            networkConfiguration.EnableHttps = oldNetworkConfiguration.EnableHttps;
-            networkConfiguration.EnableIPv4 = oldNetworkConfiguration.EnableIPV4;
-            networkConfiguration.EnableIPv6 = oldNetworkConfiguration.EnableIPV6;
-            networkConfiguration.EnablePublishedServerUriByRequest = oldNetworkConfiguration.EnablePublishedServerUriByRequest;
-            networkConfiguration.EnableRemoteAccess = oldNetworkConfiguration.EnableRemoteAccess;
-            networkConfiguration.EnableUPnP = oldNetworkConfiguration.EnableUPnP;
-            networkConfiguration.IgnoreVirtualInterfaces = oldNetworkConfiguration.IgnoreVirtualInterfaces;
-            networkConfiguration.InternalHttpPort = oldNetworkConfiguration.HttpServerPortNumber;
-            networkConfiguration.InternalHttpsPort = oldNetworkConfiguration.HttpsPortNumber;
-            networkConfiguration.IsRemoteIPFilterBlacklist = oldNetworkConfiguration.IsRemoteIPFilterBlacklist;
-            networkConfiguration.KnownProxies = oldNetworkConfiguration.KnownProxies;
-            networkConfiguration.LocalNetworkAddresses = oldNetworkConfiguration.LocalNetworkAddresses;
-            networkConfiguration.LocalNetworkSubnets = oldNetworkConfiguration.LocalNetworkSubnets;
-            networkConfiguration.PublicHttpPort = oldNetworkConfiguration.PublicPort;
-            networkConfiguration.PublicHttpsPort = oldNetworkConfiguration.PublicHttpsPort;
-            networkConfiguration.PublishedServerUriBySubnet = oldNetworkConfiguration.PublishedServerUriBySubnet;
-            networkConfiguration.RemoteIPFilter = oldNetworkConfiguration.RemoteIPFilter;
-            networkConfiguration.RequireHttps = oldNetworkConfiguration.RequireHttps;
-
-            // Migrate old virtual interface name schema
-            var oldVirtualInterfaceNames = oldNetworkConfiguration.VirtualInterfaceNames;
-            if (oldVirtualInterfaceNames.Equals("vEthernet*", StringComparison.OrdinalIgnoreCase))
-            {
-                networkConfiguration.VirtualInterfaceNames = new string[] { "veth" };
-            }
-            else
-            {
-                networkConfiguration.VirtualInterfaceNames = oldVirtualInterfaceNames.Replace("*", string.Empty, StringComparison.OrdinalIgnoreCase).Split(',');
-            }
-
-            var networkConfigSerializer = new XmlSerializer(typeof(NetworkConfiguration));
-            var xmlWriterSettings = new XmlWriterSettings { Indent = true };
-            using var xmlWriter = XmlWriter.Create(path, xmlWriterSettings);
-            networkConfigSerializer.Serialize(xmlWriter, networkConfiguration);
+            return;
         }
+
+        // Migrate network config values to new config schema
+        var networkConfiguration = new NetworkConfiguration
+        {
+            AutoDiscovery = oldNetworkConfiguration.AutoDiscovery,
+            BaseUrl = oldNetworkConfiguration.BaseUrl,
+            CertificatePassword = oldNetworkConfiguration.CertificatePassword,
+            CertificatePath = oldNetworkConfiguration.CertificatePath,
+            EnableHttps = oldNetworkConfiguration.EnableHttps,
+            EnableIPv4 = oldNetworkConfiguration.EnableIPV4,
+            EnableIPv6 = oldNetworkConfiguration.EnableIPV6,
+            EnablePublishedServerUriByRequest = oldNetworkConfiguration.EnablePublishedServerUriByRequest,
+            EnableRemoteAccess = oldNetworkConfiguration.EnableRemoteAccess,
+            EnableUPnP = oldNetworkConfiguration.EnableUPnP,
+            IgnoreVirtualInterfaces = oldNetworkConfiguration.IgnoreVirtualInterfaces,
+            InternalHttpPort = oldNetworkConfiguration.HttpServerPortNumber,
+            InternalHttpsPort = oldNetworkConfiguration.HttpsPortNumber,
+            IsRemoteIPFilterBlacklist = oldNetworkConfiguration.IsRemoteIPFilterBlacklist,
+            KnownProxies = oldNetworkConfiguration.KnownProxies,
+            LocalNetworkAddresses = oldNetworkConfiguration.LocalNetworkAddresses,
+            LocalNetworkSubnets = oldNetworkConfiguration.LocalNetworkSubnets,
+            PublicHttpPort = oldNetworkConfiguration.PublicPort,
+            PublicHttpsPort = oldNetworkConfiguration.PublicHttpsPort,
+            PublishedServerUriBySubnet = oldNetworkConfiguration.PublishedServerUriBySubnet,
+            RemoteIPFilter = oldNetworkConfiguration.RemoteIPFilter,
+            RequireHttps = oldNetworkConfiguration.RequireHttps
+        };
+
+        // Migrate old virtual interface name schema
+        var oldVirtualInterfaceNames = oldNetworkConfiguration.VirtualInterfaceNames;
+        if (oldVirtualInterfaceNames.Equals("vEthernet*", StringComparison.OrdinalIgnoreCase))
+        {
+            networkConfiguration.VirtualInterfaceNames = new string[] { "veth" };
+        }
+        else
+        {
+            networkConfiguration.VirtualInterfaceNames = oldVirtualInterfaceNames.Replace("*", string.Empty, StringComparison.OrdinalIgnoreCase).Split(',');
+        }
+
+        var networkConfigSerializer = new XmlSerializer(typeof(NetworkConfiguration));
+        var xmlWriterSettings = new XmlWriterSettings { Indent = true };
+        using var xmlWriter = XmlWriter.Create(path, xmlWriterSettings);
+        networkConfigSerializer.Serialize(xmlWriter, networkConfiguration);
     }
 
 #pragma warning disable
@@ -204,5 +210,4 @@ public class MigrateNetworkConfiguration : IMigrationRoutine
 
         public bool EnablePublishedServerUriByRequest { get; set; } = false;
     }
-#pragma warning restore
 }

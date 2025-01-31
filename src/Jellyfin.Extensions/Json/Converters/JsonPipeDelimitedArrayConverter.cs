@@ -1,4 +1,4 @@
-﻿namespace Jellyfin.Extensions.Json.Converters
+namespace Jellyfin.Extensions.Json.Converters
 {
     /// <summary>
     /// Convert Pipe delimited string to array of type.

@@ -130,5 +130,11 @@
     "TaskCleanCollectionsAndPlaylistsDescription": "Usuwa elementy z kolekcji i list odtwarzania, które już nie istnieją.",
     "TaskCleanCollectionsAndPlaylists": "Oczyść kolekcje i listy odtwarzania",
     "TaskAudioNormalization": "Normalizacja dźwięku",
-    "TaskAudioNormalizationDescription": "Skanuje pliki w poszukiwaniu danych normalizacji dźwięku."
+    "TaskAudioNormalizationDescription": "Skanuje pliki w poszukiwaniu danych normalizacji dźwięku.",
+    "TaskDownloadMissingLyrics": "Pobierz brakujące słowa",
+    "TaskDownloadMissingLyricsDescription": "Pobierz słowa piosenek",
+    "TaskExtractMediaSegments": "Skanowanie segmentów mediów",
+    "TaskMoveTrickplayImages": "Migruj lokalizację obrazu Trickplay",
+    "TaskExtractMediaSegmentsDescription": "Wyodrębnia lub pobiera segmenty mediów z wtyczek obsługujących MediaSegment.",
+    "TaskMoveTrickplayImagesDescription": "Przenosi istniejące pliki Trickplay zgodnie z ustawieniami biblioteki."
 }

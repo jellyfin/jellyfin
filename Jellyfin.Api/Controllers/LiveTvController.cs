@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
@@ -656,7 +656,7 @@ public class LiveTvController : BaseJellyfinApiController
 
         var query = new InternalItemsQuery(user)
         {
-            ChannelIds = body.ChannelIds,
+            ChannelIds = body.ChannelIds ?? [],
             HasAired = body.HasAired,
             IsAiring = body.IsAiring,
             EnableTotalRecordCount = body.EnableTotalRecordCount,
@@ -666,31 +666,31 @@ public class LiveTvController : BaseJellyfinApiController
             MaxEndDate = body.MaxEndDate,
             StartIndex = body.StartIndex,
             Limit = body.Limit,
-            OrderBy = RequestHelpers.GetOrderBy(body.SortBy, body.SortOrder),
+            OrderBy = RequestHelpers.GetOrderBy(body.SortBy ?? [], body.SortOrder ?? []),
             IsNews = body.IsNews,
             IsMovie = body.IsMovie,
             IsSeries = body.IsSeries,
             IsKids = body.IsKids,
             IsSports = body.IsSports,
             SeriesTimerId = body.SeriesTimerId,
-            Genres = body.Genres,
-            GenreIds = body.GenreIds
+            Genres = body.Genres ?? [],
+            GenreIds = body.GenreIds ?? []
         };
 
-        if (!body.LibrarySeriesId.IsEmpty())
+        if (!body.LibrarySeriesId.IsNullOrEmpty())
         {
             query.IsSeries = true;
 
-            var series = _libraryManager.GetItemById<Series>(body.LibrarySeriesId);
+            var series = _libraryManager.GetItemById<Series>(body.LibrarySeriesId.Value);
             if (series is not null)
             {
                 query.Name = series.Name;
             }
         }
 
-        var dtoOptions = new DtoOptions { Fields = body.Fields }
+        var dtoOptions = new DtoOptions { Fields = body.Fields ?? [] }
             .AddClientFields(User)
-            .AddAdditionalDtoOptions(body.EnableImages, body.EnableUserData, body.ImageTypeLimit, body.EnableImageTypes);
+            .AddAdditionalDtoOptions(body.EnableImages, body.EnableUserData, body.ImageTypeLimit, body.EnableImageTypes ?? []);
         return await _liveTvManager.GetPrograms(query, dtoOptions, CancellationToken.None).ConfigureAwait(false);
     }
 
@@ -962,9 +962,9 @@ public class LiveTvController : BaseJellyfinApiController
     }
 
     /// <summary>
-    /// Get guid info.
+    /// Get guide info.
     /// </summary>
-    /// <response code="200">Guid info returned.</response>
+    /// <response code="200">Guide info returned.</response>
     /// <returns>An <see cref="OkResult"/> containing the guide info.</returns>
     [HttpGet("GuideInfo")]
     [Authorize(Policy = Policies.LiveTvAccess)]

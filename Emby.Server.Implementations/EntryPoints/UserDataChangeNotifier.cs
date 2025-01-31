@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,7 +24,7 @@ namespace Emby.Server.Implementations.EntryPoints
         private readonly IUserManager _userManager;
 
         private readonly Dictionary<Guid, List<BaseItem>> _changedItems = new();
-        private readonly object _syncLock = new();
+        private readonly Lock _syncLock = new();
 
         private Timer? _updateTimer;
 
@@ -134,19 +133,26 @@ namespace Emby.Server.Implementations.EntryPoints
 
         private UserDataChangeInfo GetUserDataChangeInfo(Guid userId, List<BaseItem> changedItems)
         {
-            var user = _userManager.GetUserById(userId);
+            var user = _userManager.GetUserById(userId)
+                ?? throw new ArgumentException("Invalid user ID", nameof(userId));
 
             return new UserDataChangeInfo
             {
-                UserId = userId.ToString("N", CultureInfo.InvariantCulture),
+                UserId = userId,
                 UserDataList = changedItems
                     .DistinctBy(x => x.Id)
                     .Select(i =>
                     {
                         var dto = _userDataManager.GetUserDataDto(i, user);
-                        dto.ItemId = i.Id.ToString("N", CultureInfo.InvariantCulture);
+                        if (dto is null)
+                        {
+                            return null!;
+                        }
+
+                        dto.ItemId = i.Id;
                         return dto;
                     })
+                    .Where(e => e is not null)
                     .ToArray()
             };
         }

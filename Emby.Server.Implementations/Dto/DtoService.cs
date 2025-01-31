@@ -1,5 +1,3 @@
-#nullable disable
-
 #pragma warning disable CS1591
 
 using System;
@@ -12,6 +10,7 @@ using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common;
 using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -53,6 +52,7 @@ namespace Emby.Server.Implementations.Dto
         private readonly Lazy<ILiveTvManager> _livetvManagerFactory;
 
         private readonly ITrickplayManager _trickplayManager;
+        private readonly IChapterRepository _chapterRepository;
 
         public DtoService(
             ILogger<DtoService> logger,
@@ -65,7 +65,8 @@ namespace Emby.Server.Implementations.Dto
             IApplicationHost appHost,
             IMediaSourceManager mediaSourceManager,
             Lazy<ILiveTvManager> livetvManagerFactory,
-            ITrickplayManager trickplayManager)
+            ITrickplayManager trickplayManager,
+            IChapterRepository chapterRepository)
         {
             _logger = logger;
             _libraryManager = libraryManager;
@@ -78,17 +79,18 @@ namespace Emby.Server.Implementations.Dto
             _mediaSourceManager = mediaSourceManager;
             _livetvManagerFactory = livetvManagerFactory;
             _trickplayManager = trickplayManager;
+            _chapterRepository = chapterRepository;
         }
 
         private ILiveTvManager LivetvManager => _livetvManagerFactory.Value;
 
         /// <inheritdoc />
-        public IReadOnlyList<BaseItemDto> GetBaseItemDtos(IReadOnlyList<BaseItem> items, DtoOptions options, User user = null, BaseItem owner = null)
+        public IReadOnlyList<BaseItemDto> GetBaseItemDtos(IReadOnlyList<BaseItem> items, DtoOptions options, User? user = null, BaseItem? owner = null)
         {
             var accessibleItems = user is null ? items : items.Where(x => x.IsVisible(user)).ToList();
             var returnItems = new BaseItemDto[accessibleItems.Count];
-            List<(BaseItem, BaseItemDto)> programTuples = null;
-            List<(BaseItemDto, LiveTvChannel)> channelTuples = null;
+            List<(BaseItem, BaseItemDto)>? programTuples = null;
+            List<(BaseItemDto, LiveTvChannel)>? channelTuples = null;
 
             for (int index = 0; index < accessibleItems.Count; index++)
             {
@@ -137,7 +139,7 @@ namespace Emby.Server.Implementations.Dto
             return returnItems;
         }
 
-        public BaseItemDto GetBaseItemDto(BaseItem item, DtoOptions options, User user = null, BaseItem owner = null)
+        public BaseItemDto GetBaseItemDto(BaseItem item, DtoOptions options, User? user = null, BaseItem? owner = null)
         {
             var dto = GetBaseItemDtoInternal(item, options, user, owner);
             if (item is LiveTvChannel tvChannel)
@@ -167,7 +169,7 @@ namespace Emby.Server.Implementations.Dto
             return dto;
         }
 
-        private static IList<BaseItem> GetTaggedItems(IItemByName byName, User user, DtoOptions options)
+        private static IReadOnlyList<BaseItem> GetTaggedItems(IItemByName byName, User? user, DtoOptions options)
         {
             return byName.GetTaggedItems(
                 new InternalItemsQuery(user)
@@ -177,7 +179,7 @@ namespace Emby.Server.Implementations.Dto
                 });
         }
 
-        private BaseItemDto GetBaseItemDtoInternal(BaseItem item, DtoOptions options, User user = null, BaseItem owner = null)
+        private BaseItemDto GetBaseItemDtoInternal(BaseItem item, DtoOptions options, User? user = null, BaseItem? owner = null)
         {
             var dto = new BaseItemDto
             {
@@ -292,7 +294,7 @@ namespace Emby.Server.Implementations.Dto
                 }
 
                 var path = mediaSource.Path;
-                string fileExtensionContainer = null;
+                string? fileExtensionContainer = null;
 
                 if (!string.IsNullOrEmpty(path))
                 {
@@ -316,7 +318,8 @@ namespace Emby.Server.Implementations.Dto
             }
         }
 
-        public BaseItemDto GetItemByNameDto(BaseItem item, DtoOptions options, List<BaseItem> taggedItems, User user = null)
+        /// <inheritdoc />
+        public BaseItemDto GetItemByNameDto(BaseItem item, DtoOptions options, List<BaseItem>? taggedItems, User? user = null)
         {
             var dto = GetBaseItemDtoInternal(item, options, user);
 
@@ -328,7 +331,7 @@ namespace Emby.Server.Implementations.Dto
             return dto;
         }
 
-        private static void SetItemByNameInfo(BaseItem item, BaseItemDto dto, IList<BaseItem> taggedItems)
+        private static void SetItemByNameInfo(BaseItem item, BaseItemDto dto, IReadOnlyList<BaseItem> taggedItems)
         {
             if (item is MusicArtist)
             {
@@ -486,10 +489,10 @@ namespace Emby.Server.Implementations.Dto
             return images
                 .Select(p => GetImageCacheTag(item, p))
                 .Where(i => i is not null)
-                .ToArray();
+                .ToArray()!; // null values got filtered out
         }
 
-        private string GetImageCacheTag(BaseItem item, ItemImageInfo image)
+        private string? GetImageCacheTag(BaseItem item, ItemImageInfo image)
         {
             try
             {
@@ -508,7 +511,7 @@ namespace Emby.Server.Implementations.Dto
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
         /// <param name="user">The requesting user.</param>
-        private void AttachPeople(BaseItemDto dto, BaseItem item, User user = null)
+        private void AttachPeople(BaseItemDto dto, BaseItem item, User? user = null)
         {
             // Ordering by person type to ensure actors and artists are at the front.
             // This is taking advantage of the fact that they both begin with A
@@ -552,7 +555,7 @@ namespace Emby.Server.Implementations.Dto
 
             var list = new List<BaseItemPerson>();
 
-            var dictionary = people.Select(p => p.Name)
+            Dictionary<string, Person> dictionary = people.Select(p => p.Name)
                 .Distinct(StringComparer.OrdinalIgnoreCase).Select(c =>
                 {
                     try
@@ -565,9 +568,9 @@ namespace Emby.Server.Implementations.Dto
                         return null;
                     }
                 }).Where(i => i is not null)
-                .Where(i => user is null || i.IsVisible(user))
-                .DistinctBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
+                .Where(i => user is null || i!.IsVisible(user))
+                .DistinctBy(x => x!.Name, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(i => i!.Name, StringComparer.OrdinalIgnoreCase)!; // null values got filtered out
 
             for (var i = 0; i < people.Count; i++)
             {
@@ -580,7 +583,7 @@ namespace Emby.Server.Implementations.Dto
                     Type = person.Type
                 };
 
-                if (dictionary.TryGetValue(person.Name, out Person entity))
+                if (dictionary.TryGetValue(person.Name, out Person? entity))
                 {
                     baseItemPerson.PrimaryImageTag = GetTagAndFillBlurhash(dto, entity, ImageType.Primary);
                     baseItemPerson.Id = entity.Id;
@@ -650,7 +653,7 @@ namespace Emby.Server.Implementations.Dto
             return _libraryManager.GetGenreId(name);
         }
 
-        private string GetTagAndFillBlurhash(BaseItemDto dto, BaseItem item, ImageType imageType, int imageIndex = 0)
+        private string? GetTagAndFillBlurhash(BaseItemDto dto, BaseItem item, ImageType imageType, int imageIndex = 0)
         {
             var image = item.GetImageInfo(imageType, imageIndex);
             if (image is not null)
@@ -661,9 +664,14 @@ namespace Emby.Server.Implementations.Dto
             return null;
         }
 
-        private string GetTagAndFillBlurhash(BaseItemDto dto, BaseItem item, ItemImageInfo image)
+        private string? GetTagAndFillBlurhash(BaseItemDto dto, BaseItem item, ItemImageInfo image)
         {
             var tag = GetImageCacheTag(item, image);
+            if (tag is null)
+            {
+                return null;
+            }
+
             if (!string.IsNullOrEmpty(image.BlurHash))
             {
                 dto.ImageBlurHashes ??= new Dictionary<ImageType, Dictionary<string, string>>();
@@ -716,7 +724,7 @@ namespace Emby.Server.Implementations.Dto
         /// <param name="item">The item.</param>
         /// <param name="owner">The owner.</param>
         /// <param name="options">The options.</param>
-        private void AttachBasicFields(BaseItemDto dto, BaseItem item, BaseItem owner, DtoOptions options)
+        private void AttachBasicFields(BaseItemDto dto, BaseItem item, BaseItem? owner, DtoOptions options)
         {
             if (options.ContainsField(ItemFields.DateCreated))
             {
@@ -1056,7 +1064,7 @@ namespace Emby.Server.Implementations.Dto
 
                 if (options.ContainsField(ItemFields.Chapters))
                 {
-                    dto.Chapters = _itemRepo.GetChapters(item);
+                    dto.Chapters = _chapterRepository.GetChapters(item.Id).ToList();
                 }
 
                 if (options.ContainsField(ItemFields.Trickplay))
@@ -1097,7 +1105,7 @@ namespace Emby.Server.Implementations.Dto
                 }
             }
 
-            BaseItem[] allExtras = null;
+            BaseItem[]? allExtras = null;
 
             if (options.ContainsField(ItemFields.SpecialFeatureCount))
             {
@@ -1134,7 +1142,7 @@ namespace Emby.Server.Implementations.Dto
                 dto.SeasonId = episode.SeasonId;
                 dto.SeriesId = episode.SeriesId;
 
-                Series episodeSeries = null;
+                Series? episodeSeries = null;
 
                 // this block will add the series poster for episodes without a poster
                 // TODO maybe remove the if statement entirely
@@ -1162,8 +1170,10 @@ namespace Emby.Server.Implementations.Dto
             }
 
             // Add SeriesInfo
-            if (item is Series series)
+            Series? series;
+            if (item is Series tmp)
             {
+                series = tmp;
                 dto.AirDays = series.AirDays;
                 dto.AirTime = series.AirTime;
                 dto.Status = series.Status?.ToString();
@@ -1264,7 +1274,7 @@ namespace Emby.Server.Implementations.Dto
             }
         }
 
-        private BaseItem GetImageDisplayParent(BaseItem currentItem, BaseItem originalItem)
+        private BaseItem? GetImageDisplayParent(BaseItem currentItem, BaseItem originalItem)
         {
             if (currentItem is MusicAlbum musicAlbum)
             {
@@ -1285,7 +1295,7 @@ namespace Emby.Server.Implementations.Dto
             return parent;
         }
 
-        private void AddInheritedImages(BaseItemDto dto, BaseItem item, DtoOptions options, BaseItem owner)
+        private void AddInheritedImages(BaseItemDto dto, BaseItem item, DtoOptions options, BaseItem? owner)
         {
             if (!item.SupportsInheritedParentImages)
             {
@@ -1305,7 +1315,7 @@ namespace Emby.Server.Implementations.Dto
                 return;
             }
 
-            BaseItem parent = null;
+            BaseItem? parent = null;
             var isFirst = true;
 
             var imageTags = dto.ImageTags;
@@ -1378,7 +1388,7 @@ namespace Emby.Server.Implementations.Dto
             }
         }
 
-        private string GetMappedPath(BaseItem item, BaseItem ownerItem)
+        private string GetMappedPath(BaseItem item, BaseItem? ownerItem)
         {
             var path = item.Path;
 

@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.XbmcMetadata.Savers
 {
     /// <summary>
-    /// Nfo saver for artsist.
+    /// Nfo saver for artist.
     /// </summary>
     public class ArtistNfoSaver : BaseNfoSaver
     {
@@ -67,7 +67,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             AddAlbums(albums, writer);
         }
 
-        private void AddAlbums(IList<BaseItem> albums, XmlWriter writer)
+        private void AddAlbums(IReadOnlyList<BaseItem> albums, XmlWriter writer)
         {
             foreach (var album in albums)
             {

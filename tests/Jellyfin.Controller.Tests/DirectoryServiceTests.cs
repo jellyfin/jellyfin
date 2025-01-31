@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
 using Moq;
@@ -80,6 +80,21 @@ namespace Jellyfin.Controller.Tests
         }
 
         [Fact]
+        public void GetDirectories_GivenPathsWithDifferentCasing_ReturnsCorrectDirectories()
+        {
+            var fileSystemMock = new Mock<IFileSystem>();
+            fileSystemMock.Setup(f => f.GetFileSystemEntries(It.Is<string>(x => x == UpperCasePath), false)).Returns(_upperCaseFileSystemMetadata);
+            fileSystemMock.Setup(f => f.GetFileSystemEntries(It.Is<string>(x => x == LowerCasePath), false)).Returns(_lowerCaseFileSystemMetadata);
+            var directoryService = new DirectoryService(fileSystemMock.Object);
+
+            var upperCaseResult = directoryService.GetDirectories(UpperCasePath);
+            var lowerCaseResult = directoryService.GetDirectories(LowerCasePath);
+
+            Assert.Equal(_upperCaseFileSystemMetadata.Where(f => f.IsDirectory), upperCaseResult);
+            Assert.Equal(_lowerCaseFileSystemMetadata.Where(f => f.IsDirectory), lowerCaseResult);
+        }
+
+        [Fact]
         public void GetFile_GivenFilePathsWithDifferentCasing_ReturnsCorrectFile()
         {
             const string lowerCasePath = "/music/someartist/song 1.mp3";
@@ -95,15 +110,52 @@ namespace Jellyfin.Controller.Tests
                 Exists = false
             };
             var fileSystemMock = new Mock<IFileSystem>();
-            fileSystemMock.Setup(f => f.GetFileInfo(It.Is<string>(x => x == upperCasePath))).Returns(upperCaseFileSystemMetadata);
-            fileSystemMock.Setup(f => f.GetFileInfo(It.Is<string>(x => x == lowerCasePath))).Returns(lowerCaseFileSystemMetadata);
+            fileSystemMock.Setup(f => f.GetFileSystemInfo(It.Is<string>(x => x == upperCasePath))).Returns(upperCaseFileSystemMetadata);
+            fileSystemMock.Setup(f => f.GetFileSystemInfo(It.Is<string>(x => x == lowerCasePath))).Returns(lowerCaseFileSystemMetadata);
             var directoryService = new DirectoryService(fileSystemMock.Object);
 
-            var lowerCaseResult = directoryService.GetFile(lowerCasePath);
-            var upperCaseResult = directoryService.GetFile(upperCasePath);
+            var lowerCaseDirResult = directoryService.GetDirectory(lowerCasePath);
+            var lowerCaseFileResult = directoryService.GetFile(lowerCasePath);
+            var upperCaseDirResult = directoryService.GetDirectory(upperCasePath);
+            var upperCaseFileResult = directoryService.GetFile(upperCasePath);
 
-            Assert.Equal(lowerCaseFileSystemMetadata, lowerCaseResult);
-            Assert.Null(upperCaseResult);
+            Assert.Null(lowerCaseDirResult);
+            Assert.Equal(lowerCaseFileSystemMetadata, lowerCaseFileResult);
+            Assert.Null(upperCaseDirResult);
+            Assert.Null(upperCaseFileResult);
+        }
+
+        [Fact]
+        public void GetDirectory_GivenFilePathsWithDifferentCasing_ReturnsCorrectDirectory()
+        {
+            const string lowerCasePath = "/music/someartist/Lyrics";
+            var lowerCaseFileSystemMetadata = new FileSystemMetadata
+            {
+                FullName = lowerCasePath,
+                IsDirectory = true,
+                Exists = true
+            };
+            const string upperCasePath = "/music/SOMEARTIST/LYRICS";
+            var upperCaseFileSystemMetadata = new FileSystemMetadata
+            {
+                FullName = upperCasePath,
+                IsDirectory = true,
+                Exists = false
+            };
+            var fileSystemMock = new Mock<IFileSystem>();
+            fileSystemMock.Setup(f => f.GetFileSystemInfo(It.Is<string>(x => x == upperCasePath))).Returns(upperCaseFileSystemMetadata);
+            fileSystemMock.Setup(f => f.GetFileSystemInfo(It.Is<string>(x => x == lowerCasePath))).Returns(lowerCaseFileSystemMetadata);
+            var directoryService = new DirectoryService(fileSystemMock.Object);
+
+            var lowerCaseDirResult = directoryService.GetDirectory(lowerCasePath);
+            var lowerCaseFileResult = directoryService.GetFile(lowerCasePath);
+            var upperCaseDirResult = directoryService.GetDirectory(upperCasePath);
+            var upperCaseFileResult = directoryService.GetFile(upperCasePath);
+
+            Assert.Equal(lowerCaseFileSystemMetadata, lowerCaseDirResult);
+            Assert.Null(lowerCaseFileResult);
+            Assert.Null(upperCaseDirResult);
+            Assert.Null(upperCaseFileResult);
         }
 
         [Fact]
@@ -122,11 +174,11 @@ namespace Jellyfin.Controller.Tests
             };
 
             var fileSystemMock = new Mock<IFileSystem>();
-            fileSystemMock.Setup(f => f.GetFileInfo(It.Is<string>(x => x == path))).Returns(cachedFileSystemMetadata);
+            fileSystemMock.Setup(f => f.GetFileSystemInfo(It.Is<string>(x => x == path))).Returns(cachedFileSystemMetadata);
             var directoryService = new DirectoryService(fileSystemMock.Object);
 
             var result = directoryService.GetFile(path);
-            fileSystemMock.Setup(f => f.GetFileInfo(It.Is<string>(x => x == path))).Returns(newFileSystemMetadata);
+            fileSystemMock.Setup(f => f.GetFileSystemInfo(It.Is<string>(x => x == path))).Returns(newFileSystemMetadata);
             var secondResult = directoryService.GetFile(path);
 
             Assert.Equal(cachedFileSystemMetadata, result);

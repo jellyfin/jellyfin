@@ -721,6 +721,8 @@ namespace MediaBrowser.MediaEncoding.Probing
             if (streamInfo.CodecType == CodecType.Audio)
             {
                 stream.Type = MediaStreamType.Audio;
+                stream.LocalizedDefault = _localization.GetLocalizedString("Default");
+                stream.LocalizedExternal = _localization.GetLocalizedString("External");
 
                 stream.Channels = streamInfo.Channels;
 
@@ -890,8 +892,12 @@ namespace MediaBrowser.MediaEncoding.Probing
                             stream.ElPresentFlag = data.ElPresentFlag;
                             stream.BlPresentFlag = data.BlPresentFlag;
                             stream.DvBlSignalCompatibilityId = data.DvBlSignalCompatibilityId;
+                        }
 
-                            break;
+                        // Parse video rotation metadata from side_data
+                        else if (string.Equals(data.SideDataType, "Display Matrix", StringComparison.OrdinalIgnoreCase))
+                        {
+                            stream.Rotation = data.Rotation;
                         }
                     }
                 }
@@ -1319,23 +1325,23 @@ namespace MediaBrowser.MediaEncoding.Probing
             // These support multiple values, but for now we only store the first.
             var mb = GetMultipleMusicBrainzId(tags.GetValueOrDefault("MusicBrainz Album Artist Id"))
                 ?? GetMultipleMusicBrainzId(tags.GetValueOrDefault("MUSICBRAINZ_ALBUMARTISTID"));
-            audio.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, mb);
+            audio.TrySetProviderId(MetadataProvider.MusicBrainzAlbumArtist, mb);
 
             mb = GetMultipleMusicBrainzId(tags.GetValueOrDefault("MusicBrainz Artist Id"))
                 ?? GetMultipleMusicBrainzId(tags.GetValueOrDefault("MUSICBRAINZ_ARTISTID"));
-            audio.SetProviderId(MetadataProvider.MusicBrainzArtist, mb);
+            audio.TrySetProviderId(MetadataProvider.MusicBrainzArtist, mb);
 
             mb = GetMultipleMusicBrainzId(tags.GetValueOrDefault("MusicBrainz Album Id"))
                 ?? GetMultipleMusicBrainzId(tags.GetValueOrDefault("MUSICBRAINZ_ALBUMID"));
-            audio.SetProviderId(MetadataProvider.MusicBrainzAlbum, mb);
+            audio.TrySetProviderId(MetadataProvider.MusicBrainzAlbum, mb);
 
             mb = GetMultipleMusicBrainzId(tags.GetValueOrDefault("MusicBrainz Release Group Id"))
                  ?? GetMultipleMusicBrainzId(tags.GetValueOrDefault("MUSICBRAINZ_RELEASEGROUPID"));
-            audio.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, mb);
+            audio.TrySetProviderId(MetadataProvider.MusicBrainzReleaseGroup, mb);
 
             mb = GetMultipleMusicBrainzId(tags.GetValueOrDefault("MusicBrainz Release Track Id"))
                  ?? GetMultipleMusicBrainzId(tags.GetValueOrDefault("MUSICBRAINZ_RELEASETRACKID"));
-            audio.SetProviderId(MetadataProvider.MusicBrainzTrack, mb);
+            audio.TrySetProviderId(MetadataProvider.MusicBrainzTrack, mb);
         }
 
         private string GetMultipleMusicBrainzId(string value)
@@ -1642,7 +1648,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 1))
             {
-                fs.Read(packetBuffer);
+                fs.ReadExactly(packetBuffer);
             }
 
             if (packetBuffer[0] == 71)

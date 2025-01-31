@@ -1,4 +1,4 @@
-﻿namespace Jellyfin.Data.Enums
+namespace Jellyfin.Data.Enums
 {
     /// <summary>
     /// An enum representing the sorting order.

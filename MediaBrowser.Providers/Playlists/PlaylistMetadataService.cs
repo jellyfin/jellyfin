@@ -36,7 +36,7 @@ namespace MediaBrowser.Providers.Playlists
         protected override bool EnableUpdatingStudiosFromChildren => true;
 
         /// <inheritdoc />
-        protected override IList<BaseItem> GetChildrenForMetadataUpdates(Playlist item)
+        protected override IReadOnlyList<BaseItem> GetChildrenForMetadataUpdates(Playlist item)
             => item.GetLinkedChildren();
 
         /// <inheritdoc />

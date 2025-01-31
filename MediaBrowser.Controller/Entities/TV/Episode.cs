@@ -180,10 +180,7 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         public string FindSeriesPresentationUniqueKey()
-        {
-            var series = Series;
-            return series is null ? null : series.PresentationUniqueKey;
-        }
+            => Series?.PresentationUniqueKey;
 
         public string FindSeasonName()
         {
@@ -343,23 +340,6 @@ namespace MediaBrowser.Controller.Entities.TV
             }
 
             return hasChanges;
-        }
-
-        public override List<ExternalUrl> GetRelatedUrls()
-        {
-            var list = base.GetRelatedUrls();
-
-            var imdbId = this.GetProviderId(MetadataProvider.Imdb);
-            if (!string.IsNullOrEmpty(imdbId))
-            {
-                list.Add(new ExternalUrl
-                {
-                    Name = "Trakt",
-                    Url = string.Format(CultureInfo.InvariantCulture, "https://trakt.tv/episodes/{0}", imdbId)
-                });
-            }
-
-            return list;
         }
     }
 }

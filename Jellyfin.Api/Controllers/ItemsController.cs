@@ -967,17 +967,22 @@ public class ItemsController : BaseJellyfinApiController
     [HttpGet("UserItems/{itemId}/UserData")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult<UserItemDataDto> GetItemUserData(
+    public ActionResult<UserItemDataDto?> GetItemUserData(
         [FromQuery] Guid? userId,
         [FromRoute, Required] Guid itemId)
     {
         var requestUserId = RequestHelpers.GetUserId(User, userId);
-        if (!RequestHelpers.AssertCanUpdateUser(_userManager, User, requestUserId, true))
+        var user = _userManager.GetUserById(requestUserId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        if (!RequestHelpers.AssertCanUpdateUser(User, user, true))
         {
             return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to view this item user data.");
         }
 
-        var user = _userManager.GetUserById(requestUserId) ?? throw new ResourceNotFoundException();
         var item = _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
@@ -1000,7 +1005,7 @@ public class ItemsController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Obsolete("Kept for backwards compatibility")]
     [ApiExplorerSettings(IgnoreApi = true)]
-    public ActionResult<UserItemDataDto> GetItemUserDataLegacy(
+    public ActionResult<UserItemDataDto?> GetItemUserDataLegacy(
         [FromRoute, Required] Guid userId,
         [FromRoute, Required] Guid itemId)
         => GetItemUserData(userId, itemId);
@@ -1017,18 +1022,23 @@ public class ItemsController : BaseJellyfinApiController
     [HttpPost("UserItems/{itemId}/UserData")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult<UserItemDataDto> UpdateItemUserData(
+    public ActionResult<UserItemDataDto?> UpdateItemUserData(
         [FromQuery] Guid? userId,
         [FromRoute, Required] Guid itemId,
         [FromBody, Required] UpdateUserItemDataDto userDataDto)
     {
         var requestUserId = RequestHelpers.GetUserId(User, userId);
-        if (!RequestHelpers.AssertCanUpdateUser(_userManager, User, requestUserId, true))
+        var user = _userManager.GetUserById(requestUserId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        if (!RequestHelpers.AssertCanUpdateUser(User, user, true))
         {
             return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update this item user data.");
         }
 
-        var user = _userManager.GetUserById(requestUserId) ?? throw new ResourceNotFoundException();
         var item = _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
@@ -1054,7 +1064,7 @@ public class ItemsController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Obsolete("Kept for backwards compatibility")]
     [ApiExplorerSettings(IgnoreApi = true)]
-    public ActionResult<UserItemDataDto> UpdateItemUserDataLegacy(
+    public ActionResult<UserItemDataDto?> UpdateItemUserDataLegacy(
         [FromRoute, Required] Guid userId,
         [FromRoute, Required] Guid itemId,
         [FromBody, Required] UpdateUserItemDataDto userDataDto)

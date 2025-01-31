@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Jellyfin.Data.Entities.Libraries
 {
     /// <summary>
-    /// An entity representing a a series.
+    /// An entity representing a series.
     /// </summary>
     public class Series : LibraryItem
     {

@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -13,37 +11,41 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
     /// <summary>
     /// Class PeopleValidationTask.
     /// </summary>
-    public class PeopleValidationTask : IScheduledTask
+    public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
     {
-        /// <summary>
-        /// The library manager.
-        /// </summary>
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _localization;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PeopleValidationTask" /> class.
         /// </summary>
-        /// <param name="libraryManager">The library manager.</param>
-        /// <param name="localization">The localization manager.</param>
+        /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
+        /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
         public PeopleValidationTask(ILibraryManager libraryManager, ILocalizationManager localization)
         {
             _libraryManager = libraryManager;
             _localization = localization;
         }
 
+        /// <inheritdoc />
         public string Name => _localization.GetLocalizedString("TaskRefreshPeople");
 
+        /// <inheritdoc />
         public string Description => _localization.GetLocalizedString("TaskRefreshPeopleDescription");
 
+        /// <inheritdoc />
         public string Category => _localization.GetLocalizedString("TasksLibraryCategory");
 
+        /// <inheritdoc />
         public string Key => "RefreshPeople";
 
+        /// <inheritdoc />
         public bool IsHidden => false;
 
+        /// <inheritdoc />
         public bool IsEnabled => true;
 
+        /// <inheritdoc />
         public bool IsLogged => true;
 
         /// <summary>
@@ -56,7 +58,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
             {
                 new TaskTriggerInfo
                 {
-                    Type = TaskTriggerInfo.TriggerInterval,
+                    Type = TaskTriggerInfoType.IntervalTrigger,
                     IntervalTicks = TimeSpan.FromDays(7).Ticks
                 }
             };

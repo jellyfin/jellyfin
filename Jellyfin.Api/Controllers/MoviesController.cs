@@ -120,7 +120,7 @@ public class MoviesController : BaseJellyfinApiController
             DtoOptions = dtoOptions
         });
 
-        var mostRecentMovies = recentlyPlayedMovies.GetRange(0, Math.Min(recentlyPlayedMovies.Count, 6));
+        var mostRecentMovies = recentlyPlayedMovies.Take(Math.Min(recentlyPlayedMovies.Count, 6)).ToList();
         // Get recently played directors
         var recentDirectors = GetDirectors(mostRecentMovies)
             .ToList();
@@ -276,7 +276,6 @@ public class MoviesController : BaseJellyfinApiController
                 Limit = itemLimit,
                 IncludeItemTypes = itemTypes.ToArray(),
                 IsMovie = true,
-                SimilarTo = item,
                 EnableGroupByMetadataKey = true,
                 DtoOptions = dtoOptions
             });

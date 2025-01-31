@@ -53,10 +53,7 @@ namespace MediaBrowser.Providers.Plugins.StudioImages
         /// <inheritdoc />
         public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
-            return new ImageType[]
-            {
-                ImageType.Thumb
-            };
+            return [ImageType.Thumb];
         }
 
         /// <inheritdoc />
@@ -72,13 +69,10 @@ namespace MediaBrowser.Providers.Plugins.StudioImages
 
             if (imageInfo is null)
             {
-                return Enumerable.Empty<RemoteImageInfo>();
+                return [];
             }
 
-            return new RemoteImageInfo[]
-            {
-                imageInfo
-            };
+            return [imageInfo];
         }
 
         private RemoteImageInfo GetImage(BaseItem item, string filename, ImageType type, string remoteFilename)
@@ -107,11 +101,11 @@ namespace MediaBrowser.Providers.Plugins.StudioImages
             return string.Format(CultureInfo.InvariantCulture, "{0}/images/{1}/{2}.jpg", GetRepositoryUrl(), image, filename);
         }
 
-        private Task EnsureThumbsList(string file, CancellationToken cancellationToken)
+        private async Task EnsureThumbsList(string file, CancellationToken cancellationToken)
         {
             string url = string.Format(CultureInfo.InvariantCulture, "{0}/thumbs.txt", GetRepositoryUrl());
 
-            return EnsureList(url, file, _fileSystem, cancellationToken);
+            await EnsureList(url, file, _fileSystem, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />

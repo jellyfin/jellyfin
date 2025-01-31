@@ -1,4 +1,4 @@
-﻿#pragma warning disable CA1307
+#pragma warning disable CA1307
 
 using System;
 using System.Collections.Concurrent;
@@ -113,7 +113,7 @@ namespace Jellyfin.Server.Implementations.Users
         // This is some regex that matches only on unicode "word" characters, as well as -, _ and @
         // In theory this will cut out most if not all 'control' characters which should help minimize any weirdness
         // Usernames can contain letters (a-z + whatever else unicode is cool with), numbers (0-9), at-signs (@), dashes (-), underscores (_), apostrophes ('), periods (.) and spaces ( )
-        [GeneratedRegex(@"^[\w\ \-'._@]+$")]
+        [GeneratedRegex(@"^[\w\ \-'._@+]+$")]
         private static partial Regex ValidUsernameRegex();
 
         /// <inheritdoc/>
@@ -201,8 +201,6 @@ namespace Jellyfin.Server.Implementations.Users
             user.AddDefaultPermissions();
             user.AddDefaultPreferences();
 
-            _users.Add(user.Id, user);
-
             return user;
         }
 
@@ -227,6 +225,7 @@ namespace Jellyfin.Server.Implementations.Users
 
                 dbContext.Users.Add(newUser);
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                _users.Add(newUser.Id, newUser);
             }
 
             await _eventManager.PublishAsync(new UserCreatedEventArgs(newUser)).ConfigureAwait(false);
@@ -384,7 +383,6 @@ namespace Jellyfin.Server.Implementations.Users
         public async Task<User?> AuthenticateUser(
             string username,
             string password,
-            string passwordSha1,
             string remoteEndPoint,
             bool isUserSession)
         {
@@ -561,6 +559,7 @@ namespace Jellyfin.Server.Implementations.Users
 
                 dbContext.Users.Add(newUser);
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                _users.Add(newUser.Id, newUser);
             }
         }
 
