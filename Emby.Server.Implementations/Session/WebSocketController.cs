@@ -44,7 +44,7 @@ namespace Emby.Server.Implementations.Session
                 try
                 {
                     _socketsLock.EnterReadLock();
-                    return _sockets.Where(i => i.State == WebSocketState.Open).Any();
+                    return _sockets.Any(i => i.State == WebSocketState.Open);
                 }
                 finally
                 {
@@ -67,13 +67,12 @@ namespace Emby.Server.Implementations.Session
             {
                 _socketsLock.EnterWriteLock();
                 _sockets.Add(connection);
+                connection.Closed += OnConnectionClosed;
             }
             finally
             {
                 _socketsLock.ExitWriteLock();
             }
-
-            connection.Closed += OnConnectionClosed;
         }
 
         private async void OnConnectionClosed(object? sender, EventArgs e)
@@ -85,13 +84,13 @@ namespace Emby.Server.Implementations.Session
             {
                 _socketsLock.EnterWriteLock();
                 _sockets.Remove(connection);
+                connection.Closed -= OnConnectionClosed;
             }
             finally
             {
                 _socketsLock.ExitWriteLock();
             }
 
-            connection.Closed -= OnConnectionClosed;
             await _sessionManager.CloseIfNeededAsync(_session).ConfigureAwait(false);
         }
 
