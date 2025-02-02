@@ -2,24 +2,26 @@
     "name": "Development Jellyfin Server",
     "dockerComposeFile": "docker-compose.yaml",
     "service": "app",
-	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+    "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
     // restores nuget packages, installs the dotnet workloads and installs the dev https certificate
     "postStartCommand": "sudo dotnet restore; sudo dotnet workload update; sudo dotnet dev-certs https --trust; sudo bash \"./.devcontainer/install-ffmpeg.sh\"",
     // reads the extensions list and installs them
     "postAttachCommand": "cat .vscode/extensions.json | jq -r .recommendations[] | xargs -n 1 code --install-extension",
-    "forwardPorts": ["pgadmin:8081"],
-	"portsAttributes": {
-		"8081": {
-			"label": "pgAdmin",
-			"onAutoForward": "notify",
-			"requireLocalPort": true
-		},
+    "forwardPorts": [
+        "pgadmin:8081"
+    ],
+    "portsAttributes": {
+        "8081": {
+            "label": "pgAdmin",
+            "onAutoForward": "notify",
+            "requireLocalPort": true
+        },
         "8096": {
-			"label": "jellyfinapi",
-			"onAutoForward": "notify",
-			"requireLocalPort": true
-		}
-	},
+            "label": "jellyfinapi",
+            "onAutoForward": "notify",
+            "requireLocalPort": true
+        }
+    },
     "features": {
         "ghcr.io/devcontainers/features/dotnet:2": {
             "version": "none",

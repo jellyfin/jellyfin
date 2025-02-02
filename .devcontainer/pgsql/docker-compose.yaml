@@ -14,7 +14,6 @@ services:
 
     # Runs app on the same network as the database container, allows "forwardPorts" in devcontainer.json function.
     network_mode: service:pgadmin
-
     # Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
     # user: root
 
@@ -42,7 +41,6 @@ services:
       - PGADMIN_LISTEN_PORT=8081
       - PGADMIN_SERVER_JSON_FILE=/pgadmin/servers.json
       - PGADMIN_CONFIG_SERVER_MODE=False
-
     # Add "forwardPorts": ["5432"] to **devcontainer.json** to forward PostgreSQL locally.
     # (Adding the "ports" property to this file will not forward from a Codespace.)
 
