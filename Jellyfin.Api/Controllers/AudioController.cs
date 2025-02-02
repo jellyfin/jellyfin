@@ -92,18 +92,18 @@ public class AudioController : BaseJellyfinApiController
     [ProducesAudioFile]
     public async Task<ActionResult> GetAudioStream(
         [FromRoute, Required] Guid itemId,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? container,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? container,
         [FromQuery] bool? @static,
         [FromQuery] string? @params,
         [FromQuery] string? tag,
         [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? segmentContainer,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? segmentContainer,
         [FromQuery] int? segmentLength,
         [FromQuery] int? minSegments,
         [FromQuery] string? mediaSourceId,
         [FromQuery] string? deviceId,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? audioCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? audioCodec,
         [FromQuery] bool? enableAutoStreamCopy,
         [FromQuery] bool? allowVideoStreamCopy,
         [FromQuery] bool? allowAudioStreamCopy,
@@ -133,8 +133,8 @@ public class AudioController : BaseJellyfinApiController
         [FromQuery] int? cpuCoreLimit,
         [FromQuery] string? liveStreamId,
         [FromQuery] bool? enableMpegtsM2TsMode,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? videoCodec,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? subtitleCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? videoCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? subtitleCodec,
         [FromQuery] string? transcodeReasons,
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
@@ -265,12 +265,12 @@ public class AudioController : BaseJellyfinApiController
         [FromQuery] string? tag,
         [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? segmentContainer,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? segmentContainer,
         [FromQuery] int? segmentLength,
         [FromQuery] int? minSegments,
         [FromQuery] string? mediaSourceId,
         [FromQuery] string? deviceId,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? audioCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? audioCodec,
         [FromQuery] bool? enableAutoStreamCopy,
         [FromQuery] bool? allowVideoStreamCopy,
         [FromQuery] bool? allowAudioStreamCopy,
@@ -300,8 +300,8 @@ public class AudioController : BaseJellyfinApiController
         [FromQuery] int? cpuCoreLimit,
         [FromQuery] string? liveStreamId,
         [FromQuery] bool? enableMpegtsM2TsMode,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? videoCodec,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? subtitleCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? videoCodec,
+        [FromQuery][RegularExpression(EncodingHelper.ValidationRegex)] string? subtitleCodec,
         [FromQuery] string? transcodeReasons,
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
@@ -363,5 +363,19 @@ public class AudioController : BaseJellyfinApiController
         };
 
         return await _audioHelper.GetAudioStream(_transcodingJobType, streamingRequest).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Gets audio data to draw a waveform bar.
+    /// </summary>
+    /// <param name="itemId">The item id.</param>
+    /// <response code="200">AudioWaveForm returned.</response>
+    /// <returns>A <see cref="FileResult"/> containing the audiowaveform file.</returns>
+    [HttpGet("{itemId}/audiowaveform")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task GetAudioWaveForm([FromRoute, Required] Guid itemId)
+    {
+        await _audioHelper.GetAudioWaveForm(itemId).ConfigureAwait(false);
+        // return string.Empty;
     }
 }

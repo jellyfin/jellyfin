@@ -1,11 +1,16 @@
+using System;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Streaming;
@@ -153,5 +158,48 @@ public class AudioHelper
             ffmpegCommandLineArguments,
             transcodingJobType,
             cancellationTokenSource).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Gets audio data to draw a waveform bar.
+    /// </summary>
+    /// <param name="itemId">The item id.</param>
+    /// <returns>A <see cref="BaseItem"/> containing the resulting <see cref="ActionResult"/>.</returns>
+    public async Task GetAudioWaveForm(Guid itemId)
+    {
+        var item = _libraryManager.GetItemById<BaseItem>(itemId)
+        ?? throw new ResourceNotFoundException();
+
+        var libraryOptions = BaseItem.LibraryManager.GetLibraryOptions(item);
+        // considering waveform data as metadata
+        var saveInMediaFolder = libraryOptions.SaveLocalMetadata;
+        var saveFileName = Path.GetFileNameWithoutExtension(item.Path) + "." + "pcm";
+        string outputPath;
+        if (saveInMediaFolder)
+        {
+            outputPath = Path.GetFullPath(Path.Combine(item.ContainingFolderPath, saveFileName));
+        }
+        else
+        {
+            outputPath = Path.GetFullPath(Path.Combine(item.GetInternalMetadataPath(), saveFileName));
+        }
+
+        Console.WriteLine(item.Path);
+        Console.WriteLine(outputPath);
+
+        if (File.Exists(outputPath))
+        {
+        }
+        else
+        {
+            await Task.Run(() => Process.Start("ffmpeg", $"-y -i \"{item.Path}\" -acodec pcm_s16le -f s16le -ac 1 -ar 1000 \"{outputPath}\"").WaitForExit()).ConfigureAwait(false);
+
+            byte[] pcmFile = await File.ReadAllBytesAsync(outputPath).ConfigureAwait(false);
+
+            short[] pcmData = Enumerable.Range(0, pcmFile.Length / 2)
+                .Select(i => BitConverter.ToInt16(pcmFile, i * 2)).ToArray();
+        }
+
+        // return item;
     }
 }
