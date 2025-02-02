@@ -48,4 +48,8 @@
     <!-- <ProjectReference Include="..\..\Jellyfin.Server.Implementations\Jellyfin.Server.Implementations.csproj" /> -->
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Properties/" />
+  </ItemGroup>
+
 </Project>
