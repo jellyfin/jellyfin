@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
 using Emby.Server.Implementations;
@@ -197,8 +198,9 @@ namespace Jellyfin.Server
                     _logger.LogInformation("Running query planner optimizations in the database... This might take a while");
 
                     var databaseProvider = appHost.ServiceProvider.GetRequiredService<IJellyfinDatabaseProvider>();
-
-                    await databaseProvider.DisposeAsync().ConfigureAwait(false);
+                    var shutdownSource = new CancellationTokenSource();
+                    shutdownSource.CancelAfter((int)TimeSpan.FromSeconds(60).TotalMicroseconds);
+                    await databaseProvider.RunShutdownTask(shutdownSource.Token).ConfigureAwait(false);
                 }
 
                 host?.Dispose();

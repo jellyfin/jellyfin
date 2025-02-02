@@ -68,8 +68,8 @@ public sealed class PgSqlDatabaseProvider : IJellyfinDatabaseProvider
     }
 
     /// <inheritdoc/>
-    public ValueTask DisposeAsync()
+    public Task RunShutdownTask(CancellationToken cancellationToken)
     {
-        return ValueTask.CompletedTask;
+        return Task.CompletedTask;
     }
 }

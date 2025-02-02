@@ -64,13 +64,13 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     }
 
     /// <inheritdoc/>
-    public async ValueTask DisposeAsync()
+    public async Task RunShutdownTask(CancellationToken cancellationToken)
     {
         // Run before disposing the application
-        var context = await DbContextFactory!.CreateDbContextAsync().ConfigureAwait(false);
+        var context = await DbContextFactory!.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (context.ConfigureAwait(false))
         {
-            await context.Database.ExecuteSqlRawAsync("PRAGMA optimize").ConfigureAwait(false);
+            await context.Database.ExecuteSqlRawAsync("PRAGMA optimize", cancellationToken).ConfigureAwait(false);
         }
 
         SqliteConnection.ClearAllPools();
