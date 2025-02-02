@@ -1273,8 +1273,7 @@ namespace Jellyfin.Database.Providers.PgSql.Migrations
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .UseCollation("NOCASE");
+                        .HasColumnType("character varying(255)");
 
                     b.HasKey("Id");
 

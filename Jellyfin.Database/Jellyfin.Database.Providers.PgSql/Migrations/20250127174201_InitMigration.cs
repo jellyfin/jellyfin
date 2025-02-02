@@ -964,19 +964,21 @@ namespace Jellyfin.Database.Providers.PgSql.Migrations
                 table: "Peoples",
                 column: "Name");
 
+            // this was edited manually because "UserId" is a reserved name in pgsql
             migrationBuilder.CreateIndex(
                 name: "IX_Permissions_UserId_Kind",
                 table: "Permissions",
                 columns: new[] { "UserId", "Kind" },
                 unique: true,
-                filter: "[UserId] IS NOT NULL");
+                filter: "\"Permissions\".\"UserId\" IS NOT NULL");
 
+            // this was edited manually because "UserId" is a reserved name in pgsql
             migrationBuilder.CreateIndex(
                 name: "IX_Preferences_UserId_Kind",
                 table: "Preferences",
                 columns: new[] { "UserId", "Kind" },
                 unique: true,
-                filter: "[UserId] IS NOT NULL");
+                filter: "\"Preferences\".\"UserId\" IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserData_ItemId_UserId_IsFavorite",

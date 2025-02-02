@@ -25,7 +25,7 @@ services:
     image: postgres:17.2
     restart: unless-stopped
     volumes:
-      - ./pgdata/var/lib/postgresql/data
+      - ./pgdata:/var/lib/postgresql/data
     environment:
       POSTGRES_PASSWORD: jellyfin
       POSTGRES_USER: jellyfin
