@@ -5,7 +5,7 @@ using MediaBrowser.Model.Entities;
 namespace MediaBrowser.Model.Session;
 
 /// <summary>
-/// Class holding information on a runnning transcode.
+/// Class holding information on a running transcode.
 /// </summary>
 public class TranscodingInfo
 {

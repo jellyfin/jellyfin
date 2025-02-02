@@ -238,7 +238,7 @@ public class AudioController : BaseJellyfinApiController
     /// <param name="maxVideoBitDepth">Optional. The maximum video bit depth.</param>
     /// <param name="requireAvc">Optional. Whether to require avc.</param>
     /// <param name="deInterlace">Optional. Whether to deinterlace the video.</param>
-    /// <param name="requireNonAnamorphic">Optional. Whether to require a non anamporphic stream.</param>
+    /// <param name="requireNonAnamorphic">Optional. Whether to require a non anamorphic stream.</param>
     /// <param name="transcodingMaxAudioChannels">Optional. The maximum number of audio channels to transcode.</param>
     /// <param name="cpuCoreLimit">Optional. The limit of how many cpu cores to use.</param>
     /// <param name="liveStreamId">The live stream id.</param>

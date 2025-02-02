@@ -459,7 +459,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? videoStreamIndex,
         [FromQuery] EncodingContext? context,
         [FromQuery] Dictionary<string, string> streamOptions,
-        [FromQuery] bool enableAdaptiveBitrateStreaming = true,
+        [FromQuery] bool enableAdaptiveBitrateStreaming = false,
         [FromQuery] bool enableTrickplay = true,
         [FromQuery] bool enableAudioVbrEncoding = true,
         [FromQuery] bool alwaysBurnInSubtitleWhenTranscoding = false)
@@ -634,7 +634,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? videoStreamIndex,
         [FromQuery] EncodingContext? context,
         [FromQuery] Dictionary<string, string> streamOptions,
-        [FromQuery] bool enableAdaptiveBitrateStreaming = true,
+        [FromQuery] bool enableAdaptiveBitrateStreaming = false,
         [FromQuery] bool enableAudioVbrEncoding = true)
     {
         var streamingRequest = new HlsAudioRequestDto
@@ -1778,7 +1778,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         }
         else if (state.AudioStream?.CodecTag is not null && state.AudioStream.CodecTag.Equals("ac-4", StringComparison.Ordinal))
         {
-            // ac-4 audio tends to hava a super weird sample rate that will fail most encoders
+            // ac-4 audio tends to have a super weird sample rate that will fail most encoders
             // force resample it to 48KHz
             args += " -ar 48000";
         }
@@ -2056,16 +2056,16 @@ public class DynamicHlsController : BaseJellyfinApiController
         }
     }
 
-    private Task DeleteLastFile(string playlistPath, string segmentExtension, int retryCount)
+    private async Task DeleteLastFile(string playlistPath, string segmentExtension, int retryCount)
     {
         var file = GetLastTranscodingFile(playlistPath, segmentExtension, _fileSystem);
 
         if (file is null)
         {
-            return Task.CompletedTask;
+            return;
         }
 
-        return DeleteFile(file.FullName, retryCount);
+        await DeleteFile(file.FullName, retryCount).ConfigureAwait(false);
     }
 
     private async Task DeleteFile(string path, int retryCount)

@@ -18,7 +18,7 @@ public class PeopleBaseItemMap
     public int? ListOrder { get; set; }
 
     /// <summary>
-    /// Gets or Sets the Role name the assosiated actor played in the <see cref="BaseItemEntity"/>.
+    /// Gets or Sets the Role name the associated actor played in the <see cref="BaseItemEntity"/>.
     /// </summary>
     public string? Role { get; set; }
 

@@ -276,11 +276,11 @@ namespace Emby.Server.Implementations.Session
         /// </summary>
         /// <param name="webSocket">The WebSocket.</param>
         /// <returns>Task.</returns>
-        private Task SendForceKeepAlive(IWebSocketConnection webSocket)
+        private async Task SendForceKeepAlive(IWebSocketConnection webSocket)
         {
-            return webSocket.SendAsync(
+            await webSocket.SendAsync(
                 new ForceKeepAliveMessage(WebSocketLostTimeout),
-                CancellationToken.None);
+                CancellationToken.None).ConfigureAwait(false);
         }
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
@@ -102,7 +103,7 @@ public static partial class NetworkUtils
         Span<byte> bytes = stackalloc byte[mask.AddressFamily == AddressFamily.InterNetwork ? NetworkConstants.IPv4MaskBytes : NetworkConstants.IPv6MaskBytes];
         if (!mask.TryWriteBytes(bytes, out var bytesWritten))
         {
-            Console.WriteLine("Unable to write address bytes, only ${bytesWritten} bytes written.");
+            Console.WriteLine("Unable to write address bytes, only {0} bytes written.", bytesWritten.ToString(CultureInfo.InvariantCulture));
         }
 
         var zeroed = false;

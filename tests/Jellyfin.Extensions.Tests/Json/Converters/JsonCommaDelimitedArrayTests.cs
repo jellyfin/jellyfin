@@ -92,7 +92,7 @@ namespace Jellyfin.Extensions.Tests.Json.Converters
                 Value = [GeneralCommandType.MoveUp, GeneralCommandType.MoveDown]
             };
 
-            var value = JsonSerializer.Deserialize<GenericBodyArrayModel<GeneralCommandType>>(@"{ ""Value"": ""MoveUp,TotallyNotAVallidCommand,MoveDown"" }", _jsonOptions);
+            var value = JsonSerializer.Deserialize<GenericBodyArrayModel<GeneralCommandType>>(@"{ ""Value"": ""MoveUp,TotallyNotAValidCommand,MoveDown"" }", _jsonOptions);
             Assert.Equal(desiredValue.Value, value?.Value);
         }
 

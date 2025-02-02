@@ -269,7 +269,7 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
         jellyfinDatabaseProvider.OnModelCreating(modelBuilder);
         base.OnModelCreating(modelBuilder);
 
-        // Configuration for each entity is in it's own class inside 'ModelConfiguration'.
+        // Configuration for each entity is in its own class inside 'ModelConfiguration'.
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(JellyfinDbContext).Assembly);
     }
 }

@@ -58,7 +58,7 @@ namespace Jellyfin.Api.Auth
 
                 var claims = new[]
                 {
-                    new Claim(ClaimTypes.Name, authorizationInfo.User?.Username ?? string.Empty),
+                    new Claim(ClaimTypes.Name, authorizationInfo.User.Username),
                     new Claim(ClaimTypes.Role, role),
                     new Claim(InternalClaimTypes.UserId, authorizationInfo.UserId.ToString("N", CultureInfo.InvariantCulture)),
                     new Claim(InternalClaimTypes.DeviceId, authorizationInfo.DeviceId),

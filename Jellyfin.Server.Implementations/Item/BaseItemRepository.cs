@@ -231,7 +231,7 @@ public sealed class BaseItemRepository
         }
 
         dbQuery = ApplyGroupingFilter(dbQuery, filter);
-        dbQuery = ApplyQueryPageing(dbQuery, filter);
+        dbQuery = ApplyQueryPaging(dbQuery, filter);
 
         result.Items = dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToArray();
         result.StartIndex = filter.StartIndex ?? 0;
@@ -250,7 +250,7 @@ public sealed class BaseItemRepository
         dbQuery = TranslateQuery(dbQuery, context, filter);
 
         dbQuery = ApplyGroupingFilter(dbQuery, filter);
-        dbQuery = ApplyQueryPageing(dbQuery, filter);
+        dbQuery = ApplyQueryPaging(dbQuery, filter);
 
         return dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToArray();
     }
@@ -258,7 +258,7 @@ public sealed class BaseItemRepository
     private IQueryable<BaseItemEntity> ApplyGroupingFilter(IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
     {
         // This whole block is needed to filter duplicate entries on request
-        // for the time beeing it cannot be used because it would destroy the ordering
+        // for the time being it cannot be used because it would destroy the ordering
         // this results in "duplicate" responses for queries that try to lookup individual series or multiple versions but
         // for that case the invoker has to run a DistinctBy(e => e.PresentationUniqueKey) on their own
 
@@ -289,7 +289,7 @@ public sealed class BaseItemRepository
         return dbQuery;
     }
 
-    private IQueryable<BaseItemEntity> ApplyQueryPageing(IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
+    private IQueryable<BaseItemEntity> ApplyQueryPaging(IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
     {
         if (filter.Limit.HasValue || filter.StartIndex.HasValue)
         {
@@ -314,7 +314,7 @@ public sealed class BaseItemRepository
         dbQuery = TranslateQuery(dbQuery, context, filter);
         dbQuery = ApplyOrder(dbQuery, filter);
         dbQuery = ApplyGroupingFilter(dbQuery, filter);
-        dbQuery = ApplyQueryPageing(dbQuery, filter);
+        dbQuery = ApplyQueryPaging(dbQuery, filter);
         return dbQuery;
     }
 
@@ -357,7 +357,7 @@ public sealed class BaseItemRepository
     {
         ArgumentException.ThrowIfNullOrEmpty(typeName);
 
-        // TODO: this isn't great. Refactor later to be both globally handled by a dedicated service not just an static variable and be loaded eagar.
+        // TODO: this isn't great. Refactor later to be both globally handled by a dedicated service not just an static variable and be loaded eagerly.
         // currently this is done so that plugins may introduce their own type of baseitems as we dont know when we are first called, before or after plugins are loaded
         return _typeMap.GetOrAdd(typeName, k => AppDomain.CurrentDomain.GetAssemblies()
             .Select(a => a.GetType(k))
@@ -889,7 +889,7 @@ public sealed class BaseItemRepository
     /// <exception cref="InvalidOperationException">Will be thrown if an invalid serialisation is requested.</exception>
     public static BaseItemDto DeserialiseBaseItem(BaseItemEntity baseItemEntity, ILogger logger, IServerApplicationHost? appHost, bool skipDeserialization = false)
     {
-        var type = GetType(baseItemEntity.Type) ?? throw new InvalidOperationException("Cannot deserialise unkown type.");
+        var type = GetType(baseItemEntity.Type) ?? throw new InvalidOperationException("Cannot deserialise unknown type.");
         BaseItemDto? dto = null;
         if (TypeRequiresDeserialization(type) && baseItemEntity.Data is not null && !skipDeserialization)
         {
@@ -905,7 +905,7 @@ public sealed class BaseItemRepository
 
         if (dto is null)
         {
-            dto = Activator.CreateInstance(type) as BaseItemDto ?? throw new InvalidOperationException("Cannot deserialise unkown type.");
+            dto = Activator.CreateInstance(type) as BaseItemDto ?? throw new InvalidOperationException("Cannot deserialise unknown type.");
         }
 
         return Map(baseItemEntity, dto, appHost);
@@ -2065,7 +2065,7 @@ public sealed class BaseItemRepository
         if (filter.IncludeInheritedTags.Length > 0)
         {
             // Episodes do not store inherit tags from their parents in the database, and the tag may be still required by the client.
-            // In addtion to the tags for the episodes themselves, we need to manually query its parent (the season)'s tags as well.
+            // In addition to the tags for the episodes themselves, we need to manually query its parent (the season)'s tags as well.
             if (includeTypes.Length == 1 && includeTypes.FirstOrDefault() is BaseItemKind.Episode)
             {
                 baseQuery = baseQuery

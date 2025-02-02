@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Mime;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -391,7 +392,7 @@ namespace Jellyfin.Providers.Tests.Manager
                 {
                     ReasonPhrase = url,
                     StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent(Content, Encoding.UTF8, "image/jpeg")
+                    Content = new StringContent(Content, Encoding.UTF8, MediaTypeNames.Image.Jpeg)
                 });
 
             var refreshOptions = fullRefresh

@@ -634,10 +634,10 @@ public class UserLibraryController : BaseJellyfinApiController
     {
         if (item is Person)
         {
-            var hasMetdata = !string.IsNullOrWhiteSpace(item.Overview) && item.HasImage(ImageType.Primary);
-            var performFullRefresh = !hasMetdata && (DateTime.UtcNow - item.DateLastRefreshed).TotalDays >= 3;
+            var hasMetadata = !string.IsNullOrWhiteSpace(item.Overview) && item.HasImage(ImageType.Primary);
+            var performFullRefresh = !hasMetadata && (DateTime.UtcNow - item.DateLastRefreshed).TotalDays >= 3;
 
-            if (!hasMetdata)
+            if (!hasMetadata)
             {
                 var options = new MetadataRefreshOptions(new DirectoryService(_fileSystem))
                 {

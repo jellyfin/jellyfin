@@ -755,14 +755,7 @@ namespace Emby.Server.Implementations.Library
 
             if (folder.Id.IsEmpty())
             {
-                if (string.IsNullOrEmpty(folder.Path))
-                {
-                    folder.Id = GetNewItemId(folder.GetType().Name, folder.GetType());
-                }
-                else
-                {
-                    folder.Id = GetNewItemId(folder.Path, folder.GetType());
-                }
+                folder.Id = GetNewItemId(folder.Path, folder.GetType());
             }
 
             var dbItem = GetItemById(folder.Id) as BasePluginFolder;
@@ -1057,9 +1050,17 @@ namespace Emby.Server.Implementations.Library
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
             // Quickly scan CollectionFolders for changes
-            foreach (var folder in GetUserRootFolder().Children.OfType<Folder>())
+            foreach (var child in GetUserRootFolder().Children.OfType<Folder>())
             {
-                await folder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+                // If the user has somehow deleted the collection directory, remove the metadata from the database.
+                if (child is CollectionFolder collectionFolder && !Directory.Exists(collectionFolder.Path))
+                {
+                    _itemRepository.DeleteItem(collectionFolder.Id);
+                }
+                else
+                {
+                    await child.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+                }
             }
         }
 

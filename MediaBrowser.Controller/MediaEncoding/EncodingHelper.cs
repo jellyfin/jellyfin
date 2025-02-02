@@ -61,7 +61,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         private readonly Version _minFixedKernel60i915Hang = new Version(6, 0, 18);
         private readonly Version _minKernelVersionAmdVkFmtModifier = new Version(5, 15);
 
-        private readonly Version _minFFmpegImplictHwaccel = new Version(6, 0);
+        private readonly Version _minFFmpegImplicitHwaccel = new Version(6, 0);
         private readonly Version _minFFmpegHwaUnsafeOutput = new Version(6, 0);
         private readonly Version _minFFmpegOclCuTonemapMode = new Version(5, 1, 3);
         private readonly Version _minFFmpegSvtAv1Params = new Version(5, 1);
@@ -632,7 +632,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             if (string.IsNullOrWhiteSpace(container))
             {
-                // this may not work, but if the client is that broken we can not do anything better
+                // this may not work, but if the client is that broken we cannot do anything better
                 return "aac";
             }
 
@@ -2198,7 +2198,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var videoFrameRate = videoStream.ReferenceFrameRate;
 
                 // Add a little tolerance to the framerate check because some videos might record a framerate
-                // that is slightly higher than the intended framerate, but the device can still play it correctly.
+                // that is slightly greater than the intended framerate, but the device can still play it correctly.
                 // 0.05 fps tolerance should be safe enough.
                 if (!videoFrameRate.HasValue || videoFrameRate.Value > requestedFramerate.Value + 0.05f)
                 {
@@ -3609,7 +3609,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return GetSwVidFilterChain(state, options, vidEncoder);
             }
 
-            // prefered nvdec/cuvid + cuda filters + nvenc pipeline
+            // preferred nvdec/cuvid + cuda filters + nvenc pipeline
             return GetNvidiaVidFiltersPrefered(state, options, vidDecoder, vidEncoder);
         }
 
@@ -3650,8 +3650,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             var subH = state.SubtitleStream?.Height;
 
             var rotation = state.VideoStream?.Rotation ?? 0;
-            var tranposeDir = rotation == 0 ? string.Empty : GetVideoTransposeDirection(state);
-            var doCuTranspose = !string.IsNullOrEmpty(tranposeDir) && _mediaEncoder.SupportsFilter("transpose_cuda");
+            var transposeDir = rotation == 0 ? string.Empty : GetVideoTransposeDirection(state);
+            var doCuTranspose = !string.IsNullOrEmpty(transposeDir) && _mediaEncoder.SupportsFilter("transpose_cuda");
             var swapWAndH = Math.Abs(rotation) == 90 && (isSwDecoder || (isNvDecoder && doCuTranspose));
             var swpInW = swapWAndH ? inH : inW;
             var swpInH = swapWAndH ? inW : inH;
@@ -3697,7 +3697,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // hw transpose
                 if (doCuTranspose)
                 {
-                    mainFilters.Add($"transpose_cuda=dir={tranposeDir}");
+                    mainFilters.Add($"transpose_cuda=dir={transposeDir}");
                 }
 
                 var isRext = IsVideoStreamHevcRext(state);
@@ -3817,7 +3817,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return GetSwVidFilterChain(state, options, vidEncoder);
             }
 
-            // prefered d3d11va + opencl filters + amf pipeline
+            // preferred d3d11va + opencl filters + amf pipeline
             return GetAmdDx11VidFiltersPrefered(state, options, vidDecoder, vidEncoder);
         }
 
@@ -3857,8 +3857,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             var subH = state.SubtitleStream?.Height;
 
             var rotation = state.VideoStream?.Rotation ?? 0;
-            var tranposeDir = rotation == 0 ? string.Empty : GetVideoTransposeDirection(state);
-            var doOclTranspose = !string.IsNullOrEmpty(tranposeDir)
+            var transposeDir = rotation == 0 ? string.Empty : GetVideoTransposeDirection(state);
+            var doOclTranspose = !string.IsNullOrEmpty(transposeDir)
                 && _mediaEncoder.SupportsFilterWithOption(FilterOptionType.TransposeOpenclReversal);
             var swapWAndH = Math.Abs(rotation) == 90 && (isSwDecoder || (isD3d11vaDecoder && doOclTranspose));
             var swpInW = swapWAndH ? inH : inW;
@@ -3902,12 +3902,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // map from d3d11va to opencl via d3d11-opencl interop.
                 mainFilters.Add("hwmap=derive_device=opencl:mode=read");
 
-                // hw deint <= TODO: finsh the 'yadif_opencl' filter
+                // hw deint <= TODO: finish the 'yadif_opencl' filter
 
                 // hw transpose
                 if (doOclTranspose)
                 {
-                    mainFilters.Add($"transpose_opencl=dir={tranposeDir}");
+                    mainFilters.Add($"transpose_opencl=dir={transposeDir}");
                 }
 
                 var outFormat = doOclTonemap ? string.Empty : "nv12";
@@ -4043,13 +4043,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return GetSwVidFilterChain(state, options, vidEncoder);
             }
 
-            // prefered qsv(vaapi) + opencl filters pipeline
+            // preferred qsv(vaapi) + opencl filters pipeline
             if (isIntelVaapiOclSupported)
             {
                 return GetIntelQsvVaapiVidFiltersPrefered(state, options, vidDecoder, vidEncoder);
             }
 
-            // prefered qsv(d3d11) + opencl filters pipeline
+            // preferred qsv(d3d11) + opencl filters pipeline
             if (isIntelDx11OclSupported)
             {
                 return GetIntelQsvDx11VidFiltersPrefered(state, options, vidDecoder, vidEncoder);
@@ -4098,8 +4098,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             var subH = state.SubtitleStream?.Height;
 
             var rotation = state.VideoStream?.Rotation ?? 0;
-            var tranposeDir = rotation == 0 ? string.Empty : GetVideoTransposeDirection(state);
-            var doVppTranspose = !string.IsNullOrEmpty(tranposeDir);
+            var transposeDir = rotation == 0 ? string.Empty : GetVideoTransposeDirection(state);
+            var doVppTranspose = !string.IsNullOrEmpty(transposeDir);
             var swapWAndH = Math.Abs(rotation) == 90 && (isSwDecoder || ((isD3d11vaDecoder || isQsvDecoder) && doVppTranspose));
             var swpInW = swapWAndH ? inH : inW;
             var swpInH = swapWAndH ? inW : inH;
@@ -4192,7 +4192,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 if (!string.IsNullOrEmpty(hwScaleFilter) && doVppTranspose)
                 {
-                    hwScaleFilter += $":transpose={tranposeDir}";
+                    hwScaleFilter += $":transpose={transposeDir}";
                 }
 
                 if (!string.IsNullOrEmpty(hwScaleFilter) && isMjpegEncoder)
@@ -4385,8 +4385,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             var subH = state.SubtitleStream?.Height;
 
             var rotation = state.VideoStream?.Rotation ?? 0;
-            var tranposeDir = rotation == 0 ? string.Empty : GetVideoTransposeDirection(state);
-            var doVppTranspose = !string.IsNullOrEmpty(tranposeDir);
+            var transposeDir = rotation == 0 ? string.Empty : GetVideoTransposeDirection(state);
+            var doVppTranspose = !string.IsNullOrEmpty(transposeDir);
             var swapWAndH = Math.Abs(rotation) == 90 && (isSwDecoder || ((isVaapiDecoder || isQsvDecoder) && doVppTranspose));
             var swpInW = swapWAndH ? inH : inW;
             var swpInH = swapWAndH ? inW : inH;
@@ -4446,7 +4446,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // hw transpose(vaapi vpp)
                 if (isVaapiDecoder && doVppTranspose)
                 {
-                    mainFilters.Add($"transpose_vaapi=dir={tranposeDir}");
+                    mainFilters.Add($"transpose_vaapi=dir={transposeDir}");
                 }
 
                 var outFormat = doTonemap ? (((isQsvDecoder && doVppTranspose) || isRext) ? "p010" : string.Empty) : "nv12";
@@ -4456,7 +4456,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 if (!string.IsNullOrEmpty(hwScaleFilter) && isQsvDecoder && doVppTranspose)
                 {
-                    hwScaleFilter += $":transpose={tranposeDir}";
+                    hwScaleFilter += $":transpose={transposeDir}";
                 }
 
                 if (!string.IsNullOrEmpty(hwScaleFilter) && isMjpegEncoder)
@@ -4657,14 +4657,14 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return swFilterChain;
             }
 
-            // prefered vaapi + opencl filters pipeline
+            // preferred vaapi + opencl filters pipeline
             if (_mediaEncoder.IsVaapiDeviceInteliHD)
             {
                 // Intel iHD path, with extra vpp tonemap and overlay support.
                 return GetIntelVaapiFullVidFiltersPrefered(state, options, vidDecoder, vidEncoder);
             }
 
-            // prefered vaapi + vulkan filters pipeline
+            // preferred vaapi + vulkan filters pipeline
             if (_mediaEncoder.IsVaapiDeviceAmd
                 && isVaapiVkSupported
                 && _mediaEncoder.IsVaapiDeviceSupportVulkanDrmInterop
@@ -4716,8 +4716,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             var subH = state.SubtitleStream?.Height;
 
             var rotation = state.VideoStream?.Rotation ?? 0;
-            var tranposeDir = rotation == 0 ? string.Empty : GetVideoTransposeDirection(state);
-            var doVaVppTranspose = !string.IsNullOrEmpty(tranposeDir);
+            var transposeDir = rotation == 0 ? string.Empty : GetVideoTransposeDirection(state);
+            var doVaVppTranspose = !string.IsNullOrEmpty(transposeDir);
             var swapWAndH = Math.Abs(rotation) == 90 && (isSwDecoder || (isVaapiDecoder && doVaVppTranspose));
             var swpInW = swapWAndH ? inH : inW;
             var swpInH = swapWAndH ? inW : inH;
@@ -4772,7 +4772,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // hw transpose
                 if (doVaVppTranspose)
                 {
-                    mainFilters.Add($"transpose_vaapi=dir={tranposeDir}");
+                    mainFilters.Add($"transpose_vaapi=dir={transposeDir}");
                 }
 
                 var outFormat = doTonemap ? (isRext ? "p010" : string.Empty) : "nv12";
@@ -4949,8 +4949,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                     || string.Equals(state.SubtitleStream.Codec, "ssa", StringComparison.OrdinalIgnoreCase));
 
             var rotation = state.VideoStream?.Rotation ?? 0;
-            var tranposeDir = rotation == 0 ? string.Empty : GetVideoTransposeDirection(state);
-            var doVkTranspose = isVaapiDecoder && !string.IsNullOrEmpty(tranposeDir);
+            var transposeDir = rotation == 0 ? string.Empty : GetVideoTransposeDirection(state);
+            var doVkTranspose = isVaapiDecoder && !string.IsNullOrEmpty(transposeDir);
             var swapWAndH = Math.Abs(rotation) == 90 && (isSwDecoder || (isVaapiDecoder && doVkTranspose));
             var swpInW = swapWAndH ? inH : inW;
             var swpInH = swapWAndH ? inW : inH;
@@ -5043,13 +5043,13 @@ namespace MediaBrowser.Controller.MediaEncoding
             // vk transpose
             if (doVkTranspose)
             {
-                if (string.Equals(tranposeDir, "reversal", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(transposeDir, "reversal", StringComparison.OrdinalIgnoreCase))
                 {
                     mainFilters.Add("flip_vulkan");
                 }
                 else
                 {
-                    mainFilters.Add($"transpose_vulkan=dir={tranposeDir}");
+                    mainFilters.Add($"transpose_vulkan=dir={transposeDir}");
                 }
             }
 
@@ -5417,8 +5417,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             var usingHwSurface = isVtDecoder && (_mediaEncoder.EncoderVersion >= _minFFmpegWorkingVtHwSurface);
 
             var rotation = state.VideoStream?.Rotation ?? 0;
-            var tranposeDir = rotation == 0 ? string.Empty : GetVideoTransposeDirection(state);
-            var doVtTranspose = !string.IsNullOrEmpty(tranposeDir) && _mediaEncoder.SupportsFilter("transpose_vt");
+            var transposeDir = rotation == 0 ? string.Empty : GetVideoTransposeDirection(state);
+            var doVtTranspose = !string.IsNullOrEmpty(transposeDir) && _mediaEncoder.SupportsFilter("transpose_vt");
             var swapWAndH = Math.Abs(rotation) == 90 && doVtTranspose;
             var swpInW = swapWAndH ? inH : inW;
             var swpInH = swapWAndH ? inW : inH;
@@ -5462,7 +5462,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             // hw transpose
             if (doVtTranspose)
             {
-                mainFilters.Add($"transpose_vt=dir={tranposeDir}");
+                mainFilters.Add($"transpose_vt=dir={transposeDir}");
             }
 
             if (doVtTonemap)
@@ -5577,7 +5577,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return GetSwVidFilterChain(state, options, vidEncoder);
             }
 
-            // prefered rkmpp + rkrga + opencl filters pipeline
+            // preferred rkmpp + rkrga + opencl filters pipeline
             if (isRkmppOclSupported)
             {
                 return GetRkmppVidFiltersPrefered(state, options, vidDecoder, vidEncoder);
@@ -5625,8 +5625,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             var subH = state.SubtitleStream?.Height;
 
             var rotation = state.VideoStream?.Rotation ?? 0;
-            var tranposeDir = rotation == 0 ? string.Empty : GetVideoTransposeDirection(state);
-            var doRkVppTranspose = !string.IsNullOrEmpty(tranposeDir);
+            var transposeDir = rotation == 0 ? string.Empty : GetVideoTransposeDirection(state);
+            var doRkVppTranspose = !string.IsNullOrEmpty(transposeDir);
             var swapWAndH = Math.Abs(rotation) == 90 && (isSwDecoder || (isRkmppDecoder && doRkVppTranspose));
             var swpInW = swapWAndH ? inH : inW;
             var swpInH = swapWAndH ? inW : inH;
@@ -5697,7 +5697,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                     if (!string.IsNullOrEmpty(hwScaleFilter) && doRkVppTranspose)
                     {
-                        hwScaleFilter += $":transpose={tranposeDir}";
+                        hwScaleFilter += $":transpose={transposeDir}";
                     }
 
                     // try enabling AFBC to save DDR bandwidth
@@ -6171,7 +6171,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var ffmpegVersion = _mediaEncoder.EncoderVersion;
 
             // Set the av1 codec explicitly to trigger hw accelerator, otherwise libdav1d will be used.
-            var isAv1 = ffmpegVersion < _minFFmpegImplictHwaccel
+            var isAv1 = ffmpegVersion < _minFFmpegImplicitHwaccel
                 && string.Equals(videoCodec, "av1", StringComparison.OrdinalIgnoreCase);
 
             // Allow profile mismatch if decoding H.264 baseline with d3d11va and vaapi hwaccels.
