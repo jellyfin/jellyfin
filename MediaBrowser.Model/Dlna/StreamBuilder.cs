@@ -1367,7 +1367,7 @@ namespace MediaBrowser.Model.Dlna
                         failureReasons |= audioCodecProfileReasons;
                     }
 
-                    var directStreamFailureReasons = failureReasons & (~DirectStreamReasons);
+                    var directStreamFailureReasons = failureReasons & ~DirectStreamReasons;
 
                     PlayMethod? playMethod = null;
                     if (failureReasons == 0 && isEligibleForDirectPlay && mediaSource.SupportsDirectPlay)
