@@ -702,7 +702,7 @@ public class NetworkManager : INetworkManager, IDisposable
                 return false;
             }
         }
-        else if (!_lanSubnets.Any(x => x.Contains(remoteIP)))
+        else if (!IsInLocalNetwork(remoteIP))
         {
             // Remote not enabled. So everyone should be LAN.
             return false;
