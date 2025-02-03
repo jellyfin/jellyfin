@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics;
+using System.Reflection;
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.DatabaseConfiguration;
 using MediaBrowser.Common.Configuration;
@@ -42,7 +44,7 @@ public sealed class PgSqlDatabaseProvider : IJellyfinDatabaseProvider
         }
 
         var connectionBuilder = new NpgsqlConnectionStringBuilder();
-        connectionBuilder.ApplicationName = "jellyfin";
+        connectionBuilder.ApplicationName = $"jellyfin+{FileVersionInfo.GetVersionInfo(Assembly.GetEntryAssembly()!.Location).FileVersion}";
         connectionBuilder.CommandTimeout = dbSettings.PostgreSql.Timeout;
         connectionBuilder.Database = dbSettings.PostgreSql.DatabaseName;
         connectionBuilder.Username = dbSettings.PostgreSql.Username;
