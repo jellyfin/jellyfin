@@ -277,7 +277,7 @@ public class GuideManager : IGuideManager
                 if (newPrograms.Count > 0)
                 {
                     var newProgramDtos = programs.Where(b => newPrograms.Contains(b.Id)).ToList();
-                    _libraryManager.CreateItems(newProgramDtos, null, cancellationToken);
+                    _libraryManager.CreateOrUpdateItems(newProgramDtos, null, cancellationToken);
                 }
 
                 if (updatedPrograms.Count > 0)
