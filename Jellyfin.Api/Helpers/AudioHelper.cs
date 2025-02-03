@@ -164,42 +164,26 @@ public class AudioHelper
     /// Gets audio data to draw a waveform bar.
     /// </summary>
     /// <param name="itemId">The item id.</param>
-    /// <returns>A <see cref="BaseItem"/> containing the resulting <see cref="ActionResult"/>.</returns>
-    public async Task GetAudioWaveForm(Guid itemId)
+    /// <returns>A <see cref="FileStream"/> containing the resulting .dat file.</returns>
+    public async Task<FileStream> GetAudioWaveForm(Guid itemId)
     {
         var item = _libraryManager.GetItemById<BaseItem>(itemId)
-        ?? throw new ResourceNotFoundException();
+            ?? throw new ResourceNotFoundException();
 
         var libraryOptions = BaseItem.LibraryManager.GetLibraryOptions(item);
-        // considering waveform data as metadata
         var saveInMediaFolder = libraryOptions.SaveLocalMetadata;
-        var saveFileName = Path.GetFileNameWithoutExtension(item.Path) + "." + "pcm";
-        string outputPath;
-        if (saveInMediaFolder)
-        {
-            outputPath = Path.GetFullPath(Path.Combine(item.ContainingFolderPath, saveFileName));
-        }
-        else
-        {
-            outputPath = Path.GetFullPath(Path.Combine(item.GetInternalMetadataPath(), saveFileName));
-        }
+        var saveFileName = Path.GetFileNameWithoutExtension(item.Path) + ".dat";
+        string outputPath = saveInMediaFolder
+            ? Path.Combine(item.ContainingFolderPath, saveFileName)
+            : Path.Combine(item.GetInternalMetadataPath(), saveFileName);
 
-        Console.WriteLine(item.Path);
-        Console.WriteLine(outputPath);
-
-        if (File.Exists(outputPath))
+        if (!File.Exists(outputPath))
         {
-        }
-        else
-        {
-            await Task.Run(() => Process.Start("ffmpeg", $"-y -i \"{item.Path}\" -acodec pcm_s16le -f s16le -ac 1 -ar 1000 \"{outputPath}\"").WaitForExit()).ConfigureAwait(false);
-
-            byte[] pcmFile = await File.ReadAllBytesAsync(outputPath).ConfigureAwait(false);
-
-            short[] pcmData = Enumerable.Range(0, pcmFile.Length / 2)
-                .Select(i => BitConverter.ToInt16(pcmFile, i * 2)).ToArray();
+            await Task.Run(() => Process.Start("audiowaveform", $"-i \"{item.Path}\" -o \"{outputPath}\"").WaitForExit()).ConfigureAwait(false);
         }
 
-        // return item;
+        var fileStream = new FileStream(outputPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+
+        return fileStream;
     }
 }

@@ -7,6 +7,7 @@ using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.StreamingDtos;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Streaming;
+using MediaBrowser.Model;
 using MediaBrowser.Model.Dlna;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -373,9 +374,10 @@ public class AudioController : BaseJellyfinApiController
     /// <returns>A <see cref="FileResult"/> containing the audiowaveform file.</returns>
     [HttpGet("{itemId}/audiowaveform")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task GetAudioWaveForm([FromRoute, Required] Guid itemId)
+    public async Task<ActionResult> GetAudioWaveForm([FromRoute, Required] Guid itemId)
     {
-        await _audioHelper.GetAudioWaveForm(itemId).ConfigureAwait(false);
-        // return string.Empty;
+        var fileStream = await _audioHelper.GetAudioWaveForm(itemId).ConfigureAwait(false);
+
+        return File(fileStream, MimeTypes.GetMimeType("file.dat"));
     }
 }
