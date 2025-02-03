@@ -38,7 +38,7 @@ public static class ServiceCollectionExtensions
             }
 
             var provider = providerType;
-            items[keyAttribute.DatabaseProviderKey] = (services) => (IJellyfinDatabaseProvider)ActivatorUtilities.CreateInstance(services, providerType);
+            items[keyAttribute.DatabaseProviderKey.ToUpperInvariant()] = (services) => (IJellyfinDatabaseProvider)ActivatorUtilities.CreateInstance(services, providerType);
         }
 
         return items;
@@ -81,7 +81,7 @@ public static class ServiceCollectionExtensions
             }
         }
 
-        if (!providers.TryGetValue(efCoreConfiguration.DatabaseType, out providerFactory!))
+        if (!providers.TryGetValue(efCoreConfiguration.DatabaseType.ToUpperInvariant(), out providerFactory!))
         {
             throw new InvalidOperationException($"Jellyfin cannot find the database provider of type '{efCoreConfiguration.DatabaseType}'. Supported types are {string.Join(", ", providers.Keys)}");
         }
