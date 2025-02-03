@@ -14,7 +14,7 @@ public class EfMigrationTests
     {
         var dbDesignContext = new PgSqlDesignTimeJellyfinDbFactory();
         var context = dbDesignContext.CreateDbContext([]);
-        Assert.False(context.Database.HasPendingModelChanges(), "There are unapplied changes to the EfCore model for PgSQL. Please create a Migration.");
+        Assert.False(context.Database.HasPendingModelChanges(), "There are unapplied changes to the EFCore model for PgSQL. Please create a Migration.");
     }
 
     [Fact]
@@ -22,6 +22,6 @@ public class EfMigrationTests
     {
         var dbDesignContext = new SqliteDesignTimeJellyfinDbFactory();
         var context = dbDesignContext.CreateDbContext([]);
-        Assert.False(context.Database.HasPendingModelChanges(), "There are unapplied changes to the EfCore model for PgSQL. Please create a Migration.");
+        Assert.False(context.Database.HasPendingModelChanges(), "There are unapplied changes to the EFCore model for SQLite. Please create a Migration.");
     }
 }

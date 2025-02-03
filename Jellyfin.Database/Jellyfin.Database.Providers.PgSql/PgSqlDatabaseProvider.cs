@@ -9,7 +9,7 @@ using Npgsql;
 namespace Jellyfin.Database.Providers.PgSql;
 
 /// <summary>
-/// Configures jellyfin to use an SqLite database.
+/// Configures jellyfin to use an Postgres database.
 /// </summary>
 [JellyfinDatabaseProviderKey("Jellyfin-PgSql")]
 public sealed class PgSqlDatabaseProvider : IJellyfinDatabaseProvider

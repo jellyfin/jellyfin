@@ -12,12 +12,12 @@ When creating a new migration, you always have to create migrations for all prov
 dotnet ef migrations add MIGRATION_NAME --project "PATH_TO_PROJECT" -- --provider PROVIDER_KEY
 ```
 
-with both sqlite and pgsql currently beeing supported and both need migrations, you need to run the efcore tool with the correct project to tell EfCore where to store the migrations and the correct provider key to tell jellyfin to load that provider.
+with both sqlite and pgsql currently beeing supported and both need migrations, you need to run the Entity Framework tool with the correct project to tell EFCore where to store the migrations and the correct provider key to tell jellyfin to load that provider.
 
 The example is made from the root folder of the project e.g for codespaces `/workspaces/jellyfin`
 
 ```cmd
-dotnet ef migrations add {MIGRATION_NAME} --project "Jellyfin.Database/Jellyfin.Database.Providers.SqLite" -- --migration-provider Jellyfin-SqLite
+dotnet ef migrations add {MIGRATION_NAME} --project "Jellyfin.Database/Jellyfin.Database.Providers.SqLite" -- --migration-provider Jellyfin-SQLite
 dotnet ef migrations add {MIGRATION_NAME} --project "Jellyfin.Database/Jellyfin.Database.Providers.PgSql" -- --migration-provider Jellyfin-PgSql
 ```
 

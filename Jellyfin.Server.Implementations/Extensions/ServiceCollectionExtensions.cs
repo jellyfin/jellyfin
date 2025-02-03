@@ -72,10 +72,10 @@ public static class ServiceCollectionExtensions
             }
             else
             {
-                // when nothing is setup via new Database configuration, fallback to SqLite with default settings.
+                // when nothing is setup via new Database configuration, fallback to SQLite with default settings.
                 efCoreConfiguration = new DatabaseConfigurationOptions()
                 {
-                    DatabaseType = "Jellyfin-SqLite",
+                    DatabaseType = "Jellyfin-SQLite",
                 };
                 configurationManager.SaveConfiguration("database", efCoreConfiguration);
             }

@@ -8,9 +8,9 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.Database.Providers.SqLite;
 
 /// <summary>
-/// Configures jellyfin to use an SqLite database.
+/// Configures jellyfin to use an SQLite database.
 /// </summary>
-[JellyfinDatabaseProviderKey("Jellyfin-SqLite")]
+[JellyfinDatabaseProviderKey("Jellyfin-SQLite")]
 public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
 {
     private readonly IApplicationPaths _applicationPaths;
