@@ -30,7 +30,7 @@ namespace MediaBrowser.Model.Dlna
         private readonly ITranscoderSupport _transcoderSupport;
         private static readonly string[] _supportedHlsVideoCodecs = ["h264", "hevc", "vp9", "av1"];
         private static readonly string[] _supportedHlsAudioCodecsTs = ["aac", "ac3", "eac3", "mp3"];
-        private static readonly string[] _supportedHlsAudioCodecsMp4 = ["aac", "ac3", "eac3", "mp3", "alac", "flac", "opus", "dca", "truehd"];
+        private static readonly string[] _supportedHlsAudioCodecsMp4 = ["aac", "ac3", "eac3", "mp3", "alac", "flac", "opus", "dts", "truehd"];
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StreamBuilder"/> class.
