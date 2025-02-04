@@ -39,7 +39,7 @@ namespace MediaBrowser.Providers.BoxSets
         protected override bool EnableUpdatingPremiereDateFromChildren => true;
 
         /// <inheritdoc />
-        protected override IList<BaseItem> GetChildrenForMetadataUpdates(BoxSet item)
+        protected override IReadOnlyList<BaseItem> GetChildrenForMetadataUpdates(BoxSet item)
         {
             return item.GetLinkedChildren();
         }

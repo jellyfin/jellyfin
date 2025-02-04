@@ -137,27 +137,27 @@ namespace MediaBrowser.Controller.Playlists
             return Task.CompletedTask;
         }
 
-        public override List<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
+        public override IReadOnlyList<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
         {
             return GetPlayableItems(user, query);
         }
 
-        protected override IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
+        protected override IReadOnlyList<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
         {
             return [];
         }
 
-        public override IEnumerable<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)
+        public override IReadOnlyList<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)
         {
             return GetPlayableItems(user, query);
         }
 
-        public IEnumerable<Tuple<LinkedChild, BaseItem>> GetManageableItems()
+        public IReadOnlyList<Tuple<LinkedChild, BaseItem>> GetManageableItems()
         {
             return GetLinkedChildrenInfos();
         }
 
-        private List<BaseItem> GetPlayableItems(User user, InternalItemsQuery query)
+        private IReadOnlyList<BaseItem> GetPlayableItems(User user, InternalItemsQuery query)
         {
             query ??= new InternalItemsQuery(user);
 

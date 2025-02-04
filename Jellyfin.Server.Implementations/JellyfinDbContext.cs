@@ -4,20 +4,18 @@ using Jellyfin.Data.Entities;
 using Jellyfin.Data.Entities.Security;
 using Jellyfin.Data.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Implementations;
 
 /// <inheritdoc/>
-public class JellyfinDbContext : DbContext
+/// <summary>
+/// Initializes a new instance of the <see cref="JellyfinDbContext"/> class.
+/// </summary>
+/// <param name="options">The database context options.</param>
+/// <param name="logger">Logger.</param>
+public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILogger<JellyfinDbContext> logger) : DbContext(options)
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="JellyfinDbContext"/> class.
-    /// </summary>
-    /// <param name="options">The database context options.</param>
-    public JellyfinDbContext(DbContextOptions<JellyfinDbContext> options) : base(options)
-    {
-    }
-
     /// <summary>
     /// Gets the <see cref="DbSet{TEntity}"/> containing the access schedules.
     /// </summary>
@@ -87,6 +85,76 @@ public class JellyfinDbContext : DbContext
     /// Gets the <see cref="DbSet{TEntity}"/> containing the media segments.
     /// </summary>
     public DbSet<MediaSegment> MediaSegments => Set<MediaSegment>();
+
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the user data.
+    /// </summary>
+    public DbSet<UserData> UserData => Set<UserData>();
+
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the user data.
+    /// </summary>
+    public DbSet<AncestorId> AncestorIds => Set<AncestorId>();
+
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the user data.
+    /// </summary>
+    public DbSet<AttachmentStreamInfo> AttachmentStreamInfos => Set<AttachmentStreamInfo>();
+
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the user data.
+    /// </summary>
+    public DbSet<BaseItemEntity> BaseItems => Set<BaseItemEntity>();
+
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the user data.
+    /// </summary>
+    public DbSet<Chapter> Chapters => Set<Chapter>();
+
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/>.
+    /// </summary>
+    public DbSet<ItemValue> ItemValues => Set<ItemValue>();
+
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/>.
+    /// </summary>
+    public DbSet<ItemValueMap> ItemValuesMap => Set<ItemValueMap>();
+
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/>.
+    /// </summary>
+    public DbSet<MediaStreamInfo> MediaStreamInfos => Set<MediaStreamInfo>();
+
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/>.
+    /// </summary>
+    public DbSet<People> Peoples => Set<People>();
+
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/>.
+    /// </summary>
+    public DbSet<PeopleBaseItemMap> PeopleBaseItemMap => Set<PeopleBaseItemMap>();
+
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the referenced Providers with ids.
+    /// </summary>
+    public DbSet<BaseItemProvider> BaseItemProviders => Set<BaseItemProvider>();
+
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/>.
+    /// </summary>
+    public DbSet<BaseItemImageInfo> BaseItemImageInfos => Set<BaseItemImageInfo>();
+
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/>.
+    /// </summary>
+    public DbSet<BaseItemMetadataField> BaseItemMetadataFields => Set<BaseItemMetadataField>();
+
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/>.
+    /// </summary>
+    public DbSet<BaseItemTrailerType> BaseItemTrailerTypes => Set<BaseItemTrailerType>();
 
     /*public DbSet<Artwork> Artwork => Set<Artwork>();
 
@@ -183,7 +251,15 @@ public class JellyfinDbContext : DbContext
             saveEntity.OnSavingChanges();
         }
 
-        return base.SaveChanges();
+        try
+        {
+            return base.SaveChanges();
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error trying to save changes.");
+            throw;
+        }
     }
 
     /// <inheritdoc />
@@ -192,7 +268,7 @@ public class JellyfinDbContext : DbContext
         modelBuilder.SetDefaultDateTimeKind(DateTimeKind.Utc);
         base.OnModelCreating(modelBuilder);
 
-        // Configuration for each entity is in it's own class inside 'ModelConfiguration'.
+        // Configuration for each entity is in its own class inside 'ModelConfiguration'.
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(JellyfinDbContext).Assembly);
     }
 }

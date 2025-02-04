@@ -10,6 +10,7 @@ using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common;
 using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -51,6 +52,7 @@ namespace Emby.Server.Implementations.Dto
         private readonly Lazy<ILiveTvManager> _livetvManagerFactory;
 
         private readonly ITrickplayManager _trickplayManager;
+        private readonly IChapterRepository _chapterRepository;
 
         public DtoService(
             ILogger<DtoService> logger,
@@ -63,7 +65,8 @@ namespace Emby.Server.Implementations.Dto
             IApplicationHost appHost,
             IMediaSourceManager mediaSourceManager,
             Lazy<ILiveTvManager> livetvManagerFactory,
-            ITrickplayManager trickplayManager)
+            ITrickplayManager trickplayManager,
+            IChapterRepository chapterRepository)
         {
             _logger = logger;
             _libraryManager = libraryManager;
@@ -76,6 +79,7 @@ namespace Emby.Server.Implementations.Dto
             _mediaSourceManager = mediaSourceManager;
             _livetvManagerFactory = livetvManagerFactory;
             _trickplayManager = trickplayManager;
+            _chapterRepository = chapterRepository;
         }
 
         private ILiveTvManager LivetvManager => _livetvManagerFactory.Value;
@@ -165,7 +169,7 @@ namespace Emby.Server.Implementations.Dto
             return dto;
         }
 
-        private static IList<BaseItem> GetTaggedItems(IItemByName byName, User? user, DtoOptions options)
+        private static IReadOnlyList<BaseItem> GetTaggedItems(IItemByName byName, User? user, DtoOptions options)
         {
             return byName.GetTaggedItems(
                 new InternalItemsQuery(user)
@@ -327,7 +331,7 @@ namespace Emby.Server.Implementations.Dto
             return dto;
         }
 
-        private static void SetItemByNameInfo(BaseItem item, BaseItemDto dto, IList<BaseItem> taggedItems)
+        private static void SetItemByNameInfo(BaseItem item, BaseItemDto dto, IReadOnlyList<BaseItem> taggedItems)
         {
             if (item is MusicArtist)
             {
@@ -1060,7 +1064,7 @@ namespace Emby.Server.Implementations.Dto
 
                 if (options.ContainsField(ItemFields.Chapters))
                 {
-                    dto.Chapters = _itemRepo.GetChapters(item);
+                    dto.Chapters = _chapterRepository.GetChapters(item.Id).ToList();
                 }
 
                 if (options.ContainsField(ItemFields.Trickplay))

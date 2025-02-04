@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Entities;
@@ -91,7 +92,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             return Enumerable.Empty<BaseItem>();
         }
 
-        protected override List<BaseItem> LoadChildren()
+        protected override IReadOnlyList<BaseItem> LoadChildren()
         {
             if (IsLegacyBoxSet)
             {
@@ -99,7 +100,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             }
 
             // Save a trip to the database
-            return new List<BaseItem>();
+            return [];
         }
 
         public override bool IsAuthorizedToDelete(User user, List<Folder> allCollectionFolders)
@@ -127,16 +128,16 @@ namespace MediaBrowser.Controller.Entities.Movies
             return LibraryManager.Sort(items, user, new[] { sortBy }, SortOrder.Ascending);
         }
 
-        public override List<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
+        public override IReadOnlyList<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
         {
             var children = base.GetChildren(user, includeLinkedChildren, query);
-            return Sort(children, user).ToList();
+            return Sort(children, user).ToArray();
         }
 
-        public override IEnumerable<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)
+        public override IReadOnlyList<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)
         {
             var children = base.GetRecursiveChildren(user, query);
-            return Sort(children, user).ToList();
+            return Sort(children, user).ToArray();
         }
 
         public BoxSetInfo GetLookupInfo()

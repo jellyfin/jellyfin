@@ -25,8 +25,8 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="videoFramerate">The framerate.</param>
         /// <param name="packetLength">The packet length.</param>
         /// <param name="timestamp">The <see cref="TransportStreamTimestamp"/>.</param>
-        /// <param name="isAnamorphic">A value indicating whether tthe video is anamorphic.</param>
-        /// <param name="isInterlaced">A value indicating whether tthe video is interlaced.</param>
+        /// <param name="isAnamorphic">A value indicating whether the video is anamorphic.</param>
+        /// <param name="isInterlaced">A value indicating whether the video is interlaced.</param>
         /// <param name="refFrames">The reference frames.</param>
         /// <param name="numVideoStreams">The number of video streams.</param>
         /// <param name="numAudioStreams">The number of audio streams.</param>

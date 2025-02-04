@@ -305,7 +305,7 @@ public class UserLibraryController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
     [HttpDelete("UserItems/{itemId}/Rating")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<UserItemDataDto> DeleteUserItemRating(
+    public ActionResult<UserItemDataDto?> DeleteUserItemRating(
         [FromQuery] Guid? userId,
         [FromRoute, Required] Guid itemId)
     {
@@ -338,7 +338,7 @@ public class UserLibraryController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Obsolete("Kept for backwards compatibility")]
     [ApiExplorerSettings(IgnoreApi = true)]
-    public ActionResult<UserItemDataDto> DeleteUserItemRatingLegacy(
+    public ActionResult<UserItemDataDto?> DeleteUserItemRatingLegacy(
         [FromRoute, Required] Guid userId,
         [FromRoute, Required] Guid itemId)
         => DeleteUserItemRating(userId, itemId);
@@ -353,7 +353,7 @@ public class UserLibraryController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
     [HttpPost("UserItems/{itemId}/Rating")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<UserItemDataDto> UpdateUserItemRating(
+    public ActionResult<UserItemDataDto?> UpdateUserItemRating(
         [FromQuery] Guid? userId,
         [FromRoute, Required] Guid itemId,
         [FromQuery] bool? likes)
@@ -388,7 +388,7 @@ public class UserLibraryController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Obsolete("Kept for backwards compatibility")]
     [ApiExplorerSettings(IgnoreApi = true)]
-    public ActionResult<UserItemDataDto> UpdateUserItemRatingLegacy(
+    public ActionResult<UserItemDataDto?> UpdateUserItemRatingLegacy(
         [FromRoute, Required] Guid userId,
         [FromRoute, Required] Guid itemId,
         [FromQuery] bool? likes)
@@ -634,10 +634,10 @@ public class UserLibraryController : BaseJellyfinApiController
     {
         if (item is Person)
         {
-            var hasMetdata = !string.IsNullOrWhiteSpace(item.Overview) && item.HasImage(ImageType.Primary);
-            var performFullRefresh = !hasMetdata && (DateTime.UtcNow - item.DateLastRefreshed).TotalDays >= 3;
+            var hasMetadata = !string.IsNullOrWhiteSpace(item.Overview) && item.HasImage(ImageType.Primary);
+            var performFullRefresh = !hasMetadata && (DateTime.UtcNow - item.DateLastRefreshed).TotalDays >= 3;
 
-            if (!hasMetdata)
+            if (!hasMetadata)
             {
                 var options = new MetadataRefreshOptions(new DirectoryService(_fileSystem))
                 {
@@ -662,12 +662,15 @@ public class UserLibraryController : BaseJellyfinApiController
         // Get the user data for this item
         var data = _userDataRepository.GetUserData(user, item);
 
-        // Set favorite status
-        data.IsFavorite = isFavorite;
+        if (data is not null)
+        {
+            // Set favorite status
+            data.IsFavorite = isFavorite;
 
-        _userDataRepository.SaveUserData(user, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
+            _userDataRepository.SaveUserData(user, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
+        }
 
-        return _userDataRepository.GetUserDataDto(item, user);
+        return _userDataRepository.GetUserDataDto(item, user)!;
     }
 
     /// <summary>
@@ -676,14 +679,17 @@ public class UserLibraryController : BaseJellyfinApiController
     /// <param name="user">The user.</param>
     /// <param name="item">The item.</param>
     /// <param name="likes">if set to <c>true</c> [likes].</param>
-    private UserItemDataDto UpdateUserItemRatingInternal(User user, BaseItem item, bool? likes)
+    private UserItemDataDto? UpdateUserItemRatingInternal(User user, BaseItem item, bool? likes)
     {
         // Get the user data for this item
         var data = _userDataRepository.GetUserData(user, item);
 
-        data.Likes = likes;
+        if (data is not null)
+        {
+            data.Likes = likes;
 
-        _userDataRepository.SaveUserData(user, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
+            _userDataRepository.SaveUserData(user, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
+        }
 
         return _userDataRepository.GetUserDataDto(item, user);
     }

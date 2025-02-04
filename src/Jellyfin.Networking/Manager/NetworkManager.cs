@@ -27,7 +27,7 @@ public class NetworkManager : INetworkManager, IDisposable
     /// <summary>
     /// Threading lock for network properties.
     /// </summary>
-    private readonly object _initLock;
+    private readonly Lock _initLock;
 
     private readonly ILogger<NetworkManager> _logger;
 
@@ -35,7 +35,7 @@ public class NetworkManager : INetworkManager, IDisposable
 
     private readonly IConfiguration _startupConfig;
 
-    private readonly object _networkEventLock;
+    private readonly Lock _networkEventLock;
 
     /// <summary>
     /// Holds the published server URLs and the IPs to use them on.
@@ -57,7 +57,7 @@ public class NetworkManager : INetworkManager, IDisposable
     /// <summary>
     /// Dictionary containing interface addresses and their subnets.
     /// </summary>
-    private IReadOnlyList<IPData> _interfaces;
+    private List<IPData> _interfaces;
 
     /// <summary>
     /// Unfiltered user defined LAN subnets (<see cref="NetworkConfiguration.LocalNetworkSubnets"/>)
@@ -93,7 +93,7 @@ public class NetworkManager : INetworkManager, IDisposable
         _interfaces = new List<IPData>();
         _macAddresses = new List<PhysicalAddress>();
         _publishedServerUrls = new List<PublishedServerUriOverride>();
-        _networkEventLock = new object();
+        _networkEventLock = new();
         _remoteAddressFilter = new List<IPNetwork>();
 
         _ = bool.TryParse(startupConfig[DetectNetworkChangeKey], out var detectNetworkChange);
@@ -702,7 +702,7 @@ public class NetworkManager : INetworkManager, IDisposable
                 return false;
             }
         }
-        else if (!_lanSubnets.Any(x => x.Contains(remoteIP)))
+        else if (!IsInLocalNetwork(remoteIP))
         {
             // Remote not enabled. So everyone should be LAN.
             return false;
@@ -973,7 +973,7 @@ public class NetworkManager : INetworkManager, IDisposable
         bindPreference = string.Empty;
         int? port = null;
 
-        // Only consider subnets including the source IP, prefering specific overrides
+        // Only consider subnets including the source IP, preferring specific overrides
         List<PublishedServerUriOverride> validPublishedServerUrls;
         if (!isInExternalSubnet)
         {
@@ -997,7 +997,9 @@ public class NetworkManager : INetworkManager, IDisposable
             // Get interface matching override subnet
             var intf = _interfaces.OrderBy(x => x.Index).FirstOrDefault(x => data.Data.Subnet.Contains(x.Address));
 
-            if (intf?.Address is not null)
+            if (intf?.Address is not null
+                || (data.Data.AddressFamily == AddressFamily.InterNetwork && data.Data.Address.Equals(IPAddress.Any))
+                || (data.Data.AddressFamily == AddressFamily.InterNetworkV6 && data.Data.Address.Equals(IPAddress.IPv6Any)))
             {
                 // If matching interface is found, use override
                 bindPreference = data.OverrideUri;
@@ -1025,6 +1027,7 @@ public class NetworkManager : INetworkManager, IDisposable
         }
 
         _logger.LogDebug("{Source}: Matching bind address override found: {Address}", source, bindPreference);
+
         return true;
     }
 
@@ -1063,6 +1066,7 @@ public class NetworkManager : INetworkManager, IDisposable
                 // If none exists, this will select the first external interface if there is one.
                 bindAddress = externalInterfaces
                     .OrderByDescending(x => x.Subnet.Contains(source))
+                    .ThenByDescending(x => x.Subnet.PrefixLength)
                     .ThenBy(x => x.Index)
                     .Select(x => x.Address)
                     .First();
@@ -1080,6 +1084,7 @@ public class NetworkManager : INetworkManager, IDisposable
             // If none exists, this will select the first internal interface if there is one.
             bindAddress = _interfaces.Where(x => IsInLocalNetwork(x.Address))
                 .OrderByDescending(x => x.Subnet.Contains(source))
+                .ThenByDescending(x => x.Subnet.PrefixLength)
                 .ThenBy(x => x.Index)
                 .Select(x => x.Address)
                 .FirstOrDefault();
