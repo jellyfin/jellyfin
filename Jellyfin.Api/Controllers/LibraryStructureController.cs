@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -81,6 +82,12 @@ public class LibraryStructureController : BaseJellyfinApiController
         [FromBody] AddVirtualFolderDto? libraryOptionsDto,
         [FromQuery] bool refreshLibrary = false)
     {
+        // Windows does not allow files or folders with names that has leading or trailing spaces
+        if (name.Length != name.Trim().Length)
+        {
+            return BadRequest();
+        }
+
         var libraryOptions = libraryOptionsDto?.LibraryOptions ?? new LibraryOptions();
 
         if (paths is not null && paths.Length > 0)
