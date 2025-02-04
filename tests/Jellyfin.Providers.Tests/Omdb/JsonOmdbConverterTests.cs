@@ -31,7 +31,7 @@ namespace Jellyfin.Providers.Tests.Omdb
         [Theory]
         [InlineData("\"N/A\"")]
         [InlineData("null")]
-        public void Deserialization_To_Nullable_Int_Shoud_Be_Null(string input)
+        public void Deserialization_To_Nullable_Int_Should_Be_Null(string input)
         {
             var result = JsonSerializer.Deserialize<int?>(input, _options);
             Assert.Null(result);
@@ -49,7 +49,7 @@ namespace Jellyfin.Providers.Tests.Omdb
         [Theory]
         [InlineData("\"N/A\"")]
         [InlineData("null")]
-        public void Deserialization_To_Nullable_String_Shoud_Be_Null(string input)
+        public void Deserialization_To_Nullable_String_Should_Be_Null(string input)
         {
             var result = JsonSerializer.Deserialize<string?>(input, _options);
             Assert.Null(result);

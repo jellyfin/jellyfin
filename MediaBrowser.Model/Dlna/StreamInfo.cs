@@ -271,6 +271,11 @@ public class StreamInfo
     public bool EnableAudioVbrEncoding { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether always burn in subtitles when transcoding.
+    /// </summary>
+    public bool AlwaysBurnInSubtitleWhenTranscoding { get; set; }
+
+    /// <summary>
     /// Gets a value indicating whether the stream is direct.
     /// </summary>
     public bool IsDirectStream => MediaSource?.VideoType is not (VideoType.Dvd or VideoType.BluRay)
@@ -953,7 +958,7 @@ public class StreamInfo
         list.Add(new NameValuePair("VideoCodec", videoCodecs));
         list.Add(new NameValuePair("AudioCodec", audioCodecs));
         list.Add(new NameValuePair("AudioStreamIndex", item.AudioStreamIndex.HasValue ? item.AudioStreamIndex.Value.ToString(CultureInfo.InvariantCulture) : string.Empty));
-        list.Add(new NameValuePair("SubtitleStreamIndex", item.SubtitleStreamIndex.HasValue && item.SubtitleDeliveryMethod != SubtitleDeliveryMethod.External ? item.SubtitleStreamIndex.Value.ToString(CultureInfo.InvariantCulture) : string.Empty));
+        list.Add(new NameValuePair("SubtitleStreamIndex", item.SubtitleStreamIndex.HasValue && (item.AlwaysBurnInSubtitleWhenTranscoding || item.SubtitleDeliveryMethod != SubtitleDeliveryMethod.External) ? item.SubtitleStreamIndex.Value.ToString(CultureInfo.InvariantCulture) : string.Empty));
         list.Add(new NameValuePair("VideoBitrate", item.VideoBitrate.HasValue ? item.VideoBitrate.Value.ToString(CultureInfo.InvariantCulture) : string.Empty));
         list.Add(new NameValuePair("AudioBitrate", item.AudioBitrate.HasValue ? item.AudioBitrate.Value.ToString(CultureInfo.InvariantCulture) : string.Empty));
         list.Add(new NameValuePair("AudioSampleRate", item.AudioSampleRate.HasValue ? item.AudioSampleRate.Value.ToString(CultureInfo.InvariantCulture) : string.Empty));
@@ -974,7 +979,7 @@ public class StreamInfo
         }
 
         list.Add(new NameValuePair("PlaySessionId", item.PlaySessionId ?? string.Empty));
-        list.Add(new NameValuePair("api_key", accessToken ?? string.Empty));
+        list.Add(new NameValuePair("ApiKey", accessToken ?? string.Empty));
 
         string? liveStreamId = item.MediaSource?.LiveStreamId;
         list.Add(new NameValuePair("LiveStreamId", liveStreamId ?? string.Empty));
@@ -1184,7 +1189,7 @@ public class StreamInfo
 
                 if (!string.IsNullOrEmpty(accessToken))
                 {
-                    info.Url += "?api_key=" + accessToken;
+                    info.Url += "?ApiKey=" + accessToken;
                 }
 
                 info.IsExternalUrl = false;

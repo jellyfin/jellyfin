@@ -80,7 +80,7 @@ public class TrickplayController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesImageFile]
-    public async Task<ActionResult> GetTrickplayTileImageAsync(
+    public async Task<ActionResult> GetTrickplayTileImage(
         [FromRoute, Required] Guid itemId,
         [FromRoute, Required] int width,
         [FromRoute, Required] int index,

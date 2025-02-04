@@ -10,7 +10,7 @@ namespace MediaBrowser.Controller.Entities
 {
     public static class PeopleHelper
     {
-        public static void AddPerson(List<PersonInfo> people, PersonInfo person)
+        public static void AddPerson(ICollection<PersonInfo> people, PersonInfo person)
         {
             ArgumentNullException.ThrowIfNull(person);
             ArgumentException.ThrowIfNullOrEmpty(person.Name);

@@ -193,6 +193,8 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public bool EnableAudioVbrEncoding { get; set; }
 
+        public bool AlwaysBurnInSubtitleWhenTranscoding { get; set; }
+
         public string GetOption(string qualifier, string name)
         {
             var value = GetOption(qualifier + "-" + name);

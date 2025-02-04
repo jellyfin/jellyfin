@@ -22,7 +22,7 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.Server.Implementations.MediaSegments;
 
 /// <summary>
-/// Manages media segments retrival and storage.
+/// Manages media segments retrieval and storage.
 /// </summary>
 public class MediaSegmentManager : IMediaSegmentManager
 {
@@ -61,21 +61,26 @@ public class MediaSegmentManager : IMediaSegmentManager
             .Where(e => !libraryOptions.DisabledMediaSegmentProviders.Contains(GetProviderId(e.Name)))
             .OrderBy(i =>
                 {
-                    var index = libraryOptions.MediaSegmentProvideOrder.IndexOf(i.Name);
+                    var index = libraryOptions.MediaSegmentProviderOrder.IndexOf(i.Name);
                     return index == -1 ? int.MaxValue : index;
                 })
             .ToList();
 
-        _logger.LogInformation("Start media segment extraction from providers with {CountProviders} enabled", providers.Count);
+        if (providers.Count == 0)
+        {
+            _logger.LogDebug("Skipping media segment extraction as no providers are enabled for {MediaPath}", baseItem.Path);
+            return;
+        }
+
         using var db = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
         if (!overwrite && (await db.MediaSegments.AnyAsync(e => e.ItemId.Equals(baseItem.Id), cancellationToken).ConfigureAwait(false)))
         {
-            _logger.LogInformation("Skip {MediaPath} as it already contains media segments", baseItem.Path);
+            _logger.LogDebug("Skip {MediaPath} as it already contains media segments", baseItem.Path);
             return;
         }
 
-        _logger.LogInformation("Clear existing Segments for {MediaPath}", baseItem.Path);
+        _logger.LogDebug("Start media segment extraction for {MediaPath} with {CountProviders} providers enabled", baseItem.Path, providers.Count);
 
         await db.MediaSegments.Where(e => e.ItemId.Equals(baseItem.Id)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
 
@@ -86,15 +91,19 @@ public class MediaSegmentManager : IMediaSegmentManager
         {
             if (!await provider.Supports(baseItem).ConfigureAwait(false))
             {
-                _logger.LogDebug("Media Segment provider {ProviderName} does not support item with path {Path}", provider.Name, baseItem.Path);
+                _logger.LogDebug("Media Segment provider {ProviderName} does not support item with path {MediaPath}", provider.Name, baseItem.Path);
                 continue;
             }
 
-            _logger.LogDebug("Run Media Segment provider {ProviderName}", provider.Name);
             try
             {
                 var segments = await provider.GetMediaSegments(requestItem, cancellationToken)
                     .ConfigureAwait(false);
+                if (segments.Count == 0)
+                {
+                    _logger.LogDebug("Media Segment provider {ProviderName} did not find any segments for {MediaPath}", provider.Name, baseItem.Path);
+                    continue;
+                }
 
                 _logger.LogInformation("Media Segment provider {ProviderName} found {CountSegments} for {MediaPath}", provider.Name, segments.Count, baseItem.Path);
                 var providerId = GetProviderId(provider.Name);
@@ -130,23 +139,53 @@ public class MediaSegmentManager : IMediaSegmentManager
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<MediaSegmentDto>> GetSegmentsAsync(Guid itemId, IEnumerable<MediaSegmentType>? typeFilter)
+    public async Task<IEnumerable<MediaSegmentDto>> GetSegmentsAsync(Guid itemId, IEnumerable<MediaSegmentType>? typeFilter, bool filterByProvider = true)
+    {
+        var baseItem = _libraryManager.GetItemById(itemId);
+
+        if (baseItem is null)
+        {
+            _logger.LogError("Tried to request segments for an invalid item");
+            return [];
+        }
+
+        return await GetSegmentsAsync(baseItem, typeFilter, filterByProvider).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<MediaSegmentDto>> GetSegmentsAsync(BaseItem item, IEnumerable<MediaSegmentType>? typeFilter, bool filterByProvider = true)
     {
         using var db = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
 
         var query = db.MediaSegments
-            .Where(e => e.ItemId.Equals(itemId));
+            .Where(e => e.ItemId.Equals(item.Id));
 
         if (typeFilter is not null)
         {
             query = query.Where(e => typeFilter.Contains(e.Type));
         }
 
+        if (filterByProvider)
+        {
+            var libraryOptions = _libraryManager.GetLibraryOptions(item);
+            var providerIds = _segmentProviders
+                .Where(e => !libraryOptions.DisabledMediaSegmentProviders.Contains(GetProviderId(e.Name)))
+                .Select(f => GetProviderId(f.Name))
+                .ToArray();
+            if (providerIds.Length == 0)
+            {
+                return [];
+            }
+
+            query = query.Where(e => providerIds.Contains(e.SegmentProviderId));
+        }
+
         return query
             .OrderBy(e => e.StartTicks)
             .AsNoTracking()
-            .ToImmutableList()
-            .Select(Map);
+            .AsEnumerable()
+            .Select(Map)
+            .ToArray();
     }
 
     private static MediaSegmentDto Map(MediaSegment segment)

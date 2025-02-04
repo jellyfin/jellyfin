@@ -189,12 +189,12 @@ namespace MediaBrowser.Controller.Entities.TV
             return list;
         }
 
-        public override List<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
+        public override IReadOnlyList<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
         {
             return GetSeasons(user, new DtoOptions(true));
         }
 
-        public List<BaseItem> GetSeasons(User user, DtoOptions options)
+        public IReadOnlyList<BaseItem> GetSeasons(User user, DtoOptions options)
         {
             var query = new InternalItemsQuery(user)
             {

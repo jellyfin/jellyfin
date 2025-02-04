@@ -121,10 +121,20 @@
     "TaskCleanActivityLog": "Изчисти дневника с активност",
     "TaskOptimizeDatabaseDescription": "Прави базата данни по-компактна и освобождава място. Пускането на тази задача след сканиране на библиотеката или правене на други промени, свързани с модификации на базата данни, може да подобри производителността.",
     "TaskOptimizeDatabase": "Оптимизирай базата данни",
-    "TaskKeyframeExtractorDescription": "Извличат се ключови кадри от видеофайловете ,за да се създаде по точен ХЛС списък . Задачата може да отнеме много време.",
+    "TaskKeyframeExtractorDescription": "Извличат се ключови кадри от видеофайловете ,за да се създаде по точен HLS списък . Задачата може да отнеме много време.",
     "TaskKeyframeExtractor": "Извличане на ключови кадри",
     "External": "Външен",
     "HearingImpaired": "Увреден слух",
     "TaskRefreshTrickplayImages": "Генерирай изображение",
-    "TaskRefreshTrickplayImagesDescription": "Създава прегледи на Trickplay за видеа в активирани библиотеки."
+    "TaskRefreshTrickplayImagesDescription": "Създава прегледи на Trickplay за видеа в активирани библиотеки.",
+    "TaskDownloadMissingLyrics": "Свали липсващи текстове",
+    "TaskDownloadMissingLyricsDescription": "Свали текстове за песни",
+    "TaskCleanCollectionsAndPlaylists": "Изчисти колекциите и плейлистите",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Премахни несъществуващи файлове в колекциите и плейлистите.",
+    "TaskAudioNormalization": "Нормализиране на звука",
+    "TaskAudioNormalizationDescription": "Сканирай файловете за нормализация на звука.",
+    "TaskExtractMediaSegmentsDescription": "Изважда медиини сегменти от MediaSegment плъгини.",
+    "TaskMoveTrickplayImages": "Мигриране на Локацията за Trickplay изображения",
+    "TaskMoveTrickplayImagesDescription": "Премества съществуващите trickplay изображения спрямо настройките на библиотеката.",
+    "TaskExtractMediaSegments": "Сканиране за сегменти"
 }

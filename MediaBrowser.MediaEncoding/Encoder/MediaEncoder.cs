@@ -62,7 +62,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private readonly AsyncNonKeyedLocker _thumbnailResourcePool;
 
-        private readonly object _runningProcessesLock = new object();
+        private readonly Lock _runningProcessesLock = new();
         private readonly List<ProcessWrapper> _runningProcesses = new List<ProcessWrapper>();
 
         // MediaEncoder is registered as a Singleton
@@ -650,6 +650,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             ArgumentException.ThrowIfNullOrEmpty(inputPath);
 
+            var useTradeoff = _config.GetFFmpegImgExtractPerfTradeoff();
+
             var outputExtension = targetFormat?.GetExtension() ?? ".jpg";
 
             var tempExtractPath = Path.Combine(_configurationManager.ApplicationPaths.TempDirectory, Guid.NewGuid() + outputExtension);
@@ -684,7 +686,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             // Use ffmpeg to sample 100 (we can drop this if required using thumbnail=50 for 50 frames) frames and pick the best thumbnail. Have a fall back just in case.
             // mpegts need larger batch size otherwise the corrupted thumbnail will be created. Larger batch size will lower the processing speed.
-            var enableThumbnail = useIFrame && !string.Equals("wtv", container, StringComparison.OrdinalIgnoreCase);
+            var enableThumbnail = !useTradeoff && useIFrame && !string.Equals("wtv", container, StringComparison.OrdinalIgnoreCase);
             if (enableThumbnail)
             {
                 var useLargerBatchSize = string.Equals("mpegts", container, StringComparison.OrdinalIgnoreCase);
@@ -699,8 +701,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 if (SupportsFilter("tonemapx"))
                 {
+                    var peak = videoStream.VideoRangeType == VideoRangeType.DOVI ? "400" : "100";
                     enableHdrExtraction = true;
-                    filters.Add("tonemapx=tonemap=bt2390:desat=0:peak=100:t=bt709:m=bt709:p=bt709:format=yuv420p");
+                    filters.Add($"tonemapx=tonemap=bt2390:desat=0:peak={peak}:t=bt709:m=bt709:p=bt709:format=yuv420p");
                 }
                 else if (SupportsFilter("zscale") && videoStream.VideoRangeType != VideoRangeType.DOVI)
                 {
@@ -716,6 +719,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             if (offset.HasValue)
             {
                 args = string.Format(CultureInfo.InvariantCulture, "-ss {0} ", GetTimeParameter(offset.Value)) + args;
+            }
+
+            if (useIFrame && useTradeoff)
+            {
+                args = "-skip_frame nokey " + args;
             }
 
             if (!string.IsNullOrWhiteSpace(container))
@@ -804,7 +812,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                                            || (hardwareAccelerationType == HardwareAccelerationType.amf && OperatingSystem.IsWindows())
                                            || (hardwareAccelerationType == HardwareAccelerationType.qsv && options.PreferSystemNativeHwDecoder)
                                            || hardwareAccelerationType == HardwareAccelerationType.vaapi
-                                           || hardwareAccelerationType == HardwareAccelerationType.videotoolbox;
+                                           || hardwareAccelerationType == HardwareAccelerationType.videotoolbox
+                                           || hardwareAccelerationType == HardwareAccelerationType.rkmpp;
                 if (!supportsKeyFrameOnly)
                 {
                     // Disable hardware acceleration when the hardware decoder does not support keyframe only mode.
@@ -930,13 +939,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // Final command arguments
             var args = string.Format(
                 CultureInfo.InvariantCulture,
-                "-loglevel error {0} -an -sn {1} -threads {2} -c:v {3} {4}{5}-f {6} \"{7}\"",
+                "-loglevel error {0} -an -sn {1} -threads {2} -c:v {3} {4}{5}{6}-f {7} \"{8}\"",
                 inputArg,
                 filterParam,
                 outputThreads.GetValueOrDefault(_threads),
                 vidEncoder,
                 encoderQualityOption + encoderQuality + " ",
                 vidEncoder.Contains("videotoolbox", StringComparison.InvariantCultureIgnoreCase) ? "-allow_sw 1 " : string.Empty, // allow_sw fallback for some intel macs
+                EncodingHelper.GetVideoSyncOption("0", EncoderVersion).Trim() + " ", // passthrough timestamp
                 "image2",
                 outputPath);
 
@@ -1025,6 +1035,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 if (exitCode == -1)
                 {
                     _logger.LogError("ffmpeg image extraction failed for {ProcessDescription}", processDescription);
+                    // Cleanup temp folder here, because the targetDirectory is not returned and the cleanup for failed ffmpeg process is not possible for caller.
+                    // Ideally the ffmpeg should not write any files if it fails, but it seems like it is not guaranteed.
+                    try
+                    {
+                        Directory.Delete(targetDirectory, true);
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError(e, "Failed to delete ffmpeg temp directory {TargetDirectory}", targetDirectory);
+                    }
 
                     throw new FfmpegException(string.Format(CultureInfo.InvariantCulture, "ffmpeg image extraction failed for {0}", processDescription));
                 }
@@ -1081,14 +1101,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private void StopProcesses()
         {
-            List<ProcessWrapper> proceses;
+            List<ProcessWrapper> processes;
             lock (_runningProcessesLock)
             {
-                proceses = _runningProcesses.ToList();
+                processes = _runningProcesses.ToList();
                 _runningProcesses.Clear();
             }
 
-            foreach (var process in proceses)
+            foreach (var process in processes)
             {
                 if (!process.HasExited)
                 {
@@ -1102,7 +1122,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // https://ffmpeg.org/ffmpeg-filters.html#Notes-on-filtergraph-escaping
             // We need to double escape
 
-            return path.Replace('\\', '/').Replace(":", "\\:", StringComparison.Ordinal).Replace("'", @"'\\\''", StringComparison.Ordinal);
+            return path
+                .Replace('\\', '/')
+                .Replace(":", "\\:", StringComparison.Ordinal)
+                .Replace("'", @"'\\\''", StringComparison.Ordinal)
+                .Replace("\"", "\\\"", StringComparison.Ordinal);
         }
 
         /// <inheritdoc />

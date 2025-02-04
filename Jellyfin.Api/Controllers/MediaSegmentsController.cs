@@ -45,7 +45,7 @@ public class MediaSegmentsController : BaseJellyfinApiController
     [HttpGet("{itemId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<QueryResult<MediaSegmentDto>>> GetSegmentsAsync(
+    public async Task<ActionResult<QueryResult<MediaSegmentDto>>> GetItemSegments(
         [FromRoute, Required] Guid itemId,
         [FromQuery] IEnumerable<MediaSegmentType>? includeSegmentTypes = null)
     {
@@ -55,7 +55,7 @@ public class MediaSegmentsController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var items = await _mediaSegmentManager.GetSegmentsAsync(item.Id, includeSegmentTypes).ConfigureAwait(false);
+        var items = await _mediaSegmentManager.GetSegmentsAsync(item, includeSegmentTypes).ConfigureAwait(false);
         return Ok(new QueryResult<MediaSegmentDto>(items.ToArray()));
     }
 }

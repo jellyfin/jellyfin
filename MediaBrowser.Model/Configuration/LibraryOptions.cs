@@ -2,19 +2,20 @@
 
 using System;
 using System.ComponentModel;
+using System.Linq;
 
 namespace MediaBrowser.Model.Configuration
 {
     public class LibraryOptions
     {
-        private static readonly char[] _defaultTagDelimiters = ['/', '|', ';', '\\'];
+        private static readonly string[] _defaultTagDelimiters = ["/", "|", ";", "\\"];
 
         public LibraryOptions()
         {
             TypeOptions = Array.Empty<TypeOptions>();
             DisabledSubtitleFetchers = Array.Empty<string>();
             DisabledMediaSegmentProviders = Array.Empty<string>();
-            MediaSegmentProvideOrder = Array.Empty<string>();
+            MediaSegmentProviderOrder = Array.Empty<string>();
             SubtitleFetcherOrder = Array.Empty<string>();
             DisabledLocalMetadataReaders = Array.Empty<string>();
             DisabledLyricFetchers = Array.Empty<string>();
@@ -98,7 +99,7 @@ namespace MediaBrowser.Model.Configuration
 
         public string[] DisabledMediaSegmentProviders { get; set; }
 
-        public string[] MediaSegmentProvideOrder { get; set; }
+        public string[] MediaSegmentProviderOrder { get; set; }
 
         public bool SkipSubtitlesIfEmbeddedSubtitlesPresent { get; set; }
 
@@ -126,8 +127,7 @@ namespace MediaBrowser.Model.Configuration
         [DefaultValue(false)]
         public bool UseCustomTagDelimiters { get; set; }
 
-        [DefaultValue(typeof(LibraryOptions), nameof(_defaultTagDelimiters))]
-        public char[] CustomTagDelimiters { get; set; }
+        public string[] CustomTagDelimiters { get; set; }
 
         public string[] DelimiterWhitelist { get; set; }
 

@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Mime;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -292,6 +293,9 @@ namespace Jellyfin.Providers.Tests.Manager
             providerManager.Setup(pm => pm.SaveImage(item, It.IsAny<Stream>(), It.IsAny<string>(), imageType, null, It.IsAny<CancellationToken>()))
                 .Callback<BaseItem, Stream, string, ImageType, int?, CancellationToken>((callbackItem, _, _, callbackType, _, _) => callbackItem.SetImagePath(callbackType, 0, new FileSystemMetadata()))
                 .Returns(Task.CompletedTask);
+            providerManager.Setup(pm => pm.SaveImage(item, It.IsAny<string>(), It.IsAny<string>(), imageType, null, null, It.IsAny<CancellationToken>()))
+                .Callback<BaseItem, string, string, ImageType, int?, bool?, CancellationToken>((callbackItem, _, _, callbackType, _, _, _) => callbackItem.SetImagePath(callbackType, 0, new FileSystemMetadata()))
+                .Returns(Task.CompletedTask);
             var itemImageProvider = GetItemImageProvider(providerManager.Object, null);
             var result = await itemImageProvider.RefreshImages(item, libraryOptions, new List<IImageProvider> { dynamicProvider.Object }, refreshOptions, CancellationToken.None);
 
@@ -388,7 +392,7 @@ namespace Jellyfin.Providers.Tests.Manager
                 {
                     ReasonPhrase = url,
                     StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent(Content, Encoding.UTF8, "image/jpeg")
+                    Content = new StringContent(Content, Encoding.UTF8, MediaTypeNames.Image.Jpeg)
                 });
 
             var refreshOptions = fullRefresh

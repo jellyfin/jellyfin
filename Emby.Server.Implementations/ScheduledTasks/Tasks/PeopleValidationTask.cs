@@ -58,7 +58,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
             {
                 new TaskTriggerInfo
                 {
-                    Type = TaskTriggerInfo.TriggerInterval,
+                    Type = TaskTriggerInfoType.IntervalTrigger,
                     IntervalTicks = TimeSpan.FromDays(7).Ticks
                 }
             };

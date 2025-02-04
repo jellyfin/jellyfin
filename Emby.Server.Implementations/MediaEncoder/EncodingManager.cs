@@ -28,7 +28,7 @@ namespace Emby.Server.Implementations.MediaEncoder
         private readonly IFileSystem _fileSystem;
         private readonly ILogger<EncodingManager> _logger;
         private readonly IMediaEncoder _encoder;
-        private readonly IChapterManager _chapterManager;
+        private readonly IChapterRepository _chapterManager;
         private readonly ILibraryManager _libraryManager;
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace Emby.Server.Implementations.MediaEncoder
             ILogger<EncodingManager> logger,
             IFileSystem fileSystem,
             IMediaEncoder encoder,
-            IChapterManager chapterManager,
+            IChapterRepository chapterManager,
             ILibraryManager libraryManager)
         {
             _logger = logger;

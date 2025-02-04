@@ -154,14 +154,4 @@ public enum ItemSortBy
     /// The index number.
     /// </summary>
     IndexNumber = 29,
-
-    /// <summary>
-    /// The similarity score.
-    /// </summary>
-    SimilarityScore = 30,
-
-    /// <summary>
-    /// The search score.
-    /// </summary>
-    SearchScore = 31,
 }
