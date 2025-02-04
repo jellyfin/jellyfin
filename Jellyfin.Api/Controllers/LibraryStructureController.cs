@@ -75,18 +75,14 @@ public class LibraryStructureController : BaseJellyfinApiController
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> AddVirtualFolder(
-        [FromQuery] string name,
+        [FromQuery]
+        [RegularExpression(@"^(?:\S(?:.*\S)?)$", ErrorMessage = "Library name cannot be empty or have leading/trailing spaces.")]
+        string name,
         [FromQuery] CollectionTypeOptions? collectionType,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] paths,
         [FromBody] AddVirtualFolderDto? libraryOptionsDto,
         [FromQuery] bool refreshLibrary = false)
     {
-        // Windows does not allow files or folders with names that has leading or trailing spaces
-        if (name.Length != name.Trim().Length)
-        {
-            return BadRequest();
-        }
-
         var libraryOptions = libraryOptionsDto?.LibraryOptions ?? new LibraryOptions();
 
         if (paths is not null && paths.Length > 0)
