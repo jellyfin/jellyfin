@@ -679,7 +679,9 @@ public class GuideManager : IGuideManager
         updated |= UpdateImage(ImageType.Logo, item, info);
 
         // Backdrop
-        return updated || UpdateImage(ImageType.Backdrop, item, info);
+        updated |= UpdateImage(ImageType.Backdrop, item, info);
+
+        return updated;
     }
 
     private static bool UpdateImage(ImageType imageType, BaseItem item, ProgramInfo info)
