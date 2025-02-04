@@ -645,7 +645,7 @@ public sealed class BaseItemRepository
         // dto.MediaType = Enum.TryParse<MediaType>(entity.MediaType);
         if (dto is IHasStartDate hasStartDate)
         {
-            hasStartDate.StartDate = entity.StartDate;
+            hasStartDate.StartDate = entity.StartDate.GetValueOrDefault();
         }
 
         // Fields that are present in the DB but are never actually used
@@ -683,7 +683,7 @@ public sealed class BaseItemRepository
 
         entity.ParentId = !dto.ParentId.IsEmpty() ? dto.ParentId : null;
         entity.Path = GetPathToSave(dto.Path);
-        entity.EndDate = dto.EndDate.GetValueOrDefault();
+        entity.EndDate = dto.EndDate;
         entity.CommunityRating = dto.CommunityRating;
         entity.CustomRating = dto.CustomRating;
         entity.IndexNumber = dto.IndexNumber;
