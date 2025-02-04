@@ -100,4 +100,6 @@ public class MediaStreamInfo
     public int? Rotation { get; set; }
 
     public string? KeyFrames { get; set; }
+
+    public bool? Hdr10PlusPresentFlag { get; set; }
 }

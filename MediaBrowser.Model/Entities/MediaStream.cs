@@ -153,6 +153,8 @@ namespace MediaBrowser.Model.Entities
         /// <value>The title.</value>
         public string Title { get; set; }
 
+        public bool? Hdr10PlusPresentFlag { get; set; }
+
         /// <summary>
         /// Gets the video range.
         /// </summary>
@@ -811,14 +813,14 @@ namespace MediaBrowser.Model.Entities
                     _ => (VideoRange.SDR, VideoRangeType.SDR)
                 };
 
-                if (ElPresentFlag > 1 && dvRangeSet.Item2 == VideoRangeType.DOVIWithHDR10)
+                if (Hdr10PlusPresentFlag == true)
                 {
-                    return (VideoRange.HDR, VideoRangeType.DOVIWithHDR10Plus);
-                }
-
-                if (ElPresentFlag > 1 && dvRangeSet.Item2 == VideoRangeType.DOVIWithEL)
-                {
-                    return (VideoRange.HDR, VideoRangeType.DOVIWithELHDR10Plus);
+                    return dvRangeSet.Item2 switch
+                    {
+                        VideoRangeType.DOVIWithHDR10 => (VideoRange.HDR, VideoRangeType.DOVIWithHDR10Plus),
+                        VideoRangeType.DOVIWithEL => (VideoRange.HDR, VideoRangeType.DOVIWithELHDR10Plus),
+                        _ => dvRangeSet
+                    };
                 }
 
                 return dvRangeSet;
@@ -828,7 +830,7 @@ namespace MediaBrowser.Model.Entities
 
             if (string.Equals(colorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase))
             {
-                return ElPresentFlag > 1 ? (VideoRange.HDR, VideoRangeType.HDR10Plus) : (VideoRange.HDR, VideoRangeType.HDR10);
+                return Hdr10PlusPresentFlag == true ? (VideoRange.HDR, VideoRangeType.HDR10Plus) : (VideoRange.HDR, VideoRangeType.HDR10);
             }
             else if (string.Equals(colorTransfer, "arib-std-b67", StringComparison.OrdinalIgnoreCase))
             {

@@ -139,6 +139,7 @@ public class MediaStreamRepository : IMediaStreamRepository
         dto.DvBlSignalCompatibilityId = entity.DvBlSignalCompatibilityId;
         dto.IsHearingImpaired = entity.IsHearingImpaired;
         dto.Rotation = entity.Rotation;
+        dto.Hdr10PlusPresentFlag = entity.Hdr10PlusPresentFlag;
 
         if (dto.Type is MediaStreamType.Audio or MediaStreamType.Subtitle)
         {
@@ -206,7 +207,8 @@ public class MediaStreamRepository : IMediaStreamRepository
             BlPresentFlag = dto.BlPresentFlag,
             DvBlSignalCompatibilityId = dto.DvBlSignalCompatibilityId,
             IsHearingImpaired = dto.IsHearingImpaired,
-            Rotation = dto.Rotation
+            Rotation = dto.Rotation,
+            Hdr10PlusPresentFlag = dto.Hdr10PlusPresentFlag,
         };
         return entity;
     }
