@@ -333,7 +333,7 @@ public static partial class NetworkUtils
     /// <param name="network">The <see cref="IPNetwork"/>.</param>
     /// <param name="address">The <see cref="IPAddress"/>.</param>
     /// <returns>Whether the supplied IP is in the supplied network.</returns>
-    public static bool SubNetContainsAddress(IPNetwork network, IPAddress address)
+    public static bool SubnetContainsAddress(IPNetwork network, IPAddress address)
     {
         ArgumentNullException.ThrowIfNull(address);
         ArgumentNullException.ThrowIfNull(network);
