@@ -18,9 +18,9 @@ public class BaseItemEntity
 
     public string? Path { get; set; }
 
-    public DateTime StartDate { get; set; }
+    public DateTime? StartDate { get; set; }
 
-    public DateTime EndDate { get; set; }
+    public DateTime? EndDate { get; set; }
 
     public string? ChannelId { get; set; }
 

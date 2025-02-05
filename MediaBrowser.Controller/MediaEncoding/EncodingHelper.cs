@@ -310,7 +310,6 @@ namespace MediaBrowser.Controller.MediaEncoding
         private bool IsSwTonemapAvailable(EncodingJobInfo state, EncodingOptions options)
         {
             if (state.VideoStream is null
-                || !options.EnableTonemapping
                 || GetVideoColorBitDepth(state) < 10
                 || !_mediaEncoder.SupportsFilter("tonemapx"))
             {
@@ -2062,7 +2061,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // libx265 only accept level option in -x265-params.
                 // level option may cause libx265 to fail.
                 // libx265 cannot adjust the given level, just throw an error.
-                param += " -x265-params:0 subme=3:merange=25:rc-lookahead=10:me=star:ctu=32:max-tu-size=32:min-cu-size=16:rskip=2:rskip-edge-threshold=2:no-sao=1:no-strong-intra-smoothing=1:no-scenecut=1:no-open-gop=1:no-info=1";
+                param += " -x265-params:0 no-scenecut=1:no-open-gop=1:no-info=1";
+
+                if (encodingOptions.EncoderPreset < EncoderPreset.ultrafast)
+                {
+                    // The following params are slower than the ultrafast preset, don't use when ultrafast is selected.
+                    param += ":subme=3:merange=25:rc-lookahead=10:me=star:ctu=32:max-tu-size=32:min-cu-size=16:rskip=2:rskip-edge-threshold=2:no-sao=1:no-strong-intra-smoothing=1";
+                }
             }
 
             if (string.Equals(videoEncoder, "libsvtav1", StringComparison.OrdinalIgnoreCase)
@@ -5691,7 +5696,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                     if (!string.IsNullOrEmpty(doScaling)
                         && !IsScaleRatioSupported(inW, inH, reqW, reqH, reqMaxW, reqMaxH, 8.0f))
                     {
-                        var hwScaleFilterFirstPass = $"scale_rkrga=w=iw/7.9:h=ih/7.9:format={outFormat}:afbc=1";
+                        // Vendor provided BSP kernel has an RGA driver bug that causes the output to be corrupted for P010 format.
+                        // Use NV15 instead of P010 to avoid the issue.
+                        // SDR inputs are using BGRA formats already which is not affected.
+                        var intermediateFormat = string.Equals(outFormat, "p010", StringComparison.OrdinalIgnoreCase) ? "nv15" : outFormat;
+                        var hwScaleFilterFirstPass = $"scale_rkrga=w=iw/7.9:h=ih/7.9:format={intermediateFormat}:force_divisible_by=4:afbc=1";
                         mainFilters.Add(hwScaleFilterFirstPass);
                     }
 
@@ -7065,7 +7074,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 // DTS and TrueHD are not supported by HLS
                 // Keep them in the supported codecs list, but shift them to the end of the list so that if transcoding happens, another codec is used
-                shiftAudioCodecs.Add("dca");
+                shiftAudioCodecs.Add("dts");
                 shiftAudioCodecs.Add("truehd");
             }
             else

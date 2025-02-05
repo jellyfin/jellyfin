@@ -30,7 +30,7 @@ namespace MediaBrowser.Model.Dlna
         private readonly ITranscoderSupport _transcoderSupport;
         private static readonly string[] _supportedHlsVideoCodecs = ["h264", "hevc", "vp9", "av1"];
         private static readonly string[] _supportedHlsAudioCodecsTs = ["aac", "ac3", "eac3", "mp3"];
-        private static readonly string[] _supportedHlsAudioCodecsMp4 = ["aac", "ac3", "eac3", "mp3", "alac", "flac", "opus", "dca", "truehd"];
+        private static readonly string[] _supportedHlsAudioCodecsMp4 = ["aac", "ac3", "eac3", "mp3", "alac", "flac", "opus", "dts", "truehd"];
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StreamBuilder"/> class.
@@ -862,18 +862,37 @@ namespace MediaBrowser.Model.Dlna
 
                     if (options.AllowAudioStreamCopy)
                     {
-                        if (ContainerHelper.ContainsContainer(transcodingProfile.AudioCodec, audioCodec))
+                        // For Audio stream, we prefer the audio codec that can be directly copied, then the codec that can otherwise satisfies
+                        // the transcoding conditions, then the one does not satisfy the transcoding conditions.
+                        // For example: A client can support both aac and flac, but flac only supports 2 channels while aac supports 6.
+                        // When the source audio is 6 channel flac, we should transcode to 6 channel aac, instead of down-mix to 2 channel flac.
+                        var transcodingAudioCodecs = ContainerHelper.Split(transcodingProfile.AudioCodec);
+
+                        foreach (var transcodingAudioCodec in transcodingAudioCodecs)
                         {
                             var appliedVideoConditions = options.Profile.CodecProfiles
                                 .Where(i => i.Type == CodecType.VideoAudio &&
-                                    i.ContainsAnyCodec(audioCodec, container) &&
+                                    i.ContainsAnyCodec(transcodingAudioCodec, container) &&
                                     i.ApplyConditions.All(applyCondition => ConditionProcessor.IsVideoAudioConditionSatisfied(applyCondition, audioChannels, audioBitrate, audioSampleRate, audioBitDepth, audioProfile, false)))
                                 .Select(i =>
                                     i.Conditions.All(condition => ConditionProcessor.IsVideoAudioConditionSatisfied(condition, audioChannels, audioBitrate, audioSampleRate, audioBitDepth, audioProfile, false)));
 
                             // An empty appliedVideoConditions means that the codec has no conditions for the current audio stream
                             var conditionsSatisfied = appliedVideoConditions.All(satisfied => satisfied);
-                            rank.Audio = conditionsSatisfied ? 1 : 2;
+
+                            var rankAudio = 3;
+
+                            if (conditionsSatisfied)
+                            {
+                                rankAudio = string.Equals(transcodingAudioCodec, audioCodec, StringComparison.OrdinalIgnoreCase) ? 1 : 2;
+                            }
+
+                            rank.Audio = Math.Min(rank.Audio, rankAudio);
+
+                            if (rank.Audio == 1)
+                            {
+                                break;
+                            }
                         }
                     }
 
@@ -963,9 +982,28 @@ namespace MediaBrowser.Model.Dlna
 
             var audioStreamWithSupportedCodec = candidateAudioStreams.Where(stream => ContainerHelper.ContainsContainer(audioCodecs, false, stream.Codec)).FirstOrDefault();
 
-            var directAudioStream = audioStreamWithSupportedCodec?.Channels is not null && audioStreamWithSupportedCodec.Channels.Value <= (playlistItem.TranscodingMaxAudioChannels ?? int.MaxValue) ? audioStreamWithSupportedCodec : null;
+            var channelsExceedsLimit = audioStreamWithSupportedCodec is not null && audioStreamWithSupportedCodec.Channels > (playlistItem.TranscodingMaxAudioChannels ?? int.MaxValue);
 
-            var channelsExceedsLimit = audioStreamWithSupportedCodec is not null && directAudioStream is null;
+            var directAudioStreamSatisfied = audioStreamWithSupportedCodec is not null && !channelsExceedsLimit
+                && options.Profile.CodecProfiles
+                    .Where(i => i.Type == CodecType.VideoAudio
+                        && i.ContainsAnyCodec(audioStreamWithSupportedCodec.Codec, container)
+                        && i.ApplyConditions.All(applyCondition => ConditionProcessor.IsVideoAudioConditionSatisfied(applyCondition, audioStreamWithSupportedCodec.Channels, audioStreamWithSupportedCodec.BitRate, audioStreamWithSupportedCodec.SampleRate, audioStreamWithSupportedCodec.BitDepth, audioStreamWithSupportedCodec.Profile, false)))
+                    .Select(i => i.Conditions.All(condition =>
+                    {
+                        var satisfied = ConditionProcessor.IsVideoAudioConditionSatisfied(condition, audioStreamWithSupportedCodec.Channels, audioStreamWithSupportedCodec.BitRate, audioStreamWithSupportedCodec.SampleRate, audioStreamWithSupportedCodec.BitDepth, audioStreamWithSupportedCodec.Profile, false);
+                        if (!satisfied)
+                        {
+                            playlistItem.TranscodeReasons |= GetTranscodeReasonForFailedCondition(condition);
+                        }
+
+                        return satisfied;
+                    }))
+                    .All(satisfied => satisfied);
+
+            directAudioStreamSatisfied = directAudioStreamSatisfied && !playlistItem.TranscodeReasons.HasFlag(TranscodeReason.ContainerBitrateExceedsLimit);
+
+            var directAudioStream = directAudioStreamSatisfied ? audioStreamWithSupportedCodec : null;
 
             if (channelsExceedsLimit && playlistItem.TargetAudioStream is not null)
             {
@@ -2213,10 +2251,24 @@ namespace MediaBrowser.Model.Dlna
             }
         }
 
-        private static bool IsAudioDirectPlaySupported(DirectPlayProfile profile, MediaSourceInfo item, MediaStream audioStream)
+        private static bool IsAudioContainerSupported(DirectPlayProfile profile, MediaSourceInfo item)
         {
             // Check container type
             if (!profile.SupportsContainer(item.Container))
+            {
+                return false;
+            }
+
+            // Never direct play audio in matroska when the device only declare support for webm.
+            // The first check is not enough because mkv is assumed can be webm.
+            // See https://github.com/jellyfin/jellyfin/issues/13344
+            return !ContainerHelper.ContainsContainer("mkv", item.Container)
+                   || profile.SupportsContainer("mkv");
+        }
+
+        private static bool IsAudioDirectPlaySupported(DirectPlayProfile profile, MediaSourceInfo item, MediaStream audioStream)
+        {
+            if (!IsAudioContainerSupported(profile, item))
             {
                 return false;
             }
@@ -2235,19 +2287,16 @@ namespace MediaBrowser.Model.Dlna
         {
             // Check container type, this should NOT be supported
             // If the container is supported, the file should be directly played
-            if (!profile.SupportsContainer(item.Container))
+            if (IsAudioContainerSupported(profile, item))
             {
-                // Check audio codec, we cannot use the SupportsAudioCodec here
-                // Because that one assumes empty container supports all codec, which is just useless
-                string? audioCodec = audioStream?.Codec;
-                if (string.Equals(profile.AudioCodec, audioCodec, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(profile.Container, audioCodec, StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
+                return false;
             }
 
-            return false;
+            // Check audio codec, we cannot use the SupportsAudioCodec here
+            // Because that one assumes empty container supports all codec, which is just useless
+            string? audioCodec = audioStream?.Codec;
+            return string.Equals(profile.AudioCodec, audioCodec, StringComparison.OrdinalIgnoreCase)
+                   || string.Equals(profile.Container, audioCodec, StringComparison.OrdinalIgnoreCase);
         }
 
         private int GetRank(ref TranscodeReason a, TranscodeReason[] rankings)

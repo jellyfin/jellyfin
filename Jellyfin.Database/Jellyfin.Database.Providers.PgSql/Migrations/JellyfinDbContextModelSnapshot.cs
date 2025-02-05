@@ -194,7 +194,7 @@ namespace Jellyfin.Database.Providers.PgSql.Migrations
                     b.Property<DateTime?>("DateModified")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("EndDate")
+                    b.Property<DateTime?>("EndDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("EpisodeTitle")
@@ -332,7 +332,7 @@ namespace Jellyfin.Database.Providers.PgSql.Migrations
                     b.Property<string>("SortName")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("StartDate")
+                    b.Property<DateTime?>("StartDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Studios")

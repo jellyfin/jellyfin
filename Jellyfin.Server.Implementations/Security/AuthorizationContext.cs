@@ -116,17 +116,15 @@ namespace Jellyfin.Server.Implementations.Security
                 DeviceId = deviceId,
                 Version = version,
                 Token = token,
-                IsAuthenticated = false,
-                HasToken = false
+                IsAuthenticated = false
             };
 
-            if (string.IsNullOrWhiteSpace(token))
+            if (!authInfo.HasToken)
             {
                 // Request doesn't contain a token.
                 return authInfo;
             }
 
-            authInfo.HasToken = true;
             var dbContext = await _jellyfinDbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
