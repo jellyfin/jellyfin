@@ -615,7 +615,7 @@ public class GuideManager : IGuideManager
         item.IndexNumber = info.EpisodeNumber;
         item.ParentIndexNumber = info.SeasonNumber;
 
-        forceUpdate = UpdateImages(item, info) || forceUpdate;
+        forceUpdate |= UpdateImages(item, info);
 
         if (isNew)
         {
