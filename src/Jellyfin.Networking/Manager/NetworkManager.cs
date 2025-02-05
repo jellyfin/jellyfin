@@ -909,7 +909,7 @@ public class NetworkManager : INetworkManager, IDisposable
         return NetworkConstants.IPv4RFC3927LinkLocal.Contains(address) || address.IsIPv6LinkLocal;
     }
 
-    private static bool SubNetContainsAddress(IPNetwork network, IPAddress address)
+    private static bool SubnetContainsAddress(IPNetwork network, IPAddress address)
     {
         ArgumentNullException.ThrowIfNull(address);
         ArgumentNullException.ThrowIfNull(network);
