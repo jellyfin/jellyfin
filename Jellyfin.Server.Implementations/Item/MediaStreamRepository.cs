@@ -88,7 +88,7 @@ public class MediaStreamRepository : IMediaStreamRepository
             query = query.Where(e => e.StreamType == typeValue);
         }
 
-        return query;
+        return query.OrderBy(e => e.StreamIndex);
     }
 
     private MediaStream Map(MediaStreamInfo entity)
