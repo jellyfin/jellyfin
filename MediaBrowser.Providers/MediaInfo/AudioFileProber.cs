@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ATL;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
