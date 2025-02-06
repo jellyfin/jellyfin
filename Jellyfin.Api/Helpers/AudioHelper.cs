@@ -179,7 +179,7 @@ public class AudioHelper
 
         if (!File.Exists(outputPath))
         {
-            await Task.Run(() => Process.Start("audiowaveform", $"-i \"{item.Path}\" -o \"{outputPath}\"").WaitForExit()).ConfigureAwait(false);
+            await Task.Run(() => Process.Start("ffprobe", $"-v error -f lavfi -i \"amovie={item.Path},asetnsamples=44100,astats=metadata=1:reset=1\" -show_entries frame_tags=lavfi.astats.Overall.RMS_level -of csv=p=0 -o \"{outputPath}\"").WaitForExit()).ConfigureAwait(false);
         }
 
         var fileStream = new FileStream(outputPath, FileMode.Open, FileAccess.Read, FileShare.Read);
