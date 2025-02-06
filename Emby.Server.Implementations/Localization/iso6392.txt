@@ -174,7 +174,6 @@ hai|||Haida|haida
 hat||ht|Haitian; Haitian Creole|haïtien; créole haïtien
 hau||ha|Hausa|haoussa
 haw|||Hawaiian|hawaïen
-heb||he|Hebrew|hébreu
 her||hz|Herero|herero
 hil|||Hiligaynon|hiligaynon
 him|||Himachali languages; Western Pahari languages|langues himachalis; langues paharis occidentales
