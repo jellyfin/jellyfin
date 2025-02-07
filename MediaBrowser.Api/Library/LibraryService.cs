@@ -425,16 +425,17 @@ namespace MediaBrowser.Api.Library
                        || string.Equals(name, "Image Extractor", StringComparison.OrdinalIgnoreCase);
             }
 
-            var metadataOptions = ServerConfigurationManager.Configuration.MetadataOptions
-                .Where(i => string.Equals(i.ItemType, type, StringComparison.OrdinalIgnoreCase))
-                .ToArray();
+            foreach (var metadataOption in ServerConfigurationManager.Configuration.MetadataOptions) {
+                if(!string.Equals(metadataOption.ItemType, type, StringComparison.OrdinalIgnoreCase)) {
+                    continue;
+                }
 
-            if (metadataOptions.Length == 0)
-            {
-                return true;
+                if(!i.DisabledImageFetchers.Contains(name, StringComparer.OrdinalIgnoreCase)) {
+                    return true;
+                }
             }
 
-            return metadataOptions.Any(i => !i.DisabledImageFetchers.Contains(name, StringComparer.OrdinalIgnoreCase));
+            return false;
         }
 
         public object Get(GetLibraryOptionsInfo request)
