@@ -172,14 +172,27 @@ public class AudioHelper
 
         var libraryOptions = BaseItem.LibraryManager.GetLibraryOptions(item);
         var saveInMediaFolder = libraryOptions.SaveLocalMetadata;
-        var saveFileName = Path.GetFileNameWithoutExtension(item.Path) + ".dat";
+        var saveFileName = Path.GetFileNameWithoutExtension(item.Path) + ".csv";
         string outputPath = saveInMediaFolder
             ? Path.Combine(item.ContainingFolderPath, saveFileName)
             : Path.Combine(item.GetInternalMetadataPath(), saveFileName);
 
         if (!File.Exists(outputPath))
         {
-            await Task.Run(() => Process.Start("ffprobe", $"-v error -f lavfi -i \"amovie={item.Path},asetnsamples=44100,astats=metadata=1:reset=1\" -show_entries frame_tags=lavfi.astats.Overall.RMS_level -of csv=p=0 -o \"{outputPath}\"").WaitForExit()).ConfigureAwait(false);
+            var processStartInfo = new ProcessStartInfo("ffprobe", $"-v error -select_streams a:0 -show_entries stream=sample_rate -of csv=p=0 \"{item.Path}\"") { RedirectStandardOutput = true, UseShellExecute = false };
+            int sampleRate = 0;
+            using (var process = Process.Start(processStartInfo))
+            {
+                if (process != null)
+                {
+                    string output = await process.StandardOutput.ReadToEndAsync().ConfigureAwait(false);
+                    // This value sets the length of a frame, the amount of measurements per second.
+                    int samplesPerSecond = 2;
+                    sampleRate = Math.Max(int.Parse(output, System.Globalization.CultureInfo.InvariantCulture) / samplesPerSecond, 1);
+                }
+            }
+
+            await Task.Run(() => Process.Start("ffprobe", $"-v error -f lavfi -i \"amovie={item.Path},asetnsamples={sampleRate},astats=metadata=1:reset=1\" -show_entries frame_tags=lavfi.astats.Overall.RMS_peak -of csv=p=0 -o \"{outputPath}\"").WaitForExit()).ConfigureAwait(false);
         }
 
         var fileStream = new FileStream(outputPath, FileMode.Open, FileAccess.Read, FileShare.Read);
