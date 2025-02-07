@@ -155,7 +155,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
 
         if (!string.IsNullOrWhiteSpace(filter.NameContains))
         {
-            query = query.Where(e => EF.Functions.Like(e.Name, $"%{filter.NameContains}%"));
+            query = query.Where(e => e.Name.ToUpper().Contains(filter.NameContains.ToUpper()));
         }
 
         return query;
