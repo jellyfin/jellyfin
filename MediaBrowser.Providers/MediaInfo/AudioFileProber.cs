@@ -172,9 +172,9 @@ namespace MediaBrowser.Providers.MediaInfo
 
             track.Title = string.IsNullOrEmpty(track.Title) ? mediaInfo.Name : track.Title;
             track.Album = string.IsNullOrEmpty(track.Album) ? mediaInfo.Album : track.Album;
-            track.Year ??= mediaInfo.ProductionYear;
-            track.TrackNumber ??= mediaInfo.IndexNumber;
-            track.DiscNumber ??= mediaInfo.ParentIndexNumber;
+            track.Year = track.Year is null or 0 ? mediaInfo.ProductionYear : track.Year;
+            track.TrackNumber = track.TrackNumber is null or 0 ? mediaInfo.IndexNumber : track.TrackNumber;
+            track.DiscNumber = track.DiscNumber is null or 0 ? mediaInfo.ParentIndexNumber : track.DiscNumber;
 
             if (audio.SupportsPeople && !audio.LockedFields.Contains(MetadataField.Cast))
             {
