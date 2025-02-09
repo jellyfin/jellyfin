@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.StreamingDtos;
+using MediaBrowser.Controller.AudioWaveform;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model;
@@ -20,6 +21,7 @@ namespace Jellyfin.Api.Controllers;
 public class AudioController : BaseJellyfinApiController
 {
     private readonly AudioHelper _audioHelper;
+    private readonly IAudioWaveformManager _audioWaveformManager;
 
     private readonly TranscodingJobType _transcodingJobType = TranscodingJobType.Progressive;
 
@@ -27,9 +29,11 @@ public class AudioController : BaseJellyfinApiController
     /// Initializes a new instance of the <see cref="AudioController"/> class.
     /// </summary>
     /// <param name="audioHelper">Instance of <see cref="AudioHelper"/>.</param>
-    public AudioController(AudioHelper audioHelper)
+    /// <param name="audioWaveformManager">Instance of <see cref="IAudioWaveformManager"/>.</param>
+    public AudioController(AudioHelper audioHelper, IAudioWaveformManager audioWaveformManager)
     {
         _audioHelper = audioHelper;
+        _audioWaveformManager = audioWaveformManager;
     }
 
     /// <summary>
@@ -376,7 +380,8 @@ public class AudioController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult> GetAudioWaveForm([FromRoute, Required] Guid itemId)
     {
-        var fileStream = await _audioHelper.GetAudioWaveForm(itemId).ConfigureAwait(false);
+        // var fileStream = await _audioHelper.GetAudioWaveForm(itemId).ConfigureAwait(false);
+        var fileStream = await _audioWaveformManager.GetAudioWaveformAnsyc(itemId).ConfigureAwait(false);
 
         return File(fileStream, MimeTypes.GetMimeType("file.dat"));
     }

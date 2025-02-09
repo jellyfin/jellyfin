@@ -1,17 +1,12 @@
-using System;
-using System.Diagnostics;
-using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Streaming;
@@ -159,62 +154,5 @@ public class AudioHelper
             ffmpegCommandLineArguments,
             transcodingJobType,
             cancellationTokenSource).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Gets audio data to draw a waveform bar.
-    /// </summary>
-    /// <param name="itemId">The item id.</param>
-    /// <returns>A <see cref="FileStream"/> containing the resulting .dat file.</returns>
-    public async Task<FileStream> GetAudioWaveForm(Guid itemId)
-    {
-        var item = _libraryManager.GetItemById<BaseItem>(itemId)
-            ?? throw new ResourceNotFoundException();
-
-        var libraryOptions = BaseItem.LibraryManager.GetLibraryOptions(item);
-        var saveInMediaFolder = libraryOptions.SaveLocalMetadata;
-        var saveFileName = Path.GetFileNameWithoutExtension(item.Path) + ".csv";
-        string outputPathCsv = saveInMediaFolder
-            ? Path.Combine(item.ContainingFolderPath, saveFileName)
-            : Path.Combine(item.GetInternalMetadataPath(), saveFileName);
-        string outputPathJson = outputPathCsv.Replace("csv", "json", StringComparison.Ordinal);
-
-        if (!File.Exists(outputPathJson))
-        {
-            var processStartInfo = new ProcessStartInfo("ffprobe", $"-v error -select_streams a:0 -show_entries stream=sample_rate -of csv=p=0 \"{item.Path}\"") { RedirectStandardOutput = true, UseShellExecute = false };
-            int sampleRate = 0;
-            int fileSampleRate = item.GetMediaStreams()[0].SampleRate ?? 44100;
-            // This value sets the length of a frame, the amount of measurements per second.
-            int samplesPerSecond = 2;
-            sampleRate = Math.Max(fileSampleRate / samplesPerSecond, 1);
-
-            // escape double quotes and backslashes
-            string itemPathEscaped = item.Path.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("\"", "\\\"", StringComparison.Ordinal);
-            string outputPathCsvEscaped = outputPathCsv.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("\"", "\\\"", StringComparison.Ordinal);
-            await Task.Run(() => Process.Start("ffprobe", $"-v error -f lavfi -i \"amovie={itemPathEscaped},asetnsamples={sampleRate},astats=metadata=1:reset=1\" -show_entries frame_tags=lavfi.astats.Overall.RMS_peak -of csv=p=0 -o \"{outputPathCsvEscaped}\"").WaitForExitAsync()).ConfigureAwait(false);
-
-            var csvLines = await File.ReadAllLinesAsync(outputPathCsv).ConfigureAwait(false);
-            var samples = csvLines
-                    .Select(v =>
-                {
-                    if (v.Trim() == "-inf")
-                    {
-                        return 0.0;  // sometimes ffprobe returns "-inf" instead of a number
-                    }
-                    else
-                    {
-                        return Math.Pow(2, double.Parse(v, CultureInfo.InvariantCulture) / 6);
-                    }
-                })
-                .ToArray();
-
-            var json = JsonSerializer.Serialize(new { samples, sampleRate });
-            await File.WriteAllTextAsync(outputPathJson, json).ConfigureAwait(false);
-            File.Delete(outputPathCsv);
-        }
-
-        var fileStream = new FileStream(outputPathJson, FileMode.Open, FileAccess.Read, FileShare.Read);
-
-        return fileStream;
     }
 }
