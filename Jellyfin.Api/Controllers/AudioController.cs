@@ -3,9 +3,13 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
+using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.StreamingDtos;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.AudioWaveform;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model;
@@ -22,6 +26,7 @@ public class AudioController : BaseJellyfinApiController
 {
     private readonly AudioHelper _audioHelper;
     private readonly IAudioWaveformManager _audioWaveformManager;
+    private readonly ILibraryManager _libraryManager;
 
     private readonly TranscodingJobType _transcodingJobType = TranscodingJobType.Progressive;
 
@@ -30,10 +35,12 @@ public class AudioController : BaseJellyfinApiController
     /// </summary>
     /// <param name="audioHelper">Instance of <see cref="AudioHelper"/>.</param>
     /// <param name="audioWaveformManager">Instance of <see cref="IAudioWaveformManager"/>.</param>
-    public AudioController(AudioHelper audioHelper, IAudioWaveformManager audioWaveformManager)
+    /// <param name="libraryManager">Instance of <see cref="ILibraryManager"/>.</param>
+    public AudioController(AudioHelper audioHelper, IAudioWaveformManager audioWaveformManager, ILibraryManager libraryManager)
     {
         _audioHelper = audioHelper;
         _audioWaveformManager = audioWaveformManager;
+        _libraryManager = libraryManager;
     }
 
     /// <summary>
@@ -380,9 +387,14 @@ public class AudioController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult> GetAudioWaveForm([FromRoute, Required] Guid itemId)
     {
-        // var fileStream = await _audioHelper.GetAudioWaveForm(itemId).ConfigureAwait(false);
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, User.GetUserId());
+        if (item is null)
+        {
+            return NotFound();
+        }
+
         var fileStream = await _audioWaveformManager.GetAudioWaveformAnsyc(itemId).ConfigureAwait(false);
 
-        return File(fileStream, MimeTypes.GetMimeType("file.dat"));
+        return File(fileStream, "application/json");
     }
 }

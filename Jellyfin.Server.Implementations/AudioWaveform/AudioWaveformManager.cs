@@ -69,24 +69,23 @@ public class AudioWaveformManager : IAudioWaveformManager
     /// <inheritdoc />
     public async Task<FileStream> GetAudioWaveformAnsyc(Guid itemId)
     {
-        var tempDir = Path.Combine(_appPaths.TempDirectory, "audiowaveform_" + itemId);
-        Directory.CreateDirectory(tempDir);
-
         var item = _libraryManager.GetItemById<BaseItem>(itemId)
             ?? throw new ResourceNotFoundException();
 
-        var libraryOptions = BaseItem.LibraryManager.GetLibraryOptions(item);
-        var saveInMediaFolder = libraryOptions.SaveLocalMetadata;
+        var saveInMediaFolder = BaseItem.LibraryManager.GetLibraryOptions(item).SaveLocalMetadata;
         var saveFileName = Path.ChangeExtension(item.Path, "json");
         string outputPathJson = saveInMediaFolder
             ? Path.Combine(item.ContainingFolderPath, saveFileName)
             : Path.Combine(item.GetInternalMetadataPath(), saveFileName);
-        string outputPathCsv = Path.Combine(tempDir, Path.ChangeExtension(saveFileName, "csv"));
 
         if (!File.Exists(outputPathJson))
         {
+            var tempDir = Path.Combine(_appPaths.TempDirectory, "audiowaveform_" + itemId);
+            Directory.CreateDirectory(tempDir);
+            string outputPathCsv = Path.Combine(tempDir, Path.ChangeExtension(saveFileName, "csv"));
             int sampleRate = 0;
-            int fileSampleRate = item.GetMediaStreams()[0].SampleRate ?? 44100;
+            var mediaStreams = item.GetMediaStreams();
+            int fileSampleRate = (mediaStreams.Count > 0 && mediaStreams[0].SampleRate.HasValue) ? mediaStreams[0].SampleRate.Value : 44100;
             // This value sets the length of a frame, the amount of measurements per second.
             int samplesPerSecond = 2;
             sampleRate = Math.Max(fileSampleRate / samplesPerSecond, 1);
@@ -95,19 +94,10 @@ public class AudioWaveformManager : IAudioWaveformManager
             string itemPathEscaped = item.Path.Replace("\"", "\\\"", StringComparison.Ordinal);
             string outputPathCsvEscaped = outputPathCsv.Replace("\"", "\\\"", StringComparison.Ordinal);
 
-            var process = Process.Start("ffprobe", $"-v error -f lavfi -i \"amovie={itemPathEscaped},asetnsamples={sampleRate},astats=metadata=1:reset=1\" " + $"-show_entries frame_tags=lavfi.astats.Overall.RMS_peak -of csv=p=0 -o \"{outputPathCsvEscaped}\"");
+            var process = Process.Start("ffprobe", $"-v error -f lavfi -i \"amovie={itemPathEscaped},asetnsamples={sampleRate},astats=metadata=1:reset=1\" -show_entries frame_tags=lavfi.astats.Overall.RMS_peak -of csv=p=0 -o \"{outputPathCsvEscaped}\"");
 
-            await process.WaitForExitAsync().WaitAsync(Timespan.FromSecounds(10));
             int timeout = 10; // seconds, this is quite an arbitrary value
-            var timeoutTask = Task.Delay(TimeSpan.FromSeconds(timeout));
-            var completedTask = await Task.WhenAny(waitTask, timeoutTask).ConfigureAwait(false);
-
-            if (completedTask == timeoutTask)
-            {
-                process.Kill();
-                await process.WaitForExitAsync().ConfigureAwait(false); // Ensure process is fully terminated
-                throw new TimeoutException("ffprobe took too long and was terminated.");
-            }
+            await process.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(timeout)).ConfigureAwait(false);
 
             var csvLines = await File.ReadAllLinesAsync(outputPathCsv).ConfigureAwait(false);
             var samples = csvLines
@@ -137,8 +127,6 @@ public class AudioWaveformManager : IAudioWaveformManager
             File.Delete(outputPathCsv);
         }
 
-        var fileStream = new FileStream(outputPathJson, FileMode.Open, FileAccess.Read, FileShare.Read);
-
         var audioWaveformInfo = new AudioWaveformInfo
         {
             ItemId = itemId,
@@ -147,6 +135,7 @@ public class AudioWaveformManager : IAudioWaveformManager
 
         await SaveAudioWaveformInfo(audioWaveformInfo).ConfigureAwait(false);
 
+        var fileStream = new FileStream(outputPathJson, FileMode.Open, FileAccess.Read, FileShare.Read);
         return fileStream;
     }
 
