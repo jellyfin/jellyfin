@@ -692,7 +692,7 @@ public class NetworkManager : INetworkManager, IDisposable
             if (_remoteAddressFilter.Any() && !IsInLocalNetwork(remoteIP))
             {
                 // remoteAddressFilter is a whitelist or blacklist.
-                var matches = _remoteAddressFilter.Count(remoteNetwork => SubNetContainsAddress(remoteNetwork, remoteIP));
+                var matches = _remoteAddressFilter.Count(remoteNetwork => SubnetContainsAddress(remoteNetwork, remoteIP));
                 if ((!config.IsRemoteIPFilterBlacklist && matches > 0)
                     || (config.IsRemoteIPFilterBlacklist && matches == 0))
                 {
@@ -863,7 +863,7 @@ public class NetworkManager : INetworkManager, IDisposable
         // (For systems with multiple internal network cards, and multiple subnets)
         foreach (var intf in availableInterfaces)
         {
-            if (SubNetContainsAddress(intf.Subnet, source))
+            if (SubnetContainsAddress(intf.Subnet, source))
             {
                 result = NetworkUtils.FormatIPString(intf.Address);
                 _logger.LogDebug("{Source}: Found interface with matching subnet, using it as bind address: {Result}", source, result);
@@ -987,7 +987,7 @@ public class NetworkManager : INetworkManager, IDisposable
         {
             // Only use matching internal subnets
             // Prefer more specific (bigger subnet prefix) overrides
-            validPublishedServerUrls = _publishedServerUrls.Where(x => x.IsInternalOverride && SubNetContainsAddress(x.Data.Subnet, source))
+            validPublishedServerUrls = _publishedServerUrls.Where(x => x.IsInternalOverride && SubnetContainsAddress(x.Data.Subnet, source))
                 .OrderByDescending(x => x.Data.Subnet.PrefixLength)
                 .ToList();
         }
@@ -995,7 +995,7 @@ public class NetworkManager : INetworkManager, IDisposable
         {
             // Only use matching external subnets
             // Prefer more specific (bigger subnet prefix) overrides
-            validPublishedServerUrls = _publishedServerUrls.Where(x => x.IsExternalOverride && SubNetContainsAddress(x.Data.Subnet, source))
+            validPublishedServerUrls = _publishedServerUrls.Where(x => x.IsExternalOverride && SubnetContainsAddress(x.Data.Subnet, source))
                 .OrderByDescending(x => x.Data.Subnet.PrefixLength)
                 .ToList();
         }
@@ -1003,7 +1003,7 @@ public class NetworkManager : INetworkManager, IDisposable
         foreach (var data in validPublishedServerUrls)
         {
             // Get interface matching override subnet
-            var intf = _interfaces.OrderBy(x => x.Index).FirstOrDefault(x => SubNetContainsAddress(data.Data.Subnet, x.Address));
+            var intf = _interfaces.OrderBy(x => x.Index).FirstOrDefault(x => SubnetContainsAddress(data.Data.Subnet, x.Address));
 
             if (intf?.Address is not null
                 || (data.Data.AddressFamily == AddressFamily.InterNetwork && data.Data.Address.Equals(IPAddress.Any))
@@ -1074,7 +1074,7 @@ public class NetworkManager : INetworkManager, IDisposable
                 // Check to see if any of the external bind interfaces are in the same subnet as the source.
                 // If none exists, this will select the first external interface if there is one.
                 bindAddress = externalInterfaces
-                    .OrderByDescending(x => SubNetContainsAddress(x.Subnet, source))
+                    .OrderByDescending(x => SubnetContainsAddress(x.Subnet, source))
                     .ThenByDescending(x => x.Subnet.PrefixLength)
                     .ThenBy(x => x.Index)
                     .Select(x => x.Address)
@@ -1092,7 +1092,7 @@ public class NetworkManager : INetworkManager, IDisposable
             // Check to see if any of the internal bind interfaces are in the same subnet as the source.
             // If none exists, this will select the first internal interface if there is one.
             bindAddress = _interfaces.Where(x => IsInLocalNetwork(x.Address))
-                .OrderByDescending(x => SubNetContainsAddress(x.Subnet, source))
+                .OrderByDescending(x => SubnetContainsAddress(x.Subnet, source))
                 .ThenByDescending(x => x.Subnet.PrefixLength)
                 .ThenBy(x => x.Index)
                 .Select(x => x.Address)
@@ -1136,7 +1136,7 @@ public class NetworkManager : INetworkManager, IDisposable
         // (For systems with multiple network cards and/or multiple subnets)
         foreach (var intf in extResult)
         {
-            if (SubNetContainsAddress(intf.Subnet, source))
+            if (SubnetContainsAddress(intf.Subnet, source))
             {
                 result = NetworkUtils.FormatIPString(intf.Address);
                 _logger.LogDebug("{Source}: Found external interface with matching subnet, using it as bind address: {Result}", source, result);
