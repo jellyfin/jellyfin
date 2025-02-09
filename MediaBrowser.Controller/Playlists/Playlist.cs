@@ -227,11 +227,11 @@ namespace MediaBrowser.Controller.Playlists
             return [item];
         }
 
-        public override bool IsVisible(User user)
+        public override bool IsVisible(User user, bool skipAllowedTagsCheck = false)
         {
             if (!IsSharedItem)
             {
-                return base.IsVisible(user);
+                return base.IsVisible(user, skipAllowedTagsCheck);
             }
 
             if (OpenAccess)
