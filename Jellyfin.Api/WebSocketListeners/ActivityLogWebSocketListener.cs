@@ -70,7 +70,7 @@ public class ActivityLogWebSocketListener : BasePeriodicWebSocketListener<Activi
     /// <param name="message">The message.</param>
     protected override void Start(WebSocketMessageInfo message)
     {
-        if (!message.Connection.AuthorizationInfo.User.HasPermission(PermissionKind.IsAdministrator))
+        if (!message.Connection.AuthorizationInfo.User.HasPermission(PermissionKind.IsAdministrator) && !message.Connection.AuthorizationInfo.IsApiKey)
         {
             throw new AuthenticationException("Only admin users can retrieve the activity log.");
         }

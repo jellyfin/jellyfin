@@ -79,7 +79,7 @@ public class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnume
     /// <param name="message">The message.</param>
     protected override void Start(WebSocketMessageInfo message)
     {
-        if (!message.Connection.AuthorizationInfo.User.HasPermission(PermissionKind.IsAdministrator))
+        if (!message.Connection.AuthorizationInfo.User.HasPermission(PermissionKind.IsAdministrator) && !message.Connection.AuthorizationInfo.IsApiKey)
         {
             throw new AuthenticationException("Only admin users can subscribe to session information.");
         }
