@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities.Libraries;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using Jellyfin.LiveTv.Configuration;
@@ -210,7 +209,7 @@ public class GuideManager : IGuideManager
         progress.Report(15);
 
         numComplete = 0;
-        var programs = new List<LiveTvProgram>();
+        var programIds = new List<Guid>();
         var channels = new List<Guid>();
 
         var guideDays = GetGuideDays();
@@ -243,8 +242,8 @@ public class GuideManager : IGuideManager
                     DtoOptions = new DtoOptions(true)
                 }).Cast<LiveTvProgram>().ToDictionary(i => i.Id);
 
-                var newPrograms = new List<Guid>();
-                var updatedPrograms = new List<Guid>();
+                var newPrograms = new List<LiveTvProgram>();
+                var updatedPrograms = new List<LiveTvProgram>();
 
                 foreach (var program in channelPrograms)
                 {
@@ -252,14 +251,14 @@ public class GuideManager : IGuideManager
                     var id = programItem.Id;
                     if (isNew)
                     {
-                        newPrograms.Add(id);
+                        newPrograms.Add(programItem);
                     }
                     else if (isUpdated)
                     {
-                        updatedPrograms.Add(id);
+                        updatedPrograms.Add(programItem);
                     }
 
-                    programs.Add(programItem);
+                    programIds.Add(programItem.Id);
 
                     isMovie |= program.IsMovie;
                     isSeries |= program.IsSeries;
@@ -276,21 +275,21 @@ public class GuideManager : IGuideManager
 
                 if (newPrograms.Count > 0)
                 {
-                    var newProgramDtos = programs.Where(b => newPrograms.Contains(b.Id)).ToList();
-                    _libraryManager.CreateOrUpdateItems(newProgramDtos, null, cancellationToken);
+                    _libraryManager.CreateItems(newPrograms, currentChannel, cancellationToken);
+
+                    await PreCacheImages(newPrograms, maxCacheDate).ConfigureAwait(false);
                 }
 
                 if (updatedPrograms.Count > 0)
                 {
-                    var updatedProgramDtos = programs.Where(b => updatedPrograms.Contains(b.Id)).ToList();
                     await _libraryManager.UpdateItemsAsync(
-                        updatedProgramDtos,
+                        updatedPrograms,
                         currentChannel,
                         ItemUpdateType.MetadataImport,
                         cancellationToken).ConfigureAwait(false);
-                }
 
-                await PreCacheImages(programs, maxCacheDate).ConfigureAwait(false);
+                    await PreCacheImages(updatedPrograms, maxCacheDate).ConfigureAwait(false);
+                }
 
                 currentChannel.IsMovie = isMovie;
                 currentChannel.IsNews = isNews;
@@ -326,7 +325,6 @@ public class GuideManager : IGuideManager
         }
 
         progress.Report(100);
-        var programIds = programs.Select(p => p.Id).ToList();
         return new Tuple<List<Guid>, List<Guid>>(channels, programIds);
     }
 
@@ -502,35 +500,27 @@ public class GuideManager : IGuideManager
             forceUpdate = true;
         }
 
-        var seriesId = info.SeriesId;
-
-        if (!item.ParentId.Equals(channel.Id))
+        var channelId = channel.Id;
+        if (!item.ParentId.Equals(channelId))
         {
+            item.ParentId = channel.Id;
             forceUpdate = true;
         }
 
-        item.ParentId = channel.Id;
-
         item.Audio = info.Audio;
-        item.ChannelId = channel.Id;
-        item.CommunityRating ??= info.CommunityRating;
-        if ((item.CommunityRating ?? 0).Equals(0))
-        {
-            item.CommunityRating = null;
-        }
-
+        item.ChannelId = channelId;
+        item.CommunityRating = info.CommunityRating;
         item.EpisodeTitle = info.EpisodeTitle;
         item.ExternalId = info.Id;
 
-        if (!string.IsNullOrWhiteSpace(seriesId) && !string.Equals(item.ExternalSeriesId, seriesId, StringComparison.Ordinal))
+        var seriesId = info.SeriesId;
+        if (!string.IsNullOrWhiteSpace(seriesId) && !string.Equals(item.ExternalSeriesId, seriesId, StringComparison.OrdinalIgnoreCase))
         {
+            item.ExternalSeriesId = seriesId;
             forceUpdate = true;
         }
 
-        item.ExternalSeriesId = seriesId;
-
         var isSeries = info.IsSeries || !string.IsNullOrEmpty(info.EpisodeTitle);
-
         if (isSeries || !string.IsNullOrEmpty(info.EpisodeTitle))
         {
             item.SeriesName = info.Name;
@@ -578,7 +568,6 @@ public class GuideManager : IGuideManager
         }
 
         item.Tags = tags.ToArray();
-
         item.Genres = info.Genres.ToArray();
 
         if (info.IsHD ?? false)
@@ -589,41 +578,35 @@ public class GuideManager : IGuideManager
 
         item.IsMovie = info.IsMovie;
         item.IsRepeat = info.IsRepeat;
-
         if (item.IsSeries != isSeries)
         {
+            item.IsSeries = isSeries;
             forceUpdate = true;
         }
 
-        item.IsSeries = isSeries;
-
         item.Name = info.Name;
-        item.OfficialRating ??= info.OfficialRating;
-        item.Overview ??= info.Overview;
+        item.OfficialRating = info.OfficialRating;
+        item.Overview = info.Overview;
         item.RunTimeTicks = (info.EndDate - info.StartDate).Ticks;
-        item.ProviderIds = info.ProviderIds;
-
         foreach (var providerId in info.SeriesProviderIds)
         {
             info.ProviderIds["Series" + providerId.Key] = providerId.Value;
         }
 
+        item.ProviderIds = info.ProviderIds;
         if (item.StartDate != info.StartDate)
         {
+            item.StartDate = info.StartDate;
             forceUpdate = true;
         }
-
-        item.StartDate = info.StartDate;
 
         if (item.EndDate != info.EndDate)
         {
+            item.EndDate = info.EndDate;
             forceUpdate = true;
         }
 
-        item.EndDate = info.EndDate;
-
         item.ProductionYear = info.ProductionYear;
-
         if (!isSeries || info.IsRepeat)
         {
             item.PremiereDate = info.OriginalAirDate;
@@ -632,37 +615,35 @@ public class GuideManager : IGuideManager
         item.IndexNumber = info.EpisodeNumber;
         item.ParentIndexNumber = info.SeasonNumber;
 
-        forceUpdate = forceUpdate || UpdateImages(item, info);
+        forceUpdate |= UpdateImages(item, info);
 
         if (isNew)
         {
             item.OnMetadataChanged();
 
-            return (item, isNew, false);
+            return (item, true, false);
         }
 
-        var isUpdated = false;
-        if (forceUpdate || string.IsNullOrWhiteSpace(info.Etag))
+        var isUpdated = forceUpdate;
+        var etag = info.Etag;
+        if (string.IsNullOrWhiteSpace(etag))
         {
             isUpdated = true;
         }
-        else
+        else if (!string.Equals(etag, item.GetProviderId(EtagKey), StringComparison.OrdinalIgnoreCase))
         {
-            var etag = info.Etag;
-
-            if (!string.Equals(etag, item.GetProviderId(EtagKey), StringComparison.OrdinalIgnoreCase))
-            {
-                item.SetProviderId(EtagKey, etag);
-                isUpdated = true;
-            }
+            item.SetProviderId(EtagKey, etag);
+            isUpdated = true;
         }
 
         if (isUpdated)
         {
             item.OnMetadataChanged();
+
+            return (item, false, true);
         }
 
-        return (item, isNew, isUpdated);
+        return (item, false, false);
     }
 
     private static bool UpdateImages(BaseItem item, ProgramInfo info)
@@ -689,7 +670,7 @@ public class GuideManager : IGuideManager
         var newImagePath = imageType switch
         {
             ImageType.Primary => info.ImagePath,
-            _ => string.Empty
+            _ => null
         };
         var newImageUrl = imageType switch
         {
@@ -697,12 +678,12 @@ public class GuideManager : IGuideManager
             ImageType.Logo => info.LogoImageUrl,
             ImageType.Primary => info.ImageUrl,
             ImageType.Thumb => info.ThumbImageUrl,
-            _ => string.Empty
+            _ => null
         };
 
-        var differentImage = newImageUrl?.Equals(currentImagePath, StringComparison.OrdinalIgnoreCase) == false
-                                || newImagePath?.Equals(currentImagePath, StringComparison.OrdinalIgnoreCase) == false;
-        if (!differentImage)
+        var sameImage = (currentImagePath?.Equals(newImageUrl, StringComparison.OrdinalIgnoreCase) ?? false)
+                                || (currentImagePath?.Equals(newImagePath, StringComparison.OrdinalIgnoreCase) ?? false);
+        if (sameImage)
         {
             return false;
         }
@@ -757,6 +738,7 @@ public class GuideManager : IGuideManager
                     var imageInfo = program.ImageInfos[i];
                     if (!imageInfo.IsLocalFile)
                     {
+                        _logger.LogDebug("Caching image locally: {Url}", imageInfo.Path);
                         try
                         {
                             program.ImageInfos[i] = await _libraryManager.ConvertImageToLocal(
