@@ -81,7 +81,7 @@ public class AudioWaveformManager : IAudioWaveformManager
         string outputPathJson = saveInMediaFolder
             ? Path.Combine(item.ContainingFolderPath, saveFileName)
             : Path.Combine(item.GetInternalMetadataPath(), saveFileName);
-        string outputPathCsv = Path.Combine(tempDir, saveFileName.Replace("json", "csv", StringComparison.Ordinal));
+        string outputPathCsv = Path.Combine(tempDir, Path.ChangeExtension(saveFileName, "csv"));
 
         if (!File.Exists(outputPathJson))
         {
