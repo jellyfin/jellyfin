@@ -97,7 +97,7 @@ public class AudioWaveformManager : IAudioWaveformManager
 
             var process = Process.Start("ffprobe", $"-v error -f lavfi -i \"amovie={itemPathEscaped},asetnsamples={sampleRate},astats=metadata=1:reset=1\" " + $"-show_entries frame_tags=lavfi.astats.Overall.RMS_peak -of csv=p=0 -o \"{outputPathCsvEscaped}\"");
 
-            var waitTask = process.WaitForExitAsync();
+            await process.WaitForExitAsync().WaitAsync(Timespan.FromSecounds(10));
             int timeout = 10; // seconds, this is quite an arbitrary value
             var timeoutTask = Task.Delay(TimeSpan.FromSeconds(timeout));
             var completedTask = await Task.WhenAny(waitTask, timeoutTask).ConfigureAwait(false);
