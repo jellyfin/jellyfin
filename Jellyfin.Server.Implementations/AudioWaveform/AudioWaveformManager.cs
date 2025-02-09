@@ -85,6 +85,7 @@ public class AudioWaveformManager : IAudioWaveformManager
             string outputPathCsv = Path.Combine(tempDir, Path.ChangeExtension(saveFileName, "csv"));
             int sampleRate = 0;
             var mediaStreams = item.GetMediaStreams();
+            // error : mediaStreams[0].SampleRate can be null ? but why ? it is checked just before with .HasValue.
             int fileSampleRate = (mediaStreams.Count > 0 && mediaStreams[0].SampleRate.HasValue) ? mediaStreams[0].SampleRate.Value : 44100;
             // This value sets the length of a frame, the amount of measurements per second.
             int samplesPerSecond = 2;
