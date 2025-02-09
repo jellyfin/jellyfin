@@ -77,7 +77,7 @@ public class AudioWaveformManager : IAudioWaveformManager
 
         var libraryOptions = BaseItem.LibraryManager.GetLibraryOptions(item);
         var saveInMediaFolder = libraryOptions.SaveLocalMetadata;
-        var saveFileName = Path.GetFileNameWithoutExtension(item.Path) + ".json";
+        var saveFileName = Path.ChangeExtension(item.Path, "json");
         string outputPathJson = saveInMediaFolder
             ? Path.Combine(item.ContainingFolderPath, saveFileName)
             : Path.Combine(item.GetInternalMetadataPath(), saveFileName);
