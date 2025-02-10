@@ -2721,9 +2721,11 @@ namespace Emby.Server.Implementations.Library
                 if (current.IsDirectory && _namingOptions.AllExtrasTypesFolderNames.ContainsKey(current.Name))
                 {
                     var filesInSubFolder = _fileSystem.GetFiles(current.FullName, null, false, false);
-                    bool subFolderIsMixedFolder = filesInSubFolder.Count() > 1;
+                    var filesInSubFolderList = filesInSubFolder.ToList();
 
-                    foreach (var file in filesInSubFolder)
+                    bool subFolderIsMixedFolder = filesInSubFolderList.Count > 1;
+
+                    foreach (var file in filesInSubFolderList)
                     {
                         if (!_extraResolver.TryGetExtraTypeForOwner(file.FullName, ownerVideoInfo, out var extraType))
                         {
