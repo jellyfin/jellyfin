@@ -125,7 +125,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var semaphoreCount = serverConfig.Configuration.ParallelImageEncodingLimit;
             if (semaphoreCount < 1)
             {
-                semaphoreCount =  Environment.ProcessorCount;
+                semaphoreCount = Environment.ProcessorCount;
             }
 
             _thumbnailResourcePool = new(semaphoreCount);
