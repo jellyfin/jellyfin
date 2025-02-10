@@ -452,7 +452,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (newItems.Count > 0)
                 {
-                    LibraryManager.CreateOrUpdateItems(newItems, this, cancellationToken);
+                    LibraryManager.CreateItems(newItems, this, cancellationToken);
                 }
             }
             else
