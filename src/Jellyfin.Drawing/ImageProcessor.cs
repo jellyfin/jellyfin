@@ -66,7 +66,7 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
         var semaphoreCount = config.Configuration.ParallelImageEncodingLimit;
         if (semaphoreCount < 1)
         {
-            semaphoreCount = 2 * Environment.ProcessorCount;
+            semaphoreCount = Environment.ProcessorCount;
         }
 
         _parallelEncodingLimit = new(semaphoreCount);

@@ -122,7 +122,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _jsonSerializerOptions = new JsonSerializerOptions(JsonDefaults.Options);
             _jsonSerializerOptions.Converters.Add(new JsonBoolStringConverter());
 
-            var semaphoreCount = 2 * Environment.ProcessorCount;
+            var semaphoreCount = serverConfig.Configuration.ParallelImageEncodingLimit;
+            if (semaphoreCount < 1)
+            {
+                semaphoreCount =  Environment.ProcessorCount;
+            }
+
             _thumbnailResourcePool = new(semaphoreCount);
         }
 
