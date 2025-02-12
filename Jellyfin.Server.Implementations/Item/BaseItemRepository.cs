@@ -825,9 +825,6 @@ public sealed class BaseItemRepository
         entity.UnratedType = dto.GetBlockUnratedType().ToString();
 
         // Fields that are present in the DB but are never actually used
-        // dto.UnratedType = entity.UnratedType;
-        // dto.TopParentId = entity.TopParentId;
-        // dto.CleanName = entity.CleanName;
         // dto.UserDataKey = entity.UserDataKey;
 
         if (dto is Folder folder)
