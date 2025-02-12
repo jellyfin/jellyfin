@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.IO.Hashing;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -250,14 +251,12 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         private static async Task<byte[]> ComputeHash(Stream stream, CancellationToken cancellationToken)
         {
-            byte[] hash;
-            using (SHA256 hasher = SHA256.Create())
-            {
-                hash = await hasher.ComputeHashAsync(stream, cancellationToken).ConfigureAwait(false);
-                stream.Position = 0;    // reseek to the stream beginning for the upcoming save
-            }
+            stream.Position = 0;
+            var hasher = new XxHash3();
+            await hasher.AppendAsync(stream, cancellationToken).ConfigureAwait(false);
+            stream.Position = 0;
 
-            return hash;
+            return hasher.GetCurrentHash();
         }
 
         private void SetHidden(string path, bool hidden)
