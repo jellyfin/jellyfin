@@ -854,7 +854,10 @@ public sealed class BaseItemRepository
         }
 
         // query = query.DistinctBy(e => e.CleanValue);
-        return query.Select(e => e.ItemValue.CleanValue).ToArray();
+        return query.Select(e => e.ItemValue)
+            .GroupBy(e => e.CleanValue)
+            .Select(e => e.First().Value)
+            .ToArray();
     }
 
     private static bool TypeRequiresDeserialization(Type type)
