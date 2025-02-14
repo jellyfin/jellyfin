@@ -689,6 +689,7 @@ public sealed class BaseItemRepository
         entity.IndexNumber = dto.IndexNumber;
         entity.IsLocked = dto.IsLocked;
         entity.Name = dto.Name;
+        entity.CleanName = GetCleanValue(dto.Name);
         entity.OfficialRating = dto.OfficialRating;
         entity.Overview = dto.Overview;
         entity.ParentIndexNumber = dto.ParentIndexNumber;
@@ -821,10 +822,9 @@ public sealed class BaseItemRepository
             entity.StartDate = hasStartDate.StartDate;
         }
 
+        entity.UnratedType = dto.GetBlockUnratedType().ToString();
+
         // Fields that are present in the DB but are never actually used
-        // dto.UnratedType = entity.UnratedType;
-        // dto.TopParentId = entity.TopParentId;
-        // dto.CleanName = entity.CleanName;
         // dto.UserDataKey = entity.UserDataKey;
 
         if (dto is Folder folder)
