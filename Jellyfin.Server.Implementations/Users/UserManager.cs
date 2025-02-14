@@ -735,7 +735,7 @@ namespace Jellyfin.Server.Implementations.Users
 
         internal static void ThrowIfInvalidUsername(string name)
         {
-            if (!string.IsNullOrWhiteSpace(name) && ValidUsernameRegex().IsMatch(name))
+            if (!string.IsNullOrWhiteSpace(name) && ValidUsernameRegex().IsMatch(name) && !char.IsWhiteSpace(name[0]) && !char.IsWhiteSpace(name[^1]))
             {
                 return;
             }
