@@ -553,7 +553,7 @@ public sealed class BaseItemRepository
         dto.Genres = entity.Genres?.Split('|') ?? [];
         dto.DateCreated = entity.DateCreated.GetValueOrDefault();
         dto.DateModified = entity.DateModified.GetValueOrDefault();
-        dto.ChannelId = string.IsNullOrWhiteSpace(entity.ChannelId) ? Guid.Empty : (Guid.TryParse(entity.ChannelId, out var channelId) ? channelId : Guid.Empty);
+        dto.ChannelId = entity.ChannelId ?? Guid.Empty;
         dto.DateLastRefreshed = entity.DateLastRefreshed.GetValueOrDefault();
         dto.DateLastSaved = entity.DateLastSaved.GetValueOrDefault();
         dto.OwnerId = string.IsNullOrWhiteSpace(entity.OwnerId) ? Guid.Empty : (Guid.TryParse(entity.OwnerId, out var ownerId) ? ownerId : Guid.Empty);
@@ -716,7 +716,7 @@ public sealed class BaseItemRepository
         entity.Genres = string.Join('|', dto.Genres);
         entity.DateCreated = dto.DateCreated;
         entity.DateModified = dto.DateModified;
-        entity.ChannelId = dto.ChannelId.ToString();
+        entity.ChannelId = dto.ChannelId;
         entity.DateLastRefreshed = dto.DateLastRefreshed;
         entity.DateLastSaved = dto.DateLastSaved;
         entity.OwnerId = dto.OwnerId.ToString();
@@ -1451,8 +1451,7 @@ public sealed class BaseItemRepository
 
         if (filter.ChannelIds.Count > 0)
         {
-            var channelIds = filter.ChannelIds.Select(e => e.ToString("N", CultureInfo.InvariantCulture)).ToArray();
-            baseQuery = baseQuery.Where(e => channelIds.Contains(e.ChannelId));
+            baseQuery = baseQuery.Where(e => e.ChannelId != null && filter.ChannelIds.Contains(e.ChannelId.Value));
         }
 
         if (!filter.ParentId.IsEmpty())
