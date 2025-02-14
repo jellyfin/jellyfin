@@ -13,8 +13,7 @@ namespace Jellyfin.Server.Implementations.ModelConfiguration
         public void Configure(EntityTypeBuilder<User> builder)
         {
             builder
-                .Property(user => user.Username)
-                .UseCollation("NOCASE");
+                .Property(user => user.Username);
 
             builder
                 .HasOne(u => u.ProfileImage)

@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Jellyfin.Data;
 using Jellyfin.Data.Dtos;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Entities.Security;

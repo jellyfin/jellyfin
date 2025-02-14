@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Net;
 using System.Security.Claims;
 using Jellyfin.Api.Constants;
+using Jellyfin.Data;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Server.Implementations.Users;
