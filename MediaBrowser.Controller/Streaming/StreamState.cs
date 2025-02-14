@@ -93,6 +93,12 @@ public class StreamState : EncodingJobInfo, IDisposable
                     return 6;
                 }
 
+                //Prevent freezes on WebOS when skipping ahead during Dolby Vision playback. Issue 248 jellyfin/jellyfin-webos.
+                if (userAgent.Contains("Web0S", StringComparison.OrdinalIgnoreCase))
+                {
+                      return 1;
+                }
+
                 if (IsSegmentedLiveStream)
                 {
                     return 3;
