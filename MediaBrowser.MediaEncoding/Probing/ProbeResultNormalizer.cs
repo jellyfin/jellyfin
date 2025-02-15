@@ -53,6 +53,8 @@ namespace MediaBrowser.MediaEncoding.Probing
             "DJ'TEKINA//SOMETHING",
             "IX/ON",
             "J-CORE SLi//CER",
+            "lia;quo",
+            "リア;クオ",
             "M(a/u)SH",
             "Kaoru/Brilliance",
             "signum/ii",
