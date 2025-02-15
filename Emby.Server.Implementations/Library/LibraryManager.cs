@@ -2780,6 +2780,7 @@ namespace Emby.Server.Implementations.Library
             })
             .Where(i => i is not null)
             .Where(i => query.User is null || i!.IsVisible(query.User))
+            .DistinctBy(i => i!.Id)
             .ToList()!; // null values are filtered out
         }
 
