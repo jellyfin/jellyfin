@@ -205,27 +205,10 @@ namespace MediaBrowser.Providers.Manager
                     {
                         contentType = MediaTypeNames.Image.Png;
                     }
-                    else
-                    {
-                        // Deduce content type from file extension
-                        contentType = MimeTypes.GetMimeType(new Uri(url).GetLeftPart(UriPartial.Path));
-                    }
-
-                    // Throw if we still can't determine the content type
-                    if (string.IsNullOrEmpty(contentType))
-                    {
-                        throw new HttpRequestException("Invalid image received: contentType not set.", null, response.StatusCode);
-                    }
                 }
 
-                // TVDb will sometimes serve a rubbish 404 html page with a 200 OK code, because reasons...
-                if (contentType.Equals(MediaTypeNames.Text.Html, StringComparison.OrdinalIgnoreCase))
-                {
-                    throw new HttpRequestException("Invalid image received.", null, HttpStatusCode.NotFound);
-                }
-
-                // some iptv/epg providers don't correctly report media type, extract from url if no extension found
-                if (string.IsNullOrWhiteSpace(MimeTypes.ToExtension(contentType)))
+                // some providers don't correctly report media type, extract from url if no extension found
+                if (contentType is null || contentType.Equals(MediaTypeNames.Application.Octet, StringComparison.OrdinalIgnoreCase))
                 {
                     // Strip query parameters from url to get actual path.
                     contentType = MimeTypes.GetMimeType(new Uri(url).GetLeftPart(UriPartial.Path));
@@ -233,7 +216,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (!contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
                 {
-                    throw new HttpRequestException($"Request returned {contentType} instead of an image type", null, HttpStatusCode.NotFound);
+                    throw new HttpRequestException($"Request returned '{contentType}' instead of an image type", null, HttpStatusCode.NotFound);
                 }
 
                 var responseBytes = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);

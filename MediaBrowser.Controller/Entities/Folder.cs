@@ -219,7 +219,7 @@ namespace MediaBrowser.Controller.Entities
             LibraryManager.CreateItem(item, this);
         }
 
-        public override bool IsVisible(User user)
+        public override bool IsVisible(User user, bool skipAllowedTagsCheck = false)
         {
             if (this is ICollectionFolder && this is not BasePluginFolder)
             {
@@ -241,7 +241,7 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            return base.IsVisible(user);
+            return base.IsVisible(user, skipAllowedTagsCheck);
         }
 
         /// <summary>
@@ -452,7 +452,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (newItems.Count > 0)
                 {
-                    LibraryManager.CreateOrUpdateItems(newItems, this, cancellationToken);
+                    LibraryManager.CreateItems(newItems, this, cancellationToken);
                 }
             }
             else

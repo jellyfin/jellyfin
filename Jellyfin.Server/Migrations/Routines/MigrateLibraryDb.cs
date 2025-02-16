@@ -678,7 +678,7 @@ public class MigrateLibraryDb : IMigrationRoutine
             entity.EndDate = endDate;
         }
 
-        if (reader.TryGetString(index++, out var guid))
+        if (reader.TryGetGuid(index++, out var guid))
         {
             entity.ChannelId = guid;
         }
