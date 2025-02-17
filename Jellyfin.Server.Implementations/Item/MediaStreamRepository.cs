@@ -137,7 +137,7 @@ public class MediaStreamRepository : IMediaStreamRepository
         dto.ElPresentFlag = entity.ElPresentFlag;
         dto.BlPresentFlag = entity.BlPresentFlag;
         dto.DvBlSignalCompatibilityId = entity.DvBlSignalCompatibilityId;
-        dto.IsHearingImpaired = entity.IsHearingImpaired;
+        dto.IsHearingImpaired = entity.IsHearingImpaired.GetValueOrDefault();
         dto.Rotation = entity.Rotation;
 
         if (dto.Type is MediaStreamType.Audio or MediaStreamType.Subtitle)
