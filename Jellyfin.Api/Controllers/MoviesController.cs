@@ -65,7 +65,7 @@ public class MoviesController : BaseJellyfinApiController
     public ActionResult<IEnumerable<RecommendationDto>> GetMovieRecommendations(
         [FromQuery] Guid? userId,
         [FromQuery] Guid? parentId,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFields[] fields,
         [FromQuery] int categoryLimit = 5,
         [FromQuery] int itemLimit = 8)
     {

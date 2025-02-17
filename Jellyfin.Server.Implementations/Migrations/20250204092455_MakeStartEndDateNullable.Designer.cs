@@ -3,6 +3,7 @@ using System;
 using Jellyfin.Server.Implementations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,12 +11,14 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Jellyfin.Server.Implementations.Migrations
 {
     [DbContext(typeof(JellyfinDbContext))]
-    partial class JellyfinDbModelSnapshot : ModelSnapshot
+    [Migration("20250204092455_MakeStartEndDateNullable")]
+    partial class MakeStartEndDateNullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "9.0.2");
+            modelBuilder.HasAnnotation("ProductVersion", "9.0.1");
 
             modelBuilder.Entity("Jellyfin.Data.Entities.AccessSchedule", b =>
                 {
@@ -152,7 +155,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<int?>("Audio")
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid?>("ChannelId")
+                    b.Property<string>("ChannelId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("CleanName")
