@@ -2,10 +2,9 @@
 
 using MediaBrowser.Model.Plugins;
 
-namespace MediaBrowser.Providers.Plugins.Omdb
+namespace MediaBrowser.Providers.Plugins.Omdb.Configuration;
+
+public class PluginConfiguration : BasePluginConfiguration
 {
-    public class PluginConfiguration : BasePluginConfiguration
-    {
-        public bool CastAndCrew { get; set; }
-    }
+    public bool CastAndCrew { get; set; }
 }

@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
-using Jellyfin.Api.Constants;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Model.Querying;

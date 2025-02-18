@@ -1,38 +1,37 @@
-namespace MediaBrowser.Model.Entities
+namespace MediaBrowser.Model.Entities;
+
+/// <summary>
+/// Enum MediaStreamType.
+/// </summary>
+public enum MediaStreamType
 {
     /// <summary>
-    /// Enum MediaStreamType.
+    /// The audio.
     /// </summary>
-    public enum MediaStreamType
-    {
-        /// <summary>
-        /// The audio.
-        /// </summary>
-        Audio,
+    Audio,
 
-        /// <summary>
-        /// The video.
-        /// </summary>
-        Video,
+    /// <summary>
+    /// The video.
+    /// </summary>
+    Video,
 
-        /// <summary>
-        /// The subtitle.
-        /// </summary>
-        Subtitle,
+    /// <summary>
+    /// The subtitle.
+    /// </summary>
+    Subtitle,
 
-        /// <summary>
-        /// The embedded image.
-        /// </summary>
-        EmbeddedImage,
+    /// <summary>
+    /// The embedded image.
+    /// </summary>
+    EmbeddedImage,
 
-        /// <summary>
-        /// The data.
-        /// </summary>
-        Data,
+    /// <summary>
+    /// The data.
+    /// </summary>
+    Data,
 
-        /// <summary>
-        /// The lyric.
-        /// </summary>
-        Lyric
-    }
+    /// <summary>
+    /// The lyric.
+    /// </summary>
+    Lyric
 }

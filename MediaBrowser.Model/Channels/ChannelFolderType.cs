@@ -1,19 +1,18 @@
 #pragma warning disable CS1591
 
-namespace MediaBrowser.Model.Channels
+namespace MediaBrowser.Model.Channels;
+
+public enum ChannelFolderType
 {
-    public enum ChannelFolderType
-    {
-        Container = 0,
+    Container = 0,
 
-        MusicAlbum = 1,
+    MusicAlbum = 1,
 
-        PhotoAlbum = 2,
+    PhotoAlbum = 2,
 
-        MusicArtist = 3,
+    MusicArtist = 3,
 
-        Series = 4,
+    Series = 4,
 
-        Season = 5
-    }
+    Season = 5
 }

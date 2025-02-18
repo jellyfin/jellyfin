@@ -1,25 +1,24 @@
 #pragma warning disable CS1591
 
-namespace MediaBrowser.Model.Configuration
+namespace MediaBrowser.Model.Configuration;
+
+public class XbmcMetadataOptions
 {
-    public class XbmcMetadataOptions
+    public XbmcMetadataOptions()
     {
-        public XbmcMetadataOptions()
-        {
-            ReleaseDateFormat = "yyyy-MM-dd";
+        ReleaseDateFormat = "yyyy-MM-dd";
 
-            SaveImagePathsInNfo = true;
-            EnablePathSubstitution = true;
-        }
-
-        public string? UserId { get; set; }
-
-        public string ReleaseDateFormat { get; set; }
-
-        public bool SaveImagePathsInNfo { get; set; }
-
-        public bool EnablePathSubstitution { get; set; }
-
-        public bool EnableExtraThumbsDuplication { get; set; }
+        SaveImagePathsInNfo = true;
+        EnablePathSubstitution = true;
     }
+
+    public string? UserId { get; set; }
+
+    public string ReleaseDateFormat { get; set; }
+
+    public bool SaveImagePathsInNfo { get; set; }
+
+    public bool EnablePathSubstitution { get; set; }
+
+    public bool EnableExtraThumbsDuplication { get; set; }
 }

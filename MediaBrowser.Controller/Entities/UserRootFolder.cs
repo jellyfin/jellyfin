@@ -13,129 +13,128 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
 
-namespace MediaBrowser.Controller.Entities
+namespace MediaBrowser.Controller.Entities;
+
+/// <summary>
+/// Special class used for User Roots.  Children contain actual ones defined for this user
+/// PLUS the virtual folders from the physical root (added by plug-ins).
+/// </summary>
+public class UserRootFolder : Folder
 {
+    private readonly Lock _childIdsLock = new();
+    private List<Guid> _childrenIds = null;
+
     /// <summary>
-    /// Special class used for User Roots.  Children contain actual ones defined for this user
-    /// PLUS the virtual folders from the physical root (added by plug-ins).
+    /// Initializes a new instance of the <see cref="UserRootFolder"/> class.
     /// </summary>
-    public class UserRootFolder : Folder
+    public UserRootFolder()
     {
-        private readonly Lock _childIdsLock = new();
-        private List<Guid> _childrenIds = null;
+        IsRoot = true;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="UserRootFolder"/> class.
-        /// </summary>
-        public UserRootFolder()
+    [JsonIgnore]
+    public override bool SupportsInheritedParentImages => false;
+
+    [JsonIgnore]
+    public override bool SupportsPlayedStatus => false;
+
+    [JsonIgnore]
+    protected override bool SupportsShortcutChildren => true;
+
+    [JsonIgnore]
+    public override bool IsPreSorted => true;
+
+    private void ClearCache()
+    {
+        lock (_childIdsLock)
         {
-            IsRoot = true;
+            _childrenIds = null;
         }
+    }
 
-        [JsonIgnore]
-        public override bool SupportsInheritedParentImages => false;
-
-        [JsonIgnore]
-        public override bool SupportsPlayedStatus => false;
-
-        [JsonIgnore]
-        protected override bool SupportsShortcutChildren => true;
-
-        [JsonIgnore]
-        public override bool IsPreSorted => true;
-
-        private void ClearCache()
+    protected override IReadOnlyList<BaseItem> LoadChildren()
+    {
+        lock (_childIdsLock)
         {
-            lock (_childIdsLock)
+            if (_childrenIds is null)
             {
-                _childrenIds = null;
-            }
-        }
-
-        protected override IReadOnlyList<BaseItem> LoadChildren()
-        {
-            lock (_childIdsLock)
-            {
-                if (_childrenIds is null)
-                {
-                    var list = base.LoadChildren();
-                    _childrenIds = list.Select(i => i.Id).ToList();
-                    return list;
-                }
-
-                return _childrenIds.Select(LibraryManager.GetItemById).Where(i => i is not null).ToList();
-            }
-        }
-
-        protected override QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)
-        {
-            if (query.Recursive)
-            {
-                return QueryRecursive(query);
+                var list = base.LoadChildren();
+                _childrenIds = list.Select(i => i.Id).ToList();
+                return list;
             }
 
-            var result = UserViewManager.GetUserViews(new UserViewQuery
-            {
-                User = query.User,
-                PresetViews = query.PresetViews
-            });
+            return _childrenIds.Select(LibraryManager.GetItemById).Where(i => i is not null).ToList();
+        }
+    }
 
-            return UserViewBuilder.SortAndPage(result, null, query, LibraryManager, true);
+    protected override QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)
+    {
+        if (query.Recursive)
+        {
+            return QueryRecursive(query);
         }
 
-        public override int GetChildCount(User user)
+        var result = UserViewManager.GetUserViews(new UserViewQuery
         {
-            return GetChildren(user, true).Count;
+            User = query.User,
+            PresetViews = query.PresetViews
+        });
+
+        return UserViewBuilder.SortAndPage(result, null, query, LibraryManager, true);
+    }
+
+    public override int GetChildCount(User user)
+    {
+        return GetChildren(user, true).Count;
+    }
+
+    protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
+    {
+        var list = base.GetEligibleChildrenForRecursiveChildren(user).ToList();
+        list.AddRange(LibraryManager.RootFolder.VirtualChildren);
+
+        return list;
+    }
+
+    public override bool BeforeMetadataRefresh(bool replaceAllMetadata)
+    {
+        ClearCache();
+        var hasChanges = base.BeforeMetadataRefresh(replaceAllMetadata);
+
+        if (string.Equals("default", Name, StringComparison.OrdinalIgnoreCase))
+        {
+            Name = "Media Folders";
+            hasChanges = true;
         }
 
-        protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
+        return hasChanges;
+    }
+
+    protected override IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
+    {
+        ClearCache();
+
+        return base.GetNonCachedChildren(directoryService);
+    }
+
+    protected override async Task ValidateChildrenInternal(IProgress<double> progress, bool recursive, bool refreshChildMetadata, bool allowRemoveRoot, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService, CancellationToken cancellationToken)
+    {
+        ClearCache();
+
+        await base.ValidateChildrenInternal(progress, recursive, refreshChildMetadata, allowRemoveRoot, refreshOptions, directoryService, cancellationToken)
+            .ConfigureAwait(false);
+
+        ClearCache();
+
+        // Not the best way to handle this, but it solves an issue
+        // CollectionFolders aren't always getting saved after changes
+        // This means that grabbing the item by Id may end up returning the old one
+        // Fix is in two places - make sure the folder gets saved
+        // And here to remedy it for affected users.
+        // In theory this can be removed eventually.
+        foreach (var item in Children)
         {
-            var list = base.GetEligibleChildrenForRecursiveChildren(user).ToList();
-            list.AddRange(LibraryManager.RootFolder.VirtualChildren);
-
-            return list;
-        }
-
-        public override bool BeforeMetadataRefresh(bool replaceAllMetadata)
-        {
-            ClearCache();
-            var hasChanges = base.BeforeMetadataRefresh(replaceAllMetadata);
-
-            if (string.Equals("default", Name, StringComparison.OrdinalIgnoreCase))
-            {
-                Name = "Media Folders";
-                hasChanges = true;
-            }
-
-            return hasChanges;
-        }
-
-        protected override IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
-        {
-            ClearCache();
-
-            return base.GetNonCachedChildren(directoryService);
-        }
-
-        protected override async Task ValidateChildrenInternal(IProgress<double> progress, bool recursive, bool refreshChildMetadata, bool allowRemoveRoot, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService, CancellationToken cancellationToken)
-        {
-            ClearCache();
-
-            await base.ValidateChildrenInternal(progress, recursive, refreshChildMetadata, allowRemoveRoot, refreshOptions, directoryService, cancellationToken)
-                .ConfigureAwait(false);
-
-            ClearCache();
-
-            // Not the best way to handle this, but it solves an issue
-            // CollectionFolders aren't always getting saved after changes
-            // This means that grabbing the item by Id may end up returning the old one
-            // Fix is in two places - make sure the folder gets saved
-            // And here to remedy it for affected users.
-            // In theory this can be removed eventually.
-            foreach (var item in Children)
-            {
-                LibraryManager.RegisterItem(item);
-            }
+            LibraryManager.RegisterItem(item);
         }
     }
 }

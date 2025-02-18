@@ -7,7 +7,7 @@ using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.MediaSegments;
 
-namespace MediaBrowser.Controller;
+namespace MediaBrowser.Controller.MediaSegments;
 
 /// <summary>
 /// Defines methods for interacting with media segments.

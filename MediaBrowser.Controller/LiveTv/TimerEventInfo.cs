@@ -2,17 +2,16 @@
 
 using System;
 
-namespace MediaBrowser.Controller.LiveTv
+namespace MediaBrowser.Controller.LiveTv;
+
+public class TimerEventInfo
 {
-    public class TimerEventInfo
+    public TimerEventInfo(string id)
     {
-        public TimerEventInfo(string id)
-        {
-            Id = id;
-        }
-
-        public string Id { get; }
-
-        public Guid? ProgramId { get; set; }
+        Id = id;
     }
+
+    public string Id { get; }
+
+    public Guid? ProgramId { get; set; }
 }

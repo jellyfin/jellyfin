@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
@@ -24,7 +23,7 @@ namespace Jellyfin.Server.Helpers;
 /// </summary>
 public static class StartupHelpers
 {
-    private static readonly string[] _relevantEnvVarPrefixes = { "JELLYFIN_", "DOTNET_", "ASPNETCORE_" };
+    private static readonly string[] _relevantEnvVarPrefixes = ["JELLYFIN_", "DOTNET_", "ASPNETCORE_"];
 
     /// <summary>
     /// Logs relevant environment variables and information about the host.

@@ -2,16 +2,15 @@
 
 using System;
 
-namespace MediaBrowser.Controller.LiveTv
+namespace MediaBrowser.Controller.LiveTv;
+
+/// <summary>
+/// Class LiveTvConflictException.
+/// </summary>
+public class LiveTvConflictException : Exception
 {
-    /// <summary>
-    /// Class LiveTvConflictException.
-    /// </summary>
-    public class LiveTvConflictException : Exception
+    public LiveTvConflictException(string message)
+        : base(message)
     {
-        public LiveTvConflictException(string message)
-            : base(message)
-        {
-        }
     }
 }

@@ -5,64 +5,63 @@ using Jellyfin.Data.Entities.Security;
 using MediaBrowser.Controller.Security;
 using Microsoft.EntityFrameworkCore;
 
-namespace Jellyfin.Server.Implementations.Security
+namespace Jellyfin.Server.Implementations.Security;
+
+/// <inheritdoc />
+public class AuthenticationManager : IAuthenticationManager
 {
-    /// <inheritdoc />
-    public class AuthenticationManager : IAuthenticationManager
+    private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AuthenticationManager"/> class.
+    /// </summary>
+    /// <param name="dbProvider">The database provider.</param>
+    public AuthenticationManager(IDbContextFactory<JellyfinDbContext> dbProvider)
     {
-        private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
+        _dbProvider = dbProvider;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AuthenticationManager"/> class.
-        /// </summary>
-        /// <param name="dbProvider">The database provider.</param>
-        public AuthenticationManager(IDbContextFactory<JellyfinDbContext> dbProvider)
+    /// <inheritdoc />
+    public async Task CreateApiKey(string name)
+    {
+        var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+        await using (dbContext.ConfigureAwait(false))
         {
-            _dbProvider = dbProvider;
+            dbContext.ApiKeys.Add(new ApiKey(name));
+
+            await dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
+    }
 
-        /// <inheritdoc />
-        public async Task CreateApiKey(string name)
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<AuthenticationInfo>> GetApiKeys()
+    {
+        var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+        await using (dbContext.ConfigureAwait(false))
         {
-            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
-            {
-                dbContext.ApiKeys.Add(new ApiKey(name));
-
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
-            }
+            return await dbContext.ApiKeys
+                .Select(key => new AuthenticationInfo
+                {
+                    AppName = key.Name,
+                    AccessToken = key.AccessToken,
+                    DateCreated = key.DateCreated,
+                    DeviceId = string.Empty,
+                    DeviceName = string.Empty,
+                    AppVersion = string.Empty
+                }).ToListAsync().ConfigureAwait(false);
         }
+    }
 
-        /// <inheritdoc />
-        public async Task<IReadOnlyList<AuthenticationInfo>> GetApiKeys()
+    /// <inheritdoc />
+    public async Task DeleteApiKey(string accessToken)
+    {
+        var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+        await using (dbContext.ConfigureAwait(false))
         {
-            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
-            {
-                return await dbContext.ApiKeys
-                    .Select(key => new AuthenticationInfo
-                    {
-                        AppName = key.Name,
-                        AccessToken = key.AccessToken,
-                        DateCreated = key.DateCreated,
-                        DeviceId = string.Empty,
-                        DeviceName = string.Empty,
-                        AppVersion = string.Empty
-                    }).ToListAsync().ConfigureAwait(false);
-            }
-        }
-
-        /// <inheritdoc />
-        public async Task DeleteApiKey(string accessToken)
-        {
-            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
-            {
-                await dbContext.ApiKeys
-                    .Where(apiKey => apiKey.AccessToken == accessToken)
-                    .ExecuteDeleteAsync()
-                    .ConfigureAwait(false);
-            }
+            await dbContext.ApiKeys
+                .Where(apiKey => apiKey.AccessToken == accessToken)
+                .ExecuteDeleteAsync()
+                .ConfigureAwait(false);
         }
     }
 }

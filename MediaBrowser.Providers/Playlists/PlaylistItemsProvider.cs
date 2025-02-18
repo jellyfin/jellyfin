@@ -130,7 +130,7 @@ public class PlaylistItemsProvider : ILocalMetadataProvider<Playlist>,
             }
         }
 
-        return Enumerable.Empty<LinkedChild>();
+        return [];
     }
 
     private IEnumerable<LinkedChild> GetPlsItems(Stream stream, string playlistPath, List<string> libraryRoots)

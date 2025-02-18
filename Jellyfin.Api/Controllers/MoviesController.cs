@@ -82,14 +82,14 @@ public class MoviesController : BaseJellyfinApiController
 
         var query = new InternalItemsQuery(user)
         {
-            IncludeItemTypes = new[]
-            {
-                BaseItemKind.Movie,
+            IncludeItemTypes =
+            [
+                BaseItemKind.Movie
                 // nameof(Trailer),
                 // nameof(LiveTvProgram)
-            },
+            ],
             // IsMovie = true
-            OrderBy = new[] { (ItemSortBy.DatePlayed, SortOrder.Descending), (ItemSortBy.Random, SortOrder.Descending) },
+            OrderBy = [(ItemSortBy.DatePlayed, SortOrder.Descending), (ItemSortBy.Random, SortOrder.Descending)],
             Limit = 7,
             ParentId = parentIdGuid,
             Recursive = true,
@@ -110,7 +110,7 @@ public class MoviesController : BaseJellyfinApiController
         {
             IncludeItemTypes = itemTypes.ToArray(),
             IsMovie = true,
-            OrderBy = new[] { (ItemSortBy.Random, SortOrder.Descending) },
+            OrderBy = [(ItemSortBy.Random, SortOrder.Descending)],
             Limit = 10,
             IsFavoriteOrLiked = true,
             ExcludeItemIds = recentlyPlayedMovies.Select(i => i.Id).ToArray(),
@@ -197,7 +197,7 @@ public class MoviesController : BaseJellyfinApiController
                     Person = name,
                     // Account for duplicates by IMDb id, since the database doesn't support this yet
                     Limit = itemLimit + 2,
-                    PersonTypes = new[] { PersonType.Director },
+                    PersonTypes = [PersonType.Director],
                     IncludeItemTypes = itemTypes.ToArray(),
                     IsMovie = true,
                     EnableGroupByMetadataKey = true,
@@ -297,7 +297,7 @@ public class MoviesController : BaseJellyfinApiController
 
     private IEnumerable<string> GetActors(IEnumerable<BaseItem> items)
     {
-        var people = _libraryManager.GetPeople(new InternalPeopleQuery(Array.Empty<string>(), new[] { PersonType.Director })
+        var people = _libraryManager.GetPeople(new InternalPeopleQuery(Array.Empty<string>(), [PersonType.Director])
         {
             MaxListOrder = 3
         });
@@ -313,7 +313,7 @@ public class MoviesController : BaseJellyfinApiController
     private IEnumerable<string> GetDirectors(IEnumerable<BaseItem> items)
     {
         var people = _libraryManager.GetPeople(new InternalPeopleQuery(
-            new[] { PersonType.Director },
+            [PersonType.Director],
             Array.Empty<string>()));
 
         var itemIds = items.Select(i => i.Id).ToList();

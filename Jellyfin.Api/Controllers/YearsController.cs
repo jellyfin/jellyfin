@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Jellyfin.Api.Extensions;
@@ -146,7 +145,7 @@ public class YearsController : BaseJellyfinApiController
             }
         }
 
-        var tuples = ibnItems.Select(i => new Tuple<BaseItem, List<BaseItem>>(i, new List<BaseItem>()));
+        var tuples = ibnItems.Select(i => new Tuple<BaseItem, List<BaseItem>>(i, []));
 
         var dtos = tuples.Select(i => _dtoService.GetItemByNameDto(i.Item1, dtoOptions, i.Item2, user));
 

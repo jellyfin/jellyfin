@@ -12,7 +12,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Extensions;
-using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.SubtitleDtos;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
@@ -504,7 +503,7 @@ public class SubtitleController : BaseJellyfinApiController
 
         if (!string.IsNullOrEmpty(fallbackFontPath))
         {
-            var files = _fileSystem.GetFiles(fallbackFontPath, new[] { ".woff", ".woff2", ".ttf", ".otf" }, false, false);
+            var files = _fileSystem.GetFiles(fallbackFontPath, [".woff", ".woff2", ".ttf", ".otf"], false, false);
             var fontFiles = files
                 .Select(i => new FontFile
                 {

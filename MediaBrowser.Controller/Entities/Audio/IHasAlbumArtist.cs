@@ -6,28 +6,27 @@ using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Controller.Library;
 
-namespace MediaBrowser.Controller.Entities.Audio
+namespace MediaBrowser.Controller.Entities.Audio;
+
+public interface IHasAlbumArtist
 {
-    public interface IHasAlbumArtist
-    {
-        IReadOnlyList<string> AlbumArtists { get; set; }
-    }
+    IReadOnlyList<string> AlbumArtists { get; set; }
+}
 
-    public interface IHasArtist
-    {
-        /// <summary>
-        /// Gets or sets the artists.
-        /// </summary>
-        /// <value>The artists.</value>
-        IReadOnlyList<string> Artists { get; set; }
-    }
+public interface IHasArtist
+{
+    /// <summary>
+    /// Gets or sets the artists.
+    /// </summary>
+    /// <value>The artists.</value>
+    IReadOnlyList<string> Artists { get; set; }
+}
 
-    public static class Extensions
+public static class Extensions
+{
+    public static IEnumerable<string> GetAllArtists<T>(this T item)
+        where T : IHasArtist, IHasAlbumArtist
     {
-        public static IEnumerable<string> GetAllArtists<T>(this T item)
-            where T : IHasArtist, IHasAlbumArtist
-        {
-            return item.AlbumArtists.Concat(item.Artists).DistinctNames();
-        }
+        return item.AlbumArtists.Concat(item.Artists).DistinctNames();
     }
 }

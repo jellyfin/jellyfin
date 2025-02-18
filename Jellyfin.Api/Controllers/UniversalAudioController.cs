@@ -289,8 +289,8 @@ public class UniversalAudioController : BaseJellyfinApiController
 
         deviceProfile.DirectPlayProfiles = directPlayProfiles;
 
-        deviceProfile.TranscodingProfiles = new[]
-        {
+        deviceProfile.TranscodingProfiles =
+        [
             new TranscodingProfile
             {
                 Type = DlnaProfileType.Audio,
@@ -301,7 +301,7 @@ public class UniversalAudioController : BaseJellyfinApiController
                 BreakOnNonKeyFrames = breakOnNonKeyFrames ?? false,
                 MaxAudioChannels = transcodingAudioChannels?.ToString(CultureInfo.InvariantCulture)
             }
-        };
+        ];
 
         var codecProfiles = new List<CodecProfile>();
         var conditions = new List<ProfileCondition>();

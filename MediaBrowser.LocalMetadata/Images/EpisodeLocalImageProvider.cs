@@ -9,77 +9,76 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 
-namespace MediaBrowser.LocalMetadata.Images
+namespace MediaBrowser.LocalMetadata.Images;
+
+/// <summary>
+/// Episode local image provider.
+/// </summary>
+public class EpisodeLocalImageProvider : ILocalImageProvider, IHasOrder
 {
-    /// <summary>
-    /// Episode local image provider.
-    /// </summary>
-    public class EpisodeLocalImageProvider : ILocalImageProvider, IHasOrder
+    /// <inheritdoc />
+    public string Name => "Local Images";
+
+    /// <inheritdoc />
+    public int Order => 0;
+
+    /// <inheritdoc />
+    public bool Supports(BaseItem item)
     {
-        /// <inheritdoc />
-        public string Name => "Local Images";
+        return item is Episode && item.SupportsLocalMetadata;
+    }
 
-        /// <inheritdoc />
-        public int Order => 0;
-
-        /// <inheritdoc />
-        public bool Supports(BaseItem item)
+    /// <inheritdoc />
+    public IEnumerable<LocalImageInfo> GetImages(BaseItem item, IDirectoryService directoryService)
+    {
+        var parentPath = Path.GetDirectoryName(item.Path);
+        if (parentPath is null)
         {
-            return item is Episode && item.SupportsLocalMetadata;
+            return [];
         }
 
-        /// <inheritdoc />
-        public IEnumerable<LocalImageInfo> GetImages(BaseItem item, IDirectoryService directoryService)
+        var parentPathFiles = directoryService.GetFiles(parentPath);
+        var nameWithoutExtension = Path.GetFileNameWithoutExtension(item.Path.AsSpan()).ToString();
+
+        var images = GetImageFilesFromFolder(nameWithoutExtension, parentPathFiles);
+
+        var metadataSubDir = directoryService.GetDirectories(parentPath).FirstOrDefault(d => d.Name.Equals("metadata", StringComparison.Ordinal));
+        if (metadataSubDir is not null)
         {
-            var parentPath = Path.GetDirectoryName(item.Path);
-            if (parentPath is null)
-            {
-                return Enumerable.Empty<LocalImageInfo>();
-            }
-
-            var parentPathFiles = directoryService.GetFiles(parentPath);
-            var nameWithoutExtension = Path.GetFileNameWithoutExtension(item.Path.AsSpan()).ToString();
-
-            var images = GetImageFilesFromFolder(nameWithoutExtension, parentPathFiles);
-
-            var metadataSubDir = directoryService.GetDirectories(parentPath).FirstOrDefault(d => d.Name.Equals("metadata", StringComparison.Ordinal));
-            if (metadataSubDir is not null)
-            {
-                var files = directoryService.GetFiles(metadataSubDir.FullName);
-                images.AddRange(GetImageFilesFromFolder(nameWithoutExtension, files));
-            }
-
-            return images;
+            var files = directoryService.GetFiles(metadataSubDir.FullName);
+            images.AddRange(GetImageFilesFromFolder(nameWithoutExtension, files));
         }
 
-        private List<LocalImageInfo> GetImageFilesFromFolder(ReadOnlySpan<char> filenameWithoutExtension, List<FileSystemMetadata> filePaths)
-        {
-            var list = new List<LocalImageInfo>(1);
-            var thumbName = string.Concat(filenameWithoutExtension, "-thumb");
+        return images;
+    }
 
-            foreach (var i in filePaths)
+    private List<LocalImageInfo> GetImageFilesFromFolder(ReadOnlySpan<char> filenameWithoutExtension, List<FileSystemMetadata> filePaths)
+    {
+        var list = new List<LocalImageInfo>(1);
+        var thumbName = string.Concat(filenameWithoutExtension, "-thumb");
+
+        foreach (var i in filePaths)
+        {
+            if (i.IsDirectory)
             {
-                if (i.IsDirectory)
+                continue;
+            }
+
+            if (BaseItem.SupportedImageExtensions.Contains(i.Extension.AsSpan(), StringComparison.OrdinalIgnoreCase))
+            {
+                var currentNameWithoutExtension = Path.GetFileNameWithoutExtension(i.FullName.AsSpan());
+
+                if (filenameWithoutExtension.Equals(currentNameWithoutExtension, StringComparison.OrdinalIgnoreCase))
                 {
-                    continue;
+                    list.Add(new LocalImageInfo { FileInfo = i, Type = ImageType.Primary });
                 }
-
-                if (BaseItem.SupportedImageExtensions.Contains(i.Extension.AsSpan(), StringComparison.OrdinalIgnoreCase))
+                else if (currentNameWithoutExtension.Equals(thumbName, StringComparison.OrdinalIgnoreCase))
                 {
-                    var currentNameWithoutExtension = Path.GetFileNameWithoutExtension(i.FullName.AsSpan());
-
-                    if (filenameWithoutExtension.Equals(currentNameWithoutExtension, StringComparison.OrdinalIgnoreCase))
-                    {
-                        list.Add(new LocalImageInfo { FileInfo = i, Type = ImageType.Primary });
-                    }
-                    else if (currentNameWithoutExtension.Equals(thumbName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        list.Add(new LocalImageInfo { FileInfo = i, Type = ImageType.Primary });
-                    }
+                    list.Add(new LocalImageInfo { FileInfo = i, Type = ImageType.Primary });
                 }
             }
-
-            return list;
         }
+
+        return list;
     }
 }

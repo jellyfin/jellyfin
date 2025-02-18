@@ -1,28 +1,27 @@
-namespace MediaBrowser.Model.Tasks
+namespace MediaBrowser.Model.Tasks;
+
+/// <summary>
+/// Enum TaskTriggerInfoType.
+/// </summary>
+public enum TaskTriggerInfoType
 {
     /// <summary>
-    /// Enum TaskTriggerInfoType.
+    /// The daily trigger.
     /// </summary>
-    public enum TaskTriggerInfoType
-    {
-        /// <summary>
-        /// The daily trigger.
-        /// </summary>
-        DailyTrigger,
+    DailyTrigger,
 
-        /// <summary>
-        /// The weekly trigger.
-        /// </summary>
-        WeeklyTrigger,
+    /// <summary>
+    /// The weekly trigger.
+    /// </summary>
+    WeeklyTrigger,
 
-        /// <summary>
-        /// The interval trigger.
-        /// </summary>
-        IntervalTrigger,
+    /// <summary>
+    /// The interval trigger.
+    /// </summary>
+    IntervalTrigger,
 
-        /// <summary>
-        /// The startup trigger.
-        /// </summary>
-        StartupTrigger
-    }
+    /// <summary>
+    /// The startup trigger.
+    /// </summary>
+    StartupTrigger
 }

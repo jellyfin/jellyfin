@@ -16,195 +16,194 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
 
-namespace Emby.Server.Implementations.Library.Resolvers.TV
+namespace Emby.Server.Implementations.Library.Resolvers.TV;
+
+/// <summary>
+/// Class SeriesResolver.
+/// </summary>
+public class SeriesResolver : GenericFolderResolver<Series>
 {
+    private readonly ILogger<SeriesResolver> _logger;
+    private readonly NamingOptions _namingOptions;
+
     /// <summary>
-    /// Class SeriesResolver.
+    /// Initializes a new instance of the <see cref="SeriesResolver"/> class.
     /// </summary>
-    public class SeriesResolver : GenericFolderResolver<Series>
+    /// <param name="logger">The logger.</param>
+    /// <param name="namingOptions">The naming options.</param>
+    public SeriesResolver(ILogger<SeriesResolver> logger,  NamingOptions namingOptions)
     {
-        private readonly ILogger<SeriesResolver> _logger;
-        private readonly NamingOptions _namingOptions;
+        _logger = logger;
+        _namingOptions = namingOptions;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SeriesResolver"/> class.
-        /// </summary>
-        /// <param name="logger">The logger.</param>
-        /// <param name="namingOptions">The naming options.</param>
-        public SeriesResolver(ILogger<SeriesResolver> logger,  NamingOptions namingOptions)
+    /// <summary>
+    /// Gets the priority.
+    /// </summary>
+    /// <value>The priority.</value>
+    public override ResolverPriority Priority => ResolverPriority.Second;
+
+    /// <summary>
+    /// Resolves the specified args.
+    /// </summary>
+    /// <param name="args">The args.</param>
+    /// <returns>Series.</returns>
+    protected override Series Resolve(ItemResolveArgs args)
+    {
+        if (args.IsDirectory)
         {
-            _logger = logger;
-            _namingOptions = namingOptions;
-        }
-
-        /// <summary>
-        /// Gets the priority.
-        /// </summary>
-        /// <value>The priority.</value>
-        public override ResolverPriority Priority => ResolverPriority.Second;
-
-        /// <summary>
-        /// Resolves the specified args.
-        /// </summary>
-        /// <param name="args">The args.</param>
-        /// <returns>Series.</returns>
-        protected override Series Resolve(ItemResolveArgs args)
-        {
-            if (args.IsDirectory)
+            if (args.HasParent<Series>() || args.HasParent<Season>())
             {
-                if (args.HasParent<Series>() || args.HasParent<Season>())
+                return null;
+            }
+
+            var seriesInfo = Naming.TV.SeriesResolver.Resolve(_namingOptions, args.Path);
+
+            var collectionType = args.GetCollectionType();
+            if (collectionType == CollectionType.tvshows)
+            {
+                // TODO refactor into separate class or something, this is copied from LibraryManager.GetConfiguredContentType
+                var configuredContentType = args.GetConfiguredContentType();
+                if (configuredContentType != CollectionType.tvshows)
+                {
+                    return new Series
+                    {
+                        Path = args.Path,
+                        Name = seriesInfo.Name
+                    };
+                }
+            }
+            else if (collectionType is null)
+            {
+                if (args.ContainsFileSystemEntryByName("tvshow.nfo"))
+                {
+                    if (args.Parent is not null && args.Parent.IsRoot)
+                    {
+                        // For now, return null, but if we want to allow this in the future then add some additional checks to guard against a misplaced tvshow.nfo
+                        return null;
+                    }
+
+                    return new Series
+                    {
+                        Path = args.Path,
+                        Name = seriesInfo.Name
+                    };
+                }
+
+                if (args.Parent is not null && args.Parent.IsRoot)
                 {
                     return null;
                 }
 
-                var seriesInfo = Naming.TV.SeriesResolver.Resolve(_namingOptions, args.Path);
-
-                var collectionType = args.GetCollectionType();
-                if (collectionType == CollectionType.tvshows)
+                if (IsSeriesFolder(args.Path, args.FileSystemChildren, false))
                 {
-                    // TODO refactor into separate class or something, this is copied from LibraryManager.GetConfiguredContentType
-                    var configuredContentType = args.GetConfiguredContentType();
-                    if (configuredContentType != CollectionType.tvshows)
+                    return new Series
                     {
-                        return new Series
-                        {
-                            Path = args.Path,
-                            Name = seriesInfo.Name
-                        };
-                    }
-                }
-                else if (collectionType is null)
-                {
-                    if (args.ContainsFileSystemEntryByName("tvshow.nfo"))
-                    {
-                        if (args.Parent is not null && args.Parent.IsRoot)
-                        {
-                            // For now, return null, but if we want to allow this in the future then add some additional checks to guard against a misplaced tvshow.nfo
-                            return null;
-                        }
-
-                        return new Series
-                        {
-                            Path = args.Path,
-                            Name = seriesInfo.Name
-                        };
-                    }
-
-                    if (args.Parent is not null && args.Parent.IsRoot)
-                    {
-                        return null;
-                    }
-
-                    if (IsSeriesFolder(args.Path, args.FileSystemChildren, false))
-                    {
-                        return new Series
-                        {
-                            Path = args.Path,
-                            Name = seriesInfo.Name
-                        };
-                    }
+                        Path = args.Path,
+                        Name = seriesInfo.Name
+                    };
                 }
             }
-
-            return null;
         }
 
-        private bool IsSeriesFolder(
-            string path,
-            IEnumerable<FileSystemMetadata> fileSystemChildren,
-            bool isTvContentType)
+        return null;
+    }
+
+    private bool IsSeriesFolder(
+        string path,
+        IEnumerable<FileSystemMetadata> fileSystemChildren,
+        bool isTvContentType)
+    {
+        foreach (var child in fileSystemChildren)
         {
-            foreach (var child in fileSystemChildren)
+            if (child.IsDirectory)
             {
-                if (child.IsDirectory)
+                if (IsSeasonFolder(child.FullName, isTvContentType))
                 {
-                    if (IsSeasonFolder(child.FullName, isTvContentType))
+                    _logger.LogDebug("{Path} is a series because of season folder {Dir}.", path, child.FullName);
+                    return true;
+                }
+            }
+            else
+            {
+                string fullName = child.FullName;
+                if (VideoResolver.IsVideoFile(path, _namingOptions))
+                {
+                    if (isTvContentType)
                     {
-                        _logger.LogDebug("{Path} is a series because of season folder {Dir}.", path, child.FullName);
+                        return true;
+                    }
+
+                    var namingOptions = _namingOptions;
+
+                    var episodeResolver = new Naming.TV.EpisodeResolver(namingOptions);
+
+                    var episodeInfo = episodeResolver.Resolve(fullName, false, true, false, fillExtendedInfo: false);
+                    if (episodeInfo is not null && episodeInfo.EpisodeNumber.HasValue)
+                    {
                         return true;
                     }
                 }
-                else
-                {
-                    string fullName = child.FullName;
-                    if (VideoResolver.IsVideoFile(path, _namingOptions))
-                    {
-                        if (isTvContentType)
-                        {
-                            return true;
-                        }
-
-                        var namingOptions = _namingOptions;
-
-                        var episodeResolver = new Naming.TV.EpisodeResolver(namingOptions);
-
-                        var episodeInfo = episodeResolver.Resolve(fullName, false, true, false, fillExtendedInfo: false);
-                        if (episodeInfo is not null && episodeInfo.EpisodeNumber.HasValue)
-                        {
-                            return true;
-                        }
-                    }
-                }
             }
-
-            _logger.LogDebug("{Path} is not a series folder.", path);
-            return false;
         }
 
-        /// <summary>
-        /// Determines whether [is season folder] [the specified path].
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="isTvContentType">if set to <c>true</c> [is tv content type].</param>
-        /// <returns><c>true</c> if [is season folder] [the specified path]; otherwise, <c>false</c>.</returns>
-        private static bool IsSeasonFolder(string path, bool isTvContentType)
-        {
-            var seasonNumber = SeasonPathParser.Parse(path, isTvContentType, isTvContentType).SeasonNumber;
+        _logger.LogDebug("{Path} is not a series folder.", path);
+        return false;
+    }
 
-            return seasonNumber.HasValue;
-        }
+    /// <summary>
+    /// Determines whether [is season folder] [the specified path].
+    /// </summary>
+    /// <param name="path">The path.</param>
+    /// <param name="isTvContentType">if set to <c>true</c> [is tv content type].</param>
+    /// <returns><c>true</c> if [is season folder] [the specified path]; otherwise, <c>false</c>.</returns>
+    private static bool IsSeasonFolder(string path, bool isTvContentType)
+    {
+        var seasonNumber = SeasonPathParser.Parse(path, isTvContentType, isTvContentType).SeasonNumber;
 
-        /// <summary>
-        /// Sets the initial item values.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="args">The args.</param>
-        protected override void SetInitialItemValues(Series item, ItemResolveArgs args)
-        {
-            base.SetInitialItemValues(item, args);
+        return seasonNumber.HasValue;
+    }
 
-            SetProviderIdFromPath(item, args.Path);
-        }
+    /// <summary>
+    /// Sets the initial item values.
+    /// </summary>
+    /// <param name="item">The item.</param>
+    /// <param name="args">The args.</param>
+    protected override void SetInitialItemValues(Series item, ItemResolveArgs args)
+    {
+        base.SetInitialItemValues(item, args);
 
-        /// <summary>
-        /// Sets the provider id from path.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="path">The path.</param>
-        private static void SetProviderIdFromPath(Series item, string path)
-        {
-            var justName = Path.GetFileName(path.AsSpan());
+        SetProviderIdFromPath(item, args.Path);
+    }
 
-            var imdbId = justName.GetAttributeValue("imdbid");
-            item.TrySetProviderId(MetadataProvider.Imdb, imdbId);
+    /// <summary>
+    /// Sets the provider id from path.
+    /// </summary>
+    /// <param name="item">The item.</param>
+    /// <param name="path">The path.</param>
+    private static void SetProviderIdFromPath(Series item, string path)
+    {
+        var justName = Path.GetFileName(path.AsSpan());
 
-            var tvdbId = justName.GetAttributeValue("tvdbid");
-            item.TrySetProviderId(MetadataProvider.Tvdb, tvdbId);
+        var imdbId = justName.GetAttributeValue("imdbid");
+        item.TrySetProviderId(MetadataProvider.Imdb, imdbId);
 
-            var tvmazeId = justName.GetAttributeValue("tvmazeid");
-            item.TrySetProviderId(MetadataProvider.TvMaze, tvmazeId);
+        var tvdbId = justName.GetAttributeValue("tvdbid");
+        item.TrySetProviderId(MetadataProvider.Tvdb, tvdbId);
 
-            var tmdbId = justName.GetAttributeValue("tmdbid");
-            item.TrySetProviderId(MetadataProvider.Tmdb, tmdbId);
+        var tvmazeId = justName.GetAttributeValue("tvmazeid");
+        item.TrySetProviderId(MetadataProvider.TvMaze, tvmazeId);
 
-            var anidbId = justName.GetAttributeValue("anidbid");
-            item.TrySetProviderId("AniDB", anidbId);
+        var tmdbId = justName.GetAttributeValue("tmdbid");
+        item.TrySetProviderId(MetadataProvider.Tmdb, tmdbId);
 
-            var aniListId = justName.GetAttributeValue("anilistid");
-            item.TrySetProviderId("AniList", aniListId);
+        var anidbId = justName.GetAttributeValue("anidbid");
+        item.TrySetProviderId("AniDB", anidbId);
 
-            var aniSearchId = justName.GetAttributeValue("anisearchid");
-            item.TrySetProviderId("AniSearch", aniSearchId);
-        }
+        var aniListId = justName.GetAttributeValue("anilistid");
+        item.TrySetProviderId("AniList", aniListId);
+
+        var aniSearchId = justName.GetAttributeValue("anisearchid");
+        item.TrySetProviderId("AniSearch", aniSearchId);
     }
 }

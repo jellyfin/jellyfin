@@ -3,15 +3,14 @@
 using System;
 using System.Collections.Generic;
 
-namespace MediaBrowser.Model.MediaInfo
-{
-    public class SubtitleTrackInfo
-    {
-        public SubtitleTrackInfo()
-        {
-            TrackEvents = Array.Empty<SubtitleTrackEvent>();
-        }
+namespace MediaBrowser.Model.MediaInfo;
 
-        public IReadOnlyList<SubtitleTrackEvent> TrackEvents { get; set; }
+public class SubtitleTrackInfo
+{
+    public SubtitleTrackInfo()
+    {
+        TrackEvents = Array.Empty<SubtitleTrackEvent>();
     }
+
+    public IReadOnlyList<SubtitleTrackEvent> TrackEvents { get; set; }
 }

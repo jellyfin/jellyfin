@@ -90,7 +90,7 @@ public class NetworkManager : INetworkManager, IDisposable
         _configurationManager = configurationManager;
         _startupConfig = startupConfig;
         _initLock = new();
-        _interfaces = new List<IPData>();
+        _interfaces = [];
         _macAddresses = new List<PhysicalAddress>();
         _publishedServerUrls = new List<PublishedServerUriOverride>();
         _networkEventLock = new();
@@ -781,7 +781,7 @@ public class NetworkManager : INetworkManager, IDisposable
     {
         if (!NetworkUtils.TryParseHost(source, out var addresses, IsIPv4Enabled, IsIPv6Enabled))
         {
-            addresses = Array.Empty<IPAddress>();
+            addresses = [];
         }
 
         var result = GetBindAddress(addresses.FirstOrDefault(), out port);

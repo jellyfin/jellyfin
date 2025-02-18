@@ -5,90 +5,89 @@ using System.IO;
 using System.Reflection;
 using MediaBrowser.Model.Plugins;
 
-namespace MediaBrowser.Common.Plugins
+namespace MediaBrowser.Common.Plugins;
+
+/// <summary>
+/// Provides a common base class for all plugins.
+/// </summary>
+public abstract class BasePlugin : IPlugin, IPluginAssembly
 {
     /// <summary>
-    /// Provides a common base class for all plugins.
+    /// Gets the name of the plugin.
     /// </summary>
-    public abstract class BasePlugin : IPlugin, IPluginAssembly
+    /// <value>The name.</value>
+    public abstract string Name { get; }
+
+    /// <summary>
+    /// Gets the description.
+    /// </summary>
+    /// <value>The description.</value>
+    public virtual string Description => string.Empty;
+
+    /// <summary>
+    /// Gets the unique id.
+    /// </summary>
+    /// <value>The unique id.</value>
+    public virtual Guid Id { get; private set; }
+
+    /// <summary>
+    /// Gets the plugin version.
+    /// </summary>
+    /// <value>The version.</value>
+    public Version Version { get; private set; }
+
+    /// <summary>
+    /// Gets the path to the assembly file.
+    /// </summary>
+    /// <value>The assembly file path.</value>
+    public string AssemblyFilePath { get; private set; }
+
+    /// <summary>
+    /// Gets the full path to the data folder, where the plugin can store any miscellaneous files needed.
+    /// </summary>
+    /// <value>The data folder path.</value>
+    public string DataFolderPath { get; private set; }
+
+    /// <summary>
+    /// Gets a value indicating whether the plugin can be uninstalled.
+    /// </summary>
+    public bool CanUninstall => !Path.GetDirectoryName(AssemblyFilePath)
+        .Equals(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), StringComparison.Ordinal);
+
+    /// <summary>
+    /// Gets the plugin info.
+    /// </summary>
+    /// <returns>PluginInfo.</returns>
+    public virtual PluginInfo GetPluginInfo()
     {
-        /// <summary>
-        /// Gets the name of the plugin.
-        /// </summary>
-        /// <value>The name.</value>
-        public abstract string Name { get; }
+        var info = new PluginInfo(
+            Name,
+            Version,
+            Description,
+            Id,
+            CanUninstall);
 
-        /// <summary>
-        /// Gets the description.
-        /// </summary>
-        /// <value>The description.</value>
-        public virtual string Description => string.Empty;
+        return info;
+    }
 
-        /// <summary>
-        /// Gets the unique id.
-        /// </summary>
-        /// <value>The unique id.</value>
-        public virtual Guid Id { get; private set; }
+    /// <summary>
+    /// Called just before the plugin is uninstalled from the server.
+    /// </summary>
+    public virtual void OnUninstalling()
+    {
+    }
 
-        /// <summary>
-        /// Gets the plugin version.
-        /// </summary>
-        /// <value>The version.</value>
-        public Version Version { get; private set; }
+    /// <inheritdoc />
+    public void SetAttributes(string assemblyFilePath, string dataFolderPath, Version assemblyVersion)
+    {
+        AssemblyFilePath = assemblyFilePath;
+        DataFolderPath = dataFolderPath;
+        Version = assemblyVersion;
+    }
 
-        /// <summary>
-        /// Gets the path to the assembly file.
-        /// </summary>
-        /// <value>The assembly file path.</value>
-        public string AssemblyFilePath { get; private set; }
-
-        /// <summary>
-        /// Gets the full path to the data folder, where the plugin can store any miscellaneous files needed.
-        /// </summary>
-        /// <value>The data folder path.</value>
-        public string DataFolderPath { get; private set; }
-
-        /// <summary>
-        /// Gets a value indicating whether the plugin can be uninstalled.
-        /// </summary>
-        public bool CanUninstall => !Path.GetDirectoryName(AssemblyFilePath)
-            .Equals(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), StringComparison.Ordinal);
-
-        /// <summary>
-        /// Gets the plugin info.
-        /// </summary>
-        /// <returns>PluginInfo.</returns>
-        public virtual PluginInfo GetPluginInfo()
-        {
-            var info = new PluginInfo(
-                Name,
-                Version,
-                Description,
-                Id,
-                CanUninstall);
-
-            return info;
-        }
-
-        /// <summary>
-        /// Called just before the plugin is uninstalled from the server.
-        /// </summary>
-        public virtual void OnUninstalling()
-        {
-        }
-
-        /// <inheritdoc />
-        public void SetAttributes(string assemblyFilePath, string dataFolderPath, Version assemblyVersion)
-        {
-            AssemblyFilePath = assemblyFilePath;
-            DataFolderPath = dataFolderPath;
-            Version = assemblyVersion;
-        }
-
-        /// <inheritdoc />
-        public void SetId(Guid assemblyId)
-        {
-            Id = assemblyId;
-        }
+    /// <inheritdoc />
+    public void SetId(Guid assemblyId)
+    {
+        Id = assemblyId;
     }
 }

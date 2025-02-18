@@ -93,7 +93,7 @@ public class MigrateNetworkConfiguration : IMigrationRoutine
         var oldVirtualInterfaceNames = oldNetworkConfiguration.VirtualInterfaceNames;
         if (oldVirtualInterfaceNames.Equals("vEthernet*", StringComparison.OrdinalIgnoreCase))
         {
-            networkConfiguration.VirtualInterfaceNames = new string[] { "veth" };
+            networkConfiguration.VirtualInterfaceNames = ["veth"];
         }
         else
         {
@@ -189,13 +189,13 @@ public class MigrateNetworkConfiguration : IMigrationRoutine
 
         public string HDHomerunPortRange { get; set; } = string.Empty;
 
-        public string[] PublishedServerUriBySubnet { get; set; } = Array.Empty<string>();
+        public string[] PublishedServerUriBySubnet { get; set; } = [];
 
         public bool AutoDiscoveryTracing { get; set; }
 
         public bool AutoDiscovery { get; set; } = true;
 
-        public string[] RemoteIPFilter { get; set; } = Array.Empty<string>();
+        public string[] RemoteIPFilter { get; set; } = [];
 
         public bool IsRemoteIPFilterBlacklist { get; set; }
 
@@ -203,10 +203,10 @@ public class MigrateNetworkConfiguration : IMigrationRoutine
 
         public bool EnableRemoteAccess { get; set; } = true;
 
-        public string[] LocalNetworkSubnets { get; set; } = Array.Empty<string>();
+        public string[] LocalNetworkSubnets { get; set; } = [];
 
-        public string[] LocalNetworkAddresses { get; set; } = Array.Empty<string>();
-        public string[] KnownProxies { get; set; } = Array.Empty<string>();
+        public string[] LocalNetworkAddresses { get; set; } = [];
+        public string[] KnownProxies { get; set; } = [];
 
         public bool EnablePublishedServerUriByRequest { get; set; } = false;
     }

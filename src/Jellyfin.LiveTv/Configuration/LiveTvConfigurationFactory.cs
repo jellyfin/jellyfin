@@ -12,13 +12,13 @@ public class LiveTvConfigurationFactory : IConfigurationFactory
     /// <inheritdoc />
     public IEnumerable<ConfigurationStore> GetConfigurations()
     {
-        return new[]
-        {
+        return
+        [
             new ConfigurationStore
             {
                 ConfigurationType = typeof(LiveTvOptions),
                 Key = "livetv"
             }
-        };
+        ];
     }
 }

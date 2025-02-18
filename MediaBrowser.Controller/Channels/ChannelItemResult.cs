@@ -3,17 +3,16 @@
 using System;
 using System.Collections.Generic;
 
-namespace MediaBrowser.Controller.Channels
+namespace MediaBrowser.Controller.Channels;
+
+public class ChannelItemResult
 {
-    public class ChannelItemResult
+    public ChannelItemResult()
     {
-        public ChannelItemResult()
-        {
-            Items = Array.Empty<ChannelItemInfo>();
-        }
-
-        public IReadOnlyList<ChannelItemInfo> Items { get; set; }
-
-        public int? TotalRecordCount { get; set; }
+        Items = Array.Empty<ChannelItemInfo>();
     }
+
+    public IReadOnlyList<ChannelItemInfo> Items { get; set; }
+
+    public int? TotalRecordCount { get; set; }
 }

@@ -1,11 +1,10 @@
 #pragma warning disable CS1591
 
-namespace MediaBrowser.Model.LiveTv
+namespace MediaBrowser.Model.LiveTv;
+
+public enum DayPattern
 {
-    public enum DayPattern
-    {
-        Daily,
-        Weekdays,
-        Weekends
-    }
+    Daily,
+    Weekdays,
+    Weekends
 }

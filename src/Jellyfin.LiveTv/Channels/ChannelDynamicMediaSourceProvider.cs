@@ -8,36 +8,35 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 
-namespace Jellyfin.LiveTv.Channels
+namespace Jellyfin.LiveTv.Channels;
+
+/// <summary>
+/// A media source provider for channels.
+/// </summary>
+public class ChannelDynamicMediaSourceProvider : IMediaSourceProvider
 {
+    private readonly ChannelManager _channelManager;
+
     /// <summary>
-    /// A media source provider for channels.
+    /// Initializes a new instance of the <see cref="ChannelDynamicMediaSourceProvider"/> class.
     /// </summary>
-    public class ChannelDynamicMediaSourceProvider : IMediaSourceProvider
+    /// <param name="channelManager">The channel manager.</param>
+    public ChannelDynamicMediaSourceProvider(IChannelManager channelManager)
     {
-        private readonly ChannelManager _channelManager;
+        _channelManager = (ChannelManager)channelManager;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ChannelDynamicMediaSourceProvider"/> class.
-        /// </summary>
-        /// <param name="channelManager">The channel manager.</param>
-        public ChannelDynamicMediaSourceProvider(IChannelManager channelManager)
-        {
-            _channelManager = (ChannelManager)channelManager;
-        }
+    /// <inheritdoc />
+    public Task<IEnumerable<MediaSourceInfo>> GetMediaSources(BaseItem item, CancellationToken cancellationToken)
+    {
+        return item.SourceType == SourceType.Channel
+            ? _channelManager.GetDynamicMediaSources(item, cancellationToken)
+            : Task.FromResult(Enumerable.Empty<MediaSourceInfo>());
+    }
 
-        /// <inheritdoc />
-        public Task<IEnumerable<MediaSourceInfo>> GetMediaSources(BaseItem item, CancellationToken cancellationToken)
-        {
-            return item.SourceType == SourceType.Channel
-                ? _channelManager.GetDynamicMediaSources(item, cancellationToken)
-                : Task.FromResult(Enumerable.Empty<MediaSourceInfo>());
-        }
-
-        /// <inheritdoc />
-        public Task<ILiveStream> OpenMediaSource(string openToken, List<ILiveStream> currentLiveStreams, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
+    /// <inheritdoc />
+    public Task<ILiveStream> OpenMediaSource(string openToken, List<ILiveStream> currentLiveStreams, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
     }
 }

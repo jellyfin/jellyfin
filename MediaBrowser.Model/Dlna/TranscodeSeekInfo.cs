@@ -1,10 +1,9 @@
 #pragma warning disable CS1591
 
-namespace MediaBrowser.Model.Dlna
+namespace MediaBrowser.Model.Dlna;
+
+public enum TranscodeSeekInfo
 {
-    public enum TranscodeSeekInfo
-    {
-        Auto = 0,
-        Bytes = 1
-    }
+    Auto = 0,
+    Bytes = 1
 }

@@ -1,9 +1,8 @@
 #pragma warning disable CA1819, CS1591
 
-namespace MediaBrowser.Controller.Channels
+namespace MediaBrowser.Controller.Channels;
+
+public interface IHasFolderAttributes
 {
-    public interface IHasFolderAttributes
-    {
-        string[] Attributes { get; }
-    }
+    string[] Attributes { get; }
 }

@@ -1,19 +1,18 @@
 using Jellyfin.Data.Events;
 using MediaBrowser.Model.Plugins;
 
-namespace MediaBrowser.Controller.Events.Updates
+namespace MediaBrowser.Controller.Events.Updates;
+
+/// <summary>
+/// An event that occurs when a plugin is uninstalled.
+/// </summary>
+public class PluginUninstalledEventArgs : GenericEventArgs<PluginInfo>
 {
     /// <summary>
-    /// An event that occurs when a plugin is uninstalled.
+    /// Initializes a new instance of the <see cref="PluginUninstalledEventArgs"/> class.
     /// </summary>
-    public class PluginUninstalledEventArgs : GenericEventArgs<PluginInfo>
+    /// <param name="arg">The plugin.</param>
+    public PluginUninstalledEventArgs(PluginInfo arg) : base(arg)
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PluginUninstalledEventArgs"/> class.
-        /// </summary>
-        /// <param name="arg">The plugin.</param>
-        public PluginUninstalledEventArgs(PluginInfo arg) : base(arg)
-        {
-        }
     }
 }

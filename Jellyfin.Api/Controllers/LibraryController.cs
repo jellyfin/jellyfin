@@ -574,7 +574,7 @@ public class LibraryController : BaseJellyfinApiController
     {
         var series = _libraryManager.GetItemList(new InternalItemsQuery
         {
-            IncludeItemTypes = new[] { BaseItemKind.Series },
+            IncludeItemTypes = [BaseItemKind.Series],
             DtoOptions = new DtoOptions(false)
             {
                 EnableImages = false
@@ -604,7 +604,7 @@ public class LibraryController : BaseJellyfinApiController
     {
         var movies = _libraryManager.GetItemList(new InternalItemsQuery
         {
-            IncludeItemTypes = new[] { BaseItemKind.Movie },
+            IncludeItemTypes = [BaseItemKind.Movie],
             DtoOptions = new DtoOptions(false)
             {
                 EnableImages = false
@@ -909,11 +909,11 @@ public class LibraryController : BaseJellyfinApiController
 
                 SupportedImageTypes = plugins
                     .Where(i => string.Equals(i.ItemType, type, StringComparison.OrdinalIgnoreCase))
-                    .SelectMany(i => i.SupportedImageTypes ?? Array.Empty<ImageType>())
+                    .SelectMany(i => i.SupportedImageTypes ?? [])
                     .Distinct()
                     .ToArray(),
 
-                DefaultImageOptions = defaultImageOptions ?? Array.Empty<ImageOption>()
+                DefaultImageOptions = defaultImageOptions ?? []
             });
         }
 
@@ -926,7 +926,7 @@ public class LibraryController : BaseJellyfinApiController
     {
         var query = new InternalItemsQuery(user)
         {
-            IncludeItemTypes = new[] { itemKind },
+            IncludeItemTypes = [itemKind],
             Limit = 0,
             Recursive = true,
             IsVirtualItem = false,
@@ -971,16 +971,16 @@ public class LibraryController : BaseJellyfinApiController
     {
         return contentType switch
         {
-            CollectionType.boxsets => new[] { "BoxSet" },
-            CollectionType.playlists => new[] { "Playlist" },
-            CollectionType.movies => new[] { "Movie" },
-            CollectionType.tvshows => new[] { "Series", "Season", "Episode" },
-            CollectionType.books => new[] { "Book" },
-            CollectionType.music => new[] { "MusicArtist", "MusicAlbum", "Audio", "MusicVideo" },
-            CollectionType.homevideos => new[] { "Video", "Photo" },
-            CollectionType.photos => new[] { "Video", "Photo" },
-            CollectionType.musicvideos => new[] { "MusicVideo" },
-            _ => new[] { "Series", "Season", "Episode", "Movie" }
+            CollectionType.boxsets => ["BoxSet"],
+            CollectionType.playlists => ["Playlist"],
+            CollectionType.movies => ["Movie"],
+            CollectionType.tvshows => ["Series", "Season", "Episode"],
+            CollectionType.books => ["Book"],
+            CollectionType.music => ["MusicArtist", "MusicAlbum", "Audio", "MusicVideo"],
+            CollectionType.homevideos => ["Video", "Photo"],
+            CollectionType.photos => ["Video", "Photo"],
+            CollectionType.musicvideos => ["MusicVideo"],
+            _ => ["Series", "Season", "Episode", "Movie"]
         };
     }
 

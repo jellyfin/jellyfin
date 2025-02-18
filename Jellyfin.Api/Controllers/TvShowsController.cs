@@ -165,8 +165,8 @@ public class TvShowsController : BaseJellyfinApiController
 
         var itemsResult = _libraryManager.GetItemList(new InternalItemsQuery(user)
         {
-            IncludeItemTypes = new[] { BaseItemKind.Episode },
-            OrderBy = new[] { (ItemSortBy.PremiereDate, SortOrder.Ascending), (ItemSortBy.SortName, SortOrder.Ascending) },
+            IncludeItemTypes = [BaseItemKind.Episode],
+            OrderBy = [(ItemSortBy.PremiereDate, SortOrder.Ascending), (ItemSortBy.SortName, SortOrder.Ascending)],
             MinPremiereDate = minPremiereDate,
             StartIndex = startIndex,
             Limit = limit,
@@ -256,8 +256,7 @@ public class TvShowsController : BaseJellyfinApiController
                 .GetSeasons(user, dtoOptions)
                 .FirstOrDefault(i => i.IndexNumber == season.Value);
 
-            episodes = seasonItem is null ?
-                new List<BaseItem>()
+            episodes = seasonItem is null ? []
                 : ((Season)seasonItem).GetEpisodes(user, dtoOptions, shouldIncludeMissingEpisodes);
         }
         else // No season number or season id was supplied. Returning all episodes.

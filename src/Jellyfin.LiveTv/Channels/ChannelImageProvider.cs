@@ -7,58 +7,57 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 
-namespace Jellyfin.LiveTv.Channels
+namespace Jellyfin.LiveTv.Channels;
+
+/// <summary>
+/// An image provider for channels.
+/// </summary>
+public class ChannelImageProvider : IDynamicImageProvider, IHasItemChangeMonitor
 {
+    private readonly IChannelManager _channelManager;
+
     /// <summary>
-    /// An image provider for channels.
+    /// Initializes a new instance of the <see cref="ChannelImageProvider"/> class.
     /// </summary>
-    public class ChannelImageProvider : IDynamicImageProvider, IHasItemChangeMonitor
+    /// <param name="channelManager">The channel manager.</param>
+    public ChannelImageProvider(IChannelManager channelManager)
     {
-        private readonly IChannelManager _channelManager;
+        _channelManager = channelManager;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ChannelImageProvider"/> class.
-        /// </summary>
-        /// <param name="channelManager">The channel manager.</param>
-        public ChannelImageProvider(IChannelManager channelManager)
-        {
-            _channelManager = channelManager;
-        }
+    /// <inheritdoc />
+    public string Name => "Channel Image Provider";
 
-        /// <inheritdoc />
-        public string Name => "Channel Image Provider";
+    /// <inheritdoc />
+    public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
+    {
+        return GetChannel(item).GetSupportedChannelImages();
+    }
 
-        /// <inheritdoc />
-        public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
-        {
-            return GetChannel(item).GetSupportedChannelImages();
-        }
+    /// <inheritdoc />
+    public Task<DynamicImageResponse> GetImage(BaseItem item, ImageType type, CancellationToken cancellationToken)
+    {
+        var channel = GetChannel(item);
 
-        /// <inheritdoc />
-        public Task<DynamicImageResponse> GetImage(BaseItem item, ImageType type, CancellationToken cancellationToken)
-        {
-            var channel = GetChannel(item);
+        return channel.GetChannelImage(type, cancellationToken);
+    }
 
-            return channel.GetChannelImage(type, cancellationToken);
-        }
+    /// <inheritdoc />
+    public bool Supports(BaseItem item)
+    {
+        return item is Channel;
+    }
 
-        /// <inheritdoc />
-        public bool Supports(BaseItem item)
-        {
-            return item is Channel;
-        }
+    private IChannel GetChannel(BaseItem item)
+    {
+        var channel = (Channel)item;
 
-        private IChannel GetChannel(BaseItem item)
-        {
-            var channel = (Channel)item;
+        return ((ChannelManager)_channelManager).GetChannelProvider(channel);
+    }
 
-            return ((ChannelManager)_channelManager).GetChannelProvider(channel);
-        }
-
-        /// <inheritdoc />
-        public bool HasChanged(BaseItem item, IDirectoryService directoryService)
-        {
-            return GetSupportedImages(item).Any(i => !item.HasImage(i));
-        }
+    /// <inheritdoc />
+    public bool HasChanged(BaseItem item, IDirectoryService directoryService)
+    {
+        return GetSupportedImages(item).Any(i => !item.HasImage(i));
     }
 }

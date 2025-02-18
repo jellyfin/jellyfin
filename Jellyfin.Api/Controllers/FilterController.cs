@@ -77,7 +77,7 @@ public class FilterController : BaseJellyfinApiController
             EnableTotalRecordCount = false,
             DtoOptions = new DtoOptions
             {
-                Fields = new[] { ItemFields.Genres, ItemFields.Tags },
+                Fields = [ItemFields.Genres, ItemFields.Tags],
                 EnableImages = false,
                 EnableUserData = false
             }
@@ -185,7 +185,7 @@ public class FilterController : BaseJellyfinApiController
 
         if ((recursive ?? true) || parentItem is UserView || parentItem is ICollectionFolder)
         {
-            genreQuery.AncestorIds = parentItem is null ? Array.Empty<Guid>() : new[] { parentItem.Id };
+            genreQuery.AncestorIds = parentItem is null ? [] : [parentItem.Id];
         }
         else
         {

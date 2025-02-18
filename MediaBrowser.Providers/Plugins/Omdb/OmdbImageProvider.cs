@@ -17,64 +17,63 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
 
-namespace MediaBrowser.Providers.Plugins.Omdb
+namespace MediaBrowser.Providers.Plugins.Omdb;
+
+public class OmdbImageProvider : IRemoteImageProvider, IHasOrder
 {
-    public class OmdbImageProvider : IRemoteImageProvider, IHasOrder
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly OmdbProvider _omdbProvider;
+
+    public OmdbImageProvider(IHttpClientFactory httpClientFactory, IFileSystem fileSystem, IServerConfigurationManager configurationManager)
     {
-        private readonly IHttpClientFactory _httpClientFactory;
-        private readonly OmdbProvider _omdbProvider;
+        _httpClientFactory = httpClientFactory;
+        _omdbProvider = new OmdbProvider(_httpClientFactory, fileSystem, configurationManager);
+    }
 
-        public OmdbImageProvider(IHttpClientFactory httpClientFactory, IFileSystem fileSystem, IServerConfigurationManager configurationManager)
+    public string Name => "The Open Movie Database";
+
+    // After other internet providers, because they're better
+    // But before fallback providers like screengrab
+    public int Order => 90;
+
+    public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
+    {
+        yield return ImageType.Primary;
+    }
+
+    public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
+    {
+        var imdbId = item.GetProviderId(MetadataProvider.Imdb);
+        if (string.IsNullOrWhiteSpace(imdbId))
         {
-            _httpClientFactory = httpClientFactory;
-            _omdbProvider = new OmdbProvider(_httpClientFactory, fileSystem, configurationManager);
+            return [];
         }
 
-        public string Name => "The Open Movie Database";
+        var rootObject = await _omdbProvider.GetRootObject(imdbId, cancellationToken).ConfigureAwait(false);
 
-        // After other internet providers, because they're better
-        // But before fallback providers like screengrab
-        public int Order => 90;
-
-        public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
+        if (string.IsNullOrEmpty(rootObject.Poster))
         {
-            yield return ImageType.Primary;
+            return [];
         }
 
-        public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
-        {
-            var imdbId = item.GetProviderId(MetadataProvider.Imdb);
-            if (string.IsNullOrWhiteSpace(imdbId))
+        // the poster url is sometimes higher quality than the poster api
+        return
+        [
+            new RemoteImageInfo
             {
-                return Enumerable.Empty<RemoteImageInfo>();
+                ProviderName = Name,
+                Url = rootObject.Poster
             }
+        ];
+    }
 
-            var rootObject = await _omdbProvider.GetRootObject(imdbId, cancellationToken).ConfigureAwait(false);
+    public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
+    {
+        return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
+    }
 
-            if (string.IsNullOrEmpty(rootObject.Poster))
-            {
-                return Enumerable.Empty<RemoteImageInfo>();
-            }
-
-            // the poster url is sometimes higher quality than the poster api
-            return new[]
-            {
-                new RemoteImageInfo
-                {
-                    ProviderName = Name,
-                    Url = rootObject.Poster
-                }
-            };
-        }
-
-        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
-        {
-            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
-        }
-
-        public bool Supports(BaseItem item)
-        {
-            return item is Movie || item is Trailer || item is Episode;
-        }
+    public bool Supports(BaseItem item)
+    {
+        return item is Movie || item is Trailer || item is Episode;
     }
 }

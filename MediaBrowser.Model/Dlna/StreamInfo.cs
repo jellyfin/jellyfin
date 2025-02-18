@@ -1137,7 +1137,7 @@ public class StreamInfo
         {
             foreach (var profile in DeviceProfile.SubtitleProfiles)
             {
-                var info = GetSubtitleStreamInfo(stream, baseUrl, accessToken, startPositionTicks, new[] { profile }, transcoderSupport);
+                var info = GetSubtitleStreamInfo(stream, baseUrl, accessToken, startPositionTicks, [profile], transcoderSupport);
                 if (info is not null)
                 {
                     list.Add(info);

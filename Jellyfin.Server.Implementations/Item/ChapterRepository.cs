@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Chapters;

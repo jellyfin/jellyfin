@@ -8,6 +8,7 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.MediaSegments;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Tasks;
 
@@ -62,11 +63,11 @@ public class MediaSegmentExtractionTask : IScheduledTask
 
         var query = new InternalItemsQuery
         {
-            MediaTypes = new[] { MediaType.Video, MediaType.Audio },
+            MediaTypes = [MediaType.Video, MediaType.Audio],
             IsVirtualItem = false,
             IncludeItemTypes = _itemTypes,
             DtoOptions = new DtoOptions(true),
-            SourceTypes = new[] { SourceType.Library },
+            SourceTypes = [SourceType.Library],
             Recursive = true,
             Limit = pagesize
         };

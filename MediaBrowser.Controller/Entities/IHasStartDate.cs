@@ -2,10 +2,9 @@
 
 using System;
 
-namespace MediaBrowser.Controller.Entities
+namespace MediaBrowser.Controller.Entities;
+
+public interface IHasStartDate
 {
-    public interface IHasStartDate
-    {
-        DateTime StartDate { get; set; }
-    }
+    DateTime StartDate { get; set; }
 }

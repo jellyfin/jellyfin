@@ -3,13 +3,12 @@
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Configuration;
 
-namespace MediaBrowser.XbmcMetadata.Configuration
+namespace MediaBrowser.XbmcMetadata.Configuration;
+
+public static class NfoConfigurationExtension
 {
-    public static class NfoConfigurationExtension
+    public static XbmcMetadataOptions GetNfoConfiguration(this IConfigurationManager manager)
     {
-        public static XbmcMetadataOptions GetNfoConfiguration(this IConfigurationManager manager)
-        {
-            return manager.GetConfiguration<XbmcMetadataOptions>("xbmcmetadata");
-        }
+        return manager.GetConfiguration<XbmcMetadataOptions>("xbmcmetadata");
     }
 }

@@ -5,14 +5,13 @@
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 
-namespace MediaBrowser.Controller.MediaEncoding
+namespace MediaBrowser.Controller.MediaEncoding;
+
+public class MediaInfoRequest
 {
-    public class MediaInfoRequest
-    {
-        public MediaSourceInfo MediaSource { get; set; }
+    public MediaSourceInfo MediaSource { get; set; }
 
-        public bool ExtractChapters { get; set; }
+    public bool ExtractChapters { get; set; }
 
-        public DlnaProfileType MediaType { get; set; }
-    }
+    public DlnaProfileType MediaType { get; set; }
 }

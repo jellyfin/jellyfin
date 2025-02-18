@@ -1,53 +1,52 @@
-namespace MediaBrowser.Model.Session
+namespace MediaBrowser.Model.Session;
+
+/// <summary>
+/// Enum PlaystateCommand.
+/// </summary>
+public enum PlaystateCommand
 {
     /// <summary>
-    /// Enum PlaystateCommand.
+    /// The stop.
     /// </summary>
-    public enum PlaystateCommand
-    {
-        /// <summary>
-        /// The stop.
-        /// </summary>
-        Stop,
+    Stop,
 
-        /// <summary>
-        /// The pause.
-        /// </summary>
-        Pause,
+    /// <summary>
+    /// The pause.
+    /// </summary>
+    Pause,
 
-        /// <summary>
-        /// The unpause.
-        /// </summary>
-        Unpause,
+    /// <summary>
+    /// The unpause.
+    /// </summary>
+    Unpause,
 
-        /// <summary>
-        /// The next track.
-        /// </summary>
-        NextTrack,
+    /// <summary>
+    /// The next track.
+    /// </summary>
+    NextTrack,
 
-        /// <summary>
-        /// The previous track.
-        /// </summary>
-        PreviousTrack,
+    /// <summary>
+    /// The previous track.
+    /// </summary>
+    PreviousTrack,
 
-        /// <summary>
-        /// The seek.
-        /// </summary>
-        Seek,
+    /// <summary>
+    /// The seek.
+    /// </summary>
+    Seek,
 
-        /// <summary>
-        /// The rewind.
-        /// </summary>
-        Rewind,
+    /// <summary>
+    /// The rewind.
+    /// </summary>
+    Rewind,
 
-        /// <summary>
-        /// The fast forward.
-        /// </summary>
-        FastForward,
+    /// <summary>
+    /// The fast forward.
+    /// </summary>
+    FastForward,
 
-        /// <summary>
-        /// The play pause.
-        /// </summary>
-        PlayPause
-    }
+    /// <summary>
+    /// The play pause.
+    /// </summary>
+    PlayPause
 }

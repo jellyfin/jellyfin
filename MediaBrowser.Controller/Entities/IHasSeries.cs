@@ -4,26 +4,25 @@
 
 using System;
 
-namespace MediaBrowser.Controller.Entities
+namespace MediaBrowser.Controller.Entities;
+
+public interface IHasSeries
 {
-    public interface IHasSeries
-    {
-        /// <summary>
-        /// Gets or sets the name of the series.
-        /// </summary>
-        /// <value>The name of the series.</value>
-        string SeriesName { get; set; }
+    /// <summary>
+    /// Gets or sets the name of the series.
+    /// </summary>
+    /// <value>The name of the series.</value>
+    string SeriesName { get; set; }
 
-        Guid SeriesId { get; set; }
+    Guid SeriesId { get; set; }
 
-        string SeriesPresentationUniqueKey { get; set; }
+    string SeriesPresentationUniqueKey { get; set; }
 
-        string FindSeriesName();
+    string FindSeriesName();
 
-        string FindSeriesSortName();
+    string FindSeriesSortName();
 
-        Guid FindSeriesId();
+    Guid FindSeriesId();
 
-        string FindSeriesPresentationUniqueKey();
-    }
+    string FindSeriesPresentationUniqueKey();
 }

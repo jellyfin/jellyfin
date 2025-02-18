@@ -2,15 +2,14 @@
 
 using MediaBrowser.Model.Dto;
 
-namespace MediaBrowser.Model.MediaInfo
-{
-    public class LiveStreamResponse
-    {
-        public LiveStreamResponse(MediaSourceInfo mediaSource)
-        {
-            MediaSource = mediaSource;
-        }
+namespace MediaBrowser.Model.MediaInfo;
 
-        public MediaSourceInfo MediaSource { get; }
+public class LiveStreamResponse
+{
+    public LiveStreamResponse(MediaSourceInfo mediaSource)
+    {
+        MediaSource = mediaSource;
     }
+
+    public MediaSourceInfo MediaSource { get; }
 }

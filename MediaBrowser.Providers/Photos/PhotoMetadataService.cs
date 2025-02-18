@@ -8,18 +8,17 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Providers.Manager;
 using Microsoft.Extensions.Logging;
 
-namespace MediaBrowser.Providers.Photos
+namespace MediaBrowser.Providers.Photos;
+
+public class PhotoMetadataService : MetadataService<Photo, ItemLookupInfo>
 {
-    public class PhotoMetadataService : MetadataService<Photo, ItemLookupInfo>
+    public PhotoMetadataService(
+        IServerConfigurationManager serverConfigurationManager,
+        ILogger<PhotoMetadataService> logger,
+        IProviderManager providerManager,
+        IFileSystem fileSystem,
+        ILibraryManager libraryManager)
+        : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
     {
-        public PhotoMetadataService(
-            IServerConfigurationManager serverConfigurationManager,
-            ILogger<PhotoMetadataService> logger,
-            IProviderManager providerManager,
-            IFileSystem fileSystem,
-            ILibraryManager libraryManager)
-            : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
-        {
-        }
     }
 }

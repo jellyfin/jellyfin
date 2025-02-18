@@ -1,18 +1,17 @@
-namespace MediaBrowser.Model.SyncPlay
+namespace MediaBrowser.Model.SyncPlay;
+
+/// <summary>
+/// Enum GroupQueueMode.
+/// </summary>
+public enum GroupQueueMode
 {
     /// <summary>
-    /// Enum GroupQueueMode.
+    /// Insert items at the end of the queue.
     /// </summary>
-    public enum GroupQueueMode
-    {
-        /// <summary>
-        /// Insert items at the end of the queue.
-        /// </summary>
-        Queue = 0,
+    Queue = 0,
 
-        /// <summary>
-        /// Insert items after the currently playing item.
-        /// </summary>
-        QueueNext = 1
-    }
+    /// <summary>
+    /// Insert items after the currently playing item.
+    /// </summary>
+    QueueNext = 1
 }

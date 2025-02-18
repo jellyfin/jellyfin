@@ -8,18 +8,17 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Providers.Manager;
 using Microsoft.Extensions.Logging;
 
-namespace MediaBrowser.Providers.MusicGenres
+namespace MediaBrowser.Providers.MusicGenres;
+
+public class MusicGenreMetadataService : MetadataService<MusicGenre, ItemLookupInfo>
 {
-    public class MusicGenreMetadataService : MetadataService<MusicGenre, ItemLookupInfo>
+    public MusicGenreMetadataService(
+        IServerConfigurationManager serverConfigurationManager,
+        ILogger<MusicGenreMetadataService> logger,
+        IProviderManager providerManager,
+        IFileSystem fileSystem,
+        ILibraryManager libraryManager)
+        : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
     {
-        public MusicGenreMetadataService(
-            IServerConfigurationManager serverConfigurationManager,
-            ILogger<MusicGenreMetadataService> logger,
-            IProviderManager providerManager,
-            IFileSystem fileSystem,
-            ILibraryManager libraryManager)
-            : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
-        {
-        }
     }
 }

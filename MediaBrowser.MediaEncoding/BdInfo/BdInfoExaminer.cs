@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using BDInfo;
-using Jellyfin.Extensions;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
@@ -47,7 +46,7 @@ public class BdInfoExaminer : IBlurayExaminer
 
         var outputStream = new BlurayDiscInfo
         {
-            MediaStreams = Array.Empty<MediaStream>()
+            MediaStreams = []
         };
 
         if (playlist is null)

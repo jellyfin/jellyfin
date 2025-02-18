@@ -12,75 +12,74 @@ using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Querying;
 
-namespace MediaBrowser.Controller.Channels
+namespace MediaBrowser.Controller.Channels;
+
+public class Channel : Folder
 {
-    public class Channel : Folder
+    [JsonIgnore]
+    public override bool SupportsInheritedParentImages => false;
+
+    [JsonIgnore]
+    public override SourceType SourceType => SourceType.Channel;
+
+    public override bool IsVisible(User user, bool skipAllowedTagsCheck = false)
     {
-        [JsonIgnore]
-        public override bool SupportsInheritedParentImages => false;
-
-        [JsonIgnore]
-        public override SourceType SourceType => SourceType.Channel;
-
-        public override bool IsVisible(User user, bool skipAllowedTagsCheck = false)
+        var blockedChannelsPreference = user.GetPreferenceValues<Guid>(PreferenceKind.BlockedChannels);
+        if (blockedChannelsPreference.Length != 0)
         {
-            var blockedChannelsPreference = user.GetPreferenceValues<Guid>(PreferenceKind.BlockedChannels);
-            if (blockedChannelsPreference.Length != 0)
+            if (blockedChannelsPreference.Contains(Id))
             {
-                if (blockedChannelsPreference.Contains(Id))
-                {
-                    return false;
-                }
+                return false;
             }
-            else
-            {
-                if (!user.HasPermission(PermissionKind.EnableAllChannels)
-                    && !user.GetPreferenceValues<Guid>(PreferenceKind.EnabledChannels).Contains(Id))
-                {
-                    return false;
-                }
-            }
-
-            return base.IsVisible(user, skipAllowedTagsCheck);
         }
-
-        protected override QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)
+        else
         {
-            try
+            if (!user.HasPermission(PermissionKind.EnableAllChannels)
+                && !user.GetPreferenceValues<Guid>(PreferenceKind.EnabledChannels).Contains(Id))
             {
-                query.Parent = this;
-                query.ChannelIds = new Guid[] { Id };
-
-                // Don't blow up here because it could cause parent screens with other content to fail
-                return ChannelManager.GetChannelItemsInternal(query, new Progress<double>(), CancellationToken.None).GetAwaiter().GetResult();
-            }
-            catch
-            {
-                // Already logged at lower levels
-                return new QueryResult<BaseItem>();
+                return false;
             }
         }
 
-        protected override string GetInternalMetadataPath(string basePath)
-        {
-            return GetInternalMetadataPath(basePath, Id);
-        }
+        return base.IsVisible(user, skipAllowedTagsCheck);
+    }
 
-        public static string GetInternalMetadataPath(string basePath, Guid id)
+    protected override QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)
+    {
+        try
         {
-            return System.IO.Path.Combine(basePath, "channels", id.ToString("N", CultureInfo.InvariantCulture), "metadata");
-        }
+            query.Parent = this;
+            query.ChannelIds = [Id];
 
-        public override bool CanDelete()
+            // Don't blow up here because it could cause parent screens with other content to fail
+            return ChannelManager.GetChannelItemsInternal(query, new Progress<double>(), CancellationToken.None).GetAwaiter().GetResult();
+        }
+        catch
         {
-            return false;
+            // Already logged at lower levels
+            return new QueryResult<BaseItem>();
         }
+    }
 
-        internal static bool IsChannelVisible(BaseItem channelItem, User user)
-        {
-            var channel = ChannelManager.GetChannel(channelItem.ChannelId.ToString(string.Empty));
+    protected override string GetInternalMetadataPath(string basePath)
+    {
+        return GetInternalMetadataPath(basePath, Id);
+    }
 
-            return channel.IsVisible(user);
-        }
+    public static string GetInternalMetadataPath(string basePath, Guid id)
+    {
+        return System.IO.Path.Combine(basePath, "channels", id.ToString("N", CultureInfo.InvariantCulture), "metadata");
+    }
+
+    public override bool CanDelete()
+    {
+        return false;
+    }
+
+    internal static bool IsChannelVisible(BaseItem channelItem, User user)
+    {
+        var channel = ChannelManager.GetChannel(channelItem.ChannelId.ToString(string.Empty));
+
+        return channel.IsVisible(user);
     }
 }

@@ -1,16 +1,15 @@
 using System.Text.Json.Serialization;
 
-namespace Jellyfin.LiveTv.Listings.SchedulesDirectDtos
+namespace Jellyfin.LiveTv.Listings.SchedulesDirectDtos;
+
+/// <summary>
+/// Event details dto.
+/// </summary>
+public class EventDetailsDto
 {
     /// <summary>
-    /// Event details dto.
+    /// Gets or sets the sub type.
     /// </summary>
-    public class EventDetailsDto
-    {
-        /// <summary>
-        /// Gets or sets the sub type.
-        /// </summary>
-        [JsonPropertyName("subType")]
-        public string? SubType { get; set; }
-    }
+    [JsonPropertyName("subType")]
+    public string? SubType { get; set; }
 }

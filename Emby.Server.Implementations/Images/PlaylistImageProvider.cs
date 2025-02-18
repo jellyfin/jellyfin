@@ -14,52 +14,51 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 
-namespace Emby.Server.Implementations.Images
+namespace Emby.Server.Implementations.Images;
+
+public class PlaylistImageProvider : BaseDynamicImageProvider<Playlist>
 {
-    public class PlaylistImageProvider : BaseDynamicImageProvider<Playlist>
+    public PlaylistImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths, IImageProcessor imageProcessor) : base(fileSystem, providerManager, applicationPaths, imageProcessor)
     {
-        public PlaylistImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths, IImageProcessor imageProcessor) : base(fileSystem, providerManager, applicationPaths, imageProcessor)
-        {
-        }
+    }
 
-        protected override IReadOnlyList<BaseItem> GetItemsWithImages(BaseItem item)
-        {
-            var playlist = (Playlist)item;
+    protected override IReadOnlyList<BaseItem> GetItemsWithImages(BaseItem item)
+    {
+        var playlist = (Playlist)item;
 
-            return playlist.GetManageableItems()
-                .Select(i =>
+        return playlist.GetManageableItems()
+            .Select(i =>
+            {
+                var subItem = i.Item2;
+
+                if (subItem is Episode episode)
                 {
-                    var subItem = i.Item2;
-
-                    if (subItem is Episode episode)
+                    var series = episode.Series;
+                    if (series is not null && series.HasImage(ImageType.Primary))
                     {
-                        var series = episode.Series;
-                        if (series is not null && series.HasImage(ImageType.Primary))
-                        {
-                            return series;
-                        }
+                        return series;
                     }
+                }
 
-                    if (subItem.HasImage(ImageType.Primary))
+                if (subItem.HasImage(ImageType.Primary))
+                {
+                    return subItem;
+                }
+
+                var parent = subItem.GetOwner() ?? subItem.GetParent();
+
+                if (parent is not null && parent.HasImage(ImageType.Primary))
+                {
+                    if (parent is MusicAlbum)
                     {
-                        return subItem;
+                        return parent;
                     }
+                }
 
-                    var parent = subItem.GetOwner() ?? subItem.GetParent();
-
-                    if (parent is not null && parent.HasImage(ImageType.Primary))
-                    {
-                        if (parent is MusicAlbum)
-                        {
-                            return parent;
-                        }
-                    }
-
-                    return null;
-                })
-                .Where(i => i is not null)
-                .DistinctBy(x => x.Id)
-                .ToList();
-        }
+                return null;
+            })
+            .Where(i => i is not null)
+            .DistinctBy(x => x.Id)
+            .ToList();
     }
 }

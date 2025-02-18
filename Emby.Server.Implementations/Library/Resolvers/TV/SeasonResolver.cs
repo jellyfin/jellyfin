@@ -8,93 +8,92 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Globalization;
 using Microsoft.Extensions.Logging;
 
-namespace Emby.Server.Implementations.Library.Resolvers.TV
+namespace Emby.Server.Implementations.Library.Resolvers.TV;
+
+/// <summary>
+/// Class SeasonResolver.
+/// </summary>
+public class SeasonResolver : GenericFolderResolver<Season>
 {
+    private readonly ILocalizationManager _localization;
+    private readonly ILogger<SeasonResolver> _logger;
+    private readonly NamingOptions _namingOptions;
+
     /// <summary>
-    /// Class SeasonResolver.
+    /// Initializes a new instance of the <see cref="SeasonResolver"/> class.
     /// </summary>
-    public class SeasonResolver : GenericFolderResolver<Season>
+    /// <param name="namingOptions">The naming options.</param>
+    /// <param name="localization">The localization.</param>
+    /// <param name="logger">The logger.</param>
+    public SeasonResolver(
+        NamingOptions namingOptions,
+        ILocalizationManager localization,
+        ILogger<SeasonResolver> logger)
     {
-        private readonly ILocalizationManager _localization;
-        private readonly ILogger<SeasonResolver> _logger;
-        private readonly NamingOptions _namingOptions;
+        _namingOptions = namingOptions;
+        _localization = localization;
+        _logger = logger;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SeasonResolver"/> class.
-        /// </summary>
-        /// <param name="namingOptions">The naming options.</param>
-        /// <param name="localization">The localization.</param>
-        /// <param name="logger">The logger.</param>
-        public SeasonResolver(
-            NamingOptions namingOptions,
-            ILocalizationManager localization,
-            ILogger<SeasonResolver> logger)
+    /// <summary>
+    /// Resolves the specified args.
+    /// </summary>
+    /// <param name="args">The args.</param>
+    /// <returns>Season.</returns>
+    protected override Season Resolve(ItemResolveArgs args)
+    {
+        if (args.Parent is Series series && args.IsDirectory)
         {
-            _namingOptions = namingOptions;
-            _localization = localization;
-            _logger = logger;
-        }
+            var namingOptions = _namingOptions;
 
-        /// <summary>
-        /// Resolves the specified args.
-        /// </summary>
-        /// <param name="args">The args.</param>
-        /// <returns>Season.</returns>
-        protected override Season Resolve(ItemResolveArgs args)
-        {
-            if (args.Parent is Series series && args.IsDirectory)
+            var path = args.Path;
+
+            var seasonParserResult = SeasonPathParser.Parse(path, true, true);
+
+            var season = new Season
             {
-                var namingOptions = _namingOptions;
+                IndexNumber = seasonParserResult.SeasonNumber,
+                SeriesId = series.Id,
+                SeriesName = series.Name,
+                Path = seasonParserResult.IsSeasonFolder ? path : null
+            };
 
-                var path = args.Path;
+            if (!season.IndexNumber.HasValue || !seasonParserResult.IsSeasonFolder)
+            {
+                var resolver = new Naming.TV.EpisodeResolver(namingOptions);
 
-                var seasonParserResult = SeasonPathParser.Parse(path, true, true);
+                var folderName = System.IO.Path.GetFileName(path);
+                var testPath = @"\\test\" + folderName;
 
-                var season = new Season
+                var episodeInfo = resolver.Resolve(testPath, true);
+
+                if (episodeInfo?.EpisodeNumber is not null && episodeInfo.SeasonNumber.HasValue)
                 {
-                    IndexNumber = seasonParserResult.SeasonNumber,
-                    SeriesId = series.Id,
-                    SeriesName = series.Name,
-                    Path = seasonParserResult.IsSeasonFolder ? path : null
-                };
+                    _logger.LogDebug(
+                        "Found folder underneath series with episode number: {0}. Season {1}. Episode {2}",
+                        path,
+                        episodeInfo.SeasonNumber.Value,
+                        episodeInfo.EpisodeNumber.Value);
 
-                if (!season.IndexNumber.HasValue || !seasonParserResult.IsSeasonFolder)
-                {
-                    var resolver = new Naming.TV.EpisodeResolver(namingOptions);
-
-                    var folderName = System.IO.Path.GetFileName(path);
-                    var testPath = @"\\test\" + folderName;
-
-                    var episodeInfo = resolver.Resolve(testPath, true);
-
-                    if (episodeInfo?.EpisodeNumber is not null && episodeInfo.SeasonNumber.HasValue)
-                    {
-                        _logger.LogDebug(
-                            "Found folder underneath series with episode number: {0}. Season {1}. Episode {2}",
-                            path,
-                            episodeInfo.SeasonNumber.Value,
-                            episodeInfo.EpisodeNumber.Value);
-
-                        return null;
-                    }
+                    return null;
                 }
-
-                if (season.IndexNumber.HasValue && string.IsNullOrEmpty(season.Name))
-                {
-                    var seasonNumber = season.IndexNumber.Value;
-                    season.Name = seasonNumber == 0 ?
-                        args.LibraryOptions.SeasonZeroDisplayName :
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            _localization.GetLocalizedString("NameSeasonNumber"),
-                            seasonNumber,
-                            args.LibraryOptions.PreferredMetadataLanguage);
-                }
-
-                return season;
             }
 
-            return null;
+            if (season.IndexNumber.HasValue && string.IsNullOrEmpty(season.Name))
+            {
+                var seasonNumber = season.IndexNumber.Value;
+                season.Name = seasonNumber == 0 ?
+                    args.LibraryOptions.SeasonZeroDisplayName :
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        _localization.GetLocalizedString("NameSeasonNumber"),
+                        seasonNumber,
+                        args.LibraryOptions.PreferredMetadataLanguage);
+            }
+
+            return season;
         }
+
+        return null;
     }
 }

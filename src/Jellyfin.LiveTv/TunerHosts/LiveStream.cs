@@ -15,162 +15,161 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.LiveTv.TunerHosts
+namespace Jellyfin.LiveTv.TunerHosts;
+
+public class LiveStream : ILiveStream
 {
-    public class LiveStream : ILiveStream
+    private readonly IConfigurationManager _configurationManager;
+
+    public LiveStream(
+        MediaSourceInfo mediaSource,
+        TunerHostInfo tuner,
+        IFileSystem fileSystem,
+        ILogger logger,
+        IConfigurationManager configurationManager,
+        IStreamHelper streamHelper)
     {
-        private readonly IConfigurationManager _configurationManager;
+        OriginalMediaSource = mediaSource;
+        FileSystem = fileSystem;
+        MediaSource = mediaSource;
+        Logger = logger;
+        EnableStreamSharing = true;
+        UniqueId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
 
-        public LiveStream(
-            MediaSourceInfo mediaSource,
-            TunerHostInfo tuner,
-            IFileSystem fileSystem,
-            ILogger logger,
-            IConfigurationManager configurationManager,
-            IStreamHelper streamHelper)
+        if (tuner is not null)
         {
-            OriginalMediaSource = mediaSource;
-            FileSystem = fileSystem;
-            MediaSource = mediaSource;
-            Logger = logger;
-            EnableStreamSharing = true;
-            UniqueId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
-
-            if (tuner is not null)
-            {
-                TunerHostId = tuner.Id;
-            }
-
-            _configurationManager = configurationManager;
-            StreamHelper = streamHelper;
-
-            ConsumerCount = 1;
-            SetTempFilePath("ts");
+            TunerHostId = tuner.Id;
         }
 
-        protected IFileSystem FileSystem { get; }
+        _configurationManager = configurationManager;
+        StreamHelper = streamHelper;
 
-        protected IStreamHelper StreamHelper { get; }
+        ConsumerCount = 1;
+        SetTempFilePath("ts");
+    }
 
-        protected ILogger Logger { get; }
+    protected IFileSystem FileSystem { get; }
 
-        protected CancellationTokenSource LiveStreamCancellationTokenSource { get; } = new CancellationTokenSource();
+    protected IStreamHelper StreamHelper { get; }
 
-        protected string TempFilePath { get; set; }
+    protected ILogger Logger { get; }
 
-        public MediaSourceInfo OriginalMediaSource { get; set; }
+    protected CancellationTokenSource LiveStreamCancellationTokenSource { get; } = new CancellationTokenSource();
 
-        public MediaSourceInfo MediaSource { get; set; }
+    protected string TempFilePath { get; set; }
 
-        public int ConsumerCount { get; set; }
+    public MediaSourceInfo OriginalMediaSource { get; set; }
 
-        public string OriginalStreamId { get; set; }
+    public MediaSourceInfo MediaSource { get; set; }
 
-        public bool EnableStreamSharing { get; set; }
+    public int ConsumerCount { get; set; }
 
-        public string UniqueId { get; }
+    public string OriginalStreamId { get; set; }
 
-        public string TunerHostId { get; }
+    public bool EnableStreamSharing { get; set; }
 
-        public DateTime DateOpened { get; protected set; }
+    public string UniqueId { get; }
 
-        protected void SetTempFilePath(string extension)
+    public string TunerHostId { get; }
+
+    public DateTime DateOpened { get; protected set; }
+
+    protected void SetTempFilePath(string extension)
+    {
+        TempFilePath = Path.Combine(_configurationManager.GetTranscodePath(), UniqueId + "." + extension);
+    }
+
+    public virtual Task Open(CancellationToken openCancellationToken)
+    {
+        DateOpened = DateTime.UtcNow;
+        return Task.CompletedTask;
+    }
+
+    public async Task Close()
+    {
+        EnableStreamSharing = false;
+
+        Logger.LogInformation("Closing {Type}", GetType().Name);
+
+        await LiveStreamCancellationTokenSource.CancelAsync().ConfigureAwait(false);
+    }
+
+    public Stream GetStream()
+    {
+        var stream = new FileStream(
+            TempFilePath,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.ReadWrite,
+            IODefaults.FileStreamBufferSize,
+            FileOptions.SequentialScan | FileOptions.Asynchronous);
+
+        bool seekFile = (DateTime.UtcNow - DateOpened).TotalSeconds > 10;
+        if (seekFile)
         {
-            TempFilePath = Path.Combine(_configurationManager.GetTranscodePath(), UniqueId + "." + extension);
+            TrySeek(stream, -20000);
         }
 
-        public virtual Task Open(CancellationToken openCancellationToken)
+        return stream;
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool dispose)
+    {
+        if (dispose)
         {
-            DateOpened = DateTime.UtcNow;
-            return Task.CompletedTask;
+            LiveStreamCancellationTokenSource?.Dispose();
+        }
+    }
+
+    protected async Task DeleteTempFiles(string path, int retryCount = 0)
+    {
+        if (retryCount == 0)
+        {
+            Logger.LogInformation("Deleting temp file {FilePath}", path);
         }
 
-        public async Task Close()
+        try
         {
-            EnableStreamSharing = false;
-
-            Logger.LogInformation("Closing {Type}", GetType().Name);
-
-            await LiveStreamCancellationTokenSource.CancelAsync().ConfigureAwait(false);
+            FileSystem.DeleteFile(path);
         }
-
-        public Stream GetStream()
+        catch (Exception ex)
         {
-            var stream = new FileStream(
-                TempFilePath,
-                FileMode.Open,
-                FileAccess.Read,
-                FileShare.ReadWrite,
-                IODefaults.FileStreamBufferSize,
-                FileOptions.SequentialScan | FileOptions.Asynchronous);
-
-            bool seekFile = (DateTime.UtcNow - DateOpened).TotalSeconds > 10;
-            if (seekFile)
+            Logger.LogError(ex, "Error deleting file {FilePath}", path);
+            if (retryCount <= 40)
             {
-                TrySeek(stream, -20000);
-            }
-
-            return stream;
-        }
-
-        /// <inheritdoc />
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool dispose)
-        {
-            if (dispose)
-            {
-                LiveStreamCancellationTokenSource?.Dispose();
+                await Task.Delay(500).ConfigureAwait(false);
+                await DeleteTempFiles(path, retryCount + 1).ConfigureAwait(false);
             }
         }
+    }
 
-        protected async Task DeleteTempFiles(string path, int retryCount = 0)
+    private void TrySeek(FileStream stream, long offset)
+    {
+        if (!stream.CanSeek)
         {
-            if (retryCount == 0)
-            {
-                Logger.LogInformation("Deleting temp file {FilePath}", path);
-            }
-
-            try
-            {
-                FileSystem.DeleteFile(path);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error deleting file {FilePath}", path);
-                if (retryCount <= 40)
-                {
-                    await Task.Delay(500).ConfigureAwait(false);
-                    await DeleteTempFiles(path, retryCount + 1).ConfigureAwait(false);
-                }
-            }
+            return;
         }
 
-        private void TrySeek(FileStream stream, long offset)
+        try
         {
-            if (!stream.CanSeek)
-            {
-                return;
-            }
-
-            try
-            {
-                stream.Seek(offset, SeekOrigin.End);
-            }
-            catch (IOException)
-            {
-            }
-            catch (ArgumentException)
-            {
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error seeking stream");
-            }
+            stream.Seek(offset, SeekOrigin.End);
+        }
+        catch (IOException)
+        {
+        }
+        catch (ArgumentException)
+        {
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error seeking stream");
         }
     }
 }

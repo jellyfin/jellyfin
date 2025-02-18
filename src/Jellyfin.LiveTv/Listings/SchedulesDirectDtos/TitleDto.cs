@@ -1,16 +1,15 @@
 using System.Text.Json.Serialization;
 
-namespace Jellyfin.LiveTv.Listings.SchedulesDirectDtos
+namespace Jellyfin.LiveTv.Listings.SchedulesDirectDtos;
+
+/// <summary>
+/// Title dto.
+/// </summary>
+public class TitleDto
 {
     /// <summary>
-    /// Title dto.
+    /// Gets or sets the title.
     /// </summary>
-    public class TitleDto
-    {
-        /// <summary>
-        /// Gets or sets the title.
-        /// </summary>
-        [JsonPropertyName("title120")]
-        public string? Title120 { get; set; }
-    }
+    [JsonPropertyName("title120")]
+    public string? Title120 { get; set; }
 }

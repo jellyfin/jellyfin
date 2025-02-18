@@ -2,10 +2,9 @@
 
 using MediaBrowser.Model.Plugins;
 
-namespace MediaBrowser.Providers.Plugins.AudioDb
+namespace MediaBrowser.Providers.Plugins.AudioDb.Configuration;
+
+public class PluginConfiguration : BasePluginConfiguration
 {
-    public class PluginConfiguration : BasePluginConfiguration
-    {
-        public bool ReplaceAlbumName { get; set; }
-    }
+    public bool ReplaceAlbumName { get; set; }
 }

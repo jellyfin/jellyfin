@@ -2,10 +2,9 @@
 
 using System.Collections.Generic;
 
-namespace MediaBrowser.Model.Plugins
+namespace MediaBrowser.Model.Plugins;
+
+public interface IHasWebPages
 {
-    public interface IHasWebPages
-    {
-        IEnumerable<PluginPageInfo> GetPages();
-    }
+    IEnumerable<PluginPageInfo> GetPages();
 }

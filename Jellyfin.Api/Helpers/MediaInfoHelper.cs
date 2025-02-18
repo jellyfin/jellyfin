@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
-using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -24,7 +23,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Api.Helpers;
@@ -111,7 +109,7 @@ public class MediaInfoHelper
         {
             var mediaSource = await _mediaSourceManager.GetLiveStream(liveStreamId, CancellationToken.None).ConfigureAwait(false);
 
-            mediaSources = new[] { mediaSource };
+            mediaSources = [mediaSource];
         }
 
         if (mediaSources.Length == 0)
@@ -183,7 +181,7 @@ public class MediaInfoHelper
 
         var options = new MediaOptions
         {
-            MediaSources = new[] { mediaSource },
+            MediaSources = [mediaSource],
             Context = EncodingContext.Streaming,
             DeviceId = claimsPrincipal.GetDeviceId(),
             ItemId = item.Id,

@@ -2,22 +2,21 @@
 
 using MediaBrowser.Controller.Entities;
 
-namespace MediaBrowser.Controller.Providers
+namespace MediaBrowser.Controller.Providers;
+
+/// <summary>
+/// Marker interface.
+/// </summary>
+public interface IMetadataProvider
 {
     /// <summary>
-    /// Marker interface.
+    /// Gets the name.
     /// </summary>
-    public interface IMetadataProvider
-    {
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        string Name { get; }
-    }
+    /// <value>The name.</value>
+    string Name { get; }
+}
 
-    public interface IMetadataProvider<TItemType> : IMetadataProvider
-           where TItemType : BaseItem
-    {
-    }
+public interface IMetadataProvider<TItemType> : IMetadataProvider
+    where TItemType : BaseItem
+{
 }

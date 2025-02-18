@@ -7,68 +7,67 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 
-namespace Emby.Server.Implementations.Library.Resolvers.Movies
+namespace Emby.Server.Implementations.Library.Resolvers.Movies;
+
+/// <summary>
+/// Class BoxSetResolver.
+/// </summary>
+public class BoxSetResolver : GenericFolderResolver<BoxSet>
 {
     /// <summary>
-    /// Class BoxSetResolver.
+    /// Resolves the specified args.
     /// </summary>
-    public class BoxSetResolver : GenericFolderResolver<BoxSet>
+    /// <param name="args">The args.</param>
+    /// <returns>BoxSet.</returns>
+    protected override BoxSet Resolve(ItemResolveArgs args)
     {
-        /// <summary>
-        /// Resolves the specified args.
-        /// </summary>
-        /// <param name="args">The args.</param>
-        /// <returns>BoxSet.</returns>
-        protected override BoxSet Resolve(ItemResolveArgs args)
+        // It's a boxset if all of the following conditions are met:
+        // Is a Directory
+        // Contains [boxset] in the path
+        if (args.IsDirectory)
         {
-            // It's a boxset if all of the following conditions are met:
-            // Is a Directory
-            // Contains [boxset] in the path
-            if (args.IsDirectory)
+            var filename = Path.GetFileName(args.Path);
+
+            if (string.IsNullOrEmpty(filename))
             {
-                var filename = Path.GetFileName(args.Path);
-
-                if (string.IsNullOrEmpty(filename))
-                {
-                    return null;
-                }
-
-                if (filename.Contains("[boxset]", StringComparison.OrdinalIgnoreCase) || args.ContainsFileSystemEntryByName("collection.xml"))
-                {
-                    return new BoxSet
-                    {
-                        Path = args.Path,
-                        Name = Path.GetFileName(args.Path).Replace("[boxset]", string.Empty, StringComparison.OrdinalIgnoreCase).Trim()
-                    };
-                }
+                return null;
             }
 
-            return null;
+            if (filename.Contains("[boxset]", StringComparison.OrdinalIgnoreCase) || args.ContainsFileSystemEntryByName("collection.xml"))
+            {
+                return new BoxSet
+                {
+                    Path = args.Path,
+                    Name = Path.GetFileName(args.Path).Replace("[boxset]", string.Empty, StringComparison.OrdinalIgnoreCase).Trim()
+                };
+            }
         }
 
-        /// <summary>
-        /// Sets the initial item values.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="args">The args.</param>
-        protected override void SetInitialItemValues(BoxSet item, ItemResolveArgs args)
-        {
-            base.SetInitialItemValues(item, args);
+        return null;
+    }
 
-            SetProviderIdFromPath(item);
-        }
+    /// <summary>
+    /// Sets the initial item values.
+    /// </summary>
+    /// <param name="item">The item.</param>
+    /// <param name="args">The args.</param>
+    protected override void SetInitialItemValues(BoxSet item, ItemResolveArgs args)
+    {
+        base.SetInitialItemValues(item, args);
 
-        /// <summary>
-        /// Sets the provider id from path.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        private static void SetProviderIdFromPath(BaseItem item)
-        {
-            // we need to only look at the name of this actual item (not parents)
-            var justName = Path.GetFileName(item.Path.AsSpan());
+        SetProviderIdFromPath(item);
+    }
 
-            var id = justName.GetAttributeValue("tmdbid");
-            item.TrySetProviderId(MetadataProvider.Tmdb, id);
-        }
+    /// <summary>
+    /// Sets the provider id from path.
+    /// </summary>
+    /// <param name="item">The item.</param>
+    private static void SetProviderIdFromPath(BaseItem item)
+    {
+        // we need to only look at the name of this actual item (not parents)
+        var justName = Path.GetFileName(item.Path.AsSpan());
+
+        var id = justName.GetAttributeValue("tmdbid");
+        item.TrySetProviderId(MetadataProvider.Tmdb, id);
     }
 }

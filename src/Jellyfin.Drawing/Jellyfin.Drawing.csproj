@@ -5,12 +5,6 @@
     <ProjectGuid>{08FFF49B-F175-4807-A2B5-73B0EBD9F716}</ProjectGuid>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-  </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
     <ProjectReference Include="..\..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />

@@ -3,7 +3,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Net.Mime;
 using System.Text.Json;
 using Jellyfin.Api.Attributes;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.Models.ConfigurationDtos;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Api;

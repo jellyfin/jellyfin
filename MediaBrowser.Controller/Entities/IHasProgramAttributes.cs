@@ -4,26 +4,25 @@
 
 using MediaBrowser.Model.LiveTv;
 
-namespace MediaBrowser.Controller.Entities
+namespace MediaBrowser.Controller.Entities;
+
+public interface IHasProgramAttributes
 {
-    public interface IHasProgramAttributes
-    {
-        bool IsMovie { get; set; }
+    bool IsMovie { get; set; }
 
-        bool IsSports { get; }
+    bool IsSports { get; }
 
-        bool IsNews { get; }
+    bool IsNews { get; }
 
-        bool IsKids { get; }
+    bool IsKids { get; }
 
-        bool IsRepeat { get; set; }
+    bool IsRepeat { get; set; }
 
-        bool IsSeries { get; set; }
+    bool IsSeries { get; set; }
 
-        ProgramAudio? Audio { get; set; }
+    ProgramAudio? Audio { get; set; }
 
-        string EpisodeTitle { get; set; }
+    string EpisodeTitle { get; set; }
 
-        string ServiceName { get; set; }
-    }
+    string ServiceName { get; set; }
 }

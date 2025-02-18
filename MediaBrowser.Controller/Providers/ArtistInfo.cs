@@ -2,15 +2,14 @@
 
 using System.Collections.Generic;
 
-namespace MediaBrowser.Controller.Providers
-{
-    public class ArtistInfo : ItemLookupInfo
-    {
-        public ArtistInfo()
-        {
-            SongInfos = new List<SongInfo>();
-        }
+namespace MediaBrowser.Controller.Providers;
 
-        public List<SongInfo> SongInfos { get; set; }
+public class ArtistInfo : ItemLookupInfo
+{
+    public ArtistInfo()
+    {
+        SongInfos = new List<SongInfo>();
     }
+
+    public List<SongInfo> SongInfos { get; set; }
 }

@@ -79,7 +79,7 @@ public class SuggestionsController : BaseJellyfinApiController
         var dtoOptions = new DtoOptions().AddClientFields(User);
         var result = _libraryManager.GetItemsResult(new InternalItemsQuery(user)
         {
-            OrderBy = new[] { (ItemSortBy.Random, SortOrder.Descending) },
+            OrderBy = [(ItemSortBy.Random, SortOrder.Descending)],
             MediaTypes = mediaType,
             IncludeItemTypes = type,
             IsVirtualItem = false,

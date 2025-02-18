@@ -1,23 +1,22 @@
-namespace MediaBrowser.Controller.Providers
+namespace MediaBrowser.Controller.Providers;
+
+/// <summary>
+/// Provider refresh priority.
+/// </summary>
+public enum RefreshPriority
 {
     /// <summary>
-    /// Provider refresh priority.
+    /// High priority.
     /// </summary>
-    public enum RefreshPriority
-    {
-        /// <summary>
-        /// High priority.
-        /// </summary>
-        High = 0,
+    High = 0,
 
-        /// <summary>
-        /// Normal priority.
-        /// </summary>
-        Normal = 1,
+    /// <summary>
+    /// Normal priority.
+    /// </summary>
+    Normal = 1,
 
-        /// <summary>
-        /// Low priority.
-        /// </summary>
-        Low = 2
-    }
+    /// <summary>
+    /// Low priority.
+    /// </summary>
+    Low = 2
 }

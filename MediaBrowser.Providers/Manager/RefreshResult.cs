@@ -2,14 +2,13 @@
 
 using MediaBrowser.Controller.Library;
 
-namespace MediaBrowser.Providers.Manager
+namespace MediaBrowser.Providers.Manager;
+
+public class RefreshResult
 {
-    public class RefreshResult
-    {
-        public ItemUpdateType UpdateType { get; set; }
+    public ItemUpdateType UpdateType { get; set; }
 
-        public string? ErrorMessage { get; set; }
+    public string? ErrorMessage { get; set; }
 
-        public int Failures { get; set; }
-    }
+    public int Failures { get; set; }
 }

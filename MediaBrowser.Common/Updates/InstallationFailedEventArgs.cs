@@ -3,10 +3,9 @@
 
 using System;
 
-namespace MediaBrowser.Common.Updates
+namespace MediaBrowser.Common.Updates;
+
+public class InstallationFailedEventArgs : InstallationEventArgs
 {
-    public class InstallationFailedEventArgs : InstallationEventArgs
-    {
-        public Exception Exception { get; set; }
-    }
+    public Exception Exception { get; set; }
 }

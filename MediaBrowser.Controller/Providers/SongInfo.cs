@@ -5,20 +5,19 @@
 using System;
 using System.Collections.Generic;
 
-namespace MediaBrowser.Controller.Providers
+namespace MediaBrowser.Controller.Providers;
+
+public class SongInfo : ItemLookupInfo
 {
-    public class SongInfo : ItemLookupInfo
+    public SongInfo()
     {
-        public SongInfo()
-        {
-            Artists = Array.Empty<string>();
-            AlbumArtists = Array.Empty<string>();
-        }
-
-        public IReadOnlyList<string> AlbumArtists { get; set; }
-
-        public string Album { get; set; }
-
-        public IReadOnlyList<string> Artists { get; set; }
+        Artists = Array.Empty<string>();
+        AlbumArtists = Array.Empty<string>();
     }
+
+    public IReadOnlyList<string> AlbumArtists { get; set; }
+
+    public string Album { get; set; }
+
+    public IReadOnlyList<string> Artists { get; set; }
 }

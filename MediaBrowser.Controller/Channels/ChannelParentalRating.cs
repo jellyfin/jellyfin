@@ -1,17 +1,16 @@
 #pragma warning disable CS1591
 
-namespace MediaBrowser.Controller.Channels
+namespace MediaBrowser.Controller.Channels;
+
+public enum ChannelParentalRating
 {
-    public enum ChannelParentalRating
-    {
-        GeneralAudience = 0,
+    GeneralAudience = 0,
 
-        UsPG = 1,
+    UsPG = 1,
 
-        UsPG13 = 2,
+    UsPG13 = 2,
 
-        UsR = 3,
+    UsR = 3,
 
-        Adult = 4
-    }
+    Adult = 4
 }

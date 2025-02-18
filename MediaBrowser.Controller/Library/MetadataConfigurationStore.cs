@@ -4,20 +4,19 @@ using System.Collections.Generic;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Configuration;
 
-namespace MediaBrowser.Controller.Library
+namespace MediaBrowser.Controller.Library;
+
+public class MetadataConfigurationStore : IConfigurationFactory
 {
-    public class MetadataConfigurationStore : IConfigurationFactory
+    public IEnumerable<ConfigurationStore> GetConfigurations()
     {
-        public IEnumerable<ConfigurationStore> GetConfigurations()
-        {
-            return new ConfigurationStore[]
+        return
+        [
+            new ConfigurationStore
             {
-                new ConfigurationStore
-                {
-                    Key = "metadata",
-                    ConfigurationType = typeof(MetadataConfiguration)
-                }
-            };
-        }
+                Key = "metadata",
+                ConfigurationType = typeof(MetadataConfiguration)
+            }
+        ];
     }
 }

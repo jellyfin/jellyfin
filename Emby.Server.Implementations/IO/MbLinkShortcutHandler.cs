@@ -4,32 +4,31 @@ using System;
 using System.IO;
 using MediaBrowser.Model.IO;
 
-namespace Emby.Server.Implementations.IO
+namespace Emby.Server.Implementations.IO;
+
+public class MbLinkShortcutHandler : IShortcutHandler
 {
-    public class MbLinkShortcutHandler : IShortcutHandler
+    public string Extension => ".mblink";
+
+    public string? Resolve(string shortcutPath)
     {
-        public string Extension => ".mblink";
+        ArgumentException.ThrowIfNullOrEmpty(shortcutPath);
 
-        public string? Resolve(string shortcutPath)
+        if (Path.GetExtension(shortcutPath.AsSpan()).Equals(".mblink", StringComparison.OrdinalIgnoreCase))
         {
-            ArgumentException.ThrowIfNullOrEmpty(shortcutPath);
+            var path = File.ReadAllText(shortcutPath);
 
-            if (Path.GetExtension(shortcutPath.AsSpan()).Equals(".mblink", StringComparison.OrdinalIgnoreCase))
-            {
-                var path = File.ReadAllText(shortcutPath);
-
-                return Path.TrimEndingDirectorySeparator(path);
-            }
-
-            return null;
+            return Path.TrimEndingDirectorySeparator(path);
         }
 
-        public void Create(string shortcutPath, string targetPath)
-        {
-            ArgumentException.ThrowIfNullOrEmpty(shortcutPath);
-            ArgumentException.ThrowIfNullOrEmpty(targetPath);
+        return null;
+    }
 
-            File.WriteAllText(shortcutPath, targetPath);
-        }
+    public void Create(string shortcutPath, string targetPath)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(shortcutPath);
+        ArgumentException.ThrowIfNullOrEmpty(targetPath);
+
+        File.WriteAllText(shortcutPath, targetPath);
     }
 }

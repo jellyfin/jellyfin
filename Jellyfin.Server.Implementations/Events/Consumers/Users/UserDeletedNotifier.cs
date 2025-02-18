@@ -8,32 +8,31 @@ using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Session;
 
-namespace Jellyfin.Server.Implementations.Events.Consumers.Users
+namespace Jellyfin.Server.Implementations.Events.Consumers.Users;
+
+/// <summary>
+/// Notifies the user's sessions when a user is deleted.
+/// </summary>
+public class UserDeletedNotifier : IEventConsumer<UserDeletedEventArgs>
 {
+    private readonly ISessionManager _sessionManager;
+
     /// <summary>
-    /// Notifies the user's sessions when a user is deleted.
+    /// Initializes a new instance of the <see cref="UserDeletedNotifier"/> class.
     /// </summary>
-    public class UserDeletedNotifier : IEventConsumer<UserDeletedEventArgs>
+    /// <param name="sessionManager">The session manager.</param>
+    public UserDeletedNotifier(ISessionManager sessionManager)
     {
-        private readonly ISessionManager _sessionManager;
+        _sessionManager = sessionManager;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="UserDeletedNotifier"/> class.
-        /// </summary>
-        /// <param name="sessionManager">The session manager.</param>
-        public UserDeletedNotifier(ISessionManager sessionManager)
-        {
-            _sessionManager = sessionManager;
-        }
-
-        /// <inheritdoc />
-        public async Task OnEvent(UserDeletedEventArgs eventArgs)
-        {
-            await _sessionManager.SendMessageToUserSessions(
-                new List<Guid> { eventArgs.Argument.Id },
-                SessionMessageType.UserDeleted,
-                eventArgs.Argument.Id.ToString("N", CultureInfo.InvariantCulture),
-                CancellationToken.None).ConfigureAwait(false);
-        }
+    /// <inheritdoc />
+    public async Task OnEvent(UserDeletedEventArgs eventArgs)
+    {
+        await _sessionManager.SendMessageToUserSessions(
+            [eventArgs.Argument.Id],
+            SessionMessageType.UserDeleted,
+            eventArgs.Argument.Id.ToString("N", CultureInfo.InvariantCulture),
+            CancellationToken.None).ConfigureAwait(false);
     }
 }

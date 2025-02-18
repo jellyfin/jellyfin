@@ -5,12 +5,11 @@
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 
-namespace MediaBrowser.Controller.Providers
-{
-    public class LocalImageInfo
-    {
-        public FileSystemMetadata FileInfo { get; set; }
+namespace MediaBrowser.Controller.Providers;
 
-        public ImageType Type { get; set; }
-    }
+public class LocalImageInfo
+{
+    public FileSystemMetadata FileInfo { get; set; }
+
+    public ImageType Type { get; set; }
 }

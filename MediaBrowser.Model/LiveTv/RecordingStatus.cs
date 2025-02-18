@@ -1,15 +1,14 @@
 #pragma warning disable CS1591
 
-namespace MediaBrowser.Model.LiveTv
+namespace MediaBrowser.Model.LiveTv;
+
+public enum RecordingStatus
 {
-    public enum RecordingStatus
-    {
-        New,
-        InProgress,
-        Completed,
-        Cancelled,
-        ConflictedOk,
-        ConflictedNotOk,
-        Error
-    }
+    New,
+    InProgress,
+    Completed,
+    Cancelled,
+    ConflictedOk,
+    ConflictedNotOk,
+    Error
 }

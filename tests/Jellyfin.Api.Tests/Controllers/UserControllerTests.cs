@@ -18,7 +18,6 @@ using MediaBrowser.Model.Users;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Nikse.SubtitleEdit.Core.Common;
 using Xunit;
 
 namespace Jellyfin.Api.Tests.Controllers;

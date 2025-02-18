@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace MediaBrowser.Model.Configuration;
@@ -42,7 +41,7 @@ public class TrickplayOptions
     /// <summary>
     /// Gets or sets the target width resolutions, in px, to generates preview images for.
     /// </summary>
-    public int[] WidthResolutions { get; set; } = new[] { 320 };
+    public int[] WidthResolutions { get; set; } = [320];
 
     /// <summary>
     /// Gets or sets number of tile images to allow in X dimension.

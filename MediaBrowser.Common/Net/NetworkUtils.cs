@@ -254,7 +254,7 @@ public static partial class NetworkUtils
                 return TryParseHost(host[1..(i - 1)], out addresses);
             }
 
-            addresses = Array.Empty<IPAddress>();
+            addresses = [];
             return false;
         }
 
@@ -289,11 +289,11 @@ public static partial class NetworkUtils
                 if (((address.AddressFamily == AddressFamily.InterNetwork) && (!isIPv4Enabled && isIPv6Enabled))
                     || ((address.AddressFamily == AddressFamily.InterNetworkV6) && (isIPv4Enabled && !isIPv6Enabled)))
                 {
-                    addresses = Array.Empty<IPAddress>();
+                    addresses = [];
                     return false;
                 }
 
-                addresses = new[] { address };
+                addresses = [address];
 
                 // Host name is an IPv4 address, so fake resolve.
                 return true;
@@ -303,12 +303,12 @@ public static partial class NetworkUtils
         {
             if (IPAddress.TryParse(host.LeftPart('/'), out var address))
             {
-                addresses = new[] { address };
+                addresses = [address];
                 return true;
             }
         }
 
-        addresses = Array.Empty<IPAddress>();
+        addresses = [];
         return false;
     }
 

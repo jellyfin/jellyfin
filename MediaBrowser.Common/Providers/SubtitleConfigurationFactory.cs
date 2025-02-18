@@ -4,18 +4,17 @@ using System.Collections.Generic;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Providers;
 
-namespace MediaBrowser.Common.Providers
+namespace MediaBrowser.Common.Providers;
+
+public class SubtitleConfigurationFactory : IConfigurationFactory
 {
-    public class SubtitleConfigurationFactory : IConfigurationFactory
+    /// <inheritdoc />
+    public IEnumerable<ConfigurationStore> GetConfigurations()
     {
-        /// <inheritdoc />
-        public IEnumerable<ConfigurationStore> GetConfigurations()
+        yield return new ConfigurationStore()
         {
-            yield return new ConfigurationStore()
-            {
-                Key = "subtitles",
-                ConfigurationType = typeof(SubtitleOptions)
-            };
-        }
+            Key = "subtitles",
+            ConfigurationType = typeof(SubtitleOptions)
+        };
     }
 }

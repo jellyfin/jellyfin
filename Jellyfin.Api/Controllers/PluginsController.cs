@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
-using Jellyfin.Api.Constants;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Plugins;

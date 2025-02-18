@@ -4,17 +4,16 @@
 using System;
 using System.Collections.Generic;
 
-namespace MediaBrowser.Controller.Providers
+namespace MediaBrowser.Controller.Providers;
+
+public class SeasonInfo : ItemLookupInfo
 {
-    public class SeasonInfo : ItemLookupInfo
+    public SeasonInfo()
     {
-        public SeasonInfo()
-        {
-            SeriesProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        }
-
-        public Dictionary<string, string> SeriesProviderIds { get; set; }
-
-        public string SeriesDisplayOrder { get; set; }
+        SeriesProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
     }
+
+    public Dictionary<string, string> SeriesProviderIds { get; set; }
+
+    public string SeriesDisplayOrder { get; set; }
 }

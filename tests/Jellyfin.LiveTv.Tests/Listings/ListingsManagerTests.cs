@@ -25,7 +25,7 @@ public class ListingsManagerTests
         _config = Mock.Of<IConfigurationManager>();
         _taskManager = Mock.Of<ITaskManager>();
         _tunerHostManager = Mock.Of<ITunerHostManager>();
-        _listingsProviders = new[] { Mock.Of<IListingsProvider>() };
+        _listingsProviders = [Mock.Of<IListingsProvider>()];
     }
 
     [Fact]

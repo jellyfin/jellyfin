@@ -8,10 +8,8 @@
   <PropertyGroup>
     <AssemblyName>jellyfin</AssemblyName>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <ServerGarbageCollection>false</ServerGarbageCollection>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <ApplicationIcon>Jellyfin.Server.ico</ApplicationIcon>
   </PropertyGroup>
 

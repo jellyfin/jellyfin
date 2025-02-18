@@ -29,87 +29,86 @@ using System;
 using System.Diagnostics.Contracts;
 using System.Runtime.InteropServices;
 
-namespace Jellyfin.Extensions
+namespace Jellyfin.Extensions;
+
+/// <summary>
+/// Extension class for splitting lines without unnecessary allocations.
+/// </summary>
+public static class SplitStringExtensions
 {
     /// <summary>
-    /// Extension class for splitting lines without unnecessary allocations.
+    /// Creates a new string split enumerator.
     /// </summary>
-    public static class SplitStringExtensions
+    /// <param name="str">The string to split.</param>
+    /// <param name="separator">The separator to split on.</param>
+    /// <returns>The enumerator struct.</returns>
+    [Pure]
+    public static Enumerator SpanSplit(this string str, char separator) => new(str.AsSpan(), separator);
+
+    /// <summary>
+    /// Creates a new span split enumerator.
+    /// </summary>
+    /// <param name="str">The span to split.</param>
+    /// <param name="separator">The separator to split on.</param>
+    /// <returns>The enumerator struct.</returns>
+    [Pure]
+    public static Enumerator Split(this ReadOnlySpan<char> str, char separator) => new(str, separator);
+
+    /// <summary>
+    /// Provides an enumerator for the substrings separated by the separator.
+    /// </summary>
+    [StructLayout(LayoutKind.Auto)]
+    public ref struct Enumerator
     {
-        /// <summary>
-        /// Creates a new string split enumerator.
-        /// </summary>
-        /// <param name="str">The string to split.</param>
-        /// <param name="separator">The separator to split on.</param>
-        /// <returns>The enumerator struct.</returns>
-        [Pure]
-        public static Enumerator SpanSplit(this string str, char separator) => new(str.AsSpan(), separator);
+        private readonly char _separator;
+        private ReadOnlySpan<char> _str;
 
         /// <summary>
-        /// Creates a new span split enumerator.
+        /// Initializes a new instance of the <see cref="Enumerator"/> struct.
         /// </summary>
         /// <param name="str">The span to split.</param>
         /// <param name="separator">The separator to split on.</param>
-        /// <returns>The enumerator struct.</returns>
-        [Pure]
-        public static Enumerator Split(this ReadOnlySpan<char> str, char separator) => new(str, separator);
+        public Enumerator(ReadOnlySpan<char> str, char separator)
+        {
+            _str = str;
+            _separator = separator;
+            Current = default;
+        }
 
         /// <summary>
-        /// Provides an enumerator for the substrings separated by the separator.
+        /// Gets a reference to the item at the current position of the enumerator.
         /// </summary>
-        [StructLayout(LayoutKind.Auto)]
-        public ref struct Enumerator
-        {
-            private readonly char _separator;
-            private ReadOnlySpan<char> _str;
+        public ReadOnlySpan<char> Current { get; private set; }
 
-            /// <summary>
-            /// Initializes a new instance of the <see cref="Enumerator"/> struct.
-            /// </summary>
-            /// <param name="str">The span to split.</param>
-            /// <param name="separator">The separator to split on.</param>
-            public Enumerator(ReadOnlySpan<char> str, char separator)
+        /// <summary>
+        /// Returns <c>this</c>.
+        /// </summary>
+        /// <returns><c>this</c>.</returns>
+        public readonly Enumerator GetEnumerator() => this;
+
+        /// <summary>
+        /// Advances the enumerator to the next item.
+        /// </summary>
+        /// <returns><c>true</c> if there is a next element; otherwise <c>false</c>.</returns>
+        public bool MoveNext()
+        {
+            if (_str.Length == 0)
             {
-                _str = str;
-                _separator = separator;
-                Current = default;
+                return false;
             }
 
-            /// <summary>
-            /// Gets a reference to the item at the current position of the enumerator.
-            /// </summary>
-            public ReadOnlySpan<char> Current { get; private set; }
-
-            /// <summary>
-            /// Returns <c>this</c>.
-            /// </summary>
-            /// <returns><c>this</c>.</returns>
-            public readonly Enumerator GetEnumerator() => this;
-
-            /// <summary>
-            /// Advances the enumerator to the next item.
-            /// </summary>
-            /// <returns><c>true</c> if there is a next element; otherwise <c>false</c>.</returns>
-            public bool MoveNext()
+            var span = _str;
+            var index = span.IndexOf(_separator);
+            if (index == -1)
             {
-                if (_str.Length == 0)
-                {
-                    return false;
-                }
-
-                var span = _str;
-                var index = span.IndexOf(_separator);
-                if (index == -1)
-                {
-                    _str = ReadOnlySpan<char>.Empty;
-                    Current = span;
-                    return true;
-                }
-
-                Current = span.Slice(0, index);
-                _str = span[(index + 1)..];
+                _str = ReadOnlySpan<char>.Empty;
+                Current = span;
                 return true;
             }
+
+            Current = span.Slice(0, index);
+            _str = span[(index + 1)..];
+            return true;
         }
     }
 }

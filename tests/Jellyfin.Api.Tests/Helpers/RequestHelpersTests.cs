@@ -8,132 +8,126 @@ using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Net;
 using Xunit;
 
-namespace Jellyfin.Api.Tests.Helpers
+namespace Jellyfin.Api.Tests.Helpers;
+
+public static class RequestHelpersTests
 {
-    public static class RequestHelpersTests
+    [Theory]
+    [MemberData(nameof(GetOrderBy_Success_TestData))]
+    public static void GetOrderBy_Success(IReadOnlyList<ItemSortBy> sortBy, IReadOnlyList<SortOrder> requestedSortOrder, (ItemSortBy, SortOrder)[] expected)
     {
-        [Theory]
-        [MemberData(nameof(GetOrderBy_Success_TestData))]
-        public static void GetOrderBy_Success(IReadOnlyList<ItemSortBy> sortBy, IReadOnlyList<SortOrder> requestedSortOrder, (ItemSortBy, SortOrder)[] expected)
+        Assert.Equal(expected, RequestHelpers.GetOrderBy(sortBy, requestedSortOrder));
+    }
+
+    [Fact]
+    public static void GetUserId_IsAdmin()
+    {
+        Guid? requestUserId = Guid.NewGuid();
+        Guid? authUserId = Guid.NewGuid();
+
+        var claims = new[]
         {
-            Assert.Equal(expected, RequestHelpers.GetOrderBy(sortBy, requestedSortOrder));
-        }
+            new Claim(InternalClaimTypes.UserId, authUserId.Value.ToString("N", CultureInfo.InvariantCulture)),
+            new Claim(InternalClaimTypes.IsApiKey, bool.FalseString),
+            new Claim(ClaimTypes.Role, UserRoles.Administrator)
+        };
 
-        [Fact]
-        public static void GetUserId_IsAdmin()
+        var identity = new ClaimsIdentity(claims, string.Empty);
+        var principal = new ClaimsPrincipal(identity);
+
+        var userId = RequestHelpers.GetUserId(principal, requestUserId);
+
+        Assert.Equal(requestUserId, userId);
+    }
+
+    [Fact]
+    public static void GetUserId_IsApiKey_EmptyGuid()
+    {
+        Guid? requestUserId = Guid.Empty;
+
+        var claims = new[]
         {
-            Guid? requestUserId = Guid.NewGuid();
-            Guid? authUserId = Guid.NewGuid();
+            new Claim(InternalClaimTypes.IsApiKey, bool.TrueString)
+        };
 
-            var claims = new[]
-            {
-                new Claim(InternalClaimTypes.UserId, authUserId.Value.ToString("N", CultureInfo.InvariantCulture)),
-                new Claim(InternalClaimTypes.IsApiKey, bool.FalseString),
-                new Claim(ClaimTypes.Role, UserRoles.Administrator)
-            };
+        var identity = new ClaimsIdentity(claims, string.Empty);
+        var principal = new ClaimsPrincipal(identity);
 
-            var identity = new ClaimsIdentity(claims, string.Empty);
-            var principal = new ClaimsPrincipal(identity);
+        var userId = RequestHelpers.GetUserId(principal, requestUserId);
 
-            var userId = RequestHelpers.GetUserId(principal, requestUserId);
+        Assert.Equal(Guid.Empty, userId);
+    }
 
-            Assert.Equal(requestUserId, userId);
-        }
+    [Fact]
+    public static void GetUserId_IsApiKey_Null()
+    {
+        Guid? requestUserId = null;
 
-        [Fact]
-        public static void GetUserId_IsApiKey_EmptyGuid()
+        var claims = new[]
         {
-            Guid? requestUserId = Guid.Empty;
+            new Claim(InternalClaimTypes.IsApiKey, bool.TrueString)
+        };
 
-            var claims = new[]
-            {
-                new Claim(InternalClaimTypes.IsApiKey, bool.TrueString)
-            };
+        var identity = new ClaimsIdentity(claims, string.Empty);
+        var principal = new ClaimsPrincipal(identity);
 
-            var identity = new ClaimsIdentity(claims, string.Empty);
-            var principal = new ClaimsPrincipal(identity);
+        var userId = RequestHelpers.GetUserId(principal, requestUserId);
 
-            var userId = RequestHelpers.GetUserId(principal, requestUserId);
+        Assert.Equal(Guid.Empty, userId);
+    }
 
-            Assert.Equal(Guid.Empty, userId);
-        }
+    [Fact]
+    public static void GetUserId_IsUser()
+    {
+        Guid? requestUserId = Guid.NewGuid();
+        Guid? authUserId = Guid.NewGuid();
 
-        [Fact]
-        public static void GetUserId_IsApiKey_Null()
+        var claims = new[]
         {
-            Guid? requestUserId = null;
+            new Claim(InternalClaimTypes.UserId, authUserId.Value.ToString("N", CultureInfo.InvariantCulture)),
+            new Claim(InternalClaimTypes.IsApiKey, bool.FalseString),
+            new Claim(ClaimTypes.Role, UserRoles.User)
+        };
 
-            var claims = new[]
-            {
-                new Claim(InternalClaimTypes.IsApiKey, bool.TrueString)
-            };
+        var identity = new ClaimsIdentity(claims, string.Empty);
+        var principal = new ClaimsPrincipal(identity);
 
-            var identity = new ClaimsIdentity(claims, string.Empty);
-            var principal = new ClaimsPrincipal(identity);
+        Assert.Throws<SecurityException>(() => RequestHelpers.GetUserId(principal, requestUserId));
+    }
 
-            var userId = RequestHelpers.GetUserId(principal, requestUserId);
+    public static TheoryData<IReadOnlyList<ItemSortBy>, IReadOnlyList<SortOrder>, (ItemSortBy, SortOrder)[]> GetOrderBy_Success_TestData()
+    {
+        var data = new TheoryData<IReadOnlyList<ItemSortBy>, IReadOnlyList<SortOrder>, (ItemSortBy, SortOrder)[]>();
 
-            Assert.Equal(Guid.Empty, userId);
-        }
+        data.Add(
+            Array.Empty<ItemSortBy>(),
+            Array.Empty<SortOrder>(),
+            []);
 
-        [Fact]
-        public static void GetUserId_IsUser()
-        {
-            Guid? requestUserId = Guid.NewGuid();
-            Guid? authUserId = Guid.NewGuid();
+        data.Add(
+            [
+                ItemSortBy.IsFavoriteOrLiked,
+                ItemSortBy.Random
+            ],
+            Array.Empty<SortOrder>(),
+            [
+                (ItemSortBy.IsFavoriteOrLiked, SortOrder.Ascending),
+                (ItemSortBy.Random, SortOrder.Ascending)
+            ]);
 
-            var claims = new[]
-            {
-                new Claim(InternalClaimTypes.UserId, authUserId.Value.ToString("N", CultureInfo.InvariantCulture)),
-                new Claim(InternalClaimTypes.IsApiKey, bool.FalseString),
-                new Claim(ClaimTypes.Role, UserRoles.User)
-            };
+        data.Add(
+            [
+                ItemSortBy.SortName,
+                ItemSortBy.ProductionYear
+            ],
+            [
+                SortOrder.Descending
+            ],
+            [
+                (ItemSortBy.SortName, SortOrder.Descending),
+                (ItemSortBy.ProductionYear, SortOrder.Descending)
+            ]);
 
-            var identity = new ClaimsIdentity(claims, string.Empty);
-            var principal = new ClaimsPrincipal(identity);
-
-            Assert.Throws<SecurityException>(() => RequestHelpers.GetUserId(principal, requestUserId));
-        }
-
-        public static TheoryData<IReadOnlyList<ItemSortBy>, IReadOnlyList<SortOrder>, (ItemSortBy, SortOrder)[]> GetOrderBy_Success_TestData()
-        {
-            var data = new TheoryData<IReadOnlyList<ItemSortBy>, IReadOnlyList<SortOrder>, (ItemSortBy, SortOrder)[]>();
-
-            data.Add(
-                Array.Empty<ItemSortBy>(),
-                Array.Empty<SortOrder>(),
-                Array.Empty<(ItemSortBy, SortOrder)>());
-
-            data.Add(
-                new[]
-                {
-                    ItemSortBy.IsFavoriteOrLiked,
-                    ItemSortBy.Random
-                },
-                Array.Empty<SortOrder>(),
-                new (ItemSortBy, SortOrder)[]
-                {
-                    (ItemSortBy.IsFavoriteOrLiked, SortOrder.Ascending),
-                    (ItemSortBy.Random, SortOrder.Ascending),
-                });
-
-            data.Add(
-                new[]
-                {
-                    ItemSortBy.SortName,
-                    ItemSortBy.ProductionYear
-                },
-                new[]
-                {
-                    SortOrder.Descending
-                },
-                new (ItemSortBy, SortOrder)[]
-                {
-                    (ItemSortBy.SortName, SortOrder.Descending),
-                    (ItemSortBy.ProductionYear, SortOrder.Descending),
-                });
-
-            return data;
-        }
+        return data;
     }
 }

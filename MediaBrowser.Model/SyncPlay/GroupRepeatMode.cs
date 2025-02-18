@@ -1,23 +1,22 @@
-namespace MediaBrowser.Model.SyncPlay
+namespace MediaBrowser.Model.SyncPlay;
+
+/// <summary>
+/// Enum GroupRepeatMode.
+/// </summary>
+public enum GroupRepeatMode
 {
     /// <summary>
-    /// Enum GroupRepeatMode.
+    /// Repeat one item only.
     /// </summary>
-    public enum GroupRepeatMode
-    {
-        /// <summary>
-        /// Repeat one item only.
-        /// </summary>
-        RepeatOne = 0,
+    RepeatOne = 0,
 
-        /// <summary>
-        /// Cycle the playlist.
-        /// </summary>
-        RepeatAll = 1,
+    /// <summary>
+    /// Cycle the playlist.
+    /// </summary>
+    RepeatAll = 1,
 
-        /// <summary>
-        /// Do not repeat.
-        /// </summary>
-        RepeatNone = 2
-    }
+    /// <summary>
+    /// Do not repeat.
+    /// </summary>
+    RepeatNone = 2
 }

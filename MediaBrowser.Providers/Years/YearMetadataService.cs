@@ -8,18 +8,17 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Providers.Manager;
 using Microsoft.Extensions.Logging;
 
-namespace MediaBrowser.Providers.Years
+namespace MediaBrowser.Providers.Years;
+
+public class YearMetadataService : MetadataService<Year, ItemLookupInfo>
 {
-    public class YearMetadataService : MetadataService<Year, ItemLookupInfo>
+    public YearMetadataService(
+        IServerConfigurationManager serverConfigurationManager,
+        ILogger<YearMetadataService> logger,
+        IProviderManager providerManager,
+        IFileSystem fileSystem,
+        ILibraryManager libraryManager)
+        : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
     {
-        public YearMetadataService(
-            IServerConfigurationManager serverConfigurationManager,
-            ILogger<YearMetadataService> logger,
-            IProviderManager providerManager,
-            IFileSystem fileSystem,
-            ILibraryManager libraryManager)
-            : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
-        {
-        }
     }
 }

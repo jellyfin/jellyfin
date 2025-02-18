@@ -10,46 +10,45 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Providers.Manager;
 using Microsoft.Extensions.Logging;
 
-namespace MediaBrowser.Providers.Music
+namespace MediaBrowser.Providers.Music;
+
+public class MusicVideoMetadataService : MetadataService<MusicVideo, MusicVideoInfo>
 {
-    public class MusicVideoMetadataService : MetadataService<MusicVideo, MusicVideoInfo>
+    public MusicVideoMetadataService(
+        IServerConfigurationManager serverConfigurationManager,
+        ILogger<MusicVideoMetadataService> logger,
+        IProviderManager providerManager,
+        IFileSystem fileSystem,
+        ILibraryManager libraryManager)
+        : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
     {
-        public MusicVideoMetadataService(
-            IServerConfigurationManager serverConfigurationManager,
-            ILogger<MusicVideoMetadataService> logger,
-            IProviderManager providerManager,
-            IFileSystem fileSystem,
-            ILibraryManager libraryManager)
-            : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
+    }
+
+    /// <inheritdoc />
+    protected override void MergeData(
+        MetadataResult<MusicVideo> source,
+        MetadataResult<MusicVideo> target,
+        MetadataField[] lockedFields,
+        bool replaceData,
+        bool mergeMetadataSettings)
+    {
+        base.MergeData(source, target, lockedFields, replaceData, mergeMetadataSettings);
+
+        var sourceItem = source.Item;
+        var targetItem = target.Item;
+
+        if (replaceData || string.IsNullOrEmpty(targetItem.Album))
         {
+            targetItem.Album = sourceItem.Album;
         }
 
-        /// <inheritdoc />
-        protected override void MergeData(
-            MetadataResult<MusicVideo> source,
-            MetadataResult<MusicVideo> target,
-            MetadataField[] lockedFields,
-            bool replaceData,
-            bool mergeMetadataSettings)
+        if (replaceData || targetItem.Artists.Count == 0)
         {
-            base.MergeData(source, target, lockedFields, replaceData, mergeMetadataSettings);
-
-            var sourceItem = source.Item;
-            var targetItem = target.Item;
-
-            if (replaceData || string.IsNullOrEmpty(targetItem.Album))
-            {
-                targetItem.Album = sourceItem.Album;
-            }
-
-            if (replaceData || targetItem.Artists.Count == 0)
-            {
-                targetItem.Artists = sourceItem.Artists;
-            }
-            else
-            {
-                targetItem.Artists = targetItem.Artists.Concat(sourceItem.Artists).Distinct().ToArray();
-            }
+            targetItem.Artists = sourceItem.Artists;
+        }
+        else
+        {
+            targetItem.Artists = targetItem.Artists.Concat(sourceItem.Artists).Distinct().ToArray();
         }
     }
 }

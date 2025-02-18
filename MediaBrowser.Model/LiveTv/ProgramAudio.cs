@@ -1,14 +1,13 @@
 #pragma warning disable CS1591
 
-namespace MediaBrowser.Model.LiveTv
+namespace MediaBrowser.Model.LiveTv;
+
+public enum ProgramAudio
 {
-    public enum ProgramAudio
-    {
-        Mono,
-        Stereo,
-        Dolby,
-        DolbyDigital,
-        Thx,
-        Atmos
-    }
+    Mono,
+    Stereo,
+    Dolby,
+    DolbyDigital,
+    Thx,
+    Atmos
 }

@@ -1,10 +1,9 @@
 #nullable disable
 #pragma warning disable CS1591
 
-namespace MediaBrowser.Model.Dto
+namespace MediaBrowser.Model.Dto;
+
+public interface IHasServerId
 {
-    public interface IHasServerId
-    {
-        string ServerId { get; }
-    }
+    string ServerId { get; }
 }

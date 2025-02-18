@@ -19,167 +19,130 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.LiveTv.TunerHosts
+namespace Jellyfin.LiveTv.TunerHosts;
+
+public abstract class BaseTunerHost
 {
-    public abstract class BaseTunerHost
+    private readonly ConcurrentDictionary<string, List<ChannelInfo>> _cache;
+
+    protected BaseTunerHost(IServerConfigurationManager config, ILogger<BaseTunerHost> logger, IFileSystem fileSystem)
     {
-        private readonly ConcurrentDictionary<string, List<ChannelInfo>> _cache;
+        Config = config;
+        Logger = logger;
+        FileSystem = fileSystem;
+        _cache = new ConcurrentDictionary<string, List<ChannelInfo>>();
+    }
 
-        protected BaseTunerHost(IServerConfigurationManager config, ILogger<BaseTunerHost> logger, IFileSystem fileSystem)
+    protected IServerConfigurationManager Config { get; }
+
+    protected ILogger<BaseTunerHost> Logger { get; }
+
+    protected IFileSystem FileSystem { get; }
+
+    public virtual bool IsSupported => true;
+
+    public abstract string Type { get; }
+
+    protected virtual string ChannelIdPrefix => Type + "_";
+
+    protected abstract Task<List<ChannelInfo>> GetChannelsInternal(TunerHostInfo tuner, CancellationToken cancellationToken);
+
+    public async Task<List<ChannelInfo>> GetChannels(TunerHostInfo tuner, bool enableCache, CancellationToken cancellationToken)
+    {
+        var key = tuner.Id;
+
+        if (enableCache && !string.IsNullOrEmpty(key) && _cache.TryGetValue(key, out List<ChannelInfo> cache))
         {
-            Config = config;
-            Logger = logger;
-            FileSystem = fileSystem;
-            _cache = new ConcurrentDictionary<string, List<ChannelInfo>>();
+            return cache;
         }
 
-        protected IServerConfigurationManager Config { get; }
+        var list = await GetChannelsInternal(tuner, cancellationToken).ConfigureAwait(false);
+        // logger.LogInformation("Channels from {0}: {1}", tuner.Url, JsonSerializer.SerializeToString(list));
 
-        protected ILogger<BaseTunerHost> Logger { get; }
-
-        protected IFileSystem FileSystem { get; }
-
-        public virtual bool IsSupported => true;
-
-        public abstract string Type { get; }
-
-        protected virtual string ChannelIdPrefix => Type + "_";
-
-        protected abstract Task<List<ChannelInfo>> GetChannelsInternal(TunerHostInfo tuner, CancellationToken cancellationToken);
-
-        public async Task<List<ChannelInfo>> GetChannels(TunerHostInfo tuner, bool enableCache, CancellationToken cancellationToken)
+        if (!string.IsNullOrEmpty(key) && list.Count > 0)
         {
-            var key = tuner.Id;
-
-            if (enableCache && !string.IsNullOrEmpty(key) && _cache.TryGetValue(key, out List<ChannelInfo> cache))
-            {
-                return cache;
-            }
-
-            var list = await GetChannelsInternal(tuner, cancellationToken).ConfigureAwait(false);
-            // logger.LogInformation("Channels from {0}: {1}", tuner.Url, JsonSerializer.SerializeToString(list));
-
-            if (!string.IsNullOrEmpty(key) && list.Count > 0)
-            {
-                _cache[key] = list;
-            }
-
-            return list;
+            _cache[key] = list;
         }
 
-        protected virtual IList<TunerHostInfo> GetTunerHosts()
+        return list;
+    }
+
+    protected virtual IList<TunerHostInfo> GetTunerHosts()
+    {
+        return Config.GetLiveTvConfiguration().TunerHosts
+            .Where(i => string.Equals(i.Type, Type, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
+    public async Task<List<ChannelInfo>> GetChannels(bool enableCache, CancellationToken cancellationToken)
+    {
+        var list = new List<ChannelInfo>();
+
+        var hosts = GetTunerHosts();
+
+        foreach (var host in hosts)
         {
-            return Config.GetLiveTvConfiguration().TunerHosts
-                .Where(i => string.Equals(i.Type, Type, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-        }
+            var channelCacheFile = Path.Combine(Config.ApplicationPaths.CachePath, host.Id + "_channels");
 
-        public async Task<List<ChannelInfo>> GetChannels(bool enableCache, CancellationToken cancellationToken)
-        {
-            var list = new List<ChannelInfo>();
-
-            var hosts = GetTunerHosts();
-
-            foreach (var host in hosts)
+            try
             {
-                var channelCacheFile = Path.Combine(Config.ApplicationPaths.CachePath, host.Id + "_channels");
+                var channels = await GetChannels(host, enableCache, cancellationToken).ConfigureAwait(false);
+                var newChannels = channels.Where(i => !list.Any(l => string.Equals(i.Id, l.Id, StringComparison.OrdinalIgnoreCase))).ToList();
 
-                try
-                {
-                    var channels = await GetChannels(host, enableCache, cancellationToken).ConfigureAwait(false);
-                    var newChannels = channels.Where(i => !list.Any(l => string.Equals(i.Id, l.Id, StringComparison.OrdinalIgnoreCase))).ToList();
+                list.AddRange(newChannels);
 
-                    list.AddRange(newChannels);
-
-                    if (!enableCache)
-                    {
-                        try
-                        {
-                            Directory.CreateDirectory(Path.GetDirectoryName(channelCacheFile));
-                            var writeStream = AsyncFile.OpenWrite(channelCacheFile);
-                            await using (writeStream.ConfigureAwait(false))
-                            {
-                                await JsonSerializer.SerializeAsync(writeStream, channels, cancellationToken: cancellationToken).ConfigureAwait(false);
-                            }
-                        }
-                        catch (IOException)
-                        {
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, "Error getting channel list");
-
-                    if (enableCache)
-                    {
-                        try
-                        {
-                            var readStream = AsyncFile.OpenRead(channelCacheFile);
-                            await using (readStream.ConfigureAwait(false))
-                            {
-                                var channels = await JsonSerializer
-                                    .DeserializeAsync<List<ChannelInfo>>(readStream, cancellationToken: cancellationToken)
-                                    .ConfigureAwait(false);
-                                list.AddRange(channels);
-                            }
-                        }
-                        catch (IOException)
-                        {
-                        }
-                    }
-                }
-            }
-
-            return list;
-        }
-
-        protected abstract Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(TunerHostInfo tuner, ChannelInfo channel, CancellationToken cancellationToken);
-
-        public async Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(string channelId, CancellationToken cancellationToken)
-        {
-            ArgumentException.ThrowIfNullOrEmpty(channelId);
-
-            if (IsValidChannelId(channelId))
-            {
-                var hosts = GetTunerHosts();
-
-                foreach (var host in hosts)
+                if (!enableCache)
                 {
                     try
                     {
-                        var channels = await GetChannels(host, true, cancellationToken).ConfigureAwait(false);
-                        var channelInfo = channels.FirstOrDefault(i => string.Equals(i.Id, channelId, StringComparison.OrdinalIgnoreCase));
-
-                        if (channelInfo is not null)
+                        Directory.CreateDirectory(Path.GetDirectoryName(channelCacheFile));
+                        var writeStream = AsyncFile.OpenWrite(channelCacheFile);
+                        await using (writeStream.ConfigureAwait(false))
                         {
-                            return await GetChannelStreamMediaSources(host, channelInfo, cancellationToken).ConfigureAwait(false);
+                            await JsonSerializer.SerializeAsync(writeStream, channels, cancellationToken: cancellationToken).ConfigureAwait(false);
                         }
                     }
-                    catch (Exception ex)
+                    catch (IOException)
                     {
-                        Logger.LogError(ex, "Error getting channels");
                     }
                 }
             }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error getting channel list");
 
-            return new List<MediaSourceInfo>();
+                if (enableCache)
+                {
+                    try
+                    {
+                        var readStream = AsyncFile.OpenRead(channelCacheFile);
+                        await using (readStream.ConfigureAwait(false))
+                        {
+                            var channels = await JsonSerializer
+                                .DeserializeAsync<List<ChannelInfo>>(readStream, cancellationToken: cancellationToken)
+                                .ConfigureAwait(false);
+                            list.AddRange(channels);
+                        }
+                    }
+                    catch (IOException)
+                    {
+                    }
+                }
+            }
         }
 
-        protected abstract Task<ILiveStream> GetChannelStream(TunerHostInfo tunerHost, ChannelInfo channel, string streamId, IList<ILiveStream> currentLiveStreams, CancellationToken cancellationToken);
+        return list;
+    }
 
-        public async Task<ILiveStream> GetChannelStream(string channelId, string streamId, IList<ILiveStream> currentLiveStreams, CancellationToken cancellationToken)
+    protected abstract Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(TunerHostInfo tuner, ChannelInfo channel, CancellationToken cancellationToken);
+
+    public async Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(string channelId, CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(channelId);
+
+        if (IsValidChannelId(channelId))
         {
-            ArgumentException.ThrowIfNullOrEmpty(channelId);
-
-            if (!IsValidChannelId(channelId))
-            {
-                throw new FileNotFoundException();
-            }
-
             var hosts = GetTunerHosts();
-
-            var hostsWithChannel = new List<Tuple<TunerHostInfo, ChannelInfo>>();
 
             foreach (var host in hosts)
             {
@@ -190,7 +153,7 @@ namespace Jellyfin.LiveTv.TunerHosts
 
                     if (channelInfo is not null)
                     {
-                        hostsWithChannel.Add(new Tuple<TunerHostInfo, ChannelInfo>(host, channelInfo));
+                        return await GetChannelStreamMediaSources(host, channelInfo, cancellationToken).ConfigureAwait(false);
                     }
                 }
                 catch (Exception ex)
@@ -198,35 +161,71 @@ namespace Jellyfin.LiveTv.TunerHosts
                     Logger.LogError(ex, "Error getting channels");
                 }
             }
+        }
 
-            foreach (var hostTuple in hostsWithChannel)
+        return new List<MediaSourceInfo>();
+    }
+
+    protected abstract Task<ILiveStream> GetChannelStream(TunerHostInfo tunerHost, ChannelInfo channel, string streamId, IList<ILiveStream> currentLiveStreams, CancellationToken cancellationToken);
+
+    public async Task<ILiveStream> GetChannelStream(string channelId, string streamId, IList<ILiveStream> currentLiveStreams, CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(channelId);
+
+        if (!IsValidChannelId(channelId))
+        {
+            throw new FileNotFoundException();
+        }
+
+        var hosts = GetTunerHosts();
+
+        var hostsWithChannel = new List<Tuple<TunerHostInfo, ChannelInfo>>();
+
+        foreach (var host in hosts)
+        {
+            try
             {
-                var host = hostTuple.Item1;
-                var channelInfo = hostTuple.Item2;
+                var channels = await GetChannels(host, true, cancellationToken).ConfigureAwait(false);
+                var channelInfo = channels.FirstOrDefault(i => string.Equals(i.Id, channelId, StringComparison.OrdinalIgnoreCase));
 
-                try
+                if (channelInfo is not null)
                 {
-                    var liveStream = await GetChannelStream(host, channelInfo, streamId, currentLiveStreams, cancellationToken).ConfigureAwait(false);
-                    var startTime = DateTime.UtcNow;
-                    await liveStream.Open(cancellationToken).ConfigureAwait(false);
-                    var endTime = DateTime.UtcNow;
-                    Logger.LogInformation("Live stream opened after {0}ms", (endTime - startTime).TotalMilliseconds);
-                    return liveStream;
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, "Error opening tuner");
+                    hostsWithChannel.Add(new Tuple<TunerHostInfo, ChannelInfo>(host, channelInfo));
                 }
             }
-
-            throw new LiveTvConflictException("Unable to find host to play channel");
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error getting channels");
+            }
         }
 
-        protected virtual bool IsValidChannelId(string channelId)
+        foreach (var hostTuple in hostsWithChannel)
         {
-            ArgumentException.ThrowIfNullOrEmpty(channelId);
+            var host = hostTuple.Item1;
+            var channelInfo = hostTuple.Item2;
 
-            return channelId.StartsWith(ChannelIdPrefix, StringComparison.OrdinalIgnoreCase);
+            try
+            {
+                var liveStream = await GetChannelStream(host, channelInfo, streamId, currentLiveStreams, cancellationToken).ConfigureAwait(false);
+                var startTime = DateTime.UtcNow;
+                await liveStream.Open(cancellationToken).ConfigureAwait(false);
+                var endTime = DateTime.UtcNow;
+                Logger.LogInformation("Live stream opened after {0}ms", (endTime - startTime).TotalMilliseconds);
+                return liveStream;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error opening tuner");
+            }
         }
+
+        throw new LiveTvConflictException("Unable to find host to play channel");
+    }
+
+    protected virtual bool IsValidChannelId(string channelId)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(channelId);
+
+        return channelId.StartsWith(ChannelIdPrefix, StringComparison.OrdinalIgnoreCase);
     }
 }

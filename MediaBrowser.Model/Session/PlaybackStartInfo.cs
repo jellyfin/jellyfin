@@ -1,9 +1,8 @@
-namespace MediaBrowser.Model.Session
+namespace MediaBrowser.Model.Session;
+
+/// <summary>
+/// Class PlaybackStartInfo.
+/// </summary>
+public class PlaybackStartInfo : PlaybackProgressInfo
 {
-    /// <summary>
-    /// Class PlaybackStartInfo.
-    /// </summary>
-    public class PlaybackStartInfo : PlaybackProgressInfo
-    {
-    }
 }

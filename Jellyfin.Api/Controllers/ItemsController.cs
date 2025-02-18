@@ -292,7 +292,7 @@ public class ItemsController : BaseJellyfinApiController
         if (collectionType == CollectionType.playlists)
         {
             recursive = true;
-            includeItemTypes = new[] { BaseItemKind.Playlist };
+            includeItemTypes = [BaseItemKind.Playlist];
         }
 
         if (item is not UserRootFolder
@@ -487,7 +487,7 @@ public class ItemsController : BaseJellyfinApiController
             {
                 query.AlbumIds = albums.SelectMany(i =>
                 {
-                    return _libraryManager.GetItemIds(new InternalItemsQuery { IncludeItemTypes = new[] { BaseItemKind.MusicAlbum }, Name = i, Limit = 1 });
+                    return _libraryManager.GetItemIds(new InternalItemsQuery { IncludeItemTypes = [BaseItemKind.MusicAlbum], Name = i, Limit = 1 });
                 }).ToArray();
             }
 
@@ -513,7 +513,7 @@ public class ItemsController : BaseJellyfinApiController
                 // Albums by artist
                 if (query.ArtistIds.Length > 0 && query.IncludeItemTypes.Length == 1 && query.IncludeItemTypes[0] == BaseItemKind.MusicAlbum)
                 {
-                    query.OrderBy = new[] { (ItemSortBy.ProductionYear, SortOrder.Descending), (ItemSortBy.SortName, SortOrder.Ascending) };
+                    query.OrderBy = [(ItemSortBy.ProductionYear, SortOrder.Descending), (ItemSortBy.SortName, SortOrder.Ascending)];
                 }
             }
 
@@ -873,7 +873,7 @@ public class ItemsController : BaseJellyfinApiController
 
         var itemsResult = _libraryManager.GetItemsResult(new InternalItemsQuery(user)
         {
-            OrderBy = new[] { (ItemSortBy.DatePlayed, SortOrder.Descending) },
+            OrderBy = [(ItemSortBy.DatePlayed, SortOrder.Descending)],
             IsResumable = true,
             StartIndex = startIndex,
             Limit = limit,

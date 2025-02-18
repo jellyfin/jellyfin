@@ -6,71 +6,70 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.SyncPlay;
 using Microsoft.AspNetCore.Authorization;
 
-namespace Jellyfin.Api.Auth.SyncPlayAccessPolicy
+namespace Jellyfin.Api.Auth.SyncPlayAccessPolicy;
+
+/// <summary>
+/// Default authorization handler.
+/// </summary>
+public class SyncPlayAccessHandler : AuthorizationHandler<SyncPlayAccessRequirement>
 {
+    private readonly ISyncPlayManager _syncPlayManager;
+    private readonly IUserManager _userManager;
+
     /// <summary>
-    /// Default authorization handler.
+    /// Initializes a new instance of the <see cref="SyncPlayAccessHandler"/> class.
     /// </summary>
-    public class SyncPlayAccessHandler : AuthorizationHandler<SyncPlayAccessRequirement>
+    /// <param name="syncPlayManager">Instance of the <see cref="ISyncPlayManager"/> interface.</param>
+    /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
+    public SyncPlayAccessHandler(
+        ISyncPlayManager syncPlayManager,
+        IUserManager userManager)
     {
-        private readonly ISyncPlayManager _syncPlayManager;
-        private readonly IUserManager _userManager;
+        _syncPlayManager = syncPlayManager;
+        _userManager = userManager;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SyncPlayAccessHandler"/> class.
-        /// </summary>
-        /// <param name="syncPlayManager">Instance of the <see cref="ISyncPlayManager"/> interface.</param>
-        /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
-        public SyncPlayAccessHandler(
-            ISyncPlayManager syncPlayManager,
-            IUserManager userManager)
+    /// <inheritdoc />
+    protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, SyncPlayAccessRequirement requirement)
+    {
+        var userId = context.User.GetUserId();
+        var user = _userManager.GetUserById(userId);
+        if (user is null)
         {
-            _syncPlayManager = syncPlayManager;
-            _userManager = userManager;
+            throw new ResourceNotFoundException();
         }
 
-        /// <inheritdoc />
-        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, SyncPlayAccessRequirement requirement)
+        if (requirement.RequiredAccess == SyncPlayAccessRequirementType.HasAccess)
         {
-            var userId = context.User.GetUserId();
-            var user = _userManager.GetUserById(userId);
-            if (user is null)
+            if (user.SyncPlayAccess is SyncPlayUserAccessType.CreateAndJoinGroups or SyncPlayUserAccessType.JoinGroups
+                || _syncPlayManager.IsUserActive(userId))
             {
-                throw new ResourceNotFoundException();
+                context.Succeed(requirement);
             }
-
-            if (requirement.RequiredAccess == SyncPlayAccessRequirementType.HasAccess)
-            {
-                if (user.SyncPlayAccess is SyncPlayUserAccessType.CreateAndJoinGroups or SyncPlayUserAccessType.JoinGroups
-                    || _syncPlayManager.IsUserActive(userId))
-                {
-                    context.Succeed(requirement);
-                }
-            }
-            else if (requirement.RequiredAccess == SyncPlayAccessRequirementType.CreateGroup)
-            {
-                if (user.SyncPlayAccess == SyncPlayUserAccessType.CreateAndJoinGroups)
-                {
-                    context.Succeed(requirement);
-                }
-            }
-            else if (requirement.RequiredAccess == SyncPlayAccessRequirementType.JoinGroup)
-            {
-                if (user.SyncPlayAccess == SyncPlayUserAccessType.CreateAndJoinGroups
-                    || user.SyncPlayAccess == SyncPlayUserAccessType.JoinGroups)
-                {
-                    context.Succeed(requirement);
-                }
-            }
-            else if (requirement.RequiredAccess == SyncPlayAccessRequirementType.IsInGroup)
-            {
-                if (_syncPlayManager.IsUserActive(userId))
-                {
-                    context.Succeed(requirement);
-                }
-            }
-
-            return Task.CompletedTask;
         }
+        else if (requirement.RequiredAccess == SyncPlayAccessRequirementType.CreateGroup)
+        {
+            if (user.SyncPlayAccess == SyncPlayUserAccessType.CreateAndJoinGroups)
+            {
+                context.Succeed(requirement);
+            }
+        }
+        else if (requirement.RequiredAccess == SyncPlayAccessRequirementType.JoinGroup)
+        {
+            if (user.SyncPlayAccess == SyncPlayUserAccessType.CreateAndJoinGroups
+                || user.SyncPlayAccess == SyncPlayUserAccessType.JoinGroups)
+            {
+                context.Succeed(requirement);
+            }
+        }
+        else if (requirement.RequiredAccess == SyncPlayAccessRequirementType.IsInGroup)
+        {
+            if (_syncPlayManager.IsUserActive(userId))
+            {
+                context.Succeed(requirement);
+            }
+        }
+
+        return Task.CompletedTask;
     }
 }

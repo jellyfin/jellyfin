@@ -43,7 +43,7 @@ internal class FixPlaylistOwner : IMigrationRoutine
     {
         var playlists = _libraryManager.GetItemList(new InternalItemsQuery
         {
-            IncludeItemTypes = new[] { BaseItemKind.Playlist }
+            IncludeItemTypes = [BaseItemKind.Playlist]
         })
         .Cast<Playlist>()
         .Where(x => x.OwnerUserId.Equals(Guid.Empty))

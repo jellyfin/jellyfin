@@ -15,9 +15,9 @@ public class ExternalPathParserTests
 
     public ExternalPathParserTests()
     {
-        var englishCultureDto = new CultureDto("English", "English", "en", new[] { "eng" });
-        var frenchCultureDto = new CultureDto("French", "French", "fr", new[] { "fre", "fra" });
-        var hindiCultureDto = new CultureDto("Hindi", "Hindi", "hi", new[] { "hin" });
+        var englishCultureDto = new CultureDto("English", "English", "en", ["eng"]);
+        var frenchCultureDto = new CultureDto("French", "French", "fr", ["fre", "fra"]);
+        var hindiCultureDto = new CultureDto("Hindi", "Hindi", "hi", ["hin"]);
 
         var localizationManager = new Mock<ILocalizationManager>(MockBehavior.Loose);
         localizationManager.Setup(lm => lm.FindLanguageInfo(It.IsRegex("en.*", RegexOptions.IgnoreCase)))

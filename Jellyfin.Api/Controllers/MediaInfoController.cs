@@ -241,7 +241,7 @@ public class MediaInfoController : BaseJellyfinApiController
                         AlwaysBurnInSubtitleWhenTranscoding = playbackInfoDto?.AlwaysBurnInSubtitleWhenTranscoding ?? false
                     }).ConfigureAwait(false);
 
-                info.MediaSources = new[] { openStreamResult.MediaSource };
+                info.MediaSources = [openStreamResult.MediaSource];
             }
         }
 
@@ -299,7 +299,7 @@ public class MediaInfoController : BaseJellyfinApiController
             DeviceProfile = openLiveStreamDto?.DeviceProfile,
             EnableDirectPlay = enableDirectPlay ?? openLiveStreamDto?.EnableDirectPlay ?? true,
             EnableDirectStream = enableDirectStream ?? openLiveStreamDto?.EnableDirectStream ?? true,
-            DirectPlayProtocols = openLiveStreamDto?.DirectPlayProtocols ?? new[] { MediaProtocol.Http },
+            DirectPlayProtocols = openLiveStreamDto?.DirectPlayProtocols ?? [MediaProtocol.Http],
             AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding ?? openLiveStreamDto?.AlwaysBurnInSubtitleWhenTranscoding ?? false
         };
         return await _mediaInfoHelper.OpenMediaSource(HttpContext, request).ConfigureAwait(false);

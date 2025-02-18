@@ -1,28 +1,27 @@
 using System.Text.Json.Serialization;
 
-namespace Jellyfin.LiveTv.Listings.SchedulesDirectDtos
+namespace Jellyfin.LiveTv.Listings.SchedulesDirectDtos;
+
+/// <summary>
+/// Metadata dto.
+/// </summary>
+public class MetadataDto
 {
     /// <summary>
-    /// Metadata dto.
+    /// Gets or sets the lineup.
     /// </summary>
-    public class MetadataDto
-    {
-        /// <summary>
-        /// Gets or sets the lineup.
-        /// </summary>
-        [JsonPropertyName("lineup")]
-        public string? Lineup { get; set; }
+    [JsonPropertyName("lineup")]
+    public string? Lineup { get; set; }
 
-        /// <summary>
-        /// Gets or sets the modified timestamp.
-        /// </summary>
-        [JsonPropertyName("modified")]
-        public string? Modified { get; set; }
+    /// <summary>
+    /// Gets or sets the modified timestamp.
+    /// </summary>
+    [JsonPropertyName("modified")]
+    public string? Modified { get; set; }
 
-        /// <summary>
-        /// Gets or sets the transport.
-        /// </summary>
-        [JsonPropertyName("transport")]
-        public string? Transport { get; set; }
-    }
+    /// <summary>
+    /// Gets or sets the transport.
+    /// </summary>
+    [JsonPropertyName("transport")]
+    public string? Transport { get; set; }
 }

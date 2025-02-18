@@ -4,400 +4,399 @@ using Emby.Naming.Video;
 using MediaBrowser.Model.IO;
 using Xunit;
 
-namespace Jellyfin.Naming.Tests.Video
+namespace Jellyfin.Naming.Tests.Video;
+
+public class StackTests
 {
-    public class StackTests
+    private readonly NamingOptions _namingOptions = new NamingOptions();
+
+    [Fact]
+    public void TestSimpleStack()
     {
-        private readonly NamingOptions _namingOptions = new NamingOptions();
-
-        [Fact]
-        public void TestSimpleStack()
+        var files = new[]
         {
-            var files = new[]
-            {
-                "Bad Boys (2006) part1.mkv",
-                "Bad Boys (2006) part2.mkv",
-                "Bad Boys (2006) part3.mkv",
-                "Bad Boys (2006) part4.mkv",
-                "Bad Boys (2006)-trailer.mkv"
-            };
+            "Bad Boys (2006) part1.mkv",
+            "Bad Boys (2006) part2.mkv",
+            "Bad Boys (2006) part3.mkv",
+            "Bad Boys (2006) part4.mkv",
+            "Bad Boys (2006)-trailer.mkv"
+        };
 
-            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
+        var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
-            Assert.Single(result);
-            TestStackInfo(result[0], "Bad Boys (2006)", 4);
-        }
+        Assert.Single(result);
+        TestStackInfo(result[0], "Bad Boys (2006)", 4);
+    }
 
-        [Fact]
-        public void TestFalsePositives()
+    [Fact]
+    public void TestFalsePositives()
+    {
+        var files = new[]
         {
-            var files = new[]
-            {
-                "Bad Boys (2006).mkv",
-                "Bad Boys (2007).mkv"
-            };
+            "Bad Boys (2006).mkv",
+            "Bad Boys (2007).mkv"
+        };
 
-            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
+        var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
-            Assert.Empty(result);
-        }
+        Assert.Empty(result);
+    }
 
-        [Fact]
-        public void TestFalsePositives2()
+    [Fact]
+    public void TestFalsePositives2()
+    {
+        var files = new[]
         {
-            var files = new[]
-            {
-                "Bad Boys 2006.mkv",
-                "Bad Boys 2007.mkv"
-            };
+            "Bad Boys 2006.mkv",
+            "Bad Boys 2007.mkv"
+        };
 
-            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
+        var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
-            Assert.Empty(result);
-        }
+        Assert.Empty(result);
+    }
 
-        [Fact]
-        public void TestFalsePositives3()
+    [Fact]
+    public void TestFalsePositives3()
+    {
+        var files = new[]
         {
-            var files = new[]
-            {
-                "300 (2006).mkv",
-                "300 (2007).mkv"
-            };
+            "300 (2006).mkv",
+            "300 (2007).mkv"
+        };
 
-            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
+        var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
-            Assert.Empty(result);
-        }
+        Assert.Empty(result);
+    }
 
-        [Fact]
-        public void TestFalsePositives4()
+    [Fact]
+    public void TestFalsePositives4()
+    {
+        var files = new[]
         {
-            var files = new[]
-            {
-                "300 2006.mkv",
-                "300 2007.mkv"
-            };
+            "300 2006.mkv",
+            "300 2007.mkv"
+        };
 
-            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
+        var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
-            Assert.Empty(result);
-        }
+        Assert.Empty(result);
+    }
 
-        [Fact]
-        public void TestFalsePositives5()
+    [Fact]
+    public void TestFalsePositives5()
+    {
+        var files = new[]
         {
-            var files = new[]
-            {
-                "Star Trek 1 - The motion picture.mkv",
-                "Star Trek 2- The wrath of khan.mkv"
-            };
+            "Star Trek 1 - The motion picture.mkv",
+            "Star Trek 2- The wrath of khan.mkv"
+        };
 
-            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
-            Assert.Empty(result);
-        }
+        var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
+        Assert.Empty(result);
+    }
 
-        [Fact]
-        public void TestFalsePositives6()
+    [Fact]
+    public void TestFalsePositives6()
+    {
+        var files = new[]
         {
-            var files = new[]
-            {
-                "Red Riding in the Year of Our Lord 1983 (2009).mkv",
-                "Red Riding in the Year of Our Lord 1980 (2009).mkv",
-                "Red Riding in the Year of Our Lord 1974 (2009).mkv"
-            };
+            "Red Riding in the Year of Our Lord 1983 (2009).mkv",
+            "Red Riding in the Year of Our Lord 1980 (2009).mkv",
+            "Red Riding in the Year of Our Lord 1974 (2009).mkv"
+        };
 
-            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
+        var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
-            Assert.Empty(result);
-        }
+        Assert.Empty(result);
+    }
 
-        [Fact]
-        public void TestStackName()
+    [Fact]
+    public void TestStackName()
+    {
+        var files = new[]
         {
-            var files = new[]
-            {
-                "d:/movies/300 2006 part1.mkv",
-                "d:/movies/300 2006 part2.mkv"
-            };
+            "d:/movies/300 2006 part1.mkv",
+            "d:/movies/300 2006 part2.mkv"
+        };
 
-            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
+        var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
-            Assert.Single(result);
-            TestStackInfo(result[0], "300 2006", 2);
-        }
+        Assert.Single(result);
+        TestStackInfo(result[0], "300 2006", 2);
+    }
 
-        [Fact]
-        public void ResolveFiles_GivenPartInMiddleOfName_ReturnsNoStack()
+    [Fact]
+    public void ResolveFiles_GivenPartInMiddleOfName_ReturnsNoStack()
+    {
+        var files = new[]
         {
-            var files = new[]
-            {
-                "Bad Boys (2006).part1.stv.unrated.multi.1080p.bluray.x264-rough.mkv",
-                "Bad Boys (2006).part2.stv.unrated.multi.1080p.bluray.x264-rough.mkv",
-                "Bad Boys (2006).part3.stv.unrated.multi.1080p.bluray.x264-rough.mkv",
-                "Bad Boys (2006).part4.stv.unrated.multi.1080p.bluray.x264-rough.mkv",
-                "Bad Boys (2006)-trailer.mkv"
-            };
+            "Bad Boys (2006).part1.stv.unrated.multi.1080p.bluray.x264-rough.mkv",
+            "Bad Boys (2006).part2.stv.unrated.multi.1080p.bluray.x264-rough.mkv",
+            "Bad Boys (2006).part3.stv.unrated.multi.1080p.bluray.x264-rough.mkv",
+            "Bad Boys (2006).part4.stv.unrated.multi.1080p.bluray.x264-rough.mkv",
+            "Bad Boys (2006)-trailer.mkv"
+        };
 
-            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
+        var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
-            Assert.Empty(result);
-        }
+        Assert.Empty(result);
+    }
 
-        [Fact]
-        public void ResolveFiles_FileNamesWithMissingPartType_ReturnsNoStack()
+    [Fact]
+    public void ResolveFiles_FileNamesWithMissingPartType_ReturnsNoStack()
+    {
+        var files = new[]
         {
-            var files = new[]
-            {
-                "Bad Boys (2006).mkv",
-                "Bad Boys (2006) 1.mkv",
-                "Bad Boys (2006) 2.mkv",
-                "Bad Boys (2006) 3.mkv",
-                "Bad Boys (2006)-trailer.mkv"
-            };
+            "Bad Boys (2006).mkv",
+            "Bad Boys (2006) 1.mkv",
+            "Bad Boys (2006) 2.mkv",
+            "Bad Boys (2006) 3.mkv",
+            "Bad Boys (2006)-trailer.mkv"
+        };
 
-            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
+        var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
-            Assert.Empty(result);
-        }
+        Assert.Empty(result);
+    }
 
-        [Fact]
-        public void TestSimpleStackWithNumericName()
+    [Fact]
+    public void TestSimpleStackWithNumericName()
+    {
+        var files = new[]
         {
-            var files = new[]
-            {
-                "300 (2006) part1.mkv",
-                "300 (2006) part2.mkv",
-                "300 (2006) part3.mkv",
-                "300 (2006) part4.mkv",
-                "300 (2006)-trailer.mkv"
-            };
+            "300 (2006) part1.mkv",
+            "300 (2006) part2.mkv",
+            "300 (2006) part3.mkv",
+            "300 (2006) part4.mkv",
+            "300 (2006)-trailer.mkv"
+        };
 
-            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
+        var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
-            Assert.Single(result);
-            TestStackInfo(result[0], "300 (2006)", 4);
-        }
+        Assert.Single(result);
+        TestStackInfo(result[0], "300 (2006)", 4);
+    }
 
-        [Fact]
-        public void TestMixedExpressionsNotAllowed()
+    [Fact]
+    public void TestMixedExpressionsNotAllowed()
+    {
+        var files = new[]
         {
-            var files = new[]
-            {
-                "Bad Boys (2006) part1.mkv",
-                "Bad Boys (2006) part2.mkv",
-                "Bad Boys (2006) part3.mkv",
-                "Bad Boys (2006) parta.mkv",
-                "Bad Boys (2006)-trailer.mkv"
-            };
+            "Bad Boys (2006) part1.mkv",
+            "Bad Boys (2006) part2.mkv",
+            "Bad Boys (2006) part3.mkv",
+            "Bad Boys (2006) parta.mkv",
+            "Bad Boys (2006)-trailer.mkv"
+        };
 
-            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
+        var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
-            Assert.Single(result);
-            TestStackInfo(result[0], "Bad Boys (2006)", 3);
-        }
+        Assert.Single(result);
+        TestStackInfo(result[0], "Bad Boys (2006)", 3);
+    }
 
-        [Fact]
-        public void TestDualStacks()
+    [Fact]
+    public void TestDualStacks()
+    {
+        var files = new[]
         {
-            var files = new[]
-            {
-                "Bad Boys (2006) part1.mkv",
-                "Bad Boys (2006) part2.mkv",
-                "Bad Boys (2006) part3.mkv",
-                "Bad Boys (2006) part4.mkv",
-                "Bad Boys (2006)-trailer.mkv",
-                "300 (2006) part1.mkv",
-                "300 (2006) part2.mkv",
-                "300 (2006) part3.mkv",
-                "300 (2006)-trailer.mkv"
-            };
+            "Bad Boys (2006) part1.mkv",
+            "Bad Boys (2006) part2.mkv",
+            "Bad Boys (2006) part3.mkv",
+            "Bad Boys (2006) part4.mkv",
+            "Bad Boys (2006)-trailer.mkv",
+            "300 (2006) part1.mkv",
+            "300 (2006) part2.mkv",
+            "300 (2006) part3.mkv",
+            "300 (2006)-trailer.mkv"
+        };
 
-            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
+        var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
-            Assert.Equal(2, result.Count);
-            TestStackInfo(result[1], "Bad Boys (2006)", 4);
-            TestStackInfo(result[0], "300 (2006)", 3);
-        }
+        Assert.Equal(2, result.Count);
+        TestStackInfo(result[1], "Bad Boys (2006)", 4);
+        TestStackInfo(result[0], "300 (2006)", 3);
+    }
 
-        [Fact]
-        public void TestDirectories()
+    [Fact]
+    public void TestDirectories()
+    {
+        var files = new[]
         {
-            var files = new[]
-            {
-                "blah blah - cd 1",
-                "blah blah - cd 2"
-            };
+            "blah blah - cd 1",
+            "blah blah - cd 2"
+        };
 
-            var result = StackResolver.ResolveDirectories(files, _namingOptions).ToList();
+        var result = StackResolver.ResolveDirectories(files, _namingOptions).ToList();
 
-            Assert.Single(result);
-            TestStackInfo(result[0], "blah blah", 2);
-        }
+        Assert.Single(result);
+        TestStackInfo(result[0], "blah blah", 2);
+    }
 
-        [Fact]
-        public void TestMissingParttype()
+    [Fact]
+    public void TestMissingParttype()
+    {
+        var files = new[]
         {
-            var files = new[]
-            {
-                "300a.mkv",
-                "300b.mkv",
-                "300c.mkv",
-                "300-trailer.mkv"
-            };
+            "300a.mkv",
+            "300b.mkv",
+            "300c.mkv",
+            "300-trailer.mkv"
+        };
 
-            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
+        var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
-            // There should be no stack, because all files should be treated as separate movies
-            Assert.Empty(result);
-        }
+        // There should be no stack, because all files should be treated as separate movies
+        Assert.Empty(result);
+    }
 
-        [Fact]
-        public void TestFailSequence()
+    [Fact]
+    public void TestFailSequence()
+    {
+        var files = new[]
         {
-            var files = new[]
-            {
-                "300 part1.mkv",
-                "300 part2.mkv",
-                "Avatar",
-                "Avengers part1.mkv",
-                "Avengers part2.mkv",
-                "Avengers part3.mkv"
-            };
+            "300 part1.mkv",
+            "300 part2.mkv",
+            "Avatar",
+            "Avengers part1.mkv",
+            "Avengers part2.mkv",
+            "Avengers part3.mkv"
+        };
 
-            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
+        var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
-            Assert.Equal(2, result.Count);
+        Assert.Equal(2, result.Count);
 
-            TestStackInfo(result[0], "300", 2);
-            TestStackInfo(result[1], "Avengers", 3);
-        }
+        TestStackInfo(result[0], "300", 2);
+        TestStackInfo(result[1], "Avengers", 3);
+    }
 
-        [Fact]
-        public void TestMixedExpressions()
+    [Fact]
+    public void TestMixedExpressions()
+    {
+        var files = new[]
         {
-            var files = new[]
-            {
-                "Bad Boys (2006) part1.mkv",
-                "Bad Boys (2006) part2.mkv",
-                "Bad Boys (2006) part3.mkv",
-                "Bad Boys (2006) part4.mkv",
-                "Bad Boys (2006)-trailer.mkv",
-                "300 (2006) parta.mkv",
-                "300 (2006) partb.mkv",
-                "300 (2006) partc.mkv",
-                "300 (2006) partd.mkv",
-                "300 (2006)-trailer.mkv",
-                "300a.mkv",
-                "300b.mkv",
-                "300c.mkv",
-                "300-trailer.mkv"
-            };
+            "Bad Boys (2006) part1.mkv",
+            "Bad Boys (2006) part2.mkv",
+            "Bad Boys (2006) part3.mkv",
+            "Bad Boys (2006) part4.mkv",
+            "Bad Boys (2006)-trailer.mkv",
+            "300 (2006) parta.mkv",
+            "300 (2006) partb.mkv",
+            "300 (2006) partc.mkv",
+            "300 (2006) partd.mkv",
+            "300 (2006)-trailer.mkv",
+            "300a.mkv",
+            "300b.mkv",
+            "300c.mkv",
+            "300-trailer.mkv"
+        };
 
-            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
+        var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
-            // Only 'Bad Boys (2006)' and '300 (2006)' should be in the stack
-            Assert.Equal(2, result.Count);
+        // Only 'Bad Boys (2006)' and '300 (2006)' should be in the stack
+        Assert.Equal(2, result.Count);
 
-            TestStackInfo(result[0], "300 (2006)", 4);
-            TestStackInfo(result[1], "Bad Boys (2006)", 4);
-        }
+        TestStackInfo(result[0], "300 (2006)", 4);
+        TestStackInfo(result[1], "Bad Boys (2006)", 4);
+    }
 
-        [Fact]
-        public void TestAlphaLimitOfFour()
+    [Fact]
+    public void TestAlphaLimitOfFour()
+    {
+        var files = new[]
         {
-            var files = new[]
-            {
-                "300 (2006) parta.mkv",
-                "300 (2006) partb.mkv",
-                "300 (2006) partc.mkv",
-                "300 (2006) partd.mkv",
-                "300 (2006) parte.mkv",
-                "300 (2006) partf.mkv",
-                "300 (2006) partg.mkv",
-                "300 (2006)-trailer.mkv"
-            };
+            "300 (2006) parta.mkv",
+            "300 (2006) partb.mkv",
+            "300 (2006) partc.mkv",
+            "300 (2006) partd.mkv",
+            "300 (2006) parte.mkv",
+            "300 (2006) partf.mkv",
+            "300 (2006) partg.mkv",
+            "300 (2006)-trailer.mkv"
+        };
 
-            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
+        var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
-            Assert.Single(result);
+        Assert.Single(result);
 
-            TestStackInfo(result[0], "300 (2006)", 4);
-        }
+        TestStackInfo(result[0], "300 (2006)", 4);
+    }
 
-        [Fact]
-        public void TestMixed()
+    [Fact]
+    public void TestMixed()
+    {
+        var files = new[]
         {
-            var files = new[]
-            {
-                new FileSystemMetadata { FullName = "Bad Boys (2006) part1.mkv", IsDirectory = false },
-                new FileSystemMetadata { FullName = "Bad Boys (2006) part2.mkv", IsDirectory = false },
-                new FileSystemMetadata { FullName = "300 (2006) part2", IsDirectory = true },
-                new FileSystemMetadata { FullName = "300 (2006) part3", IsDirectory = true },
-                new FileSystemMetadata { FullName = "300 (2006) part1", IsDirectory = true }
-            };
+            new FileSystemMetadata { FullName = "Bad Boys (2006) part1.mkv", IsDirectory = false },
+            new FileSystemMetadata { FullName = "Bad Boys (2006) part2.mkv", IsDirectory = false },
+            new FileSystemMetadata { FullName = "300 (2006) part2", IsDirectory = true },
+            new FileSystemMetadata { FullName = "300 (2006) part3", IsDirectory = true },
+            new FileSystemMetadata { FullName = "300 (2006) part1", IsDirectory = true }
+        };
 
-            var result = StackResolver.Resolve(files, _namingOptions).ToList();
+        var result = StackResolver.Resolve(files, _namingOptions).ToList();
 
-            Assert.Equal(2, result.Count);
-            TestStackInfo(result[0], "300 (2006)", 3);
-            TestStackInfo(result[1], "Bad Boys (2006)", 2);
-        }
+        Assert.Equal(2, result.Count);
+        TestStackInfo(result[0], "300 (2006)", 3);
+        TestStackInfo(result[1], "Bad Boys (2006)", 2);
+    }
 
-        [Fact]
-        public void TestNamesWithoutParts()
+    [Fact]
+    public void TestNamesWithoutParts()
+    {
+        // No stacking here because there is no part/disc/etc
+        var files = new[]
         {
-            // No stacking here because there is no part/disc/etc
-            var files = new[]
-            {
-                "Harry Potter and the Deathly Hallows.mkv",
-                "Harry Potter and the Deathly Hallows 1.mkv",
-                "Harry Potter and the Deathly Hallows 2.mkv",
-                "Harry Potter and the Deathly Hallows 3.mkv",
-                "Harry Potter and the Deathly Hallows 4.mkv"
-            };
+            "Harry Potter and the Deathly Hallows.mkv",
+            "Harry Potter and the Deathly Hallows 1.mkv",
+            "Harry Potter and the Deathly Hallows 2.mkv",
+            "Harry Potter and the Deathly Hallows 3.mkv",
+            "Harry Potter and the Deathly Hallows 4.mkv"
+        };
 
-            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
+        var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
-            Assert.Empty(result);
-        }
+        Assert.Empty(result);
+    }
 
-        [Fact]
-        public void TestNumbersAppearingBeforePartNumber()
+    [Fact]
+    public void TestNumbersAppearingBeforePartNumber()
+    {
+        // No stacking here because there is no part/disc/etc
+        var files = new[]
         {
-            // No stacking here because there is no part/disc/etc
-            var files = new[]
-            {
-                "Neverland (2011)[720p][PG][Voted 6.5][Family-Fantasy]part1.mkv",
-                "Neverland (2011)[720p][PG][Voted 6.5][Family-Fantasy]part2.mkv"
-            };
+            "Neverland (2011)[720p][PG][Voted 6.5][Family-Fantasy]part1.mkv",
+            "Neverland (2011)[720p][PG][Voted 6.5][Family-Fantasy]part2.mkv"
+        };
 
-            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
+        var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
-            Assert.Single(result);
-            Assert.Equal(2, result[0].Files.Count);
-        }
+        Assert.Single(result);
+        Assert.Equal(2, result[0].Files.Count);
+    }
 
-        [Fact]
-        public void TestMultiDiscs()
+    [Fact]
+    public void TestMultiDiscs()
+    {
+        // No stacking here because there is no part/disc/etc
+        var files = new[]
         {
-            // No stacking here because there is no part/disc/etc
-            var files = new[]
-            {
-                "M:/Movies (DVD)/Movies (Musical)/The Sound of Music/The Sound of Music (1965) (Disc 01)",
-                "M:/Movies (DVD)/Movies (Musical)/The Sound of Music/The Sound of Music (1965) (Disc 02)"
-            };
+            "M:/Movies (DVD)/Movies (Musical)/The Sound of Music/The Sound of Music (1965) (Disc 01)",
+            "M:/Movies (DVD)/Movies (Musical)/The Sound of Music/The Sound of Music (1965) (Disc 02)"
+        };
 
-            var result = StackResolver.ResolveDirectories(files, _namingOptions).ToList();
+        var result = StackResolver.ResolveDirectories(files, _namingOptions).ToList();
 
-            Assert.Single(result);
-            Assert.Equal(2, result[0].Files.Count);
-        }
+        Assert.Single(result);
+        Assert.Equal(2, result[0].Files.Count);
+    }
 
-        private void TestStackInfo(FileStack stack, string name, int fileCount)
-        {
-            Assert.Equal(fileCount, stack.Files.Count);
-            Assert.Equal(name, stack.Name);
-        }
+    private void TestStackInfo(FileStack stack, string name, int fileCount)
+    {
+        Assert.Equal(fileCount, stack.Files.Count);
+        Assert.Equal(name, stack.Name);
     }
 }

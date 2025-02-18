@@ -2,10 +2,9 @@
 
 #pragma warning disable CS1591
 
-namespace MediaBrowser.Controller.Channels
+namespace MediaBrowser.Controller.Channels;
+
+public class ChannelLatestMediaSearch
 {
-    public class ChannelLatestMediaSearch
-    {
-        public string UserId { get; set; }
-    }
+    public string UserId { get; set; }
 }

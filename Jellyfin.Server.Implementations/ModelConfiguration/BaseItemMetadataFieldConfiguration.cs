@@ -1,10 +1,6 @@
-using System;
-using System.Linq;
 using Jellyfin.Data.Entities;
-using MediaBrowser.Model.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using SQLitePCL;
 
 namespace Jellyfin.Server.Implementations.ModelConfiguration;
 

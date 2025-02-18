@@ -2,10 +2,9 @@
 
 #pragma warning disable CA1819, CS1591
 
-namespace MediaBrowser.Controller.Entities.Audio
+namespace MediaBrowser.Controller.Entities.Audio;
+
+public interface IHasMusicGenres
 {
-    public interface IHasMusicGenres
-    {
-        string[] Genres { get; }
-    }
+    string[] Genres { get; }
 }

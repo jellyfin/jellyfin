@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoMoq;
@@ -17,110 +16,109 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 
-namespace Jellyfin.Api.Tests.Auth.FirstTimeSetupPolicy
+namespace Jellyfin.Api.Tests.Auth.FirstTimeSetupPolicy;
+
+public class FirstTimeSetupHandlerTests
 {
-    public class FirstTimeSetupHandlerTests
+    private readonly Mock<IConfigurationManager> _configurationManagerMock;
+    private readonly List<IAuthorizationRequirement> _requirements;
+    private readonly DefaultAuthorizationHandler _defaultAuthorizationHandler;
+    private readonly FirstTimeSetupHandler _firstTimeSetupHandler;
+    private readonly IAuthorizationService _authorizationService;
+    private readonly Mock<IUserManager> _userManagerMock;
+    private readonly Mock<IHttpContextAccessor> _httpContextAccessor;
+
+    public FirstTimeSetupHandlerTests()
     {
-        private readonly Mock<IConfigurationManager> _configurationManagerMock;
-        private readonly List<IAuthorizationRequirement> _requirements;
-        private readonly DefaultAuthorizationHandler _defaultAuthorizationHandler;
-        private readonly FirstTimeSetupHandler _firstTimeSetupHandler;
-        private readonly IAuthorizationService _authorizationService;
-        private readonly Mock<IUserManager> _userManagerMock;
-        private readonly Mock<IHttpContextAccessor> _httpContextAccessor;
+        var fixture = new Fixture().Customize(new AutoMoqCustomization());
+        _configurationManagerMock = fixture.Freeze<Mock<IConfigurationManager>>();
+        _requirements = [new FirstTimeSetupRequirement()];
+        _userManagerMock = fixture.Freeze<Mock<IUserManager>>();
+        _httpContextAccessor = fixture.Freeze<Mock<IHttpContextAccessor>>();
 
-        public FirstTimeSetupHandlerTests()
+        _firstTimeSetupHandler = fixture.Create<FirstTimeSetupHandler>();
+        _defaultAuthorizationHandler = fixture.Create<DefaultAuthorizationHandler>();
+
+        var services = new ServiceCollection();
+        services.AddAuthorizationCore();
+        services.AddLogging();
+        services.AddOptions();
+        services.AddSingleton<IAuthorizationHandler>(_defaultAuthorizationHandler);
+        services.AddSingleton<IAuthorizationHandler>(_firstTimeSetupHandler);
+        services.AddAuthorization(options =>
         {
-            var fixture = new Fixture().Customize(new AutoMoqCustomization());
-            _configurationManagerMock = fixture.Freeze<Mock<IConfigurationManager>>();
-            _requirements = new List<IAuthorizationRequirement> { new FirstTimeSetupRequirement() };
-            _userManagerMock = fixture.Freeze<Mock<IUserManager>>();
-            _httpContextAccessor = fixture.Freeze<Mock<IHttpContextAccessor>>();
+            options.AddPolicy("FirstTime", policy => policy.Requirements.Add(new FirstTimeSetupRequirement()));
+            options.AddPolicy("FirstTimeNoAdmin", policy => policy.Requirements.Add(new FirstTimeSetupRequirement(false, false)));
+            options.AddPolicy("FirstTimeSchedule", policy => policy.Requirements.Add(new FirstTimeSetupRequirement(true, false)));
+        });
+        _authorizationService = services.BuildServiceProvider().GetRequiredService<IAuthorizationService>();
+    }
 
-            _firstTimeSetupHandler = fixture.Create<FirstTimeSetupHandler>();
-            _defaultAuthorizationHandler = fixture.Create<DefaultAuthorizationHandler>();
+    [Theory]
+    [InlineData(UserRoles.Administrator)]
+    [InlineData(UserRoles.Guest)]
+    [InlineData(UserRoles.User)]
+    public async Task ShouldSucceedIfStartupWizardIncomplete(string userRole)
+    {
+        TestHelpers.SetupConfigurationManager(_configurationManagerMock, false);
+        var claims = TestHelpers.SetupUser(
+            _userManagerMock,
+            _httpContextAccessor,
+            userRole);
 
-            var services = new ServiceCollection();
-            services.AddAuthorizationCore();
-            services.AddLogging();
-            services.AddOptions();
-            services.AddSingleton<IAuthorizationHandler>(_defaultAuthorizationHandler);
-            services.AddSingleton<IAuthorizationHandler>(_firstTimeSetupHandler);
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicy("FirstTime", policy => policy.Requirements.Add(new FirstTimeSetupRequirement()));
-                options.AddPolicy("FirstTimeNoAdmin", policy => policy.Requirements.Add(new FirstTimeSetupRequirement(false, false)));
-                options.AddPolicy("FirstTimeSchedule", policy => policy.Requirements.Add(new FirstTimeSetupRequirement(true, false)));
-            });
-            _authorizationService = services.BuildServiceProvider().GetRequiredService<IAuthorizationService>();
-        }
+        var allowed = await _authorizationService.AuthorizeAsync(claims, "FirstTime");
 
-        [Theory]
-        [InlineData(UserRoles.Administrator)]
-        [InlineData(UserRoles.Guest)]
-        [InlineData(UserRoles.User)]
-        public async Task ShouldSucceedIfStartupWizardIncomplete(string userRole)
-        {
-            TestHelpers.SetupConfigurationManager(_configurationManagerMock, false);
-            var claims = TestHelpers.SetupUser(
-                _userManagerMock,
-                _httpContextAccessor,
-                userRole);
+        Assert.True(allowed.Succeeded);
+    }
 
-            var allowed = await _authorizationService.AuthorizeAsync(claims, "FirstTime");
+    [Theory]
+    [InlineData(UserRoles.Administrator, true)]
+    [InlineData(UserRoles.Guest, false)]
+    [InlineData(UserRoles.User, false)]
+    public async Task ShouldRequireAdministratorIfStartupWizardComplete(string userRole, bool shouldSucceed)
+    {
+        TestHelpers.SetupConfigurationManager(_configurationManagerMock, true);
+        var claims = TestHelpers.SetupUser(
+            _userManagerMock,
+            _httpContextAccessor,
+            userRole);
 
-            Assert.True(allowed.Succeeded);
-        }
+        var allowed = await _authorizationService.AuthorizeAsync(claims, "FirstTime");
 
-        [Theory]
-        [InlineData(UserRoles.Administrator, true)]
-        [InlineData(UserRoles.Guest, false)]
-        [InlineData(UserRoles.User, false)]
-        public async Task ShouldRequireAdministratorIfStartupWizardComplete(string userRole, bool shouldSucceed)
-        {
-            TestHelpers.SetupConfigurationManager(_configurationManagerMock, true);
-            var claims = TestHelpers.SetupUser(
-                _userManagerMock,
-                _httpContextAccessor,
-                userRole);
+        Assert.Equal(shouldSucceed, allowed.Succeeded);
+    }
 
-            var allowed = await _authorizationService.AuthorizeAsync(claims, "FirstTime");
+    [Theory]
+    [InlineData(UserRoles.Administrator, true)]
+    [InlineData(UserRoles.Guest, false)]
+    [InlineData(UserRoles.User, true)]
+    public async Task ShouldRequireUserIfNotAdministrator(string userRole, bool shouldSucceed)
+    {
+        TestHelpers.SetupConfigurationManager(_configurationManagerMock, true);
+        var claims = TestHelpers.SetupUser(
+            _userManagerMock,
+            _httpContextAccessor,
+            userRole);
 
-            Assert.Equal(shouldSucceed, allowed.Succeeded);
-        }
+        var allowed = await _authorizationService.AuthorizeAsync(claims, "FirstTimeNoAdmin");
 
-        [Theory]
-        [InlineData(UserRoles.Administrator, true)]
-        [InlineData(UserRoles.Guest, false)]
-        [InlineData(UserRoles.User, true)]
-        public async Task ShouldRequireUserIfNotAdministrator(string userRole, bool shouldSucceed)
-        {
-            TestHelpers.SetupConfigurationManager(_configurationManagerMock, true);
-            var claims = TestHelpers.SetupUser(
-                _userManagerMock,
-                _httpContextAccessor,
-                userRole);
+        Assert.Equal(shouldSucceed, allowed.Succeeded);
+    }
 
-            var allowed = await _authorizationService.AuthorizeAsync(claims, "FirstTimeNoAdmin");
+    [Fact]
+    public async Task ShouldDisallowUserIfOutsideSchedule()
+    {
+        AccessSchedule[] accessSchedules = [new AccessSchedule(DynamicDayOfWeek.Everyday, 0, 0, Guid.Empty)];
 
-            Assert.Equal(shouldSucceed, allowed.Succeeded);
-        }
+        TestHelpers.SetupConfigurationManager(_configurationManagerMock, true);
+        var claims = TestHelpers.SetupUser(
+            _userManagerMock,
+            _httpContextAccessor,
+            UserRoles.User,
+            accessSchedules);
 
-        [Fact]
-        public async Task ShouldDisallowUserIfOutsideSchedule()
-        {
-            AccessSchedule[] accessSchedules = { new AccessSchedule(DynamicDayOfWeek.Everyday, 0, 0, Guid.Empty) };
+        var allowed = await _authorizationService.AuthorizeAsync(claims, "FirstTimeSchedule");
 
-            TestHelpers.SetupConfigurationManager(_configurationManagerMock, true);
-            var claims = TestHelpers.SetupUser(
-                _userManagerMock,
-                _httpContextAccessor,
-                UserRoles.User,
-                accessSchedules);
-
-            var allowed = await _authorizationService.AuthorizeAsync(claims, "FirstTimeSchedule");
-
-            Assert.False(allowed.Succeeded);
-        }
+        Assert.False(allowed.Succeeded);
     }
 }

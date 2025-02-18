@@ -6,30 +6,29 @@ using System;
 using System.Collections.Generic;
 using MediaBrowser.Model.IO;
 
-namespace MediaBrowser.Controller.Entities
+namespace MediaBrowser.Controller.Entities;
+
+public class LinkedChildComparer : IEqualityComparer<LinkedChild>
 {
-    public class LinkedChildComparer : IEqualityComparer<LinkedChild>
+    private readonly IFileSystem _fileSystem;
+
+    public LinkedChildComparer(IFileSystem fileSystem)
     {
-        private readonly IFileSystem _fileSystem;
+        _fileSystem = fileSystem;
+    }
 
-        public LinkedChildComparer(IFileSystem fileSystem)
+    public bool Equals(LinkedChild x, LinkedChild y)
+    {
+        if (x.Type == y.Type)
         {
-            _fileSystem = fileSystem;
+            return _fileSystem.AreEqual(x.Path, y.Path);
         }
 
-        public bool Equals(LinkedChild x, LinkedChild y)
-        {
-            if (x.Type == y.Type)
-            {
-                return _fileSystem.AreEqual(x.Path, y.Path);
-            }
+        return false;
+    }
 
-            return false;
-        }
-
-        public int GetHashCode(LinkedChild obj)
-        {
-            return ((obj.Path ?? string.Empty) + (obj.LibraryItemId ?? string.Empty) + obj.Type).GetHashCode(StringComparison.Ordinal);
-        }
+    public int GetHashCode(LinkedChild obj)
+    {
+        return ((obj.Path ?? string.Empty) + (obj.LibraryItemId ?? string.Empty) + obj.Type).GetHashCode(StringComparison.Ordinal);
     }
 }

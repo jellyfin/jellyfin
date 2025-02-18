@@ -1,5 +1,3 @@
-using System;
-using System.Threading.Tasks;
 using Jellyfin.Server.Implementations.Migrations;
 using Microsoft.EntityFrameworkCore;
 using Xunit;

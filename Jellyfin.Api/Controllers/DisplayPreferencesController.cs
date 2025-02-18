@@ -123,7 +123,7 @@ public class DisplayPreferencesController : BaseJellyfinApiController
         userId = RequestHelpers.GetUserId(User, userId);
 
         HomeSectionType[] defaults =
-        {
+        [
             HomeSectionType.SmallLibraryTiles,
             HomeSectionType.Resume,
             HomeSectionType.ResumeAudio,
@@ -131,8 +131,8 @@ public class DisplayPreferencesController : BaseJellyfinApiController
             HomeSectionType.LiveTv,
             HomeSectionType.NextUp,
             HomeSectionType.LatestMedia,
-            HomeSectionType.None,
-        };
+            HomeSectionType.None
+        ];
 
         if (!Guid.TryParse(displayPreferencesId, out var itemId))
         {

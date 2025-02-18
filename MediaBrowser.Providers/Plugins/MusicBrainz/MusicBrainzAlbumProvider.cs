@@ -112,7 +112,7 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
             }
         }
 
-        return Enumerable.Empty<RemoteSearchResult>();
+        return [];
     }
 
     private IEnumerable<RemoteSearchResult> GetReleaseSearchResult(IEnumerable<ISearchResult<IRelease>>? releaseSearchResults)

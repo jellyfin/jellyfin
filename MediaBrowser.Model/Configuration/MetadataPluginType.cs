@@ -1,20 +1,19 @@
 #pragma warning disable CS1591
 
-namespace MediaBrowser.Model.Configuration
+namespace MediaBrowser.Model.Configuration;
+
+/// <summary>
+/// Enum MetadataPluginType.
+/// </summary>
+public enum MetadataPluginType
 {
-    /// <summary>
-    /// Enum MetadataPluginType.
-    /// </summary>
-    public enum MetadataPluginType
-    {
-        LocalImageProvider,
-        ImageFetcher,
-        ImageSaver,
-        LocalMetadataProvider,
-        MetadataFetcher,
-        MetadataSaver,
-        SubtitleFetcher,
-        LyricFetcher,
-        MediaSegmentProvider
-    }
+    LocalImageProvider,
+    ImageFetcher,
+    ImageSaver,
+    LocalMetadataProvider,
+    MetadataFetcher,
+    MetadataSaver,
+    SubtitleFetcher,
+    LyricFetcher,
+    MediaSegmentProvider
 }

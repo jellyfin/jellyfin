@@ -5,14 +5,13 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Model.IO
+namespace MediaBrowser.Model.IO;
+
+public interface IStreamHelper
 {
-    public interface IStreamHelper
-    {
-        Task CopyToAsync(Stream source, Stream destination, int bufferSize, Action? onStarted, CancellationToken cancellationToken);
+    Task CopyToAsync(Stream source, Stream destination, int bufferSize, Action? onStarted, CancellationToken cancellationToken);
 
-        Task CopyToAsync(Stream source, Stream destination, int bufferSize, int emptyReadLimit, CancellationToken cancellationToken);
+    Task CopyToAsync(Stream source, Stream destination, int bufferSize, int emptyReadLimit, CancellationToken cancellationToken);
 
-        Task CopyUntilCancelled(Stream source, Stream target, int bufferSize, CancellationToken cancellationToken);
-    }
+    Task CopyUntilCancelled(Stream source, Stream target, int bufferSize, CancellationToken cancellationToken);
 }

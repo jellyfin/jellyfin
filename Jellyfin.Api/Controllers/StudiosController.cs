@@ -117,11 +117,11 @@ public class StudiosController : BaseJellyfinApiController
         {
             if (parentItem is Folder)
             {
-                query.AncestorIds = new[] { parentId.Value };
+                query.AncestorIds = [parentId.Value];
             }
             else
             {
-                query.ItemIds = new[] { parentId.Value };
+                query.ItemIds = [parentId.Value];
             }
         }
 

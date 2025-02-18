@@ -5,12 +5,6 @@
     <ProjectGuid>{960295EE-4AF4-4440-A525-B4C295B01A61}</ProjectGuid>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-  </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="..\SharedVersion.cs" />
   </ItemGroup>

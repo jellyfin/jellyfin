@@ -10,33 +10,32 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Providers.Manager;
 using Microsoft.Extensions.Logging;
 
-namespace MediaBrowser.Providers.Movies
+namespace MediaBrowser.Providers.Movies;
+
+public class TrailerMetadataService : MetadataService<Trailer, TrailerInfo>
 {
-    public class TrailerMetadataService : MetadataService<Trailer, TrailerInfo>
+    public TrailerMetadataService(
+        IServerConfigurationManager serverConfigurationManager,
+        ILogger<TrailerMetadataService> logger,
+        IProviderManager providerManager,
+        IFileSystem fileSystem,
+        ILibraryManager libraryManager)
+        : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
     {
-        public TrailerMetadataService(
-            IServerConfigurationManager serverConfigurationManager,
-            ILogger<TrailerMetadataService> logger,
-            IProviderManager providerManager,
-            IFileSystem fileSystem,
-            ILibraryManager libraryManager)
-            : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
+    }
+
+    /// <inheritdoc />
+    protected override void MergeData(MetadataResult<Trailer> source, MetadataResult<Trailer> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
+    {
+        base.MergeData(source, target, lockedFields, replaceData, mergeMetadataSettings);
+
+        if (replaceData || target.Item.TrailerTypes.Length == 0)
         {
+            target.Item.TrailerTypes = source.Item.TrailerTypes;
         }
-
-        /// <inheritdoc />
-        protected override void MergeData(MetadataResult<Trailer> source, MetadataResult<Trailer> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
+        else
         {
-            base.MergeData(source, target, lockedFields, replaceData, mergeMetadataSettings);
-
-            if (replaceData || target.Item.TrailerTypes.Length == 0)
-            {
-                target.Item.TrailerTypes = source.Item.TrailerTypes;
-            }
-            else
-            {
-                target.Item.TrailerTypes = target.Item.TrailerTypes.Concat(source.Item.TrailerTypes).Distinct().ToArray();
-            }
+            target.Item.TrailerTypes = target.Item.TrailerTypes.Concat(source.Item.TrailerTypes).Distinct().ToArray();
         }
     }
 }

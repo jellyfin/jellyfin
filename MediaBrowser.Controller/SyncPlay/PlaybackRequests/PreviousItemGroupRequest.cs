@@ -5,35 +5,34 @@ using System.Threading;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.SyncPlay;
 
-namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
+namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests;
+
+/// <summary>
+/// Class PreviousItemGroupRequest.
+/// </summary>
+public class PreviousItemGroupRequest : AbstractPlaybackRequest
 {
     /// <summary>
-    /// Class PreviousItemGroupRequest.
+    /// Initializes a new instance of the <see cref="PreviousItemGroupRequest"/> class.
     /// </summary>
-    public class PreviousItemGroupRequest : AbstractPlaybackRequest
+    /// <param name="playlistItemId">The playing item identifier.</param>
+    public PreviousItemGroupRequest(Guid playlistItemId)
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PreviousItemGroupRequest"/> class.
-        /// </summary>
-        /// <param name="playlistItemId">The playing item identifier.</param>
-        public PreviousItemGroupRequest(Guid playlistItemId)
-        {
-            PlaylistItemId = playlistItemId;
-        }
+        PlaylistItemId = playlistItemId;
+    }
 
-        /// <summary>
-        /// Gets the playing item identifier.
-        /// </summary>
-        /// <value>The playing item identifier.</value>
-        public Guid PlaylistItemId { get; }
+    /// <summary>
+    /// Gets the playing item identifier.
+    /// </summary>
+    /// <value>The playing item identifier.</value>
+    public Guid PlaylistItemId { get; }
 
-        /// <inheritdoc />
-        public override PlaybackRequestType Action { get; } = PlaybackRequestType.PreviousItem;
+    /// <inheritdoc />
+    public override PlaybackRequestType Action { get; } = PlaybackRequestType.PreviousItem;
 
-        /// <inheritdoc />
-        public override void Apply(IGroupStateContext context, IGroupState state, SessionInfo session, CancellationToken cancellationToken)
-        {
-            state.HandleRequest(this, context, state.Type, session, cancellationToken);
-        }
+    /// <inheritdoc />
+    public override void Apply(IGroupStateContext context, IGroupState state, SessionInfo session, CancellationToken cancellationToken)
+    {
+        state.HandleRequest(this, context, state.Type, session, cancellationToken);
     }
 }

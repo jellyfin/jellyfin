@@ -8,18 +8,17 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Providers.Manager;
 using Microsoft.Extensions.Logging;
 
-namespace MediaBrowser.Providers.Folders
+namespace MediaBrowser.Providers.Folders;
+
+public class CollectionFolderMetadataService : MetadataService<CollectionFolder, ItemLookupInfo>
 {
-    public class CollectionFolderMetadataService : MetadataService<CollectionFolder, ItemLookupInfo>
+    public CollectionFolderMetadataService(
+        IServerConfigurationManager serverConfigurationManager,
+        ILogger<CollectionFolderMetadataService> logger,
+        IProviderManager providerManager,
+        IFileSystem fileSystem,
+        ILibraryManager libraryManager)
+        : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
     {
-        public CollectionFolderMetadataService(
-            IServerConfigurationManager serverConfigurationManager,
-            ILogger<CollectionFolderMetadataService> logger,
-            IProviderManager providerManager,
-            IFileSystem fileSystem,
-            ILibraryManager libraryManager)
-            : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
-        {
-        }
     }
 }

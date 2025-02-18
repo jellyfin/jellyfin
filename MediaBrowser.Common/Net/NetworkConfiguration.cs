@@ -131,17 +131,17 @@ public class NetworkConfiguration
     /// <summary>
     /// Gets or sets the subnets that are deemed to make up the LAN.
     /// </summary>
-    public string[] LocalNetworkSubnets { get; set; } = Array.Empty<string>();
+    public string[] LocalNetworkSubnets { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the interface addresses which Jellyfin will bind to. If empty, all interfaces will be used.
     /// </summary>
-    public string[] LocalNetworkAddresses { get; set; } = Array.Empty<string>();
+    public string[] LocalNetworkAddresses { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the known proxies.
     /// </summary>
-    public string[] KnownProxies { get; set; } = Array.Empty<string>();
+    public string[] KnownProxies { get; set; } = [];
 
     /// <summary>
     /// Gets or sets a value indicating whether address names that match <see cref="VirtualInterfaceNames"/> should be ignored for the purposes of binding.
@@ -151,7 +151,7 @@ public class NetworkConfiguration
     /// <summary>
     /// Gets or sets a value indicating the interface name prefixes that should be ignored. The list can be comma separated and values are case-insensitive. <seealso cref="IgnoreVirtualInterfaces"/>.
     /// </summary>
-    public string[] VirtualInterfaceNames { get; set; } = new string[] { "veth" };
+    public string[] VirtualInterfaceNames { get; set; } = ["veth"];
 
     /// <summary>
     /// Gets or sets a value indicating whether the published server uri is based on information in HTTP requests.
@@ -162,12 +162,12 @@ public class NetworkConfiguration
     /// Gets or sets the PublishedServerUriBySubnet
     /// Gets or sets PublishedServerUri to advertise for specific subnets.
     /// </summary>
-    public string[] PublishedServerUriBySubnet { get; set; } = Array.Empty<string>();
+    public string[] PublishedServerUriBySubnet { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the filter for remote IP connectivity. Used in conjunction with <seealso cref="IsRemoteIPFilterBlacklist"/>.
     /// </summary>
-    public string[] RemoteIPFilter { get; set; } = Array.Empty<string>();
+    public string[] RemoteIPFilter { get; set; } = [];
 
     /// <summary>
     /// Gets or sets a value indicating whether <seealso cref="RemoteIPFilter"/> contains a blacklist or a whitelist. Default is a whitelist.

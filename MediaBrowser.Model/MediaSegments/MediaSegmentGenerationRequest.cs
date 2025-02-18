@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MediaBrowser.Model;
+namespace MediaBrowser.Model.MediaSegments;
 
 /// <summary>
 /// Model containing the arguments for enumerating the requested media item.

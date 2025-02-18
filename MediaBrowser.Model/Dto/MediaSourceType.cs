@@ -1,11 +1,10 @@
 #pragma warning disable CS1591
 
-namespace MediaBrowser.Model.Dto
+namespace MediaBrowser.Model.Dto;
+
+public enum MediaSourceType
 {
-    public enum MediaSourceType
-    {
-        Default = 0,
-        Grouping = 1,
-        Placeholder = 2
-    }
+    Default = 0,
+    Grouping = 1,
+    Placeholder = 2
 }

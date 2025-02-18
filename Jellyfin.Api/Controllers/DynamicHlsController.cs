@@ -2046,7 +2046,7 @@ public class DynamicHlsController : BaseJellyfinApiController
 
         try
         {
-            return fileSystem.GetFiles(folder, new[] { segmentExtension }, true, false)
+            return fileSystem.GetFiles(folder, [segmentExtension], true, false)
                 .Where(i => Path.GetFileNameWithoutExtension(i.Name).StartsWith(filePrefix, StringComparison.OrdinalIgnoreCase))
                 .MaxBy(fileSystem.GetLastWriteTimeUtc);
         }

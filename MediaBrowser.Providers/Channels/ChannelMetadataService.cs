@@ -8,18 +8,17 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Providers.Manager;
 using Microsoft.Extensions.Logging;
 
-namespace MediaBrowser.Providers.Channels
+namespace MediaBrowser.Providers.Channels;
+
+public class ChannelMetadataService : MetadataService<Channel, ItemLookupInfo>
 {
-    public class ChannelMetadataService : MetadataService<Channel, ItemLookupInfo>
+    public ChannelMetadataService(
+        IServerConfigurationManager serverConfigurationManager,
+        ILogger<ChannelMetadataService> logger,
+        IProviderManager providerManager,
+        IFileSystem fileSystem,
+        ILibraryManager libraryManager)
+        : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
     {
-        public ChannelMetadataService(
-            IServerConfigurationManager serverConfigurationManager,
-            ILogger<ChannelMetadataService> logger,
-            IProviderManager providerManager,
-            IFileSystem fileSystem,
-            ILibraryManager libraryManager)
-            : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
-        {
-        }
     }
 }

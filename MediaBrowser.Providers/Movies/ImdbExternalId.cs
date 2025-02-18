@@ -8,32 +8,31 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 
-namespace MediaBrowser.Providers.Movies
+namespace MediaBrowser.Providers.Movies;
+
+public class ImdbExternalId : IExternalId
 {
-    public class ImdbExternalId : IExternalId
+    /// <inheritdoc />
+    public string ProviderName => "IMDb";
+
+    /// <inheritdoc />
+    public string Key => MetadataProvider.Imdb.ToString();
+
+    /// <inheritdoc />
+    public ExternalIdMediaType? Type => null;
+
+    /// <inheritdoc />
+    public string UrlFormatString => "https://www.imdb.com/title/{0}";
+
+    /// <inheritdoc />
+    public bool Supports(IHasProviderIds item)
     {
-        /// <inheritdoc />
-        public string ProviderName => "IMDb";
-
-        /// <inheritdoc />
-        public string Key => MetadataProvider.Imdb.ToString();
-
-        /// <inheritdoc />
-        public ExternalIdMediaType? Type => null;
-
-        /// <inheritdoc />
-        public string UrlFormatString => "https://www.imdb.com/title/{0}";
-
-        /// <inheritdoc />
-        public bool Supports(IHasProviderIds item)
+        // Supports images for tv movies
+        if (item is LiveTvProgram tvProgram && tvProgram.IsMovie)
         {
-            // Supports images for tv movies
-            if (item is LiveTvProgram tvProgram && tvProgram.IsMovie)
-            {
-                return true;
-            }
-
-            return item is Movie || item is MusicVideo || item is Series || item is Episode || item is Trailer;
+            return true;
         }
+
+        return item is Movie || item is MusicVideo || item is Series || item is Episode || item is Trailer;
     }
 }

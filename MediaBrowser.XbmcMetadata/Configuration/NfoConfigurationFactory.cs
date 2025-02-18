@@ -4,21 +4,20 @@ using System.Collections.Generic;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Configuration;
 
-namespace MediaBrowser.XbmcMetadata.Configuration
+namespace MediaBrowser.XbmcMetadata.Configuration;
+
+public class NfoConfigurationFactory : IConfigurationFactory
 {
-    public class NfoConfigurationFactory : IConfigurationFactory
+    /// <inheritdoc />
+    public IEnumerable<ConfigurationStore> GetConfigurations()
     {
-        /// <inheritdoc />
-        public IEnumerable<ConfigurationStore> GetConfigurations()
-        {
-            return new[]
+        return
+        [
+            new ConfigurationStore
             {
-                new ConfigurationStore
-                {
-                    ConfigurationType = typeof(XbmcMetadataOptions),
-                    Key = "xbmcmetadata"
-                }
-            };
-        }
+                ConfigurationType = typeof(XbmcMetadataOptions),
+                Key = "xbmcmetadata"
+            }
+        ];
     }
 }

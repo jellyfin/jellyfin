@@ -1,53 +1,52 @@
-namespace MediaBrowser.Model.Entities
+namespace MediaBrowser.Model.Entities;
+
+/// <summary>
+/// Enum MetadataFields.
+/// </summary>
+public enum MetadataField
 {
     /// <summary>
-    /// Enum MetadataFields.
+    /// The cast.
     /// </summary>
-    public enum MetadataField
-    {
-        /// <summary>
-        /// The cast.
-        /// </summary>
-        Cast,
+    Cast,
 
-        /// <summary>
-        /// The genres.
-        /// </summary>
-        Genres,
+    /// <summary>
+    /// The genres.
+    /// </summary>
+    Genres,
 
-        /// <summary>
-        /// The production locations.
-        /// </summary>
-        ProductionLocations,
+    /// <summary>
+    /// The production locations.
+    /// </summary>
+    ProductionLocations,
 
-        /// <summary>
-        /// The studios.
-        /// </summary>
-        Studios,
+    /// <summary>
+    /// The studios.
+    /// </summary>
+    Studios,
 
-        /// <summary>
-        /// The tags.
-        /// </summary>
-        Tags,
+    /// <summary>
+    /// The tags.
+    /// </summary>
+    Tags,
 
-        /// <summary>
-        /// The name.
-        /// </summary>
-        Name,
+    /// <summary>
+    /// The name.
+    /// </summary>
+    Name,
 
-        /// <summary>
-        /// The overview.
-        /// </summary>
-        Overview,
+    /// <summary>
+    /// The overview.
+    /// </summary>
+    Overview,
 
-        /// <summary>
-        /// The runtime.
-        /// </summary>
-        Runtime,
+    /// <summary>
+    /// The runtime.
+    /// </summary>
+    Runtime,
 
-        /// <summary>
-        /// The official rating.
-        /// </summary>
-        OfficialRating
-    }
+    /// <summary>
+    /// The official rating.
+    /// </summary>
+    OfficialRating
 }

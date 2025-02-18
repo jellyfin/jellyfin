@@ -4,14 +4,13 @@
 
 using System;
 
-namespace MediaBrowser.Controller.Net
+namespace MediaBrowser.Controller.Net;
+
+public class WebSocketListenerState
 {
-    public class WebSocketListenerState
-    {
-        public DateTime DateLastSendUtc { get; set; }
+    public DateTime DateLastSendUtc { get; set; }
 
-        public long InitialDelayMs { get; set; }
+    public long InitialDelayMs { get; set; }
 
-        public long IntervalMs { get; set; }
-    }
+    public long IntervalMs { get; set; }
 }

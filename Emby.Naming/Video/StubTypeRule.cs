@@ -1,31 +1,30 @@
-namespace Emby.Naming.Video
+namespace Emby.Naming.Video;
+
+/// <summary>
+/// Data class holding information about Stub type rule.
+/// </summary>
+public class StubTypeRule
 {
     /// <summary>
-    /// Data class holding information about Stub type rule.
+    /// Initializes a new instance of the <see cref="StubTypeRule"/> class.
     /// </summary>
-    public class StubTypeRule
+    /// <param name="token">Token.</param>
+    /// <param name="stubType">Stub type.</param>
+    public StubTypeRule(string token, string stubType)
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="StubTypeRule"/> class.
-        /// </summary>
-        /// <param name="token">Token.</param>
-        /// <param name="stubType">Stub type.</param>
-        public StubTypeRule(string token, string stubType)
-        {
-            Token = token;
-            StubType = stubType;
-        }
-
-        /// <summary>
-        /// Gets or sets the token.
-        /// </summary>
-        /// <value>The token.</value>
-        public string Token { get; set; }
-
-        /// <summary>
-        /// Gets or sets the type of the stub.
-        /// </summary>
-        /// <value>The type of the stub.</value>
-        public string StubType { get; set; }
+        Token = token;
+        StubType = stubType;
     }
+
+    /// <summary>
+    /// Gets or sets the token.
+    /// </summary>
+    /// <value>The token.</value>
+    public string Token { get; set; }
+
+    /// <summary>
+    /// Gets or sets the type of the stub.
+    /// </summary>
+    /// <value>The type of the stub.</value>
+    public string StubType { get; set; }
 }

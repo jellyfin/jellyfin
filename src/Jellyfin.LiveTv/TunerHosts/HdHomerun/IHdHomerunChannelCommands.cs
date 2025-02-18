@@ -2,10 +2,9 @@
 
 using System.Collections.Generic;
 
-namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
+namespace Jellyfin.LiveTv.TunerHosts.HdHomerun;
+
+public interface IHdHomerunChannelCommands
 {
-    public interface IHdHomerunChannelCommands
-    {
-        IEnumerable<(string CommandName, string CommandValue)> GetCommands();
-    }
+    IEnumerable<(string CommandName, string CommandValue)> GetCommands();
 }

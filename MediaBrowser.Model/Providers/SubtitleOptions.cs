@@ -3,34 +3,33 @@
 
 using System;
 
-namespace MediaBrowser.Model.Providers
+namespace MediaBrowser.Model.Providers;
+
+public class SubtitleOptions
 {
-    public class SubtitleOptions
+    public SubtitleOptions()
     {
-        public SubtitleOptions()
-        {
-            DownloadLanguages = Array.Empty<string>();
+        DownloadLanguages = [];
 
-            SkipIfAudioTrackMatches = true;
-            RequirePerfectMatch = true;
-        }
-
-        public bool SkipIfEmbeddedSubtitlesPresent { get; set; }
-
-        public bool SkipIfAudioTrackMatches { get; set; }
-
-        public string[] DownloadLanguages { get; set; }
-
-        public bool DownloadMovieSubtitles { get; set; }
-
-        public bool DownloadEpisodeSubtitles { get; set; }
-
-        public string OpenSubtitlesUsername { get; set; }
-
-        public string OpenSubtitlesPasswordHash { get; set; }
-
-        public bool IsOpenSubtitleVipAccount { get; set; }
-
-        public bool RequirePerfectMatch { get; set; }
+        SkipIfAudioTrackMatches = true;
+        RequirePerfectMatch = true;
     }
+
+    public bool SkipIfEmbeddedSubtitlesPresent { get; set; }
+
+    public bool SkipIfAudioTrackMatches { get; set; }
+
+    public string[] DownloadLanguages { get; set; }
+
+    public bool DownloadMovieSubtitles { get; set; }
+
+    public bool DownloadEpisodeSubtitles { get; set; }
+
+    public string OpenSubtitlesUsername { get; set; }
+
+    public string OpenSubtitlesPasswordHash { get; set; }
+
+    public bool IsOpenSubtitleVipAccount { get; set; }
+
+    public bool RequirePerfectMatch { get; set; }
 }

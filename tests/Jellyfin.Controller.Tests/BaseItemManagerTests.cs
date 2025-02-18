@@ -7,74 +7,73 @@ using MediaBrowser.Model.Configuration;
 using Moq;
 using Xunit;
 
-namespace Jellyfin.Controller.Tests
+namespace Jellyfin.Controller.Tests;
+
+public class BaseItemManagerTests
 {
-    public class BaseItemManagerTests
+    [Theory]
+    [InlineData(typeof(Book), "LibraryEnabled", true)]
+    [InlineData(typeof(Book), "LibraryDisabled", false)]
+    [InlineData(typeof(MusicArtist), "Enabled", true)]
+    [InlineData(typeof(MusicArtist), "ServerDisabled", false)]
+    public void IsMetadataFetcherEnabled_ChecksOptions_ReturnsExpected(Type itemType, string fetcherName, bool expected)
     {
-        [Theory]
-        [InlineData(typeof(Book), "LibraryEnabled", true)]
-        [InlineData(typeof(Book), "LibraryDisabled", false)]
-        [InlineData(typeof(MusicArtist), "Enabled", true)]
-        [InlineData(typeof(MusicArtist), "ServerDisabled", false)]
-        public void IsMetadataFetcherEnabled_ChecksOptions_ReturnsExpected(Type itemType, string fetcherName, bool expected)
-        {
-            BaseItem item = (BaseItem)Activator.CreateInstance(itemType)!;
+        BaseItem item = (BaseItem)Activator.CreateInstance(itemType)!;
 
-            var libraryTypeOptions = itemType == typeof(Book)
-                ? new TypeOptions
-                {
-                    Type = "Book",
-                    MetadataFetchers = new[] { "LibraryEnabled" }
-                }
-                : null;
-
-            var serverConfiguration = new ServerConfiguration();
-            foreach (var typeConfig in serverConfiguration.MetadataOptions)
+        var libraryTypeOptions = itemType == typeof(Book)
+            ? new TypeOptions
             {
-                typeConfig.DisabledMetadataFetchers = new[] { "ServerDisabled" };
+                Type = "Book",
+                MetadataFetchers = ["LibraryEnabled"]
             }
+            : null;
 
-            var serverConfigurationManager = new Mock<IServerConfigurationManager>();
-            serverConfigurationManager.Setup(scm => scm.Configuration)
-                .Returns(serverConfiguration);
-
-            var baseItemManager = new BaseItemManager(serverConfigurationManager.Object);
-            var actual = baseItemManager.IsMetadataFetcherEnabled(item, libraryTypeOptions, fetcherName);
-
-            Assert.Equal(expected, actual);
+        var serverConfiguration = new ServerConfiguration();
+        foreach (var typeConfig in serverConfiguration.MetadataOptions)
+        {
+            typeConfig.DisabledMetadataFetchers = ["ServerDisabled"];
         }
 
-        [Theory]
-        [InlineData(typeof(Book), "LibraryEnabled", true)]
-        [InlineData(typeof(Book), "LibraryDisabled", false)]
-        [InlineData(typeof(MusicArtist), "Enabled", true)]
-        [InlineData(typeof(MusicArtist), "ServerDisabled", false)]
-        public void IsImageFetcherEnabled_ChecksOptions_ReturnsExpected(Type itemType, string fetcherName, bool expected)
-        {
-            BaseItem item = (BaseItem)Activator.CreateInstance(itemType)!;
+        var serverConfigurationManager = new Mock<IServerConfigurationManager>();
+        serverConfigurationManager.Setup(scm => scm.Configuration)
+            .Returns(serverConfiguration);
 
-            var libraryTypeOptions = itemType == typeof(Book)
-                ? new TypeOptions
-                {
-                    Type = "Book",
-                    ImageFetchers = new[] { "LibraryEnabled" }
-                }
-                : null;
+        var baseItemManager = new BaseItemManager(serverConfigurationManager.Object);
+        var actual = baseItemManager.IsMetadataFetcherEnabled(item, libraryTypeOptions, fetcherName);
 
-            var serverConfiguration = new ServerConfiguration();
-            foreach (var typeConfig in serverConfiguration.MetadataOptions)
+        Assert.Equal(expected, actual);
+    }
+
+    [Theory]
+    [InlineData(typeof(Book), "LibraryEnabled", true)]
+    [InlineData(typeof(Book), "LibraryDisabled", false)]
+    [InlineData(typeof(MusicArtist), "Enabled", true)]
+    [InlineData(typeof(MusicArtist), "ServerDisabled", false)]
+    public void IsImageFetcherEnabled_ChecksOptions_ReturnsExpected(Type itemType, string fetcherName, bool expected)
+    {
+        BaseItem item = (BaseItem)Activator.CreateInstance(itemType)!;
+
+        var libraryTypeOptions = itemType == typeof(Book)
+            ? new TypeOptions
             {
-                typeConfig.DisabledImageFetchers = new[] { "ServerDisabled" };
+                Type = "Book",
+                ImageFetchers = ["LibraryEnabled"]
             }
+            : null;
 
-            var serverConfigurationManager = new Mock<IServerConfigurationManager>();
-            serverConfigurationManager.Setup(scm => scm.Configuration)
-                .Returns(serverConfiguration);
-
-            var baseItemManager = new BaseItemManager(serverConfigurationManager.Object);
-            var actual = baseItemManager.IsImageFetcherEnabled(item, libraryTypeOptions, fetcherName);
-
-            Assert.Equal(expected, actual);
+        var serverConfiguration = new ServerConfiguration();
+        foreach (var typeConfig in serverConfiguration.MetadataOptions)
+        {
+            typeConfig.DisabledImageFetchers = ["ServerDisabled"];
         }
+
+        var serverConfigurationManager = new Mock<IServerConfigurationManager>();
+        serverConfigurationManager.Setup(scm => scm.Configuration)
+            .Returns(serverConfiguration);
+
+        var baseItemManager = new BaseItemManager(serverConfigurationManager.Object);
+        var actual = baseItemManager.IsImageFetcherEnabled(item, libraryTypeOptions, fetcherName);
+
+        Assert.Equal(expected, actual);
     }
 }

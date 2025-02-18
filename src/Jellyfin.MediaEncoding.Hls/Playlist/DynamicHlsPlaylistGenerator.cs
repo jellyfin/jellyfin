@@ -4,12 +4,15 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Jellyfin.MediaEncoding.Hls.Extractors;
 using Jellyfin.MediaEncoding.Keyframes;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
+
+[assembly: InternalsVisibleTo("Jellyfin.MediaEncoding.Hls.Tests")]
 
 namespace Jellyfin.MediaEncoding.Hls.Playlist;
 

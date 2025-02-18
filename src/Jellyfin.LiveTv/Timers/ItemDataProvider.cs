@@ -10,147 +10,146 @@ using System.Threading;
 using Jellyfin.Extensions.Json;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.LiveTv.Timers
-{
-    public class ItemDataProvider<T>
-        where T : class
-    {
-        private readonly string _dataPath;
-        private readonly Lock _fileDataLock = new();
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
-        private T[]? _items;
+namespace Jellyfin.LiveTv.Timers;
 
-        public ItemDataProvider(
-            ILogger logger,
-            string dataPath,
-            Func<T, T, bool> equalityComparer)
+public class ItemDataProvider<T>
+    where T : class
+{
+    private readonly string _dataPath;
+    private readonly Lock _fileDataLock = new();
+    private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
+    private T[]? _items;
+
+    public ItemDataProvider(
+        ILogger logger,
+        string dataPath,
+        Func<T, T, bool> equalityComparer)
+    {
+        Logger = logger;
+        _dataPath = dataPath;
+        EqualityComparer = equalityComparer;
+    }
+
+    protected ILogger Logger { get; }
+
+    protected Func<T, T, bool> EqualityComparer { get; }
+
+    [MemberNotNull(nameof(_items))]
+    private void EnsureLoaded()
+    {
+        if (_items is not null)
         {
-            Logger = logger;
-            _dataPath = dataPath;
-            EqualityComparer = equalityComparer;
+            return;
         }
 
-        protected ILogger Logger { get; }
-
-        protected Func<T, T, bool> EqualityComparer { get; }
-
-        [MemberNotNull(nameof(_items))]
-        private void EnsureLoaded()
+        if (File.Exists(_dataPath))
         {
-            if (_items is not null)
+            Logger.LogInformation("Loading live tv data from {Path}", _dataPath);
+
+            try
             {
+                var bytes = File.ReadAllBytes(_dataPath);
+                _items = JsonSerializer.Deserialize<T[]>(bytes, _jsonOptions);
+                if (_items is null)
+                {
+                    Logger.LogError("Error deserializing {Path}, data was null", _dataPath);
+                    _items = [];
+                }
+
                 return;
             }
-
-            if (File.Exists(_dataPath))
+            catch (JsonException ex)
             {
-                Logger.LogInformation("Loading live tv data from {Path}", _dataPath);
-
-                try
-                {
-                    var bytes = File.ReadAllBytes(_dataPath);
-                    _items = JsonSerializer.Deserialize<T[]>(bytes, _jsonOptions);
-                    if (_items is null)
-                    {
-                        Logger.LogError("Error deserializing {Path}, data was null", _dataPath);
-                        _items = Array.Empty<T>();
-                    }
-
-                    return;
-                }
-                catch (JsonException ex)
-                {
-                    Logger.LogError(ex, "Error deserializing {Path}", _dataPath);
-                }
-            }
-
-            _items = Array.Empty<T>();
-        }
-
-        private void SaveList()
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(_dataPath) ?? throw new ArgumentException("Path can't be a root directory.", nameof(_dataPath)));
-            var jsonString = JsonSerializer.Serialize(_items, _jsonOptions);
-            File.WriteAllText(_dataPath, jsonString);
-        }
-
-        public IReadOnlyList<T> GetAll()
-        {
-            lock (_fileDataLock)
-            {
-                EnsureLoaded();
-                return (T[])_items.Clone();
+                Logger.LogError(ex, "Error deserializing {Path}", _dataPath);
             }
         }
 
-        public virtual void Update(T item)
+        _items = [];
+    }
+
+    private void SaveList()
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(_dataPath) ?? throw new ArgumentException("Path can't be a root directory.", nameof(_dataPath)));
+        var jsonString = JsonSerializer.Serialize(_items, _jsonOptions);
+        File.WriteAllText(_dataPath, jsonString);
+    }
+
+    public IReadOnlyList<T> GetAll()
+    {
+        lock (_fileDataLock)
         {
-            ArgumentNullException.ThrowIfNull(item);
-
-            lock (_fileDataLock)
-            {
-                EnsureLoaded();
-
-                var index = Array.FindIndex(_items, i => EqualityComparer(i, item));
-                if (index == -1)
-                {
-                    throw new ArgumentException("item not found");
-                }
-
-                _items[index] = item;
-
-                SaveList();
-            }
+            EnsureLoaded();
+            return (T[])_items.Clone();
         }
+    }
 
-        public virtual void Add(T item)
+    public virtual void Update(T item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+
+        lock (_fileDataLock)
         {
-            ArgumentNullException.ThrowIfNull(item);
+            EnsureLoaded();
 
-            lock (_fileDataLock)
+            var index = Array.FindIndex(_items, i => EqualityComparer(i, item));
+            if (index == -1)
             {
-                EnsureLoaded();
+                throw new ArgumentException("item not found");
+            }
 
-                if (_items.Any(i => EqualityComparer(i, item)))
-                {
-                    throw new ArgumentException("item already exists", nameof(item));
-                }
+            _items[index] = item;
 
+            SaveList();
+        }
+    }
+
+    public virtual void Add(T item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+
+        lock (_fileDataLock)
+        {
+            EnsureLoaded();
+
+            if (_items.Any(i => EqualityComparer(i, item)))
+            {
+                throw new ArgumentException("item already exists", nameof(item));
+            }
+
+            _items = [.._items, item];
+
+            SaveList();
+        }
+    }
+
+    public virtual void AddOrUpdate(T item)
+    {
+        lock (_fileDataLock)
+        {
+            EnsureLoaded();
+
+            int index = Array.FindIndex(_items, i => EqualityComparer(i, item));
+            if (index == -1)
+            {
                 _items = [.._items, item];
-
-                SaveList();
             }
-        }
-
-        public virtual void AddOrUpdate(T item)
-        {
-            lock (_fileDataLock)
+            else
             {
-                EnsureLoaded();
-
-                int index = Array.FindIndex(_items, i => EqualityComparer(i, item));
-                if (index == -1)
-                {
-                    _items = [.._items, item];
-                }
-                else
-                {
-                    _items[index] = item;
-                }
-
-                SaveList();
+                _items[index] = item;
             }
+
+            SaveList();
         }
+    }
 
-        public virtual void Delete(T item)
+    public virtual void Delete(T item)
+    {
+        lock (_fileDataLock)
         {
-            lock (_fileDataLock)
-            {
-                EnsureLoaded();
-                _items = _items.Where(i => !EqualityComparer(i, item)).ToArray();
+            EnsureLoaded();
+            _items = _items.Where(i => !EqualityComparer(i, item)).ToArray();
 
-                SaveList();
-            }
+            SaveList();
         }
     }
 }

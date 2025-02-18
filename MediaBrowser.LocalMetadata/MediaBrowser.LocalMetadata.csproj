@@ -10,12 +10,6 @@
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-  </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="..\SharedVersion.cs" />
   </ItemGroup>

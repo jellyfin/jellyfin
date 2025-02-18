@@ -135,7 +135,7 @@ public class ChannelsController : BaseJellyfinApiController
         {
             Limit = limit,
             StartIndex = startIndex,
-            ChannelIds = new[] { channelId },
+            ChannelIds = [channelId],
             ParentId = folderId ?? Guid.Empty,
             OrderBy = RequestHelpers.GetOrderBy(sortBy, sortOrder),
             DtoOptions = new DtoOptions { Fields = fields }

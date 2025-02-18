@@ -1,8 +1,7 @@
 #pragma warning disable CS1591
 
-namespace MediaBrowser.Controller.Providers
+namespace MediaBrowser.Controller.Providers;
+
+public class BoxSetInfo : ItemLookupInfo
 {
-    public class BoxSetInfo : ItemLookupInfo
-    {
-    }
 }

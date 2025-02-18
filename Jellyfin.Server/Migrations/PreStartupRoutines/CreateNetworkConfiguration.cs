@@ -114,11 +114,11 @@ public class CreateNetworkConfiguration : IMigrationRoutine
 
         public bool IgnoreVirtualInterfaces { get; set; } = true;
 
-        public string[] VirtualInterfaceNames { get; set; } = new string[] { "veth" };
+        public string[] VirtualInterfaceNames { get; set; } = ["veth"];
 
-        public string[] PublishedServerUriBySubnet { get; set; } = Array.Empty<string>();
+        public string[] PublishedServerUriBySubnet { get; set; } = [];
 
-        public string[] RemoteIPFilter { get; set; } = Array.Empty<string>();
+        public string[] RemoteIPFilter { get; set; } = [];
 
         public bool IsRemoteIPFilterBlacklist { get; set; }
 
@@ -126,10 +126,10 @@ public class CreateNetworkConfiguration : IMigrationRoutine
 
         public bool EnableRemoteAccess { get; set; } = true;
 
-        public string[] LocalNetworkSubnets { get; set; } = Array.Empty<string>();
+        public string[] LocalNetworkSubnets { get; set; } = [];
 
-        public string[] LocalNetworkAddresses { get; set; } = Array.Empty<string>();
+        public string[] LocalNetworkAddresses { get; set; } = [];
 
-        public string[] KnownProxies { get; set; } = Array.Empty<string>();
+        public string[] KnownProxies { get; set; } = [];
     }
 }

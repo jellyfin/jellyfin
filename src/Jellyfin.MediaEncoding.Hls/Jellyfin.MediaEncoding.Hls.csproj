@@ -1,10 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-  </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="../../MediaBrowser.Common/MediaBrowser.Common.csproj" />
     <ProjectReference Include="../../MediaBrowser.Controller/MediaBrowser.Controller.csproj" />

@@ -102,7 +102,7 @@ public class DashboardController : BaseJellyfinApiController
     {
         if (plugin.Instance is not IHasWebPages hasWebPages)
         {
-            return Enumerable.Empty<Tuple<PluginPageInfo, IPlugin>>();
+            return [];
         }
 
         return hasWebPages.GetPages().Select(i => new Tuple<PluginPageInfo, IPlugin>(i, plugin.Instance));

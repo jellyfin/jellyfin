@@ -1,18 +1,17 @@
 using Jellyfin.Data.Entities;
 
-namespace Jellyfin.Data.Events.Users
+namespace Jellyfin.Data.Events.Users;
+
+/// <summary>
+/// An event that occurs when a user is locked out.
+/// </summary>
+public class UserLockedOutEventArgs : GenericEventArgs<User>
 {
     /// <summary>
-    /// An event that occurs when a user is locked out.
+    /// Initializes a new instance of the <see cref="UserLockedOutEventArgs"/> class.
     /// </summary>
-    public class UserLockedOutEventArgs : GenericEventArgs<User>
+    /// <param name="arg">The user.</param>
+    public UserLockedOutEventArgs(User arg) : base(arg)
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="UserLockedOutEventArgs"/> class.
-        /// </summary>
-        /// <param name="arg">The user.</param>
-        public UserLockedOutEventArgs(User arg) : base(arg)
-        {
-        }
     }
 }

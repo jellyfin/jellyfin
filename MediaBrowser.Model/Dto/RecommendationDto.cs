@@ -4,16 +4,15 @@
 using System;
 using System.Collections.Generic;
 
-namespace MediaBrowser.Model.Dto
+namespace MediaBrowser.Model.Dto;
+
+public class RecommendationDto
 {
-    public class RecommendationDto
-    {
-        public IReadOnlyCollection<BaseItemDto> Items { get; set; }
+    public IReadOnlyCollection<BaseItemDto> Items { get; set; }
 
-        public RecommendationType RecommendationType { get; set; }
+    public RecommendationType RecommendationType { get; set; }
 
-        public string BaselineItemName { get; set; }
+    public string BaselineItemName { get; set; }
 
-        public Guid CategoryId { get; set; }
-    }
+    public Guid CategoryId { get; set; }
 }

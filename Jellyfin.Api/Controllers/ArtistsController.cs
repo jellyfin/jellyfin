@@ -163,11 +163,11 @@ public class ArtistsController : BaseJellyfinApiController
         {
             if (parentItem is Folder)
             {
-                query.AncestorIds = new[] { parentId.Value };
+                query.AncestorIds = [parentId.Value];
             }
             else
             {
-                query.ItemIds = new[] { parentId.Value };
+                query.ItemIds = [parentId.Value];
             }
         }
 
@@ -367,11 +367,11 @@ public class ArtistsController : BaseJellyfinApiController
         {
             if (parentItem is Folder)
             {
-                query.AncestorIds = new[] { parentId.Value };
+                query.AncestorIds = [parentId.Value];
             }
             else
             {
-                query.ItemIds = new[] { parentId.Value };
+                query.ItemIds = [parentId.Value];
             }
         }
 

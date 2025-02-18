@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Data;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -1061,7 +1060,7 @@ public class MigrateLibraryDb : IMigrationRoutine
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            return Array.Empty<ItemImageInfo>();
+            return [];
         }
 
         // TODO The following is an ugly performance optimization, but it's extremely unlikely that the data in the database would be malformed
@@ -1087,7 +1086,7 @@ public class MigrateLibraryDb : IMigrationRoutine
 
         if (position == 0)
         {
-            return Array.Empty<ItemImageInfo>();
+            return [];
         }
 
         // Extremely unlikely, but somehow one or more of the image strings were malformed. Cut the array.

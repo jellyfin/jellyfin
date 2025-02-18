@@ -1,10 +1,9 @@
 #pragma warning disable CS1591
 
-namespace MediaBrowser.Model.Dlna
+namespace MediaBrowser.Model.Dlna;
+
+public enum EncodingContext
 {
-    public enum EncodingContext
-    {
-        Streaming = 0,
-        Static = 1
-    }
+    Streaming = 0,
+    Static = 1
 }

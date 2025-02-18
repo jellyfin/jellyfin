@@ -1,9 +1,8 @@
-namespace MediaBrowser.Model.Plugins
+namespace MediaBrowser.Model.Plugins;
+
+/// <summary>
+/// Class BasePluginConfiguration.
+/// </summary>
+public class BasePluginConfiguration
 {
-    /// <summary>
-    /// Class BasePluginConfiguration.
-    /// </summary>
-    public class BasePluginConfiguration
-    {
-    }
 }

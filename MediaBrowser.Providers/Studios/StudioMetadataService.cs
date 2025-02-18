@@ -8,18 +8,17 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Providers.Manager;
 using Microsoft.Extensions.Logging;
 
-namespace MediaBrowser.Providers.Studios
+namespace MediaBrowser.Providers.Studios;
+
+public class StudioMetadataService : MetadataService<Studio, ItemLookupInfo>
 {
-    public class StudioMetadataService : MetadataService<Studio, ItemLookupInfo>
+    public StudioMetadataService(
+        IServerConfigurationManager serverConfigurationManager,
+        ILogger<StudioMetadataService> logger,
+        IProviderManager providerManager,
+        IFileSystem fileSystem,
+        ILibraryManager libraryManager)
+        : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
     {
-        public StudioMetadataService(
-            IServerConfigurationManager serverConfigurationManager,
-            ILogger<StudioMetadataService> logger,
-            IProviderManager providerManager,
-            IFileSystem fileSystem,
-            ILibraryManager libraryManager)
-            : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
-        {
-        }
     }
 }

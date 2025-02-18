@@ -3,12 +3,11 @@
 
 using System;
 
-namespace MediaBrowser.Model.Dto
-{
-    public class NameGuidPair
-    {
-        public string Name { get; set; }
+namespace MediaBrowser.Model.Dto;
 
-        public Guid Id { get; set; }
-    }
+public class NameGuidPair
+{
+    public string Name { get; set; }
+
+    public Guid Id { get; set; }
 }

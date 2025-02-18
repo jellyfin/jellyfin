@@ -1,23 +1,22 @@
-namespace MediaBrowser.Controller.MediaEncoding
+namespace MediaBrowser.Controller.MediaEncoding;
+
+/// <summary>
+/// Enum TranscodingJobType.
+/// </summary>
+public enum TranscodingJobType
 {
     /// <summary>
-    /// Enum TranscodingJobType.
+    /// The progressive.
     /// </summary>
-    public enum TranscodingJobType
-    {
-        /// <summary>
-        /// The progressive.
-        /// </summary>
-        Progressive,
+    Progressive,
 
-        /// <summary>
-        /// The HLS.
-        /// </summary>
-        Hls,
+    /// <summary>
+    /// The HLS.
+    /// </summary>
+    Hls,
 
-        /// <summary>
-        /// The dash.
-        /// </summary>
-        Dash
-    }
+    /// <summary>
+    /// The dash.
+    /// </summary>
+    Dash
 }

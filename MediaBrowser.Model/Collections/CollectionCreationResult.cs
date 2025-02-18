@@ -2,10 +2,9 @@
 
 using System;
 
-namespace MediaBrowser.Model.Collections
+namespace MediaBrowser.Model.Collections;
+
+public class CollectionCreationResult
 {
-    public class CollectionCreationResult
-    {
-        public Guid Id { get; set; }
-    }
+    public Guid Id { get; set; }
 }

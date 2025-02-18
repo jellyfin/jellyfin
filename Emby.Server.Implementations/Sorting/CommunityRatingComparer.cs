@@ -4,31 +4,29 @@ using System;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Sorting;
-using MediaBrowser.Model.Querying;
 
-namespace Emby.Server.Implementations.Sorting
+namespace Emby.Server.Implementations.Sorting;
+
+public class CommunityRatingComparer : IBaseItemComparer
 {
-    public class CommunityRatingComparer : IBaseItemComparer
+    /// <summary>
+    /// Gets the name.
+    /// </summary>
+    /// <value>The name.</value>
+    public ItemSortBy Type => ItemSortBy.CommunityRating;
+
+    /// <summary>
+    /// Compares the specified x.
+    /// </summary>
+    /// <param name="x">The x.</param>
+    /// <param name="y">The y.</param>
+    /// <returns>System.Int32.</returns>
+    public int Compare(BaseItem? x, BaseItem? y)
     {
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        public ItemSortBy Type => ItemSortBy.CommunityRating;
+        ArgumentNullException.ThrowIfNull(x);
 
-        /// <summary>
-        /// Compares the specified x.
-        /// </summary>
-        /// <param name="x">The x.</param>
-        /// <param name="y">The y.</param>
-        /// <returns>System.Int32.</returns>
-        public int Compare(BaseItem? x, BaseItem? y)
-        {
-            ArgumentNullException.ThrowIfNull(x);
+        ArgumentNullException.ThrowIfNull(y);
 
-            ArgumentNullException.ThrowIfNull(y);
-
-            return (x.CommunityRating ?? 0).CompareTo(y.CommunityRating ?? 0);
-        }
+        return (x.CommunityRating ?? 0).CompareTo(y.CommunityRating ?? 0);
     }
 }

@@ -31,202 +31,201 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Prometheus;
 
-namespace Jellyfin.Server
+namespace Jellyfin.Server;
+
+/// <summary>
+/// Startup configuration for the Kestrel webhost.
+/// </summary>
+public class Startup
 {
+    private readonly CoreAppHost _serverApplicationHost;
+    private readonly IServerConfigurationManager _serverConfigurationManager;
+
     /// <summary>
-    /// Startup configuration for the Kestrel webhost.
+    /// Initializes a new instance of the <see cref="Startup" /> class.
     /// </summary>
-    public class Startup
+    /// <param name="appHost">The server application host.</param>
+    public Startup(CoreAppHost appHost)
     {
-        private readonly CoreAppHost _serverApplicationHost;
-        private readonly IServerConfigurationManager _serverConfigurationManager;
+        _serverApplicationHost = appHost;
+        _serverConfigurationManager = appHost.ConfigurationManager;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Startup" /> class.
-        /// </summary>
-        /// <param name="appHost">The server application host.</param>
-        public Startup(CoreAppHost appHost)
+    /// <summary>
+    /// Configures the service collection for the webhost.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddResponseCompression();
+        services.AddHttpContextAccessor();
+        services.AddHttpsRedirection(options =>
         {
-            _serverApplicationHost = appHost;
-            _serverConfigurationManager = appHost.ConfigurationManager;
-        }
+            options.HttpsPort = _serverApplicationHost.HttpsPort;
+        });
 
-        /// <summary>
-        /// Configures the service collection for the webhost.
-        /// </summary>
-        /// <param name="services">The service collection.</param>
-        public void ConfigureServices(IServiceCollection services)
+        // TODO remove once this is fixed upstream https://github.com/dotnet/aspnetcore/issues/34371
+        services.AddSingleton<IActionResultExecutor<PhysicalFileResult>, SymlinkFollowingPhysicalFileResultExecutor>();
+        services.AddJellyfinApi(_serverApplicationHost.GetApiPluginAssemblies(), _serverConfigurationManager.GetNetworkConfiguration());
+        services.AddJellyfinDbContext();
+        services.AddJellyfinApiSwagger();
+
+        // configure custom legacy authentication
+        services.AddCustomAuthentication();
+
+        services.AddJellyfinApiAuthorization();
+
+        var productHeader = new ProductInfoHeaderValue(
+            _serverApplicationHost.Name.Replace(' ', '-'),
+            _serverApplicationHost.ApplicationVersionString);
+        var acceptJsonHeader = new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Json, 1.0);
+        var acceptXmlHeader = new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Xml, 0.9);
+        var acceptAnyHeader = new MediaTypeWithQualityHeaderValue("*/*", 0.8);
+        Func<IServiceProvider, HttpMessageHandler> eyeballsHttpClientHandlerDelegate = (_) => new SocketsHttpHandler()
         {
-            services.AddResponseCompression();
-            services.AddHttpContextAccessor();
-            services.AddHttpsRedirection(options =>
-            {
-                options.HttpsPort = _serverApplicationHost.HttpsPort;
-            });
+            AutomaticDecompression = DecompressionMethods.All,
+            RequestHeaderEncodingSelector = (_, _) => Encoding.UTF8,
+            ConnectCallback = HttpClientExtension.OnConnect
+        };
 
-            // TODO remove once this is fixed upstream https://github.com/dotnet/aspnetcore/issues/34371
-            services.AddSingleton<IActionResultExecutor<PhysicalFileResult>, SymlinkFollowingPhysicalFileResultExecutor>();
-            services.AddJellyfinApi(_serverApplicationHost.GetApiPluginAssemblies(), _serverConfigurationManager.GetNetworkConfiguration());
-            services.AddJellyfinDbContext();
-            services.AddJellyfinApiSwagger();
-
-            // configure custom legacy authentication
-            services.AddCustomAuthentication();
-
-            services.AddJellyfinApiAuthorization();
-
-            var productHeader = new ProductInfoHeaderValue(
-                _serverApplicationHost.Name.Replace(' ', '-'),
-                _serverApplicationHost.ApplicationVersionString);
-            var acceptJsonHeader = new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Json, 1.0);
-            var acceptXmlHeader = new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Xml, 0.9);
-            var acceptAnyHeader = new MediaTypeWithQualityHeaderValue("*/*", 0.8);
-            Func<IServiceProvider, HttpMessageHandler> eyeballsHttpClientHandlerDelegate = (_) => new SocketsHttpHandler()
-            {
-                AutomaticDecompression = DecompressionMethods.All,
-                RequestHeaderEncodingSelector = (_, _) => Encoding.UTF8,
-                ConnectCallback = HttpClientExtension.OnConnect
-            };
-
-            Func<IServiceProvider, HttpMessageHandler> defaultHttpClientHandlerDelegate = (_) => new SocketsHttpHandler()
-            {
-                AutomaticDecompression = DecompressionMethods.All,
-                RequestHeaderEncodingSelector = (_, _) => Encoding.UTF8
-            };
-
-            services.AddHttpClient(NamedClient.Default, c =>
-                {
-                    c.DefaultRequestHeaders.UserAgent.Add(productHeader);
-                    c.DefaultRequestHeaders.Accept.Add(acceptJsonHeader);
-                    c.DefaultRequestHeaders.Accept.Add(acceptXmlHeader);
-                    c.DefaultRequestHeaders.Accept.Add(acceptAnyHeader);
-                })
-                .ConfigurePrimaryHttpMessageHandler(eyeballsHttpClientHandlerDelegate);
-
-            services.AddHttpClient(NamedClient.MusicBrainz, c =>
-                {
-                    c.DefaultRequestHeaders.UserAgent.Add(productHeader);
-                    c.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue($"({_serverApplicationHost.ApplicationUserAgentAddress})"));
-                    c.DefaultRequestHeaders.Accept.Add(acceptXmlHeader);
-                    c.DefaultRequestHeaders.Accept.Add(acceptAnyHeader);
-                })
-                .ConfigurePrimaryHttpMessageHandler(eyeballsHttpClientHandlerDelegate);
-
-            services.AddHttpClient(NamedClient.DirectIp, c =>
-                {
-                    c.DefaultRequestHeaders.UserAgent.Add(productHeader);
-                    c.DefaultRequestHeaders.Accept.Add(acceptJsonHeader);
-                    c.DefaultRequestHeaders.Accept.Add(acceptXmlHeader);
-                    c.DefaultRequestHeaders.Accept.Add(acceptAnyHeader);
-                })
-                .ConfigurePrimaryHttpMessageHandler(defaultHttpClientHandlerDelegate);
-
-            services.AddHealthChecks()
-                .AddCheck<DbContextFactoryHealthCheck<JellyfinDbContext>>(nameof(JellyfinDbContext));
-
-            services.AddHlsPlaylistGenerator();
-            services.AddLiveTvServices();
-
-            services.AddHostedService<RecordingsHost>();
-            services.AddHostedService<AutoDiscoveryHost>();
-            services.AddHostedService<NfoUserDataSaver>();
-            services.AddHostedService<LibraryChangedNotifier>();
-            services.AddHostedService<UserDataChangeNotifier>();
-            services.AddHostedService<RecordingNotifier>();
-        }
-
-        /// <summary>
-        /// Configures the app builder for the webhost.
-        /// </summary>
-        /// <param name="app">The application builder.</param>
-        /// <param name="env">The webhost environment.</param>
-        /// <param name="appConfig">The application config.</param>
-        public void Configure(
-            IApplicationBuilder app,
-            IWebHostEnvironment env,
-            IConfiguration appConfig)
+        Func<IServiceProvider, HttpMessageHandler> defaultHttpClientHandlerDelegate = (_) => new SocketsHttpHandler()
         {
-            app.UseBaseUrlRedirection();
+            AutomaticDecompression = DecompressionMethods.All,
+            RequestHeaderEncodingSelector = (_, _) => Encoding.UTF8
+        };
 
-            // Wrap rest of configuration so everything only listens on BaseUrl.
-            var config = _serverConfigurationManager.GetNetworkConfiguration();
-            app.Map(config.BaseUrl, mainApp =>
+        services.AddHttpClient(NamedClient.Default, c =>
             {
-                if (env.IsDevelopment())
+                c.DefaultRequestHeaders.UserAgent.Add(productHeader);
+                c.DefaultRequestHeaders.Accept.Add(acceptJsonHeader);
+                c.DefaultRequestHeaders.Accept.Add(acceptXmlHeader);
+                c.DefaultRequestHeaders.Accept.Add(acceptAnyHeader);
+            })
+            .ConfigurePrimaryHttpMessageHandler(eyeballsHttpClientHandlerDelegate);
+
+        services.AddHttpClient(NamedClient.MusicBrainz, c =>
+            {
+                c.DefaultRequestHeaders.UserAgent.Add(productHeader);
+                c.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue($"({_serverApplicationHost.ApplicationUserAgentAddress})"));
+                c.DefaultRequestHeaders.Accept.Add(acceptXmlHeader);
+                c.DefaultRequestHeaders.Accept.Add(acceptAnyHeader);
+            })
+            .ConfigurePrimaryHttpMessageHandler(eyeballsHttpClientHandlerDelegate);
+
+        services.AddHttpClient(NamedClient.DirectIp, c =>
+            {
+                c.DefaultRequestHeaders.UserAgent.Add(productHeader);
+                c.DefaultRequestHeaders.Accept.Add(acceptJsonHeader);
+                c.DefaultRequestHeaders.Accept.Add(acceptXmlHeader);
+                c.DefaultRequestHeaders.Accept.Add(acceptAnyHeader);
+            })
+            .ConfigurePrimaryHttpMessageHandler(defaultHttpClientHandlerDelegate);
+
+        services.AddHealthChecks()
+            .AddCheck<DbContextFactoryHealthCheck<JellyfinDbContext>>(nameof(JellyfinDbContext));
+
+        services.AddHlsPlaylistGenerator();
+        services.AddLiveTvServices();
+
+        services.AddHostedService<RecordingsHost>();
+        services.AddHostedService<AutoDiscoveryHost>();
+        services.AddHostedService<NfoUserDataSaver>();
+        services.AddHostedService<LibraryChangedNotifier>();
+        services.AddHostedService<UserDataChangeNotifier>();
+        services.AddHostedService<RecordingNotifier>();
+    }
+
+    /// <summary>
+    /// Configures the app builder for the webhost.
+    /// </summary>
+    /// <param name="app">The application builder.</param>
+    /// <param name="env">The webhost environment.</param>
+    /// <param name="appConfig">The application config.</param>
+    public void Configure(
+        IApplicationBuilder app,
+        IWebHostEnvironment env,
+        IConfiguration appConfig)
+    {
+        app.UseBaseUrlRedirection();
+
+        // Wrap rest of configuration so everything only listens on BaseUrl.
+        var config = _serverConfigurationManager.GetNetworkConfiguration();
+        app.Map(config.BaseUrl, mainApp =>
+        {
+            if (env.IsDevelopment())
+            {
+                mainApp.UseDeveloperExceptionPage();
+            }
+
+            mainApp.UseForwardedHeaders();
+            mainApp.UseMiddleware<ExceptionMiddleware>();
+
+            mainApp.UseMiddleware<ResponseTimeMiddleware>();
+
+            mainApp.UseWebSockets();
+
+            mainApp.UseResponseCompression();
+
+            mainApp.UseCors();
+
+            if (config.RequireHttps && _serverApplicationHost.ListenWithHttps)
+            {
+                mainApp.UseHttpsRedirection();
+            }
+
+            // This must be injected before any path related middleware.
+            mainApp.UsePathTrim();
+
+            if (appConfig.HostWebClient())
+            {
+                var extensionProvider = new FileExtensionContentTypeProvider();
+
+                // subtitles octopus requires .data, .mem files.
+                extensionProvider.Mappings.Add(".data", MediaTypeNames.Application.Octet);
+                extensionProvider.Mappings.Add(".mem", MediaTypeNames.Application.Octet);
+                mainApp.UseDefaultFiles(new DefaultFilesOptions
                 {
-                    mainApp.UseDeveloperExceptionPage();
-                }
-
-                mainApp.UseForwardedHeaders();
-                mainApp.UseMiddleware<ExceptionMiddleware>();
-
-                mainApp.UseMiddleware<ResponseTimeMiddleware>();
-
-                mainApp.UseWebSockets();
-
-                mainApp.UseResponseCompression();
-
-                mainApp.UseCors();
-
-                if (config.RequireHttps && _serverApplicationHost.ListenWithHttps)
+                    FileProvider = new PhysicalFileProvider(_serverConfigurationManager.ApplicationPaths.WebPath),
+                    RequestPath = "/web"
+                });
+                mainApp.UseStaticFiles(new StaticFileOptions
                 {
-                    mainApp.UseHttpsRedirection();
-                }
+                    FileProvider = new PhysicalFileProvider(_serverConfigurationManager.ApplicationPaths.WebPath),
+                    RequestPath = "/web",
+                    ContentTypeProvider = extensionProvider
+                });
 
-                // This must be injected before any path related middleware.
-                mainApp.UsePathTrim();
+                mainApp.UseRobotsRedirection();
+            }
 
-                if (appConfig.HostWebClient())
-                {
-                    var extensionProvider = new FileExtensionContentTypeProvider();
+            mainApp.UseStaticFiles();
+            mainApp.UseAuthentication();
+            mainApp.UseJellyfinApiSwagger(_serverConfigurationManager);
+            mainApp.UseQueryStringDecoding();
+            mainApp.UseRouting();
+            mainApp.UseAuthorization();
 
-                    // subtitles octopus requires .data, .mem files.
-                    extensionProvider.Mappings.Add(".data", MediaTypeNames.Application.Octet);
-                    extensionProvider.Mappings.Add(".mem", MediaTypeNames.Application.Octet);
-                    mainApp.UseDefaultFiles(new DefaultFilesOptions
-                    {
-                        FileProvider = new PhysicalFileProvider(_serverConfigurationManager.ApplicationPaths.WebPath),
-                        RequestPath = "/web"
-                    });
-                    mainApp.UseStaticFiles(new StaticFileOptions
-                    {
-                        FileProvider = new PhysicalFileProvider(_serverConfigurationManager.ApplicationPaths.WebPath),
-                        RequestPath = "/web",
-                        ContentTypeProvider = extensionProvider
-                    });
+            mainApp.UseLanFiltering();
+            mainApp.UseIPBasedAccessValidation();
+            mainApp.UseWebSocketHandler();
+            mainApp.UseServerStartupMessage();
 
-                    mainApp.UseRobotsRedirection();
-                }
+            if (_serverConfigurationManager.Configuration.EnableMetrics)
+            {
+                // Must be registered after any middleware that could change HTTP response codes or the data will be bad
+                mainApp.UseHttpMetrics();
+            }
 
-                mainApp.UseStaticFiles();
-                mainApp.UseAuthentication();
-                mainApp.UseJellyfinApiSwagger(_serverConfigurationManager);
-                mainApp.UseQueryStringDecoding();
-                mainApp.UseRouting();
-                mainApp.UseAuthorization();
-
-                mainApp.UseLanFiltering();
-                mainApp.UseIPBasedAccessValidation();
-                mainApp.UseWebSocketHandler();
-                mainApp.UseServerStartupMessage();
-
+            mainApp.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
                 if (_serverConfigurationManager.Configuration.EnableMetrics)
                 {
-                    // Must be registered after any middleware that could change HTTP response codes or the data will be bad
-                    mainApp.UseHttpMetrics();
+                    endpoints.MapMetrics();
                 }
 
-                mainApp.UseEndpoints(endpoints =>
-                {
-                    endpoints.MapControllers();
-                    if (_serverConfigurationManager.Configuration.EnableMetrics)
-                    {
-                        endpoints.MapMetrics();
-                    }
-
-                    endpoints.MapHealthChecks("/health");
-                });
+                endpoints.MapHealthChecks("/health");
             });
-        }
+        });
     }
 }

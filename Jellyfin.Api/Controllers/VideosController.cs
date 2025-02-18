@@ -122,7 +122,7 @@ public class VideosController : BaseJellyfinApiController
         }
         else
         {
-            items = Array.Empty<BaseItemDto>();
+            items = [];
         }
 
         var result = new QueryResult<BaseItemDto>(items);
@@ -161,12 +161,12 @@ public class VideosController : BaseJellyfinApiController
         foreach (var link in item.GetLinkedAlternateVersions())
         {
             link.SetPrimaryVersionId(null);
-            link.LinkedAlternateVersions = Array.Empty<LinkedChild>();
+            link.LinkedAlternateVersions = [];
 
             await link.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
         }
 
-        item.LinkedAlternateVersions = Array.Empty<LinkedChild>();
+        item.LinkedAlternateVersions = [];
         item.SetPrimaryVersionId(null);
         await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
@@ -242,7 +242,7 @@ public class VideosController : BaseJellyfinApiController
 
             if (item.LinkedAlternateVersions.Length > 0)
             {
-                item.LinkedAlternateVersions = Array.Empty<LinkedChild>();
+                item.LinkedAlternateVersions = [];
                 await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
             }
         }

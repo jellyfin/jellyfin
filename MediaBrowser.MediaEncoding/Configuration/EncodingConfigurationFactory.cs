@@ -3,16 +3,15 @@
 using System.Collections.Generic;
 using MediaBrowser.Common.Configuration;
 
-namespace MediaBrowser.MediaEncoding.Configuration
+namespace MediaBrowser.MediaEncoding.Configuration;
+
+public class EncodingConfigurationFactory : IConfigurationFactory
 {
-    public class EncodingConfigurationFactory : IConfigurationFactory
+    public IEnumerable<ConfigurationStore> GetConfigurations()
     {
-        public IEnumerable<ConfigurationStore> GetConfigurations()
-        {
-            return new[]
-            {
-                new EncodingConfigurationStore()
-            };
-        }
+        return
+        [
+            new EncodingConfigurationStore()
+        ];
     }
 }

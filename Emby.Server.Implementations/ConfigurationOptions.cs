@@ -1,27 +1,26 @@
 using System.Collections.Generic;
 using static MediaBrowser.Controller.Extensions.ConfigurationExtensions;
 
-namespace Emby.Server.Implementations
+namespace Emby.Server.Implementations;
+
+/// <summary>
+/// Static class containing the default configuration options for the web server.
+/// </summary>
+public static class ConfigurationOptions
 {
     /// <summary>
-    /// Static class containing the default configuration options for the web server.
+    /// Gets a new copy of the default configuration options.
     /// </summary>
-    public static class ConfigurationOptions
+    public static Dictionary<string, string?> DefaultConfiguration => new()
     {
-        /// <summary>
-        /// Gets a new copy of the default configuration options.
-        /// </summary>
-        public static Dictionary<string, string?> DefaultConfiguration => new()
-        {
-            { HostWebClientKey, bool.TrueString },
-            { DefaultRedirectKey, "web/" },
-            { FfmpegProbeSizeKey, "1G" },
-            { FfmpegAnalyzeDurationKey, "200M" },
-            { BindToUnixSocketKey, bool.FalseString },
-            { SqliteCacheSizeKey, "20000" },
-            { FfmpegSkipValidationKey, bool.FalseString },
-            { FfmpegImgExtractPerfTradeoffKey, bool.FalseString },
-            { DetectNetworkChangeKey, bool.TrueString }
-        };
-    }
+        { HostWebClientKey, bool.TrueString },
+        { DefaultRedirectKey, "web/" },
+        { FfmpegProbeSizeKey, "1G" },
+        { FfmpegAnalyzeDurationKey, "200M" },
+        { BindToUnixSocketKey, bool.FalseString },
+        { SqliteCacheSizeKey, "20000" },
+        { FfmpegSkipValidationKey, bool.FalseString },
+        { FfmpegImgExtractPerfTradeoffKey, bool.FalseString },
+        { DetectNetworkChangeKey, bool.TrueString }
+    };
 }

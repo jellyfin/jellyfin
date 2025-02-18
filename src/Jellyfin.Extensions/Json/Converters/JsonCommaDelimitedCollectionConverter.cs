@@ -1,19 +1,18 @@
-namespace Jellyfin.Extensions.Json.Converters
+namespace Jellyfin.Extensions.Json.Converters;
+
+/// <summary>
+/// Convert comma delimited string to collection of type.
+/// </summary>
+/// <typeparam name="T">Type to convert to.</typeparam>
+public sealed class JsonCommaDelimitedCollectionConverter<T> : JsonDelimitedCollectionConverter<T>
 {
     /// <summary>
-    /// Convert comma delimited string to collection of type.
+    /// Initializes a new instance of the <see cref="JsonCommaDelimitedCollectionConverter{T}"/> class.
     /// </summary>
-    /// <typeparam name="T">Type to convert to.</typeparam>
-    public sealed class JsonCommaDelimitedCollectionConverter<T> : JsonDelimitedCollectionConverter<T>
+    public JsonCommaDelimitedCollectionConverter() : base()
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="JsonCommaDelimitedCollectionConverter{T}"/> class.
-        /// </summary>
-        public JsonCommaDelimitedCollectionConverter() : base()
-        {
-        }
-
-        /// <inheritdoc />
-        protected override char Delimiter => ',';
     }
+
+    /// <inheritdoc />
+    protected override char Delimiter => ',';
 }

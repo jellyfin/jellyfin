@@ -160,7 +160,7 @@ public class ListingsManager : IListingsManager
             }
         }
 
-        return Enumerable.Empty<ProgramInfo>();
+        return [];
     }
 
     /// <inheritdoc />

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.Intrinsics.X86;
 using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Controller.Entities;

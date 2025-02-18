@@ -1,11 +1,10 @@
-namespace Jellyfin.Api.Tests.ModelBinders
+namespace Jellyfin.Api.Tests.ModelBinders;
+
+public enum TestType
 {
-    public enum TestType
-    {
-        How,
-        Much,
-        Is,
-        The,
-        Fish
-    }
+    How,
+    Much,
+    Is,
+    The,
+    Fish
 }

@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Net.Mime;
 using Jellyfin.Api.Attributes;
-using Jellyfin.Api.Constants;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
@@ -140,12 +139,12 @@ public class SystemController : BaseJellyfinApiController
 
         try
         {
-            files = _fileSystem.GetFiles(_appPaths.LogDirectoryPath, new[] { ".txt", ".log" }, true, false);
+            files = _fileSystem.GetFiles(_appPaths.LogDirectoryPath, [".txt", ".log"], true, false);
         }
         catch (IOException ex)
         {
             _logger.LogError(ex, "Error getting logs");
-            files = Enumerable.Empty<FileSystemMetadata>();
+            files = [];
         }
 
         var result = files.Select(i => new LogFile

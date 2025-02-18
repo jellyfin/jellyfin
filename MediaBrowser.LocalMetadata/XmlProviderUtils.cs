@@ -1,13 +1,12 @@
-namespace MediaBrowser.LocalMetadata
+namespace MediaBrowser.LocalMetadata;
+
+/// <summary>
+/// The xml provider utils.
+/// </summary>
+public static class XmlProviderUtils
 {
     /// <summary>
-    /// The xml provider utils.
+    /// Gets the name.
     /// </summary>
-    public static class XmlProviderUtils
-    {
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        public static string Name => "Emby Xml";
-    }
+    public static string Name => "Emby Xml";
 }

@@ -94,7 +94,7 @@ public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, Ar
             }
         }
 
-        return Enumerable.Empty<RemoteSearchResult>();
+        return [];
     }
 
     private IEnumerable<RemoteSearchResult> GetResultsFromResponse(IEnumerable<ISearchResult<IArtist>>? releaseSearchResults)

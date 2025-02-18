@@ -5,21 +5,20 @@ using System.Collections.Generic;
 using System.Linq;
 using Jellyfin.Extensions;
 
-namespace MediaBrowser.Controller.Library
+namespace MediaBrowser.Controller.Library;
+
+public static class NameExtensions
 {
-    public static class NameExtensions
+    public static IEnumerable<string> DistinctNames(this IEnumerable<string> names)
+        => names.DistinctBy(RemoveDiacritics, StringComparer.OrdinalIgnoreCase);
+
+    private static string RemoveDiacritics(string? name)
     {
-        public static IEnumerable<string> DistinctNames(this IEnumerable<string> names)
-            => names.DistinctBy(RemoveDiacritics, StringComparer.OrdinalIgnoreCase);
-
-        private static string RemoveDiacritics(string? name)
+        if (name is null)
         {
-            if (name is null)
-            {
-                return string.Empty;
-            }
-
-            return name.RemoveDiacritics();
+            return string.Empty;
         }
+
+        return name.RemoveDiacritics();
     }
 }

@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.Models.StartupDtos;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Net;

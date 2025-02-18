@@ -8,6 +8,7 @@ using Jellyfin.Data.Enums;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.MediaSegments;
 using MediaBrowser.Model.MediaSegments;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;

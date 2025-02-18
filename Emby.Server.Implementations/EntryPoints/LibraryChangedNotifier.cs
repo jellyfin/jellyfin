@@ -35,11 +35,11 @@ public sealed class LibraryChangedNotifier : IHostedService, IDisposable
     private readonly ILogger<LibraryChangedNotifier> _logger;
 
     private readonly Lock _libraryChangedSyncLock = new();
-    private readonly List<Folder> _foldersAddedTo = new();
-    private readonly List<Folder> _foldersRemovedFrom = new();
-    private readonly List<BaseItem> _itemsAdded = new();
-    private readonly List<BaseItem> _itemsRemoved = new();
-    private readonly List<BaseItem> _itemsUpdated = new();
+    private readonly List<Folder> _foldersAddedTo = [];
+    private readonly List<Folder> _foldersRemovedFrom = [];
+    private readonly List<BaseItem> _itemsAdded = [];
+    private readonly List<BaseItem> _itemsRemoved = [];
+    private readonly List<BaseItem> _itemsUpdated = [];
     private readonly ConcurrentDictionary<Guid, DateTime> _lastProgressMessageTimes = new();
 
     private Timer? _libraryUpdateTimer;
@@ -280,7 +280,7 @@ public sealed class LibraryChangedNotifier : IHostedService, IDisposable
             try
             {
                 await _sessionManager.SendMessageToUserSessions(
-                        new List<Guid> { userId },
+                        [userId],
                         SessionMessageType.LibraryChanged,
                         info,
                         cancellationToken)
@@ -381,16 +381,16 @@ public sealed class LibraryChangedNotifier : IHostedService, IDisposable
         // If the physical root changed, return the user root
         if (item is AggregateFolder)
         {
-            return _libraryManager.GetUserRootFolder() is T t ? new[] { t } : Array.Empty<T>();
+            return _libraryManager.GetUserRootFolder() is T t ? [t] : [];
         }
 
         // Return it only if it's in the user's library
         if (includeIfNotFound || item.IsVisibleStandalone(user))
         {
-            return new[] { item };
+            return [item];
         }
 
-        return Array.Empty<T>();
+        return [];
     }
 
     /// <inheritdoc />

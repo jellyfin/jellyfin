@@ -1,10 +1,9 @@
 #pragma warning disable CS1591
 
-namespace MediaBrowser.Model.Dto
+namespace MediaBrowser.Model.Dto;
+
+public enum RatingType
 {
-    public enum RatingType
-    {
-        Score,
-        Likes
-    }
+    Score,
+    Likes
 }

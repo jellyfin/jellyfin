@@ -3,82 +3,77 @@
 #pragma warning disable CA1819, CS1591
 
 using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Providers;
 
-namespace MediaBrowser.Controller.Entities
+namespace MediaBrowser.Controller.Entities;
+
+/// <summary>
+/// Class Trailer.
+/// </summary>
+public class Trailer : Video, IHasLookupInfo<TrailerInfo>
 {
-    /// <summary>
-    /// Class Trailer.
-    /// </summary>
-    public class Trailer : Video, IHasLookupInfo<TrailerInfo>
+    public Trailer()
     {
-        public Trailer()
+        TrailerTypes = [];
+    }
+
+    public TrailerType[] TrailerTypes { get; set; }
+
+    public override double GetDefaultPrimaryImageAspectRatio()
+        => 2.0 / 3;
+
+    public override UnratedItem GetBlockUnratedType()
+    {
+        return UnratedItem.Trailer;
+    }
+
+    public TrailerInfo GetLookupInfo()
+    {
+        var info = GetItemLookupInfo<TrailerInfo>();
+
+        if (!IsInMixedFolder && IsFileProtocol)
         {
-            TrailerTypes = Array.Empty<TrailerType>();
+            info.Name = System.IO.Path.GetFileName(ContainingFolderPath);
         }
 
-        public TrailerType[] TrailerTypes { get; set; }
+        return info;
+    }
 
-        public override double GetDefaultPrimaryImageAspectRatio()
-            => 2.0 / 3;
+    public override bool BeforeMetadataRefresh(bool replaceAllMetadata)
+    {
+        var hasChanges = base.BeforeMetadataRefresh(replaceAllMetadata);
 
-        public override UnratedItem GetBlockUnratedType()
+        if (!ProductionYear.HasValue)
         {
-            return UnratedItem.Trailer;
-        }
+            var info = LibraryManager.ParseName(Name);
 
-        public TrailerInfo GetLookupInfo()
-        {
-            var info = GetItemLookupInfo<TrailerInfo>();
+            var yearInName = info.Year;
 
-            if (!IsInMixedFolder && IsFileProtocol)
+            if (yearInName.HasValue)
             {
-                info.Name = System.IO.Path.GetFileName(ContainingFolderPath);
+                ProductionYear = yearInName;
+                hasChanges = true;
             }
-
-            return info;
-        }
-
-        public override bool BeforeMetadataRefresh(bool replaceAllMetadata)
-        {
-            var hasChanges = base.BeforeMetadataRefresh(replaceAllMetadata);
-
-            if (!ProductionYear.HasValue)
+            else
             {
-                var info = LibraryManager.ParseName(Name);
-
-                var yearInName = info.Year;
-
-                if (yearInName.HasValue)
+                // Try to get the year from the folder name
+                if (!IsInMixedFolder)
                 {
-                    ProductionYear = yearInName;
-                    hasChanges = true;
-                }
-                else
-                {
-                    // Try to get the year from the folder name
-                    if (!IsInMixedFolder)
+                    info = LibraryManager.ParseName(System.IO.Path.GetFileName(ContainingFolderPath));
+
+                    yearInName = info.Year;
+
+                    if (yearInName.HasValue)
                     {
-                        info = LibraryManager.ParseName(System.IO.Path.GetFileName(ContainingFolderPath));
-
-                        yearInName = info.Year;
-
-                        if (yearInName.HasValue)
-                        {
-                            ProductionYear = yearInName;
-                            hasChanges = true;
-                        }
+                        ProductionYear = yearInName;
+                        hasChanges = true;
                     }
                 }
             }
-
-            return hasChanges;
         }
+
+        return hasChanges;
     }
 }

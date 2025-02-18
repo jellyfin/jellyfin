@@ -14,9 +14,9 @@ public class NetworkConfigurationFactory : IConfigurationFactory
     /// <returns>The <see cref="IEnumerable{ConfigurationStore}"/>.</returns>
     public IEnumerable<ConfigurationStore> GetConfigurations()
     {
-        return new[]
-        {
+        return
+        [
             new NetworkConfigurationStore()
-        };
+        ];
     }
 }

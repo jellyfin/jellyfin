@@ -62,13 +62,13 @@ public class RefreshGuideScheduledTask : IScheduledTask, IConfigurableScheduledT
     /// <inheritdoc />
     public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
     {
-        return new[]
-        {
+        return
+        [
             new TaskTriggerInfo
             {
                 Type = TaskTriggerInfoType.IntervalTrigger,
                 IntervalTicks = TimeSpan.FromHours(24).Ticks
             }
-        };
+        ];
     }
 }

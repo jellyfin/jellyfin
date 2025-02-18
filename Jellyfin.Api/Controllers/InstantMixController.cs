@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Jellyfin.Api.Extensions;
@@ -216,7 +215,7 @@ public class InstantMixController : BaseJellyfinApiController
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
-        var items = _musicManager.GetInstantMixFromGenres(new[] { name }, user, dtoOptions);
+        var items = _musicManager.GetInstantMixFromGenres([name], user, dtoOptions);
         return GetResult(items, user, limit, dtoOptions);
     }
 

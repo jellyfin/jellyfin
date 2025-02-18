@@ -9,155 +9,154 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace MediaBrowser.Controller.MediaEncoding
+namespace MediaBrowser.Controller.MediaEncoding;
+
+public class JobLogger
 {
-    public class JobLogger
+    private readonly ILogger _logger;
+
+    public JobLogger(ILogger logger)
     {
-        private readonly ILogger _logger;
+        _logger = logger;
+    }
 
-        public JobLogger(ILogger logger)
+    public async Task StartStreamingLog(EncodingJobInfo state, StreamReader reader, Stream target)
+    {
+        try
         {
-            _logger = logger;
-        }
-
-        public async Task StartStreamingLog(EncodingJobInfo state, StreamReader reader, Stream target)
-        {
-            try
+            using (target)
+            using (reader)
             {
-                using (target)
-                using (reader)
+                while (!reader.EndOfStream && reader.BaseStream.CanRead)
                 {
-                    while (!reader.EndOfStream && reader.BaseStream.CanRead)
+                    var line = await reader.ReadLineAsync().ConfigureAwait(false);
+
+                    ParseLogLine(line, state);
+
+                    var bytes = Encoding.UTF8.GetBytes(Environment.NewLine + line);
+
+                    // If ffmpeg process is closed, the state is disposed, so don't write to target in that case
+                    if (!target.CanWrite)
                     {
-                        var line = await reader.ReadLineAsync().ConfigureAwait(false);
-
-                        ParseLogLine(line, state);
-
-                        var bytes = Encoding.UTF8.GetBytes(Environment.NewLine + line);
-
-                        // If ffmpeg process is closed, the state is disposed, so don't write to target in that case
-                        if (!target.CanWrite)
-                        {
-                            break;
-                        }
-
-                        await target.WriteAsync(bytes).ConfigureAwait(false);
-
-                        // Check again, the stream could have been closed
-                        if (!target.CanWrite)
-                        {
-                            break;
-                        }
-
-                        await target.FlushAsync().ConfigureAwait(false);
+                        break;
                     }
+
+                    await target.WriteAsync(bytes).ConfigureAwait(false);
+
+                    // Check again, the stream could have been closed
+                    if (!target.CanWrite)
+                    {
+                        break;
+                    }
+
+                    await target.FlushAsync().ConfigureAwait(false);
                 }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error reading ffmpeg log");
             }
         }
-
-        private void ParseLogLine(string line, EncodingJobInfo state)
+        catch (Exception ex)
         {
-            float? framerate = null;
-            double? percent = null;
-            TimeSpan? transcodingPosition = null;
-            long? bytesTranscoded = null;
-            int? bitRate = null;
+            _logger.LogError(ex, "Error reading ffmpeg log");
+        }
+    }
 
-            var parts = line.Split(' ');
+    private void ParseLogLine(string line, EncodingJobInfo state)
+    {
+        float? framerate = null;
+        double? percent = null;
+        TimeSpan? transcodingPosition = null;
+        long? bytesTranscoded = null;
+        int? bitRate = null;
 
-            var totalMs = state.RunTimeTicks.HasValue
-                ? TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalMilliseconds
-                : 0;
+        var parts = line.Split(' ');
 
-            var startMs = state.BaseRequest.StartTimeTicks.HasValue
-                ? TimeSpan.FromTicks(state.BaseRequest.StartTimeTicks.Value).TotalMilliseconds
-                : 0;
+        var totalMs = state.RunTimeTicks.HasValue
+            ? TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalMilliseconds
+            : 0;
 
-            for (var i = 0; i < parts.Length; i++)
+        var startMs = state.BaseRequest.StartTimeTicks.HasValue
+            ? TimeSpan.FromTicks(state.BaseRequest.StartTimeTicks.Value).TotalMilliseconds
+            : 0;
+
+        for (var i = 0; i < parts.Length; i++)
+        {
+            var part = parts[i];
+
+            if (string.Equals(part, "fps=", StringComparison.OrdinalIgnoreCase) &&
+                (i + 1 < parts.Length))
             {
-                var part = parts[i];
+                var rate = parts[i + 1];
 
-                if (string.Equals(part, "fps=", StringComparison.OrdinalIgnoreCase) &&
-                    (i + 1 < parts.Length))
+                if (float.TryParse(rate, CultureInfo.InvariantCulture, out var val))
                 {
-                    var rate = parts[i + 1];
-
-                    if (float.TryParse(rate, CultureInfo.InvariantCulture, out var val))
-                    {
-                        framerate = val;
-                    }
+                    framerate = val;
                 }
-                else if (part.StartsWith("fps=", StringComparison.OrdinalIgnoreCase))
-                {
-                    var rate = part.Split('=', 2)[^1];
+            }
+            else if (part.StartsWith("fps=", StringComparison.OrdinalIgnoreCase))
+            {
+                var rate = part.Split('=', 2)[^1];
 
-                    if (float.TryParse(rate, CultureInfo.InvariantCulture, out var val))
-                    {
-                        framerate = val;
-                    }
+                if (float.TryParse(rate, CultureInfo.InvariantCulture, out var val))
+                {
+                    framerate = val;
                 }
-                else if (state.RunTimeTicks.HasValue &&
-                    part.StartsWith("time=", StringComparison.OrdinalIgnoreCase))
+            }
+            else if (state.RunTimeTicks.HasValue &&
+                     part.StartsWith("time=", StringComparison.OrdinalIgnoreCase))
+            {
+                var time = part.Split('=', 2)[^1];
+
+                if (TimeSpan.TryParse(time, CultureInfo.InvariantCulture, out var val))
                 {
-                    var time = part.Split('=', 2)[^1];
+                    var currentMs = startMs + val.TotalMilliseconds;
 
-                    if (TimeSpan.TryParse(time, CultureInfo.InvariantCulture, out var val))
-                    {
-                        var currentMs = startMs + val.TotalMilliseconds;
+                    percent = 100.0 * currentMs / totalMs;
 
-                        percent = 100.0 * currentMs / totalMs;
-
-                        transcodingPosition = TimeSpan.FromMilliseconds(currentMs);
-                    }
+                    transcodingPosition = TimeSpan.FromMilliseconds(currentMs);
                 }
-                else if (part.StartsWith("size=", StringComparison.OrdinalIgnoreCase))
+            }
+            else if (part.StartsWith("size=", StringComparison.OrdinalIgnoreCase))
+            {
+                var size = part.Split('=', 2)[^1];
+
+                int? scale = null;
+                if (size.Contains("kb", StringComparison.OrdinalIgnoreCase))
                 {
-                    var size = part.Split('=', 2)[^1];
-
-                    int? scale = null;
-                    if (size.Contains("kb", StringComparison.OrdinalIgnoreCase))
-                    {
-                        scale = 1024;
-                        size = size.Replace("kb", string.Empty, StringComparison.OrdinalIgnoreCase);
-                    }
-
-                    if (scale.HasValue)
-                    {
-                        if (long.TryParse(size, CultureInfo.InvariantCulture, out var val))
-                        {
-                            bytesTranscoded = val * scale.Value;
-                        }
-                    }
+                    scale = 1024;
+                    size = size.Replace("kb", string.Empty, StringComparison.OrdinalIgnoreCase);
                 }
-                else if (part.StartsWith("bitrate=", StringComparison.OrdinalIgnoreCase))
+
+                if (scale.HasValue)
                 {
-                    var rate = part.Split('=', 2)[^1];
-
-                    int? scale = null;
-                    if (rate.Contains("kbits/s", StringComparison.OrdinalIgnoreCase))
+                    if (long.TryParse(size, CultureInfo.InvariantCulture, out var val))
                     {
-                        scale = 1024;
-                        rate = rate.Replace("kbits/s", string.Empty, StringComparison.OrdinalIgnoreCase);
-                    }
-
-                    if (scale.HasValue)
-                    {
-                        if (float.TryParse(rate, CultureInfo.InvariantCulture, out var val))
-                        {
-                            bitRate = (int)Math.Ceiling(val * scale.Value);
-                        }
+                        bytesTranscoded = val * scale.Value;
                     }
                 }
             }
-
-            if (framerate.HasValue || percent.HasValue)
+            else if (part.StartsWith("bitrate=", StringComparison.OrdinalIgnoreCase))
             {
-                state.ReportTranscodingProgress(transcodingPosition, framerate, percent, bytesTranscoded, bitRate);
+                var rate = part.Split('=', 2)[^1];
+
+                int? scale = null;
+                if (rate.Contains("kbits/s", StringComparison.OrdinalIgnoreCase))
+                {
+                    scale = 1024;
+                    rate = rate.Replace("kbits/s", string.Empty, StringComparison.OrdinalIgnoreCase);
+                }
+
+                if (scale.HasValue)
+                {
+                    if (float.TryParse(rate, CultureInfo.InvariantCulture, out var val))
+                    {
+                        bitRate = (int)Math.Ceiling(val * scale.Value);
+                    }
+                }
             }
+        }
+
+        if (framerate.HasValue || percent.HasValue)
+        {
+            state.ReportTranscodingProgress(transcodingPosition, framerate, percent, bytesTranscoded, bitRate);
         }
     }
 }

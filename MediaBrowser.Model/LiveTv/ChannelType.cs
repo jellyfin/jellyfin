@@ -1,18 +1,17 @@
-namespace MediaBrowser.Model.LiveTv
+namespace MediaBrowser.Model.LiveTv;
+
+/// <summary>
+/// Enum ChannelType.
+/// </summary>
+public enum ChannelType
 {
     /// <summary>
-    /// Enum ChannelType.
+    /// The TV.
     /// </summary>
-    public enum ChannelType
-    {
-        /// <summary>
-        /// The TV.
-        /// </summary>
-        TV,
+    TV,
 
-        /// <summary>
-        /// The radio.
-        /// </summary>
-        Radio
-    }
+    /// <summary>
+    /// The radio.
+    /// </summary>
+    Radio
 }

@@ -1,11 +1,10 @@
 #pragma warning disable CS1591
 
-namespace MediaBrowser.Model.Session
+namespace MediaBrowser.Model.Session;
+
+public enum PlayMethod
 {
-    public enum PlayMethod
-    {
-        Transcode = 0,
-        DirectStream = 1,
-        DirectPlay = 2
-    }
+    Transcode = 0,
+    DirectStream = 1,
+    DirectPlay = 2
 }

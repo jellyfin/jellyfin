@@ -1,10 +1,9 @@
 #pragma warning disable CS1591
 
-namespace MediaBrowser.Model.Configuration
+namespace MediaBrowser.Model.Configuration;
+
+public enum ImageSavingConvention
 {
-    public enum ImageSavingConvention
-    {
-        Legacy,
-        Compatible
-    }
+    Legacy,
+    Compatible
 }

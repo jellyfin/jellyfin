@@ -122,11 +122,11 @@ public class MusicGenresController : BaseJellyfinApiController
         {
             if (parentItem is Folder)
             {
-                query.AncestorIds = new[] { parentId.Value };
+                query.AncestorIds = [parentId.Value];
             }
             else
             {
-                query.ItemIds = new[] { parentId.Value };
+                query.ItemIds = [parentId.Value];
             }
         }
 
@@ -181,21 +181,21 @@ public class MusicGenresController : BaseJellyfinApiController
         var result = libraryManager.GetItemList(new InternalItemsQuery
         {
             Name = name.Replace(BaseItem.SlugChar, '&'),
-            IncludeItemTypes = new[] { baseItemKind },
+            IncludeItemTypes = [baseItemKind],
             DtoOptions = dtoOptions
         }).OfType<T>().FirstOrDefault();
 
         result ??= libraryManager.GetItemList(new InternalItemsQuery
         {
             Name = name.Replace(BaseItem.SlugChar, '/'),
-            IncludeItemTypes = new[] { baseItemKind },
+            IncludeItemTypes = [baseItemKind],
             DtoOptions = dtoOptions
         }).OfType<T>().FirstOrDefault();
 
         result ??= libraryManager.GetItemList(new InternalItemsQuery
         {
             Name = name.Replace(BaseItem.SlugChar, '?'),
-            IncludeItemTypes = new[] { baseItemKind },
+            IncludeItemTypes = [baseItemKind],
             DtoOptions = dtoOptions
         }).OfType<T>().FirstOrDefault();
 

@@ -2,7 +2,6 @@ using System;
 using Emby.Server.Implementations.Sorting;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Sorting;
 using Xunit;
 
 namespace Jellyfin.Server.Implementations.Tests.Sorting;

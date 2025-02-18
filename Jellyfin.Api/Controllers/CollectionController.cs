@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.ModelBinders;
 using MediaBrowser.Common.Api;
@@ -62,7 +61,7 @@ public class CollectionController : BaseJellyfinApiController
             Name = name,
             ParentId = parentId,
             ItemIdList = ids,
-            UserIds = new[] { userId }
+            UserIds = [userId]
         }).ConfigureAwait(false);
 
         var dtoOptions = new DtoOptions().AddClientFields(User);

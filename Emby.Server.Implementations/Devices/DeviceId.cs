@@ -8,91 +8,90 @@ using System.Threading;
 using MediaBrowser.Common.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace Emby.Server.Implementations.Devices
+namespace Emby.Server.Implementations.Devices;
+
+public class DeviceId
 {
-    public class DeviceId
+    private readonly IApplicationPaths _appPaths;
+    private readonly ILogger<DeviceId> _logger;
+    private readonly Lock _syncLock = new();
+
+    private string? _id;
+
+    public DeviceId(IApplicationPaths appPaths, ILogger<DeviceId> logger)
     {
-        private readonly IApplicationPaths _appPaths;
-        private readonly ILogger<DeviceId> _logger;
-        private readonly Lock _syncLock = new();
+        _appPaths = appPaths;
+        _logger = logger;
+    }
 
-        private string? _id;
+    public string Value => _id ??= GetDeviceId();
 
-        public DeviceId(IApplicationPaths appPaths, ILogger<DeviceId> logger)
+    private string CachePath => Path.Combine(_appPaths.DataPath, "device.txt");
+
+    private string? GetCachedId()
+    {
+        try
         {
-            _appPaths = appPaths;
-            _logger = logger;
-        }
-
-        public string Value => _id ??= GetDeviceId();
-
-        private string CachePath => Path.Combine(_appPaths.DataPath, "device.txt");
-
-        private string? GetCachedId()
-        {
-            try
+            lock (_syncLock)
             {
-                lock (_syncLock)
+                var value = File.ReadAllText(CachePath, Encoding.UTF8);
+
+                if (Guid.TryParse(value, out _))
                 {
-                    var value = File.ReadAllText(CachePath, Encoding.UTF8);
-
-                    if (Guid.TryParse(value, out _))
-                    {
-                        return value;
-                    }
-
-                    _logger.LogError("Invalid value found in device id file");
+                    return value;
                 }
-            }
-            catch (DirectoryNotFoundException)
-            {
-            }
-            catch (FileNotFoundException)
-            {
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error reading file");
-            }
 
-            return null;
+                _logger.LogError("Invalid value found in device id file");
+            }
         }
-
-        private void SaveId(string id)
+        catch (DirectoryNotFoundException)
         {
-            try
-            {
-                var path = CachePath;
-
-                Directory.CreateDirectory(Path.GetDirectoryName(path) ?? throw new InvalidOperationException("Path can't be a root directory."));
-
-                lock (_syncLock)
-                {
-                    File.WriteAllText(path, id, Encoding.UTF8);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error writing to file");
-            }
         }
-
-        private static string GetNewId()
+        catch (FileNotFoundException)
         {
-            return Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
         }
-
-        private string GetDeviceId()
+        catch (Exception ex)
         {
-            var id = GetCachedId();
-
-            if (string.IsNullOrWhiteSpace(id))
-            {
-                id = GetNewId();
-                SaveId(id);
-            }
-
-            return id;
+            _logger.LogError(ex, "Error reading file");
         }
+
+        return null;
+    }
+
+    private void SaveId(string id)
+    {
+        try
+        {
+            var path = CachePath;
+
+            Directory.CreateDirectory(Path.GetDirectoryName(path) ?? throw new InvalidOperationException("Path can't be a root directory."));
+
+            lock (_syncLock)
+            {
+                File.WriteAllText(path, id, Encoding.UTF8);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error writing to file");
+        }
+    }
+
+    private static string GetNewId()
+    {
+        return Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
+    }
+
+    private string GetDeviceId()
+    {
+        var id = GetCachedId();
+
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            id = GetNewId();
+            SaveId(id);
+        }
+
+        return id;
     }
 }

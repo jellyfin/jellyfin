@@ -1,32 +1,30 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Linq;
 using Jellyfin.Extensions;
 
-namespace MediaBrowser.Controller.Entities
+namespace MediaBrowser.Controller.Entities;
+
+public static class TagExtensions
 {
-    public static class TagExtensions
+    public static void AddTag(this BaseItem item, string name)
     {
-        public static void AddTag(this BaseItem item, string name)
+        if (string.IsNullOrWhiteSpace(name))
         {
-            if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentNullException(nameof(name));
+        }
+
+        var current = item.Tags;
+
+        if (!current.Contains(name, StringComparison.OrdinalIgnoreCase))
+        {
+            if (current.Length == 0)
             {
-                throw new ArgumentNullException(nameof(name));
+                item.Tags = [name];
             }
-
-            var current = item.Tags;
-
-            if (!current.Contains(name, StringComparison.OrdinalIgnoreCase))
+            else
             {
-                if (current.Length == 0)
-                {
-                    item.Tags = [name];
-                }
-                else
-                {
-                    item.Tags = [..current, name];
-                }
+                item.Tags = [..current, name];
             }
         }
     }

@@ -19,8 +19,8 @@ public class ServerConfiguration : BaseApplicationConfiguration
     /// </summary>
     public ServerConfiguration()
     {
-        MetadataOptions = new[]
-        {
+        MetadataOptions =
+        [
             new MetadataOptions()
             {
                 ItemType = "Book"
@@ -32,8 +32,8 @@ public class ServerConfiguration : BaseApplicationConfiguration
             new MetadataOptions
             {
                 ItemType = "MusicVideo",
-                DisabledMetadataFetchers = new[] { "The Open Movie Database" },
-                DisabledImageFetchers = new[] { "The Open Movie Database" }
+                DisabledMetadataFetchers = ["The Open Movie Database"],
+                DisabledImageFetchers = ["The Open Movie Database"]
             },
             new MetadataOptions
             {
@@ -42,12 +42,12 @@ public class ServerConfiguration : BaseApplicationConfiguration
             new MetadataOptions
             {
                 ItemType = "MusicAlbum",
-                DisabledMetadataFetchers = new[] { "TheAudioDB" }
+                DisabledMetadataFetchers = ["TheAudioDB"]
             },
             new MetadataOptions
             {
                 ItemType = "MusicArtist",
-                DisabledMetadataFetchers = new[] { "TheAudioDB" }
+                DisabledMetadataFetchers = ["TheAudioDB"]
             },
             new MetadataOptions
             {
@@ -61,7 +61,7 @@ public class ServerConfiguration : BaseApplicationConfiguration
             {
                 ItemType = "Episode",
             }
-        };
+        ];
     }
 
     /// <summary>
@@ -112,19 +112,19 @@ public class ServerConfiguration : BaseApplicationConfiguration
     /// Gets or sets characters to be replaced with a ' ' in strings to create a sort name.
     /// </summary>
     /// <value>The sort replace characters.</value>
-    public string[] SortReplaceCharacters { get; set; } = new[] { ".", "+", "%" };
+    public string[] SortReplaceCharacters { get; set; } = [".", "+", "%"];
 
     /// <summary>
     /// Gets or sets characters to be removed from strings to create a sort name.
     /// </summary>
     /// <value>The sort remove characters.</value>
-    public string[] SortRemoveCharacters { get; set; } = new[] { ",", "&", "-", "{", "}", "'" };
+    public string[] SortRemoveCharacters { get; set; } = [",", "&", "-", "{", "}", "'"];
 
     /// <summary>
     /// Gets or sets words to be removed from strings to create a sort name.
     /// </summary>
     /// <value>The sort remove words.</value>
-    public string[] SortRemoveWords { get; set; } = new[] { "the", "a", "an" };
+    public string[] SortRemoveWords { get; set; } = ["the", "a", "an"];
 
     /// <summary>
     /// Gets or sets the minimum percentage of an item that must be played in order for playstate to be updated.
@@ -193,7 +193,7 @@ public class ServerConfiguration : BaseApplicationConfiguration
 
     public bool SaveMetadataHidden { get; set; } = false;
 
-    public NameValuePair[] ContentTypes { get; set; } = Array.Empty<NameValuePair>();
+    public NameValuePair[] ContentTypes { get; set; } = [];
 
     public int RemoteClientBitrateLimit { get; set; }
 
@@ -203,15 +203,15 @@ public class ServerConfiguration : BaseApplicationConfiguration
 
     public bool DisplaySpecialsWithinSeasons { get; set; } = true;
 
-    public string[] CodecsUsed { get; set; } = Array.Empty<string>();
+    public string[] CodecsUsed { get; set; } = [];
 
-    public RepositoryInfo[] PluginRepositories { get; set; } = Array.Empty<RepositoryInfo>();
+    public RepositoryInfo[] PluginRepositories { get; set; } = [];
 
     public bool EnableExternalContentInSuggestions { get; set; } = true;
 
     public int ImageExtractionTimeoutMs { get; set; }
 
-    public PathSubstitution[] PathSubstitutions { get; set; } = Array.Empty<PathSubstitution>();
+    public PathSubstitution[] PathSubstitutions { get; set; } = [];
 
     /// <summary>
     /// Gets or sets a value indicating whether slow server responses should be logged as a warning.
@@ -226,7 +226,7 @@ public class ServerConfiguration : BaseApplicationConfiguration
     /// <summary>
     /// Gets or sets the cors hosts.
     /// </summary>
-    public string[] CorsHosts { get; set; } = new[] { "*" };
+    public string[] CorsHosts { get; set; } = ["*"];
 
     /// <summary>
     /// Gets or sets the number of days we should retain activity logs.
@@ -269,7 +269,7 @@ public class ServerConfiguration : BaseApplicationConfiguration
     /// <summary>
     /// Gets or sets the list of cast receiver applications.
     /// </summary>
-    public CastReceiverApplication[] CastReceiverApplications { get; set; } = Array.Empty<CastReceiverApplication>();
+    public CastReceiverApplication[] CastReceiverApplications { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the trickplay options.

@@ -4,35 +4,34 @@ using System.Threading;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.SyncPlay;
 
-namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
+namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests;
+
+/// <summary>
+/// Class SetShuffleModeGroupRequest.
+/// </summary>
+public class SetShuffleModeGroupRequest : AbstractPlaybackRequest
 {
     /// <summary>
-    /// Class SetShuffleModeGroupRequest.
+    /// Initializes a new instance of the <see cref="SetShuffleModeGroupRequest"/> class.
     /// </summary>
-    public class SetShuffleModeGroupRequest : AbstractPlaybackRequest
+    /// <param name="mode">The shuffle mode.</param>
+    public SetShuffleModeGroupRequest(GroupShuffleMode mode)
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SetShuffleModeGroupRequest"/> class.
-        /// </summary>
-        /// <param name="mode">The shuffle mode.</param>
-        public SetShuffleModeGroupRequest(GroupShuffleMode mode)
-        {
-            Mode = mode;
-        }
+        Mode = mode;
+    }
 
-        /// <summary>
-        /// Gets the shuffle mode.
-        /// </summary>
-        /// <value>The shuffle mode.</value>
-        public GroupShuffleMode Mode { get; }
+    /// <summary>
+    /// Gets the shuffle mode.
+    /// </summary>
+    /// <value>The shuffle mode.</value>
+    public GroupShuffleMode Mode { get; }
 
-        /// <inheritdoc />
-        public override PlaybackRequestType Action { get; } = PlaybackRequestType.SetShuffleMode;
+    /// <inheritdoc />
+    public override PlaybackRequestType Action { get; } = PlaybackRequestType.SetShuffleMode;
 
-        /// <inheritdoc />
-        public override void Apply(IGroupStateContext context, IGroupState state, SessionInfo session, CancellationToken cancellationToken)
-        {
-            state.HandleRequest(this, context, state.Type, session, cancellationToken);
-        }
+    /// <inheritdoc />
+    public override void Apply(IGroupStateContext context, IGroupState state, SessionInfo session, CancellationToken cancellationToken)
+    {
+        state.HandleRequest(this, context, state.Type, session, cancellationToken);
     }
 }

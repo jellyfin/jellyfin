@@ -3,41 +3,40 @@ using Jellyfin.Api.Attributes;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace Jellyfin.Server.Filters
+namespace Jellyfin.Server.Filters;
+
+/// <inheritdoc />
+public class FileRequestFilter : IOperationFilter
 {
     /// <inheritdoc />
-    public class FileRequestFilter : IOperationFilter
+    public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {
-        /// <inheritdoc />
-        public void Apply(OpenApiOperation operation, OperationFilterContext context)
+        foreach (var attribute in context.ApiDescription.ActionDescriptor.EndpointMetadata)
         {
-            foreach (var attribute in context.ApiDescription.ActionDescriptor.EndpointMetadata)
+            if (attribute is AcceptsFileAttribute acceptsFileAttribute)
             {
-                if (attribute is AcceptsFileAttribute acceptsFileAttribute)
-                {
-                    operation.RequestBody = GetRequestBody(acceptsFileAttribute.ContentTypes);
-                    break;
-                }
+                operation.RequestBody = GetRequestBody(acceptsFileAttribute.ContentTypes);
+                break;
             }
         }
+    }
 
-        private static OpenApiRequestBody GetRequestBody(IEnumerable<string> contentTypes)
+    private static OpenApiRequestBody GetRequestBody(IEnumerable<string> contentTypes)
+    {
+        var body = new OpenApiRequestBody();
+        var mediaType = new OpenApiMediaType
         {
-            var body = new OpenApiRequestBody();
-            var mediaType = new OpenApiMediaType
+            Schema = new OpenApiSchema
             {
-                Schema = new OpenApiSchema
-                {
-                    Type = "string",
-                    Format = "binary"
-                }
-            };
-            foreach (var contentType in contentTypes)
-            {
-                body.Content.Add(contentType, mediaType);
+                Type = "string",
+                Format = "binary"
             }
-
-            return body;
+        };
+        foreach (var contentType in contentTypes)
+        {
+            body.Content.Add(contentType, mediaType);
         }
+
+        return body;
     }
 }

@@ -9,7 +9,6 @@ using Jellyfin.MediaEncoding.Hls.Extractors;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Tasks;
 
@@ -23,7 +22,7 @@ public class KeyframeExtractionScheduledTask : IScheduledTask
     private readonly ILocalizationManager _localizationManager;
     private readonly ILibraryManager _libraryManager;
     private readonly IKeyframeExtractor[] _keyframeExtractors;
-    private static readonly BaseItemKind[] _itemTypes = { BaseItemKind.Episode, BaseItemKind.Movie };
+    private static readonly BaseItemKind[] _itemTypes = [BaseItemKind.Episode, BaseItemKind.Movie];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KeyframeExtractionScheduledTask"/> class.
@@ -55,11 +54,11 @@ public class KeyframeExtractionScheduledTask : IScheduledTask
     {
         var query = new InternalItemsQuery
         {
-            MediaTypes = new[] { MediaType.Video },
+            MediaTypes = [MediaType.Video],
             IsVirtualItem = false,
             IncludeItemTypes = _itemTypes,
             DtoOptions = new DtoOptions(true),
-            SourceTypes = new[] { SourceType.Library },
+            SourceTypes = [SourceType.Library],
             Recursive = true,
             Limit = Pagesize
         };
@@ -82,9 +81,8 @@ public class KeyframeExtractionScheduledTask : IScheduledTask
                 // Only local files supported
                 if (video.IsFileProtocol && File.Exists(video.Path))
                 {
-                    for (var j = 0; j < _keyframeExtractors.Length; j++)
+                    foreach (var extractor in _keyframeExtractors)
                     {
-                        var extractor = _keyframeExtractors[j];
                         // The cache decorator will make sure to save them in the data dir
                         if (extractor.TryExtractKeyframes(video.Path, out _))
                         {
@@ -107,5 +105,5 @@ public class KeyframeExtractionScheduledTask : IScheduledTask
     }
 
     /// <inheritdoc />
-    public IEnumerable<TaskTriggerInfo> GetDefaultTriggers() => Enumerable.Empty<TaskTriggerInfo>();
+    public IEnumerable<TaskTriggerInfo> GetDefaultTriggers() => [];
 }

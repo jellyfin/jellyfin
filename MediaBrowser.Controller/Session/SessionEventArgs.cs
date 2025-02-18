@@ -4,10 +4,9 @@
 
 using System;
 
-namespace MediaBrowser.Controller.Session
+namespace MediaBrowser.Controller.Session;
+
+public class SessionEventArgs : EventArgs
 {
-    public class SessionEventArgs : EventArgs
-    {
-        public SessionInfo SessionInfo { get; set; }
-    }
+    public SessionInfo SessionInfo { get; set; }
 }

@@ -35,7 +35,7 @@ public static class RequestHelpers
     {
         if (sortBy.Count == 0)
         {
-            return Array.Empty<(ItemSortBy, SortOrder)>();
+            return [];
         }
 
         var result = new (ItemSortBy, SortOrder)[sortBy.Count];

@@ -39,7 +39,7 @@ public class TrickplayManager : ITrickplayManager
     private readonly IApplicationPaths _appPaths;
 
     private static readonly AsyncNonKeyedLocker _resourcePool = new(1);
-    private static readonly string[] _trickplayImgExtensions = { ".jpg" };
+    private static readonly string[] _trickplayImgExtensions = [".jpg"];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TrickplayManager"/> class.
