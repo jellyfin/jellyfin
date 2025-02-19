@@ -110,6 +110,8 @@ namespace MediaBrowser.Model.Users
         /// <value>The max parental rating.</value>
         public int? MaxParentalRating { get; set; }
 
+        public int? MaxParentalSubRating { get; set; }
+
         public string[] BlockedTags { get; set; }
 
         public string[] AllowedTags { get; set; }
