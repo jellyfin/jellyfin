@@ -1,6 +1,6 @@
 #nullable disable
 
-#pragma warning disable CA1002, CA2227, CS1591
+#pragma warning disable CA1002, CS1591
 
 using System;
 using System.Collections.Generic;
@@ -16,12 +16,7 @@ namespace MediaBrowser.Controller.Library
     /// </summary>
     public class PlaybackProgressEventArgs : EventArgs
     {
-        public PlaybackProgressEventArgs()
-        {
-            Users = new List<User>();
-        }
-
-        public List<User> Users { get; set; }
+        public List<User> Users { get; init; } = [];
 
         public long? PlaybackPositionTicks { get; set; }
 

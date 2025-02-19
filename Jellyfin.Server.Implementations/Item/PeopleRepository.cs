@@ -113,6 +113,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
             Name = people.Name,
             PersonType = people.Type.ToString(),
             Id = people.Id,
+            BaseItems = ImmutableList<PeopleBaseItemMap>.Empty,
         };
 
         return personInfo;
@@ -130,12 +131,12 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
 
         if (!filter.ItemId.IsEmpty())
         {
-            query = query.Where(e => e.BaseItems!.Any(w => w.ItemId.Equals(filter.ItemId)));
+            query = query.Where(e => e.BaseItems.Any(w => w.ItemId.Equals(filter.ItemId)));
         }
 
         if (!filter.AppearsInItemId.IsEmpty())
         {
-            query = query.Where(e => e.BaseItems!.Any(w => w.ItemId.Equals(filter.AppearsInItemId)));
+            query = query.Where(e => e.BaseItems.Any(w => w.ItemId.Equals(filter.AppearsInItemId)));
         }
 
         var queryPersonTypes = filter.PersonTypes.Where(IsValidPersonType).ToList();
@@ -153,7 +154,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
 
         if (filter.MaxListOrder.HasValue && !filter.ItemId.IsEmpty())
         {
-            query = query.Where(e => e.BaseItems!.First(w => w.ItemId == filter.ItemId).ListOrder <= filter.MaxListOrder.Value);
+            query = query.Where(e => e.BaseItems.First(w => w.ItemId == filter.ItemId).ListOrder <= filter.MaxListOrder.Value);
         }
 
         if (!string.IsNullOrWhiteSpace(filter.NameContains))

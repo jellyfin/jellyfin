@@ -1,6 +1,6 @@
 #nullable disable
 
-#pragma warning disable CA2227, CS1591
+#pragma warning disable CS1591
 
 using System;
 using System.Collections.Generic;
@@ -14,16 +14,10 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public sealed class PersonInfo : IHasProviderIds
     {
-        public PersonInfo()
-        {
-            ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            Id = Guid.NewGuid();
-        }
-
         /// <summary>
         /// Gets or Sets the PersonId.
         /// </summary>
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
 
         public Guid ItemId { get; set; }
 
@@ -53,7 +47,7 @@ namespace MediaBrowser.Controller.Entities
 
         public string ImageUrl { get; set; }
 
-        public Dictionary<string, string> ProviderIds { get; set; }
+        public Dictionary<string, string> ProviderIds { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Returns a <see cref="string" /> that represents this instance.

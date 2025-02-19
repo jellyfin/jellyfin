@@ -303,7 +303,7 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
             versionInfo.Timestamp = DateTime.UtcNow.ToString(CultureInfo.InvariantCulture);
 
             var packageInfo = fixture.Create<PackageInfo>();
-            packageInfo.Versions = new[] { versionInfo };
+            packageInfo.Versions.Add(versionInfo);
 
             return packageInfo;
         }

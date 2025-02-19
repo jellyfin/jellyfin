@@ -1,6 +1,6 @@
 #nullable disable
 
-#pragma warning disable CA1002, CA2227, CS1591
+#pragma warning disable CA1002, CS1591
 
 using System;
 using System.Collections.Generic;
@@ -20,7 +20,7 @@ namespace MediaBrowser.Controller.Library
         /// <value>The user id.</value>
         public Guid UserId { get; set; }
 
-        public List<string> Keys { get; set; }
+        public List<string> Keys { get; init; }
 
         /// <summary>
         /// Gets or sets the save reason.

@@ -281,10 +281,9 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             public string strLocked { get; set; }
         }
 
-#pragma warning disable CA2227
         public class RootObject
         {
-            public List<Artist> artists { get; set; }
+            public List<Artist> artists { get; init; }
         }
     }
 }

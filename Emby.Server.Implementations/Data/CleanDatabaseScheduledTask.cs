@@ -73,7 +73,7 @@ namespace Emby.Server.Implementations.Data
                 var transaction = await context.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
                 await using (transaction.ConfigureAwait(false))
                 {
-                    await context.ItemValues.Where(e => e.BaseItemsMap!.Count == 0).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+                    await context.ItemValues.Where(e => e.BaseItemsMap.Count == 0).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
                     await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
                 }
             }

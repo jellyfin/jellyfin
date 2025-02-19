@@ -210,7 +210,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             throw new NotImplementedException();
         }
 
-#pragma warning disable CA1034, CA2227
+#pragma warning disable CA1034
         public class Album
         {
             public string idAlbum { get; set; }
@@ -292,7 +292,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
         public class RootObject
         {
-            public List<Album> album { get; set; }
+            public List<Album> album { get; init; }
         }
     }
 }
