@@ -390,7 +390,7 @@ public class UserController : BaseJellyfinApiController
             return StatusCode(StatusCodes.Status403Forbidden, "User update not allowed.");
         }
 
-        if (!string.Equals(user.Username, updateUser.Name, StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(user.Username, updateUser.Name, StringComparison.Ordinal))
         {
             await _userManager.RenameUser(user, updateUser.Name).ConfigureAwait(false);
         }
