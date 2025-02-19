@@ -60,10 +60,10 @@ namespace Jellyfin.Server.Migrations.Routines
                     var score = ratingValue?.Score;
                     var subScore = ratingValue?.SubScore;
                     context.BaseItems
-                        .Where(e => string.Equals(e.OfficialRating, rating, StringComparison.OrdinalIgnoreCase))
+                        .Where(e => e.OfficialRating == rating)
                         .ExecuteUpdate(f => f.SetProperty(e => e.InheritedParentalRatingValue, score));
                     context.BaseItems
-                        .Where(e => e.OfficialRating == null || e.OfficialRating == string.Empty)
+                        .Where(e => e.OfficialRating == rating)
                         .ExecuteUpdate(f => f.SetProperty(e => e.InheritedParentalRatingSubValue, subScore));
                 }
             }
