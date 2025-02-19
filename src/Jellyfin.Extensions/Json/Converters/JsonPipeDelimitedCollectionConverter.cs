@@ -4,12 +4,12 @@ namespace Jellyfin.Extensions.Json.Converters
     /// Convert Pipe delimited string to array of type.
     /// </summary>
     /// <typeparam name="T">Type to convert to.</typeparam>
-    public sealed class JsonPipeDelimitedArrayConverter<T> : JsonDelimitedArrayConverter<T>
+    public sealed class JsonPipeDelimitedCollectionConverter<T> : JsonDelimitedCollectionConverter<T>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="JsonPipeDelimitedArrayConverter{T}"/> class.
+        /// Initializes a new instance of the <see cref="JsonPipeDelimitedCollectionConverter{T}"/> class.
         /// </summary>
-        public JsonPipeDelimitedArrayConverter() : base()
+        public JsonPipeDelimitedCollectionConverter() : base()
         {
         }
 

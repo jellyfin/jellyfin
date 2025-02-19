@@ -3,7 +3,7 @@
   "isRoot": true,
   "tools": {
     "dotnet-ef": {
-      "version": "9.0.1",
+      "version": "9.0.2",
       "commands": [
         "dotnet-ef"
       ]

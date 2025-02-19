@@ -8,18 +8,18 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.Api.ModelBinders;
 
 /// <summary>
-/// Comma delimited array model binder.
+/// Comma delimited collection model binder.
 /// Returns an empty array of specified type if there is no query parameter.
 /// </summary>
-public class CommaDelimitedArrayModelBinder : IModelBinder
+public class CommaDelimitedCollectionModelBinder : IModelBinder
 {
-    private readonly ILogger<CommaDelimitedArrayModelBinder> _logger;
+    private readonly ILogger<CommaDelimitedCollectionModelBinder> _logger;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="CommaDelimitedArrayModelBinder"/> class.
+    /// Initializes a new instance of the <see cref="CommaDelimitedCollectionModelBinder"/> class.
     /// </summary>
-    /// <param name="logger">Instance of the <see cref="ILogger{CommaDelimitedArrayModelBinder}"/> interface.</param>
-    public CommaDelimitedArrayModelBinder(ILogger<CommaDelimitedArrayModelBinder> logger)
+    /// <param name="logger">Instance of the <see cref="ILogger{CommaDelimitedCollectionModelBinder}"/> interface.</param>
+    public CommaDelimitedCollectionModelBinder(ILogger<CommaDelimitedCollectionModelBinder> logger)
     {
         _logger = logger;
     }

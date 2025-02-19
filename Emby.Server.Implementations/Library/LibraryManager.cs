@@ -1812,11 +1812,11 @@ namespace Emby.Server.Implementations.Library
         /// <inheritdoc />
         public void CreateItem(BaseItem item, BaseItem? parent)
         {
-            CreateOrUpdateItems(new[] { item }, parent, CancellationToken.None);
+            CreateItems(new[] { item }, parent, CancellationToken.None);
         }
 
         /// <inheritdoc />
-        public void CreateOrUpdateItems(IReadOnlyList<BaseItem> items, BaseItem? parent, CancellationToken cancellationToken)
+        public void CreateItems(IReadOnlyList<BaseItem> items, BaseItem? parent, CancellationToken cancellationToken)
         {
             _itemRepository.SaveItems(items, cancellationToken);
 
@@ -2973,11 +2973,11 @@ namespace Emby.Server.Implementations.Library
                 {
                     if (createEntity)
                     {
-                        CreateOrUpdateItems([personEntity], null, CancellationToken.None);
+                        CreateItems([personEntity], null, CancellationToken.None);
                     }
 
                     await RunMetadataSavers(personEntity, itemUpdateType).ConfigureAwait(false);
-                    CreateOrUpdateItems([personEntity], null, CancellationToken.None);
+                    CreateItems([personEntity], null, CancellationToken.None);
                 }
             }
         }
