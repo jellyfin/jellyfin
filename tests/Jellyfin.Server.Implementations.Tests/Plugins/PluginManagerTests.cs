@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text.Json;
@@ -295,7 +296,9 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
         private PackageInfo GenerateTestPackage()
         {
             var fixture = new Fixture();
-            fixture.Customize<PackageInfo>(c => c.Without(x => x.Versions).Without(x => x.ImageUrl));
+            fixture.Customize<PackageInfo>(c => c
+                .With(x => x.Versions, new List<VersionInfo>())
+                .Without(x => x.ImageUrl));
             fixture.Customize<VersionInfo>(c => c.Without(x => x.Version).Without(x => x.Timestamp));
 
             var versionInfo = fixture.Create<VersionInfo>();
