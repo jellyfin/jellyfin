@@ -277,5 +277,3 @@ apiclient/generated
 
 # Omnisharp crash logs
 mono_crash.*.json
-
-.devcontainer/pgsql/pgdata
