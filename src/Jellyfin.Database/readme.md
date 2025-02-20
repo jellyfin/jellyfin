@@ -12,14 +12,14 @@ When creating a new migration, you always have to create migrations for all prov
 dotnet ef migrations add MIGRATION_NAME --project "PATH_TO_PROJECT" -- --provider PROVIDER_KEY
 ```
 
-with sqlite currently beeing supported and, you need to run the Entity Framework tool with the correct project to tell EFCore where to store the migrations and the correct provider key to tell jellyfin to load that provider.
+with sqlite currently being the only supported provider, you need to run the Entity Framework tool with the correct project to tell EFCore where to store the migrations and the correct provider key to tell jellyfin to load that provider.
 
 The example is made from the root folder of the project e.g for codespaces `/workspaces/jellyfin`
 
 ```cmd
-dotnet ef migrations add {MIGRATION_NAME} --project "Jellyfin.Database/Jellyfin.Database.Providers.SqLite" -- --migration-provider Jellyfin-SQLite
+dotnet ef migrations add {MIGRATION_NAME} --project "src/Jellyfin.Database/Jellyfin.Database.Providers.SqLite" -- --migration-provider Jellyfin-SQLite
 ```
 
 If you get the error: `Run "dotnet tool restore" to make the "dotnet-ef" command available.` Run `dotnet restore`.
 
-in the event that you get the error: `System.UnauthorizedAccessException: Access to the path '/Jellyfin.Database' is denied.` you have to restore as sudo and then run `ef migrations` as sudo too.
+in the event that you get the error: `System.UnauthorizedAccessException: Access to the path '/src/Jellyfin.Database' is denied.` you have to restore as sudo and then run `ef migrations` as sudo too.
