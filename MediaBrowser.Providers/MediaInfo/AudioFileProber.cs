@@ -19,6 +19,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging;
+using static Jellyfin.Extensions.StringExtensions;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
