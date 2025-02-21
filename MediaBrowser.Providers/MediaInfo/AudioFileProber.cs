@@ -361,7 +361,7 @@ namespace MediaBrowser.Providers.MediaInfo
                      || track.AdditionalFields.TryGetValue("MusicBrainz Track Id", out recordingMbId))
                     && !string.IsNullOrEmpty(recordingMbId))
                 {
-                    audio.TrySetProviderId(MetadataProvider.MusicBrainzTrack, recordingMbId);
+                    audio.TrySetProviderId(MetadataProvider.MusicBrainzRecording, recordingMbId);
                 }
                 else if (track.AdditionalFields.TryGetValue("UFID", out var ufIdValue) && !string.IsNullOrEmpty(ufIdValue))
                 {
