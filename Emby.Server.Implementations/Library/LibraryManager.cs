@@ -454,6 +454,7 @@ namespace Emby.Server.Implementations.Library
             foreach (var child in children)
             {
                 _itemRepository.DeleteItem(child.Id);
+                _cache.TryRemove(child.Id, out _);
             }
 
             _cache.TryRemove(item.Id, out _);
