@@ -368,11 +368,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     // If tagged with MB Picard, the format is 'http://musicbrainz.org\0<recording MBID>
                     if (ufIdValue.Contains("musicbrainz.org", StringComparison.OrdinalIgnoreCase))
                     {
-                        var ufidParts = ufIdValue.Split('\0');
-                        if (ufidParts.Length > 1)
-                        {
-                            audio.TrySetProviderId(MetadataProvider.MusicBrainzRecording, ufidParts[1]);
-                        }
+                        audio.TrySetProviderId(MetadataProvider.MusicBrainzRecording, ufIdValue.AsSpan().RightPart('\0').ToString());
                     }
                 }
             }
