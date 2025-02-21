@@ -23,16 +23,14 @@ public class TmdbExternalUrlProvider : IExternalUrlProvider
         switch (item)
         {
             case Series:
-                var externalId = item.GetProviderId(MetadataProvider.Tmdb);
-                if (!string.IsNullOrEmpty(externalId))
+                if (item.TryGetProviderId(MetadataProvider.Tmdb, out var externalId))
                 {
                     yield return TmdbUtils.BaseTmdbUrl + $"tv/{externalId}";
                 }
 
                 break;
             case Season season:
-                var seriesExternalId = season.Series.GetProviderId(MetadataProvider.Tmdb);
-                if (!string.IsNullOrEmpty(seriesExternalId))
+                if (season.Series.TryGetProviderId(MetadataProvider.Tmdb, out var seriesExternalId))
                 {
                     var orderString = season.Series.DisplayOrder;
                     if (string.IsNullOrEmpty(orderString))
@@ -52,8 +50,7 @@ public class TmdbExternalUrlProvider : IExternalUrlProvider
 
                 break;
             case Episode episode:
-                seriesExternalId = episode.Series.GetProviderId(MetadataProvider.Tmdb);
-                if (!string.IsNullOrEmpty(seriesExternalId))
+                if (episode.Series.TryGetProviderId(MetadataProvider.Imdb, out seriesExternalId))
                 {
                     var orderString = episode.Series.DisplayOrder;
                     if (string.IsNullOrEmpty(orderString))
@@ -73,24 +70,21 @@ public class TmdbExternalUrlProvider : IExternalUrlProvider
 
                 break;
             case Movie:
-                externalId = item.GetProviderId(MetadataProvider.Tmdb);
-                if (!string.IsNullOrEmpty(externalId))
+                if (item.TryGetProviderId(MetadataProvider.Tmdb, out externalId))
                 {
                     yield return TmdbUtils.BaseTmdbUrl + $"movie/{externalId}";
                 }
 
                 break;
             case Person:
-                externalId = item.GetProviderId(MetadataProvider.Tmdb);
-                if (!string.IsNullOrEmpty(externalId))
+                if (item.TryGetProviderId(MetadataProvider.Tmdb, out externalId))
                 {
                     yield return TmdbUtils.BaseTmdbUrl + $"person/{externalId}";
                 }
 
                 break;
             case BoxSet:
-                externalId = item.GetProviderId(MetadataProvider.Tmdb);
-                if (!string.IsNullOrEmpty(externalId))
+                if (item.TryGetProviderId(MetadataProvider.Tmdb, out externalId))
                 {
                     yield return TmdbUtils.BaseTmdbUrl + $"collection/{externalId}";
                 }

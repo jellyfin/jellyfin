@@ -17,9 +17,7 @@ public class ImdbExternalUrlProvider : IExternalUrlProvider
     public IEnumerable<string> GetExternalUrls(BaseItem item)
     {
         var baseUrl = "https://www.imdb.com/";
-        var externalId = item.GetProviderId(MetadataProvider.Imdb);
-
-        if (!string.IsNullOrEmpty(externalId))
+        if (item.TryGetProviderId(MetadataProvider.Imdb, out var externalId))
         {
             yield return baseUrl + $"title/{externalId}";
         }

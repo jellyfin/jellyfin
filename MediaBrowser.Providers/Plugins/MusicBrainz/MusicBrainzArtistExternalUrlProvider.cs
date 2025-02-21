@@ -17,8 +17,7 @@ public class MusicBrainzArtistExternalUrlProvider : IExternalUrlProvider
     /// <inheritdoc/>
     public IEnumerable<string> GetExternalUrls(BaseItem item)
     {
-        var externalId = item.GetProviderId(MetadataProvider.MusicBrainzArtist);
-        if (!string.IsNullOrEmpty(externalId))
+        if (item.TryGetProviderId(MetadataProvider.MusicBrainzArtist, out var externalId))
         {
             switch (item)
             {

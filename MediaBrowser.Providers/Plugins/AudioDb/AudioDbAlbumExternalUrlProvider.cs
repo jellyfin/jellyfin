@@ -17,8 +17,7 @@ public class AudioDbAlbumExternalUrlProvider : IExternalUrlProvider
     /// <inheritdoc/>
     public IEnumerable<string> GetExternalUrls(BaseItem item)
     {
-        var externalId = item.GetProviderId(MetadataProvider.AudioDbAlbum);
-        if (!string.IsNullOrEmpty(externalId))
+        if (item.TryGetProviderId(MetadataProvider.AudioDbAlbum, out var externalId))
         {
             var baseUrl = "https://www.theaudiodb.com/";
             switch (item)

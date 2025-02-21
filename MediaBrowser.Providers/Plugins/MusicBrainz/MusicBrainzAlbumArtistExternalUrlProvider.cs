@@ -19,8 +19,7 @@ public class MusicBrainzAlbumArtistExternalUrlProvider : IExternalUrlProvider
     {
         if (item is MusicAlbum)
         {
-            var externalId = item.GetProviderId(MetadataProvider.MusicBrainzAlbumArtist);
-            if (!string.IsNullOrEmpty(externalId))
+        if (item.TryGetProviderId(MetadataProvider.MusicBrainzAlbumArtist, out var externalId))
             {
                 yield return Plugin.Instance!.Configuration.Server + $"/artist/{externalId}";
             }
