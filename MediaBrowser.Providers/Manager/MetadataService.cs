@@ -1010,7 +1010,7 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            if (replaceData || !target.PremiereDate.HasValue)
+            if (replaceData || !target.PremiereDate.HasValue || (IsYearOnlyDate(target.PremiereDate.Value) && source.PremiereDate.HasValue))
             {
                 target.PremiereDate = source.PremiereDate;
             }
@@ -1140,6 +1140,15 @@ namespace MediaBrowser.Providers.Manager
                     target.PreferredMetadataLanguage = source.PreferredMetadataLanguage;
                 }
             }
+        }
+
+        private static bool IsYearOnlyDate(DateTime date)
+        {
+            return date > DateTime.MinValue && date < DateTime.MaxValue
+                && date.Year > 0
+                && date.Month == 1
+                && date.Day == 1
+                && date.TimeOfDay == TimeSpan.Zero;
         }
 
         private static void MergePeople(List<PersonInfo> source, List<PersonInfo> target)
