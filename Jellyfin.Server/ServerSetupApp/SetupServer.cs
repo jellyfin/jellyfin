@@ -64,10 +64,14 @@ public sealed class SetupServer : IDisposable
                                                 return;
                                             }
 
-                                            var logfilePath = Directory.EnumerateFiles(applicationPaths.LogDirectoryPath).Select(e => new FileInfo(e)).OrderBy(f => f.CreationTimeUtc).FirstOrDefault()?.FullName;
-                                            if (logfilePath is not null)
+                                            var logFilePath = new DirectoryInfo(applicationPaths.LogDirectoryPath)
+                                                .EnumerateFiles()
+                                                .OrderBy(f => f.CreationTimeUtc)
+                                                .FirstOrDefault()
+                                                ?.FullName;
+                                            if (logFilePath is not null)
                                             {
-                                                await context.Response.SendFileAsync(logfilePath, CancellationToken.None).ConfigureAwait(false);
+                                                await context.Response.SendFileAsync(logFilePath, CancellationToken.None).ConfigureAwait(false);
                                             }
                                         });
                                     });
