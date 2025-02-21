@@ -21,7 +21,16 @@ namespace Emby.Naming.TV
             "staffel",
             "series",
             "сезон",
-            "stagione"
+            "stagione",
+            "kausi",
+            "säsong",
+            "seizoen",
+            "sesong",
+            "sezon",
+            "sezona",
+            "季",
+            "시즌",
+            "シーズン"
         };
 
         private static readonly char[] _splitChars = ['.', '_', ' ', '-'];
