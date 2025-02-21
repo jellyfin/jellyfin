@@ -892,8 +892,12 @@ namespace MediaBrowser.MediaEncoding.Probing
                             stream.ElPresentFlag = data.ElPresentFlag;
                             stream.BlPresentFlag = data.BlPresentFlag;
                             stream.DvBlSignalCompatibilityId = data.DvBlSignalCompatibilityId;
+                        }
 
-                            break;
+                        // Parse video rotation metadata from side_data
+                        else if (string.Equals(data.SideDataType, "Display Matrix", StringComparison.OrdinalIgnoreCase))
+                        {
+                            stream.Rotation = data.Rotation;
                         }
                     }
                 }
@@ -1644,7 +1648,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 1))
             {
-                fs.Read(packetBuffer);
+                fs.ReadExactly(packetBuffer);
             }
 
             if (packetBuffer[0] == 71)

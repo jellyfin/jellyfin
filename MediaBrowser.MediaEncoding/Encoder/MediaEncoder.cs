@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using AsyncKeyedLock;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using Jellyfin.Extensions.Json.Converters;
@@ -61,7 +62,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private readonly AsyncNonKeyedLocker _thumbnailResourcePool;
 
-        private readonly object _runningProcessesLock = new object();
+        private readonly Lock _runningProcessesLock = new();
         private readonly List<ProcessWrapper> _runningProcesses = new List<ProcessWrapper>();
 
         // MediaEncoder is registered as a Singleton
@@ -79,7 +80,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private bool _isVaapiDeviceAmd = false;
         private bool _isVaapiDeviceInteliHD = false;
         private bool _isVaapiDeviceInteli965 = false;
+        private bool _isVaapiDeviceSupportVulkanDrmModifier = false;
         private bool _isVaapiDeviceSupportVulkanDrmInterop = false;
+
+        private static string[] _vulkanImageDrmFmtModifierExts =
+        {
+            "VK_EXT_image_drm_format_modifier",
+        };
 
         private static string[] _vulkanExternalMemoryDmaBufExts =
         {
@@ -115,7 +122,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _jsonSerializerOptions = new JsonSerializerOptions(JsonDefaults.Options);
             _jsonSerializerOptions.Converters.Add(new JsonBoolStringConverter());
 
-            var semaphoreCount = 2 * Environment.ProcessorCount;
+            // Although the type is not nullable, this might still be null during unit tests
+            var semaphoreCount = serverConfig.Configuration?.ParallelImageEncodingLimit ?? 0;
+            if (semaphoreCount < 1)
+            {
+                semaphoreCount = Environment.ProcessorCount;
+            }
+
             _thumbnailResourcePool = new(semaphoreCount);
         }
 
@@ -141,34 +154,50 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public bool IsVaapiDeviceInteli965 => _isVaapiDeviceInteli965;
 
         /// <inheritdoc />
+        public bool IsVaapiDeviceSupportVulkanDrmModifier => _isVaapiDeviceSupportVulkanDrmModifier;
+
+        /// <inheritdoc />
         public bool IsVaapiDeviceSupportVulkanDrmInterop => _isVaapiDeviceSupportVulkanDrmInterop;
 
         [GeneratedRegex(@"[^\/\\]+?(\.[^\/\\\n.]+)?$")]
         private static partial Regex FfprobePathRegex();
 
         /// <summary>
-        /// Run at startup or if the user removes a Custom path from transcode page.
+        /// Run at startup to validate ffmpeg.
         /// Sets global variables FFmpegPath.
-        /// Precedence is: Config > CLI > $PATH.
+        /// Precedence is: CLI/Env var > Config > $PATH.
         /// </summary>
-        public void SetFFmpegPath()
+        /// <returns>bool indicates whether a valid ffmpeg is found.</returns>
+        public bool SetFFmpegPath()
         {
+            var skipValidation = _config.GetFFmpegSkipValidation();
+            if (skipValidation)
+            {
+                _logger.LogWarning("FFmpeg: Skipping FFmpeg Validation due to FFmpeg:novalidation set to true");
+                return true;
+            }
+
             // 1) Check if the --ffmpeg CLI switch has been given
             var ffmpegPath = _startupOptionFFmpegPath;
+            string ffmpegPathSetMethodText = "command line or environment variable";
             if (string.IsNullOrEmpty(ffmpegPath))
             {
                 // 2) Custom path stored in config/encoding xml file under tag <EncoderAppPath> should be used as a fallback
                 ffmpegPath = _configurationManager.GetEncodingOptions().EncoderAppPath;
+                ffmpegPathSetMethodText = "encoding.xml config file";
                 if (string.IsNullOrEmpty(ffmpegPath))
                 {
                     // 3) Check "ffmpeg"
                     ffmpegPath = "ffmpeg";
+                    ffmpegPathSetMethodText = "system $PATH";
                 }
             }
 
             if (!ValidatePath(ffmpegPath))
             {
                 _ffmpegPath = null;
+                _logger.LogError("FFmpeg: Path set by {FfmpegPathSetMethodText} is invalid", ffmpegPathSetMethodText);
+                return false;
             }
 
             // Write the FFmpeg path to the config/encoding.xml file as <EncoderAppPathDisplay> so it appears in UI
@@ -194,18 +223,19 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 _threads = EncodingHelper.GetNumberOfThreads(null, options, null);
 
-                _isPkeyPauseSupported = validator.CheckSupportedRuntimeKey("p      pause transcoding");
+                _isPkeyPauseSupported = validator.CheckSupportedRuntimeKey("p      pause transcoding", _ffmpegVersion);
                 _isLowPriorityHwDecodeSupported = validator.CheckSupportedHwaccelFlag("low_priority");
 
                 // Check the Vaapi device vendor
                 if (OperatingSystem.IsLinux()
                     && SupportsHwaccel("vaapi")
                     && !string.IsNullOrEmpty(options.VaapiDevice)
-                    && string.Equals(options.HardwareAccelerationType, "vaapi", StringComparison.OrdinalIgnoreCase))
+                    && options.HardwareAccelerationType == HardwareAccelerationType.vaapi)
                 {
                     _isVaapiDeviceAmd = validator.CheckVaapiDeviceByDriverName("Mesa Gallium driver", options.VaapiDevice);
                     _isVaapiDeviceInteliHD = validator.CheckVaapiDeviceByDriverName("Intel iHD driver", options.VaapiDevice);
                     _isVaapiDeviceInteli965 = validator.CheckVaapiDeviceByDriverName("Intel i965 driver", options.VaapiDevice);
+                    _isVaapiDeviceSupportVulkanDrmModifier = validator.CheckVulkanDrmDeviceByExtensionName(options.VaapiDevice, _vulkanImageDrmFmtModifierExts);
                     _isVaapiDeviceSupportVulkanDrmInterop = validator.CheckVulkanDrmDeviceByExtensionName(options.VaapiDevice, _vulkanExternalMemoryDmaBufExts);
 
                     if (_isVaapiDeviceAmd)
@@ -221,6 +251,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
                         _logger.LogInformation("VAAPI device {RenderNodePath} is Intel GPU (i965)", options.VaapiDevice);
                     }
 
+                    if (_isVaapiDeviceSupportVulkanDrmModifier)
+                    {
+                        _logger.LogInformation("VAAPI device {RenderNodePath} supports Vulkan DRM modifier", options.VaapiDevice);
+                    }
+
                     if (_isVaapiDeviceSupportVulkanDrmInterop)
                     {
                         _logger.LogInformation("VAAPI device {RenderNodePath} supports Vulkan DRM interop", options.VaapiDevice);
@@ -229,65 +264,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             _logger.LogInformation("FFmpeg: {FfmpegPath}", _ffmpegPath ?? string.Empty);
-        }
-
-        /// <summary>
-        /// Triggered from the Settings > Transcoding UI page when users submits Custom FFmpeg path to use.
-        /// Only write the new path to xml if it exists.  Do not perform validation checks on ffmpeg here.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="pathType">The path type.</param>
-        public void UpdateEncoderPath(string path, string pathType)
-        {
-            var config = _configurationManager.GetEncodingOptions();
-
-            // Filesystem may not be case insensitive, but EncoderAppPathDisplay should always point to a valid file?
-            if (string.IsNullOrEmpty(config.EncoderAppPath)
-                && string.Equals(config.EncoderAppPathDisplay, path, StringComparison.OrdinalIgnoreCase))
-            {
-                _logger.LogDebug("Existing ffmpeg path is empty and the new path is the same as {EncoderAppPathDisplay}. Skipping", nameof(config.EncoderAppPathDisplay));
-                return;
-            }
-
-            string newPath;
-
-            _logger.LogInformation("Attempting to update encoder path to {Path}. pathType: {PathType}", path ?? string.Empty, pathType ?? string.Empty);
-
-            if (!string.Equals(pathType, "custom", StringComparison.OrdinalIgnoreCase))
-            {
-                throw new ArgumentException("Unexpected pathType value");
-            }
-
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                // User had cleared the custom path in UI
-                newPath = string.Empty;
-            }
-            else
-            {
-                if (Directory.Exists(path))
-                {
-                    // Given path is directory, so resolve down to filename
-                    newPath = GetEncoderPathFromDirectory(path, "ffmpeg");
-                }
-                else
-                {
-                    newPath = path;
-                }
-
-                if (!new EncoderValidator(_logger, newPath).ValidateVersion())
-                {
-                    throw new ResourceNotFoundException();
-                }
-            }
-
-            // Write the new ffmpeg path to the xml as <EncoderAppPath>
-            // This ensures its not lost on next startup
-            config.EncoderAppPath = newPath;
-            _configurationManager.SaveConfiguration("encoding", config);
-
-            // Trigger SetFFmpegPath so we validate the new path and setup probe path
-            SetFFmpegPath();
+            return !string.IsNullOrWhiteSpace(ffmpegPath);
         }
 
         /// <summary>
@@ -306,7 +283,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             bool rc = new EncoderValidator(_logger, path).ValidateVersion();
             if (!rc)
             {
-                _logger.LogWarning("FFmpeg: Failed version check: {Path}", path);
+                _logger.LogError("FFmpeg: Failed version check: {Path}", path);
                 return false;
             }
 
@@ -627,7 +604,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 try
                 {
-                    return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, true, targetFormat, cancellationToken).ConfigureAwait(false);
+                    return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, true, targetFormat, false, cancellationToken).ConfigureAwait(false);
                 }
                 catch (ArgumentException)
                 {
@@ -639,7 +616,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
-            return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, false, targetFormat, cancellationToken).ConfigureAwait(false);
+            return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, false, targetFormat, isAudio, cancellationToken).ConfigureAwait(false);
         }
 
         private string GetImageResolutionParameter()
@@ -665,9 +642,21 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return imageResolutionParameter;
         }
 
-        private async Task<string> ExtractImageInternal(string inputPath, string container, MediaStream videoStream, int? imageStreamIndex, Video3DFormat? threedFormat, TimeSpan? offset, bool useIFrame, ImageFormat? targetFormat, CancellationToken cancellationToken)
+        private async Task<string> ExtractImageInternal(
+            string inputPath,
+            string container,
+            MediaStream videoStream,
+            int? imageStreamIndex,
+            Video3DFormat? threedFormat,
+            TimeSpan? offset,
+            bool useIFrame,
+            ImageFormat? targetFormat,
+            bool isAudio,
+            CancellationToken cancellationToken)
         {
             ArgumentException.ThrowIfNullOrEmpty(inputPath);
+
+            var useTradeoff = _config.GetFFmpegImgExtractPerfTradeoff();
 
             var outputExtension = targetFormat?.GetExtension() ?? ".jpg";
 
@@ -703,25 +692,26 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             // Use ffmpeg to sample 100 (we can drop this if required using thumbnail=50 for 50 frames) frames and pick the best thumbnail. Have a fall back just in case.
             // mpegts need larger batch size otherwise the corrupted thumbnail will be created. Larger batch size will lower the processing speed.
-            var enableThumbnail = useIFrame && !string.Equals("wtv", container, StringComparison.OrdinalIgnoreCase);
+            var enableThumbnail = !useTradeoff && useIFrame && !string.Equals("wtv", container, StringComparison.OrdinalIgnoreCase);
             if (enableThumbnail)
             {
                 var useLargerBatchSize = string.Equals("mpegts", container, StringComparison.OrdinalIgnoreCase);
                 filters.Add("thumbnail=n=" + (useLargerBatchSize ? "50" : "24"));
             }
 
-            // Use SW tonemap on HDR10/HLG video stream only when the zscale or tonemapx filter is available.
+            // Use SW tonemap on HDR video stream only when the zscale or tonemapx filter is available.
+            // Only enable Dolby Vision tonemap when tonemapx is available
             var enableHdrExtraction = false;
 
-            if (string.Equals(videoStream?.ColorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(videoStream?.ColorTransfer, "arib-std-b67", StringComparison.OrdinalIgnoreCase))
+            if (videoStream?.VideoRange == VideoRange.HDR)
             {
                 if (SupportsFilter("tonemapx"))
                 {
+                    var peak = videoStream.VideoRangeType == VideoRangeType.DOVI ? "400" : "100";
                     enableHdrExtraction = true;
-                    filters.Add("tonemapx=tonemap=bt2390:desat=0:peak=100:t=bt709:m=bt709:p=bt709:format=yuv420p");
+                    filters.Add($"tonemapx=tonemap=bt2390:desat=0:peak={peak}:t=bt709:m=bt709:p=bt709:format=yuv420p");
                 }
-                else if (SupportsFilter("zscale"))
+                else if (SupportsFilter("zscale") && videoStream.VideoRangeType != VideoRangeType.DOVI)
                 {
                     enableHdrExtraction = true;
                     filters.Add("zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0:peak=100,zscale=t=bt709:m=bt709,format=yuv420p");
@@ -730,11 +720,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var vf = string.Join(',', filters);
             var mapArg = imageStreamIndex.HasValue ? (" -map 0:" + imageStreamIndex.Value.ToString(CultureInfo.InvariantCulture)) : string.Empty;
-            var args = string.Format(CultureInfo.InvariantCulture, "-i {0}{3} -threads {4} -v quiet -vframes 1 -vf {2}{5} -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg, _threads, GetImageResolutionParameter());
+            var args = string.Format(CultureInfo.InvariantCulture, "-i {0}{3} -threads {4} -v quiet -vframes 1 -vf {2}{5} -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg, _threads, isAudio ? string.Empty : GetImageResolutionParameter());
 
             if (offset.HasValue)
             {
                 args = string.Format(CultureInfo.InvariantCulture, "-ss {0} ", GetTimeParameter(offset.Value)) + args;
+            }
+
+            if (useIFrame && useTradeoff)
+            {
+                args = "-skip_frame nokey " + args;
             }
 
             if (!string.IsNullOrWhiteSpace(container))
@@ -764,8 +759,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             using (var processWrapper = new ProcessWrapper(process, this))
             {
-                bool ranToCompletion;
-
                 using (await _thumbnailResourcePool.LockAsync(cancellationToken).ConfigureAwait(false))
                 {
                     StartProcess(processWrapper);
@@ -779,22 +772,18 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     try
                     {
                         await process.WaitForExitAsync(TimeSpan.FromMilliseconds(timeoutMs)).ConfigureAwait(false);
-                        ranToCompletion = true;
                     }
-                    catch (OperationCanceledException)
+                    catch (OperationCanceledException ex)
                     {
                         process.Kill(true);
-                        ranToCompletion = false;
+                        throw new FfmpegException(string.Format(CultureInfo.InvariantCulture, "ffmpeg image extraction timed out for {0} after {1}ms", inputPath, timeoutMs), ex);
                     }
                 }
 
-                var exitCode = ranToCompletion ? processWrapper.ExitCode ?? 0 : -1;
                 var file = _fileSystem.GetFileInfo(tempExtractPath);
 
-                if (exitCode == -1 || !file.Exists || file.Length == 0)
+                if (processWrapper.ExitCode > 0 || !file.Exists || file.Length == 0)
                 {
-                    _logger.LogError("ffmpeg image extraction failed for {Path}", inputPath);
-
                     throw new FfmpegException(string.Format(CultureInfo.InvariantCulture, "ffmpeg image extraction failed for {0}", inputPath));
                 }
 
@@ -824,11 +813,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (allowHwAccel && enableKeyFrameOnlyExtraction)
             {
-                var supportsKeyFrameOnly = (string.Equals(options.HardwareAccelerationType, "nvenc", StringComparison.OrdinalIgnoreCase) && options.EnableEnhancedNvdecDecoder)
-                                           || (string.Equals(options.HardwareAccelerationType, "amf", StringComparison.OrdinalIgnoreCase) && OperatingSystem.IsWindows())
-                                           || (string.Equals(options.HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase) && options.PreferSystemNativeHwDecoder)
-                                           || string.Equals(options.HardwareAccelerationType, "vaapi", StringComparison.OrdinalIgnoreCase)
-                                           || string.Equals(options.HardwareAccelerationType, "videotoolbox", StringComparison.OrdinalIgnoreCase);
+                var hardwareAccelerationType = options.HardwareAccelerationType;
+                var supportsKeyFrameOnly = (hardwareAccelerationType == HardwareAccelerationType.nvenc && options.EnableEnhancedNvdecDecoder)
+                                           || (hardwareAccelerationType == HardwareAccelerationType.amf && OperatingSystem.IsWindows())
+                                           || (hardwareAccelerationType == HardwareAccelerationType.qsv && options.PreferSystemNativeHwDecoder)
+                                           || hardwareAccelerationType == HardwareAccelerationType.vaapi
+                                           || hardwareAccelerationType == HardwareAccelerationType.videotoolbox
+                                           || hardwareAccelerationType == HardwareAccelerationType.rkmpp;
                 if (!supportsKeyFrameOnly)
                 {
                     // Disable hardware acceleration when the hardware decoder does not support keyframe only mode.
@@ -842,7 +833,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             if (!allowHwAccel)
             {
                 options.EnableHardwareEncoding = false;
-                options.HardwareAccelerationType = string.Empty;
+                options.HardwareAccelerationType = HardwareAccelerationType.none;
                 options.EnableTonemapping = false;
             }
 
@@ -886,7 +877,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 inputArg = "-threads " + threads + " " + inputArg; // HW accel args set a different input thread count, only set if disabled
             }
 
-            if (options.HardwareAccelerationType.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase) && _isLowPriorityHwDecodeSupported)
+            if (options.HardwareAccelerationType == HardwareAccelerationType.videotoolbox && _isLowPriorityHwDecodeSupported)
             {
                 // VideoToolbox supports low priority decoding, which is useful for trickplay
                 inputArg = "-hwaccel_flags +low_priority " + inputArg;
@@ -920,21 +911,30 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 throw new InvalidOperationException("Empty or invalid input argument.");
             }
 
-            float? encoderQuality = qualityScale;
-            if (vidEncoder.Contains("vaapi", StringComparison.OrdinalIgnoreCase))
+            // ffmpeg qscale is a value from 1-31, with 1 being best quality and 31 being worst
+            // jpeg quality is a value from 0-100, with 0 being worst quality and 100 being best
+            var encoderQuality = Math.Clamp(qualityScale ?? 4, 1, 31);
+            var encoderQualityOption = "-qscale:v ";
+
+            if (vidEncoder.Contains("vaapi", StringComparison.OrdinalIgnoreCase)
+                || vidEncoder.Contains("qsv", StringComparison.OrdinalIgnoreCase))
             {
-                // vaapi's mjpeg encoder uses jpeg quality divided by QP2LAMBDA (118) as input, instead of ffmpeg defined qscale
-                // ffmpeg qscale is a value from 1-31, with 1 being best quality and 31 being worst
-                // jpeg quality is a value from 0-100, with 0 being worst quality and 100 being best
-                encoderQuality = (100 - ((qualityScale - 1) * (100 / 30))) / 118;
+                // vaapi and qsv's mjpeg encoder use jpeg quality as input, instead of ffmpeg defined qscale
+                encoderQuality = 100 - ((encoderQuality - 1) * (100 / 30));
+                encoderQualityOption = "-global_quality:v ";
             }
 
             if (vidEncoder.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase))
             {
                 // videotoolbox's mjpeg encoder uses jpeg quality scaled to QP2LAMBDA (118) instead of ffmpeg defined qscale
-                // ffmpeg qscale is a value from 1-31, with 1 being best quality and 31 being worst
-                // jpeg quality is a value from 0-100, with 0 being worst quality and 100 being best
-                encoderQuality = 118 - ((qualityScale - 1) * (118 / 30));
+                encoderQuality = 118 - ((encoderQuality - 1) * (118 / 30));
+            }
+
+            if (vidEncoder.Contains("rkmpp", StringComparison.OrdinalIgnoreCase))
+            {
+                // rkmpp's mjpeg encoder uses jpeg quality as input (max is 99, not 100), instead of ffmpeg defined qscale
+                encoderQuality = 99 - ((encoderQuality - 1) * (99 / 30));
+                encoderQualityOption = "-qp_init:v ";
             }
 
             // Output arguments
@@ -945,13 +945,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // Final command arguments
             var args = string.Format(
                 CultureInfo.InvariantCulture,
-                "-loglevel error {0} -an -sn {1} -threads {2} -c:v {3} {4}{5}-f {6} \"{7}\"",
+                "-loglevel error {0} -an -sn {1} -threads {2} -c:v {3} {4}{5}{6}-f {7} \"{8}\"",
                 inputArg,
                 filterParam,
                 outputThreads.GetValueOrDefault(_threads),
                 vidEncoder,
-                qualityScale.HasValue ? "-qscale:v " + encoderQuality.Value.ToString(CultureInfo.InvariantCulture) + " " : string.Empty,
+                encoderQualityOption + encoderQuality + " ",
                 vidEncoder.Contains("videotoolbox", StringComparison.InvariantCultureIgnoreCase) ? "-allow_sw 1 " : string.Empty, // allow_sw fallback for some intel macs
+                EncodingHelper.GetVideoSyncOption("0", EncoderVersion).Trim() + " ", // passthrough timestamp
                 "image2",
                 outputPath);
 
@@ -1040,6 +1041,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 if (exitCode == -1)
                 {
                     _logger.LogError("ffmpeg image extraction failed for {ProcessDescription}", processDescription);
+                    // Cleanup temp folder here, because the targetDirectory is not returned and the cleanup for failed ffmpeg process is not possible for caller.
+                    // Ideally the ffmpeg should not write any files if it fails, but it seems like it is not guaranteed.
+                    try
+                    {
+                        Directory.Delete(targetDirectory, true);
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError(e, "Failed to delete ffmpeg temp directory {TargetDirectory}", targetDirectory);
+                    }
 
                     throw new FfmpegException(string.Format(CultureInfo.InvariantCulture, "ffmpeg image extraction failed for {0}", processDescription));
                 }
@@ -1096,14 +1107,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private void StopProcesses()
         {
-            List<ProcessWrapper> proceses;
+            List<ProcessWrapper> processes;
             lock (_runningProcessesLock)
             {
-                proceses = _runningProcesses.ToList();
+                processes = _runningProcesses.ToList();
                 _runningProcesses.Clear();
             }
 
-            foreach (var process in proceses)
+            foreach (var process in processes)
             {
                 if (!process.HasExited)
                 {
@@ -1117,7 +1128,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // https://ffmpeg.org/ffmpeg-filters.html#Notes-on-filtergraph-escaping
             // We need to double escape
 
-            return path.Replace('\\', '/').Replace(":", "\\:", StringComparison.Ordinal).Replace("'", @"'\\\''", StringComparison.Ordinal);
+            return path
+                .Replace('\\', '/')
+                .Replace(":", "\\:", StringComparison.Ordinal)
+                .Replace("'", @"'\\\''", StringComparison.Ordinal)
+                .Replace("\"", "\\\"", StringComparison.Ordinal);
         }
 
         /// <inheritdoc />
@@ -1231,7 +1246,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             // Generate concat configuration entries for each file and write to file
             Directory.CreateDirectory(Path.GetDirectoryName(concatFilePath));
-            using StreamWriter sw = new StreamWriter(concatFilePath);
+            using var sw = new FormattingStreamWriter(concatFilePath, CultureInfo.InvariantCulture);
             foreach (var path in files)
             {
                 var mediaInfoResult = GetMediaInfo(

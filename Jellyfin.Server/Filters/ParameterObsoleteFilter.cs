@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using Jellyfin.Api.Attributes;
 using Microsoft.OpenApi.Models;

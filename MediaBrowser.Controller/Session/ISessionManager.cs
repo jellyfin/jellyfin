@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Jellyfin.Data.Entities.Security;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.SyncPlay;
 
@@ -293,6 +294,17 @@ namespace MediaBrowser.Controller.Session
         SessionInfo GetSession(string deviceId, string client, string version);
 
         /// <summary>
+        /// Gets all sessions available to a user.
+        /// </summary>
+        /// <param name="userId">The session identifier.</param>
+        /// <param name="deviceId">The device id.</param>
+        /// <param name="activeWithinSeconds">Active within session limit.</param>
+        /// <param name="controllableUserToCheck">Filter for sessions remote controllable for this user.</param>
+        /// <param name="isApiKey">Is the request authenticated with API key.</param>
+        /// <returns>IReadOnlyList{SessionInfoDto}.</returns>
+        IReadOnlyList<SessionInfoDto> GetSessions(Guid userId, string deviceId, int? activeWithinSeconds, Guid? controllableUserToCheck, bool isApiKey);
+
+        /// <summary>
         /// Gets the session by authentication token.
         /// </summary>
         /// <param name="token">The token.</param>
@@ -312,7 +324,7 @@ namespace MediaBrowser.Controller.Session
         Task<SessionInfo> GetSessionByAuthenticationToken(Device info, string deviceId, string remoteEndpoint, string appVersion);
 
         /// <summary>
-        /// Logouts the specified access token.
+        /// Logs out the specified access token.
         /// </summary>
         /// <param name="accessToken">The access token.</param>
         /// <returns>A <see cref="Task"/> representing the log out process.</returns>

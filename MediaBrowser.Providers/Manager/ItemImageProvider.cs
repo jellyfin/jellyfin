@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
@@ -68,16 +69,22 @@ namespace MediaBrowser.Providers.Manager
         /// Removes all existing images from the provided item.
         /// </summary>
         /// <param name="item">The <see cref="BaseItem"/> to remove images from.</param>
+        /// <param name="canDeleteLocal">Whether removing images outside metadata folder is allowed.</param>
         /// <returns><c>true</c> if changes were made to the item; otherwise <c>false</c>.</returns>
-        public bool RemoveImages(BaseItem item)
+        public bool RemoveImages(BaseItem item, bool canDeleteLocal = false)
         {
             var singular = new List<ItemImageInfo>();
+            var itemMetadataPath = item.GetInternalMetadataPath();
             for (var i = 0; i < _singularImages.Length; i++)
             {
                 var currentImage = item.GetImageInfo(_singularImages[i], 0);
                 if (currentImage is not null)
                 {
-                    singular.Add(currentImage);
+                    var imageInMetadataFolder = currentImage.Path.StartsWith(itemMetadataPath, StringComparison.OrdinalIgnoreCase);
+                    if (imageInMetadataFolder || canDeleteLocal || item.IsSaveLocalMetadataEnabled())
+                    {
+                        singular.Add(currentImage);
+                    }
                 }
             }
 
@@ -223,9 +230,7 @@ namespace MediaBrowser.Providers.Manager
                                 {
                                     var mimeType = MimeTypes.GetMimeType(response.Path);
 
-                                    var stream = AsyncFile.OpenRead(response.Path);
-
-                                    await _providerManager.SaveImage(item, stream, mimeType, imageType, null, cancellationToken).ConfigureAwait(false);
+                                    await _providerManager.SaveImage(item, response.Path, mimeType, imageType, null, null, cancellationToken).ConfigureAwait(false);
                                 }
                             }
 
@@ -381,8 +386,8 @@ namespace MediaBrowser.Providers.Manager
 
             item.RemoveImages(images);
 
-            // Cleanup old metadata directory for episodes if empty
-            if (item is Episode)
+            // Cleanup old metadata directory for episodes if empty, as long as it's not a virtual item
+            if (item is Episode && !item.IsVirtualItem)
             {
                 var oldLocalMetadataDirectory = Path.Combine(item.ContainingFolderPath, "metadata");
                 if (_fileSystem.DirectoryExists(oldLocalMetadataDirectory) && !_fileSystem.GetFiles(oldLocalMetadataDirectory).Any())
@@ -547,10 +552,16 @@ namespace MediaBrowser.Providers.Manager
                     var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
                     await using (stream.ConfigureAwait(false))
                     {
+                        var mimetype = response.Content.Headers.ContentType?.MediaType;
+                        if (mimetype is null || mimetype.Equals(MediaTypeNames.Application.Octet, StringComparison.OrdinalIgnoreCase))
+                        {
+                            mimetype = MimeTypes.GetMimeType(response.RequestMessage.RequestUri.GetLeftPart(UriPartial.Path));
+                        }
+
                         await _providerManager.SaveImage(
                             item,
                             stream,
-                            response.Content.Headers.ContentType?.MediaType,
+                            mimetype,
                             type,
                             null,
                             cancellationToken).ConfigureAwait(false);
@@ -673,10 +684,16 @@ namespace MediaBrowser.Providers.Manager
                     var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
                     await using (stream.ConfigureAwait(false))
                     {
+                        var mimetype = response.Content.Headers.ContentType?.MediaType;
+                        if (mimetype is null || mimetype.Equals(MediaTypeNames.Application.Octet, StringComparison.OrdinalIgnoreCase))
+                        {
+                            mimetype = MimeTypes.GetMimeType(response.RequestMessage.RequestUri.GetLeftPart(UriPartial.Path));
+                        }
+
                         await _providerManager.SaveImage(
                             item,
                             stream,
-                            response.Content.Headers.ContentType?.MediaType,
+                            mimetype,
                             imageType,
                             null,
                             cancellationToken).ConfigureAwait(false);

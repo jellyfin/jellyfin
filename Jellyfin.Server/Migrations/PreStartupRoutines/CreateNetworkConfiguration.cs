@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
@@ -132,5 +132,4 @@ public class CreateNetworkConfiguration : IMigrationRoutine
 
         public string[] KnownProxies { get; set; } = Array.Empty<string>();
     }
-#pragma warning restore
 }

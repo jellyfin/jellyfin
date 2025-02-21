@@ -99,7 +99,7 @@ public class TrickplayProvider : ICustomMetadataProvider<Episode>,
     {
         var libraryOptions = _libraryManager.GetLibraryOptions(video);
         bool? enableDuringScan = libraryOptions?.ExtractTrickplayImagesDuringLibraryScan;
-        bool replace = options.ReplaceAllImages;
+        bool replace = options.RegenerateTrickplay && options.MetadataRefreshMode > MetadataRefreshMode.Default;
 
         if (!enableDuringScan.GetValueOrDefault(false))
         {
@@ -108,11 +108,11 @@ public class TrickplayProvider : ICustomMetadataProvider<Episode>,
 
         if (_config.Configuration.TrickplayOptions.ScanBehavior == TrickplayScanBehavior.Blocking)
         {
-            await _trickplayManager.RefreshTrickplayDataAsync(video, replace, cancellationToken).ConfigureAwait(false);
+            await _trickplayManager.RefreshTrickplayDataAsync(video, replace, libraryOptions, cancellationToken).ConfigureAwait(false);
         }
         else
         {
-            _ = _trickplayManager.RefreshTrickplayDataAsync(video, replace, cancellationToken).ConfigureAwait(false);
+            _ = _trickplayManager.RefreshTrickplayDataAsync(video, replace, libraryOptions, cancellationToken).ConfigureAwait(false);
         }
 
         // The core doesn't need to trigger any save operations over this

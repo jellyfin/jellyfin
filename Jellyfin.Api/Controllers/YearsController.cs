@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Jellyfin.Api.Extensions;
@@ -71,16 +72,16 @@ public class YearsController : BaseJellyfinApiController
     public ActionResult<QueryResult<BaseItemDto>> GetYears(
         [FromQuery] int? startIndex,
         [FromQuery] int? limit,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] SortOrder[] sortOrder,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] SortOrder[] sortOrder,
         [FromQuery] Guid? parentId,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] excludeItemTypes,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] MediaType[] mediaTypes,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemSortBy[] sortBy,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFields[] fields,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] BaseItemKind[] excludeItemTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] BaseItemKind[] includeItemTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] MediaType[] mediaTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemSortBy[] sortBy,
         [FromQuery] bool? enableUserData,
         [FromQuery] int? imageTypeLimit,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ImageType[] enableImageTypes,
         [FromQuery] Guid? userId,
         [FromQuery] bool recursive = true,
         [FromQuery] bool? enableImages = true)
@@ -105,18 +106,18 @@ public class YearsController : BaseJellyfinApiController
 
         bool Filter(BaseItem i) => FilterItem(i, excludeItemTypes, includeItemTypes, mediaTypes);
 
-        IList<BaseItem> items;
+        IReadOnlyList<BaseItem> items;
         if (parentItem.IsFolder)
         {
             var folder = (Folder)parentItem;
 
             if (userId.IsNullOrEmpty())
             {
-                items = recursive ? folder.GetRecursiveChildren(Filter) : folder.Children.Where(Filter).ToList();
+                items = recursive ? folder.GetRecursiveChildren(Filter) : folder.Children.Where(Filter).ToArray();
             }
             else
             {
-                items = recursive ? folder.GetRecursiveChildren(user, query).ToList() : folder.GetChildren(user, true).Where(Filter).ToList();
+                items = recursive ? folder.GetRecursiveChildren(user, query) : folder.GetChildren(user, true).Where(Filter).ToArray();
             }
         }
         else

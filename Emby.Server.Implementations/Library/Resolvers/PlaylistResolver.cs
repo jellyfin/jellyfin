@@ -28,7 +28,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
         {
             if (args.IsDirectory)
             {
-                // It's a boxset if the path is a directory with [playlist] in its name
+                // It's a playlist if the path is a directory with [playlist] in its name
                 var filename = Path.GetFileName(Path.TrimEndingDirectorySeparator(args.Path));
                 if (string.IsNullOrEmpty(filename))
                 {

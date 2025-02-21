@@ -84,6 +84,7 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
             Assert.Equal(0, res.VideoStream.ElPresentFlag);
             Assert.Equal(1, res.VideoStream.BlPresentFlag);
             Assert.Equal(0, res.VideoStream.DvBlSignalCompatibilityId);
+            Assert.Equal(-180, res.VideoStream.Rotation);
 
             var audio1 = res.MediaStreams[1];
             Assert.Equal("eac3", audio1.Codec);

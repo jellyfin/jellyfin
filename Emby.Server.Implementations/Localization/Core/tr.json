@@ -130,5 +130,11 @@
     "TaskCleanCollectionsAndPlaylistsDescription": "Artık var olmayan koleksiyon ve çalma listelerindeki ögeleri kaldırır.",
     "TaskCleanCollectionsAndPlaylists": "Koleksiyonları ve çalma listelerini temizleyin",
     "TaskAudioNormalizationDescription": "Ses normalleştirme verileri için dosyaları tarar.",
-    "TaskAudioNormalization": "Ses Normalleştirme"
+    "TaskAudioNormalization": "Ses Normalleştirme",
+    "TaskExtractMediaSegments": "Medya Segmenti Tarama",
+    "TaskMoveTrickplayImages": "Trickplay Görsel Konumunu Taşıma",
+    "TaskMoveTrickplayImagesDescription": "Mevcut trickplay dosyalarını kütüphane ayarlarına göre taşır.",
+    "TaskDownloadMissingLyrics": "Eksik şarkı sözlerini indir",
+    "TaskDownloadMissingLyricsDescription": "Şarkı sözlerini indirir",
+    "TaskExtractMediaSegmentsDescription": "MediaSegment özelliği etkin olan eklentilerden medya segmentlerini çıkarır veya alır."
 }

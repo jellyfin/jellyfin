@@ -117,11 +117,10 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="username">The user.</param>
         /// <param name="password">The password to use.</param>
-        /// <param name="passwordSha1">Hash of password.</param>
         /// <param name="remoteEndPoint">Remove endpoint to use.</param>
         /// <param name="isUserSession">Specifies if a user session.</param>
         /// <returns>User wrapped in awaitable task.</returns>
-        Task<User?> AuthenticateUser(string username, string password, string passwordSha1, string remoteEndPoint, bool isUserSession);
+        Task<User?> AuthenticateUser(string username, string password, string remoteEndPoint, bool isUserSession);
 
         /// <summary>
         /// Starts the forgot password process.

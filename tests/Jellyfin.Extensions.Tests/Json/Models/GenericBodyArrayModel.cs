@@ -8,13 +8,13 @@ namespace Jellyfin.Extensions.Tests.Json.Models
     /// The generic body model.
     /// </summary>
     /// <typeparam name="T">The value type.</typeparam>
-    public class GenericBodyArrayModel<T>
+    public sealed class GenericBodyArrayModel<T>
     {
         /// <summary>
         /// Gets or sets the value.
         /// </summary>
         [SuppressMessage("Microsoft.Performance", "CA1819:Properties should not return arrays", MessageId = "Value", Justification = "Imported from ServiceStack")]
-        [JsonConverter(typeof(JsonCommaDelimitedArrayConverterFactory))]
+        [JsonConverter(typeof(JsonCommaDelimitedCollectionConverterFactory))]
         public T[] Value { get; set; } = default!;
     }
 }

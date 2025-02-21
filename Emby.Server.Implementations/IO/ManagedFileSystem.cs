@@ -149,6 +149,26 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
+        /// <inheritdoc />
+        public void MoveDirectory(string source, string destination)
+        {
+            try
+            {
+                Directory.Move(source, destination);
+            }
+            catch (IOException)
+            {
+                // Cross device move requires a copy
+                Directory.CreateDirectory(destination);
+                foreach (string file in Directory.GetFiles(source))
+                {
+                    File.Copy(file, Path.Combine(destination, Path.GetFileName(file)), true);
+                }
+
+                Directory.Delete(source, true);
+            }
+        }
+
         /// <summary>
         /// Returns a <see cref="FileSystemMetadata"/> object for the specified file or directory path.
         /// </summary>
@@ -256,6 +276,13 @@ namespace Emby.Server.Implementations.IO
                         {
                             _logger.LogError(ex, "Reading the file at {Path} failed due to a permissions exception.", fileInfo.FullName);
                         }
+                        catch (IOException ex)
+                        {
+                            // IOException generally means the file is not accessible due to filesystem issues
+                            // Catch this exception and mark the file as not exist to ignore it
+                            _logger.LogError(ex, "Reading the file at {Path} failed due to an IO Exception. Marking the file as not existing", fileInfo.FullName);
+                            result.Exists = false;
+                        }
                     }
                 }
 
@@ -327,11 +354,7 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
-        /// <summary>
-        /// Gets the creation time UTC.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>DateTime.</returns>
+        /// <inheritdoc />
         public virtual DateTime GetCreationTimeUtc(string path)
         {
             return GetCreationTimeUtc(GetFileSystemInfo(path));
@@ -368,11 +391,7 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
-        /// <summary>
-        /// Gets the last write time UTC.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>DateTime.</returns>
+        /// <inheritdoc />
         public virtual DateTime GetLastWriteTimeUtc(string path)
         {
             return GetLastWriteTimeUtc(GetFileSystemInfo(path));
@@ -446,11 +465,7 @@ namespace Emby.Server.Implementations.IO
             File.SetAttributes(path, attributes);
         }
 
-        /// <summary>
-        /// Swaps the files.
-        /// </summary>
-        /// <param name="file1">The file1.</param>
-        /// <param name="file2">The file2.</param>
+        /// <inheritdoc />
         public virtual void SwapFiles(string file1, string file2)
         {
             ArgumentException.ThrowIfNullOrEmpty(file1);
@@ -553,7 +568,7 @@ namespace Emby.Server.Implementations.IO
         {
             var enumerationOptions = GetEnumerationOptions(recursive);
 
-            // On linux and osx the search pattern is case sensitive
+            // On linux and macOS the search pattern is case-sensitive
             // If we're OK with case-sensitivity, and we're only filtering for one extension, then use the native method
             if ((enableCaseSensitiveExtensions || _isEnvironmentCaseInsensitive) && extensions is not null && extensions.Count == 1)
             {
@@ -582,6 +597,9 @@ namespace Emby.Server.Implementations.IO
         /// <inheritdoc />
         public virtual IEnumerable<FileSystemMetadata> GetFileSystemEntries(string path, bool recursive = false)
         {
+            // Note: any of unhandled exceptions thrown by this method may cause the caller to believe the whole path is not accessible.
+            // But what causing the exception may be a single file under that path. This could lead to unexpected behavior.
+            // For example, the scanner will remove everything in that path due to unhandled errors.
             var directoryInfo = new DirectoryInfo(path);
             var enumerationOptions = GetEnumerationOptions(recursive);
 
@@ -610,7 +628,7 @@ namespace Emby.Server.Implementations.IO
         {
             var enumerationOptions = GetEnumerationOptions(recursive);
 
-            // On linux and osx the search pattern is case sensitive
+            // On linux and macOS the search pattern is case-sensitive
             // If we're OK with case-sensitivity, and we're only filtering for one extension, then use the native method
             if ((enableCaseSensitiveExtensions || _isEnvironmentCaseInsensitive) && extensions is not null && extensions.Length == 1)
             {

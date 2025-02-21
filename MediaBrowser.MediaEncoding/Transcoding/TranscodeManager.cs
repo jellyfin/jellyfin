@@ -51,6 +51,8 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         o.PoolInitialFill = 1;
     });
 
+    private readonly Version _maxFFmpegCkeyPauseSupported = new Version(6, 1);
+
     /// <summary>
     /// Initializes a new instance of the <see cref="TranscodeManager"/> class.
     /// </summary>
@@ -350,12 +352,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         {
             var audioCodec = state.ActualOutputAudioCodec;
             var videoCodec = state.ActualOutputVideoCodec;
-            var hardwareAccelerationTypeString = _serverConfigurationManager.GetEncodingOptions().HardwareAccelerationType;
-            HardwareEncodingType? hardwareAccelerationType = null;
-            if (Enum.TryParse<HardwareEncodingType>(hardwareAccelerationTypeString, out var parsedHardwareAccelerationType))
-            {
-                hardwareAccelerationType = parsedHardwareAccelerationType;
-            }
+            var hardwareAccelerationType = _serverConfigurationManager.GetEncodingOptions().HardwareAccelerationType;
 
             _sessionManager.ReportTranscodingInfo(deviceId, new TranscodingInfo
             {
@@ -555,7 +552,9 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
 
     private void StartThrottler(StreamState state, TranscodingJob transcodingJob)
     {
-        if (EnableThrottling(state))
+        if (EnableThrottling(state)
+            && (_mediaEncoder.IsPkeyPauseSupported
+                || _mediaEncoder.EncoderVersion <= _maxFFmpegCkeyPauseSupported))
         {
             transcodingJob.TranscodingThrottler = new TranscodingThrottler(transcodingJob, _loggerFactory.CreateLogger<TranscodingThrottler>(), _serverConfigurationManager, _fileSystem, _mediaEncoder);
             transcodingJob.TranscodingThrottler.Start();

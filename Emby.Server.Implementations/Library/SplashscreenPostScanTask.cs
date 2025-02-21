@@ -43,14 +43,26 @@ public class SplashscreenPostScanTask : ILibraryPostScanTask
     /// <inheritdoc />
     public Task Run(IProgress<double> progress, CancellationToken cancellationToken)
     {
-        var posters = GetItemsWithImageType(ImageType.Primary).Select(x => x.GetImages(ImageType.Primary).First().Path).ToList();
-        var backdrops = GetItemsWithImageType(ImageType.Thumb).Select(x => x.GetImages(ImageType.Thumb).First().Path).ToList();
+        var posters = GetItemsWithImageType(ImageType.Primary)
+            .Select(x => x.GetImages(ImageType.Primary).FirstOrDefault()?.Path)
+            .Where(path => !string.IsNullOrEmpty(path))
+            .Select(path => path!)
+            .ToList();
+        var backdrops = GetItemsWithImageType(ImageType.Thumb)
+            .Select(x => x.GetImages(ImageType.Thumb).FirstOrDefault()?.Path)
+            .Where(path => !string.IsNullOrEmpty(path))
+            .Select(path => path!)
+            .ToList();
         if (backdrops.Count == 0)
         {
             // Thumb images fit better because they include the title in the image but are not provided with TMDb.
             // Using backdrops as a fallback to generate an image at all
             _logger.LogDebug("No thumb images found. Using backdrops to generate splashscreen");
-            backdrops = GetItemsWithImageType(ImageType.Backdrop).Select(x => x.GetImages(ImageType.Backdrop).First().Path).ToList();
+            backdrops = GetItemsWithImageType(ImageType.Backdrop)
+                .Select(x => x.GetImages(ImageType.Backdrop).FirstOrDefault()?.Path)
+                .Where(path => !string.IsNullOrEmpty(path))
+                .Select(path => path!)
+                .ToList();
         }
 
         _imageEncoder.CreateSplashscreen(posters, backdrops);

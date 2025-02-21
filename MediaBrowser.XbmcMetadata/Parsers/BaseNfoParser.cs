@@ -73,7 +73,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         protected IProviderManager ProviderManager { get; }
 
         /// <summary>
-        /// Gets a value indicating whether URLs after a closing XML tag are supporrted.
+        /// Gets a value indicating whether URLs after a closing XML tag are supported.
         /// </summary>
         protected virtual bool SupportsUrlAfterClosingXmlTag => false;
 
@@ -306,12 +306,18 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     break;
                 case "watched":
                     var played = reader.ReadElementContentAsBoolean();
-                    if (!string.IsNullOrWhiteSpace(nfoConfiguration.UserId))
+                    if (Guid.TryParse(nfoConfiguration.UserId, out var userId))
                     {
-                        var user = _userManager.GetUserById(Guid.Parse(nfoConfiguration.UserId));
-                        userData = _userDataManager.GetUserData(user, item);
-                        userData.Played = played;
-                        _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+                        var user = _userManager.GetUserById(userId);
+                        if (user is not null)
+                        {
+                            userData = _userDataManager.GetUserData(user, item);
+                            if (userData is not null)
+                            {
+                                userData.Played = played;
+                                _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+                            }
+                        }
                     }
 
                     break;
@@ -320,9 +326,15 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         && Guid.TryParse(nfoConfiguration.UserId, out var playCountUserId))
                     {
                         var user = _userManager.GetUserById(playCountUserId);
-                        userData = _userDataManager.GetUserData(user, item);
-                        userData.PlayCount = count;
-                        _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+                        if (user is not null)
+                        {
+                            userData = _userDataManager.GetUserData(user, item);
+                            if (userData is not null)
+                            {
+                                userData.PlayCount = count;
+                                _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+                            }
+                        }
                     }
 
                     break;
@@ -331,9 +343,15 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         && Guid.TryParse(nfoConfiguration.UserId, out var lastPlayedUserId))
                     {
                         var user = _userManager.GetUserById(lastPlayedUserId);
-                        userData = _userDataManager.GetUserData(user, item);
-                        userData.LastPlayedDate = lastPlayed;
-                        _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+                        if (user is not null)
+                        {
+                            userData = _userDataManager.GetUserData(user, item);
+                            if (userData is not null)
+                            {
+                                userData.LastPlayedDate = lastPlayed;
+                                _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+                            }
+                        }
                     }
 
                     break;
@@ -654,7 +672,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 }
 
                 var fileSystemMetadata = _directoryService.GetFile(val);
-                // non existing file returns null
+                // nonexistent file returns null
                 if (fileSystemMetadata is null || !fileSystemMetadata.Exists)
                 {
                     Logger.LogWarning("Artwork file {Path} specified in nfo file for {ItemName} does not exist.", uri, itemResult.Item.Name);

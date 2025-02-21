@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -20,10 +18,22 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.TV
 {
+    /// <summary>
+    /// Service to manage series metadata.
+    /// </summary>
     public class SeriesMetadataService : MetadataService<Series, SeriesInfo>
     {
         private readonly ILocalizationManager _localizationManager;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SeriesMetadataService"/> class.
+        /// </summary>
+        /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+        /// <param name="logger">Instance of the <see cref="ILogger{SeasonMetadataService}"/> interface.</param>
+        /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
+        /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
+        /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
+        /// <param name="localizationManager">Instance of the <see cref="ILocalizationManager"/> interface.</param>
         public SeriesMetadataService(
             IServerConfigurationManager serverConfigurationManager,
             ILogger<SeriesMetadataService> logger,
@@ -36,6 +46,7 @@ namespace MediaBrowser.Providers.TV
             _localizationManager = localizationManager;
         }
 
+        /// <inheritdoc />
         public override async Task<ItemUpdateType> RefreshMetadata(BaseItem item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
         {
             if (item is Series series)
@@ -61,8 +72,8 @@ namespace MediaBrowser.Providers.TV
             await base.AfterMetadataRefresh(item, refreshOptions, cancellationToken).ConfigureAwait(false);
 
             RemoveObsoleteEpisodes(item);
-            await CreateSeasonsAsync(item, cancellationToken).ConfigureAwait(false);
             RemoveObsoleteSeasons(item);
+            await CreateSeasonsAsync(item, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
@@ -129,38 +140,39 @@ namespace MediaBrowser.Providers.TV
 
         private void RemoveObsoleteEpisodes(Series series)
         {
-            var episodes = series.GetEpisodes(null, new DtoOptions(), true).OfType<Episode>().ToList();
-            var numberOfEpisodes = episodes.Count;
-            // TODO: O(n^2), but can it be done faster without overcomplicating it?
-            for (var i = 0; i < numberOfEpisodes; i++)
+            var episodesBySeason = series.GetEpisodes(null, new DtoOptions(), true)
+                            .OfType<Episode>()
+                            .GroupBy(e => e.ParentIndexNumber)
+                            .ToList();
+
+            foreach (var seasonEpisodes in episodesBySeason)
             {
-                var currentEpisode = episodes[i];
-                // The outer loop only examines virtual episodes
-                if (!currentEpisode.IsVirtualItem)
+                List<Episode> nonPhysicalEpisodes = [];
+                List<Episode> physicalEpisodes = [];
+                foreach (var episode in seasonEpisodes)
                 {
-                    continue;
+                    if (episode.IsVirtualItem || episode.IsMissingEpisode)
+                    {
+                        nonPhysicalEpisodes.Add(episode);
+                        continue;
+                    }
+
+                    physicalEpisodes.Add(episode);
                 }
 
-                // Virtual episodes without an episode number are practically orphaned and should be deleted
-                if (!currentEpisode.IndexNumber.HasValue)
+                // Only consider non-physical episodes
+                foreach (var episode in nonPhysicalEpisodes)
                 {
-                    DeleteEpisode(currentEpisode);
-                    continue;
-                }
+                    // Episodes without an episode number are practically orphaned and should be deleted
+                    // Episodes with a physical equivalent should be deleted (they are no longer missing)
+                    var shouldKeep = episode.IndexNumber.HasValue && !physicalEpisodes.Any(e => e.ContainsEpisodeNumber(episode.IndexNumber.Value));
 
-                for (var j = i + 1; j < numberOfEpisodes; j++)
-                {
-                    var comparisonEpisode = episodes[j];
-                    // The inner loop is only for "physical" episodes
-                    if (comparisonEpisode.IsVirtualItem
-                        || currentEpisode.ParentIndexNumber != comparisonEpisode.ParentIndexNumber
-                        || !comparisonEpisode.ContainsEpisodeNumber(currentEpisode.IndexNumber.Value))
+                    if (shouldKeep)
                     {
                         continue;
                     }
 
-                    DeleteEpisode(currentEpisode);
-                    break;
+                    DeleteEpisode(episode);
                 }
             }
         }
@@ -211,8 +223,12 @@ namespace MediaBrowser.Providers.TV
                 }
                 else if (existingSeason.IsVirtualItem)
                 {
-                    existingSeason.IsVirtualItem = false;
-                    await existingSeason.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+                    var episodeCount = seriesChildren.OfType<Episode>().Count(e => e.ParentIndexNumber == seasonNumber && !e.IsMissingEpisode);
+                    if (episodeCount > 0)
+                    {
+                        existingSeason.IsVirtualItem = false;
+                        await existingSeason.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+                    }
                 }
             }
         }

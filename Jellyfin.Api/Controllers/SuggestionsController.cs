@@ -59,8 +59,8 @@ public class SuggestionsController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<QueryResult<BaseItemDto>> GetSuggestions(
         [FromQuery] Guid? userId,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] MediaType[] mediaType,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] type,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] MediaType[] mediaType,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] BaseItemKind[] type,
         [FromQuery] int? startIndex,
         [FromQuery] int? limit,
         [FromQuery] bool enableTotalRecordCount = false)
@@ -115,8 +115,8 @@ public class SuggestionsController : BaseJellyfinApiController
     [ApiExplorerSettings(IgnoreApi = true)]
     public ActionResult<QueryResult<BaseItemDto>> GetSuggestionsLegacy(
         [FromRoute, Required] Guid userId,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] MediaType[] mediaType,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] type,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] MediaType[] mediaType,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] BaseItemKind[] type,
         [FromQuery] int? startIndex,
         [FromQuery] int? limit,
         [FromQuery] bool enableTotalRecordCount = false)

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
@@ -20,7 +20,7 @@ public class CreatePlaylistDto
     /// <summary>
     /// Gets or sets item ids to add to the playlist.
     /// </summary>
-    [JsonConverter(typeof(JsonCommaDelimitedArrayConverterFactory))]
+    [JsonConverter(typeof(JsonCommaDelimitedCollectionConverterFactory))]
     public IReadOnlyList<Guid> Ids { get; set; } = [];
 
     /// <summary>

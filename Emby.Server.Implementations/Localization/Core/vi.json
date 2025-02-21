@@ -129,5 +129,11 @@
     "TaskCleanCollectionsAndPlaylists": "Dọn dẹp bộ sưu tập và danh sách phát",
     "TaskCleanCollectionsAndPlaylistsDescription": "Xóa các mục khỏi bộ sưu tập và danh sách phát không còn tồn tại.",
     "TaskAudioNormalization": "Chuẩn Hóa Âm Thanh",
-    "TaskAudioNormalizationDescription": "Quét tập tin để tìm dữ liệu chuẩn hóa âm thanh."
+    "TaskAudioNormalizationDescription": "Quét tập tin để tìm dữ liệu chuẩn hóa âm thanh.",
+    "TaskDownloadMissingLyricsDescription": "Tải xuống lời cho bài hát",
+    "TaskDownloadMissingLyrics": "Tải xuống lời bị thiếu",
+    "TaskExtractMediaSegmentsDescription": "Trích xuất hoặc lấy các phân đoạn phương tiện từ các plugin hỗ trợ MediaSegment.",
+    "TaskMoveTrickplayImages": "Di chuyển vị trí hình ảnh Trickplay",
+    "TaskMoveTrickplayImagesDescription": "Di chuyển các tập tin trickplay hiện có theo cài đặt thư viện.",
+    "TaskExtractMediaSegments": "Quét Phân Đoạn Phương Tiện"
 }

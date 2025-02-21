@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -156,6 +156,7 @@ public class MediaInfoHelper
     /// <param name="enableTranscoding">Enable transcoding.</param>
     /// <param name="allowVideoStreamCopy">Allow video stream copy.</param>
     /// <param name="allowAudioStreamCopy">Allow audio stream copy.</param>
+    /// <param name="alwaysBurnInSubtitleWhenTranscoding">Always burn-in subtitle when transcoding.</param>
     /// <param name="ipAddress">Requesting IP address.</param>
     public void SetDeviceSpecificData(
         BaseItem item,
@@ -175,6 +176,7 @@ public class MediaInfoHelper
         bool enableTranscoding,
         bool allowVideoStreamCopy,
         bool allowAudioStreamCopy,
+        bool alwaysBurnInSubtitleWhenTranscoding,
         IPAddress ipAddress)
     {
         var streamBuilder = new StreamBuilder(_mediaEncoder, _logger);
@@ -188,7 +190,8 @@ public class MediaInfoHelper
             Profile = profile,
             MaxAudioChannels = maxAudioChannels,
             AllowAudioStreamCopy = allowAudioStreamCopy,
-            AllowVideoStreamCopy = allowVideoStreamCopy
+            AllowVideoStreamCopy = allowVideoStreamCopy,
+            AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding,
         };
 
         if (string.Equals(mediaSourceId, mediaSource.Id, StringComparison.OrdinalIgnoreCase))
@@ -290,6 +293,10 @@ public class MediaInfoHelper
                 mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
                 mediaSource.TranscodingContainer = streamInfo.Container;
                 mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
+                if (streamInfo.AlwaysBurnInSubtitleWhenTranscoding)
+                {
+                    mediaSource.TranscodingUrl += "&alwaysBurnInSubtitleWhenTranscoding=true";
+                }
             }
             else
             {
@@ -306,6 +313,11 @@ public class MediaInfoHelper
                     if (!allowAudioStreamCopy)
                     {
                         mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
+                    }
+
+                    if (streamInfo.AlwaysBurnInSubtitleWhenTranscoding)
+                    {
+                        mediaSource.TranscodingUrl += "&alwaysBurnInSubtitleWhenTranscoding=true";
                     }
                 }
             }
@@ -420,6 +432,7 @@ public class MediaInfoHelper
                 true,
                 true,
                 true,
+                request.AlwaysBurnInSubtitleWhenTranscoding,
                 httpContext.GetNormalizedRemoteIP());
         }
         else

@@ -15,7 +15,7 @@
     "Favorites": "Favoritos",
     "Folders": "Carpetas",
     "Genres": "Géneros",
-    "HeaderAlbumArtists": "Artistas de álbum",
+    "HeaderAlbumArtists": "Artistas del álbum",
     "HeaderContinueWatching": "Seguir viendo",
     "HeaderFavoriteAlbums": "Álbumes favoritos",
     "HeaderFavoriteArtists": "Artistas favoritos",
@@ -124,5 +124,17 @@
     "External": "Externo",
     "TaskKeyframeExtractorDescription": "Extrae Fotogramas Clave de los archivos de vídeo para crear Listas de Reprodución HLS más precisas. Esta tarea puede durar mucho tiempo.",
     "TaskKeyframeExtractor": "Extractor de Fotogramas Clave",
-    "HearingImpaired": "Discapacidad Auditiva"
+    "HearingImpaired": "Discapacidad Auditiva",
+    "TaskRefreshTrickplayImages": "Generar imágenes de Trickplay",
+    "TaskRefreshTrickplayImagesDescription": "Crea vistas previas de reproducción engañosa para videos en bibliotecas habilitadas.",
+    "TaskAudioNormalization": "Normalización de audio",
+    "TaskAudioNormalizationDescription": "Escanea archivos en busca de datos de normalización de audio.",
+    "TaskCleanCollectionsAndPlaylists": "Limpiar colecciones y listas de reproducción",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Elimina elementos de colecciones y listas de reproducción que ya no existen.",
+    "TaskDownloadMissingLyrics": "Descargar letra faltante",
+    "TaskDownloadMissingLyricsDescription": "Descarga letras de canciones",
+    "TaskExtractMediaSegments": "Escanear Segmentos de Media",
+    "TaskExtractMediaSegmentsDescription": "Extrae u obtiene segmentos de medio de plugins habilitados para MediaSegment.",
+    "TaskMoveTrickplayImagesDescription": "Mueve archivos existentes de trickplay de acuerdo a la configuración de la biblioteca.",
+    "TaskMoveTrickplayImages": "Migrar Ubicación de Imagen de Trickplay"
 }

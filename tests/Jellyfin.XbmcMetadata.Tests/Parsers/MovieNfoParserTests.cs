@@ -149,7 +149,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             Assert.Equal(new DateTime(2019, 8, 6, 9, 1, 18), item.DateCreated);
 
             // userData
-            var userData = _userDataManager.GetUserData(_testUser, item);
+            var userData = _userDataManager.GetUserData(_testUser, item)!;
             Assert.Equal(2, userData.PlayCount);
             Assert.True(userData.Played);
             Assert.Equal(new DateTime(2021, 02, 11, 07, 47, 23), userData.LastPlayedDate);
@@ -220,7 +220,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
 
             _parser.Fetch(result, "Test Data/Fanart.nfo", CancellationToken.None);
 
-            Assert.Single(result.RemoteImages.Where(x => x.Type == ImageType.Backdrop));
+            Assert.Single(result.RemoteImages, x => x.Type == ImageType.Backdrop);
             Assert.Equal("https://assets.fanart.tv/fanart/movies/141052/moviebackground/justice-league-5a5332c7b5e77.jpg", result.RemoteImages.First(x => x.Type == ImageType.Backdrop).Url);
         }
 
@@ -256,6 +256,24 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             };
 
             Assert.Throws<ArgumentException>(() => _parser.Fetch(result, string.Empty, CancellationToken.None));
+        }
+
+        [Fact]
+        public void Parsing_Fields_With_Escaped_Xml_Special_Characters_Success()
+        {
+            var result = new MetadataResult<Video>()
+            {
+                Item = new Movie()
+            };
+
+            _parser.Fetch(result, "Test Data/Lilo & Stitch.nfo", CancellationToken.None);
+            var item = (Movie)result.Item;
+
+            Assert.Equal("Lilo & Stitch", item.Name);
+            Assert.Equal("Lilo & Stitch", item.OriginalTitle);
+            Assert.Equal("Lilo & Stitch Collection", item.CollectionName);
+            Assert.StartsWith(">>", item.Overview, StringComparison.InvariantCulture);
+            Assert.EndsWith("<<", item.Overview, StringComparison.InvariantCulture);
         }
     }
 }
