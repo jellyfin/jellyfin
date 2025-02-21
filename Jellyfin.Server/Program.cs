@@ -45,7 +45,7 @@ namespace Jellyfin.Server
         public const string LoggingConfigFileSystem = "logging.json";
 
         private static readonly SerilogLoggerFactory _loggerFactory = new SerilogLoggerFactory();
-        private static SetupServer? _setupServer = new();
+        private static SetupServer _setupServer = new();
         private static CoreAppHost? _appHost;
         private static IHost? _jfHost = null;
         private static long _startTimestamp;
@@ -74,7 +74,7 @@ namespace Jellyfin.Server
         {
             _startTimestamp = Stopwatch.GetTimestamp();
             ServerApplicationPaths appPaths = StartupHelpers.CreateApplicationPaths(options);
-            await _setupServer!.RunAsync(static () => _jfHost?.Services?.GetService<INetworkManager>(), appPaths, static () => _appHost).ConfigureAwait(false);
+            await _setupServer.RunAsync(static () => _jfHost?.Services?.GetService<INetworkManager>(), appPaths, static () => _appHost).ConfigureAwait(false);
 
             // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
             Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", appPaths.LogDirectoryPath);
@@ -169,7 +169,7 @@ namespace Jellyfin.Server
 
                 try
                 {
-                    await _setupServer!.StopAsync().ConfigureAwait(false);
+                    await _setupServer.StopAsync().ConfigureAwait(false);
                     _setupServer.Dispose();
                     _setupServer = null!;
                     await _jfHost.StartAsync().ConfigureAwait(false);
