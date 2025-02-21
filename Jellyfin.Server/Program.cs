@@ -7,7 +7,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using CommandLine;
 using Emby.Server.Implementations;
-using Jellyfin.Networking.Manager;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Helpers;
 using Jellyfin.Server.Implementations;
@@ -47,7 +46,7 @@ namespace Jellyfin.Server
         private static readonly SerilogLoggerFactory _loggerFactory = new SerilogLoggerFactory();
         private static SetupServer _setupServer = new();
         private static CoreAppHost? _appHost;
-        private static IHost? _jfHost = null;
+        private static IHost? _jellyfinHost = null;
         private static long _startTimestamp;
         private static ILogger _logger = NullLogger.Instance;
         private static bool _restartOnShutdown;
@@ -74,7 +73,7 @@ namespace Jellyfin.Server
         {
             _startTimestamp = Stopwatch.GetTimestamp();
             ServerApplicationPaths appPaths = StartupHelpers.CreateApplicationPaths(options);
-            await _setupServer.RunAsync(static () => _jfHost?.Services?.GetService<INetworkManager>(), appPaths, static () => _appHost).ConfigureAwait(false);
+            await _setupServer.RunAsync(static () => _jellyfinHost?.Services?.GetService<INetworkManager>(), appPaths, static () => _appHost).ConfigureAwait(false);
 
             // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
             Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", appPaths.LogDirectoryPath);
@@ -130,7 +129,7 @@ namespace Jellyfin.Server
                 {
                     _startTimestamp = Stopwatch.GetTimestamp();
                     _setupServer = new SetupServer();
-                    await _setupServer.RunAsync(static () => _jfHost?.Services?.GetService<INetworkManager>(), appPaths, static () => _appHost).ConfigureAwait(false);
+                    await _setupServer.RunAsync(static () => _jellyfinHost?.Services?.GetService<INetworkManager>(), appPaths, static () => _appHost).ConfigureAwait(false);
                 }
             } while (_restartOnShutdown);
         }
@@ -145,7 +144,7 @@ namespace Jellyfin.Server
             _appHost = appHost;
             try
             {
-                _jfHost = Host.CreateDefaultBuilder()
+                _jellyfinHost = Host.CreateDefaultBuilder()
                     .UseConsoleLifetime()
                     .ConfigureServices(services => appHost.Init(services))
                     .ConfigureWebHostDefaults(webHostBuilder =>
@@ -162,7 +161,7 @@ namespace Jellyfin.Server
                     .Build();
 
                 // Re-use the host service provider in the app host since ASP.NET doesn't allow a custom service collection.
-                appHost.ServiceProvider = _jfHost.Services;
+                appHost.ServiceProvider = _jellyfinHost.Services;
 
                 await appHost.InitializeServices().ConfigureAwait(false);
                 Migrations.MigrationRunner.Run(appHost, _loggerFactory);
@@ -172,7 +171,7 @@ namespace Jellyfin.Server
                     await _setupServer.StopAsync().ConfigureAwait(false);
                     _setupServer.Dispose();
                     _setupServer = null!;
-                    await _jfHost.StartAsync().ConfigureAwait(false);
+                    await _jellyfinHost.StartAsync().ConfigureAwait(false);
 
                     if (!OperatingSystem.IsWindows() && startupConfig.UseUnixSocket())
                     {
@@ -191,7 +190,7 @@ namespace Jellyfin.Server
 
                 _logger.LogInformation("Startup complete {Time:g}", Stopwatch.GetElapsedTime(_startTimestamp));
 
-                await _jfHost.WaitForShutdownAsync().ConfigureAwait(false);
+                await _jellyfinHost.WaitForShutdownAsync().ConfigureAwait(false);
                 _restartOnShutdown = appHost.ShouldRestart;
             }
             catch (Exception ex)
@@ -217,7 +216,7 @@ namespace Jellyfin.Server
                 }
 
                 _appHost = null;
-                _jfHost?.Dispose();
+                _jellyfinHost?.Dispose();
             }
         }
 
