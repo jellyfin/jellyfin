@@ -176,6 +176,10 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public async Task UpdateUserAsync(User user)
         {
+            ArgumentNullException.ThrowIfNull(user);
+
+            ThrowIfInvalidUsername(user.Username);
+
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
