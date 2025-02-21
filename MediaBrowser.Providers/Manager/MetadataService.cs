@@ -1142,14 +1142,7 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        private static bool IsYearOnlyDate(DateTime date)
-        {
-            return date > DateTime.MinValue && date < DateTime.MaxValue
-                && date.Year > 0
-                && date.Month == 1
-                && date.Day == 1
-                && date.TimeOfDay == TimeSpan.Zero;
-        }
+        private static bool IsYearOnlyDate(DateTime date) => date.Month == 1 && date.Day == 1;
 
         private static void MergePeople(List<PersonInfo> source, List<PersonInfo> target)
         {
