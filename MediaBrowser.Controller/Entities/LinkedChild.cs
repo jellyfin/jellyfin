@@ -4,7 +4,6 @@
 
 using System;
 using System.Globalization;
-using System.Text.Json.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -12,7 +11,6 @@ namespace MediaBrowser.Controller.Entities
     {
         public LinkedChild()
         {
-            Id = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
         }
 
         public string Path { get; set; }
@@ -21,9 +19,6 @@ namespace MediaBrowser.Controller.Entities
 
         public string LibraryItemId { get; set; }
 
-        [JsonIgnore]
-        public string Id { get; set; }
-
         /// <summary>
         /// Gets or sets the linked item id.
         /// </summary>
@@ -31,6 +26,8 @@ namespace MediaBrowser.Controller.Entities
 
         public static LinkedChild Create(BaseItem item)
         {
+            ArgumentNullException.ThrowIfNull(item);
+
             var child = new LinkedChild
             {
                 Path = item.Path,

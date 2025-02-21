@@ -124,22 +124,7 @@ namespace Jellyfin.LiveTv.IO
 
         private string GetCommandLineArgs(MediaSourceInfo mediaSource, string inputTempFile, string targetFile)
         {
-            string videoArgs;
-            if (EncodeVideo(mediaSource))
-            {
-                const int MaxBitrate = 25000000;
-                videoArgs = string.Format(
-                    CultureInfo.InvariantCulture,
-                    "-codec:v:0 libx264 -force_key_frames \"expr:gte(t,n_forced*5)\" {0} -pix_fmt yuv420p -preset superfast -crf 23 -b:v {1} -maxrate {1} -bufsize ({1}*2) -profile:v high -level 41",
-                    GetOutputSizeParam(),
-                    MaxBitrate);
-            }
-            else
-            {
-                videoArgs = "-codec:v:0 copy";
-            }
-
-            videoArgs += " -fflags +genpts";
+            string videoArgs = "-codec:v:0 copy -fflags +genpts";
 
             var flags = new List<string>();
             if (mediaSource.IgnoreDts)
@@ -205,19 +190,6 @@ namespace Jellyfin.LiveTv.IO
         private static string GetAudioArgs(MediaSourceInfo mediaSource)
         {
             return "-codec:a:0 copy";
-
-            // var audioChannels = 2;
-            // var audioStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
-            // if (audioStream is not null)
-            // {
-            //    audioChannels = audioStream.Channels ?? audioChannels;
-            // }
-            // return "-codec:a:0 aac -strict experimental -ab 320000";
-        }
-
-        private static bool EncodeVideo(MediaSourceInfo mediaSource)
-        {
-            return false;
         }
 
         protected string GetOutputSizeParam()

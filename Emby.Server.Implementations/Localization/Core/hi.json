@@ -99,7 +99,7 @@
     "ValueHasBeenAddedToLibrary": "{0} आपके माध्यम ग्रन्थालय में उपजात हो गया हैं",
     "TasksLibraryCategory": "संग्रहालय",
     "TaskOptimizeDatabase": "जानकारी प्रवृद्धि",
-    "TaskDownloadMissingSubtitles": "असमेत अनुलेख को अवाहरति करें",
+    "TaskDownloadMissingSubtitles": "लापता अनुलेख डाउनलोड करें",
     "TaskRefreshLibrary": "माध्यम संग्राहत को छाने",
     "TaskCleanActivityLog": "क्रियाकलाप लॉग साफ करें",
     "TasksChannelsCategory": "इंटरनेट प्रणाली",
@@ -127,5 +127,7 @@
     "TaskRefreshTrickplayImages": "ट्रिकप्लै चित्रों को सृजन करे",
     "TaskRefreshTrickplayImagesDescription": "नियत संग्रहों में चलचित्रों का ट्रीकप्लै दर्शनों को सृजन करे.",
     "TaskAudioNormalization": "श्रव्य सामान्यीकरण",
-    "TaskAudioNormalizationDescription": "श्रव्य सामान्यीकरण के लिए फाइलें अन्वेषण करें"
+    "TaskAudioNormalizationDescription": "श्रव्य सामान्यीकरण के लिए फाइलें अन्वेषण करें",
+    "TaskDownloadMissingLyrics": "लापता गानों के बोल डाउनलोड करेँ",
+    "TaskDownloadMissingLyricsDescription": "गानों के बोल डाउनलोड करता है"
 }

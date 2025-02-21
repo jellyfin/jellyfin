@@ -267,7 +267,7 @@ public class DynamicHlsHelper
 
         if (EnableAdaptiveBitrateStreaming(state, isLiveStream, enableAdaptiveBitrateStreaming, _httpContextAccessor.HttpContext.GetNormalizedRemoteIP()))
         {
-            var requestedVideoBitrate = state.VideoRequest is null ? 0 : state.VideoRequest.VideoBitRate ?? 0;
+            var requestedVideoBitrate = state.VideoRequest?.VideoBitRate ?? 0;
 
             // By default, vary by just 200k
             var variation = GetBitrateVariation(totalBitrate);
@@ -526,9 +526,7 @@ public class DynamicHlsHelper
             return false;
         }
 
-        // Having problems in android
-        return false;
-        // return state.VideoRequest.VideoBitRate.HasValue;
+        return state.VideoRequest?.VideoBitRate.HasValue ?? false;
     }
 
     private void AddSubtitles(StreamState state, IEnumerable<MediaStream> subtitles, StringBuilder builder, ClaimsPrincipal user)
@@ -550,7 +548,7 @@ public class DynamicHlsHelper
 
             var url = string.Format(
                 CultureInfo.InvariantCulture,
-                "{0}/Subtitles/{1}/subtitles.m3u8?SegmentLength={2}&api_key={3}",
+                "{0}/Subtitles/{1}/subtitles.m3u8?SegmentLength={2}&ApiKey={3}",
                 state.Request.MediaSourceId,
                 stream.Index.ToString(CultureInfo.InvariantCulture),
                 30.ToString(CultureInfo.InvariantCulture),
@@ -587,7 +585,7 @@ public class DynamicHlsHelper
 
             var url = string.Format(
                 CultureInfo.InvariantCulture,
-                "Trickplay/{0}/tiles.m3u8?MediaSourceId={1}&api_key={2}",
+                "Trickplay/{0}/tiles.m3u8?MediaSourceId={1}&ApiKey={2}",
                 width.ToString(CultureInfo.InvariantCulture),
                 state.Request.MediaSourceId,
                 user.GetToken());
@@ -616,7 +614,7 @@ public class DynamicHlsHelper
             && state.VideoStream is not null
             && state.VideoStream.Level.HasValue)
         {
-            levelString = state.VideoStream.Level.Value.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
+            levelString = state.VideoStream.Level.Value.ToString(CultureInfo.InvariantCulture);
         }
         else
         {

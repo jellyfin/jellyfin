@@ -62,7 +62,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private readonly AsyncNonKeyedLocker _thumbnailResourcePool;
 
-        private readonly object _runningProcessesLock = new object();
+        private readonly Lock _runningProcessesLock = new();
         private readonly List<ProcessWrapper> _runningProcesses = new List<ProcessWrapper>();
 
         // MediaEncoder is registered as a Singleton
@@ -122,7 +122,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _jsonSerializerOptions = new JsonSerializerOptions(JsonDefaults.Options);
             _jsonSerializerOptions.Converters.Add(new JsonBoolStringConverter());
 
-            var semaphoreCount = 2 * Environment.ProcessorCount;
+            // Although the type is not nullable, this might still be null during unit tests
+            var semaphoreCount = serverConfig.Configuration?.ParallelImageEncodingLimit ?? 0;
+            if (semaphoreCount < 1)
+            {
+                semaphoreCount = Environment.ProcessorCount;
+            }
+
             _thumbnailResourcePool = new(semaphoreCount);
         }
 
@@ -1035,6 +1041,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 if (exitCode == -1)
                 {
                     _logger.LogError("ffmpeg image extraction failed for {ProcessDescription}", processDescription);
+                    // Cleanup temp folder here, because the targetDirectory is not returned and the cleanup for failed ffmpeg process is not possible for caller.
+                    // Ideally the ffmpeg should not write any files if it fails, but it seems like it is not guaranteed.
+                    try
+                    {
+                        Directory.Delete(targetDirectory, true);
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError(e, "Failed to delete ffmpeg temp directory {TargetDirectory}", targetDirectory);
+                    }
 
                     throw new FfmpegException(string.Format(CultureInfo.InvariantCulture, "ffmpeg image extraction failed for {0}", processDescription));
                 }
@@ -1091,14 +1107,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private void StopProcesses()
         {
-            List<ProcessWrapper> proceses;
+            List<ProcessWrapper> processes;
             lock (_runningProcessesLock)
             {
-                proceses = _runningProcesses.ToList();
+                processes = _runningProcesses.ToList();
                 _runningProcesses.Clear();
             }
 
-            foreach (var process in proceses)
+            foreach (var process in processes)
             {
                 if (!process.HasExited)
                 {

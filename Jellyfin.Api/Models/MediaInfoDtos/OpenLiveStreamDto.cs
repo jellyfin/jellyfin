@@ -61,7 +61,7 @@ public class OpenLiveStreamDto
     public bool? EnableDirectPlay { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether to enale direct stream.
+    /// Gets or sets a value indicating whether to enable direct stream.
     /// </summary>
     public bool? EnableDirectStream { get; set; }
 

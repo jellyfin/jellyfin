@@ -514,7 +514,7 @@ namespace Jellyfin.Data.Entities
         /// </summary>
         public void AddDefaultPreferences()
         {
-            foreach (var val in Enum.GetValues(typeof(PreferenceKind)).Cast<PreferenceKind>())
+            foreach (var val in Enum.GetValues<PreferenceKind>())
             {
                 Preferences.Add(new Preference(val, string.Empty));
             }

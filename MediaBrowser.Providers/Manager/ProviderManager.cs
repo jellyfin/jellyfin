@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Mime;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using AsyncKeyedLock;
@@ -47,7 +48,7 @@ namespace MediaBrowser.Providers.Manager
     /// </summary>
     public class ProviderManager : IProviderManager, IDisposable
     {
-        private readonly object _refreshQueueLock = new();
+        private readonly Lock _refreshQueueLock = new();
         private readonly ILogger<ProviderManager> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILibraryMonitor _libraryMonitor;
@@ -199,24 +200,15 @@ namespace MediaBrowser.Providers.Manager
                 // TODO: Isolate this hack into the tvh plugin
                 if (string.IsNullOrEmpty(contentType))
                 {
+                    // Special case for imagecache
                     if (url.Contains("/imagecache/", StringComparison.OrdinalIgnoreCase))
                     {
                         contentType = MediaTypeNames.Image.Png;
                     }
-                    else
-                    {
-                        throw new HttpRequestException("Invalid image received: contentType not set.", null, response.StatusCode);
-                    }
                 }
 
-                // TVDb will sometimes serve a rubbish 404 html page with a 200 OK code, because reasons...
-                if (contentType.Equals(MediaTypeNames.Text.Html, StringComparison.OrdinalIgnoreCase))
-                {
-                    throw new HttpRequestException("Invalid image received.", null, HttpStatusCode.NotFound);
-                }
-
-                // some iptv/epg providers don't correctly report media type, extract from url if no extension found
-                if (string.IsNullOrWhiteSpace(MimeTypes.ToExtension(contentType)))
+                // some providers don't correctly report media type, extract from url if no extension found
+                if (contentType is null || contentType.Equals(MediaTypeNames.Application.Octet, StringComparison.OrdinalIgnoreCase))
                 {
                     // Strip query parameters from url to get actual path.
                     contentType = MimeTypes.GetMimeType(new Uri(url).GetLeftPart(UriPartial.Path));
@@ -224,7 +216,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (!contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
                 {
-                    throw new HttpRequestException($"Request returned {contentType} instead of an image type", null, HttpStatusCode.NotFound);
+                    throw new HttpRequestException($"Request returned '{contentType}' instead of an image type", null, HttpStatusCode.NotFound);
                 }
 
                 var responseBytes = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
@@ -251,15 +243,31 @@ namespace MediaBrowser.Providers.Manager
         }
 
         /// <inheritdoc/>
-        public Task SaveImage(BaseItem item, string source, string mimeType, ImageType type, int? imageIndex, bool? saveLocallyWithMedia, CancellationToken cancellationToken)
+        public async Task SaveImage(BaseItem item, string source, string mimeType, ImageType type, int? imageIndex, bool? saveLocallyWithMedia, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(source))
             {
                 throw new ArgumentNullException(nameof(source));
             }
 
-            var fileStream = AsyncFile.OpenRead(source);
-            return new ImageSaver(_configurationManager, _libraryMonitor, _fileSystem, _logger).SaveImage(item, fileStream, mimeType, type, imageIndex, saveLocallyWithMedia, cancellationToken);
+            try
+            {
+                var fileStream = AsyncFile.OpenRead(source);
+                await new ImageSaver(_configurationManager, _libraryMonitor, _fileSystem, _logger)
+                    .SaveImage(item, fileStream, mimeType, type, imageIndex, saveLocallyWithMedia, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            finally
+            {
+                try
+                {
+                    File.Delete(source);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Source file {Source} not found or in use, skip removing", source);
+                }
+            }
         }
 
         /// <inheritdoc/>
@@ -1016,7 +1024,6 @@ namespace MediaBrowser.Providers.Manager
         /// <inheritdoc/>
         public void QueueRefresh(Guid itemId, MetadataRefreshOptions options, RefreshPriority priority)
         {
-            ArgumentNullException.ThrowIfNull(itemId);
             if (itemId.IsEmpty())
             {
                 throw new ArgumentException("Guid can't be empty", nameof(itemId));

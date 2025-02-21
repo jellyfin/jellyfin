@@ -1303,7 +1303,7 @@ namespace Emby.Server.Implementations.Session
 
             if (item is null)
             {
-                _logger.LogError("A non-existent item Id {0} was passed into TranslateItemForPlayback", id);
+                _logger.LogError("A nonexistent item Id {0} was passed into TranslateItemForPlayback", id);
                 return Array.Empty<BaseItem>();
             }
 
@@ -1356,7 +1356,7 @@ namespace Emby.Server.Implementations.Session
 
             if (item is null)
             {
-                _logger.LogError("A non-existent item Id {0} was passed into TranslateItemForInstantMix", id);
+                _logger.LogError("A nonexistent item Id {0} was passed into TranslateItemForInstantMix", id);
                 return new List<BaseItem>();
             }
 
@@ -1938,7 +1938,11 @@ namespace Emby.Server.Implementations.Session
                 // Don't report acceleration type for non-admin users.
                 result = result.Select(r =>
                 {
-                    r.TranscodingInfo.HardwareAccelerationType = HardwareAccelerationType.none;
+                    if (r.TranscodingInfo is not null)
+                    {
+                        r.TranscodingInfo.HardwareAccelerationType = HardwareAccelerationType.none;
+                    }
+
                     return r;
                 });
             }

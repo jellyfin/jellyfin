@@ -132,7 +132,7 @@ public static class StreamingHelpers
 
                 mediaSource = string.IsNullOrEmpty(streamingRequest.MediaSourceId)
                     ? mediaSources[0]
-                    : mediaSources.Find(i => string.Equals(i.Id, streamingRequest.MediaSourceId, StringComparison.Ordinal));
+                    : mediaSources.FirstOrDefault(i => string.Equals(i.Id, streamingRequest.MediaSourceId, StringComparison.Ordinal));
 
                 if (mediaSource is null && Guid.Parse(streamingRequest.MediaSourceId).Equals(streamingRequest.Id))
                 {
@@ -210,7 +210,7 @@ public static class StreamingHelpers
                     && state.VideoRequest.VideoBitRate.Value >= state.VideoStream.BitRate.Value)
                 {
                     // Don't downscale the resolution if the width/height/MaxWidth/MaxHeight is not requested,
-                    // and the requested video bitrate is higher than source video bitrate.
+                    // and the requested video bitrate is greater than source video bitrate.
                     if (state.VideoStream.Width.HasValue || state.VideoStream.Height.HasValue)
                     {
                         state.VideoRequest.MaxWidth = state.VideoStream?.Width;
@@ -234,6 +234,11 @@ public static class StreamingHelpers
                     state.VideoRequest.MaxWidth = resolution.MaxWidth;
                     state.VideoRequest.MaxHeight = resolution.MaxHeight;
                 }
+            }
+
+            if (state.AudioStream is not null && !EncodingHelper.IsCopyCodec(state.OutputAudioCodec) && string.Equals(state.AudioStream.Codec, state.OutputAudioCodec, StringComparison.OrdinalIgnoreCase) && state.OutputAudioBitrate.HasValue)
+            {
+                state.OutputAudioCodec = state.SupportedAudioCodecs.Where(c => !EncodingHelper.LosslessAudioCodecs.Contains(c)).FirstOrDefault(mediaEncoder.CanEncodeToAudioCodec);
             }
         }
 
