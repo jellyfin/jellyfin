@@ -365,7 +365,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
                 else if (track.AdditionalFields.TryGetValue("UFID", out var ufIdValue) && !string.IsNullOrEmpty(ufIdValue))
                 {
-                    // If tagged with MB Picard, the format is 'http://musicbrainz.org\0<recording MBID>
+                    // If tagged with MB Picard, the format is 'http://musicbrainz.org\0<recording MBID>'
                     if (ufIdValue.Contains("musicbrainz.org", StringComparison.OrdinalIgnoreCase))
                     {
                         audio.TrySetProviderId(MetadataProvider.MusicBrainzRecording, ufIdValue.AsSpan().RightPart('\0').ToString());
