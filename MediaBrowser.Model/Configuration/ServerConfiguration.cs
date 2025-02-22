@@ -178,6 +178,11 @@ public class ServerConfiguration : BaseApplicationConfiguration
     public int LibraryUpdateDuration { get; set; } = 30;
 
     /// <summary>
+    /// Gets or sets the amount of items to cache.
+    /// </summary>
+    public int LibraryCacheSize { get; set; } = 10_000;
+
+    /// <summary>
     /// Gets or sets the image saving convention.
     /// </summary>
     /// <value>The image saving convention.</value>
