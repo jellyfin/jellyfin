@@ -66,13 +66,11 @@ namespace MediaBrowser.Model.Updates
         public Guid Id { get; set; }
 
         /// <summary>
-        /// Gets or sets the versions.
+        /// Gets the versions.
         /// </summary>
         /// <value>The versions.</value>
         [JsonPropertyName("versions")]
-#pragma warning disable CA2227 // Collection properties should be read only
-        public IList<VersionInfo> Versions { get; set; }
-#pragma warning restore CA2227 // Collection properties should be read only
+        public IList<VersionInfo> Versions { get; init; }
 
         /// <summary>
         /// Gets or sets the image url for the package.

@@ -1,5 +1,4 @@
 #pragma warning disable CA1002 // Do not expose generic lists
-#pragma warning disable CA2227 // Collection properties should be read only
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -14,9 +13,9 @@ namespace Jellyfin.Extensions.Tests.Json.Models
     public sealed class GenericBodyListModel<T>
     {
         /// <summary>
-        /// Gets or sets the value.
+        /// Gets the value.
         /// </summary>
         [JsonConverter(typeof(JsonCommaDelimitedCollectionConverterFactory))]
-        public List<T> Value { get; set; } = default!;
+        public List<T> Value { get; init; } = default!;
     }
 }

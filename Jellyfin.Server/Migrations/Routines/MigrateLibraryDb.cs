@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Data;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -416,6 +415,7 @@ public class MigrateLibraryDb : IMigrationRoutine
             Type = (ItemValueType)reader.GetInt32(1),
             Value = reader.GetString(2),
             CleanValue = reader.GetString(3),
+            BaseItemsMap = ImmutableList<ItemValueMap>.Empty,
         };
     }
 
@@ -425,6 +425,7 @@ public class MigrateLibraryDb : IMigrationRoutine
         {
             Id = Guid.NewGuid(),
             Name = reader.GetString(1),
+            BaseItems = ImmutableList<PeopleBaseItemMap>.Empty,
         };
 
         if (reader.TryGetString(3, out var type))

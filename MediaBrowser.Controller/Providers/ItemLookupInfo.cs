@@ -10,12 +10,6 @@ namespace MediaBrowser.Controller.Providers
 {
     public class ItemLookupInfo : IHasProviderIds
     {
-        public ItemLookupInfo()
-        {
-            IsAutomated = true;
-            ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        }
-
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
@@ -50,7 +44,7 @@ namespace MediaBrowser.Controller.Providers
         /// Gets or sets the provider ids.
         /// </summary>
         /// <value>The provider ids.</value>
-        public Dictionary<string, string> ProviderIds { get; set; }
+        public Dictionary<string, string> ProviderIds { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Gets or sets the year.
@@ -64,6 +58,6 @@ namespace MediaBrowser.Controller.Providers
 
         public DateTime? PremiereDate { get; set; }
 
-        public bool IsAutomated { get; set; }
+        public bool IsAutomated { get; set; } = true;
     }
 }

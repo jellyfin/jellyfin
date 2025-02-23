@@ -1,6 +1,6 @@
 #nullable disable
 
-#pragma warning disable CA1002, CA2227, CS1591
+#pragma warning disable CA1002, CS1591
 
 using System.Collections.Generic;
 using MediaBrowser.Model.Channels;
@@ -9,25 +9,17 @@ namespace MediaBrowser.Controller.Channels
 {
     public class InternalChannelFeatures
     {
-        public InternalChannelFeatures()
-        {
-            MediaTypes = new List<ChannelMediaType>();
-            ContentTypes = new List<ChannelMediaContentType>();
-
-            DefaultSortFields = new List<ChannelItemSortField>();
-        }
-
         /// <summary>
-        /// Gets or sets the media types.
+        /// Gets the media types.
         /// </summary>
         /// <value>The media types.</value>
-        public List<ChannelMediaType> MediaTypes { get; set; }
+        public List<ChannelMediaType> MediaTypes { get; init; } = [];
 
         /// <summary>
-        /// Gets or sets the content types.
+        /// Gets the content types.
         /// </summary>
         /// <value>The content types.</value>
-        public List<ChannelMediaContentType> ContentTypes { get; set; }
+        public List<ChannelMediaContentType> ContentTypes { get; init; } = [];
 
         /// <summary>
         /// Gets or sets the maximum number of records the channel allows retrieving at a time.
@@ -35,10 +27,10 @@ namespace MediaBrowser.Controller.Channels
         public int? MaxPageSize { get; set; }
 
         /// <summary>
-        /// Gets or sets the default sort orders.
+        /// Gets the default sort orders.
         /// </summary>
         /// <value>The default sort orders.</value>
-        public List<ChannelItemSortField> DefaultSortFields { get; set; }
+        public List<ChannelItemSortField> DefaultSortFields { get; init; } = [];
 
         /// <summary>
         /// Gets or sets a value indicating whether a sort ascending/descending toggle is supported or not.

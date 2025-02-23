@@ -1,5 +1,3 @@
-#pragma warning disable CA2227 // Collection properties should be read only
-
 using System;
 using System.Collections.Generic;
 
@@ -26,7 +24,7 @@ public class People
     public string? PersonType { get; set; }
 
     /// <summary>
-    /// Gets or Sets the mapping of People to BaseItems.
+    /// Gets the mapping of People to BaseItems.
     /// </summary>
-    public ICollection<PeopleBaseItemMap>? BaseItems { get; set; }
+    public required ICollection<PeopleBaseItemMap> BaseItems { get; init; }
 }

@@ -1,10 +1,7 @@
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-#pragma warning disable CA2227 // Collection properties should be read only
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Jellyfin.Data.Entities;
 
@@ -152,27 +149,27 @@ public class BaseItemEntity
 
     public Guid? SeriesId { get; set; }
 
-    public ICollection<PeopleBaseItemMap>? Peoples { get; set; }
+    public ICollection<PeopleBaseItemMap> Peoples { get; init; } = [];
 
-    public ICollection<UserData>? UserData { get; set; }
+    public ICollection<UserData> UserData { get; init; } = [];
 
-    public ICollection<ItemValueMap>? ItemValues { get; set; }
+    public ICollection<ItemValueMap> ItemValues { get; init; } = [];
 
-    public ICollection<MediaStreamInfo>? MediaStreams { get; set; }
+    public ICollection<MediaStreamInfo> MediaStreams { get; init; } = [];
 
-    public ICollection<Chapter>? Chapters { get; set; }
+    public ICollection<Chapter> Chapters { get; init; } = [];
 
-    public ICollection<BaseItemProvider>? Provider { get; set; }
+    public IReadOnlyCollection<BaseItemProvider> Provider { get; set; } = [];
 
-    public ICollection<AncestorId>? ParentAncestors { get; set; }
+    public ICollection<AncestorId> ParentAncestors { get; init; } = [];
 
-    public ICollection<AncestorId>? Children { get; set; }
+    public IReadOnlyCollection<AncestorId> Children { get; set; } = [];
 
-    public ICollection<BaseItemMetadataField>? LockedFields { get; set; }
+    public IReadOnlyCollection<BaseItemMetadataField>? LockedFields { get; set; }
 
-    public ICollection<BaseItemTrailerType>? TrailerTypes { get; set; }
+    public IReadOnlyCollection<BaseItemTrailerType> TrailerTypes { get; set; } = [];
 
-    public ICollection<BaseItemImageInfo>? Images { get; set; }
+    public IReadOnlyCollection<BaseItemImageInfo> Images { get; set; } = [];
 
     // those are references to __LOCAL__ ids not DB ids ... TODO: Bring the whole folder structure into the DB
     // public ICollection<BaseItemEntity>? SeriesEpisodes { get; set; }

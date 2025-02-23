@@ -102,12 +102,12 @@ public sealed class BaseItemRepository
         using var context = _dbProvider.CreateDbContext();
         using var transaction = context.Database.BeginTransaction();
         context.PeopleBaseItemMap.Where(e => e.ItemId == id).ExecuteDelete();
-        context.Peoples.Where(e => e.BaseItems!.Count == 0).ExecuteDelete();
+        context.Peoples.Where(e => e.BaseItems.Count == 0).ExecuteDelete();
         context.Chapters.Where(e => e.ItemId == id).ExecuteDelete();
         context.MediaStreamInfos.Where(e => e.ItemId == id).ExecuteDelete();
         context.AncestorIds.Where(e => e.ItemId == id || e.ParentItemId == id).ExecuteDelete();
         context.ItemValuesMap.Where(e => e.ItemId == id).ExecuteDelete();
-        context.ItemValues.Where(e => e.BaseItemsMap!.Count == 0).ExecuteDelete();
+        context.ItemValues.Where(e => e.BaseItemsMap.Count == 0).ExecuteDelete();
         context.BaseItemImageInfos.Where(e => e.ItemId == id).ExecuteDelete();
         context.BaseItemProviders.Where(e => e.ItemId == id).ExecuteDelete();
         context.BaseItems.Where(e => e.Id == id).ExecuteDelete();
@@ -465,7 +465,8 @@ public sealed class BaseItemRepository
                         CleanValue = GetCleanValue(itemValue.Value),
                         Type = (ItemValueType)itemValue.MagicNumber,
                         ItemValueId = refValue = Guid.NewGuid(),
-                        Value = itemValue.Value
+                        Value = itemValue.Value,
+                        BaseItemsMap = [],
                     });
                     localItemValueCache[itemValue] = refValue;
                 }
@@ -673,7 +674,7 @@ public sealed class BaseItemRepository
         var entity = new BaseItemEntity()
         {
             Type = dtoType.ToString(),
-            Id = dto.Id
+            Id = dto.Id,
         };
 
         if (TypeRequiresDeserialization(dtoType))

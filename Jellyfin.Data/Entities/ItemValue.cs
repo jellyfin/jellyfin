@@ -29,9 +29,7 @@ public class ItemValue
     public required string CleanValue { get; set; }
 
     /// <summary>
-    /// Gets or Sets all associated BaseItems.
+    /// Gets all associated BaseItems.
     /// </summary>
-#pragma warning disable CA2227 // Collection properties should be read only
-    public ICollection<ItemValueMap>? BaseItemsMap { get; set; }
-#pragma warning restore CA2227 // Collection properties should be read only
+    public required ICollection<ItemValueMap> BaseItemsMap { get; init; }
 }
