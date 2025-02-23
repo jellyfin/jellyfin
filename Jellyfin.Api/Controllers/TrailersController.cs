@@ -41,6 +41,7 @@ public class TrailersController : BaseJellyfinApiController
     /// <param name="parentIndexNumber">Optional filter by parent index number.</param>
     /// <param name="hasParentalRating">Optional filter by items that have or do not have a parental rating.</param>
     /// <param name="isHd">Optional filter by items that are HD or not.</param>
+    /// <param name="isSd">Optional filter by items that are SD or not.</param>
     /// <param name="is4K">Optional filter by items that are 4K or not.</param>
     /// <param name="locationTypes">Optional. If specified, results will be filtered based on LocationType. This allows multiple, comma delimited.</param>
     /// <param name="excludeLocationTypes">Optional. If specified, results will be filtered based on the LocationType. This allows multiple, comma delimited.</param>
@@ -129,6 +130,7 @@ public class TrailersController : BaseJellyfinApiController
         [FromQuery] int? parentIndexNumber,
         [FromQuery] bool? hasParentalRating,
         [FromQuery] bool? isHd,
+        [FromQuery] bool? isSd,
         [FromQuery] bool? is4K,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] LocationType[] locationTypes,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] LocationType[] excludeLocationTypes,
@@ -219,6 +221,7 @@ public class TrailersController : BaseJellyfinApiController
                 parentIndexNumber,
                 hasParentalRating,
                 isHd,
+                isSd,
                 is4K,
                 locationTypes,
                 excludeLocationTypes,
