@@ -2,7 +2,6 @@
 #pragma warning disable CA5394
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -11,6 +10,8 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using BitFaster.Caching;
+using BitFaster.Caching.Lru;
 using Emby.Naming.Common;
 using Emby.Naming.TV;
 using Emby.Server.Implementations.Library.Resolvers;
@@ -62,7 +63,7 @@ namespace Emby.Server.Implementations.Library
         private const string ShortcutFileExtension = ".mblink";
 
         private readonly ILogger<LibraryManager> _logger;
-        private readonly ConcurrentDictionary<Guid, BaseItem> _cache;
+        private readonly ICache<Guid, BaseItem> _cache;
         private readonly ITaskManager _taskManager;
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataRepository;
@@ -145,14 +146,18 @@ namespace Emby.Server.Implementations.Library
             _mediaEncoder = mediaEncoder;
             _itemRepository = itemRepository;
             _imageProcessor = imageProcessor;
-            _cache = new ConcurrentDictionary<Guid, BaseItem>();
+            _cache = new ConcurrentLruBuilder<Guid, BaseItem>()
+                .WithCapacity(_configurationManager.Configuration.LibraryCacheSize)
+                .WithExpireAfterAccess(TimeSpan.FromHours(2))
+                .Build();
+
             _namingOptions = namingOptions;
             _peopleRepository = peopleRepository;
             _extraResolver = new ExtraResolver(loggerFactory.CreateLogger<ExtraResolver>(), namingOptions, directoryService);
 
             _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
 
-            RecordConfigurationValues(configurationManager.Configuration);
+            RecordConfigurationValues(_configurationManager.Configuration);
         }
 
         /// <summary>
@@ -300,7 +305,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            _cache[item.Id] = item;
+            _cache.AddOrUpdate(item.Id, item);
         }
 
         public void DeleteItem(BaseItem item, DeleteOptions options)
@@ -454,12 +459,12 @@ namespace Emby.Server.Implementations.Library
             item.SetParent(null);
 
             _itemRepository.DeleteItem(item.Id);
+            _cache.TryRemove(item.Id, out _);
             foreach (var child in children)
             {
                 _itemRepository.DeleteItem(child.Id);
+                _cache.TryRemove(child.Id);
             }
-
-            _cache.TryRemove(item.Id, out _);
 
             ReportItemRemoved(item, parent);
         }
@@ -1234,7 +1239,7 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentException("Guid can't be empty", nameof(id));
             }
 
-            if (_cache.TryGetValue(id, out BaseItem? item))
+            if (_cache.TryGet(id, out var item))
             {
                 return item;
             }
@@ -1251,7 +1256,7 @@ namespace Emby.Server.Implementations.Library
 
         /// <inheritdoc />
         public T? GetItemById<T>(Guid id)
-         where T : BaseItem
+            where T : BaseItem
         {
             var item = GetItemById(id);
             if (item is T typedItem)
