@@ -4,6 +4,8 @@ using Jellyfin.Data.Entities;
 using Jellyfin.Data.Entities.Security;
 using Jellyfin.Data.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Implementations;
@@ -270,5 +272,24 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
 
         // Configuration for each entity is in its own class inside 'ModelConfiguration'.
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(JellyfinDbContext).Assembly);
+    }
+
+    /// <inheritdoc/>
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        configurationBuilder.Conventions.Add(_ => new DoNotUseReturningClauseConvention());
+    }
+
+    private class DoNotUseReturningClauseConvention : IModelFinalizingConvention
+    {
+        public void ProcessModelFinalizing(
+            IConventionModelBuilder modelBuilder,
+            IConventionContext<IConventionModelBuilder> context)
+        {
+            foreach (var entityType in modelBuilder.Metadata.GetEntityTypes())
+            {
+                entityType.UseSqlReturningClause(false);
+            }
+        }
     }
 }
