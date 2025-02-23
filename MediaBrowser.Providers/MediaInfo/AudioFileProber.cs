@@ -400,6 +400,30 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
+            if (options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzRecording, out _))
+            {
+                if (!track.AdditionalFields.TryGetValue("MUSICBRAINZ_TRACKID", out var musicBrainzRecordingIdTag)
+                     && !track.AdditionalFields.TryGetValue("MusicBrainz Recording Id", out musicBrainzRecordingIdTag)
+                     && track.AdditionalFields.TryGetValue("UFID", out musicBrainzRecordingIdTag))
+                {
+                    string[] parts = musicBrainzRecordingIdTag.Split("\0");
+                    if (parts[0] != "http://musicbrainz.org")
+                    {
+                        musicBrainzRecordingIdTag = null;
+                    }
+                    else
+                    {
+                        musicBrainzRecordingIdTag = parts[1];
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(musicBrainzRecordingIdTag))
+                {
+                    var id = GetFirstMusicBrainzId(musicBrainzRecordingIdTag, libraryOptions.UseCustomTagDelimiters, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist);
+                    audio.TrySetProviderId(MetadataProvider.MusicBrainzRecording, id);
+                }
+            }
+
             // Save extracted lyrics if they exist,
             // and if the audio doesn't yet have lyrics.
             var lyrics = track.Lyrics.SynchronizedLyrics.Count > 0 ? track.Lyrics.FormatSynchToLRC() : track.Lyrics.UnsynchronizedLyrics;
