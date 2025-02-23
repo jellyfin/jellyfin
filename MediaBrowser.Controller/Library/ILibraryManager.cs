@@ -426,8 +426,9 @@ namespace MediaBrowser.Controller.Library
         /// Gets the season number from path.
         /// </summary>
         /// <param name="path">The path.</param>
+        /// <param name="parentId">The parent id.</param>
         /// <returns>System.Nullable&lt;System.Int32&gt;.</returns>
-        int? GetSeasonNumberFromPath(string path);
+        int? GetSeasonNumberFromPath(string path, Guid? parentId);
 
         /// <summary>
         /// Fills the missing episode numbers from path.
