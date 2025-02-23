@@ -955,7 +955,14 @@ namespace Emby.Server.Implementations.Session
 
                     if (libraryItem is IHasMediaSources)
                     {
-                        mediaSource = await GetMediaSource(libraryItem, info.MediaSourceId, info.LiveStreamId).ConfigureAwait(false);
+                        try
+                        {
+                            mediaSource = await GetMediaSource(libraryItem, info.MediaSourceId, info.LiveStreamId).ConfigureAwait(false);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error retrieving media source");
+                        }
                     }
 
                     info.Item = GetItemInfo(libraryItem, mediaSource);
