@@ -73,9 +73,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private List<string> _hwaccels = new List<string>();
         private List<string> _filters = new List<string>();
         private IDictionary<int, bool> _filtersWithOption = new Dictionary<int, bool>();
+        private IDictionary<int, bool> _bitStreamFiltersWithOption = new Dictionary<int, bool>();
 
         private bool _isPkeyPauseSupported = false;
         private bool _isLowPriorityHwDecodeSupported = false;
+        private bool _proberSupportsFirstVideoFrame = false;
 
         private bool _isVaapiDeviceAmd = false;
         private bool _isVaapiDeviceInteliHD = false;
@@ -218,6 +220,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 SetAvailableEncoders(validator.GetEncoders());
                 SetAvailableFilters(validator.GetFilters());
                 SetAvailableFiltersWithOption(validator.GetFiltersWithOption());
+                SetAvailableBitStreamFiltersWithOption(validator.GetBitStreamFiltersWithOption());
                 SetAvailableHwaccels(validator.GetHwaccels());
                 SetMediaEncoderVersion(validator);
 
@@ -225,6 +228,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 _isPkeyPauseSupported = validator.CheckSupportedRuntimeKey("p      pause transcoding", _ffmpegVersion);
                 _isLowPriorityHwDecodeSupported = validator.CheckSupportedHwaccelFlag("low_priority");
+                _proberSupportsFirstVideoFrame = validator.CheckSupportedProberOption("only_first_vframe", _ffprobePath);
 
                 // Check the Vaapi device vendor
                 if (OperatingSystem.IsLinux()
@@ -332,6 +336,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _filtersWithOption = dict;
         }
 
+        public void SetAvailableBitStreamFiltersWithOption(IDictionary<int, bool> dict)
+        {
+            _bitStreamFiltersWithOption = dict;
+        }
+
         public void SetMediaEncoderVersion(EncoderValidator validator)
         {
             _ffmpegVersion = validator.GetFFmpegVersion();
@@ -370,6 +379,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             return false;
+        }
+
+        public bool SupportsBitStreamFilterWithOption(BitStreamFilterOptionType option)
+        {
+            return _bitStreamFiltersWithOption.TryGetValue((int)option, out var val) && val;
         }
 
         public bool CanEncodeToAudioCodec(string codec)
@@ -491,6 +505,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var args = extractChapters
                 ? "{0} -i {1} -threads {2} -v warning -print_format json -show_streams -show_chapters -show_format"
                 : "{0} -i {1} -threads {2} -v warning -print_format json -show_streams -show_format";
+
+            if (_proberSupportsFirstVideoFrame)
+            {
+                args += " -show_frames -only_first_vframe";
+            }
+
             args = string.Format(CultureInfo.InvariantCulture, args, probeSizeArgument, inputPath, _threads).Trim();
 
             var process = new Process
