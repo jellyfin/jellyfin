@@ -544,16 +544,13 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteElementString("aspectratio", hasAspectRatio.AspectRatio);
             }
 
-            var tmdbCollection = item.GetProviderId(MetadataProvider.TmdbCollection);
-
-            if (!string.IsNullOrEmpty(tmdbCollection))
+            if (item.TryGetProviderId(MetadataProvider.Tmdb, out var tmdbCollection))
             {
                 writer.WriteElementString("collectionnumber", tmdbCollection);
                 writtenProviderIds.Add(MetadataProvider.TmdbCollection.ToString());
             }
 
-            var imdb = item.GetProviderId(MetadataProvider.Imdb);
-            if (!string.IsNullOrEmpty(imdb))
+            if (item.TryGetProviderId(MetadataProvider.Imdb, out var imdb))
             {
                 if (item is Series)
                 {
@@ -570,16 +567,14 @@ namespace MediaBrowser.XbmcMetadata.Savers
             // Series xml saver already saves this
             if (item is not Series)
             {
-                var tvdb = item.GetProviderId(MetadataProvider.Tvdb);
-                if (!string.IsNullOrEmpty(tvdb))
+                if (item.TryGetProviderId(MetadataProvider.Tvdb, out var tvdb))
                 {
                     writer.WriteElementString("tvdbid", tvdb);
                     writtenProviderIds.Add(MetadataProvider.Tvdb.ToString());
                 }
             }
 
-            var tmdb = item.GetProviderId(MetadataProvider.Tmdb);
-            if (!string.IsNullOrEmpty(tmdb))
+            if (item.TryGetProviderId(MetadataProvider.Tmdb, out var tmdb))
             {
                 writer.WriteElementString("tmdbid", tmdb);
                 writtenProviderIds.Add(MetadataProvider.Tmdb.ToString());
@@ -687,64 +682,49 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 }
             }
 
-            var externalId = item.GetProviderId(MetadataProvider.AudioDbArtist);
-
-            if (!string.IsNullOrEmpty(externalId))
+            if (item.TryGetProviderId(MetadataProvider.AudioDbArtist, out var externalId))
             {
                 writer.WriteElementString("audiodbartistid", externalId);
                 writtenProviderIds.Add(MetadataProvider.AudioDbArtist.ToString());
             }
 
-            externalId = item.GetProviderId(MetadataProvider.AudioDbAlbum);
-
-            if (!string.IsNullOrEmpty(externalId))
+            if (item.TryGetProviderId(MetadataProvider.AudioDbAlbum, out externalId))
             {
                 writer.WriteElementString("audiodbalbumid", externalId);
                 writtenProviderIds.Add(MetadataProvider.AudioDbAlbum.ToString());
             }
 
-            externalId = item.GetProviderId(MetadataProvider.Zap2It);
-
-            if (!string.IsNullOrEmpty(externalId))
+            if (item.TryGetProviderId(MetadataProvider.Zap2It, out externalId))
             {
                 writer.WriteElementString("zap2itid", externalId);
                 writtenProviderIds.Add(MetadataProvider.Zap2It.ToString());
             }
 
-            externalId = item.GetProviderId(MetadataProvider.MusicBrainzAlbum);
-
-            if (!string.IsNullOrEmpty(externalId))
+            if (item.TryGetProviderId(MetadataProvider.MusicBrainzAlbum, out externalId))
             {
                 writer.WriteElementString("musicbrainzalbumid", externalId);
                 writtenProviderIds.Add(MetadataProvider.MusicBrainzAlbum.ToString());
             }
 
-            externalId = item.GetProviderId(MetadataProvider.MusicBrainzAlbumArtist);
-
-            if (!string.IsNullOrEmpty(externalId))
+            if (item.TryGetProviderId(MetadataProvider.MusicBrainzAlbumArtist, out externalId))
             {
                 writer.WriteElementString("musicbrainzalbumartistid", externalId);
                 writtenProviderIds.Add(MetadataProvider.MusicBrainzAlbumArtist.ToString());
             }
 
-            externalId = item.GetProviderId(MetadataProvider.MusicBrainzArtist);
-
-            if (!string.IsNullOrEmpty(externalId))
+            if (item.TryGetProviderId(MetadataProvider.MusicBrainzArtist, out externalId))
             {
                 writer.WriteElementString("musicbrainzartistid", externalId);
                 writtenProviderIds.Add(MetadataProvider.MusicBrainzArtist.ToString());
             }
 
-            externalId = item.GetProviderId(MetadataProvider.MusicBrainzReleaseGroup);
-
-            if (!string.IsNullOrEmpty(externalId))
+            if (item.TryGetProviderId(MetadataProvider.MusicBrainzReleaseGroup, out externalId))
             {
                 writer.WriteElementString("musicbrainzreleasegroupid", externalId);
                 writtenProviderIds.Add(MetadataProvider.MusicBrainzReleaseGroup.ToString());
             }
 
-            externalId = item.GetProviderId(MetadataProvider.TvRage);
-            if (!string.IsNullOrEmpty(externalId))
+            if (item.TryGetProviderId(MetadataProvider.TvRage, out externalId))
             {
                 writer.WriteElementString("tvrageid", externalId);
                 writtenProviderIds.Add(MetadataProvider.TvRage.ToString());
