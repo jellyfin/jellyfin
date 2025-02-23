@@ -721,6 +721,41 @@ namespace Emby.Server.Implementations.Session
             {
                 foreach (var user in users)
                 {
+                    var activeStreams = Sessions
+                        .Where(i => i.UserId.Equals(user.Id)
+                            && i.DeviceId != session.DeviceId
+                            && i.NowPlayingItem is not null)
+                        .ToList();
+
+                    int maxActiveStreams = user.MaxActiveStreams;
+
+                    _logger.LogInformation("Current/Max streams for user {User}: {Streams}/{Max}", user.Username, activeStreams.Count(), maxActiveStreams);
+
+                    while (maxActiveStreams >= 1 && activeStreams.Count() >= maxActiveStreams)
+                    {
+                        var activeStream = activeStreams.First();
+
+                        try
+                        {
+                            await SendPlaystateCommand(
+                                session.Id,
+                                activeStream.Id,
+                                new PlaystateRequest()
+                                {
+                                    Command = PlaystateCommand.Stop,
+                                    ControllingUserId = activeStream.UserId.ToString(),
+                                    SeekPositionTicks = activeStream.PlayState?.PositionTicks
+                                },
+                                CancellationToken.None).ConfigureAwait(true);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogDebug(ex, "Error calling SendPlaystateCommand for stopping max active session {Session}.", activeStream.Id);
+                        }
+
+                        activeStreams.RemoveAt(0);
+                    }
+
                     OnPlaybackStart(user, libraryItem);
                 }
             }
