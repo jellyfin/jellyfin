@@ -18,8 +18,9 @@ namespace Emby.Naming.Video
         /// </summary>
         /// <param name="path">Path to file.</param>
         /// <param name="namingOptions">The naming options.</param>
+        /// <param name="libraryRoot">Top-level folder for the containing library.</param>
         /// <returns>Returns <see cref="ExtraResult"/> object.</returns>
-        public static ExtraResult GetExtraInfo(string path, NamingOptions namingOptions)
+        public static ExtraResult GetExtraInfo(string path, NamingOptions namingOptions, string? libraryRoot = "")
         {
             var result = new ExtraResult();
 
@@ -69,7 +70,9 @@ namespace Emby.Naming.Video
                 else if (rule.RuleType == ExtraRuleType.DirectoryName)
                 {
                     var directoryName = Path.GetFileName(Path.GetDirectoryName(pathSpan));
-                    if (directoryName.Equals(rule.Token, StringComparison.OrdinalIgnoreCase))
+                    string fullDirectory = Path.GetDirectoryName(pathSpan).ToString();
+                    if (directoryName.Equals(rule.Token, StringComparison.OrdinalIgnoreCase)
+                        && !string.Equals(fullDirectory, libraryRoot, StringComparison.OrdinalIgnoreCase))
                     {
                         result.ExtraType = rule.ExtraType;
                         result.Rule = rule;
