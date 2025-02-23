@@ -176,10 +176,6 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public async Task UpdateUserAsync(User user)
         {
-            ArgumentNullException.ThrowIfNull(user);
-
-            ThrowIfInvalidUsername(user.Username);
-
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
@@ -737,7 +733,8 @@ namespace Jellyfin.Server.Implementations.Users
             _users[user.Id] = user;
         }
 
-        internal static void ThrowIfInvalidUsername(string name)
+        /// <inheritdoc/>
+        public void ThrowIfInvalidUsername(string name)
         {
             if (!string.IsNullOrWhiteSpace(name) && ValidUsernameRegex().IsMatch(name))
             {
