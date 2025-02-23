@@ -195,6 +195,7 @@
  - [Kenneth Cochran](https://github.com/kennethcochran)
  - [benedikt257](https://github.com/benedikt257)
  - [revam](https://github.com/revam)
+ - [FrenchGithubUser](https://github.com/FrenchGithubUser)
 
 # Emby Contributors
 
