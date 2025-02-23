@@ -86,6 +86,8 @@ public class BaseItemEntity
 
     public int? InheritedParentalRatingValue { get; set; }
 
+    public int? InheritedParentalRatingSubValue { get; set; }
+
     public string? UnratedType { get; set; }
 
     public float? CriticRating { get; set; }
