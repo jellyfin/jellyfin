@@ -882,7 +882,7 @@ public class MigrateLibraryDb : IMigrationRoutine
             entity.OriginalTitle = originalTitle;
         }
 
-        if (reader.TryGetString(index++, out var primaryVersionId))
+        if (reader.TryGetGuid(index++, out var primaryVersionId))
         {
             entity.PrimaryVersionId = primaryVersionId;
         }
