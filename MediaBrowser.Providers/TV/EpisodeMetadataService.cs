@@ -104,7 +104,8 @@ namespace MediaBrowser.Providers.TV
                 targetItem.IndexNumberEnd = sourceItem.IndexNumberEnd;
             }
 
-            if (replaceData || !targetItem.ParentIndexNumber.HasValue)
+            // Handles ParentIndexNumber = 1, which is the default in LibraryManager when no Season is present in filename
+            if (replaceData || !targetItem.ParentIndexNumber.HasValue || targetItem.ParentIndexNumber == 1)
             {
                 targetItem.ParentIndexNumber = sourceItem.ParentIndexNumber;
             }
