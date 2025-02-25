@@ -116,6 +116,7 @@ public partial class AudioNormalizationTask : IScheduledTask
                 {
                     a.LUFS = await CalculateLUFSAsync(
                         string.Format(CultureInfo.InvariantCulture, "-f concat -safe 0 -i \"{0}\"", tempFile),
+                        OperatingSystem.IsWindows(), // Wait for process to exit on Windows before we try deleting the concat file
                         cancellationToken).ConfigureAwait(false);
                 }
                 finally
@@ -142,7 +143,10 @@ public partial class AudioNormalizationTask : IScheduledTask
                     continue;
                 }
 
-                t.LUFS = await CalculateLUFSAsync(string.Format(CultureInfo.InvariantCulture, "-i \"{0}\"", t.Path.Replace("\"", "\\\"", StringComparison.Ordinal)), cancellationToken).ConfigureAwait(false);
+                t.LUFS = await CalculateLUFSAsync(
+                    string.Format(CultureInfo.InvariantCulture, "-i \"{0}\"", t.Path.Replace("\"", "\\\"", StringComparison.Ordinal)),
+                    false,
+                    cancellationToken).ConfigureAwait(false);
             }
 
             _itemRepository.SaveItems(tracks, cancellationToken);
@@ -162,7 +166,7 @@ public partial class AudioNormalizationTask : IScheduledTask
         ];
     }
 
-    private async Task<float?> CalculateLUFSAsync(string inputArgs, CancellationToken cancellationToken)
+    private async Task<float?> CalculateLUFSAsync(string inputArgs, bool waitForExit, CancellationToken cancellationToken)
     {
         var args = $"-hide_banner {inputArgs} -af ebur128=framelog=verbose -f null -";
 
@@ -189,18 +193,28 @@ public partial class AudioNormalizationTask : IScheduledTask
             }
 
             using var reader = process.StandardError;
+            float? lufs = null;
             await foreach (var line in reader.ReadAllLinesAsync(cancellationToken))
             {
                 Match match = LUFSRegex().Match(line);
-
                 if (match.Success)
                 {
-                    return float.Parse(match.Groups[1].ValueSpan, CultureInfo.InvariantCulture.NumberFormat);
+                    lufs = float.Parse(match.Groups[1].ValueSpan, CultureInfo.InvariantCulture.NumberFormat);
+                    break;
                 }
             }
 
-            _logger.LogError("Failed to find LUFS value in output");
-            return null;
+            if (lufs is null)
+            {
+                _logger.LogError("Failed to find LUFS value in output");
+            }
+
+            if (waitForExit)
+            {
+                await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
+            }
+
+            return lufs;
         }
     }
 }
