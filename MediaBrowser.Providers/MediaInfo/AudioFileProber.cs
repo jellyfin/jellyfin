@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ATL;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
@@ -192,11 +193,11 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 foreach (var albumArtist in albumArtists)
                 {
-                    if (!string.IsNullOrEmpty(albumArtist))
+                    if (!string.IsNullOrWhiteSpace(albumArtist))
                     {
                         PeopleHelper.AddPerson(people, new PersonInfo
                         {
-                            Name = albumArtist,
+                            Name = albumArtist.Trim(),
                             Type = PersonKind.AlbumArtist
                         });
                     }
@@ -224,11 +225,11 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 foreach (var performer in performers)
                 {
-                    if (!string.IsNullOrEmpty(performer))
+                    if (!string.IsNullOrWhiteSpace(performer))
                     {
                         PeopleHelper.AddPerson(people, new PersonInfo
                         {
-                            Name = performer,
+                            Name = performer.Trim(),
                             Type = PersonKind.Artist
                         });
                     }
@@ -236,11 +237,11 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 foreach (var composer in track.Composer.Split(InternalValueSeparator))
                 {
-                    if (!string.IsNullOrEmpty(composer))
+                    if (!string.IsNullOrWhiteSpace(composer))
                     {
                         PeopleHelper.AddPerson(people, new PersonInfo
                         {
-                            Name = composer,
+                            Name = composer.Trim(),
                             Type = PersonKind.Composer
                         });
                     }
@@ -282,13 +283,13 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (options.ReplaceAllMetadata)
             {
-                audio.Album = track.Album;
+                audio.Album = track.Album.Trim();
                 audio.IndexNumber = track.TrackNumber;
                 audio.ParentIndexNumber = track.DiscNumber;
             }
             else
             {
-                audio.Album ??= track.Album;
+                audio.Album ??= track.Album.Trim();
                 audio.IndexNumber ??= track.TrackNumber;
                 audio.ParentIndexNumber ??= track.DiscNumber;
             }
@@ -324,6 +325,8 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     genres = genres.SelectMany(g => SplitWithCustomDelimiter(g, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist)).ToArray();
                 }
+
+                genres = genres.Trimmed().Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
 
                 audio.Genres = options.ReplaceAllMetadata || audio.Genres is null || audio.Genres.Length == 0
                     ? genres
