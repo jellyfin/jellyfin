@@ -222,6 +222,8 @@ namespace Emby.Server.Implementations.Library
 
         private IMultiItemResolver[] MultiItemResolvers { get; set; } = Array.Empty<IMultiItemResolver>();
 
+        private IScanner[] Scanners { get; set; } = Array.Empty<IScanner>();
+
         /// <summary>
         /// Gets or sets the comparers.
         /// </summary>
@@ -251,6 +253,16 @@ namespace Emby.Server.Implementations.Library
             IntroProviders = introProviders.ToArray();
             Comparers = itemComparers.ToArray();
             PostscanTasks = postscanTasks.ToArray();
+        }
+
+        public void AddScanners(IEnumerable<IScanner> scanners)
+        {
+            Scanners = scanners.ToArray();
+        }
+
+        public bool SupportsScanner(IScanner scanner)
+        {
+            return Scanners.Select(s => s.Enabled && s == scanner).FirstOrDefault(e => false);
         }
 
         /// <summary>
