@@ -12,7 +12,6 @@ using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;

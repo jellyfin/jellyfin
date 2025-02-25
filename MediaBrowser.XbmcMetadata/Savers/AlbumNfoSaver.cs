@@ -74,6 +74,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             foreach (var track in tracks
                 .OrderBy(i => i.ParentIndexNumber ?? 0)
                 .ThenBy(i => i.IndexNumber ?? 0)
+                .ThenBy(i => SortNameOrName(i))
                 .ThenBy(i => i.Name?.Trim()))
             {
                 writer.WriteStartElement("track");

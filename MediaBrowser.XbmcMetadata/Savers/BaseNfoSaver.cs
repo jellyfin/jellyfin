@@ -19,7 +19,6 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -1038,5 +1037,24 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         private string GetTagForProviderKey(string providerKey)
             => providerKey.ToLowerInvariant() + "id";
+
+        protected static string SortNameOrName(BaseItem item)
+        {
+            if (item == null)
+            {
+                return string.Empty;
+            }
+
+            if (item.SortName != null)
+            {
+                string trimmed = item.SortName.Trim();
+                if (trimmed.Length > 0)
+                {
+                    return trimmed;
+                }
+            }
+
+            return (item.Name ?? string.Empty).Trim();
+        }
     }
 }
