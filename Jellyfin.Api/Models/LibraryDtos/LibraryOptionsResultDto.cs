@@ -9,6 +9,11 @@ namespace Jellyfin.Api.Models.LibraryDtos;
 public class LibraryOptionsResultDto
 {
     /// <summary>
+    /// Gets or sets the metadata readers.
+    /// </summary>
+    public IReadOnlyList<LibraryOptionInfoDto> MetadataResolvers { get; set; } = Array.Empty<LibraryOptionInfoDto>();
+
+    /// <summary>
     /// Gets or sets the metadata savers.
     /// </summary>
     public IReadOnlyList<LibraryOptionInfoDto> MetadataSavers { get; set; } = Array.Empty<LibraryOptionInfoDto>();
