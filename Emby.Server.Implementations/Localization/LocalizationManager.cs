@@ -113,43 +113,47 @@ namespace Emby.Server.Implementations.Localization
         {
             List<CultureDto> list = new List<CultureDto>();
 
-            await using var stream = _assembly.GetManifestResourceStream(CulturesPath)
+            var stream = _assembly.GetManifestResourceStream(CulturesPath)
                 ?? throw new InvalidOperationException($"Invalid resource path: '{CulturesPath}'");
-            using var reader = new StreamReader(stream);
-            await foreach (var line in reader.ReadAllLinesAsync().ConfigureAwait(false))
+
+            await using (stream!.ConfigureAwait(false))
             {
-                if (string.IsNullOrWhiteSpace(line))
+                using var reader = new StreamReader(stream);
+                await foreach (var line in reader.ReadAllLinesAsync().ConfigureAwait(false))
                 {
-                    continue;
-                }
-
-                var parts = line.Split('|');
-
-                if (parts.Length == 5)
-                {
-                    string name = parts[3];
-                    if (string.IsNullOrWhiteSpace(name))
+                    if (string.IsNullOrWhiteSpace(line))
                     {
                         continue;
                     }
 
-                    string twoCharName = parts[2];
-                    if (string.IsNullOrWhiteSpace(twoCharName))
-                    {
-                        continue;
-                    }
+                    var parts = line.Split('|');
 
-                    string[] threeletterNames;
-                    if (string.IsNullOrWhiteSpace(parts[1]))
+                    if (parts.Length == 5)
                     {
-                        threeletterNames = new[] { parts[0] };
-                    }
-                    else
-                    {
-                        threeletterNames = new[] { parts[0], parts[1] };
-                    }
+                        string name = parts[3];
+                        if (string.IsNullOrWhiteSpace(name))
+                        {
+                            continue;
+                        }
 
-                    list.Add(new CultureDto(name, name, twoCharName, threeletterNames));
+                        string twoCharName = parts[2];
+                        if (string.IsNullOrWhiteSpace(twoCharName))
+                        {
+                            continue;
+                        }
+
+                        string[] threeletterNames;
+                        if (string.IsNullOrWhiteSpace(parts[1]))
+                        {
+                            threeletterNames = [parts[0]];
+                        }
+                        else
+                        {
+                            threeletterNames = [parts[0], parts[1]];
+                        }
+
+                        list.Add(new CultureDto(name, name, twoCharName, threeletterNames));
+                    }
                 }
             }
 
@@ -404,23 +408,27 @@ namespace Emby.Server.Implementations.Localization
 
         private async Task CopyInto(IDictionary<string, string> dictionary, string resourcePath)
         {
-            await using var stream = _assembly.GetManifestResourceStream(resourcePath);
-            // If a Culture doesn't have a translation the stream will be null and it defaults to en-us further up the chain
+            var stream = _assembly.GetManifestResourceStream(resourcePath);
+
             if (stream is null)
             {
+                // If a Culture doesn't have a translation the stream will be null and it defaults to en-us further up the chain
                 _logger.LogError("Missing translation/culture resource: {ResourcePath}", resourcePath);
                 return;
             }
 
-            var dict = await JsonSerializer.DeserializeAsync<Dictionary<string, string>>(stream, _jsonOptions).ConfigureAwait(false);
-            if (dict is null)
+            await using (stream.ConfigureAwait(false))
             {
-                throw new InvalidOperationException($"Resource contains invalid data: '{stream}'");
-            }
+                var dict = await JsonSerializer.DeserializeAsync<Dictionary<string, string>>(stream, _jsonOptions).ConfigureAwait(false);
+                if (dict is null)
+                {
+                    throw new InvalidOperationException($"Resource contains invalid data: '{stream}'");
+                }
 
-            foreach (var key in dict.Keys)
-            {
-                dictionary[key] = dict[key];
+                foreach (var key in dict.Keys)
+                {
+                    dictionary[key] = dict[key];
+                }
             }
         }
 
