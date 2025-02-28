@@ -88,16 +88,15 @@ namespace MediaBrowser.XbmcMetadata.Savers
             return false;
         }
 
+         /// <inheritdoc />
+        protected override MetadataProvider? GetDefaultProvider()
+        {
+            return MetadataProvider.Imdb;
+        }
+
         /// <inheritdoc />
         protected override void WriteCustomElements(BaseItem item, XmlWriter writer)
         {
-            var imdb = item.GetProviderId(MetadataProvider.Imdb);
-
-            if (!string.IsNullOrEmpty(imdb))
-            {
-                writer.WriteElementString("id", imdb);
-            }
-
             if (item is MusicVideo musicVideo)
             {
                 foreach (var artist in musicVideo.Artists)

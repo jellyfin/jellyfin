@@ -84,6 +84,11 @@ namespace MediaBrowser.Model.Entities
         /// <summary>
         /// The TvMaze provider.
         /// </summary>
-        TvMaze = 19
+        TvMaze = 19,
+
+        /// <summary>
+        /// The Jellyfin provider.
+        /// </summary>
+        Jellyfin = 20
     }
 }
