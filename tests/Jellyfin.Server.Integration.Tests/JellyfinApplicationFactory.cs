@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
 using Serilog;
 using Serilog.Extensions.Logging;
 
@@ -102,7 +103,7 @@ namespace Jellyfin.Server.Integration.Tests
             var host = builder.Build();
             var appHost = (TestAppHost)host.Services.GetRequiredService<IApplicationHost>();
             appHost.ServiceProvider = host.Services;
-            appHost.InitializeServices().GetAwaiter().GetResult();
+            appHost.InitializeServices(Mock.Of<IConfiguration>()).GetAwaiter().GetResult();
             host.Start();
 
             appHost.RunStartupTasksAsync().GetAwaiter().GetResult();
