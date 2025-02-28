@@ -286,8 +286,10 @@ namespace Emby.Server.Implementations.Localization
             }
 
             // Fairly common for some users to have "Rated R" in their rating field
-            rating = rating.Replace("Rated :", string.Empty, StringComparison.OrdinalIgnoreCase);
-            rating = rating.Replace("Rated ", string.Empty, StringComparison.OrdinalIgnoreCase);
+            rating = rating.Replace("Rated :", string.Empty, StringComparison.OrdinalIgnoreCase)
+                            .Replace("Rated:", string.Empty, StringComparison.OrdinalIgnoreCase)
+                            .Replace("Rated ", string.Empty, StringComparison.OrdinalIgnoreCase)
+                            .Trim();
 
             // Use rating system matching the language
             if (!string.IsNullOrEmpty(countryCode))
