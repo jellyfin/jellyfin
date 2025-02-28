@@ -19,6 +19,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging;
+using static Jellyfin.Extensions.StringExtensions;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -397,6 +398,24 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     var id = GetFirstMusicBrainzId(trackMbId, libraryOptions.UseCustomTagDelimiters, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist);
                     audio.TrySetProviderId(MetadataProvider.MusicBrainzTrack, id);
+                }
+            }
+
+            if (options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzRecording, out _))
+            {
+                if ((track.AdditionalFields.TryGetValue("MUSICBRAINZ_TRACKID", out var recordingMbId)
+                     || track.AdditionalFields.TryGetValue("MusicBrainz Track Id", out recordingMbId))
+                    && !string.IsNullOrEmpty(recordingMbId))
+                {
+                    audio.TrySetProviderId(MetadataProvider.MusicBrainzRecording, recordingMbId);
+                }
+                else if (track.AdditionalFields.TryGetValue("UFID", out var ufIdValue) && !string.IsNullOrEmpty(ufIdValue))
+                {
+                    // If tagged with MB Picard, the format is 'http://musicbrainz.org\0<recording MBID>'
+                    if (ufIdValue.Contains("musicbrainz.org", StringComparison.OrdinalIgnoreCase))
+                    {
+                        audio.TrySetProviderId(MetadataProvider.MusicBrainzRecording, ufIdValue.AsSpan().RightPart('\0').ToString());
+                    }
                 }
             }
 
