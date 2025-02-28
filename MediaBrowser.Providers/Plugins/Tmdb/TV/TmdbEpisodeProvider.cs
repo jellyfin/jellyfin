@@ -126,6 +126,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     {
                         Name = result[0].Name,
                         Overview = result[0].Overview,
+                        Id = result[0].Id,
                         AirDate = result[0].AirDate,
                         VoteAverage = result[0].VoteAverage,
                         ExternalIds = result[0].ExternalIds,
@@ -190,7 +191,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             item.TrySetProviderId(MetadataProvider.Tvdb, externalIds?.TvdbId);
             item.TrySetProviderId(MetadataProvider.Imdb, externalIds?.ImdbId);
             item.TrySetProviderId(MetadataProvider.TvRage, externalIds?.TvrageId);
-
+            item.TrySetProviderId(MetadataProvider.Tmdb, episodeResult.Id?.ToString(CultureInfo.InvariantCulture));
             if (episodeResult.Videos?.Results is not null)
             {
                 foreach (var video in episodeResult.Videos.Results)
