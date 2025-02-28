@@ -62,6 +62,8 @@ namespace Emby.Server.Implementations.Session
         private readonly ConcurrentDictionary<string, SessionInfo> _activeConnections
             = new(StringComparer.OrdinalIgnoreCase);
 
+        private readonly ConcurrentDictionary<string, HashSet<string>> _decrementTracker = new();
+
         private Timer _idleTimer;
         private Timer _inactiveTimer;
 
@@ -309,7 +311,16 @@ namespace Emby.Server.Implementations.Session
                 _activeConnections.TryRemove(key, out _);
                 if (!string.IsNullOrEmpty(session.PlayState?.LiveStreamId))
                 {
-                    await _mediaSourceManager.CloseLiveStream(session.PlayState.LiveStreamId).ConfigureAwait(false);
+                    var liveStreamId = session.PlayState.LiveStreamId;
+
+                    var sessionIds = _decrementTracker.GetOrAdd(liveStreamId, _ => new HashSet<string>());
+
+                    lock (sessionIds)
+                    {
+                        sessionIds.Add(session.Id);
+                    }
+
+                    await _mediaSourceManager.CloseLiveStream(liveStreamId).ConfigureAwait(false);
                 }
 
                 await OnSessionEnded(session).ConfigureAwait(false);
@@ -1000,13 +1011,37 @@ namespace Emby.Server.Implementations.Session
 
             if (!string.IsNullOrEmpty(info.LiveStreamId))
             {
-                try
+                bool liveStreamAlreadyClosed = false;
+
+                var liveStreamId = info.LiveStreamId;
+
+                var sessionIds = _decrementTracker.GetOrAdd(liveStreamId, _ => new HashSet<string>());
+
+                lock (sessionIds)
                 {
-                    await _mediaSourceManager.CloseLiveStream(info.LiveStreamId).ConfigureAwait(false);
+                    if (sessionIds.Contains(info.SessionId))
+                    {
+                        liveStreamAlreadyClosed = true;
+                        sessionIds.Remove(info.SessionId);
+                        _logger.LogInformation("Session has already been deducted from the consumer count for this livestream");
+                    }
+
+                    if (sessionIds.Count == 0)
+                    {
+                        _decrementTracker.TryRemove(liveStreamId, out _);
+                    }
                 }
-                catch (Exception ex)
+
+                if (!liveStreamAlreadyClosed)
                 {
-                    _logger.LogError(ex, "Error closing live stream");
+                    try
+                    {
+                        await _mediaSourceManager.CloseLiveStream(liveStreamId).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error closing live stream");
+                    }
                 }
             }
 
@@ -2055,6 +2090,7 @@ namespace Emby.Server.Implementations.Session
             }
 
             _activeConnections.Clear();
+            _decrementTracker.Clear();
         }
     }
 }
