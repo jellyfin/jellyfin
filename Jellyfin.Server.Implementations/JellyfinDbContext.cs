@@ -82,6 +82,11 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
     public DbSet<TrickplayInfo> TrickplayInfos => Set<TrickplayInfo>();
 
     /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the audioWaveform metadata.
+    /// </summary>
+    public DbSet<AudioWaveformInfo> AudioWaveformInfos => Set<AudioWaveformInfo>();
+
+    /// <summary>
     /// Gets the <see cref="DbSet{TEntity}"/> containing the media segments.
     /// </summary>
     public DbSet<MediaSegment> MediaSegments => Set<MediaSegment>();
