@@ -483,6 +483,21 @@
             "$type": "CodecProfile"
         }
     ],
+    "ContainerProfiles": [
+        {
+            "Type": "Video",
+            "Conditions": [
+                {
+                    "Condition": "LessThanEqual",
+                    "Property": "NumStreams",
+                    "Value": "32",
+                    "IsRequired": false,
+                    "$type": "ProfileCondition"
+                }
+            ],
+            "$type": "ContainerProfile"
+        }
+    ],
     "ResponseProfiles": [
         {
             "Container": "m4v",
