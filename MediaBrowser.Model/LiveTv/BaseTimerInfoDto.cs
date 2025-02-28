@@ -11,7 +11,7 @@ namespace MediaBrowser.Model.LiveTv
         /// <summary>
         /// Gets or sets the Id of the recording.
         /// </summary>
-        public string Id { get; set; }
+        public Guid Id { get; set; }
 
         public string Type { get; set; }
 
@@ -25,7 +25,7 @@ namespace MediaBrowser.Model.LiveTv
         /// Gets or sets the external identifier.
         /// </summary>
         /// <value>The external identifier.</value>
-        public string ExternalId { get; set; }
+        public Guid ExternalId { get; set; }
 
         /// <summary>
         /// Gets or sets the channel id of the recording.
