@@ -326,4 +326,23 @@ public static partial class NetworkUtils
 
         return new IPAddress(BitConverter.GetBytes(broadCastIPAddress));
     }
+
+    /// <summary>
+    /// Check if a subnet contains an address. This method also handles IPv4 mapped to IPv6 addresses.
+    /// </summary>
+    /// <param name="network">The <see cref="IPNetwork"/>.</param>
+    /// <param name="address">The <see cref="IPAddress"/>.</param>
+    /// <returns>Whether the supplied IP is in the supplied network.</returns>
+    public static bool SubnetContainsAddress(IPNetwork network, IPAddress address)
+    {
+        ArgumentNullException.ThrowIfNull(address);
+        ArgumentNullException.ThrowIfNull(network);
+
+        if (address.IsIPv4MappedToIPv6)
+        {
+            address = address.MapToIPv4();
+        }
+
+        return network.Contains(address);
+    }
 }
