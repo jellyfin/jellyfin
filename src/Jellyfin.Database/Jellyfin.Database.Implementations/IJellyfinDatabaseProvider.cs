@@ -28,6 +28,12 @@ public interface IJellyfinDatabaseProvider
     void OnModelCreating(ModelBuilder modelBuilder);
 
     /// <summary>
+    /// Will be invoked when EFCore wants to configure its model.
+    /// </summary>
+    /// <param name="configurationBuilder">The ModelConfigurationBuilder from EFCore.</param>
+    void ConfigureConventions(ModelConfigurationBuilder configurationBuilder);
+
+    /// <summary>
     /// If supported this should run any periodic maintaince tasks.
     /// </summary>
     /// <param name="cancellationToken">The token to abort the operation.</param>

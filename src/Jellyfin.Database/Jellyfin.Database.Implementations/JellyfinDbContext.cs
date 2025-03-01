@@ -272,4 +272,11 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
         // Configuration for each entity is in its own class inside 'ModelConfiguration'.
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(JellyfinDbContext).Assembly);
     }
+
+    /// <inheritdoc />
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        jellyfinDatabaseProvider.ConfigureConventions(configurationBuilder);
+        base.ConfigureConventions(configurationBuilder);
+    }
 }

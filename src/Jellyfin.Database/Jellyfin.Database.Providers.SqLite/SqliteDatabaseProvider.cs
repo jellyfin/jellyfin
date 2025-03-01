@@ -78,4 +78,10 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
 
         SqliteConnection.ClearAllPools();
     }
+
+    /// <inheritdoc/>
+    public void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        configurationBuilder.Conventions.Add(_ => new DoNotUseReturningClauseConvention());
+    }
 }
