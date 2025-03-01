@@ -141,8 +141,10 @@ namespace Jellyfin.Providers.Tests.Manager
                 { "ProductionYear", 1, 2 },
                 { "CommunityRating", 1.0f, 2.0f },
                 { "CriticRating", 1.0f, 2.0f },
-                { "EndDate", DateTime.UnixEpoch, DateTime.Now },
-                { "PremiereDate", DateTime.UnixEpoch, DateTime.Now },
+                { "EndDate", DateTime.UnixEpoch, DateTime.UtcNow },
+                { "PremiereDate", DateTime.UnixEpoch, DateTime.UtcNow },
+                { "PremiereDate", new DateTime(1999, 1, 1, 0, 0, 0, DateTimeKind.Utc), DateTime.UtcNow },
+                { "PremiereDate", new DateTime(2025, 2, 21, 0, 0, 0, DateTimeKind.Utc), DateTime.UtcNow },
                 { "Video3DFormat", Video3DFormat.HalfSideBySide, Video3DFormat.FullSideBySide }
             };
 
@@ -151,7 +153,15 @@ namespace Jellyfin.Providers.Tests.Manager
         public void MergeBaseItemData_SimpleField_ReplacesAppropriately(string propName, object oldValue, object newValue)
         {
             // Use type Movie to allow testing of Video3DFormat
-            Assert.False(TestMergeBaseItemData<Movie, MovieInfo>(propName, oldValue, newValue, null, false, out _));
+            if (propName.Equals("PremiereDate", StringComparison.Ordinal) && oldValue is DateTime oldDateTime)
+            {
+                bool expectReplaced = oldDateTime.Month == 1 && oldDateTime.Day == 1;
+                Assert.Equal(TestMergeBaseItemData<Movie, MovieInfo>(propName, oldValue, newValue, null, false, out _), expectReplaced);
+            }
+            else
+            {
+                Assert.False(TestMergeBaseItemData<Movie, MovieInfo>(propName, oldValue, newValue, null, false, out _));
+            }
 
             Assert.True(TestMergeBaseItemData<Movie, MovieInfo>(propName, oldValue, newValue, null, true, out _));
             Assert.True(TestMergeBaseItemData<Movie, MovieInfo>(propName, null, newValue, null, false, out _));
