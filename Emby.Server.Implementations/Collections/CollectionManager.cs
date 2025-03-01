@@ -204,7 +204,7 @@ namespace Emby.Server.Implementations.Collections
         {
             if (_libraryManager.GetItemById(collectionId) is not BoxSet collection)
             {
-                throw new ArgumentException("No collection exists with the supplied Id");
+                throw new ArgumentException("No collection exists with the supplied collectionId " + collectionId);
             }
 
             List<BaseItem>? itemList = null;
@@ -218,7 +218,7 @@ namespace Emby.Server.Implementations.Collections
 
                 if (item is null)
                 {
-                    throw new ArgumentException("No item exists with the supplied Id");
+                    throw new ArgumentException("No item exists with the supplied Id " + id);
                 }
 
                 if (!currentLinkedChildrenIds.Contains(id))
