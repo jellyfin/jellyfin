@@ -50,11 +50,6 @@ public class NetworkManager : INetworkManager, IDisposable
     private bool _eventfire;
 
     /// <summary>
-    /// List of all interface MAC addresses.
-    /// </summary>
-    private IReadOnlyList<PhysicalAddress> _macAddresses;
-
-    /// <summary>
     /// Dictionary containing interface addresses and their subnets.
     /// </summary>
     private List<IPData> _interfaces;
@@ -91,7 +86,6 @@ public class NetworkManager : INetworkManager, IDisposable
         _startupConfig = startupConfig;
         _initLock = new();
         _interfaces = new List<IPData>();
-        _macAddresses = new List<PhysicalAddress>();
         _publishedServerUrls = new List<PublishedServerUriOverride>();
         _networkEventLock = new();
         _remoteAddressFilter = new List<IPNetwork>();
@@ -215,7 +209,6 @@ public class NetworkManager : INetworkManager, IDisposable
 
     /// <summary>
     /// Generate a list of all the interface ip addresses and submasks where that are in the active/unknown state.
-    /// Generate a list of all active mac addresses that aren't loopback addresses.
     /// </summary>
     private void InitializeInterfaces()
     {
@@ -224,7 +217,6 @@ public class NetworkManager : INetworkManager, IDisposable
             _logger.LogDebug("Refreshing interfaces.");
 
             var interfaces = new List<IPData>();
-            var macAddresses = new List<PhysicalAddress>();
 
             try
             {
@@ -236,13 +228,6 @@ public class NetworkManager : INetworkManager, IDisposable
                     try
                     {
                         var ipProperties = adapter.GetIPProperties();
-                        var mac = adapter.GetPhysicalAddress();
-
-                        // Populate MAC list
-                        if (adapter.NetworkInterfaceType != NetworkInterfaceType.Loopback && !PhysicalAddress.None.Equals(mac))
-                        {
-                            macAddresses.Add(mac);
-                        }
 
                         // Populate interface list
                         foreach (var info in ipProperties.UnicastAddresses)
@@ -302,7 +287,6 @@ public class NetworkManager : INetworkManager, IDisposable
             _logger.LogDebug("Discovered {NumberOfInterfaces} interfaces.", interfaces.Count);
             _logger.LogDebug("Interfaces addresses: {Addresses}", interfaces.OrderByDescending(s => s.AddressFamily == AddressFamily.InterNetwork).Select(s => s.Address.ToString()));
 
-            _macAddresses = macAddresses;
             _interfaces = interfaces;
         }
     }
@@ -709,13 +693,6 @@ public class NetworkManager : INetworkManager, IDisposable
         }
 
         return true;
-    }
-
-    /// <inheritdoc/>
-    public IReadOnlyList<PhysicalAddress> GetMacAddresses()
-    {
-        // Populated in construction - so always has values.
-        return _macAddresses;
     }
 
     /// <inheritdoc/>
