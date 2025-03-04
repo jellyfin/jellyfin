@@ -20,9 +20,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
         public ExternalIdMediaType? Type => ExternalIdMediaType.Person;
 
         /// <inheritdoc />
-        public string UrlFormatString => TmdbUtils.BaseTmdbUrl + "person/{0}";
-
-        /// <inheritdoc />
         public bool Supports(IHasProviderIds item)
         {
             return item is Person;
