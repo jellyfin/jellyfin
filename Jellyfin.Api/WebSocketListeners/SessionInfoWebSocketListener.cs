@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Jellyfin.Data;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Library;

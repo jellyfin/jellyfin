@@ -16,7 +16,8 @@ namespace Jellyfin.Server.Implementations;
 /// </summary>
 /// <param name="options">The database context options.</param>
 /// <param name="logger">Logger.</param>
-public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILogger<JellyfinDbContext> logger) : DbContext(options)
+/// <param name="jellyfinDatabaseProvider">The provider for the database engine specific operations.</param>
+public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILogger<JellyfinDbContext> logger, IJellyfinDatabaseProvider jellyfinDatabaseProvider) : DbContext(options)
 {
     /// <summary>
     /// Gets the <see cref="DbSet{TEntity}"/> containing the access schedules.
@@ -267,29 +268,17 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.SetDefaultDateTimeKind(DateTimeKind.Utc);
+        jellyfinDatabaseProvider.OnModelCreating(modelBuilder);
         base.OnModelCreating(modelBuilder);
 
         // Configuration for each entity is in its own class inside 'ModelConfiguration'.
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(JellyfinDbContext).Assembly);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
-        configurationBuilder.Conventions.Add(_ => new DoNotUseReturningClauseConvention());
-    }
-
-    private class DoNotUseReturningClauseConvention : IModelFinalizingConvention
-    {
-        public void ProcessModelFinalizing(
-            IConventionModelBuilder modelBuilder,
-            IConventionContext<IConventionModelBuilder> context)
-        {
-            foreach (var entityType in modelBuilder.Metadata.GetEntityTypes())
-            {
-                entityType.UseSqlReturningClause(false);
-            }
-        }
+        jellyfinDatabaseProvider.ConfigureConventions(configurationBuilder);
+        base.ConfigureConventions(configurationBuilder);
     }
 }
