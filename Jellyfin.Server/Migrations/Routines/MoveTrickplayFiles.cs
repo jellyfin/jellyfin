@@ -39,7 +39,7 @@ public class MoveTrickplayFiles : IMigrationRoutine
     }
 
     /// <inheritdoc />
-    public Guid Id => new("4EF123D5-8EFF-4B0B-869D-3AED07A60E1B");
+    public Guid Id => new("9540D44A-D8DC-11EF-9CBB-B77274F77C52");
 
     /// <inheritdoc />
     public string Name => "MoveTrickplayFiles";
@@ -89,6 +89,12 @@ public class MoveTrickplayFiles : IMigrationRoutine
                 {
                     _fileSystem.MoveDirectory(oldPath, newPath);
                 }
+
+                oldPath = GetNewOldTrickplayDirectory(item, trickplayInfo.TileWidth, trickplayInfo.TileHeight, trickplayInfo.Width, false);
+                if (_fileSystem.DirectoryExists(oldPath))
+                {
+                    _fileSystem.MoveDirectory(oldPath, newPath);
+                }
             }
         } while (previousCount == Limit);
 
@@ -100,5 +106,21 @@ public class MoveTrickplayFiles : IMigrationRoutine
         var path = Path.Combine(item.GetInternalMetadataPath(), "trickplay");
 
         return width.HasValue ? Path.Combine(path, width.Value.ToString(CultureInfo.InvariantCulture)) : path;
+    }
+
+    private string GetNewOldTrickplayDirectory(BaseItem item, int tileWidth, int tileHeight, int width, bool saveWithMedia = false)
+    {
+        var path = saveWithMedia
+            ? Path.Combine(item.ContainingFolderPath, Path.ChangeExtension(item.Path, ".trickplay"))
+            : Path.Combine(item.GetInternalMetadataPath(), "trickplay");
+
+        var subdirectory = string.Format(
+            CultureInfo.InvariantCulture,
+            "{0} - {1}x{2}",
+            width.ToString(CultureInfo.InvariantCulture),
+            tileWidth.ToString(CultureInfo.InvariantCulture),
+            tileHeight.ToString(CultureInfo.InvariantCulture));
+
+        return Path.Combine(path, subdirectory);
     }
 }

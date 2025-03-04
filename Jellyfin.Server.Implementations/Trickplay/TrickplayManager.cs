@@ -610,9 +610,11 @@ public class TrickplayManager : ITrickplayManager
     /// <inheritdoc />
     public string GetTrickplayDirectory(BaseItem item, int tileWidth, int tileHeight, int width, bool saveWithMedia = false)
     {
+        var basePath = _config.ApplicationPaths.TrickplayPath;
+        var idString = item.Id.ToString("N", CultureInfo.InvariantCulture);
         var path = saveWithMedia
             ? Path.Combine(item.ContainingFolderPath, Path.ChangeExtension(item.Path, ".trickplay"))
-            : Path.Combine(item.GetInternalMetadataPath(), "trickplay");
+            : Path.Combine(basePath, idString);
 
         var subdirectory = string.Format(
             CultureInfo.InvariantCulture,
