@@ -63,7 +63,8 @@ namespace Jellyfin.Server.Integration.Tests
                 Path.Combine(webHostPathRoot, "logs"),
                 Path.Combine(webHostPathRoot, "config"),
                 Path.Combine(webHostPathRoot, "cache"),
-                Path.Combine(webHostPathRoot, "jellyfin-web"));
+                Path.Combine(webHostPathRoot, "jellyfin-web"),
+                commandLineOpts.PackageName);
 
             // Create the logging config file
             // TODO: We shouldn't need to do this since we are only logging to console
