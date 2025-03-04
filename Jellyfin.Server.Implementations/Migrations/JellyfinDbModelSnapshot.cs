@@ -720,6 +720,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<long>("EndTicks")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("ImageSource")
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid>("ItemId")
                         .HasColumnType("TEXT");
 
