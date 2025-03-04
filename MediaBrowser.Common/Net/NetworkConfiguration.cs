@@ -39,7 +39,7 @@ public class NetworkConfiguration
 
             if (value[0] != '/')
             {
-                // If baseUrl was not configured with a leading slash, append one for consistency
+                // If baseUrl was not configured with a leading slash, prepend one for consistency
                 value = "/" + value;
             }
 

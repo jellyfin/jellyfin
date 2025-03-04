@@ -287,7 +287,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<string>("PresentationUniqueKey")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("PrimaryVersionId")
+                    b.Property<Guid?>("PrimaryVersionId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ProductionLocations")
