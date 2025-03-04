@@ -18,12 +18,14 @@ namespace Emby.Server.Implementations.AppBase
         /// <param name="configurationDirectoryPath">The configuration directory path.</param>
         /// <param name="cacheDirectoryPath">The cache directory path.</param>
         /// <param name="webDirectoryPath">The web directory path.</param>
+        /// /// <param name="packageName">The package name.</param>
         protected BaseApplicationPaths(
             string programDataPath,
             string logDirectoryPath,
             string configurationDirectoryPath,
             string cacheDirectoryPath,
-            string webDirectoryPath)
+            string webDirectoryPath,
+            string? packageName)
         {
             ProgramDataPath = programDataPath;
             LogDirectoryPath = logDirectoryPath;
@@ -32,6 +34,7 @@ namespace Emby.Server.Implementations.AppBase
             WebPath = webDirectoryPath;
 
             DataPath = Directory.CreateDirectory(Path.Combine(ProgramDataPath, "data")).FullName;
+            PackageName = packageName;
         }
 
         /// <summary>
@@ -104,6 +107,12 @@ namespace Emby.Server.Implementations.AppBase
         /// Gets the folder path to the temp directory within the cache folder.
         /// </summary>
         /// <value>The temp directory.</value>
-        public string TempDirectory => Path.Join(Path.GetTempPath(), "jellyfin");
+        public string TempDirectory => Path.Join(Path.GetTempPath(), PackageName ?? "jellyfin");
+
+        /// <summary>
+        /// Gets package name.
+        /// </summary>
+        /// <value>The package name.</value>
+        public string? PackageName { get; }
     }
 }

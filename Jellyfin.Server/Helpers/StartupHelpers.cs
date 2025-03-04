@@ -149,7 +149,7 @@ public static class StartupHelpers
             Environment.Exit(1);
         }
 
-        return new ServerApplicationPaths(dataDir, logDir, configDir, cacheDir, webDir);
+        return new ServerApplicationPaths(dataDir, logDir, configDir, cacheDir, webDir, options.PackageName);
     }
 
     private static string GetXdgCacheHome()
