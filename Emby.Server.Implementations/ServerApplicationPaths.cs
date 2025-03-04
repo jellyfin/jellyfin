@@ -17,18 +17,21 @@ namespace Emby.Server.Implementations
         /// <param name="configurationDirectoryPath">The path for Jellyfin's configuration directory.</param>
         /// <param name="cacheDirectoryPath">The path for Jellyfin's cache directory.</param>
         /// <param name="webDirectoryPath">The path for Jellyfin's web UI.</param>
+        /// <param name="packageName">The package name.</param>
         public ServerApplicationPaths(
             string programDataPath,
             string logDirectoryPath,
             string configurationDirectoryPath,
             string cacheDirectoryPath,
-            string webDirectoryPath)
+            string webDirectoryPath,
+            string? packageName)
             : base(
                 programDataPath,
                 logDirectoryPath,
                 configurationDirectoryPath,
                 cacheDirectoryPath,
-                webDirectoryPath)
+                webDirectoryPath,
+                packageName)
         {
             // ProgramDataPath cannot change when the server is running, so cache these to avoid allocations.
             RootFolderPath = Path.Join(ProgramDataPath, "root");
