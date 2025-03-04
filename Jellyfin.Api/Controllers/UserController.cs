@@ -453,6 +453,12 @@ public class UserController : BaseJellyfinApiController
             }
         }
 
+        // If granting admin access, password needs to be set
+        if (newPolicy.IsAdministrator && string.IsNullOrEmpty(user.Password))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, "Administrator accounts always need to have a password.");
+        }
+
         // If disabling
         if (newPolicy.IsDisabled && user.HasPermission(PermissionKind.IsAdministrator))
         {
