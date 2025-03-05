@@ -42,25 +42,23 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         // Include PeopleBaseItemMap
         if (!filter.ItemId.IsEmpty())
         {
-            var people = dbQuery.ToArray();
-            var peopleIds = people.Select(p => p.Id).ToArray();
+            var query = dbQuery
+                .GroupJoin(
+                    context.PeopleBaseItemMap.AsNoTracking().Where(m => m.ItemId == filter.ItemId),
+                    person => person.Id,
+                    mapping => mapping.PeopleId,
+                    (person, mappings) => new { Person = person, Mapping = mappings.FirstOrDefault() });
 
-            var mappings = context.PeopleBaseItemMap
-                .AsNoTracking()
-                .Where(m => peopleIds.Contains(m.PeopleId) && m.ItemId == filter.ItemId)
-                .ToDictionary(m => m.PeopleId);
-
-            return people.Select(p =>
-            {
-                var personInfo = Map(p);
-                if (mappings.TryGetValue(p.Id, out var mapping))
+            return query
+                .AsEnumerable()
+                .Select(p =>
                 {
-                    personInfo.Role = mapping.Role;
-                    personInfo.SortOrder = mapping.SortOrder;
-                }
-
-                return personInfo;
-            }).ToArray();
+                    var personInfo = Map(p.Person);
+                    personInfo.Role = p.Mapping?.Role;
+                    personInfo.SortOrder = p.Mapping?.SortOrder;
+                    return personInfo;
+                })
+                .ToArray();
         }
 
         return dbQuery.AsEnumerable().Select(Map).ToArray();
