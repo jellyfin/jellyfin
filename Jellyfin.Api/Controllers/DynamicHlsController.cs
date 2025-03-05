@@ -1823,19 +1823,33 @@ public class DynamicHlsController : BaseJellyfinApiController
             // Only enable Dolby Vision remuxing if the client explicitly declares support for profiles without fallbacks.
             var clientSupportsDoVi = requestedRange.Contains(VideoRangeType.DOVI.ToString(), StringComparison.OrdinalIgnoreCase);
             var videoIsDoVi = state.VideoStream.VideoRangeType is VideoRangeType.DOVI or VideoRangeType.DOVIWithHDR10 or VideoRangeType.DOVIWithHLG or VideoRangeType.DOVIWithSDR;
+            var videoIsDoviProfile5 = state.VideoStream.DvProfile == 5;
 
             if (EncodingHelper.IsCopyCodec(codec)
                 && (videoIsDoVi && clientSupportsDoVi))
             {
                 if (isActualOutputVideoCodecHevc)
                 {
-                    // Prefer dvh1 to dvhe
-                    args += " -tag:v:0 dvh1 -strict -2";
+                    // Profile 5 does not have any fallbacks so it should have dvh1 tag.
+                    // Other DoVi videos generally have fallbacks so they should have generic hvc1 tag.
+                    if (videoIsDoviProfile5)
+                    {
+                        // Prefer dvh1 to dvhe
+                        args += " -tag:v:0 dvh1";
+                    }
+                    else
+                    {
+                        // Prefer hvc1 to hev1
+                        args += " -tag:v:0 hvc1";
+                    }
                 }
                 else if (isActualOutputVideoCodecAv1)
                 {
-                    args += " -tag:v:0 dav1 -strict -2";
+                    args += " -tag:v:0 dav1";
                 }
+
+                // All DoVi videos should have strict -2 (experimental) flag.
+                args += " -strict -2";
             }
             else if (isActualOutputVideoCodecHevc)
             {
