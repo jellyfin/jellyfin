@@ -148,7 +148,7 @@ namespace Emby.Server.Implementations.Library
             _imageProcessor = imageProcessor;
             _cache = new ConcurrentLruBuilder<Guid, BaseItem>()
                 .WithCapacity(_configurationManager.Configuration.LibraryCacheSize)
-                .WithExpireAfterAccess(TimeSpan.FromHours(2))
+                .WithExpireAfterAccess(TimeSpan.FromMinutes(10))
                 .Build();
 
             _namingOptions = namingOptions;
@@ -1333,7 +1333,7 @@ namespace Emby.Server.Implementations.Library
             return _itemRepository.GetCount(query);
         }
 
-        public IReadOnlyList<BaseItem> GetItemList(InternalItemsQuery query, List<BaseItem> parents)
+        public IReadOnlyList<BaseItem> GetItemList(InternalItemsQuery query, IReadOnlyCollection<BaseItem> parents)
         {
             SetTopParentIdsOrAncestors(query, parents);
 
@@ -1346,6 +1346,36 @@ namespace Emby.Server.Implementations.Library
             }
 
             return _itemRepository.GetItemList(query);
+        }
+
+        public IReadOnlyList<string> GetSeriesPresentationUniqueKeys(InternalItemsQuery query, IReadOnlyCollection<BaseItem> parents)
+        {
+            SetTopParentIdsOrAncestors(query, parents);
+
+            if (query.AncestorIds.Length == 0 && query.TopParentIds.Length == 0)
+            {
+                if (query.User is not null)
+                {
+                    AddUserToQuery(query, query.User);
+                }
+            }
+
+            return _itemRepository.GetSeriesPresentationUniqueKeys(query);
+        }
+
+        public IReadOnlyList<string> GetNextUp(InternalItemsQuery query, IReadOnlyCollection<BaseItem> parents)
+        {
+            SetTopParentIdsOrAncestors(query, parents);
+
+            if (query.AncestorIds.Length == 0 && query.TopParentIds.Length == 0)
+            {
+                if (query.User is not null)
+                {
+                    AddUserToQuery(query, query.User);
+                }
+            }
+
+            return _itemRepository.GetNextUpSeriesKeys(query);
         }
 
         public QueryResult<BaseItem> QueryItems(InternalItemsQuery query)
