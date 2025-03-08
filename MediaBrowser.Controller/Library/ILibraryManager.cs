@@ -563,7 +563,15 @@ namespace MediaBrowser.Controller.Library
         /// <param name="query">The query to use.</param>
         /// <param name="parents">Items to use for query.</param>
         /// <returns>List of items.</returns>
-        IReadOnlyList<BaseItem> GetItemList(InternalItemsQuery query, List<BaseItem> parents);
+        IReadOnlyList<BaseItem> GetItemList(InternalItemsQuery query, IReadOnlyCollection<BaseItem> parents);
+
+        /// <summary>
+        /// Gets the distinct list of series presentation keys.
+        /// </summary>
+        /// <param name="query">The query to use.</param>
+        /// <param name="parents">Items to use for query.</param>
+        /// <returns>The list of series presentation keys.</returns>
+        IReadOnlyList<string> GetSeriesPresentationUniqueKeys(InternalItemsQuery query, IReadOnlyCollection<BaseItem> parents);
 
         /// <summary>
         /// Gets the items result.

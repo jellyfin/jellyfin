@@ -66,7 +66,7 @@ namespace Emby.Server.Implementations.TV
             else
             {
                 parents = _libraryManager.GetUserRootFolder().GetChildren(user, true)
-                   .Where(i => i is Folder)
+                   .Where(i => i is CollectionFolder f && f.CollectionType == CollectionType.tvshows)
                    .Where(i => !user.GetPreferenceValues<Guid>(PreferenceKind.LatestItemExcludes).Contains(i.Id))
                    .ToArray();
             }
@@ -91,7 +91,7 @@ namespace Emby.Server.Implementations.TV
 
             if (!string.IsNullOrEmpty(presentationUniqueKey))
             {
-                return GetResult(GetNextUpEpisodes(request, user, new[] { presentationUniqueKey }, options), request);
+                return GetResult(GetNextUpEpisodes(request, user, [presentationUniqueKey], options), request);
             }
 
             if (limit.HasValue)
@@ -100,24 +100,19 @@ namespace Emby.Server.Implementations.TV
             }
 
             var items = _libraryManager
-                .GetItemList(
+                .GetSeriesPresentationUniqueKeys(
                     new InternalItemsQuery(user)
                     {
-                        IncludeItemTypes = new[] { BaseItemKind.Episode },
-                        OrderBy = new[] { (ItemSortBy.DatePlayed, SortOrder.Descending) },
+                        IncludeItemTypes = [BaseItemKind.Episode],
+                        OrderBy = [(ItemSortBy.DatePlayed, SortOrder.Descending)],
                         SeriesPresentationUniqueKey = presentationUniqueKey,
                         Limit = limit,
-                        DtoOptions = new DtoOptions { Fields = new[] { ItemFields.SeriesPresentationUniqueKey }, EnableImages = false },
+                        DtoOptions = new DtoOptions { Fields = [ItemFields.SeriesPresentationUniqueKey], EnableImages = false },
                         GroupBySeriesPresentationUniqueKey = true
                     },
-                    parentsFolders.ToList())
-                .Cast<Episode>()
-                .Where(episode => !string.IsNullOrEmpty(episode.SeriesPresentationUniqueKey))
-                .Select(GetUniqueSeriesKey)
-                .ToList();
+                    parentsFolders);
 
-            // Avoid implicitly captured closure
-            var episodes = GetNextUpEpisodes(request, user, items.Distinct().ToArray(), options);
+            var episodes = GetNextUpEpisodes(request, user, items, options);
 
             return GetResult(episodes, request);
         }
