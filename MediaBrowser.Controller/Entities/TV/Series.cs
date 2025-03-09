@@ -225,6 +225,21 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             var user = query.User;
 
+            if (SourceType == SourceType.Channel)
+            {
+                try
+                {
+                    query.Parent = this;
+                    query.ChannelIds = [ChannelId];
+                    return ChannelManager.GetChannelItemsInternal(query, new Progress<double>(), CancellationToken.None).GetAwaiter().GetResult();
+                }
+                catch
+                {
+                    // Already logged at lower levels
+                    return new QueryResult<BaseItem>();
+                }
+            }
+
             if (query.Recursive)
             {
                 var seriesKey = GetUniqueSeriesKey(this);
@@ -371,7 +386,25 @@ namespace MediaBrowser.Controller.Entities.TV
                 query.IsMissing = false;
             }
 
-            var allItems = LibraryManager.GetItemList(query);
+            IReadOnlyList<BaseItem> allItems;
+            if (SourceType == SourceType.Channel)
+            {
+                try
+                {
+                    query.Parent = parentSeason;
+                    query.ChannelIds = [ChannelId];
+                    allItems = [.. ChannelManager.GetChannelItemsInternal(query, new Progress<double>(), CancellationToken.None).GetAwaiter().GetResult().Items];
+                }
+                catch
+                {
+                    // Already logged at lower levels
+                    return [];
+                }
+            }
+            else
+            {
+                allItems = LibraryManager.GetItemList(query);
+            }
 
             return GetSeasonEpisodes(parentSeason, user, allItems, options, shouldIncludeMissingEpisodes);
         }
