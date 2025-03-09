@@ -34,76 +34,46 @@ namespace Emby.Server.Implementations.AppBase
             DataPath = Directory.CreateDirectory(Path.Combine(ProgramDataPath, "data")).FullName;
         }
 
-        /// <summary>
-        /// Gets the path to the program data folder.
-        /// </summary>
-        /// <value>The program data path.</value>
+        /// <inheritdoc/>
         public string ProgramDataPath { get; }
 
         /// <inheritdoc/>
         public string WebPath { get; }
 
-        /// <summary>
-        /// Gets the path to the system folder.
-        /// </summary>
-        /// <value>The path to the system folder.</value>
+        /// <inheritdoc/>
         public string ProgramSystemPath { get; } = AppContext.BaseDirectory;
 
-        /// <summary>
-        /// Gets the folder path to the data directory.
-        /// </summary>
-        /// <value>The data directory.</value>
+        /// <inheritdoc/>
         public string DataPath { get; }
 
         /// <inheritdoc />
         public string VirtualDataPath => "%AppDataPath%";
 
-        /// <summary>
-        /// Gets the image cache path.
-        /// </summary>
-        /// <value>The image cache path.</value>
+        /// <inheritdoc/>
         public string ImageCachePath => Path.Combine(CachePath, "images");
 
-        /// <summary>
-        /// Gets the path to the plugin directory.
-        /// </summary>
-        /// <value>The plugins path.</value>
+        /// <inheritdoc/>
         public string PluginsPath => Path.Combine(ProgramDataPath, "plugins");
 
-        /// <summary>
-        /// Gets the path to the plugin configurations directory.
-        /// </summary>
-        /// <value>The plugin configurations path.</value>
+        /// <inheritdoc/>
         public string PluginConfigurationsPath => Path.Combine(PluginsPath, "configurations");
 
-        /// <summary>
-        /// Gets the path to the log directory.
-        /// </summary>
-        /// <value>The log directory path.</value>
+        /// <inheritdoc/>
         public string LogDirectoryPath { get; }
 
-        /// <summary>
-        /// Gets the path to the application configuration root directory.
-        /// </summary>
-        /// <value>The configuration directory path.</value>
+        /// <inheritdoc/>
         public string ConfigurationDirectoryPath { get; }
 
-        /// <summary>
-        /// Gets the path to the system configuration file.
-        /// </summary>
-        /// <value>The system configuration file path.</value>
+        /// <inheritdoc/>
         public string SystemConfigurationFilePath => Path.Combine(ConfigurationDirectoryPath, "system.xml");
 
-        /// <summary>
-        /// Gets or sets the folder path to the cache directory.
-        /// </summary>
-        /// <value>The cache directory.</value>
+        /// <inheritdoc/>
         public string CachePath { get; set; }
 
-        /// <summary>
-        /// Gets the folder path to the temp directory within the cache folder.
-        /// </summary>
-        /// <value>The temp directory.</value>
+        /// <inheritdoc/>
         public string TempDirectory => Path.Join(Path.GetTempPath(), "jellyfin");
+
+        /// <inheritdoc />
+        public string TrickplayPath => Path.Combine(DataPath, "trickplay");
     }
 }
