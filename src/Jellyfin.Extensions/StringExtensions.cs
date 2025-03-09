@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using ICU4N.Text;
 
@@ -122,6 +124,16 @@ namespace Jellyfin.Extensions
         public static string Transliterated(this string text)
         {
             return (_transliterator.Value is null) ? text : _transliterator.Value.Transliterate(text);
+        }
+
+        /// <summary>
+        /// Ensures all strings are non-null and trimmed of leading an trailing blanks.
+        /// </summary>
+        /// <param name="values">The enumerable of strings to trim.</param>
+        /// <returns>The enumeration of trimmed strings.</returns>
+        public static IEnumerable<string> Trimmed(this IEnumerable<string> values)
+        {
+            return values.Select(i => (i ?? string.Empty).Trim());
         }
     }
 }

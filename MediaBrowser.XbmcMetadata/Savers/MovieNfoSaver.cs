@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -100,7 +101,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             if (item is MusicVideo musicVideo)
             {
-                foreach (var artist in musicVideo.Artists)
+                foreach (var artist in musicVideo.Artists.Trimmed().OrderBy(artist => artist))
                 {
                     writer.WriteElementString("artist", artist);
                 }
