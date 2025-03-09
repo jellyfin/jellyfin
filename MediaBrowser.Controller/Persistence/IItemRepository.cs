@@ -60,6 +60,13 @@ public interface IItemRepository
     IReadOnlyList<BaseItem> GetItemList(InternalItemsQuery filter);
 
     /// <summary>
+    /// Gets the list of series presentation keys.
+    /// </summary>
+    /// <param name="filter">The query.</param>
+    /// <returns>The list of keys.</returns>
+    IReadOnlyList<string> GetSeriesPresentationUniqueKeys(InternalItemsQuery filter);
+
+    /// <summary>
     /// Updates the inherited values.
     /// </summary>
     void UpdateInheritedValues();
