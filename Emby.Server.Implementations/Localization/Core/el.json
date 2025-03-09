@@ -28,7 +28,7 @@
     "HomeVideos": "Προσωπικά Βίντεο",
     "Inherit": "Κληρονόμηση",
     "ItemAddedWithName": "{0} προστέθηκε στη βιβλιοθήκη",
-    "ItemRemovedWithName": "{0} διαγράφηκε από τη βιβλιοθήκη",
+    "ItemRemovedWithName": "Το {0} διαγράφτηκε από τη βιβλιοθήκη",
     "LabelIpAddressValue": "Διεύθυνση IP: {0}",
     "LabelRunningTimeValue": "Διάρκεια: {0}",
     "Latest": "Πρόσφατα",
