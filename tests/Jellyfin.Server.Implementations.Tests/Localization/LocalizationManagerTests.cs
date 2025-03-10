@@ -44,7 +44,7 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
 
             var germany = cultures.FirstOrDefault(x => x.TwoLetterISOLanguageName.Equals("de", StringComparison.Ordinal));
             Assert.NotNull(germany);
-            Assert.Equal("ger", germany!.ThreeLetterISOLanguageName);
+            Assert.Equal("deu", germany!.ThreeLetterISOLanguageName);
             Assert.Equal("German", germany.DisplayName);
             Assert.Equal("German", germany.Name);
             Assert.Contains("deu", germany.ThreeLetterISOLanguageNames);
@@ -53,6 +53,7 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
 
         [Theory]
         [InlineData("de")]
+        [InlineData("deu")]
         [InlineData("ger")]
         [InlineData("german")]
         public async Task FindLanguageInfo_Valid_Success(string identifier)
@@ -66,7 +67,7 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             var germany = localizationManager.FindLanguageInfo(identifier);
             Assert.NotNull(germany);
 
-            Assert.Equal("ger", germany!.ThreeLetterISOLanguageName);
+            Assert.Equal("deu", germany!.ThreeLetterISOLanguageName);
             Assert.Equal("German", germany.DisplayName);
             Assert.Equal("German", germany.Name);
             Assert.Contains("deu", germany.ThreeLetterISOLanguageNames);
