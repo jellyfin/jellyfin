@@ -157,7 +157,11 @@ namespace MediaBrowser.Model.IO
         /// <returns>All found files.</returns>
         IEnumerable<FileSystemMetadata> GetFiles(string path, bool recursive = false);
 
+        IEnumerable<FileSystemMetadata> GetFiles(string path, string searchPattern, bool recursive = false);
+
         IEnumerable<FileSystemMetadata> GetFiles(string path, IReadOnlyList<string>? extensions, bool enableCaseSensitiveExtensions, bool recursive);
+
+        IEnumerable<FileSystemMetadata> GetFiles(string path, string searchPattern, IReadOnlyList<string>? extensions, bool enableCaseSensitiveExtensions, bool recursive);
 
         /// <summary>
         /// Gets the file system entries.
