@@ -250,7 +250,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 _libraryManager.UpdatePeople(audio, people);
 
-                if (options.ReplaceAllMetadata && performers.Count != 0)
+                if (options.ReplaceAllMetadata && performers.Length != 0)
                 {
                     audio.Artists = performers.ToImmutableList();
                 }
@@ -260,13 +260,13 @@ namespace MediaBrowser.Providers.MediaInfo
                     audio.Artists = performers.ToImmutableList();
                 }
 
-                if (albumArtists.Count == 0)
+                if (albumArtists.Length == 0)
                 {
                     // Album artists not provided, fall back to performers (artists).
                     albumArtists = performers;
                 }
 
-                if (options.ReplaceAllMetadata && albumArtists.Count != 0)
+                if (options.ReplaceAllMetadata && albumArtists.Length != 0)
                 {
                     audio.AlbumArtists = albumArtists.ToImmutableList();
                 }
@@ -327,9 +327,9 @@ namespace MediaBrowser.Providers.MediaInfo
                     genres = genres.SelectMany(g => SplitWithCustomDelimiter(g, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist)).ToArray();
                 }
 
-                audio.Genres = options.ReplaceAllMetadata || audio.Genres is null || audio.Genres.Length == 0
+                audio.Genres = options.ReplaceAllMetadata || audio.Genres is null || audio.Genres.Count == 0
                     ? genres
-                    : audio.Genres).ToImmutableList();
+                    : audio.Genres.ToImmutableList();
             }
 
             track.AdditionalFields.TryGetValue("REPLAYGAIN_TRACK_GAIN", out var trackGainTag);
