@@ -1,8 +1,6 @@
-using System;
 using Jellyfin.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using SQLitePCL;
 
 namespace Jellyfin.Server.Implementations.ModelConfiguration;
 
