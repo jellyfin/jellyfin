@@ -255,6 +255,23 @@ public sealed class BaseItemRepository
         return dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToArray();
     }
 
+    /// <inheritdoc />
+    public IReadOnlyList<string> GetSeriesPresentationUniqueKeys(InternalItemsQuery filter)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        PrepareFilterQuery(filter);
+
+        using var context = _dbProvider.CreateDbContext();
+        IQueryable<BaseItemEntity> dbQuery = PrepareItemQuery(context, filter);
+
+        dbQuery = TranslateQuery(dbQuery, context, filter);
+
+        dbQuery = ApplyGroupingFilter(dbQuery, filter);
+        dbQuery = ApplyQueryPaging(dbQuery, filter);
+
+        return dbQuery.Where(q => q.SeriesPresentationUniqueKey != null).Select(q => q.SeriesPresentationUniqueKey!).AsEnumerable().Distinct().ToArray();
+    }
+
     private IQueryable<BaseItemEntity> ApplyGroupingFilter(IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
     {
         // This whole block is needed to filter duplicate entries on request
