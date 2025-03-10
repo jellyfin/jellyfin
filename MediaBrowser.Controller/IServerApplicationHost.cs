@@ -4,7 +4,10 @@
 
 using System.Net;
 using MediaBrowser.Common;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Plugins;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MediaBrowser.Controller
 {
@@ -86,5 +89,18 @@ namespace MediaBrowser.Controller
         string ExpandVirtualPath(string path);
 
         string ReverseVirtualPath(string path);
+
+        /// <summary>
+        /// Add a plugin HttpClient.
+        /// </summary>
+        /// <param name="serviceCollection">The service collection to add to.</param>
+        /// <param name="basedOnClientName">The name of the HttpClient to base config on.</param>
+        /// <param name="customHeaders">The custom headers to use. If provided no other headers will be added.</param>
+        /// <typeparam name="T">The plugin type.</typeparam>
+        void AddPluginHttpClient<T>(
+            IServiceCollection serviceCollection,
+            string basedOnClientName = nameof(NamedClient.Default),
+            (string Name, string[] Values)[] customHeaders = null)
+            where T : BasePlugin;
     }
 }
