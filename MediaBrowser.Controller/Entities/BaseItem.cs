@@ -919,7 +919,7 @@ namespace MediaBrowser.Controller.Entities
                 // Remove from middle if surrounded by spaces
                 sortable = sortable.Replace(" " + search + " ", " ", StringComparison.Ordinal);
 
-                // Remove from end if followed by a space
+                // Remove from end if preceeded by a space
                 if (sortable.EndsWith(" " + search, StringComparison.Ordinal))
                 {
                     sortable = sortable.Remove(sortable.Length - (search.Length + 1));
@@ -1775,7 +1775,6 @@ namespace MediaBrowser.Controller.Entities
         public void AddStudio(string name)
         {
             ArgumentException.ThrowIfNullOrEmpty(name);
-
             var current = Studios;
 
             if (!current.Contains(name, StringComparison.OrdinalIgnoreCase))
@@ -1794,7 +1793,7 @@ namespace MediaBrowser.Controller.Entities
 
         public void SetStudios(IEnumerable<string> names)
         {
-            Studios = names.Distinct().ToArray();
+            Studios = names.Trimmed().Distinct().ToArray();
         }
 
         /// <summary>
