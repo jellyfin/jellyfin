@@ -99,25 +99,9 @@ namespace Emby.Server.Implementations.TV
                 limit = limit.Value + 10;
             }
 
-            var items = _libraryManager
-                .GetItemList(
-                    new InternalItemsQuery(user)
-                    {
-                        IncludeItemTypes = new[] { BaseItemKind.Episode },
-                        OrderBy = new[] { (ItemSortBy.DatePlayed, SortOrder.Descending) },
-                        SeriesPresentationUniqueKey = presentationUniqueKey,
-                        Limit = limit,
-                        DtoOptions = new DtoOptions { Fields = new[] { ItemFields.SeriesPresentationUniqueKey }, EnableImages = false },
-                        GroupBySeriesPresentationUniqueKey = true
-                    },
-                    parentsFolders.ToList())
-                .Cast<Episode>()
-                .Where(episode => !string.IsNullOrEmpty(episode.SeriesPresentationUniqueKey))
-                .Select(GetUniqueSeriesKey)
-                .ToList();
+            var nextUpSeriesKeys = _libraryManager.GetNextUpSeriesKeys(new InternalItemsQuery(user) { Limit = limit }, parentsFolders);
 
-            // Avoid implicitly captured closure
-            var episodes = GetNextUpEpisodes(request, user, items.Distinct().ToArray(), options);
+            var episodes = GetNextUpEpisodes(request, user, nextUpSeriesKeys, options);
 
             return GetResult(episodes, request);
         }

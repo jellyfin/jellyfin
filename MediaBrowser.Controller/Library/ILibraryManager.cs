@@ -566,6 +566,14 @@ namespace MediaBrowser.Controller.Library
         IReadOnlyList<BaseItem> GetItemList(InternalItemsQuery query, List<BaseItem> parents);
 
         /// <summary>
+        /// Gets the list of series presentation keys for next up.
+        /// </summary>
+        /// <param name="query">The query to use.</param>
+        /// <param name="parents">Items to use for query.</param>
+        /// <returns>List of series presentation keys.</returns>
+        IReadOnlyList<string> GetNextUpSeriesKeys(InternalItemsQuery query, IReadOnlyCollection<BaseItem> parents);
+
+        /// <summary>
         /// Gets the items result.
         /// </summary>
         /// <param name="query">The query.</param>
