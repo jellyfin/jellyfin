@@ -22,7 +22,7 @@ namespace MediaBrowser.Controller.Resolvers
 
         protected BaseItem ApplyMetadata(BaseItem t)
         {
-            throw new NotImplementedException();
+            protected abstract BaseItem ApplyMetadata(BaseItem t);
         }
 
         public ICollection<BaseItem> ApplyMetadata(ICollection<BaseItem> ts)
