@@ -541,8 +541,8 @@ namespace Emby.Server.Implementations.IO
             return DriveInfo.GetDrives()
                 .Where(
                     d => (d.DriveType == DriveType.Fixed || d.DriveType == DriveType.Network || d.DriveType == DriveType.Removable)
-                        && d.IsReady
-                        && d.TotalSize != 0)
+                         && d.IsReady
+                         && d.TotalSize != 0)
                 .Select(d => new FileSystemMetadata
                 {
                     Name = d.Name,
@@ -560,11 +560,23 @@ namespace Emby.Server.Implementations.IO
         /// <inheritdoc />
         public virtual IEnumerable<FileSystemMetadata> GetFiles(string path, bool recursive = false)
         {
-            return GetFiles(path, null, false, recursive);
+            return GetFiles(path, "*", recursive);
         }
 
         /// <inheritdoc />
-        public virtual IEnumerable<FileSystemMetadata> GetFiles(string path, IReadOnlyList<string>? extensions, bool enableCaseSensitiveExtensions, bool recursive = false)
+        public virtual IEnumerable<FileSystemMetadata> GetFiles(string path, string searchPattern, bool recursive = false)
+        {
+            return GetFiles(path, searchPattern, null, false, recursive);
+        }
+
+        /// <inheritdoc />
+        public virtual IEnumerable<FileSystemMetadata> GetFiles(string path, IReadOnlyList<string>? extensions, bool enableCaseSensitiveExtensions, bool recursive)
+        {
+            return GetFiles(path, "*", extensions, enableCaseSensitiveExtensions, recursive);
+        }
+
+        /// <inheritdoc />
+        public virtual IEnumerable<FileSystemMetadata> GetFiles(string path, string searchPattern, IReadOnlyList<string>? extensions, bool enableCaseSensitiveExtensions, bool recursive = false)
         {
             var enumerationOptions = GetEnumerationOptions(recursive);
 
@@ -575,7 +587,7 @@ namespace Emby.Server.Implementations.IO
                 return ToMetadata(new DirectoryInfo(path).EnumerateFiles("*" + extensions[0], enumerationOptions));
             }
 
-            var files = new DirectoryInfo(path).EnumerateFiles("*", enumerationOptions);
+            var files = new DirectoryInfo(path).EnumerateFiles(searchPattern, enumerationOptions);
 
             if (extensions is not null && extensions.Count > 0)
             {
