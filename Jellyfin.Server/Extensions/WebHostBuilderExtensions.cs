@@ -84,6 +84,9 @@ public static class WebHostBuilderExtensions
                     options.ListenUnixSocket(socketPath);
                     logger.LogInformation("Kestrel listening to unix socket {SocketPath}", socketPath);
                 }
+
+                // look for LISTEN_FDS and listen on those sockets
+                KestrelServerOptionsSystemdExtensions.UseSystemd(options);
             })
             .UseStartup(_ => new Startup(appHost));
     }
