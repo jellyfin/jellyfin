@@ -63,8 +63,9 @@ public interface IItemRepository
     /// Gets the list of series presentation keys for next up.
     /// </summary>
     /// <param name="filter">The query.</param>
+    /// <param name="dateCutoff">The minimum date for a series to have been most recently watched.</param>
     /// <returns>The list of keys.</returns>
-    IReadOnlyList<string> GetNextUpSeriesKeys(InternalItemsQuery filter);
+    IReadOnlyList<string> GetNextUpSeriesKeys(InternalItemsQuery filter, DateTime dateCutoff);
 
     /// <summary>
     /// Updates the inherited values.

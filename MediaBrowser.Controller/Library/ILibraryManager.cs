@@ -570,8 +570,9 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="query">The query to use.</param>
         /// <param name="parents">Items to use for query.</param>
+        /// <param name="dateCutoff">The minimum date for a series to have been most recently watched.</param>
         /// <returns>List of series presentation keys.</returns>
-        IReadOnlyList<string> GetNextUpSeriesKeys(InternalItemsQuery query, IReadOnlyCollection<BaseItem> parents);
+        IReadOnlyList<string> GetNextUpSeriesKeys(InternalItemsQuery query, IReadOnlyCollection<BaseItem> parents, DateTime dateCutoff);
 
         /// <summary>
         /// Gets the items result.

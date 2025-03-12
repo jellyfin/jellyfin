@@ -1344,7 +1344,7 @@ namespace Emby.Server.Implementations.Library
             return _itemRepository.GetItemList(query);
         }
 
-        public IReadOnlyList<string> GetNextUpSeriesKeys(InternalItemsQuery query, IReadOnlyCollection<BaseItem> parents)
+        public IReadOnlyList<string> GetNextUpSeriesKeys(InternalItemsQuery query, IReadOnlyCollection<BaseItem> parents, DateTime dateCutoff)
         {
             SetTopParentIdsOrAncestors(query, parents);
 
@@ -1356,7 +1356,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            return _itemRepository.GetNextUpSeriesKeys(query);
+            return _itemRepository.GetNextUpSeriesKeys(query, dateCutoff);
         }
 
         public QueryResult<BaseItem> QueryItems(InternalItemsQuery query)

@@ -256,7 +256,7 @@ public sealed class BaseItemRepository
     }
 
     /// <inheritdoc />
-    public IReadOnlyList<string> GetNextUpSeriesKeys(InternalItemsQuery filter)
+    public IReadOnlyList<string> GetNextUpSeriesKeys(InternalItemsQuery filter, DateTime dateCutoff)
     {
         ArgumentNullException.ThrowIfNull(filter);
         ArgumentNullException.ThrowIfNull(filter.User);
@@ -274,7 +274,7 @@ public sealed class BaseItemRepository
                 (entity, data) => new { Item = entity, UserData = data })
             .GroupBy(g => g.Item.SeriesPresentationUniqueKey)
             .Select(g => new { g.Key, LastPlayedDate = g.Max(u => u.UserData.LastPlayedDate) })
-            .Where(g => g.Key != null && g.LastPlayedDate != null)
+            .Where(g => g.Key != null && g.LastPlayedDate != null && g.LastPlayedDate >= dateCutoff)
             .OrderByDescending(g => g.LastPlayedDate)
             .Select(g => g.Key!);
 
