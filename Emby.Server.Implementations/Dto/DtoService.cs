@@ -1082,7 +1082,7 @@ namespace Emby.Server.Implementations.Dto
                 {
                     MediaStream[] mediaStreams;
 
-                    if (dto.MediaSources is not null && dto.MediaSources.Length > 0)
+                    if (dto.MediaSources is not null && dto.MediaSources.Count > 0)
                     {
                         if (item.SourceType == SourceType.Channel)
                         {
@@ -1224,7 +1224,7 @@ namespace Emby.Server.Implementations.Dto
 
             if (options.ContainsField(ItemFields.ProductionLocations))
             {
-                if (item.ProductionLocations.Length > 0 || item is Movie)
+                if (item.ProductionLocations.Count > 0 || item is Movie)
                 {
                     dto.ProductionLocations = item.ProductionLocations;
                 }
@@ -1366,7 +1366,7 @@ namespace Emby.Server.Implementations.Dto
                     }
                 }
 
-                if (backdropLimit > 0 && !((dto.BackdropImageTags is not null && dto.BackdropImageTags.Length > 0) || (dto.ParentBackdropImageTags is not null && dto.ParentBackdropImageTags.Length > 0)))
+                if (backdropLimit > 0 && !((dto.BackdropImageTags is not null && dto.BackdropImageTags.Count > 0) || (dto.ParentBackdropImageTags is not null && dto.ParentBackdropImageTags.Count > 0)))
                 {
                     var images = allImages.Where(i => i.Type == ImageType.Backdrop).Take(backdropLimit).ToList();
 

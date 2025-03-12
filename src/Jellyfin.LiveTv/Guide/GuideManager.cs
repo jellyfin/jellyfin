@@ -730,7 +730,9 @@ public class GuideManager : IGuideManager
             _cacheParallelOptions,
             async (program, cancellationToken) =>
             {
-                for (var i = 0; i < program.ImageInfos.Length; i++)
+                var images = new ItemImageInfo[program.ImageInfos.Count];
+
+                for (var i = 0; i < images.Length; i++)
                 {
                     if (cancellationToken.IsCancellationRequested)
                     {
@@ -743,7 +745,7 @@ public class GuideManager : IGuideManager
                         _logger.LogDebug("Caching image locally: {Url}", imageInfo.Path);
                         try
                         {
-                            program.ImageInfos[i] = await _libraryManager.ConvertImageToLocal(
+                            images[i] = await _libraryManager.ConvertImageToLocal(
                                     program,
                                     imageInfo,
                                     imageIndex: 0,
@@ -756,6 +758,8 @@ public class GuideManager : IGuideManager
                         }
                     }
                 }
+
+                program.ImageInfos = images;
             }).ConfigureAwait(false);
     }
 }

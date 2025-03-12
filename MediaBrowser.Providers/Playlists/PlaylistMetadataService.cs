@@ -40,7 +40,7 @@ namespace MediaBrowser.Providers.Playlists
             => item.GetLinkedChildren();
 
         /// <inheritdoc />
-        protected override void MergeData(MetadataResult<Playlist> source, MetadataResult<Playlist> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<Playlist> source, MetadataResult<Playlist> target, IReadOnlyList<MetadataField> lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             base.MergeData(source, target, lockedFields, replaceData, mergeMetadataSettings);
 

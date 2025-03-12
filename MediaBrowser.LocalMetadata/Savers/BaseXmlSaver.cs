@@ -183,7 +183,7 @@ namespace MediaBrowser.LocalMetadata.Savers
 
             await writer.WriteElementStringAsync(null, "LockData", null, item.IsLocked.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()).ConfigureAwait(false);
 
-            if (item.LockedFields.Length > 0)
+            if (item.LockedFields.Count > 0)
             {
                 await writer.WriteElementStringAsync(null, "LockedFields", null, string.Join('|', item.LockedFields)).ConfigureAwait(false);
             }
@@ -255,7 +255,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 await writer.WriteEndElementAsync().ConfigureAwait(false);
             }
 
-            if (item.ProductionLocations.Length > 0)
+            if (item.ProductionLocations.Count > 0)
             {
                 await writer.WriteStartElementAsync(null, "Countries", null).ConfigureAwait(false);
 
@@ -329,7 +329,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 await writer.WriteEndElementAsync().ConfigureAwait(false);
             }
 
-            if (item.Genres.Length > 0)
+            if (item.Genres.Count > 0)
             {
                 await writer.WriteStartElementAsync(null, "Genres", null).ConfigureAwait(false);
 
@@ -341,7 +341,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 await writer.WriteEndElementAsync().ConfigureAwait(false);
             }
 
-            if (item.Studios.Length > 0)
+            if (item.Studios.Count > 0)
             {
                 await writer.WriteStartElementAsync(null, "Studios", null).ConfigureAwait(false);
 
@@ -353,7 +353,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 await writer.WriteEndElementAsync().ConfigureAwait(false);
             }
 
-            if (item.Tags.Length > 0)
+            if (item.Tags.Count > 0)
             {
                 await writer.WriteStartElementAsync(null, "Tags", null).ConfigureAwait(false);
 

@@ -30,7 +30,7 @@ namespace MediaBrowser.Controller.Entities.TV
             AirDays = Array.Empty<DayOfWeek>();
         }
 
-        public DayOfWeek[] AirDays { get; set; }
+        public IReadOnlyList<DayOfWeek> AirDays { get; set; }
 
         public string AirTime { get; set; }
 
