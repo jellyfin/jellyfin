@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ATL;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
@@ -179,8 +180,8 @@ namespace MediaBrowser.Providers.MediaInfo
             // That setter is meant for its own tag parser and external editor usage and will have unwanted side effects
             // For example, setting the Year property will also set the Date property, which is not what we want here.
             // To properly handle fallback values, we make a clone of those fields when valid.
-            var trackTitle = string.IsNullOrEmpty(track.Title) ? mediaInfo.Name : track.Title;
-            var trackAlbum = string.IsNullOrEmpty(track.Album) ? mediaInfo.Album : track.Album;
+            var trackTitle = (string.IsNullOrEmpty(track.Title) ? mediaInfo.Name : track.Title).Trim();
+            var trackAlbum = (string.IsNullOrEmpty(track.Album) ? mediaInfo.Album : track.Album).Trim();
             var trackYear = track.Year is null or 0 ? mediaInfo.ProductionYear : track.Year;
             var trackTrackNumber = track.TrackNumber is null or 0 ? mediaInfo.IndexNumber : track.TrackNumber;
             var trackDiscNumber = track.DiscNumber is null or 0 ? mediaInfo.ParentIndexNumber : track.DiscNumber;
@@ -197,11 +198,11 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 foreach (var albumArtist in albumArtists)
                 {
-                    if (!string.IsNullOrEmpty(albumArtist))
+                    if (!string.IsNullOrWhiteSpace(albumArtist))
                     {
                         PeopleHelper.AddPerson(people, new PersonInfo
                         {
-                            Name = albumArtist,
+                            Name = albumArtist.Trim(),
                             Type = PersonKind.AlbumArtist
                         });
                     }
@@ -229,11 +230,11 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 foreach (var performer in performers)
                 {
-                    if (!string.IsNullOrEmpty(performer))
+                    if (!string.IsNullOrWhiteSpace(performer))
                     {
                         PeopleHelper.AddPerson(people, new PersonInfo
                         {
-                            Name = performer,
+                            Name = performer.Trim(),
                             Type = PersonKind.Artist
                         });
                     }
@@ -241,11 +242,11 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 foreach (var composer in track.Composer.Split(InternalValueSeparator))
                 {
-                    if (!string.IsNullOrEmpty(composer))
+                    if (!string.IsNullOrWhiteSpace(composer))
                     {
                         PeopleHelper.AddPerson(people, new PersonInfo
                         {
-                            Name = composer,
+                            Name = composer.Trim(),
                             Type = PersonKind.Composer
                         });
                     }
@@ -330,6 +331,8 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     genres = genres.SelectMany(g => SplitWithCustomDelimiter(g, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist)).ToArray();
                 }
+
+                genres = genres.Trimmed().Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
 
                 audio.Genres = options.ReplaceAllMetadata || audio.Genres is null || audio.Genres.Length == 0
                     ? genres
