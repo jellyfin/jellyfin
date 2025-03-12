@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Jellyfin.Api.Tests.ModelBinders
 {
-    public sealed class PipeDelimitedArrayModelBinderTests
+    public sealed class PipeDelimitedCollectionModelBinderTests
     {
         [Fact]
         public async Task BindModelAsync_CorrectlyBindsValidPipeDelimitedStringArrayQuery()
@@ -22,7 +22,7 @@ namespace Jellyfin.Api.Tests.ModelBinders
             var queryParamString = "lol|xd";
             var queryParamType = typeof(string[]);
 
-            var modelBinder = new PipeDelimitedArrayModelBinder(new NullLogger<PipeDelimitedArrayModelBinder>());
+            var modelBinder = new PipeDelimitedCollectionModelBinder(new NullLogger<PipeDelimitedCollectionModelBinder>());
             var valueProvider = new QueryStringValueProvider(
                     new BindingSource(string.Empty, string.Empty, false, false),
                     new QueryCollection(new Dictionary<string, StringValues> { { queryParamName, new StringValues(queryParamString) } }),
@@ -47,7 +47,7 @@ namespace Jellyfin.Api.Tests.ModelBinders
             var queryParamString = "42|0";
             var queryParamType = typeof(int[]);
 
-            var modelBinder = new PipeDelimitedArrayModelBinder(new NullLogger<PipeDelimitedArrayModelBinder>());
+            var modelBinder = new PipeDelimitedCollectionModelBinder(new NullLogger<PipeDelimitedCollectionModelBinder>());
             var valueProvider = new QueryStringValueProvider(
                     new BindingSource(string.Empty, string.Empty, false, false),
                     new QueryCollection(new Dictionary<string, StringValues> { { queryParamName, new StringValues(queryParamString) } }),
@@ -72,7 +72,7 @@ namespace Jellyfin.Api.Tests.ModelBinders
             var queryParamString = "How|Much";
             var queryParamType = typeof(TestType[]);
 
-            var modelBinder = new PipeDelimitedArrayModelBinder(new NullLogger<PipeDelimitedArrayModelBinder>());
+            var modelBinder = new PipeDelimitedCollectionModelBinder(new NullLogger<PipeDelimitedCollectionModelBinder>());
             var valueProvider = new QueryStringValueProvider(
                     new BindingSource(string.Empty, string.Empty, false, false),
                     new QueryCollection(new Dictionary<string, StringValues> { { queryParamName, new StringValues(queryParamString) } }),
@@ -97,7 +97,7 @@ namespace Jellyfin.Api.Tests.ModelBinders
             var queryParamString = "How||Much";
             var queryParamType = typeof(TestType[]);
 
-            var modelBinder = new PipeDelimitedArrayModelBinder(new NullLogger<PipeDelimitedArrayModelBinder>());
+            var modelBinder = new PipeDelimitedCollectionModelBinder(new NullLogger<PipeDelimitedCollectionModelBinder>());
             var valueProvider = new QueryStringValueProvider(
                     new BindingSource(string.Empty, string.Empty, false, false),
                     new QueryCollection(new Dictionary<string, StringValues> { { queryParamName, new StringValues(queryParamString) } }),
@@ -123,7 +123,7 @@ namespace Jellyfin.Api.Tests.ModelBinders
             var queryParamString2 = "Much";
             var queryParamType = typeof(TestType[]);
 
-            var modelBinder = new PipeDelimitedArrayModelBinder(new NullLogger<PipeDelimitedArrayModelBinder>());
+            var modelBinder = new PipeDelimitedCollectionModelBinder(new NullLogger<PipeDelimitedCollectionModelBinder>());
 
             var valueProvider = new QueryStringValueProvider(
                     new BindingSource(string.Empty, string.Empty, false, false),
@@ -151,7 +151,7 @@ namespace Jellyfin.Api.Tests.ModelBinders
             IReadOnlyList<TestType> queryParamValues = Array.Empty<TestType>();
             var queryParamType = typeof(TestType[]);
 
-            var modelBinder = new PipeDelimitedArrayModelBinder(new NullLogger<PipeDelimitedArrayModelBinder>());
+            var modelBinder = new PipeDelimitedCollectionModelBinder(new NullLogger<PipeDelimitedCollectionModelBinder>());
 
             var valueProvider = new QueryStringValueProvider(
                     new BindingSource(string.Empty, string.Empty, false, false),
@@ -179,7 +179,7 @@ namespace Jellyfin.Api.Tests.ModelBinders
             var queryParamString = "🔥|😢";
             var queryParamType = typeof(IReadOnlyList<TestType>);
 
-            var modelBinder = new PipeDelimitedArrayModelBinder(new NullLogger<PipeDelimitedArrayModelBinder>());
+            var modelBinder = new PipeDelimitedCollectionModelBinder(new NullLogger<PipeDelimitedCollectionModelBinder>());
             var valueProvider = new QueryStringValueProvider(
                     new BindingSource(string.Empty, string.Empty, false, false),
                     new QueryCollection(new Dictionary<string, StringValues> { { queryParamName, new StringValues(queryParamString) } }),
@@ -205,7 +205,7 @@ namespace Jellyfin.Api.Tests.ModelBinders
             var queryParamString2 = "😱";
             var queryParamType = typeof(IReadOnlyList<TestType>);
 
-            var modelBinder = new PipeDelimitedArrayModelBinder(new NullLogger<PipeDelimitedArrayModelBinder>());
+            var modelBinder = new PipeDelimitedCollectionModelBinder(new NullLogger<PipeDelimitedCollectionModelBinder>());
 
             var valueProvider = new QueryStringValueProvider(
                     new BindingSource(string.Empty, string.Empty, false, false),

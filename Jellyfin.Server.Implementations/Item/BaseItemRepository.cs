@@ -553,7 +553,7 @@ public sealed class BaseItemRepository
         dto.Genres = entity.Genres?.Split('|') ?? [];
         dto.DateCreated = entity.DateCreated.GetValueOrDefault();
         dto.DateModified = entity.DateModified.GetValueOrDefault();
-        dto.ChannelId = string.IsNullOrWhiteSpace(entity.ChannelId) ? Guid.Empty : (Guid.TryParse(entity.ChannelId, out var channelId) ? channelId : Guid.Empty);
+        dto.ChannelId = entity.ChannelId ?? Guid.Empty;
         dto.DateLastRefreshed = entity.DateLastRefreshed.GetValueOrDefault();
         dto.DateLastSaved = entity.DateLastSaved.GetValueOrDefault();
         dto.OwnerId = string.IsNullOrWhiteSpace(entity.OwnerId) ? Guid.Empty : (Guid.TryParse(entity.OwnerId, out var ownerId) ? ownerId : Guid.Empty);
@@ -645,7 +645,7 @@ public sealed class BaseItemRepository
         // dto.MediaType = Enum.TryParse<MediaType>(entity.MediaType);
         if (dto is IHasStartDate hasStartDate)
         {
-            hasStartDate.StartDate = entity.StartDate;
+            hasStartDate.StartDate = entity.StartDate.GetValueOrDefault();
         }
 
         // Fields that are present in the DB but are never actually used
@@ -683,12 +683,13 @@ public sealed class BaseItemRepository
 
         entity.ParentId = !dto.ParentId.IsEmpty() ? dto.ParentId : null;
         entity.Path = GetPathToSave(dto.Path);
-        entity.EndDate = dto.EndDate.GetValueOrDefault();
+        entity.EndDate = dto.EndDate;
         entity.CommunityRating = dto.CommunityRating;
         entity.CustomRating = dto.CustomRating;
         entity.IndexNumber = dto.IndexNumber;
         entity.IsLocked = dto.IsLocked;
         entity.Name = dto.Name;
+        entity.CleanName = GetCleanValue(dto.Name);
         entity.OfficialRating = dto.OfficialRating;
         entity.Overview = dto.Overview;
         entity.ParentIndexNumber = dto.ParentIndexNumber;
@@ -716,7 +717,7 @@ public sealed class BaseItemRepository
         entity.Genres = string.Join('|', dto.Genres);
         entity.DateCreated = dto.DateCreated;
         entity.DateModified = dto.DateModified;
-        entity.ChannelId = dto.ChannelId.ToString();
+        entity.ChannelId = dto.ChannelId;
         entity.DateLastRefreshed = dto.DateLastRefreshed;
         entity.DateLastSaved = dto.DateLastSaved;
         entity.OwnerId = dto.OwnerId.ToString();
@@ -821,10 +822,9 @@ public sealed class BaseItemRepository
             entity.StartDate = hasStartDate.StartDate;
         }
 
+        entity.UnratedType = dto.GetBlockUnratedType().ToString();
+
         // Fields that are present in the DB but are never actually used
-        // dto.UnratedType = entity.UnratedType;
-        // dto.TopParentId = entity.TopParentId;
-        // dto.CleanName = entity.CleanName;
         // dto.UserDataKey = entity.UserDataKey;
 
         if (dto is Folder folder)
@@ -854,7 +854,10 @@ public sealed class BaseItemRepository
         }
 
         // query = query.DistinctBy(e => e.CleanValue);
-        return query.Select(e => e.ItemValue.CleanValue).ToArray();
+        return query.Select(e => e.ItemValue)
+            .GroupBy(e => e.CleanValue)
+            .Select(e => e.First().Value)
+            .ToArray();
     }
 
     private static bool TypeRequiresDeserialization(Type type)
@@ -1448,8 +1451,7 @@ public sealed class BaseItemRepository
 
         if (filter.ChannelIds.Count > 0)
         {
-            var channelIds = filter.ChannelIds.Select(e => e.ToString("N", CultureInfo.InvariantCulture)).ToArray();
-            baseQuery = baseQuery.Where(e => channelIds.Contains(e.ChannelId));
+            baseQuery = baseQuery.Where(e => e.ChannelId != null && filter.ChannelIds.Contains(e.ChannelId.Value));
         }
 
         if (!filter.ParentId.IsEmpty())

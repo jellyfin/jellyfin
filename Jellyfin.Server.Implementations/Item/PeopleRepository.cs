@@ -11,6 +11,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Jellyfin.Server.Implementations.Item;
 #pragma warning disable RS0030 // Do not use banned APIs
+#pragma warning disable CA1304 // Specify CultureInfo
+#pragma warning disable CA1311 // Specify a culture or use an invariant version
+#pragma warning disable CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
 
 /// <summary>
 /// Manager for handling people.
@@ -155,7 +158,8 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
 
         if (!string.IsNullOrWhiteSpace(filter.NameContains))
         {
-            query = query.Where(e => e.Name.Contains(filter.NameContains));
+            var nameContainsUpper = filter.NameContains.ToUpper();
+            query = query.Where(e => e.Name.ToUpper().Contains(nameContainsUpper));
         }
 
         return query;

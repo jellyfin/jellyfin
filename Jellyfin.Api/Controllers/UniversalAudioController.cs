@@ -98,7 +98,7 @@ public class UniversalAudioController : BaseJellyfinApiController
     [ProducesAudioFile]
     public async Task<ActionResult> GetUniversalAudioStream(
         [FromRoute, Required] Guid itemId,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] container,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] container,
         [FromQuery] string? mediaSourceId,
         [FromQuery] string? deviceId,
         [FromQuery] Guid? userId,

@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Implementations.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "8.0.10");
+            modelBuilder.HasAnnotation("ProductVersion", "9.0.2");
 
             modelBuilder.Entity("Jellyfin.Data.Entities.AccessSchedule", b =>
                 {
@@ -152,7 +152,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<int?>("Audio")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("ChannelId")
+                    b.Property<Guid?>("ChannelId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("CleanName")
@@ -185,7 +185,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<DateTime?>("DateModified")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("EndDate")
+                    b.Property<DateTime?>("EndDate")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("EpisodeTitle")
@@ -323,7 +323,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<string>("SortName")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("StartDate")
+                    b.Property<DateTime?>("StartDate")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Studios")

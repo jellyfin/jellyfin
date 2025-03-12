@@ -1162,6 +1162,16 @@ namespace MediaBrowser.Providers.Manager
                     {
                         person.ImageUrl = personInSource.ImageUrl;
                     }
+
+                    if (!string.IsNullOrWhiteSpace(personInSource.Role) && string.IsNullOrWhiteSpace(person.Role))
+                    {
+                        person.Role = personInSource.Role;
+                    }
+
+                    if (personInSource.SortOrder.HasValue && !person.SortOrder.HasValue)
+                    {
+                        person.SortOrder = personInSource.SortOrder;
+                    }
                 }
             }
         }
