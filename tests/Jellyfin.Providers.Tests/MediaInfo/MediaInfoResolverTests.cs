@@ -217,68 +217,58 @@ public class MediaInfoResolverTests
         string file = "My.Video.srt";
         data.Add(
             file,
-            new[]
-            {
+            [
                 CreateMediaStream(VideoDirectoryPath + "/" + file, null, null, 0)
-            },
-            new[]
-            {
+            ],
+            [
                 CreateMediaStream(VideoDirectoryPath + "/" + file, null, null, 0)
-            });
+            ]);
 
         // filename has metadata
         file = "My.Video.Title1.default.forced.sdh.en.srt";
         data.Add(
             file,
-            new[]
-            {
+            [
                 CreateMediaStream(VideoDirectoryPath + "/" + file, null, null, 0)
-            },
-            new[]
-            {
+            ],
+            [
                 CreateMediaStream(VideoDirectoryPath + "/" + file, "eng", "Title1", 0, true, true, true)
-            });
+            ]);
 
         // single stream with metadata
         file = "My.Video.mks";
         data.Add(
             file,
-            new[]
-            {
+            [
                 CreateMediaStream(VideoDirectoryPath + "/" + file, "eng", "Title", 0, true, true, true)
-            },
-            new[]
-            {
-                CreateMediaStream(VideoDirectoryPath + "/" + file, "eng", "Title", 0, true, true, true)
-            });
+            ],
+            [
+                CreateMediaStream(VideoDirectoryPath + "/" + file, "eng", "Title", 0, true, false, true)
+            ]);
 
         // stream wins for title/language, filename wins for flags when conflicting
         file = "My.Video.Title2.default.forced.sdh.en.srt";
         data.Add(
             file,
-            new[]
-            {
+            [
                 CreateMediaStream(VideoDirectoryPath + "/" + file, "fra", "Metadata", 0)
-            },
-            new[]
-            {
+            ],
+            [
                 CreateMediaStream(VideoDirectoryPath + "/" + file, "fra", "Metadata", 0, true, true, true)
-            });
+            ]);
 
         // multiple stream with metadata - filename flags ignored but other data filled in when missing from stream
         file = "My.Video.Title3.default.forced.en.srt";
         data.Add(
             file,
-            new[]
-            {
+            [
                 CreateMediaStream(VideoDirectoryPath + "/" + file, null, null, 0, true, true),
                 CreateMediaStream(VideoDirectoryPath + "/" + file, "fra", "Metadata", 1)
-            },
-            new[]
-            {
+            ],
+            [
                 CreateMediaStream(VideoDirectoryPath + "/" + file, "eng", "Title3", 0, true, true),
                 CreateMediaStream(VideoDirectoryPath + "/" + file, "fra", "Metadata", 1)
-            });
+            ]);
 
         return data;
     }
