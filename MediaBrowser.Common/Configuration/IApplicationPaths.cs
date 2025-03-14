@@ -85,7 +85,7 @@ namespace MediaBrowser.Common.Configuration
         /// <value>The magic string used for virtual path manipulation.</value>
         string VirtualDataPath { get; }
       
-        /// </summary>
+        /// <summary>
         /// Gets the path used for storing trickplay files.
         /// </summary>
         /// <value>The trickplay path.</value>
