@@ -148,7 +148,7 @@ namespace Emby.Server.Implementations.Library
             _imageProcessor = imageProcessor;
             _cache = new ConcurrentLruBuilder<Guid, BaseItem>()
                 .WithCapacity(_configurationManager.Configuration.LibraryCacheSize)
-                .WithExpireAfterAccess(TimeSpan.FromHours(2))
+                .WithExpireAfterAccess(TimeSpan.FromMinutes(10))
                 .Build();
 
             _namingOptions = namingOptions;

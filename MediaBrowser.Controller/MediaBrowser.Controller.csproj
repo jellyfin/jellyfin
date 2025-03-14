@@ -62,5 +62,10 @@
     <PackageReference Include="StyleCop.Analyzers" PrivateAssets="All" />
     <PackageReference Include="SmartAnalyzers.MultithreadingAnalyzer" PrivateAssets="All" />
   </ItemGroup>
+  <ItemGroup>
+    <Reference Include="BitFaster.Caching">
+      <HintPath>..\..\..\.nuget\packages\bitfaster.caching\2.5.3\lib\net6.0\BitFaster.Caching.dll</HintPath>
+    </Reference>
+  </ItemGroup>
 
 </Project>

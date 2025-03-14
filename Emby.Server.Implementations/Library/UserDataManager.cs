@@ -1,13 +1,13 @@
 #pragma warning disable RS0030 // Do not use banned APIs
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
+using BitFaster.Caching;
+using BitFaster.Caching.Lru;
 using Jellyfin.Data.Entities;
-using Jellyfin.Extensions;
 using Jellyfin.Server.Implementations;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
@@ -26,8 +26,7 @@ namespace Emby.Server.Implementations.Library
     /// </summary>
     public class UserDataManager : IUserDataManager
     {
-        private readonly ConcurrentDictionary<string, UserItemData> _userData =
-            new ConcurrentDictionary<string, UserItemData>(StringComparer.OrdinalIgnoreCase);
+        private readonly ICache<string, UserItemData> _cache;
 
         private readonly IServerConfigurationManager _config;
         private readonly IDbContextFactory<JellyfinDbContext> _repository;
@@ -43,6 +42,11 @@ namespace Emby.Server.Implementations.Library
         {
             _config = config;
             _repository = repository;
+            _cache = new ConcurrentLruBuilder<string, UserItemData>()
+                .WithCapacity(_config.Configuration.LibraryCacheSize)
+                .WithExpireAfterAccess(TimeSpan.FromMinutes(10))
+                .WithKeyComparer(StringComparer.OrdinalIgnoreCase)
+                .Build();
         }
 
         /// <inheritdoc />
@@ -81,7 +85,7 @@ namespace Emby.Server.Implementations.Library
 
             var userId = user.InternalId;
             var cacheKey = GetCacheKey(userId, item.Id);
-            _userData.AddOrUpdate(cacheKey, userData, (_, _) => userData);
+            _cache.AddOrUpdate(cacheKey, userData);
 
             UserDataSaved?.Invoke(this, new UserDataSaveEventArgs
             {
@@ -182,7 +186,7 @@ namespace Emby.Server.Implementations.Library
         {
             var cacheKey = GetCacheKey(user.InternalId, itemId);
 
-            if (_userData.TryGetValue(cacheKey, out var data))
+            if (_cache.TryGet(cacheKey, out var data))
             {
                 return data;
             }
@@ -197,7 +201,7 @@ namespace Emby.Server.Implementations.Library
                 };
             }
 
-            return _userData.GetOrAdd(cacheKey, data);
+            return _cache.GetOrAdd(cacheKey, _ => data);
         }
 
         private UserItemData? GetUserDataInternal(Guid userId, Guid itemId, List<string> keys)
