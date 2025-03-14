@@ -126,5 +126,15 @@
     "TaskKeyframeExtractorDescription": "Iz video datoteke Izvleče ključne sličice, da ustvari bolj natančne sezname predvajanja HLS. Proces lahko traja dolgo časa.",
     "HearingImpaired": "Oslabljen sluh",
     "TaskRefreshTrickplayImages": "Ustvari Trickplay slike",
-    "TaskRefreshTrickplayImagesDescription": "Ustvari trickplay predoglede za posnetke v omogočenih knjižnicah."
+    "TaskRefreshTrickplayImagesDescription": "Ustvari trickplay predoglede za posnetke v omogočenih knjižnicah.",
+    "TaskExtractMediaSegmentsDescription": "Ekstrahira ali pridobi medijske segmente iz vtičnikov, ki podpirajo MediaSegment.",
+    "TaskMoveTrickplayImagesDescription": "Premakne obstoječe datoteke trickplay v skladu z nastavitvami knjižnice.",
+    "TaskExtractMediaSegments": "Skeniranje segmentov v medijih",
+    "TaskMoveTrickplayImages": "Preseli lokacijo Trickplay slik",
+    "TaskDownloadMissingLyrics": "Prenesi manjkajoča besedila pesmi",
+    "TaskDownloadMissingLyricsDescription": "Prenesi besedila za pesmi",
+    "TaskCleanCollectionsAndPlaylists": "Počisti zbirke in sezname predvajanja",
+    "TaskAudioNormalization": "Normalizacija zvoka",
+    "TaskAudioNormalizationDescription": "Pregled datotek za podatke o normalizaciji zvoka.",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Odstrani elemente iz zbirk in seznamov predvajanja, ki ne obstajajo več."
 }

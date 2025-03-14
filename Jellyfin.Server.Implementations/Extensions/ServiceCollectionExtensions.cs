@@ -21,7 +21,7 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddPooledDbContextFactory<JellyfinDbContext>((serviceProvider, opt) =>
         {
             var applicationPaths = serviceProvider.GetRequiredService<IApplicationPaths>();
-            opt.UseSqlite($"Filename={Path.Combine(applicationPaths.DataPath, "jellyfin.db")}");
+            opt.UseSqlite($"Filename={Path.Combine(applicationPaths.DataPath, "jellyfin.db")};Pooling=false");
         });
 
         return serviceCollection;

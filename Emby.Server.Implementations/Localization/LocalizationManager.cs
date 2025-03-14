@@ -231,13 +231,13 @@ namespace Emby.Server.Implementations.Localization
                 ratings.Add(new ParentalRating("21", 21));
             }
 
-            // A lot of countries don't excplicitly have a seperate rating for adult content
+            // A lot of countries don't explicitly have a separate rating for adult content
             if (ratings.All(x => x.Value != 1000))
             {
                 ratings.Add(new ParentalRating("XXX", 1000));
             }
 
-            // A lot of countries don't excplicitly have a seperate rating for banned content
+            // A lot of countries don't explicitly have a separate rating for banned content
             if (ratings.All(x => x.Value != 1001))
             {
                 ratings.Add(new ParentalRating("Banned", 1001));
@@ -286,8 +286,10 @@ namespace Emby.Server.Implementations.Localization
             }
 
             // Fairly common for some users to have "Rated R" in their rating field
-            rating = rating.Replace("Rated :", string.Empty, StringComparison.OrdinalIgnoreCase);
-            rating = rating.Replace("Rated ", string.Empty, StringComparison.OrdinalIgnoreCase);
+            rating = rating.Replace("Rated :", string.Empty, StringComparison.OrdinalIgnoreCase)
+                            .Replace("Rated:", string.Empty, StringComparison.OrdinalIgnoreCase)
+                            .Replace("Rated ", string.Empty, StringComparison.OrdinalIgnoreCase)
+                            .Trim();
 
             // Use rating system matching the language
             if (!string.IsNullOrEmpty(countryCode))

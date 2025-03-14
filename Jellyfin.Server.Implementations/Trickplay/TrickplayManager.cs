@@ -46,7 +46,7 @@ public class TrickplayManager : ITrickplayManager
     /// </summary>
     /// <param name="logger">The logger.</param>
     /// <param name="mediaEncoder">The media encoder.</param>
-    /// <param name="fileSystem">The file systen.</param>
+    /// <param name="fileSystem">The file system.</param>
     /// <param name="encodingHelper">The encoding helper.</param>
     /// <param name="libraryManager">The library manager.</param>
     /// <param name="config">The server configuration manager.</param>
@@ -179,7 +179,7 @@ public class TrickplayManager : ITrickplayManager
             {
                 // Extract images
                 // Note: Media sources under parent items exist as their own video/item as well. Only use this video stream for trickplay.
-                var mediaSource = video.GetMediaSources(false).Find(source => Guid.Parse(source.Id).Equals(video.Id));
+                var mediaSource = video.GetMediaSources(false).FirstOrDefault(source => Guid.Parse(source.Id).Equals(video.Id));
 
                 if (mediaSource is null)
                 {
@@ -191,6 +191,14 @@ public class TrickplayManager : ITrickplayManager
                 if (!File.Exists(mediaPath))
                 {
                     _logger.LogWarning("Media not found at {Path} for item {ItemID}", mediaPath, video.Id);
+                    return;
+                }
+
+                // We support video backdrops, but we should not generate trickplay images for them
+                var parentDirectory = Directory.GetParent(mediaPath);
+                if (parentDirectory is not null && string.Equals(parentDirectory.Name, "backdrops", StringComparison.OrdinalIgnoreCase))
+                {
+                    _logger.LogDebug("Ignoring backdrop media found at {Path} for item {ItemID}", mediaPath, video.Id);
                     return;
                 }
 
@@ -238,7 +246,7 @@ public class TrickplayManager : ITrickplayManager
                         foreach (var tile in existingFiles)
                         {
                             var image = _imageEncoder.GetImageSize(tile);
-                            localTrickplayInfo.Height = Math.Max(localTrickplayInfo.Height, image.Height);
+                            localTrickplayInfo.Height = Math.Max(localTrickplayInfo.Height, (int)Math.Ceiling((double)image.Height / localTrickplayInfo.TileHeight));
                             var bitrate = (int)Math.Ceiling((decimal)new FileInfo(tile).Length * 8 / localTrickplayInfo.TileWidth / localTrickplayInfo.TileHeight / (localTrickplayInfo.Interval / 1000));
                             localTrickplayInfo.Bandwidth = Math.Max(localTrickplayInfo.Bandwidth, bitrate);
                         }
@@ -536,7 +544,7 @@ public class TrickplayManager : ITrickplayManager
 
             if (trickplayInfo.ThumbnailCount > 0)
             {
-                const string urlFormat = "{0}.jpg?MediaSourceId={1}&api_key={2}";
+                const string urlFormat = "{0}.jpg?MediaSourceId={1}&ApiKey={2}";
                 const string decimalFormat = "{0:0.###}";
 
                 var resolution = $"{trickplayInfo.Width}x{trickplayInfo.Height}";
@@ -602,9 +610,11 @@ public class TrickplayManager : ITrickplayManager
     /// <inheritdoc />
     public string GetTrickplayDirectory(BaseItem item, int tileWidth, int tileHeight, int width, bool saveWithMedia = false)
     {
+        var basePath = _config.ApplicationPaths.TrickplayPath;
+        var idString = item.Id.ToString("N", CultureInfo.InvariantCulture);
         var path = saveWithMedia
             ? Path.Combine(item.ContainingFolderPath, Path.ChangeExtension(item.Path, ".trickplay"))
-            : Path.Combine(item.GetInternalMetadataPath(), "trickplay");
+            : Path.Combine(basePath, idString);
 
         var subdirectory = string.Format(
             CultureInfo.InvariantCulture,

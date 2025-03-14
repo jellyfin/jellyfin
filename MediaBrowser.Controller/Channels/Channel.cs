@@ -22,7 +22,7 @@ namespace MediaBrowser.Controller.Channels
         [JsonIgnore]
         public override SourceType SourceType => SourceType.Channel;
 
-        public override bool IsVisible(User user)
+        public override bool IsVisible(User user, bool skipAllowedTagsCheck = false)
         {
             var blockedChannelsPreference = user.GetPreferenceValues<Guid>(PreferenceKind.BlockedChannels);
             if (blockedChannelsPreference.Length != 0)
@@ -41,7 +41,7 @@ namespace MediaBrowser.Controller.Channels
                 }
             }
 
-            return base.IsVisible(user);
+            return base.IsVisible(user, skipAllowedTagsCheck);
         }
 
         protected override QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)

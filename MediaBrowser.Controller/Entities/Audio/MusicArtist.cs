@@ -21,6 +21,7 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// <summary>
     /// Class MusicArtist.
     /// </summary>
+    [Common.RequiresSourceSerialisation]
     public class MusicArtist : Folder, IItemByName, IHasMusicGenres, IHasDualAccess, IHasLookupInfo<ArtistInfo>
     {
         [JsonIgnore]
@@ -84,7 +85,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             return !IsAccessedByName;
         }
 
-        public IList<BaseItem> GetTaggedItems(InternalItemsQuery query)
+        public IReadOnlyList<BaseItem> GetTaggedItems(InternalItemsQuery query)
         {
             if (query.IncludeItemTypes.Length == 0)
             {
@@ -110,15 +111,15 @@ namespace MediaBrowser.Controller.Entities.Audio
             return base.IsSaveLocalMetadataEnabled();
         }
 
-        protected override Task ValidateChildrenInternal(IProgress<double> progress, bool recursive, bool refreshChildMetadata, bool allowRemoveRoot, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService, CancellationToken cancellationToken)
+        protected override async Task ValidateChildrenInternal(IProgress<double> progress, bool recursive, bool refreshChildMetadata, bool allowRemoveRoot, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
             if (IsAccessedByName)
             {
                 // Should never get in here anyway
-                return Task.CompletedTask;
+                return;
             }
 
-            return base.ValidateChildrenInternal(progress, recursive, refreshChildMetadata, false, refreshOptions, directoryService, cancellationToken);
+            await base.ValidateChildrenInternal(progress, recursive, refreshChildMetadata, false, refreshOptions, directoryService, cancellationToken).ConfigureAwait(false);
         }
 
         public override List<string> GetUserDataKeys()
@@ -137,11 +138,9 @@ namespace MediaBrowser.Controller.Entities.Audio
         private static List<string> GetUserDataKeys(MusicArtist item)
         {
             var list = new List<string>();
-            var id = item.GetProviderId(MetadataProvider.MusicBrainzArtist);
-
-            if (!string.IsNullOrEmpty(id))
+            if (item.TryGetProviderId(MetadataProvider.MusicBrainzArtist, out var externalId))
             {
-                list.Add("Artist-Musicbrainz-" + id);
+                list.Add("Artist-Musicbrainz-" + externalId);
             }
 
             list.Add("Artist-" + (item.Name ?? string.Empty).RemoveDiacritics());

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Net.Mime;
 using Jellyfin.Extensions;
 
 namespace MediaBrowser.Model.Net
@@ -125,6 +126,7 @@ namespace MediaBrowser.Model.Net
             new("audio/vorbis", ".vorbis"),
             new("audio/x-ape", ".ape"),
             new("audio/xsp", ".xsp"),
+            new("audio/x-aac", ".aac"),
             new("audio/x-wavpack", ".wv"),
 
             // Type image
@@ -143,7 +145,7 @@ namespace MediaBrowser.Model.Net
             new("video/x-matroska", ".mkv"),
         }.ToFrozenDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase);
 
-        public static string GetMimeType(string path) => GetMimeType(path, "application/octet-stream");
+        public static string GetMimeType(string path) => GetMimeType(path, MediaTypeNames.Application.Octet);
 
         /// <summary>
         /// Gets the type of the MIME.

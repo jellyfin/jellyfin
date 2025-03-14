@@ -27,7 +27,7 @@ public class NetworkManager : INetworkManager, IDisposable
     /// <summary>
     /// Threading lock for network properties.
     /// </summary>
-    private readonly object _initLock;
+    private readonly Lock _initLock;
 
     private readonly ILogger<NetworkManager> _logger;
 
@@ -35,7 +35,7 @@ public class NetworkManager : INetworkManager, IDisposable
 
     private readonly IConfiguration _startupConfig;
 
-    private readonly object _networkEventLock;
+    private readonly Lock _networkEventLock;
 
     /// <summary>
     /// Holds the published server URLs and the IPs to use them on.
@@ -50,14 +50,9 @@ public class NetworkManager : INetworkManager, IDisposable
     private bool _eventfire;
 
     /// <summary>
-    /// List of all interface MAC addresses.
-    /// </summary>
-    private IReadOnlyList<PhysicalAddress> _macAddresses;
-
-    /// <summary>
     /// Dictionary containing interface addresses and their subnets.
     /// </summary>
-    private IReadOnlyList<IPData> _interfaces;
+    private List<IPData> _interfaces;
 
     /// <summary>
     /// Unfiltered user defined LAN subnets (<see cref="NetworkConfiguration.LocalNetworkSubnets"/>)
@@ -91,9 +86,8 @@ public class NetworkManager : INetworkManager, IDisposable
         _startupConfig = startupConfig;
         _initLock = new();
         _interfaces = new List<IPData>();
-        _macAddresses = new List<PhysicalAddress>();
         _publishedServerUrls = new List<PublishedServerUriOverride>();
-        _networkEventLock = new object();
+        _networkEventLock = new();
         _remoteAddressFilter = new List<IPNetwork>();
 
         _ = bool.TryParse(startupConfig[DetectNetworkChangeKey], out var detectNetworkChange);
@@ -215,7 +209,6 @@ public class NetworkManager : INetworkManager, IDisposable
 
     /// <summary>
     /// Generate a list of all the interface ip addresses and submasks where that are in the active/unknown state.
-    /// Generate a list of all active mac addresses that aren't loopback addresses.
     /// </summary>
     private void InitializeInterfaces()
     {
@@ -224,7 +217,6 @@ public class NetworkManager : INetworkManager, IDisposable
             _logger.LogDebug("Refreshing interfaces.");
 
             var interfaces = new List<IPData>();
-            var macAddresses = new List<PhysicalAddress>();
 
             try
             {
@@ -236,13 +228,6 @@ public class NetworkManager : INetworkManager, IDisposable
                     try
                     {
                         var ipProperties = adapter.GetIPProperties();
-                        var mac = adapter.GetPhysicalAddress();
-
-                        // Populate MAC list
-                        if (adapter.NetworkInterfaceType != NetworkInterfaceType.Loopback && !PhysicalAddress.None.Equals(mac))
-                        {
-                            macAddresses.Add(mac);
-                        }
 
                         // Populate interface list
                         foreach (var info in ipProperties.UnicastAddresses)
@@ -302,7 +287,6 @@ public class NetworkManager : INetworkManager, IDisposable
             _logger.LogDebug("Discovered {NumberOfInterfaces} interfaces.", interfaces.Count);
             _logger.LogDebug("Interfaces addresses: {Addresses}", interfaces.OrderByDescending(s => s.AddressFamily == AddressFamily.InterNetwork).Select(s => s.Address.ToString()));
 
-            _macAddresses = macAddresses;
             _interfaces = interfaces;
         }
     }
@@ -702,20 +686,13 @@ public class NetworkManager : INetworkManager, IDisposable
                 return false;
             }
         }
-        else if (!_lanSubnets.Any(x => x.Contains(remoteIP)))
+        else if (!IsInLocalNetwork(remoteIP))
         {
             // Remote not enabled. So everyone should be LAN.
             return false;
         }
 
         return true;
-    }
-
-    /// <inheritdoc/>
-    public IReadOnlyList<PhysicalAddress> GetMacAddresses()
-    {
-        // Populated in construction - so always has values.
-        return _macAddresses;
     }
 
     /// <inheritdoc/>
@@ -973,7 +950,7 @@ public class NetworkManager : INetworkManager, IDisposable
         bindPreference = string.Empty;
         int? port = null;
 
-        // Only consider subnets including the source IP, prefering specific overrides
+        // Only consider subnets including the source IP, preferring specific overrides
         List<PublishedServerUriOverride> validPublishedServerUrls;
         if (!isInExternalSubnet)
         {
@@ -997,7 +974,9 @@ public class NetworkManager : INetworkManager, IDisposable
             // Get interface matching override subnet
             var intf = _interfaces.OrderBy(x => x.Index).FirstOrDefault(x => data.Data.Subnet.Contains(x.Address));
 
-            if (intf?.Address is not null)
+            if (intf?.Address is not null
+                || (data.Data.AddressFamily == AddressFamily.InterNetwork && data.Data.Address.Equals(IPAddress.Any))
+                || (data.Data.AddressFamily == AddressFamily.InterNetworkV6 && data.Data.Address.Equals(IPAddress.IPv6Any)))
             {
                 // If matching interface is found, use override
                 bindPreference = data.OverrideUri;
@@ -1025,6 +1004,7 @@ public class NetworkManager : INetworkManager, IDisposable
         }
 
         _logger.LogDebug("{Source}: Matching bind address override found: {Address}", source, bindPreference);
+
         return true;
     }
 
@@ -1063,6 +1043,7 @@ public class NetworkManager : INetworkManager, IDisposable
                 // If none exists, this will select the first external interface if there is one.
                 bindAddress = externalInterfaces
                     .OrderByDescending(x => x.Subnet.Contains(source))
+                    .ThenByDescending(x => x.Subnet.PrefixLength)
                     .ThenBy(x => x.Index)
                     .Select(x => x.Address)
                     .First();
@@ -1080,6 +1061,7 @@ public class NetworkManager : INetworkManager, IDisposable
             // If none exists, this will select the first internal interface if there is one.
             bindAddress = _interfaces.Where(x => IsInLocalNetwork(x.Address))
                 .OrderByDescending(x => x.Subnet.Contains(source))
+                .ThenByDescending(x => x.Subnet.PrefixLength)
                 .ThenBy(x => x.Index)
                 .Select(x => x.Address)
                 .FirstOrDefault();

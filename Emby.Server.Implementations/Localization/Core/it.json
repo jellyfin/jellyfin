@@ -58,8 +58,8 @@
     "NotificationOptionServerRestartRequired": "Riavvio del server necessario",
     "NotificationOptionTaskFailed": "Operazione pianificata fallita",
     "NotificationOptionUserLockedOut": "Utente bloccato",
-    "NotificationOptionVideoPlayback": "La riproduzione video è iniziata",
-    "NotificationOptionVideoPlaybackStopped": "La riproduzione video è stata interrotta",
+    "NotificationOptionVideoPlayback": "Riproduzione video iniziata",
+    "NotificationOptionVideoPlaybackStopped": "Riproduzione video interrotta",
     "Photos": "Foto",
     "Playlists": "Playlist",
     "Plugin": "Plugin",
@@ -134,5 +134,7 @@
     "TaskDownloadMissingLyricsDescription": "Scarica testi per le canzoni",
     "TaskDownloadMissingLyrics": "Scarica testi mancanti",
     "TaskMoveTrickplayImages": "Sposta le immagini Trickplay",
-    "TaskMoveTrickplayImagesDescription": "Sposta le immagini Trickplay esistenti secondo la configurazione della libreria."
+    "TaskMoveTrickplayImagesDescription": "Sposta le immagini Trickplay esistenti secondo la configurazione della libreria.",
+    "TaskExtractMediaSegmentsDescription": "Estrae o ottiene segmenti multimediali dai plugin abilitati MediaSegment.",
+    "TaskExtractMediaSegments": "Scansiona Segmento Media"
 }

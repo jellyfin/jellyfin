@@ -16,12 +16,17 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
 
+      - name: Setup .NET
+        uses: actions/setup-dotnet@3951f0dfe7a07e2313ec93c75700083e2005cbab # v4.3.0
+        with:
+          dotnet-version: '9.0.x'
+
       - name: Build
         run: |
           dotnet build Jellyfin.Server -o ./out
 
       - name: Upload Head
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
         with:
           name: abi-head
           retention-days: 14
@@ -41,6 +46,11 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           fetch-depth: 0
 
+      - name: Setup .NET
+        uses: actions/setup-dotnet@3951f0dfe7a07e2313ec93c75700083e2005cbab # v4.3.0
+        with:
+          dotnet-version: '9.0.x'
+
       - name: Checkout common ancestor
         env:
           HEAD_REF: ${{ github.head_ref }}
@@ -55,7 +65,7 @@ jobs:
           dotnet build Jellyfin.Server -o ./out
 
       - name: Upload Head
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
         with:
           name: abi-base
           retention-days: 14
@@ -75,13 +85,13 @@ jobs:
 
     steps:
       - name: Download abi-head
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
         with:
           name: abi-head
           path: abi-head
 
       - name: Download abi-base
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
         with:
           name: abi-base
           path: abi-base

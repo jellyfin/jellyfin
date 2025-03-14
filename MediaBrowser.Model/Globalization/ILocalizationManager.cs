@@ -52,7 +52,7 @@ namespace MediaBrowser.Model.Globalization
         /// <summary>
         /// Gets the localization options.
         /// </summary>
-        /// <returns><see cref="IEnumerable{LocalizatonOption}" />.</returns>
+        /// <returns><see cref="IEnumerable{LocalizationOption}" />.</returns>
         IEnumerable<LocalizationOption> GetLocalizationOptions();
 
         /// <summary>
