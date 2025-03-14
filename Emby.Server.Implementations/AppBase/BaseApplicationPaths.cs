@@ -77,7 +77,7 @@ namespace Emby.Server.Implementations.AppBase
         /// <inheritdoc />
         public string TrickplayPath => Path.Combine(DataPath, "trickplay");
         
-        /// <inheritdoc cref="IApplicationPaths"/>
+        /// <inheritdoc />
         public virtual void MakeSanityCheckOrThrow()
         {
             CreateAndCheckMarker(ConfigurationDirectoryPath, "config");
@@ -88,7 +88,7 @@ namespace Emby.Server.Implementations.AppBase
             CreateAndCheckMarker(DataPath, "data");
         }
 
-        /// <inheritdoc cref="IApplicationPaths"/>
+        /// <inheritdoc />
         public void CreateAndCheckMarker(string path, string markerName, bool recursive = false)
         {
             if (!Directory.Exists(path))
