@@ -20,8 +20,5 @@ public class MusicBrainzRecordingId : IExternalId
     public ExternalIdMediaType? Type => ExternalIdMediaType.Recording;
 
     /// <inheritdoc />
-    public string UrlFormatString => Plugin.Instance!.Configuration.Server + "/recording/{0}";
-
-    /// <inheritdoc />
     public bool Supports(IHasProviderIds item) => item is Audio;
 }
