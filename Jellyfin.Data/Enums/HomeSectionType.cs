@@ -53,6 +53,11 @@ namespace Jellyfin.Data.Enums
         /// <summary>
         /// Continue Reading.
         /// </summary>
-        ResumeBook = 9
+        ResumeBook = 9,
+
+        /// <summary>
+        /// Latest Release.
+        /// </summary>
+        LatestRelease = 10
     }
 }
