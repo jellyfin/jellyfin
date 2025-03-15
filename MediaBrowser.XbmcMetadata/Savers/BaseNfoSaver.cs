@@ -414,6 +414,9 @@ namespace MediaBrowser.XbmcMetadata.Savers
                                 case Video3DFormat.MVC:
                                     writer.WriteElementString("format3d", "MVC");
                                     break;
+                                case Video3DFormat.Spatial:
+                                    writer.WriteElementString("format3d", "Spatial");
+                                    break;
                             }
                         }
                     }
