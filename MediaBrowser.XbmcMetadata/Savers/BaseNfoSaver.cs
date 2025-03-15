@@ -4,7 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.IO.Hashing;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -197,14 +199,31 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await SaveToFileAsync(memoryStream, path).ConfigureAwait(false);
+                await SaveToFileAsync(memoryStream, path, cancellationToken).ConfigureAwait(false);
             }
         }
 
-        private async Task SaveToFileAsync(Stream stream, string path)
+        private async Task SaveToFileAsync(Stream stream, string path, CancellationToken cancellationToken)
         {
             var directory = Path.GetDirectoryName(path) ?? throw new ArgumentException($"Provided path ({path}) is not valid.", nameof(path));
             Directory.CreateDirectory(directory);
+
+            // Compare metadata hashes before proceeding
+            if (File.Exists(path))
+            {
+                byte[] existingFileHash;
+                using (var existingFileStream = File.OpenRead(path))
+                {
+                    existingFileHash = await ComputeHash(existingFileStream, cancellationToken).ConfigureAwait(false);
+                }
+
+                byte[] newContentHash = await ComputeHash(stream, cancellationToken).ConfigureAwait(false);
+
+                if (existingFileHash.SequenceEqual(newContentHash))
+                {
+                    return; // Don't save since .nfo is unchanged
+                }
+            }
 
             // On Windows, saving the file will fail if the file is hidden or readonly
             FileSystem.SetAttributes(path, false, false);
@@ -221,13 +240,23 @@ namespace MediaBrowser.XbmcMetadata.Savers
             var filestream = new FileStream(path, fileStreamOptions);
             await using (filestream.ConfigureAwait(false))
             {
-                await stream.CopyToAsync(filestream).ConfigureAwait(false);
+                await stream.CopyToAsync(filestream, cancellationToken).ConfigureAwait(false);
             }
 
             if (ConfigurationManager.Configuration.SaveMetadataHidden)
             {
                 SetHidden(path, true);
             }
+        }
+
+        private static async Task<byte[]> ComputeHash(Stream stream, CancellationToken cancellationToken)
+        {
+            stream.Position = 0;
+            var hasher = new XxHash3();
+            await hasher.AppendAsync(stream, cancellationToken).ConfigureAwait(false);
+            stream.Position = 0;
+
+            return hasher.GetCurrentHash();
         }
 
         private void SetHidden(string path, bool hidden)
