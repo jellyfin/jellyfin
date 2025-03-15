@@ -111,6 +111,7 @@ public class MediaStreamRepository : IMediaStreamRepository
         dto.IsDefault = entity.IsDefault;
         dto.IsForced = entity.IsForced;
         dto.IsExternal = entity.IsExternal;
+        dto.IsOriginal = entity.IsOriginal;
         dto.Height = entity.Height;
         dto.Width = entity.Width;
         dto.AverageFrameRate = entity.AverageFrameRate;
@@ -144,6 +145,11 @@ public class MediaStreamRepository : IMediaStreamRepository
         {
             dto.LocalizedDefault = _localization.GetLocalizedString("Default");
             dto.LocalizedExternal = _localization.GetLocalizedString("External");
+
+            if (dto.Type is MediaStreamType.Audio)
+            {
+                dto.LocalizedOriginal = _localization.GetLocalizedString("Original");
+            }
 
             if (dto.Type is MediaStreamType.Subtitle)
             {
@@ -179,6 +185,7 @@ public class MediaStreamRepository : IMediaStreamRepository
             IsDefault = dto.IsDefault,
             IsForced = dto.IsForced,
             IsExternal = dto.IsExternal,
+            IsOriginal = dto.IsOriginal,
             Height = dto.Height,
             Width = dto.Width,
             AverageFrameRate = dto.AverageFrameRate,
