@@ -1,7 +1,7 @@
-#pragma warning disable CA2227
+#pragma warning disable CA1819 // Properties should not return arrays
+#pragma warning disable CA2227 // Collection properties should be read only
 
 using System;
-using System.Collections.Generic;
 
 namespace Jellyfin.Data.Entities;
 
@@ -40,12 +40,15 @@ public class BaseItemImageInfo
     /// </summary>
     public int Height { get; set; }
 
-#pragma warning disable CA1819 // Properties should not return arrays
     /// <summary>
     /// Gets or Sets the blurhash.
     /// </summary>
     public byte[]? Blurhash { get; set; }
-#pragma warning restore CA1819
+
+    /// <summary>
+    /// Gets or Sets the file hash.
+    /// </summary>
+    public byte[]? FileHash { get; set; }
 
     /// <summary>
     /// Gets or Sets the reference id to the BaseItem.
