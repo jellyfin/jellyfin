@@ -13,10 +13,10 @@ namespace Jellyfin.Server.Implementations.Migrations
             migrationBuilder.RenameColumn(
                 name: "MaxParentalAgeRating",
                 table: "Users",
-                newName: "MaxParentalRatingSubScore");
+                newName: "MaxParentalRatingScore");
 
             migrationBuilder.AddColumn<int>(
-                name: "MaxParentalRatingScore",
+                name: "MaxParentalRatingSubScore",
                 table: "Users",
                 type: "INTEGER",
                 nullable: true);
@@ -32,7 +32,7 @@ namespace Jellyfin.Server.Implementations.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "MaxParentalRatingScore",
+                name: "MaxParentalRatingSubScore",
                 table: "Users");
 
             migrationBuilder.DropColumn(
@@ -40,7 +40,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                 table: "BaseItems");
 
             migrationBuilder.RenameColumn(
-                name: "MaxParentalRatingSubScore",
+                name: "MaxParentalRatingScore",
                 table: "Users",
                 newName: "MaxParentalAgeRating");
         }
