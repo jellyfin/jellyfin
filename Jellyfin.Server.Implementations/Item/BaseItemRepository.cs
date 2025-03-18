@@ -255,6 +255,37 @@ public sealed class BaseItemRepository
         return dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToArray();
     }
 
+    /// <inheritdoc />
+    public IReadOnlyList<string> GetNextUpSeriesKeys(InternalItemsQuery filter, DateTime dateCutoff)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        ArgumentNullException.ThrowIfNull(filter.User);
+
+        using var context = _dbProvider.CreateDbContext();
+
+        var query = context.BaseItems
+            .AsNoTracking()
+            .Where(i => filter.TopParentIds.Contains(i.TopParentId!.Value))
+            .Where(i => i.Type == _itemTypeLookup.BaseItemKindNames[BaseItemKind.Episode])
+            .Join(
+                context.UserData.AsNoTracking(),
+                i => new { UserId = filter.User.Id, ItemId = i.Id },
+                u => new { UserId = u.UserId, ItemId = u.ItemId },
+                (entity, data) => new { Item = entity, UserData = data })
+            .GroupBy(g => g.Item.SeriesPresentationUniqueKey)
+            .Select(g => new { g.Key, LastPlayedDate = g.Max(u => u.UserData.LastPlayedDate) })
+            .Where(g => g.Key != null && g.LastPlayedDate != null && g.LastPlayedDate >= dateCutoff)
+            .OrderByDescending(g => g.LastPlayedDate)
+            .Select(g => g.Key!);
+
+        if (filter.Limit.HasValue)
+        {
+            query = query.Take(filter.Limit.Value);
+        }
+
+        return query.ToArray();
+    }
+
     private IQueryable<BaseItemEntity> ApplyGroupingFilter(IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
     {
         // This whole block is needed to filter duplicate entries on request
