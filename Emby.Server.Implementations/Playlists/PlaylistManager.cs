@@ -283,14 +283,14 @@ namespace Emby.Server.Implementations.Playlists
                 RefreshPriority.High);
         }
 
-        internal static int DetermineAdjustedIndex(int priorIndexAllChildren, int newIndex)
+        internal static int DetermineAdjustedIndex(int newPriorIndexAllChildren, int newIndex)
         {
             if (newIndex == 0)
             {
-                return priorIndexAllChildren > 0 ? priorIndexAllChildren - 1 : 0;
+                return newPriorIndexAllChildren > 0 ? newPriorIndexAllChildren - 1 : 0;
             }
 
-            return priorIndexAllChildren + 1;
+            return newPriorIndexAllChildren + 1;
         }
 
         public async Task MoveItemAsync(string playlistId, string entryId, int newIndex, Guid callingUserId)
