@@ -11,5 +11,8 @@ namespace MediaBrowser.Model.MediaInfo
         public const string VTT = "vtt";
         public const string WEBVTT = "webvtt";
         public const string TTML = "ttml";
+        public const string DVDSUB = "dvdsub";
+        public const string DVBSUB = "dvbsub";
+        public const string PGSSUB = "pgssub";
     }
 }

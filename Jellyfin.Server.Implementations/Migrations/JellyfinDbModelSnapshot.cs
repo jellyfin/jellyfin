@@ -1235,6 +1235,10 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("SubtitleCodecPreference")
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("SubtitleMode")
                         .HasColumnType("INTEGER");
 
