@@ -1,41 +1,40 @@
 using Emby.Server.Implementations.Playlists;
 using Xunit;
 
-namespace Jellyfin.Server.Implementations.Tests.Playlists
+namespace Jellyfin.Server.Implementations.Tests.Playlists;
+
+public class PlaylistManagerTests
 {
-    public class PlaylistManagerTests
+    [Fact]
+    public void DetermineAdjustedIndexMoveToFirstPositionNoPriorInAllList()
     {
-        [Fact]
-        public void DetermineAdjustedIndexMoveToFirstPositionNoPriorInAllList()
-        {
-            var priorIndexAllChildren = 0;
-            var newIndex = 0;
+        var priorIndexAllChildren = 0;
+        var newIndex = 0;
 
-            var adjustedIndex = PlaylistManager.DetermineAdjustedIndex(priorIndexAllChildren, newIndex);
+        var adjustedIndex = PlaylistManager.DetermineAdjustedIndex(priorIndexAllChildren, newIndex);
 
-            Assert.Equal(0, adjustedIndex);
-        }
+        Assert.Equal(0, adjustedIndex);
+    }
 
-        [Fact]
-        public void DetermineAdjustedIndexPriorInMiddleOfAllList()
-        {
-            var priorIndexAllChildren = 2;
-            var newIndex = 0;
+    [Fact]
+    public void DetermineAdjustedIndexPriorInMiddleOfAllList()
+    {
+        var priorIndexAllChildren = 2;
+        var newIndex = 0;
 
-            var adjustedIndex = PlaylistManager.DetermineAdjustedIndex(priorIndexAllChildren, newIndex);
+        var adjustedIndex = PlaylistManager.DetermineAdjustedIndex(priorIndexAllChildren, newIndex);
 
-            Assert.Equal(1, adjustedIndex);
-        }
+        Assert.Equal(1, adjustedIndex);
+    }
 
-        [Fact]
-        public void DetermineAdjustedIndexMoveMiddleOfPlaylist()
-        {
-            var priorIndexAllChildren = 2;
-            var newIndex = 1;
+    [Fact]
+    public void DetermineAdjustedIndexMoveMiddleOfPlaylist()
+    {
+        var priorIndexAllChildren = 2;
+        var newIndex = 1;
 
-            var adjustedIndex = PlaylistManager.DetermineAdjustedIndex(priorIndexAllChildren, newIndex);
+        var adjustedIndex = PlaylistManager.DetermineAdjustedIndex(priorIndexAllChildren, newIndex);
 
-            Assert.Equal(3, adjustedIndex);
-        }
+        Assert.Equal(3, adjustedIndex);
     }
 }
