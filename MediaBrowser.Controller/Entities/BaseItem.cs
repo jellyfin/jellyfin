@@ -2539,6 +2539,15 @@ namespace MediaBrowser.Controller.Entities
                     updateType |= ItemUpdateType.MetadataImport;
                 }
             }
+            else
+            {
+                if (item.InheritedParentalRatingValue is not null)
+                {
+                    item.InheritedParentalRatingValue = null;
+                    item.InheritedParentalRatingSubValue = null;
+                    updateType |= ItemUpdateType.MetadataImport;
+                }
+            }
 
             return updateType;
         }
