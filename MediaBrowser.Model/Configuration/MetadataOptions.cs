@@ -18,6 +18,8 @@ namespace MediaBrowser.Model.Configuration
             MetadataFetcherOrder = Array.Empty<string>();
             DisabledImageFetchers = Array.Empty<string>();
             ImageFetcherOrder = Array.Empty<string>();
+            MetadataResolvers = Array.Empty<string>();
+            DisabledMetadataResolvers = Array.Empty<string>();
         }
 
         public string ItemType { get; set; }
@@ -33,5 +35,9 @@ namespace MediaBrowser.Model.Configuration
         public string[] DisabledImageFetchers { get; set; }
 
         public string[] ImageFetcherOrder { get; set; }
+
+        public string[] MetadataResolvers { get; set; }
+
+        public string[] DisabledMetadataResolvers { get; set; }
     }
 }
