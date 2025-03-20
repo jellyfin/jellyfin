@@ -146,12 +146,25 @@ namespace Emby.Naming.Video
         /// <summary>
         /// Tries to get name and year from raw name.
         /// </summary>
-        /// <param name="name">Raw name.</param>
-        /// <param name="namingOptions">The naming options.</param>
+        /// <param name="fullFilePathWithOrWithoutExtension">Raw name.</param>
         /// <returns>Returns <see cref="CleanDateTimeResult"/> with name and optional year.</returns>
-        public static CleanDateTimeResult CleanDateTime(string name, NamingOptions namingOptions)
+        /// <param name="namingOptions">The naming options.</param>
+        public static CleanDateTimeResult CleanDateTime(string fullFilePathWithOrWithoutExtension, NamingOptions namingOptions)
         {
-            return CleanDateTimeParser.Clean(name, namingOptions.CleanDateTimeRegexes);
+            var fileNameWithoutExtension = GetFileNameWithoutExtension(fullFilePathWithOrWithoutExtension, namingOptions);
+            return CleanDateTimeParser.Clean(fileNameWithoutExtension, namingOptions);
+        }
+
+        private static string GetFileNameWithoutExtension(string fullFilePathWithOrWithoutExtension, NamingOptions namingOptions)
+        {
+            string fileNameWithoutExtension = fullFilePathWithOrWithoutExtension;
+
+            foreach (var videoFileExtension in namingOptions.VideoFileExtensions)
+            {
+                fileNameWithoutExtension = fullFilePathWithOrWithoutExtension.Replace(videoFileExtension, string.Empty, StringComparison.OrdinalIgnoreCase);
+            }
+
+            return fileNameWithoutExtension;
         }
     }
 }
