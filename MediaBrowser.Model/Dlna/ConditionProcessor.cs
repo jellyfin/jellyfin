@@ -341,6 +341,15 @@ namespace MediaBrowser.Model.Dlna
                 return !condition.IsRequired;
             }
 
+            // Special case: HDR10 also satisfies if the video is HDR10Plus
+            if (currentValue.Value == VideoRangeType.HDR10Plus)
+            {
+                if (IsConditionSatisfied(condition, VideoRangeType.HDR10))
+                {
+                    return true;
+                }
+            }
+
             var conditionType = condition.Condition;
             if (conditionType == ProfileConditionType.EqualsAny)
             {
