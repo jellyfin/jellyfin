@@ -2683,14 +2683,18 @@ namespace Emby.Server.Implementations.Library
                 if (current.IsDirectory && _namingOptions.AllExtrasTypesFolderNames.ContainsKey(current.Name))
                 {
                     var filesInSubFolder = _fileSystem.GetFiles(current.FullName, null, false, false);
-                    foreach (var file in filesInSubFolder)
+                    var filesInSubFolderList = filesInSubFolder.ToList();
+
+                    bool subFolderIsMixedFolder = filesInSubFolderList.Count > 1;
+
+                    foreach (var file in filesInSubFolderList)
                     {
                         if (!_extraResolver.TryGetExtraTypeForOwner(file.FullName, ownerVideoInfo, out var extraType))
                         {
                             continue;
                         }
 
-                        var extra = GetExtra(file, extraType.Value);
+                        var extra = GetExtra(file, extraType.Value, subFolderIsMixedFolder);
                         if (extra is not null)
                         {
                             yield return extra;
@@ -2699,7 +2703,7 @@ namespace Emby.Server.Implementations.Library
                 }
                 else if (!current.IsDirectory && _extraResolver.TryGetExtraTypeForOwner(current.FullName, ownerVideoInfo, out var extraType))
                 {
-                    var extra = GetExtra(current, extraType.Value);
+                    var extra = GetExtra(current, extraType.Value, false);
                     if (extra is not null)
                     {
                         yield return extra;
@@ -2707,7 +2711,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            BaseItem? GetExtra(FileSystemMetadata file, ExtraType extraType)
+            BaseItem? GetExtra(FileSystemMetadata file, ExtraType extraType, bool isInMixedFolder)
             {
                 var extra = ResolvePath(_fileSystem.GetFileInfo(file.FullName), directoryService, _extraResolver.GetResolversForExtraType(extraType));
                 if (extra is not Video && extra is not Audio)
@@ -2730,6 +2734,7 @@ namespace Emby.Server.Implementations.Library
 
                 extra.ParentId = Guid.Empty;
                 extra.OwnerId = owner.Id;
+                extra.IsInMixedFolder = isInMixedFolder;
                 return extra;
             }
         }
