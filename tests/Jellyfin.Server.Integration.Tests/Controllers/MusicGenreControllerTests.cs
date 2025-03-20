@@ -4,7 +4,8 @@ using Xunit;
 
 namespace Jellyfin.Server.Integration.Tests.Controllers;
 
-public sealed class MusicGenreControllerTests : IClassFixture<JellyfinApplicationFactory>
+[Collection("Controller collection")]
+public sealed class MusicGenreControllerTests
 {
     private readonly JellyfinApplicationFactory _factory;
     private static string? _accessToken;
