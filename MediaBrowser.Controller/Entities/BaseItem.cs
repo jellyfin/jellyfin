@@ -207,6 +207,9 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public string OriginalTitle { get; set; }
 
+        [JsonIgnore]
+        public string OriginalLanguage { get; set; }
+
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
