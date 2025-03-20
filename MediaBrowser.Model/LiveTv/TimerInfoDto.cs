@@ -1,6 +1,7 @@
 #nullable disable
 #pragma warning disable CS1591
 
+using System;
 using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Model.LiveTv
@@ -22,13 +23,13 @@ namespace MediaBrowser.Model.LiveTv
         /// Gets or sets the series timer identifier.
         /// </summary>
         /// <value>The series timer identifier.</value>
-        public string SeriesTimerId { get; set; }
+        public Guid? SeriesTimerId { get; set; }
 
         /// <summary>
         /// Gets or sets the external series timer identifier.
         /// </summary>
         /// <value>The external series timer identifier.</value>
-        public string ExternalSeriesTimerId { get; set; }
+        public Guid? ExternalSeriesTimerId { get; set; }
 
         /// <summary>
         /// Gets or sets the run time ticks.

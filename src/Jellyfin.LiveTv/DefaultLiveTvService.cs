@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -66,7 +65,7 @@ namespace Jellyfin.LiveTv
 
         public event EventHandler<GenericEventArgs<TimerInfo>> TimerCreated;
 
-        public event EventHandler<GenericEventArgs<string>> TimerCancelled;
+        public event EventHandler<GenericEventArgs<Guid>> TimerCancelled;
 
         /// <inheritdoc />
         public string Name => ServiceName;
@@ -143,11 +142,11 @@ namespace Jellyfin.LiveTv
             return GetChannelsAsync(false, cancellationToken);
         }
 
-        public Task CancelSeriesTimerAsync(string timerId, CancellationToken cancellationToken)
+        public Task CancelSeriesTimerAsync(Guid timerId, CancellationToken cancellationToken)
         {
             var timers = _timerManager
                 .GetAll()
-                .Where(i => string.Equals(i.SeriesTimerId, timerId, StringComparison.OrdinalIgnoreCase))
+                .Where(i => i.SeriesTimerId.Equals(timerId))
                 .ToList();
 
             foreach (var timer in timers)
@@ -155,7 +154,7 @@ namespace Jellyfin.LiveTv
                 CancelTimerInternal(timer.Id, true, true);
             }
 
-            var remove = _seriesTimerManager.GetAll().FirstOrDefault(r => string.Equals(r.Id, timerId, StringComparison.OrdinalIgnoreCase));
+            var remove = _seriesTimerManager.GetAll().FirstOrDefault(r => r.Id.Equals(timerId));
             if (remove is not null)
             {
                 _seriesTimerManager.Delete(remove);
@@ -164,7 +163,7 @@ namespace Jellyfin.LiveTv
             return Task.CompletedTask;
         }
 
-        private void CancelTimerInternal(string timerId, bool isSeriesCancelled, bool isManualCancellation)
+        private void CancelTimerInternal(Guid timerId, bool isSeriesCancelled, bool isManualCancellation)
         {
             var timer = _timerManager.GetTimer(timerId);
             if (timer is not null)
@@ -177,7 +176,7 @@ namespace Jellyfin.LiveTv
                     timer.IsManual = true;
                 }
 
-                if (string.IsNullOrWhiteSpace(timer.SeriesTimerId) || isSeriesCancelled)
+                if (timer.SeriesTimerId.IsNullOrEmpty() || isSeriesCancelled)
                 {
                     _timerManager.Delete(timer);
                 }
@@ -188,14 +187,14 @@ namespace Jellyfin.LiveTv
 
                 if (statusChanging && TimerCancelled is not null)
                 {
-                    TimerCancelled(this, new GenericEventArgs<string>(timerId));
+                    TimerCancelled(this, new GenericEventArgs<Guid>(timerId));
                 }
             }
 
             _recordingsManager.CancelRecording(timerId, timer);
         }
 
-        public Task CancelTimerAsync(string timerId, CancellationToken cancellationToken)
+        public Task CancelTimerAsync(Guid timerId, CancellationToken cancellationToken)
         {
             CancelTimerInternal(timerId, false, true);
             return Task.CompletedTask;
@@ -211,7 +210,7 @@ namespace Jellyfin.LiveTv
             throw new NotImplementedException();
         }
 
-        public Task<string> CreateTimer(TimerInfo info, CancellationToken cancellationToken)
+        public Task<Guid> CreateTimer(TimerInfo info, CancellationToken cancellationToken)
         {
             var existingTimer = string.IsNullOrWhiteSpace(info.ProgramId) ?
                 null :
@@ -231,7 +230,7 @@ namespace Jellyfin.LiveTv
                 throw new ArgumentException("A scheduled recording already exists for this program.");
             }
 
-            info.Id = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
+            info.Id = Guid.NewGuid();
 
             LiveTvProgram programInfo = null;
 
@@ -259,9 +258,9 @@ namespace Jellyfin.LiveTv
             return Task.FromResult(info.Id);
         }
 
-        public async Task<string> CreateSeriesTimer(SeriesTimerInfo info, CancellationToken cancellationToken)
+        public async Task<Guid> CreateSeriesTimer(SeriesTimerInfo info, CancellationToken cancellationToken)
         {
-            info.Id = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
+            info.Id = Guid.NewGuid();
 
             // populate info.seriesID
             var program = GetProgramInfoFromCache(info.ProgramId);
@@ -305,12 +304,12 @@ namespace Jellyfin.LiveTv
 
             UpdateTimersForSeriesTimer(info, true, false);
 
-            return info.Id;
+            return info.Id.Value;
         }
 
         public Task UpdateSeriesTimerAsync(SeriesTimerInfo info, CancellationToken cancellationToken)
         {
-            var instance = _seriesTimerManager.GetAll().FirstOrDefault(i => string.Equals(i.Id, info.Id, StringComparison.OrdinalIgnoreCase));
+            var instance = _seriesTimerManager.GetAll().FirstOrDefault(i => i.Id.Equals(info.Id));
 
             if (instance is not null)
             {
@@ -787,8 +786,8 @@ namespace Jellyfin.LiveTv
                 };
 
                 var deletes = _timerManager.GetAll()
-                    .Where(i => string.Equals(i.SeriesTimerId, seriesTimer.Id, StringComparison.OrdinalIgnoreCase))
-                    .Where(i => !allTimerIds.Contains(i.Id, StringComparison.OrdinalIgnoreCase) && i.StartDate > DateTime.UtcNow)
+                    .Where(i => i.SeriesTimerId.Equals(seriesTimer.Id))
+                    .Where(i => !allTimerIds.Contains(i.Id) && i.StartDate > DateTime.UtcNow)
                     .Where(i => deleteStatuses.Contains(i.Status))
                     .ToList();
 
@@ -860,7 +859,7 @@ namespace Jellyfin.LiveTv
             var timer = new TimerInfo
             {
                 ChannelId = channelId,
-                Id = (seriesTimer.Id + parent.ExternalId).GetMD5().ToString("N", CultureInfo.InvariantCulture),
+                Id = (seriesTimer.Id + parent.ExternalId).GetMD5(),
                 StartDate = parent.StartDate,
                 EndDate = parent.EndDate.Value,
                 ProgramId = parent.ExternalId,
