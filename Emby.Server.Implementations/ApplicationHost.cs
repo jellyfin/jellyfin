@@ -651,6 +651,7 @@ namespace Emby.Server.Implementations
             BaseItem.MediaSegmentManager = Resolve<IMediaSegmentManager>();
             CollectionFolder.XmlSerializer = _xmlSerializer;
             CollectionFolder.ApplicationHost = this;
+            DirectoryService.Initialize(ConfigurationManager);
         }
 
         /// <summary>

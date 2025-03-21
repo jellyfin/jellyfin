@@ -1,26 +1,49 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using BitFaster.Caching;
+using BitFaster.Caching.Lru;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Controller.Providers
 {
     public class DirectoryService : IDirectoryService
     {
+        private static ICache<string, FileSystemMetadata[]> _cache = null!;
+        private static ICache<string, FileSystemMetadata> _fileCache = null!;
+        private static ICache<string, List<string>> _filePathCache = null!;
+
         private readonly IFileSystem _fileSystem;
-
-        private readonly ConcurrentDictionary<string, FileSystemMetadata[]> _cache = new(StringComparer.Ordinal);
-
-        private readonly ConcurrentDictionary<string, FileSystemMetadata> _fileCache = new(StringComparer.Ordinal);
-
-        private readonly ConcurrentDictionary<string, List<string>> _filePathCache = new(StringComparer.Ordinal);
 
         public DirectoryService(IFileSystem fileSystem)
         {
             _fileSystem = fileSystem;
+        }
+
+        public static void Initialize(IServerConfigurationManager configurationManager)
+        {
+            ArgumentNullException.ThrowIfNull(configurationManager);
+
+            _cache = new ConcurrentLruBuilder<string, FileSystemMetadata[]>()
+                .WithCapacity(configurationManager.Configuration.LibraryCacheSize)
+                .WithExpireAfterAccess(TimeSpan.FromMinutes(10))
+                .WithKeyComparer(StringComparer.Ordinal)
+                .Build();
+
+            _fileCache = new ConcurrentLruBuilder<string, FileSystemMetadata>()
+                .WithCapacity(configurationManager.Configuration.LibraryCacheSize)
+                .WithExpireAfterAccess(TimeSpan.FromMinutes(10))
+                .WithKeyComparer(StringComparer.Ordinal)
+                .Build();
+
+            _filePathCache = new ConcurrentLruBuilder<string, List<string>>()
+                .WithCapacity(configurationManager.Configuration.LibraryCacheSize)
+                .WithExpireAfterAccess(TimeSpan.FromMinutes(10))
+                .WithKeyComparer(StringComparer.Ordinal)
+                .Build();
         }
 
         public FileSystemMetadata[] GetFileSystemEntries(string path)
@@ -74,13 +97,13 @@ namespace MediaBrowser.Controller.Providers
 
         public FileSystemMetadata? GetFileSystemEntry(string path)
         {
-            if (!_fileCache.TryGetValue(path, out var result))
+            if (!_fileCache.TryGet(path, out var result))
             {
                 var file = _fileSystem.GetFileSystemInfo(path);
                 if (file?.Exists ?? false)
                 {
                     result = file;
-                    _fileCache.TryAdd(path, result);
+                    _fileCache.AddOrUpdate(path, result);
                 }
             }
 
