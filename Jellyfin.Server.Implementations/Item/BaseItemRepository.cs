@@ -1806,20 +1806,20 @@ public sealed class BaseItemRepository
         }
         else if (filter.BlockUnratedItems.Length > 0)
         {
-            var unratedItems = filter.BlockUnratedItems.Select(f => f.ToString()).ToArray();
-            Expression<Func<BaseItemEntity, bool>> unratedItemFilter = e => e.InheritedParentalRatingValue == null && !unratedItems.Contains(e.UnratedType);
+            var unratedItemTypes = filter.BlockUnratedItems.Select(f => f.ToString()).ToArray();
+            Expression<Func<BaseItemEntity, bool>> unratedItemFilter = e => e.InheritedParentalRatingValue != null || !unratedItemTypes.Contains(e.UnratedType);
 
             if (minParentalRatingFilter != null && maxParentalRatingFilter != null)
             {
-                baseQuery = baseQuery.Where(unratedItemFilter.Or(minParentalRatingFilter.And(maxParentalRatingFilter)));
+                baseQuery = baseQuery.Where(unratedItemFilter.And(minParentalRatingFilter.And(maxParentalRatingFilter)));
             }
             else if (minParentalRatingFilter != null)
             {
-                baseQuery = baseQuery.Where(unratedItemFilter.Or(minParentalRatingFilter));
+                baseQuery = baseQuery.Where(unratedItemFilter.And(minParentalRatingFilter));
             }
             else if (maxParentalRatingFilter != null)
             {
-                baseQuery = baseQuery.Where(unratedItemFilter.Or(maxParentalRatingFilter));
+                baseQuery = baseQuery.Where(unratedItemFilter.And(maxParentalRatingFilter));
             }
             else
             {
