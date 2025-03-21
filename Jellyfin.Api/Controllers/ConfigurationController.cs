@@ -102,6 +102,17 @@ public class ConfigurationController : BaseJellyfinApiController
             throw new ArgumentException("Body doesn't contain a valid configuration");
         }
 
+        // Special handling for BrandingOptions to preserve SplashscreenLocation
+        if (key.Equals("branding", StringComparison.OrdinalIgnoreCase) &&
+            configurationType == typeof(MediaBrowser.Model.Branding.BrandingOptions))
+        {
+            var existingOptions = (MediaBrowser.Model.Branding.BrandingOptions)_configurationManager.GetConfiguration(key);
+            var newOptions = (MediaBrowser.Model.Branding.BrandingOptions)deserializedConfiguration;
+
+            // Preserve SplashscreenLocation
+            newOptions.SplashscreenLocation = existingOptions.SplashscreenLocation;
+        }
+
         _configurationManager.SaveConfiguration(key, deserializedConfiguration);
         return NoContent();
     }
