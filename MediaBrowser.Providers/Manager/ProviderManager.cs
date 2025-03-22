@@ -354,9 +354,7 @@ namespace MediaBrowser.Providers.Manager
                     // Filter out languages that do not match the preferred languages.
                     //
                     // TODO: should exception case of "en" (English) eventually be removed?
-                    result = result.Where(i => i.Language is not null &&
-                                               (string.Equals(preferredLanguage, i.Language, StringComparison.OrdinalIgnoreCase) ||
-                                               string.Equals(i.Language, "en", StringComparison.OrdinalIgnoreCase)));
+                    result = result.Where(i => IsValidImage(i, preferredLanguage));
                 }
 
                 return result.OrderByLanguageDescending(preferredLanguage);
@@ -370,6 +368,35 @@ namespace MediaBrowser.Providers.Manager
                 _logger.LogError(ex, "{ProviderName} failed in GetImageInfos for type {ItemType} at {ItemPath}", provider.GetType().Name, item.GetType().Name, item.Path);
                 return Enumerable.Empty<RemoteImageInfo>();
             }
+        }
+
+        /// <summary>
+        /// Check if image need language.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns>True if image need language or False for image without text (like backdrop).</returns>
+        private bool ImageNeedLanguage(ImageType type)
+        {
+            return type is ImageType.Primary or ImageType.Logo or ImageType.Thumb;
+        }
+
+        /// <summary>
+        /// Check if image is valid.
+        /// </summary>
+        /// <param name="image">The image.</param>
+        /// <param name="preferredLanguage">The preferred language.</param>
+        /// <param name="fallbackLanguage">The fallback language (default is English => en).</param>
+        /// <returns>True if image is valid OR False is image is invalid.</returns>
+        private bool IsValidImage(RemoteImageInfo image, string preferredLanguage, string fallbackLanguage = "en")
+        {
+            if (ImageNeedLanguage(image.Type))
+            {
+                return image.Language is not null && (string.Equals(preferredLanguage, image.Language, StringComparison.OrdinalIgnoreCase) ||
+                       string.Equals(image.Language, fallbackLanguage, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return string.IsNullOrEmpty(image.Language) || string.Equals(preferredLanguage, image.Language, StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(image.Language, fallbackLanguage, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <inheritdoc/>
