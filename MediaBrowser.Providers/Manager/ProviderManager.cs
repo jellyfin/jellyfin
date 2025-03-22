@@ -354,9 +354,9 @@ namespace MediaBrowser.Providers.Manager
                     // Filter out languages that do not match the preferred languages.
                     //
                     // TODO: should exception case of "en" (English) eventually be removed?
-                    result = result.Where(i => string.IsNullOrWhiteSpace(i.Language) ||
-                                               string.Equals(preferredLanguage, i.Language, StringComparison.OrdinalIgnoreCase) ||
-                                               string.Equals(i.Language, "en", StringComparison.OrdinalIgnoreCase));
+                    result = result.Where(i => i.Language is not null &&
+                                               (string.Equals(preferredLanguage, i.Language, StringComparison.OrdinalIgnoreCase) ||
+                                               string.Equals(i.Language, "en", StringComparison.OrdinalIgnoreCase)));
                 }
 
                 return result.OrderByLanguageDescending(preferredLanguage);
