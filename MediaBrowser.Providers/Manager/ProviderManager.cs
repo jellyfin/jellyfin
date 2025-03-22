@@ -352,8 +352,6 @@ namespace MediaBrowser.Providers.Manager
                 if (!includeAllLanguages && hasPreferredLanguage)
                 {
                     // Filter out languages that do not match the preferred languages.
-                    //
-                    // TODO: should exception case of "en" (English) eventually be removed?
                     result = result.Where(i => IsValidImage(i, preferredLanguage));
                 }
 
@@ -371,32 +369,49 @@ namespace MediaBrowser.Providers.Manager
         }
 
         /// <summary>
-        /// Check if image need language.
+        /// Check if image type requires language specification.
         /// </summary>
-        /// <param name="type">The type.</param>
-        /// <returns>True if image need language or False for image without text (like backdrop).</returns>
-        private bool ImageNeedLanguage(ImageType type)
+        /// <param name="type">The image type.</param>
+        /// <returns>True if image requires language specification, otherwise False.</returns>
+        private bool RequiresLanguage(ImageType type)
         {
             return type is ImageType.Primary or ImageType.Logo or ImageType.Thumb;
         }
 
         /// <summary>
-        /// Check if image is valid.
+        /// Check if image is valid based on language requirements.
         /// </summary>
         /// <param name="image">The image.</param>
         /// <param name="preferredLanguage">The preferred language.</param>
-        /// <param name="fallbackLanguage">The fallback language (default is English => en).</param>
-        /// <returns>True if image is valid OR False is image is invalid.</returns>
+        /// <param name="fallbackLanguage">The fallback language (default is English => "en").</param>
+        /// <returns>True if image meets language requirements, otherwise False.</returns>
         private bool IsValidImage(RemoteImageInfo image, string preferredLanguage, string fallbackLanguage = "en")
         {
-            if (ImageNeedLanguage(image.Type))
+            // TODO: should exception case of "en" (English) eventually be removed?
+            if (RequiresLanguage(image.Type))
             {
-                return image.Language is not null && (string.Equals(preferredLanguage, image.Language, StringComparison.OrdinalIgnoreCase) ||
-                       string.Equals(image.Language, fallbackLanguage, StringComparison.OrdinalIgnoreCase));
+                return image.Language is not null &&
+                       (MatchesLanguage(preferredLanguage, image.Language) ||
+                        MatchesLanguage(image.Language, fallbackLanguage));
             }
 
-            return string.IsNullOrEmpty(image.Language) || string.Equals(preferredLanguage, image.Language, StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals(image.Language, fallbackLanguage, StringComparison.OrdinalIgnoreCase);
+            return string.IsNullOrEmpty(image.Language) ||
+                   MatchesLanguage(preferredLanguage, image.Language) ||
+                   MatchesLanguage(image.Language, fallbackLanguage);
+        }
+
+        /// <summary>
+        /// Compares two language strings in a case-insensitive manner.
+        /// </summary>
+        /// <param name="imageLanguage">The language code of the image.</param>
+        /// <param name="targetLanguage">The language code to compare against.</param>
+        /// <returns>
+        /// True if the language codes match (case-insensitive), otherwise False.
+        /// Returns False if either parameter is null.
+        /// </returns>
+        private bool MatchesLanguage(string imageLanguage, string targetLanguage)
+        {
+            return string.Equals(imageLanguage, targetLanguage, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <inheritdoc/>
