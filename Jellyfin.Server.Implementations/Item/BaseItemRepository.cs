@@ -7,9 +7,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -20,6 +18,7 @@ using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
+using Jellyfin.Server.Implementations.Extensions;
 using MediaBrowser.Common;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Channels;
@@ -733,6 +732,7 @@ public sealed class BaseItemRepository
         entity.PreferredMetadataCountryCode = dto.PreferredMetadataCountryCode;
         entity.IsInMixedFolder = dto.IsInMixedFolder;
         entity.InheritedParentalRatingValue = dto.InheritedParentalRatingValue;
+        entity.InheritedParentalRatingSubValue = dto.InheritedParentalRatingSubValue;
         entity.CriticRating = dto.CriticRating;
         entity.PresentationUniqueKey = dto.PresentationUniqueKey;
         entity.OriginalTitle = dto.OriginalTitle;
@@ -1801,61 +1801,73 @@ public sealed class BaseItemRepository
                    .Where(e => filter.OfficialRatings.Contains(e.OfficialRating));
         }
 
+        Expression<Func<BaseItemEntity, bool>>? minParentalRatingFilter = null;
+        if (filter.MinParentalRating != null)
+        {
+            var min = filter.MinParentalRating;
+            minParentalRatingFilter = e => e.InheritedParentalRatingValue >= min.Score || e.InheritedParentalRatingValue == null;
+            if (min.SubScore != null)
+            {
+                minParentalRatingFilter = minParentalRatingFilter.And(e => e.InheritedParentalRatingValue >= min.SubScore || e.InheritedParentalRatingValue == null);
+            }
+        }
+
+        Expression<Func<BaseItemEntity, bool>>? maxParentalRatingFilter = null;
+        if (filter.MaxParentalRating != null)
+        {
+            var max = filter.MaxParentalRating;
+            maxParentalRatingFilter = e => e.InheritedParentalRatingValue <= max.Score || e.InheritedParentalRatingValue == null;
+            if (max.SubScore != null)
+            {
+                maxParentalRatingFilter = maxParentalRatingFilter.And(e => e.InheritedParentalRatingValue <= max.SubScore || e.InheritedParentalRatingValue == null);
+            }
+        }
+
         if (filter.HasParentalRating ?? false)
         {
-            if (filter.MinParentalRating.HasValue)
+            if (minParentalRatingFilter != null)
             {
-                baseQuery = baseQuery
-                   .Where(e => e.InheritedParentalRatingValue >= filter.MinParentalRating.Value);
+                baseQuery = baseQuery.Where(minParentalRatingFilter);
             }
 
-            if (filter.MaxParentalRating.HasValue)
+            if (maxParentalRatingFilter != null)
             {
-                baseQuery = baseQuery
-                   .Where(e => e.InheritedParentalRatingValue < filter.MaxParentalRating.Value);
+                baseQuery = baseQuery.Where(maxParentalRatingFilter);
             }
         }
         else if (filter.BlockUnratedItems.Length > 0)
         {
-            var unratedItems = filter.BlockUnratedItems.Select(f => f.ToString()).ToArray();
-            if (filter.MinParentalRating.HasValue)
+            var unratedItemTypes = filter.BlockUnratedItems.Select(f => f.ToString()).ToArray();
+            Expression<Func<BaseItemEntity, bool>> unratedItemFilter = e => e.InheritedParentalRatingValue != null || !unratedItemTypes.Contains(e.UnratedType);
+
+            if (minParentalRatingFilter != null && maxParentalRatingFilter != null)
             {
-                if (filter.MaxParentalRating.HasValue)
-                {
-                    baseQuery = baseQuery
-                        .Where(e => (e.InheritedParentalRatingValue == null && !unratedItems.Contains(e.UnratedType))
-                        || (e.InheritedParentalRatingValue >= filter.MinParentalRating && e.InheritedParentalRatingValue <= filter.MaxParentalRating));
-                }
-                else
-                {
-                    baseQuery = baseQuery
-                        .Where(e => (e.InheritedParentalRatingValue == null && !unratedItems.Contains(e.UnratedType))
-                        || e.InheritedParentalRatingValue >= filter.MinParentalRating);
-                }
+                baseQuery = baseQuery.Where(unratedItemFilter.And(minParentalRatingFilter.And(maxParentalRatingFilter)));
+            }
+            else if (minParentalRatingFilter != null)
+            {
+                baseQuery = baseQuery.Where(unratedItemFilter.And(minParentalRatingFilter));
+            }
+            else if (maxParentalRatingFilter != null)
+            {
+                baseQuery = baseQuery.Where(unratedItemFilter.And(maxParentalRatingFilter));
             }
             else
             {
-                baseQuery = baseQuery
-                    .Where(e => e.InheritedParentalRatingValue != null && !unratedItems.Contains(e.UnratedType));
+                baseQuery = baseQuery.Where(unratedItemFilter);
             }
         }
-        else if (filter.MinParentalRating.HasValue)
+        else if (minParentalRatingFilter != null || maxParentalRatingFilter != null)
         {
-            if (filter.MaxParentalRating.HasValue)
+            if (minParentalRatingFilter != null)
             {
-                baseQuery = baseQuery
-                    .Where(e => e.InheritedParentalRatingValue != null && e.InheritedParentalRatingValue >= filter.MinParentalRating.Value && e.InheritedParentalRatingValue <= filter.MaxParentalRating.Value);
+                baseQuery = baseQuery.Where(minParentalRatingFilter);
             }
-            else
+
+            if (maxParentalRatingFilter != null)
             {
-                baseQuery = baseQuery
-                    .Where(e => e.InheritedParentalRatingValue != null && e.InheritedParentalRatingValue >= filter.MinParentalRating.Value);
+                baseQuery = baseQuery.Where(maxParentalRatingFilter);
             }
-        }
-        else if (filter.MaxParentalRating.HasValue)
-        {
-            baseQuery = baseQuery
-                .Where(e => e.InheritedParentalRatingValue != null && e.InheritedParentalRatingValue >= filter.MaxParentalRating.Value);
         }
         else if (!filter.HasParentalRating ?? false)
         {
