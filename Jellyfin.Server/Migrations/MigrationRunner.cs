@@ -131,7 +131,7 @@ namespace Jellyfin.Server.Migrations
             var migrationsToBeApplied = migrations.Where(e => !appliedMigrationIds.Contains(e.Id)).ToArray();
 
             string? migrationKey = null;
-            if (migrationsToBeApplied.Any(f => f is DatabaseMigrationRoutine) && jellyfinDatabaseProvider is not null)
+            if (migrationsToBeApplied.Any(f => f is IDatabaseMigrationRoutine) && jellyfinDatabaseProvider is not null)
             {
                 logger.LogInformation("Database backup is performed");
                 try
