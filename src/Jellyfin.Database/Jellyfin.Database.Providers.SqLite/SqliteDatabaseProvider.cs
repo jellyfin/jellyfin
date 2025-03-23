@@ -16,6 +16,7 @@ namespace Jellyfin.Database.Providers.SqLite;
 [JellyfinDatabaseProviderKey("Jellyfin-SQLite")]
 public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
 {
+    private const string BACKUP_FOLDER_NAME = "SQLiteBackups";
     private readonly IApplicationPaths _applicationPaths;
     private readonly ILogger<SqliteDatabaseProvider> _logger;
 
@@ -83,5 +84,37 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     public void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         configurationBuilder.Conventions.Add(_ => new DoNotUseReturningClauseConvention());
+    }
+
+    /// <inheritdoc />
+    public Task<string> MigrationBackupFast(CancellationToken cancellationToken)
+    {
+        var key = Guid.NewGuid().ToString("D");
+        var path = Path.Combine(_applicationPaths.DataPath, "jellyfin.db");
+        var backupFile = Path.Combine(_applicationPaths.DataPath, BACKUP_FOLDER_NAME);
+        if (!Directory.Exists(backupFile))
+        {
+            Directory.CreateDirectory(backupFile);
+        }
+
+        backupFile = Path.Combine(_applicationPaths.DataPath, $"{key}_jellyfin.db");
+        File.Copy(path, backupFile);
+        return Task.FromResult(key);
+    }
+
+    /// <inheritdoc />
+    public Task RestoreBackupFast(string key, CancellationToken cancellationToken)
+    {
+        var path = Path.Combine(_applicationPaths.DataPath, "jellyfin.db");
+        var backupFile = Path.Combine(_applicationPaths.DataPath, BACKUP_FOLDER_NAME, $"{key}_jellyfin.db");
+
+        if (!File.Exists(backupFile))
+        {
+            _logger.LogCritical("Tried to restore a backup that does not exist.");
+            return Task.CompletedTask;
+        }
+
+        File.Copy(backupFile, path, true);
+        return Task.CompletedTask;
     }
 }

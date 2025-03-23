@@ -115,7 +115,7 @@ namespace Jellyfin.Server
             }
 
             StartupHelpers.PerformStaticInitialization();
-            Migrations.MigrationRunner.RunPreStartup(appPaths, _loggerFactory);
+            await Migrations.MigrationRunner.RunPreStartup(appPaths, _loggerFactory).ConfigureAwait(false);
 
             do
             {
@@ -159,7 +159,7 @@ namespace Jellyfin.Server
                 appHost.ServiceProvider = host.Services;
 
                 await appHost.InitializeServices(startupConfig).ConfigureAwait(false);
-                Migrations.MigrationRunner.Run(appHost, _loggerFactory);
+                await Migrations.MigrationRunner.Run(appHost, _loggerFactory).ConfigureAwait(false);
 
                 try
                 {
