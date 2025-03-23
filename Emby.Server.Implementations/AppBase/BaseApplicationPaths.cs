@@ -76,7 +76,7 @@ namespace Emby.Server.Implementations.AppBase
 
         /// <inheritdoc />
         public string TrickplayPath => Path.Combine(DataPath, "trickplay");
-        
+
         /// <inheritdoc />
         public virtual void MakeSanityCheckOrThrow()
         {
