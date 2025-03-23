@@ -19,7 +19,14 @@ public class ImdbExternalUrlProvider : IExternalUrlProvider
         var baseUrl = "https://www.imdb.com/";
         if (item.TryGetProviderId(MetadataProvider.Imdb, out var externalId))
         {
-            yield return baseUrl + $"title/{externalId}";
+            if (item is Person)
+            {
+                yield return baseUrl + $"name/{externalId}";
+            }
+            else
+            {
+                yield return baseUrl + $"title/{externalId}";
+            }
         }
     }
 }

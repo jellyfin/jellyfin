@@ -1342,6 +1342,21 @@ namespace Emby.Server.Implementations.Library
             return _itemRepository.GetItemList(query);
         }
 
+        public IReadOnlyList<string> GetNextUpSeriesKeys(InternalItemsQuery query, IReadOnlyCollection<BaseItem> parents, DateTime dateCutoff)
+        {
+            SetTopParentIdsOrAncestors(query, parents);
+
+            if (query.AncestorIds.Length == 0 && query.TopParentIds.Length == 0)
+            {
+                if (query.User is not null)
+                {
+                    AddUserToQuery(query, query.User);
+                }
+            }
+
+            return _itemRepository.GetNextUpSeriesKeys(query, dateCutoff);
+        }
+
         public QueryResult<BaseItem> QueryItems(InternalItemsQuery query)
         {
             if (query.User is not null)
