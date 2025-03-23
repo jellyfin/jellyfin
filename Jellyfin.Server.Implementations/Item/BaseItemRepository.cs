@@ -101,16 +101,23 @@ public sealed class BaseItemRepository
 
         using var context = _dbProvider.CreateDbContext();
         using var transaction = context.Database.BeginTransaction();
+        context.AncestorIds.Where(e => e.ItemId == id || e.ParentItemId == id).ExecuteDelete();
+        context.AttachmentStreamInfos.Where(e => e.ItemId == id).ExecuteDelete();
+        context.BaseItemImageInfos.Where(e => e.ItemId == id).ExecuteDelete();
+        context.BaseItemMetadataFields.Where(e => e.ItemId == id).ExecuteDelete();
+        context.BaseItemProviders.Where(e => e.ItemId == id).ExecuteDelete();
+        context.BaseItemTrailerTypes.Where(e => e.ItemId == id).ExecuteDelete();
+        context.BaseItems.Where(e => e.Id == id).ExecuteDelete();
+        context.Chapters.Where(e => e.ItemId == id).ExecuteDelete();
+        context.CustomItemDisplayPreferences.Where(e => e.ItemId == id).ExecuteDelete();
+        context.ItemDisplayPreferences.Where(e => e.ItemId == id).ExecuteDelete();
+        context.ItemValues.Where(e => e.BaseItemsMap!.Count == 0).ExecuteDelete();
+        context.ItemValuesMap.Where(e => e.ItemId == id).ExecuteDelete();
+        context.MediaSegments.Where(e => e.ItemId == id).ExecuteDelete();
+        context.MediaStreamInfos.Where(e => e.ItemId == id).ExecuteDelete();
         context.PeopleBaseItemMap.Where(e => e.ItemId == id).ExecuteDelete();
         context.Peoples.Where(e => e.BaseItems!.Count == 0).ExecuteDelete();
-        context.Chapters.Where(e => e.ItemId == id).ExecuteDelete();
-        context.MediaStreamInfos.Where(e => e.ItemId == id).ExecuteDelete();
-        context.AncestorIds.Where(e => e.ItemId == id || e.ParentItemId == id).ExecuteDelete();
-        context.ItemValuesMap.Where(e => e.ItemId == id).ExecuteDelete();
-        context.ItemValues.Where(e => e.BaseItemsMap!.Count == 0).ExecuteDelete();
-        context.BaseItemImageInfos.Where(e => e.ItemId == id).ExecuteDelete();
-        context.BaseItemProviders.Where(e => e.ItemId == id).ExecuteDelete();
-        context.BaseItems.Where(e => e.Id == id).ExecuteDelete();
+        context.TrickplayInfos.Where(e => e.ItemId == id).ExecuteDelete();
         context.SaveChanges();
         transaction.Commit();
     }
