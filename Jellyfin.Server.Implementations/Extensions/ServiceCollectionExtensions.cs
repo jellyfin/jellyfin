@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Jellyfin.Database.Providers.SqLite;
+using Jellyfin.Database.Providers.Sqlite;
 using Jellyfin.Server.Implementations.DatabaseConfiguration;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;

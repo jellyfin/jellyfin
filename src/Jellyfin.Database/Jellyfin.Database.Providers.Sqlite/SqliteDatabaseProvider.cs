@@ -8,7 +8,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Database.Providers.SqLite;
+namespace Jellyfin.Database.Providers.Sqlite;
 
 /// <summary>
 /// Configures jellyfin to use an SQLite database.

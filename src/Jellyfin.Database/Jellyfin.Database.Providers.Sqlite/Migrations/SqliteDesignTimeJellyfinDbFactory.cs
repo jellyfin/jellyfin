@@ -1,4 +1,4 @@
-using Jellyfin.Database.Providers.SqLite;
+using Jellyfin.Database.Providers.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Logging.Abstractions;
