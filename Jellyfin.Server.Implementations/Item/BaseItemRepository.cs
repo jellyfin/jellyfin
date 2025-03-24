@@ -35,6 +35,7 @@ using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using BaseItemDto = MediaBrowser.Controller.Entities.BaseItem;
 using BaseItemEntity = Jellyfin.Data.Entities.BaseItemEntity;
 
@@ -260,6 +261,49 @@ public sealed class BaseItemRepository
         dbQuery = ApplyQueryPaging(dbQuery, filter);
 
         return dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToArray();
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyList<BaseItem> GetLatestItemList(InternalItemsQuery filter, CollectionType collectionType)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        PrepareFilterQuery(filter);
+
+        // Early exit if collection type is not tvshows or music
+        if (collectionType != CollectionType.tvshows && collectionType != CollectionType.music)
+        {
+            return Array.Empty<BaseItem>();
+        }
+
+        using var context = _dbProvider.CreateDbContext();
+
+        // Subquery to group by SeriesNames/Album and get the max Date Created for each group.
+        var subquery = context.BaseItems
+            .AsNoTracking()
+            .Where(b => !b.IsVirtualItem)
+            .GroupBy(g => collectionType == CollectionType.tvshows ? g.SeriesName : g.Album)
+            .Select(g => new
+            {
+                Key = g.Key,
+                MaxDateCreated = g.Max(a => a.DateCreated)
+            })
+            .OrderByDescending(g => g.MaxDateCreated)
+            .Select(g => g);
+
+        if (filter.Limit.HasValue)
+        {
+            subquery = subquery.Take(filter.Limit.Value);
+        }
+
+        filter.Limit = null;
+
+        var mainquery = PrepareItemQuery(context, filter);
+        mainquery = TranslateQuery(mainquery, context, filter);
+        mainquery = mainquery.Where(g => g.DateCreated >= subquery.Min(s => s.MaxDateCreated));
+        mainquery = ApplyGroupingFilter(mainquery, filter);
+        mainquery = ApplyQueryPaging(mainquery, filter);
+
+        return mainquery.AsEnumerable().Where(e => e is not null).Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToArray();
     }
 
     /// <inheritdoc />
