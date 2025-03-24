@@ -17,7 +17,7 @@ internal class RetryOnTemporarlyUnavailableFilter : IOperationFilter
             {
                 {
                     "retry-after",
-                    new() { AllowEmptyValue = true, Required = false, Description = "A hint for when to retry the operation." }
+                    new() { AllowEmptyValue = true, Required = false, Description = "A hint for when to retry the operation in full secounds." }
                 },
                 {
                     "message",
