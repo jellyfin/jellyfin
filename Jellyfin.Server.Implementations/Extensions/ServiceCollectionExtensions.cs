@@ -24,7 +24,7 @@ public static class ServiceCollectionExtensions
 
     private static IDictionary<string, JellyfinDbProviderFactory> GetSupportedDbProviders()
     {
-        var items = new Dictionary<string, JellyfinDbProviderFactory>();
+        var items = new Dictionary<string, JellyfinDbProviderFactory>(StringComparer.InvariantCultureIgnoreCase);
         foreach (var providerType in DatabaseProviderTypes())
         {
             var keyAttribute = providerType.GetCustomAttribute<JellyfinDatabaseProviderKeyAttribute>();
@@ -34,7 +34,7 @@ public static class ServiceCollectionExtensions
             }
 
             var provider = providerType;
-            items[keyAttribute.DatabaseProviderKey.ToUpperInvariant()] = (services) => (IJellyfinDatabaseProvider)ActivatorUtilities.CreateInstance(services, providerType);
+            items[keyAttribute.DatabaseProviderKey] = (services) => (IJellyfinDatabaseProvider)ActivatorUtilities.CreateInstance(services, providerType);
         }
 
         return items;

@@ -198,7 +198,7 @@ namespace Jellyfin.Server
                     _logger.LogInformation("Running query planner optimizations in the database... This might take a while");
 
                     var databaseProvider = appHost.ServiceProvider.GetRequiredService<IJellyfinDatabaseProvider>();
-                    var shutdownSource = new CancellationTokenSource();
+                    using var shutdownSource = new CancellationTokenSource();
                     shutdownSource.CancelAfter((int)TimeSpan.FromSeconds(60).TotalMicroseconds);
                     await databaseProvider.RunShutdownTask(shutdownSource.Token).ConfigureAwait(false);
                 }
