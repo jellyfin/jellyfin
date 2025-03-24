@@ -963,25 +963,11 @@ public sealed class BaseItemRepository
 
         using var context = _dbProvider.CreateDbContext();
 
-        var innerQuery = new InternalItemsQuery(filter.User)
-        {
-            ExcludeItemTypes = filter.ExcludeItemTypes,
-            IncludeItemTypes = filter.IncludeItemTypes,
-            MediaTypes = filter.MediaTypes,
-            AncestorIds = filter.AncestorIds,
-            ItemIds = filter.ItemIds,
-            TopParentIds = filter.TopParentIds,
-            ParentId = filter.ParentId,
-            IsAiring = filter.IsAiring,
-            IsMovie = filter.IsMovie,
-            IsSports = filter.IsSports,
-            IsKids = filter.IsKids,
-            IsNews = filter.IsNews,
-            IsSeries = filter.IsSeries
-        };
-        var query = TranslateQuery(context.BaseItems.AsNoTracking(), context, innerQuery);
+        var query = TranslateQuery(context.BaseItems.AsNoTracking(), context, filter);
 
-        query = query.Where(e => e.Type == returnType && e.ItemValues!.Any(f => e.CleanName == f.ItemValue.CleanValue && itemValueTypes.Any(w => (ItemValueType)w == f.ItemValue.Type)));
+        query = query.Where(e => e.Type == returnType);
+        // this does not seem to be nesseary but it does not make any sense why this isn't working.
+        // && e.ItemValues!.Any(f => e.CleanName == f.ItemValue.CleanValue && itemValueTypes.Any(w => (ItemValueType)w == f.ItemValue.Type)));
 
         if (filter.OrderBy.Count != 0
             || !string.IsNullOrEmpty(filter.SearchTerm))
