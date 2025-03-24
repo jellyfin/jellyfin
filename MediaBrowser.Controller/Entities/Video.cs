@@ -40,7 +40,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [JsonIgnore]
-        public string PrimaryVersionId { get; set; }
+        public Guid? PrimaryVersionId { get; set; }
 
         public string[] AdditionalParts { get; set; }
 
@@ -152,9 +152,9 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                if (!string.IsNullOrEmpty(PrimaryVersionId))
+                if (!PrimaryVersionId.IsNullOrEmpty())
                 {
-                    var item = LibraryManager.GetItemById(PrimaryVersionId);
+                    var item = LibraryManager.GetItemById(PrimaryVersionId.Value);
                     if (item is Video video)
                     {
                         return video.MediaSourceCount;
@@ -298,9 +298,9 @@ namespace MediaBrowser.Controller.Entities
             return list;
         }
 
-        public void SetPrimaryVersionId(string id)
+        public void SetPrimaryVersionId(Guid? id)
         {
-            if (string.IsNullOrEmpty(id))
+            if (id.IsNullOrEmpty())
             {
                 PrimaryVersionId = null;
             }
@@ -314,9 +314,9 @@ namespace MediaBrowser.Controller.Entities
 
         public override string CreatePresentationUniqueKey()
         {
-            if (!string.IsNullOrEmpty(PrimaryVersionId))
+            if (!PrimaryVersionId.IsNullOrEmpty())
             {
-                return PrimaryVersionId;
+                return PrimaryVersionId.Value.ToString("N", CultureInfo.InvariantCulture);
             }
 
             return base.CreatePresentationUniqueKey();
@@ -527,9 +527,9 @@ namespace MediaBrowser.Controller.Entities
 
             list.AddRange(GetLinkedAlternateVersions().Select(i => ((BaseItem)i, MediaSourceType.Grouping)));
 
-            if (!string.IsNullOrEmpty(PrimaryVersionId))
+            if (!PrimaryVersionId.IsNullOrEmpty())
             {
-                if (LibraryManager.GetItemById(PrimaryVersionId) is Video primary)
+                if (LibraryManager.GetItemById(PrimaryVersionId.Value) is Video primary)
                 {
                     var existingIds = list.Select(i => i.Item1.Id).ToList();
                     list.Add((primary, MediaSourceType.Grouping));
