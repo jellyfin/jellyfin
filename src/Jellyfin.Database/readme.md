@@ -2,7 +2,7 @@
 
 This shall provide context on how to work with entity frameworks multi provider migration feature.
 
-Jellyfin will support multiple database providers in the future, namely SQLite as its default and the experimental postgresSQL.
+Jellyfin will support multiple database providers in the future, namely SQLite as its default and the experimental PostgreSQL.
 
 Each provider has its own set of migrations, as they contain provider specific instructions to migrate the specific changes to their respective systems.
 
