@@ -16,11 +16,11 @@ internal class RetryOnTemporarlyUnavailableFilter : IOperationFilter
             Headers = new Dictionary<string, OpenApiHeader>()
             {
                 {
-                    "retry-after",
-                    new() { AllowEmptyValue = true, Required = false, Description = "A hint for when to retry the operation in full secounds." }
+                    "Retry-After",
+                    new() { AllowEmptyValue = true, Required = false, Description = "A hint for when to retry the operation in full seconds." }
                 },
                 {
-                    "message",
+                    "Message",
                     new() { AllowEmptyValue = true, Required = false, Description = "A short plain-text reason why the server is not available." }
                 }
             },
