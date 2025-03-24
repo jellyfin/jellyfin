@@ -277,11 +277,9 @@ public sealed class BaseItemRepository
         using var context = _dbProvider.CreateDbContext();
 
         // Subquery to group by SeriesNames/Album and get the max Date Created for each group.
-        var subquery = context.BaseItems
-            .AsNoTracking()
-            .Where(b => !b.IsVirtualItem)
-            .Where(b => b.MediaType != MediaType.Unknown.ToString())
-            .GroupBy(g => collectionType == CollectionType.tvshows ? g.SeriesName : g.Album)
+        var subquery = PrepareItemQuery(context, filter);
+        subquery = TranslateQuery(subquery, context, filter);
+        var subqueryGrouped = subquery.GroupBy(e => e.SeriesName)
             .Select(g => new
             {
                 Key = g.Key,
@@ -292,14 +290,14 @@ public sealed class BaseItemRepository
 
         if (filter.Limit.HasValue)
         {
-            subquery = subquery.Take(filter.Limit.Value);
+            subqueryGrouped = subqueryGrouped.Take(filter.Limit.Value);
         }
 
         filter.Limit = null;
 
         var mainquery = PrepareItemQuery(context, filter);
         mainquery = TranslateQuery(mainquery, context, filter);
-        mainquery = mainquery.Where(g => g.DateCreated >= subquery.Min(s => s.MaxDateCreated));
+        mainquery = mainquery.Where(g => g.DateCreated >= subqueryGrouped.Min(s => s.MaxDateCreated));
         mainquery = ApplyGroupingFilter(mainquery, filter);
         mainquery = ApplyQueryPaging(mainquery, filter);
 
