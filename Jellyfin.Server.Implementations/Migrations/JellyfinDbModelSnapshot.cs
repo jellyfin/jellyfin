@@ -1200,6 +1200,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<int>("MaxActiveSessions")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("MaxActiveStreams")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int?>("MaxParentalAgeRating")
                         .HasColumnType("INTEGER");
 
