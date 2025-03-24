@@ -475,7 +475,7 @@ public class LiveTvController : BaseJellyfinApiController
     [HttpGet("Timers/{timerId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Authorize(Policy = Policies.LiveTvAccess)]
-    public async Task<ActionResult<TimerInfoDto>> GetTimer([FromRoute, Required] string timerId)
+    public async Task<ActionResult<TimerInfoDto>> GetTimer([FromRoute, Required] Guid timerId)
     {
         return await _liveTvManager.GetTimer(timerId, CancellationToken.None).ConfigureAwait(false);
     }
@@ -513,7 +513,7 @@ public class LiveTvController : BaseJellyfinApiController
     [Authorize(Policy = Policies.LiveTvAccess)]
     public async Task<ActionResult<QueryResult<TimerInfoDto>>> GetTimers(
         [FromQuery] string? channelId,
-        [FromQuery] string? seriesTimerId,
+        [FromQuery] Guid? seriesTimerId,
         [FromQuery] bool? isActive,
         [FromQuery] bool? isScheduled)
     {
@@ -589,7 +589,7 @@ public class LiveTvController : BaseJellyfinApiController
         [FromQuery] int? imageTypeLimit,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ImageType[] enableImageTypes,
         [FromQuery] bool? enableUserData,
-        [FromQuery] string? seriesTimerId,
+        [FromQuery] Guid? seriesTimerId,
         [FromQuery] Guid? librarySeriesId,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFields[] fields,
         [FromQuery] bool enableTotalRecordCount = true)
@@ -822,7 +822,7 @@ public class LiveTvController : BaseJellyfinApiController
     [HttpDelete("Timers/{timerId}")]
     [Authorize(Policy = Policies.LiveTvManagement)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<ActionResult> CancelTimer([FromRoute, Required] string timerId)
+    public async Task<ActionResult> CancelTimer([FromRoute, Required] Guid timerId)
     {
         await _liveTvManager.CancelTimer(timerId).ConfigureAwait(false);
         return NoContent();
@@ -871,7 +871,7 @@ public class LiveTvController : BaseJellyfinApiController
     [Authorize(Policy = Policies.LiveTvAccess)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<SeriesTimerInfoDto>> GetSeriesTimer([FromRoute, Required] string timerId)
+    public async Task<ActionResult<SeriesTimerInfoDto>> GetSeriesTimer([FromRoute, Required] Guid timerId)
     {
         var timer = await _liveTvManager.GetSeriesTimer(timerId, CancellationToken.None).ConfigureAwait(false);
         if (timer is null)
@@ -912,7 +912,7 @@ public class LiveTvController : BaseJellyfinApiController
     [HttpDelete("SeriesTimers/{timerId}")]
     [Authorize(Policy = Policies.LiveTvManagement)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<ActionResult> CancelSeriesTimer([FromRoute, Required] string timerId)
+    public async Task<ActionResult> CancelSeriesTimer([FromRoute, Required] Guid timerId)
     {
         await _liveTvManager.CancelSeriesTimer(timerId).ConfigureAwait(false);
         return NoContent();
@@ -1162,7 +1162,7 @@ public class LiveTvController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesVideoFile]
-    public ActionResult GetLiveRecordingFile([FromRoute, Required] string recordingId)
+    public ActionResult GetLiveRecordingFile([FromRoute, Required] Guid recordingId)
     {
         var path = _recordingsManager.GetActiveRecordingPath(recordingId);
         if (string.IsNullOrWhiteSpace(path))

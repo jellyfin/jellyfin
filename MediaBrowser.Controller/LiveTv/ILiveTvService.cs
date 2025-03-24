@@ -41,7 +41,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="timerId">The timer identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task CancelTimerAsync(string timerId, CancellationToken cancellationToken);
+        Task CancelTimerAsync(Guid timerId, CancellationToken cancellationToken);
 
         /// <summary>
         /// Cancels the series timer asynchronous.
@@ -49,7 +49,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="timerId">The timer identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task CancelSeriesTimerAsync(string timerId, CancellationToken cancellationToken);
+        Task CancelSeriesTimerAsync(Guid timerId, CancellationToken cancellationToken);
 
         /// <summary>
         /// Creates the timer asynchronous.
@@ -156,16 +156,16 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <param name="info">The information.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task<string> CreateTimer(TimerInfo info, CancellationToken cancellationToken);
+        /// <returns>The new timer id.</returns>
+        Task<Guid> CreateTimer(TimerInfo info, CancellationToken cancellationToken);
 
         /// <summary>
         /// Creates the series timer asynchronous.
         /// </summary>
         /// <param name="info">The information.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task<string> CreateSeriesTimer(SeriesTimerInfo info, CancellationToken cancellationToken);
+        /// <returns>The new timer id.</returns>
+        Task<Guid> CreateSeriesTimer(SeriesTimerInfo info, CancellationToken cancellationToken);
     }
 
     public interface ISupportsDirectStreamProvider

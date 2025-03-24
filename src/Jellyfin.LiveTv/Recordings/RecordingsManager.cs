@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AsyncKeyedLock;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using Jellyfin.LiveTv.Configuration;
 using Jellyfin.LiveTv.IO;
 using Jellyfin.LiveTv.Timers;
@@ -50,7 +51,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
     private readonly SeriesTimerManager _seriesTimerManager;
     private readonly RecordingsMetadataManager _recordingsMetadataManager;
 
-    private readonly ConcurrentDictionary<string, ActiveRecordingInfo> _activeRecordings = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<Guid, ActiveRecordingInfo> _activeRecordings = new();
     private readonly AsyncNonKeyedLocker _recordingDeleteSemaphore = new();
     private bool _disposed;
 
@@ -115,7 +116,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
     }
 
     /// <inheritdoc />
-    public string? GetActiveRecordingPath(string id)
+    public string? GetActiveRecordingPath(Guid id)
         => _activeRecordings.GetValueOrDefault(id)?.Path;
 
     /// <inheritdoc />
@@ -290,7 +291,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
     }
 
     /// <inheritdoc />
-    public void CancelRecording(string timerId, TimerInfo? timer)
+    public void CancelRecording(Guid timerId, TimerInfo? timer)
     {
         if (_activeRecordings.TryGetValue(timerId, out var activeRecordingInfo))
         {
@@ -651,7 +652,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
 
     private async Task EnforceKeepUpTo(TimerInfo timer, string? seriesPath)
     {
-        if (string.IsNullOrWhiteSpace(timer.SeriesTimerId)
+        if (timer.SeriesTimerId.IsNullOrEmpty()
             || string.IsNullOrWhiteSpace(seriesPath))
         {
             return;
@@ -659,7 +660,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
 
         var seriesTimerId = timer.SeriesTimerId;
         var seriesTimer = _seriesTimerManager.GetAll()
-            .FirstOrDefault(i => string.Equals(i.Id, seriesTimerId, StringComparison.OrdinalIgnoreCase));
+            .FirstOrDefault(i => i.Id.Equals(seriesTimerId));
 
         if (seriesTimer is null || seriesTimer.KeepUpTo <= 0)
         {
@@ -681,7 +682,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
             var timersToDelete = _timerManager.GetAll()
                 .Where(timerInfo => timerInfo.Status == RecordingStatus.Completed
                     && !string.IsNullOrWhiteSpace(timerInfo.RecordingPath)
-                    && string.Equals(timerInfo.SeriesTimerId, seriesTimerId, StringComparison.OrdinalIgnoreCase)
+                    && timerInfo.SeriesTimerId.Equals(seriesTimerId)
                     && File.Exists(timerInfo.RecordingPath))
                 .OrderByDescending(i => i.EndDate)
                 .Skip(seriesTimer.KeepUpTo - 1)
@@ -767,7 +768,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
         _timerManager.Delete(timer);
     }
 
-    private string EnsureFileUnique(string path, string timerId)
+    private string EnsureFileUnique(string path, Guid timerId)
     {
         var parent = Path.GetDirectoryName(path)!;
         var name = Path.GetFileNameWithoutExtension(path);
@@ -776,7 +777,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
         var index = 1;
         while (File.Exists(path) || _activeRecordings.Any(i
                    => string.Equals(i.Value.Path, path, StringComparison.OrdinalIgnoreCase)
-                      && !string.Equals(i.Value.Timer.Id, timerId, StringComparison.OrdinalIgnoreCase)))
+                      && !i.Value.Timer.Id.Equals(timerId)))
         {
             name += " - " + index.ToString(CultureInfo.InvariantCulture);
 

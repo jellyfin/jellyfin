@@ -684,7 +684,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the series timer identifier.
         /// </summary>
         /// <value>The series timer identifier.</value>
-        public string SeriesTimerId { get; set; }
+        public Guid? SeriesTimerId { get; set; }
 
         /// <summary>
         /// Gets or sets the program identifier.
@@ -779,7 +779,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the timer identifier.
         /// </summary>
         /// <value>The timer identifier.</value>
-        public string TimerId { get; set; }
+        public Guid? TimerId { get; set; }
 
         /// <summary>
         /// Gets or sets the gain required for audio normalization.

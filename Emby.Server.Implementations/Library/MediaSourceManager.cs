@@ -823,7 +823,7 @@ namespace Emby.Server.Implementations.Library
                 EncoderProtocol = MediaProtocol.Http,
                 Path = info.Path,
                 Protocol = MediaProtocol.File,
-                Id = info.Id,
+                Id = info.Id.ToString("N"),
                 SupportsDirectPlay = false,
                 SupportsDirectStream = true,
                 SupportsTranscoding = true,
