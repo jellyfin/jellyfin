@@ -279,7 +279,7 @@ public sealed class BaseItemRepository
         // Subquery to group by SeriesNames/Album and get the max Date Created for each group.
         var subquery = PrepareItemQuery(context, filter);
         subquery = TranslateQuery(subquery, context, filter);
-        var subqueryGrouped = subquery.GroupBy(e => e.SeriesName)
+        var subqueryGrouped = subquery.GroupBy(g => collectionType == CollectionType.tvshows ? g.SeriesName : g.Album)
             .Select(g => new
             {
                 Key = g.Key,
