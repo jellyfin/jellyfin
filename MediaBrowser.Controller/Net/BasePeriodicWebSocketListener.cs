@@ -81,6 +81,16 @@ namespace MediaBrowser.Controller.Net
         protected abstract Task<TReturnDataType> GetDataToSend();
 
         /// <summary>
+        /// Gets the data to send for a specific connection.
+        /// </summary>
+        /// <param name="connection">The connection.</param>
+        /// <returns>Task{`1}.</returns>
+        protected virtual Task<TReturnDataType> GetDataToSendForConnection(IWebSocketConnection connection)
+        {
+            return GetDataToSend();
+        }
+
+        /// <summary>
         /// Processes the message.
         /// </summary>
         /// <param name="message">The message.</param>
@@ -174,17 +184,11 @@ namespace MediaBrowser.Controller.Net
                             continue;
                         }
 
-                        var data = await GetDataToSend().ConfigureAwait(false);
-                        if (data is null)
-                        {
-                            continue;
-                        }
-
                         IEnumerable<Task> GetTasks()
                         {
                             foreach (var tuple in tuples)
                             {
-                                yield return SendDataInternal(data, tuple);
+                                yield return SendDataForConnectionAsync(tuple);
                             }
                         }
 
@@ -198,12 +202,19 @@ namespace MediaBrowser.Controller.Net
             }
         }
 
-        private async Task SendDataInternal(TReturnDataType data, (IWebSocketConnection Connection, CancellationTokenSource CancellationTokenSource, TStateType State) tuple)
+        private async Task SendDataForConnectionAsync((IWebSocketConnection Connection, CancellationTokenSource CancellationTokenSource, TStateType State) tuple)
         {
             try
             {
                 var (connection, cts, state) = tuple;
                 var cancellationToken = cts.Token;
+
+                var data = await GetDataToSendForConnection(connection).ConfigureAwait(false);
+                if (data is null)
+                {
+                    return;
+                }
+
                 await connection.SendAsync(
                     new OutboundWebSocketMessage<TReturnDataType> { MessageType = Type, Data = data },
                     cancellationToken).ConfigureAwait(false);
