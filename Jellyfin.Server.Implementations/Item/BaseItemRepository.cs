@@ -280,6 +280,7 @@ public sealed class BaseItemRepository
         var subquery = context.BaseItems
             .AsNoTracking()
             .Where(b => !b.IsVirtualItem)
+            .Where(b => b.MediaType != MediaType.Unknown.ToString())
             .GroupBy(g => collectionType == CollectionType.tvshows ? g.SeriesName : g.Album)
             .Select(g => new
             {
