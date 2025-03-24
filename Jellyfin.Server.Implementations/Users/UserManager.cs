@@ -287,6 +287,11 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentException("Admin user passwords must not be empty", nameof(newPassword));
             }
 
+            if (!user.HasPermission(PermissionKind.EnableNoPassword) && string.IsNullOrWhiteSpace(newPassword))
+            {
+                throw new ArgumentException("This user is not allowed to have an empty password", nameof(newPassword));
+            }
+
             await GetAuthenticationProvider(user).ChangePassword(user, newPassword).ConfigureAwait(false);
             await UpdateUserAsync(user).ConfigureAwait(false);
 
@@ -364,6 +369,7 @@ namespace Jellyfin.Server.Implementations.Users
                     EnablePublicSharing = user.HasPermission(PermissionKind.EnablePublicSharing),
                     EnableCollectionManagement = user.HasPermission(PermissionKind.EnableCollectionManagement),
                     EnableSubtitleManagement = user.HasPermission(PermissionKind.EnableSubtitleManagement),
+                    EnableNoPassword = user.HasPermission(PermissionKind.EnableNoPassword),
                     AccessSchedules = user.AccessSchedules.ToArray(),
                     BlockedTags = user.GetPreference(PreferenceKind.BlockedTags),
                     AllowedTags = user.GetPreference(PreferenceKind.AllowedTags),
@@ -692,6 +698,7 @@ namespace Jellyfin.Server.Implementations.Users
                 user.SetPermission(PermissionKind.EnableLyricManagement, policy.EnableLyricManagement);
                 user.SetPermission(PermissionKind.ForceRemoteSourceTranscoding, policy.ForceRemoteSourceTranscoding);
                 user.SetPermission(PermissionKind.EnablePublicSharing, policy.EnablePublicSharing);
+                user.SetPermission(PermissionKind.EnableNoPassword, policy.EnableNoPassword);
 
                 user.AccessSchedules.Clear();
                 foreach (var policyAccessSchedule in policy.AccessSchedules)
