@@ -7,7 +7,7 @@ using AutoFixture.AutoMoq;
 using Jellyfin.Api.Auth;
 using Jellyfin.Api.Constants;
 using Jellyfin.Data;
-using Jellyfin.Data.Entities;
+using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Net;

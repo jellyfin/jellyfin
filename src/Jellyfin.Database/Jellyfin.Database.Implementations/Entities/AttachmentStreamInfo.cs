@@ -1,6 +1,6 @@
 using System;
 
-namespace Jellyfin.Data.Entities;
+namespace Jellyfin.Database.Implementations.Entities;
 
 /// <summary>
 /// Provides information about an Attachment to an <see cref="BaseItemEntity"/>.

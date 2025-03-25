@@ -1,5 +1,5 @@
 #pragma warning disable CA1027 // Mark enums with FlagsAttribute
-namespace Jellyfin.Data.Entities;
+namespace Jellyfin.Database.Implementations.Entities;
 
 /// <summary>
 /// Provides the Value types for an <see cref="ItemValue"/>.

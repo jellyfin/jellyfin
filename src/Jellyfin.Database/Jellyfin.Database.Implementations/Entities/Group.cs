@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Jellyfin.Database.Implementations.Interfaces;
 
-namespace Jellyfin.Data.Entities
+namespace Jellyfin.Database.Implementations.Entities
 {
     /// <summary>
     /// An entity representing a group.

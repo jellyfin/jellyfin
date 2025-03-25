@@ -16,9 +16,9 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
-using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
@@ -38,7 +38,7 @@ using MediaBrowser.Model.Querying;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using BaseItemDto = MediaBrowser.Controller.Entities.BaseItem;
-using BaseItemEntity = Jellyfin.Data.Entities.BaseItemEntity;
+using BaseItemEntity = Jellyfin.Database.Implementations.Entities.BaseItemEntity;
 
 namespace Jellyfin.Server.Implementations.Item;
 

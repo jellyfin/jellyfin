@@ -1,4 +1,4 @@
-namespace Jellyfin.Data.Entities.Libraries
+namespace Jellyfin.Database.Implementations.Entities.Libraries
 {
     /// <summary>
     /// An entity containing metadata for a custom item.

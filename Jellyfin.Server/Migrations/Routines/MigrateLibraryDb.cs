@@ -11,8 +11,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using Emby.Server.Implementations.Data;
-using Jellyfin.Data.Entities;
 using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
 using Jellyfin.Server.Implementations.Item;
 using MediaBrowser.Controller;
@@ -21,7 +21,8 @@ using MediaBrowser.Model.Entities;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Chapter = Jellyfin.Data.Entities.Chapter;
+using BaseItemEntity = Jellyfin.Database.Implementations.Entities.BaseItemEntity;
+using Chapter = Jellyfin.Database.Implementations.Entities.Chapter;
 
 namespace Jellyfin.Server.Migrations.Routines;
 
@@ -125,7 +126,7 @@ public class MigrateLibraryDb : IMigrationRoutine
         dbContext.ItemValues.ExecuteDelete();
 
         // EFCores local lookup sucks. We cannot use context.ItemValues.Local here because its just super slow.
-        var localItems = new Dictionary<(int Type, string CleanValue), (ItemValue ItemValue, List<Guid> ItemIds)>();
+        var localItems = new Dictionary<(int Type, string CleanValue), (Database.Implementations.Entities.ItemValue ItemValue, List<Guid> ItemIds)>();
 
         foreach (SqliteDataReader dto in connection.Query(itemValueQuery))
         {

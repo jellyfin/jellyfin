@@ -1,6 +1,6 @@
 using System;
 
-namespace Jellyfin.Data.Entities;
+namespace Jellyfin.Database.Implementations.Entities;
 
 /// <summary>
 /// Provides <see cref="BaseItemEntity"/> and <see cref="User"/> related data.

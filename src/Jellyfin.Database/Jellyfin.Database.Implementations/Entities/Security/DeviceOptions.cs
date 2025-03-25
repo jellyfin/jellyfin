@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Jellyfin.Data.Entities.Security
+namespace Jellyfin.Database.Implementations.Entities.Security
 {
     /// <summary>
     /// An entity representing custom options for a device.

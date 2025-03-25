@@ -1,4 +1,4 @@
-using Jellyfin.Data.Entities.Security;
+using Jellyfin.Database.Implementations.Entities.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

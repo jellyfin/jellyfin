@@ -1,5 +1,5 @@
 #pragma warning disable CS1591
-namespace Jellyfin.Data.Entities;
+namespace Jellyfin.Database.Implementations.Entities;
 
 public enum BaseItemExtraType
 {

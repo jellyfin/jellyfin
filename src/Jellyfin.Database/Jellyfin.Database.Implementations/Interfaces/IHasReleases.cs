@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Jellyfin.Data.Entities.Libraries;
+using Jellyfin.Database.Implementations.Entities.Libraries;
 
 namespace Jellyfin.Database.Implementations.Interfaces;
 

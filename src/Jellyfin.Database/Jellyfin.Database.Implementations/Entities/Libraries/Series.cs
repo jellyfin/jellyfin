@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Jellyfin.Data.Entities.Libraries
+namespace Jellyfin.Database.Implementations.Entities.Libraries
 {
     /// <summary>
     /// An entity representing a series.

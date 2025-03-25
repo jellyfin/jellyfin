@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Jellyfin.Data.Entities;
+namespace Jellyfin.Database.Implementations.Entities;
 
 public class MediaStreamInfo
 {

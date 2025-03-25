@@ -1,6 +1,6 @@
 using System;
 
-namespace Jellyfin.Data.Entities;
+namespace Jellyfin.Database.Implementations.Entities;
 
 /// <summary>
 /// Represents a Key-Value relation of an BaseItem's provider.

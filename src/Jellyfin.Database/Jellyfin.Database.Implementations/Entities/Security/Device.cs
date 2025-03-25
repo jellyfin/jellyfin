@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Globalization;
 
-namespace Jellyfin.Data.Entities.Security
+namespace Jellyfin.Database.Implementations.Entities.Security
 {
     /// <summary>
     /// An entity representing a device.

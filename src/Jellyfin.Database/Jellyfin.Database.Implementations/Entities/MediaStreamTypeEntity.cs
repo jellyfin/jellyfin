@@ -1,4 +1,4 @@
-namespace Jellyfin.Data.Entities;
+namespace Jellyfin.Database.Implementations.Entities;
 
 /// <summary>
 /// Enum MediaStreamType.

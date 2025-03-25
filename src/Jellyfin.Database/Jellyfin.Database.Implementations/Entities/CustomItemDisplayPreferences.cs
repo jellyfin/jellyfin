@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Jellyfin.Data.Entities
+namespace Jellyfin.Database.Implementations.Entities
 {
     /// <summary>
     /// An entity that represents a user's custom display preferences for a specific item.

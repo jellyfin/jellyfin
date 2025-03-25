@@ -1,10 +1,9 @@
 using Jellyfin.Database.Implementations;
-using Jellyfin.Database.Providers.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Jellyfin.Server.Implementations.Migrations
+namespace Jellyfin.Database.Providers.Sqlite.Migrations
 {
     /// <summary>
     /// The design time factory for <see cref="JellyfinDbContext"/>.

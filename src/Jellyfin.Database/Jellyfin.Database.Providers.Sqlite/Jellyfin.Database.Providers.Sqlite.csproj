@@ -24,13 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Jellyfin.Data\Jellyfin.Data.csproj" />
-    <ProjectReference Include="..\..\..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
-    <ProjectReference Include="..\..\..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
-    <!-- <ProjectReference Include="..\..\Jellyfin.Server.Implementations\Jellyfin.Server.Implementations.csproj" /> -->
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="Properties/" />
   </ItemGroup>
 

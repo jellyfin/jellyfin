@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
-using Jellyfin.Data.Entities;
-using Jellyfin.Data.Entities.Security;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Entities.Security;
 using Jellyfin.Database.Implementations.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
