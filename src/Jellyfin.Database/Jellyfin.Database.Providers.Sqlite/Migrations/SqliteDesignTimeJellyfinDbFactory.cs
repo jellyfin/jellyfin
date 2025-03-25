@@ -1,3 +1,4 @@
+using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Providers.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;

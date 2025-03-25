@@ -1,18 +1,17 @@
-namespace Jellyfin.Data.Enums
+namespace Jellyfin.Database.Implementations.Enums;
+
+/// <summary>
+/// An enum representing the version of Chromecast to be used by clients.
+/// </summary>
+public enum ChromecastVersion
 {
     /// <summary>
-    /// An enum representing the version of Chromecast to be used by clients.
+    /// Stable Chromecast version.
     /// </summary>
-    public enum ChromecastVersion
-    {
-        /// <summary>
-        /// Stable Chromecast version.
-        /// </summary>
-        Stable = 0,
+    Stable = 0,
 
-        /// <summary>
-        /// Unstable Chromecast version.
-        /// </summary>
-        Unstable = 1
-    }
+    /// <summary>
+    /// Unstable Chromecast version.
+    /// </summary>
+    Unstable = 1
 }

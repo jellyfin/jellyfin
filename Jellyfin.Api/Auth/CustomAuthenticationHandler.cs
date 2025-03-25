@@ -4,7 +4,7 @@ using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Data;
-using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Net;
 using Microsoft.AspNetCore.Authentication;

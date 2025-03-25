@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Jellyfin.Data.Entities.Libraries;
 
-namespace Jellyfin.Data.Interfaces
+namespace Jellyfin.Database.Implementations.Interfaces
 {
     /// <summary>
     /// An abstraction representing an entity that has companies.

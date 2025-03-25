@@ -1,18 +1,17 @@
-namespace Jellyfin.Data.Interfaces
+namespace Jellyfin.Database.Implementations.Interfaces;
+
+/// <summary>
+/// An interface abstracting an entity that has a concurrency token.
+/// </summary>
+public interface IHasConcurrencyToken
 {
     /// <summary>
-    /// An interface abstracting an entity that has a concurrency token.
+    /// Gets the version of this row. Acts as a concurrency token.
     /// </summary>
-    public interface IHasConcurrencyToken
-    {
-        /// <summary>
-        /// Gets the version of this row. Acts as a concurrency token.
-        /// </summary>
-        uint RowVersion { get; }
+    uint RowVersion { get; }
 
-        /// <summary>
-        /// Called when saving changes to this entity.
-        /// </summary>
-        void OnSavingChanges();
-    }
+    /// <summary>
+    /// Called when saving changes to this entity.
+    /// </summary>
+    void OnSavingChanges();
 }

@@ -6,7 +6,7 @@ using System.Security.Claims;
 using Jellyfin.Api.Constants;
 using Jellyfin.Data;
 using Jellyfin.Data.Entities;
-using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Server.Implementations.Users;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Library;

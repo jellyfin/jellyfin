@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Xml.Serialization;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Enums;
 using AccessSchedule = Jellyfin.Data.Entities.AccessSchedule;
 
 namespace MediaBrowser.Model.Users

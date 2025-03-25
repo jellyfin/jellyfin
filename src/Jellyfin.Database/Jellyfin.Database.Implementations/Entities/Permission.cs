@@ -3,8 +3,8 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Jellyfin.Data.Enums;
-using Jellyfin.Data.Interfaces;
+using Jellyfin.Database.Implementations.Enums;
+using Jellyfin.Database.Implementations.Interfaces;
 
 namespace Jellyfin.Data.Entities
 {

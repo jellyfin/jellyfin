@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using Jellyfin.Data.Enums;
-using Jellyfin.Data.Interfaces;
+using Jellyfin.Database.Implementations.Interfaces;
 
 namespace Jellyfin.Data.Entities
 {

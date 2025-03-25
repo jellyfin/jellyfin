@@ -2,8 +2,8 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using Jellyfin.Data.Entities;
-using Jellyfin.Data.Enums;
-using Jellyfin.Data.Interfaces;
+using Jellyfin.Database.Implementations.Enums;
+using Jellyfin.Database.Implementations.Interfaces;
 
 namespace Jellyfin.Data;
 

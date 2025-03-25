@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Emby.Server.Implementations.Data;
 using Jellyfin.Data.Entities.Security;
-using Jellyfin.Server.Implementations;
+using Jellyfin.Database.Implementations;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using Microsoft.Data.Sqlite;

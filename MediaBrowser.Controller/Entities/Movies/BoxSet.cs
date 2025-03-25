@@ -10,6 +10,7 @@ using System.Text.Json.Serialization;
 using Jellyfin.Data;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Querying;
 

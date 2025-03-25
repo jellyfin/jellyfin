@@ -1,33 +1,32 @@
-namespace Jellyfin.Data.Enums
+namespace Jellyfin.Database.Implementations.Enums;
+
+/// <summary>
+/// An enum representing types of art.
+/// </summary>
+public enum ArtKind
 {
     /// <summary>
-    /// An enum representing types of art.
+    /// Another type of art, not covered by the other members.
     /// </summary>
-    public enum ArtKind
-    {
-        /// <summary>
-        /// Another type of art, not covered by the other members.
-        /// </summary>
-        Other = 0,
+    Other = 0,
 
-        /// <summary>
-        /// A poster.
-        /// </summary>
-        Poster = 1,
+    /// <summary>
+    /// A poster.
+    /// </summary>
+    Poster = 1,
 
-        /// <summary>
-        /// A banner.
-        /// </summary>
-        Banner = 2,
+    /// <summary>
+    /// A banner.
+    /// </summary>
+    Banner = 2,
 
-        /// <summary>
-        /// A thumbnail.
-        /// </summary>
-        Thumbnail = 3,
+    /// <summary>
+    /// A thumbnail.
+    /// </summary>
+    Thumbnail = 3,
 
-        /// <summary>
-        /// A logo.
-        /// </summary>
-        Logo = 4
-    }
+    /// <summary>
+    /// A logo.
+    /// </summary>
+    Logo = 4
 }

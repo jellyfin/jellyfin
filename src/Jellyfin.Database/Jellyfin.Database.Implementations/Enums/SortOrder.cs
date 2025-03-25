@@ -1,18 +1,17 @@
-namespace Jellyfin.Data.Enums
+namespace Jellyfin.Database.Implementations.Enums;
+
+/// <summary>
+/// An enum representing the sorting order.
+/// </summary>
+public enum SortOrder
 {
     /// <summary>
-    /// An enum representing the sorting order.
+    /// Sort in increasing order.
     /// </summary>
-    public enum SortOrder
-    {
-        /// <summary>
-        /// Sort in increasing order.
-        /// </summary>
-        Ascending = 0,
+    Ascending = 0,
 
-        /// <summary>
-        /// Sort in decreasing order.
-        /// </summary>
-        Descending = 1
-    }
+    /// <summary>
+    /// Sort in decreasing order.
+    /// </summary>
+    Descending = 1
 }

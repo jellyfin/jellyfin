@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Events;
 using Jellyfin.Data.Queries;
+using Jellyfin.Database.Implementations;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Querying;
 using Microsoft.EntityFrameworkCore;

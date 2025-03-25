@@ -9,7 +9,7 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using Jellyfin.Data;
 using Jellyfin.Data.Entities;
-using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Querying;
 

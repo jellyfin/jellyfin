@@ -8,7 +8,7 @@ using Jellyfin.Api.Auth;
 using Jellyfin.Api.Constants;
 using Jellyfin.Data;
 using Jellyfin.Data.Entities;
-using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Net;
 using Microsoft.AspNetCore.Authentication;

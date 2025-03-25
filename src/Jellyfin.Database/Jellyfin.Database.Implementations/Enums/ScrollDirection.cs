@@ -1,18 +1,17 @@
-namespace Jellyfin.Data.Enums
+namespace Jellyfin.Database.Implementations.Enums;
+
+/// <summary>
+/// An enum representing the axis that should be scrolled.
+/// </summary>
+public enum ScrollDirection
 {
     /// <summary>
-    /// An enum representing the axis that should be scrolled.
+    /// Horizontal scrolling direction.
     /// </summary>
-    public enum ScrollDirection
-    {
-        /// <summary>
-        /// Horizontal scrolling direction.
-        /// </summary>
-        Horizontal = 0,
+    Horizontal = 0,
 
-        /// <summary>
-        /// Vertical scrolling direction.
-        /// </summary>
-        Vertical = 1
-    }
+    /// <summary>
+    /// Vertical scrolling direction.
+    /// </summary>
+    Vertical = 1
 }
