@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ATL;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
@@ -175,11 +176,15 @@ namespace MediaBrowser.Providers.MediaInfo
                 _logger.LogWarning("File {File} only has ID3v1 tags, some fields may be truncated", audio.Path);
             }
 
-            track.Title = string.IsNullOrEmpty(track.Title) ? mediaInfo.Name : track.Title;
-            track.Album = string.IsNullOrEmpty(track.Album) ? mediaInfo.Album : track.Album;
-            track.Year = track.Year is null or 0 ? mediaInfo.ProductionYear : track.Year;
-            track.TrackNumber = track.TrackNumber is null or 0 ? mediaInfo.IndexNumber : track.TrackNumber;
-            track.DiscNumber = track.DiscNumber is null or 0 ? mediaInfo.ParentIndexNumber : track.DiscNumber;
+            // We should never use the property setter of the ATL.Track class.
+            // That setter is meant for its own tag parser and external editor usage and will have unwanted side effects
+            // For example, setting the Year property will also set the Date property, which is not what we want here.
+            // To properly handle fallback values, we make a clone of those fields when valid.
+            var trackTitle = (string.IsNullOrEmpty(track.Title) ? mediaInfo.Name : track.Title).Trim();
+            var trackAlbum = (string.IsNullOrEmpty(track.Album) ? mediaInfo.Album : track.Album).Trim();
+            var trackYear = track.Year is null or 0 ? mediaInfo.ProductionYear : track.Year;
+            var trackTrackNumber = track.TrackNumber is null or 0 ? mediaInfo.IndexNumber : track.TrackNumber;
+            var trackDiscNumber = track.DiscNumber is null or 0 ? mediaInfo.ParentIndexNumber : track.DiscNumber;
 
             if (audio.SupportsPeople && !audio.LockedFields.Contains(MetadataField.Cast))
             {
@@ -193,11 +198,11 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 foreach (var albumArtist in albumArtists)
                 {
-                    if (!string.IsNullOrEmpty(albumArtist))
+                    if (!string.IsNullOrWhiteSpace(albumArtist))
                     {
                         PeopleHelper.AddPerson(people, new PersonInfo
                         {
-                            Name = albumArtist,
+                            Name = albumArtist.Trim(),
                             Type = PersonKind.AlbumArtist
                         });
                     }
@@ -225,11 +230,11 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 foreach (var performer in performers)
                 {
-                    if (!string.IsNullOrEmpty(performer))
+                    if (!string.IsNullOrWhiteSpace(performer))
                     {
                         PeopleHelper.AddPerson(people, new PersonInfo
                         {
-                            Name = performer,
+                            Name = performer.Trim(),
                             Type = PersonKind.Artist
                         });
                     }
@@ -237,11 +242,11 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 foreach (var composer in track.Composer.Split(InternalValueSeparator))
                 {
-                    if (!string.IsNullOrEmpty(composer))
+                    if (!string.IsNullOrWhiteSpace(composer))
                     {
                         PeopleHelper.AddPerson(people, new PersonInfo
                         {
-                            Name = composer,
+                            Name = composer.Trim(),
                             Type = PersonKind.Composer
                         });
                     }
@@ -276,22 +281,22 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            if (!audio.LockedFields.Contains(MetadataField.Name) && !string.IsNullOrEmpty(track.Title))
+            if (!audio.LockedFields.Contains(MetadataField.Name) && !string.IsNullOrEmpty(trackTitle))
             {
-                audio.Name = track.Title;
+                audio.Name = trackTitle;
             }
 
             if (options.ReplaceAllMetadata)
             {
-                audio.Album = track.Album;
-                audio.IndexNumber = track.TrackNumber;
-                audio.ParentIndexNumber = track.DiscNumber;
+                audio.Album = trackAlbum;
+                audio.IndexNumber = trackTrackNumber;
+                audio.ParentIndexNumber = trackDiscNumber;
             }
             else
             {
-                audio.Album ??= track.Album;
-                audio.IndexNumber ??= track.TrackNumber;
-                audio.ParentIndexNumber ??= track.DiscNumber;
+                audio.Album ??= trackAlbum;
+                audio.IndexNumber ??= trackTrackNumber;
+                audio.ParentIndexNumber ??= trackDiscNumber;
             }
 
             if (track.Date.HasValue)
@@ -299,11 +304,12 @@ namespace MediaBrowser.Providers.MediaInfo
                 audio.PremiereDate = track.Date;
             }
 
-            if (track.Year.HasValue)
+            if (trackYear.HasValue)
             {
-                var year = track.Year.Value;
+                var year = trackYear.Value;
                 audio.ProductionYear = year;
 
+                // ATL library handles such fallback this with its own internal logic, but we also need to handle it here for the ffprobe fallbacks.
                 if (!audio.PremiereDate.HasValue)
                 {
                     try
@@ -312,7 +318,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     }
                     catch (ArgumentOutOfRangeException ex)
                     {
-                        _logger.LogError(ex, "Error parsing YEAR tag in {File}. '{TagValue}' is an invalid year", audio.Path, track.Year);
+                        _logger.LogError(ex, "Error parsing YEAR tag in {File}. '{TagValue}' is an invalid year", audio.Path, trackYear);
                     }
                 }
             }
@@ -325,6 +331,8 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     genres = genres.SelectMany(g => SplitWithCustomDelimiter(g, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist)).ToArray();
                 }
+
+                genres = genres.Trimmed().Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
 
                 audio.Genres = options.ReplaceAllMetadata || audio.Genres is null || audio.Genres.Length == 0
                     ? genres

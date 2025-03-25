@@ -783,9 +783,13 @@ namespace Emby.Server.Implementations.Library
         {
             ArgumentException.ThrowIfNullOrEmpty(id);
 
-            // TODO probably shouldn't throw here but it is kept for "backwards compatibility"
-            var info = GetLiveStreamInfo(id) ?? throw new ResourceNotFoundException();
-            return Task.FromResult(new Tuple<MediaSourceInfo, IDirectStreamProvider>(info.MediaSource, info as IDirectStreamProvider));
+            var info = GetLiveStreamInfo(id);
+            if (info is null)
+            {
+                return Task.FromResult<Tuple<MediaSourceInfo, IDirectStreamProvider>>(new Tuple<MediaSourceInfo, IDirectStreamProvider>(null, null));
+            }
+
+            return Task.FromResult<Tuple<MediaSourceInfo, IDirectStreamProvider>>(new Tuple<MediaSourceInfo, IDirectStreamProvider>(info.MediaSource, info as IDirectStreamProvider));
         }
 
         public ILiveStream GetLiveStreamInfo(string id)

@@ -344,6 +344,11 @@ namespace Emby.Server.Implementations.Session
         /// <returns>Task.</returns>
         private async Task UpdateNowPlayingItem(SessionInfo session, PlaybackProgressInfo info, BaseItem libraryItem, bool updateLastCheckInTime)
         {
+            if (session is null)
+            {
+               return;
+            }
+
             if (string.IsNullOrEmpty(info.MediaSourceId))
             {
                 info.MediaSourceId = info.ItemId.ToString("N", CultureInfo.InvariantCulture);
@@ -676,6 +681,11 @@ namespace Emby.Server.Implementations.Session
 
         private BaseItem GetNowPlayingItem(SessionInfo session, Guid itemId)
         {
+            if (session is null)
+            {
+                return null;
+            }
+
             var item = session.FullNowPlayingItem;
             if (item is not null && item.Id.Equals(itemId))
             {
@@ -795,7 +805,11 @@ namespace Emby.Server.Implementations.Session
 
             ArgumentNullException.ThrowIfNull(info);
 
-            var session = GetSession(info.SessionId);
+            var session = GetSession(info.SessionId, false);
+            if (session is null)
+            {
+                return;
+            }
 
             var libraryItem = info.ItemId.IsEmpty()
                 ? null

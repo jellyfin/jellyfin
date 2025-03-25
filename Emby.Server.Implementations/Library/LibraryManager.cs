@@ -79,6 +79,7 @@ namespace Emby.Server.Implementations.Library
         private readonly NamingOptions _namingOptions;
         private readonly IPeopleRepository _peopleRepository;
         private readonly ExtraResolver _extraResolver;
+        private readonly IPathManager _pathManager;
 
         /// <summary>
         /// The _root folder sync lock.
@@ -114,7 +115,8 @@ namespace Emby.Server.Implementations.Library
         /// <param name="imageProcessor">The image processor.</param>
         /// <param name="namingOptions">The naming options.</param>
         /// <param name="directoryService">The directory service.</param>
-        /// <param name="peopleRepository">The People Repository.</param>
+        /// <param name="peopleRepository">The people repository.</param>
+        /// <param name="pathManager">The path manager.</param>
         public LibraryManager(
             IServerApplicationHost appHost,
             ILoggerFactory loggerFactory,
@@ -131,7 +133,8 @@ namespace Emby.Server.Implementations.Library
             IImageProcessor imageProcessor,
             NamingOptions namingOptions,
             IDirectoryService directoryService,
-            IPeopleRepository peopleRepository)
+            IPeopleRepository peopleRepository,
+            IPathManager pathManager)
         {
             _appHost = appHost;
             _logger = loggerFactory.CreateLogger<LibraryManager>();
@@ -149,6 +152,7 @@ namespace Emby.Server.Implementations.Library
             _cache = new ConcurrentDictionary<Guid, BaseItem>();
             _namingOptions = namingOptions;
             _peopleRepository = peopleRepository;
+            _pathManager = pathManager;
             _extraResolver = new ExtraResolver(loggerFactory.CreateLogger<ExtraResolver>(), namingOptions, directoryService);
 
             _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
@@ -201,33 +205,33 @@ namespace Emby.Server.Implementations.Library
         /// Gets or sets the postscan tasks.
         /// </summary>
         /// <value>The postscan tasks.</value>
-        private ILibraryPostScanTask[] PostscanTasks { get; set; } = Array.Empty<ILibraryPostScanTask>();
+        private ILibraryPostScanTask[] PostscanTasks { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the intro providers.
         /// </summary>
         /// <value>The intro providers.</value>
-        private IIntroProvider[] IntroProviders { get; set; } = Array.Empty<IIntroProvider>();
+        private IIntroProvider[] IntroProviders { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the list of entity resolution ignore rules.
         /// </summary>
         /// <value>The entity resolution ignore rules.</value>
-        private IResolverIgnoreRule[] EntityResolutionIgnoreRules { get; set; } = Array.Empty<IResolverIgnoreRule>();
+        private IResolverIgnoreRule[] EntityResolutionIgnoreRules { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the list of currently registered entity resolvers.
         /// </summary>
         /// <value>The entity resolvers enumerable.</value>
-        private IItemResolver[] EntityResolvers { get; set; } = Array.Empty<IItemResolver>();
+        private IItemResolver[] EntityResolvers { get; set; } = [];
 
-        private IMultiItemResolver[] MultiItemResolvers { get; set; } = Array.Empty<IMultiItemResolver>();
+        private IMultiItemResolver[] MultiItemResolvers { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the comparers.
         /// </summary>
         /// <value>The comparers.</value>
-        private IBaseItemComparer[] Comparers { get; set; } = Array.Empty<IBaseItemComparer>();
+        private IBaseItemComparer[] Comparers { get; set; } = [];
 
         public bool IsScanRunning { get; private set; }
 
@@ -360,7 +364,7 @@ namespace Emby.Server.Implementations.Library
 
             var children = item.IsFolder
                 ? ((Folder)item).GetRecursiveChildren(false)
-                : Array.Empty<BaseItem>();
+                : [];
 
             foreach (var metadataPath in GetMetadataPaths(item, children))
             {
@@ -466,14 +470,28 @@ namespace Emby.Server.Implementations.Library
             ReportItemRemoved(item, parent);
         }
 
-        private static List<string> GetMetadataPaths(BaseItem item, IEnumerable<BaseItem> children)
+        private List<string> GetMetadataPaths(BaseItem item, IEnumerable<BaseItem> children)
+        {
+            var list = GetInternalMetadataPaths(item);
+            foreach (var child in children)
+            {
+                list.AddRange(GetInternalMetadataPaths(child));
+            }
+
+            return list;
+        }
+
+        private List<string> GetInternalMetadataPaths(BaseItem item)
         {
             var list = new List<string>
             {
                 item.GetInternalMetadataPath()
             };
 
-            list.AddRange(children.Select(i => i.GetInternalMetadataPath()));
+            if (item is Video video)
+            {
+                list.Add(_pathManager.GetTrickplayDirectory(video));
+            }
 
             return list;
         }
@@ -594,7 +612,7 @@ namespace Emby.Server.Implementations.Library
                     {
                         _logger.LogError(ex, "Error in GetFilteredFileSystemEntries isPhysicalRoot: {0} IsVf: {1}", isPhysicalRoot, isVf);
 
-                        files = Array.Empty<FileSystemMetadata>();
+                        files = [];
                     }
                     else
                     {
@@ -1345,6 +1363,21 @@ namespace Emby.Server.Implementations.Library
             return _itemRepository.GetItemList(query);
         }
 
+        public IReadOnlyList<string> GetNextUpSeriesKeys(InternalItemsQuery query, IReadOnlyCollection<BaseItem> parents, DateTime dateCutoff)
+        {
+            SetTopParentIdsOrAncestors(query, parents);
+
+            if (query.AncestorIds.Length == 0 && query.TopParentIds.Length == 0)
+            {
+                if (query.User is not null)
+                {
+                    AddUserToQuery(query, query.User);
+                }
+            }
+
+            return _itemRepository.GetNextUpSeriesKeys(query, dateCutoff);
+        }
+
         public QueryResult<BaseItem> QueryItems(InternalItemsQuery query)
         {
             if (query.User is not null)
@@ -1449,7 +1482,7 @@ namespace Emby.Server.Implementations.Library
 
             // Optimize by querying against top level views
             query.TopParentIds = parents.SelectMany(i => GetTopParentIdsForQuery(i, query.User)).ToArray();
-            query.AncestorIds = Array.Empty<Guid>();
+            query.AncestorIds = [];
 
             // Prevent searching in all libraries due to empty filter
             if (query.TopParentIds.Length == 0)
@@ -1569,7 +1602,7 @@ namespace Emby.Server.Implementations.Library
                         return GetTopParentIdsForQuery(displayParent, user);
                     }
 
-                    return Array.Empty<Guid>();
+                    return [];
                 }
 
                 if (!view.ParentId.IsEmpty())
@@ -1580,7 +1613,7 @@ namespace Emby.Server.Implementations.Library
                         return GetTopParentIdsForQuery(displayParent, user);
                     }
 
-                    return Array.Empty<Guid>();
+                    return [];
                 }
 
                 // Handle grouping
@@ -1595,7 +1628,7 @@ namespace Emby.Server.Implementations.Library
                         .SelectMany(i => GetTopParentIdsForQuery(i, user));
                 }
 
-                return Array.Empty<Guid>();
+                return [];
             }
 
             if (item is CollectionFolder collectionFolder)
@@ -1609,7 +1642,7 @@ namespace Emby.Server.Implementations.Library
                 return new[] { topParent.Id };
             }
 
-            return Array.Empty<Guid>();
+            return [];
         }
 
         /// <summary>
@@ -1653,7 +1686,7 @@ namespace Emby.Server.Implementations.Library
             {
                 _logger.LogError(ex, "Error getting intros");
 
-                return Enumerable.Empty<IntroInfo>();
+                return [];
             }
         }
 
@@ -2480,8 +2513,11 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
-        public int? GetSeasonNumberFromPath(string path)
-            => SeasonPathParser.Parse(path, true, true).SeasonNumber;
+        public int? GetSeasonNumberFromPath(string path, Guid? parentId)
+        {
+            var parentPath = parentId.HasValue ? GetItemById(parentId.Value)?.ContainingFolderPath : null;
+            return SeasonPathParser.Parse(path, parentPath, true, true).SeasonNumber;
+        }
 
         /// <inheritdoc />
         public bool FillMissingEpisodeNumbersFromPath(Episode episode, bool forceRefresh)
@@ -2880,7 +2916,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     var path = Path.Combine(virtualFolderPath, collectionType.ToString()!.ToLowerInvariant() + ".collection"); // Can't be null with legal values?
 
-                    await File.WriteAllBytesAsync(path, Array.Empty<byte>()).ConfigureAwait(false);
+                    await File.WriteAllBytesAsync(path, []).ConfigureAwait(false);
                 }
 
                 CollectionFolder.SaveLibraryOptions(virtualFolderPath, options);
