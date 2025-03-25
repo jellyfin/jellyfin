@@ -388,7 +388,7 @@ namespace MediaBrowser.Providers.Manager
         private bool IsValidImage(RemoteImageInfo image, string preferredLanguage, string fallbackLanguage = "en")
         {
             // TODO: should exception case of "en" (English) eventually be removed?
-            bool matchesLanguage = MatchesLanguage(preferredLanguage, image.Language) || MatchesLanguage(image.Language, fallbackLanguage);
+            bool matchesLanguage = MatchesLanguage(image.Language, preferredLanguage) || MatchesLanguage(image.Language, fallbackLanguage);
 
             if (RequiresLanguage(image.Type))
             {
