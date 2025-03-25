@@ -1,4 +1,4 @@
-namespace Jellyfin.Server.Implementations;
+namespace Jellyfin.Database.Implementations;
 
 /// <summary>
 /// Defines the key of the database provider.
@@ -16,7 +16,7 @@ public sealed class JellyfinDatabaseProviderKeyAttribute : System.Attribute
     /// <param name="databaseProviderKey">The key on which to identify the annotated provider.</param>
     public JellyfinDatabaseProviderKeyAttribute(string databaseProviderKey)
     {
-        this._databaseProviderKey = databaseProviderKey;
+        _databaseProviderKey = databaseProviderKey;
     }
 
     /// <summary>

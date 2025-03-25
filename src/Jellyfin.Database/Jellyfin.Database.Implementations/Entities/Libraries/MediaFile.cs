@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Jellyfin.Data.Enums;
-using Jellyfin.Data.Interfaces;
+using Jellyfin.Database.Implementations.Enums;
+using Jellyfin.Database.Implementations.Interfaces;
 
-namespace Jellyfin.Data.Entities.Libraries
+namespace Jellyfin.Database.Implementations.Entities.Libraries
 {
     /// <summary>
     /// An entity representing a file on disk.

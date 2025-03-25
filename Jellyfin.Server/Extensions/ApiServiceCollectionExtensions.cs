@@ -19,6 +19,7 @@ using Jellyfin.Api.Controllers;
 using Jellyfin.Api.Formatters;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions.Json;
 using Jellyfin.Server.Configuration;
 using Jellyfin.Server.Filters;

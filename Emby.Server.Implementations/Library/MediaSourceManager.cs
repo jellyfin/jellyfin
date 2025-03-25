@@ -14,8 +14,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using AsyncKeyedLock;
 using Jellyfin.Data;
-using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Configuration;
@@ -783,9 +784,13 @@ namespace Emby.Server.Implementations.Library
         {
             ArgumentException.ThrowIfNullOrEmpty(id);
 
-            // TODO probably shouldn't throw here but it is kept for "backwards compatibility"
-            var info = GetLiveStreamInfo(id) ?? throw new ResourceNotFoundException();
-            return Task.FromResult(new Tuple<MediaSourceInfo, IDirectStreamProvider>(info.MediaSource, info as IDirectStreamProvider));
+            var info = GetLiveStreamInfo(id);
+            if (info is null)
+            {
+                return Task.FromResult<Tuple<MediaSourceInfo, IDirectStreamProvider>>(new Tuple<MediaSourceInfo, IDirectStreamProvider>(null, null));
+            }
+
+            return Task.FromResult<Tuple<MediaSourceInfo, IDirectStreamProvider>>(new Tuple<MediaSourceInfo, IDirectStreamProvider>(info.MediaSource, info as IDirectStreamProvider));
         }
 
         public ILiveStream GetLiveStreamInfo(string id)

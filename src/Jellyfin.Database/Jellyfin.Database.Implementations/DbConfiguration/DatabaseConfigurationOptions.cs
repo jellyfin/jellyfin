@@ -1,6 +1,4 @@
-using System;
-
-namespace Jellyfin.Server.Implementations.DatabaseConfiguration;
+namespace Jellyfin.Database.Implementations.DbConfiguration;
 
 /// <summary>
 /// Options to configure jellyfins managed database.

@@ -1,14 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
 using System.Text.Json.Serialization;
-using Jellyfin.Data.Enums;
-using Jellyfin.Data.Interfaces;
+using Jellyfin.Database.Implementations.Enums;
+using Jellyfin.Database.Implementations.Interfaces;
 
-namespace Jellyfin.Data.Entities
+namespace Jellyfin.Database.Implementations.Entities
 {
     /// <summary>
     /// An entity representing a user.

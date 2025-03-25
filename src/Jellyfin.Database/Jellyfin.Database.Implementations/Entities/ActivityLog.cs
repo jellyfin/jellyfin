@@ -1,10 +1,10 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Jellyfin.Data.Interfaces;
+using Jellyfin.Database.Implementations.Interfaces;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Data.Entities
+namespace Jellyfin.Database.Implementations.Entities
 {
     /// <summary>
     /// An entity referencing an activity log entry.

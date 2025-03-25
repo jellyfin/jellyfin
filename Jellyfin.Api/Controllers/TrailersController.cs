@@ -1,6 +1,7 @@
 using System;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;

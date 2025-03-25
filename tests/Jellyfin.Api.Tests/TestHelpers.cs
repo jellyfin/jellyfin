@@ -5,15 +5,15 @@ using System.Net;
 using System.Security.Claims;
 using Jellyfin.Api.Constants;
 using Jellyfin.Data;
-using Jellyfin.Data.Entities;
-using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Server.Implementations.Users;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Configuration;
 using Microsoft.AspNetCore.Http;
 using Moq;
-using AccessSchedule = Jellyfin.Data.Entities.AccessSchedule;
+using AccessSchedule = Jellyfin.Database.Implementations.Entities.AccessSchedule;
 
 namespace Jellyfin.Api.Tests
 {

@@ -8,10 +8,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
 using Emby.Server.Implementations;
+using Jellyfin.Database.Implementations;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Helpers;
-using Jellyfin.Server.Implementations;
+using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Data.Sqlite;
@@ -44,6 +46,9 @@ namespace Jellyfin.Server
         public const string LoggingConfigFileSystem = "logging.json";
 
         private static readonly SerilogLoggerFactory _loggerFactory = new SerilogLoggerFactory();
+        private static SetupServer _setupServer = new();
+        private static CoreAppHost? _appHost;
+        private static IHost? _jellyfinHost = null;
         private static long _startTimestamp;
         private static ILogger _logger = NullLogger.Instance;
         private static bool _restartOnShutdown;
@@ -70,6 +75,7 @@ namespace Jellyfin.Server
         {
             _startTimestamp = Stopwatch.GetTimestamp();
             ServerApplicationPaths appPaths = StartupHelpers.CreateApplicationPaths(options);
+            await _setupServer.RunAsync(static () => _jellyfinHost?.Services?.GetService<INetworkManager>(), appPaths, static () => _appHost).ConfigureAwait(false);
 
             // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
             Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", appPaths.LogDirectoryPath);
@@ -124,22 +130,23 @@ namespace Jellyfin.Server
                 if (_restartOnShutdown)
                 {
                     _startTimestamp = Stopwatch.GetTimestamp();
+                    _setupServer = new SetupServer();
+                    await _setupServer.RunAsync(static () => _jellyfinHost?.Services?.GetService<INetworkManager>(), appPaths, static () => _appHost).ConfigureAwait(false);
                 }
             } while (_restartOnShutdown);
         }
 
         private static async Task StartServer(IServerApplicationPaths appPaths, StartupOptions options, IConfiguration startupConfig)
         {
-            using var appHost = new CoreAppHost(
-                appPaths,
-                _loggerFactory,
-                options,
-                startupConfig);
-
-            IHost? host = null;
+            using CoreAppHost appHost = new CoreAppHost(
+                            appPaths,
+                            _loggerFactory,
+                            options,
+                            startupConfig);
+            _appHost = appHost;
             try
             {
-                host = Host.CreateDefaultBuilder()
+                _jellyfinHost = Host.CreateDefaultBuilder()
                     .UseConsoleLifetime()
                     .ConfigureServices(services => appHost.Init(services))
                     .ConfigureWebHostDefaults(webHostBuilder =>
@@ -156,14 +163,17 @@ namespace Jellyfin.Server
                     .Build();
 
                 // Re-use the host service provider in the app host since ASP.NET doesn't allow a custom service collection.
-                appHost.ServiceProvider = host.Services;
+                appHost.ServiceProvider = _jellyfinHost.Services;
 
                 await appHost.InitializeServices(startupConfig).ConfigureAwait(false);
                 await Migrations.MigrationRunner.Run(appHost, _loggerFactory).ConfigureAwait(false);
 
                 try
                 {
-                    await host.StartAsync().ConfigureAwait(false);
+                    await _setupServer.StopAsync().ConfigureAwait(false);
+                    _setupServer.Dispose();
+                    _setupServer = null!;
+                    await _jellyfinHost.StartAsync().ConfigureAwait(false);
 
                     if (!OperatingSystem.IsWindows() && startupConfig.UseUnixSocket())
                     {
@@ -182,7 +192,7 @@ namespace Jellyfin.Server
 
                 _logger.LogInformation("Startup complete {Time:g}", Stopwatch.GetElapsedTime(_startTimestamp));
 
-                await host.WaitForShutdownAsync().ConfigureAwait(false);
+                await _jellyfinHost.WaitForShutdownAsync().ConfigureAwait(false);
                 _restartOnShutdown = appHost.ShouldRestart;
             }
             catch (Exception ex)
@@ -198,12 +208,13 @@ namespace Jellyfin.Server
                     _logger.LogInformation("Running query planner optimizations in the database... This might take a while");
 
                     var databaseProvider = appHost.ServiceProvider.GetRequiredService<IJellyfinDatabaseProvider>();
-                    var shutdownSource = new CancellationTokenSource();
+                    using var shutdownSource = new CancellationTokenSource();
                     shutdownSource.CancelAfter((int)TimeSpan.FromSeconds(60).TotalMicroseconds);
                     await databaseProvider.RunShutdownTask(shutdownSource.Token).ConfigureAwait(false);
                 }
 
-                host?.Dispose();
+                _appHost = null;
+                _jellyfinHost?.Dispose();
             }
         }
 

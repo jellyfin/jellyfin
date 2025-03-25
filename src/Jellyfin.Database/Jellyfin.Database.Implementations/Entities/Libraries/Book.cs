@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using Jellyfin.Data.Interfaces;
+using Jellyfin.Database.Implementations.Interfaces;
 
-namespace Jellyfin.Data.Entities.Libraries
+namespace Jellyfin.Database.Implementations.Entities.Libraries
 {
     /// <summary>
     /// An entity representing a book.

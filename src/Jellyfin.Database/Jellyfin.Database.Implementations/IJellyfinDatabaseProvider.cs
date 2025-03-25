@@ -1,9 +1,8 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
-namespace Jellyfin.Server.Implementations;
+namespace Jellyfin.Database.Implementations;
 
 /// <summary>
 /// Defines the type and extension points for multi database support.

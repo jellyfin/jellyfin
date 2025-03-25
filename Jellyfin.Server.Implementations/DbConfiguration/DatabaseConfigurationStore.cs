@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Jellyfin.Database.Implementations.DbConfiguration;
 using MediaBrowser.Common.Configuration;
 
 namespace Jellyfin.Server.Implementations.DatabaseConfiguration;

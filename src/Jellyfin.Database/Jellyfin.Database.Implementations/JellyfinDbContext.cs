@@ -1,14 +1,12 @@
 using System;
 using System.Linq;
-using Jellyfin.Data.Entities;
-using Jellyfin.Data.Entities.Security;
-using Jellyfin.Data.Interfaces;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Entities.Security;
+using Jellyfin.Database.Implementations.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Server.Implementations;
+namespace Jellyfin.Database.Implementations;
 
 /// <inheritdoc/>
 /// <summary>

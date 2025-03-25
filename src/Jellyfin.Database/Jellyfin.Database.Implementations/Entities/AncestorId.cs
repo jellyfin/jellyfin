@@ -1,6 +1,6 @@
 using System;
 
-namespace Jellyfin.Data.Entities;
+namespace Jellyfin.Database.Implementations.Entities;
 
 /// <summary>
 /// Represents the relational information for an <see cref="BaseItemEntity"/>.

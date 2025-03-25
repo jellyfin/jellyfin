@@ -87,9 +87,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.LiveTv.Tests", "te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.LiveTv", "src\Jellyfin.LiveTv\Jellyfin.LiveTv.csproj", "{8C6B2B13-58A4-4506-9DAB-1F882A093FE0}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Jellyfin.Database", "src\Jellyfin.Database", "{4C54CE05-69C8-48FA-8785-39F7F6DB1CAD}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Jellyfin.Database", "Jellyfin.Database", "{4C54CE05-69C8-48FA-8785-39F7F6DB1CAD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Database.Providers.SqLite", "src\Jellyfin.Database\Jellyfin.Database.Providers.SqLite\Jellyfin.Database.Providers.SqLite.csproj", "{A5590358-33CC-4B39-BDE7-DC62FEB03C76}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Database.Providers.Sqlite", "src\Jellyfin.Database\Jellyfin.Database.Providers.Sqlite\Jellyfin.Database.Providers.Sqlite.csproj", "{A5590358-33CC-4B39-BDE7-DC62FEB03C76}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Database.Implementations", "src\Jellyfin.Database\Jellyfin.Database.Implementations\Jellyfin.Database.Implementations.csproj", "{8C9F9221-8415-496C-B1F5-E7756F03FA59}"
 EndProject

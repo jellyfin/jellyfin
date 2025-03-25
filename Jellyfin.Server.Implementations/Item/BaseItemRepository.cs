@@ -16,8 +16,10 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
-using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common;
@@ -36,7 +38,7 @@ using MediaBrowser.Model.Querying;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using BaseItemDto = MediaBrowser.Controller.Entities.BaseItem;
-using BaseItemEntity = Jellyfin.Data.Entities.BaseItemEntity;
+using BaseItemEntity = Jellyfin.Database.Implementations.Entities.BaseItemEntity;
 
 namespace Jellyfin.Server.Implementations.Item;
 
@@ -101,16 +103,23 @@ public sealed class BaseItemRepository
 
         using var context = _dbProvider.CreateDbContext();
         using var transaction = context.Database.BeginTransaction();
+        context.AncestorIds.Where(e => e.ItemId == id || e.ParentItemId == id).ExecuteDelete();
+        context.AttachmentStreamInfos.Where(e => e.ItemId == id).ExecuteDelete();
+        context.BaseItemImageInfos.Where(e => e.ItemId == id).ExecuteDelete();
+        context.BaseItemMetadataFields.Where(e => e.ItemId == id).ExecuteDelete();
+        context.BaseItemProviders.Where(e => e.ItemId == id).ExecuteDelete();
+        context.BaseItemTrailerTypes.Where(e => e.ItemId == id).ExecuteDelete();
+        context.BaseItems.Where(e => e.Id == id).ExecuteDelete();
+        context.Chapters.Where(e => e.ItemId == id).ExecuteDelete();
+        context.CustomItemDisplayPreferences.Where(e => e.ItemId == id).ExecuteDelete();
+        context.ItemDisplayPreferences.Where(e => e.ItemId == id).ExecuteDelete();
+        context.ItemValues.Where(e => e.BaseItemsMap!.Count == 0).ExecuteDelete();
+        context.ItemValuesMap.Where(e => e.ItemId == id).ExecuteDelete();
+        context.MediaSegments.Where(e => e.ItemId == id).ExecuteDelete();
+        context.MediaStreamInfos.Where(e => e.ItemId == id).ExecuteDelete();
         context.PeopleBaseItemMap.Where(e => e.ItemId == id).ExecuteDelete();
         context.Peoples.Where(e => e.BaseItems!.Count == 0).ExecuteDelete();
-        context.Chapters.Where(e => e.ItemId == id).ExecuteDelete();
-        context.MediaStreamInfos.Where(e => e.ItemId == id).ExecuteDelete();
-        context.AncestorIds.Where(e => e.ItemId == id || e.ParentItemId == id).ExecuteDelete();
-        context.ItemValuesMap.Where(e => e.ItemId == id).ExecuteDelete();
-        context.ItemValues.Where(e => e.BaseItemsMap!.Count == 0).ExecuteDelete();
-        context.BaseItemImageInfos.Where(e => e.ItemId == id).ExecuteDelete();
-        context.BaseItemProviders.Where(e => e.ItemId == id).ExecuteDelete();
-        context.BaseItems.Where(e => e.Id == id).ExecuteDelete();
+        context.TrickplayInfos.Where(e => e.ItemId == id).ExecuteDelete();
         context.SaveChanges();
         transaction.Commit();
     }
@@ -253,6 +262,37 @@ public sealed class BaseItemRepository
         dbQuery = ApplyQueryPaging(dbQuery, filter);
 
         return dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToArray();
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> GetNextUpSeriesKeys(InternalItemsQuery filter, DateTime dateCutoff)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        ArgumentNullException.ThrowIfNull(filter.User);
+
+        using var context = _dbProvider.CreateDbContext();
+
+        var query = context.BaseItems
+            .AsNoTracking()
+            .Where(i => filter.TopParentIds.Contains(i.TopParentId!.Value))
+            .Where(i => i.Type == _itemTypeLookup.BaseItemKindNames[BaseItemKind.Episode])
+            .Join(
+                context.UserData.AsNoTracking(),
+                i => new { UserId = filter.User.Id, ItemId = i.Id },
+                u => new { UserId = u.UserId, ItemId = u.ItemId },
+                (entity, data) => new { Item = entity, UserData = data })
+            .GroupBy(g => g.Item.SeriesPresentationUniqueKey)
+            .Select(g => new { g.Key, LastPlayedDate = g.Max(u => u.UserData.LastPlayedDate) })
+            .Where(g => g.Key != null && g.LastPlayedDate != null && g.LastPlayedDate >= dateCutoff)
+            .OrderByDescending(g => g.LastPlayedDate)
+            .Select(g => g.Key!);
+
+        if (filter.Limit.HasValue)
+        {
+            query = query.Take(filter.Limit.Value);
+        }
+
+        return query.ToArray();
     }
 
     private IQueryable<BaseItemEntity> ApplyGroupingFilter(IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
@@ -925,25 +965,11 @@ public sealed class BaseItemRepository
 
         using var context = _dbProvider.CreateDbContext();
 
-        var innerQuery = new InternalItemsQuery(filter.User)
-        {
-            ExcludeItemTypes = filter.ExcludeItemTypes,
-            IncludeItemTypes = filter.IncludeItemTypes,
-            MediaTypes = filter.MediaTypes,
-            AncestorIds = filter.AncestorIds,
-            ItemIds = filter.ItemIds,
-            TopParentIds = filter.TopParentIds,
-            ParentId = filter.ParentId,
-            IsAiring = filter.IsAiring,
-            IsMovie = filter.IsMovie,
-            IsSports = filter.IsSports,
-            IsKids = filter.IsKids,
-            IsNews = filter.IsNews,
-            IsSeries = filter.IsSeries
-        };
-        var query = TranslateQuery(context.BaseItems.AsNoTracking(), context, innerQuery);
+        var query = TranslateQuery(context.BaseItems.AsNoTracking(), context, filter);
 
-        query = query.Where(e => e.Type == returnType && e.ItemValues!.Any(f => e.CleanName == f.ItemValue.CleanValue && itemValueTypes.Any(w => (ItemValueType)w == f.ItemValue.Type)));
+        query = query.Where(e => e.Type == returnType);
+        // this does not seem to be nesseary but it does not make any sense why this isn't working.
+        // && e.ItemValues!.Any(f => e.CleanName == f.ItemValue.CleanValue && itemValueTypes.Any(w => (ItemValueType)w == f.ItemValue.Type)));
 
         if (filter.OrderBy.Count != 0
             || !string.IsNullOrEmpty(filter.SearchTerm))

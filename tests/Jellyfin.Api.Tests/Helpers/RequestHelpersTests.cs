@@ -5,6 +5,7 @@ using System.Security.Claims;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller.Net;
 using Xunit;
 

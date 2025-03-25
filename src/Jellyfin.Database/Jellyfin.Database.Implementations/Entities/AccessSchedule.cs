@@ -1,9 +1,9 @@
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Xml.Serialization;
-using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Enums;
 
-namespace Jellyfin.Data.Entities
+namespace Jellyfin.Database.Implementations.Entities
 {
     /// <summary>
     /// An entity representing a user's access schedule.

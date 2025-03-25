@@ -2,9 +2,9 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Jellyfin.Data.Interfaces;
+using Jellyfin.Database.Implementations.Interfaces;
 
-namespace Jellyfin.Data.Entities.Libraries
+namespace Jellyfin.Database.Implementations.Entities.Libraries
 {
     /// <summary>
     /// An entity representing a stream in a media file.

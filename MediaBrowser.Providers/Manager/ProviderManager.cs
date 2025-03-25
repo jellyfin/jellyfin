@@ -899,35 +899,10 @@ namespace MediaBrowser.Providers.Manager
         /// <inheritdoc/>
         public IEnumerable<ExternalUrl> GetExternalUrls(BaseItem item)
         {
-#pragma warning disable CS0618 // Type or member is obsolete - Remove 10.11
-            var legacyExternalIdUrls = GetExternalIds(item)
-                .Select(i =>
-                {
-                    var urlFormatString = i.UrlFormatString;
-                    if (string.IsNullOrEmpty(urlFormatString)
-                        || !item.TryGetProviderId(i.Key, out var providerId))
-                    {
-                        return null;
-                    }
-
-                    return new ExternalUrl
-                    {
-                        Name = i.ProviderName,
-                        Url = string.Format(
-                            CultureInfo.InvariantCulture,
-                            urlFormatString,
-                            providerId)
-                    };
-                })
-                .OfType<ExternalUrl>();
-#pragma warning restore CS0618 // Type or member is obsolete
-
-            var externalUrls = _externalUrlProviders
+            return _externalUrlProviders
                 .SelectMany(p => p
                     .GetExternalUrls(item)
                     .Select(externalUrl => new ExternalUrl { Name = p.Name, Url = externalUrl }));
-
-            return legacyExternalIdUrls.Concat(externalUrls).OrderBy(u => u.Name);
         }
 
         /// <inheritdoc/>
@@ -937,10 +912,7 @@ namespace MediaBrowser.Providers.Manager
                 .Select(i => new ExternalIdInfo(
                     name: i.ProviderName,
                     key: i.Key,
-                    type: i.Type,
-#pragma warning disable CS0618 // Type or member is obsolete - Remove 10.11
-                    urlFormatString: i.UrlFormatString));
-#pragma warning restore CS0618 // Type or member is obsolete
+                    type: i.Type));
         }
 
         /// <inheritdoc/>

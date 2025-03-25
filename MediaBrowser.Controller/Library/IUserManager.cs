@@ -3,8 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
 using Jellyfin.Data.Events;
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Users;

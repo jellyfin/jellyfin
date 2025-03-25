@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -86,7 +88,7 @@ public class TvShowsController : BaseJellyfinApiController
         [FromQuery] bool? enableUserData,
         [FromQuery] DateTime? nextUpDateCutoff,
         [FromQuery] bool enableTotalRecordCount = true,
-        [FromQuery] bool disableFirstEpisode = false,
+        [FromQuery][ParameterObsolete] bool disableFirstEpisode = false,
         [FromQuery] bool enableResumable = true,
         [FromQuery] bool enableRewatching = false)
     {
@@ -109,7 +111,6 @@ public class TvShowsController : BaseJellyfinApiController
                 StartIndex = startIndex,
                 User = user,
                 EnableTotalRecordCount = enableTotalRecordCount,
-                DisableFirstEpisode = disableFirstEpisode,
                 NextUpDateCutoff = nextUpDateCutoff ?? DateTime.MinValue,
                 EnableResumable = enableResumable,
                 EnableRewatching = enableRewatching

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using Jellyfin.Data.Entities.Libraries;
+using Jellyfin.Database.Implementations.Entities.Libraries;
 
-namespace Jellyfin.Data.Interfaces
+namespace Jellyfin.Database.Implementations.Interfaces
 {
     /// <summary>
     /// An interface abstracting an entity that has artwork.

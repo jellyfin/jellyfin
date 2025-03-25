@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using Jellyfin.Data.Queries;
+using Jellyfin.Database.Implementations;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;

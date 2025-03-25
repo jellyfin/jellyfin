@@ -1,68 +1,67 @@
-namespace Jellyfin.Data.Enums
+namespace Jellyfin.Database.Implementations.Enums;
+
+/// <summary>
+/// An enum representing a person's role in a specific media item.
+/// </summary>
+public enum PersonRoleType
 {
     /// <summary>
-    /// An enum representing a person's role in a specific media item.
+    /// Another role, not covered by the other types.
     /// </summary>
-    public enum PersonRoleType
-    {
-        /// <summary>
-        /// Another role, not covered by the other types.
-        /// </summary>
-        Other = 0,
+    Other = 0,
 
-        /// <summary>
-        /// The director of the media.
-        /// </summary>
-        Director = 1,
+    /// <summary>
+    /// The director of the media.
+    /// </summary>
+    Director = 1,
 
-        /// <summary>
-        /// An artist.
-        /// </summary>
-        Artist = 2,
+    /// <summary>
+    /// An artist.
+    /// </summary>
+    Artist = 2,
 
-        /// <summary>
-        /// The original artist.
-        /// </summary>
-        OriginalArtist = 3,
+    /// <summary>
+    /// The original artist.
+    /// </summary>
+    OriginalArtist = 3,
 
-        /// <summary>
-        /// An actor.
-        /// </summary>
-        Actor = 4,
+    /// <summary>
+    /// An actor.
+    /// </summary>
+    Actor = 4,
 
-        /// <summary>
-        /// A voice actor.
-        /// </summary>
-        VoiceActor = 5,
+    /// <summary>
+    /// A voice actor.
+    /// </summary>
+    VoiceActor = 5,
 
-        /// <summary>
-        /// A producer.
-        /// </summary>
-        Producer = 6,
+    /// <summary>
+    /// A producer.
+    /// </summary>
+    Producer = 6,
 
-        /// <summary>
-        /// A remixer.
-        /// </summary>
-        Remixer = 7,
+    /// <summary>
+    /// A remixer.
+    /// </summary>
+    Remixer = 7,
 
-        /// <summary>
-        /// A conductor.
-        /// </summary>
-        Conductor = 8,
+    /// <summary>
+    /// A conductor.
+    /// </summary>
+    Conductor = 8,
 
-        /// <summary>
-        /// A composer.
-        /// </summary>
-        Composer = 9,
+    /// <summary>
+    /// A composer.
+    /// </summary>
+    Composer = 9,
 
-        /// <summary>
-        /// An author.
-        /// </summary>
-        Author = 10,
+    /// <summary>
+    /// An author.
+    /// </summary>
+    Author = 10,
 
-        /// <summary>
-        /// An editor.
-        /// </summary>
-        Editor = 11
-    }
+    /// <summary>
+    /// An editor.
+    /// </summary>
+    Editor = 11
 }

@@ -11,9 +11,9 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using Emby.Server.Implementations.Data;
-using Jellyfin.Data.Entities;
+using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
-using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Item;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
@@ -21,7 +21,8 @@ using MediaBrowser.Model.Entities;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Chapter = Jellyfin.Data.Entities.Chapter;
+using BaseItemEntity = Jellyfin.Database.Implementations.Entities.BaseItemEntity;
+using Chapter = Jellyfin.Database.Implementations.Entities.Chapter;
 
 namespace Jellyfin.Server.Migrations.Routines;
 
@@ -94,7 +95,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
          Audio, ExternalServiceId, IsInMixedFolder, DateLastSaved, LockedFields, Studios, Tags, TrailerTypes, OriginalTitle, PrimaryVersionId,
          DateLastMediaAdded, Album, LUFS, NormalizationGain, CriticRating, IsVirtualItem, SeriesName, UserDataKey, SeasonName, SeasonId, SeriesId,
          PresentationUniqueKey, InheritedParentalRatingValue, ExternalSeriesId, Tagline, ProviderIds, Images, ProductionLocations, ExtraIds, TotalBitrate,
-         ExtraType, Artists, AlbumArtists, ExternalId, SeriesPresentationUniqueKey, ShowId, OwnerId, MediaType FROM TypedBaseItems
+         ExtraType, Artists, AlbumArtists, ExternalId, SeriesPresentationUniqueKey, ShowId, OwnerId, MediaType, SortName, CleanName FROM TypedBaseItems
          """;
         dbContext.BaseItems.ExecuteDelete();
 
@@ -125,7 +126,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         dbContext.ItemValues.ExecuteDelete();
 
         // EFCores local lookup sucks. We cannot use context.ItemValues.Local here because its just super slow.
-        var localItems = new Dictionary<(int Type, string CleanValue), (ItemValue ItemValue, List<Guid> ItemIds)>();
+        var localItems = new Dictionary<(int Type, string CleanValue), (Database.Implementations.Entities.ItemValue ItemValue, List<Guid> ItemIds)>();
 
         foreach (SqliteDataReader dto in connection.Query(itemValueQuery))
         {
@@ -168,7 +169,6 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         dbContext.UserData.ExecuteDelete();
 
         var users = dbContext.Users.AsNoTracking().ToImmutableArray();
-        var oldUserdata = new Dictionary<string, UserData>();
 
         foreach (var entity in queryResult)
         {
@@ -189,6 +189,8 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             dbContext.UserData.Add(userData);
         }
 
+        users.Clear();
+        legacyBaseItemWithUserKeys.Clear();
         _logger.LogInformation("Try saving {0} UserData entries.", dbContext.UserData.Local.Count);
         dbContext.SaveChanges();
 
@@ -225,11 +227,12 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         dbContext.PeopleBaseItemMap.ExecuteDelete();
 
         var peopleCache = new Dictionary<string, (People Person, List<PeopleBaseItemMap> Items)>();
+        var baseItemIds = dbContext.BaseItems.Select(b => b.Id).ToHashSet();
 
         foreach (SqliteDataReader reader in connection.Query(personsQuery))
         {
             var itemId = reader.GetGuid(0);
-            if (!dbContext.BaseItems.Any(f => f.Id == itemId))
+            if (!baseItemIds.Contains(itemId))
             {
                 _logger.LogError("Dont save person {0} because its not in use by any BaseItem", reader.GetString(1));
                 continue;
@@ -261,11 +264,15 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             });
         }
 
+        baseItemIds.Clear();
+
         foreach (var item in peopleCache)
         {
             dbContext.Peoples.Add(item.Value.Person);
             dbContext.PeopleBaseItemMap.AddRange(item.Value.Items.DistinctBy(e => (e.ItemId, e.PeopleId)));
         }
+
+        peopleCache.Clear();
 
         _logger.LogInformation("Try saving {0} People entries.", dbContext.MediaStreamInfos.Local.Count);
         dbContext.SaveChanges();
@@ -1027,6 +1034,16 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         if (reader.TryGetString(index++, out var mediaType))
         {
             entity.MediaType = mediaType;
+        }
+
+        if (reader.TryGetString(index++, out var sortName))
+        {
+            entity.SortName = sortName;
+        }
+
+        if (reader.TryGetString(index++, out var cleanName))
+        {
+            entity.CleanName = cleanName;
         }
 
         var baseItem = BaseItemRepository.DeserialiseBaseItem(entity, _logger, null, false);

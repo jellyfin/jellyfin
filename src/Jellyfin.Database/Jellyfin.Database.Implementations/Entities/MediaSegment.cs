@@ -1,8 +1,8 @@
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
-using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Enums;
 
-namespace Jellyfin.Data.Entities;
+namespace Jellyfin.Database.Implementations.Entities;
 
 /// <summary>
 /// An entity representing the metadata for a group of trickplay tiles.

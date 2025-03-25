@@ -1,8 +1,8 @@
-using Jellyfin.Data.Entities;
+using Jellyfin.Database.Implementations.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Jellyfin.Server.Implementations.ModelConfiguration
+namespace Jellyfin.Database.Implementations.ModelConfiguration
 {
     /// <summary>
     /// FluentAPI configuration for the TrickplayInfo entity.

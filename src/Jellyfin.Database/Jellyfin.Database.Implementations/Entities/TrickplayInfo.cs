@@ -1,7 +1,7 @@
 using System;
 using System.Text.Json.Serialization;
 
-namespace Jellyfin.Data.Entities;
+namespace Jellyfin.Database.Implementations.Entities;
 
 /// <summary>
 /// An entity representing the metadata for a group of trickplay tiles.

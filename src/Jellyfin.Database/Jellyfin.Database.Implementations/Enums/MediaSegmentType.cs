@@ -1,6 +1,6 @@
-using Jellyfin.Data.Entities;
+using Jellyfin.Database.Implementations.Entities;
 
-namespace Jellyfin.Data.Enums;
+namespace Jellyfin.Database.Implementations.Enums;
 
 /// <summary>
 /// Defines the types of content an individual <see cref="MediaSegment"/> represents.

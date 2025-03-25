@@ -1,14 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Jellyfin.Database.Providers.SqLite;
-using Jellyfin.Server.Implementations.DatabaseConfiguration;
+using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.DbConfiguration;
+using Jellyfin.Database.Providers.Sqlite;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using JellyfinDbProviderFactory = System.Func<System.IServiceProvider, Jellyfin.Server.Implementations.IJellyfinDatabaseProvider>;
+using JellyfinDbProviderFactory = System.Func<System.IServiceProvider, Jellyfin.Database.Implementations.IJellyfinDatabaseProvider>;
 
 namespace Jellyfin.Server.Implementations.Extensions;
 
@@ -24,7 +25,7 @@ public static class ServiceCollectionExtensions
 
     private static IDictionary<string, JellyfinDbProviderFactory> GetSupportedDbProviders()
     {
-        var items = new Dictionary<string, JellyfinDbProviderFactory>();
+        var items = new Dictionary<string, JellyfinDbProviderFactory>(StringComparer.InvariantCultureIgnoreCase);
         foreach (var providerType in DatabaseProviderTypes())
         {
             var keyAttribute = providerType.GetCustomAttribute<JellyfinDatabaseProviderKeyAttribute>();
@@ -34,7 +35,7 @@ public static class ServiceCollectionExtensions
             }
 
             var provider = providerType;
-            items[keyAttribute.DatabaseProviderKey.ToUpperInvariant()] = (services) => (IJellyfinDatabaseProvider)ActivatorUtilities.CreateInstance(services, providerType);
+            items[keyAttribute.DatabaseProviderKey] = (services) => (IJellyfinDatabaseProvider)ActivatorUtilities.CreateInstance(services, providerType);
         }
 
         return items;
