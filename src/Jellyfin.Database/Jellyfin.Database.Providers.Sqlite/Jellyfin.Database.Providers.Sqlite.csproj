@@ -27,4 +27,9 @@
     <Folder Include="Properties/" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\MediaBrowser.Common\MediaBrowser.Common.csproj" />
+    <ProjectReference Include="..\Jellyfin.Database.Implementations\Jellyfin.Database.Implementations.csproj" />
+  </ItemGroup>
+
 </Project>
