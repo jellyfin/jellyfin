@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.Serialization;
+using Jellyfin.Database.Implementations;
 using Jellyfin.Server.Implementations;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Configuration;

@@ -16,7 +16,7 @@ namespace Jellyfin.Database.Providers.Sqlite;
 [JellyfinDatabaseProviderKey("Jellyfin-SQLite")]
 public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
 {
-    private const string BACKUP_FOLDER_NAME = "SQLiteBackups";
+    private const string BACKUPFOLDERNAME = "SQLiteBackups";
     private readonly IApplicationPaths _applicationPaths;
     private readonly ILogger<SqliteDatabaseProvider> _logger;
 
@@ -91,7 +91,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     {
         var key = Guid.NewGuid().ToString("D");
         var path = Path.Combine(_applicationPaths.DataPath, "jellyfin.db");
-        var backupFile = Path.Combine(_applicationPaths.DataPath, BACKUP_FOLDER_NAME);
+        var backupFile = Path.Combine(_applicationPaths.DataPath, BACKUPFOLDERNAME);
         if (!Directory.Exists(backupFile))
         {
             Directory.CreateDirectory(backupFile);
@@ -106,7 +106,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     public Task RestoreBackupFast(string key, CancellationToken cancellationToken)
     {
         var path = Path.Combine(_applicationPaths.DataPath, "jellyfin.db");
-        var backupFile = Path.Combine(_applicationPaths.DataPath, BACKUP_FOLDER_NAME, $"{key}_jellyfin.db");
+        var backupFile = Path.Combine(_applicationPaths.DataPath, BACKUPFOLDERNAME, $"{key}_jellyfin.db");
 
         if (!File.Exists(backupFile))
         {
