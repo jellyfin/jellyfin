@@ -28,7 +28,7 @@ public class MoveExtractedFiles : IMigrationRoutine
     private readonly IPathManager _pathManager;
     private readonly IFileSystem _fileSystem;
     private readonly ILibraryManager _libraryManager;
-    private readonly ILogger<MoveTrickplayFiles> _logger;
+    private readonly ILogger<MoveExtractedFiles> _logger;
     private readonly IApplicationPaths _appPaths;
 
     /// <summary>
@@ -37,13 +37,13 @@ public class MoveExtractedFiles : IMigrationRoutine
     /// <param name="pathManager">Instance of the <see cref="IPathManager"/> interface.</param>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
-    /// <param name="appPaths">Instace of the <see cref="IApplicationPaths"/> internface.</param>
+    /// <param name="appPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
     /// <param name="logger">The logger.</param>
     public MoveExtractedFiles(
         IPathManager pathManager,
         IFileSystem fileSystem,
         ILibraryManager libraryManager,
-        ILogger<MoveTrickplayFiles> logger,
+        ILogger<MoveExtractedFiles> logger,
         IApplicationPaths appPaths)
     {
         _pathManager = pathManager;
@@ -58,7 +58,7 @@ public class MoveExtractedFiles : IMigrationRoutine
     private string AttachmentCachePath => Path.Combine(_appPaths.DataPath, "attachments");
 
     /// <inheritdoc />
-    public Guid Id => new("9063b0ef-cff1-4edc-9a13-74093681a89b");
+    public Guid Id => new("9063b0Ef-CFF1-4EDC-9A13-74093681A89B");
 
     /// <inheritdoc />
     public string Name => "MoveExtractedFiles";
@@ -78,40 +78,45 @@ public class MoveExtractedFiles : IMigrationRoutine
             MediaTypes = [MediaType.Video],
             SourceTypes = [SourceType.Library],
             IsVirtualItem = false,
-            IsFolder = false
+            IsFolder = false,
+            EnableTotalRecordCount = true
         };
 
         do
         {
-            var items = _libraryManager.GetItemList(itemsQuery);
+            var result = _libraryManager.GetItemsResult(itemsQuery);
+            _logger.LogInformation("Moving extracted files for {Count} items", result.TotalRecordCount);
+
+            var items = result.Items;
             previousCount = items.Count;
             offset += Limit;
             foreach (var item in items)
             {
                 if (++itemCount % 1_000 == 0)
                 {
-                    _logger.LogInformation("Moved {Count} items in {Time}", itemCount, sw.Elapsed);
+                    _logger.LogInformation("Moved extracted data for {Count} items in {Time}", itemCount, sw.Elapsed);
                 }
 
-                MoveSubtitleandAttachmentFiles(item);
+                MoveSubtitleAndAttachmentFiles(item);
             }
         } while (previousCount == Limit);
 
-        _logger.LogInformation("Moved {Count} items in {Time}", itemCount, sw.Elapsed);
-        _logger.LogInformation("Cleaning up left over subtitles and attachments!");
+        _logger.LogInformation("Moved extracted data for {Count} items in {Time}", itemCount, sw.Elapsed);
 
-        // Get all subdirectories
-        var subdirectories = Directory.GetDirectories(SubtitleCachePath, "*", SearchOption.AllDirectories).ToList();
-        subdirectories.AddRange(Directory.GetDirectories(AttachmentCachePath, "*", SearchOption.AllDirectories));
+        // Get all subdirectories with 1 character names (those are the legacy directories)
+        var subdirectories = Directory.GetDirectories(SubtitleCachePath, "*", SearchOption.AllDirectories).Where(s => s.Length == SubtitleCachePath.Length + 1).ToList();
+        subdirectories.AddRange(Directory.GetDirectories(AttachmentCachePath, "*", SearchOption.AllDirectories).Where(s => s.Length == AttachmentCachePath.Length + 1));
 
-        // Remove all subdirectories with 1 character names (those are the legacy directories)
-        foreach (var subdir in subdirectories.Where(s => s.Length == 1))
+        // Remove all legacy subdirectories
+        foreach (var subdir in subdirectories)
         {
             Directory.Delete(subdir, true);
         }
+
+        _logger.LogInformation("Cleaned up left over subtitles and attachments");
     }
 
-    private void MoveSubtitleandAttachmentFiles(BaseItem item)
+    private void MoveSubtitleAndAttachmentFiles(BaseItem item)
     {
         var mediaSources = item.GetMediaSources(false);
         foreach (var mediaSource in mediaSources)
@@ -121,6 +126,11 @@ public class MoveExtractedFiles : IMigrationRoutine
             {
                 var extension = GetSubtitleExtension(mediaStream.Codec);
                 var oldSubtitleCachePath = GetOldSubtitleCachePath(mediaSource.Path, mediaStream.Index, extension);
+                if (string.IsNullOrEmpty(oldSubtitleCachePath) || !_fileSystem.FileExists(oldSubtitleCachePath))
+                {
+                    continue;
+                }
+
                 var newSubtitleCachePath = _pathManager.GetSubtitlePath(mediaSource.Id, mediaStream.Index, extension);
                 if (_fileSystem.FileExists(newSubtitleCachePath))
                 {
@@ -141,6 +151,11 @@ public class MoveExtractedFiles : IMigrationRoutine
             {
                 var attachmentIndex = attachment.Index;
                 var oldAttachmentCachePath = GetOldAttachmentCachePath(mediaSource, mediaSource.Path, attachmentIndex);
+                if (string.IsNullOrEmpty(oldAttachmentCachePath) || !_fileSystem.FileExists(oldAttachmentCachePath))
+                {
+                    continue;
+                }
+
                 var newAttachmentCachePath = _pathManager.GetAttachmentPath(mediaSource.Id, attachmentIndex);
                 var newDirectory = Path.GetDirectoryName(newAttachmentCachePath);
                 if (_fileSystem.FileExists(newAttachmentCachePath))
@@ -159,13 +174,24 @@ public class MoveExtractedFiles : IMigrationRoutine
         }
     }
 
-    private string GetOldAttachmentCachePath(MediaSourceInfo mediaSource, string mediaPath, int attachmentStreamIndex)
+    private string? GetOldAttachmentCachePath(MediaSourceInfo mediaSource, string mediaPath, int attachmentStreamIndex)
     {
         string filename;
         if (mediaSource.Protocol == MediaProtocol.File)
         {
-            var date = File.GetLastWriteTimeUtc(mediaPath);
-            filename = (mediaPath + attachmentStreamIndex.ToString(CultureInfo.InvariantCulture) + "_" + date.Ticks.ToString(CultureInfo.InvariantCulture)).GetMD5().ToString("D", CultureInfo.InvariantCulture);
+            DateTime? date;
+            try
+            {
+                date = File.GetLastWriteTimeUtc(mediaPath);
+            }
+            catch (IOException e)
+            {
+                _logger.LogDebug("Skipping index {Index} for {Path}: {Exception}", attachmentStreamIndex, mediaPath, e.Message);
+
+                return null;
+            }
+
+            filename = (mediaPath + attachmentStreamIndex.ToString(CultureInfo.InvariantCulture) + "_" + date.Value.Ticks.ToString(CultureInfo.InvariantCulture)).GetMD5().ToString("D", CultureInfo.InvariantCulture);
         }
         else
         {
@@ -175,11 +201,22 @@ public class MoveExtractedFiles : IMigrationRoutine
         return Path.Join(AttachmentCachePath, filename[..1], filename);
     }
 
-    private string GetOldSubtitleCachePath(string path, int streamIndex, string outputSubtitleExtension)
+    private string? GetOldSubtitleCachePath(string path, int streamIndex, string outputSubtitleExtension)
     {
+        DateTime? date;
+        try
+        {
+            date = File.GetLastWriteTimeUtc(path);
+        }
+        catch (IOException e)
+        {
+            _logger.LogDebug("Skipping index {Index} for {Path}: {Exception}", streamIndex, path, e.Message);
+
+            return null;
+        }
+
         var ticksParam = string.Empty;
-        var date = File.GetLastWriteTimeUtc(path);
-        ReadOnlySpan<char> filename = new Guid(MD5.HashData(Encoding.Unicode.GetBytes(path + "_" + streamIndex.ToString(CultureInfo.InvariantCulture) + "_" + date.Ticks.ToString(CultureInfo.InvariantCulture) + ticksParam))) + outputSubtitleExtension;
+        ReadOnlySpan<char> filename = new Guid(MD5.HashData(Encoding.Unicode.GetBytes(path + "_" + streamIndex.ToString(CultureInfo.InvariantCulture) + "_" + date.Value.Ticks.ToString(CultureInfo.InvariantCulture) + ticksParam))) + outputSubtitleExtension;
 
         return Path.Join(SubtitleCachePath, filename[..1], filename);
     }
