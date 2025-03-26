@@ -1,0 +1,41 @@
+{
+    "countryCode": "mx",
+    "supportsSubScores": false,
+    "ratings": [
+        {
+            "ratingStrings": ["A", "AA"],
+            "ratingScore": {
+                "score": 0,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["B"],
+            "ratingScore": {
+                "score": 12,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["B-15"],
+            "ratingScore": {
+                "score": 15,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["C"],
+            "ratingScore": {
+                "score": 18,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["D"],
+            "ratingScore": {
+                "score": 1000,
+                "subScore": null
+            }
+        }
+    ]
+}

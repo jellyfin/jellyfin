@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Jellyfin.Api.Constants;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
@@ -45,7 +44,7 @@ public class LocalizationController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing the list of countries.</returns>
     [HttpGet("Countries")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<IEnumerable<CountryInfo>> GetCountries()
+    public ActionResult<IReadOnlyList<CountryInfo>> GetCountries()
     {
         return Ok(_localization.GetCountries());
     }
@@ -57,7 +56,7 @@ public class LocalizationController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing the list of parental ratings.</returns>
     [HttpGet("ParentalRatings")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<IEnumerable<ParentalRating>> GetParentalRatings()
+    public ActionResult<IReadOnlyList<ParentalRating>> GetParentalRatings()
     {
         return Ok(_localization.GetParentalRatings());
     }
