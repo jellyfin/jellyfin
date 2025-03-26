@@ -1,3 +1,4 @@
+using System;
 using System.Globalization;
 using System.IO;
 using MediaBrowser.Common.Configuration;
@@ -35,20 +36,22 @@ public class PathManager : IPathManager
     /// <inheritdoc />
     public string GetAttachmentPath(string mediaSourceId, int attachmentIndex)
     {
-        return Path.Join(AttachmentCachePath, mediaSourceId, attachmentIndex.ToString(CultureInfo.InvariantCulture));
+        var id = Guid.Parse(mediaSourceId);
+        return Path.Join(AttachmentCachePath, id.ToString("D", CultureInfo.InvariantCulture), attachmentIndex.ToString(CultureInfo.InvariantCulture));
     }
 
     /// <inheritdoc />
     public string GetSubtitlePath(string mediaSourceId, int streamIndex, string extension)
     {
-        return Path.Join(SubtitleCachePath, mediaSourceId, streamIndex.ToString(CultureInfo.InvariantCulture) + extension);
+        var id = Guid.Parse(mediaSourceId);
+        return Path.Join(SubtitleCachePath, id.ToString("D", CultureInfo.InvariantCulture), streamIndex.ToString(CultureInfo.InvariantCulture) + extension);
     }
 
     /// <inheritdoc />
     public string GetTrickplayDirectory(BaseItem item, bool saveWithMedia = false)
     {
         var basePath = _config.ApplicationPaths.TrickplayPath;
-        var idString = item.Id.ToString("N", CultureInfo.InvariantCulture);
+        var idString = item.Id.ToString("D", CultureInfo.InvariantCulture);
 
         return saveWithMedia
             ? Path.Combine(item.ContainingFolderPath, Path.ChangeExtension(item.Path, ".trickplay"))
