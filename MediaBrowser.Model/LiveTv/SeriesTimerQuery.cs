@@ -1,6 +1,6 @@
 #pragma warning disable CS1591
 
-using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Enums;
 
 namespace MediaBrowser.Model.LiveTv
 {

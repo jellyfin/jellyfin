@@ -9,10 +9,11 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Emby.Server.Implementations.Data;
-using Jellyfin.Data.Entities;
+using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
-using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Item;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
@@ -20,7 +21,8 @@ using MediaBrowser.Model.Entities;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Chapter = Jellyfin.Data.Entities.Chapter;
+using BaseItemEntity = Jellyfin.Database.Implementations.Entities.BaseItemEntity;
+using Chapter = Jellyfin.Database.Implementations.Entities.Chapter;
 
 namespace Jellyfin.Server.Migrations.Routines;
 
@@ -33,6 +35,7 @@ public class MigrateLibraryDb : IMigrationRoutine
 
     private readonly ILogger<MigrateLibraryDb> _logger;
     private readonly IServerApplicationPaths _paths;
+    private readonly IJellyfinDatabaseProvider _jellyfinDatabaseProvider;
     private readonly IDbContextFactory<JellyfinDbContext> _provider;
 
     /// <summary>
@@ -41,14 +44,17 @@ public class MigrateLibraryDb : IMigrationRoutine
     /// <param name="logger">The logger.</param>
     /// <param name="provider">The database provider.</param>
     /// <param name="paths">The server application paths.</param>
+    /// <param name="jellyfinDatabaseProvider">The database provider for special access.</param>
     public MigrateLibraryDb(
         ILogger<MigrateLibraryDb> logger,
         IDbContextFactory<JellyfinDbContext> provider,
-        IServerApplicationPaths paths)
+        IServerApplicationPaths paths,
+        IJellyfinDatabaseProvider jellyfinDatabaseProvider)
     {
         _logger = logger;
         _provider = provider;
         _paths = paths;
+        _jellyfinDatabaseProvider = jellyfinDatabaseProvider;
     }
 
     /// <inheritdoc/>
@@ -120,7 +126,7 @@ public class MigrateLibraryDb : IMigrationRoutine
         dbContext.ItemValues.ExecuteDelete();
 
         // EFCores local lookup sucks. We cannot use context.ItemValues.Local here because its just super slow.
-        var localItems = new Dictionary<(int Type, string CleanValue), (ItemValue ItemValue, List<Guid> ItemIds)>();
+        var localItems = new Dictionary<(int Type, string CleanValue), (Database.Implementations.Entities.ItemValue ItemValue, List<Guid> ItemIds)>();
 
         foreach (SqliteDataReader dto in connection.Query(itemValueQuery))
         {
@@ -323,17 +329,7 @@ public class MigrateLibraryDb : IMigrationRoutine
 
         _logger.LogInformation("Migrating Library db took {0}.", migrationTotalTime);
 
-        if (dbContext.Database.IsSqlite())
-        {
-            _logger.LogInformation("Vacuum and Optimise jellyfin.db now.");
-            dbContext.Database.ExecuteSqlRaw("PRAGMA optimize");
-            dbContext.Database.ExecuteSqlRaw("VACUUM");
-            _logger.LogInformation("jellyfin.db optimized successfully!");
-        }
-        else
-        {
-            _logger.LogInformation("This database doesn't support optimization");
-        }
+        _jellyfinDatabaseProvider.RunScheduledOptimisation(CancellationToken.None).ConfigureAwait(false).GetAwaiter().GetResult();
     }
 
     private UserData? GetUserData(ImmutableArray<User> users, SqliteDataReader dto)
