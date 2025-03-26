@@ -267,6 +267,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<string>("OfficialRating")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("OriginalLanguage")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("OriginalTitle")
                         .HasColumnType("TEXT");
 
@@ -887,6 +890,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<bool?>("IsInterlaced")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsOriginal")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("KeyFrames")
