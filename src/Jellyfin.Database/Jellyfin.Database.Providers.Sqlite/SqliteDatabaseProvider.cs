@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -89,7 +90,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     /// <inheritdoc />
     public Task<string> MigrationBackupFast(CancellationToken cancellationToken)
     {
-        var key = Guid.NewGuid().ToString("D");
+        var key = DateTime.UtcNow.ToString("yyyyMMddhhmmss", CultureInfo.InvariantCulture);
         var path = Path.Combine(_applicationPaths.DataPath, "jellyfin.db");
         var backupFile = Path.Combine(_applicationPaths.DataPath, BACKUPFOLDERNAME);
         if (!Directory.Exists(backupFile))
