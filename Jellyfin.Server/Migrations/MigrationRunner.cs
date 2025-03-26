@@ -141,7 +141,7 @@ namespace Jellyfin.Server.Migrations
                 }
                 catch (NotImplementedException)
                 {
-                    logger.LogWarning("Dont perform backup of database before migration because provider does not support it");
+                    logger.LogWarning("Could not perform backup of database before migration because provider does not support it");
                 }
             }
 
