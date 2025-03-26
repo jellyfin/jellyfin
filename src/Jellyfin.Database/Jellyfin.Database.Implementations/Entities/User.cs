@@ -249,9 +249,14 @@ namespace Jellyfin.Database.Implementations.Entities
         public bool EnableUserPreferenceAccess { get; set; }
 
         /// <summary>
-        /// Gets or sets the maximum parental age rating.
+        /// Gets or sets the maximum parental rating score.
         /// </summary>
-        public int? MaxParentalAgeRating { get; set; }
+        public int? MaxParentalRatingScore { get; set; }
+
+        /// <summary>
+        /// Gets or sets the maximum parental rating sub score.
+        /// </summary>
+        public int? MaxParentalRatingSubScore { get; set; }
 
         /// <summary>
         /// Gets or sets the remote client bitrate limit.
