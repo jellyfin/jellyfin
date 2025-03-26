@@ -9,5 +9,4 @@ namespace Jellyfin.Server.Migrations;
 /// </summary>
 internal interface IDatabaseMigrationRoutine : IMigrationRoutine
 {
-
 }
