@@ -132,12 +132,13 @@ namespace Jellyfin.Server.Migrations
             var migrationsToBeApplied = migrations.Where(e => !appliedMigrationIds.Contains(e.Id)).ToArray();
 
             string? migrationKey = null;
-            if (migrationsToBeApplied.Any(f => f is IDatabaseMigrationRoutine) && jellyfinDatabaseProvider is not null)
+            if (jellyfinDatabaseProvider is not null && migrationsToBeApplied.Any(f => f is IDatabaseMigrationRoutine))
             {
-                logger.LogInformation("Database backup is performed");
+                logger.LogInformation("Performing database backup");
                 try
                 {
                     migrationKey = await jellyfinDatabaseProvider.MigrationBackupFast(CancellationToken.None).ConfigureAwait(false);
+                    logger.LogInformation("Database backup with key '{BackupKey}' has been successfully created.", migrationKey);
                 }
                 catch (NotImplementedException)
                 {
