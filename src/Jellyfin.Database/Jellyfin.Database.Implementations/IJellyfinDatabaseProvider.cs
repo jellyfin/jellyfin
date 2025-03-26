@@ -56,7 +56,7 @@ public interface IJellyfinDatabaseProvider
     Task<string> MigrationBackupFast(CancellationToken cancellationToken);
 
     /// <summary>
-    /// Runs a full Database backup that can later be restored to.
+    /// Restores a backup that has been previously created by <see cref="MigrationBackupFast(CancellationToken)"/>.
     /// </summary>
     /// <param name="key">The key to the backup from which the current database should be restored from.</param>
     /// <param name="cancellationToken">A cancelation token.</param>
