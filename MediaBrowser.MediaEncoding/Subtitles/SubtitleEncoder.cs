@@ -13,10 +13,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using AsyncKeyedLock;
 using MediaBrowser.Common;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Dto;
@@ -31,12 +31,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
     public sealed class SubtitleEncoder : ISubtitleEncoder, IDisposable
     {
         private readonly ILogger<SubtitleEncoder> _logger;
-        private readonly IApplicationPaths _appPaths;
         private readonly IFileSystem _fileSystem;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly ISubtitleParser _subtitleParser;
+        private readonly IPathManager _pathManager;
 
         /// <summary>
         /// The _semaphoreLocks.
@@ -49,23 +49,21 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
         public SubtitleEncoder(
             ILogger<SubtitleEncoder> logger,
-            IApplicationPaths appPaths,
             IFileSystem fileSystem,
             IMediaEncoder mediaEncoder,
             IHttpClientFactory httpClientFactory,
             IMediaSourceManager mediaSourceManager,
-            ISubtitleParser subtitleParser)
+            ISubtitleParser subtitleParser,
+            IPathManager pathManager)
         {
             _logger = logger;
-            _appPaths = appPaths;
             _fileSystem = fileSystem;
             _mediaEncoder = mediaEncoder;
             _httpClientFactory = httpClientFactory;
             _mediaSourceManager = mediaSourceManager;
             _subtitleParser = subtitleParser;
+            _pathManager = pathManager;
         }
-
-        private string SubtitleCachePath => Path.Combine(_appPaths.DataPath, "subtitles");
 
         private MemoryStream ConvertSubtitles(
             Stream stream,
@@ -830,26 +828,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
         private string GetSubtitleCachePath(MediaSourceInfo mediaSource, int subtitleStreamIndex, string outputSubtitleExtension)
         {
-            if (mediaSource.Protocol == MediaProtocol.File)
-            {
-                var ticksParam = string.Empty;
-
-                var date = _fileSystem.GetLastWriteTimeUtc(mediaSource.Path);
-
-                ReadOnlySpan<char> filename = (mediaSource.Path + "_" + subtitleStreamIndex.ToString(CultureInfo.InvariantCulture) + "_" + date.Ticks.ToString(CultureInfo.InvariantCulture) + ticksParam).GetMD5() + outputSubtitleExtension;
-
-                var prefix = filename.Slice(0, 1);
-
-                return Path.Join(SubtitleCachePath, prefix, filename);
-            }
-            else
-            {
-                ReadOnlySpan<char> filename = (mediaSource.Path + "_" + subtitleStreamIndex.ToString(CultureInfo.InvariantCulture)).GetMD5() + outputSubtitleExtension;
-
-                var prefix = filename.Slice(0, 1);
-
-                return Path.Join(SubtitleCachePath, prefix, filename);
-            }
+            return _pathManager.GetSubtitlePath(mediaSource.Id, subtitleStreamIndex, outputSubtitleExtension);
         }
 
         /// <inheritdoc />

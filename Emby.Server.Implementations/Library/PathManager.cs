@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.IO;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
@@ -12,15 +13,35 @@ namespace Emby.Server.Implementations.Library;
 public class PathManager : IPathManager
 {
     private readonly IServerConfigurationManager _config;
+    private readonly IApplicationPaths _appPaths;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PathManager"/> class.
     /// </summary>
     /// <param name="config">The server configuration manager.</param>
+    /// <param name="appPaths">The application paths.</param>
     public PathManager(
-        IServerConfigurationManager config)
+        IServerConfigurationManager config,
+        IApplicationPaths appPaths)
     {
         _config = config;
+        _appPaths = appPaths;
+    }
+
+    private string SubtitleCachePath => Path.Combine(_appPaths.DataPath, "subtitles");
+
+    private string AttachmentCachePath => Path.Combine(_appPaths.DataPath, "attachments");
+
+    /// <inheritdoc />
+    public string GetAttachmentPath(string mediaSourceId, int attachmentIndex)
+    {
+        return Path.Join(AttachmentCachePath, mediaSourceId, attachmentIndex.ToString(CultureInfo.InvariantCulture));
+    }
+
+    /// <inheritdoc />
+    public string GetSubtitlePath(string mediaSourceId, int streamIndex, string extension)
+    {
+        return Path.Join(SubtitleCachePath, mediaSourceId, streamIndex.ToString(CultureInfo.InvariantCulture) + extension);
     }
 
     /// <inheritdoc />
