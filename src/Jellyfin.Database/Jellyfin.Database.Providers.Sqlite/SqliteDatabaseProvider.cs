@@ -17,7 +17,7 @@ namespace Jellyfin.Database.Providers.Sqlite;
 [JellyfinDatabaseProviderKey("Jellyfin-SQLite")]
 public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
 {
-    private const string BACKUPFOLDERNAME = "SQLiteBackups";
+    private const string BackupFolderName = "SQLiteBackups";
     private readonly IApplicationPaths _applicationPaths;
     private readonly ILogger<SqliteDatabaseProvider> _logger;
 
