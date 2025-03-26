@@ -248,9 +248,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             {
             }
 
-            if (reader.TryGetInt32(4, out var sortOrder))
-            {
-            }
+            int? sortOrder = reader.IsDBNull(4) ? null : reader.GetInt32(4);
 
             personCache.Items.Add(new PeopleBaseItemMap()
             {

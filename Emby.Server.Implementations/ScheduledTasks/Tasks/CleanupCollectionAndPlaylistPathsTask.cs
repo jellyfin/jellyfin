@@ -84,7 +84,7 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
                 var collection = collections[index];
                 _logger.LogDebug("Checking boxset {CollectionName}", collection.Name);
 
-                CleanupLinkedChildren(collection, cancellationToken);
+                await CleanupLinkedChildrenAsync(collection, cancellationToken).ConfigureAwait(false);
                 progress.Report(50D / collections.Length * (index + 1));
             }
         }
@@ -104,12 +104,12 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
             var playlist = playlists[index];
             _logger.LogDebug("Checking playlist {PlaylistName}", playlist.Name);
 
-            CleanupLinkedChildren(playlist, cancellationToken);
+            await CleanupLinkedChildrenAsync(playlist, cancellationToken).ConfigureAwait(false);
             progress.Report(50D / playlists.Length * (index + 1));
         }
     }
 
-    private void CleanupLinkedChildren<T>(T folder, CancellationToken cancellationToken)
+    private async Task CleanupLinkedChildrenAsync<T>(T folder, CancellationToken cancellationToken)
         where T : Folder
     {
         List<LinkedChild>? itemsToRemove = null;
@@ -127,8 +127,8 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
         {
             _logger.LogDebug("Updating {FolderName}", folder.Name);
             folder.LinkedChildren = folder.LinkedChildren.Except(itemsToRemove).ToArray();
-            _providerManager.SaveMetadataAsync(folder, ItemUpdateType.MetadataEdit);
-            folder.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken);
+            await _providerManager.SaveMetadataAsync(folder, ItemUpdateType.MetadataEdit).ConfigureAwait(false);
+            await folder.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
         }
     }
 

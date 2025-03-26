@@ -248,6 +248,7 @@ namespace Jellyfin.Server.Extensions
                 c.AddSwaggerTypeMappings();
 
                 c.SchemaFilter<IgnoreEnumSchemaFilter>();
+                c.OperationFilter<RetryOnTemporarlyUnavailableFilter>();
                 c.OperationFilter<SecurityRequirementsOperationFilter>();
                 c.OperationFilter<FileResponseFilter>();
                 c.OperationFilter<FileRequestFilter>();
