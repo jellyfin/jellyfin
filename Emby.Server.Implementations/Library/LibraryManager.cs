@@ -10,7 +10,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using BitFaster.Caching;
 using BitFaster.Caching.Lru;
 using Emby.Naming.Common;
 using Emby.Naming.TV;
@@ -65,7 +64,6 @@ namespace Emby.Server.Implementations.Library
         private const string ShortcutFileExtension = ".mblink";
 
         private readonly ILogger<LibraryManager> _logger;
-        private readonly ICache<Guid, BaseItem> _cache;
         private readonly ITaskManager _taskManager;
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataRepository;
@@ -82,6 +80,7 @@ namespace Emby.Server.Implementations.Library
         private readonly IPeopleRepository _peopleRepository;
         private readonly ExtraResolver _extraResolver;
         private readonly IPathManager _pathManager;
+        private readonly FastConcurrentLru<Guid, BaseItem> _cache;
 
         /// <summary>
         /// The _root folder sync lock.
@@ -151,10 +150,8 @@ namespace Emby.Server.Implementations.Library
             _mediaEncoder = mediaEncoder;
             _itemRepository = itemRepository;
             _imageProcessor = imageProcessor;
-            _cache = new ConcurrentLruBuilder<Guid, BaseItem>()
-                .WithCapacity(_configurationManager.Configuration.LibraryCacheSize)
-                .WithExpireAfterAccess(TimeSpan.FromMinutes(10))
-                .Build();
+
+            _cache = new FastConcurrentLru<Guid, BaseItem>(_configurationManager.Configuration.CacheSize);
 
             _namingOptions = namingOptions;
             _peopleRepository = peopleRepository;

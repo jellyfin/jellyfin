@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using BitFaster.Caching;
 using BitFaster.Caching.Lru;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.IO;
@@ -12,9 +11,9 @@ namespace MediaBrowser.Controller.Providers
 {
     public class DirectoryService : IDirectoryService
     {
-        private static ICache<string, FileSystemMetadata[]> _cache = null!;
-        private static ICache<string, FileSystemMetadata> _fileCache = null!;
-        private static ICache<string, List<string>> _filePathCache = null!;
+        private static FastConcurrentLru<string, FileSystemMetadata[]> _cache = null!;
+        private static FastConcurrentLru<string, FileSystemMetadata> _fileCache = null!;
+        private static FastConcurrentLru<string, List<string>> _filePathCache = null!;
 
         private readonly IFileSystem _fileSystem;
 
@@ -27,23 +26,12 @@ namespace MediaBrowser.Controller.Providers
         {
             ArgumentNullException.ThrowIfNull(configurationManager);
 
-            _cache = new ConcurrentLruBuilder<string, FileSystemMetadata[]>()
-                .WithCapacity(configurationManager.Configuration.LibraryCacheSize)
-                .WithExpireAfterAccess(TimeSpan.FromMinutes(10))
-                .WithKeyComparer(StringComparer.Ordinal)
-                .Build();
-
-            _fileCache = new ConcurrentLruBuilder<string, FileSystemMetadata>()
-                .WithCapacity(configurationManager.Configuration.LibraryCacheSize)
-                .WithExpireAfterAccess(TimeSpan.FromMinutes(10))
-                .WithKeyComparer(StringComparer.Ordinal)
-                .Build();
-
-            _filePathCache = new ConcurrentLruBuilder<string, List<string>>()
-                .WithCapacity(configurationManager.Configuration.LibraryCacheSize)
-                .WithExpireAfterAccess(TimeSpan.FromMinutes(10))
-                .WithKeyComparer(StringComparer.Ordinal)
-                .Build();
+            // Internal default in caching library but we need the ctor with string comparer.
+            var concurrency = Environment.ProcessorCount;
+            var cacheSize = configurationManager.Configuration.CacheSize;
+            _cache = new FastConcurrentLru<string, FileSystemMetadata[]>(concurrency, cacheSize, StringComparer.OrdinalIgnoreCase);
+            _fileCache = new FastConcurrentLru<string, FileSystemMetadata>(concurrency, cacheSize, StringComparer.OrdinalIgnoreCase);
+            _filePathCache = new FastConcurrentLru<string, List<string>>(concurrency, cacheSize, StringComparer.OrdinalIgnoreCase);
         }
 
         public FileSystemMetadata[] GetFileSystemEntries(string path)

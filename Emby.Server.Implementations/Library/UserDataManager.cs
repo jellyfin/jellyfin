@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
-using BitFaster.Caching;
 using BitFaster.Caching.Lru;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
@@ -26,10 +25,9 @@ namespace Emby.Server.Implementations.Library
     /// </summary>
     public class UserDataManager : IUserDataManager
     {
-        private readonly ICache<string, UserItemData> _cache;
-
         private readonly IServerConfigurationManager _config;
         private readonly IDbContextFactory<JellyfinDbContext> _repository;
+        private readonly FastConcurrentLru<string, UserItemData> _cache;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserDataManager"/> class.
@@ -42,11 +40,7 @@ namespace Emby.Server.Implementations.Library
         {
             _config = config;
             _repository = repository;
-            _cache = new ConcurrentLruBuilder<string, UserItemData>()
-                .WithCapacity(_config.Configuration.LibraryCacheSize)
-                .WithExpireAfterAccess(TimeSpan.FromMinutes(10))
-                .WithKeyComparer(StringComparer.OrdinalIgnoreCase)
-                .Build();
+            _cache = new FastConcurrentLru<string, UserItemData>(Environment.ProcessorCount, _config.Configuration.CacheSize, StringComparer.OrdinalIgnoreCase);
         }
 
         /// <inheritdoc />
