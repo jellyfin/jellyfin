@@ -1,0 +1,31 @@
+#nullable disable
+
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Jellyfin.MediaEncoding.Keyframes;
+
+namespace MediaBrowser.Controller.Persistence;
+
+/// <summary>
+/// Provides methods for accessing keyframe data.
+/// </summary>
+public interface IKeyframeRepository
+{
+    /// <summary>
+    /// Gets the keyframe data.
+    /// </summary>
+    /// <param name="itemId">The item id.</param>
+    /// <returns>IEnumerable{KeyframeData}.</returns>
+    IReadOnlyList<KeyframeData> GetKeyframeData(Guid itemId);
+
+    /// <summary>
+    /// Saves the keyframe data.
+    /// </summary>
+    /// <param name="itemId">The item id.</param>
+    /// <param name="data">The keyframe data.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The task object representing the asynchronous operation.</returns>
+    Task SaveKeyframeDataAsync(Guid itemId, KeyframeData data, CancellationToken cancellationToken);
+}

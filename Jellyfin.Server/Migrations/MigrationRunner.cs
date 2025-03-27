@@ -55,6 +55,7 @@ namespace Jellyfin.Server.Migrations
             typeof(Routines.MoveTrickplayFiles),
             typeof(Routines.RemoveDuplicatePlaylistChildren),
             typeof(Routines.MigrateLibraryDb),
+            typeof(Routines.MigrateKeyframeData),
         };
 
         /// <summary>
