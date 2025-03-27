@@ -7,8 +7,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
-using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
 using MediaBrowser.Common;
 using MediaBrowser.Controller.Dto;
@@ -257,7 +257,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
             if (!IndexNumber.HasValue && !string.IsNullOrEmpty(Path))
             {
-                IndexNumber ??= LibraryManager.GetSeasonNumberFromPath(Path);
+                IndexNumber ??= LibraryManager.GetSeasonNumberFromPath(Path, ParentId);
 
                 // If a change was made record it
                 if (IndexNumber.HasValue)

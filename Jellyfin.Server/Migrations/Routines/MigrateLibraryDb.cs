@@ -9,10 +9,11 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Emby.Server.Implementations.Data;
-using Jellyfin.Data.Entities;
+using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
-using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Item;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
@@ -20,19 +21,21 @@ using MediaBrowser.Model.Entities;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Chapter = Jellyfin.Data.Entities.Chapter;
+using BaseItemEntity = Jellyfin.Database.Implementations.Entities.BaseItemEntity;
+using Chapter = Jellyfin.Database.Implementations.Entities.Chapter;
 
 namespace Jellyfin.Server.Migrations.Routines;
 
 /// <summary>
 /// The migration routine for migrating the userdata database to EF Core.
 /// </summary>
-public class MigrateLibraryDb : IMigrationRoutine
+internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 {
     private const string DbFilename = "library.db";
 
     private readonly ILogger<MigrateLibraryDb> _logger;
     private readonly IServerApplicationPaths _paths;
+    private readonly IJellyfinDatabaseProvider _jellyfinDatabaseProvider;
     private readonly IDbContextFactory<JellyfinDbContext> _provider;
 
     /// <summary>
@@ -41,14 +44,17 @@ public class MigrateLibraryDb : IMigrationRoutine
     /// <param name="logger">The logger.</param>
     /// <param name="provider">The database provider.</param>
     /// <param name="paths">The server application paths.</param>
+    /// <param name="jellyfinDatabaseProvider">The database provider for special access.</param>
     public MigrateLibraryDb(
         ILogger<MigrateLibraryDb> logger,
         IDbContextFactory<JellyfinDbContext> provider,
-        IServerApplicationPaths paths)
+        IServerApplicationPaths paths,
+        IJellyfinDatabaseProvider jellyfinDatabaseProvider)
     {
         _logger = logger;
         _provider = provider;
         _paths = paths;
+        _jellyfinDatabaseProvider = jellyfinDatabaseProvider;
     }
 
     /// <inheritdoc/>
@@ -89,7 +95,7 @@ public class MigrateLibraryDb : IMigrationRoutine
          Audio, ExternalServiceId, IsInMixedFolder, DateLastSaved, LockedFields, Studios, Tags, TrailerTypes, OriginalTitle, PrimaryVersionId,
          DateLastMediaAdded, Album, LUFS, NormalizationGain, CriticRating, IsVirtualItem, SeriesName, UserDataKey, SeasonName, SeasonId, SeriesId,
          PresentationUniqueKey, InheritedParentalRatingValue, ExternalSeriesId, Tagline, ProviderIds, Images, ProductionLocations, ExtraIds, TotalBitrate,
-         ExtraType, Artists, AlbumArtists, ExternalId, SeriesPresentationUniqueKey, ShowId, OwnerId, MediaType FROM TypedBaseItems
+         ExtraType, Artists, AlbumArtists, ExternalId, SeriesPresentationUniqueKey, ShowId, OwnerId, MediaType, SortName, CleanName, UnratedType FROM TypedBaseItems
          """;
         dbContext.BaseItems.ExecuteDelete();
 
@@ -120,7 +126,7 @@ public class MigrateLibraryDb : IMigrationRoutine
         dbContext.ItemValues.ExecuteDelete();
 
         // EFCores local lookup sucks. We cannot use context.ItemValues.Local here because its just super slow.
-        var localItems = new Dictionary<(int Type, string CleanValue), (ItemValue ItemValue, List<Guid> ItemIds)>();
+        var localItems = new Dictionary<(int Type, string CleanValue), (Database.Implementations.Entities.ItemValue ItemValue, List<Guid> ItemIds)>();
 
         foreach (SqliteDataReader dto in connection.Query(itemValueQuery))
         {
@@ -163,7 +169,6 @@ public class MigrateLibraryDb : IMigrationRoutine
         dbContext.UserData.ExecuteDelete();
 
         var users = dbContext.Users.AsNoTracking().ToImmutableArray();
-        var oldUserdata = new Dictionary<string, UserData>();
 
         foreach (var entity in queryResult)
         {
@@ -184,6 +189,8 @@ public class MigrateLibraryDb : IMigrationRoutine
             dbContext.UserData.Add(userData);
         }
 
+        users.Clear();
+        legacyBaseItemWithUserKeys.Clear();
         _logger.LogInformation("Try saving {0} UserData entries.", dbContext.UserData.Local.Count);
         dbContext.SaveChanges();
 
@@ -220,11 +227,12 @@ public class MigrateLibraryDb : IMigrationRoutine
         dbContext.PeopleBaseItemMap.ExecuteDelete();
 
         var peopleCache = new Dictionary<string, (People Person, List<PeopleBaseItemMap> Items)>();
+        var baseItemIds = dbContext.BaseItems.Select(b => b.Id).ToHashSet();
 
         foreach (SqliteDataReader reader in connection.Query(personsQuery))
         {
             var itemId = reader.GetGuid(0);
-            if (!dbContext.BaseItems.Any(f => f.Id == itemId))
+            if (!baseItemIds.Contains(itemId))
             {
                 _logger.LogError("Dont save person {0} because its not in use by any BaseItem", reader.GetString(1));
                 continue;
@@ -240,9 +248,7 @@ public class MigrateLibraryDb : IMigrationRoutine
             {
             }
 
-            if (reader.TryGetInt32(4, out var sortOrder))
-            {
-            }
+            int? sortOrder = reader.IsDBNull(4) ? null : reader.GetInt32(4);
 
             personCache.Items.Add(new PeopleBaseItemMap()
             {
@@ -256,11 +262,15 @@ public class MigrateLibraryDb : IMigrationRoutine
             });
         }
 
+        baseItemIds.Clear();
+
         foreach (var item in peopleCache)
         {
             dbContext.Peoples.Add(item.Value.Person);
             dbContext.PeopleBaseItemMap.AddRange(item.Value.Items.DistinctBy(e => (e.ItemId, e.PeopleId)));
         }
+
+        peopleCache.Clear();
 
         _logger.LogInformation("Try saving {0} People entries.", dbContext.MediaStreamInfos.Local.Count);
         dbContext.SaveChanges();
@@ -315,21 +325,12 @@ public class MigrateLibraryDb : IMigrationRoutine
         _logger.LogInformation("Move {0} to {1}.", libraryDbPath, libraryDbPath + ".old");
 
         SqliteConnection.ClearAllPools();
-        File.Move(libraryDbPath, libraryDbPath + ".old");
+
+        File.Move(libraryDbPath, libraryDbPath + ".old", true);
 
         _logger.LogInformation("Migrating Library db took {0}.", migrationTotalTime);
 
-        if (dbContext.Database.IsSqlite())
-        {
-            _logger.LogInformation("Vacuum and Optimise jellyfin.db now.");
-            dbContext.Database.ExecuteSqlRaw("PRAGMA optimize");
-            dbContext.Database.ExecuteSqlRaw("VACUUM");
-            _logger.LogInformation("jellyfin.db optimized successfully!");
-        }
-        else
-        {
-            _logger.LogInformation("This database doesn't support optimization");
-        }
+        _jellyfinDatabaseProvider.RunScheduledOptimisation(CancellationToken.None).ConfigureAwait(false).GetAwaiter().GetResult();
     }
 
     private UserData? GetUserData(ImmutableArray<User> users, SqliteDataReader dto)
@@ -1032,6 +1033,21 @@ public class MigrateLibraryDb : IMigrationRoutine
         if (reader.TryGetString(index++, out var mediaType))
         {
             entity.MediaType = mediaType;
+        }
+
+        if (reader.TryGetString(index++, out var sortName))
+        {
+            entity.SortName = sortName;
+        }
+
+        if (reader.TryGetString(index++, out var cleanName))
+        {
+            entity.CleanName = cleanName;
+        }
+
+        if (reader.TryGetString(index++, out var unratedType))
+        {
+            entity.UnratedType = unratedType;
         }
 
         var baseItem = BaseItemRepository.DeserialiseBaseItem(entity, _logger, null, false);

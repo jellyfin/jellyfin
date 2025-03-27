@@ -8,8 +8,10 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
+using Jellyfin.Data;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -138,11 +140,9 @@ namespace MediaBrowser.Controller.Entities.Audio
         private static List<string> GetUserDataKeys(MusicArtist item)
         {
             var list = new List<string>();
-            var id = item.GetProviderId(MetadataProvider.MusicBrainzArtist);
-
-            if (!string.IsNullOrEmpty(id))
+            if (item.TryGetProviderId(MetadataProvider.MusicBrainzArtist, out var externalId))
             {
-                list.Add("Artist-Musicbrainz-" + id);
+                list.Add("Artist-Musicbrainz-" + externalId);
             }
 
             list.Add("Artist-" + (item.Name ?? string.Empty).RemoveDiacritics());

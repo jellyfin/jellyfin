@@ -13,8 +13,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using J2N.Collections.Generic.Extensions;
-using Jellyfin.Data.Entities;
+using Jellyfin.Data;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Collections;
@@ -1198,6 +1200,11 @@ namespace MediaBrowser.Controller.Entities
             }
 
             if (request.Is3D.HasValue)
+            {
+                return false;
+            }
+
+            if (request.Is4K.HasValue)
             {
                 return false;
             }

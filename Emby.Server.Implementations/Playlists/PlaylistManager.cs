@@ -9,8 +9,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -310,7 +310,7 @@ namespace Emby.Server.Implementations.Playlists
             var item = playlist.LinkedChildren.FirstOrDefault(i => string.Equals(entryId, i.ItemId?.ToString("N", CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase));
             if (item is null)
             {
-                _logger.LogWarning("Modified item not found in playlist. ItemId: {ItemId}, PlaylistId: {PlaylistId}", item.ItemId, playlistId);
+                _logger.LogWarning("Modified item not found in playlist. ItemId: {ItemId}, PlaylistId: {PlaylistId}", entryId, playlistId);
 
                 return;
             }
