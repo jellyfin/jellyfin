@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using Emby.Server.Implementations.Data;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
@@ -81,10 +82,6 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 
         connection.Open();
         using var dbContext = _provider.CreateDbContext();
-
-        migrationTotalTime += stopwatch.Elapsed;
-        _logger.LogInformation("Saving UserData entries took {0}.", stopwatch.Elapsed);
-        stopwatch.Restart();
 
         _logger.LogInformation("Start moving TypedBaseItem.");
         const string typedBaseItemsQuery = """
@@ -193,6 +190,9 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         legacyBaseItemWithUserKeys.Clear();
         _logger.LogInformation("Try saving {0} UserData entries.", dbContext.UserData.Local.Count);
         dbContext.SaveChanges();
+        migrationTotalTime += stopwatch.Elapsed;
+        _logger.LogInformation("Saving UserData entries took {0}.", stopwatch.Elapsed);
+        stopwatch.Restart();
 
         _logger.LogInformation("Start moving MediaStreamInfos.");
         const string mediaStreamQuery = """
