@@ -26,7 +26,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             var providerManager = new Mock<IProviderManager>();
 
             var imdbExternalId = new ImdbExternalId();
-            var externalIdInfo = new ExternalIdInfo(imdbExternalId.ProviderName, imdbExternalId.Key, imdbExternalId.Type, imdbExternalId.UrlFormatString);
+            var externalIdInfo = new ExternalIdInfo(imdbExternalId.ProviderName, imdbExternalId.Key, imdbExternalId.Type);
 
             providerManager.Setup(x => x.GetExternalIdInfos(It.IsAny<IHasProviderIds>()))
                 .Returns(new[] { externalIdInfo });
