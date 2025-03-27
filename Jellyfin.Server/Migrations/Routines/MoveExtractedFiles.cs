@@ -13,9 +13,6 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Migrations.Routines;
@@ -25,32 +22,32 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// </summary>
 public class MoveExtractedFiles : IMigrationRoutine
 {
-    private readonly IPathManager _pathManager;
-    private readonly IFileSystem _fileSystem;
+    private readonly IApplicationPaths _appPaths;
     private readonly ILibraryManager _libraryManager;
     private readonly ILogger<MoveExtractedFiles> _logger;
-    private readonly IApplicationPaths _appPaths;
+    private readonly IMediaSourceManager _mediaSourceManager;
+    private readonly IPathManager _pathManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MoveExtractedFiles"/> class.
     /// </summary>
-    /// <param name="pathManager">Instance of the <see cref="IPathManager"/> interface.</param>
-    /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
-    /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="appPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
+    /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="logger">The logger.</param>
+    /// <param name="mediaSourceManager">Instance of the <see cref="IPathManager"/> interface.</param>
+    /// <param name="pathManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
     public MoveExtractedFiles(
-        IPathManager pathManager,
-        IFileSystem fileSystem,
+        IApplicationPaths appPaths,
         ILibraryManager libraryManager,
         ILogger<MoveExtractedFiles> logger,
-        IApplicationPaths appPaths)
+        IMediaSourceManager mediaSourceManager,
+        IPathManager pathManager)
     {
         _pathManager = pathManager;
-        _fileSystem = fileSystem;
         _libraryManager = libraryManager;
         _logger = logger;
         _appPaths = appPaths;
+        _mediaSourceManager = mediaSourceManager;
     }
 
     private string SubtitleCachePath => Path.Combine(_appPaths.DataPath, "subtitles");
@@ -92,7 +89,7 @@ public class MoveExtractedFiles : IMigrationRoutine
             offset += Limit;
             foreach (var item in items)
             {
-                if (++itemCount % 1_000 == 0)
+                if (++itemCount % 5_000 == 0)
                 {
                     _logger.LogInformation("Moved extracted data for {Count} items in {Time}", itemCount, sw.Elapsed);
                 }
@@ -104,8 +101,8 @@ public class MoveExtractedFiles : IMigrationRoutine
         _logger.LogInformation("Moved extracted data for {Count} items in {Time}", itemCount, sw.Elapsed);
 
         // Get all subdirectories with 1 character names (those are the legacy directories)
-        var subdirectories = Directory.GetDirectories(SubtitleCachePath, "*", SearchOption.AllDirectories).Where(s => s.Length == SubtitleCachePath.Length + 1).ToList();
-        subdirectories.AddRange(Directory.GetDirectories(AttachmentCachePath, "*", SearchOption.AllDirectories).Where(s => s.Length == AttachmentCachePath.Length + 1));
+        var subdirectories = Directory.GetDirectories(SubtitleCachePath, "*", SearchOption.AllDirectories).Where(s => s.Length == SubtitleCachePath.Length + 2).ToList();
+        subdirectories.AddRange(Directory.GetDirectories(AttachmentCachePath, "*", SearchOption.AllDirectories).Where(s => s.Length == AttachmentCachePath.Length + 2));
 
         // Remove all legacy subdirectories
         foreach (var subdir in subdirectories)
@@ -118,85 +115,73 @@ public class MoveExtractedFiles : IMigrationRoutine
 
     private void MoveSubtitleAndAttachmentFiles(BaseItem item)
     {
-        var mediaSources = item.GetMediaSources(false);
-        foreach (var mediaSource in mediaSources)
+        var mediaStreams = item.GetMediaStreams().Where(s => !s.IsExternal);
+        foreach (var mediaStream in mediaStreams)
         {
-            var mediaStreams = mediaSource.MediaStreams.Where(s => !s.IsExternal);
-            foreach (var mediaStream in mediaStreams)
+            var extension = GetSubtitleExtension(mediaStream.Codec);
+            var oldSubtitleCachePath = GetOldSubtitleCachePath(item.Path, mediaStream.Index, extension);
+            if (string.IsNullOrEmpty(oldSubtitleCachePath) || !File.Exists(oldSubtitleCachePath))
             {
-                var extension = GetSubtitleExtension(mediaStream.Codec);
-                var oldSubtitleCachePath = GetOldSubtitleCachePath(mediaSource.Path, mediaStream.Index, extension);
-                if (string.IsNullOrEmpty(oldSubtitleCachePath) || !_fileSystem.FileExists(oldSubtitleCachePath))
-                {
-                    continue;
-                }
-
-                var newSubtitleCachePath = _pathManager.GetSubtitlePath(mediaSource.Id, mediaStream.Index, extension);
-                if (_fileSystem.FileExists(newSubtitleCachePath))
-                {
-                    _fileSystem.DeleteFile(oldSubtitleCachePath);
-                }
-                else
-                {
-                    var newDirectory = Path.GetDirectoryName(newSubtitleCachePath);
-                    if (newDirectory is not null)
-                    {
-                        Directory.CreateDirectory(newDirectory);
-                        File.Move(oldSubtitleCachePath, newSubtitleCachePath, false);
-                    }
-                }
+                continue;
             }
 
-            foreach (var attachment in mediaSource.MediaAttachments)
+            var newSubtitleCachePath = _pathManager.GetSubtitlePath(item.Id.ToString("N", CultureInfo.InvariantCulture), mediaStream.Index, extension);
+            if (File.Exists(newSubtitleCachePath))
             {
-                var attachmentIndex = attachment.Index;
-                var oldAttachmentCachePath = GetOldAttachmentCachePath(mediaSource, mediaSource.Path, attachmentIndex);
-                if (string.IsNullOrEmpty(oldAttachmentCachePath) || !_fileSystem.FileExists(oldAttachmentCachePath))
+                File.Delete(oldSubtitleCachePath);
+            }
+            else
+            {
+                var newDirectory = Path.GetDirectoryName(newSubtitleCachePath);
+                if (newDirectory is not null)
                 {
-                    continue;
+                    Directory.CreateDirectory(newDirectory);
+                    File.Move(oldSubtitleCachePath, newSubtitleCachePath, false);
                 }
+            }
+        }
 
-                var newAttachmentCachePath = _pathManager.GetAttachmentPath(mediaSource.Id, attachmentIndex);
-                var newDirectory = Path.GetDirectoryName(newAttachmentCachePath);
-                if (_fileSystem.FileExists(newAttachmentCachePath))
+        foreach (var attachment in _mediaSourceManager.GetMediaAttachments(item.Id))
+        {
+            var attachmentIndex = attachment.Index;
+            var oldAttachmentCachePath = GetOldAttachmentCachePath(item.Path, attachmentIndex);
+            if (string.IsNullOrEmpty(oldAttachmentCachePath) || !File.Exists(oldAttachmentCachePath))
+            {
+                continue;
+            }
+
+            var newAttachmentCachePath = _pathManager.GetAttachmentPath(item.Id.ToString("N", CultureInfo.InvariantCulture), attachmentIndex);
+            var newDirectory = Path.GetDirectoryName(newAttachmentCachePath);
+            if (File.Exists(newAttachmentCachePath))
+            {
+                File.Delete(oldAttachmentCachePath);
+            }
+            else
+            {
+                if (newDirectory is not null)
                 {
-                    _fileSystem.DeleteFile(oldAttachmentCachePath);
-                }
-                else
-                {
-                    if (newDirectory is not null)
-                    {
-                        Directory.CreateDirectory(newDirectory);
-                        File.Move(oldAttachmentCachePath, newAttachmentCachePath, false);
-                    }
+                    Directory.CreateDirectory(newDirectory);
+                    File.Move(oldAttachmentCachePath, newAttachmentCachePath, false);
                 }
             }
         }
     }
 
-    private string? GetOldAttachmentCachePath(MediaSourceInfo mediaSource, string mediaPath, int attachmentStreamIndex)
+    private string? GetOldAttachmentCachePath(string mediaPath, int attachmentStreamIndex)
     {
-        string filename;
-        if (mediaSource.Protocol == MediaProtocol.File)
+        DateTime? date;
+        try
         {
-            DateTime? date;
-            try
-            {
-                date = File.GetLastWriteTimeUtc(mediaPath);
-            }
-            catch (IOException e)
-            {
-                _logger.LogDebug("Skipping index {Index} for {Path}: {Exception}", attachmentStreamIndex, mediaPath, e.Message);
-
-                return null;
-            }
-
-            filename = (mediaPath + attachmentStreamIndex.ToString(CultureInfo.InvariantCulture) + "_" + date.Value.Ticks.ToString(CultureInfo.InvariantCulture)).GetMD5().ToString("D", CultureInfo.InvariantCulture);
+            date = File.GetLastWriteTimeUtc(mediaPath);
         }
-        else
+        catch (IOException e)
         {
-            filename = (mediaPath + attachmentStreamIndex.ToString(CultureInfo.InvariantCulture)).GetMD5().ToString("D", CultureInfo.InvariantCulture);
+            _logger.LogDebug("Skipping index {Index} for {Path}: {Exception}", attachmentStreamIndex, mediaPath, e.Message);
+
+            return null;
         }
+
+        var filename = (mediaPath + attachmentStreamIndex.ToString(CultureInfo.InvariantCulture) + "_" + date.Value.Ticks.ToString(CultureInfo.InvariantCulture)).GetMD5().ToString("D", CultureInfo.InvariantCulture);
 
         return Path.Join(AttachmentCachePath, filename[..1], filename);
     }
