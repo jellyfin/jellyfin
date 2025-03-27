@@ -95,7 +95,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
          Audio, ExternalServiceId, IsInMixedFolder, DateLastSaved, LockedFields, Studios, Tags, TrailerTypes, OriginalTitle, PrimaryVersionId,
          DateLastMediaAdded, Album, LUFS, NormalizationGain, CriticRating, IsVirtualItem, SeriesName, UserDataKey, SeasonName, SeasonId, SeriesId,
          PresentationUniqueKey, InheritedParentalRatingValue, ExternalSeriesId, Tagline, ProviderIds, Images, ProductionLocations, ExtraIds, TotalBitrate,
-         ExtraType, Artists, AlbumArtists, ExternalId, SeriesPresentationUniqueKey, ShowId, OwnerId, MediaType, SortName, CleanName FROM TypedBaseItems
+         ExtraType, Artists, AlbumArtists, ExternalId, SeriesPresentationUniqueKey, ShowId, OwnerId, MediaType, SortName, CleanName, UnratedType FROM TypedBaseItems
          """;
         dbContext.BaseItems.ExecuteDelete();
 
@@ -1043,6 +1043,11 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         if (reader.TryGetString(index++, out var cleanName))
         {
             entity.CleanName = cleanName;
+        }
+
+        if (reader.TryGetString(index++, out var unratedType))
+        {
+            entity.UnratedType = unratedType;
         }
 
         var baseItem = BaseItemRepository.DeserialiseBaseItem(entity, _logger, null, false);
