@@ -3,6 +3,7 @@ using System;
 using Jellyfin.Database.Implementations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Jellyfin.Server.Implementations.Migrations
 {
     [DbContext(typeof(JellyfinDbContext))]
-    partial class JellyfinDbModelSnapshot : ModelSnapshot
+    [Migration("20250327101120_AddKeyframeData")]
+    partial class AddKeyframeData
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.3");
@@ -224,9 +227,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<int?>("IndexNumber")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int?>("InheritedParentalRatingSubValue")
                         .HasColumnType("INTEGER");
 
                     b.Property<int?>("InheritedParentalRatingValue")
@@ -1275,10 +1275,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<int>("MaxActiveSessions")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("MaxParentalRatingScore")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int?>("MaxParentalRatingSubScore")
+                    b.Property<int?>("MaxParentalAgeRating")
                         .HasColumnType("INTEGER");
 
                     b.Property<bool>("MustUpdatePassword")

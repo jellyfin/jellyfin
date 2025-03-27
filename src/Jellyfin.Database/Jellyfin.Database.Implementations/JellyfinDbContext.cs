@@ -157,6 +157,11 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
     /// </summary>
     public DbSet<BaseItemTrailerType> BaseItemTrailerTypes => Set<BaseItemTrailerType>();
 
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/>.
+    /// </summary>
+    public DbSet<KeyframeData> KeyframeData => Set<KeyframeData>();
+
     /*public DbSet<Artwork> Artwork => Set<Artwork>();
 
     public DbSet<Book> Books => Set<Book>();

@@ -28,6 +28,7 @@
     <ProjectReference Include="../Emby.Naming/Emby.Naming.csproj" />
     <ProjectReference Include="../MediaBrowser.Model/MediaBrowser.Model.csproj" />
     <ProjectReference Include="../MediaBrowser.Common/MediaBrowser.Common.csproj" />
+    <ProjectReference Include="../src/Jellyfin.MediaEncoding.Keyframes/Jellyfin.MediaEncoding.Keyframes.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -34,7 +34,7 @@ public class FfProbeKeyframeExtractor : IKeyframeExtractor
     public bool IsMetadataBased => false;
 
     /// <inheritdoc />
-    public bool TryExtractKeyframes(string filePath, [NotNullWhen(true)] out KeyframeData? keyframeData)
+    public bool TryExtractKeyframes(Guid itemId, string filePath, [NotNullWhen(true)] out KeyframeData? keyframeData)
     {
         if (!_namingOptions.VideoFileExtensions.Contains(Path.GetExtension(filePath.AsSpan()), StringComparison.OrdinalIgnoreCase))
         {
