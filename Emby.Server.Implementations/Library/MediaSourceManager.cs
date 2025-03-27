@@ -433,20 +433,14 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            if (user.PlayDefaultAudioTrack)
-            {
-                source.DefaultAudioStreamIndex = MediaStreamSelector.GetDefaultAudioStreamIndex(source.MediaStreams, [], user.PlayDefaultAudioTrack);
-                return;
-            }
-
-            if (user.AudioLanguagePreference == "OriginalLanguage" && !string.IsNullOrWhiteSpace(originalLanguage))
-            {
-                // If there are multiple original languages, use the first language
-                originalLanguage = originalLanguage.Split(',').FirstOrDefault();
-            }
-
             if (user.AudioLanguagePreference == "OriginalLanguage")
             {
+                if (!string.IsNullOrWhiteSpace(originalLanguage))
+                {
+                    // If there are multiple original languages, use the first language
+                    originalLanguage = originalLanguage.Split(',').FirstOrDefault();
+                }
+
                 var originalIndex = source.MediaStreams.FindIndex(i => i.Type == MediaStreamType.Audio && i.IsOriginal);
                 // If original language and the language name with the original indicator
                 if (!string.IsNullOrWhiteSpace(originalLanguage) && originalIndex != -1)
