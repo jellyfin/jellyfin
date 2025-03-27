@@ -364,11 +364,12 @@ namespace MediaBrowser.Controller.Entities
             if (maxRating.HasValue)
             {
                 MaxParentalRating = new(maxRating.Value, user.MaxParentalRatingSubScore);
-                var other = UnratedItem.Other.ToString();
-                BlockUnratedItems = user.GetPreference(PreferenceKind.BlockUnratedItems)
-                    .Where(i => i != other)
-                    .Select(e => Enum.Parse<UnratedItem>(e, true)).ToArray();
             }
+
+            var other = UnratedItem.Other.ToString();
+            BlockUnratedItems = user.GetPreference(PreferenceKind.BlockUnratedItems)
+                .Where(i => i != other)
+                .Select(e => Enum.Parse<UnratedItem>(e, true)).ToArray();
 
             ExcludeInheritedTags = user.GetPreference(PreferenceKind.BlockedTags);
             IncludeInheritedTags = user.GetPreference(PreferenceKind.AllowedTags);
