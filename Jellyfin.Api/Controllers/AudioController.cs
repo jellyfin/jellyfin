@@ -259,7 +259,7 @@ public class AudioController : BaseJellyfinApiController
     [ProducesAudioFile]
     public async Task<ActionResult> GetAudioStreamByContainer(
         [FromRoute, Required] Guid itemId,
-        [FromRoute, Required] string container,
+        [FromRoute, Required] [RegularExpression(EncodingHelper.ValidationRegex)] string container,
         [FromQuery] bool? @static,
         [FromQuery] string? @params,
         [FromQuery] string? tag,
