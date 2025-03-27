@@ -68,13 +68,14 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
     public bool PerformOnNewInstall => false; // TODO Change back after testing
 
     /// <inheritdoc/>
-    public void Perform()
+    public async void Perform()
     {
         _logger.LogInformation("Migrating the userdata from library.db may take a while, do not stop Jellyfin.");
 
         var dataPath = _paths.DataPath;
         var libraryDbPath = Path.Combine(dataPath, DbFilename);
-        using var connection = new SqliteConnection($"Filename={libraryDbPath}");
+        var dbPath = $"Filename={libraryDbPath};Mode=ReadOnly;Cache=Shared;Pooling=true;";
+        using var connection = new SqliteConnection(dbPath);
         var migrationTotalTime = TimeSpan.Zero;
 
         var stopwatch = new Stopwatch();
@@ -124,215 +125,278 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         dbContext.SaveChanges();
         migrationTotalTime += stopwatch.Elapsed;
         _logger.LogInformation("Saving BaseItems entries took {0}.", stopwatch.Elapsed);
-        stopwatch.Restart();
-
-        _logger.LogInformation("Start moving ItemValues.");
-        // do not migrate inherited types as they are now properly mapped in search and lookup.
-        const string itemValueQuery =
-        """
-        SELECT ItemId, Type, Value, CleanValue FROM ItemValues
-                    WHERE Type <> 6 AND EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = ItemValues.ItemId)
-        """;
-
-        // EFCores local lookup sucks. We cannot use context.ItemValues.Local here because its just super slow.
-        var localItems = new Dictionary<(int Type, string CleanValue), (Database.Implementations.Entities.ItemValue ItemValue, List<Guid> ItemIds)>();
-
-        foreach (SqliteDataReader dto in connection.Query(itemValueQuery))
-        {
-            var itemId = dto.GetGuid(0);
-            var entity = GetItemValue(dto);
-            var key = ((int)entity.Type, entity.CleanValue);
-            if (!localItems.TryGetValue(key, out var existing))
-            {
-                localItems[key] = existing = (entity, []);
-            }
-
-            existing.ItemIds.Add(itemId);
-        }
-
-        foreach (var item in localItems)
-        {
-            dbContext.ItemValues.Add(item.Value.ItemValue);
-            dbContext.ItemValuesMap.AddRange(item.Value.ItemIds.Distinct().Select(f => new ItemValueMap()
-            {
-                Item = null!,
-                ItemValue = null!,
-                ItemId = f,
-                ItemValueId = item.Value.ItemValue.ItemValueId
-            }));
-        }
-
-        _logger.LogInformation("Try saving {0} ItemValues entries.", dbContext.ItemValues.Local.Count);
-        dbContext.SaveChanges();
-        migrationTotalTime += stopwatch.Elapsed;
-        _logger.LogInformation("Saving People ItemValues took {0}.", stopwatch.Elapsed);
-        stopwatch.Restart();
-
-        _logger.LogInformation("Start moving UserData.");
-        var queryResult = connection.Query("""
-        SELECT key, userId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex FROM UserDatas
-
-        WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.UserDataKey = UserDatas.key)
-        """);
-
-        var users = dbContext.Users.AsNoTracking().ToImmutableArray();
-
-        foreach (var entity in queryResult)
-        {
-            var userData = GetUserData(users, entity);
-            if (userData is null)
-            {
-                _logger.LogError("Was not able to migrate user data with key {0}", entity.GetString(0));
-                continue;
-            }
-
-            if (!legacyBaseItemWithUserKeys.TryGetValue(userData.CustomDataKey!, out var refItem))
-            {
-                _logger.LogError("Was not able to migrate user data with key {0} because it does not reference a valid BaseItem.", entity.GetString(0));
-                continue;
-            }
-
-            userData.ItemId = refItem.Id;
-            dbContext.UserData.Add(userData);
-        }
-
-        users.Clear();
-        legacyBaseItemWithUserKeys.Clear();
-        _logger.LogInformation("Try saving {0} UserData entries.", dbContext.UserData.Local.Count);
-        dbContext.SaveChanges();
-        migrationTotalTime += stopwatch.Elapsed;
-        _logger.LogInformation("Saving UserData entries took {0}.", stopwatch.Elapsed);
-        stopwatch.Restart();
-
-        _logger.LogInformation("Start moving MediaStreamInfos.");
-        const string mediaStreamQuery = """
-        SELECT ItemId, StreamIndex, StreamType, Codec, Language, ChannelLayout, Profile, AspectRatio, Path,
-        IsInterlaced, BitRate, Channels, SampleRate, IsDefault, IsForced, IsExternal, Height, Width,
-        AverageFrameRate, RealFrameRate, Level, PixelFormat, BitDepth, IsAnamorphic, RefFrames, CodecTag,
-        Comment, NalLengthSize, IsAvc, Title, TimeBase, CodecTimeBase, ColorPrimaries, ColorSpace, ColorTransfer,
-        DvVersionMajor, DvVersionMinor, DvProfile, DvLevel, RpuPresentFlag, ElPresentFlag, BlPresentFlag, DvBlSignalCompatibilityId, IsHearingImpaired
-        FROM MediaStreams
-        WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = MediaStreams.ItemId)
-        """;
-
-        foreach (SqliteDataReader dto in connection.Query(mediaStreamQuery))
-        {
-            dbContext.MediaStreamInfos.Add(GetMediaStream(dto));
-        }
-
-        _logger.LogInformation("Try saving {0} MediaStreamInfos entries.", dbContext.MediaStreamInfos.Local.Count);
-        dbContext.SaveChanges();
-
-        migrationTotalTime += stopwatch.Elapsed;
-        _logger.LogInformation("Saving MediaStreamInfos entries took {0}.", stopwatch.Elapsed);
-        stopwatch.Restart();
-
-        _logger.LogInformation("Start moving People.");
-        const string personsQuery = """
-        SELECT ItemId, Name, Role, PersonType, SortOrder FROM People
-        WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = People.ItemId)
-        """;
-
-        var peopleCache = new Dictionary<string, (People Person, List<PeopleBaseItemMap> Items)>();
-        var baseItemIds = dbContext.BaseItems.Select(b => b.Id).ToHashSet();
-
-        foreach (SqliteDataReader reader in connection.Query(personsQuery))
-        {
-            var itemId = reader.GetGuid(0);
-            if (!baseItemIds.Contains(itemId))
-            {
-                _logger.LogError("Dont save person {0} because its not in use by any BaseItem", reader.GetString(1));
-                continue;
-            }
-
-            var entity = GetPerson(reader);
-            if (!peopleCache.TryGetValue(entity.Name, out var personCache))
-            {
-                peopleCache[entity.Name] = personCache = (entity, []);
-            }
-
-            if (reader.TryGetString(2, out var role))
-            {
-            }
-
-            int? sortOrder = reader.IsDBNull(4) ? null : reader.GetInt32(4);
-
-            personCache.Items.Add(new PeopleBaseItemMap()
-            {
-                Item = null!,
-                ItemId = itemId,
-                People = null!,
-                PeopleId = personCache.Person.Id,
-                ListOrder = sortOrder,
-                SortOrder = sortOrder,
-                Role = role
-            });
-        }
-
-        baseItemIds.Clear();
-
-        foreach (var item in peopleCache)
-        {
-            dbContext.Peoples.Add(item.Value.Person);
-            dbContext.PeopleBaseItemMap.AddRange(item.Value.Items.DistinctBy(e => (e.ItemId, e.PeopleId)));
-        }
-
-        peopleCache.Clear();
-
-        _logger.LogInformation("Try saving {0} People entries.", dbContext.Peoples.Local.Count);
-        dbContext.SaveChanges();
-        migrationTotalTime += stopwatch.Elapsed;
-        _logger.LogInformation("Saving People entries took {0}.", stopwatch.Elapsed);
-        stopwatch.Restart();
-
-        _logger.LogInformation("Start moving Chapters.");
-        const string chapterQuery = """
-        SELECT ItemId,StartPositionTicks,Name,ImagePath,ImageDateModified,ChapterIndex from Chapters2
-        WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = Chapters2.ItemId)
-        """;
-
-        foreach (SqliteDataReader dto in connection.Query(chapterQuery))
-        {
-            var chapter = GetChapter(dto);
-            dbContext.Chapters.Add(chapter);
-        }
-
-        _logger.LogInformation("Try saving {0} Chapters entries.", dbContext.Chapters.Local.Count);
-        dbContext.SaveChanges();
-        migrationTotalTime += stopwatch.Elapsed;
-        _logger.LogInformation("Saving Chapters took {0}.", stopwatch.Elapsed);
-        stopwatch.Restart();
-
-        _logger.LogInformation("Start moving AncestorIds.");
-        const string ancestorIdsQuery = """
-        SELECT ItemId, AncestorId, AncestorIdText FROM AncestorIds
-        WHERE
-        EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = AncestorIds.ItemId)
-        AND
-        EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = AncestorIds.AncestorId)
-        """;
-
-        foreach (SqliteDataReader dto in connection.Query(ancestorIdsQuery))
-        {
-            var ancestorId = GetAncestorId(dto);
-            dbContext.AncestorIds.Add(ancestorId);
-        }
-
-        _logger.LogInformation("Try saving {0} AncestorIds entries.", dbContext.AncestorIds.Local.Count);
-
-        dbContext.SaveChanges();
-        migrationTotalTime += stopwatch.Elapsed;
-        _logger.LogInformation("Saving AncestorIds took {0}.", stopwatch.Elapsed);
-        stopwatch.Restart();
-
+        stopwatch.Stop();
         connection.Close();
-        _logger.LogInformation("Migration of the Library.db done.");
-        _logger.LogInformation("Move {0} to {1}.", libraryDbPath, libraryDbPath + ".old");
+
+        var taskTimes = await Task.WhenAll(
+            Task.Run(() =>
+            {
+                using var dbContext = _provider.CreateDbContext();
+                using var connection = new SqliteConnection(dbPath);
+                connection.Open();
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
+                _logger.LogInformation("Start moving ItemValues.");
+                // do not migrate inherited types as they are now properly mapped in search and lookup.
+                const string itemValueQuery =
+                """
+                SELECT ItemId, Type, Value, CleanValue FROM ItemValues
+                            WHERE Type <> 6 AND EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = ItemValues.ItemId)
+                """;
+
+                // EFCores local lookup sucks. We cannot use context.ItemValues.Local here because its just super slow.
+                var localItems = new Dictionary<(int Type, string CleanValue), (Database.Implementations.Entities.ItemValue ItemValue, List<Guid> ItemIds)>();
+
+                foreach (SqliteDataReader dto in connection.Query(itemValueQuery))
+                {
+                    var itemId = dto.GetGuid(0);
+                    var entity = GetItemValue(dto);
+                    var key = ((int)entity.Type, entity.CleanValue);
+                    if (!localItems.TryGetValue(key, out var existing))
+                    {
+                        localItems[key] = existing = (entity, []);
+                    }
+
+                    existing.ItemIds.Add(itemId);
+                }
+
+                foreach (var item in localItems)
+                {
+                    dbContext.ItemValues.Add(item.Value.ItemValue);
+                    dbContext.ItemValuesMap.AddRange(item.Value.ItemIds.Distinct().Select(f => new ItemValueMap()
+                    {
+                        Item = null!,
+                        ItemValue = null!,
+                        ItemId = f,
+                        ItemValueId = item.Value.ItemValue.ItemValueId
+                    }));
+                }
+
+                _logger.LogInformation("Try saving {0} ItemValues entries.", dbContext.ItemValues.Local.Count);
+                dbContext.SaveChanges();
+                _logger.LogInformation("Saving People ItemValues took {0}.", stopwatch.Elapsed);
+                stopwatch.Stop();
+                connection.Close();
+
+                return stopwatch.Elapsed;
+            }),
+            Task.Run(() =>
+            {
+                using var dbContext = _provider.CreateDbContext();
+                using var connection = new SqliteConnection(dbPath);
+                connection.Open();
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
+                _logger.LogInformation("Start moving UserData.");
+                var queryResult = connection.Query("""
+                SELECT key, userId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex FROM UserDatas
+
+                WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.UserDataKey = UserDatas.key)
+                """);
+
+                var users = dbContext.Users.AsNoTracking().ToImmutableArray();
+
+                foreach (var entity in queryResult)
+                {
+                    var userData = GetUserData(users, entity);
+                    if (userData is null)
+                    {
+                        _logger.LogError("Was not able to migrate user data with key {0}", entity.GetString(0));
+                        continue;
+                    }
+
+                    if (!legacyBaseItemWithUserKeys.TryGetValue(userData.CustomDataKey!, out var refItem))
+                    {
+                        _logger.LogError("Was not able to migrate user data with key {0} because it does not reference a valid BaseItem.", entity.GetString(0));
+                        continue;
+                    }
+
+                    userData.ItemId = refItem.Id;
+                    dbContext.UserData.Add(userData);
+                }
+
+                users.Clear();
+                legacyBaseItemWithUserKeys.Clear();
+                _logger.LogInformation("Try saving {0} UserData entries.", dbContext.UserData.Local.Count);
+                dbContext.SaveChanges();
+                _logger.LogInformation("Saving UserData entries took {0}.", stopwatch.Elapsed);
+                stopwatch.Stop();
+                connection.Close();
+
+                return stopwatch.Elapsed;
+            }),
+            Task.Run(() =>
+            {
+                using var dbContext = _provider.CreateDbContext();
+                using var connection = new SqliteConnection(dbPath);
+                connection.Open();
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
+                _logger.LogInformation("Start moving MediaStreamInfos.");
+                const string mediaStreamQuery = """
+                SELECT ItemId, StreamIndex, StreamType, Codec, Language, ChannelLayout, Profile, AspectRatio, Path,
+                IsInterlaced, BitRate, Channels, SampleRate, IsDefault, IsForced, IsExternal, Height, Width,
+                AverageFrameRate, RealFrameRate, Level, PixelFormat, BitDepth, IsAnamorphic, RefFrames, CodecTag,
+                Comment, NalLengthSize, IsAvc, Title, TimeBase, CodecTimeBase, ColorPrimaries, ColorSpace, ColorTransfer,
+                DvVersionMajor, DvVersionMinor, DvProfile, DvLevel, RpuPresentFlag, ElPresentFlag, BlPresentFlag, DvBlSignalCompatibilityId, IsHearingImpaired
+                FROM MediaStreams
+                WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = MediaStreams.ItemId)
+                """;
+
+                foreach (SqliteDataReader dto in connection.Query(mediaStreamQuery))
+                {
+                    dbContext.MediaStreamInfos.Add(GetMediaStream(dto));
+                }
+
+                _logger.LogInformation("Try saving {0} MediaStreamInfos entries.", dbContext.MediaStreamInfos.Local.Count);
+                dbContext.SaveChanges();
+                _logger.LogInformation("Saving MediaStreamInfos entries took {0}.", stopwatch.Elapsed);
+                stopwatch.Stop();
+                connection.Close();
+
+                return stopwatch.Elapsed;
+            }),
+            Task.Run(() =>
+            {
+                using var dbContext = _provider.CreateDbContext();
+                using var connection = new SqliteConnection(dbPath);
+                connection.Open();
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
+                _logger.LogInformation("Start moving People.");
+                const string personsQuery = """
+                SELECT ItemId, Name, Role, PersonType, SortOrder FROM People
+                WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = People.ItemId)
+                """;
+
+                var peopleCache = new Dictionary<string, (People Person, List<PeopleBaseItemMap> Items)>();
+                var baseItemIds = dbContext.BaseItems.Select(b => b.Id).ToHashSet();
+
+                foreach (SqliteDataReader reader in connection.Query(personsQuery))
+                {
+                    var itemId = reader.GetGuid(0);
+                    if (!baseItemIds.Contains(itemId))
+                    {
+                        _logger.LogError("Dont save person {0} because its not in use by any BaseItem", reader.GetString(1));
+                        continue;
+                    }
+
+                    var entity = GetPerson(reader);
+                    if (!peopleCache.TryGetValue(entity.Name, out var personCache))
+                    {
+                        peopleCache[entity.Name] = personCache = (entity, []);
+                    }
+
+                    if (reader.TryGetString(2, out var role))
+                    {
+                    }
+
+                    int? sortOrder = reader.IsDBNull(4) ? null : reader.GetInt32(4);
+
+                    personCache.Items.Add(new PeopleBaseItemMap()
+                    {
+                        Item = null!,
+                        ItemId = itemId,
+                        People = null!,
+                        PeopleId = personCache.Person.Id,
+                        ListOrder = sortOrder,
+                        SortOrder = sortOrder,
+                        Role = role
+                    });
+                }
+
+                baseItemIds.Clear();
+
+                foreach (var item in peopleCache)
+                {
+                    dbContext.Peoples.Add(item.Value.Person);
+                    dbContext.PeopleBaseItemMap.AddRange(item.Value.Items.DistinctBy(e => (e.ItemId, e.PeopleId)));
+                }
+
+                peopleCache.Clear();
+
+                _logger.LogInformation("Try saving {0} People entries.", dbContext.MediaStreamInfos.Local.Count);
+                dbContext.SaveChanges();
+                _logger.LogInformation("Saving People entries took {0}.", stopwatch.Elapsed);
+                stopwatch.Stop();
+                connection.Close();
+
+                return stopwatch.Elapsed;
+            }),
+            Task.Run(() =>
+            {
+                using var dbContext = _provider.CreateDbContext();
+                using var connection = new SqliteConnection(dbPath);
+                connection.Open();
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
+                _logger.LogInformation("Start moving Chapters.");
+                const string chapterQuery = """
+                SELECT ItemId,StartPositionTicks,Name,ImagePath,ImageDateModified,ChapterIndex from Chapters2
+                WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = Chapters2.ItemId)
+                """;
+
+                foreach (SqliteDataReader dto in connection.Query(chapterQuery))
+                {
+                    var chapter = GetChapter(dto);
+                    dbContext.Chapters.Add(chapter);
+                }
+
+                _logger.LogInformation("Try saving {0} Chapters entries.", dbContext.Chapters.Local.Count);
+                dbContext.SaveChanges();
+                _logger.LogInformation("Saving Chapters took {0}.", stopwatch.Elapsed);
+                stopwatch.Stop();
+                connection.Close();
+
+                return stopwatch.Elapsed;
+            }),
+            Task.Run(() =>
+            {
+                using var dbContext = _provider.CreateDbContext();
+                using var connection = new SqliteConnection(dbPath);
+                connection.Open();
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
+                _logger.LogInformation("Start moving AncestorIds.");
+                const string ancestorIdsQuery = """
+                SELECT ItemId, AncestorId, AncestorIdText FROM AncestorIds
+                WHERE
+                EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = AncestorIds.ItemId)
+                AND
+                EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = AncestorIds.AncestorId)
+                """;
+
+                foreach (SqliteDataReader dto in connection.Query(ancestorIdsQuery))
+                {
+                    var ancestorId = GetAncestorId(dto);
+                    dbContext.AncestorIds.Add(ancestorId);
+                }
+
+                _logger.LogInformation("Try saving {0} AncestorIds entries.", dbContext.Chapters.Local.Count);
+
+                dbContext.SaveChanges();
+                _logger.LogInformation("Saving AncestorIds took {0}.", stopwatch.Elapsed);
+                stopwatch.Stop();
+                connection.Close();
+
+                return stopwatch.Elapsed;
+            })).ConfigureAwait(false);
+        stopwatch.Restart();
+
+        foreach (var time in taskTimes)
+        {
+            migrationTotalTime += time;
+        }
+
+        _logger.LogInformation("All data has been migrated successfully!");
+        _logger.LogInformation("Moving {0} to {1}.", libraryDbPath, libraryDbPath + ".old");
 
         SqliteConnection.ClearAllPools();
 
         File.Move(libraryDbPath, libraryDbPath + ".old", true);
 
+        migrationTotalTime += stopwatch.Elapsed;
+        stopwatch.Stop();
         _logger.LogInformation("Migrating Library db took {0}.", migrationTotalTime);
 
         _jellyfinDatabaseProvider.RunScheduledOptimisation(CancellationToken.None).ConfigureAwait(false).GetAwaiter().GetResult();
