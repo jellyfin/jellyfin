@@ -1364,6 +1364,21 @@ namespace Emby.Server.Implementations.Library
             return _itemRepository.GetItemList(query);
         }
 
+        public IReadOnlyList<BaseItem> GetLatestItemList(InternalItemsQuery query, IReadOnlyList<BaseItem> parents, CollectionType collectionType)
+        {
+            SetTopParentIdsOrAncestors(query, parents);
+
+            if (query.AncestorIds.Length == 0 && query.TopParentIds.Length == 0)
+            {
+                if (query.User is not null)
+                {
+                    AddUserToQuery(query, query.User);
+                }
+            }
+
+            return _itemRepository.GetLatestItemList(query, collectionType);
+        }
+
         public IReadOnlyList<string> GetNextUpSeriesKeys(InternalItemsQuery query, IReadOnlyCollection<BaseItem> parents, DateTime dateCutoff)
         {
             SetTopParentIdsOrAncestors(query, parents);

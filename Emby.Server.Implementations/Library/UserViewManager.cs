@@ -372,6 +372,21 @@ namespace Emby.Server.Implementations.Library
                 MediaTypes = mediaTypes
             };
 
+            if (request.GroupItems)
+            {
+                if (parents.OfType<ICollectionFolder>().All(i => i.CollectionType == CollectionType.tvshows))
+                {
+                    query.Limit = limit;
+                    return _libraryManager.GetLatestItemList(query, parents, CollectionType.tvshows);
+                }
+
+                if (parents.OfType<ICollectionFolder>().All(i => i.CollectionType == CollectionType.music))
+                {
+                    query.Limit = limit;
+                    return _libraryManager.GetLatestItemList(query, parents, CollectionType.music);
+                }
+            }
+
             return _libraryManager.GetItemList(query, parents);
         }
     }

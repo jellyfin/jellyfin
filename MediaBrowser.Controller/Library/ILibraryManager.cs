@@ -568,6 +568,15 @@ namespace MediaBrowser.Controller.Library
         IReadOnlyList<BaseItem> GetItemList(InternalItemsQuery query, List<BaseItem> parents);
 
         /// <summary>
+        /// Gets the TVShow/Album items for Latest api.
+        /// </summary>
+        /// <param name="query">The query to use.</param>
+        /// <param name="parents">Items to use for query.</param>
+        /// <param name="collectionType">Collection Type.</param>
+        /// <returns>List of items.</returns>
+        IReadOnlyList<BaseItem> GetLatestItemList(InternalItemsQuery query, IReadOnlyList<BaseItem> parents, CollectionType collectionType);
+
+        /// <summary>
         /// Gets the list of series presentation keys for next up.
         /// </summary>
         /// <param name="query">The query to use.</param>

@@ -264,6 +264,48 @@ public sealed class BaseItemRepository
         return dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToArray();
     }
 
+    /// <inheritdoc/>
+    public IReadOnlyList<BaseItem> GetLatestItemList(InternalItemsQuery filter, CollectionType collectionType)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        PrepareFilterQuery(filter);
+
+        // Early exit if collection type is not tvshows or music
+        if (collectionType != CollectionType.tvshows && collectionType != CollectionType.music)
+        {
+            return Array.Empty<BaseItem>();
+        }
+
+        using var context = _dbProvider.CreateDbContext();
+
+        // Subquery to group by SeriesNames/Album and get the max Date Created for each group.
+        var subquery = PrepareItemQuery(context, filter);
+        subquery = TranslateQuery(subquery, context, filter);
+        var subqueryGrouped = subquery.GroupBy(g => collectionType == CollectionType.tvshows ? g.SeriesName : g.Album)
+            .Select(g => new
+            {
+                Key = g.Key,
+                MaxDateCreated = g.Max(a => a.DateCreated)
+            })
+            .OrderByDescending(g => g.MaxDateCreated)
+            .Select(g => g);
+
+        if (filter.Limit.HasValue)
+        {
+            subqueryGrouped = subqueryGrouped.Take(filter.Limit.Value);
+        }
+
+        filter.Limit = null;
+
+        var mainquery = PrepareItemQuery(context, filter);
+        mainquery = TranslateQuery(mainquery, context, filter);
+        mainquery = mainquery.Where(g => g.DateCreated >= subqueryGrouped.Min(s => s.MaxDateCreated));
+        mainquery = ApplyGroupingFilter(mainquery, filter);
+        mainquery = ApplyQueryPaging(mainquery, filter);
+
+        return mainquery.AsEnumerable().Where(e => e is not null).Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToArray();
+    }
+
     /// <inheritdoc />
     public IReadOnlyList<string> GetNextUpSeriesKeys(InternalItemsQuery filter, DateTime dateCutoff)
     {
