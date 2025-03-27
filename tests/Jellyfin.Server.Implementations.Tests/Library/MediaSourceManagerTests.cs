@@ -58,17 +58,23 @@ namespace Jellyfin.Server.Implementations.Tests.Library
             => Assert.Equal(expected, _mediaSourceManager.GetPathProtocol(path));
 
         [Theory]
-        [InlineData(1, "eng", "eng", true, true)]
-        [InlineData(3, "eng", "eng", false, true)]
-        [InlineData(1, "ger", "eng", false, true)]
-        [InlineData(3, "OriginalLanguage", "eng", false, false)]
+        [InlineData(5, "eng", "eng", false, true)]
+        [InlineData(5, "eng", "eng", true, true)]
+        [InlineData(2, "ger", "eng", false, true)]
+        [InlineData(2, "ger", "eng", true, true)]
+        [InlineData(1, "fre", "eng", false, true)]
+        [InlineData(2, "fre", "eng", true, true)]
+        [InlineData(5, "OriginalLanguage", "eng", false, false)]
         [InlineData(4, "OriginalLanguage", "eng", false, true)]
-        [InlineData(1, "OriginalLanguage", "jpn", true, true)]
-        [InlineData(2, "OriginalLanguage", "jpn,eng", false, false)]
+        [InlineData(5, "OriginalLanguage", "eng", true, false)]
+        [InlineData(4, "OriginalLanguage", "eng", true, true)]
+        [InlineData(2, "OriginalLanguage", "jpn", true, true)]
         [InlineData(2, "OriginalLanguage", "jpn", false, true)]
+        [InlineData(2, "OriginalLanguage", "jpn,eng", false, false)]
         [InlineData(4, "OriginalLanguage", null, false, true)]
         [InlineData(4, "OriginalLanguage", "", false, true)]
-        [InlineData(1, "OriginalLanguage", "ger", false, true)]
+        [InlineData(2, "OriginalLanguage", "", false, false)]
+        [InlineData(2, "OriginalLanguage", "ger", false, true)]
         public void SetDefaultAudioStreamIndex_Index_Correct(
             int expectedIndex,
             string prefferedLanguage,
@@ -89,7 +95,7 @@ namespace Jellyfin.Server.Implementations.Tests.Library
                     Index = 1,
                     Type = MediaStreamType.Audio,
                     Language = "fre",
-                    IsDefault = true,
+                    IsDefault = false,
                     IsOriginal = false
                 },
                 new()
@@ -115,6 +121,14 @@ namespace Jellyfin.Server.Implementations.Tests.Library
                     Language = "eng",
                     IsDefault = false,
                     IsOriginal = originalExist,
+                },
+                new()
+                {
+                    Index = 5,
+                    Type = MediaStreamType.Audio,
+                    Language = "eng",
+                    IsDefault = true,
+                    IsOriginal = false,
                 }
             };
             var mediaInfo = new MediaSourceInfo
