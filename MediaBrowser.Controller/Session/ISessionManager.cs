@@ -342,5 +342,12 @@ namespace MediaBrowser.Controller.Session
         Task RevokeUserTokens(Guid userId, string currentAccessToken);
 
         Task CloseIfNeededAsync(SessionInfo session);
+
+        /// <summary>
+        /// Retrieves the playback position for a given livestream session.
+        /// </summary>
+        /// <param name="playSessionId">The play session Id.</param>
+        /// <returns>Task containing the playback position in seconds.</returns>
+        Task<long> GetLiveStreamPlaybackPositionAsync(string playSessionId);
     }
 }

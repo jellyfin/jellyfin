@@ -573,7 +573,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
     {
         if (EnableSegmentCleaning(state))
         {
-            transcodingJob.TranscodingSegmentCleaner = new TranscodingSegmentCleaner(transcodingJob, _loggerFactory.CreateLogger<TranscodingSegmentCleaner>(), _serverConfigurationManager, _fileSystem, _mediaEncoder, state.SegmentLength);
+            transcodingJob.TranscodingSegmentCleaner = new TranscodingSegmentCleaner(transcodingJob, _loggerFactory.CreateLogger<TranscodingSegmentCleaner>(), _serverConfigurationManager, _fileSystem, _mediaEncoder, _sessionManager, state.SegmentLength);
             transcodingJob.TranscodingSegmentCleaner.Start();
         }
     }
@@ -582,8 +582,8 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         => state.InputProtocol is MediaProtocol.File or MediaProtocol.Http
            && state.IsInputVideo
            && state.TranscodingType == TranscodingJobType.Hls
-           && state.RunTimeTicks.HasValue
-           && state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks;
+           && ((state.RunTimeTicks.HasValue && state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks)
+            || state.IsSegmentedLiveStream);
 
     private TranscodingJob OnTranscodeBeginning(
         string path,

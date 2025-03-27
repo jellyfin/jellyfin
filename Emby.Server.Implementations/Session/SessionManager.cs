@@ -64,6 +64,9 @@ namespace Emby.Server.Implementations.Session
         private readonly ConcurrentDictionary<string, SessionInfo> _activeConnections
             = new(StringComparer.OrdinalIgnoreCase);
 
+        private static readonly ConcurrentDictionary<string, long> _liveStreamPlaybackPositions
+            = new(StringComparer.OrdinalIgnoreCase);
+
         private Timer _idleTimer;
         private Timer _inactiveTimer;
 
@@ -834,6 +837,12 @@ namespace Emby.Server.Implementations.Session
                 }
             }
 
+            if (!string.IsNullOrEmpty(info.LiveStreamId) && !string.IsNullOrEmpty(info.PlaySessionId) && info.PlayMethod == PlayMethod.Transcode)
+            {
+                var playbackPosition = info.PositionTicks.HasValue ? info.PositionTicks.Value / 10000000 : 0;
+                _liveStreamPlaybackPositions.AddOrUpdate(info.PlaySessionId, playbackPosition, (key, oldValue) => playbackPosition);
+            }
+
             var eventArgs = new PlaybackProgressEventArgs
             {
                 Item = libraryItem,
@@ -927,6 +936,12 @@ namespace Emby.Server.Implementations.Session
             }
 
             return changed;
+        }
+
+        /// <inheritdoc />
+        public Task<long> GetLiveStreamPlaybackPositionAsync(string playSessionId)
+        {
+            return Task.FromResult(_liveStreamPlaybackPositions.TryGetValue(playSessionId, out var position) ? position : 0L);
         }
 
         /// <summary>
@@ -1023,6 +1038,11 @@ namespace Emby.Server.Implementations.Session
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error closing live stream");
+                }
+
+                if (!string.IsNullOrEmpty(info.PlaySessionId))
+                {
+                _liveStreamPlaybackPositions.TryRemove(info.PlaySessionId, out _);
                 }
             }
 
@@ -2071,6 +2091,7 @@ namespace Emby.Server.Implementations.Session
             }
 
             _activeConnections.Clear();
+            _liveStreamPlaybackPositions.Clear();
         }
     }
 }

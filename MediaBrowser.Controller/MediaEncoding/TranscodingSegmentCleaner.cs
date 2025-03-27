@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
@@ -21,6 +22,7 @@ public class TranscodingSegmentCleaner : IDisposable
     private readonly IConfigurationManager _config;
     private readonly IFileSystem _fileSystem;
     private readonly IMediaEncoder _mediaEncoder;
+    private readonly ISessionManager _sessionManager;
     private Timer? _timer;
     private int _segmentLength;
 
@@ -32,14 +34,16 @@ public class TranscodingSegmentCleaner : IDisposable
     /// <param name="config">Instance of the <see cref="IConfigurationManager"/> interface.</param>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
+    /// <param name="sessionManager">Instance of the <see cref="ISessionManager"/> interface.</param>
     /// <param name="segmentLength">The segment length of this transcoding job.</param>
-    public TranscodingSegmentCleaner(TranscodingJob job, ILogger<TranscodingSegmentCleaner> logger, IConfigurationManager config, IFileSystem fileSystem, IMediaEncoder mediaEncoder, int segmentLength)
+    public TranscodingSegmentCleaner(TranscodingJob job, ILogger<TranscodingSegmentCleaner> logger, IConfigurationManager config, IFileSystem fileSystem, IMediaEncoder mediaEncoder, ISessionManager sessionManager, int segmentLength)
     {
         _job = job;
         _logger = logger;
         _config = config;
         _fileSystem = fileSystem;
         _mediaEncoder = mediaEncoder;
+        _sessionManager = sessionManager;
         _segmentLength = segmentLength;
     }
 
@@ -99,8 +103,17 @@ public class TranscodingSegmentCleaner : IDisposable
 
         if (enableSegmentDeletion)
         {
-            var downloadPositionTicks = _job.DownloadPositionTicks ?? 0;
-            var downloadPositionSeconds = Convert.ToInt64(TimeSpan.FromTicks(downloadPositionTicks).TotalSeconds);
+            long downloadPositionSeconds;
+
+            if (!string.IsNullOrEmpty(_job.LiveStreamId) && !string.IsNullOrEmpty(_job.PlaySessionId))
+            {
+                downloadPositionSeconds = await _sessionManager.GetLiveStreamPlaybackPositionAsync(_job.PlaySessionId).ConfigureAwait(false);
+            }
+            else
+            {
+                var downloadPositionTicks = _job.DownloadPositionTicks ?? 0;
+                downloadPositionSeconds = Convert.ToInt64(TimeSpan.FromTicks(downloadPositionTicks).TotalSeconds);
+            }
 
             if (downloadPositionSeconds > 0 && segmentKeepSeconds > 0 && downloadPositionSeconds > segmentKeepSeconds)
             {
