@@ -325,7 +325,8 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         _logger.LogInformation("Move {0} to {1}.", libraryDbPath, libraryDbPath + ".old");
 
         SqliteConnection.ClearAllPools();
-        File.Move(libraryDbPath, libraryDbPath + ".old");
+
+        File.Move(libraryDbPath, libraryDbPath + ".old", true);
 
         _logger.LogInformation("Migrating Library db took {0}.", migrationTotalTime);
 
