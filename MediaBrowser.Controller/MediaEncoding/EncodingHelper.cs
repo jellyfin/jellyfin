@@ -37,6 +37,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// </summary>
         public const string ContainerValidationRegex = @"^[a-zA-Z0-9\-\._,|]{0,40}$";
 
+        /// <summary>
+        /// The level validation regex.
+        /// This regular expression matches strings representing a double.
+        /// </summary>
+        public const string LevelValidationRegex = @"-?\d+(?:\.\d+)?";
+
         private const string _defaultMjpegEncoder = "mjpeg";
 
         private const string QsvAlias = "qs";
