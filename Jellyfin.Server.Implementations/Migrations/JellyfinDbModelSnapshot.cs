@@ -39,7 +39,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AccessSchedules");
+                    b.ToTable("AccessSchedules", (string)null);
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.ActivityLog", b =>
@@ -87,7 +87,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("DateCreated");
 
-                    b.ToTable("ActivityLogs");
+                    b.ToTable("ActivityLogs", (string)null);
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.AncestorId", b =>
@@ -102,7 +102,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("ParentItemId");
 
-                    b.ToTable("AncestorIds");
+                    b.ToTable("AncestorIds", (string)null);
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.AttachmentStreamInfo", b =>
@@ -131,7 +131,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasKey("ItemId", "Index");
 
-                    b.ToTable("AttachmentStreamInfos");
+                    b.ToTable("AttachmentStreamInfos", (string)null);
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.BaseItemEntity", b =>
@@ -379,7 +379,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("Type", "TopParentId", "IsVirtualItem", "PresentationUniqueKey", "DateCreated");
 
-                    b.ToTable("BaseItems");
+                    b.ToTable("BaseItems", (string)null);
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.BaseItemImageInfo", b =>
@@ -414,7 +414,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("ItemId");
 
-                    b.ToTable("BaseItemImageInfos");
+                    b.ToTable("BaseItemImageInfos", (string)null);
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.BaseItemMetadataField", b =>
@@ -429,7 +429,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("ItemId");
 
-                    b.ToTable("BaseItemMetadataFields");
+                    b.ToTable("BaseItemMetadataFields", (string)null);
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.BaseItemProvider", b =>
@@ -448,7 +448,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("ProviderId", "ProviderValue", "ItemId");
 
-                    b.ToTable("BaseItemProviders");
+                    b.ToTable("BaseItemProviders", (string)null);
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.BaseItemTrailerType", b =>
@@ -463,7 +463,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("ItemId");
 
-                    b.ToTable("BaseItemTrailerTypes");
+                    b.ToTable("BaseItemTrailerTypes", (string)null);
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.Chapter", b =>
@@ -488,7 +488,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasKey("ItemId", "ChapterIndex");
 
-                    b.ToTable("Chapters");
+                    b.ToTable("Chapters", (string)null);
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.CustomItemDisplayPreferences", b =>
@@ -520,7 +520,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasIndex("UserId", "ItemId", "Client", "Key")
                         .IsUnique();
 
-                    b.ToTable("CustomItemDisplayPreferences");
+                    b.ToTable("CustomItemDisplayPreferences", (string)null);
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.DisplayPreferences", b =>
@@ -577,7 +577,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasIndex("UserId", "ItemId", "Client")
                         .IsUnique();
 
-                    b.ToTable("DisplayPreferences");
+                    b.ToTable("DisplayPreferences", (string)null);
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.HomeSection", b =>
@@ -599,7 +599,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("DisplayPreferencesId");
 
-                    b.ToTable("HomeSection");
+                    b.ToTable("HomeSection", (string)null);
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.ImageInfo", b =>
@@ -624,7 +624,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("ImageInfos");
+                    b.ToTable("ImageInfos", (string)null);
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.ItemDisplayPreferences", b =>
@@ -668,7 +668,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ItemDisplayPreferences");
+                    b.ToTable("ItemDisplayPreferences", (string)null);
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.ItemValue", b =>
@@ -693,7 +693,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasIndex("Type", "CleanValue")
                         .IsUnique();
 
-                    b.ToTable("ItemValues");
+                    b.ToTable("ItemValues", (string)null);
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.ItemValueMap", b =>
@@ -708,7 +708,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("ItemId");
 
-                    b.ToTable("ItemValuesMap");
+                    b.ToTable("ItemValuesMap", (string)null);
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.MediaSegment", b =>
@@ -735,7 +735,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("MediaSegments");
+                    b.ToTable("MediaSegments", (string)null);
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.MediaStreamInfo", b =>
@@ -804,9 +804,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<int?>("ElPresentFlag")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool?>("Hdr10PlusPresentFlag")
                         .HasColumnType("INTEGER");
 
                     b.Property<int?>("Height")
@@ -891,7 +888,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("StreamIndex", "StreamType", "Language");
 
-                    b.ToTable("MediaStreamInfos");
+                    b.ToTable("MediaStreamInfos", (string)null);
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.People", b =>
@@ -911,7 +908,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("Name");
 
-                    b.ToTable("Peoples");
+                    b.ToTable("Peoples", (string)null);
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.PeopleBaseItemMap", b =>
@@ -939,7 +936,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("ItemId", "SortOrder");
 
-                    b.ToTable("PeopleBaseItemMap");
+                    b.ToTable("PeopleBaseItemMap", (string)null);
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.Permission", b =>
@@ -970,7 +967,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .IsUnique()
                         .HasFilter("[UserId] IS NOT NULL");
 
-                    b.ToTable("Permissions");
+                    b.ToTable("Permissions", (string)null);
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.Preference", b =>
@@ -1003,7 +1000,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .IsUnique()
                         .HasFilter("[UserId] IS NOT NULL");
 
-                    b.ToTable("Preferences");
+                    b.ToTable("Preferences", (string)null);
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.Security.ApiKey", b =>
@@ -1032,7 +1029,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasIndex("AccessToken")
                         .IsUnique();
 
-                    b.ToTable("ApiKeys");
+                    b.ToTable("ApiKeys", (string)null);
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.Security.Device", b =>
@@ -1090,7 +1087,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("UserId", "DeviceId");
 
-                    b.ToTable("Devices");
+                    b.ToTable("Devices", (string)null);
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.Security.DeviceOptions", b =>
@@ -1111,7 +1108,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasIndex("DeviceId")
                         .IsUnique();
 
-                    b.ToTable("DeviceOptions");
+                    b.ToTable("DeviceOptions", (string)null);
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.TrickplayInfo", b =>
@@ -1142,7 +1139,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasKey("ItemId", "Width");
 
-                    b.ToTable("TrickplayInfos");
+                    b.ToTable("TrickplayInfos", (string)null);
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.User", b =>
@@ -1255,7 +1252,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasIndex("Username")
                         .IsUnique();
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.UserData", b =>
@@ -1308,7 +1305,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("ItemId", "UserId", "Played");
 
-                    b.ToTable("UserData");
+                    b.ToTable("UserData", (string)null);
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.AccessSchedule", b =>
