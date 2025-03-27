@@ -179,9 +179,8 @@ public class ServerConfiguration : BaseApplicationConfiguration
 
     /// <summary>
     /// Gets or sets the maximum amount of items to cache.
-    /// Should be relative to the library size.
     /// </summary>
-    public int CacheSize { get; set; } = 10_000;
+    public int CacheSize { get; set; } = 1_000;
 
     /// <summary>
     /// Gets or sets the image saving convention.
