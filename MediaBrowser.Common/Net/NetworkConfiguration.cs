@@ -173,4 +173,14 @@ public class NetworkConfiguration
     /// Gets or sets a value indicating whether <seealso cref="RemoteIPFilter"/> contains a blacklist or a whitelist. Default is a whitelist.
     /// </summary>
     public bool IsRemoteIPFilterBlacklist { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether public user listing is enabled.
+    /// </summary>
+    public bool PublicUserListing { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether public user listing is scoped to local network only.
+    /// </summary>
+    public bool PublicUserListingLocalOnly { get; set; } = true;
 }
