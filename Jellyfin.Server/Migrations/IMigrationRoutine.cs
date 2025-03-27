@@ -1,4 +1,6 @@
 using System;
+using Jellyfin.Server.Implementations;
+using Microsoft.EntityFrameworkCore.Internal;
 
 namespace Jellyfin.Server.Migrations
 {
