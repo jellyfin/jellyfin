@@ -83,6 +83,20 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         connection.Open();
         using var dbContext = _provider.CreateDbContext();
 
+        // Perform a cleanup first to remove stale data from previously failed migrations.
+        _logger.LogInformation("Cleaning leftovers to ensure no data from previous failed migrations exist...");
+        dbContext.BaseItems.ExecuteDelete();
+        dbContext.ItemValues.ExecuteDelete();
+        dbContext.UserData.ExecuteDelete();
+        dbContext.MediaStreamInfos.ExecuteDelete();
+        dbContext.Peoples.ExecuteDelete();
+        dbContext.PeopleBaseItemMap.ExecuteDelete();
+        dbContext.AncestorIds.ExecuteDelete();
+        dbContext.Chapters.ExecuteDelete();
+        migrationTotalTime += stopwatch.Elapsed;
+        _logger.LogInformation("Cleaning took {0}.", stopwatch.Elapsed);
+        stopwatch.Restart();
+
         _logger.LogInformation("Start moving TypedBaseItem.");
         const string typedBaseItemsQuery = """
          SELECT guid, type, data, StartDate, EndDate, ChannelId, IsMovie,
@@ -94,7 +108,6 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
          PresentationUniqueKey, InheritedParentalRatingValue, ExternalSeriesId, Tagline, ProviderIds, Images, ProductionLocations, ExtraIds, TotalBitrate,
          ExtraType, Artists, AlbumArtists, ExternalId, SeriesPresentationUniqueKey, ShowId, OwnerId, MediaType, SortName, CleanName, UnratedType FROM TypedBaseItems
          """;
-        dbContext.BaseItems.ExecuteDelete();
 
         var legacyBaseItemWithUserKeys = new Dictionary<string, BaseItemEntity>();
         foreach (SqliteDataReader dto in connection.Query(typedBaseItemsQuery))
@@ -120,7 +133,6 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         SELECT ItemId, Type, Value, CleanValue FROM ItemValues
                     WHERE Type <> 6 AND EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = ItemValues.ItemId)
         """;
-        dbContext.ItemValues.ExecuteDelete();
 
         // EFCores local lookup sucks. We cannot use context.ItemValues.Local here because its just super slow.
         var localItems = new Dictionary<(int Type, string CleanValue), (Database.Implementations.Entities.ItemValue ItemValue, List<Guid> ItemIds)>();
@@ -163,8 +175,6 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.UserDataKey = UserDatas.key)
         """);
 
-        dbContext.UserData.ExecuteDelete();
-
         var users = dbContext.Users.AsNoTracking().ToImmutableArray();
 
         foreach (var entity in queryResult)
@@ -204,7 +214,6 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         FROM MediaStreams
         WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = MediaStreams.ItemId)
         """;
-        dbContext.MediaStreamInfos.ExecuteDelete();
 
         foreach (SqliteDataReader dto in connection.Query(mediaStreamQuery))
         {
@@ -223,8 +232,6 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         SELECT ItemId, Name, Role, PersonType, SortOrder FROM People
         WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = People.ItemId)
         """;
-        dbContext.Peoples.ExecuteDelete();
-        dbContext.PeopleBaseItemMap.ExecuteDelete();
 
         var peopleCache = new Dictionary<string, (People Person, List<PeopleBaseItemMap> Items)>();
         var baseItemIds = dbContext.BaseItems.Select(b => b.Id).ToHashSet();
@@ -283,7 +290,6 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         SELECT ItemId,StartPositionTicks,Name,ImagePath,ImageDateModified,ChapterIndex from Chapters2
         WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = Chapters2.ItemId)
         """;
-        dbContext.Chapters.ExecuteDelete();
 
         foreach (SqliteDataReader dto in connection.Query(chapterQuery))
         {
@@ -305,7 +311,6 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         AND
         EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = AncestorIds.AncestorId)
         """;
-        dbContext.AncestorIds.ExecuteDelete();
 
         foreach (SqliteDataReader dto in connection.Query(ancestorIdsQuery))
         {
