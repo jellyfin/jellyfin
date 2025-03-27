@@ -180,7 +180,7 @@ public class ServerConfiguration : BaseApplicationConfiguration
     /// <summary>
     /// Gets or sets the maximum amount of items to cache.
     /// </summary>
-    public int CacheSize { get; set; } = 1_000;
+    public int CacheSize { get; set; } = Environment.ProcessorCount * 100;
 
     /// <summary>
     /// Gets or sets the image saving convention.
