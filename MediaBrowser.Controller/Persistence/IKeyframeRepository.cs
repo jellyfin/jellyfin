@@ -15,7 +15,7 @@ public interface IKeyframeRepository
     /// Gets the keyframe data.
     /// </summary>
     /// <param name="itemId">The item id.</param>
-    /// <returns>IEnumerable{KeyframeData}.</returns>
+    /// <returns>The keyframe data.</returns>
     IReadOnlyList<KeyframeData> GetKeyframeData(Guid itemId);
 
     /// <summary>
