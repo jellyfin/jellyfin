@@ -126,9 +126,10 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         connection.Close();
         stopwatch.Stop();
         migrationTotalTime += stopwatch.Elapsed;
-        commitTasks.Add(() => CommitChanges(dbContext, "BaseItems"));
+        _logger.LogInformation("Saving BaseItems and processing related entities...");
 
         var taskTimes = Task.WhenAll(
+            Task.Run(() => CommitChanges(dbContext, "BaseItems")),
             Task.Run(() =>
             {
                 var dbContext = CreateDbContext();
@@ -374,7 +375,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
                 return stopwatch.Elapsed;
             })).GetAwaiter().GetResult();
 
-        _logger.LogInformation("Finished processing entities! Saving changes to database...");
+        _logger.LogInformation("Finished processing all entities! Saving remaining changes to database...");
         foreach (var task in commitTasks)
         {
             migrationTotalTime += task();
