@@ -82,7 +82,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 
         // Perform a cleanup first to remove stale data from previously failed migrations.
         _logger.LogInformation("Cleaning leftovers to ensure no data from previous failed migrations exist...");
-        using var dbContext = _provider.CreateDbContext();
+        var dbContext = CreateDbContext();
         dbContext.BaseItems.ExecuteDelete();
         dbContext.ItemValues.ExecuteDelete();
         dbContext.UserData.ExecuteDelete();
@@ -131,7 +131,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         var taskTimes = Task.WhenAll(
             Task.Run(() =>
             {
-                using var dbContext = _provider.CreateDbContext();
+                var dbContext = CreateDbContext();
                 using var connection = new SqliteConnection(dbPath);
                 connection.Open();
                 var stopwatch = new Stopwatch();
@@ -175,7 +175,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             }),
             Task.Run(() =>
             {
-                using var dbContext = _provider.CreateDbContext();
+                var dbContext = CreateDbContext();
                 using var connection = new SqliteConnection(dbPath);
                 connection.Open();
                 var stopwatch = new Stopwatch();
@@ -226,7 +226,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             }),
             Task.Run(() =>
             {
-                using var dbContext = _provider.CreateDbContext();
+                var dbContext = CreateDbContext();
                 using var connection = new SqliteConnection(dbPath);
                 connection.Open();
                 var stopwatch = new Stopwatch();
@@ -256,7 +256,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             }),
             Task.Run(() =>
             {
-                using var dbContext = _provider.CreateDbContext();
+                var dbContext = CreateDbContext();
                 using var connection = new SqliteConnection(dbPath);
                 connection.Open();
                 var stopwatch = new Stopwatch();
@@ -320,7 +320,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             }),
             Task.Run(() =>
             {
-                using var dbContext = _provider.CreateDbContext();
+                var dbContext = CreateDbContext();
                 using var connection = new SqliteConnection(dbPath);
                 connection.Open();
                 var stopwatch = new Stopwatch();
@@ -346,7 +346,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             }),
             Task.Run(() =>
             {
-                using var dbContext = _provider.CreateDbContext();
+                var dbContext = CreateDbContext();
                 using var connection = new SqliteConnection(dbPath);
                 connection.Open();
                 var stopwatch = new Stopwatch();
@@ -402,11 +402,21 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         _jellyfinDatabaseProvider.RunScheduledOptimisation(CancellationToken.None).ConfigureAwait(false).GetAwaiter().GetResult();
     }
 
+    private JellyfinDbContext CreateDbContext()
+    {
+        var dbContext = _provider.CreateDbContext();
+        // We're just inserting, not updating, so it's faster to disable change tracking
+        dbContext.ChangeTracker.AutoDetectChangesEnabled = false;
+        dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+        return dbContext;
+    }
+
     private TimeSpan CommitChanges(DbContext dbContext, string entityName)
     {
         var stopwatch = new Stopwatch();
         stopwatch.Start();
         dbContext.SaveChanges();
+        dbContext.Dispose();
         _logger.LogInformation("Saving {0} entries took {1}.", entityName, stopwatch.Elapsed);
         stopwatch.Stop();
         return stopwatch.Elapsed;
