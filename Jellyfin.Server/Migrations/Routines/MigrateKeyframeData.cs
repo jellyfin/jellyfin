@@ -119,7 +119,7 @@ public class MigrateKeyframeData : IDatabaseMigrationRoutine
         if (!string.IsNullOrEmpty(path))
         {
             var cachePath = GetCachePath(KeyframeCachePath, path);
-            if (!string.IsNullOrEmpty(cachePath) && TryReadFromCache(cachePath, out var keyframeData))
+            if (TryReadFromCache(cachePath, out var keyframeData))
             {
                 data = new()
                 {
@@ -155,7 +155,7 @@ public class MigrateKeyframeData : IDatabaseMigrationRoutine
         return Path.Join(keyframeCachePath, prefix, filename);
     }
 
-    private static bool TryReadFromCache(string cachePath, [NotNullWhen(true)] out MediaEncoding.Keyframes.KeyframeData? cachedResult)
+    private static bool TryReadFromCache(string? cachePath, [NotNullWhen(true)] out MediaEncoding.Keyframes.KeyframeData? cachedResult)
     {
         if (File.Exists(cachePath))
         {

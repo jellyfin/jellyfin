@@ -77,7 +77,7 @@ public class KeyframeExtractionScheduledTask : IScheduledTask
             {
                 // Only local files supported
                 var path = video.Path;
-                if (!string.IsNullOrEmpty(path) && File.Exists(path))
+                if (File.Exists(path))
                 {
                     foreach (var extractor in _keyframeExtractors)
                     {
