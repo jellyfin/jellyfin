@@ -35,6 +35,7 @@ using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.SyncPlay;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
@@ -1822,6 +1823,11 @@ namespace Emby.Server.Implementations.Session
             var deviceName = info.DeviceName;
             var appName = info.AppName;
 
+            if (user == null && info.UserId.IsEmpty())
+            {
+                user = new User(deviceName, "AccessToken", "None");
+            }
+
             if (string.IsNullOrEmpty(deviceId))
             {
                 deviceId = info.DeviceId;
@@ -1847,7 +1853,7 @@ namespace Emby.Server.Implementations.Session
 
             if (items.Count == 0)
             {
-                Device apiDevice = new Device(Guid.Empty, "API", null, "Jellyfin Server", deviceId);
+                Device apiDevice = new Device(Guid.Empty, "API", _appHost.ApplicationVersionString, _appHost.Name, deviceId);
                 items = [apiDevice];
             }
 
