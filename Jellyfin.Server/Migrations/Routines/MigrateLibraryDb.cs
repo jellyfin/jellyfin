@@ -272,7 +272,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 
         peopleCache.Clear();
 
-        _logger.LogInformation("Try saving {0} People entries.", dbContext.MediaStreamInfos.Local.Count);
+        _logger.LogInformation("Try saving {0} People entries.", dbContext.Peoples.Local.Count);
         dbContext.SaveChanges();
         migrationTotalTime += stopwatch.Elapsed;
         _logger.LogInformation("Saving People entries took {0}.", stopwatch.Elapsed);
@@ -305,7 +305,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         AND
         EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = AncestorIds.AncestorId)
         """;
-        dbContext.Chapters.ExecuteDelete();
+        dbContext.AncestorIds.ExecuteDelete();
 
         foreach (SqliteDataReader dto in connection.Query(ancestorIdsQuery))
         {
@@ -313,7 +313,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             dbContext.AncestorIds.Add(ancestorId);
         }
 
-        _logger.LogInformation("Try saving {0} AncestorIds entries.", dbContext.Chapters.Local.Count);
+        _logger.LogInformation("Try saving {0} AncestorIds entries.", dbContext.AncestorIds.Local.Count);
 
         dbContext.SaveChanges();
         migrationTotalTime += stopwatch.Elapsed;
