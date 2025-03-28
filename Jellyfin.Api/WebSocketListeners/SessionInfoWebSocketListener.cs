@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Jellyfin.Data.Enums;
+using Jellyfin.Data;
+using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
@@ -79,7 +80,9 @@ public class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnume
     /// <param name="message">The message.</param>
     protected override void Start(WebSocketMessageInfo message)
     {
-        if (!message.Connection.AuthorizationInfo.User.HasPermission(PermissionKind.IsAdministrator))
+        if (!message.Connection.AuthorizationInfo.IsApiKey
+            && (message.Connection.AuthorizationInfo.User is null
+                || !message.Connection.AuthorizationInfo.User.HasPermission(PermissionKind.IsAdministrator)))
         {
             throw new AuthenticationException("Only admin users can subscribe to session information.");
         }

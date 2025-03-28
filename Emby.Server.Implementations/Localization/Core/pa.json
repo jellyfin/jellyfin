@@ -120,5 +120,20 @@
     "Albums": "ਐਲਬਮਾਂ",
     "TaskOptimizeDatabase": "ਡਾਟਾਬੇਸ ਅਨੁਕੂਲ ਬਣਾਓ",
     "External": "ਬਾਹਰੀ",
-    "HearingImpaired": "ਸੁਨਣ ਵਿਚ ਕਮਜ਼ੋਰ"
+    "HearingImpaired": "ਸੁਨਣ ਵਿਚ ਕਮਜ਼ੋਰ",
+    "TaskAudioNormalizationDescription": "ਆਵਾਜ਼ ਸਧਾਰਣੀਕਰਨ ਡਾਟਾ ਲਈ ਫਾਇਲਾਂ ਖੋਜੋ।",
+    "TaskRefreshTrickplayImages": "ਟ੍ਰਿਕਪਲੇ ਤਸਵੀਰਾਂ ਤਿਆਰ ਕਰੋ",
+    "TaskExtractMediaSegments": "ਮੀਡੀਆ ਸੈਗਮੈਂਟ ਸਕੈਨ",
+    "TaskMoveTrickplayImagesDescription": "ਟ੍ਰਿਕਪਲੇ ਤਸਵੀਰਾਂ ਦੀ ਜਗਾ ਨੂੰ ਲਾਇਬ੍ਰੇਰੀ ਸੈਟਿੰਗਜ਼ ਅਨੁਸਾਰ ਬਦਲੋ।",
+    "TaskOptimizeDatabaseDescription": "ਡੇਟਾਬੇਸ ਨੂੰ ਸੰਗ੍ਰਹਿਤ ਕਰਦਾ ਹੈ ਅਤੇ ਖਾਲੀ ਜਗ੍ਹਾ ਘਟਾਉਂਦਾ ਹੈ। ਲਾਇਬ੍ਰੇਰੀ ਸਕੈਨ ਕਰਨ ਜਾਂ ਡੇਟਾਬੇਸ ਵਿੱਚ ਸੋਧਾਂ ਕਰਨ ਤੋਂ ਬਾਅਦ ਇਸ ਕੰਮ ਨੂੰ ਚਲਾਉਣਾ ਪ੍ਰਦਰਸ਼ਨ ਵਿੱਚ ਸੁਧਾਰ ਕਰ ਸਕਦਾ ਹੈ।",
+    "TaskExtractMediaSegmentsDescription": "ਮੀਡੀਆ ਸੈਗਮੈਂਟ ਨੂੰ ਮੀਡੀਆਸੈਗਮੈਂਟ ਯੋਗ ਪਲੱਗਇਨਾਂ ਤੋਂ ਨਿਕਾਲਦਾ ਜਾਂ ਪ੍ਰਾਪਤ ਕਰਦਾ ਹੈ।",
+    "TaskMoveTrickplayImages": "ਟ੍ਰਿਕਪਲੇ ਤਸਵੀਰਾਂ ਦੀ ਜਗਾ ਬਦਲੋ",
+    "TaskDownloadMissingLyrics": "ਅਧੂਰੇ ਬੋਲ ਡਾਊਨਲੋਡ ਕਰੋ",
+    "TaskDownloadMissingLyricsDescription": "ਗੀਤਾਂ ਲਈ ਡਾਊਨਲੋਡ ਕਿਤੇ ਬੋਲ",
+    "TaskKeyframeExtractor": "ਕੀ-ਫ੍ਰੇਮ ਐਕਸਟ੍ਰੈਕਟਰ",
+    "TaskCleanCollectionsAndPlaylistsDescription": "ਕਲੈਕਸ਼ਨਾਂ ਅਤੇ ਪਲੇਲਿਸਟਾਂ ਵਿੱਚੋਂ ਉਹ ਆਈਟਮ ਹਟਾਉਂਦਾ ਹੈ ਜੋ ਹੁਣ ਮੌਜੂਦ ਨਹੀਂ ਹਨ।",
+    "TaskCleanCollectionsAndPlaylists": "ਕਲੈਕਸ਼ਨਾਂ ਅਤੇ ਪਲੇਲਿਸਟਾਂ ਨੂੰ ਸਾਫ ਕਰੋ",
+    "TaskAudioNormalization": "ਆਵਾਜ਼ ਸਧਾਰਣੀਕਰਨ",
+    "TaskRefreshTrickplayImagesDescription": "ਚਲ ਰਹੀ ਲਾਇਬ੍ਰੇਰੀਆਂ ਵਿੱਚ ਵੀਡੀਓਜ਼ ਲਈ ਟ੍ਰਿਕਪਲੇ ਪ੍ਰੀਵਿਊ ਬਣਾਉਂਦਾ ਹੈ।",
+    "TaskKeyframeExtractorDescription": "ਕੀ-ਫ੍ਰੇਮਜ਼ ਨੂੰ ਵੀਡੀਓ ਫਾਈਲਾਂ ਵਿੱਚੋਂ ਨਿਕਾਲਦਾ ਹੈ ਤਾਂ ਜੋ ਹੋਰ ਜ਼ਿਆਦਾ ਸਟਿਕ ਹੋਣ ਵਾਲੀਆਂ HLS ਪਲੇਲਿਸਟਾਂ ਬਣਾਈਆਂ ਜਾ ਸਕਣ। ਇਹ ਕੰਮ ਲੰਬੇ ਸਮੇਂ ਤੱਕ ਚੱਲ ਸਕਦਾ ਹੈ।"
 }

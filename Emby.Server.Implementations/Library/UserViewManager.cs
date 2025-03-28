@@ -6,8 +6,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using Jellyfin.Data.Entities;
+using Jellyfin.Data;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -308,39 +310,40 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            var mediaTypes = new List<MediaType>();
+            MediaType[] mediaTypes = [];
 
             if (includeItemTypes.Length == 0)
             {
+                HashSet<MediaType> tmpMediaTypes = [];
                 foreach (var parent in parents.OfType<ICollectionFolder>())
                 {
                     switch (parent.CollectionType)
                     {
                         case CollectionType.books:
-                            mediaTypes.Add(MediaType.Book);
-                            mediaTypes.Add(MediaType.Audio);
+                            tmpMediaTypes.Add(MediaType.Book);
+                            tmpMediaTypes.Add(MediaType.Audio);
                             break;
                         case CollectionType.music:
-                            mediaTypes.Add(MediaType.Audio);
+                            tmpMediaTypes.Add(MediaType.Audio);
                             break;
                         case CollectionType.photos:
-                            mediaTypes.Add(MediaType.Photo);
-                            mediaTypes.Add(MediaType.Video);
+                            tmpMediaTypes.Add(MediaType.Photo);
+                            tmpMediaTypes.Add(MediaType.Video);
                             break;
                         case CollectionType.homevideos:
-                            mediaTypes.Add(MediaType.Photo);
-                            mediaTypes.Add(MediaType.Video);
+                            tmpMediaTypes.Add(MediaType.Photo);
+                            tmpMediaTypes.Add(MediaType.Video);
                             break;
                         default:
-                            mediaTypes.Add(MediaType.Video);
+                            tmpMediaTypes.Add(MediaType.Video);
                             break;
                     }
                 }
 
-                mediaTypes = mediaTypes.Distinct().ToList();
+                mediaTypes = tmpMediaTypes.ToArray();
             }
 
-            var excludeItemTypes = includeItemTypes.Length == 0 && mediaTypes.Count == 0
+            var excludeItemTypes = includeItemTypes.Length == 0 && mediaTypes.Length == 0
                 ? new[]
                 {
                     BaseItemKind.Person,
@@ -366,12 +369,22 @@ namespace Emby.Server.Implementations.Library
                 Limit = limit * 5,
                 IsPlayed = isPlayed,
                 DtoOptions = options,
-                MediaTypes = mediaTypes.ToArray()
+                MediaTypes = mediaTypes
             };
 
-            if (parents.Count == 0)
+            if (request.GroupItems)
             {
-                return _libraryManager.GetItemList(query, false);
+                if (parents.OfType<ICollectionFolder>().All(i => i.CollectionType == CollectionType.tvshows))
+                {
+                    query.Limit = limit;
+                    return _libraryManager.GetLatestItemList(query, parents, CollectionType.tvshows);
+                }
+
+                if (parents.OfType<ICollectionFolder>().All(i => i.CollectionType == CollectionType.music))
+                {
+                    query.Limit = limit;
+                    return _libraryManager.GetLatestItemList(query, parents, CollectionType.music);
+                }
             }
 
             return _libraryManager.GetItemList(query, parents);

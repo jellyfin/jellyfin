@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Enums;
 
 namespace MediaBrowser.Model.Dto
 {

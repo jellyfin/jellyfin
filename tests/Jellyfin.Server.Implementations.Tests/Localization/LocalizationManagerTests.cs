@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Localization;
 using MediaBrowser.Controller.Configuration;
@@ -45,7 +44,7 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
 
             var germany = cultures.FirstOrDefault(x => x.TwoLetterISOLanguageName.Equals("de", StringComparison.Ordinal));
             Assert.NotNull(germany);
-            Assert.Equal("ger", germany!.ThreeLetterISOLanguageName);
+            Assert.Equal("deu", germany!.ThreeLetterISOLanguageName);
             Assert.Equal("German", germany.DisplayName);
             Assert.Equal("German", germany.Name);
             Assert.Contains("deu", germany.ThreeLetterISOLanguageNames);
@@ -54,6 +53,7 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
 
         [Theory]
         [InlineData("de")]
+        [InlineData("deu")]
         [InlineData("ger")]
         [InlineData("german")]
         public async Task FindLanguageInfo_Valid_Success(string identifier)
@@ -67,7 +67,7 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             var germany = localizationManager.FindLanguageInfo(identifier);
             Assert.NotNull(germany);
 
-            Assert.Equal("ger", germany!.ThreeLetterISOLanguageName);
+            Assert.Equal("deu", germany!.ThreeLetterISOLanguageName);
             Assert.Equal("German", germany.DisplayName);
             Assert.Equal("German", germany.Name);
             Assert.Contains("deu", germany.ThreeLetterISOLanguageNames);
@@ -84,7 +84,7 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             await localizationManager.LoadAll();
             var ratings = localizationManager.GetParentalRatings().ToList();
 
-            Assert.Equal(54, ratings.Count);
+            Assert.Equal(56, ratings.Count);
 
             var tvma = ratings.FirstOrDefault(x => x.Name.Equals("TV-MA", StringComparison.Ordinal));
             Assert.NotNull(tvma);
@@ -116,6 +116,10 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
         [InlineData("TV-MA", "US", 17)]
         [InlineData("XXX", "asdf", 1000)]
         [InlineData("Germany: FSK-18", "DE", 18)]
+        [InlineData("Rated : R", "US", 17)]
+        [InlineData("Rated: R", "US", 17)]
+        [InlineData("Rated R", "US", 17)]
+        [InlineData(" PG-13 ", "US", 13)]
         public async Task GetRatingLevel_GivenValidString_Success(string value, string countryCode, int expectedLevel)
         {
             var localizationManager = Setup(new ServerConfiguration()

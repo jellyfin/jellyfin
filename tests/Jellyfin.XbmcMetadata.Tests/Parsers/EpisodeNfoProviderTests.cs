@@ -26,7 +26,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             var providerManager = new Mock<IProviderManager>();
 
             var imdbExternalId = new ImdbExternalId();
-            var externalIdInfo = new ExternalIdInfo(imdbExternalId.ProviderName, imdbExternalId.Key, imdbExternalId.Type, imdbExternalId.UrlFormatString);
+            var externalIdInfo = new ExternalIdInfo(imdbExternalId.ProviderName, imdbExternalId.Key, imdbExternalId.Type);
 
             providerManager.Setup(x => x.GetExternalIdInfos(It.IsAny<IHasProviderIds>()))
                 .Returns(new[] { externalIdInfo });
@@ -85,7 +85,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             Assert.Contains("Bryan Fuller", writers.Select(x => x.Name));
             Assert.Contains("Michael Green", writers.Select(x => x.Name));
 
-            // Direcotrs
+            // Directors
             var directors = result.People.Where(x => x.Type == PersonKind.Director).ToArray();
             Assert.Single(directors);
             Assert.Contains("David Slade", directors.Select(x => x.Name));

@@ -23,6 +23,10 @@ namespace Jellyfin.Server.Implementations.Tests.Users
         [InlineData(" ")]
         [InlineData("")]
         [InlineData("special characters like & $ ? are not allowed")]
+        [InlineData("thishasaspaceontheend ")]
+        [InlineData(" thishasaspaceatthestart")]
+        [InlineData(" thishasaspaceatbothends ")]
+        [InlineData(" this has a space at both ends and inbetween ")]
         public void ThrowIfInvalidUsername_WhenInvalidUsername_ThrowsArgumentException(string username)
         {
             Assert.Throws<ArgumentException>(() => UserManager.ThrowIfInvalidUsername(username));

@@ -98,7 +98,7 @@ public class UniversalAudioController : BaseJellyfinApiController
     [ProducesAudioFile]
     public async Task<ActionResult> GetUniversalAudioStream(
         [FromRoute, Required] Guid itemId,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] container,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] container,
         [FromQuery] string? mediaSourceId,
         [FromQuery] string? deviceId,
         [FromQuery] Guid? userId,
@@ -222,7 +222,7 @@ public class UniversalAudioController : BaseJellyfinApiController
                 TranscodeReasons = mediaSource.TranscodeReasons == 0 ? null : mediaSource.TranscodeReasons.ToString(),
                 Context = EncodingContext.Static,
                 StreamOptions = new Dictionary<string, string>(),
-                EnableAdaptiveBitrateStreaming = true,
+                EnableAdaptiveBitrateStreaming = false,
                 EnableAudioVbrEncoding = enableAudioVbrEncoding
             };
 
