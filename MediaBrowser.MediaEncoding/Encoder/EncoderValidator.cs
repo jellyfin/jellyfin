@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 
@@ -437,6 +438,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
         }
 
+        [SupportedOSPlatform("macos")]
         public bool CheckIsVideoToolboxAv1DecodeAvailable()
         {
             return ApplePlatformHelper.HasAv1HardwareAccel(_logger);

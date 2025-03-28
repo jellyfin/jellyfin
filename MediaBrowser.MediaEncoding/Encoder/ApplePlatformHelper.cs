@@ -3,6 +3,7 @@
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.MediaEncoding.Encoder;
@@ -10,6 +11,7 @@ namespace MediaBrowser.MediaEncoding.Encoder;
 /// <summary>
 /// Helper class for Apple platform specific operations.
 /// </summary>
+[SupportedOSPlatform("macos")]
 public static class ApplePlatformHelper
 {
     private static readonly string[] _av1DecodeBlacklistedCpuClass = ["M1", "M2"];
