@@ -11,9 +11,9 @@ namespace MediaBrowser.Controller.Providers
     public class DirectoryService : IDirectoryService
     {
         // These caches are primarily used for scanning so no reason to have them be large.
-        private static readonly FastConcurrentLru<string, FileSystemMetadata[]> _cache = new(Environment.ProcessorCount, Environment.ProcessorCount * 10, StringComparer.Ordinal);
-        private static readonly FastConcurrentLru<string, FileSystemMetadata> _fileCache = new(Environment.ProcessorCount, Environment.ProcessorCount * 10, StringComparer.Ordinal);
-        private static readonly FastConcurrentLru<string, List<string>> _filePathCache = new(Environment.ProcessorCount, Environment.ProcessorCount * 10, StringComparer.Ordinal);
+        private static readonly FastConcurrentLru<string, FileSystemMetadata[]> _cache = new(Environment.ProcessorCount, Math.Max(128, Environment.ProcessorCount * 10), StringComparer.Ordinal);
+        private static readonly FastConcurrentLru<string, FileSystemMetadata> _fileCache = new(Environment.ProcessorCount, Math.Max(128, Environment.ProcessorCount * 10), StringComparer.Ordinal);
+        private static readonly FastConcurrentLru<string, List<string>> _filePathCache = new(Environment.ProcessorCount, Math.Max(128, Environment.ProcessorCount * 10), StringComparer.Ordinal);
 
         private readonly IFileSystem _fileSystem;
 
