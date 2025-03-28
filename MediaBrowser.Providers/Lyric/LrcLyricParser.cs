@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Jellyfin.Extensions;
 using LrcParser.Model;
 using LrcParser.Parser;
@@ -14,7 +15,7 @@ namespace MediaBrowser.Providers.Lyric;
 /// <summary>
 /// LRC Lyric Parser.
 /// </summary>
-public class LrcLyricParser : ILyricParser
+public partial class LrcLyricParser : ILyricParser
 {
     private readonly LyricParser _lrcLyricParser;
 
@@ -65,30 +66,47 @@ public class LrcLyricParser : ILyricParser
         }
 
         List<LyricLine> lyricList = [];
-
-        for (int i = 0; i < sortedLyricData.Count; i++)
+        for (var l = 0; l < sortedLyricData.Count; l++)
         {
-            List<LyricLineCue>? timeTags = [];
-            if (sortedLyricData[i].TimeTags.Count != 0)
-            {
-                timeTags = sortedLyricData[i].TimeTags
-                    .Zip(sortedLyricData[i].TimeTags.Skip(1), (current, next) => new LyricLineCue(
-                        position: Math.Max(current.Key.Index, 0),
-                        start: TimeSpan.FromMilliseconds(current.Value ?? 0).Ticks,
-                        end: TimeSpan.FromMilliseconds(next.Value ?? 0).Ticks))
-                    .ToList();
+            var cues = new List<LyricLineCue>();
+            var lyric = sortedLyricData[l];
 
-                var lastItem = sortedLyricData[i].TimeTags.LastOrDefault();
-                timeTags.Add(new LyricLineCue(
-                    position: Math.Max(lastItem.Key.Index, 0),
-                    start: TimeSpan.FromMilliseconds(lastItem.Value ?? 0).Ticks,
-                    end: TimeSpan.FromMilliseconds(sortedLyricData[i + 1].TimeTags.FirstOrDefault().Value ?? 0).Ticks));
+            if (lyric.TimeTags.Count != 0)
+            {
+                var keys = lyric.TimeTags.Keys.ToList();
+                int current = 0, next = 1;
+                while (next < keys.Count)
+                {
+                    var currentKey = keys[current];
+                    var currentMs = lyric.TimeTags[currentKey] ?? 0;
+                    var nextMs = lyric.TimeTags[keys[next]] ?? 0;
+
+                    cues.Add(new LyricLineCue(
+                        position: Math.Max(currentKey.Index, 0),
+                        start: TimeSpan.FromMilliseconds(currentMs).Ticks,
+                        end: TimeSpan.FromMilliseconds(nextMs).Ticks));
+
+                    current++;
+                    next++;
+                }
+
+                var lastKey = keys[current];
+                var lastMs = lyric.TimeTags[lastKey] ?? 0;
+
+                cues.Add(new LyricLineCue(
+                    position: Math.Max(lastKey.Index, 0),
+                    start: TimeSpan.FromMilliseconds(lastMs).Ticks,
+                    end: l + 1 < sortedLyricData.Count ? TimeSpan.FromMilliseconds(sortedLyricData[l + 1].StartTime).Ticks : null));
             }
 
-            long ticks = TimeSpan.FromMilliseconds(sortedLyricData[i].StartTime).Ticks;
-            lyricList.Add(new LyricLine(sortedLyricData[i].Text.Trim(), ticks, timeTags));
+            long lyricStartTicks = TimeSpan.FromMilliseconds(lyric.StartTime).Ticks;
+            lyricList.Add(new LyricLine(WhitespaceRegex().Replace(lyric.Text.Trim(), " "), lyricStartTicks, cues));
         }
 
         return new LyricDto { Lyrics = lyricList };
     }
+
+    // Replacement is required until https://github.com/karaoke-dev/LrcParser/issues/83 is resolved.
+    [GeneratedRegex(@"\s+")]
+    private static partial Regex WhitespaceRegex();
 }
