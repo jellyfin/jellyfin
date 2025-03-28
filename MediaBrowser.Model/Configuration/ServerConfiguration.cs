@@ -204,7 +204,9 @@ public class ServerConfiguration : BaseApplicationConfiguration
 
     public bool EnableFolderView { get; set; } = false;
 
-    public bool EnableGroupingIntoCollections { get; set; } = false;
+    public bool EnableGroupingMoviesIntoCollections { get; set; } = false;
+
+    public bool EnableGroupingShowsIntoCollections { get; set; } = false;
 
     public bool DisplaySpecialsWithinSeasons { get; set; } = true;
 
