@@ -1020,12 +1020,12 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         protected static string SortNameOrName(BaseItem item)
         {
-            if (item == null)
+            if (item is null)
             {
                 return string.Empty;
             }
 
-            if (item.SortName != null)
+            if (item.SortName is not null)
             {
                 string trimmed = item.SortName.Trim();
                 if (trimmed.Length > 0)

@@ -31,7 +31,7 @@ public class StreamInfoTests
     /// <returns>An <see cref="Array"/> of <see cref="Type"/>.</returns>
     private static object? RandomArray(Random random, Type? elementType)
     {
-        if (elementType == null)
+        if (elementType is null)
         {
             return null;
         }
@@ -148,7 +148,7 @@ public class StreamInfoTests
 
             var type = property.PropertyType;
             // If nullable, then set it to null, 25% of the time.
-            if (Nullable.GetUnderlyingType(type) != null)
+            if (Nullable.GetUnderlyingType(type) is not null)
             {
                 if (random.Next(0, 4) == 0)
                 {

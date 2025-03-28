@@ -1753,7 +1753,7 @@ public class DynamicHlsController : BaseJellyfinApiController
 
         if (channels.HasValue
             && (channels.Value != 2
-                || (state.AudioStream?.Channels != null && !useDownMixAlgorithm)))
+                || (state.AudioStream?.Channels is not null && !useDownMixAlgorithm)))
         {
             args += " -ac " + channels.Value;
         }
