@@ -1,12 +1,10 @@
 #nullable disable
 #pragma warning disable CS1591
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
-using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Session;
@@ -17,10 +15,10 @@ namespace MediaBrowser.Model.Dto
     {
         public MediaSourceInfo()
         {
-            Formats = Array.Empty<string>();
-            MediaStreams = Array.Empty<MediaStream>();
-            MediaAttachments = Array.Empty<MediaAttachment>();
-            RequiredHttpHeaders = new Dictionary<string, string>();
+            Formats = [];
+            MediaStreams = [];
+            MediaAttachments = [];
+            RequiredHttpHeaders = [];
             SupportsTranscoding = true;
             SupportsDirectStream = true;
             SupportsDirectPlay = true;
