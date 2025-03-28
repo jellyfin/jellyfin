@@ -9,6 +9,7 @@ using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Branding;
 using MediaBrowser.Model.Configuration;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -117,6 +118,51 @@ public class ConfigurationController : BaseJellyfinApiController
     public ActionResult<MetadataOptions> GetDefaultMetadataOptions()
     {
         return new MetadataOptions();
+    }
+
+    /// <summary>
+    /// Gets branding configuration.
+    /// </summary>
+    /// <response code="200">Branding configuration returned.</response>
+    /// <returns>Branding configuration.</returns>
+    [HttpGet("Configuration/Branding")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public ActionResult<BrandOptionsDto> GetBrandingConfiguration()
+    {
+        var brandingOptions = (BrandingOptions)_configurationManager.GetConfiguration("branding");
+
+        var brandOptionsDto = new BrandOptionsDto
+        {
+            LoginDisclaimer = brandingOptions.LoginDisclaimer,
+            CustomCss = brandingOptions.CustomCss,
+            SplashscreenEnabled = brandingOptions.SplashscreenEnabled
+        };
+
+        return brandOptionsDto;
+    }
+
+    /// <summary>
+    /// Updates branding configuration.
+    /// </summary>
+    /// <param name="configuration">Branding configuration.</param>
+    /// <response code="204">Branding configuration updated.</response>
+    /// <returns>Update status.</returns>
+    [HttpPost("Configuration/Branding")]
+    [Authorize(Policy = Policies.RequiresElevation)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public ActionResult UpdateBrandingConfiguration([FromBody, Required] BrandOptionsDto configuration)
+    {
+        // Get the current branding configuration to preserve SplashscreenLocation
+        var currentBranding = (BrandingOptions)_configurationManager.GetConfiguration("branding");
+
+        // Update only the properties from BrandOptionsDto
+        currentBranding.LoginDisclaimer = configuration.LoginDisclaimer;
+        currentBranding.CustomCss = configuration.CustomCss;
+        currentBranding.SplashscreenEnabled = configuration.SplashscreenEnabled;
+
+        _configurationManager.SaveConfiguration("branding", currentBranding);
+
+        return NoContent();
     }
 
     /// <summary>
