@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
+using MediaBrowser.Controller.MediaEncoding;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.MediaEncoding.Encoder
@@ -159,13 +160,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
             { 6, new string[] { "transpose_opencl", "rotate by half-turn" } }
         };
 
-        private static readonly Dictionary<int, string[]> _bsfOptionsDict = new Dictionary<int, string[]>
+        private static readonly Dictionary<BitStreamFilterOptionType, string[]> _bsfOptionsDict = new Dictionary<BitStreamFilterOptionType, string[]>
         {
-            { 0, ["hevc_metadata", "remove_dovi"] },
-            { 1, ["hevc_metadata", "remove_hdr10plus"] },
-            { 2, ["av1_metadata", "remove_dovi"] },
-            { 3, ["av1_metadata", "remove_hdr10plus"] },
-            { 4, ["dovi_rpu", "strip"] }
+            { BitStreamFilterOptionType.HevcMetadataRemoveDovi, ["hevc_metadata", "remove_dovi"] },
+            { BitStreamFilterOptionType.HevcMetadataRemoveHdr10Plus, ["hevc_metadata", "remove_hdr10plus"] },
+            { BitStreamFilterOptionType.Av1MetadataRemoveDovi, ["av1_metadata", "remove_dovi"] },
+            { BitStreamFilterOptionType.Av1MetadataRemoveHdr10Plus, ["av1_metadata", "remove_hdr10plus"] },
+            { BitStreamFilterOptionType.DoviRpuStrip, ["dovi_rpu", "strip"] }
         };
 
         // These are the library versions that corresponds to our minimum ffmpeg version 4.4 according to the version table below
@@ -294,7 +295,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public IDictionary<int, bool> GetFiltersWithOption() => GetFFmpegFiltersWithOption();
 
-        public IDictionary<int, bool> GetBitStreamFiltersWithOption() => _bsfOptionsDict
+        public IDictionary<BitStreamFilterOptionType, bool> GetBitStreamFiltersWithOption() => _bsfOptionsDict
             .Where(item => item.Value.Length == 2)
             .ToDictionary(item => item.Key, item => CheckBitStreamFilterWithOption(item.Value[0], item.Value[1]));
 

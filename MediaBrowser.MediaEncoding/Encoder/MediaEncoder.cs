@@ -73,7 +73,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private List<string> _hwaccels = new List<string>();
         private List<string> _filters = new List<string>();
         private IDictionary<int, bool> _filtersWithOption = new Dictionary<int, bool>();
-        private IDictionary<int, bool> _bitStreamFiltersWithOption = new Dictionary<int, bool>();
+        private IDictionary<BitStreamFilterOptionType, bool> _bitStreamFiltersWithOption = new Dictionary<BitStreamFilterOptionType, bool>();
 
         private bool _isPkeyPauseSupported = false;
         private bool _isLowPriorityHwDecodeSupported = false;
@@ -336,7 +336,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _filtersWithOption = dict;
         }
 
-        public void SetAvailableBitStreamFiltersWithOption(IDictionary<int, bool> dict)
+        public void SetAvailableBitStreamFiltersWithOption(IDictionary<BitStreamFilterOptionType, bool> dict)
         {
             _bitStreamFiltersWithOption = dict;
         }
@@ -383,7 +383,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public bool SupportsBitStreamFilterWithOption(BitStreamFilterOptionType option)
         {
-            return _bitStreamFiltersWithOption.TryGetValue((int)option, out var val) && val;
+            return _bitStreamFiltersWithOption.TryGetValue(option, out var val) && val;
         }
 
         public bool CanEncodeToAudioCodec(string codec)
