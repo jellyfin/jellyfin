@@ -1847,7 +1847,8 @@ namespace Emby.Server.Implementations.Session
 
             if (items.Count == 0)
             {
-                return null;
+                Device apiDevice = new Device(Guid.Empty, "API", null, "Jellyfin Server", deviceId);
+                items = [apiDevice];
             }
 
             return await GetSessionByAuthenticationToken(items[0], deviceId, remoteEndpoint, null).ConfigureAwait(false);
