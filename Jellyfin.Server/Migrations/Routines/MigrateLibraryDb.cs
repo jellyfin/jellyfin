@@ -91,9 +91,9 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         dbContext.PeopleBaseItemMap.ExecuteDelete();
         dbContext.AncestorIds.ExecuteDelete();
         dbContext.Chapters.ExecuteDelete();
-        stopwatch.Stop();
         migrationTotalTime += stopwatch.Elapsed;
         _logger.LogInformation("Cleaning took {0}.", stopwatch.Elapsed);
+        stopwatch.Restart();
 
         using var connection = new SqliteConnection(dbPath);
         connection.Open();
@@ -218,7 +218,8 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 
                 connection.Close();
                 stopwatch.Stop();
-                _logger.LogInformation("Processing {0} ItemValues entries took {1}.", dbContext.ItemValues.Local.Count, stopwatch.Elapsed);
+                int processedEntities = dbContext.ItemValues.Local.Count + dbContext.ItemValuesMap.Local.Count;
+                _logger.LogInformation("Processing {0} ItemValues entries took {1}.", processedEntities, stopwatch.Elapsed);
                 commitTasks.Add(() => CommitChanges(dbContext, "People ItemValues"));
 
                 return stopwatch.Elapsed;
@@ -311,9 +312,8 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
                 peopleCache.Clear();
                 stopwatch.Stop();
                 connection.Close();
-
-                _logger.LogInformation("Processing {0} People entries took {1}", dbContext.MediaStreamInfos.Local.Count, stopwatch.Elapsed);
-                dbContext.SaveChanges();
+                int processedEntities = dbContext.PeopleBaseItemMap.Local.Count + dbContext.Peoples.Local.Count;
+                _logger.LogInformation("Processing {0} People entries took {1}", processedEntities, stopwatch.Elapsed);
                 commitTasks.Add(() => CommitChanges(dbContext, "People"));
 
                 return stopwatch.Elapsed;
@@ -368,7 +368,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 
                 stopwatch.Stop();
                 connection.Close();
-                _logger.LogInformation("Processing {0} AncestorIds entries took {1}.", dbContext.Chapters.Local.Count, stopwatch.Elapsed);
+                _logger.LogInformation("Processing {0} AncestorIds entries took {1}.", dbContext.AncestorIds.Local.Count, stopwatch.Elapsed);
                 commitTasks.Add(() => CommitChanges(dbContext, "AncestorIds"));
 
                 return stopwatch.Elapsed;
@@ -380,6 +380,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             migrationTotalTime += task();
         }
 
+        commitTasks.Clear();
         stopwatch.Restart();
 
         foreach (var time in taskTimes)
