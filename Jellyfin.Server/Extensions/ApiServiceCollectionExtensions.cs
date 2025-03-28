@@ -118,15 +118,15 @@ namespace Jellyfin.Server.Extensions
                     // https://github.com/dotnet/aspnetcore/blob/master/src/Middleware/HttpOverrides/src/ForwardedHeadersMiddleware.cs
                     // Enable debug logging on Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersMiddleware to help investigate issues.
 
-                    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
-
                     if (config.KnownProxies.Length == 0)
                     {
+                        options.ForwardedHeaders = ForwardedHeaders.None;
                         options.KnownNetworks.Clear();
                         options.KnownProxies.Clear();
                     }
                     else
                     {
+                        options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
                         AddProxyAddresses(config, config.KnownProxies, options);
                     }
 
