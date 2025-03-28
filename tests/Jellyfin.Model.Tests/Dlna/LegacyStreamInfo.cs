@@ -143,7 +143,7 @@ public class LegacyStreamInfo : StreamInfo
         }
 
         list.Add(new NameValuePair("PlaySessionId", item.PlaySessionId ?? string.Empty));
-        list.Add(new NameValuePair("api_key", accessToken ?? string.Empty));
+        list.Add(new NameValuePair("ApiKey", accessToken ?? string.Empty));
 
         string? liveStreamId = item.MediaSource?.LiveStreamId;
         list.Add(new NameValuePair("LiveStreamId", liveStreamId ?? string.Empty));
