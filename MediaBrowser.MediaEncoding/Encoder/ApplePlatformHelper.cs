@@ -14,7 +14,7 @@ public static class ApplePlatformHelper
 {
     private static readonly string[] _av1DecodeBlacklistedCpuClass = ["M1", "M2"];
 
-    private static string GetSysctlValue(string name)
+    private static string GetSysctlValue(ReadOnlySpan<byte> name)
     {
         IntPtr length = IntPtr.Zero;
         // Get length of the value
@@ -22,7 +22,7 @@ public static class ApplePlatformHelper
 
         if (osStatus != 0)
         {
-            throw new NotSupportedException($"Failed to get sysctl value for {name} with error {osStatus}");
+            throw new NotSupportedException($"Failed to get sysctl value for {System.Text.Encoding.UTF8.GetString(name)} with error {osStatus}");
         }
 
         IntPtr buffer = Marshal.AllocHGlobal(length.ToInt32());
@@ -31,7 +31,7 @@ public static class ApplePlatformHelper
             osStatus = SysctlByName(name, buffer, ref length, IntPtr.Zero, 0);
             if (osStatus != 0)
             {
-                throw new NotSupportedException($"Failed to get sysctl value for {name} with error {osStatus}");
+                throw new NotSupportedException($"Failed to get sysctl value for {System.Text.Encoding.UTF8.GetString(name)} with error {osStatus}");
             }
 
             return Marshal.PtrToStringAnsi(buffer) ?? string.Empty;
@@ -42,9 +42,9 @@ public static class ApplePlatformHelper
         }
     }
 
-    private static int SysctlByName(string name, IntPtr oldp, ref IntPtr oldlenp, IntPtr newp, uint newlen)
+    private static int SysctlByName(ReadOnlySpan<byte> name, IntPtr oldp, ref IntPtr oldlenp, IntPtr newp, uint newlen)
     {
-        return NativeMethods.SysctlByName(System.Text.Encoding.ASCII.GetBytes(name), oldp, ref oldlenp, newp, newlen);
+        return NativeMethods.SysctlByName(name.ToArray(), oldp, ref oldlenp, newp, newlen);
     }
 
     /// <summary>
@@ -61,7 +61,7 @@ public static class ApplePlatformHelper
 
         try
         {
-            string cpuBrandString = GetSysctlValue("machdep.cpu.brand_string");
+            string cpuBrandString = GetSysctlValue("machdep.cpu.brand_string"u8);
             return !_av1DecodeBlacklistedCpuClass.Any(blacklistedCpuClass => cpuBrandString.Contains(blacklistedCpuClass, StringComparison.OrdinalIgnoreCase));
         }
         catch (NotSupportedException e)
