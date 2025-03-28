@@ -121,27 +121,6 @@ public class ConfigurationController : BaseJellyfinApiController
     }
 
     /// <summary>
-    /// Gets branding configuration.
-    /// </summary>
-    /// <response code="200">Branding configuration returned.</response>
-    /// <returns>Branding configuration.</returns>
-    [HttpGet("Configuration/Branding")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<BrandOptionsDto> GetBrandingConfiguration()
-    {
-        var brandingOptions = (BrandingOptions)_configurationManager.GetConfiguration("branding");
-
-        var brandOptionsDto = new BrandOptionsDto
-        {
-            LoginDisclaimer = brandingOptions.LoginDisclaimer,
-            CustomCss = brandingOptions.CustomCss,
-            SplashscreenEnabled = brandingOptions.SplashscreenEnabled
-        };
-
-        return brandOptionsDto;
-    }
-
-    /// <summary>
     /// Updates branding configuration.
     /// </summary>
     /// <param name="configuration">Branding configuration.</param>
