@@ -34,8 +34,8 @@ public class MoveExtractedFiles : IMigrationRoutine
     /// <param name="appPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="logger">The logger.</param>
-    /// <param name="mediaSourceManager">Instance of the <see cref="IPathManager"/> interface.</param>
-    /// <param name="pathManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
+    /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
+    /// <param name="pathManager">Instance of the <see cref="IPathManager"/> interface.</param>
     public MoveExtractedFiles(
         IApplicationPaths appPaths,
         ILibraryManager libraryManager,
@@ -43,11 +43,11 @@ public class MoveExtractedFiles : IMigrationRoutine
         IMediaSourceManager mediaSourceManager,
         IPathManager pathManager)
     {
-        _pathManager = pathManager;
+        _appPaths = appPaths;
         _libraryManager = libraryManager;
         _logger = logger;
-        _appPaths = appPaths;
         _mediaSourceManager = mediaSourceManager;
+        _pathManager = pathManager;
     }
 
     private string SubtitleCachePath => Path.Combine(_appPaths.DataPath, "subtitles");
