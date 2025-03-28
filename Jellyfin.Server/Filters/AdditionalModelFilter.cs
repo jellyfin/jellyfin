@@ -25,7 +25,7 @@ namespace Jellyfin.Server.Filters
     public class AdditionalModelFilter : IDocumentFilter
     {
         // Array of options that should not be visible in the api spec.
-        private static readonly Type[] _ignoredConfigurations = { typeof(MigrationOptions) };
+        private static readonly Type[] _ignoredConfigurations = { typeof(MigrationOptions), typeof(MediaBrowser.Model.Branding.BrandingOptions) };
         private readonly IServerConfigurationManager _serverConfigurationManager;
 
         /// <summary>
