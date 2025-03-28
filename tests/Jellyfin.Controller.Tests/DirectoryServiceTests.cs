@@ -209,7 +209,7 @@ namespace Jellyfin.Controller.Tests
             fileSystemMock.Setup(f => f.GetFilePaths(It.Is<string>(x => x == path), false)).Returns(cachedPaths);
             var directoryService = new DirectoryService(fileSystemMock.Object);
 
-            var result = directoryService.GetFilePaths(path, true);
+            var result = directoryService.GetFilePaths(path);
             fileSystemMock.Setup(f => f.GetFilePaths(It.Is<string>(x => x == path), false)).Returns(newPaths);
             var secondResult = directoryService.GetFilePaths(path);
 
@@ -241,7 +241,7 @@ namespace Jellyfin.Controller.Tests
             fileSystemMock.Setup(f => f.GetFilePaths(It.Is<string>(x => x == path), false)).Returns(cachedPaths);
             var directoryService = new DirectoryService(fileSystemMock.Object);
 
-            var result = directoryService.GetFilePaths(path, true);
+            var result = directoryService.GetFilePaths(path);
             fileSystemMock.Setup(f => f.GetFilePaths(It.Is<string>(x => x == path), false)).Returns(newPaths);
             var secondResult = directoryService.GetFilePaths(path, true);
 
