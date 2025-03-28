@@ -48,7 +48,7 @@ public class RenameEnableGroupingIntoCollections : IMigrationRoutine
         {
             XDocument xmlDocument = XDocument.Load(path);
             var element = xmlDocument.Descendants("EnableGroupingIntoCollections").FirstOrDefault();
-            if (element != null)
+            if (element is not null)
             {
                 element.Name = "EnableGroupingMoviesIntoCollections";
                 _logger.LogInformation("The tag <EnableGroupingIntoCollections> was successfully renamed to <EnableGroupingMoviesIntoCollections>.");
