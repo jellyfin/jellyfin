@@ -1,19 +1,21 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using BitFaster.Caching.Lru;
 using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Controller.Providers
 {
     public class DirectoryService : IDirectoryService
     {
-        // These caches are primarily used for scanning so no reason to have them be large.
-        private static readonly FastConcurrentLru<string, FileSystemMetadata[]> _cache = new(Environment.ProcessorCount, Math.Max(128, Environment.ProcessorCount * 10), StringComparer.Ordinal);
-        private static readonly FastConcurrentLru<string, FileSystemMetadata> _fileCache = new(Environment.ProcessorCount, Math.Max(128, Environment.ProcessorCount * 10), StringComparer.Ordinal);
-        private static readonly FastConcurrentLru<string, List<string>> _filePathCache = new(Environment.ProcessorCount, Math.Max(128, Environment.ProcessorCount * 10), StringComparer.Ordinal);
+        // TODO make static and switch to FastConcurrentLru.
+        private readonly ConcurrentDictionary<string, FileSystemMetadata[]> _cache = new(StringComparer.Ordinal);
+
+        private readonly ConcurrentDictionary<string, FileSystemMetadata> _fileCache = new(StringComparer.Ordinal);
+
+        private readonly ConcurrentDictionary<string, List<string>> _filePathCache = new(StringComparer.Ordinal);
 
         private readonly IFileSystem _fileSystem;
 
@@ -73,13 +75,13 @@ namespace MediaBrowser.Controller.Providers
 
         public FileSystemMetadata? GetFileSystemEntry(string path)
         {
-            if (!_fileCache.TryGet(path, out var result))
+            if (!_fileCache.TryGetValue(path, out var result))
             {
                 var file = _fileSystem.GetFileSystemInfo(path);
                 if (file?.Exists ?? false)
                 {
                     result = file;
-                    _fileCache.AddOrUpdate(path, result);
+                    _fileCache.TryAdd(path, result);
                 }
             }
 
