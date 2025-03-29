@@ -81,7 +81,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         var migrationTotalTime = TimeSpan.Zero;
 
         // Perform a cleanup first to remove stale data from previously failed migrations.
-        _logger.LogInformation("Cleaning leftovers to ensure no data from previous failed migrations exist...");
+        _logger.LogInformation("Ensure no data from previous attempts exist...");
         var dbContext = CreateDbContext();
         dbContext.BaseItems.ExecuteDelete();
         dbContext.ItemValues.ExecuteDelete();
