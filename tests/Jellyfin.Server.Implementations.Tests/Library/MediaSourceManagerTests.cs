@@ -67,14 +67,18 @@ namespace Jellyfin.Server.Implementations.Tests.Library
         [InlineData(5, "OriginalLanguage", "eng", false, false)]
         [InlineData(4, "OriginalLanguage", "eng", false, true)]
         [InlineData(5, "OriginalLanguage", "eng", true, false)]
-        [InlineData(4, "OriginalLanguage", "eng", true, true)]
+        [InlineData(5, "OriginalLanguage", "eng", true, true)]
         [InlineData(2, "OriginalLanguage", "jpn", true, true)]
         [InlineData(2, "OriginalLanguage", "jpn", false, true)]
-        [InlineData(2, "OriginalLanguage", "jpn,eng", false, false)]
+        [InlineData(2, "OriginalLanguage", "jpn,eng", false, true)]
         [InlineData(4, "OriginalLanguage", null, false, true)]
         [InlineData(4, "OriginalLanguage", "", false, true)]
         [InlineData(2, "OriginalLanguage", "", false, false)]
         [InlineData(2, "OriginalLanguage", "ger", false, true)]
+        [InlineData(2, "OriginalLanguage", "ger", false, false)]
+        [InlineData(1, "OriginalLanguage", "fre", false, false)]
+        [InlineData(2, "OriginalLanguage", "fre", true, true)]
+        [InlineData(2, "OriginalLanguage", "fre", true, false)]
         public void SetDefaultAudioStreamIndex_Index_Correct(
             int expectedIndex,
             string prefferedLanguage,

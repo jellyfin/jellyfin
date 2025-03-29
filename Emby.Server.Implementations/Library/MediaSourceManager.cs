@@ -438,6 +438,15 @@ namespace Emby.Server.Implementations.Library
                 {
                     // If there are multiple original languages, use the first language
                     originalLanguage = originalLanguage.Split(',').FirstOrDefault();
+
+                    if (user.PlayDefaultAudioTrack)
+                    {
+                        source.DefaultAudioStreamIndex = MediaStreamSelector.GetDefaultAudioStreamIndex(
+                            source.MediaStreams,
+                            NormalizeLanguage(originalLanguage),
+                            user.PlayDefaultAudioTrack);
+                        return;
+                    }
                 }
 
                 var originalIndex = source.MediaStreams.FindIndex(i => i.Type == MediaStreamType.Audio && i.IsOriginal);
@@ -712,11 +721,11 @@ namespace Emby.Server.Implementations.Library
 
                 mediaInfo = await _mediaEncoder.GetMediaInfo(
                     new MediaInfoRequest
-                {
-                    MediaSource = mediaSource,
-                    MediaType = isAudio ? DlnaProfileType.Audio : DlnaProfileType.Video,
-                    ExtractChapters = false
-                },
+                    {
+                        MediaSource = mediaSource,
+                        MediaType = isAudio ? DlnaProfileType.Audio : DlnaProfileType.Video,
+                        ExtractChapters = false
+                    },
                     cancellationToken).ConfigureAwait(false);
 
                 if (cacheFilePath is not null)
