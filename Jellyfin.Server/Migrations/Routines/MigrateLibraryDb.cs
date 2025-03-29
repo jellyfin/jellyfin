@@ -81,7 +81,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 
         var legacyBaseItemWithUserKeys = new Dictionary<string, BaseItemEntity>();
         connection.Open();
-        using (var dbContext = _provider.CreateDbContext())
+        using (var dbContext = GetPreparedDbContext())
         {
             migrationTotalTime += stopwatch.Elapsed;
             _logger.LogInformation("Saving UserData entries took {0}.", stopwatch.Elapsed);
@@ -126,7 +126,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
                     WHERE Type <> 6 AND EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = ItemValues.ItemId)
         """;
 
-        using (var dbContext = _provider.CreateDbContext())
+        using (var dbContext = GetPreparedDbContext())
         {
             dbContext.ItemValues.ExecuteDelete();
 
@@ -173,7 +173,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.UserDataKey = UserDatas.key)
         """);
 
-        using (var dbContext = _provider.CreateDbContext())
+        using (var dbContext = GetPreparedDbContext())
         {
             dbContext.UserData.ExecuteDelete();
 
@@ -214,7 +214,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         FROM MediaStreams
         WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = MediaStreams.ItemId)
         """;
-        using (var dbContext = _provider.CreateDbContext())
+        using (var dbContext = GetPreparedDbContext())
         {
             dbContext.MediaStreamInfos.ExecuteDelete();
 
@@ -238,7 +238,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = People.ItemId)
         """;
 
-        using (var dbContext = _provider.CreateDbContext())
+        using (var dbContext = GetPreparedDbContext())
         {
             dbContext.Peoples.ExecuteDelete();
             dbContext.PeopleBaseItemMap.ExecuteDelete();
@@ -302,7 +302,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         SELECT ItemId,StartPositionTicks,Name,ImagePath,ImageDateModified,ChapterIndex from Chapters2
         WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = Chapters2.ItemId)
         """;
-        using (var dbContext = _provider.CreateDbContext())
+        using (var dbContext = GetPreparedDbContext())
         {
             dbContext.Chapters.ExecuteDelete();
 
@@ -329,7 +329,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = AncestorIds.AncestorId)
         """;
 
-        using (var dbContext = _provider.CreateDbContext())
+        using (var dbContext = GetPreparedDbContext())
         {
             dbContext.AncestorIds.ExecuteDelete();
 
@@ -359,6 +359,14 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         _logger.LogInformation("Migrating Library db took {0}.", migrationTotalTime);
 
         _jellyfinDatabaseProvider.RunScheduledOptimisation(CancellationToken.None).ConfigureAwait(false).GetAwaiter().GetResult();
+    }
+
+    private JellyfinDbContext GetPreparedDbContext()
+    {
+        var dbContext = _provider.CreateDbContext();
+        dbContext.ChangeTracker.AutoDetectChangesEnabled = false;
+        dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+        return dbContext;
     }
 
     private UserData? GetUserData(ImmutableArray<User> users, SqliteDataReader dto)
