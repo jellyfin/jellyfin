@@ -439,6 +439,15 @@ namespace Emby.Server.Implementations.Library
                 {
                     // If there are multiple original languages, use the first language
                     originalLanguage = originalLanguage.Split(',').FirstOrDefault();
+
+                    if (user.PlayDefaultAudioTrack)
+                    {
+                        source.DefaultAudioStreamIndex = MediaStreamSelector.GetDefaultAudioStreamIndex(
+                            source.MediaStreams,
+                            NormalizeLanguage(originalLanguage),
+                            user.PlayDefaultAudioTrack);
+                        return;
+                    }
                 }
 
                 var originalIndex = source.MediaStreams.FindIndex(i => i.Type == MediaStreamType.Audio && i.IsOriginal);
