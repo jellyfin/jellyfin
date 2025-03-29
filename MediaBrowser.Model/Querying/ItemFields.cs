@@ -209,6 +209,7 @@ namespace MediaBrowser.Model.Querying
         ExternalEtag,
         PresentationUniqueKey,
         InheritedParentalRatingValue,
+        InheritedParentalRatingSubValue,
         ExternalSeriesId,
         SeriesPresentationUniqueKey,
         DateLastRefreshed,

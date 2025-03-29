@@ -1,0 +1,69 @@
+{
+    "countryCode": "fr",
+    "supportsSubScores": false,
+    "ratings": [
+        {
+            "ratingStrings": ["0+", "Public Averti", "Tous Publics", "TP", "U"],
+            "ratingScore": {
+                "score": 0,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["6+"],
+            "ratingScore": {
+                "score": 6,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["9+"],
+            "ratingScore": {
+                "score": 9,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["10"],
+            "ratingScore": {
+                "score": 10,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["12"],
+            "ratingScore": {
+                "score": 12,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["14+"],
+            "ratingScore": {
+                "score": 14,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["16"],
+            "ratingScore": {
+                "score": 16,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["18"],
+            "ratingScore": {
+                "score": 18,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["X"],
+            "ratingScore": {
+                "score": 1000,
+                "subScore": null
+            }
+        }
+    ]
+}

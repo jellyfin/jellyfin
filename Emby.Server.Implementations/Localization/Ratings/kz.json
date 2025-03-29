@@ -1,0 +1,41 @@
+{
+    "countryCode": "kz",
+    "supportsSubScores": false,
+    "ratings": [
+        {
+            "ratingStrings": ["K"],
+            "ratingScore": {
+                "score": 0,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["БА"],
+            "ratingScore": {
+                "score": 12,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["Б14"],
+            "ratingScore": {
+                "score": 14,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["E16"],
+            "ratingScore": {
+                "score": 16,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["E18", "HA"],
+            "ratingScore": {
+                "score": 18,
+                "subScore": null
+            }
+        }
+    ]
+}
