@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -467,6 +468,7 @@ public class StreamInfo
     /// Gets the target video range type that will be in the output stream.
     /// </summary>
     /// <value>The video range type.</value>
+    [DefaultValue(VideoRangeType.Unknown)]
     public VideoRangeType TargetVideoRangeType
     {
         get
