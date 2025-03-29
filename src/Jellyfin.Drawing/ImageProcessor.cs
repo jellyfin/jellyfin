@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.IO.Hashing;
 using System.Linq;
 using System.Net.Mime;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using AsyncKeyedLock;
 using Jellyfin.Database.Implementations.Entities;
@@ -40,7 +40,6 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
     private readonly IFileSystem _fileSystem;
     private readonly IServerApplicationPaths _appPaths;
     private readonly IImageEncoder _imageEncoder;
-
     private readonly AsyncNonKeyedLocker _parallelEncodingLimit;
 
     private bool _disposed;
@@ -406,26 +405,34 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
     }
 
     /// <inheritdoc />
-    public string GetImageCacheTag(string baseItemPath, DateTime imageDateModified)
-        => (baseItemPath + imageDateModified.Ticks).GetMD5().ToString("N", CultureInfo.InvariantCulture);
+    public string GetImageFileHash(string path)
+    {
+        var fileInfo = new FileInfo(path);
+        if (fileInfo.Exists)
+        {
+            using (FileStream fileStream = fileInfo.Open(FileMode.Open, FileAccess.Read))
+            {
+                fileStream.Position = 0;
+                var hasher = new XxHash3();
+                hasher.Append(fileStream);
+
+                return Convert.ToHexString(hasher.GetCurrentHash());
+            }
+        }
+
+        return string.Empty;
+    }
 
     /// <inheritdoc />
     public string GetImageCacheTag(BaseItem item, ItemImageInfo image)
-        => GetImageCacheTag(item.Path, image.DateModified);
-
-    /// <inheritdoc />
-    public string GetImageCacheTag(BaseItemDto item, ItemImageInfo image)
-        => GetImageCacheTag(item.Path, image.DateModified);
-
-    /// <inheritdoc />
-    public string? GetImageCacheTag(BaseItemDto item, ChapterInfo chapter)
     {
-        if (chapter.ImagePath is null)
+        var fileHash = image.FileHash;
+        if (!string.IsNullOrEmpty(fileHash))
         {
-            return null;
+            return fileHash;
         }
 
-        return GetImageCacheTag(item.Path, chapter.ImageDateModified);
+        return (item.Path + image.DateModified.Ticks).GetMD5().ToString("N", CultureInfo.InvariantCulture);
     }
 
     /// <inheritdoc />
@@ -445,14 +452,54 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
     }
 
     /// <inheritdoc />
-    public string? GetImageCacheTag(User user)
+    public string GetImageCacheTag(BaseItemDto item, ItemImageInfo image)
     {
-        if (user.ProfileImage is null)
+        var fileHash = image.FileHash;
+        if (!string.IsNullOrEmpty(fileHash))
+        {
+            return fileHash;
+        }
+
+        return (item.Path + image.DateModified.Ticks).GetMD5().ToString("N", CultureInfo.InvariantCulture);
+    }
+
+    /// <inheritdoc />
+    public string? GetImageCacheTag(BaseItemDto item, ChapterInfo chapter)
+    {
+        if (chapter.ImagePath is null)
         {
             return null;
         }
 
-        return GetImageCacheTag(user.ProfileImage.Path, user.ProfileImage.LastModified);
+        return GetImageCacheTag(item, new ItemImageInfo
+        {
+            Path = chapter.ImagePath,
+            Type = ImageType.Chapter,
+            DateModified = chapter.ImageDateModified
+        });
+    }
+
+    /// <inheritdoc />
+    public string? GetImageCacheTag(BaseItemEntity item, ChapterInfo chapter)
+    {
+        if (chapter.ImagePath is null)
+        {
+            return null;
+        }
+
+        return (item.Path + chapter.ImageDateModified.Ticks).GetMD5().ToString("N", CultureInfo.InvariantCulture);
+    }
+
+    /// <inheritdoc />
+    public string? GetImageCacheTag(User user)
+    {
+        var profileImage = user.ProfileImage;
+        if (profileImage is null)
+        {
+            return null;
+        }
+
+        return (profileImage.Path + profileImage.LastModified.Ticks).GetMD5().ToString("N", CultureInfo.InvariantCulture);
     }
 
     private Task<(string Path, DateTime DateModified)> GetSupportedImage(string originalImagePath, DateTime dateModified)

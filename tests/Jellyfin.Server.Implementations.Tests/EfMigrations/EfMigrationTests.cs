@@ -1,5 +1,4 @@
 using Jellyfin.Database.Providers.Sqlite.Migrations;
-using Jellyfin.Server.Implementations.Migrations;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 

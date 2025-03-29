@@ -59,12 +59,11 @@ namespace MediaBrowser.Controller.Drawing
         string GetImageBlurHash(string path, ImageDimensions imageDimensions);
 
         /// <summary>
-        /// Gets the image cache tag.
+        /// Gets the file hash of the image.
         /// </summary>
-        /// <param name="baseItemPath">The items basePath.</param>
-        /// <param name="imageDateModified">The image last modification date.</param>
-        /// <returns>Guid.</returns>
-        string? GetImageCacheTag(string baseItemPath, DateTime imageDateModified);
+        /// <param name="path">Path to the image file.</param>
+        /// <returns>FileHash.</returns>
+        string GetImageFileHash(string path);
 
         /// <summary>
         /// Gets the image cache tag.
@@ -73,6 +72,14 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="image">The image.</param>
         /// <returns>Guid.</returns>
         string? GetImageCacheTag(BaseItemDto item, ChapterInfo image);
+
+        /// <summary>
+        /// Gets the image cache tag.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="image">The image.</param>
+        /// <returns>Guid.</returns>
+        string? GetImageCacheTag(BaseItemEntity item, ChapterInfo image);
 
         /// <summary>
         /// Gets the image cache tag.
