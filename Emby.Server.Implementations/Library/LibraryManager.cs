@@ -492,7 +492,26 @@ namespace Emby.Server.Implementations.Library
 
             if (item is Video video)
             {
+                // Trickplay
                 list.Add(_pathManager.GetTrickplayDirectory(video));
+
+                // Subtitles and attachments
+                foreach (var mediaSource in item.GetMediaSources(false))
+                {
+                    // Use SRT as a dummy parameter since it is required, we only need the parent directory.
+                    var subtitleFolder = Path.GetDirectoryName(_pathManager.GetSubtitlePath(mediaSource.Id, 1, ".srt"));
+                    if (subtitleFolder is not null)
+                    {
+                        list.Add(subtitleFolder);
+                    }
+
+                    // Use steam id 1 as a dummy parameter since it is required, we only need the parent directory.
+                    var attachmentFolder = Path.GetDirectoryName(_pathManager.GetAttachmentPath(mediaSource.Id, 1));
+                    if (attachmentFolder is not null)
+                    {
+                        list.Add(attachmentFolder);
+                    }
+                }
             }
 
             return list;
