@@ -67,6 +67,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             "id",
             "credits",
             "originaltitle",
+            "originallanguage",
             "watched",
             "playcount",
             "lastplayed",
@@ -376,6 +377,11 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteElementString("default", stream.IsDefault.ToString(CultureInfo.InvariantCulture));
                 writer.WriteElementString("forced", stream.IsForced.ToString(CultureInfo.InvariantCulture));
 
+                if (stream.IsOriginal)
+                {
+                    writer.WriteElementString("original", stream.IsOriginal.ToString(CultureInfo.InvariantCulture));
+                }
+
                 if (stream.Type == MediaStreamType.Video)
                 {
                     var runtimeTicks = item.RunTimeTicks;
@@ -482,6 +488,11 @@ namespace MediaBrowser.XbmcMetadata.Savers
             if (!string.IsNullOrWhiteSpace(item.OriginalTitle))
             {
                 writer.WriteElementString("originaltitle", item.OriginalTitle);
+            }
+
+            if (!string.IsNullOrWhiteSpace(item.OriginalLanguage))
+            {
+                writer.WriteElementString("originallanguage", item.OriginalLanguage);
             }
 
             var people = libraryManager.GetPeople(item);
