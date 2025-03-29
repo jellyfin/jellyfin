@@ -281,8 +281,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 ExtraFiles = leftOver
             };
 
-            var isInMixedFolder = resolverResult.Count > 1 || parent?.IsTopParent == true;
-
             foreach (var video in resolverResult)
             {
                 var firstVideo = video.Files[0];
@@ -298,7 +296,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 var videoItem = new T
                 {
                     Path = path,
-                    IsInMixedFolder = isInMixedFolder,
                     ProductionYear = video.Year,
                     Name = parseName ? video.Name : firstVideo.Name,
                     AdditionalParts = additionalParts,
@@ -312,6 +309,13 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             }
 
             result.ExtraFiles.AddRange(files.Where(i => !ContainsFile(resolverResult, i)));
+
+            // calculate if in mixed folder after extra files have been removed from count
+            var isInMixedFolder = result.Items.Count > 1 || parent?.IsTopParent == true;
+            foreach (var item in result.Items)
+            {
+                item.IsInMixedFolder = isInMixedFolder;
+            }
 
             return result;
         }
