@@ -83,6 +83,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private bool _isVaapiDeviceSupportVulkanDrmModifier = false;
         private bool _isVaapiDeviceSupportVulkanDrmInterop = false;
 
+        private bool _isVideoToolboxAv1DecodeAvailable = false;
+
         private static string[] _vulkanImageDrmFmtModifierExts =
         {
             "VK_EXT_image_drm_format_modifier",
@@ -158,6 +160,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         /// <inheritdoc />
         public bool IsVaapiDeviceSupportVulkanDrmInterop => _isVaapiDeviceSupportVulkanDrmInterop;
+
+        public bool IsVideoToolboxAv1DecodeAvailable => _isVideoToolboxAv1DecodeAvailable;
 
         [GeneratedRegex(@"[^\/\\]+?(\.[^\/\\\n.]+)?$")]
         private static partial Regex FfprobePathRegex();
@@ -260,6 +264,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     {
                         _logger.LogInformation("VAAPI device {RenderNodePath} supports Vulkan DRM interop", options.VaapiDevice);
                     }
+                }
+
+                // Check if VideoToolbox supports AV1 decode
+                if (OperatingSystem.IsMacOS() && SupportsHwaccel("videotoolbox"))
+                {
+                    _isVideoToolboxAv1DecodeAvailable = validator.CheckIsVideoToolboxAv1DecodeAvailable();
                 }
             }
 
