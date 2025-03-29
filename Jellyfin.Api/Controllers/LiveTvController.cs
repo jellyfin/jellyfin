@@ -1160,6 +1160,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// or a <see cref="NotFoundResult"/> if recording not found.
     /// </returns>
     [HttpGet("LiveRecordings/{recordingId}/stream")]
+    [Authorize(Policy = Policies.Playback)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesVideoFile]
@@ -1187,6 +1188,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// or a <see cref="NotFoundResult"/> if stream not found.
     /// </returns>
     [HttpGet("LiveStreamFiles/{streamId}/stream.{container}")]
+    [Authorize(Policy = Policies.Playback)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesVideoFile]
