@@ -10,16 +10,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using AsyncKeyedLock;
 using MediaBrowser.Common;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.MediaEncoding.Encoder;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.MediaEncoding.Attachments
@@ -27,10 +26,10 @@ namespace MediaBrowser.MediaEncoding.Attachments
     public sealed class AttachmentExtractor : IAttachmentExtractor, IDisposable
     {
         private readonly ILogger<AttachmentExtractor> _logger;
-        private readonly IApplicationPaths _appPaths;
         private readonly IFileSystem _fileSystem;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IMediaSourceManager _mediaSourceManager;
+        private readonly IPathManager _pathManager;
 
         private readonly AsyncKeyedLocker<string> _semaphoreLocks = new(o =>
         {
@@ -40,16 +39,16 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
         public AttachmentExtractor(
             ILogger<AttachmentExtractor> logger,
-            IApplicationPaths appPaths,
             IFileSystem fileSystem,
             IMediaEncoder mediaEncoder,
-            IMediaSourceManager mediaSourceManager)
+            IMediaSourceManager mediaSourceManager,
+            IPathManager pathManager)
         {
             _logger = logger;
-            _appPaths = appPaths;
             _fileSystem = fileSystem;
             _mediaEncoder = mediaEncoder;
             _mediaSourceManager = mediaSourceManager;
+            _pathManager = pathManager;
         }
 
         /// <inheritdoc />
@@ -248,7 +247,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
         {
             await CacheAllAttachments(mediaPath, inputFile, mediaSource, cancellationToken).ConfigureAwait(false);
 
-            var outputPath = GetAttachmentCachePath(mediaPath, mediaSource, mediaAttachment.Index);
+            var outputPath = GetAttachmentCachePath(mediaSource, mediaAttachment.Index);
             await ExtractAttachment(inputFile, mediaSource, mediaAttachment.Index, outputPath, cancellationToken)
                 .ConfigureAwait(false);
 
@@ -268,7 +267,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
             {
                 foreach (var attachment in mediaSource.MediaAttachments)
                 {
-                    var outputPath = GetAttachmentCachePath(mediaPath, mediaSource, attachment.Index);
+                    var outputPath = GetAttachmentCachePath(mediaSource, attachment.Index);
 
                     var releaser = await _semaphoreLocks.LockAsync(outputPath, cancellationToken).ConfigureAwait(false);
 
@@ -309,7 +308,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
             foreach (var attachmentId in extractableAttachmentIds)
             {
-                var outputPath = GetAttachmentCachePath(mediaPath, mediaSource, attachmentId);
+                var outputPath = GetAttachmentCachePath(mediaSource, attachmentId);
 
                 Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? throw new FileNotFoundException($"Calculated path ({outputPath}) is not valid."));
 
@@ -510,21 +509,9 @@ namespace MediaBrowser.MediaEncoding.Attachments
             _logger.LogInformation("ffmpeg attachment extraction completed for {InputPath} to {OutputPath}", inputPath, outputPath);
         }
 
-        private string GetAttachmentCachePath(string mediaPath, MediaSourceInfo mediaSource, int attachmentStreamIndex)
+        private string GetAttachmentCachePath(MediaSourceInfo mediaSource, int attachmentStreamIndex)
         {
-            string filename;
-            if (mediaSource.Protocol == MediaProtocol.File)
-            {
-                var date = _fileSystem.GetLastWriteTimeUtc(mediaPath);
-                filename = (mediaPath + attachmentStreamIndex.ToString(CultureInfo.InvariantCulture) + "_" + date.Ticks.ToString(CultureInfo.InvariantCulture)).GetMD5().ToString("D", CultureInfo.InvariantCulture);
-            }
-            else
-            {
-                filename = (mediaPath + attachmentStreamIndex.ToString(CultureInfo.InvariantCulture)).GetMD5().ToString("D", CultureInfo.InvariantCulture);
-            }
-
-            var prefix = filename.AsSpan(0, 1);
-            return Path.Join(_appPaths.DataPath, "attachments", prefix, filename);
+            return _pathManager.GetAttachmentPath(mediaSource.Id, attachmentStreamIndex);
         }
 
         /// <inheritdoc />
