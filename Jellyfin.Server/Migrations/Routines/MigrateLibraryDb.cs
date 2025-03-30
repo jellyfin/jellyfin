@@ -184,13 +184,22 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             using (new TrackedMigrationStep("loading UserData", _logger))
             {
                 var users = operation.JellyfinDbContext.Users.AsNoTracking().ToImmutableArray();
+                var userIdBlacklist = new HashSet<int>();
 
                 foreach (var entity in queryResult)
                 {
-                    var userData = GetUserData(users, entity);
+                    var userData = GetUserData(users, entity, userIdBlacklist);
                     if (userData is null)
                     {
-                        _logger.LogError("Was not able to migrate user data with key {0}", entity.GetString(0));
+                        var userDataId = entity.GetString(0);
+                        var internalUserId = entity.GetInt32(1);
+
+                        if (!userIdBlacklist.Contains(internalUserId))
+                        {
+                            _logger.LogError("Was not able to migrate user data with key {0} because its id {InternalId} does not match any existing user.", userDataId, internalUserId);
+                            userIdBlacklist.Add(internalUserId);
+                        }
+
                         continue;
                     }
 
@@ -374,13 +383,18 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         return new DatabaseMigrationStep(dbContext, operationName, _logger);
     }
 
-    private UserData? GetUserData(ImmutableArray<User> users, SqliteDataReader dto)
+    private UserData? GetUserData(ImmutableArray<User> users, SqliteDataReader dto, HashSet<int> userIdBlacklist)
     {
         var internalUserId = dto.GetInt32(1);
         var user = users.FirstOrDefault(e => e.InternalId == internalUserId);
 
         if (user is null)
         {
+            if (userIdBlacklist.Contains(internalUserId))
+            {
+                return null;
+            }
+
             _logger.LogError("Tried to find user with index '{Idx}' but there are only '{MaxIdx}' users.", internalUserId, users.Length);
             return null;
         }
