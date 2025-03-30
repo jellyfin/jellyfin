@@ -83,10 +83,6 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         connection.Open();
         using (var dbContext = GetPreparedDbContext())
         {
-            migrationTotalTime += stopwatch.Elapsed;
-            _logger.LogInformation("Saving UserData entries took {0}.", stopwatch.Elapsed);
-            stopwatch.Restart();
-
             _logger.LogInformation("Start moving TypedBaseItem.");
             const string typedBaseItemsQuery = """
          SELECT guid, type, data, StartDate, EndDate, ChannelId, IsMovie,
@@ -112,9 +108,9 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 
             _logger.LogInformation("Try saving {0} BaseItem entries.", dbContext.BaseItems.Local.Count);
             dbContext.SaveChanges();
+            migrationTotalTime += stopwatch.Elapsed;
         }
 
-        migrationTotalTime += stopwatch.Elapsed;
         _logger.LogInformation("Saving BaseItems entries took {0}.", stopwatch.Elapsed);
         stopwatch.Restart();
 
@@ -202,7 +198,11 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             legacyBaseItemWithUserKeys.Clear();
             _logger.LogInformation("Try saving {0} UserData entries.", dbContext.UserData.Local.Count);
             dbContext.SaveChanges();
+            migrationTotalTime += stopwatch.Elapsed;
         }
+
+        _logger.LogInformation("Saving UserData took {0}.", stopwatch.Elapsed);
+        stopwatch.Restart();
 
         _logger.LogInformation("Start moving MediaStreamInfos.");
         const string mediaStreamQuery = """
@@ -351,6 +351,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         connection.Close();
         _logger.LogInformation("Migration of the Library.db done.");
         _logger.LogInformation("Move {0} to {1}.", libraryDbPath, libraryDbPath + ".old");
+        _logger.LogInformation("Migrating Library db took {0}.", migrationTotalTime);
 
         SqliteConnection.ClearAllPools();
 
