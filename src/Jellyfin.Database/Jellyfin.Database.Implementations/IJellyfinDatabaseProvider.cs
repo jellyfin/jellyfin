@@ -62,4 +62,14 @@ public interface IJellyfinDatabaseProvider
     /// <param name="cancellationToken">A cancelation token.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
     Task RestoreBackupFast(string key, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Configures the fuzzy search functions.
+    /// </summary>
+    /// <param name="connectionString">The connection string.</param>
+    /// <remarks>
+    /// This method is called when the database is created or migrated.
+    /// It should create the necessary functions for fuzzy search.
+    /// </remarks>
+    void ConfigureFuzzySearchFunctions(string connectionString);
 }

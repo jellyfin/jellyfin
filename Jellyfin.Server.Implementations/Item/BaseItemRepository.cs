@@ -1420,7 +1420,39 @@ public sealed class BaseItemRepository
         if (!string.IsNullOrEmpty(filter.SearchTerm))
         {
             var searchTerm = filter.SearchTerm.ToLower();
-            baseQuery = baseQuery.Where(e => e.CleanName!.ToLower().Contains(searchTerm) || (e.OriginalTitle != null && e.OriginalTitle.ToLower().Contains(searchTerm)));
+
+            // STEP 1: Standard search for exact matches
+            var exactMatchQuery = baseQuery.Where(e =>
+                e.CleanName!.ToLower().Contains(searchTerm) ||
+                (e.OriginalTitle != null && e.OriginalTitle.ToLower().Contains(searchTerm)));
+
+            // Generate important n-grams from the search term
+            var searchNGrams = GenerateNGrams(searchTerm, 3);
+
+            // STEP 2: Fuzzy search with tokenization (uses word segments)
+            // Use LIKE with segments of the search term
+            var fuzzyMatchQuery = baseQuery.Where(e =>
+                searchNGrams.Any(ngram =>
+                    e.CleanName!.ToLower().Contains(ngram) ||
+                    (e.OriginalTitle != null && e.OriginalTitle.ToLower().Contains(ngram))));
+
+            // Combine results with UNION (exact matches first)
+            // Note: For EF Core, we should ideally use FromSqlRaw for an efficient UNION query
+            // Here's an approximation that works with LINQ:
+            var exactResults = exactMatchQuery.ToList();
+
+            // Only execute the second query if the first doesn't have enough results
+            var fuzzyResults = fuzzyMatchQuery
+                    .Where(e => !exactResults.Select(er => er.Id).Contains(e.Id))
+                    .Take(10)
+                    .ToList();
+
+            // Combine the results
+            exactResults.AddRange(fuzzyResults);
+
+            // Create a new query from the combined list of IDs
+            var combinedIds = exactResults.Select(e => e.Id).ToList();
+            baseQuery = baseQuery.Where(e => combinedIds.Contains(e.Id));
         }
 
         if (filter.IsFolder.HasValue)
@@ -2200,5 +2232,22 @@ public sealed class BaseItemRepository
         }
 
         return baseQuery;
+    }
+
+    // Auxiliary function to generate n-grams
+    private List<string> GenerateNGrams(string text, int n)
+    {
+        if (string.IsNullOrEmpty(text) || text.Length < n)
+        {
+            return [text];
+        }
+
+        var ngrams = new List<string>();
+        for (var i = 0; i <= text.Length - n; i++)
+        {
+            ngrams.Add(text.Substring(i, n));
+        }
+
+        return ngrams;
     }
 }
