@@ -956,12 +956,10 @@ public class StreamInfo
             sb.Append(AudioStreamIndex.Value.ToString(CultureInfo.InvariantCulture));
         }
 
-        if (SubtitleStreamIndex.HasValue && SubtitleDeliveryMethod != SubtitleDeliveryMethod.External && SubtitleStreamIndex != -1)
+        if (SubtitleStreamIndex.HasValue && (AlwaysBurnInSubtitleWhenTranscoding || SubtitleDeliveryMethod != SubtitleDeliveryMethod.External) && SubtitleStreamIndex != -1)
         {
             sb.Append("&SubtitleStreamIndex=");
             sb.Append(SubtitleStreamIndex.Value.ToString(CultureInfo.InvariantCulture));
-            sb.Append("&SubtitleMethod=");
-            sb.Append(SubtitleDeliveryMethod.ToString());
         }
 
         if (VideoBitrate.HasValue)
@@ -1095,17 +1093,11 @@ public class StreamInfo
                 sb.Append(CopyTimestamps.ToString(CultureInfo.InvariantCulture));
             }
 
-            if (RequireAvc)
-            {
-                sb.Append("&RequireAvc=");
-                sb.Append(RequireAvc.ToString(CultureInfo.InvariantCulture));
-            }
+            sb.Append("&RequireAvc=");
+            sb.Append(RequireAvc.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
 
-            if (EnableAudioVbrEncoding)
-            {
-                sb.Append("EnableAudioVbrEncoding=");
-                sb.Append(EnableAudioVbrEncoding.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
-            }
+            sb.Append("&EnableAudioVbrEncoding=");
+            sb.Append(EnableAudioVbrEncoding.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
         }
 
         var etag = MediaSource?.ETag;
@@ -1118,7 +1110,7 @@ public class StreamInfo
         if (SubtitleStreamIndex.HasValue && SubtitleDeliveryMethod != SubtitleDeliveryMethod.External)
         {
             sb.Append("&SubtitleMethod=");
-            sb.AppendJoin(',', SubtitleDeliveryMethod);
+            sb.Append(SubtitleDeliveryMethod);
         }
 
         if (SubtitleStreamIndex.HasValue && SubtitleDeliveryMethod == SubtitleDeliveryMethod.Embed && SubtitleCodecs.Count != 0)
