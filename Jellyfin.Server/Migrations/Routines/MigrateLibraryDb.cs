@@ -74,300 +74,304 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         var dataPath = _paths.DataPath;
         var libraryDbPath = Path.Combine(dataPath, DbFilename);
         using var connection = new SqliteConnection($"Filename={libraryDbPath}");
-        var migrationTotalTime = TimeSpan.Zero;
 
-        var stopwatch = new Stopwatch();
-        stopwatch.Start();
+        var fullOperationTimer = new Stopwatch();
+        fullOperationTimer.Start();
+
+        using (var operation = GetPreparedDbContext("Cleanup database"))
+        {
+            operation.JellyfinDbContext.BaseItems.ExecuteDelete();
+            operation.JellyfinDbContext.ItemValues.ExecuteDelete();
+            operation.JellyfinDbContext.UserData.ExecuteDelete();
+            operation.JellyfinDbContext.MediaStreamInfos.ExecuteDelete();
+            operation.JellyfinDbContext.Peoples.ExecuteDelete();
+            operation.JellyfinDbContext.PeopleBaseItemMap.ExecuteDelete();
+            operation.JellyfinDbContext.Chapters.ExecuteDelete();
+            operation.JellyfinDbContext.AncestorIds.ExecuteDelete();
+            operation.JellyfinDbContext.SaveChanges();
+        }
 
         var legacyBaseItemWithUserKeys = new Dictionary<string, BaseItemEntity>();
         connection.Open();
-        using (var dbContext = GetPreparedDbContext())
+        using (var operation = GetPreparedDbContext("moving TypedBaseItem"))
         {
-            _logger.LogInformation("Start moving TypedBaseItem.");
-            const string typedBaseItemsQuery = """
-         SELECT guid, type, data, StartDate, EndDate, ChannelId, IsMovie,
-         IsSeries, EpisodeTitle, IsRepeat, CommunityRating, CustomRating, IndexNumber, IsLocked, PreferredMetadataLanguage,
-         PreferredMetadataCountryCode, Width, Height, DateLastRefreshed, Name, Path, PremiereDate, Overview, ParentIndexNumber,
-         ProductionYear, OfficialRating, ForcedSortName, RunTimeTicks, Size, DateCreated, DateModified, Genres, ParentId, TopParentId,
-         Audio, ExternalServiceId, IsInMixedFolder, DateLastSaved, LockedFields, Studios, Tags, TrailerTypes, OriginalTitle, PrimaryVersionId,
-         DateLastMediaAdded, Album, LUFS, NormalizationGain, CriticRating, IsVirtualItem, SeriesName, UserDataKey, SeasonName, SeasonId, SeriesId,
-         PresentationUniqueKey, InheritedParentalRatingValue, ExternalSeriesId, Tagline, ProviderIds, Images, ProductionLocations, ExtraIds, TotalBitrate,
-         ExtraType, Artists, AlbumArtists, ExternalId, SeriesPresentationUniqueKey, ShowId, OwnerId, MediaType, SortName, CleanName, UnratedType FROM TypedBaseItems
-         """;
-            dbContext.BaseItems.ExecuteDelete();
-
-            foreach (SqliteDataReader dto in connection.Query(typedBaseItemsQuery))
+            const string typedBaseItemsQuery =
+            """
+            SELECT guid, type, data, StartDate, EndDate, ChannelId, IsMovie,
+            IsSeries, EpisodeTitle, IsRepeat, CommunityRating, CustomRating, IndexNumber, IsLocked, PreferredMetadataLanguage,
+            PreferredMetadataCountryCode, Width, Height, DateLastRefreshed, Name, Path, PremiereDate, Overview, ParentIndexNumber,
+            ProductionYear, OfficialRating, ForcedSortName, RunTimeTicks, Size, DateCreated, DateModified, Genres, ParentId, TopParentId,
+            Audio, ExternalServiceId, IsInMixedFolder, DateLastSaved, LockedFields, Studios, Tags, TrailerTypes, OriginalTitle, PrimaryVersionId,
+            DateLastMediaAdded, Album, LUFS, NormalizationGain, CriticRating, IsVirtualItem, SeriesName, UserDataKey, SeasonName, SeasonId, SeriesId,
+            PresentationUniqueKey, InheritedParentalRatingValue, ExternalSeriesId, Tagline, ProviderIds, Images, ProductionLocations, ExtraIds, TotalBitrate,
+            ExtraType, Artists, AlbumArtists, ExternalId, SeriesPresentationUniqueKey, ShowId, OwnerId, MediaType, SortName, CleanName, UnratedType FROM TypedBaseItems
+            """;
+            using (new TrackedMigrationStep("Loading TypedBaseItems", _logger))
             {
-                var baseItem = GetItem(dto);
-                dbContext.BaseItems.Add(baseItem.BaseItem);
-                foreach (var dataKey in baseItem.LegacyUserDataKey)
+                foreach (SqliteDataReader dto in connection.Query(typedBaseItemsQuery))
                 {
-                    legacyBaseItemWithUserKeys[dataKey] = baseItem.BaseItem;
+                    var baseItem = GetItem(dto);
+                    operation.JellyfinDbContext.BaseItems.Add(baseItem.BaseItem);
+                    foreach (var dataKey in baseItem.LegacyUserDataKey)
+                    {
+                        legacyBaseItemWithUserKeys[dataKey] = baseItem.BaseItem;
+                    }
                 }
             }
 
-            _logger.LogInformation("Try saving {0} BaseItem entries.", dbContext.BaseItems.Local.Count);
-            dbContext.SaveChanges();
-            migrationTotalTime += stopwatch.Elapsed;
+            using (new TrackedMigrationStep($"saving {operation.JellyfinDbContext.BaseItems.Local.Count} BaseItem entries", _logger))
+            {
+                operation.JellyfinDbContext.SaveChanges();
+            }
         }
 
-        _logger.LogInformation("Saving BaseItems entries took {0}.", stopwatch.Elapsed);
-        stopwatch.Restart();
-
-        _logger.LogInformation("Start moving ItemValues.");
-        // do not migrate inherited types as they are now properly mapped in search and lookup.
-        const string itemValueQuery =
-        """
-        SELECT ItemId, Type, Value, CleanValue FROM ItemValues
-                    WHERE Type <> 6 AND EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = ItemValues.ItemId)
-        """;
-
-        using (var dbContext = GetPreparedDbContext())
+        using (var operation = GetPreparedDbContext("moving ItemValues"))
         {
-            dbContext.ItemValues.ExecuteDelete();
+            // do not migrate inherited types as they are now properly mapped in search and lookup.
+            const string itemValueQuery =
+            """
+            SELECT ItemId, Type, Value, CleanValue FROM ItemValues
+                        WHERE Type <> 6 AND EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = ItemValues.ItemId)
+            """;
 
             // EFCores local lookup sucks. We cannot use context.ItemValues.Local here because its just super slow.
             var localItems = new Dictionary<(int Type, string CleanValue), (Database.Implementations.Entities.ItemValue ItemValue, List<Guid> ItemIds)>();
-
-            foreach (SqliteDataReader dto in connection.Query(itemValueQuery))
+            using (new TrackedMigrationStep("loading ItemValues", _logger))
             {
-                var itemId = dto.GetGuid(0);
-                var entity = GetItemValue(dto);
-                var key = ((int)entity.Type, entity.CleanValue);
-                if (!localItems.TryGetValue(key, out var existing))
+                foreach (SqliteDataReader dto in connection.Query(itemValueQuery))
                 {
-                    localItems[key] = existing = (entity, []);
+                    var itemId = dto.GetGuid(0);
+                    var entity = GetItemValue(dto);
+                    var key = ((int)entity.Type, entity.CleanValue);
+                    if (!localItems.TryGetValue(key, out var existing))
+                    {
+                        localItems[key] = existing = (entity, []);
+                    }
+
+                    existing.ItemIds.Add(itemId);
                 }
 
-                existing.ItemIds.Add(itemId);
-            }
-
-            foreach (var item in localItems)
-            {
-                dbContext.ItemValues.Add(item.Value.ItemValue);
-                dbContext.ItemValuesMap.AddRange(item.Value.ItemIds.Distinct().Select(f => new ItemValueMap()
+                foreach (var item in localItems)
                 {
-                    Item = null!,
-                    ItemValue = null!,
-                    ItemId = f,
-                    ItemValueId = item.Value.ItemValue.ItemValueId
-                }));
+                    operation.JellyfinDbContext.ItemValues.Add(item.Value.ItemValue);
+                    operation.JellyfinDbContext.ItemValuesMap.AddRange(item.Value.ItemIds.Distinct().Select(f => new ItemValueMap()
+                    {
+                        Item = null!,
+                        ItemValue = null!,
+                        ItemId = f,
+                        ItemValueId = item.Value.ItemValue.ItemValueId
+                    }));
+                }
             }
 
-            _logger.LogInformation("Try saving {0} ItemValues entries.", dbContext.ItemValues.Local.Count);
-            dbContext.SaveChanges();
-            migrationTotalTime += stopwatch.Elapsed;
+            using (new TrackedMigrationStep($"saving {operation.JellyfinDbContext.ItemValues.Local.Count} ItemValues entries", _logger))
+            {
+                operation.JellyfinDbContext.SaveChanges();
+            }
         }
 
-        _logger.LogInformation("Saving People ItemValues took {0}.", stopwatch.Elapsed);
-        stopwatch.Restart();
-
-        _logger.LogInformation("Start moving UserData.");
-        var queryResult = connection.Query("""
-        SELECT key, userId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex FROM UserDatas
-
-        WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.UserDataKey = UserDatas.key)
-        """);
-
-        using (var dbContext = GetPreparedDbContext())
+        using (var operation = GetPreparedDbContext("moving UserData"))
         {
-            dbContext.UserData.ExecuteDelete();
+            var queryResult = connection.Query(
+            """
+            SELECT key, userId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex FROM UserDatas
 
-            var users = dbContext.Users.AsNoTracking().ToImmutableArray();
+            WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.UserDataKey = UserDatas.key)
+            """);
 
-            foreach (var entity in queryResult)
+            using (new TrackedMigrationStep("loading UserData", _logger))
             {
-                var userData = GetUserData(users, entity);
-                if (userData is null)
+                var users = operation.JellyfinDbContext.Users.AsNoTracking().ToImmutableArray();
+
+                foreach (var entity in queryResult)
                 {
-                    _logger.LogError("Was not able to migrate user data with key {0}", entity.GetString(0));
-                    continue;
+                    var userData = GetUserData(users, entity);
+                    if (userData is null)
+                    {
+                        _logger.LogError("Was not able to migrate user data with key {0}", entity.GetString(0));
+                        continue;
+                    }
+
+                    if (!legacyBaseItemWithUserKeys.TryGetValue(userData.CustomDataKey!, out var refItem))
+                    {
+                        _logger.LogError("Was not able to migrate user data with key {0} because it does not reference a valid BaseItem.", entity.GetString(0));
+                        continue;
+                    }
+
+                    userData.ItemId = refItem.Id;
+                    operation.JellyfinDbContext.UserData.Add(userData);
                 }
 
-                if (!legacyBaseItemWithUserKeys.TryGetValue(userData.CustomDataKey!, out var refItem))
-                {
-                    _logger.LogError("Was not able to migrate user data with key {0} because it does not reference a valid BaseItem.", entity.GetString(0));
-                    continue;
-                }
-
-                userData.ItemId = refItem.Id;
-                dbContext.UserData.Add(userData);
+                users.Clear();
             }
 
-            users.Clear();
             legacyBaseItemWithUserKeys.Clear();
-            _logger.LogInformation("Try saving {0} UserData entries.", dbContext.UserData.Local.Count);
-            dbContext.SaveChanges();
-            migrationTotalTime += stopwatch.Elapsed;
+
+            using (new TrackedMigrationStep($"saving {operation.JellyfinDbContext.UserData.Local.Count} UserData entries", _logger))
+            {
+                operation.JellyfinDbContext.SaveChanges();
+            }
         }
 
-        _logger.LogInformation("Saving UserData took {0}.", stopwatch.Elapsed);
-        stopwatch.Restart();
-
-        _logger.LogInformation("Start moving MediaStreamInfos.");
-        const string mediaStreamQuery = """
-        SELECT ItemId, StreamIndex, StreamType, Codec, Language, ChannelLayout, Profile, AspectRatio, Path,
-        IsInterlaced, BitRate, Channels, SampleRate, IsDefault, IsForced, IsExternal, Height, Width,
-        AverageFrameRate, RealFrameRate, Level, PixelFormat, BitDepth, IsAnamorphic, RefFrames, CodecTag,
-        Comment, NalLengthSize, IsAvc, Title, TimeBase, CodecTimeBase, ColorPrimaries, ColorSpace, ColorTransfer,
-        DvVersionMajor, DvVersionMinor, DvProfile, DvLevel, RpuPresentFlag, ElPresentFlag, BlPresentFlag, DvBlSignalCompatibilityId, IsHearingImpaired
-        FROM MediaStreams
-        WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = MediaStreams.ItemId)
-        """;
-        using (var dbContext = GetPreparedDbContext())
+        using (var operation = GetPreparedDbContext("moving MediaStreamInfos"))
         {
-            dbContext.MediaStreamInfos.ExecuteDelete();
+            const string mediaStreamQuery =
+            """
+            SELECT ItemId, StreamIndex, StreamType, Codec, Language, ChannelLayout, Profile, AspectRatio, Path,
+            IsInterlaced, BitRate, Channels, SampleRate, IsDefault, IsForced, IsExternal, Height, Width,
+            AverageFrameRate, RealFrameRate, Level, PixelFormat, BitDepth, IsAnamorphic, RefFrames, CodecTag,
+            Comment, NalLengthSize, IsAvc, Title, TimeBase, CodecTimeBase, ColorPrimaries, ColorSpace, ColorTransfer,
+            DvVersionMajor, DvVersionMinor, DvProfile, DvLevel, RpuPresentFlag, ElPresentFlag, BlPresentFlag, DvBlSignalCompatibilityId, IsHearingImpaired
+            FROM MediaStreams
+            WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = MediaStreams.ItemId)
+            """;
 
-            foreach (SqliteDataReader dto in connection.Query(mediaStreamQuery))
+            using (new TrackedMigrationStep("loading MediaStreamInfos", _logger))
             {
-                dbContext.MediaStreamInfos.Add(GetMediaStream(dto));
+                foreach (SqliteDataReader dto in connection.Query(mediaStreamQuery))
+                {
+                    operation.JellyfinDbContext.MediaStreamInfos.Add(GetMediaStream(dto));
+                }
             }
 
-            _logger.LogInformation("Try saving {0} MediaStreamInfos entries.", dbContext.MediaStreamInfos.Local.Count);
-            dbContext.SaveChanges();
-
-            migrationTotalTime += stopwatch.Elapsed;
+            using (new TrackedMigrationStep($"saving {operation.JellyfinDbContext.MediaStreamInfos.Local.Count} MediaStreamInfos entries", _logger))
+            {
+                operation.JellyfinDbContext.SaveChanges();
+            }
         }
 
-        _logger.LogInformation("Saving MediaStreamInfos entries took {0}.", stopwatch.Elapsed);
-        stopwatch.Restart();
-
-        _logger.LogInformation("Start moving People.");
-        const string personsQuery = """
-        SELECT ItemId, Name, Role, PersonType, SortOrder FROM People
-        WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = People.ItemId)
-        """;
-
-        using (var dbContext = GetPreparedDbContext())
+        using (var operation = GetPreparedDbContext("moving People"))
         {
-            dbContext.Peoples.ExecuteDelete();
-            dbContext.PeopleBaseItemMap.ExecuteDelete();
+            const string personsQuery =
+            """
+            SELECT ItemId, Name, Role, PersonType, SortOrder FROM People
+            WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = People.ItemId)
+            """;
 
             var peopleCache = new Dictionary<string, (People Person, List<PeopleBaseItemMap> Items)>();
-            var baseItemIds = dbContext.BaseItems.Select(b => b.Id).ToHashSet();
 
-            foreach (SqliteDataReader reader in connection.Query(personsQuery))
+            using (new TrackedMigrationStep("loading People", _logger))
             {
-                var itemId = reader.GetGuid(0);
-                if (!baseItemIds.Contains(itemId))
+                var baseItemIds = operation.JellyfinDbContext.BaseItems.Select(b => b.Id).ToHashSet();
+
+                foreach (SqliteDataReader reader in connection.Query(personsQuery))
                 {
-                    _logger.LogError("Dont save person {0} because its not in use by any BaseItem", reader.GetString(1));
-                    continue;
+                    var itemId = reader.GetGuid(0);
+                    if (!baseItemIds.Contains(itemId))
+                    {
+                        _logger.LogError("Dont save person {0} because its not in use by any BaseItem", reader.GetString(1));
+                        continue;
+                    }
+
+                    var entity = GetPerson(reader);
+                    if (!peopleCache.TryGetValue(entity.Name, out var personCache))
+                    {
+                        peopleCache[entity.Name] = personCache = (entity, []);
+                    }
+
+                    if (reader.TryGetString(2, out var role))
+                    {
+                    }
+
+                    int? sortOrder = reader.IsDBNull(4) ? null : reader.GetInt32(4);
+
+                    personCache.Items.Add(new PeopleBaseItemMap()
+                    {
+                        Item = null!,
+                        ItemId = itemId,
+                        People = null!,
+                        PeopleId = personCache.Person.Id,
+                        ListOrder = sortOrder,
+                        SortOrder = sortOrder,
+                        Role = role
+                    });
                 }
 
-                var entity = GetPerson(reader);
-                if (!peopleCache.TryGetValue(entity.Name, out var personCache))
+                baseItemIds.Clear();
+
+                foreach (var item in peopleCache)
                 {
-                    peopleCache[entity.Name] = personCache = (entity, []);
+                    operation.JellyfinDbContext.Peoples.Add(item.Value.Person);
+                    operation.JellyfinDbContext.PeopleBaseItemMap.AddRange(item.Value.Items.DistinctBy(e => (e.ItemId, e.PeopleId)));
                 }
 
-                if (reader.TryGetString(2, out var role))
-                {
-                }
-
-                int? sortOrder = reader.IsDBNull(4) ? null : reader.GetInt32(4);
-
-                personCache.Items.Add(new PeopleBaseItemMap()
-                {
-                    Item = null!,
-                    ItemId = itemId,
-                    People = null!,
-                    PeopleId = personCache.Person.Id,
-                    ListOrder = sortOrder,
-                    SortOrder = sortOrder,
-                    Role = role
-                });
+                peopleCache.Clear();
             }
 
-            baseItemIds.Clear();
-
-            foreach (var item in peopleCache)
+            using (new TrackedMigrationStep($"saving {operation.JellyfinDbContext.Peoples.Local.Count} People entries", _logger))
             {
-                dbContext.Peoples.Add(item.Value.Person);
-                dbContext.PeopleBaseItemMap.AddRange(item.Value.Items.DistinctBy(e => (e.ItemId, e.PeopleId)));
+                operation.JellyfinDbContext.SaveChanges();
             }
-
-            peopleCache.Clear();
-
-            _logger.LogInformation("Try saving {0} People entries.", dbContext.Peoples.Local.Count);
-            dbContext.SaveChanges();
-            migrationTotalTime += stopwatch.Elapsed;
         }
 
-        _logger.LogInformation("Saving People entries took {0}.", stopwatch.Elapsed);
-        stopwatch.Restart();
-
-        _logger.LogInformation("Start moving Chapters.");
-        const string chapterQuery = """
-        SELECT ItemId,StartPositionTicks,Name,ImagePath,ImageDateModified,ChapterIndex from Chapters2
-        WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = Chapters2.ItemId)
-        """;
-        using (var dbContext = GetPreparedDbContext())
+        using (var operation = GetPreparedDbContext("moving Chapters"))
         {
-            dbContext.Chapters.ExecuteDelete();
+            const string chapterQuery =
+            """
+            SELECT ItemId,StartPositionTicks,Name,ImagePath,ImageDateModified,ChapterIndex from Chapters2
+            WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = Chapters2.ItemId)
+            """;
 
-            foreach (SqliteDataReader dto in connection.Query(chapterQuery))
+            using (new TrackedMigrationStep("loading Chapters", _logger))
             {
-                var chapter = GetChapter(dto);
-                dbContext.Chapters.Add(chapter);
+                foreach (SqliteDataReader dto in connection.Query(chapterQuery))
+                {
+                    var chapter = GetChapter(dto);
+                    operation.JellyfinDbContext.Chapters.Add(chapter);
+                }
             }
 
-            _logger.LogInformation("Try saving {0} Chapters entries.", dbContext.Chapters.Local.Count);
-            dbContext.SaveChanges();
-            migrationTotalTime += stopwatch.Elapsed;
+            using (new TrackedMigrationStep($"saving {operation.JellyfinDbContext.Chapters.Local.Count} Chapters entries", _logger))
+            {
+                operation.JellyfinDbContext.SaveChanges();
+            }
         }
 
-        _logger.LogInformation("Saving Chapters took {0}.", stopwatch.Elapsed);
-        stopwatch.Restart();
-
-        _logger.LogInformation("Start moving AncestorIds.");
-        const string ancestorIdsQuery = """
-        SELECT ItemId, AncestorId, AncestorIdText FROM AncestorIds
-        WHERE
-        EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = AncestorIds.ItemId)
-        AND
-        EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = AncestorIds.AncestorId)
-        """;
-
-        using (var dbContext = GetPreparedDbContext())
+        using (var operation = GetPreparedDbContext("moving AncestorIds"))
         {
-            dbContext.AncestorIds.ExecuteDelete();
+            const string ancestorIdsQuery =
+            """
+            SELECT ItemId, AncestorId, AncestorIdText FROM AncestorIds
+            WHERE
+            EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = AncestorIds.ItemId)
+            AND
+            EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = AncestorIds.AncestorId)
+            """;
 
-            foreach (SqliteDataReader dto in connection.Query(ancestorIdsQuery))
+            using (new TrackedMigrationStep("loading AncestorIds", _logger))
             {
-                var ancestorId = GetAncestorId(dto);
-                dbContext.AncestorIds.Add(ancestorId);
+                foreach (SqliteDataReader dto in connection.Query(ancestorIdsQuery))
+                {
+                    var ancestorId = GetAncestorId(dto);
+                    operation.JellyfinDbContext.AncestorIds.Add(ancestorId);
+                }
             }
 
-            _logger.LogInformation("Try saving {0} AncestorIds entries.", dbContext.AncestorIds.Local.Count);
-
-            dbContext.SaveChanges();
-            migrationTotalTime += stopwatch.Elapsed;
+            using (new TrackedMigrationStep($"saving {operation.JellyfinDbContext.AncestorIds.Local.Count} AncestorId entries", _logger))
+            {
+                operation.JellyfinDbContext.SaveChanges();
+            }
         }
-
-        _logger.LogInformation("Saving AncestorIds took {0}.", stopwatch.Elapsed);
-        stopwatch.Restart();
 
         connection.Close();
+
         _logger.LogInformation("Migration of the Library.db done.");
         _logger.LogInformation("Move {0} to {1}.", libraryDbPath, libraryDbPath + ".old");
-        _logger.LogInformation("Migrating Library db took {0}.", migrationTotalTime);
+        _logger.LogInformation("Migrating Library db took {0}.", fullOperationTimer.Elapsed);
 
         SqliteConnection.ClearAllPools();
 
         File.Move(libraryDbPath, libraryDbPath + ".old", true);
 
-        _logger.LogInformation("Migrating Library db took {0}.", migrationTotalTime);
-
         _jellyfinDatabaseProvider.RunScheduledOptimisation(CancellationToken.None).ConfigureAwait(false).GetAwaiter().GetResult();
     }
 
-    private JellyfinDbContext GetPreparedDbContext()
+    private DatabaseMigrationStep GetPreparedDbContext(string operationName)
     {
         var dbContext = _provider.CreateDbContext();
         dbContext.ChangeTracker.AutoDetectChangesEnabled = false;
         dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
-        return dbContext;
+        return new DatabaseMigrationStep(dbContext, operationName, _logger);
     }
 
     private UserData? GetUserData(ImmutableArray<User> users, SqliteDataReader dto)
@@ -1250,5 +1254,59 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         }
 
         return image;
+    }
+
+    private class TrackedMigrationStep : IDisposable
+    {
+        private readonly string _operationName;
+        private readonly ILogger _logger;
+        private readonly Stopwatch _operationTimer;
+        private bool _disposed;
+
+        public TrackedMigrationStep(string operationName, ILogger logger)
+        {
+            _operationName = operationName;
+            _logger = logger;
+            _operationTimer = Stopwatch.StartNew();
+            logger.LogInformation("Start {OperationName}", operationName);
+        }
+
+        public bool Disposed
+        {
+            get => _disposed;
+            set => _disposed = value;
+        }
+
+        public virtual void Dispose()
+        {
+            if (Disposed)
+            {
+                return;
+            }
+
+            Disposed = true;
+            _logger.LogInformation("{OperationName} took '{Time}'", _operationName, _operationTimer.Elapsed);
+        }
+    }
+
+    private sealed class DatabaseMigrationStep : TrackedMigrationStep
+    {
+        public DatabaseMigrationStep(JellyfinDbContext jellyfinDbContext, string operationName, ILogger logger) : base(operationName, logger)
+        {
+            JellyfinDbContext = jellyfinDbContext;
+        }
+
+        public JellyfinDbContext JellyfinDbContext { get; }
+
+        public override void Dispose()
+        {
+            if (Disposed)
+            {
+                return;
+            }
+
+            JellyfinDbContext.Dispose();
+            base.Dispose();
+        }
     }
 }
