@@ -123,7 +123,7 @@ public class AudioWaveformManager : IAudioWaveformManager
                 { "sampleRate", sampleRate }
             };
 
-            var json = JsonSerializer.Serialize(data);
+            var json = JsonSerializer.Serialize(data, JsonDefaults.Options);
             await File.WriteAllTextAsync(outputPathJson, json).ConfigureAwait(false);
             File.Delete(outputPathCsv);
         }
