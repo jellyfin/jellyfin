@@ -73,7 +73,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 
         var dataPath = _paths.DataPath;
         var libraryDbPath = Path.Combine(dataPath, DbFilename);
-        using var connection = new SqliteConnection($"Filename={libraryDbPath}");
+        using var connection = new SqliteConnection($"Filename={libraryDbPath};Mode=ReadOnly");
 
         var fullOperationTimer = new Stopwatch();
         fullOperationTimer.Start();
@@ -88,11 +88,12 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             operation.JellyfinDbContext.PeopleBaseItemMap.ExecuteDelete();
             operation.JellyfinDbContext.Chapters.ExecuteDelete();
             operation.JellyfinDbContext.AncestorIds.ExecuteDelete();
-            operation.JellyfinDbContext.SaveChanges();
         }
 
         var legacyBaseItemWithUserKeys = new Dictionary<string, BaseItemEntity>();
         connection.Open();
+
+        var baseItemIds = new HashSet<Guid>();
         using (var operation = GetPreparedDbContext("moving TypedBaseItem"))
         {
             const string typedBaseItemsQuery =
@@ -112,6 +113,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
                 {
                     var baseItem = GetItem(dto);
                     operation.JellyfinDbContext.BaseItems.Add(baseItem.BaseItem);
+                    baseItemIds.Add(baseItem.BaseItem.Id);
                     foreach (var dataKey in baseItem.LegacyUserDataKey)
                     {
                         legacyBaseItemWithUserKeys[dataKey] = baseItem.BaseItem;
@@ -252,8 +254,6 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 
             using (new TrackedMigrationStep("loading People", _logger))
             {
-                var baseItemIds = operation.JellyfinDbContext.BaseItems.Select(b => b.Id).ToHashSet();
-
                 foreach (SqliteDataReader reader in connection.Query(personsQuery))
                 {
                     var itemId = reader.GetGuid(0);
@@ -298,7 +298,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
                 peopleCache.Clear();
             }
 
-            using (new TrackedMigrationStep($"saving {operation.JellyfinDbContext.Peoples.Local.Count} People entries", _logger))
+            using (new TrackedMigrationStep($"saving {operation.JellyfinDbContext.Peoples.Local.Count} People entries and {operation.JellyfinDbContext.PeopleBaseItemMap.Local.Count} maps", _logger))
             {
                 operation.JellyfinDbContext.SaveChanges();
             }
@@ -356,11 +356,11 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         connection.Close();
 
         _logger.LogInformation("Migration of the Library.db done.");
-        _logger.LogInformation("Move {0} to {1}.", libraryDbPath, libraryDbPath + ".old");
         _logger.LogInformation("Migrating Library db took {0}.", fullOperationTimer.Elapsed);
 
         SqliteConnection.ClearAllPools();
 
+        _logger.LogInformation("Move {0} to {1}.", libraryDbPath, libraryDbPath + ".old");
         File.Move(libraryDbPath, libraryDbPath + ".old", true);
 
         _jellyfinDatabaseProvider.RunScheduledOptimisation(CancellationToken.None).ConfigureAwait(false).GetAwaiter().GetResult();
