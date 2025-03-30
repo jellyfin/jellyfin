@@ -4,7 +4,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using Jellyfin.Data.Enums;
-using MediaBrowser.Common;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Trickplay;
@@ -16,7 +15,7 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// Migration to move trickplay files to the new directory.
 /// </summary>
-public class MoveTrickplayFiles : IMigrationRoutine
+public class MoveTrickplayFiles : IDatabaseMigrationRoutine
 {
     private readonly ITrickplayManager _trickplayManager;
     private readonly IFileSystem _fileSystem;
