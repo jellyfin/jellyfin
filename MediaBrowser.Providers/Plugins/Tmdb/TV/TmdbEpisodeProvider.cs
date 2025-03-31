@@ -47,7 +47,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(EpisodeInfo searchInfo, CancellationToken cancellationToken)
         {
             // The search query must either provide an episode number or date
-            if (!searchInfo.IndexNumber.HasValue || !searchInfo.ParentIndexNumber.HasValue)
+            if (!searchInfo.IndexNumber.HasValue)
             {
                 return Enumerable.Empty<RemoteSearchResult>();
             }
@@ -96,10 +96,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 return metadataResult;
             }
 
-            var seasonNumber = info.ParentIndexNumber;
+            var seasonNumber = info.ParentIndexNumber ?? 1;
             var episodeNumber = info.IndexNumber;
 
-            if (!seasonNumber.HasValue || !episodeNumber.HasValue)
+            if (!episodeNumber.HasValue)
             {
                 return metadataResult;
             }
@@ -112,7 +112,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 List<TvEpisode>? result = null;
                 for (int? episode = startindex; episode <= endindex; episode++)
                 {
-                    var episodeInfo = await _tmdbClientManager.GetEpisodeAsync(seriesTmdbId, seasonNumber.Value, episode.Value, info.SeriesDisplayOrder, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken).ConfigureAwait(false);
+                    var episodeInfo = await _tmdbClientManager.GetEpisodeAsync(seriesTmdbId, seasonNumber, episode.Value, info.SeriesDisplayOrder, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken).ConfigureAwait(false);
                     if (episodeInfo is not null)
                     {
                         (result ??= new List<TvEpisode>()).Add(episodeInfo);
@@ -156,7 +156,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             else
             {
                 episodeResult = await _tmdbClientManager
-                    .GetEpisodeAsync(seriesTmdbId, seasonNumber.Value, episodeNumber.Value, info.SeriesDisplayOrder, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken)
+                    .GetEpisodeAsync(seriesTmdbId, seasonNumber, episodeNumber.Value, info.SeriesDisplayOrder, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken)
                     .ConfigureAwait(false);
             }
 
@@ -211,7 +211,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     metadataResult.AddPerson(new PersonInfo
                     {
                         Name = actor.Name.Trim(),
-                        Role = actor.Character,
+                        Role = actor.Character.Trim(),
                         Type = PersonKind.Actor,
                         SortOrder = actor.Order
                     });
@@ -225,7 +225,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     metadataResult.AddPerson(new PersonInfo
                     {
                         Name = guest.Name.Trim(),
-                        Role = guest.Character,
+                        Role = guest.Character.Trim(),
                         Type = PersonKind.GuestStar,
                         SortOrder = guest.Order
                     });
@@ -249,7 +249,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     metadataResult.AddPerson(new PersonInfo
                     {
                         Name = person.Name.Trim(),
-                        Role = person.Job,
+                        Role = person.Job?.Trim(),
                         Type = type
                     });
                 }

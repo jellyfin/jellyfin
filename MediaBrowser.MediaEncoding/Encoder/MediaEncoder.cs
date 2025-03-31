@@ -62,7 +62,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private readonly AsyncNonKeyedLocker _thumbnailResourcePool;
 
-        private readonly object _runningProcessesLock = new object();
+        private readonly Lock _runningProcessesLock = new();
         private readonly List<ProcessWrapper> _runningProcesses = new List<ProcessWrapper>();
 
         // MediaEncoder is registered as a Singleton
@@ -82,6 +82,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private bool _isVaapiDeviceInteli965 = false;
         private bool _isVaapiDeviceSupportVulkanDrmModifier = false;
         private bool _isVaapiDeviceSupportVulkanDrmInterop = false;
+
+        private bool _isVideoToolboxAv1DecodeAvailable = false;
 
         private static string[] _vulkanImageDrmFmtModifierExts =
         {
@@ -122,7 +124,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _jsonSerializerOptions = new JsonSerializerOptions(JsonDefaults.Options);
             _jsonSerializerOptions.Converters.Add(new JsonBoolStringConverter());
 
-            var semaphoreCount = 2 * Environment.ProcessorCount;
+            // Although the type is not nullable, this might still be null during unit tests
+            var semaphoreCount = serverConfig.Configuration?.ParallelImageEncodingLimit ?? 0;
+            if (semaphoreCount < 1)
+            {
+                semaphoreCount = Environment.ProcessorCount;
+            }
+
             _thumbnailResourcePool = new(semaphoreCount);
         }
 
@@ -152,6 +160,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         /// <inheritdoc />
         public bool IsVaapiDeviceSupportVulkanDrmInterop => _isVaapiDeviceSupportVulkanDrmInterop;
+
+        public bool IsVideoToolboxAv1DecodeAvailable => _isVideoToolboxAv1DecodeAvailable;
 
         [GeneratedRegex(@"[^\/\\]+?(\.[^\/\\\n.]+)?$")]
         private static partial Regex FfprobePathRegex();
@@ -254,6 +264,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     {
                         _logger.LogInformation("VAAPI device {RenderNodePath} supports Vulkan DRM interop", options.VaapiDevice);
                     }
+                }
+
+                // Check if VideoToolbox supports AV1 decode
+                if (OperatingSystem.IsMacOS() && SupportsHwaccel("videotoolbox"))
+                {
+                    _isVideoToolboxAv1DecodeAvailable = validator.CheckIsVideoToolboxAv1DecodeAvailable();
                 }
             }
 
@@ -1101,14 +1117,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private void StopProcesses()
         {
-            List<ProcessWrapper> proceses;
+            List<ProcessWrapper> processes;
             lock (_runningProcessesLock)
             {
-                proceses = _runningProcesses.ToList();
+                processes = _runningProcesses.ToList();
                 _runningProcesses.Clear();
             }
 
-            foreach (var process in proceses)
+            foreach (var process in processes)
             {
                 if (!process.HasExited)
                 {

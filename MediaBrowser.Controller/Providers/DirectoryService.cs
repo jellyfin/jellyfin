@@ -10,13 +10,14 @@ namespace MediaBrowser.Controller.Providers
 {
     public class DirectoryService : IDirectoryService
     {
-        private readonly IFileSystem _fileSystem;
-
+        // TODO make static and switch to FastConcurrentLru.
         private readonly ConcurrentDictionary<string, FileSystemMetadata[]> _cache = new(StringComparer.Ordinal);
 
         private readonly ConcurrentDictionary<string, FileSystemMetadata> _fileCache = new(StringComparer.Ordinal);
 
         private readonly ConcurrentDictionary<string, List<string>> _filePathCache = new(StringComparer.Ordinal);
+
+        private readonly IFileSystem _fileSystem;
 
         public DirectoryService(IFileSystem fileSystem)
         {

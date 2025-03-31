@@ -1,8 +1,10 @@
 {
     "name": "Development Jellyfin Server",
-    "image":"mcr.microsoft.com/devcontainers/dotnet:9.0-jammy",
+    "image": "mcr.microsoft.com/devcontainers/dotnet:9.0-bookworm",
+    "service": "app",
+    "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
     // restores nuget packages, installs the dotnet workloads and installs the dev https certificate
-    "postStartCommand": "dotnet restore; dotnet workload update; dotnet dev-certs https --trust",
+    "postStartCommand": "sudo dotnet restore; sudo dotnet workload update; sudo dotnet dev-certs https --trust; sudo bash \"./.devcontainer/install-ffmpeg.sh\"",
     // reads the extensions list and installs them
     "postAttachCommand": "cat .vscode/extensions.json | jq -r .recommendations[] | xargs -n 1 code --install-extension",
     "features": {
@@ -13,7 +15,9 @@
         },
         "ghcr.io/devcontainers-contrib/features/apt-packages:1": {
             "preserve_apt_list": false,
-            "packages": ["libfontconfig1"]
+            "packages": [
+                "libfontconfig1"
+            ]
         },
         "ghcr.io/devcontainers/features/docker-in-docker:2": {
             "dockerDashComposeVersion": "v2"

@@ -9,12 +9,13 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
+using Jellyfin.Data;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Querying;
 using MetadataProvider = MediaBrowser.Model.Entities.MetadataProvider;
 
@@ -23,7 +24,7 @@ namespace MediaBrowser.Controller.Entities.TV
     /// <summary>
     /// Class Series.
     /// </summary>
-    public class Series : Folder, IHasTrailers, IHasDisplayOrder, IHasLookupInfo<SeriesInfo>, IMetadataContainer
+    public class Series : Folder, IHasTrailers, IHasDisplayOrder, IHasLookupInfo<SeriesInfo>, IMetadataContainer, ISupportsBoxSetGrouping
     {
         public Series()
         {
@@ -189,12 +190,12 @@ namespace MediaBrowser.Controller.Entities.TV
             return list;
         }
 
-        public override List<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
+        public override IReadOnlyList<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
         {
             return GetSeasons(user, new DtoOptions(true));
         }
 
-        public List<BaseItem> GetSeasons(User user, DtoOptions options)
+        public IReadOnlyList<BaseItem> GetSeasons(User user, DtoOptions options)
         {
             var query = new InternalItemsQuery(user)
             {
@@ -224,6 +225,21 @@ namespace MediaBrowser.Controller.Entities.TV
         protected override QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)
         {
             var user = query.User;
+
+            if (SourceType == SourceType.Channel)
+            {
+                try
+                {
+                    query.Parent = this;
+                    query.ChannelIds = [ChannelId];
+                    return ChannelManager.GetChannelItemsInternal(query, new Progress<double>(), CancellationToken.None).GetAwaiter().GetResult();
+                }
+                catch
+                {
+                    // Already logged at lower levels
+                    return new QueryResult<BaseItem>();
+                }
+            }
 
             if (query.Recursive)
             {
@@ -371,7 +387,25 @@ namespace MediaBrowser.Controller.Entities.TV
                 query.IsMissing = false;
             }
 
-            var allItems = LibraryManager.GetItemList(query);
+            IReadOnlyList<BaseItem> allItems;
+            if (SourceType == SourceType.Channel)
+            {
+                try
+                {
+                    query.Parent = parentSeason;
+                    query.ChannelIds = [ChannelId];
+                    allItems = [.. ChannelManager.GetChannelItemsInternal(query, new Progress<double>(), CancellationToken.None).GetAwaiter().GetResult().Items];
+                }
+                catch
+                {
+                    // Already logged at lower levels
+                    return [];
+                }
+            }
+            else
+            {
+                allItems = LibraryManager.GetItemList(query);
+            }
 
             return GetSeasonEpisodes(parentSeason, user, allItems, options, shouldIncludeMissingEpisodes);
         }

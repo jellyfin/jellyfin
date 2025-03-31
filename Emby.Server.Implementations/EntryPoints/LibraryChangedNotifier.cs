@@ -5,8 +5,8 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
 using Jellyfin.Data.Events;
+using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -34,7 +34,7 @@ public sealed class LibraryChangedNotifier : IHostedService, IDisposable
     private readonly IUserManager _userManager;
     private readonly ILogger<LibraryChangedNotifier> _logger;
 
-    private readonly object _libraryChangedSyncLock = new();
+    private readonly Lock _libraryChangedSyncLock = new();
     private readonly List<Folder> _foldersAddedTo = new();
     private readonly List<Folder> _foldersRemovedFrom = new();
     private readonly List<BaseItem> _itemsAdded = new();

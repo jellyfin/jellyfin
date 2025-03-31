@@ -9,8 +9,10 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
+using Jellyfin.Data;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -137,27 +139,27 @@ namespace MediaBrowser.Controller.Playlists
             return Task.CompletedTask;
         }
 
-        public override List<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
+        public override IReadOnlyList<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
         {
             return GetPlayableItems(user, query);
         }
 
-        protected override IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
+        protected override IReadOnlyList<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
         {
             return [];
         }
 
-        public override IEnumerable<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)
+        public override IReadOnlyList<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)
         {
             return GetPlayableItems(user, query);
         }
 
-        public IEnumerable<Tuple<LinkedChild, BaseItem>> GetManageableItems()
+        public IReadOnlyList<Tuple<LinkedChild, BaseItem>> GetManageableItems()
         {
             return GetLinkedChildrenInfos();
         }
 
-        private List<BaseItem> GetPlayableItems(User user, InternalItemsQuery query)
+        private IReadOnlyList<BaseItem> GetPlayableItems(User user, InternalItemsQuery query)
         {
             query ??= new InternalItemsQuery(user);
 
@@ -227,11 +229,11 @@ namespace MediaBrowser.Controller.Playlists
             return [item];
         }
 
-        public override bool IsVisible(User user)
+        public override bool IsVisible(User user, bool skipAllowedTagsCheck = false)
         {
             if (!IsSharedItem)
             {
-                return base.IsVisible(user);
+                return base.IsVisible(user, skipAllowedTagsCheck);
             }
 
             if (OpenAccess)

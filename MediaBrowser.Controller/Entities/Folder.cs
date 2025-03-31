@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Security;
@@ -11,8 +12,11 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
-using Jellyfin.Data.Entities;
+using J2N.Collections.Generic.Extensions;
+using Jellyfin.Data;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Collections;
@@ -217,7 +221,7 @@ namespace MediaBrowser.Controller.Entities
             LibraryManager.CreateItem(item, this);
         }
 
-        public override bool IsVisible(User user)
+        public override bool IsVisible(User user, bool skipAllowedTagsCheck = false)
         {
             if (this is ICollectionFolder && this is not BasePluginFolder)
             {
@@ -239,7 +243,7 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            return base.IsVisible(user);
+            return base.IsVisible(user, skipAllowedTagsCheck);
         }
 
         /// <summary>
@@ -247,7 +251,7 @@ namespace MediaBrowser.Controller.Entities
         /// We want this synchronous.
         /// </summary>
         /// <returns>Returns children.</returns>
-        protected virtual List<BaseItem> LoadChildren()
+        protected virtual IReadOnlyList<BaseItem> LoadChildren()
         {
             // logger.LogDebug("Loading children from {0} {1} {2}", GetType().Name, Id, Path);
             // just load our children from the repo - the library will be validated and maintained in other processes
@@ -528,13 +532,13 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        private Task RefreshMetadataRecursive(IList<BaseItem> children, MetadataRefreshOptions refreshOptions, bool recursive, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task RefreshMetadataRecursive(IList<BaseItem> children, MetadataRefreshOptions refreshOptions, bool recursive, IProgress<double> progress, CancellationToken cancellationToken)
         {
-            return RunTasks(
+            await RunTasks(
                 (baseItem, innerProgress) => RefreshChildMetadata(baseItem, refreshOptions, recursive && baseItem.IsFolder, innerProgress, cancellationToken),
                 children,
                 progress,
-                cancellationToken);
+                cancellationToken).ConfigureAwait(false);
         }
 
         private async Task RefreshAllMetadataForContainer(IMetadataContainer container, MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
@@ -575,13 +579,13 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private Task ValidateSubFolders(IList<Folder> children, IDirectoryService directoryService, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task ValidateSubFolders(IList<Folder> children, IDirectoryService directoryService, IProgress<double> progress, CancellationToken cancellationToken)
         {
-            return RunTasks(
+            await RunTasks(
                 (folder, innerProgress) => folder.ValidateChildrenInternal(innerProgress, true, false, false, null, directoryService, cancellationToken),
                 children,
                 progress,
-                cancellationToken);
+                cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -659,7 +663,7 @@ namespace MediaBrowser.Controller.Entities
         /// Get our children from the repo - stubbed for now.
         /// </summary>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        protected List<BaseItem> GetCachedChildren()
+        protected IReadOnlyList<BaseItem> GetCachedChildren()
         {
             return ItemRepository.GetItemList(new InternalItemsQuery
             {
@@ -1060,11 +1064,6 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            if (queryParent is Series)
-            {
-                return false;
-            }
-
             if (queryParent is Season)
             {
                 return false;
@@ -1084,12 +1083,15 @@ namespace MediaBrowser.Controller.Entities
 
             if (!param.HasValue)
             {
-                if (user is not null && !configurationManager.Configuration.EnableGroupingIntoCollections)
+                if (user is not null && query.IncludeItemTypes.Any(type =>
+                    (type == BaseItemKind.Movie && !configurationManager.Configuration.EnableGroupingMoviesIntoCollections) ||
+                    (type == BaseItemKind.Series && !configurationManager.Configuration.EnableGroupingShowsIntoCollections)))
                 {
                     return false;
                 }
 
-                if (query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains(BaseItemKind.Movie))
+                if (query.IncludeItemTypes.Length == 0
+                    || query.IncludeItemTypes.Any(type => type == BaseItemKind.Movie || type == BaseItemKind.Series))
                 {
                     param = true;
                 }
@@ -1200,6 +1202,11 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
+            if (request.Is4K.HasValue)
+            {
+                return false;
+            }
+
             if (request.IsHD.HasValue)
             {
                 return false;
@@ -1236,11 +1243,6 @@ namespace MediaBrowser.Controller.Entities
             }
 
             if (request.StudioIds.Length > 0)
-            {
-                return false;
-            }
-
-            if (request.GenreIds.Count > 0)
             {
                 return false;
             }
@@ -1283,14 +1285,14 @@ namespace MediaBrowser.Controller.Entities
             return true;
         }
 
-        public List<BaseItem> GetChildren(User user, bool includeLinkedChildren)
+        public IReadOnlyList<BaseItem> GetChildren(User user, bool includeLinkedChildren)
         {
             ArgumentNullException.ThrowIfNull(user);
 
             return GetChildren(user, includeLinkedChildren, new InternalItemsQuery(user));
         }
 
-        public virtual List<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
+        public virtual IReadOnlyList<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
         {
             ArgumentNullException.ThrowIfNull(user);
 
@@ -1304,7 +1306,7 @@ namespace MediaBrowser.Controller.Entities
 
             AddChildren(user, includeLinkedChildren, result, false, query);
 
-            return result.Values.ToList();
+            return result.Values.ToArray();
         }
 
         protected virtual IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
@@ -1369,7 +1371,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        public virtual IEnumerable<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)
+        public virtual IReadOnlyList<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)
         {
             ArgumentNullException.ThrowIfNull(user);
 
@@ -1377,35 +1379,35 @@ namespace MediaBrowser.Controller.Entities
 
             AddChildren(user, true, result, true, query);
 
-            return result.Values;
+            return result.Values.ToArray();
         }
 
         /// <summary>
         /// Gets the recursive children.
         /// </summary>
         /// <returns>IList{BaseItem}.</returns>
-        public IList<BaseItem> GetRecursiveChildren()
+        public IReadOnlyList<BaseItem> GetRecursiveChildren()
         {
             return GetRecursiveChildren(true);
         }
 
-        public IList<BaseItem> GetRecursiveChildren(bool includeLinkedChildren)
+        public IReadOnlyList<BaseItem> GetRecursiveChildren(bool includeLinkedChildren)
         {
             return GetRecursiveChildren(i => true, includeLinkedChildren);
         }
 
-        public IList<BaseItem> GetRecursiveChildren(Func<BaseItem, bool> filter)
+        public IReadOnlyList<BaseItem> GetRecursiveChildren(Func<BaseItem, bool> filter)
         {
             return GetRecursiveChildren(filter, true);
         }
 
-        public IList<BaseItem> GetRecursiveChildren(Func<BaseItem, bool> filter, bool includeLinkedChildren)
+        public IReadOnlyList<BaseItem> GetRecursiveChildren(Func<BaseItem, bool> filter, bool includeLinkedChildren)
         {
             var result = new Dictionary<Guid, BaseItem>();
 
             AddChildrenToList(result, includeLinkedChildren, true, filter);
 
-            return result.Values.ToList();
+            return result.Values.ToArray();
         }
 
         /// <summary>
@@ -1556,11 +1558,12 @@ namespace MediaBrowser.Controller.Entities
         /// Gets the linked children.
         /// </summary>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        public IEnumerable<Tuple<LinkedChild, BaseItem>> GetLinkedChildrenInfos()
+        public IReadOnlyList<Tuple<LinkedChild, BaseItem>> GetLinkedChildrenInfos()
         {
             return LinkedChildren
                 .Select(i => new Tuple<LinkedChild, BaseItem>(i, GetLinkedChild(i)))
-                .Where(i => i.Item2 is not null);
+                .Where(i => i.Item2 is not null)
+                .ToArray();
         }
 
         protected override async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, IReadOnlyList<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)

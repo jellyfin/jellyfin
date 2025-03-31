@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
@@ -21,7 +21,7 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class UserRootFolder : Folder
     {
-        private readonly object _childIdsLock = new object();
+        private readonly Lock _childIdsLock = new();
         private List<Guid> _childrenIds = null;
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        protected override List<BaseItem> LoadChildren()
+        protected override IReadOnlyList<BaseItem> LoadChildren()
         {
             lock (_childIdsLock)
             {

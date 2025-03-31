@@ -11,7 +11,7 @@
     "Collections": "Koleksi",
     "DeviceOfflineWithName": "{0} telah diputuskan sambungan",
     "DeviceOnlineWithName": "{0} telah disambung",
-    "FailedLoginAttemptWithUserName": "Cubaan log masuk gagal dari {0}",
+    "FailedLoginAttemptWithUserName": "Percubaan log masuk daripada {0} gagal",
     "Favorites": "Kegemaran",
     "Folders": "Fail-fail",
     "Genres": "Genre-genre",
@@ -126,5 +126,15 @@
     "TaskKeyframeExtractor": "Ekstrak bingkai kunci",
     "TaskKeyframeExtractorDescription": "Ekstrak bingkai kunci dari fail video untuk membina HLS playlist yang lebih tepat. Tugas ini mungkin perlukan masa yang panjang.",
     "TaskRefreshTrickplayImagesDescription": "Jana gambar prebiu Trickplay untuk video dalam perpustakaan.",
-    "TaskRefreshTrickplayImages": "Jana gambar Trickplay"
+    "TaskRefreshTrickplayImages": "Jana gambar Trickplay",
+    "TaskExtractMediaSegments": "Imbasan Segmen Media",
+    "TaskExtractMediaSegmentsDescription": "Mengekstrak atau mendapatkan segmen media daripada pemalam yang didayakan MediaSegment.",
+    "TaskMoveTrickplayImagesDescription": "Mengalihkan fail trickplay sedia ada mengikut tetapan pustakan digital.",
+    "TaskDownloadMissingLyrics": "Muat turun lirik yang hilang",
+    "TaskDownloadMissingLyricsDescription": "Memuat turun lirik-lirik untuk lagu-lagu",
+    "TaskMoveTrickplayImages": "Alih Lokasi Imej Trickplay",
+    "TaskCleanCollectionsAndPlaylists": "Bersihkan koleksi dan senarai audio video",
+    "TaskAudioNormalization": "Normalisasi Audio",
+    "TaskAudioNormalizationDescription": "Mengimbas fail-fail untuk data normalisasi audio.",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Mengalih keluar item daripada koleksi dan senarai audio video yang tidak wujud lagi."
 }

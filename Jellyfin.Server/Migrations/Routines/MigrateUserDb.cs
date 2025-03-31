@@ -1,10 +1,11 @@
 using System;
 using System.IO;
 using Emby.Server.Implementations.Data;
-using Jellyfin.Data.Entities;
-using Jellyfin.Data.Enums;
+using Jellyfin.Data;
+using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions.Json;
-using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Users;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
@@ -111,7 +112,8 @@ namespace Jellyfin.Server.Migrations.Routines
                     {
                         Id = entry.GetGuid(1),
                         InternalId = entry.GetInt64(0),
-                        MaxParentalAgeRating = policy.MaxParentalRating,
+                        MaxParentalRatingScore = policy.MaxParentalRating,
+                        MaxParentalRatingSubScore = null,
                         EnableUserPreferenceAccess = policy.EnableUserPreferenceAccess,
                         RemoteClientBitrateLimit = policy.RemoteClientBitrateLimit,
                         InvalidLoginAttemptCount = policy.InvalidLoginAttemptCount,

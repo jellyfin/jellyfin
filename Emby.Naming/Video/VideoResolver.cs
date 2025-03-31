@@ -17,10 +17,11 @@ namespace Emby.Naming.Video
         /// <param name="path">The path.</param>
         /// <param name="namingOptions">The naming options.</param>
         /// <param name="parseName">Whether to parse the name or use the filename.</param>
+        /// <param name="libraryRoot">Top-level folder for the containing library.</param>
         /// <returns>VideoFileInfo.</returns>
-        public static VideoFileInfo? ResolveDirectory(string? path, NamingOptions namingOptions, bool parseName = true)
+        public static VideoFileInfo? ResolveDirectory(string? path, NamingOptions namingOptions, bool parseName = true, string? libraryRoot = "")
         {
-            return Resolve(path, true, namingOptions, parseName);
+            return Resolve(path, true, namingOptions, parseName, libraryRoot);
         }
 
         /// <summary>
@@ -28,10 +29,11 @@ namespace Emby.Naming.Video
         /// </summary>
         /// <param name="path">The path.</param>
         /// <param name="namingOptions">The naming options.</param>
+        /// <param name="libraryRoot">Top-level folder for the containing library.</param>
         /// <returns>VideoFileInfo.</returns>
-        public static VideoFileInfo? ResolveFile(string? path, NamingOptions namingOptions)
+        public static VideoFileInfo? ResolveFile(string? path, NamingOptions namingOptions, string? libraryRoot = "")
         {
-            return Resolve(path, false, namingOptions);
+            return Resolve(path, false, namingOptions, libraryRoot: libraryRoot);
         }
 
         /// <summary>
@@ -41,9 +43,10 @@ namespace Emby.Naming.Video
         /// <param name="isDirectory">if set to <c>true</c> [is folder].</param>
         /// <param name="namingOptions">The naming options.</param>
         /// <param name="parseName">Whether or not the name should be parsed for info.</param>
+        /// <param name="libraryRoot">Top-level folder for the containing library.</param>
         /// <returns>VideoFileInfo.</returns>
         /// <exception cref="ArgumentNullException"><c>path</c> is <c>null</c>.</exception>
-        public static VideoFileInfo? Resolve(string? path, bool isDirectory, NamingOptions namingOptions, bool parseName = true)
+        public static VideoFileInfo? Resolve(string? path, bool isDirectory, NamingOptions namingOptions, bool parseName = true, string? libraryRoot = "")
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -75,7 +78,7 @@ namespace Emby.Naming.Video
 
             var format3DResult = Format3DParser.Parse(path, namingOptions);
 
-            var extraResult = ExtraRuleResolver.GetExtraInfo(path, namingOptions);
+            var extraResult = ExtraRuleResolver.GetExtraInfo(path, namingOptions, libraryRoot);
 
             var name = Path.GetFileNameWithoutExtension(path);
 

@@ -140,38 +140,39 @@ namespace MediaBrowser.Providers.TV
 
         private void RemoveObsoleteEpisodes(Series series)
         {
-            var episodes = series.GetEpisodes(null, new DtoOptions(), true).OfType<Episode>().ToList();
-            var numberOfEpisodes = episodes.Count;
-            // TODO: O(n^2), but can it be done faster without overcomplicating it?
-            for (var i = 0; i < numberOfEpisodes; i++)
+            var episodesBySeason = series.GetEpisodes(null, new DtoOptions(), true)
+                            .OfType<Episode>()
+                            .GroupBy(e => e.ParentIndexNumber)
+                            .ToList();
+
+            foreach (var seasonEpisodes in episodesBySeason)
             {
-                var currentEpisode = episodes[i];
-                // The outer loop only examines virtual episodes
-                if (!currentEpisode.IsVirtualItem)
+                List<Episode> nonPhysicalEpisodes = [];
+                List<Episode> physicalEpisodes = [];
+                foreach (var episode in seasonEpisodes)
                 {
-                    continue;
+                    if (episode.IsVirtualItem || episode.IsMissingEpisode)
+                    {
+                        nonPhysicalEpisodes.Add(episode);
+                        continue;
+                    }
+
+                    physicalEpisodes.Add(episode);
                 }
 
-                // Virtual episodes without an episode number are practically orphaned and should be deleted
-                if (!currentEpisode.IndexNumber.HasValue)
+                // Only consider non-physical episodes
+                foreach (var episode in nonPhysicalEpisodes)
                 {
-                    DeleteEpisode(currentEpisode);
-                    continue;
-                }
+                    // Episodes without an episode number are practically orphaned and should be deleted
+                    // Episodes with a physical equivalent should be deleted (they are no longer missing)
+                    var shouldKeep = episode.IndexNumber.HasValue && !physicalEpisodes.Any(e => e.ContainsEpisodeNumber(episode.IndexNumber.Value));
 
-                for (var j = i + 1; j < numberOfEpisodes; j++)
-                {
-                    var comparisonEpisode = episodes[j];
-                    // The inner loop is only for "physical" episodes
-                    if (comparisonEpisode.IsVirtualItem
-                        || currentEpisode.ParentIndexNumber != comparisonEpisode.ParentIndexNumber
-                        || !comparisonEpisode.ContainsEpisodeNumber(currentEpisode.IndexNumber.Value))
+                    if (shouldKeep)
                     {
                         continue;
                     }
 
-                    DeleteEpisode(currentEpisode);
-                    break;
+                    DeleteEpisode(episode);
                 }
             }
         }

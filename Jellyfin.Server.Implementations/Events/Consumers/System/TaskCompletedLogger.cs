@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Globalization;

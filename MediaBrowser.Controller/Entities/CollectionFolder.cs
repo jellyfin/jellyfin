@@ -11,8 +11,8 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
@@ -96,11 +96,11 @@ namespace MediaBrowser.Controller.Entities
             return GetLibraryOptions(Path);
         }
 
-        public override bool IsVisible(User user)
+        public override bool IsVisible(User user, bool skipAllowedTagsCheck = false)
         {
             if (GetLibraryOptions().Enabled)
             {
-                return base.IsVisible(user);
+                return base.IsVisible(user, skipAllowedTagsCheck);
             }
 
             return false;

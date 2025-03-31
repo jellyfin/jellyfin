@@ -13,7 +13,7 @@ namespace Jellyfin.Extensions.Tests.Json.Models
         /// <summary>
         /// Gets or sets the value.
         /// </summary>
-        [JsonConverter(typeof(JsonCommaDelimitedArrayConverterFactory))]
+        [JsonConverter(typeof(JsonCommaDelimitedCollectionConverterFactory))]
         public IReadOnlyList<T> Value { get; set; } = default!;
     }
 }

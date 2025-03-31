@@ -134,5 +134,6 @@
     "TaskExtractMediaSegments": "メディアセグメントを読み取る",
     "TaskMoveTrickplayImages": "Trickplayの画像を移動",
     "TaskMoveTrickplayImagesDescription": "ライブラリ設定によりTrickplayのファイルを移動。",
-    "TaskDownloadMissingLyrics": "記録されていない歌詞をダウンロード"
+    "TaskDownloadMissingLyrics": "失われた歌詞をダウンロード",
+    "TaskExtractMediaSegmentsDescription": "MediaSegment 対応プラグインからメディア セグメントを抽出または取得します。"
 }

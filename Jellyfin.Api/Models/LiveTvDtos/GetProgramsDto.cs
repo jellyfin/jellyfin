@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions.Json.Converters;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
@@ -17,7 +18,7 @@ public class GetProgramsDto
     /// <summary>
     /// Gets or sets the channels to return guide information for.
     /// </summary>
-    [JsonConverter(typeof(JsonCommaDelimitedArrayConverterFactory))]
+    [JsonConverter(typeof(JsonCommaDelimitedCollectionConverterFactory))]
     public IReadOnlyList<Guid>? ChannelIds { get; set; }
 
     /// <summary>
@@ -93,25 +94,25 @@ public class GetProgramsDto
     /// <summary>
     /// Gets or sets specify one or more sort orders, comma delimited. Options: Name, StartDate.
     /// </summary>
-    [JsonConverter(typeof(JsonCommaDelimitedArrayConverterFactory))]
+    [JsonConverter(typeof(JsonCommaDelimitedCollectionConverterFactory))]
     public IReadOnlyList<ItemSortBy>? SortBy { get; set; }
 
     /// <summary>
     /// Gets or sets sort order.
     /// </summary>
-    [JsonConverter(typeof(JsonCommaDelimitedArrayConverterFactory))]
+    [JsonConverter(typeof(JsonCommaDelimitedCollectionConverterFactory))]
     public IReadOnlyList<SortOrder>? SortOrder { get; set; }
 
     /// <summary>
     /// Gets or sets the genres to return guide information for.
     /// </summary>
-    [JsonConverter(typeof(JsonPipeDelimitedArrayConverterFactory))]
+    [JsonConverter(typeof(JsonPipeDelimitedCollectionConverterFactory))]
     public IReadOnlyList<string>? Genres { get; set; }
 
     /// <summary>
     /// Gets or sets the genre ids to return guide information for.
     /// </summary>
-    [JsonConverter(typeof(JsonCommaDelimitedArrayConverterFactory))]
+    [JsonConverter(typeof(JsonCommaDelimitedCollectionConverterFactory))]
     public IReadOnlyList<Guid>? GenreIds { get; set; }
 
     /// <summary>
@@ -133,7 +134,7 @@ public class GetProgramsDto
     /// <summary>
     /// Gets or sets the image types to include in the output.
     /// </summary>
-    [JsonConverter(typeof(JsonCommaDelimitedArrayConverterFactory))]
+    [JsonConverter(typeof(JsonCommaDelimitedCollectionConverterFactory))]
     public IReadOnlyList<ImageType>? EnableImageTypes { get; set; }
 
     /// <summary>
@@ -154,6 +155,6 @@ public class GetProgramsDto
     /// <summary>
     /// Gets or sets specify additional fields of information to return in the output.
     /// </summary>
-    [JsonConverter(typeof(JsonCommaDelimitedArrayConverterFactory))]
+    [JsonConverter(typeof(JsonCommaDelimitedCollectionConverterFactory))]
     public IReadOnlyList<ItemFields>? Fields { get; set; }
 }

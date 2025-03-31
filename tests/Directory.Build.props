@@ -6,7 +6,6 @@
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <IsPackable>false</IsPackable>
-    <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)/jellyfin-tests.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <!-- Code Analyzers -->

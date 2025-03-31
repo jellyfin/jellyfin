@@ -27,7 +27,7 @@ namespace MediaBrowser.Model.Entities
         Tvdb = 4,
 
         /// <summary>
-        /// The tvcom providerd.
+        /// The tvcom provider.
         /// </summary>
         Tvcom = 5,
 
@@ -84,6 +84,11 @@ namespace MediaBrowser.Model.Entities
         /// <summary>
         /// The TvMaze provider.
         /// </summary>
-        TvMaze = 19
+        TvMaze = 19,
+
+        /// <summary>
+        /// The MusicBrainz recording provider.
+        /// </summary>
+        MusicBrainzRecording = 20,
     }
 }
