@@ -186,7 +186,7 @@ public class MoveExtractedFiles : IDatabaseMigrationRoutine
                 {
                     Directory.CreateDirectory(newDirectory);
                     File.Move(oldAttachmentCachePath, newAttachmentCachePath, false);
-                    _logger.LogDebug("Moved subtitle {Index} for {Item} from {Source} to {Destination}", attachmentIndex, item.Id, oldAttachmentCachePath, newAttachmentCachePath);
+                    _logger.LogDebug("Moved attachment {Index} for {Item} from {Source} to {Destination}", attachmentIndex, item.Id, oldAttachmentCachePath, newAttachmentCachePath);
 
                     modified = true;
                 }
