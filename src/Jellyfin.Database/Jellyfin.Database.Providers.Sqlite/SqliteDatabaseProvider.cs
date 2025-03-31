@@ -127,112 +127,92 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     {
         try
         {
-            // Create a connection to register our custom functions
+            // Créer une connexion pour configurer FTS5
             using var connection = new SqliteConnection(connectionString);
             connection.Open();
 
-            // Register the tokenization function
-            connection.CreateFunction("generate_tokens", (string text) =>
-            {
-                if (string.IsNullOrEmpty(text))
-                {
-                    return string.Empty;
-                }
-
-                // Convert to lowercase and remove non-alphanumeric characters
-                text = new string([.. text.ToLower(CultureInfo.CurrentCulture).Where(c => char.IsLetterOrDigit(c) || char.IsWhiteSpace(c))]);
-
-                // Tokenize by space
-                return string.Join(" ", text.Split([' '], StringSplitOptions.RemoveEmptyEntries));
-            });
-
-            // Function to calculate a simple similarity score
-            connection.CreateFunction("simple_similarity", (string s1, string s2) =>
-            {
-                if (string.IsNullOrEmpty(s1) || string.IsNullOrEmpty(s2))
-                {
-                    return 0.0;
-                }
-
-                s1 = s1.ToLower(CultureInfo.CurrentCulture);
-                s2 = s2.ToLower(CultureInfo.CurrentCulture);
-
-                // Partial inclusion check
-                if (s1.Contains(s2, StringComparison.OrdinalIgnoreCase) || s2.Contains(s1, StringComparison.OrdinalIgnoreCase))
-                {
-                    return 0.8;
-                }
-
-                // Check first characters (errors often towards the end)
-                var prefixLen = Math.Min(Math.Min(s1.Length, s2.Length), 3);
-                if (prefixLen > 0 && s1[..prefixLen] == s2[..prefixLen])
-                {
-                    return 0.7;
-                }
-
-                // Simple similarity calculation based on common characters
-                var commonChars = 0;
-                foreach (var c in s1)
-                {
-                    if (s2.Contains(c, StringComparison.Ordinal))
-                    {
-                        commonChars++;
-                    }
-                }
-
-                return (double)commonChars / Math.Max(s1.Length, s2.Length);
-            });
-
-            // Function that checks if a string contains at least N tokens from the other
-            connection.CreateFunction("contains_tokens", (string text, string searchTerms, int minTokens) =>
-            {
-                if (string.IsNullOrEmpty(text) || string.IsNullOrEmpty(searchTerms))
-                {
-                    return 0;
-                }
-
-                var textTokens = text.ToLower(CultureInfo.CurrentCulture).Split([' '], StringSplitOptions.RemoveEmptyEntries);
-                var searchTokens = searchTerms.ToLower(CultureInfo.CurrentCulture).Split([' '], StringSplitOptions.RemoveEmptyEntries);
-
-                var matchCount = 0;
-                foreach (var token in searchTokens)
-                {
-                    if (token.Length < 3)
-                    {
-                        // For short tokens, check exact equality
-                        if (textTokens.Any(t => t.Equals(token, StringComparison.OrdinalIgnoreCase)))
-                        {
-                            matchCount++;
-                        }
-                    }
-                    else
-                    {
-                        // For longer tokens, check if a text token contains the search token
-                        if (textTokens.Any(t => t.Contains(token, StringComparison.OrdinalIgnoreCase) || token.Contains(t, StringComparison.OrdinalIgnoreCase)))
-                        {
-                            matchCount++;
-                        }
-                    }
-                }
-
-                return matchCount >= minTokens ? 1 : 0;
-            });
-
-            // Execute SQL queries to create indexes if necessary
             using var command = connection.CreateCommand();
 
-            // Create an index on important columns for search
-            command.CommandText = @"
-                CREATE INDEX IF NOT EXISTS idx_baseitem_cleanname ON BaseItems(CleanName);
-                CREATE INDEX IF NOT EXISTS idx_baseitem_originaltitle ON BaseItems(OriginalTitle);
-            ";
+            // Drop the existing FTS5 table if it exists
+            command.CommandText = "DROP TABLE IF EXISTS item_search_fts;";
+            _ = command.ExecuteNonQuery();
+            command.CommandText = "DROP TRIGGER IF EXISTS baseitem_ai_fts;";
+            _ = command.ExecuteNonQuery();
+            command.CommandText = "DROP TRIGGER IF EXISTS baseitem_au_fts;";
+            _ = command.ExecuteNonQuery();
+            command.CommandText = "DROP TRIGGER IF EXISTS baseitem_ad_fts;";
             _ = command.ExecuteNonQuery();
 
-            _logger.LogInformation("Configuration of fuzzy search functions completed successfully");
+            // Créer une table virtuelle FTS5 pour les titres et autres champs de recherche
+            command.CommandText = @"
+                -- Create a virtual FTS5 table for searching
+                CREATE VIRTUAL TABLE IF NOT EXISTS item_search_fts USING FTS5(
+                    id UNINDEXED,
+                    clean_name,
+                    original_title,
+                    episode_title,
+                    path,
+                    tags,
+                    genres,
+                    tokenize='unicode61 remove_diacritics 0 tokenchars ''0123456789'''
+                );
+
+                -- Create triggers to keep the FTS5 table in sync with the BaseItems table
+                CREATE TRIGGER IF NOT EXISTS baseitem_ai_fts AFTER INSERT ON BaseItems BEGIN
+                    INSERT INTO item_search_fts(id, clean_name, original_title, tags, genres)
+                    VALUES (
+                        new.Id,
+                        new.CleanName,
+                        new.OriginalTitle,
+                        new.EpisodeTitle,
+                        new.Path,
+                        new.Tags,
+                        new.Genres
+                    );
+                END;
+
+                -- Create triggers to keep the FTS5 table in sync with the BaseItems table
+                CREATE TRIGGER IF NOT EXISTS baseitem_au_fts AFTER UPDATE ON BaseItems BEGIN
+                    UPDATE item_search_fts
+                    SET
+                        clean_name = new.CleanName,
+                        original_title = new.OriginalTitle,
+                        episode_title = new.EpisodeTitle,
+                        tags = new.Tags,
+                        path = new.Path,
+                        genres = new.Genres
+                    WHERE id = new.Id;
+                END;
+
+                CREATE TRIGGER IF NOT EXISTS baseitem_ad_fts AFTER DELETE ON BaseItems BEGIN
+                    DELETE FROM item_search_fts WHERE id = old.Id;
+                END;
+            ";
+
+            _ = command.ExecuteNonQuery();
+
+            // Initialiser la table avec les données existantes
+            command.CommandText = @"
+                INSERT INTO item_search_fts(id, clean_name, original_title, episode_title, path, tags, genres)
+                SELECT
+                    b.Id,
+                    b.CleanName,
+                    b.OriginalTitle,
+                    b.EpisodeTitle,
+                    b.Path,
+                    b.Tags,
+                    b.Genres
+                FROM BaseItems b
+                WHERE b.OriginalTitle IS NOT NULL;
+            ";
+
+            _ = command.ExecuteNonQuery();
+
+            _logger.LogInformation("Configuration of FTS5 search completed successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error configuring fuzzy search functions");
+            _logger.LogError(ex, "Error configuring FTS5 search");
         }
     }
 }

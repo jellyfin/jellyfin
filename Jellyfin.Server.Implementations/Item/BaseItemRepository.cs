@@ -1419,40 +1419,23 @@ public sealed class BaseItemRepository
 
         if (!string.IsNullOrEmpty(filter.SearchTerm))
         {
-            var searchTerm = filter.SearchTerm.ToLower();
+            var searchTerm = filter.SearchTerm.ToLower().Replace(".", " ").Trim();
 
-            // STEP 1: Standard search for exact matches
-            var exactMatchQuery = baseQuery.Where(e =>
-                e.CleanName!.ToLower().Contains(searchTerm) ||
-                (e.OriginalTitle != null && e.OriginalTitle.ToLower().Contains(searchTerm)));
+            var tokens = searchTerm.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-            // Generate important n-grams from the search term
-            var searchNGrams = GenerateNGrams(searchTerm, 3);
+            // Construire une requête OR avec chaque token
+            var orQuery = string.Join(" OR ", tokens.Select(t => t + "*"));
 
-            // STEP 2: Fuzzy search with tokenization (uses word segments)
-            // Use LIKE with segments of the search term
-            var fuzzyMatchQuery = baseQuery.Where(e =>
-                searchNGrams.Any(ngram =>
-                    e.CleanName!.ToLower().Contains(ngram) ||
-                    (e.OriginalTitle != null && e.OriginalTitle.ToLower().Contains(ngram))));
+            var v = context.BaseItems.FromSqlRaw(
+                @"
+                SELECT b.Id FROM BaseItems b
+                JOIN item_search_fts fts ON b.Id = fts.id
+                WHERE item_search_fts MATCH {0}
+                ORDER BY rank",
+                orQuery);
 
-            // Combine results with UNION (exact matches first)
-            // Note: For EF Core, we should ideally use FromSqlRaw for an efficient UNION query
-            // Here's an approximation that works with LINQ:
-            var exactResults = exactMatchQuery.ToList();
-
-            // Only execute the second query if the first doesn't have enough results
-            var fuzzyResults = fuzzyMatchQuery
-                    .Where(e => !exactResults.Select(er => er.Id).Contains(e.Id))
-                    .Take(10)
-                    .ToList();
-
-            // Combine the results
-            exactResults.AddRange(fuzzyResults);
-
-            // Create a new query from the combined list of IDs
-            var combinedIds = exactResults.Select(e => e.Id).ToList();
-            baseQuery = baseQuery.Where(e => combinedIds.Contains(e.Id));
+            // add ids to the query
+            baseQuery = baseQuery.Where(e => v.Any(f => f.Id == e.Id));
         }
 
         if (filter.IsFolder.HasValue)
