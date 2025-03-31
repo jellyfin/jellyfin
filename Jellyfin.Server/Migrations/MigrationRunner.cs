@@ -49,12 +49,12 @@ namespace Jellyfin.Server.Migrations
             typeof(Routines.RemoveDownloadImagesInAdvance),
             typeof(Routines.MigrateAuthenticationDb),
             typeof(Routines.FixPlaylistOwner),
-            typeof(Routines.MigrateRatingLevels),
             typeof(Routines.AddDefaultCastReceivers),
             typeof(Routines.UpdateDefaultPluginRepository),
             typeof(Routines.FixAudioData),
             typeof(Routines.RemoveDuplicatePlaylistChildren),
             typeof(Routines.MigrateLibraryDb),
+            typeof(Routines.MigrateRatingLevels),
             typeof(Routines.MoveTrickplayFiles),
         };
 

@@ -1,0 +1,83 @@
+{
+    "countryCode": "us",
+    "supportsSubScores": true,
+    "ratings": [
+        {
+            "ratingStrings": ["Approved", "G", "TV-G", "TV-Y"],
+            "ratingScore": {
+                "score": 0,
+                "subScore": 0
+            }
+        },
+        {
+            "ratingStrings": ["TV-Y7"],
+            "ratingScore": {
+                "score": 7,
+                "subScore": 0
+            }
+        },
+        {
+            "ratingStrings": ["TV-Y7-FV"],
+            "ratingScore": {
+                "score": 7,
+                "subScore": 1
+            }
+        },
+        {
+            "ratingStrings": ["PG", "TV-PG"],
+            "ratingScore": {
+                "score": 10,
+                "subScore": 0
+            }
+        },
+        {
+            "ratingStrings": ["TV-PG-D", "TV-PG-L", "TV-PG-S", "TV-PG-V", "TV-PG-DL", "TV-PG-DS", "TV-PG-DV", "TV-PG-LS", "TV-PG-LV", "TV-PG-SV", "TV-PG-DLS", "TV-PG-DLV", "TV-PG-DSV", "TV-PG-LSV", "TV-PG-DLSV"],
+            "ratingScore": {
+                "score": 10,
+                "subScore": 1
+            }
+        },
+        {
+            "ratingStrings": ["PG-13"],
+            "ratingScore": {
+                "score": 13,
+                "subScore": 0
+            }
+        },
+        {
+            "ratingStrings": ["TV-14"],
+            "ratingScore": {
+                "score": 14,
+                "subScore": 0
+            }
+        },
+        {
+            "ratingStrings": ["TV-14-D", "TV-14-L", "TV-14-S", "TV-14-V", "TV-14-DL", "TV-14-DS", "TV-14-DV", "TV-14-LS", "TV-14-LV", "TV-14-SV", "TV-14-DLS", "TV-14-DLV", "TV-14-DSV", "TV-14-LSV", "TV-14-DLSV"],
+            "ratingScore": {
+                "score": 14,
+                "subScore": 1
+            }
+        },
+        {
+            "ratingStrings": ["R"],
+            "ratingScore": {
+                "score": 17,
+                "subScore": 0
+            }
+        },
+        {
+            "ratingStrings": ["NC-17", "TV-MA", "TV-MA-L", "TV-MA-S", "TV-MA-V", "TV-MA-LS", "TV-MA-LV", "TV-MA-SV", "TV-MA-LSV"],
+            "ratingScore": {
+                "score": 17,
+                "subScore": 1
+            }
+        },
+        {
+            "ratingStrings": ["TV-X", "TV-AO"],
+            "ratingScore": {
+                "score": 18,
+                "subScore": 0
+            }
+        }
+    ]
+}

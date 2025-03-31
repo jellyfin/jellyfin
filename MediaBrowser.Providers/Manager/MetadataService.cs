@@ -193,6 +193,7 @@ namespace MediaBrowser.Providers.Manager
             if (hasRefreshedMetadata && hasRefreshedImages)
             {
                 item.DateLastRefreshed = DateTime.UtcNow;
+                updateType |= item.OnMetadataChanged();
             }
 
             updateType = await SaveInternal(item, refreshOptions, updateType, isFirstRefresh, requiresRefresh, metadataResult, cancellationToken).ConfigureAwait(false);

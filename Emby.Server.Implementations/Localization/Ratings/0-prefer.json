@@ -1,0 +1,34 @@
+{
+    "countryCode": "0-prefer",
+    "supportsSubScores": false,
+    "ratings": [
+        {
+            "ratingStrings": ["E", "EC"],
+            "ratingScore": {
+                "score": 0,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["T"],
+            "ratingScore": {
+                "score": 7,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["M", "AO", "UR", "RP"],
+            "ratingScore": {
+                "score": 18,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["X", "XX", "XXX", "XXXX"],
+            "ratingScore": {
+                "score": 1000,
+                "subScore": null
+            }
+        }
+    ]
+}
