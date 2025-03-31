@@ -369,7 +369,6 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// Gets the target video range type.
         /// </summary>
-        [DefaultValue(VideoRangeType.Unknown)]
         public VideoRangeType TargetVideoRangeType
         {
             get
