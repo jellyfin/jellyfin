@@ -34,31 +34,6 @@ namespace MediaBrowser.Model.Entities
             "zxx"
         };
 
-        // Transformation table from ISO-639-2/B to ISO-639-2/T
-        private static readonly FrozenDictionary<string, string> _iso6392BtoT = new KeyValuePair<string, string>[]
-        {
-            new("alb", "sqi"), // Albanian
-            new("arm", "hye"), // Armenian
-            new("baq", "eus"), // Basque
-            new("bur", "mya"), // Burmese
-            new("chi", "zho"), // Chinese
-            new("cze", "ces"), // Czech
-            new("dut", "nld"), // Dutch; Flemish
-            new("fre", "fra"), // French
-            new("ger", "deu"), // German
-            new("geo", "kat"), // Georgian
-            new("gre", "ell"), // Greek, Modern
-            new("ice", "isl"), // Icelandic
-            new("mac", "mkd"), // Macedonian
-            new("mao", "mri"), // Maori
-            new("may", "msa"), // Malay
-            new("per", "fas"), // Persian
-            new("rum", "ron"), // Romanian; Moldavian; Moldovan
-            new("slo", "slk"), // Slovak
-            new("tib", "bod"), // Tibetan
-            new("wel", "cym"), // Welsh
-        }.ToFrozenDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase);
-
         /// <summary>
         /// Gets or sets the codec.
         /// </summary>
@@ -294,15 +269,12 @@ namespace MediaBrowser.Model.Entities
                         // Do not display the language code in display titles if unset or set to a special code. Show it in all other cases (possibly expanded).
                         if (!string.IsNullOrEmpty(Language) && !_specialCodes.Contains(Language, StringComparison.OrdinalIgnoreCase))
                         {
-                            // Transform ISO 639-2/B to ISO 639-2/T
-                            var iSO6392TLanguage = GetISOTFromB(Language);
-
                             // Get full language string i.e. eng -> English.
                             string fullLanguage = CultureInfo
                                 .GetCultures(CultureTypes.NeutralCultures)
-                                .FirstOrDefault(r => r.ThreeLetterISOLanguageName.Equals(iSO6392TLanguage, StringComparison.OrdinalIgnoreCase))
+                                .FirstOrDefault(r => r.ThreeLetterISOLanguageName.Equals(Language, StringComparison.OrdinalIgnoreCase))
                                 ?.DisplayName;
-                            attributes.Add(StringHelper.FirstToUpper(fullLanguage ?? iSO6392TLanguage));
+                            attributes.Add(StringHelper.FirstToUpper(fullLanguage ?? Language));
                         }
 
                         if (!string.IsNullOrEmpty(Profile) && !string.Equals(Profile, "lc", StringComparison.OrdinalIgnoreCase))
@@ -400,15 +372,12 @@ namespace MediaBrowser.Model.Entities
 
                         if (!string.IsNullOrEmpty(Language))
                         {
-                            // Transform ISO 639-2/B to ISO 639-2/T
-                            var iSO6392TLanguage = GetISOTFromB(Language);
-
                             // Get full language string i.e. eng -> English.
                             string fullLanguage = CultureInfo
                                 .GetCultures(CultureTypes.NeutralCultures)
-                                .FirstOrDefault(r => r.ThreeLetterISOLanguageName.Equals(iSO6392TLanguage, StringComparison.OrdinalIgnoreCase))
+                                .FirstOrDefault(r => r.ThreeLetterISOLanguageName.Equals(Language, StringComparison.OrdinalIgnoreCase))
                                 ?.DisplayName;
-                            attributes.Add(StringHelper.FirstToUpper(fullLanguage ?? iSO6392TLanguage));
+                            attributes.Add(StringHelper.FirstToUpper(fullLanguage ?? Language));
                         }
                         else
                         {
@@ -860,16 +829,6 @@ namespace MediaBrowser.Model.Entities
             }
 
             return (VideoRange.SDR, VideoRangeType.SDR);
-        }
-
-        private string GetISOTFromB(string isoB)
-        {
-            if (_iso6392BtoT.TryGetValue(isoB, out string result) && !string.IsNullOrEmpty(result))
-            {
-                return result;
-            }
-
-            return isoB;
         }
     }
 }
