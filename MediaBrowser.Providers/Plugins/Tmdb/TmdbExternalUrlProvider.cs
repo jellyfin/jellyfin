@@ -54,7 +54,7 @@ public class TmdbExternalUrlProvider : IExternalUrlProvider
                 if (episode.Series.TryGetProviderId(MetadataProvider.Imdb, out seriesExternalId))
                 {
                     var orderString = episode.Series.DisplayOrder;
-                    var seasonNumber = episode.Season.IndexNumber;
+                    var seasonNumber = episode.Season?.IndexNumber;
                     var episodeNumber = episode.IndexNumber;
                     if (string.IsNullOrEmpty(orderString) && seasonNumber is not null && episodeNumber is not null)
                     {
