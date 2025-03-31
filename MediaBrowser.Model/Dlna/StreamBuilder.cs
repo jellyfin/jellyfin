@@ -669,11 +669,17 @@ namespace MediaBrowser.Model.Dlna
             {
                 if (audioStream?.IsDefault == true)
                 {
-                    candidateAudioStreams = item.MediaStreams.Where(stream => stream.Type == MediaStreamType.Audio && stream.IsDefault).ToArray();
+                    candidateAudioStreams = item.MediaStreams
+                        .Where(stream => stream.Type == MediaStreamType.Audio && stream.IsDefault)
+                        .OrderByDescending(stream => stream.Index == audioStream?.Index)
+                        .ToArray();
                 }
                 else
                 {
-                    candidateAudioStreams = item.MediaStreams.Where(stream => stream.Type == MediaStreamType.Audio && stream.Language == audioStream?.Language).ToArray();
+                    candidateAudioStreams = item.MediaStreams
+                        .Where(stream => stream.Type == MediaStreamType.Audio && stream.Language == audioStream?.Language)
+                        .OrderByDescending(stream => stream.Index == audioStream?.Index)
+                        .ToArray();
                 }
             }
 
