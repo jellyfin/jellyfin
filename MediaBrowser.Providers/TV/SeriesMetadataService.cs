@@ -55,7 +55,7 @@ namespace MediaBrowser.Providers.TV
 
                 foreach (var season in seasons)
                 {
-                    var hasUpdate = refreshOptions != null && season.BeforeMetadataRefresh(refreshOptions.ReplaceAllMetadata);
+                    var hasUpdate = refreshOptions is not null && season.BeforeMetadataRefresh(refreshOptions.ReplaceAllMetadata);
                     if (hasUpdate)
                     {
                         await season.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
