@@ -129,12 +129,12 @@ public class ConfigurationController : BaseJellyfinApiController
     [HttpPost("Configuration/Branding")]
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public ActionResult UpdateBrandingConfiguration([FromBody, Required] BrandOptionsDto configuration)
+    public ActionResult UpdateBrandingConfiguration([FromBody, Required] BrandingOptionsDto configuration)
     {
         // Get the current branding configuration to preserve SplashscreenLocation
         var currentBranding = (BrandingOptions)_configurationManager.GetConfiguration("branding");
 
-        // Update only the properties from BrandOptionsDto
+        // Update only the properties from BrandingOptionsDto
         currentBranding.LoginDisclaimer = configuration.LoginDisclaimer;
         currentBranding.CustomCss = configuration.CustomCss;
         currentBranding.SplashscreenEnabled = configuration.SplashscreenEnabled;
