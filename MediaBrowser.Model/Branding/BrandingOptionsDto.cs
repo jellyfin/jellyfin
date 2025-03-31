@@ -1,9 +1,10 @@
 namespace MediaBrowser.Model.Branding;
 
 /// <summary>
-/// The branding options.
+/// The branding options DTO for API use.
+/// This DTO excludes SplashscreenLocation to prevent it from being updated via API.
 /// </summary>
-public class BrandingOptions
+public class BrandingOptionsDto
 {
     /// <summary>
     /// Gets or sets the login disclaimer.
@@ -21,9 +22,4 @@ public class BrandingOptions
     /// Gets or sets a value indicating whether to enable the splashscreen.
     /// </summary>
     public bool SplashscreenEnabled { get; set; } = false;
-
-    /// <summary>
-    /// Gets or sets the splashscreen location on disk.
-    /// </summary>
-    public string? SplashscreenLocation { get; set; }
 }
