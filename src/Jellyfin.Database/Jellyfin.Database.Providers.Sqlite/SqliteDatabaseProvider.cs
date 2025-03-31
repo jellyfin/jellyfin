@@ -134,6 +134,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
             using var command = connection.CreateCommand();
 
             // Drop the existing FTS5 table if it exists
+            // In the long term, these lines will need to be removed
             command.CommandText = "DROP TABLE IF EXISTS item_search_fts;";
             _ = command.ExecuteNonQuery();
             command.CommandText = "DROP TRIGGER IF EXISTS baseitem_ai_fts;";
@@ -143,7 +144,6 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
             command.CommandText = "DROP TRIGGER IF EXISTS baseitem_ad_fts;";
             _ = command.ExecuteNonQuery();
 
-            // Créer une table virtuelle FTS5 pour les titres et autres champs de recherche
             command.CommandText = @"
                 -- Create a virtual FTS5 table for searching
                 CREATE VIRTUAL TABLE IF NOT EXISTS item_search_fts USING FTS5(
@@ -158,6 +158,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
                 );
 
                 -- Create triggers to keep the FTS5 table in sync with the BaseItems table
+
                 CREATE TRIGGER IF NOT EXISTS baseitem_ai_fts AFTER INSERT ON BaseItems BEGIN
                     INSERT INTO item_search_fts(id, clean_name, original_title, tags, genres)
                     VALUES (
@@ -171,7 +172,6 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
                     );
                 END;
 
-                -- Create triggers to keep the FTS5 table in sync with the BaseItems table
                 CREATE TRIGGER IF NOT EXISTS baseitem_au_fts AFTER UPDATE ON BaseItems BEGIN
                     UPDATE item_search_fts
                     SET
@@ -191,7 +191,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
 
             _ = command.ExecuteNonQuery();
 
-            // Initialiser la table avec les données existantes
+            // Initialize the FTS5 table with existing data
             command.CommandText = @"
                 INSERT INTO item_search_fts(id, clean_name, original_title, episode_title, path, tags, genres)
                 SELECT

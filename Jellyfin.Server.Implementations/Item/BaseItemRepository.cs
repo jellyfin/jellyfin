@@ -1423,7 +1423,8 @@ public sealed class BaseItemRepository
 
             var tokens = searchTerm.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-            // Construire une requête OR avec chaque token
+            // Construct the SQL FTS query
+            // This is a simple OR query for all tokens
             var orQuery = string.Join(" OR ", tokens.Select(t => t + "*"));
 
             var v = context.BaseItems.FromSqlRaw(
@@ -2215,22 +2216,5 @@ public sealed class BaseItemRepository
         }
 
         return baseQuery;
-    }
-
-    // Auxiliary function to generate n-grams
-    private List<string> GenerateNGrams(string text, int n)
-    {
-        if (string.IsNullOrEmpty(text) || text.Length < n)
-        {
-            return [text];
-        }
-
-        var ngrams = new List<string>();
-        for (var i = 0; i <= text.Length - n; i++)
-        {
-            ngrams.Add(text.Substring(i, n));
-        }
-
-        return ngrams;
     }
 }
