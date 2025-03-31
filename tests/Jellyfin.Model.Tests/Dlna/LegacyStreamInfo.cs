@@ -92,7 +92,7 @@ public class LegacyStreamInfo : StreamInfo
 
     private static List<NameValuePair> BuildParams(StreamInfo item, string? accessToken)
     {
-        var list = new List<NameValuePair>();
+        List<NameValuePair> list = [];
 
         string audioCodecs = item.AudioCodecs.Count == 0 ?
             string.Empty :
@@ -109,7 +109,7 @@ public class LegacyStreamInfo : StreamInfo
         list.Add(new NameValuePair("VideoCodec", videoCodecs));
         list.Add(new NameValuePair("AudioCodec", audioCodecs));
         list.Add(new NameValuePair("AudioStreamIndex", item.AudioStreamIndex.HasValue ? item.AudioStreamIndex.Value.ToString(CultureInfo.InvariantCulture) : string.Empty));
-        list.Add(new NameValuePair("SubtitleStreamIndex", item.SubtitleStreamIndex.HasValue && item.SubtitleDeliveryMethod != SubtitleDeliveryMethod.External ? item.SubtitleStreamIndex.Value.ToString(CultureInfo.InvariantCulture) : string.Empty));
+        list.Add(new NameValuePair("SubtitleStreamIndex", item.SubtitleStreamIndex.HasValue && (item.AlwaysBurnInSubtitleWhenTranscoding || item.SubtitleDeliveryMethod != SubtitleDeliveryMethod.External) ? item.SubtitleStreamIndex.Value.ToString(CultureInfo.InvariantCulture) : string.Empty));
         list.Add(new NameValuePair("VideoBitrate", item.VideoBitrate.HasValue ? item.VideoBitrate.Value.ToString(CultureInfo.InvariantCulture) : string.Empty));
         list.Add(new NameValuePair("AudioBitrate", item.AudioBitrate.HasValue ? item.AudioBitrate.Value.ToString(CultureInfo.InvariantCulture) : string.Empty));
         list.Add(new NameValuePair("AudioSampleRate", item.AudioSampleRate.HasValue ? item.AudioSampleRate.Value.ToString(CultureInfo.InvariantCulture) : string.Empty));
@@ -182,25 +182,16 @@ public class LegacyStreamInfo : StreamInfo
                 list.Add(new NameValuePair("CopyTimestamps", item.CopyTimestamps.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()));
             }
 
-            if (item.RequireAvc)
-            {
-                list.Add(new NameValuePair("RequireAvc", item.RequireAvc.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()));
-            }
+            list.Add(new NameValuePair("RequireAvc", item.RequireAvc.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()));
 
-            if (item.EnableAudioVbrEncoding)
-            {
-                list.Add(new NameValuePair("EnableAudioVbrEncoding", item.EnableAudioVbrEncoding.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()));
-            }
+            list.Add(new NameValuePair("EnableAudioVbrEncoding", item.EnableAudioVbrEncoding.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()));
         }
 
         list.Add(new NameValuePair("Tag", item.MediaSource?.ETag ?? string.Empty));
 
-        string subtitleCodecs = item.SubtitleCodecs.Count == 0 ?
-           string.Empty :
-           string.Join(",", item.SubtitleCodecs);
-
-        list.Add(new NameValuePair("SubtitleMethod", item.SubtitleStreamIndex.HasValue && item.SubtitleDeliveryMethod != SubtitleDeliveryMethod.External ? item.SubtitleDeliveryMethod.ToString() : string.Empty));
+        string subtitleCodecs = item.SubtitleCodecs.Count == 0 ? string.Empty : string.Join(",", item.SubtitleCodecs);
         list.Add(new NameValuePair("SubtitleCodec", item.SubtitleStreamIndex.HasValue && item.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Embed ? subtitleCodecs : string.Empty));
+        list.Add(new NameValuePair("SubtitleMethod", item.SubtitleStreamIndex.HasValue && item.SubtitleDeliveryMethod != SubtitleDeliveryMethod.External ? item.SubtitleDeliveryMethod.ToString() : string.Empty));
 
         foreach (var pair in item.StreamOptions)
         {
