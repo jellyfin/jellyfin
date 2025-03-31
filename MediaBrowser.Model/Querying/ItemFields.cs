@@ -121,7 +121,7 @@ namespace MediaBrowser.Model.Querying
         People,
 
         /// <summary>
-        /// Value indicating wheter playback access is granted.
+        /// Value indicating whether playback access is granted.
         /// </summary>
         PlayAccess,
 
