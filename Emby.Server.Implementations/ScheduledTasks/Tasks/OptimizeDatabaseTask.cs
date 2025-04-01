@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Server.Implementations;
+using Jellyfin.Database.Implementations;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +18,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         private readonly ILogger<OptimizeDatabaseTask> _logger;
         private readonly ILocalizationManager _localization;
         private readonly IDbContextFactory<JellyfinDbContext> _provider;
+        private readonly IJellyfinDatabaseProvider _jellyfinDatabaseProvider;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OptimizeDatabaseTask" /> class.
@@ -25,14 +26,17 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
         /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
         /// <param name="provider">Instance of the <see cref="IDbContextFactory{JellyfinDbContext}"/> interface.</param>
+        /// <param name="jellyfinDatabaseProvider">Instance of the JellyfinDatabaseProvider that can be used for provider specific operations.</param>
         public OptimizeDatabaseTask(
             ILogger<OptimizeDatabaseTask> logger,
             ILocalizationManager localization,
-            IDbContextFactory<JellyfinDbContext> provider)
+            IDbContextFactory<JellyfinDbContext> provider,
+            IJellyfinDatabaseProvider jellyfinDatabaseProvider)
         {
             _logger = logger;
             _localization = localization;
             _provider = provider;
+            _jellyfinDatabaseProvider = jellyfinDatabaseProvider;
         }
 
         /// <inheritdoc />
@@ -73,20 +77,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
 
             try
             {
-                var context = await _provider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-                await using (context.ConfigureAwait(false))
-                {
-                    if (context.Database.IsSqlite())
-                    {
-                        await context.Database.ExecuteSqlRawAsync("PRAGMA optimize", cancellationToken).ConfigureAwait(false);
-                        await context.Database.ExecuteSqlRawAsync("VACUUM", cancellationToken).ConfigureAwait(false);
-                        _logger.LogInformation("jellyfin.db optimized successfully!");
-                    }
-                    else
-                    {
-                        _logger.LogInformation("This database doesn't support optimization");
-                    }
-                }
+                await _jellyfinDatabaseProvider.RunScheduledOptimisation(cancellationToken).ConfigureAwait(false);
             }
             catch (Exception e)
             {

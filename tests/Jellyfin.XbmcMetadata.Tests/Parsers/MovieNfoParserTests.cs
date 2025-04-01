@@ -1,8 +1,8 @@
 using System;
 using System.Linq;
 using System.Threading;
-using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -34,7 +34,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             var providerManager = new Mock<IProviderManager>();
 
             var tmdbExternalId = new TmdbMovieExternalId();
-            var externalIdInfo = new ExternalIdInfo(tmdbExternalId.ProviderName, tmdbExternalId.Key, tmdbExternalId.Type, tmdbExternalId.UrlFormatString);
+            var externalIdInfo = new ExternalIdInfo(tmdbExternalId.ProviderName, tmdbExternalId.Key, tmdbExternalId.Type);
 
             providerManager.Setup(x => x.GetExternalIdInfos(It.IsAny<IHasProviderIds>()))
                 .Returns(new[] { externalIdInfo });

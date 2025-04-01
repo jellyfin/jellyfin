@@ -130,7 +130,7 @@ public class ImageController : BaseJellyfinApiController
                 await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);
             }
 
-            user.ProfileImage = new Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + extension));
+            user.ProfileImage = new Database.Implementations.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + extension));
 
             await _providerManager
                 .SaveImage(stream, mimeType, user.ProfileImage.Path)

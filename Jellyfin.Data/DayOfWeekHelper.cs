@@ -1,7 +1,7 @@
 #pragma warning disable CS1591
 
 using System;
-using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Enums;
 
 namespace Jellyfin.Data
 {

@@ -19,6 +19,7 @@ using Jellyfin.Api.Controllers;
 using Jellyfin.Api.Formatters;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions.Json;
 using Jellyfin.Server.Configuration;
 using Jellyfin.Server.Filters;
@@ -247,6 +248,7 @@ namespace Jellyfin.Server.Extensions
                 c.AddSwaggerTypeMappings();
 
                 c.SchemaFilter<IgnoreEnumSchemaFilter>();
+                c.OperationFilter<RetryOnTemporarlyUnavailableFilter>();
                 c.OperationFilter<SecurityRequirementsOperationFilter>();
                 c.OperationFilter<FileResponseFilter>();
                 c.OperationFilter<FileRequestFilter>();

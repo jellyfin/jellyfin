@@ -76,6 +76,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         bool IsVaapiDeviceSupportVulkanDrmInterop { get; }
 
         /// <summary>
+        /// Gets a value indicating whether av1 decoding is available via VideoToolbox.
+        /// </summary>
+        /// <value><c>true</c> if the av1 is available via VideoToolbox, <c>false</c> otherwise.</value>
+        bool IsVideoToolboxAv1DecodeAvailable { get; }
+
+        /// <summary>
         /// Whether given encoder codec is supported.
         /// </summary>
         /// <param name="encoder">The encoder.</param>

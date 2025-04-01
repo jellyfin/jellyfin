@@ -28,6 +28,7 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="isAnamorphic">A value indicating whether the video is anamorphic.</param>
         /// <param name="isInterlaced">A value indicating whether the video is interlaced.</param>
         /// <param name="refFrames">The reference frames.</param>
+        /// <param name="numStreams">The number of streams.</param>
         /// <param name="numVideoStreams">The number of video streams.</param>
         /// <param name="numAudioStreams">The number of audio streams.</param>
         /// <param name="videoCodecTag">The video codec tag.</param>
@@ -48,6 +49,7 @@ namespace MediaBrowser.Model.Dlna
             bool? isAnamorphic,
             bool? isInterlaced,
             int? refFrames,
+            int numStreams,
             int? numVideoStreams,
             int? numAudioStreams,
             string? videoCodecTag,
@@ -83,6 +85,8 @@ namespace MediaBrowser.Model.Dlna
                     return IsConditionSatisfied(condition, width);
                 case ProfileConditionValue.RefFrames:
                     return IsConditionSatisfied(condition, refFrames);
+                case ProfileConditionValue.NumStreams:
+                    return IsConditionSatisfied(condition, numStreams);
                 case ProfileConditionValue.NumAudioStreams:
                     return IsConditionSatisfied(condition, numAudioStreams);
                 case ProfileConditionValue.NumVideoStreams:

@@ -234,8 +234,8 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     item.CustomRating = reader.ReadNormalizedString();
                     break;
                 case "RunningTime":
-                    var runtimeText = reader.ReadElementContentAsString();
-                    if (!string.IsNullOrWhiteSpace(runtimeText))
+                    var runtimeText = reader.ReadNormalizedString();
+                    if (!string.IsNullOrEmpty(runtimeText))
                     {
                         if (int.TryParse(runtimeText.AsSpan().LeftPart(' '), NumberStyles.Integer, CultureInfo.InvariantCulture, out var runtime))
                         {
@@ -253,7 +253,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                     break;
                 case "LockData":
-                    item.IsLocked = string.Equals(reader.ReadElementContentAsString(), "true", StringComparison.OrdinalIgnoreCase);
+                    item.IsLocked = string.Equals(reader.ReadNormalizedString(), "true", StringComparison.OrdinalIgnoreCase);
                     break;
                 case "Network":
                     foreach (var name in reader.GetStringArray())
@@ -331,9 +331,9 @@ namespace MediaBrowser.LocalMetadata.Parsers
                 case "Rating":
                 case "IMDBrating":
                 {
-                    var rating = reader.ReadElementContentAsString();
+                    var rating = reader.ReadNormalizedString();
 
-                    if (!string.IsNullOrWhiteSpace(rating))
+                    if (!string.IsNullOrEmpty(rating))
                     {
                         // All external meta is saving this as '.' for decimal I believe...but just to be sure
                         if (float.TryParse(rating.Replace(',', '.'), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var val))
@@ -449,7 +449,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                 case "OwnerUserId":
                 {
-                    var val = reader.ReadElementContentAsString();
+                    var val = reader.ReadNormalizedString();
 
                     if (Guid.TryParse(val, out var guid) && !guid.Equals(Guid.Empty))
                     {
@@ -464,7 +464,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                 case "Format3D":
                 {
-                    var val = reader.ReadElementContentAsString();
+                    var val = reader.ReadNormalizedString();
 
                     if (item is Video video)
                     {
@@ -498,7 +498,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     string readerName = reader.Name;
                     if (_validProviderIds!.TryGetValue(readerName, out string? providerIdValue))
                     {
-                        var id = reader.ReadElementContentAsString();
+                        var id = reader.ReadNormalizedString();
                         item.TrySetProviderId(providerIdValue, id);
                     }
                     else
@@ -580,7 +580,12 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     switch (reader.Name)
                     {
                         case "Tagline":
-                            item.Tagline = reader.ReadNormalizedString();
+                            var val = reader.ReadNormalizedString();
+                            if (!string.IsNullOrEmpty(val))
+                            {
+                                item.Tagline = val;
+                            }
+
                             break;
                         default:
                             reader.Skip();
@@ -842,7 +847,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                             userId = reader.ReadNormalizedString();
                             break;
                         case "CanEdit":
-                            canEdit = string.Equals(reader.ReadElementContentAsString(), "true", StringComparison.OrdinalIgnoreCase);
+                            canEdit = string.Equals(reader.ReadNormalizedString(), "true", StringComparison.OrdinalIgnoreCase);
                             break;
                         default:
                             reader.Skip();
@@ -856,7 +861,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
             }
 
             // This is valid
-            if (!string.IsNullOrWhiteSpace(userId) && Guid.TryParse(userId, out var guid))
+            if (!string.IsNullOrEmpty(userId) && Guid.TryParse(userId, out var guid))
             {
                 return new PlaylistUserPermissions(guid, canEdit);
             }

@@ -1,35 +1,55 @@
-#pragma warning disable CS1591
-
-using System;
 using System.Collections.Generic;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Providers;
 
-namespace MediaBrowser.Model.Dto
+namespace MediaBrowser.Model.Dto;
+
+/// <summary>
+/// A class representing metadata editor information.
+/// </summary>
+public class MetadataEditorInfo
 {
-    public class MetadataEditorInfo
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MetadataEditorInfo"/> class.
+    /// </summary>
+    public MetadataEditorInfo()
     {
-        public MetadataEditorInfo()
-        {
-            ParentalRatingOptions = Array.Empty<ParentalRating>();
-            Countries = Array.Empty<CountryInfo>();
-            Cultures = Array.Empty<CultureDto>();
-            ExternalIdInfos = Array.Empty<ExternalIdInfo>();
-            ContentTypeOptions = Array.Empty<NameValuePair>();
-        }
-
-        public IReadOnlyList<ParentalRating> ParentalRatingOptions { get; set; }
-
-        public IReadOnlyList<CountryInfo> Countries { get; set; }
-
-        public IReadOnlyList<CultureDto> Cultures { get; set; }
-
-        public IReadOnlyList<ExternalIdInfo> ExternalIdInfos { get; set; }
-
-        public CollectionType? ContentType { get; set; }
-
-        public IReadOnlyList<NameValuePair> ContentTypeOptions { get; set; }
+        ParentalRatingOptions = [];
+        Countries = [];
+        Cultures = [];
+        ExternalIdInfos = [];
+        ContentTypeOptions = [];
     }
+
+    /// <summary>
+    /// Gets or sets the parental rating options.
+    /// </summary>
+    public IReadOnlyList<ParentalRating> ParentalRatingOptions { get; set; }
+
+    /// <summary>
+    /// Gets or sets the countries.
+    /// </summary>
+    public IReadOnlyList<CountryInfo> Countries { get; set; }
+
+    /// <summary>
+    /// Gets or sets the cultures.
+    /// </summary>
+    public IReadOnlyList<CultureDto> Cultures { get; set; }
+
+    /// <summary>
+    /// Gets or sets the external id infos.
+    /// </summary>
+    public IReadOnlyList<ExternalIdInfo> ExternalIdInfos { get; set; }
+
+    /// <summary>
+    /// Gets or sets the content type.
+    /// </summary>
+    public CollectionType? ContentType { get; set; }
+
+    /// <summary>
+    /// Gets or sets the content type options.
+    /// </summary>
+    public IReadOnlyList<NameValuePair> ContentTypeOptions { get; set; }
 }

@@ -1,0 +1,48 @@
+{
+    "countryCode": "dk",
+    "supportsSubScores": false,
+    "ratings": [
+        {
+            "ratingStrings": ["F", "A"],
+            "ratingScore": {
+                "score": 0,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["7"],
+            "ratingScore": {
+                "score": 7,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["11"],
+            "ratingScore": {
+                "score": 11,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["12"],
+            "ratingScore": {
+                "score": 12,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["15"],
+            "ratingScore": {
+                "score": 15,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["16"],
+            "ratingScore": {
+                "score": 16,
+                "subScore": null
+            }
+        }
+    ]
+}

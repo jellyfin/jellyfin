@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Localization;
 using MediaBrowser.Controller.Configuration;
@@ -45,7 +44,7 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
 
             var germany = cultures.FirstOrDefault(x => x.TwoLetterISOLanguageName.Equals("de", StringComparison.Ordinal));
             Assert.NotNull(germany);
-            Assert.Equal("ger", germany!.ThreeLetterISOLanguageName);
+            Assert.Equal("deu", germany!.ThreeLetterISOLanguageName);
             Assert.Equal("German", germany.DisplayName);
             Assert.Equal("German", germany.Name);
             Assert.Contains("deu", germany.ThreeLetterISOLanguageNames);
@@ -54,6 +53,7 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
 
         [Theory]
         [InlineData("de")]
+        [InlineData("deu")]
         [InlineData("ger")]
         [InlineData("german")]
         public async Task FindLanguageInfo_Valid_Success(string identifier)
@@ -67,7 +67,7 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             var germany = localizationManager.FindLanguageInfo(identifier);
             Assert.NotNull(germany);
 
-            Assert.Equal("ger", germany!.ThreeLetterISOLanguageName);
+            Assert.Equal("deu", germany!.ThreeLetterISOLanguageName);
             Assert.Equal("German", germany.DisplayName);
             Assert.Equal("German", germany.Name);
             Assert.Contains("deu", germany.ThreeLetterISOLanguageNames);
@@ -88,7 +88,7 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
 
             var tvma = ratings.FirstOrDefault(x => x.Name.Equals("TV-MA", StringComparison.Ordinal));
             Assert.NotNull(tvma);
-            Assert.Equal(17, tvma!.Value);
+            Assert.Equal(17, tvma!.RatingScore!.Score);
         }
 
         [Fact]
@@ -105,43 +105,49 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
 
             var fsk = ratings.FirstOrDefault(x => x.Name.Equals("FSK-12", StringComparison.Ordinal));
             Assert.NotNull(fsk);
-            Assert.Equal(12, fsk!.Value);
+            Assert.Equal(12, fsk!.RatingScore!.Score);
         }
 
         [Theory]
-        [InlineData("CA-R", "CA", 18)]
-        [InlineData("FSK-16", "DE", 16)]
-        [InlineData("FSK-18", "DE", 18)]
-        [InlineData("FSK-18", "US", 18)]
-        [InlineData("TV-MA", "US", 17)]
-        [InlineData("XXX", "asdf", 1000)]
-        [InlineData("Germany: FSK-18", "DE", 18)]
-        public async Task GetRatingLevel_GivenValidString_Success(string value, string countryCode, int expectedLevel)
+        [InlineData("CA-R", "CA", 18, 1)]
+        [InlineData("FSK-16", "DE", 16, null)]
+        [InlineData("FSK-18", "DE", 18, null)]
+        [InlineData("FSK-18", "US", 18, null)]
+        [InlineData("TV-MA", "US", 17, 1)]
+        [InlineData("XXX", "asdf", 1000, null)]
+        [InlineData("Germany: FSK-18", "DE", 18, null)]
+        [InlineData("Rated : R", "US", 17, 0)]
+        [InlineData("Rated: R", "US", 17, 0)]
+        [InlineData("Rated R", "US", 17, 0)]
+        [InlineData(" PG-13 ", "US", 13, 0)]
+        public async Task GetRatingLevel_GivenValidString_Success(string value, string countryCode, int? expectedScore, int? expectedSubScore)
         {
             var localizationManager = Setup(new ServerConfiguration()
             {
                 MetadataCountryCode = countryCode
             });
             await localizationManager.LoadAll();
-            var level = localizationManager.GetRatingLevel(value);
-            Assert.NotNull(level);
-            Assert.Equal(expectedLevel, level!);
+            var score = localizationManager.GetRatingScore(value);
+            Assert.NotNull(score);
+            Assert.Equal(expectedScore, score.Score);
+            Assert.Equal(expectedSubScore, score.SubScore);
         }
 
         [Theory]
-        [InlineData("0", 0)]
-        [InlineData("1", 1)]
-        [InlineData("6", 6)]
-        [InlineData("12", 12)]
-        [InlineData("42", 42)]
-        [InlineData("9999", 9999)]
-        public async Task GetRatingLevel_GivenValidAge_Success(string value, int expectedLevel)
+        [InlineData("0", 0, null)]
+        [InlineData("1", 1, null)]
+        [InlineData("6", 6, null)]
+        [InlineData("12", 12, null)]
+        [InlineData("42", 42, null)]
+        [InlineData("9999", 9999, null)]
+        public async Task GetRatingLevel_GivenValidAge_Success(string value, int? expectedScore, int? expectedSubScore)
         {
             var localizationManager = Setup(new ServerConfiguration { MetadataCountryCode = "nl" });
             await localizationManager.LoadAll();
-            var level = localizationManager.GetRatingLevel(value);
-            Assert.NotNull(level);
-            Assert.Equal(expectedLevel, level);
+            var score = localizationManager.GetRatingScore(value);
+            Assert.NotNull(score);
+            Assert.Equal(expectedScore, score.Score);
+            Assert.Equal(expectedSubScore, score.SubScore);
         }
 
         [Fact]
@@ -152,10 +158,10 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
                 UICulture = "de-DE"
             });
             await localizationManager.LoadAll();
-            Assert.Null(localizationManager.GetRatingLevel("NR"));
-            Assert.Null(localizationManager.GetRatingLevel("unrated"));
-            Assert.Null(localizationManager.GetRatingLevel("Not Rated"));
-            Assert.Null(localizationManager.GetRatingLevel("n/a"));
+            Assert.Null(localizationManager.GetRatingScore("NR"));
+            Assert.Null(localizationManager.GetRatingScore("unrated"));
+            Assert.Null(localizationManager.GetRatingScore("Not Rated"));
+            Assert.Null(localizationManager.GetRatingScore("n/a"));
         }
 
         [Theory]
@@ -169,7 +175,7 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             });
             await localizationManager.LoadAll();
 
-            Assert.Null(localizationManager.GetRatingLevel(value));
+            Assert.Null(localizationManager.GetRatingScore(value));
         }
 
         [Theory]

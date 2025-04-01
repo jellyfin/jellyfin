@@ -1,6 +1,6 @@
 {
     "Albums": "Álbuns",
-    "AppDeviceValues": "Aplicação {0}, Dispositivo: {1}",
+    "AppDeviceValues": "Aplicação: {0}, Dispositivo: {1}",
     "Application": "Aplicação",
     "Artists": "Artistas",
     "AuthenticationSucceededWithUserName": "{0} autenticado com sucesso",
