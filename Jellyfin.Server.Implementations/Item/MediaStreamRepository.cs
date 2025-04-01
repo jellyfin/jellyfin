@@ -107,11 +107,7 @@ public class MediaStreamRepository : IMediaStreamRepository
         // if yes choose the first as that is the ISO 639-2/T code we're needing
         if (language != null)
         {
-            var langInfo = _localization.FindLanguageInfo(language);
-            if (langInfo != null && langInfo.ThreeLetterISOLanguageNames.Count > 1)
-            {
-                language = langInfo.ThreeLetterISOLanguageNames[0];
-            }
+            language = _localization.GetISO6392TFromB(language);
         }
 
         dto.Language = language;

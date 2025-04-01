@@ -61,4 +61,11 @@ public interface ILocalizationManager
     /// <param name="language">The language.</param>
     /// <returns>The correct <see cref="CultureDto" /> for the given language.</returns>
     CultureDto? FindLanguageInfo(string language);
+
+    /// <summary>
+    /// Returns the language in ISO 639-2/T when the input is ISO 639-2/B.
+    /// </summary>
+    /// <param name="isoB">The language in ISO 639-2/B.</param>
+    /// <returns>The language in ISO 639-2/T.</returns>
+    public string GetISO6392TFromB(string isoB);
 }

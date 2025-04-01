@@ -38,6 +38,8 @@ namespace Emby.Server.Implementations.Localization
 
         private List<CultureDto> _cultures = [];
 
+        private Dictionary<string, string> _iso6392BtoT = [];
+
         /// <summary>
         /// Initializes a new instance of the <see cref="LocalizationManager" /> class.
         /// </summary>
@@ -100,6 +102,7 @@ namespace Emby.Server.Implementations.Localization
         private async Task LoadCultures()
         {
             List<CultureDto> list = [];
+            Dictionary<string, string> iso6392BtoTdict = new Dictionary<string, string>();
 
             using var stream = _assembly.GetManifestResourceStream(CulturesPath);
             if (stream is null)
@@ -142,12 +145,17 @@ namespace Emby.Server.Implementations.Localization
                     else
                     {
                         threeLetterNames = [parts[0], parts[1]];
+
+                        // In cases where there are two TLN the first one is ISO 639-2/T and the second one is ISO 639-2/B
+                        // We need ISO 639-2/T for the .NET cultures so we cultivate a dictionary for the translation B->T
+                        iso6392BtoTdict.TryAdd(parts[1], parts[0]);
                     }
 
                     list.Add(new CultureDto(name, name, twoCharName, threeLetterNames));
                 }
 
                 _cultures = list;
+                _iso6392BtoT = iso6392BtoTdict;
             }
         }
 
@@ -504,6 +512,21 @@ namespace Emby.Server.Implementations.Localization
             yield return new LocalizationOption("汉语 (简体字)", "zh-CN");
             yield return new LocalizationOption("漢語 (繁體字)", "zh-TW");
             yield return new LocalizationOption("廣東話 (香港)", "zh-HK");
+        }
+
+        /// <summary>
+        /// Returns the language in ISO 639-2/T when the input is ISO 639-2/B.
+        /// </summary>
+        /// <param name="isoB">The language in ISO 639-2/B.</param>
+        /// <returns>The language in ISO 639-2/T.</returns>
+        public string GetISO6392TFromB(string isoB)
+        {
+            if (_iso6392BtoT.TryGetValue(isoB, out string? result) && !string.IsNullOrEmpty(result))
+            {
+                return result;
+            }
+
+            return isoB;
         }
     }
 }
