@@ -2899,7 +2899,7 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentNullException(nameof(name));
             }
 
-            name = _fileSystem.GetValidFilename(name);
+            name = _fileSystem.GetValidFilename(name.Trim());
 
             var rootFolderPath = _configurationManager.ApplicationPaths.DefaultUserViewsPath;
 
