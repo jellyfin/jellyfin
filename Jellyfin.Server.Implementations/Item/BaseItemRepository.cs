@@ -2089,7 +2089,7 @@ public sealed class BaseItemRepository
         if (!string.IsNullOrWhiteSpace(filter.AncestorWithPresentationUniqueKey))
         {
             baseQuery = baseQuery
-                .Where(e => context.BaseItems.Where(f => f.PresentationUniqueKey == filter.AncestorWithPresentationUniqueKey).Any(f => f.ParentAncestors!.Any(w => w.ItemId == f.Id)));
+                .Where(e => context.BaseItems.Where(f => f.PresentationUniqueKey == filter.AncestorWithPresentationUniqueKey).Any(f => f.Children!.Any(w => w.ItemId == e.Id)));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.SeriesPresentationUniqueKey))
@@ -2124,7 +2124,7 @@ public sealed class BaseItemRepository
             {
                 baseQuery = baseQuery
                     .Where(e =>
-                    e.ParentAncestors!
+                    e.Parents!
                         .Any(f =>
                             f.ParentItem.ItemValues!.Any(w => w.ItemValue.Type == ItemValueType.Tags && filter.IncludeInheritedTags.Contains(w.ItemValue.CleanValue))
                             || e.Data!.Contains($"OwnerUserId\":\"{filter.User!.Id:N}\"")));
@@ -2133,7 +2133,7 @@ public sealed class BaseItemRepository
             else
             {
                 baseQuery = baseQuery
-                    .Where(e => e.ParentAncestors!.Any(f => f.ParentItem.ItemValues!.Any(w => w.ItemValue.Type == ItemValueType.Tags && filter.IncludeInheritedTags.Contains(w.ItemValue.CleanValue))));
+                    .Where(e => e.Parents!.Any(f => f.ParentItem.ItemValues!.Any(w => w.ItemValue.Type == ItemValueType.Tags && filter.IncludeInheritedTags.Contains(w.ItemValue.CleanValue))));
             }
         }
 
