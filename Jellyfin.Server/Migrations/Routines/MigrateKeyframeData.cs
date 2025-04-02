@@ -76,6 +76,7 @@ public class MigrateKeyframeData : IDatabaseMigrationRoutine
         };
 
         using var context = _dbProvider.CreateDbContext();
+        context.KeyframeData.ExecuteDelete();
         using var transaction = context.Database.BeginTransaction();
         List<KeyframeData> keyframes = [];
 
