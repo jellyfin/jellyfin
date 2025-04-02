@@ -33,17 +33,18 @@ public class TmdbExternalUrlProvider : IExternalUrlProvider
                 if (season.Series.TryGetProviderId(MetadataProvider.Tmdb, out var seriesExternalId))
                 {
                     var orderString = season.Series.DisplayOrder;
-                    if (string.IsNullOrEmpty(orderString))
+                    var seasonNumber = season.IndexNumber;
+                    if (string.IsNullOrEmpty(orderString) && seasonNumber is not null)
                     {
                         // Default order is airdate
-                        yield return TmdbUtils.BaseTmdbUrl + $"tv/{seriesExternalId}/season/{season.IndexNumber}";
+                        yield return TmdbUtils.BaseTmdbUrl + $"tv/{seriesExternalId}/season/{seasonNumber}";
                     }
 
                     if (Enum.TryParse<TvGroupType>(season.Series.DisplayOrder, out var order))
                     {
-                        if (order.Equals(TvGroupType.OriginalAirDate))
+                        if (order.Equals(TvGroupType.OriginalAirDate) && seasonNumber is not null)
                         {
-                            yield return TmdbUtils.BaseTmdbUrl + $"tv/{seriesExternalId}/season/{season.IndexNumber}";
+                            yield return TmdbUtils.BaseTmdbUrl + $"tv/{seriesExternalId}/season/{seasonNumber}";
                         }
                     }
                 }
@@ -53,17 +54,19 @@ public class TmdbExternalUrlProvider : IExternalUrlProvider
                 if (episode.Series.TryGetProviderId(MetadataProvider.Imdb, out seriesExternalId))
                 {
                     var orderString = episode.Series.DisplayOrder;
-                    if (string.IsNullOrEmpty(orderString))
+                    var seasonNumber = episode.Season?.IndexNumber;
+                    var episodeNumber = episode.IndexNumber;
+                    if (string.IsNullOrEmpty(orderString) && seasonNumber is not null && episodeNumber is not null)
                     {
                         // Default order is airdate
-                        yield return TmdbUtils.BaseTmdbUrl + $"tv/{seriesExternalId}/season/{episode.Season.IndexNumber}/episode/{episode.IndexNumber}";
+                        yield return TmdbUtils.BaseTmdbUrl + $"tv/{seriesExternalId}/season/{seasonNumber}/episode/{episodeNumber}";
                     }
 
                     if (Enum.TryParse<TvGroupType>(orderString, out var order))
                     {
-                        if (order.Equals(TvGroupType.OriginalAirDate))
+                        if (order.Equals(TvGroupType.OriginalAirDate) && seasonNumber is not null && episodeNumber is not null)
                         {
-                            yield return TmdbUtils.BaseTmdbUrl + $"tv/{seriesExternalId}/season/{episode.Season.IndexNumber}/episode/{episode.IndexNumber}";
+                            yield return TmdbUtils.BaseTmdbUrl + $"tv/{seriesExternalId}/season/{seasonNumber}/episode/{episodeNumber}";
                         }
                     }
                 }

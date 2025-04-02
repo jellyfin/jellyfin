@@ -866,9 +866,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                 && _mediaEncoder.EncoderVersion >= _minFFmpegVaapiDeviceVendorId;
 
             // Priority: 'renderNodePath' > 'vendorId' > 'kernelDriver'
-            var driverOpts = string.IsNullOrEmpty(renderNodePath)
-                ? (haveVendorId ? $",vendor_id={vendorId}" : (string.IsNullOrEmpty(kernelDriver) ? string.Empty : $",kernel_driver={kernelDriver}"))
-                : renderNodePath;
+            var driverOpts = File.Exists(renderNodePath)
+                ? renderNodePath
+                : (haveVendorId ? $",vendor_id={vendorId}" : (string.IsNullOrEmpty(kernelDriver) ? string.Empty : $",kernel_driver={kernelDriver}"));
 
             // 'driver' behaves similarly to env LIBVA_DRIVER_NAME
             driverOpts += string.IsNullOrEmpty(driver) ? string.Empty : ",driver=" + driver;
@@ -5792,7 +5792,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var doDeintH2645 = doDeintH264 || doDeintHevc;
             var doOclTonemap = IsHwTonemapAvailable(state, options);
 
-            var hasSubs = state.SubtitleStream != null && ShouldEncodeSubtitle(state);
+            var hasSubs = state.SubtitleStream is not null && ShouldEncodeSubtitle(state);
             var hasTextSubs = hasSubs && state.SubtitleStream.IsTextSubtitleStream;
             var hasGraphicalSubs = hasSubs && !state.SubtitleStream.IsTextSubtitleStream;
             var hasAssSubs = hasSubs
@@ -6792,6 +6792,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 || string.Equals("yuv420p12le", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase)
                 || string.Equals("yuv422p12le", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase)
                 || string.Equals("yuv444p12le", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase);
+            var isAv1SupportedSwFormatsVt = is8_10bitSwFormatsVt || string.Equals("yuv420p12le", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase);
 
             // The related patches make videotoolbox hardware surface working is only available in jellyfin-ffmpeg 7.0.1 at the moment.
             bool useHwSurface = (_mediaEncoder.EncoderVersion >= _minFFmpegWorkingVtHwSurface) && IsVideoToolboxFullSupported();
@@ -6824,6 +6825,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                     || string.Equals("h265", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
                 {
                     return GetHwaccelType(state, options, "hevc", bitDepth, useHwSurface);
+                }
+
+                if (string.Equals("av1", videoStream.Codec, StringComparison.OrdinalIgnoreCase)
+                    && isAv1SupportedSwFormatsVt
+                    && _mediaEncoder.IsVideoToolboxAv1DecodeAvailable)
+                {
+                    return GetHwaccelType(state, options, "av1", bitDepth, useHwSurface);
                 }
             }
 

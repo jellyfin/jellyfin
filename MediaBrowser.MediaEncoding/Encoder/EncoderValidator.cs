@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Text.RegularExpressions;
 using MediaBrowser.Controller.MediaEncoding;
 using Microsoft.Extensions.Logging;
@@ -448,6 +449,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 _logger.LogError(ex, "Error detecting the given drm render node path");
                 return false;
             }
+        }
+
+        [SupportedOSPlatform("macos")]
+        public bool CheckIsVideoToolboxAv1DecodeAvailable()
+        {
+            return ApplePlatformHelper.HasAv1HardwareAccel(_logger);
         }
 
         private IEnumerable<string> GetHwaccelTypes()

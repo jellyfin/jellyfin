@@ -53,6 +53,7 @@ public class SystemManager : ISystemManager
             HasPendingRestart = _applicationHost.HasPendingRestart,
             IsShuttingDown = _applicationLifetime.ApplicationStopping.IsCancellationRequested,
             Version = _applicationHost.ApplicationVersionString,
+            ProductName = _applicationHost.Name,
             WebSocketPortNumber = _applicationHost.HttpPort,
             CompletedInstallations = _installationManager.CompletedInstallations.ToArray(),
             Id = _applicationHost.SystemId,
@@ -65,6 +66,7 @@ public class SystemManager : ISystemManager
             TranscodingTempPath = _configurationManager.GetTranscodePath(),
             ServerName = _applicationHost.FriendlyName,
             LocalAddress = _applicationHost.GetSmartApiUrl(request),
+            StartupWizardCompleted = _configurationManager.CommonConfiguration.IsStartupWizardCompleted,
             SupportsLibraryMonitor = true,
             PackageName = _startupOptions.PackageName,
             CastReceiverApplications = _configurationManager.Configuration.CastReceiverApplications

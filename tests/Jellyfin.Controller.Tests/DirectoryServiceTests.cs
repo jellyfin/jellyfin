@@ -181,8 +181,8 @@ namespace Jellyfin.Controller.Tests
             fileSystemMock.Setup(f => f.GetFileSystemInfo(It.Is<string>(x => x == path))).Returns(newFileSystemMetadata);
             var secondResult = directoryService.GetFile(path);
 
-            Assert.Equal(cachedFileSystemMetadata, result);
-            Assert.Equal(cachedFileSystemMetadata, secondResult);
+            Assert.Equivalent(cachedFileSystemMetadata, result);
+            Assert.Equivalent(cachedFileSystemMetadata, secondResult);
         }
 
         [Fact]

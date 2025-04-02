@@ -22,6 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="BitFaster.Caching" />
     <PackageReference Include="DiscUtils.Udf" />
     <PackageReference Include="Microsoft.Data.Sqlite" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
@@ -67,6 +68,6 @@
     <EmbeddedResource Include="Localization\iso6392.txt" />
     <EmbeddedResource Include="Localization\countries.json" />
     <EmbeddedResource Include="Localization\Core\*.json" />
-    <EmbeddedResource Include="Localization\Ratings\*.csv" />
+    <EmbeddedResource Include="Localization\Ratings\*.json" />
   </ItemGroup>
 </Project>

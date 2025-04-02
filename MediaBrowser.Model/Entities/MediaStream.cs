@@ -159,6 +159,7 @@ namespace MediaBrowser.Model.Entities
         /// Gets the video range.
         /// </summary>
         /// <value>The video range.</value>
+        [DefaultValue(VideoRange.Unknown)]
         public VideoRange VideoRange
         {
             get

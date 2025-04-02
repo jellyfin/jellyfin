@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Entities;
@@ -34,6 +35,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the type.
         /// </summary>
         /// <value>The type.</value>
+        [DefaultValue(PersonKind.Unknown)]
         public PersonKind Type { get; set; }
 
         /// <summary>

@@ -29,7 +29,8 @@ namespace Jellyfin.Server.Migrations
             typeof(PreStartupRoutines.CreateNetworkConfiguration),
             typeof(PreStartupRoutines.MigrateMusicBrainzTimeout),
             typeof(PreStartupRoutines.MigrateNetworkConfiguration),
-            typeof(PreStartupRoutines.MigrateEncodingOptions)
+            typeof(PreStartupRoutines.MigrateEncodingOptions),
+            typeof(PreStartupRoutines.RenameEnableGroupingIntoCollections)
         };
 
         /// <summary>
@@ -48,13 +49,13 @@ namespace Jellyfin.Server.Migrations
             typeof(Routines.RemoveDownloadImagesInAdvance),
             typeof(Routines.MigrateAuthenticationDb),
             typeof(Routines.FixPlaylistOwner),
-            typeof(Routines.MigrateRatingLevels),
             typeof(Routines.AddDefaultCastReceivers),
             typeof(Routines.UpdateDefaultPluginRepository),
             typeof(Routines.FixAudioData),
-            typeof(Routines.MoveTrickplayFiles),
             typeof(Routines.RemoveDuplicatePlaylistChildren),
             typeof(Routines.MigrateLibraryDb),
+            typeof(Routines.MigrateRatingLevels),
+            typeof(Routines.MoveTrickplayFiles),
         };
 
         /// <summary>

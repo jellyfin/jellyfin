@@ -338,6 +338,9 @@ namespace MediaBrowser.Model.Dlna
                 case ProfileConditionValue.IsSecondaryAudio:
                     return TranscodeReason.SecondaryAudioNotSupported;
 
+                case ProfileConditionValue.NumStreams:
+                    return TranscodeReason.StreamCountExceedsLimit;
+
                 case ProfileConditionValue.NumAudioStreams:
                     // TODO
                     return 0;
@@ -797,7 +800,7 @@ namespace MediaBrowser.Model.Dlna
                 options.SubtitleStreamIndex,
                 playlistItem.PlayMethod,
                 playlistItem.TranscodeReasons,
-                playlistItem.ToUrl("media:", "<token>"));
+                playlistItem.ToUrl("media:", "<token>", null));
 
             item.Container = NormalizeMediaSourceFormatIntoSingleContainer(item.Container, options.Profile, DlnaProfileType.Video, directPlayProfile);
             return playlistItem;
@@ -1019,6 +1022,7 @@ namespace MediaBrowser.Model.Dlna
             int? packetLength = videoStream?.PacketLength;
             int? refFrames = videoStream?.RefFrames;
 
+            int numStreams = item.MediaStreams.Count;
             int? numAudioStreams = item.GetStreamCount(MediaStreamType.Audio);
             int? numVideoStreams = item.GetStreamCount(MediaStreamType.Video);
 
@@ -1027,7 +1031,7 @@ namespace MediaBrowser.Model.Dlna
             var appliedVideoConditions = options.Profile.CodecProfiles
                 .Where(i => i.Type == CodecType.Video &&
                     i.ContainsAnyCodec(playlistItem.VideoCodecs, container, useSubContainer) &&
-                    i.ApplyConditions.All(applyCondition => ConditionProcessor.IsVideoConditionSatisfied(applyCondition, width, height, bitDepth, videoBitrate, videoProfile, videoRangeType, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc)))
+                    i.ApplyConditions.All(applyCondition => ConditionProcessor.IsVideoConditionSatisfied(applyCondition, width, height, bitDepth, videoBitrate, videoProfile, videoRangeType, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numStreams, numVideoStreams, numAudioStreams, videoCodecTag, isAvc)))
                 // Reverse codec profiles for backward compatibility - first codec profile has higher priority
                 .Reverse();
             foreach (var condition in appliedVideoConditions)
@@ -1850,6 +1854,7 @@ namespace MediaBrowser.Model.Dlna
                     case ProfileConditionValue.AudioProfile:
                     case ProfileConditionValue.Has64BitOffsets:
                     case ProfileConditionValue.PacketLength:
+                    case ProfileConditionValue.NumStreams:
                     case ProfileConditionValue.NumAudioStreams:
                     case ProfileConditionValue.NumVideoStreams:
                     case ProfileConditionValue.IsSecondaryAudio:
@@ -2258,10 +2263,11 @@ namespace MediaBrowser.Model.Dlna
             int? packetLength = videoStream?.PacketLength;
             int? refFrames = videoStream?.RefFrames;
 
+            int numStreams = mediaSource.MediaStreams.Count;
             int? numAudioStreams = mediaSource.GetStreamCount(MediaStreamType.Audio);
             int? numVideoStreams = mediaSource.GetStreamCount(MediaStreamType.Video);
 
-            return conditions.Where(applyCondition => !ConditionProcessor.IsVideoConditionSatisfied(applyCondition, width, height, bitDepth, videoBitrate, videoProfile, videoRangeType, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc));
+            return conditions.Where(applyCondition => !ConditionProcessor.IsVideoConditionSatisfied(applyCondition, width, height, bitDepth, videoBitrate, videoProfile, videoRangeType, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numStreams, numVideoStreams, numAudioStreams, videoCodecTag, isAvc));
         }
 
         /// <summary>
