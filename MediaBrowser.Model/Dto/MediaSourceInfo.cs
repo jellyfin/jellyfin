@@ -119,7 +119,7 @@ namespace MediaBrowser.Model.Dto
         [JsonIgnore]
         public TranscodeReason TranscodeReasons { get; set; }
 
-        [DefaultValue(AudioIndexSource.None)]
+        [JsonIgnore]
         public AudioIndexSource DefaultAudioIndexSource { get; set; }
 
         public int? DefaultAudioStreamIndex { get; set; }
