@@ -129,6 +129,16 @@ namespace MediaBrowser.MediaEncoding.Attachments
                 {
                     Directory.CreateDirectory(outputFolder);
                 }
+                else
+                {
+                    var fileNames = Directory.GetFiles(outputFolder, "*", SearchOption.TopDirectoryOnly).Select(f => Path.GetFileName(f));
+                    var missingFiles = mediaSource.MediaAttachments.Where(a => !fileNames.Contains(a.FileName));
+                    if (!missingFiles.Any())
+                    {
+                        // Skip extraction if all files already exist
+                        return;
+                    }
+                }
 
                 var processArgs = string.Format(
                     CultureInfo.InvariantCulture,
