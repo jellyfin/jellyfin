@@ -99,7 +99,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
             {
                 foreach (var attachment in mediaSource.MediaAttachments)
                 {
-                    await ExtractAttachment(mediaSource, attachment, cancellationToken).ConfigureAwait(false);
+                    await ExtractAttachment(inputFile, mediaSource, attachment, cancellationToken).ConfigureAwait(false);
                 }
             }
             else
@@ -225,12 +225,13 @@ namespace MediaBrowser.MediaEncoding.Attachments
             MediaAttachment mediaAttachment,
             CancellationToken cancellationToken)
         {
-            var attachmentPath = await ExtractAttachment(mediaSource, mediaAttachment, cancellationToken)
+            var attachmentPath = await ExtractAttachment(mediaSource.Path, mediaSource, mediaAttachment, cancellationToken)
                 .ConfigureAwait(false);
             return AsyncFile.OpenRead(attachmentPath);
         }
 
         private async Task<string> ExtractAttachment(
+            string inputFile,
             MediaSourceInfo mediaSource,
             MediaAttachment mediaAttachment,
             CancellationToken cancellationToken)
@@ -242,7 +243,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
                 if (!File.Exists(attachmentPath))
                 {
                     await ExtractAttachmentInternal(
-                        _mediaEncoder.GetInputArgument(mediaSource.Path, mediaSource),
+                        _mediaEncoder.GetInputArgument(inputFile, mediaSource),
                         mediaAttachment.Index,
                         attachmentPath,
                         cancellationToken).ConfigureAwait(false);
