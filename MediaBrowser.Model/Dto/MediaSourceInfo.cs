@@ -24,6 +24,7 @@ namespace MediaBrowser.Model.Dto
             SupportsDirectPlay = true;
             SupportsProbing = true;
             UseMostCompatibleTranscodingProfile = false;
+            DefaultAudioIndexSource = AudioIndexSource.None;
         }
 
         public MediaProtocol Protocol { get; set; }
@@ -117,6 +118,9 @@ namespace MediaBrowser.Model.Dto
 
         [JsonIgnore]
         public TranscodeReason TranscodeReasons { get; set; }
+
+        [DefaultValue(AudioIndexSource.None)]
+        public AudioIndexSource DefaultAudioIndexSource { get; set; }
 
         public int? DefaultAudioStreamIndex { get; set; }
 
