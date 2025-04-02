@@ -498,15 +498,13 @@ namespace Emby.Server.Implementations.Library
                 // Subtitles and attachments
                 foreach (var mediaSource in item.GetMediaSources(false))
                 {
-                    // Use SRT as a dummy parameter since it is required, we only need the parent directory.
-                    var subtitleFolder = Path.GetDirectoryName(_pathManager.GetSubtitlePath(mediaSource.Id, 1, ".srt"));
+                    var subtitleFolder = _pathManager.GetSubtitleFolderPath(mediaSource.Id);
                     if (subtitleFolder is not null)
                     {
                         list.Add(subtitleFolder);
                     }
 
-                    // Use steam id 1 as a dummy parameter since it is required, we only need the parent directory.
-                    var attachmentFolder = Path.GetDirectoryName(_pathManager.GetAttachmentPath(mediaSource.Id, 1));
+                    var attachmentFolder = _pathManager.GetAttachmentFolderPath(mediaSource.Id);
                     if (attachmentFolder is not null)
                     {
                         list.Add(attachmentFolder);

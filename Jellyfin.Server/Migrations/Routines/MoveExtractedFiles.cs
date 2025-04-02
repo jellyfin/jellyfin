@@ -130,6 +130,7 @@ public class MoveExtractedFiles : IDatabaseMigrationRoutine
     private bool MoveSubtitleAndAttachmentFiles(BaseItem item)
     {
         var mediaStreams = item.GetMediaStreams().Where(s => s.Type == MediaStreamType.Subtitle && !s.IsExternal);
+        var itemIdString = item.Id.ToString("N", CultureInfo.InvariantCulture);
         var modified = false;
         foreach (var mediaStream in mediaStreams)
         {
@@ -146,7 +147,7 @@ public class MoveExtractedFiles : IDatabaseMigrationRoutine
                 continue;
             }
 
-            var newSubtitleCachePath = _pathManager.GetSubtitlePath(item.Id.ToString("N", CultureInfo.InvariantCulture), mediaStreamIndex, extension);
+            var newSubtitleCachePath = _pathManager.GetSubtitlePath(itemIdString, mediaStreamIndex, extension);
             if (File.Exists(newSubtitleCachePath))
             {
                 File.Delete(oldSubtitleCachePath);
@@ -174,14 +175,14 @@ public class MoveExtractedFiles : IDatabaseMigrationRoutine
                 continue;
             }
 
-            var newAttachmentCachePath = _pathManager.GetAttachmentPath(item.Id.ToString("N", CultureInfo.InvariantCulture), attachmentIndex);
-            var newDirectory = Path.GetDirectoryName(newAttachmentCachePath);
+            var newAttachmentCachePath = _pathManager.GetAttachmentPath(itemIdString, attachment.FileName ?? attachmentIndex.ToString(CultureInfo.InvariantCulture));
             if (File.Exists(newAttachmentCachePath))
             {
                 File.Delete(oldAttachmentCachePath);
             }
             else
             {
+                var newDirectory = Path.GetDirectoryName(newAttachmentCachePath);
                 if (newDirectory is not null)
                 {
                     Directory.CreateDirectory(newDirectory);

@@ -1,4 +1,5 @@
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Controller.IO;
 
@@ -25,10 +26,24 @@ public interface IPathManager
     public string GetSubtitlePath(string mediaSourceId, int streamIndex, string extension);
 
     /// <summary>
+    /// Gets the path to the subtitle file.
+    /// </summary>
+    /// <param name="mediaSourceId">The media source id.</param>
+    /// <returns>The absolute path.</returns>
+    public string GetSubtitleFolderPath(string mediaSourceId);
+
+    /// <summary>
     /// Gets the path to the attachment file.
     /// </summary>
     /// <param name="mediaSourceId">The media source id.</param>
-    /// <param name="attachmentIndex">The stream index.</param>
+    /// <param name="fileName">The attachmentFileName index.</param>
     /// <returns>The absolute path.</returns>
-    public string GetAttachmentPath(string mediaSourceId, int attachmentIndex);
+    public string GetAttachmentPath(string mediaSourceId, string fileName);
+
+    /// <summary>
+    /// Gets the path to the attachment folder.
+    /// </summary>
+    /// <param name="mediaSourceId">The media source id.</param>
+    /// <returns>The absolute path.</returns>
+    public string GetAttachmentFolderPath(string mediaSourceId);
 }

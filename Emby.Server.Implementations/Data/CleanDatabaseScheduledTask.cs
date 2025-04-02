@@ -64,8 +64,7 @@ public class CleanDatabaseScheduledTask : ILibraryPostScanTask
                     // Delete extracted subtitles
                     try
                     {
-                        // Use SRT as a dummy parameter since it is required, we only need the parent directory.
-                        var subtitleFolder = Path.GetDirectoryName(_pathManager.GetSubtitlePath(mediaSource.Id, 1, ".srt"));
+                        var subtitleFolder = _pathManager.GetSubtitleFolderPath(mediaSource.Id);
                         if (Directory.Exists(subtitleFolder))
                         {
                             Directory.Delete(subtitleFolder, true);
@@ -79,8 +78,7 @@ public class CleanDatabaseScheduledTask : ILibraryPostScanTask
                     // Delete extracted attachments
                     try
                     {
-                        // Use steam id 1 as a dummy parameter since it is required, we only need the parent directory.
-                        var attachmentFolder = Path.GetDirectoryName(_pathManager.GetAttachmentPath(mediaSource.Id, 1));
+                        var attachmentFolder = _pathManager.GetAttachmentFolderPath(mediaSource.Id);
                         if (Directory.Exists(attachmentFolder))
                         {
                             Directory.Delete(attachmentFolder, true);

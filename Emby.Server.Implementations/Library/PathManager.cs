@@ -34,17 +34,29 @@ public class PathManager : IPathManager
     private string AttachmentCachePath => Path.Combine(_appPaths.DataPath, "attachments");
 
     /// <inheritdoc />
-    public string GetAttachmentPath(string mediaSourceId, int attachmentIndex)
+    public string GetAttachmentPath(string mediaSourceId, string fileName)
+    {
+        return Path.Join(GetAttachmentFolderPath(mediaSourceId), fileName);
+    }
+
+    /// <inheritdoc />
+    public string GetAttachmentFolderPath(string mediaSourceId)
     {
         var id = Guid.Parse(mediaSourceId);
-        return Path.Join(AttachmentCachePath, id.ToString("D", CultureInfo.InvariantCulture), attachmentIndex.ToString(CultureInfo.InvariantCulture));
+        return Path.Join(AttachmentCachePath, id.ToString("D", CultureInfo.InvariantCulture));
+    }
+
+    /// <inheritdoc />
+    public string GetSubtitleFolderPath(string mediaSourceId)
+    {
+        var id = Guid.Parse(mediaSourceId);
+        return Path.Join(SubtitleCachePath, id.ToString("D", CultureInfo.InvariantCulture));
     }
 
     /// <inheritdoc />
     public string GetSubtitlePath(string mediaSourceId, int streamIndex, string extension)
     {
-        var id = Guid.Parse(mediaSourceId);
-        return Path.Join(SubtitleCachePath, id.ToString("D", CultureInfo.InvariantCulture), streamIndex.ToString(CultureInfo.InvariantCulture) + extension);
+        return Path.Join(GetSubtitleFolderPath(mediaSourceId), streamIndex.ToString(CultureInfo.InvariantCulture) + extension);
     }
 
     /// <inheritdoc />
