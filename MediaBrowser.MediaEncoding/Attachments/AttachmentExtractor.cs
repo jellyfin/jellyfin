@@ -95,7 +95,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
         {
             var shouldExtractOneByOne = mediaSource.MediaAttachments.Any(a => !string.IsNullOrEmpty(a.FileName)
                                                                               && (a.FileName.Contains('/', StringComparison.OrdinalIgnoreCase) || a.FileName.Contains('\\', StringComparison.OrdinalIgnoreCase)));
-            if (shouldExtractOneByOne)
+            if (shouldExtractOneByOne && !inputFile.EndsWith(".mks", StringComparison.OrdinalIgnoreCase))
             {
                 foreach (var attachment in mediaSource.MediaAttachments)
                 {
