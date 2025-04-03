@@ -125,7 +125,11 @@ public class MoveExtractedFiles : IDatabaseMigrationRoutine
         }
 
         // Remove old cache path
-        Directory.Delete(Path.Join(_appPaths.CachePath, "attachments"));
+        var attachmentCachePath = Path.Join(_appPaths.CachePath, "attachments");
+        if (Directory.Exists(attachmentCachePath))
+        {
+            Directory.Delete(attachmentCachePath, true);
+        }
 
         _logger.LogInformation("Cleaned up left over subtitles and attachments.");
     }
