@@ -7165,7 +7165,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             state.RemoteHttpHeaders = mediaSource.RequiredHttpHeaders;
             state.ReadInputAtNativeFramerate = mediaSource.ReadAtNativeFramerate;
 
-            if (state.ReadInputAtNativeFramerate
+            if ((state.ReadInputAtNativeFramerate && !state.IsSegmentedLiveStream)
                 || (mediaSource.Protocol == MediaProtocol.File
                 && string.Equals(mediaSource.Container, "wtv", StringComparison.OrdinalIgnoreCase)))
             {
