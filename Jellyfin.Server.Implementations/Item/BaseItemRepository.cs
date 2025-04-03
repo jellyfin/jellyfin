@@ -114,6 +114,7 @@ public sealed class BaseItemRepository
         context.ItemDisplayPreferences.Where(e => e.ItemId == id).ExecuteDelete();
         context.ItemValues.Where(e => e.BaseItemsMap!.Count == 0).ExecuteDelete();
         context.ItemValuesMap.Where(e => e.ItemId == id).ExecuteDelete();
+        context.KeyframeData.Where(e => e.ItemId == id).ExecuteDelete();
         context.MediaSegments.Where(e => e.ItemId == id).ExecuteDelete();
         context.MediaStreamInfos.Where(e => e.ItemId == id).ExecuteDelete();
         context.PeopleBaseItemMap.Where(e => e.ItemId == id).ExecuteDelete();
