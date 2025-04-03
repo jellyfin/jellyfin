@@ -35,7 +35,9 @@ public class DynamicHlsPlaylistGenerator : IDynamicHlsPlaylistGenerator
     {
         IReadOnlyList<double> segments;
         // For video transcodes it is sufficient with equal length segments as ffmpeg will create new keyframes
-        if (request.IsRemuxingVideo && TryExtractKeyframes(request.MediaSourceId, request.FilePath, out var keyframeData))
+        if (request.IsRemuxingVideo
+            && request.MediaSourceId is not null
+            && TryExtractKeyframes(request.MediaSourceId.Value, request.FilePath, out var keyframeData))
         {
             segments = ComputeSegments(keyframeData, request.DesiredSegmentLengthMs);
         }
