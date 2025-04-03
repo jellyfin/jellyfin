@@ -41,7 +41,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// The level validation regex.
         /// This regular expression matches strings representing a double.
         /// </summary>
-        public const string LevelValidationRegex = @"-?\d+(?:\.\d+)?";
+        public const string LevelValidationRegex = @"-?[0-9]+(?:\.[0-9]+)?";
 
         private const string _defaultMjpegEncoder = "mjpeg";
 
