@@ -110,7 +110,10 @@ public class MigrateKeyframeData : IDatabaseMigrationRoutine
 
         _logger.LogInformation("Imported keyframes for {Count} items in {Time}", itemCount, sw.Elapsed);
 
-        Directory.Delete(KeyframeCachePath, true);
+        if (Directory.Exists(KeyframeCachePath))
+        {
+            Directory.Delete(KeyframeCachePath, true);
+        }
     }
 
     private bool TryGetKeyframeData(BaseItem item, [NotNullWhen(true)] out KeyframeData? data)
