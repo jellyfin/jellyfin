@@ -81,6 +81,11 @@ namespace MediaBrowser.MediaEncoding.Attachments
                 throw new ResourceNotFoundException($"MediaSource {mediaSourceId} has no attachment with stream index {attachmentStreamIndex}");
             }
 
+            if (string.Equals(mediaAttachment.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ResourceNotFoundException($"Attachment with stream index {attachmentStreamIndex} can't be extracted for MediaSource {mediaSourceId}");
+            }
+
             var attachmentStream = await GetAttachmentStream(mediaSource, mediaAttachment, cancellationToken)
                     .ConfigureAwait(false);
 
@@ -99,7 +104,10 @@ namespace MediaBrowser.MediaEncoding.Attachments
             {
                 foreach (var attachment in mediaSource.MediaAttachments)
                 {
-                    await ExtractAttachment(inputFile, mediaSource, attachment, cancellationToken).ConfigureAwait(false);
+                    if (!string.Equals(attachment.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase))
+                    {
+                        await ExtractAttachment(inputFile, mediaSource, attachment, cancellationToken).ConfigureAwait(false);
+                    }
                 }
             }
             else
@@ -132,7 +140,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
                 else
                 {
                     var fileNames = Directory.GetFiles(outputFolder, "*", SearchOption.TopDirectoryOnly).Select(f => Path.GetFileName(f));
-                    var missingFiles = mediaSource.MediaAttachments.Where(a => !fileNames.Contains(a.FileName));
+                    var missingFiles = mediaSource.MediaAttachments.Where(a => !fileNames.Contains(a.FileName) && !string.Equals(a.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase));
                     if (!missingFiles.Any())
                     {
                         // Skip extraction if all files already exist
