@@ -157,6 +157,7 @@ namespace MediaBrowser.Model.Entities
         /// Gets the video range.
         /// </summary>
         /// <value>The video range.</value>
+        [DefaultValue(VideoRange.Unknown)]
         public VideoRange VideoRange
         {
             get
@@ -171,6 +172,7 @@ namespace MediaBrowser.Model.Entities
         /// Gets the video range type.
         /// </summary>
         /// <value>The video range type.</value>
+        [DefaultValue(VideoRangeType.Unknown)]
         public VideoRangeType VideoRangeType
         {
             get
