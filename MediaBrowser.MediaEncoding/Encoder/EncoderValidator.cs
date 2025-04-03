@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.Versioning;
 using System.Text.RegularExpressions;
+using MediaBrowser.Controller.MediaEncoding;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.MediaEncoding.Encoder
@@ -160,6 +161,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
             { 6, new string[] { "transpose_opencl", "rotate by half-turn" } }
         };
 
+        private static readonly Dictionary<BitStreamFilterOptionType, (string, string)> _bsfOptionsDict = new Dictionary<BitStreamFilterOptionType, (string, string)>
+        {
+            { BitStreamFilterOptionType.HevcMetadataRemoveDovi, ("hevc_metadata", "remove_dovi") },
+            { BitStreamFilterOptionType.HevcMetadataRemoveHdr10Plus, ("hevc_metadata", "remove_hdr10plus") },
+            { BitStreamFilterOptionType.Av1MetadataRemoveDovi, ("av1_metadata", "remove_dovi") },
+            { BitStreamFilterOptionType.Av1MetadataRemoveHdr10Plus, ("av1_metadata", "remove_hdr10plus") },
+            { BitStreamFilterOptionType.DoviRpuStrip, ("dovi_rpu", "strip") }
+        };
+
         // These are the library versions that corresponds to our minimum ffmpeg version 4.4 according to the version table below
         // Refers to the versions in https://ffmpeg.org/download.html
         private static readonly Dictionary<string, Version> _ffmpegMinimumLibraryVersions = new Dictionary<string, Version>
@@ -285,6 +295,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public IEnumerable<string> GetFilters() => GetFFmpegFilters();
 
         public IDictionary<int, bool> GetFiltersWithOption() => GetFFmpegFiltersWithOption();
+
+        public IDictionary<BitStreamFilterOptionType, bool> GetBitStreamFiltersWithOption() => _bsfOptionsDict
+            .ToDictionary(item => item.Key, item => CheckBitStreamFilterWithOption(item.Value.Item1, item.Value.Item2));
 
         public Version? GetFFmpegVersion()
         {
@@ -495,6 +508,34 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return false;
         }
 
+        public bool CheckBitStreamFilterWithOption(string filter, string option)
+        {
+            if (string.IsNullOrEmpty(filter) || string.IsNullOrEmpty(option))
+            {
+                return false;
+            }
+
+            string output;
+            try
+            {
+                output = GetProcessOutput(_encoderPath, "-h bsf=" + filter, false, null);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error detecting the given bit stream filter");
+                return false;
+            }
+
+            if (output.Contains("Bit stream filter " + filter, StringComparison.Ordinal))
+            {
+                return output.Contains(option, StringComparison.Ordinal);
+            }
+
+            _logger.LogWarning("Bit stream filter: {Name} with option {Option} is not available", filter, option);
+
+            return false;
+        }
+
         public bool CheckSupportedRuntimeKey(string keyDesc, Version? ffmpegVersion)
         {
             if (string.IsNullOrEmpty(keyDesc))
@@ -521,6 +562,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public bool CheckSupportedHwaccelFlag(string flag)
         {
             return !string.IsNullOrEmpty(flag) && GetProcessExitCode(_encoderPath, $"-loglevel quiet -hwaccel_flags +{flag} -hide_banner -f lavfi -i nullsrc=s=1x1:d=100 -f null -");
+        }
+
+        public bool CheckSupportedProberOption(string option, string proberPath)
+        {
+            return !string.IsNullOrEmpty(option) && GetProcessExitCode(proberPath, $"-loglevel quiet -f lavfi -i nullsrc=s=1x1:d=1 -{option}");
         }
 
         private IEnumerable<string> GetCodecs(Codec codec)

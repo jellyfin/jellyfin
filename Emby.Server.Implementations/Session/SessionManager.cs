@@ -1808,7 +1808,6 @@ namespace Emby.Server.Implementations.Session
                 fields.Remove(ItemFields.DateLastSaved);
                 fields.Remove(ItemFields.DisplayPreferencesId);
                 fields.Remove(ItemFields.Etag);
-                fields.Remove(ItemFields.InheritedParentalRatingValue);
                 fields.Remove(ItemFields.ItemCounts);
                 fields.Remove(ItemFields.MediaSourceCount);
                 fields.Remove(ItemFields.MediaStreams);

@@ -109,15 +109,18 @@ public partial class StripCollageBuilder
 
         // resize to the same aspect as the original
         var backdropHeight = Math.Abs(width * backdrop.Height / backdrop.Width);
-        using var residedBackdrop = SkiaEncoder.ResizeImage(backdrop, new SKImageInfo(width, backdropHeight, backdrop.ColorType, backdrop.AlphaType, backdrop.ColorSpace));
+        using var resizedBackdrop = SkiaEncoder.ResizeImage(backdrop, new SKImageInfo(width, backdropHeight, backdrop.ColorType, backdrop.AlphaType, backdrop.ColorSpace));
+        using var paint = new SKPaint();
+        paint.FilterQuality = SKFilterQuality.High;
         // draw the backdrop
-        canvas.DrawImage(residedBackdrop, 0, 0);
+        canvas.DrawImage(resizedBackdrop, 0, 0, paint);
 
         // draw shadow rectangle
         using var paintColor = new SKPaint
         {
             Color = SKColors.Black.WithAlpha(0x78),
-            Style = SKPaintStyle.Fill
+            Style = SKPaintStyle.Fill,
+            FilterQuality = SKFilterQuality.High
         };
         canvas.DrawRect(0, 0, width, height, paintColor);
 
@@ -131,7 +134,8 @@ public partial class StripCollageBuilder
             TextSize = 112,
             TextAlign = SKTextAlign.Left,
             Typeface = typeFace,
-            IsAntialias = true
+            IsAntialias = true,
+            FilterQuality = SKFilterQuality.High
         };
 
         // scale down text to 90% of the width if text is larger than 95% of the width
@@ -188,14 +192,16 @@ public partial class StripCollageBuilder
                     continue;
                 }
 
-                // Scale image. The FromBitmap creates a copy
+                // Scale image
                 var imageInfo = new SKImageInfo(cellWidth, cellHeight, currentBitmap.ColorType, currentBitmap.AlphaType, currentBitmap.ColorSpace);
                 using var resizeImage = SkiaEncoder.ResizeImage(currentBitmap, imageInfo);
+                using var paint = new SKPaint();
+                paint.FilterQuality = SKFilterQuality.High;
 
                 // draw this image into the strip at the next position
                 var xPos = x * cellWidth;
                 var yPos = y * cellHeight;
-                canvas.DrawImage(resizeImage, xPos, yPos);
+                canvas.DrawImage(resizeImage, xPos, yPos, paint);
             }
         }
 

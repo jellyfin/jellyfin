@@ -863,6 +863,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<int?>("ElPresentFlag")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool?>("Hdr10PlusPresentFlag")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int?>("Height")
                         .HasColumnType("INTEGER");
 

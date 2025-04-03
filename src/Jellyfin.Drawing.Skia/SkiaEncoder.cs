@@ -557,20 +557,14 @@ public class SkiaEncoder : IImageEncoder
             canvas.Clear(SKColor.Parse(options.BackgroundColor));
         }
 
+        using var paint = new SKPaint();
         // Add blur if option is present
-        if (blur > 0)
-        {
-            // create image from resized bitmap to apply blur
-            using var paint = new SKPaint();
-            using var filter = SKImageFilter.CreateBlur(blur, blur);
-            paint.ImageFilter = filter;
-            canvas.DrawBitmap(resizedBitmap, SKRect.Create(width, height), paint);
-        }
-        else
-        {
-            // draw resized bitmap onto canvas
-            canvas.DrawBitmap(resizedBitmap, SKRect.Create(width, height));
-        }
+        using var filter = blur > 0 ? SKImageFilter.CreateBlur(blur, blur) : null;
+        paint.FilterQuality = SKFilterQuality.High;
+        paint.ImageFilter = filter;
+
+        // create image from resized bitmap to apply blur
+        canvas.DrawBitmap(resizedBitmap, SKRect.Create(width, height), paint);
 
         // If foreground layer present then draw
         if (hasForegroundColor)
