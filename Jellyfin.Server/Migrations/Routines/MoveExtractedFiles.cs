@@ -124,6 +124,9 @@ public class MoveExtractedFiles : IDatabaseMigrationRoutine
             Directory.Delete(subdir, true);
         }
 
+        // Remove old cache path
+        Directory.Delete(Path.Join(_appPaths.CachePath, "attachments"));
+
         _logger.LogInformation("Cleaned up left over subtitles and attachments.");
     }
 
@@ -166,28 +169,35 @@ public class MoveExtractedFiles : IDatabaseMigrationRoutine
             }
         }
 
-        foreach (var attachment in _mediaSourceManager.GetMediaAttachments(item.Id))
+        var attachments = _mediaSourceManager.GetMediaAttachments(item.Id).Where(a => !string.Equals(a.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase)).ToList();
+        var shouldExtractOneByOne = attachments.Any(a => !string.IsNullOrEmpty(a.FileName)
+                                                                              && (a.FileName.Contains('/', StringComparison.OrdinalIgnoreCase) || a.FileName.Contains('\\', StringComparison.OrdinalIgnoreCase)));
+        foreach (var attachment in attachments)
         {
             var attachmentIndex = attachment.Index;
-            var oldAttachmentCachePath = GetOldAttachmentCachePath(item.Path, attachmentIndex);
-            if (string.IsNullOrEmpty(oldAttachmentCachePath) || !File.Exists(oldAttachmentCachePath))
+            var oldAttachmentPath = GetOldAttachmentDataPath(item.Path, attachmentIndex);
+            if (string.IsNullOrEmpty(oldAttachmentPath) || !File.Exists(oldAttachmentPath))
             {
-                continue;
+                oldAttachmentPath = GetOldAttachmentCachePath(itemIdString, attachment, shouldExtractOneByOne);
+                if (string.IsNullOrEmpty(oldAttachmentPath) || !File.Exists(oldAttachmentPath))
+                {
+                    continue;
+                }
             }
 
-            var newAttachmentCachePath = _pathManager.GetAttachmentPath(itemIdString, attachment.FileName ?? attachmentIndex.ToString(CultureInfo.InvariantCulture));
-            if (File.Exists(newAttachmentCachePath))
+            var newAttachmentPath = _pathManager.GetAttachmentPath(itemIdString, attachment.FileName ?? attachmentIndex.ToString(CultureInfo.InvariantCulture));
+            if (File.Exists(newAttachmentPath))
             {
-                File.Delete(oldAttachmentCachePath);
+                File.Delete(oldAttachmentPath);
             }
             else
             {
-                var newDirectory = Path.GetDirectoryName(newAttachmentCachePath);
+                var newDirectory = Path.GetDirectoryName(newAttachmentPath);
                 if (newDirectory is not null)
                 {
                     Directory.CreateDirectory(newDirectory);
-                    File.Move(oldAttachmentCachePath, newAttachmentCachePath, false);
-                    _logger.LogDebug("Moved attachment {Index} for {Item} from {Source} to {Destination}", attachmentIndex, item.Id, oldAttachmentCachePath, newAttachmentCachePath);
+                    File.Move(oldAttachmentPath, newAttachmentPath, false);
+                    _logger.LogDebug("Moved attachment {Index} for {Item} from {Source} to {Destination}", attachmentIndex, item.Id, oldAttachmentPath, newAttachmentPath);
 
                     modified = true;
                 }
@@ -197,7 +207,7 @@ public class MoveExtractedFiles : IDatabaseMigrationRoutine
         return modified;
     }
 
-    private string? GetOldAttachmentCachePath(string? mediaPath, int attachmentStreamIndex)
+    private string? GetOldAttachmentDataPath(string? mediaPath, int attachmentStreamIndex)
     {
         if (mediaPath is null)
         {
@@ -228,6 +238,22 @@ public class MoveExtractedFiles : IDatabaseMigrationRoutine
         }
 
         return Path.Join(_appPaths.DataPath, "attachments", filename[..1], filename);
+    }
+
+    private string? GetOldAttachmentCachePath(string mediaSourceId, MediaAttachment attachment, bool shouldExtractOneByOne)
+    {
+        var attachmentFolderPath = Path.Join(_appPaths.CachePath, "attachments", mediaSourceId);
+        if (shouldExtractOneByOne)
+        {
+            return Path.Join(attachmentFolderPath, attachment.Index.ToString(CultureInfo.InvariantCulture));
+        }
+
+        if (string.IsNullOrEmpty(attachment.FileName))
+        {
+            return null;
+        }
+
+        return Path.Join(attachmentFolderPath, attachment.FileName);
     }
 
     private string? GetOldSubtitleCachePath(string path, int streamIndex, string outputSubtitleExtension)
