@@ -407,6 +407,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<DateTime>("DateModified")
                         .HasColumnType("TEXT");
 
+                    b.Property<byte[]>("FileHash")
+                        .HasColumnType("BLOB");
+
                     b.Property<int>("Height")
                         .HasColumnType("INTEGER");
 

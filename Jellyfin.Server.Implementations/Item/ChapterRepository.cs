@@ -47,16 +47,10 @@ public class ChapterRepository : IChapterRepository
     public ChapterInfo? GetChapter(Guid baseItemId, int index)
     {
         using var context = _dbProvider.CreateDbContext();
-        var chapter = context.Chapters.AsNoTracking()
-            .Select(e => new
-            {
-                chapter = e,
-                baseItemPath = e.Item.Path
-            })
-            .FirstOrDefault(e => e.chapter.ItemId.Equals(baseItemId) && e.chapter.ChapterIndex == index);
+        var chapter = context.Chapters.AsNoTracking().FirstOrDefault(e => e.ItemId.Equals(baseItemId) && e.ChapterIndex == index);
         if (chapter is not null)
         {
-            return Map(chapter.chapter, chapter.baseItemPath!);
+            return Map(chapter);
         }
 
         return null;
@@ -67,13 +61,7 @@ public class ChapterRepository : IChapterRepository
     {
         using var context = _dbProvider.CreateDbContext();
         return context.Chapters.AsNoTracking().Where(e => e.ItemId.Equals(baseItemId))
-            .Select(e => new
-            {
-                chapter = e,
-                baseItemPath = e.Item.Path
-            })
-            .AsEnumerable()
-            .Select(e => Map(e.chapter, e.baseItemPath!))
+            .Select(e => Map(e))
             .ToArray();
     }
 
@@ -109,16 +97,17 @@ public class ChapterRepository : IChapterRepository
         };
     }
 
-    private ChapterInfo Map(Chapter chapterInfo, string baseItemPath)
+    private ChapterInfo Map(Chapter chapter)
     {
-        var chapterEntity = new ChapterInfo()
+        var chapterInfo = new ChapterInfo()
         {
-            StartPositionTicks = chapterInfo.StartPositionTicks,
-            ImageDateModified = chapterInfo.ImageDateModified.GetValueOrDefault(),
-            ImagePath = chapterInfo.ImagePath,
-            Name = chapterInfo.Name,
+            StartPositionTicks = chapter.StartPositionTicks,
+            ImageDateModified = chapter.ImageDateModified.GetValueOrDefault(),
+            ImagePath = chapter.ImagePath,
+            Name = chapter.Name,
         };
-        chapterEntity.ImageTag = _imageProcessor.GetImageCacheTag(baseItemPath, chapterEntity.ImageDateModified);
-        return chapterEntity;
+        chapterInfo.ImageTag = _imageProcessor.GetImageCacheTag(chapter.Item, chapterInfo);
+
+        return chapterInfo;
     }
 }

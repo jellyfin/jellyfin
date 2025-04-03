@@ -1136,6 +1136,7 @@ public sealed class BaseItemRepository
             Id = Guid.NewGuid(),
             Path = e.Path,
             Blurhash = e.BlurHash is null ? null : Encoding.UTF8.GetBytes(e.BlurHash),
+            FileHash = e.FileHash is null ? null : Encoding.UTF8.GetBytes(e.FileHash),
             DateModified = e.DateModified,
             Height = e.Height,
             Width = e.Width,

@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <PackageReference Include="AsyncKeyedLock" />
+    <PackageReference Include="System.IO.Hashing" />
   </ItemGroup>
 
 </Project>
