@@ -19,6 +19,7 @@ using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Extensions;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
@@ -55,6 +56,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         private readonly ISubtitleEncoder _subtitleEncoder;
         private readonly IConfiguration _config;
         private readonly IConfigurationManager _configurationManager;
+        private readonly IPathManager _pathManager;
 
         // i915 hang was fixed by linux 6.2 (3f882f2)
         private readonly Version _minKerneli915Hang = new Version(5, 18);
@@ -153,13 +155,15 @@ namespace MediaBrowser.Controller.MediaEncoding
             IMediaEncoder mediaEncoder,
             ISubtitleEncoder subtitleEncoder,
             IConfiguration config,
-            IConfigurationManager configurationManager)
+            IConfigurationManager configurationManager,
+            IPathManager pathManager)
         {
             _appPaths = appPaths;
             _mediaEncoder = mediaEncoder;
             _subtitleEncoder = subtitleEncoder;
             _config = config;
             _configurationManager = configurationManager;
+            _pathManager = pathManager;
         }
 
         private enum DynamicHdrMetadataRemovalPlan
@@ -1785,7 +1789,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var alphaParam = enableAlpha ? ":alpha=1" : string.Empty;
             var sub2videoParam = enableSub2video ? ":sub2video=1" : string.Empty;
 
-            var fontPath = Path.Combine(_appPaths.CachePath, "attachments", state.MediaSource.Id);
+            var fontPath = _pathManager.GetAttachmentFolderPath(state.MediaSource.Id);
             var fontParam = string.Format(
                 CultureInfo.InvariantCulture,
                 ":fontsdir='{0}'",

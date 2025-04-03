@@ -80,6 +80,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 
         using (var operation = GetPreparedDbContext("Cleanup database"))
         {
+            operation.JellyfinDbContext.AttachmentStreamInfos.ExecuteDelete();
             operation.JellyfinDbContext.BaseItems.ExecuteDelete();
             operation.JellyfinDbContext.ItemValues.ExecuteDelete();
             operation.JellyfinDbContext.UserData.ExecuteDelete();
@@ -246,6 +247,29 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             }
 
             using (new TrackedMigrationStep($"saving {operation.JellyfinDbContext.MediaStreamInfos.Local.Count} MediaStreamInfos entries", _logger))
+            {
+                operation.JellyfinDbContext.SaveChanges();
+            }
+        }
+
+        using (var operation = GetPreparedDbContext("moving AttachmentStreamInfos"))
+        {
+            const string mediaAttachmentQuery =
+            """
+            SELECT ItemId, AttachmentIndex, Codec, CodecTag, Comment, filename, MIMEType
+            FROM mediaattachments
+            WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = mediaattachments.ItemId)
+            """;
+
+            using (new TrackedMigrationStep("loading AttachmentStreamInfos", _logger))
+            {
+                foreach (SqliteDataReader dto in connection.Query(mediaAttachmentQuery))
+                {
+                    operation.JellyfinDbContext.AttachmentStreamInfos.Add(GetMediaAttachment(dto));
+                }
+            }
+
+            using (new TrackedMigrationStep($"saving {operation.JellyfinDbContext.AttachmentStreamInfos.Local.Count} AttachmentStreamInfos entries", _logger))
             {
                 operation.JellyfinDbContext.SaveChanges();
             }
@@ -705,6 +729,48 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         // {
         //     item.Rotation = rotation;
         // }
+
+        return item;
+    }
+
+    /// <summary>
+    /// Gets the attachment.
+    /// </summary>
+    /// <param name="reader">The reader.</param>
+    /// <returns>MediaAttachment.</returns>
+    private AttachmentStreamInfo GetMediaAttachment(SqliteDataReader reader)
+    {
+        var item = new AttachmentStreamInfo
+        {
+            Index = reader.GetInt32(1),
+            Item = null!,
+            ItemId = reader.GetGuid(0),
+        };
+
+        if (reader.TryGetString(2, out var codec))
+        {
+            item.Codec = codec;
+        }
+
+        if (reader.TryGetString(3, out var codecTag))
+        {
+            item.CodecTag = codecTag;
+        }
+
+        if (reader.TryGetString(4, out var comment))
+        {
+            item.Comment = comment;
+        }
+
+        if (reader.TryGetString(5, out var fileName))
+        {
+            item.Filename = fileName;
+        }
+
+        if (reader.TryGetString(6, out var mimeType))
+        {
+            item.MimeType = mimeType;
+        }
 
         return item;
     }

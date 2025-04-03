@@ -120,7 +120,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Codec")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("CodecTag")

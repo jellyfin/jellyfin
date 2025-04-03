@@ -54,6 +54,7 @@ namespace Jellyfin.Server.Migrations
             typeof(Routines.FixAudioData),
             typeof(Routines.RemoveDuplicatePlaylistChildren),
             typeof(Routines.MigrateLibraryDb),
+            typeof(Routines.MoveExtractedFiles),
             typeof(Routines.MigrateRatingLevels),
             typeof(Routines.MoveTrickplayFiles),
             typeof(Routines.MigrateKeyframeData),

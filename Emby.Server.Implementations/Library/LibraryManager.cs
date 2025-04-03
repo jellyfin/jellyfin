@@ -492,7 +492,24 @@ namespace Emby.Server.Implementations.Library
 
             if (item is Video video)
             {
+                // Trickplay
                 list.Add(_pathManager.GetTrickplayDirectory(video));
+
+                // Subtitles and attachments
+                foreach (var mediaSource in item.GetMediaSources(false))
+                {
+                    var subtitleFolder = _pathManager.GetSubtitleFolderPath(mediaSource.Id);
+                    if (subtitleFolder is not null)
+                    {
+                        list.Add(subtitleFolder);
+                    }
+
+                    var attachmentFolder = _pathManager.GetAttachmentFolderPath(mediaSource.Id);
+                    if (attachmentFolder is not null)
+                    {
+                        list.Add(attachmentFolder);
+                    }
+                }
             }
 
             return list;
