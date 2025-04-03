@@ -1419,9 +1419,9 @@ public class DynamicHlsController : BaseJellyfinApiController
                 TranscodingJobType,
                 cancellationTokenSource.Token)
             .ConfigureAwait(false);
-
+        var mediaSourceId = state.BaseRequest.MediaSourceId;
         var request = new CreateMainPlaylistRequest(
-            Guid.Parse(state.BaseRequest.MediaSourceId),
+            mediaSourceId is null ? null : Guid.Parse(mediaSourceId),
             state.MediaPath,
             state.SegmentLength * 1000,
             state.RunTimeTicks ?? 0,

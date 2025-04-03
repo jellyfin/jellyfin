@@ -18,7 +18,7 @@ public class CreateMainPlaylistRequest
     /// <param name="endpointPrefix">The URI prefix for the relative URL in the playlist.</param>
     /// <param name="queryString">The desired query string to append (must start with ?).</param>
     /// <param name="isRemuxingVideo">Whether the video is being remuxed.</param>
-    public CreateMainPlaylistRequest(Guid mediaSourceId, string filePath, int desiredSegmentLengthMs, long totalRuntimeTicks, string segmentContainer, string endpointPrefix, string queryString, bool isRemuxingVideo)
+    public CreateMainPlaylistRequest(Guid? mediaSourceId, string filePath, int desiredSegmentLengthMs, long totalRuntimeTicks, string segmentContainer, string endpointPrefix, string queryString, bool isRemuxingVideo)
     {
         MediaSourceId = mediaSourceId;
         FilePath = filePath;
@@ -33,7 +33,7 @@ public class CreateMainPlaylistRequest
     /// <summary>
     /// Gets the media source id.
     /// </summary>
-    public Guid MediaSourceId { get; }
+    public Guid? MediaSourceId { get; }
 
     /// <summary>
     /// Gets the file path.
