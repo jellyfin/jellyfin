@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -38,7 +40,7 @@ namespace Emby.Server.Implementations.Localization
 
         private List<CultureDto> _cultures = [];
 
-        private Dictionary<string, string> _iso6392BtoT = [];
+        private FrozenDictionary<string, string> _iso6392BtoT = null!;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LocalizationManager" /> class.
@@ -155,7 +157,7 @@ namespace Emby.Server.Implementations.Localization
                 }
 
                 _cultures = list;
-                _iso6392BtoT = iso6392BtoTdict;
+                _iso6392BtoT = iso6392BtoTdict.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
             }
         }
 
@@ -514,19 +516,25 @@ namespace Emby.Server.Implementations.Localization
             yield return new LocalizationOption("廣東話 (香港)", "zh-HK");
         }
 
-        /// <summary>
-        /// Returns the language in ISO 639-2/T when the input is ISO 639-2/B.
-        /// </summary>
-        /// <param name="isoB">The language in ISO 639-2/B.</param>
-        /// <returns>The language in ISO 639-2/T.</returns>
-        public string GetISO6392TFromB(string isoB)
+        /// <inheritdoc />
+        public bool TryGetISO6392TFromB(string isoB, [NotNullWhen(true)] out string? isoT)
         {
-            if (_iso6392BtoT.TryGetValue(isoB, out string? result) && !string.IsNullOrEmpty(result))
+            // Unlikely case the dictionary is not (yet) initialized properly
+            if (_iso6392BtoT == null)
             {
-                return result;
+                isoT = null;
+                return false;
             }
 
-            return isoB;
+            var result = _iso6392BtoT.TryGetValue(isoB, out isoT) && !string.IsNullOrEmpty(isoT);
+
+            // Ensure the ISO code being null if the result is false
+            if (!result)
+            {
+                isoT = null;
+            }
+
+            return result;
         }
     }
 }

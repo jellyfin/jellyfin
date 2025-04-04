@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Globalization;
@@ -66,6 +67,7 @@ public interface ILocalizationManager
     /// Returns the language in ISO 639-2/T when the input is ISO 639-2/B.
     /// </summary>
     /// <param name="isoB">The language in ISO 639-2/B.</param>
-    /// <returns>The language in ISO 639-2/T.</returns>
-    public string GetISO6392TFromB(string isoB);
+    /// <param name="isoT">The language in ISO 639-2/T.</param>
+    /// <returns>Whether the language could be converted.</returns>
+    public bool TryGetISO6392TFromB(string isoB, [NotNullWhen(true)] out string? isoT);
 }
