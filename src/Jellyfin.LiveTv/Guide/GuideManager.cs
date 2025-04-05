@@ -458,6 +458,13 @@ public class GuideManager : IGuideManager
             }
         }
 
+        if (!string.Equals(channelInfo.ChannelGroup, item.ChannelGroup, StringComparison.Ordinal))
+        {
+            forceUpdate = true;
+        }
+
+        item.ChannelGroup = channelInfo.ChannelGroup;
+
         if (isNew)
         {
             _libraryManager.CreateItem(item, parentFolder);
