@@ -25,6 +25,7 @@ namespace MediaBrowser.Common.Plugins
             TargetAbi = string.Empty;
             Version = string.Empty;
             Assemblies = Array.Empty<string>();
+            MaximumAbi = string.Empty;
         }
 
         /// <summary>
@@ -113,5 +114,11 @@ namespace MediaBrowser.Common.Plugins
         /// </summary>
         [JsonPropertyName("assemblies")]
         public IReadOnlyList<string> Assemblies { get; set; }
+
+        /// <summary>
+        /// Gets or sets the maximum compatibility version of the plugin.
+        /// </summary>
+        [JsonPropertyName("maximumAbi")]
+        public string MaximumAbi { get; set; }
     }
 }
