@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
-using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Model.Dto;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -29,18 +27,6 @@ public class ChapterRepository : IChapterRepository
     {
         _dbProvider = dbProvider;
         _imageProcessor = imageProcessor;
-    }
-
-    /// <inheritdoc cref="IChapterRepository"/>
-    public ChapterInfo? GetChapter(BaseItemDto baseItem, int index)
-    {
-        return GetChapter(baseItem.Id, index);
-    }
-
-    /// <inheritdoc cref="IChapterRepository"/>
-    public IReadOnlyList<ChapterInfo> GetChapters(BaseItemDto baseItem)
-    {
-        return GetChapters(baseItem.Id);
     }
 
     /// <inheritdoc cref="IChapterRepository"/>

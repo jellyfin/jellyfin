@@ -70,4 +70,10 @@ public class PathManager : IPathManager
             ? Path.Combine(item.ContainingFolderPath, Path.ChangeExtension(item.Path, ".trickplay"))
             : Path.Join(_config.ApplicationPaths.TrickplayPath, id[..2], id);
     }
+
+    /// <inheritdoc/>
+    public string GetChapterImageFolderPath(BaseItem item)
+    {
+        return Path.Combine(item.GetInternalMetadataPath(), "chapters");
+    }
 }
