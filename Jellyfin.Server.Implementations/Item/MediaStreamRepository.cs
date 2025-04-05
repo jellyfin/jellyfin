@@ -100,7 +100,18 @@ public class MediaStreamRepository : IMediaStreamRepository
 
         dto.IsAVC = entity.IsAvc;
         dto.Codec = entity.Codec;
-        dto.Language = entity.Language;
+
+        var language = entity.Language;
+
+        // Check if the language has multiple three letter ISO codes
+        // if yes choose the first as that is the ISO 639-2/T code we're needing
+        if (language != null && _localization.TryGetISO6392TFromB(language, out string? isoT))
+        {
+            language = isoT;
+        }
+
+        dto.Language = language;
+
         dto.ChannelLayout = entity.ChannelLayout;
         dto.Profile = entity.Profile;
         dto.AspectRatio = entity.AspectRatio;
