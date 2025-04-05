@@ -42,15 +42,17 @@ public class PathManager : IPathManager
     /// <inheritdoc />
     public string GetAttachmentFolderPath(string mediaSourceId)
     {
-        var id = Guid.Parse(mediaSourceId);
-        return Path.Join(AttachmentCachePath, id.ToString("D", CultureInfo.InvariantCulture));
+        var id = Guid.Parse(mediaSourceId).ToString("D", CultureInfo.InvariantCulture).AsSpan();
+
+        return Path.Join(AttachmentCachePath, id[..2], id);
     }
 
     /// <inheritdoc />
     public string GetSubtitleFolderPath(string mediaSourceId)
     {
-        var id = Guid.Parse(mediaSourceId);
-        return Path.Join(SubtitleCachePath, id.ToString("D", CultureInfo.InvariantCulture));
+        var id = Guid.Parse(mediaSourceId).ToString("D", CultureInfo.InvariantCulture).AsSpan();
+
+        return Path.Join(SubtitleCachePath, id[..2], id);
     }
 
     /// <inheritdoc />
@@ -62,11 +64,10 @@ public class PathManager : IPathManager
     /// <inheritdoc />
     public string GetTrickplayDirectory(BaseItem item, bool saveWithMedia = false)
     {
-        var basePath = _config.ApplicationPaths.TrickplayPath;
-        var idString = item.Id.ToString("D", CultureInfo.InvariantCulture);
+        var id = item.Id.ToString("D", CultureInfo.InvariantCulture).AsSpan();
 
         return saveWithMedia
             ? Path.Combine(item.ContainingFolderPath, Path.ChangeExtension(item.Path, ".trickplay"))
-            : Path.Combine(basePath, idString);
+            : Path.Join(_config.ApplicationPaths.TrickplayPath, id[..2], id);
     }
 }
