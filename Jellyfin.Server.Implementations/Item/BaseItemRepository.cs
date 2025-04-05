@@ -535,7 +535,7 @@ public sealed class BaseItemRepository
                 if (!localItemValueCache.TryGetValue(itemValue, out var refValue))
                 {
                     refValue = context.ItemValues
-                                .Where(f => f.CleanValue == GetCleanValue(itemValue.Value) && (int)f.Type == itemValue.MagicNumber)
+                                .Where(f => f.Value == itemValue.Value && (int)f.Type == itemValue.MagicNumber)
                                 .Select(e => e.ItemValueId)
                                 .FirstOrDefault();
                 }

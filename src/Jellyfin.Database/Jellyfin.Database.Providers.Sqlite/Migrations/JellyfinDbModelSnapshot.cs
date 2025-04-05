@@ -722,7 +722,9 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasKey("ItemValueId");
 
-                    b.HasIndex("Type", "CleanValue")
+                    b.HasIndex("Type", "CleanValue");
+
+                    b.HasIndex("Type", "Value")
                         .IsUnique();
 
                     b.ToTable("ItemValues");
