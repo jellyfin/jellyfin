@@ -140,6 +140,8 @@ namespace MediaBrowser.Controller.Entities
 
         public bool? IsHD { get; set; }
 
+        public bool? IsSD { get; set; }
+
         public bool? IsLocked { get; set; }
 
         public bool? IsPlaceHolder { get; set; }
