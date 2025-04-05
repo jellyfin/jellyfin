@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using BitFaster.Caching;
 using Emby.Server.Implementations.Localization;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Configuration;
@@ -49,6 +50,30 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             Assert.Equal("German", germany.Name);
             Assert.Contains("deu", germany.ThreeLetterISOLanguageNames);
             Assert.Contains("ger", germany.ThreeLetterISOLanguageNames);
+        }
+
+        [Fact]
+        public async Task TryGetISO6392TFromB_Success()
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "de-DE"
+            });
+            await localizationManager.LoadAll();
+
+            string? isoT;
+
+            // Translation ger -> deu
+            Assert.True(localizationManager.TryGetISO6392TFromB("ger", out isoT));
+            Assert.Equal("deu", isoT);
+
+            // chi -> zho
+            Assert.True(localizationManager.TryGetISO6392TFromB("chi", out isoT));
+            Assert.Equal("zho", isoT);
+
+            // eng is already ISO 639-2/T
+            Assert.False(localizationManager.TryGetISO6392TFromB("eng", out isoT));
+            Assert.Null(isoT);
         }
 
         [Theory]
