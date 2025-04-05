@@ -1423,8 +1423,24 @@ public sealed class BaseItemRepository
 
         if (!string.IsNullOrEmpty(filter.SearchTerm))
         {
-            var searchTerm = filter.SearchTerm.ToLower();
-            baseQuery = baseQuery.Where(e => e.CleanName!.ToLower().Contains(searchTerm) || (e.OriginalTitle != null && e.OriginalTitle.ToLower().Contains(searchTerm)));
+            var searchTerm = filter.SearchTerm.ToLower().Replace(".", " ").Trim();
+
+            var tokens = searchTerm.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+            // Construct the SQL FTS query
+            // This is a simple OR query for all tokens
+            var orQuery = string.Join(" OR ", tokens.Select(t => t + "*"));
+
+            var v = context.BaseItems.FromSqlRaw(
+                @"
+                SELECT b.Id FROM BaseItems b
+                JOIN item_search_fts fts ON b.Id = fts.id
+                WHERE item_search_fts MATCH {0}
+                ORDER BY rank",
+                orQuery);
+
+            // add ids to the query
+            baseQuery = baseQuery.Where(e => v.Any(f => f.Id == e.Id));
         }
 
         if (filter.IsFolder.HasValue)
