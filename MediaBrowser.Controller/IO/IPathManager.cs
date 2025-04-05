@@ -1,5 +1,5 @@
+using System.Collections.Generic;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Controller.IO;
 
@@ -46,4 +46,11 @@ public interface IPathManager
     /// <param name="mediaSourceId">The media source id.</param>
     /// <returns>The absolute path.</returns>
     public string GetAttachmentFolderPath(string mediaSourceId);
+
+    /// <summary>
+    /// Gets the paths of extracted data folders.
+    /// </summary>
+    /// <param name="item">The base item.</param>
+    /// <returns>The absolute paths.</returns>
+    public IReadOnlyList<string> GetExtractedDataPaths(BaseItem item);
 }

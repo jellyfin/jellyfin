@@ -634,6 +634,7 @@ public sealed class BaseItemRepository
         dto.Size = entity.Size;
         dto.Genres = entity.Genres?.Split('|') ?? [];
         dto.DateCreated = entity.DateCreated.GetValueOrDefault();
+        dto.DateLastModifiedFilesystem = entity.DateLastModifiedFilesystem.GetValueOrDefault();
         dto.DateModified = entity.DateModified.GetValueOrDefault();
         dto.ChannelId = entity.ChannelId ?? Guid.Empty;
         dto.DateLastRefreshed = entity.DateLastRefreshed.GetValueOrDefault();
@@ -799,6 +800,7 @@ public sealed class BaseItemRepository
         entity.Size = dto.Size;
         entity.Genres = string.Join('|', dto.Genres);
         entity.DateCreated = dto.DateCreated;
+        entity.DateLastModifiedFilesystem = dto.DateLastModifiedFilesystem;
         entity.DateModified = dto.DateModified;
         entity.ChannelId = dto.ChannelId;
         entity.DateLastRefreshed = dto.DateLastRefreshed;

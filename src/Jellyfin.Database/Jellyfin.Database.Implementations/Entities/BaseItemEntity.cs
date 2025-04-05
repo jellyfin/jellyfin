@@ -58,6 +58,8 @@ public class BaseItemEntity
 
     public DateTime? DateModified { get; set; }
 
+    public DateTime? DateLastModifiedFilesystem { get; set; }
+
     public bool IsSeries { get; set; }
 
     public string? EpisodeTitle { get; set; }

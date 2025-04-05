@@ -220,7 +220,6 @@ namespace MediaBrowser.Providers.MediaInfo
                 mediaAttachments = mediaInfo.MediaAttachments;
                 video.TotalBitrate = mediaInfo.Bitrate;
                 video.RunTimeTicks = mediaInfo.RunTimeTicks;
-                video.Size = mediaInfo.Size;
                 video.Container = mediaInfo.Container;
 
                 chapters = mediaInfo.Chapters ?? Array.Empty<ChapterInfo>();

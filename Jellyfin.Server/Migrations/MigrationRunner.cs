@@ -58,6 +58,7 @@ namespace Jellyfin.Server.Migrations
             typeof(Routines.MigrateRatingLevels),
             typeof(Routines.MoveTrickplayFiles),
             typeof(Routines.MigrateKeyframeData),
+            typeof(Routines.RefreshFilesystemInformation),
         };
 
         /// <summary>
