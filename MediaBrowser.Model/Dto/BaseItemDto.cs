@@ -3,8 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using Jellyfin.Data.Entities;
+using System.ComponentModel;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Library;
@@ -586,6 +587,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the type of the media.
         /// </summary>
         /// <value>The type of the media.</value>
+        [DefaultValue(MediaType.Unknown)]
         public MediaType MediaType { get; set; }
 
         /// <summary>

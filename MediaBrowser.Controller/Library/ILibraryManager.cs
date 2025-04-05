@@ -4,8 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -426,8 +427,9 @@ namespace MediaBrowser.Controller.Library
         /// Gets the season number from path.
         /// </summary>
         /// <param name="path">The path.</param>
+        /// <param name="parentId">The parent id.</param>
         /// <returns>System.Nullable&lt;System.Int32&gt;.</returns>
-        int? GetSeasonNumberFromPath(string path);
+        int? GetSeasonNumberFromPath(string path, Guid? parentId);
 
         /// <summary>
         /// Fills the missing episode numbers from path.
@@ -564,6 +566,24 @@ namespace MediaBrowser.Controller.Library
         /// <param name="parents">Items to use for query.</param>
         /// <returns>List of items.</returns>
         IReadOnlyList<BaseItem> GetItemList(InternalItemsQuery query, List<BaseItem> parents);
+
+        /// <summary>
+        /// Gets the TVShow/Album items for Latest api.
+        /// </summary>
+        /// <param name="query">The query to use.</param>
+        /// <param name="parents">Items to use for query.</param>
+        /// <param name="collectionType">Collection Type.</param>
+        /// <returns>List of items.</returns>
+        IReadOnlyList<BaseItem> GetLatestItemList(InternalItemsQuery query, IReadOnlyList<BaseItem> parents, CollectionType collectionType);
+
+        /// <summary>
+        /// Gets the list of series presentation keys for next up.
+        /// </summary>
+        /// <param name="query">The query to use.</param>
+        /// <param name="parents">Items to use for query.</param>
+        /// <param name="dateCutoff">The minimum date for a series to have been most recently watched.</param>
+        /// <returns>List of series presentation keys.</returns>
+        IReadOnlyList<string> GetNextUpSeriesKeys(InternalItemsQuery query, IReadOnlyCollection<BaseItem> parents, DateTime dateCutoff);
 
         /// <summary>
         /// Gets the items result.

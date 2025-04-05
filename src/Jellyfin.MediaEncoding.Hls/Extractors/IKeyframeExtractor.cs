@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics.CodeAnalysis;
 using Jellyfin.MediaEncoding.Keyframes;
 
@@ -16,8 +17,9 @@ public interface IKeyframeExtractor
     /// <summary>
     /// Attempt to extract keyframes.
     /// </summary>
+    /// <param name="itemId">The item id.</param>
     /// <param name="filePath">The path to the file.</param>
     /// <param name="keyframeData">The keyframes.</param>
     /// <returns>A value indicating whether the keyframe extraction was successful.</returns>
-    bool TryExtractKeyframes(string filePath, [NotNullWhen(true)] out KeyframeData? keyframeData);
+    bool TryExtractKeyframes(Guid itemId, string filePath, [NotNullWhen(true)] out KeyframeData? keyframeData);
 }

@@ -35,11 +35,11 @@ using Emby.Server.Implementations.SyncPlay;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Database.Implementations;
 using Jellyfin.Drawing;
 using Jellyfin.MediaEncoding.Hls.Playlist;
 using Jellyfin.Networking.Manager;
 using Jellyfin.Networking.Udp;
-using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Item;
 using Jellyfin.Server.Implementations.MediaSegments;
 using MediaBrowser.Common;
@@ -57,6 +57,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Lyrics;
@@ -504,10 +505,12 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IChapterRepository, ChapterRepository>();
             serviceCollection.AddSingleton<IMediaAttachmentRepository, MediaAttachmentRepository>();
             serviceCollection.AddSingleton<IMediaStreamRepository, MediaStreamRepository>();
+            serviceCollection.AddSingleton<IKeyframeRepository, KeyframeRepository>();
             serviceCollection.AddSingleton<IItemTypeLookup, ItemTypeLookup>();
 
             serviceCollection.AddSingleton<IMediaEncoder, MediaBrowser.MediaEncoding.Encoder.MediaEncoder>();
             serviceCollection.AddSingleton<EncodingHelper>();
+            serviceCollection.AddSingleton<IPathManager, PathManager>();
 
             // TODO: Refactor to eliminate the circular dependencies here so that Lazy<T> isn't required
             serviceCollection.AddTransient(provider => new Lazy<ILibraryMonitor>(provider.GetRequiredService<ILibraryMonitor>));
@@ -572,10 +575,15 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Create services registered with the service container that need to be initialized at application startup.
         /// </summary>
+        /// <param name="startupConfig">The configuration used to initialise the application.</param>
         /// <returns>A task representing the service initialization operation.</returns>
-        public async Task InitializeServices()
+        public async Task InitializeServices(IConfiguration startupConfig)
         {
-            var jellyfinDb = await Resolve<IDbContextFactory<JellyfinDbContext>>().CreateDbContextAsync().ConfigureAwait(false);
+            var factory = Resolve<IDbContextFactory<JellyfinDbContext>>();
+            var provider = Resolve<IJellyfinDatabaseProvider>();
+            provider.DbContextFactory = factory;
+
+            var jellyfinDb = await factory.CreateDbContextAsync().ConfigureAwait(false);
             await using (jellyfinDb.ConfigureAwait(false))
             {
                 if ((await jellyfinDb.Database.GetPendingMigrationsAsync().ConfigureAwait(false)).Any())

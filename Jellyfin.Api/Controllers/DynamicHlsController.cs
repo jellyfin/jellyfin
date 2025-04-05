@@ -1419,8 +1419,9 @@ public class DynamicHlsController : BaseJellyfinApiController
                 TranscodingJobType,
                 cancellationTokenSource.Token)
             .ConfigureAwait(false);
-
+        var mediaSourceId = state.BaseRequest.MediaSourceId;
         var request = new CreateMainPlaylistRequest(
+            mediaSourceId is null ? null : Guid.Parse(mediaSourceId),
             state.MediaPath,
             state.SegmentLength * 1000,
             state.RunTimeTicks ?? 0,
@@ -1675,7 +1676,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         }
 
         var audioCodec = _encodingHelper.GetAudioEncoder(state);
-        var bitStreamArgs = EncodingHelper.GetAudioBitStreamArguments(state, state.Request.SegmentContainer, state.MediaSource.Container);
+        var bitStreamArgs = _encodingHelper.GetAudioBitStreamArguments(state, state.Request.SegmentContainer, state.MediaSource.Container);
 
         // opus, dts, truehd and flac (in FFmpeg 5 and older) are experimental in mp4 muxer
         var strictArgs = string.Empty;
@@ -1753,7 +1754,7 @@ public class DynamicHlsController : BaseJellyfinApiController
 
         if (channels.HasValue
             && (channels.Value != 2
-                || (state.AudioStream?.Channels != null && !useDownMixAlgorithm)))
+                || (state.AudioStream?.Channels is not null && !useDownMixAlgorithm)))
         {
             args += " -ac " + channels.Value;
         }
@@ -1822,10 +1823,11 @@ public class DynamicHlsController : BaseJellyfinApiController
             // Clients reporting Dolby Vision capabilities with fallbacks may only support the fallback layer.
             // Only enable Dolby Vision remuxing if the client explicitly declares support for profiles without fallbacks.
             var clientSupportsDoVi = requestedRange.Contains(VideoRangeType.DOVI.ToString(), StringComparison.OrdinalIgnoreCase);
-            var videoIsDoVi = state.VideoStream.VideoRangeType is VideoRangeType.DOVI or VideoRangeType.DOVIWithHDR10 or VideoRangeType.DOVIWithHLG or VideoRangeType.DOVIWithSDR;
+            var videoIsDoVi = EncodingHelper.IsDovi(state.VideoStream);
 
             if (EncodingHelper.IsCopyCodec(codec)
-                && (videoIsDoVi && clientSupportsDoVi))
+                && (videoIsDoVi && clientSupportsDoVi)
+                && !_encodingHelper.IsDoviRemoved(state))
             {
                 if (isActualOutputVideoCodecHevc)
                 {
@@ -1855,7 +1857,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             // If h264_mp4toannexb is ever added, do not use it for live tv.
             if (state.VideoStream is not null && !string.Equals(state.VideoStream.NalLengthSize, "0", StringComparison.OrdinalIgnoreCase))
             {
-                string bitStreamArgs = EncodingHelper.GetBitStreamArgs(state.VideoStream);
+                string bitStreamArgs = _encodingHelper.GetBitStreamArgs(state, MediaStreamType.Video);
                 if (!string.IsNullOrEmpty(bitStreamArgs))
                 {
                     args += " " + bitStreamArgs;

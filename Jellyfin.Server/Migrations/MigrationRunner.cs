@@ -2,10 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.Serialization;
+using Jellyfin.Database.Implementations;
+using Jellyfin.Server.Implementations;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Configuration;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -24,7 +29,8 @@ namespace Jellyfin.Server.Migrations
             typeof(PreStartupRoutines.CreateNetworkConfiguration),
             typeof(PreStartupRoutines.MigrateMusicBrainzTimeout),
             typeof(PreStartupRoutines.MigrateNetworkConfiguration),
-            typeof(PreStartupRoutines.MigrateEncodingOptions)
+            typeof(PreStartupRoutines.MigrateEncodingOptions),
+            typeof(PreStartupRoutines.RenameEnableGroupingIntoCollections)
         };
 
         /// <summary>
@@ -43,13 +49,15 @@ namespace Jellyfin.Server.Migrations
             typeof(Routines.RemoveDownloadImagesInAdvance),
             typeof(Routines.MigrateAuthenticationDb),
             typeof(Routines.FixPlaylistOwner),
-            typeof(Routines.MigrateRatingLevels),
             typeof(Routines.AddDefaultCastReceivers),
             typeof(Routines.UpdateDefaultPluginRepository),
             typeof(Routines.FixAudioData),
-            typeof(Routines.MoveTrickplayFiles),
             typeof(Routines.RemoveDuplicatePlaylistChildren),
             typeof(Routines.MigrateLibraryDb),
+            typeof(Routines.MoveExtractedFiles),
+            typeof(Routines.MigrateRatingLevels),
+            typeof(Routines.MoveTrickplayFiles),
+            typeof(Routines.MigrateKeyframeData),
         };
 
         /// <summary>
@@ -57,7 +65,8 @@ namespace Jellyfin.Server.Migrations
         /// </summary>
         /// <param name="host">CoreAppHost that hosts current version.</param>
         /// <param name="loggerFactory">Factory for making the logger.</param>
-        public static void Run(CoreAppHost host, ILoggerFactory loggerFactory)
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public static async Task Run(CoreAppHost host, ILoggerFactory loggerFactory)
         {
             var logger = loggerFactory.CreateLogger<MigrationRunner>();
             var migrations = _migrationTypes
@@ -67,7 +76,8 @@ namespace Jellyfin.Server.Migrations
 
             var migrationOptions = host.ConfigurationManager.GetConfiguration<MigrationOptions>(MigrationsListStore.StoreKey);
             HandleStartupWizardCondition(migrations, migrationOptions, host.ConfigurationManager.Configuration.IsStartupWizardCompleted, logger);
-            PerformMigrations(migrations, migrationOptions, options => host.ConfigurationManager.SaveConfiguration(MigrationsListStore.StoreKey, options), logger);
+            await PerformMigrations(migrations, migrationOptions, options => host.ConfigurationManager.SaveConfiguration(MigrationsListStore.StoreKey, options), logger, host.ServiceProvider.GetRequiredService<IJellyfinDatabaseProvider>())
+                .ConfigureAwait(false);
         }
 
         /// <summary>
@@ -75,7 +85,8 @@ namespace Jellyfin.Server.Migrations
         /// </summary>
         /// <param name="appPaths">Application paths.</param>
         /// <param name="loggerFactory">Factory for making the logger.</param>
-        public static void RunPreStartup(ServerApplicationPaths appPaths, ILoggerFactory loggerFactory)
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public static async Task RunPreStartup(ServerApplicationPaths appPaths, ILoggerFactory loggerFactory)
         {
             var logger = loggerFactory.CreateLogger<MigrationRunner>();
             var migrations = _preStartupMigrationTypes
@@ -95,7 +106,7 @@ namespace Jellyfin.Server.Migrations
                 : new ServerConfiguration();
 
             HandleStartupWizardCondition(migrations, migrationOptions, serverConfig.IsStartupWizardCompleted, logger);
-            PerformMigrations(migrations, migrationOptions, options => xmlSerializer.SerializeToFile(options, migrationConfigPath), logger);
+            await PerformMigrations(migrations, migrationOptions, options => xmlSerializer.SerializeToFile(options, migrationConfigPath), logger, null).ConfigureAwait(false);
         }
 
         private static void HandleStartupWizardCondition(IEnumerable<IMigrationRoutine> migrations, MigrationOptions migrationOptions, bool isStartWizardCompleted, ILogger logger)
@@ -111,38 +122,61 @@ namespace Jellyfin.Server.Migrations
             migrationOptions.Applied.AddRange(onlyOldInstalls.Select(m => (m.Id, m.Name)));
         }
 
-        private static void PerformMigrations(IMigrationRoutine[] migrations, MigrationOptions migrationOptions, Action<MigrationOptions> saveConfiguration, ILogger logger)
+        private static async Task PerformMigrations(
+            IMigrationRoutine[] migrations,
+            MigrationOptions migrationOptions,
+            Action<MigrationOptions> saveConfiguration,
+            ILogger logger,
+            IJellyfinDatabaseProvider? jellyfinDatabaseProvider)
         {
             // save already applied migrations, and skip them thereafter
             saveConfiguration(migrationOptions);
             var appliedMigrationIds = migrationOptions.Applied.Select(m => m.Id).ToHashSet();
+            var migrationsToBeApplied = migrations.Where(e => !appliedMigrationIds.Contains(e.Id)).ToArray();
 
-            for (var i = 0; i < migrations.Length; i++)
+            string? migrationKey = null;
+            if (jellyfinDatabaseProvider is not null && migrationsToBeApplied.Any(f => f is IDatabaseMigrationRoutine))
             {
-                var migrationRoutine = migrations[i];
-                if (appliedMigrationIds.Contains(migrationRoutine.Id))
-                {
-                    logger.LogDebug("Skipping migration '{Name}' since it is already applied", migrationRoutine.Name);
-                    continue;
-                }
-
-                logger.LogInformation("Applying migration '{Name}'", migrationRoutine.Name);
-
+                logger.LogInformation("Performing database backup");
                 try
                 {
-                    migrationRoutine.Perform();
+                    migrationKey = await jellyfinDatabaseProvider.MigrationBackupFast(CancellationToken.None).ConfigureAwait(false);
+                    logger.LogInformation("Database backup with key '{BackupKey}' has been successfully created.", migrationKey);
                 }
-                catch (Exception ex)
+                catch (NotImplementedException)
                 {
-                    logger.LogError(ex, "Could not apply migration '{Name}'", migrationRoutine.Name);
-                    throw;
+                    logger.LogWarning("Could not perform backup of database before migration because provider does not support it");
                 }
+            }
 
-                // Mark the migration as completed
-                logger.LogInformation("Migration '{Name}' applied successfully", migrationRoutine.Name);
-                migrationOptions.Applied.Add((migrationRoutine.Id, migrationRoutine.Name));
-                saveConfiguration(migrationOptions);
-                logger.LogDebug("Migration '{Name}' marked as applied in configuration.", migrationRoutine.Name);
+            try
+            {
+                foreach (var migrationRoutine in migrationsToBeApplied)
+                {
+                    logger.LogInformation("Applying migration '{Name}'", migrationRoutine.Name);
+
+                    try
+                    {
+                        migrationRoutine.Perform();
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogError(ex, "Could not apply migration '{Name}'", migrationRoutine.Name);
+                        throw;
+                    }
+
+                    // Mark the migration as completed
+                    logger.LogInformation("Migration '{Name}' applied successfully", migrationRoutine.Name);
+                    migrationOptions.Applied.Add((migrationRoutine.Id, migrationRoutine.Name));
+                    saveConfiguration(migrationOptions);
+                    logger.LogDebug("Migration '{Name}' marked as applied in configuration.", migrationRoutine.Name);
+                }
+            }
+            catch (System.Exception) when (migrationKey is not null && jellyfinDatabaseProvider is not null)
+            {
+                logger.LogInformation("Rollback on database as migration reported failure.");
+                await jellyfinDatabaseProvider.RestoreBackupFast(migrationKey, CancellationToken.None).ConfigureAwait(false);
+                throw;
             }
         }
     }

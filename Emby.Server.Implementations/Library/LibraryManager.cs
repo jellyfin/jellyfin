@@ -2,7 +2,6 @@
 #pragma warning disable CA5394
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -11,6 +10,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using BitFaster.Caching.Lru;
 using Emby.Naming.Common;
 using Emby.Naming.TV;
 using Emby.Server.Implementations.Library.Resolvers;
@@ -18,8 +18,10 @@ using Emby.Server.Implementations.Library.Validators;
 using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.ScheduledTasks.Tasks;
 using Emby.Server.Implementations.Sorting;
-using Jellyfin.Data.Entities;
+using Jellyfin.Data;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
@@ -62,7 +64,6 @@ namespace Emby.Server.Implementations.Library
         private const string ShortcutFileExtension = ".mblink";
 
         private readonly ILogger<LibraryManager> _logger;
-        private readonly ConcurrentDictionary<Guid, BaseItem> _cache;
         private readonly ITaskManager _taskManager;
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataRepository;
@@ -78,6 +79,8 @@ namespace Emby.Server.Implementations.Library
         private readonly NamingOptions _namingOptions;
         private readonly IPeopleRepository _peopleRepository;
         private readonly ExtraResolver _extraResolver;
+        private readonly IPathManager _pathManager;
+        private readonly FastConcurrentLru<Guid, BaseItem> _cache;
 
         /// <summary>
         /// The _root folder sync lock.
@@ -113,7 +116,8 @@ namespace Emby.Server.Implementations.Library
         /// <param name="imageProcessor">The image processor.</param>
         /// <param name="namingOptions">The naming options.</param>
         /// <param name="directoryService">The directory service.</param>
-        /// <param name="peopleRepository">The People Repository.</param>
+        /// <param name="peopleRepository">The people repository.</param>
+        /// <param name="pathManager">The path manager.</param>
         public LibraryManager(
             IServerApplicationHost appHost,
             ILoggerFactory loggerFactory,
@@ -130,7 +134,8 @@ namespace Emby.Server.Implementations.Library
             IImageProcessor imageProcessor,
             NamingOptions namingOptions,
             IDirectoryService directoryService,
-            IPeopleRepository peopleRepository)
+            IPeopleRepository peopleRepository,
+            IPathManager pathManager)
         {
             _appHost = appHost;
             _logger = loggerFactory.CreateLogger<LibraryManager>();
@@ -145,14 +150,17 @@ namespace Emby.Server.Implementations.Library
             _mediaEncoder = mediaEncoder;
             _itemRepository = itemRepository;
             _imageProcessor = imageProcessor;
-            _cache = new ConcurrentDictionary<Guid, BaseItem>();
+
+            _cache = new FastConcurrentLru<Guid, BaseItem>(_configurationManager.Configuration.CacheSize);
+
             _namingOptions = namingOptions;
             _peopleRepository = peopleRepository;
+            _pathManager = pathManager;
             _extraResolver = new ExtraResolver(loggerFactory.CreateLogger<ExtraResolver>(), namingOptions, directoryService);
 
             _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
 
-            RecordConfigurationValues(configurationManager.Configuration);
+            RecordConfigurationValues(_configurationManager.Configuration);
         }
 
         /// <summary>
@@ -200,33 +208,33 @@ namespace Emby.Server.Implementations.Library
         /// Gets or sets the postscan tasks.
         /// </summary>
         /// <value>The postscan tasks.</value>
-        private ILibraryPostScanTask[] PostscanTasks { get; set; } = Array.Empty<ILibraryPostScanTask>();
+        private ILibraryPostScanTask[] PostscanTasks { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the intro providers.
         /// </summary>
         /// <value>The intro providers.</value>
-        private IIntroProvider[] IntroProviders { get; set; } = Array.Empty<IIntroProvider>();
+        private IIntroProvider[] IntroProviders { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the list of entity resolution ignore rules.
         /// </summary>
         /// <value>The entity resolution ignore rules.</value>
-        private IResolverIgnoreRule[] EntityResolutionIgnoreRules { get; set; } = Array.Empty<IResolverIgnoreRule>();
+        private IResolverIgnoreRule[] EntityResolutionIgnoreRules { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the list of currently registered entity resolvers.
         /// </summary>
         /// <value>The entity resolvers enumerable.</value>
-        private IItemResolver[] EntityResolvers { get; set; } = Array.Empty<IItemResolver>();
+        private IItemResolver[] EntityResolvers { get; set; } = [];
 
-        private IMultiItemResolver[] MultiItemResolvers { get; set; } = Array.Empty<IMultiItemResolver>();
+        private IMultiItemResolver[] MultiItemResolvers { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the comparers.
         /// </summary>
         /// <value>The comparers.</value>
-        private IBaseItemComparer[] Comparers { get; set; } = Array.Empty<IBaseItemComparer>();
+        private IBaseItemComparer[] Comparers { get; set; } = [];
 
         public bool IsScanRunning { get; private set; }
 
@@ -300,7 +308,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            _cache[item.Id] = item;
+            _cache.AddOrUpdate(item.Id, item);
         }
 
         public void DeleteItem(BaseItem item, DeleteOptions options)
@@ -359,7 +367,7 @@ namespace Emby.Server.Implementations.Library
 
             var children = item.IsFolder
                 ? ((Folder)item).GetRecursiveChildren(false)
-                : Array.Empty<BaseItem>();
+                : [];
 
             foreach (var metadataPath in GetMetadataPaths(item, children))
             {
@@ -454,24 +462,55 @@ namespace Emby.Server.Implementations.Library
             item.SetParent(null);
 
             _itemRepository.DeleteItem(item.Id);
+            _cache.TryRemove(item.Id, out _);
             foreach (var child in children)
             {
                 _itemRepository.DeleteItem(child.Id);
+                _cache.TryRemove(child.Id, out _);
             }
-
-            _cache.TryRemove(item.Id, out _);
 
             ReportItemRemoved(item, parent);
         }
 
-        private static List<string> GetMetadataPaths(BaseItem item, IEnumerable<BaseItem> children)
+        private List<string> GetMetadataPaths(BaseItem item, IEnumerable<BaseItem> children)
+        {
+            var list = GetInternalMetadataPaths(item);
+            foreach (var child in children)
+            {
+                list.AddRange(GetInternalMetadataPaths(child));
+            }
+
+            return list;
+        }
+
+        private List<string> GetInternalMetadataPaths(BaseItem item)
         {
             var list = new List<string>
             {
                 item.GetInternalMetadataPath()
             };
 
-            list.AddRange(children.Select(i => i.GetInternalMetadataPath()));
+            if (item is Video video)
+            {
+                // Trickplay
+                list.Add(_pathManager.GetTrickplayDirectory(video));
+
+                // Subtitles and attachments
+                foreach (var mediaSource in item.GetMediaSources(false))
+                {
+                    var subtitleFolder = _pathManager.GetSubtitleFolderPath(mediaSource.Id);
+                    if (subtitleFolder is not null)
+                    {
+                        list.Add(subtitleFolder);
+                    }
+
+                    var attachmentFolder = _pathManager.GetAttachmentFolderPath(mediaSource.Id);
+                    if (attachmentFolder is not null)
+                    {
+                        list.Add(attachmentFolder);
+                    }
+                }
+            }
 
             return list;
         }
@@ -592,7 +631,7 @@ namespace Emby.Server.Implementations.Library
                     {
                         _logger.LogError(ex, "Error in GetFilteredFileSystemEntries isPhysicalRoot: {0} IsVf: {1}", isPhysicalRoot, isVf);
 
-                        files = Array.Empty<FileSystemMetadata>();
+                        files = [];
                     }
                     else
                     {
@@ -1234,7 +1273,7 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentException("Guid can't be empty", nameof(id));
             }
 
-            if (_cache.TryGetValue(id, out BaseItem? item))
+            if (_cache.TryGet(id, out var item))
             {
                 return item;
             }
@@ -1251,7 +1290,7 @@ namespace Emby.Server.Implementations.Library
 
         /// <inheritdoc />
         public T? GetItemById<T>(Guid id)
-         where T : BaseItem
+            where T : BaseItem
         {
             var item = GetItemById(id);
             if (item is T typedItem)
@@ -1341,6 +1380,36 @@ namespace Emby.Server.Implementations.Library
             }
 
             return _itemRepository.GetItemList(query);
+        }
+
+        public IReadOnlyList<BaseItem> GetLatestItemList(InternalItemsQuery query, IReadOnlyList<BaseItem> parents, CollectionType collectionType)
+        {
+            SetTopParentIdsOrAncestors(query, parents);
+
+            if (query.AncestorIds.Length == 0 && query.TopParentIds.Length == 0)
+            {
+                if (query.User is not null)
+                {
+                    AddUserToQuery(query, query.User);
+                }
+            }
+
+            return _itemRepository.GetLatestItemList(query, collectionType);
+        }
+
+        public IReadOnlyList<string> GetNextUpSeriesKeys(InternalItemsQuery query, IReadOnlyCollection<BaseItem> parents, DateTime dateCutoff)
+        {
+            SetTopParentIdsOrAncestors(query, parents);
+
+            if (query.AncestorIds.Length == 0 && query.TopParentIds.Length == 0)
+            {
+                if (query.User is not null)
+                {
+                    AddUserToQuery(query, query.User);
+                }
+            }
+
+            return _itemRepository.GetNextUpSeriesKeys(query, dateCutoff);
         }
 
         public QueryResult<BaseItem> QueryItems(InternalItemsQuery query)
@@ -1447,7 +1516,7 @@ namespace Emby.Server.Implementations.Library
 
             // Optimize by querying against top level views
             query.TopParentIds = parents.SelectMany(i => GetTopParentIdsForQuery(i, query.User)).ToArray();
-            query.AncestorIds = Array.Empty<Guid>();
+            query.AncestorIds = [];
 
             // Prevent searching in all libraries due to empty filter
             if (query.TopParentIds.Length == 0)
@@ -1567,7 +1636,7 @@ namespace Emby.Server.Implementations.Library
                         return GetTopParentIdsForQuery(displayParent, user);
                     }
 
-                    return Array.Empty<Guid>();
+                    return [];
                 }
 
                 if (!view.ParentId.IsEmpty())
@@ -1578,7 +1647,7 @@ namespace Emby.Server.Implementations.Library
                         return GetTopParentIdsForQuery(displayParent, user);
                     }
 
-                    return Array.Empty<Guid>();
+                    return [];
                 }
 
                 // Handle grouping
@@ -1593,7 +1662,7 @@ namespace Emby.Server.Implementations.Library
                         .SelectMany(i => GetTopParentIdsForQuery(i, user));
                 }
 
-                return Array.Empty<Guid>();
+                return [];
             }
 
             if (item is CollectionFolder collectionFolder)
@@ -1607,7 +1676,7 @@ namespace Emby.Server.Implementations.Library
                 return new[] { topParent.Id };
             }
 
-            return Array.Empty<Guid>();
+            return [];
         }
 
         /// <summary>
@@ -1651,7 +1720,7 @@ namespace Emby.Server.Implementations.Library
             {
                 _logger.LogError(ex, "Error getting intros");
 
-                return Enumerable.Empty<IntroInfo>();
+                return [];
             }
         }
 
@@ -2478,8 +2547,11 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
-        public int? GetSeasonNumberFromPath(string path)
-            => SeasonPathParser.Parse(path, true, true).SeasonNumber;
+        public int? GetSeasonNumberFromPath(string path, Guid? parentId)
+        {
+            var parentPath = parentId.HasValue ? GetItemById(parentId.Value)?.ContainingFolderPath : null;
+            return SeasonPathParser.Parse(path, parentPath, true, true).SeasonNumber;
+        }
 
         /// <inheritdoc />
         public bool FillMissingEpisodeNumbersFromPath(Episode episode, bool forceRefresh)
@@ -2630,15 +2702,6 @@ namespace Emby.Server.Implementations.Library
                 {
                     episode.ParentIndexNumber = season.IndexNumber;
                 }
-                else
-                {
-                    /*
-                    Anime series don't generally have a season in their file name, however,
-                    TVDb needs a season to correctly get the metadata.
-                    Hence, a null season needs to be filled with something. */
-                    // FIXME perhaps this would be better for TVDb parser to ask for season 1 if no season is specified
-                    episode.ParentIndexNumber = 1;
-                }
 
                 if (episode.ParentIndexNumber.HasValue)
                 {
@@ -2663,7 +2726,7 @@ namespace Emby.Server.Implementations.Library
 
         public IEnumerable<BaseItem> FindExtras(BaseItem owner, IReadOnlyList<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
         {
-            var ownerVideoInfo = VideoResolver.Resolve(owner.Path, owner.IsFolder, _namingOptions);
+            var ownerVideoInfo = VideoResolver.Resolve(owner.Path, owner.IsFolder, _namingOptions, libraryRoot: owner.ContainingFolderPath);
             if (ownerVideoInfo is null)
             {
                 yield break;
@@ -2853,7 +2916,7 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentNullException(nameof(name));
             }
 
-            name = _fileSystem.GetValidFilename(name);
+            name = _fileSystem.GetValidFilename(name.Trim());
 
             var rootFolderPath = _configurationManager.ApplicationPaths.DefaultUserViewsPath;
 
@@ -2887,7 +2950,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     var path = Path.Combine(virtualFolderPath, collectionType.ToString()!.ToLowerInvariant() + ".collection"); // Can't be null with legal values?
 
-                    await File.WriteAllBytesAsync(path, Array.Empty<byte>()).ConfigureAwait(false);
+                    await File.WriteAllBytesAsync(path, []).ConfigureAwait(false);
                 }
 
                 CollectionFolder.SaveLibraryOptions(virtualFolderPath, options);

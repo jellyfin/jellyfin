@@ -193,6 +193,7 @@ namespace MediaBrowser.Providers.Manager
             if (hasRefreshedMetadata && hasRefreshedImages)
             {
                 item.DateLastRefreshed = DateTime.UtcNow;
+                updateType |= item.OnMetadataChanged();
             }
 
             updateType = await SaveInternal(item, refreshOptions, updateType, isFirstRefresh, requiresRefresh, metadataResult, cancellationToken).ConfigureAwait(false);
@@ -1146,13 +1147,24 @@ namespace MediaBrowser.Providers.Manager
 
         private static void MergePeople(IReadOnlyList<PersonInfo> source, IReadOnlyList<PersonInfo> target)
         {
-            foreach (var person in target)
-            {
-                var normalizedName = person.Name.RemoveDiacritics();
-                var personInSource = source.FirstOrDefault(i => string.Equals(i.Name.RemoveDiacritics(), normalizedName, StringComparison.OrdinalIgnoreCase));
+            var sourceByName = source.ToLookup(p => p.Name.RemoveDiacritics(), StringComparer.OrdinalIgnoreCase);
+            var targetByName = target.ToLookup(p => p.Name.RemoveDiacritics(), StringComparer.OrdinalIgnoreCase);
 
-                if (personInSource is not null)
+            foreach (var name in targetByName.Select(g => g.Key))
+            {
+                var targetPeople = targetByName[name].ToArray();
+                var sourcePeople = sourceByName[name].ToArray();
+
+                if (sourcePeople.Length == 0)
                 {
+                    continue;
+                }
+
+                for (int i = 0; i < targetPeople.Length; i++)
+                {
+                    var person = targetPeople[i];
+                    var personInSource = i < sourcePeople.Length ? sourcePeople[i] : sourcePeople[0];
+
                     foreach (var providerId in personInSource.ProviderIds)
                     {
                         person.ProviderIds.TryAdd(providerId.Key, providerId.Value);
@@ -1161,6 +1173,16 @@ namespace MediaBrowser.Providers.Manager
                     if (string.IsNullOrWhiteSpace(person.ImageUrl))
                     {
                         person.ImageUrl = personInSource.ImageUrl;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(personInSource.Role) && string.IsNullOrWhiteSpace(person.Role))
+                    {
+                        person.Role = personInSource.Role;
+                    }
+
+                    if (personInSource.SortOrder.HasValue && !person.SortOrder.HasValue)
+                    {
+                        person.SortOrder = personInSource.SortOrder;
                     }
                 }
             }

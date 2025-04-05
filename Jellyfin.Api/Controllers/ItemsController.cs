@@ -4,7 +4,9 @@ using System.Linq;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
+using Jellyfin.Data;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Dto;
@@ -446,13 +448,13 @@ public class ItemsController : BaseJellyfinApiController
             // Min official rating
             if (!string.IsNullOrWhiteSpace(minOfficialRating))
             {
-                query.MinParentalRating = _localization.GetRatingLevel(minOfficialRating);
+                query.MinParentalRating = _localization.GetRatingScore(minOfficialRating);
             }
 
             // Max official rating
             if (!string.IsNullOrWhiteSpace(maxOfficialRating))
             {
-                query.MaxParentalRating = _localization.GetRatingLevel(maxOfficialRating);
+                query.MaxParentalRating = _localization.GetRatingScore(maxOfficialRating);
             }
 
             // Artists

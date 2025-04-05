@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Model.Activity;

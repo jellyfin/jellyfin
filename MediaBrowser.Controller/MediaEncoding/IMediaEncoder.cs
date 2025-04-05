@@ -76,6 +76,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         bool IsVaapiDeviceSupportVulkanDrmInterop { get; }
 
         /// <summary>
+        /// Gets a value indicating whether av1 decoding is available via VideoToolbox.
+        /// </summary>
+        /// <value><c>true</c> if the av1 is available via VideoToolbox, <c>false</c> otherwise.</value>
+        bool IsVideoToolboxAv1DecodeAvailable { get; }
+
+        /// <summary>
         /// Whether given encoder codec is supported.
         /// </summary>
         /// <param name="encoder">The encoder.</param>
@@ -109,6 +115,13 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="option">The option.</param>
         /// <returns><c>true</c> if the filter is supported, <c>false</c> otherwise.</returns>
         bool SupportsFilterWithOption(FilterOptionType option);
+
+        /// <summary>
+        /// Whether the bitstream filter is supported with the given option.
+        /// </summary>
+        /// <param name="option">The option.</param>
+        /// <returns><c>true</c> if the bitstream filter is supported, <c>false</c> otherwise.</returns>
+        bool SupportsBitStreamFilterWithOption(BitStreamFilterOptionType option);
 
         /// <summary>
         /// Extracts the audio image.

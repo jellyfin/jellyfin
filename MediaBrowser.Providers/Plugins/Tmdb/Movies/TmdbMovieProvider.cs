@@ -234,7 +234,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
             var genres = movieResult.Genres;
 
-            foreach (var genre in genres.Select(g => g.Name))
+            foreach (var genre in genres.Select(g => g.Name).Trimmed())
             {
                 movie.AddGenre(genre);
             }
@@ -254,7 +254,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                     var personInfo = new PersonInfo
                     {
                         Name = actor.Name.Trim(),
-                        Role = actor.Character,
+                        Role = actor.Character.Trim(),
                         Type = PersonKind.Actor,
                         SortOrder = actor.Order
                     };
@@ -289,7 +289,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                     var personInfo = new PersonInfo
                     {
                         Name = person.Name.Trim(),
-                        Role = person.Job,
+                        Role = person.Job?.Trim(),
                         Type = type
                     };
 

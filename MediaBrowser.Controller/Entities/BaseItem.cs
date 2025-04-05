@@ -12,8 +12,10 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
+using Jellyfin.Data;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Channels;
@@ -21,6 +23,7 @@ using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
@@ -578,6 +581,9 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public int? InheritedParentalRatingValue { get; set; }
 
+        [JsonIgnore]
+        public int? InheritedParentalRatingSubValue { get; set; }
+
         /// <summary>
         /// Gets or sets the critic rating.
         /// </summary>
@@ -919,7 +925,7 @@ namespace MediaBrowser.Controller.Entities
                 // Remove from middle if surrounded by spaces
                 sortable = sortable.Replace(" " + search + " ", " ", StringComparison.Ordinal);
 
-                // Remove from end if followed by a space
+                // Remove from end if preceeded by a space
                 if (sortable.EndsWith(" " + search, StringComparison.Ordinal))
                 {
                     sortable = sortable.Remove(sortable.Length - (search.Length + 1));
@@ -1537,7 +1543,8 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            var maxAllowedRating = user.MaxParentalAgeRating;
+            var maxAllowedRating = user.MaxParentalRatingScore;
+            var maxAllowedSubRating = user.MaxParentalRatingSubScore;
             var rating = CustomRatingForComparison;
 
             if (string.IsNullOrEmpty(rating))
@@ -1551,10 +1558,10 @@ namespace MediaBrowser.Controller.Entities
                 return !GetBlockUnratedValue(user);
             }
 
-            var value = LocalizationManager.GetRatingLevel(rating);
+            var ratingScore = LocalizationManager.GetRatingScore(rating);
 
             // Could not determine rating level
-            if (!value.HasValue)
+            if (ratingScore is null)
             {
                 var isAllowed = !GetBlockUnratedValue(user);
 
@@ -1566,10 +1573,15 @@ namespace MediaBrowser.Controller.Entities
                 return isAllowed;
             }
 
-            return !maxAllowedRating.HasValue || value.Value <= maxAllowedRating.Value;
+            if (maxAllowedSubRating is not null)
+            {
+                return (ratingScore.SubScore ?? 0) <= maxAllowedSubRating && ratingScore.Score <= maxAllowedRating.Value;
+            }
+
+            return !maxAllowedRating.HasValue || ratingScore.Score <= maxAllowedRating.Value;
         }
 
-        public int? GetInheritedParentalRatingValue()
+        public ParentalRatingScore GetParentalRatingScore()
         {
             var rating = CustomRatingForComparison;
 
@@ -1583,7 +1595,7 @@ namespace MediaBrowser.Controller.Entities
                 return null;
             }
 
-            return LocalizationManager.GetRatingLevel(rating);
+            return LocalizationManager.GetRatingScore(rating);
         }
 
         public List<string> GetInheritedTags()
@@ -1681,7 +1693,7 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual string GetClientTypeName()
         {
-            if (IsFolder && SourceType == SourceType.Channel && this is not Channel)
+            if (IsFolder && SourceType == SourceType.Channel && this is not Channel && this is not Season && this is not Series)
             {
                 return "ChannelFolderItem";
             }
@@ -1775,7 +1787,6 @@ namespace MediaBrowser.Controller.Entities
         public void AddStudio(string name)
         {
             ArgumentException.ThrowIfNullOrEmpty(name);
-
             var current = Studios;
 
             if (!current.Contains(name, StringComparison.OrdinalIgnoreCase))
@@ -1794,7 +1805,7 @@ namespace MediaBrowser.Controller.Entities
 
         public void SetStudios(IEnumerable<string> names)
         {
-            Studios = names.Distinct().ToArray();
+            Studios = names.Trimmed().Distinct().ToArray();
         }
 
         /// <summary>
@@ -2516,11 +2527,29 @@ namespace MediaBrowser.Controller.Entities
 
             var item = this;
 
-            var inheritedParentalRatingValue = item.GetInheritedParentalRatingValue() ?? null;
-            if (inheritedParentalRatingValue != item.InheritedParentalRatingValue)
+            var rating = item.GetParentalRatingScore();
+            if (rating is not null)
             {
-                item.InheritedParentalRatingValue = inheritedParentalRatingValue;
-                updateType |= ItemUpdateType.MetadataImport;
+                if (rating.Score != item.InheritedParentalRatingValue)
+                {
+                    item.InheritedParentalRatingValue = rating.Score;
+                    updateType |= ItemUpdateType.MetadataImport;
+                }
+
+                if (rating.SubScore != item.InheritedParentalRatingSubValue)
+                {
+                    item.InheritedParentalRatingSubValue = rating.SubScore;
+                    updateType |= ItemUpdateType.MetadataImport;
+                }
+            }
+            else
+            {
+                if (item.InheritedParentalRatingValue is not null)
+                {
+                    item.InheritedParentalRatingValue = null;
+                    item.InheritedParentalRatingSubValue = null;
+                    updateType |= ItemUpdateType.MetadataImport;
+                }
             }
 
             return updateType;
@@ -2540,8 +2569,9 @@ namespace MediaBrowser.Controller.Entities
                 .Select(i => i.OfficialRating)
                 .Where(i => !string.IsNullOrEmpty(i))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Select(rating => (rating, LocalizationManager.GetRatingLevel(rating)))
-                .OrderBy(i => i.Item2 ?? 1000)
+                .Select(rating => (rating, LocalizationManager.GetRatingScore(rating)))
+                .OrderBy(i => i.Item2 is null ? 1001 : i.Item2.Score)
+                .ThenBy(i => i.Item2 is null ? 1001 : i.Item2.SubScore)
                 .Select(i => i.rating);
 
             OfficialRating = ratings.FirstOrDefault() ?? currentOfficialRating;

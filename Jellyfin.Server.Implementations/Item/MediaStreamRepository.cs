@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
-using Jellyfin.Data.Entities;
+using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
@@ -137,8 +138,9 @@ public class MediaStreamRepository : IMediaStreamRepository
         dto.ElPresentFlag = entity.ElPresentFlag;
         dto.BlPresentFlag = entity.BlPresentFlag;
         dto.DvBlSignalCompatibilityId = entity.DvBlSignalCompatibilityId;
-        dto.IsHearingImpaired = entity.IsHearingImpaired;
+        dto.IsHearingImpaired = entity.IsHearingImpaired.GetValueOrDefault();
         dto.Rotation = entity.Rotation;
+        dto.Hdr10PlusPresentFlag = entity.Hdr10PlusPresentFlag;
 
         if (dto.Type is MediaStreamType.Audio or MediaStreamType.Subtitle)
         {
@@ -206,7 +208,8 @@ public class MediaStreamRepository : IMediaStreamRepository
             BlPresentFlag = dto.BlPresentFlag,
             DvBlSignalCompatibilityId = dto.DvBlSignalCompatibilityId,
             IsHearingImpaired = dto.IsHearingImpaired,
-            Rotation = dto.Rotation
+            Rotation = dto.Rotation,
+            Hdr10PlusPresentFlag = dto.Hdr10PlusPresentFlag,
         };
         return entity;
     }

@@ -7,11 +7,13 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AsyncKeyedLock;
-using Jellyfin.Data.Entities;
+using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Trickplay;
@@ -37,9 +39,10 @@ public class TrickplayManager : ITrickplayManager
     private readonly IImageEncoder _imageEncoder;
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
     private readonly IApplicationPaths _appPaths;
+    private readonly IPathManager _pathManager;
 
     private static readonly AsyncNonKeyedLocker _resourcePool = new(1);
-    private static readonly string[] _trickplayImgExtensions = { ".jpg" };
+    private static readonly string[] _trickplayImgExtensions = [".jpg"];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TrickplayManager"/> class.
@@ -53,6 +56,7 @@ public class TrickplayManager : ITrickplayManager
     /// <param name="imageEncoder">The image encoder.</param>
     /// <param name="dbProvider">The database provider.</param>
     /// <param name="appPaths">The application paths.</param>
+    /// <param name="pathManager">The path manager.</param>
     public TrickplayManager(
         ILogger<TrickplayManager> logger,
         IMediaEncoder mediaEncoder,
@@ -62,7 +66,8 @@ public class TrickplayManager : ITrickplayManager
         IServerConfigurationManager config,
         IImageEncoder imageEncoder,
         IDbContextFactory<JellyfinDbContext> dbProvider,
-        IApplicationPaths appPaths)
+        IApplicationPaths appPaths,
+        IPathManager pathManager)
     {
         _logger = logger;
         _mediaEncoder = mediaEncoder;
@@ -73,6 +78,7 @@ public class TrickplayManager : ITrickplayManager
         _imageEncoder = imageEncoder;
         _dbProvider = dbProvider;
         _appPaths = appPaths;
+        _pathManager = pathManager;
     }
 
     /// <inheritdoc />
@@ -610,10 +616,7 @@ public class TrickplayManager : ITrickplayManager
     /// <inheritdoc />
     public string GetTrickplayDirectory(BaseItem item, int tileWidth, int tileHeight, int width, bool saveWithMedia = false)
     {
-        var path = saveWithMedia
-            ? Path.Combine(item.ContainingFolderPath, Path.ChangeExtension(item.Path, ".trickplay"))
-            : Path.Combine(item.GetInternalMetadataPath(), "trickplay");
-
+        var path = _pathManager.GetTrickplayDirectory(item, saveWithMedia);
         var subdirectory = string.Format(
             CultureInfo.InvariantCulture,
             "{0} - {1}x{2}",

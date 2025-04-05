@@ -21,9 +21,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
         public ExternalIdMediaType? Type => ExternalIdMediaType.BoxSet;
 
         /// <inheritdoc />
-        public string UrlFormatString => TmdbUtils.BaseTmdbUrl + "collection/{0}";
-
-        /// <inheritdoc />
         public bool Supports(IHasProviderIds item)
         {
             return item is Movie || item is MusicVideo || item is Trailer;
