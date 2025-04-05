@@ -38,7 +38,13 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// periods, underscores, commas, and vertical bars, with a length between 0 and 40 characters.
         /// This should matches all common valid codecs.
         /// </summary>
-        public const string ValidationRegex = @"^[a-zA-Z0-9\-\._,|]{0,40}$";
+        public const string ContainerValidationRegex = @"^[a-zA-Z0-9\-\._,|]{0,40}$";
+
+        /// <summary>
+        /// The level validation regex.
+        /// This regular expression matches strings representing a double.
+        /// </summary>
+        public const string LevelValidationRegex = @"-?[0-9]+(?:\.[0-9]+)?";
 
         private const string _defaultMjpegEncoder = "mjpeg";
 
@@ -79,7 +85,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         private readonly Version _minFFmpegVaapiDeviceVendorId = new Version(7, 0, 1);
         private readonly Version _minFFmpegQsvVppScaleModeOption = new Version(6, 0);
 
-        private static readonly Regex _validationRegex = new(ValidationRegex, RegexOptions.Compiled);
+        private static readonly Regex _containerValidationRegex = new(ContainerValidationRegex, RegexOptions.Compiled);
 
         private static readonly string[] _videoProfilesH264 =
         [
@@ -460,7 +466,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     return GetMjpegEncoder(state, encodingOptions);
                 }
 
-                if (_validationRegex.IsMatch(codec))
+                if (_containerValidationRegex.IsMatch(codec))
                 {
                     return codec.ToLowerInvariant();
                 }
@@ -501,7 +507,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public static string GetInputFormat(string container)
         {
-            if (string.IsNullOrEmpty(container) || !_validationRegex.IsMatch(container))
+            if (string.IsNullOrEmpty(container) || !_containerValidationRegex.IsMatch(container))
             {
                 return null;
             }
@@ -719,7 +725,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             var codec = state.OutputAudioCodec;
 
-            if (!_validationRegex.IsMatch(codec))
+            if (!_containerValidationRegex.IsMatch(codec))
             {
                 codec = "aac";
             }
