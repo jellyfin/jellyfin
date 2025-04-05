@@ -427,6 +427,7 @@ namespace Emby.Server.Implementations.Library
                 if (source.MediaStreams.Any(i => i.Type == MediaStreamType.Audio && i.Index == index))
                 {
                     source.DefaultAudioStreamIndex = index;
+                    source.DefaultAudioIndexSource = AudioIndexSource.User;
                     return;
                 }
             }
@@ -434,6 +435,15 @@ namespace Emby.Server.Implementations.Library
             var preferredAudio = NormalizeLanguage(user.AudioLanguagePreference);
 
             source.DefaultAudioStreamIndex = MediaStreamSelector.GetDefaultAudioStreamIndex(source.MediaStreams, preferredAudio, user.PlayDefaultAudioTrack);
+            if (user.PlayDefaultAudioTrack)
+            {
+                source.DefaultAudioIndexSource |= AudioIndexSource.Default;
+            }
+
+            if (preferredAudio.Count > 0)
+            {
+                source.DefaultAudioIndexSource |= AudioIndexSource.Language;
+            }
         }
 
         public void SetDefaultAudioAndSubtitleStreamIndices(BaseItem item, MediaSourceInfo source, User user)
