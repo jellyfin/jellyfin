@@ -1405,13 +1405,13 @@ namespace Jellyfin.Server.Implementations.Migrations
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.AncestorId", b =>
                 {
                     b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "Item")
-                        .WithMany("Children")
+                        .WithMany("Parents")
                         .HasForeignKey("ItemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "ParentItem")
-                        .WithMany("ParentAncestors")
+                        .WithMany("Children")
                         .HasForeignKey("ParentItemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1642,7 +1642,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.Navigation("MediaStreams");
 
-                    b.Navigation("ParentAncestors");
+                    b.Navigation("Parents");
 
                     b.Navigation("Peoples");
 
