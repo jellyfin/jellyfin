@@ -1186,7 +1186,9 @@ public class LiveTvController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesVideoFile]
-    public ActionResult GetLiveStreamFile([FromRoute, Required] string streamId, [FromRoute, Required] string container)
+    public ActionResult GetLiveStreamFile(
+        [FromRoute, Required] string streamId,
+        [FromRoute, Required] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string container)
     {
         var liveStreamInfo = _mediaSourceManager.GetLiveStreamInfoByUniqueId(streamId);
         if (liveStreamInfo is null)
