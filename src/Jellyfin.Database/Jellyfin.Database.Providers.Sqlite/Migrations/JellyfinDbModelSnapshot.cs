@@ -180,6 +180,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<DateTime?>("DateCreated")
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTime?>("DateLastModifiedFilesystem")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime?>("DateLastMediaAdded")
                         .HasColumnType("TEXT");
 

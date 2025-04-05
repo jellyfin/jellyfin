@@ -410,6 +410,13 @@ namespace MediaBrowser.Controller.Entities
         public DateTime DateCreated { get; set; }
 
         /// <summary>
+        /// Gets or sets the file modification date.
+        /// </summary>
+        /// <value>The file modification date.</value>
+        [JsonIgnore]
+        public DateTime? DateLastModifiedFilesystem { get; set; }
+
+        /// <summary>
         /// Gets or sets the date modified.
         /// </summary>
         /// <value>The date modified.</value>
@@ -1408,7 +1415,18 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual bool RequiresRefresh()
         {
-            return false;
+            if (string.IsNullOrEmpty(Path) || DateLastModifiedFilesystem is null)
+            {
+                return false;
+            }
+
+            var info = IsFileProtocol ? FileSystem.GetFileInfo(Path) : FileSystem.GetDirectoryInfo(Path);
+            if (IsFileProtocol)
+            {
+                return info.LastWriteTimeUtc != DateLastModifiedFilesystem && info.Length != Size;
+            }
+
+            return info.LastWriteTimeUtc != DateLastModifiedFilesystem;
         }
 
         public virtual List<string> GetUserDataKeys()
