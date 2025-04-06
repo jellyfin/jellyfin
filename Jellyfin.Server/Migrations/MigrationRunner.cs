@@ -147,6 +147,7 @@ namespace Jellyfin.Server.Migrations
                 }
             }
 
+            List<IDatabaseMigrationRoutine> databaseMigrations = [];
             try
             {
                 foreach (var migrationRoutine in migrationsToBeApplied)
@@ -165,16 +166,34 @@ namespace Jellyfin.Server.Migrations
 
                     // Mark the migration as completed
                     logger.LogInformation("Migration '{Name}' applied successfully", migrationRoutine.Name);
-                    migrationOptions.Applied.Add((migrationRoutine.Id, migrationRoutine.Name));
-                    saveConfiguration(migrationOptions);
-                    logger.LogDebug("Migration '{Name}' marked as applied in configuration.", migrationRoutine.Name);
+                    if (migrationRoutine is IDatabaseMigrationRoutine dbRoutine)
+                    {
+                        databaseMigrations.Add(dbRoutine);
+                    }
+                    else
+                    {
+                        migrationOptions.Applied.Add((migrationRoutine.Id, migrationRoutine.Name));
+                        saveConfiguration(migrationOptions);
+                        logger.LogDebug("Migration '{Name}' marked as applied in configuration.", migrationRoutine.Name);
+                    }
                 }
             }
-            catch (System.Exception) when (migrationKey is not null && jellyfinDatabaseProvider is not null)
+            catch (Exception) when (migrationKey is not null && jellyfinDatabaseProvider is not null)
             {
-                logger.LogInformation("Rollback on database as migration reported failure.");
-                await jellyfinDatabaseProvider.RestoreBackupFast(migrationKey, CancellationToken.None).ConfigureAwait(false);
+                if (databaseMigrations.Count != 0)
+                {
+                    logger.LogInformation("Rolling back database as migrations reported failure.");
+                    await jellyfinDatabaseProvider.RestoreBackupFast(migrationKey, CancellationToken.None).ConfigureAwait(false);
+                }
+
                 throw;
+            }
+
+            foreach (var migrationRoutine in databaseMigrations)
+            {
+                migrationOptions.Applied.Add((migrationRoutine.Id, migrationRoutine.Name));
+                saveConfiguration(migrationOptions);
+                logger.LogDebug("Migration '{Name}' marked as applied in configuration.", migrationRoutine.Name);
             }
         }
     }

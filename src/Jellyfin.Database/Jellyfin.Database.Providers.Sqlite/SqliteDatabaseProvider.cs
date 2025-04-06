@@ -106,6 +106,8 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     /// <inheritdoc />
     public Task RestoreBackupFast(string key, CancellationToken cancellationToken)
     {
+        // ensure there are absolutly no dangling Sqlite connections.
+        SqliteConnection.ClearAllPools();
         var path = Path.Combine(_applicationPaths.DataPath, "jellyfin.db");
         var backupFile = Path.Combine(_applicationPaths.DataPath, BackupFolderName, $"{key}_jellyfin.db");
 
