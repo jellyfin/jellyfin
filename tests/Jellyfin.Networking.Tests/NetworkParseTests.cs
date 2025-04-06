@@ -79,7 +79,10 @@ namespace Jellyfin.Networking.Tests
         [InlineData("[fe80::7add:12ff:febb:c67b%16]")]
         [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517/56")]
         public static void TryParseValidIPStringsTrue(string address)
-            => Assert.True(NetworkUtils.TryParseToSubnet(address, out _));
+        {
+            Assert.True(NetworkUtils.TryParseToSubnet(address, out _));
+            Assert.True(NetworkUtils.TryParseToSubnet('!' + address, out _, true));
+        }
 
         /// <summary>
         /// Checks invalid IP address formats.
