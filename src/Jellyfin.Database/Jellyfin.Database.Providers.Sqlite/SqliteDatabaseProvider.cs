@@ -108,7 +108,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
 
         if (!File.Exists(backupFile))
         {
-            _logger.LogCritical("Tried to restore a backup that does not exist.");
+            _logger.LogCritical("Tried to restore a backup that does not exist: {Key}", key);
             return Task.CompletedTask;
         }
 
