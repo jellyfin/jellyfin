@@ -31,7 +31,7 @@
             }
         },
         {
-            "ratingStrings": ["18", "od 18 lat"],
+            "ratingStrings": ["18", "od 18 lat", "R"],
             "ratingScore": {
                 "score": 18,
                 "subScore": null
