@@ -24,6 +24,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Configuration;
@@ -697,10 +698,17 @@ public class LibraryController : BaseJellyfinApiController
             await LogDownloadAsync(item, user).ConfigureAwait(false);
         }
 
-        // Quotes are valid in linux. They'll possibly cause issues here.
-        var filename = Path.GetFileName(item.Path)?.Replace("\"", string.Empty, StringComparison.Ordinal);
+        if (item.GetType() == typeof(Playlist))
+        {
+            return File(await ((Playlist)item).GetPlaylistDownload(user).ConfigureAwait(false), "application/zip", "Playlist.zip");
+        }
+        else
+        {
+            // Quotes are valid in linux. They'll possibly cause issues here.
+            var filename = Path.GetFileName(item.Path)?.Replace("\"", string.Empty, StringComparison.Ordinal);
 
-        return PhysicalFile(item.Path, MimeTypes.GetMimeType(item.Path), filename, true);
+            return PhysicalFile(item.Path, MimeTypes.GetMimeType(item.Path), filename, true);
+        }
     }
 
     /// <summary>

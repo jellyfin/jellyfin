@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -229,6 +230,45 @@ namespace MediaBrowser.Controller.Playlists
             return [item];
         }
 
+        public async Task<byte[]> GetPlaylistDownload(User user)
+        {
+            var query = new InternalItemsQuery(user);
+            var playlistItems = GetChildren(user, true, query);
+            using (var ms = new MemoryStream())
+            {
+                using (var archive = new ZipArchive(ms, ZipArchiveMode.Create, true))
+                {
+                    MemoryStream memoryStream = new MemoryStream();
+                    TextWriter playlistWriter = new StreamWriter(memoryStream);
+                    await playlistWriter.WriteLineAsync("#EXTM3U").ConfigureAwait(false);
+
+                    foreach (var playlistItem in playlistItems)
+                    {
+                        byte[] bytes = await System.IO.File.ReadAllBytesAsync(playlistItem.Path).ConfigureAwait(false);
+                        var relativeFilePath = playlistItem.Path.TrimStart('/');
+                        var zipEntry = archive.CreateEntry(relativeFilePath, CompressionLevel.Fastest);
+
+                        using (var zipStream = zipEntry.Open())
+                        {
+                            await zipStream.WriteAsync(bytes).ConfigureAwait(false);
+                        }
+
+                        await playlistWriter.WriteLineAsync(relativeFilePath).ConfigureAwait(false);
+                    }
+
+                    await playlistWriter.FlushAsync().ConfigureAwait(false);
+                    playlistWriter.Close();
+                    var zipPlaylistEntry = archive.CreateEntry("playlist.m3u8", CompressionLevel.Fastest);
+                    using (var zipStream = zipPlaylistEntry.Open())
+                    {
+                        await zipStream.WriteAsync(memoryStream.GetBuffer()).ConfigureAwait(false);
+                    }
+                }
+
+                return ms.ToArray();
+            }
+        }
+
         public override bool IsVisible(User user, bool skipAllowedTagsCheck = false)
         {
             if (!IsSharedItem)
@@ -259,6 +299,11 @@ namespace MediaBrowser.Controller.Playlists
         public override bool CanDelete(User user)
         {
             return user.HasPermission(PermissionKind.IsAdministrator) || user.Id.Equals(OwnerUserId);
+        }
+
+        public override bool CanDownload()
+        {
+            return true;
         }
 
         public override bool IsVisibleStandalone(User user)
