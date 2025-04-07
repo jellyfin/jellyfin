@@ -715,7 +715,23 @@ public class LibraryController : BaseJellyfinApiController
             }
 
             await WriteZipAsStream(Response.Body, filesVirtual, filesDisk).ConfigureAwait(false);
+            return new EmptyResult();
+        }
+        else if (item.GetType() == typeof(MusicAlbum))
+        {
+            var album = (MusicAlbum)item;
+            var fileName = string.Join("_", album.Name.Split(Path.GetInvalidFileNameChars()));
+            Response.ContentType = "application/octet-stream";
+            Response.Headers.Append("Content-Disposition", $"attachment; filename=\"{fileName}.zip\"");
 
+            List<Tuple<string, byte[]>> filesVirtual = [];
+            List<Tuple<string, string>> filesDisk = new List<Tuple<string, string>>();
+            foreach (var track in album.Tracks)
+            {
+                filesDisk.Add(Tuple.Create(Path.GetFileName(track.Path), track.Path));
+            }
+
+            await WriteZipAsStream(Response.Body, filesVirtual, filesDisk).ConfigureAwait(false);
             return new EmptyResult();
         }
         else
