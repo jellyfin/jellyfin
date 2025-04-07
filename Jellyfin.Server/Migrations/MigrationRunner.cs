@@ -147,12 +147,18 @@ namespace Jellyfin.Server.Migrations
                 }
             }
 
-            List<IDatabaseMigrationRoutine> databaseMigrations = [];
+            List<IMigrationRoutine> databaseMigrations = [];
             try
             {
                 foreach (var migrationRoutine in migrationsToBeApplied)
                 {
                     logger.LogInformation("Applying migration '{Name}'", migrationRoutine.Name);
+                    var isDbMigration = migrationRoutine is IDatabaseMigrationRoutine;
+
+                    if (isDbMigration)
+                    {
+                        databaseMigrations.Add(migrationRoutine);
+                    }
 
                     try
                     {
@@ -166,11 +172,7 @@ namespace Jellyfin.Server.Migrations
 
                     // Mark the migration as completed
                     logger.LogInformation("Migration '{Name}' applied successfully", migrationRoutine.Name);
-                    if (migrationRoutine is IDatabaseMigrationRoutine dbRoutine)
-                    {
-                        databaseMigrations.Add(dbRoutine);
-                    }
-                    else
+                    if (!isDbMigration)
                     {
                         migrationOptions.Applied.Add((migrationRoutine.Id, migrationRoutine.Name));
                         saveConfiguration(migrationOptions);
