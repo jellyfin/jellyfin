@@ -68,7 +68,7 @@ public sealed class BaseItemRepository
     private static readonly IReadOnlyList<ItemValueType> _getArtistValueTypes = [ItemValueType.Artist];
     private static readonly IReadOnlyList<ItemValueType> _getAlbumArtistValueTypes = [ItemValueType.AlbumArtist];
     private static readonly IReadOnlyList<ItemValueType> _getStudiosValueTypes = [ItemValueType.Studios];
-    private static readonly IReadOnlyList<ItemValueType> _getGenreValueTypes = [ItemValueType.Studios];
+    private static readonly IReadOnlyList<ItemValueType> _getGenreValueTypes = [ItemValueType.Genre];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BaseItemRepository"/> class.
