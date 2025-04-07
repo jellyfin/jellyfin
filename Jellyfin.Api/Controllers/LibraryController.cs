@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -700,7 +701,22 @@ public class LibraryController : BaseJellyfinApiController
 
         if (item.GetType() == typeof(Playlist))
         {
-            return File(await ((Playlist)item).GetPlaylistDownload(user).ConfigureAwait(false), "application/zip", "Playlist.zip");
+            Response.ContentType = "application/octet-stream";
+            Response.Headers.Append("Content-Disposition", "attachment; filename=\"Playlist.zip\"");
+
+            var playlist = (Playlist)item;
+            var playlistFile = playlist.GetPlaylistAsFileBytes(user);
+
+            List<Tuple<string, byte[]>> filesVirtual = [new Tuple<string, byte[]>("Playlist.m3u8", playlistFile)];
+            List<Tuple<string, string>> filesDisk = new List<Tuple<string, string>>();
+            foreach (var playlistItem in playlist.GetChildPaths(user))
+            {
+                filesDisk.Add(Tuple.Create(playlistItem.TrimStart('/'), playlistItem));
+            }
+
+            await WriteZipAsStream(Response.Body, filesVirtual, filesDisk).ConfigureAwait(false);
+
+            return new EmptyResult();
         }
         else
         {
@@ -708,6 +724,37 @@ public class LibraryController : BaseJellyfinApiController
             var filename = Path.GetFileName(item.Path)?.Replace("\"", string.Empty, StringComparison.Ordinal);
 
             return PhysicalFile(item.Path, MimeTypes.GetMimeType(item.Path), filename, true);
+        }
+    }
+
+    private static async Task WriteZipAsStream(Stream stream, List<Tuple<string, byte[]>> filesVirtual, List<Tuple<string, string>> filesDisk)
+    {
+        using (ZipArchive archive = new ZipArchive(new PositionWrapperStream(stream), ZipArchiveMode.Create))
+        {
+            foreach (var file in filesVirtual)
+            {
+                var fileName = file.Item1;
+                var fileBytes = file.Item2;
+
+                var entry = archive.CreateEntry(fileName);
+                using (var entryStream = entry.Open())
+                {
+                    await entryStream.WriteAsync(fileBytes).ConfigureAwait(false);
+                }
+            }
+
+            foreach (var file in filesDisk)
+            {
+                var fileName = file.Item1;
+                var filePath = file.Item2;
+
+                var entry = archive.CreateEntry(fileName);
+                using (var entryStream = entry.Open())
+                using (var fileStream = System.IO.File.OpenRead(filePath))
+                {
+                    await fileStream.CopyToAsync(entryStream).ConfigureAwait(false);
+                }
+            }
         }
     }
 
