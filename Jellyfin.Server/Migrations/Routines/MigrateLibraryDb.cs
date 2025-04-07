@@ -138,14 +138,14 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             """;
 
             // EFCores local lookup sucks. We cannot use context.ItemValues.Local here because its just super slow.
-            var localItems = new Dictionary<(int Type, string CleanValue), (Database.Implementations.Entities.ItemValue ItemValue, List<Guid> ItemIds)>();
+            var localItems = new Dictionary<(int Type, string Value), (Database.Implementations.Entities.ItemValue ItemValue, List<Guid> ItemIds)>();
             using (new TrackedMigrationStep("loading ItemValues", _logger))
             {
                 foreach (SqliteDataReader dto in connection.Query(itemValueQuery))
                 {
                     var itemId = dto.GetGuid(0);
                     var entity = GetItemValue(dto);
-                    var key = ((int)entity.Type, entity.CleanValue);
+                    var key = ((int)entity.Type, entity.Value);
                     if (!localItems.TryGetValue(key, out var existing))
                     {
                         localItems[key] = existing = (entity, []);
