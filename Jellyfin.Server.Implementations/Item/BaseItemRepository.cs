@@ -490,7 +490,7 @@ public sealed class BaseItemRepository
         var localItemValueCache = new Dictionary<(int MagicNumber, string Value), Guid>();
 
         using var context = _dbProvider.CreateDbContext();
-        using var transaction = context.Database.BeginTransaction();
+        // using var transaction = context.Database.BeginTransaction();
         foreach (var item in tuples)
         {
             var entity = Map(item.Item);
@@ -507,29 +507,35 @@ public sealed class BaseItemRepository
                 context.BaseItems.Attach(entity).State = EntityState.Modified;
             }
 
-            context.AncestorIds.Where(e => e.ItemId == entity.Id).ExecuteDelete();
             if (item.Item.SupportsAncestors && item.AncestorIds != null)
             {
-                foreach (var ancestorId in item.AncestorIds)
+                var existingAncestorIds = context.AncestorIds.Where(e => e.ItemId == entity.Id).ToList();
+                var validAncestorIds = context.BaseItems.Where(e => item.AncestorIds.Contains(e.Id)).Select(f => f.Id).ToArray();
+                foreach (var ancestorId in validAncestorIds)
                 {
-                    if (!context.BaseItems.Any(f => f.Id == ancestorId))
+                    var existingAncestorId = existingAncestorIds.FirstOrDefault(e => e.ParentItemId == ancestorId);
+                    if (existingAncestorId is null)
                     {
-                        continue;
+                        context.AncestorIds.Add(new AncestorId()
+                        {
+                            ParentItemId = ancestorId,
+                            ItemId = entity.Id,
+                            Item = null!,
+                            ParentItem = null!
+                        });
                     }
-
-                    context.AncestorIds.Add(new AncestorId()
+                    else
                     {
-                        ParentItemId = ancestorId,
-                        ItemId = entity.Id,
-                        Item = null!,
-                        ParentItem = null!
-                    });
+                        existingAncestorIds.Remove(existingAncestorId);
+                    }
                 }
+
+                context.AncestorIds.RemoveRange(existingAncestorIds);
             }
 
             // Never save duplicate itemValues as they are now mapped anyway.
             var itemValuesToSave = GetItemValuesToSave(item.Item, item.InheritedTags).DistinctBy(e => (GetCleanValue(e.Value), e.MagicNumber));
-            context.ItemValuesMap.Where(e => e.ItemId == entity.Id).ExecuteDelete();
+            var mappedValues = context.ItemValuesMap.Where(e => e.ItemId == entity.Id).ToList();
             foreach (var itemValue in itemValuesToSave)
             {
                 if (!localItemValueCache.TryGetValue(itemValue, out var refValue))
@@ -552,18 +558,30 @@ public sealed class BaseItemRepository
                     localItemValueCache[itemValue] = refValue;
                 }
 
-                context.ItemValuesMap.Add(new ItemValueMap()
+                var existingItem = mappedValues.FirstOrDefault(f => f.ItemValueId == refValue);
+                if (existingItem is null)
                 {
-                    Item = null!,
-                    ItemId = entity.Id,
-                    ItemValue = null!,
-                    ItemValueId = refValue
-                });
+                    context.ItemValuesMap.Add(new ItemValueMap()
+                    {
+                        Item = null!,
+                        ItemId = entity.Id,
+                        ItemValue = null!,
+                        ItemValueId = refValue
+                    });
+                }
+                else
+                {
+                    // map exists, remove from list so its been handled.
+                    mappedValues.Remove(existingItem);
+                }
             }
+
+            // all still listed values are not in the new list so remove them.
+            context.ItemValuesMap.RemoveRange(mappedValues);
         }
 
         context.SaveChanges();
-        transaction.Commit();
+        // transaction.Commit();
     }
 
     /// <inheritdoc  />

@@ -5,6 +5,7 @@ using System.Linq;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Entities.Libraries;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
@@ -68,34 +69,46 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
     public void UpdatePeople(Guid itemId, IReadOnlyList<PersonInfo> people)
     {
         using var context = _dbProvider.CreateDbContext();
-        using var transaction = context.Database.BeginTransaction();
+        // using var transaction = context.Database.BeginTransaction(System.Data.IsolationLevel.ReadUncommitted);
 
-        context.PeopleBaseItemMap.Where(e => e.ItemId == itemId).ExecuteDelete();
         // TODO: yes for __SOME__ reason there can be duplicates.
-        foreach (var item in people.DistinctBy(e => e.Id))
-        {
-            var personEntity = Map(item);
-            var existingEntity = context.Peoples.FirstOrDefault(e => e.Id == personEntity.Id);
-            if (existingEntity is null)
-            {
-                context.Peoples.Add(personEntity);
-                existingEntity = personEntity;
-            }
+        people = people.DistinctBy(e => e.Id).ToArray();
+        var personids = people.Select(f => f.Id);
+        var existingPersons = context.Peoples.Where(p => personids.Contains(p.Id)).Select(f => f.Id).ToArray();
+        context.Peoples.AddRange(people.Where(e => !existingPersons.Contains(e.Id)).Select(Map));
+        context.SaveChanges();
 
-            context.PeopleBaseItemMap.Add(new PeopleBaseItemMap()
+        var maps = context.PeopleBaseItemMap.Where(e => e.ItemId == itemId).ToList();
+
+        // context.PeopleBaseItemMap.Where(e => e.ItemId == itemId).ExecuteDelete();
+        // .Join(maps, e => e.Id, e => e.PeopleId, (person, map) => (map, person)).Where(e => e.map is null)
+        foreach (var person in people)
+        {
+            var existingMap = maps.FirstOrDefault(e => e.PeopleId == person.Id);
+            if (existingMap is null)
             {
-                Item = null!,
-                ItemId = itemId,
-                People = existingEntity,
-                PeopleId = existingEntity.Id,
-                ListOrder = item.SortOrder,
-                SortOrder = item.SortOrder,
-                Role = item.Role
-            });
+                context.PeopleBaseItemMap.Add(new PeopleBaseItemMap()
+                {
+                    Item = null!,
+                    ItemId = itemId,
+                    People = null!,
+                    PeopleId = person.Id,
+                    ListOrder = person.SortOrder,
+                    SortOrder = person.SortOrder,
+                    Role = person.Role
+                });
+            }
+            else
+            {
+                // person mapping already exists so remove from list
+                maps.Remove(existingMap);
+            }
         }
 
+        context.PeopleBaseItemMap.RemoveRange(maps);
+
         context.SaveChanges();
-        transaction.Commit();
+        // transaction.Commit();
     }
 
     private PersonInfo Map(People people)
