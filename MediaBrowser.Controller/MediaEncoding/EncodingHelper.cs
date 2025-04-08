@@ -2872,10 +2872,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var seekTick = isHlsRemuxing ? time + 5000000L : time;
 
                 // Seeking beyond EOF makes no sense in transcoding. Clamp the seekTick value to
-                // [0, RuntimeTicks - 0.5s], so that the muxer gets packets and avoid error codes.
+                // [0, RuntimeTicks - 5.0s], so that the muxer gets packets and avoid error codes.
                 if (maxTime > 0)
                 {
-                    seekTick = Math.Clamp(seekTick, 0, Math.Max(maxTime - 5000000L, 0));
+                    seekTick = Math.Clamp(seekTick, 0, Math.Max(maxTime - 50000000L, 0));
                 }
 
                 seekParam += string.Format(CultureInfo.InvariantCulture, "-ss {0}", _mediaEncoder.GetTimeParameter(seekTick));
