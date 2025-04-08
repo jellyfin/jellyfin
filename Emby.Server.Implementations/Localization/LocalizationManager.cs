@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -37,6 +39,8 @@ namespace Emby.Server.Implementations.Localization
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
         private List<CultureDto> _cultures = [];
+
+        private FrozenDictionary<string, string> _iso6392BtoT = null!;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LocalizationManager" /> class.
@@ -100,6 +104,7 @@ namespace Emby.Server.Implementations.Localization
         private async Task LoadCultures()
         {
             List<CultureDto> list = [];
+            Dictionary<string, string> iso6392BtoTdict = new Dictionary<string, string>();
 
             using var stream = _assembly.GetManifestResourceStream(CulturesPath);
             if (stream is null)
@@ -142,12 +147,17 @@ namespace Emby.Server.Implementations.Localization
                     else
                     {
                         threeLetterNames = [parts[0], parts[1]];
+
+                        // In cases where there are two TLN the first one is ISO 639-2/T and the second one is ISO 639-2/B
+                        // We need ISO 639-2/T for the .NET cultures so we cultivate a dictionary for the translation B->T
+                        iso6392BtoTdict.TryAdd(parts[1], parts[0]);
                     }
 
                     list.Add(new CultureDto(name, name, twoCharName, threeLetterNames));
                 }
 
                 _cultures = list;
+                _iso6392BtoT = iso6392BtoTdict.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
             }
         }
 
@@ -504,6 +514,27 @@ namespace Emby.Server.Implementations.Localization
             yield return new LocalizationOption("汉语 (简体字)", "zh-CN");
             yield return new LocalizationOption("漢語 (繁體字)", "zh-TW");
             yield return new LocalizationOption("廣東話 (香港)", "zh-HK");
+        }
+
+        /// <inheritdoc />
+        public bool TryGetISO6392TFromB(string isoB, [NotNullWhen(true)] out string? isoT)
+        {
+            // Unlikely case the dictionary is not (yet) initialized properly
+            if (_iso6392BtoT == null)
+            {
+                isoT = null;
+                return false;
+            }
+
+            var result = _iso6392BtoT.TryGetValue(isoB, out isoT) && !string.IsNullOrEmpty(isoT);
+
+            // Ensure the ISO code being null if the result is false
+            if (!result)
+            {
+                isoT = null;
+            }
+
+            return result;
         }
     }
 }
