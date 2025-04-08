@@ -491,13 +491,17 @@ public sealed class BaseItemRepository
 
         using var context = _dbProvider.CreateDbContext();
         // using var transaction = context.Database.BeginTransaction();
+
+        var ids = tuples.Select(f => f.Item.Id).ToArray();
+        var existingItems = context.BaseItems.Where(e => ids.Contains(e.Id)).Select(f => f.Id).ToArray();
+
         foreach (var item in tuples)
         {
             var entity = Map(item.Item);
             // TODO: refactor this "inconsistency"
             entity.TopParentId = item.TopParent?.Id;
 
-            if (!context.BaseItems.Any(e => e.Id == entity.Id))
+            if (!existingItems.Any(e => e == entity.Id))
             {
                 context.BaseItems.Add(entity);
             }
@@ -506,10 +510,15 @@ public sealed class BaseItemRepository
                 context.BaseItemProviders.Where(e => e.ItemId == entity.Id).ExecuteDelete();
                 context.BaseItems.Attach(entity).State = EntityState.Modified;
             }
+        }
 
+        context.SaveChanges();
+
+        foreach (var item in tuples)
+        {
             if (item.Item.SupportsAncestors && item.AncestorIds != null)
             {
-                var existingAncestorIds = context.AncestorIds.Where(e => e.ItemId == entity.Id).ToList();
+                var existingAncestorIds = context.AncestorIds.Where(e => e.ItemId == item.Item.Id).ToList();
                 var validAncestorIds = context.BaseItems.Where(e => item.AncestorIds.Contains(e.Id)).Select(f => f.Id).ToArray();
                 foreach (var ancestorId in validAncestorIds)
                 {
@@ -519,7 +528,7 @@ public sealed class BaseItemRepository
                         context.AncestorIds.Add(new AncestorId()
                         {
                             ParentItemId = ancestorId,
-                            ItemId = entity.Id,
+                            ItemId = item.Item.Id,
                             Item = null!,
                             ParentItem = null!
                         });
@@ -535,7 +544,7 @@ public sealed class BaseItemRepository
 
             // Never save duplicate itemValues as they are now mapped anyway.
             var itemValuesToSave = GetItemValuesToSave(item.Item, item.InheritedTags).DistinctBy(e => (GetCleanValue(e.Value), e.MagicNumber));
-            var mappedValues = context.ItemValuesMap.Where(e => e.ItemId == entity.Id).ToList();
+            var mappedValues = context.ItemValuesMap.Where(e => e.ItemId == item.Item.Id).ToList();
             foreach (var itemValue in itemValuesToSave)
             {
                 if (!localItemValueCache.TryGetValue(itemValue, out var refValue))
@@ -564,7 +573,7 @@ public sealed class BaseItemRepository
                     context.ItemValuesMap.Add(new ItemValueMap()
                     {
                         Item = null!,
-                        ItemId = entity.Id,
+                        ItemId = item.Item.Id,
                         ItemValue = null!,
                         ItemValueId = refValue
                     });
