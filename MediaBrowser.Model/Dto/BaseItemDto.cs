@@ -551,7 +551,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the parent primary image item identifier.
         /// </summary>
         /// <value>The parent primary image item identifier.</value>
-        public string ParentPrimaryImageItemId { get; set; }
+        public Guid? ParentPrimaryImageItemId { get; set; }
 
         /// <summary>
         /// Gets or sets the parent primary image tag.
