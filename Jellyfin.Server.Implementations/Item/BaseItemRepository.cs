@@ -489,7 +489,7 @@ public sealed class BaseItemRepository
         }
 
         using var context = _dbProvider.CreateDbContext();
-        // using var transaction = context.Database.BeginTransaction();
+        using var transaction = context.Database.BeginTransaction();
 
         var ids = tuples.Select(f => f.Item.Id).ToArray();
         var existingItems = context.BaseItems.Where(e => ids.Contains(e.Id)).Select(f => f.Id).ToArray();
@@ -561,16 +561,6 @@ public sealed class BaseItemRepository
                         ItemValue = null!,
                         ItemValueId = itemValue.ItemValueId
                     });
-
-                    if (!context.BaseItems.Any(f => f.Id == item.Item.Id))
-                    {
-                        throw new InvalidCastException();
-                    }
-
-                    if (!context.ItemValues.Any(f => f.ItemValueId == itemValue.ItemValueId))
-                    {
-                        throw new InvalidCastException();
-                    }
                 }
                 else
                 {
@@ -615,7 +605,7 @@ public sealed class BaseItemRepository
         }
 
         context.SaveChanges();
-        // transaction.Commit();
+        transaction.Commit();
     }
 
     /// <inheritdoc  />
