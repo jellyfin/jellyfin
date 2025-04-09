@@ -35,6 +35,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.Extensions.Logging;
 using BaseItemDto = MediaBrowser.Controller.Entities.BaseItem;
 using BaseItemEntity = Jellyfin.Database.Implementations.Entities.BaseItemEntity;
@@ -487,8 +488,6 @@ public sealed class BaseItemRepository
             tuples.Add((item, ancestorIds, topParent, userdataKey, inheritedTags));
         }
 
-        var localItemValueCache = new Dictionary<(int MagicNumber, string Value), Guid>();
-
         using var context = _dbProvider.CreateDbContext();
         // using var transaction = context.Database.BeginTransaction();
 
@@ -513,6 +512,58 @@ public sealed class BaseItemRepository
         }
 
         context.SaveChanges();
+
+        var itemValueMaps = tuples
+            .Select(e => (Item: e.Item, Values: GetItemValuesToSave(e.Item, e.InheritedTags)))
+            .ToArray();
+        var itemValues = itemValueMaps
+            .SelectMany(f => f.Values)
+            .DistinctBy(e => (e.Value, e.MagicNumber))
+            .ToArray();
+        var existingValues = context.ItemValues.Where(f => itemValues.Any(e => e.MagicNumber == (int)f.Type && e.Value == f.Value)).ToArray();
+        var missingItemValues = itemValues.Except(existingValues.Select(f => (MagicNumber: (int)f.Type, f.Value))).Select(f => new ItemValue()
+        {
+            CleanValue = GetCleanValue(f.Value),
+            ItemValueId = Guid.NewGuid(),
+            Type = (ItemValueType)f.MagicNumber,
+            Value = f.Value
+        });
+        context.ItemValues.AddRange(missingItemValues);
+        context.SaveChanges();
+
+        var itemValuesStore = existingValues.Concat(missingItemValues).ToArray();
+        var valueMap = itemValueMaps
+            .Select(f => (Item: f.Item, Values: f.Values.Select(e => itemValuesStore.First(g => g.Value == e.Value && (int)g.Type == e.MagicNumber)).ToArray()))
+            .ToArray();
+
+        var mappedValues = context.ItemValuesMap.Where(e => ids.Contains(e.ItemId)).ToList();
+
+        foreach (var item in valueMap)
+        {
+            var itemMappedValues = mappedValues.Where(e => e.ItemId == item.Item.Id).ToList();
+            foreach (var itemValue in item.Values)
+            {
+                var existingItem = itemMappedValues.FirstOrDefault(f => f.ItemValueId == itemValue.ItemValueId);
+                if (existingItem is null)
+                {
+                    context.ItemValuesMap.Add(new ItemValueMap()
+                    {
+                        Item = null!,
+                        ItemId = item.Item.Id,
+                        ItemValue = null!,
+                        ItemValueId = itemValue.ItemValueId
+                    });
+                }
+                else
+                {
+                    // map exists, remove from list so its been handled.
+                    itemMappedValues.Remove(existingItem);
+                }
+            }
+
+            // all still listed values are not in the new list so remove them.
+            context.ItemValuesMap.RemoveRange(itemMappedValues);
+        }
 
         foreach (var item in tuples)
         {
@@ -541,52 +592,6 @@ public sealed class BaseItemRepository
 
                 context.AncestorIds.RemoveRange(existingAncestorIds);
             }
-
-            // Never save duplicate itemValues as they are now mapped anyway.
-            var itemValuesToSave = GetItemValuesToSave(item.Item, item.InheritedTags).DistinctBy(e => (GetCleanValue(e.Value), e.MagicNumber));
-            var mappedValues = context.ItemValuesMap.Where(e => e.ItemId == item.Item.Id).ToList();
-            foreach (var itemValue in itemValuesToSave)
-            {
-                if (!localItemValueCache.TryGetValue(itemValue, out var refValue))
-                {
-                    refValue = context.ItemValues
-                                .Where(f => f.Value == itemValue.Value && (int)f.Type == itemValue.MagicNumber)
-                                .Select(e => e.ItemValueId)
-                                .FirstOrDefault();
-                }
-
-                if (refValue.IsEmpty())
-                {
-                    context.ItemValues.Add(new ItemValue()
-                    {
-                        CleanValue = GetCleanValue(itemValue.Value),
-                        Type = (ItemValueType)itemValue.MagicNumber,
-                        ItemValueId = refValue = Guid.NewGuid(),
-                        Value = itemValue.Value
-                    });
-                    localItemValueCache[itemValue] = refValue;
-                }
-
-                var existingItem = mappedValues.FirstOrDefault(f => f.ItemValueId == refValue);
-                if (existingItem is null)
-                {
-                    context.ItemValuesMap.Add(new ItemValueMap()
-                    {
-                        Item = null!,
-                        ItemId = item.Item.Id,
-                        ItemValue = null!,
-                        ItemValueId = refValue
-                    });
-                }
-                else
-                {
-                    // map exists, remove from list so its been handled.
-                    mappedValues.Remove(existingItem);
-                }
-            }
-
-            // all still listed values are not in the new list so remove them.
-            context.ItemValuesMap.RemoveRange(mappedValues);
         }
 
         context.SaveChanges();
