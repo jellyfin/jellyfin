@@ -445,12 +445,13 @@ namespace Jellyfin.LiveTv.Channels
 
             if (item is null)
             {
+                var info = Directory.CreateDirectory(path);
                 item = new Channel
                 {
                     Name = channelInfo.Name,
                     Id = id,
-                    DateCreated = _fileSystem.GetCreationTimeUtc(path),
-                    DateModified = _fileSystem.GetLastWriteTimeUtc(path)
+                    DateCreated = info.CreationTimeUtc,
+                    DateModified = info.LastWriteTimeUtc
                 };
 
                 isNew = true;
