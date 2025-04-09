@@ -620,6 +620,7 @@ public sealed class BaseItemRepository
         dto.PreferredMetadataCountryCode = entity.PreferredMetadataCountryCode;
         dto.IsInMixedFolder = entity.IsInMixedFolder;
         dto.InheritedParentalRatingValue = entity.InheritedParentalRatingValue;
+        dto.InheritedParentalRatingSubValue = entity.InheritedParentalRatingSubValue;
         dto.CriticRating = entity.CriticRating;
         dto.PresentationUniqueKey = entity.PresentationUniqueKey;
         dto.OriginalTitle = entity.OriginalTitle;
