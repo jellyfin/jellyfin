@@ -129,6 +129,13 @@ public class MediaInfoHelper
             var mediaSourcesClone = JsonSerializer.Deserialize<MediaSourceInfo[]>(JsonSerializer.SerializeToUtf8Bytes(mediaSources));
             if (mediaSourcesClone is not null)
             {
+                // Carry over the default audio index source.
+                // This field is not intended to be exposed to API clients, but it is used internally by the server
+                for (int i = 0; i < mediaSourcesClone.Length && i < mediaSources.Length; i++)
+                {
+                    mediaSourcesClone[i].DefaultAudioIndexSource = mediaSources[i].DefaultAudioIndexSource;
+                }
+
                 result.MediaSources = mediaSourcesClone;
             }
 
