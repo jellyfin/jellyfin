@@ -227,7 +227,7 @@ namespace Jellyfin.Server
                 var configTestFilePath = Path.Combine(appPaths.DataPath, "storagetest.bin");
                 if (File.Exists(configTestFilePath))
                 {
-                    logger.LogInformation("Testfile {TestFilename} seem to already exist, try deleting it.", configTestFilePath);
+                    logger.LogInformation("Testfile {TestFilename} seem to already exist, will now attempt to delete it.", configTestFilePath);
                     File.Delete(configTestFilePath);
                 }
 
@@ -244,7 +244,7 @@ namespace Jellyfin.Server
                     }
                 }
 
-                logger.LogInformation("Testfile {TestFilename} has been successfully in {Time} been created try deleting it.", configTestFilePath, stopwatch.Elapsed);
+                logger.LogInformation("Testfile {TestFilename} has been successfully in {Time} been created, will now attempt to delete it.", configTestFilePath, stopwatch.Elapsed);
 
                 File.Delete(configTestFilePath);
             }
