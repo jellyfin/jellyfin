@@ -1,6 +1,9 @@
 using System;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using Microsoft.Extensions.Logging;
@@ -73,6 +76,26 @@ namespace Emby.Server.Implementations.Library.Validators
                 percent *= 100;
 
                 progress.Report(percent);
+            }
+
+            var deadEntities = _libraryManager.GetItemList(new InternalItemsQuery
+            {
+                IncludeItemTypes = [BaseItemKind.Genre],
+                IsDeadGenre = true,
+                IsLocked = false
+            });
+
+            foreach (var item in deadEntities)
+            {
+                _logger.LogInformation("Deleting dead {ItemType} {ItemId} {ItemName}", item.GetType().Name, item.Id.ToString("N", CultureInfo.InvariantCulture), item.Name);
+
+                _libraryManager.DeleteItem(
+                    item,
+                    new DeleteOptions
+                    {
+                        DeleteFileLocation = false
+                    },
+                    false);
             }
 
             progress.Report(100);

@@ -1962,13 +1962,19 @@ public sealed class BaseItemRepository
         if (filter.IsDeadArtist.HasValue && filter.IsDeadArtist.Value)
         {
             baseQuery = baseQuery
-                    .Where(e => e.ItemValues!.Count(f => f.ItemValue.Type == ItemValueType.Artist || f.ItemValue.Type == ItemValueType.AlbumArtist) == 1);
+                    .Where(e => !context.ItemValues.Where(f => _getAllArtistsValueTypes.Contains(f.Type)).Any(f => f.Value == e.Name));
         }
 
         if (filter.IsDeadStudio.HasValue && filter.IsDeadStudio.Value)
         {
             baseQuery = baseQuery
-                    .Where(e => e.ItemValues!.Count(f => f.ItemValue.Type == ItemValueType.Studios) == 1);
+                    .Where(e => !context.ItemValues.Where(f => _getStudiosValueTypes.Contains(f.Type)).Any(f => f.Value == e.Name));
+        }
+
+        if (filter.IsDeadGenre.HasValue && filter.IsDeadGenre.Value)
+        {
+            baseQuery = baseQuery
+                    .Where(e => !context.ItemValues.Where(f => _getGenreValueTypes.Contains(f.Type)).Any(f => f.Value == e.Name));
         }
 
         if (filter.IsDeadPerson.HasValue && filter.IsDeadPerson.Value)
