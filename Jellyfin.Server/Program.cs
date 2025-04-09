@@ -120,6 +120,8 @@ namespace Jellyfin.Server
                 }
             }
 
+            TestDataDirectoryAccess(appPaths, _loggerFactory.CreateLogger<Startup>());
+
             StartupHelpers.PerformStaticInitialization();
             await Migrations.MigrationRunner.RunPreStartup(appPaths, _loggerFactory).ConfigureAwait(false);
 
@@ -216,6 +218,43 @@ namespace Jellyfin.Server
                 _appHost = null;
                 _jellyfinHost?.Dispose();
             }
+        }
+
+        private static void TestDataDirectoryAccess(IServerApplicationPaths appPaths, ILogger logger)
+        {
+            try
+            {
+                var configTestFilePath = Path.Combine(appPaths.DataPath, "storagetest.bin");
+                if (File.Exists(configTestFilePath))
+                {
+                    logger.LogInformation("Testfile {TestFilename} seem to already exist, try deleting it.", configTestFilePath);
+                    File.Delete(configTestFilePath);
+                }
+
+                logger.LogInformation("Try create {TestFilename}.", configTestFilePath);
+                var stopwatch = Stopwatch.StartNew();
+                using (var fs = File.Create(configTestFilePath))
+                {
+                    logger.LogInformation("Try write 10 megabyte file to {TestFilename}.", configTestFilePath);
+                    var buffer = new byte[1028];
+                    for (int i = 0; i < 1028 * 10; i++)
+                    {
+                        Random.Shared.NextBytes(buffer);
+                        fs.Write(buffer);
+                    }
+                }
+
+                logger.LogInformation("Testfile {TestFilename} has been successfully in {Time} been created try deleting it.", configTestFilePath, stopwatch.Elapsed);
+
+                File.Delete(configTestFilePath);
+            }
+            catch (Exception exception)
+            {
+                logger.LogError(exception, "Could not successfuly test access to the configuration directory. This may indicate a permission issue or your storage is full.");
+                throw;
+            }
+
+            logger.LogInformation("Storage successfully tested.");
         }
 
         /// <summary>
