@@ -454,11 +454,9 @@ public sealed class BaseItemRepository
 
         var images = item.ImageInfos.Select(e => Map(item.Id, e));
         using var context = _dbProvider.CreateDbContext();
-        using var transaction = context.Database.BeginTransaction();
         context.BaseItemImageInfos.Where(e => e.ItemId == item.Id).ExecuteDelete();
         context.BaseItemImageInfos.AddRange(images);
         context.SaveChanges();
-        transaction.Commit();
     }
 
     /// <inheritdoc  />
