@@ -69,7 +69,6 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
     public void UpdatePeople(Guid itemId, IReadOnlyList<PersonInfo> people)
     {
         using var context = _dbProvider.CreateDbContext();
-        // using var transaction = context.Database.BeginTransaction(System.Data.IsolationLevel.ReadUncommitted);
 
         // TODO: yes for __SOME__ reason there can be duplicates.
         people = people.DistinctBy(e => e.Id).ToArray();
@@ -79,9 +78,6 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         context.SaveChanges();
 
         var maps = context.PeopleBaseItemMap.Where(e => e.ItemId == itemId).ToList();
-
-        // context.PeopleBaseItemMap.Where(e => e.ItemId == itemId).ExecuteDelete();
-        // .Join(maps, e => e.Id, e => e.PeopleId, (person, map) => (map, person)).Where(e => e.map is null)
         foreach (var person in people)
         {
             var existingMap = maps.FirstOrDefault(e => e.PeopleId == person.Id);
@@ -108,7 +104,6 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         context.PeopleBaseItemMap.RemoveRange(maps);
 
         context.SaveChanges();
-        // transaction.Commit();
     }
 
     private PersonInfo Map(People people)
