@@ -516,24 +516,32 @@ public sealed class BaseItemRepository
         var itemValueMaps = tuples
             .Select(e => (Item: e.Item, Values: GetItemValuesToSave(e.Item, e.InheritedTags)))
             .ToArray();
-        var itemValues = itemValueMaps
+        var allListedItemValues = itemValueMaps
             .SelectMany(f => f.Values)
-            .DistinctBy(e => (e.Value, e.MagicNumber))
+            .Distinct()
             .ToArray();
-        var existingValues = context.ItemValues.Where(f => itemValues.Any(e => e.MagicNumber == (int)f.Type && e.Value == f.Value)).ToArray();
-        var missingItemValues = itemValues.Except(existingValues.Select(f => (MagicNumber: (int)f.Type, f.Value))).Select(f => new ItemValue()
+        var existingValues = context.ItemValues
+            .Select(e => new
+            {
+                item = e,
+                Key = e.Type + "+" + e.Value
+            })
+            .Where(f => allListedItemValues.Select(e => $"{(int)e.MagicNumber}+{e.Value}").Contains(f.Key))
+            .Select(e => e.item)
+            .ToArray();
+        var missingItemValues = allListedItemValues.Except(existingValues.Select(f => (MagicNumber: f.Type, f.Value))).Select(f => new ItemValue()
         {
             CleanValue = GetCleanValue(f.Value),
             ItemValueId = Guid.NewGuid(),
-            Type = (ItemValueType)f.MagicNumber,
+            Type = f.MagicNumber,
             Value = f.Value
-        });
+        }).ToArray();
         context.ItemValues.AddRange(missingItemValues);
         context.SaveChanges();
 
         var itemValuesStore = existingValues.Concat(missingItemValues).ToArray();
         var valueMap = itemValueMaps
-            .Select(f => (Item: f.Item, Values: f.Values.Select(e => itemValuesStore.First(g => g.Value == e.Value && (int)g.Type == e.MagicNumber)).ToArray()))
+            .Select(f => (Item: f.Item, Values: f.Values.Select(e => itemValuesStore.First(g => g.Value == e.Value && g.Type == e.MagicNumber)).ToArray()))
             .ToArray();
 
         var mappedValues = context.ItemValuesMap.Where(e => ids.Contains(e.ItemId)).ToList();
@@ -553,6 +561,16 @@ public sealed class BaseItemRepository
                         ItemValue = null!,
                         ItemValueId = itemValue.ItemValueId
                     });
+
+                    if (!context.BaseItems.Any(f => f.Id == item.Item.Id))
+                    {
+                        throw new InvalidCastException();
+                    }
+
+                    if (!context.ItemValues.Any(f => f.ItemValueId == itemValue.ItemValueId))
+                    {
+                        throw new InvalidCastException();
+                    }
                 }
                 else
                 {
@@ -564,6 +582,8 @@ public sealed class BaseItemRepository
             // all still listed values are not in the new list so remove them.
             context.ItemValuesMap.RemoveRange(itemMappedValues);
         }
+
+        context.SaveChanges();
 
         foreach (var item in tuples)
         {
@@ -1133,27 +1153,27 @@ public sealed class BaseItemRepository
         return value.RemoveDiacritics().ToLowerInvariant();
     }
 
-    private List<(int MagicNumber, string Value)> GetItemValuesToSave(BaseItemDto item, List<string> inheritedTags)
+    private List<(ItemValueType MagicNumber, string Value)> GetItemValuesToSave(BaseItemDto item, List<string> inheritedTags)
     {
-        var list = new List<(int, string)>();
+        var list = new List<(ItemValueType, string)>();
 
         if (item is IHasArtist hasArtist)
         {
-            list.AddRange(hasArtist.Artists.Select(i => (0, i)));
+            list.AddRange(hasArtist.Artists.Select(i => ((ItemValueType)0, i)));
         }
 
         if (item is IHasAlbumArtist hasAlbumArtist)
         {
-            list.AddRange(hasAlbumArtist.AlbumArtists.Select(i => (1, i)));
+            list.AddRange(hasAlbumArtist.AlbumArtists.Select(i => (ItemValueType.AlbumArtist, i)));
         }
 
-        list.AddRange(item.Genres.Select(i => (2, i)));
-        list.AddRange(item.Studios.Select(i => (3, i)));
-        list.AddRange(item.Tags.Select(i => (4, i)));
+        list.AddRange(item.Genres.Select(i => (ItemValueType.Genre, i)));
+        list.AddRange(item.Studios.Select(i => (ItemValueType.Studios, i)));
+        list.AddRange(item.Tags.Select(i => (ItemValueType.Tags, i)));
 
         // keywords was 5
 
-        list.AddRange(inheritedTags.Select(i => (6, i)));
+        list.AddRange(inheritedTags.Select(i => (ItemValueType.InheritedTags, i)));
 
         // Remove all invalid values.
         list.RemoveAll(i => string.IsNullOrWhiteSpace(i.Item2));
