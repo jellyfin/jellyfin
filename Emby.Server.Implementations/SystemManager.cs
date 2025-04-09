@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Threading.Tasks;
+using Jellyfin.Server.Implementations.StorageHelpers;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
@@ -57,13 +58,13 @@ public class SystemManager : ISystemManager
             WebSocketPortNumber = _applicationHost.HttpPort,
             CompletedInstallations = _installationManager.CompletedInstallations.ToArray(),
             Id = _applicationHost.SystemId,
-            ProgramDataPath = _applicationPaths.ProgramDataPath,
-            WebPath = _applicationPaths.WebPath,
-            LogPath = _applicationPaths.LogDirectoryPath,
-            ItemsByNamePath = _applicationPaths.InternalMetadataPath,
-            InternalMetadataPath = _applicationPaths.InternalMetadataPath,
-            CachePath = _applicationPaths.CachePath,
-            TranscodingTempPath = _configurationManager.GetTranscodePath(),
+            ProgramDataPath = StorageHelper.GetFreeSpaceOf(_applicationPaths.ProgramDataPath),
+            WebPath = StorageHelper.GetFreeSpaceOf(_applicationPaths.WebPath),
+            LogPath = StorageHelper.GetFreeSpaceOf(_applicationPaths.LogDirectoryPath),
+            ItemsByNamePath = StorageHelper.GetFreeSpaceOf(_applicationPaths.InternalMetadataPath),
+            InternalMetadataPath = StorageHelper.GetFreeSpaceOf(_applicationPaths.InternalMetadataPath),
+            CachePath = StorageHelper.GetFreeSpaceOf(_applicationPaths.CachePath),
+            TranscodingTempPath = StorageHelper.GetFreeSpaceOf(_configurationManager.GetTranscodePath()),
             ServerName = _applicationHost.FriendlyName,
             LocalAddress = _applicationHost.GetSmartApiUrl(request),
             StartupWizardCompleted = _configurationManager.CommonConfiguration.IsStartupWizardCompleted,

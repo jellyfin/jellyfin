@@ -76,43 +76,43 @@ namespace MediaBrowser.Model.System
         /// Gets or sets the program data path.
         /// </summary>
         /// <value>The program data path.</value>
-        public string ProgramDataPath { get; set; }
+        public FolderStorageInfo ProgramDataPath { get; set; }
 
         /// <summary>
         /// Gets or sets the web UI resources path.
         /// </summary>
         /// <value>The web UI resources path.</value>
-        public string WebPath { get; set; }
+        public FolderStorageInfo WebPath { get; set; }
 
         /// <summary>
         /// Gets or sets the items by name path.
         /// </summary>
         /// <value>The items by name path.</value>
-        public string ItemsByNamePath { get; set; }
+        public FolderStorageInfo ItemsByNamePath { get; set; }
 
         /// <summary>
         /// Gets or sets the cache path.
         /// </summary>
         /// <value>The cache path.</value>
-        public string CachePath { get; set; }
+        public FolderStorageInfo CachePath { get; set; }
 
         /// <summary>
         /// Gets or sets the log path.
         /// </summary>
         /// <value>The log path.</value>
-        public string LogPath { get; set; }
+        public FolderStorageInfo LogPath { get; set; }
 
         /// <summary>
         /// Gets or sets the internal metadata path.
         /// </summary>
         /// <value>The internal metadata path.</value>
-        public string InternalMetadataPath { get; set; }
+        public FolderStorageInfo InternalMetadataPath { get; set; }
 
         /// <summary>
         /// Gets or sets the transcode path.
         /// </summary>
         /// <value>The transcode path.</value>
-        public string TranscodingTempPath { get; set; }
+        public FolderStorageInfo TranscodingTempPath { get; set; }
 
         /// <summary>
         /// Gets or sets the list of cast receiver applications.

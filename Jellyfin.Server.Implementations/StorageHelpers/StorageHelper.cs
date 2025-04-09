@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Model.System;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Implementations.StorageHelpers;
@@ -26,6 +27,36 @@ public static class StorageHelper
         TestDataDirectorySize(applicationPaths.CachePath, logger, TwoGigabyte);
         TestDataDirectorySize(applicationPaths.ProgramDataPath, logger, TwoGigabyte);
         TestDataDirectorySize(applicationPaths.TempDirectory, logger, TwoGigabyte);
+    }
+
+    /// <summary>
+    /// Gets the free space of a specific directory.
+    /// </summary>
+    /// <param name="path">Path to a folder.</param>
+    /// <returns>The number of bytes available space.</returns>
+    public static FolderStorageInfo GetFreeSpaceOf(string path)
+    {
+        try
+        {
+            var driveInfo = new DriveInfo(path);
+            return new FolderStorageInfo()
+            {
+                Path = path,
+                FreeSpace = driveInfo.AvailableFreeSpace,
+                UsedSpace = driveInfo.TotalSize - driveInfo.AvailableFreeSpace,
+                StorageType = driveInfo.DriveType.ToString(),
+            };
+        }
+        catch
+        {
+            return new FolderStorageInfo()
+            {
+                Path = path,
+                FreeSpace = -1,
+                UsedSpace = -1,
+                StorageType = null,
+            };
+        }
     }
 
     private static void TestDataDirectorySize(string path, ILogger logger, long threshold = -1)
