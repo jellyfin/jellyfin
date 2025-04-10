@@ -12,7 +12,7 @@ namespace Jellyfin.Server.Implementations.StorageHelpers;
 /// </summary>
 public static class StorageHelper
 {
-    private const long TwoGigabyte = 2147483647L;
+    private const long TwoGigabyte = 2_147_483_647L;
     private const long FiveHundredAndTwelveMegaByte = 536_870_911L;
     private static string[] _byteHumanizedSuffixes = ["B", "KB", "MB", "GB", "TB", "PB", "EB"];
 
@@ -21,7 +21,7 @@ public static class StorageHelper
     /// </summary>
     /// <param name="applicationPaths">The application paths.</param>
     /// <param name="logger">Logger.</param>
-    public static void TestCommonJfPathsForStorageCapacity(IApplicationPaths applicationPaths, ILogger logger)
+    public static void TestCommonPathsForStorageCapacity(IApplicationPaths applicationPaths, ILogger logger)
     {
         TestDataDirectorySize(applicationPaths.DataPath, logger, TwoGigabyte);
         TestDataDirectorySize(applicationPaths.LogDirectoryPath, logger, FiveHundredAndTwelveMegaByte);
@@ -60,6 +60,13 @@ public static class StorageHelper
         }
     }
 
+    /// <summary>
+    /// Gets the underlying drive data from a given path and checks if the available storage capacity matches the threshold.
+    /// </summary>
+    /// <param name="path">The path to a folder to evaluate.</param>
+    /// <param name="logger">The logger.</param>
+    /// <param name="threshold">The threshold to check for or -1 to just log the data.</param>
+    /// <exception cref="InvalidOperationException">Thrown when the threshold is not available on the underlying storage.</exception>
     private static void TestDataDirectorySize(string path, ILogger logger, long threshold = -1)
     {
         logger.LogDebug("Check path {TestPath} for storage capacity", path);
@@ -70,7 +77,7 @@ public static class StorageHelper
         }
 
         logger.LogInformation(
-            "Storage path `{TestPath}` ({StorageType}) successfully tested with {FreeSpace} left free which is over the minimum of {MinFree}.",
+            "Storage path `{TestPath}` ({StorageType}) successfully checked with {FreeSpace} free which is over the minimum of {MinFree}.",
             path,
             drive.DriveType,
             HumanizeStorageSize(drive.AvailableFreeSpace),

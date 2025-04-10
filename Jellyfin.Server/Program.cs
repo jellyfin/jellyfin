@@ -122,7 +122,7 @@ namespace Jellyfin.Server
                 }
             }
 
-            StorageHelper.TestCommonJfPathsForStorageCapacity(appPaths, _loggerFactory.CreateLogger<Startup>());
+            StorageHelper.TestCommonPathsForStorageCapacity(appPaths, _loggerFactory.CreateLogger<Startup>());
 
             StartupHelpers.PerformStaticInitialization();
             await Migrations.MigrationRunner.RunPreStartup(appPaths, _loggerFactory).ConfigureAwait(false);
