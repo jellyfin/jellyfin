@@ -93,8 +93,9 @@ namespace Jellyfin.LiveTv.Listings
                         File.Delete(cacheFile);
                     }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    _logger.LogWarning(ex, "Unable to get last modified time for {Path}", info.Path);
                     File.Delete(cacheFile);
                 }
             }
