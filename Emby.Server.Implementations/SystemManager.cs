@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Server.Implementations.StorageHelpers;
@@ -5,6 +6,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
@@ -20,6 +22,7 @@ public class SystemManager : ISystemManager
     private readonly IServerConfigurationManager _configurationManager;
     private readonly IStartupOptions _startupOptions;
     private readonly IInstallationManager _installationManager;
+    private readonly ILibraryManager _libraryManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SystemManager"/> class.
@@ -30,13 +33,15 @@ public class SystemManager : ISystemManager
     /// <param name="configurationManager">Instance of <see cref="IServerConfigurationManager"/>.</param>
     /// <param name="startupOptions">Instance of <see cref="IStartupOptions"/>.</param>
     /// <param name="installationManager">Instance of <see cref="IInstallationManager"/>.</param>
+    /// <param name="libraryManager">Instance of <see cref="ILibraryManager"/>.</param>
     public SystemManager(
         IHostApplicationLifetime applicationLifetime,
         IServerApplicationHost applicationHost,
         IServerApplicationPaths applicationPaths,
         IServerConfigurationManager configurationManager,
         IStartupOptions startupOptions,
-        IInstallationManager installationManager)
+        IInstallationManager installationManager,
+        ILibraryManager libraryManager)
     {
         _applicationLifetime = applicationLifetime;
         _applicationHost = applicationHost;
@@ -44,6 +49,7 @@ public class SystemManager : ISystemManager
         _configurationManager = configurationManager;
         _startupOptions = startupOptions;
         _installationManager = installationManager;
+        _libraryManager = libraryManager;
     }
 
     /// <inheritdoc />
@@ -67,6 +73,27 @@ public class SystemManager : ISystemManager
             CachePath = _applicationPaths.CachePath,
             TranscodingTempPath = _configurationManager.GetTranscodePath(),
 #pragma warning restore CS0618 // Type or member is obsolete
+            ServerName = _applicationHost.FriendlyName,
+            LocalAddress = _applicationHost.GetSmartApiUrl(request),
+            StartupWizardCompleted = _configurationManager.CommonConfiguration.IsStartupWizardCompleted,
+            SupportsLibraryMonitor = true,
+            PackageName = _startupOptions.PackageName,
+            CastReceiverApplications = _configurationManager.Configuration.CastReceiverApplications
+        };
+    }
+
+    /// <inheritdoc/>
+    public SystemStorageInfo GetSystemStorageInfo()
+    {
+        var virtualFolderInfos = _libraryManager.GetVirtualFolders().Select(e => new LibraryStorageInfo()
+        {
+            LibraryId = Guid.Parse(e.ItemId),
+            LibraryName = e.Name,
+            FolderDirectoryInfos = e.Locations.Select(f => StorageHelper.GetFreeSpaceOf(f)).ToArray()
+        });
+
+        return new SystemStorageInfo()
+        {
             ProgramDataDirectoryInfo = StorageHelper.GetFreeSpaceOf(_applicationPaths.ProgramDataPath),
             WebDirectoryInfo = StorageHelper.GetFreeSpaceOf(_applicationPaths.WebPath),
             LogDirectoryInfo = StorageHelper.GetFreeSpaceOf(_applicationPaths.LogDirectoryPath),
@@ -74,12 +101,7 @@ public class SystemManager : ISystemManager
             InternalMetadataDirectoryInfo = StorageHelper.GetFreeSpaceOf(_applicationPaths.InternalMetadataPath),
             CacheDirectoryInfo = StorageHelper.GetFreeSpaceOf(_applicationPaths.CachePath),
             TranscodingTempDirectoryInfo = StorageHelper.GetFreeSpaceOf(_configurationManager.GetTranscodePath()),
-            ServerName = _applicationHost.FriendlyName,
-            LocalAddress = _applicationHost.GetSmartApiUrl(request),
-            StartupWizardCompleted = _configurationManager.CommonConfiguration.IsStartupWizardCompleted,
-            SupportsLibraryMonitor = true,
-            PackageName = _startupOptions.PackageName,
-            CastReceiverApplications = _configurationManager.Configuration.CastReceiverApplications
+            Libraries = virtualFolderInfos.ToArray()
         };
     }
 

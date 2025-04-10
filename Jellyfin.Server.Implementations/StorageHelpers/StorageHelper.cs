@@ -66,15 +66,15 @@ public static class StorageHelper
         var drive = new DriveInfo(path);
         if (threshold != -1 && drive.AvailableFreeSpace < threshold)
         {
-            throw new InvalidOperationException($"The path `{path}` exceeds the minimum required free capacity of {BytesToString(threshold)}");
+            throw new InvalidOperationException($"The path `{path}` exceeds the minimum required free capacity of {HumanizeStorageSize(threshold)}");
         }
 
         logger.LogInformation(
             "Storage path `{TestPath}` ({StorageType}) successfully tested with {FreeSpace} left free which is over the minimum of {MinFree}.",
             path,
             drive.DriveType,
-            BytesToString(drive.AvailableFreeSpace),
-            BytesToString(threshold));
+            HumanizeStorageSize(drive.AvailableFreeSpace),
+            HumanizeStorageSize(threshold));
     }
 
     /// <summary>
@@ -85,7 +85,7 @@ public static class StorageHelper
     /// </remarks>
     /// <param name="byteCount">The size in bytes.</param>
     /// <returns>A human readable approximate representation of the argument.</returns>
-    public static string BytesToString(long byteCount)
+    public static string HumanizeStorageSize(long byteCount)
     {
         if (byteCount == 0)
         {
