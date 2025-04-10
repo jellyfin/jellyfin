@@ -14,6 +14,7 @@ public static class StorageHelper
 {
     private const long TwoGigabyte = 2147483647L;
     private const long FiveHundredAndTwelveMegaByte = 536_870_911L;
+    private static string[] _byteHumanizedSuffixes = ["B", "KB", "MB", "GB", "TB", "PB", "EB"];
 
     /// <summary>
     /// Tests the available storage capacity on the jellyfin paths with estimated minimum values.
@@ -86,16 +87,14 @@ public static class StorageHelper
     /// <returns>A human readable approximate representation of the argument.</returns>
     public static string BytesToString(long byteCount)
     {
-        string[] suf = ["B", "KB", "MB", "GB", "TB", "PB", "EB"];
-
         if (byteCount == 0)
         {
-            return $"0{suf[0]}";
+            return $"0{_byteHumanizedSuffixes[0]}";
         }
 
         var bytes = Math.Abs(byteCount);
         var place = Convert.ToInt32(Math.Floor(Math.Log(bytes, 1024)));
         var num = Math.Round(bytes / Math.Pow(1024, place), 1);
-        return (Math.Sign(byteCount) * num).ToString(CultureInfo.InvariantCulture) + suf[place];
+        return (Math.Sign(byteCount) * num).ToString(CultureInfo.InvariantCulture) + _byteHumanizedSuffixes[place];
     }
 }

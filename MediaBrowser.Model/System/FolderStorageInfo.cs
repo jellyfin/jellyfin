@@ -8,7 +8,7 @@ public class FolderStorageInfo
     /// <summary>
     /// Gets the path of the folder in question.
     /// </summary>
-    public string? Path { get; init; }
+    public required string Path { get; init; }
 
     /// <summary>
     /// Gets the free space of the underlying storage device of the <see cref="Path"/>.
