@@ -24,4 +24,9 @@ public class FolderStorageInfo
     /// Gets the kind of storage device of the <see cref="Path"/>.
     /// </summary>
     public string? StorageType { get; init; }
+
+    /// <summary>
+    /// Gets the Device Identifier.
+    /// </summary>
+    public string? DeviceId { get; init; }
 }

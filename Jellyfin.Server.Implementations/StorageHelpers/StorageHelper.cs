@@ -46,6 +46,7 @@ public static class StorageHelper
                 FreeSpace = driveInfo.AvailableFreeSpace,
                 UsedSpace = driveInfo.TotalSize - driveInfo.AvailableFreeSpace,
                 StorageType = driveInfo.DriveType.ToString(),
+                DeviceId = driveInfo.Name
             };
         }
         catch
@@ -56,6 +57,7 @@ public static class StorageHelper
                 FreeSpace = -1,
                 UsedSpace = -1,
                 StorageType = null,
+                DeviceId = null
             };
         }
     }
