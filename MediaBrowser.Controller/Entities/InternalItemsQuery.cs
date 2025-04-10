@@ -306,6 +306,8 @@ namespace MediaBrowser.Controller.Entities
 
         public bool? IsDeadStudio { get; set; }
 
+        public bool? IsDeadGenre { get; set; }
+
         public bool? IsDeadPerson { get; set; }
 
         /// <summary>
