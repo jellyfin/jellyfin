@@ -1408,6 +1408,22 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual bool RequiresRefresh()
         {
+            if (string.IsNullOrEmpty(Path) || DateModified == default)
+            {
+                return false;
+            }
+
+            var info = FileSystem.GetFileSystemInfo(Path);
+            if (info.Exists)
+            {
+                if (info.IsDirectory)
+                {
+                    return info.LastWriteTimeUtc != DateModified;
+                }
+
+                return info.LastWriteTimeUtc != DateModified && info.Length != (Size ?? 0);
+            }
+
             return false;
         }
 

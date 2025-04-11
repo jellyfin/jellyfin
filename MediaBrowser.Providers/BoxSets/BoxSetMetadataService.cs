@@ -5,6 +5,7 @@ using System.Linq;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -21,8 +22,9 @@ namespace MediaBrowser.Providers.BoxSets
             ILogger<BoxSetMetadataService> logger,
             IProviderManager providerManager,
             IFileSystem fileSystem,
-            ILibraryManager libraryManager)
-            : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
+            ILibraryManager libraryManager,
+            IPathManager pathManager)
+            : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager, pathManager)
         {
         }
 
