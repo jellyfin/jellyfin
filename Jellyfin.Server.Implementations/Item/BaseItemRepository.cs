@@ -1309,33 +1309,35 @@ public sealed class BaseItemRepository
         JellyfinDbContext context,
         InternalItemsQuery filter)
     {
+        const int HDWidth = 1200;
+        const int UHDWidth = 3800;
+        const int UHDHeight = 2100;
+
         var minWidth = filter.MinWidth;
         var maxWidth = filter.MaxWidth;
         var now = DateTime.UtcNow;
 
         if (filter.IsHD.HasValue)
         {
-            const int Threshold = 1200;
             if (filter.IsHD.Value)
             {
-                minWidth = Threshold;
+                baseQuery = baseQuery.Where(e => e.Width >= HDWidth && !(e.Width >= UHDWidth || e.Height >= UHDHeight));
             }
             else
             {
-                maxWidth = Threshold - 1;
+                baseQuery = baseQuery.Where(e => e.Width < HDWidth);
             }
         }
 
         if (filter.Is4K.HasValue)
         {
-            const int Threshold = 3800;
             if (filter.Is4K.Value)
             {
-                minWidth = Threshold;
+                baseQuery = baseQuery.Where(e => e.Width >= UHDWidth || e.Height >= UHDHeight);
             }
             else
             {
-                maxWidth = Threshold - 1;
+                baseQuery = baseQuery.Where(e => e.Width < UHDWidth && e.Height < UHDHeight);
             }
         }
 
