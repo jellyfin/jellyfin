@@ -1,9 +1,4 @@
-using System;
-using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Net.Mime;
-using System.Text;
 using Emby.Server.Implementations.EntryPoints;
 using Jellyfin.Api.Middleware;
 using Jellyfin.Database.Implementations;
@@ -11,7 +6,6 @@ using Jellyfin.LiveTv.Extensions;
 using Jellyfin.LiveTv.Recordings;
 using Jellyfin.MediaEncoding.Hls.Extensions;
 using Jellyfin.Networking;
-using Jellyfin.Networking.HappyEyeballs;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.HealthChecks;
 using Jellyfin.Server.Implementations.Extensions;
@@ -78,51 +72,8 @@ namespace Jellyfin.Server
 
             services.AddJellyfinApiAuthorization();
 
-            var productHeader = new ProductInfoHeaderValue(
-                _serverApplicationHost.Name.Replace(' ', '-'),
-                _serverApplicationHost.ApplicationVersionString);
-            var acceptJsonHeader = new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Json, 1.0);
-            var acceptXmlHeader = new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Xml, 0.9);
-            var acceptAnyHeader = new MediaTypeWithQualityHeaderValue("*/*", 0.8);
-            Func<IServiceProvider, HttpMessageHandler> eyeballsHttpClientHandlerDelegate = (_) => new SocketsHttpHandler()
-            {
-                AutomaticDecompression = DecompressionMethods.All,
-                RequestHeaderEncodingSelector = (_, _) => Encoding.UTF8,
-                ConnectCallback = HttpClientExtension.OnConnect
-            };
-
-            Func<IServiceProvider, HttpMessageHandler> defaultHttpClientHandlerDelegate = (_) => new SocketsHttpHandler()
-            {
-                AutomaticDecompression = DecompressionMethods.All,
-                RequestHeaderEncodingSelector = (_, _) => Encoding.UTF8
-            };
-
-            services.AddHttpClient(NamedClient.Default, c =>
-                {
-                    c.DefaultRequestHeaders.UserAgent.Add(productHeader);
-                    c.DefaultRequestHeaders.Accept.Add(acceptJsonHeader);
-                    c.DefaultRequestHeaders.Accept.Add(acceptXmlHeader);
-                    c.DefaultRequestHeaders.Accept.Add(acceptAnyHeader);
-                })
-                .ConfigurePrimaryHttpMessageHandler(eyeballsHttpClientHandlerDelegate);
-
-            services.AddHttpClient(NamedClient.MusicBrainz, c =>
-                {
-                    c.DefaultRequestHeaders.UserAgent.Add(productHeader);
-                    c.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue($"({_serverApplicationHost.ApplicationUserAgentAddress})"));
-                    c.DefaultRequestHeaders.Accept.Add(acceptXmlHeader);
-                    c.DefaultRequestHeaders.Accept.Add(acceptAnyHeader);
-                })
-                .ConfigurePrimaryHttpMessageHandler(eyeballsHttpClientHandlerDelegate);
-
-            services.AddHttpClient(NamedClient.DirectIp, c =>
-                {
-                    c.DefaultRequestHeaders.UserAgent.Add(productHeader);
-                    c.DefaultRequestHeaders.Accept.Add(acceptJsonHeader);
-                    c.DefaultRequestHeaders.Accept.Add(acceptXmlHeader);
-                    c.DefaultRequestHeaders.Accept.Add(acceptAnyHeader);
-                })
-                .ConfigurePrimaryHttpMessageHandler(defaultHttpClientHandlerDelegate);
+            _serverApplicationHost.AddHttpClient(services, NamedClient.Default);
+            _serverApplicationHost.AddHttpClient(services, NamedClient.DirectIp);
 
             services.AddHealthChecks()
                 .AddCheck<DbContextFactoryHealthCheck<JellyfinDbContext>>(nameof(JellyfinDbContext));
