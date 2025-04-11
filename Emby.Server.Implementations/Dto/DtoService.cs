@@ -17,7 +17,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Trickplay;
@@ -51,7 +50,7 @@ namespace Emby.Server.Implementations.Dto
         private readonly Lazy<ILiveTvManager> _livetvManagerFactory;
 
         private readonly ITrickplayManager _trickplayManager;
-        private readonly IChapterRepository _chapterRepository;
+        private readonly IChapterManager _chapterManager;
 
         public DtoService(
             ILogger<DtoService> logger,
@@ -64,7 +63,7 @@ namespace Emby.Server.Implementations.Dto
             IMediaSourceManager mediaSourceManager,
             Lazy<ILiveTvManager> livetvManagerFactory,
             ITrickplayManager trickplayManager,
-            IChapterRepository chapterRepository)
+            IChapterManager chapterManager)
         {
             _logger = logger;
             _libraryManager = libraryManager;
@@ -76,7 +75,7 @@ namespace Emby.Server.Implementations.Dto
             _mediaSourceManager = mediaSourceManager;
             _livetvManagerFactory = livetvManagerFactory;
             _trickplayManager = trickplayManager;
-            _chapterRepository = chapterRepository;
+            _chapterManager = chapterManager;
         }
 
         private ILiveTvManager LivetvManager => _livetvManagerFactory.Value;
@@ -1061,7 +1060,7 @@ namespace Emby.Server.Implementations.Dto
 
                 if (options.ContainsField(ItemFields.Chapters))
                 {
-                    dto.Chapters = _chapterRepository.GetChapters(item.Id).ToList();
+                    dto.Chapters = _chapterManager.GetChapters(item.Id).ToList();
                 }
 
                 if (options.ContainsField(ItemFields.Trickplay))

@@ -34,7 +34,6 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Providers;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities
@@ -484,7 +483,7 @@ namespace MediaBrowser.Controller.Entities
 
         public static IItemRepository ItemRepository { get; set; }
 
-        public static IChapterRepository ChapterRepository { get; set; }
+        public static IChapterManager ChapterManager { get; set; }
 
         public static IFileSystem FileSystem { get; set; }
 
@@ -2051,7 +2050,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (imageType == ImageType.Chapter)
             {
-                var chapter = ChapterRepository.GetChapter(this.Id, imageIndex);
+                var chapter = ChapterManager.GetChapter(Id, imageIndex);
 
                 if (chapter is null)
                 {
@@ -2101,7 +2100,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (image.Type == ImageType.Chapter)
             {
-                var chapters = ChapterRepository.GetChapters(this.Id);
+                var chapters = ChapterManager.GetChapters(Id);
                 for (var i = 0; i < chapters.Count; i++)
                 {
                     if (chapters[i].ImagePath == image.Path)
