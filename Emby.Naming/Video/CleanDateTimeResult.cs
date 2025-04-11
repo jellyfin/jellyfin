@@ -17,6 +17,18 @@ namespace Emby.Naming.Video
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="CleanDateTimeResult"/> struct.
+        /// </summary>
+        /// <param name="name">Name of video.</param>
+        /// <param name="yearString">Year of release.</param>
+        public CleanDateTimeResult(string name, string? yearString)
+        {
+            Name = name;
+            var succeeded = int.TryParse(yearString, out var year);
+            Year = year == 0 ? null : year;
+        }
+
+        /// <summary>
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>

@@ -63,7 +63,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
                 return false;
             }
 
-            var cleanDateTimeResult = CleanDateTimeParser.Clean(Path.GetFileNameWithoutExtension(path), _namingOptions.CleanDateTimeRegexes);
+            var cleanDateTimeResult = CleanDateTimeParser.Clean(Path.GetFileNameWithoutExtension(path), _namingOptions);
             var name = cleanDateTimeResult.Name;
             var year = cleanDateTimeResult.Year;
 
