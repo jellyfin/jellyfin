@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,6 +25,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Configuration;
@@ -697,10 +699,79 @@ public class LibraryController : BaseJellyfinApiController
             await LogDownloadAsync(item, user).ConfigureAwait(false);
         }
 
-        // Quotes are valid in linux. They'll possibly cause issues here.
-        var filename = Path.GetFileName(item.Path)?.Replace("\"", string.Empty, StringComparison.Ordinal);
+        if (item.GetType() == typeof(Playlist))
+        {
+            Response.ContentType = "application/octet-stream";
+            Response.Headers.Append("Content-Disposition", "attachment; filename=\"Playlist.zip\"");
 
-        return PhysicalFile(item.Path, MimeTypes.GetMimeType(item.Path), filename, true);
+            var playlist = (Playlist)item;
+            var playlistFile = playlist.GetPlaylistAsFileBytes(user);
+
+            List<Tuple<string, byte[]>> filesVirtual = [new Tuple<string, byte[]>("Playlist.m3u8", playlistFile)];
+            List<Tuple<string, string>> filesDisk = new List<Tuple<string, string>>();
+            foreach (var playlistItem in playlist.GetChildPaths(user))
+            {
+                filesDisk.Add(Tuple.Create(playlistItem.TrimStart('/'), playlistItem));
+            }
+
+            await WriteZipAsStream(Response.Body, filesVirtual, filesDisk).ConfigureAwait(false);
+            return new EmptyResult();
+        }
+        else if (item.GetType() == typeof(MusicAlbum))
+        {
+            var album = (MusicAlbum)item;
+            var fileName = string.Join("_", album.Name.Split(Path.GetInvalidFileNameChars()));
+            Response.ContentType = "application/octet-stream";
+            Response.Headers.Append("Content-Disposition", $"attachment; filename=\"{fileName}.zip\"");
+
+            List<Tuple<string, byte[]>> filesVirtual = [];
+            List<Tuple<string, string>> filesDisk = new List<Tuple<string, string>>();
+            foreach (var track in album.Tracks)
+            {
+                filesDisk.Add(Tuple.Create(Path.GetFileName(track.Path), track.Path));
+            }
+
+            await WriteZipAsStream(Response.Body, filesVirtual, filesDisk).ConfigureAwait(false);
+            return new EmptyResult();
+        }
+        else
+        {
+            // Quotes are valid in linux. They'll possibly cause issues here.
+            var filename = Path.GetFileName(item.Path)?.Replace("\"", string.Empty, StringComparison.Ordinal);
+
+            return PhysicalFile(item.Path, MimeTypes.GetMimeType(item.Path), filename, true);
+        }
+    }
+
+    private static async Task WriteZipAsStream(Stream stream, List<Tuple<string, byte[]>> filesVirtual, List<Tuple<string, string>> filesDisk)
+    {
+        using (ZipArchive archive = new ZipArchive(new PositionWrapperStream(stream), ZipArchiveMode.Create))
+        {
+            foreach (var file in filesVirtual)
+            {
+                var fileName = file.Item1;
+                var fileBytes = file.Item2;
+
+                var entry = archive.CreateEntry(fileName);
+                using (var entryStream = entry.Open())
+                {
+                    await entryStream.WriteAsync(fileBytes).ConfigureAwait(false);
+                }
+            }
+
+            foreach (var file in filesDisk)
+            {
+                var fileName = file.Item1;
+                var filePath = file.Item2;
+
+                var entry = archive.CreateEntry(fileName);
+                using (var entryStream = entry.Open())
+                using (var fileStream = System.IO.File.OpenRead(filePath))
+                {
+                    await fileStream.CopyToAsync(entryStream).ConfigureAwait(false);
+                }
+            }
+        }
     }
 
     /// <summary>
