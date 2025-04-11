@@ -145,10 +145,7 @@ namespace MediaBrowser.Common.Plugins
             lock (_configurationSaveLock)
             {
                 var folder = Path.GetDirectoryName(ConfigurationFilePath);
-                if (!Directory.Exists(folder))
-                {
-                    Directory.CreateDirectory(folder);
-                }
+                Directory.CreateDirectory(folder);
 
                 XmlSerializer.SerializeToFile(config, ConfigurationFilePath);
             }
