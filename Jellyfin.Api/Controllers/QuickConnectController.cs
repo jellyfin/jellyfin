@@ -48,7 +48,6 @@ public class QuickConnectController : BaseJellyfinApiController
     /// Initiate a new quick connect request.
     /// </summary>
     /// <response code="200">Quick connect request successfully created.</response>
-    /// <response code="401">Quick connect is not active on this server.</response>
     /// <returns>A <see cref="QuickConnectResult"/> with a secret and code for future use or an error message.</returns>
     [HttpPost("Initiate")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -107,12 +106,10 @@ public class QuickConnectController : BaseJellyfinApiController
     /// <param name="code">Quick connect code to authorize.</param>
     /// <param name="userId">The user the authorize. Access to the requested user is required.</param>
     /// <response code="200">Quick connect result authorized successfully.</response>
-    /// <response code="403">Unknown user id.</response>
     /// <returns>Boolean indicating if the authorization was successful.</returns>
     [HttpPost("Authorize")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<bool>> AuthorizeQuickConnect([FromQuery, Required] string code, [FromQuery] Guid? userId = null)
     {
         userId = RequestHelpers.GetUserId(User, userId);
