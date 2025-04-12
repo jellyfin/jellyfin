@@ -90,9 +90,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
             var newUser = await getResponse.Content.ReadFromJsonAsync<StartupUserDto>(_jsonOptions);
             Assert.NotNull(newUser);
             Assert.Equal(user.Name, newUser.Name);
-            Assert.NotNull(newUser.Password);
-            Assert.NotEmpty(newUser.Password);
-            Assert.NotEqual(user.Password, newUser.Password);
+            Assert.Null(newUser.Password);
         }
 
         [Fact]

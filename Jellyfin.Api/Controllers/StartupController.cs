@@ -114,8 +114,7 @@ public class StartupController : BaseJellyfinApiController
         var user = _userManager.Users.First();
         return new StartupUserDto
         {
-            Name = user.Username,
-            Password = user.Password
+            Name = user.Username
         };
     }
 
