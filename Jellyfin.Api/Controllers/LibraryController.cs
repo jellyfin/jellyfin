@@ -756,7 +756,7 @@ public class LibraryController : BaseJellyfinApiController
 
             foreach (var file in filesDisk)
             {
-                var entry = archive.CreateEntry(file.FileName);
+                var entry = archive.CreateEntry(file.FileName, CompressionLevel.NoCompression);
                 using (var entryStream = entry.Open())
                 using (var fileStream = System.IO.File.OpenRead(file.FilePath))
                 {
