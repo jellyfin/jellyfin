@@ -10,6 +10,12 @@ namespace MediaBrowser.Controller.Persistence;
 public interface IChapterRepository
 {
     /// <summary>
+    /// Deletes the chapters.
+    /// </summary>
+    /// <param name="itemId">The item.</param>
+    void DeleteChapters(Guid itemId);
+
+    /// <summary>
     /// Saves the chapters.
     /// </summary>
     /// <param name="itemId">The item.</param>

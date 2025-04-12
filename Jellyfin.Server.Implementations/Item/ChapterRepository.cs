@@ -29,7 +29,7 @@ public class ChapterRepository : IChapterRepository
         _imageProcessor = imageProcessor;
     }
 
-    /// <inheritdoc cref="IChapterRepository"/>
+    /// <inheritdoc />
     public ChapterInfo? GetChapter(Guid baseItemId, int index)
     {
         using var context = _dbProvider.CreateDbContext();
@@ -48,7 +48,7 @@ public class ChapterRepository : IChapterRepository
         return null;
     }
 
-    /// <inheritdoc cref="IChapterRepository"/>
+    /// <inheritdoc />
     public IReadOnlyList<ChapterInfo> GetChapters(Guid baseItemId)
     {
         using var context = _dbProvider.CreateDbContext();
@@ -63,7 +63,7 @@ public class ChapterRepository : IChapterRepository
             .ToArray();
     }
 
-    /// <inheritdoc cref="IChapterRepository"/>
+    /// <inheritdoc />
     public void SaveChapters(Guid itemId, IReadOnlyList<ChapterInfo> chapters)
     {
         using var context = _dbProvider.CreateDbContext();
@@ -79,6 +79,14 @@ public class ChapterRepository : IChapterRepository
             context.SaveChanges();
             transaction.Commit();
         }
+    }
+
+    /// <inheritdoc />
+    public void DeleteChapters(Guid itemId)
+    {
+        using var context = _dbProvider.CreateDbContext();
+        context.Chapters.Where(c => c.ItemId.Equals(itemId)).ExecuteDelete();
+        context.SaveChanges();
     }
 
     private Chapter Map(ChapterInfo chapterInfo, int index, Guid itemId)

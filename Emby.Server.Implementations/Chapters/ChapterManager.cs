@@ -268,7 +268,7 @@ public class ChapterManager : IChapterManager
             _logger.LogWarning("Failed to remove chapter image folder for {Item}: {Exception}", video.Id, ex);
         }
 
-        _chapterRepository.SaveChapters(video.Id, []);
+        _chapterRepository.DeleteChapters(video.Id);
     }
 
     private IReadOnlyList<string> GetSavedChapterImages(Video video, IDirectoryService directoryService)
