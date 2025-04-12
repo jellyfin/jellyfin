@@ -52,4 +52,12 @@ public interface IPathManager
     /// <param name="item">The base item.</param>
     /// <returns>The chapter images data path.</returns>
     public string GetChapterImageFolderPath(BaseItem item);
+
+    /// <summary>
+    /// Gets the chapter images path.
+    /// </summary>
+    /// <param name="item">The base item.</param>
+    /// <param name="chapterPositionTicks">The chapter position.</param>
+    /// <returns>The chapter images data path.</returns>
+    public string GetChapterImagePath(BaseItem item, long chapterPositionTicks);
 }

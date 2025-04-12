@@ -150,7 +150,7 @@ public class ChapterManager : IChapterManager
                 break;
             }
 
-            var path = GetChapterImagePath(video, chapter.StartPositionTicks);
+            var path = _pathManager.GetChapterImagePath(video, chapter.StartPositionTicks);
 
             if (!currentImages.Contains(path, StringComparison.OrdinalIgnoreCase))
             {
@@ -269,13 +269,6 @@ public class ChapterManager : IChapterManager
         }
 
         _chapterRepository.SaveChapters(video.Id, []);
-    }
-
-    private string GetChapterImagePath(Video video, long chapterPositionTicks)
-    {
-        var filename = video.DateModified.Ticks.ToString(CultureInfo.InvariantCulture) + "_" + chapterPositionTicks.ToString(CultureInfo.InvariantCulture) + ".jpg";
-
-        return Path.Combine(_pathManager.GetChapterImageFolderPath(video), filename);
     }
 
     private IReadOnlyList<string> GetSavedChapterImages(Video video, IDirectoryService directoryService)
