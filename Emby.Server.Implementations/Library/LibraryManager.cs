@@ -493,7 +493,10 @@ namespace Emby.Server.Implementations.Library
             var itemPath = item.Path;
             if (!string.IsNullOrEmpty(pathToCheck) && !string.IsNullOrEmpty(itemPath))
             {
-                return itemPath.StartsWith(pathToCheck, StringComparison.OrdinalIgnoreCase);
+                var cleanPath = _fileSystem.GetValidFilename(itemPath);
+                var cleanCheckPath = _fileSystem.GetValidFilename(pathToCheck);
+
+                return cleanPath.StartsWith(cleanCheckPath, StringComparison.Ordinal);
             }
 
             return false;
