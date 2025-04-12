@@ -701,17 +701,16 @@ public class LibraryController : BaseJellyfinApiController
 
         if (item.GetType() == typeof(Playlist))
         {
-            Response.ContentType = "application/octet-stream";
             Response.Headers.Append("Content-Disposition", "attachment; filename=\"Playlist.zip\"");
 
             var playlist = (Playlist)item;
             var playlistFile = playlist.GetPlaylistAsFileBytes(user);
 
-            List<Tuple<string, byte[]>> filesVirtual = [new Tuple<string, byte[]>("Playlist.m3u8", playlistFile)];
-            List<Tuple<string, string>> filesDisk = new List<Tuple<string, string>>();
+            List<(string, byte[])> filesVirtual = [("Playlist.m3u8", playlistFile)];
+            List<(string, string)> filesDisk = new List<(string, string)>();
             foreach (var playlistItem in playlist.GetChildPaths(user))
             {
-                filesDisk.Add(Tuple.Create(playlistItem.TrimStart('/'), playlistItem));
+                filesDisk.Add((playlistItem.TrimStart('/'), playlistItem));
             }
 
             await WriteZipAsStream(Response.Body, filesVirtual, filesDisk).ConfigureAwait(false);
@@ -721,14 +720,13 @@ public class LibraryController : BaseJellyfinApiController
         {
             var album = (MusicAlbum)item;
             var fileName = string.Join("_", album.Name.Split(Path.GetInvalidFileNameChars()));
-            Response.ContentType = "application/octet-stream";
             Response.Headers.Append("Content-Disposition", $"attachment; filename=\"{fileName}.zip\"");
 
-            List<Tuple<string, byte[]>> filesVirtual = [];
-            List<Tuple<string, string>> filesDisk = new List<Tuple<string, string>>();
+            List<(string, byte[])> filesVirtual = [];
+            List<(string, string)> filesDisk = new List<(string, string)>();
             foreach (var track in album.Tracks)
             {
-                filesDisk.Add(Tuple.Create(Path.GetFileName(track.Path), track.Path));
+                filesDisk.Add((Path.GetFileName(track.Path), track.Path));
             }
 
             await WriteZipAsStream(Response.Body, filesVirtual, filesDisk).ConfigureAwait(false);
@@ -743,30 +741,24 @@ public class LibraryController : BaseJellyfinApiController
         }
     }
 
-    private static async Task WriteZipAsStream(Stream stream, List<Tuple<string, byte[]>> filesVirtual, List<Tuple<string, string>> filesDisk)
+    private static async Task WriteZipAsStream(Stream stream, List<(string FileName, byte[] FileBytes)> filesVirtual, List<(string FileName, string FilePath)> filesDisk)
     {
         using (ZipArchive archive = new ZipArchive(new PositionWrapperStream(stream), ZipArchiveMode.Create))
         {
             foreach (var file in filesVirtual)
             {
-                var fileName = file.Item1;
-                var fileBytes = file.Item2;
-
-                var entry = archive.CreateEntry(fileName);
+                var entry = archive.CreateEntry(file.FileName);
                 using (var entryStream = entry.Open())
                 {
-                    await entryStream.WriteAsync(fileBytes).ConfigureAwait(false);
+                    await entryStream.WriteAsync(file.FileBytes).ConfigureAwait(false);
                 }
             }
 
             foreach (var file in filesDisk)
             {
-                var fileName = file.Item1;
-                var filePath = file.Item2;
-
-                var entry = archive.CreateEntry(fileName);
+                var entry = archive.CreateEntry(file.FileName);
                 using (var entryStream = entry.Open())
-                using (var fileStream = System.IO.File.OpenRead(filePath))
+                using (var fileStream = System.IO.File.OpenRead(file.FilePath))
                 {
                     await fileStream.CopyToAsync(entryStream).ConfigureAwait(false);
                 }
