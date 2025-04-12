@@ -4,7 +4,7 @@ using MediaBrowser.Controller.Entities;
 namespace MediaBrowser.Controller.IO;
 
 /// <summary>
-/// Interface ITrickplayManager.
+/// Interface IPathManager.
 /// </summary>
 public interface IPathManager
 {

@@ -19,8 +19,9 @@ namespace MediaBrowser.Providers.People
             IProviderManager providerManager,
             IFileSystem fileSystem,
             ILibraryManager libraryManager,
-            IPathManager pathManager)
-            : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager, pathManager)
+            IPathManager pathManager,
+            IKeyframeManager keyframeManager)
+            : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager, pathManager, keyframeManager)
         {
         }
     }

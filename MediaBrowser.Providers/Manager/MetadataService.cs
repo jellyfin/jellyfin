@@ -34,7 +34,8 @@ namespace MediaBrowser.Providers.Manager
             IProviderManager providerManager,
             IFileSystem fileSystem,
             ILibraryManager libraryManager,
-            IPathManager pathManager)
+            IPathManager pathManager,
+            IKeyframeManager keyframeManager)
         {
             ServerConfigurationManager = serverConfigurationManager;
             Logger = logger;
@@ -42,6 +43,7 @@ namespace MediaBrowser.Providers.Manager
             FileSystem = fileSystem;
             LibraryManager = libraryManager;
             PathManager = pathManager;
+            KeyframeManager = keyframeManager;
             ImageProvider = new ItemImageProvider(Logger, ProviderManager, FileSystem);
         }
 
@@ -58,6 +60,8 @@ namespace MediaBrowser.Providers.Manager
         protected ILibraryManager LibraryManager { get; }
 
         protected IPathManager PathManager { get; }
+
+        protected IKeyframeManager KeyframeManager { get; }
 
         protected virtual bool EnableUpdatingPremiereDateFromChildren => false;
 
@@ -354,6 +358,8 @@ namespace MediaBrowser.Providers.Manager
                                     Directory.Delete(path, true);
                                 }
                             }
+
+                            KeyframeManager.DeleteKeyframeDataAsync(video.Id, CancellationToken.None).GetAwaiter().GetResult();
                         }
                     }
 

@@ -26,14 +26,16 @@ namespace MediaBrowser.Providers.Music
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         /// <param name="pathManager">Instance of the <see cref="IPathManager"/> interface.</param>
+        /// <param name="keyframeManager">Instance of the <see cref="IKeyframeManager"/> interface.</param>
         public AudioMetadataService(
             IServerConfigurationManager serverConfigurationManager,
             ILogger<AudioMetadataService> logger,
             IProviderManager providerManager,
             IFileSystem fileSystem,
             ILibraryManager libraryManager,
-            IPathManager pathManager)
-            : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager, pathManager)
+            IPathManager pathManager,
+            IKeyframeManager keyframeManager)
+            : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager, pathManager, keyframeManager)
         {
         }
 

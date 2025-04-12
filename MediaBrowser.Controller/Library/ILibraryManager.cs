@@ -593,11 +593,11 @@ namespace MediaBrowser.Controller.Library
         QueryResult<BaseItem> GetItemsResult(InternalItemsQuery query);
 
         /// <summary>
-        /// Ignores the file.
+        /// Checks if the file is ignored.
         /// </summary>
         /// <param name="file">The file.</param>
         /// <param name="parent">The parent.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        /// <returns><c>true</c> if ignored, <c>false</c> otherwise.</returns>
         bool IgnoreFile(FileSystemMetadata file, BaseItem parent);
 
         Guid GetStudioId(string name);

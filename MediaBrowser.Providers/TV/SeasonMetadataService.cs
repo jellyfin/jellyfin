@@ -28,14 +28,16 @@ namespace MediaBrowser.Providers.TV
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         /// <param name="pathManager">Instance of the <see cref="IPathManager"/> interface.</param>
+        /// <param name="keyframeManager">Instance of the <see cref="IKeyframeManager"/> interface.</param>
         public SeasonMetadataService(
             IServerConfigurationManager serverConfigurationManager,
             ILogger<SeasonMetadataService> logger,
             IProviderManager providerManager,
             IFileSystem fileSystem,
             ILibraryManager libraryManager,
-            IPathManager pathManager)
-            : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager, pathManager)
+            IPathManager pathManager,
+            IKeyframeManager keyframeManager)
+            : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager, pathManager, keyframeManager)
         {
         }
 
