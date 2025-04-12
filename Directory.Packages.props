@@ -21,6 +21,7 @@
     <PackageVersion Include="HarfBuzzSharp.NativeAssets.Linux" Version="7.3.0.3" />
     <PackageVersion Include="ICU4N.Transliterator" Version="60.1.0-alpha.356" />
     <PackageVersion Include="IDisposableAnalyzers" Version="4.0.8" />
+    <PackageVersion Include="Ignore" Version="0.2.1" />
     <PackageVersion Include="Jellyfin.XmlTv" Version="10.8.0" />
     <PackageVersion Include="libse" Version="4.0.10" />
     <PackageVersion Include="LrcParser" Version="2025.228.1" />
