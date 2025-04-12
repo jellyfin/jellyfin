@@ -62,17 +62,17 @@ public class MigrateKeyframeData : IDatabaseMigrationRoutine
         var sw = Stopwatch.StartNew();
 
         using var context = _dbProvider.CreateDbContext();
-        var records = context.BaseItems.Where(b => b.MediaType == MediaType.Video.ToString() && !b.IsVirtualItem).Count();
+        var records = context.BaseItems.Where(b => b.MediaType == MediaType.Video.ToString() && !b.IsVirtualItem && !b.IsFolder).Count();
         _logger.LogInformation("Checking {Count} items for importable keyframe data.", records);
 
         context.KeyframeData.ExecuteDelete();
         using var transaction = context.Database.BeginTransaction();
         do
         {
-            var items = context.BaseItems.Where(b => b.MediaType == MediaType.Video.ToString() && !b.IsVirtualItem).OrderBy(e => e.Id).Skip(offset).Take(Limit).ToList();
-            foreach (var item in items)
+            var results = context.BaseItems.Where(b => b.MediaType == MediaType.Video.ToString() && !b.IsVirtualItem && !b.IsFolder).OrderBy(e => e.Id).Skip(offset).Take(Limit).Select(b => new Tuple<Guid, string?>(b.Id, b.Path)).ToList();
+            foreach (var result in results)
             {
-                if (TryGetKeyframeData(item, out var data))
+                if (TryGetKeyframeData(result.Item1, result.Item2, out var data))
                 {
                     itemCount++;
                     context.KeyframeData.Add(data);
@@ -94,10 +94,9 @@ public class MigrateKeyframeData : IDatabaseMigrationRoutine
         }
     }
 
-    private bool TryGetKeyframeData(BaseItemEntity item, [NotNullWhen(true)] out KeyframeData? data)
+    private bool TryGetKeyframeData(Guid id, string? path, [NotNullWhen(true)] out KeyframeData? data)
     {
         data = null;
-        var path = item.Path;
         if (!string.IsNullOrEmpty(path))
         {
             var cachePath = GetCachePath(KeyframeCachePath, path);
@@ -105,7 +104,7 @@ public class MigrateKeyframeData : IDatabaseMigrationRoutine
             {
                 data = new()
                 {
-                    ItemId = item.Id,
+                    ItemId = id,
                     KeyframeTicks = keyframeData.KeyframeTicks.ToList(),
                     TotalDuration = keyframeData.TotalDuration
                 };

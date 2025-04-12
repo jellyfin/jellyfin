@@ -82,10 +82,10 @@ public class MoveExtractedFiles : IMigrationRoutine
         Directory.CreateDirectory(AttachmentCachePath);
         do
         {
-            var items = context.BaseItems.Where(b => b.MediaType == MediaType.Video.ToString() && !b.IsVirtualItem && !b.IsFolder).OrderBy(e => e.Id).Skip(offset).Take(Limit).ToList();
-            foreach (var item in items)
+            var results = context.BaseItems.Where(b => b.MediaType == MediaType.Video.ToString() && !b.IsVirtualItem && !b.IsFolder).OrderBy(e => e.Id).Skip(offset).Take(Limit).Select(b => new Tuple<Guid, string?>(b.Id, b.Path)).ToList();
+            foreach (var result in results)
             {
-                if (MoveSubtitleAndAttachmentFiles(item, context))
+                if (MoveSubtitleAndAttachmentFiles(result.Item1, result.Item2, context))
                 {
                     itemCount++;
                 }
@@ -117,11 +117,11 @@ public class MoveExtractedFiles : IMigrationRoutine
         _logger.LogInformation("Cleaned up left over subtitles and attachments.");
     }
 
-    private bool MoveSubtitleAndAttachmentFiles(BaseItemEntity item, JellyfinDbContext context)
+    private bool MoveSubtitleAndAttachmentFiles(Guid id, string? path, JellyfinDbContext context)
     {
-        var itemIdString = item.Id.ToString("N", CultureInfo.InvariantCulture);
+        var itemIdString = id.ToString("N", CultureInfo.InvariantCulture);
         var modified = false;
-        var mediaStreams = context.MediaStreamInfos.Where(s => s.ItemId.Equals(item.Id) && s.StreamType == MediaStreamTypeEntity.Subtitle && !s.IsExternal).ToList();
+        var mediaStreams = context.MediaStreamInfos.Where(s => s.ItemId.Equals(id) && s.StreamType == MediaStreamTypeEntity.Subtitle && !s.IsExternal).ToList();
         foreach (var mediaStream in mediaStreams)
         {
             if (mediaStream.Codec is null)
@@ -131,7 +131,7 @@ public class MoveExtractedFiles : IMigrationRoutine
 
             var mediaStreamIndex = mediaStream.StreamIndex;
             var extension = GetSubtitleExtension(mediaStream.Codec);
-            var oldSubtitleCachePath = GetOldSubtitleCachePath(item.Path, mediaStreamIndex, extension);
+            var oldSubtitleCachePath = GetOldSubtitleCachePath(path, mediaStreamIndex, extension);
             if (string.IsNullOrEmpty(oldSubtitleCachePath) || !File.Exists(oldSubtitleCachePath))
             {
                 continue;
@@ -149,7 +149,7 @@ public class MoveExtractedFiles : IMigrationRoutine
                 {
                     Directory.CreateDirectory(newDirectory);
                     File.Move(oldSubtitleCachePath, newSubtitleCachePath, false);
-                    _logger.LogDebug("Moved subtitle {Index} for {Item} from {Source} to {Destination}", mediaStreamIndex, item.Id, oldSubtitleCachePath, newSubtitleCachePath);
+                    _logger.LogDebug("Moved subtitle {Index} for {Item} from {Source} to {Destination}", mediaStreamIndex, id, oldSubtitleCachePath, newSubtitleCachePath);
 
                     modified = true;
                 }
@@ -157,14 +157,14 @@ public class MoveExtractedFiles : IMigrationRoutine
         }
 
 #pragma warning disable CA1309 // Use ordinal string comparison
-        var attachments = context.AttachmentStreamInfos.Where(a => a.ItemId.Equals(item.Id) && !string.Equals(a.Codec, "mjpeg")).ToList();
+        var attachments = context.AttachmentStreamInfos.Where(a => a.ItemId.Equals(id) && !string.Equals(a.Codec, "mjpeg")).ToList();
 #pragma warning restore CA1309 // Use ordinal string comparison
         var shouldExtractOneByOne = attachments.Any(a => !string.IsNullOrEmpty(a.Filename)
                                                                               && (a.Filename.Contains('/', StringComparison.OrdinalIgnoreCase) || a.Filename.Contains('\\', StringComparison.OrdinalIgnoreCase)));
         foreach (var attachment in attachments)
         {
             var attachmentIndex = attachment.Index;
-            var oldAttachmentPath = GetOldAttachmentDataPath(item.Path, attachmentIndex);
+            var oldAttachmentPath = GetOldAttachmentDataPath(path, attachmentIndex);
             if (string.IsNullOrEmpty(oldAttachmentPath) || !File.Exists(oldAttachmentPath))
             {
                 oldAttachmentPath = GetOldAttachmentCachePath(itemIdString, attachment, shouldExtractOneByOne);
@@ -186,7 +186,7 @@ public class MoveExtractedFiles : IMigrationRoutine
                 {
                     Directory.CreateDirectory(newDirectory);
                     File.Move(oldAttachmentPath, newAttachmentPath, false);
-                    _logger.LogDebug("Moved attachment {Index} for {Item} from {Source} to {Destination}", attachmentIndex, item.Id, oldAttachmentPath, newAttachmentPath);
+                    _logger.LogDebug("Moved attachment {Index} for {Item} from {Source} to {Destination}", attachmentIndex, id, oldAttachmentPath, newAttachmentPath);
 
                     modified = true;
                 }
