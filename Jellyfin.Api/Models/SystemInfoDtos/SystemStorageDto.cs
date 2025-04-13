@@ -14,61 +14,61 @@ public record SystemStorageDto
     /// Gets or sets the program data path.
     /// </summary>
     /// <value>The program data path.</value>
-    public required FolderStorageDto ProgramDataStorage { get; set; }
+    public required FolderStorageDto ProgramDataFolder { get; set; }
 
     /// <summary>
     /// Gets or sets the web UI resources path.
     /// </summary>
     /// <value>The web UI resources path.</value>
-    public required FolderStorageDto WebStorage { get; set; }
+    public required FolderStorageDto WebFolder { get; set; }
 
     /// <summary>
     /// Gets or sets the items by name path.
     /// </summary>
     /// <value>The items by name path.</value>
-    public required FolderStorageDto ItemsByNameStorage { get; set; }
+    public required FolderStorageDto ItemsByNameFolder { get; set; }
 
     /// <summary>
     /// Gets or sets the cache path.
     /// </summary>
     /// <value>The cache path.</value>
-    public required FolderStorageDto CacheStorage { get; set; }
+    public required FolderStorageDto CacheFolder { get; set; }
 
     /// <summary>
     /// Gets or sets the log path.
     /// </summary>
     /// <value>The log path.</value>
-    public required FolderStorageDto LogStorage { get; set; }
+    public required FolderStorageDto LogFolder { get; set; }
 
     /// <summary>
     /// Gets or sets the internal metadata path.
     /// </summary>
     /// <value>The internal metadata path.</value>
-    public required FolderStorageDto InternalMetadataStorage { get; set; }
+    public required FolderStorageDto InternalMetadataFolder { get; set; }
 
     /// <summary>
     /// Gets or sets the transcode path.
     /// </summary>
     /// <value>The transcode path.</value>
-    public required FolderStorageDto TranscodingTempStorage { get; set; }
+    public required FolderStorageDto TranscodingTempFolder { get; set; }
 
     /// <summary>
     /// Gets or sets the storage informations of all libraries.
     /// </summary>
-    public required IReadOnlyCollection<LibraryStorageDto> LibrariesStorage { get; set; }
+    public required IReadOnlyCollection<LibraryStorageDto> Libraries { get; set; }
 
     internal static SystemStorageDto FromSystemStorageInfo(SystemStorageInfo model)
     {
         return new SystemStorageDto()
         {
-            ProgramDataStorage = FolderStorageDto.FromFolderStorageInfo(model.ProgramDataStorage),
-            WebStorage = FolderStorageDto.FromFolderStorageInfo(model.WebStorage),
-            ItemsByNameStorage = FolderStorageDto.FromFolderStorageInfo(model.ItemsByNameStorage),
-            CacheStorage = FolderStorageDto.FromFolderStorageInfo(model.CacheStorage),
-            LogStorage = FolderStorageDto.FromFolderStorageInfo(model.LogStorage),
-            InternalMetadataStorage = FolderStorageDto.FromFolderStorageInfo(model.InternalMetadataStorage),
-            TranscodingTempStorage = FolderStorageDto.FromFolderStorageInfo(model.TranscodingTempStorage),
-            LibrariesStorage = model.LibrariesStorage.Select(LibraryStorageDto.FromLibraryStorageModel).ToArray()
+            ProgramDataFolder = FolderStorageDto.FromFolderStorageInfo(model.ProgramDataFolder),
+            WebFolder = FolderStorageDto.FromFolderStorageInfo(model.WebFolder),
+            ItemsByNameFolder = FolderStorageDto.FromFolderStorageInfo(model.ItemsByNameFolder),
+            CacheFolder = FolderStorageDto.FromFolderStorageInfo(model.CacheFolder),
+            LogFolder = FolderStorageDto.FromFolderStorageInfo(model.LogFolder),
+            InternalMetadataFolder = FolderStorageDto.FromFolderStorageInfo(model.InternalMetadataFolder),
+            TranscodingTempFolder = FolderStorageDto.FromFolderStorageInfo(model.TranscodingTempFolder),
+            Libraries = model.Libraries.Select(LibraryStorageDto.FromLibraryStorageModel).ToArray()
         };
     }
 }

@@ -94,14 +94,14 @@ public class SystemManager : ISystemManager
 
         return new SystemStorageInfo()
         {
-            ProgramDataStorage = StorageHelper.GetFreeSpaceOf(_applicationPaths.ProgramDataPath),
-            WebStorage = StorageHelper.GetFreeSpaceOf(_applicationPaths.WebPath),
-            LogStorage = StorageHelper.GetFreeSpaceOf(_applicationPaths.LogDirectoryPath),
-            ItemsByNameStorage = StorageHelper.GetFreeSpaceOf(_applicationPaths.InternalMetadataPath),
-            InternalMetadataStorage = StorageHelper.GetFreeSpaceOf(_applicationPaths.InternalMetadataPath),
-            CacheStorage = StorageHelper.GetFreeSpaceOf(_applicationPaths.CachePath),
-            TranscodingTempStorage = StorageHelper.GetFreeSpaceOf(_configurationManager.GetTranscodePath()),
-            LibrariesStorage = virtualFolderInfos.ToArray()
+            ProgramDataFolder = StorageHelper.GetFreeSpaceOf(_applicationPaths.ProgramDataPath),
+            WebFolder = StorageHelper.GetFreeSpaceOf(_applicationPaths.WebPath),
+            LogFolder = StorageHelper.GetFreeSpaceOf(_applicationPaths.LogDirectoryPath),
+            ItemsByNameFolder = StorageHelper.GetFreeSpaceOf(_applicationPaths.InternalMetadataPath),
+            InternalMetadataFolder = StorageHelper.GetFreeSpaceOf(_applicationPaths.InternalMetadataPath),
+            CacheFolder = StorageHelper.GetFreeSpaceOf(_applicationPaths.CachePath),
+            TranscodingTempFolder = StorageHelper.GetFreeSpaceOf(_configurationManager.GetTranscodePath()),
+            Libraries = virtualFolderInfos.ToArray()
         };
     }
 
