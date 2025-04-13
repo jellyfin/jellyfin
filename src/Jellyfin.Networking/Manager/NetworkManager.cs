@@ -720,28 +720,47 @@ public class NetworkManager : INetworkManager, IDisposable
     /// <inheritdoc/>
     public IReadOnlyList<IPData> GetAllBindInterfaces(bool individualInterfaces = false)
     {
-        var config = _configurationManager.GetNetworkConfiguration();
+        return NetworkManager.GetAllBindInterfaces(individualInterfaces, _configurationManager, _interfaces, IsIPv4Enabled, IsIPv6Enabled);
+    }
+
+    /// <summary>
+    /// Reads the jellyfin configuration of the configuration manager and produces a list of interfaces that should be bound.
+    /// </summary>
+    /// <param name="individualInterfaces">Defines that only known interfaces should be used.</param>
+    /// <param name="configurationManager">The ConfigurationManager.</param>
+    /// <param name="knownInterfaces">The known interfaces that gets returned if possible or instructed.</param>
+    /// <param name="readIpv4">Include IPV4 type interfaces.</param>
+    /// <param name="readIpv6">Include IPV6 type interfaces.</param>
+    /// <returns>A list of ip address of which jellyfin should bind to.</returns>
+    public static IReadOnlyList<IPData> GetAllBindInterfaces(
+        bool individualInterfaces,
+        IConfigurationManager configurationManager,
+        IReadOnlyList<IPData> knownInterfaces,
+        bool readIpv4,
+        bool readIpv6)
+    {
+        var config = configurationManager.GetNetworkConfiguration();
         var localNetworkAddresses = config.LocalNetworkAddresses;
-        if ((localNetworkAddresses.Length > 0 && !string.IsNullOrWhiteSpace(localNetworkAddresses[0]) && _interfaces.Count > 0) || individualInterfaces)
+        if ((localNetworkAddresses.Length > 0 && !string.IsNullOrWhiteSpace(localNetworkAddresses[0]) && knownInterfaces.Count > 0) || individualInterfaces)
         {
-            return _interfaces;
+            return knownInterfaces;
         }
 
         // No bind address and no exclusions, so listen on all interfaces.
         var result = new List<IPData>();
-        if (IsIPv4Enabled && IsIPv6Enabled)
+        if (readIpv4 && readIpv6)
         {
             // Kestrel source code shows it uses Sockets.DualMode - so this also covers IPAddress.Any by default
             result.Add(new IPData(IPAddress.IPv6Any, NetworkConstants.IPv6Any));
         }
-        else if (IsIPv4Enabled)
+        else if (readIpv4)
         {
             result.Add(new IPData(IPAddress.Any, NetworkConstants.IPv4Any));
         }
-        else if (IsIPv6Enabled)
+        else if (readIpv6)
         {
             // Cannot use IPv6Any as Kestrel will bind to IPv4 addresses too.
-            foreach (var iface in _interfaces)
+            foreach (var iface in knownInterfaces)
             {
                 if (iface.AddressFamily == AddressFamily.InterNetworkV6)
                 {
