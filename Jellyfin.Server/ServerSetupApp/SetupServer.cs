@@ -80,8 +80,10 @@ public sealed class SetupServer : IDisposable
                         webHostBuilder
                                 .UseKestrel((builderContext, options) =>
                                 {
-                                    var config = _configurationManager.GetNetworkConfiguration();
-                                    var bindInterfaces = NetworkManager.GetAllBindInterfaces(false, _configurationManager, [], config.EnableIPv4, config.EnableIPv6);
+                                    var config = _configurationManager.GetNetworkConfiguration()!;
+                                    var knownBindInterfaces = NetworkManager.GetInterfacesCore(_loggerFactory.CreateLogger<SetupServer>(), config.EnableIPv4, config.EnableIPv6);
+                                    knownBindInterfaces = NetworkManager.FilterBindSettings(config, knownBindInterfaces.ToList(), config.EnableIPv4, config.EnableIPv6);
+                                    var bindInterfaces = NetworkManager.GetAllBindInterfaces(false, _configurationManager, knownBindInterfaces, config.EnableIPv4, config.EnableIPv6);
                                     Extensions.WebHostBuilderExtensions.SetupJellyfinWebServer(
                                         bindInterfaces,
                                         config.PublicHttpPort,
