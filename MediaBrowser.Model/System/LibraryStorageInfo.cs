@@ -1,10 +1,5 @@
-#nullable disable
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using MediaBrowser.Model.Updates;
 
 namespace MediaBrowser.Model.System;
 
@@ -16,15 +11,15 @@ public class LibraryStorageInfo
     /// <summary>
     /// Gets or sets the Library Id.
     /// </summary>
-    public Guid Id { get; set; }
+    public required Guid Id { get; set; }
 
     /// <summary>
     /// Gets or sets the name of the library.
     /// </summary>
-    public string Name { get; set; }
+    public required string Name { get; set; }
 
     /// <summary>
     /// Gets or sets the storage informations about the folders used in a library.
     /// </summary>
-    public IReadOnlyCollection<FolderStorageInfo> Folders { get; set; }
+    public required IReadOnlyCollection<FolderStorageInfo> Folders { get; set; }
 }

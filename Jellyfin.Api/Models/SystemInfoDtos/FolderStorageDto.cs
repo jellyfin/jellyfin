@@ -1,9 +1,11 @@
-namespace MediaBrowser.Model.System;
+using MediaBrowser.Model.System;
+
+namespace Jellyfin.Api.Models.SystemInfoDtos;
 
 /// <summary>
 /// Contains information about a specific folder.
 /// </summary>
-public record FolderStorageInfo
+public record FolderStorageDto
 {
     /// <summary>
     /// Gets the path of the folder in question.
@@ -29,4 +31,16 @@ public record FolderStorageInfo
     /// Gets the Device Identifier.
     /// </summary>
     public string? DeviceId { get; init; }
+
+    internal static FolderStorageDto FromFolderStorageInfo(FolderStorageInfo model)
+    {
+        return new()
+        {
+            Path = model.Path,
+            FreeSpace = model.FreeSpace,
+            UsedSpace = model.UsedSpace,
+            StorageType = model.StorageType,
+            DeviceId = model.DeviceId
+        };
+    }
 }

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net.Mime;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
+using Jellyfin.Api.Models.SystemInfoDtos;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
@@ -81,8 +82,8 @@ public class SystemController : BaseJellyfinApiController
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public ActionResult<SystemStorageInfo> GetSystemStorage()
-        => Ok(_systemManager.GetSystemStorageInfo());
+    public ActionResult<SystemStorageDto> GetSystemStorage()
+        => Ok(SystemStorageDto.FromSystemStorageInfo(_systemManager.GetSystemStorageInfo()));
 
     /// <summary>
     /// Gets public information about the server.
