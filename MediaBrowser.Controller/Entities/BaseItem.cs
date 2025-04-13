@@ -1368,8 +1368,7 @@ namespace MediaBrowser.Controller.Entities
 
         private async Task<bool> RefreshExtras(BaseItem item, MetadataRefreshOptions options, IReadOnlyList<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
-            var filtered = fileSystemChildren.Where(f => !LibraryManager.IgnoreFile(f, this)).ToArray();
-            var extras = LibraryManager.FindExtras(item, filtered, options.DirectoryService).ToArray();
+            var extras = LibraryManager.FindExtras(item, fileSystemChildren, options.DirectoryService).ToArray();
             var newExtraIds = Array.ConvertAll(extras, x => x.Id);
             var extrasChanged = !item.ExtraIds.SequenceEqual(newExtraIds);
 
