@@ -80,7 +80,7 @@ namespace Emby.Server.Implementations.Library.Validators
 
             var deadEntities = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = [BaseItemKind.Genre],
+                IncludeItemTypes = [BaseItemKind.Genre, BaseItemKind.MusicGenre],
                 IsDeadGenre = true,
                 IsLocked = false
             });
