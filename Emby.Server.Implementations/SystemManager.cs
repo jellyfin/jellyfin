@@ -87,21 +87,21 @@ public class SystemManager : ISystemManager
     {
         var virtualFolderInfos = _libraryManager.GetVirtualFolders().Select(e => new LibraryStorageInfo()
         {
-            LibraryId = Guid.Parse(e.ItemId),
-            LibraryName = e.Name,
-            FolderDirectoryInfos = e.Locations.Select(f => StorageHelper.GetFreeSpaceOf(f)).ToArray()
+            Id = Guid.Parse(e.ItemId),
+            Name = e.Name,
+            Folders = e.Locations.Select(f => StorageHelper.GetFreeSpaceOf(f)).ToArray()
         });
 
         return new SystemStorageInfo()
         {
-            ProgramDataDirectoryInfo = StorageHelper.GetFreeSpaceOf(_applicationPaths.ProgramDataPath),
-            WebDirectoryInfo = StorageHelper.GetFreeSpaceOf(_applicationPaths.WebPath),
-            LogDirectoryInfo = StorageHelper.GetFreeSpaceOf(_applicationPaths.LogDirectoryPath),
-            ItemsByNameDirectoryInfo = StorageHelper.GetFreeSpaceOf(_applicationPaths.InternalMetadataPath),
-            InternalMetadataDirectoryInfo = StorageHelper.GetFreeSpaceOf(_applicationPaths.InternalMetadataPath),
-            CacheDirectoryInfo = StorageHelper.GetFreeSpaceOf(_applicationPaths.CachePath),
-            TranscodingTempDirectoryInfo = StorageHelper.GetFreeSpaceOf(_configurationManager.GetTranscodePath()),
-            Libraries = virtualFolderInfos.ToArray()
+            ProgramDataStorage = StorageHelper.GetFreeSpaceOf(_applicationPaths.ProgramDataPath),
+            WebStorage = StorageHelper.GetFreeSpaceOf(_applicationPaths.WebPath),
+            LogStorage = StorageHelper.GetFreeSpaceOf(_applicationPaths.LogDirectoryPath),
+            ItemsByNameStorage = StorageHelper.GetFreeSpaceOf(_applicationPaths.InternalMetadataPath),
+            InternalMetadataStorage = StorageHelper.GetFreeSpaceOf(_applicationPaths.InternalMetadataPath),
+            CacheStorage = StorageHelper.GetFreeSpaceOf(_applicationPaths.CachePath),
+            TranscodingTempStorage = StorageHelper.GetFreeSpaceOf(_configurationManager.GetTranscodePath()),
+            LibrariesStorage = virtualFolderInfos.ToArray()
         };
     }
 

@@ -77,11 +77,11 @@ public class SystemController : BaseJellyfinApiController
     /// <response code="200">Information retrieved.</response>
     /// <response code="403">User does not have permission to retrieve information.</response>
     /// <returns>A <see cref="SystemInfo"/> with info about the system.</returns>
-    [HttpGet("StorageResources")]
-    [Authorize(Policy = Policies.FirstTimeSetupOrElevated)]
+    [HttpGet("Info/Storage")]
+    [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public ActionResult<SystemStorageInfo> GetSystemStorageInfo()
+    public ActionResult<SystemStorageInfo> GetSystemStorage()
         => Ok(_systemManager.GetSystemStorageInfo());
 
     /// <summary>

@@ -16,15 +16,15 @@ public class LibraryStorageInfo
     /// <summary>
     /// Gets or sets the Library Id.
     /// </summary>
-    public Guid LibraryId { get; set; }
+    public Guid Id { get; set; }
 
     /// <summary>
     /// Gets or sets the name of the library.
     /// </summary>
-    public string LibraryName { get; set; }
+    public string Name { get; set; }
 
     /// <summary>
     /// Gets or sets the storage informations about the folders used in a library.
     /// </summary>
-    public IReadOnlyCollection<FolderStorageInfo> FolderDirectoryInfos { get; set; }
+    public IReadOnlyCollection<FolderStorageInfo> Folders { get; set; }
 }
