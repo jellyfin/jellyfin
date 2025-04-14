@@ -51,5 +51,5 @@ public interface IChapterManager
     /// Deletes the chapter images.
     /// </summary>
     /// <param name="video">Video to use.</param>
-    public void DeleteChapterImages(Video video);
+    void DeleteChapterImages(Video video);
 }
