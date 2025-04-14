@@ -86,7 +86,7 @@ public sealed class SetupServer : IDisposable
                                     var bindInterfaces = NetworkManager.GetAllBindInterfaces(false, _configurationManager, knownBindInterfaces, config.EnableIPv4, config.EnableIPv6);
                                     Extensions.WebHostBuilderExtensions.SetupJellyfinWebServer(
                                         bindInterfaces,
-                                        config.PublicHttpPort,
+                                        config.InternalHttpPort,
                                         null,
                                         null,
                                         _startupConfiguration,
