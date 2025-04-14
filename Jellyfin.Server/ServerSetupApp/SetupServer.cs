@@ -19,6 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 
 namespace Jellyfin.Server.ServerSetupApp;
 
@@ -139,7 +140,7 @@ public sealed class SetupServer : IDisposable
                                             if (jfApplicationHost is null)
                                             {
                                                 context.Response.StatusCode = (int)HttpStatusCode.ServiceUnavailable;
-                                                context.Response.Headers.RetryAfter = new Microsoft.Extensions.Primitives.StringValues("5");
+                                                context.Response.Headers.RetryAfter = new StringValues("5");
                                                 return;
                                             }
 
@@ -160,7 +161,8 @@ public sealed class SetupServer : IDisposable
                                     app.Run((context) =>
                                     {
                                         context.Response.StatusCode = (int)HttpStatusCode.ServiceUnavailable;
-                                        context.Response.Headers.RetryAfter = new Microsoft.Extensions.Primitives.StringValues("5");
+                                        context.Response.Headers.RetryAfter = new StringValues("5");
+                                        context.Response.Headers.ContentType = new StringValues("text/html");
                                         context.Response.WriteAsync("<p>Jellyfin Server still starting. Please wait.</p>");
                                         var networkManager = _networkManagerFactory();
                                         if (networkManager is not null && context.Connection.RemoteIpAddress is not null && networkManager.IsInLocalNetwork(context.Connection.RemoteIpAddress))
