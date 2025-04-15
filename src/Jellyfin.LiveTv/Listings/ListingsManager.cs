@@ -230,10 +230,15 @@ public class ListingsManager : IListingsManager
         var listingsProviderInfo = config.ListingProviders
             .First(info => string.Equals(providerId, info.Id, StringComparison.OrdinalIgnoreCase));
 
+        var channelMappingExists = listingsProviderInfo.ChannelMappings
+            .Any(pair => string.Equals(pair.Name, tunerChannelNumber, StringComparison.OrdinalIgnoreCase)
+                        && string.Equals(pair.Value, providerChannelNumber, StringComparison.OrdinalIgnoreCase));
+
         listingsProviderInfo.ChannelMappings = listingsProviderInfo.ChannelMappings
             .Where(pair => !string.Equals(pair.Name, tunerChannelNumber, StringComparison.OrdinalIgnoreCase)).ToArray();
 
-        if (!string.Equals(tunerChannelNumber, providerChannelNumber, StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(tunerChannelNumber, providerChannelNumber, StringComparison.OrdinalIgnoreCase)
+            && !channelMappingExists)
         {
             var newItem = new NameValuePair
             {
