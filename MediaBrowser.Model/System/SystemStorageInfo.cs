@@ -23,7 +23,7 @@ public class SystemStorageInfo
     /// Gets or sets the items by name path.
     /// </summary>
     /// <value>The items by name path.</value>
-    public required FolderStorageInfo ItemsByNameFolder { get; set; }
+    public required FolderStorageInfo ImageCacheFolder { get; set; }
 
     /// <summary>
     /// Gets or sets the cache path.

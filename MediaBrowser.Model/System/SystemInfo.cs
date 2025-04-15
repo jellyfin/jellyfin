@@ -76,49 +76,49 @@ public class SystemInfo : PublicSystemInfo
     /// Gets or sets the program data path.
     /// </summary>
     /// <value>The program data path.</value>
-    [Obsolete("Use the newer SystemStorageInfo.DirectoryInfo instead")]
+    [Obsolete("Use the newer SystemStorageDto instead")]
     public string ProgramDataPath { get; set; }
 
     /// <summary>
     /// Gets or sets the web UI resources path.
     /// </summary>
     /// <value>The web UI resources path.</value>
-    [Obsolete("Use the newer SystemStorageInfo.DirectoryInfo instead")]
+    [Obsolete("Use the newer SystemStorageDto instead")]
     public string WebPath { get; set; }
 
     /// <summary>
     /// Gets or sets the items by name path.
     /// </summary>
     /// <value>The items by name path.</value>
-    [Obsolete("Use the newer SystemStorageInfo.DirectoryInfo instead")]
+    [Obsolete("Use the newer SystemStorageDto instead")]
     public string ItemsByNamePath { get; set; }
 
     /// <summary>
     /// Gets or sets the cache path.
     /// </summary>
     /// <value>The cache path.</value>
-    [Obsolete("Use the newer SystemStorageInfo.DirectoryInfo instead")]
+    [Obsolete("Use the newer SystemStorageDto instead")]
     public string CachePath { get; set; }
 
     /// <summary>
     /// Gets or sets the log path.
     /// </summary>
     /// <value>The log path.</value>
-    [Obsolete("Use the newer SystemStorageInfo.DirectoryInfo instead")]
+    [Obsolete("Use the newer SystemStorageDto instead")]
     public string LogPath { get; set; }
 
     /// <summary>
     /// Gets or sets the internal metadata path.
     /// </summary>
     /// <value>The internal metadata path.</value>
-    [Obsolete("Use the newer SystemStorageInfo.DirectoryInfo instead")]
+    [Obsolete("Use the newer SystemStorageDto instead")]
     public string InternalMetadataPath { get; set; }
 
     /// <summary>
     /// Gets or sets the transcode path.
     /// </summary>
     /// <value>The transcode path.</value>
-    [Obsolete("Use the newer SystemStorageInfo.DirectoryInfo instead")]
+    [Obsolete("Use the newer SystemStorageDto instead")]
     public string TranscodingTempPath { get; set; }
 
     /// <summary>

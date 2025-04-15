@@ -11,45 +11,38 @@ namespace Jellyfin.Api.Models.SystemInfoDtos;
 public record SystemStorageDto
 {
     /// <summary>
-    /// Gets or sets the program data path.
+    /// Gets or sets the Storage information of the program data folder.
     /// </summary>
-    /// <value>The program data path.</value>
     public required FolderStorageDto ProgramDataFolder { get; set; }
 
     /// <summary>
-    /// Gets or sets the web UI resources path.
+    /// Gets or sets the Storage information of the web UI resources folder.
     /// </summary>
-    /// <value>The web UI resources path.</value>
     public required FolderStorageDto WebFolder { get; set; }
 
     /// <summary>
-    /// Gets or sets the items by name path.
+    /// Gets or sets the Storage information of the folder where images are cached.
     /// </summary>
-    /// <value>The items by name path.</value>
-    public required FolderStorageDto ItemsByNameFolder { get; set; }
+    public required FolderStorageDto ImageCacheFolder { get; set; }
 
     /// <summary>
-    /// Gets or sets the cache path.
+    /// Gets or sets the Storage information of the cache folder.
     /// </summary>
-    /// <value>The cache path.</value>
     public required FolderStorageDto CacheFolder { get; set; }
 
     /// <summary>
-    /// Gets or sets the log path.
+    /// Gets or sets the Storage information of the folder where logfiles are saved to.
     /// </summary>
-    /// <value>The log path.</value>
     public required FolderStorageDto LogFolder { get; set; }
 
     /// <summary>
-    /// Gets or sets the internal metadata path.
+    /// Gets or sets the Storage information of the folder where metadata is stored.
     /// </summary>
-    /// <value>The internal metadata path.</value>
     public required FolderStorageDto InternalMetadataFolder { get; set; }
 
     /// <summary>
-    /// Gets or sets the transcode path.
+    /// Gets or sets the Storage information of the transcoding cache.
     /// </summary>
-    /// <value>The transcode path.</value>
     public required FolderStorageDto TranscodingTempFolder { get; set; }
 
     /// <summary>
@@ -63,7 +56,7 @@ public record SystemStorageDto
         {
             ProgramDataFolder = FolderStorageDto.FromFolderStorageInfo(model.ProgramDataFolder),
             WebFolder = FolderStorageDto.FromFolderStorageInfo(model.WebFolder),
-            ItemsByNameFolder = FolderStorageDto.FromFolderStorageInfo(model.ItemsByNameFolder),
+            ImageCacheFolder = FolderStorageDto.FromFolderStorageInfo(model.ImageCacheFolder),
             CacheFolder = FolderStorageDto.FromFolderStorageInfo(model.CacheFolder),
             LogFolder = FolderStorageDto.FromFolderStorageInfo(model.LogFolder),
             InternalMetadataFolder = FolderStorageDto.FromFolderStorageInfo(model.InternalMetadataFolder),

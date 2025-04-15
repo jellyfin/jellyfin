@@ -97,7 +97,7 @@ public class SystemManager : ISystemManager
             ProgramDataFolder = StorageHelper.GetFreeSpaceOf(_applicationPaths.ProgramDataPath),
             WebFolder = StorageHelper.GetFreeSpaceOf(_applicationPaths.WebPath),
             LogFolder = StorageHelper.GetFreeSpaceOf(_applicationPaths.LogDirectoryPath),
-            ItemsByNameFolder = StorageHelper.GetFreeSpaceOf(_applicationPaths.InternalMetadataPath),
+            ImageCacheFolder = StorageHelper.GetFreeSpaceOf(_applicationPaths.ImageCachePath),
             InternalMetadataFolder = StorageHelper.GetFreeSpaceOf(_applicationPaths.InternalMetadataPath),
             CacheFolder = StorageHelper.GetFreeSpaceOf(_applicationPaths.CachePath),
             TranscodingTempFolder = StorageHelper.GetFreeSpaceOf(_configurationManager.GetTranscodePath()),
