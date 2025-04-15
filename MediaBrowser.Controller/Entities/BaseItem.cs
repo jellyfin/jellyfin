@@ -52,7 +52,7 @@ namespace MediaBrowser.Controller.Entities
         /// The supported image extensions.
         /// </summary>
         public static readonly string[] SupportedImageExtensions
-            = new[] { ".png", ".jpg", ".jpeg", ".webp", ".tbn", ".gif", ".svg" };
+            = [".png", ".jpg", ".jpeg", ".webp", ".tbn", ".gif", ".svg"];
 
         private static readonly List<string> _supportedExtensions = new List<string>(SupportedImageExtensions)
         {
@@ -448,7 +448,7 @@ namespace MediaBrowser.Controller.Entities
                     return Array.Empty<string>();
                 }
 
-                return new[] { Path };
+                return [Path];
             }
         }
 
@@ -1984,7 +1984,7 @@ namespace MediaBrowser.Controller.Entities
 
         public void RemoveImage(ItemImageInfo image)
         {
-            RemoveImages(new[] { image });
+            RemoveImages([image]);
         }
 
         public void RemoveImages(IEnumerable<ItemImageInfo> deletedImages)
@@ -2019,7 +2019,7 @@ namespace MediaBrowser.Controller.Entities
                     continue;
                 }
 
-                (deletedImages ??= new List<ItemImageInfo>()).Add(imageInfo);
+                (deletedImages ??= []).Add(imageInfo);
             }
 
             var anyImagesRemoved = deletedImages?.Count > 0;
@@ -2222,11 +2222,7 @@ namespace MediaBrowser.Controller.Entities
         {
             return new[]
             {
-                new FileSystemMetadata
-                {
-                    FullName = Path,
-                    IsDirectory = IsFolder
-                }
+                FileSystem.GetFileSystemInfo(Path)
             }.Concat(GetLocalMetadataFilesToDelete());
         }
 
@@ -2234,7 +2230,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (IsFolder || !IsInMixedFolder)
             {
-                return new List<FileSystemMetadata>();
+                return [];
             }
 
             var filename = System.IO.Path.GetFileNameWithoutExtension(Path);
@@ -2490,10 +2486,10 @@ namespace MediaBrowser.Controller.Entities
 
         protected virtual List<string> GetEtagValues(User user)
         {
-            return new List<string>
-            {
+            return
+            [
                 DateLastSaved.Ticks.ToString(CultureInfo.InvariantCulture)
-            };
+            ];
         }
 
         public virtual IEnumerable<Guid> GetAncestorIds()
@@ -2513,7 +2509,7 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual IEnumerable<Guid> GetIdsForAncestorQuery()
         {
-            return new[] { Id };
+            return [Id];
         }
 
         public virtual double? GetRefreshProgress()
