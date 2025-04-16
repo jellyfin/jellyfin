@@ -1778,8 +1778,16 @@ public sealed class BaseItemRepository
         if (tags.Count > 0)
         {
             var cleanValues = tags.Select(e => GetCleanValue(e)).ToArray();
-            baseQuery = baseQuery
-                    .Where(e => e.ItemValues!.Any(f => f.ItemValue.Type == ItemValueType.Tags && cleanValues.Contains(f.ItemValue.CleanValue)));
+            if (filter.MatchAllTags)
+            {
+                baseQuery = baseQuery
+                .Where(e => cleanValues.All(tag => e.ItemValues!.Any(f => f.ItemValue.Type == ItemValueType.Tags && f.ItemValue.CleanValue == tag)));
+            }
+            else
+            {
+                baseQuery = baseQuery
+                .Where(e => e.ItemValues!.Any(f => f.ItemValue.Type == ItemValueType.Tags && cleanValues.Contains(f.ItemValue.CleanValue)));
+            }
         }
 
         if (excludeTags.Count > 0)
