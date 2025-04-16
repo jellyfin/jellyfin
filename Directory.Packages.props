@@ -22,7 +22,7 @@
     <PackageVersion Include="ICU4N.Transliterator" Version="60.1.0-alpha.356" />
     <PackageVersion Include="IDisposableAnalyzers" Version="4.0.8" />
     <PackageVersion Include="Jellyfin.XmlTv" Version="10.8.0" />
-    <PackageVersion Include="libse" Version="4.0.10" />
+    <PackageVersion Include="libse" Version="4.0.12" />
     <PackageVersion Include="LrcParser" Version="2025.228.1" />
     <PackageVersion Include="MetaBrainz.MusicBrainz" Version="6.1.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="9.0.4" />
