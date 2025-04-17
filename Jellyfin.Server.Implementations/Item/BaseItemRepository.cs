@@ -106,13 +106,13 @@ public sealed class BaseItemRepository
 
         var genreFilter = OneOrManyItem(referenceIds, f => f.Id);
 
-        return baseQuery
-            .Where(item => context.ItemValues
-                .Where(f => context.BaseItems.Where(genreFilter)
-                .Select(f => f.CleanName)
-                .Any(w => f.CleanValue == w) && f.Type == itemValueType)
-                .Select(e => e.BaseItemsMap!.Any(w => w.ItemId == item.Id))
-                .Any() == !invert);
+        return baseQuery.Where(item =>
+            context.ItemValues
+                .Join(context.ItemValuesMap, e => e.ItemValueId, e => e.ItemValueId, (item, map) => new { item, map })
+                .Any(val =>
+                    val.item.Type == itemValueType
+                    && context.BaseItems.Where(genreFilter).Any(e => e.CleanName == val.item.CleanValue)
+                    && val.map.ItemId == item.Id) == !invert);
     }
 
     private static Expression<Func<TEntity, bool>> OneOrMany<TEntity, TProperty>(IList<TProperty> oneOf, Expression<Func<TEntity, TProperty>> property)
