@@ -1381,7 +1381,7 @@ public sealed class BaseItemRepository
         }
         else if (orderBy.Count == 0)
         {
-            return query;
+            return query.OrderBy(e => e.SortName);
         }
 
         IOrderedQueryable<BaseItemEntity>? orderedQuery = null;
