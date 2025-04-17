@@ -50,7 +50,7 @@ public class SyncPlayController : BaseJellyfinApiController
     /// </summary>
     /// <param name="requestData">The settings of the new group.</param>
     /// <response code="204">New group created.</response>
-    /// <returns>An <see cref="GroupInfoDto"/> for the createc group.</returns>
+    /// <returns>An <see cref="GroupInfoDto"/> for the created group.</returns>
     [HttpPost("New")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Authorize(Policy = Policies.SyncPlayCreateGroup)]
