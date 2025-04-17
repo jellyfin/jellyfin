@@ -150,37 +150,37 @@ public sealed class BaseItemRepository
     }
 
     /// <inheritdoc />
-    public QueryResult<(BaseItemDto Item, ItemCounts ItemCounts)> GetAllArtists(InternalItemsQuery filter)
+    public QueryResult<(BaseItemDto Item, ItemCounts? ItemCounts)> GetAllArtists(InternalItemsQuery filter)
     {
         return GetItemValues(filter, _getAllArtistsValueTypes, _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist]);
     }
 
     /// <inheritdoc />
-    public QueryResult<(BaseItemDto Item, ItemCounts ItemCounts)> GetArtists(InternalItemsQuery filter)
+    public QueryResult<(BaseItemDto Item, ItemCounts? ItemCounts)> GetArtists(InternalItemsQuery filter)
     {
         return GetItemValues(filter, _getArtistValueTypes, _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist]);
     }
 
     /// <inheritdoc />
-    public QueryResult<(BaseItemDto Item, ItemCounts ItemCounts)> GetAlbumArtists(InternalItemsQuery filter)
+    public QueryResult<(BaseItemDto Item, ItemCounts? ItemCounts)> GetAlbumArtists(InternalItemsQuery filter)
     {
         return GetItemValues(filter, _getAlbumArtistValueTypes, _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist]);
     }
 
     /// <inheritdoc />
-    public QueryResult<(BaseItemDto Item, ItemCounts ItemCounts)> GetStudios(InternalItemsQuery filter)
+    public QueryResult<(BaseItemDto Item, ItemCounts? ItemCounts)> GetStudios(InternalItemsQuery filter)
     {
         return GetItemValues(filter, _getStudiosValueTypes, _itemTypeLookup.BaseItemKindNames[BaseItemKind.Studio]);
     }
 
     /// <inheritdoc />
-    public QueryResult<(BaseItemDto Item, ItemCounts ItemCounts)> GetGenres(InternalItemsQuery filter)
+    public QueryResult<(BaseItemDto Item, ItemCounts? ItemCounts)> GetGenres(InternalItemsQuery filter)
     {
         return GetItemValues(filter, _getGenreValueTypes, _itemTypeLookup.BaseItemKindNames[BaseItemKind.Genre]);
     }
 
     /// <inheritdoc />
-    public QueryResult<(BaseItemDto Item, ItemCounts ItemCounts)> GetMusicGenres(InternalItemsQuery filter)
+    public QueryResult<(BaseItemDto Item, ItemCounts? ItemCounts)> GetMusicGenres(InternalItemsQuery filter)
     {
         return GetItemValues(filter, _getGenreValueTypes, _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicGenre]);
     }
@@ -404,7 +404,8 @@ public sealed class BaseItemRepository
 
     private IQueryable<BaseItemEntity> PrepareItemQuery(JellyfinDbContext context, InternalItemsQuery filter)
     {
-        IQueryable<BaseItemEntity> dbQuery = context.BaseItems.AsNoTracking().AsSplitQuery()
+        IQueryable<BaseItemEntity> dbQuery = context.BaseItems.AsNoTracking();
+        dbQuery = dbQuery.AsSingleQuery()
             .Include(e => e.TrailerTypes)
             .Include(e => e.Provider)
             .Include(e => e.LockedFields);
@@ -1000,7 +1001,7 @@ public sealed class BaseItemRepository
         return Map(baseItemEntity, dto, appHost);
     }
 
-    private QueryResult<(BaseItemDto Item, ItemCounts ItemCounts)> GetItemValues(InternalItemsQuery filter, IReadOnlyList<ItemValueType> itemValueTypes, string returnType)
+    private QueryResult<(BaseItemDto Item, ItemCounts? ItemCounts)> GetItemValues(InternalItemsQuery filter, IReadOnlyList<ItemValueType> itemValueTypes, string returnType)
     {
         ArgumentNullException.ThrowIfNull(filter);
 
@@ -1074,7 +1075,7 @@ public sealed class BaseItemRepository
             }
         }
 
-        var result = new QueryResult<(BaseItemDto, ItemCounts)>();
+        var result = new QueryResult<(BaseItemDto, ItemCounts?)>();
         if (filter.EnableTotalRecordCount)
         {
             result.TotalRecordCount = query.Count();
@@ -1113,11 +1114,11 @@ public sealed class BaseItemRepository
             var resultQuery = query.Select(e => new
             {
                 item = e.AsQueryable()
-            .Include(e => e.TrailerTypes)
-            .Include(e => e.Provider)
-            .Include(e => e.LockedFields)
-            .Include(e => e.Images)
-            .AsSingleQuery().First(),
+                        .Include(e => e.TrailerTypes)
+                        .Include(e => e.Provider)
+                        .Include(e => e.LockedFields)
+                        .Include(e => e.Images)
+                        .AsSingleQuery().First(),
                 // TODO: This is bad refactor!
                 itemCount = new ItemCounts()
                 {
@@ -1132,10 +1133,18 @@ public sealed class BaseItemRepository
             });
 
             result.StartIndex = filter.StartIndex ?? 0;
-            result.Items = resultQuery.ToArray().Where(e => e is not null).Select(e =>
+            result.Items = [.. resultQuery.ToArray().Where(e => e is not null).Select(e =>
             {
                 return (DeserialiseBaseItem(e.item, filter.SkipDeserialization), e.itemCount);
-            }).ToArray();
+            })];
+        }
+        else
+        {
+            result.StartIndex = filter.StartIndex ?? 0;
+            result.Items = [.. query.Select(e => e.First()).ToArray().Where(e => e is not null).Select<BaseItemEntity, (BaseItemDto, ItemCounts?)>(e =>
+            {
+                return (DeserialiseBaseItem(e, filter.SkipDeserialization), null);
+            })];
         }
 
         return result;
