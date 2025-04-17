@@ -35,6 +35,8 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Logging;
 using BaseItemDto = MediaBrowser.Controller.Entities.BaseItem;
 using BaseItemEntity = Jellyfin.Database.Implementations.Entities.BaseItemEntity;
@@ -1009,21 +1011,53 @@ public sealed class BaseItemRepository
 
         using var context = _dbProvider.CreateDbContext();
 
-        var query = TranslateQuery(context.BaseItems.AsNoTracking(), context, filter);
-
-        query = query.Where(e => e.Type == returnType);
-        // this does not seem to be nesseary but it does not make any sense why this isn't working.
-        // && e.ItemValues!.Any(f => e.CleanName == f.ItemValue.CleanValue && itemValueTypes.Any(w => (ItemValueType)w == f.ItemValue.Type)));
-
-        if (filter.OrderBy.Count != 0
-            || !string.IsNullOrEmpty(filter.SearchTerm))
+        var innerQueryFilter = new InternalItemsQuery(filter.User)
         {
-            query = ApplyOrder(query, filter);
-        }
-        else
+            ExcludeItemTypes = filter.ExcludeItemTypes,
+            IncludeItemTypes = filter.IncludeItemTypes,
+            MediaTypes = filter.MediaTypes,
+            AncestorIds = filter.AncestorIds,
+            ItemIds = filter.ItemIds,
+            TopParentIds = filter.TopParentIds,
+            ParentId = filter.ParentId,
+            IsAiring = filter.IsAiring,
+            IsMovie = filter.IsMovie,
+            IsSports = filter.IsSports,
+            IsKids = filter.IsKids,
+            IsNews = filter.IsNews,
+            IsSeries = filter.IsSeries
+        };
+        var innerQuery = PrepareItemQuery(context, filter)
+            .Where(e => e.Type == returnType)
+            .Where(e => context.ItemValues!
+                .Where(f => itemValueTypes.Contains(f.Type))
+                .Select(f => f.CleanValue)
+                .Contains(e.CleanName));
+        // .Where(e => context.ItemValues!.Any(f => f.BaseItemsMap!.Any(m => itemValueTypes!.Contains(f.Type) && TranslateQuery(f.BaseItemsMap!.Select(g => g.Item).AsQueryable(), context, innerQueryFilter).Any())));
+
+        var outerQueryFilter = new InternalItemsQuery(filter.User)
         {
-            query = query.OrderBy(e => e.SortName);
-        }
+            IsPlayed = filter.IsPlayed,
+            IsFavorite = filter.IsFavorite,
+            IsFavoriteOrLiked = filter.IsFavoriteOrLiked,
+            IsLiked = filter.IsLiked,
+            IsLocked = filter.IsLocked,
+            NameLessThan = filter.NameLessThan,
+            NameStartsWith = filter.NameStartsWith,
+            NameStartsWithOrGreater = filter.NameStartsWithOrGreater,
+            Tags = filter.Tags,
+            OfficialRatings = filter.OfficialRatings,
+            StudioIds = filter.StudioIds,
+            GenreIds = filter.GenreIds,
+            Genres = filter.Genres,
+            Years = filter.Years,
+            NameContains = filter.NameContains,
+            SearchTerm = filter.SearchTerm,
+            ExcludeItemIds = filter.ExcludeItemIds
+        };
+
+        var query = TranslateQuery(innerQuery, context, outerQueryFilter)
+            .GroupBy(e => e.PresentationUniqueKey);
 
         if (filter.Limit.HasValue || filter.StartIndex.HasValue)
         {
@@ -1043,38 +1077,66 @@ public sealed class BaseItemRepository
         var result = new QueryResult<(BaseItemDto, ItemCounts)>();
         if (filter.EnableTotalRecordCount)
         {
-            result.TotalRecordCount = query.GroupBy(e => e.PresentationUniqueKey).Select(e => e.First()).Count();
+            result.TotalRecordCount = query.Count();
         }
 
-        var seriesTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Series];
-        var movieTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Movie];
-        var episodeTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Episode];
-        var musicAlbumTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicAlbum];
-        var musicArtistTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist];
-        var audioTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Audio];
-        var trailerTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Trailer];
+        IQueryable<BaseItemEntity>? itemCountQuery = null;
 
-        var resultQuery = query.Select(e => new
+        if (filter.IncludeItemTypes.Length > 0)
         {
-            item = e,
-            // TODO: This is bad refactor!
-            itemCount = new ItemCounts()
+            // if we are to include more then one type, sub query those items beforehand.
+
+            var typeSubQuery = new InternalItemsQuery(filter.User)
             {
-                SeriesCount = e.ItemValues!.Count(f => f.Item.Type == seriesTypeName),
-                EpisodeCount = e.ItemValues!.Count(f => f.Item.Type == episodeTypeName),
-                MovieCount = e.ItemValues!.Count(f => f.Item.Type == movieTypeName),
-                AlbumCount = e.ItemValues!.Count(f => f.Item.Type == musicAlbumTypeName),
-                ArtistCount = e.ItemValues!.Count(f => f.Item.Type == musicArtistTypeName),
-                SongCount = e.ItemValues!.Count(f => f.Item.Type == audioTypeName),
-                TrailerCount = e.ItemValues!.Count(f => f.Item.Type == trailerTypeName),
-            }
-        });
+                ExcludeItemTypes = filter.ExcludeItemTypes,
+                IncludeItemTypes = filter.IncludeItemTypes,
+                MediaTypes = filter.MediaTypes,
+                AncestorIds = filter.AncestorIds,
+                ExcludeItemIds = filter.ExcludeItemIds,
+                ItemIds = filter.ItemIds,
+                TopParentIds = filter.TopParentIds,
+                ParentId = filter.ParentId,
+                IsPlayed = filter.IsPlayed
+            };
 
-        result.StartIndex = filter.StartIndex ?? 0;
-        result.Items = resultQuery.ToArray().Where(e => e is not null).Select(e =>
-        {
-            return (DeserialiseBaseItem(e.item, filter.SkipDeserialization), e.itemCount);
-        }).ToArray();
+            itemCountQuery = TranslateQuery(context.BaseItems.AsNoTracking(), context, typeSubQuery)
+                .Where(e => e.ItemValues!.Any(f => itemValueTypes!.Contains(f.ItemValue.Type)));
+
+            var seriesTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Series];
+            var movieTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Movie];
+            var episodeTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Episode];
+            var musicAlbumTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicAlbum];
+            var musicArtistTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist];
+            var audioTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Audio];
+            var trailerTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Trailer];
+
+            var resultQuery = query.Select(e => new
+            {
+                item = e.AsQueryable()
+            .Include(e => e.TrailerTypes)
+            .Include(e => e.Provider)
+            .Include(e => e.LockedFields)
+            .Include(e => e.Images)
+            .AsSingleQuery().First(),
+                // TODO: This is bad refactor!
+                itemCount = new ItemCounts()
+                {
+                    SeriesCount = itemCountQuery!.Count(f => f.Type == seriesTypeName),
+                    EpisodeCount = itemCountQuery!.Count(f => f.Type == episodeTypeName),
+                    MovieCount = itemCountQuery!.Count(f => f.Type == movieTypeName),
+                    AlbumCount = itemCountQuery!.Count(f => f.Type == musicAlbumTypeName),
+                    ArtistCount = itemCountQuery!.Count(f => f.Type == musicArtistTypeName),
+                    SongCount = itemCountQuery!.Count(f => f.Type == audioTypeName),
+                    TrailerCount = itemCountQuery!.Count(f => f.Type == trailerTypeName),
+                }
+            });
+
+            result.StartIndex = filter.StartIndex ?? 0;
+            result.Items = resultQuery.ToArray().Where(e => e is not null).Select(e =>
+            {
+                return (DeserialiseBaseItem(e.item, filter.SkipDeserialization), e.itemCount);
+            }).ToArray();
+        }
 
         return result;
     }
@@ -1434,6 +1496,44 @@ public sealed class BaseItemRepository
         }
 
         var includeTypes = filter.IncludeItemTypes;
+
+        Expression<Func<TEntity, bool>> OneOrMany<TEntity, TProperty>(IList<TProperty> oneOf, Expression<Func<TEntity, TProperty>> property)
+        {
+            var parameter = Expression.Parameter(typeof(TEntity), "item");
+            property = ParameterReplacer.Replace<Func<TEntity, TProperty>, Func<TEntity, TProperty>>(property, property.Parameters[0], parameter);
+            if (oneOf.Count == 1)
+            {
+                var value = oneOf[0];
+                if (typeof(TProperty).IsValueType)
+                {
+                    return Expression.Lambda<Func<TEntity, bool>>(Expression.Equal(property.Body, Expression.Constant(value)), parameter);
+                }
+                else
+                {
+                    return Expression.Lambda<Func<TEntity, bool>>(Expression.ReferenceEqual(property.Body, Expression.Constant(value)), parameter);
+                }
+            }
+
+            var methods = typeof(Enumerable).GetMethods(BindingFlags.Public | BindingFlags.Static);
+            MethodInfo containsMethod = methods.First(m => m.Name == "Contains" && m.GetParameters().Length == 2).MakeGenericMethod(typeof(TProperty));
+            return Expression.Lambda<Func<TEntity, bool>>(Expression.Call(null, containsMethod, Expression.Constant(oneOf), property.Body), parameter);
+        }
+
+        Expression<Func<BaseItemEntity, bool>> OneOrManyItem<TProperty>(IList<TProperty> oneOf, Expression<Func<BaseItemEntity, TProperty>> property)
+        {
+            return OneOrMany(oneOf, property);
+        }
+
+        // Expression<Func<ItemValue, bool>> OneOrManyValues<TProperty>(IList<TProperty> oneOf, Expression<Func<ItemValue, TProperty>> property)
+        // {
+        //     return OneOrMany(oneOf, property);
+        // }
+
+        Expression<Func<ItemValueMap, bool>> OneOrManyValueMaps<TProperty>(IList<TProperty> oneOf, Expression<Func<ItemValueMap, TProperty>> property)
+        {
+            return OneOrMany(oneOf, property);
+        }
+
         // Only specify excluded types if no included types are specified
         if (filter.IncludeItemTypes.Length == 0)
         {
@@ -1459,25 +1559,10 @@ public sealed class BaseItemRepository
                 baseQuery = baseQuery.Where(e => !excludeTypeName.Contains(e.Type));
             }
         }
-        else if (includeTypes.Length == 1)
+        else
         {
-            if (_itemTypeLookup.BaseItemKindNames.TryGetValue(includeTypes[0], out var includeTypeName))
-            {
-                baseQuery = baseQuery.Where(e => e.Type == includeTypeName);
-            }
-        }
-        else if (includeTypes.Length > 1)
-        {
-            var includeTypeName = new List<string>();
-            foreach (var includeType in includeTypes)
-            {
-                if (_itemTypeLookup.BaseItemKindNames.TryGetValue(includeType, out var baseItemKindName))
-                {
-                    includeTypeName.Add(baseItemKindName!);
-                }
-            }
-
-            baseQuery = baseQuery.Where(e => includeTypeName.Contains(e.Type));
+            string[] types = includeTypes.Select(f => _itemTypeLookup.BaseItemKindNames.GetValueOrDefault(f)).Where(e => e != null).ToArray()!;
+            baseQuery = baseQuery.Where(OneOrManyItem(types, f => f.Type));
         }
 
         if (filter.ChannelIds.Count > 0)
@@ -1733,22 +1818,37 @@ public sealed class BaseItemRepository
             }
         }
 
+        IQueryable<BaseItemEntity> ReferencedItemFilter(ItemValueType itemValueType, Guid[] referenceIds, bool invert = false)
+        {
+            // Well genre/artist/album etc items do not actually set the ItemValue of thier specitic types so we cannot match it that way.
+            /*
+            "(guid in (select itemid from ItemValues where CleanValue = (select CleanName from TypedBaseItems where guid=@GenreIds and Type=2)))"
+            */
+
+            var genreFilter = OneOrManyItem(filter.GenreIds.ToArray(), f => f.Id);
+
+            return baseQuery
+                .Where(item => context.ItemValues
+                    .Where(f => context.BaseItems.Where(genreFilter)
+                    .Select(f => f.CleanName)
+                    .Any(w => f.CleanValue == w) && f.Type == itemValueType)
+                    .Select(e => e.BaseItemsMap!.Any(w => w.ItemId == item.Id))
+                    .Any() == !invert);
+        }
+
         if (filter.ArtistIds.Length > 0)
         {
-            baseQuery = baseQuery
-                   .Where(e => e.ItemValues!.Any(f => f.ItemValue.Type <= ItemValueType.Artist && filter.ArtistIds.Contains(f.ItemId)));
+            baseQuery = ReferencedItemFilter(ItemValueType.Artist, filter.ArtistIds);
         }
 
         if (filter.AlbumArtistIds.Length > 0)
         {
-            baseQuery = baseQuery
-                   .Where(e => e.ItemValues!.Any(f => f.ItemValue.Type == ItemValueType.Artist && filter.AlbumArtistIds.Contains(f.ItemId)));
+            baseQuery = ReferencedItemFilter(ItemValueType.Artist, filter.AlbumArtistIds);
         }
 
         if (filter.ContributingArtistIds.Length > 0)
         {
-            baseQuery = baseQuery
-                   .Where(e => e.ItemValues!.Any(f => f.ItemValue.Type == ItemValueType.Artist && filter.ContributingArtistIds.Contains(f.ItemId)));
+            baseQuery = ReferencedItemFilter(ItemValueType.Artist, filter.ContributingArtistIds);
         }
 
         if (filter.AlbumIds.Length > 0)
@@ -1758,41 +1858,38 @@ public sealed class BaseItemRepository
 
         if (filter.ExcludeArtistIds.Length > 0)
         {
-            baseQuery = baseQuery
-                   .Where(e => !e.ItemValues!.Any(f => f.ItemValue.Type == ItemValueType.Artist && filter.ExcludeArtistIds.Contains(f.ItemId)));
+            baseQuery = ReferencedItemFilter(ItemValueType.Artist, filter.ExcludeArtistIds.ToArray(), true);
         }
 
         if (filter.GenreIds.Count > 0)
         {
-            baseQuery = baseQuery
-                   .Where(e => e.ItemValues!.Any(f => f.ItemValue.Type == ItemValueType.Genre && filter.GenreIds.Contains(f.ItemId)));
+            baseQuery = ReferencedItemFilter(ItemValueType.Genre, filter.GenreIds.ToArray());
         }
 
         if (filter.Genres.Count > 0)
         {
-            var cleanGenres = filter.Genres.Select(e => GetCleanValue(e)).ToArray();
+            var cleanGenres = OneOrManyValueMaps(filter.Genres.Select(e => GetCleanValue(e)).ToArray(), f => f.ItemValue.CleanValue);
             baseQuery = baseQuery
-                    .Where(e => e.ItemValues!.Any(f => f.ItemValue.Type == ItemValueType.Genre && cleanGenres.Contains(f.ItemValue.CleanValue)));
+                    .Where(e => e.ItemValues!.AsQueryable().Where(f => f.ItemValue.Type == ItemValueType.Genre).Any(cleanGenres));
         }
 
         if (tags.Count > 0)
         {
             var cleanValues = tags.Select(e => GetCleanValue(e)).ToArray();
             baseQuery = baseQuery
-                    .Where(e => e.ItemValues!.Any(f => f.ItemValue.Type == ItemValueType.Tags && cleanValues.Contains(f.ItemValue.CleanValue)));
+                    .Where(e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.Tags).Any(f => cleanValues.Contains(f.ItemValue.CleanValue)));
         }
 
         if (excludeTags.Count > 0)
         {
             var cleanValues = excludeTags.Select(e => GetCleanValue(e)).ToArray();
             baseQuery = baseQuery
-                    .Where(e => !e.ItemValues!.Any(f => f.ItemValue.Type == ItemValueType.Tags && cleanValues.Contains(f.ItemValue.CleanValue)));
+                    .Where(e => !e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.Tags).Any(f => cleanValues.Contains(f.ItemValue.CleanValue)));
         }
 
         if (filter.StudioIds.Length > 0)
         {
-            baseQuery = baseQuery
-                    .Where(e => e.ItemValues!.Any(f => f.ItemValue.Type == ItemValueType.Studios && filter.StudioIds.Contains(f.ItemId)));
+            baseQuery = ReferencedItemFilter(ItemValueType.Studios, filter.StudioIds.ToArray());
         }
 
         if (filter.OfficialRatings.Length > 0)
@@ -1983,15 +2080,9 @@ public sealed class BaseItemRepository
                 .Where(e => !context.Peoples.Any(f => f.Name == e.Name));
         }
 
-        if (filter.Years.Length == 1)
+        if (filter.Years.Length > 0)
         {
-            baseQuery = baseQuery
-                .Where(e => e.ProductionYear == filter.Years[0]);
-        }
-        else if (filter.Years.Length > 1)
-        {
-            baseQuery = baseQuery
-                .Where(e => filter.Years.Any(f => f == e.ProductionYear));
+            baseQuery = baseQuery.Where(OneOrManyItem(filter.Years, e => e.ProductionYear!.Value));
         }
 
         var isVirtualItem = filter.IsVirtualItem ?? filter.IsMissing;
@@ -2032,14 +2123,12 @@ public sealed class BaseItemRepository
         if (filter.MediaTypes.Length > 0)
         {
             var mediaTypes = filter.MediaTypes.Select(f => f.ToString()).ToArray();
-            baseQuery = baseQuery
-                .Where(e => mediaTypes.Contains(e.MediaType));
+            baseQuery = baseQuery.Where(OneOrManyItem(mediaTypes, e => e.MediaType));
         }
 
         if (filter.ItemIds.Length > 0)
         {
-            baseQuery = baseQuery
-                .Where(e => filter.ItemIds.Contains(e.Id));
+            baseQuery = baseQuery.Where(OneOrManyItem(filter.ItemIds, e => e.Id));
         }
 
         if (filter.ExcludeItemIds.Length > 0)
@@ -2085,13 +2174,13 @@ public sealed class BaseItemRepository
             }
             else
             {
-                baseQuery = baseQuery.Where(e => queryTopParentIds.Contains(e.TopParentId!.Value));
+                baseQuery = baseQuery.Where(OneOrManyItem(queryTopParentIds, e => e.TopParentId!.Value));
             }
         }
 
         if (filter.AncestorIds.Length > 0)
         {
-            baseQuery = baseQuery.Where(e => e.Children!.Any(f => filter.AncestorIds.Contains(f.ParentItemId)));
+            baseQuery = baseQuery.Where(e => e.Children!.Any(f => filter.AncestorIds.Contains(f.ItemId)));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.AncestorWithPresentationUniqueKey))
@@ -2223,5 +2312,50 @@ public sealed class BaseItemRepository
         }
 
         return baseQuery;
+    }
+
+    internal static class ParameterReplacer
+    {
+        // Produces an expression identical to 'expression'
+        // except with 'source' parameter replaced with 'target' expression.
+        internal static Expression<TOutput> Replace<TInput, TOutput>(
+                        Expression<TInput> expression,
+                        ParameterExpression source,
+                        ParameterExpression target)
+        {
+            return new ParameterReplacerVisitor<TOutput>(source, target)
+                        .VisitAndConvert(expression);
+        }
+
+        private class ParameterReplacerVisitor<TOutput> : ExpressionVisitor
+        {
+            private ParameterExpression _source;
+            private ParameterExpression _target;
+
+            public ParameterReplacerVisitor(ParameterExpression source, ParameterExpression target)
+            {
+                _source = source;
+                _target = target;
+            }
+
+            internal Expression<TOutput> VisitAndConvert<T>(Expression<T> root)
+            {
+                return (Expression<TOutput>)VisitLambda(root);
+            }
+
+            protected override Expression VisitLambda<T>(Expression<T> node)
+            {
+                // Leave all parameters alone except the one we want to replace.
+                var parameters = node.Parameters.Select(p => p == _source ? _target : p);
+
+                return Expression.Lambda<TOutput>(Visit(node.Body), parameters);
+            }
+
+            protected override Expression VisitParameter(ParameterExpression node)
+            {
+                // Replace the source with the target, visit other params as usual.
+                return node == _source ? _target : base.VisitParameter(node);
+            }
+        }
     }
 }
