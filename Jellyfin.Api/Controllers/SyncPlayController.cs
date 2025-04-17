@@ -124,7 +124,6 @@ public class SyncPlayController : BaseJellyfinApiController
     public async Task<ActionResult<GroupInfoDto>> SyncPlayGetGroup([FromRoute] Guid id)
     {
         var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
-        var syncPlayRequest = new ListGroupsRequest();
         var group = _syncPlayManager.GetGroup(currentSession, id);
         return group == null ? NotFound() : Ok(group);
     }
