@@ -72,6 +72,9 @@ public sealed class BaseItemRepository
     private static readonly IReadOnlyList<ItemValueType> _getStudiosValueTypes = [ItemValueType.Studios];
     private static readonly IReadOnlyList<ItemValueType> _getGenreValueTypes = [ItemValueType.Genre];
 
+    private static readonly MethodInfo _containsMethodGenericCache = typeof(Enumerable).GetMethods(BindingFlags.Public | BindingFlags.Static).First(m => m.Name == "Contains" && m.GetParameters().Length == 2);
+    private static readonly ConcurrentDictionary<Type, MethodInfo> _containsQueryCache = new();
+
     /// <summary>
     /// Initializes a new instance of the <see cref="BaseItemRepository"/> class.
     /// </summary>
@@ -92,6 +95,56 @@ public sealed class BaseItemRepository
         _itemTypeLookup = itemTypeLookup;
         _serverConfigurationManager = serverConfigurationManager;
         _logger = logger;
+    }
+
+    private static IQueryable<BaseItemEntity> ReferencedItemFilter(JellyfinDbContext context, IQueryable<BaseItemEntity> baseQuery, ItemValueType itemValueType, Guid[] referenceIds, bool invert = false)
+    {
+        // Well genre/artist/album etc items do not actually set the ItemValue of thier specitic types so we cannot match it that way.
+        /*
+        "(guid in (select itemid from ItemValues where CleanValue = (select CleanName from TypedBaseItems where guid=@GenreIds and Type=2)))"
+        */
+
+        var genreFilter = OneOrManyItem(referenceIds, f => f.Id);
+
+        return baseQuery
+            .Where(item => context.ItemValues
+                .Where(f => context.BaseItems.Where(genreFilter)
+                .Select(f => f.CleanName)
+                .Any(w => f.CleanValue == w) && f.Type == itemValueType)
+                .Select(e => e.BaseItemsMap!.Any(w => w.ItemId == item.Id))
+                .Any() == !invert);
+    }
+
+    private static Expression<Func<TEntity, bool>> OneOrMany<TEntity, TProperty>(IList<TProperty> oneOf, Expression<Func<TEntity, TProperty>> property)
+    {
+        var parameter = Expression.Parameter(typeof(TEntity), "item");
+        property = ParameterReplacer.Replace<Func<TEntity, TProperty>, Func<TEntity, TProperty>>(property, property.Parameters[0], parameter);
+        if (oneOf.Count == 1)
+        {
+            var value = oneOf[0];
+            if (typeof(TProperty).IsValueType)
+            {
+                return Expression.Lambda<Func<TEntity, bool>>(Expression.Equal(property.Body, Expression.Constant(value)), parameter);
+            }
+            else
+            {
+                return Expression.Lambda<Func<TEntity, bool>>(Expression.ReferenceEqual(property.Body, Expression.Constant(value)), parameter);
+            }
+        }
+
+        var containsMethodInfo = _containsQueryCache.GetOrAdd(typeof(TProperty), static (key) => _containsMethodGenericCache.MakeGenericMethod(key));
+
+        return Expression.Lambda<Func<TEntity, bool>>(Expression.Call(null, containsMethodInfo, Expression.Constant(oneOf), property.Body), parameter);
+    }
+
+    private static Expression<Func<BaseItemEntity, bool>> OneOrManyItem<TProperty>(IList<TProperty> oneOf, Expression<Func<BaseItemEntity, TProperty>> property)
+    {
+        return OneOrMany(oneOf, property);
+    }
+
+    private static Expression<Func<ItemValueMap, bool>> OneOrManyValueMaps<TProperty>(IList<TProperty> oneOf, Expression<Func<ItemValueMap, TProperty>> property)
+    {
+        return OneOrMany(oneOf, property);
     }
 
     /// <inheritdoc />
@@ -1506,43 +1559,6 @@ public sealed class BaseItemRepository
 
         var includeTypes = filter.IncludeItemTypes;
 
-        Expression<Func<TEntity, bool>> OneOrMany<TEntity, TProperty>(IList<TProperty> oneOf, Expression<Func<TEntity, TProperty>> property)
-        {
-            var parameter = Expression.Parameter(typeof(TEntity), "item");
-            property = ParameterReplacer.Replace<Func<TEntity, TProperty>, Func<TEntity, TProperty>>(property, property.Parameters[0], parameter);
-            if (oneOf.Count == 1)
-            {
-                var value = oneOf[0];
-                if (typeof(TProperty).IsValueType)
-                {
-                    return Expression.Lambda<Func<TEntity, bool>>(Expression.Equal(property.Body, Expression.Constant(value)), parameter);
-                }
-                else
-                {
-                    return Expression.Lambda<Func<TEntity, bool>>(Expression.ReferenceEqual(property.Body, Expression.Constant(value)), parameter);
-                }
-            }
-
-            var methods = typeof(Enumerable).GetMethods(BindingFlags.Public | BindingFlags.Static);
-            MethodInfo containsMethod = methods.First(m => m.Name == "Contains" && m.GetParameters().Length == 2).MakeGenericMethod(typeof(TProperty));
-            return Expression.Lambda<Func<TEntity, bool>>(Expression.Call(null, containsMethod, Expression.Constant(oneOf), property.Body), parameter);
-        }
-
-        Expression<Func<BaseItemEntity, bool>> OneOrManyItem<TProperty>(IList<TProperty> oneOf, Expression<Func<BaseItemEntity, TProperty>> property)
-        {
-            return OneOrMany(oneOf, property);
-        }
-
-        // Expression<Func<ItemValue, bool>> OneOrManyValues<TProperty>(IList<TProperty> oneOf, Expression<Func<ItemValue, TProperty>> property)
-        // {
-        //     return OneOrMany(oneOf, property);
-        // }
-
-        Expression<Func<ItemValueMap, bool>> OneOrManyValueMaps<TProperty>(IList<TProperty> oneOf, Expression<Func<ItemValueMap, TProperty>> property)
-        {
-            return OneOrMany(oneOf, property);
-        }
-
         // Only specify excluded types if no included types are specified
         if (filter.IncludeItemTypes.Length == 0)
         {
@@ -1827,37 +1843,19 @@ public sealed class BaseItemRepository
             }
         }
 
-        IQueryable<BaseItemEntity> ReferencedItemFilter(ItemValueType itemValueType, Guid[] referenceIds, bool invert = false)
-        {
-            // Well genre/artist/album etc items do not actually set the ItemValue of thier specitic types so we cannot match it that way.
-            /*
-            "(guid in (select itemid from ItemValues where CleanValue = (select CleanName from TypedBaseItems where guid=@GenreIds and Type=2)))"
-            */
-
-            var genreFilter = OneOrManyItem(filter.GenreIds.ToArray(), f => f.Id);
-
-            return baseQuery
-                .Where(item => context.ItemValues
-                    .Where(f => context.BaseItems.Where(genreFilter)
-                    .Select(f => f.CleanName)
-                    .Any(w => f.CleanValue == w) && f.Type == itemValueType)
-                    .Select(e => e.BaseItemsMap!.Any(w => w.ItemId == item.Id))
-                    .Any() == !invert);
-        }
-
         if (filter.ArtistIds.Length > 0)
         {
-            baseQuery = ReferencedItemFilter(ItemValueType.Artist, filter.ArtistIds);
+            baseQuery = ReferencedItemFilter(context, baseQuery, ItemValueType.Artist, filter.ArtistIds);
         }
 
         if (filter.AlbumArtistIds.Length > 0)
         {
-            baseQuery = ReferencedItemFilter(ItemValueType.Artist, filter.AlbumArtistIds);
+            baseQuery = ReferencedItemFilter(context, baseQuery, ItemValueType.Artist, filter.AlbumArtistIds);
         }
 
         if (filter.ContributingArtistIds.Length > 0)
         {
-            baseQuery = ReferencedItemFilter(ItemValueType.Artist, filter.ContributingArtistIds);
+            baseQuery = ReferencedItemFilter(context, baseQuery, ItemValueType.Artist, filter.ContributingArtistIds);
         }
 
         if (filter.AlbumIds.Length > 0)
@@ -1867,12 +1865,12 @@ public sealed class BaseItemRepository
 
         if (filter.ExcludeArtistIds.Length > 0)
         {
-            baseQuery = ReferencedItemFilter(ItemValueType.Artist, filter.ExcludeArtistIds.ToArray(), true);
+            baseQuery = ReferencedItemFilter(context, baseQuery, ItemValueType.Artist, filter.ExcludeArtistIds.ToArray(), true);
         }
 
         if (filter.GenreIds.Count > 0)
         {
-            baseQuery = ReferencedItemFilter(ItemValueType.Genre, filter.GenreIds.ToArray());
+            baseQuery = ReferencedItemFilter(context, baseQuery, ItemValueType.Genre, filter.GenreIds.ToArray());
         }
 
         if (filter.Genres.Count > 0)
@@ -1898,7 +1896,7 @@ public sealed class BaseItemRepository
 
         if (filter.StudioIds.Length > 0)
         {
-            baseQuery = ReferencedItemFilter(ItemValueType.Studios, filter.StudioIds.ToArray());
+            baseQuery = ReferencedItemFilter(context, baseQuery, ItemValueType.Studios, filter.StudioIds.ToArray());
         }
 
         if (filter.OfficialRatings.Length > 0)
