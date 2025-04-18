@@ -11,6 +11,7 @@ using Emby.Server.Implementations;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Helpers;
+using Jellyfin.Server.Implementations.Backup;
 using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
@@ -164,6 +165,7 @@ namespace Jellyfin.Server
 
                 // Re-use the host service provider in the app host since ASP.NET doesn't allow a custom service collection.
                 appHost.ServiceProvider = _jellyfinHost.Services;
+                await appHost.ServiceProvider.GetService<BackupService>()!.CreateBackupAsync().ConfigureAwait(false);
 
                 await appHost.InitializeServices(startupConfig).ConfigureAwait(false);
                 await Migrations.MigrationRunner.Run(appHost, _loggerFactory).ConfigureAwait(false);
