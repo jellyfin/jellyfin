@@ -76,7 +76,7 @@ namespace Jellyfin.Server
         /// <summary>
         /// Gets or sets the path to an jellyfin backup archive to restore the application to.
         /// </summary>
-        [Option("restore-archive", Required = false, HelpText = "path to an jellyfin backup archive to restore the application to")]
+        [Option("restore-archive", Required = false, HelpText = "Path to a Jellyfin backup archive to restore from")]
         public string? RestoreArchive { get; set; }
 
         /// <summary>

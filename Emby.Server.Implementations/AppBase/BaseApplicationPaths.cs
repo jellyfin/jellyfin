@@ -77,6 +77,6 @@ namespace Emby.Server.Implementations.AppBase
         public string TrickplayPath => Path.Combine(DataPath, "trickplay");
 
         /// <inheritdoc />
-        public string BackupPath => Path.Combine(DataPath, "Backups");
+        public string BackupPath => Path.Combine(DataPath, "backups");
     }
 }

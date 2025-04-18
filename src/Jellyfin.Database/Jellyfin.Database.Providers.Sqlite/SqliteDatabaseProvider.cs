@@ -135,15 +135,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
         var deleteQueries = new List<string>();
         foreach (var tableName in tableNames)
         {
-            try
-            {
-                deleteQueries.Add($"DELETE FROM \"{tableName}\";");
-            }
-            catch (System.Exception ex)
-            {
-                System.Console.WriteLine(ex);
-                throw;
-            }
+            deleteQueries.Add($"DELETE FROM \"{tableName}\";");
         }
 
         var deleteAllQuery =

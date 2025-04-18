@@ -39,7 +39,7 @@ namespace MediaBrowser.Controller
         string FriendlyName { get; }
 
         /// <summary>
-        /// Gets or sets the path to the backup archive used to resture on the Restart.
+        /// Gets or sets the path to the backup archive used to restore upon restart.
         /// </summary>
         string RestoreBackup { get; set; }
 

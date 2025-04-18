@@ -211,7 +211,7 @@ public class BackupService : IBackupService
             Directory.CreateDirectory(backupFolder);
         }
 
-        var backupPath = Path.Combine(backupFolder, $"jfBackup-{DateTime.Now:yyyyMMddHHmmss}.zip");
+        var backupPath = Path.Combine(backupFolder, $"jellyfin-backup-{DateTime.Now:yyyyMMddHHmmss}.zip");
         _logger.LogInformation("Attempt to create a new backup at {BackupPath}", backupPath);
         using var fileStream = File.OpenWrite(backupPath);
         using (var zipArchive = new ZipArchive(fileStream, ZipArchiveMode.Create, false))
@@ -336,9 +336,9 @@ public class BackupService : IBackupService
 
                 manifests.Add(Map(manifest, item));
             }
-            catch
+            catch (Exception ex)
             {
-                continue;
+                _logger.LogError(ex, "Could not load {BackupArchive} path.", item);
             }
         }
 
