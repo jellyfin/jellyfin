@@ -74,24 +74,21 @@ public static class JellyfinQueryHelperExtensions
 
         var itemFilter = OneOrManyExpressionBuilder<BaseItemEntity, Guid>(referenceIds, f => f.Id);
 
-        if (invert)
-        {
-            return item =>
-                !context.ItemValues
-                    .Join(context.ItemValuesMap, e => e.ItemValueId, e => e.ItemValueId, (item, map) => new { item, map })
-                    .Any(val =>
-                        val.item.Type == itemValueType
-                        && context.BaseItems.Where(itemFilter).Any(e => e.CleanName == val.item.CleanValue)
-                        && val.map.ItemId == item.Id);
-        }
-
         return item =>
-            context.ItemValues
-                .Join(context.ItemValuesMap, e => e.ItemValueId, e => e.ItemValueId, (item, map) => new { item, map })
-                .Any(val =>
-                    val.item.Type == itemValueType
-                    && context.BaseItems.Where(itemFilter).Any(e => e.CleanName == val.item.CleanValue)
-                    && val.map.ItemId == item.Id);
+          !context.ItemValues
+              .Join(context.ItemValuesMap, e => e.ItemValueId, e => e.ItemValueId, (item, map) => new { item, map })
+              .Any(val =>
+                  val.item.Type == itemValueType
+                  && context.BaseItems.Where(itemFilter).Any(e => e.CleanName == val.item.CleanValue)
+                  && val.map.ItemId == item.Id) == EF.Constant(!invert);
+
+        // return item =>
+        //     context.ItemValues
+        //         .Join(context.ItemValuesMap, e => e.ItemValueId, e => e.ItemValueId, (item, map) => new { item, map })
+        //         .Any(val =>
+        //             val.item.Type == itemValueType
+        //             && context.BaseItems.Where(itemFilter).Any(e => e.CleanName == val.item.CleanValue)
+        //             && val.map.ItemId == item.Id);
     }
 
     /// <summary>
