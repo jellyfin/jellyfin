@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.SystemBackupService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -305,5 +306,46 @@ public class BackupService : IBackupService
         }
 
         _logger.LogInformation("Backup created");
+    }
+
+    /// <inheritdoc/>
+    public async Task<BackupManifestDto[]> EnumerateBackups()
+    {
+        var archives = Directory.EnumerateFiles(_applicationPaths.BackupPath, "*.zip");
+        var manifests = new List<BackupManifestDto>();
+        foreach (var item in archives)
+        {
+            try
+            {
+                using var archiveStream = File.OpenRead(item);
+                using var zipStream = new ZipArchive(archiveStream, ZipArchiveMode.Read);
+                var manifestEntry = zipStream.GetEntry(_manifestEntryName);
+                if (manifestEntry is null)
+                {
+                    continue;
+                }
+
+                using var manifestStream = manifestEntry.Open();
+                var manifest = await JsonSerializer.DeserializeAsync<BackupManifest>(manifestStream, _serializerSettings).ConfigureAwait(false);
+
+                if (manifest is null)
+                {
+                    continue;
+                }
+
+                manifests.Add(new BackupManifestDto()
+                {
+                    BackupEngineVersion = manifest.BackupEngineVersion,
+                    DateOfCreation = manifest.DateOfCreation,
+                    JellyfinVersion = manifest.JellyfinVersion
+                });
+            }
+            catch
+            {
+                continue;
+            }
+        }
+
+        return manifests.ToArray();
     }
 }

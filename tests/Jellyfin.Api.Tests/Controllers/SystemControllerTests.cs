@@ -1,4 +1,5 @@
 using Jellyfin.Api.Controllers;
+using Jellyfin.Server.Implementations.Backup;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.IO;
@@ -25,7 +26,8 @@ namespace Jellyfin.Api.Tests.Controllers
                 Mock.Of<IServerApplicationPaths>(),
                 mockFileSystem.Object,
                 Mock.Of<INetworkManager>(),
-                Mock.Of<ISystemManager>());
+                Mock.Of<ISystemManager>(),
+                Mock.Of<IBackupService>());
 
             var result = controller.GetLogFile("DOES_NOT_EXIST.txt");
 

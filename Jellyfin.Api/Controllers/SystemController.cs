@@ -4,13 +4,16 @@ using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Net.Mime;
+using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
+using Jellyfin.Server.Implementations.Backup;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.SystemBackupService;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.System;
@@ -32,6 +35,7 @@ public class SystemController : BaseJellyfinApiController
     private readonly IFileSystem _fileSystem;
     private readonly INetworkManager _networkManager;
     private readonly ISystemManager _systemManager;
+    private readonly IBackupService _backupService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SystemController"/> class.
@@ -42,13 +46,15 @@ public class SystemController : BaseJellyfinApiController
     /// <param name="fileSystem">Instance of <see cref="IFileSystem"/> interface.</param>
     /// <param name="networkManager">Instance of <see cref="INetworkManager"/> interface.</param>
     /// <param name="systemManager">Instance of <see cref="ISystemManager"/> interface.</param>
+    /// <param name="backupService">Instance of the <see cref="IBackupService"/> interface.</param>
     public SystemController(
         ILogger<SystemController> logger,
         IServerApplicationHost appHost,
         IServerApplicationPaths appPaths,
         IFileSystem fileSystem,
         INetworkManager networkManager,
-        ISystemManager systemManager)
+        ISystemManager systemManager,
+        IBackupService backupService)
     {
         _logger = logger;
         _appHost = appHost;
@@ -56,6 +62,55 @@ public class SystemController : BaseJellyfinApiController
         _fileSystem = fileSystem;
         _networkManager = networkManager;
         _systemManager = systemManager;
+        _backupService = backupService;
+    }
+
+    /// <summary>
+    /// Creates a new Backup.
+    /// </summary>
+    /// <response code="200">Backup created.</response>
+    /// <response code="403">User does not have permission to retrieve information.</response>
+    /// <returns>OK.</returns>
+    [HttpPost("Backup/Create")]
+    [Authorize(Policy = Policies.RequiresElevation)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> CreateBackup()
+    {
+        await _backupService.CreateBackupAsync().ConfigureAwait(false);
+        return Ok();
+    }
+
+    /// <summary>
+    /// Restores to a backup by restarting the server and applying the backup.
+    /// </summary>
+    /// <param name="archivePath">The local path to the archive to restore from.</param>
+    /// <response code="200">Backup restore started.</response>
+    /// <response code="403">User does not have permission to retrieve information.</response>
+    /// <returns>OK.</returns>
+    [HttpPost("Backup/Restore")]
+    [Authorize(Policy = Policies.RequiresElevation)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public IActionResult StartRestoreBackup(string archivePath)
+    {
+        _backupService.ScheduleRestoreAndRestartServer(archivePath);
+        return Ok();
+    }
+
+    /// <summary>
+    /// Gets a list of all currently present backups in the backup directory.
+    /// </summary>
+    /// <response code="200">Backups available.</response>
+    /// <response code="403">User does not have permission to retrieve information.</response>
+    /// <returns>OK.</returns>
+    [HttpGet("Backup")]
+    [Authorize(Policy = Policies.RequiresElevation)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<BackupManifestDto[]>> Backups()
+    {
+        return Ok(await _backupService.EnumerateBackups().ConfigureAwait(false));
     }
 
     /// <summary>

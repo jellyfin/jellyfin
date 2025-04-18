@@ -173,7 +173,7 @@ namespace Jellyfin.Server
                     var factory = appHost.ServiceProvider.GetService<IDbContextFactory<JellyfinDbContext>>()!;
                     var provider = appHost.ServiceProvider.GetService<IJellyfinDatabaseProvider>()!;
                     provider.DbContextFactory = factory;
-                    await appHost.ServiceProvider.GetService<BackupService>()!.RestoreBackupAsync(_restoreFromBackup).ConfigureAwait(false);
+                    await appHost.ServiceProvider.GetService<IBackupService>()!.RestoreBackupAsync(_restoreFromBackup).ConfigureAwait(false);
                     _restoreFromBackup = null;
                     _restartOnShutdown = true;
                     return;

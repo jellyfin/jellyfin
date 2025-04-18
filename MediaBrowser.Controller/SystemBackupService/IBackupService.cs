@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.SystemBackupService;
 
 namespace Jellyfin.Server.Implementations.Backup;
 
@@ -14,6 +15,12 @@ public interface IBackupService
     /// </summary>
     /// <returns>A task.</returns>
     Task CreateBackupAsync();
+
+    /// <summary>
+    /// Gets a list of backups that are available to be restored from.
+    /// </summary>
+    /// <returns>A list of backup paths.</returns>
+    Task<BackupManifestDto[]> EnumerateBackups();
 
     /// <summary>
     /// Restores an backup zip file created by jellyfin.

@@ -474,7 +474,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IApplicationHost>(this);
             serviceCollection.AddSingleton<IPluginManager>(_pluginManager);
             serviceCollection.AddSingleton<IApplicationPaths>(ApplicationPaths);
-            serviceCollection.AddSingleton<BackupService>(); // TODO: add interface
+            serviceCollection.AddSingleton<IBackupService, BackupService>();
 
             serviceCollection.AddSingleton<IFileSystem, ManagedFileSystem>();
             serviceCollection.AddSingleton<IShortcutHandler, MbLinkShortcutHandler>();
