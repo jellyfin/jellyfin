@@ -1815,7 +1815,7 @@ public sealed class BaseItemRepository
 
         if (filter.GenreIds.Count > 0)
         {
-            baseQuery = baseQuery.WhereReferencedItem(context, ItemValueType.Artist, filter.GenreIds.ToArray());
+            baseQuery = baseQuery.WhereReferencedItem(context, ItemValueType.Genre, filter.GenreIds.ToArray());
         }
 
         if (filter.Genres.Count > 0)
