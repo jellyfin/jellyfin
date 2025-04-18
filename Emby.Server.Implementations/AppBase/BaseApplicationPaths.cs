@@ -84,7 +84,7 @@ namespace Emby.Server.Implementations.AppBase
             CreateAndCheckMarker(LogDirectoryPath, "log");
             CreateAndCheckMarker(PluginsPath, "plugin");
             CreateAndCheckMarker(ProgramDataPath, "data");
-            CreateAndCheckMarker(CachePath, "cache", true);
+            CreateAndCheckMarker(CachePath, "cache");
             CreateAndCheckMarker(DataPath, "data");
         }
 
