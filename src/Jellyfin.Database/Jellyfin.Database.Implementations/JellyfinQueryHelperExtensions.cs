@@ -75,7 +75,7 @@ public static class JellyfinQueryHelperExtensions
         var itemFilter = OneOrManyExpressionBuilder<BaseItemEntity, Guid>(referenceIds, f => f.Id);
 
         return item =>
-          !context.ItemValues
+          context.ItemValues
               .Join(context.ItemValuesMap, e => e.ItemValueId, e => e.ItemValueId, (item, map) => new { item, map })
               .Any(val =>
                   val.item.Type == itemValueType
