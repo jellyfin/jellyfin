@@ -72,7 +72,8 @@ public sealed class BaseItemRepository
     private static readonly IReadOnlyList<ItemValueType> _getStudiosValueTypes = [ItemValueType.Studios];
     private static readonly IReadOnlyList<ItemValueType> _getGenreValueTypes = [ItemValueType.Genre];
 
-    private static readonly MethodInfo _containsMethodGenericCache = typeof(Enumerable).GetMethods(BindingFlags.Public | BindingFlags.Static).First(m => m.Name == "Contains" && m.GetParameters().Length == 2);
+    private static readonly MethodInfo _containsMethodGenericCache = typeof(Enumerable).GetMethods(BindingFlags.Public | BindingFlags.Static).First(m => m.Name == nameof(Enumerable.Contains) && m.GetParameters().Length == 2);
+    private static readonly MethodInfo _efParameterInstruction = typeof(EF).GetMethod(nameof(EF.Parameter), BindingFlags.Public | BindingFlags.Static)!;
     private static readonly ConcurrentDictionary<Type, MethodInfo> _containsQueryCache = new();
 
     /// <summary>
@@ -106,13 +107,24 @@ public sealed class BaseItemRepository
 
         var itemFilter = OneOrManyItem(referenceIds, f => f.Id);
 
+        if (invert)
+        {
+            return baseQuery.Where(item =>
+                !context.ItemValues
+                    .Join(context.ItemValuesMap, e => e.ItemValueId, e => e.ItemValueId, (item, map) => new { item, map })
+                    .Any(val =>
+                        val.item.Type == itemValueType
+                        && context.BaseItems.Where(itemFilter).Any(e => e.CleanName == val.item.CleanValue)
+                        && val.map.ItemId == item.Id));
+        }
+
         return baseQuery.Where(item =>
             context.ItemValues
                 .Join(context.ItemValuesMap, e => e.ItemValueId, e => e.ItemValueId, (item, map) => new { item, map })
                 .Any(val =>
                     val.item.Type == itemValueType
                     && context.BaseItems.Where(itemFilter).Any(e => e.CleanName == val.item.CleanValue)
-                    && val.map.ItemId == item.Id) == !invert);
+                    && val.map.ItemId == item.Id));
     }
 
     private static Expression<Func<TEntity, bool>> OneOrMany<TEntity, TProperty>(IList<TProperty> oneOf, Expression<Func<TEntity, TProperty>> property)
@@ -134,7 +146,13 @@ public sealed class BaseItemRepository
 
         var containsMethodInfo = _containsQueryCache.GetOrAdd(typeof(TProperty), static (key) => _containsMethodGenericCache.MakeGenericMethod(key));
 
-        return Expression.Lambda<Func<TEntity, bool>>(Expression.Call(null, containsMethodInfo, Expression.Constant(oneOf), property.Body), parameter);
+        if (oneOf.Count < 4) // arbitrary value choosen.
+        {
+            // if we have 3 or less values to check against its faster to do a IN(const,const,const) lookup
+            return Expression.Lambda<Func<TEntity, bool>>(Expression.Call(null, containsMethodInfo, Expression.Constant(oneOf), property.Body), parameter);
+        }
+
+        return Expression.Lambda<Func<TEntity, bool>>(Expression.Call(null, containsMethodInfo, Expression.Call(null, _efParameterInstruction.MakeGenericMethod(oneOf.GetType()), Expression.Constant(oneOf)), property.Body), parameter);
     }
 
     private static Expression<Func<BaseItemEntity, bool>> OneOrManyItem<TProperty>(IList<TProperty> oneOf, Expression<Func<BaseItemEntity, TProperty>> property)
