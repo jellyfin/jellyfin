@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Threading;
@@ -71,8 +72,13 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     /// <inheritdoc/>
     public async Task RunShutdownTask(CancellationToken cancellationToken)
     {
+        if (DbContextFactory is null)
+        {
+            return;
+        }
+
         // Run before disposing the application
-        var context = await DbContextFactory!.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        var context = await DbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (context.ConfigureAwait(false))
         {
             await context.Database.ExecuteSqlRawAsync("PRAGMA optimize", cancellationToken).ConfigureAwait(false);
@@ -119,5 +125,34 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
 
         File.Copy(backupFile, path, true);
         return Task.CompletedTask;
+    }
+
+    /// <inheritdoc/>
+    public async Task PurgeDatabase(JellyfinDbContext dbContext, IEnumerable<string>? tableNames)
+    {
+        ArgumentNullException.ThrowIfNull(tableNames);
+
+        var deleteQueries = new List<string>();
+        foreach (var tableName in tableNames)
+        {
+            try
+            {
+                deleteQueries.Add($"DELETE FROM \"{tableName}\";");
+            }
+            catch (System.Exception ex)
+            {
+                System.Console.WriteLine(ex);
+                throw;
+            }
+        }
+
+        var deleteAllQuery =
+        $"""
+        PRAGMA foreign_keys = OFF;
+        {string.Join('\n', deleteQueries)}
+        PRAGMA foreign_keys = ON;
+        """;
+
+        await dbContext.Database.ExecuteSqlRawAsync(deleteAllQuery).ConfigureAwait(false);
     }
 }

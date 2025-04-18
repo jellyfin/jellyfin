@@ -268,6 +268,8 @@ namespace Emby.Server.Implementations
                 ? Environment.MachineName
                 : ConfigurationManager.Configuration.ServerName;
 
+        public string RestoreBackup { get; set; }
+
         public string ExpandVirtualPath(string path)
         {
             if (path is null)

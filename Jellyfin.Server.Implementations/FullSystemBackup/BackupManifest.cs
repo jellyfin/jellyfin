@@ -7,7 +7,9 @@ namespace Jellyfin.Server.Implementations.Backup;
 /// </summary>
 internal class BackupManifest
 {
-    public required Version Version { get; set; }
+    public required Version JellyfinVersion { get; set; }
+
+    public required Version BackupEngineVersion { get; set; }
 
     public required DateTimeOffset DateOfCreation { get; set; }
 

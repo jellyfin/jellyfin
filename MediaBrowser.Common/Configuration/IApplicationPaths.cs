@@ -90,5 +90,11 @@ namespace MediaBrowser.Common.Configuration
         /// </summary>
         /// <value>The trickplay path.</value>
         string TrickplayPath { get; }
+
+        /// <summary>
+        /// Gets the path used for storing backup archives.
+        /// </summary>
+        /// <value>The trickplay path.</value>
+        string BackupPath { get; }
     }
 }
