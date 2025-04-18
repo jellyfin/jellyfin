@@ -104,14 +104,14 @@ public sealed class BaseItemRepository
         "(guid in (select itemid from ItemValues where CleanValue = (select CleanName from TypedBaseItems where guid=@GenreIds and Type=2)))"
         */
 
-        var genreFilter = OneOrManyItem(referenceIds, f => f.Id);
+        var itemFilter = OneOrManyItem(referenceIds, f => f.Id);
 
         return baseQuery.Where(item =>
             context.ItemValues
                 .Join(context.ItemValuesMap, e => e.ItemValueId, e => e.ItemValueId, (item, map) => new { item, map })
                 .Any(val =>
                     val.item.Type == itemValueType
-                    && context.BaseItems.Where(genreFilter).Any(e => e.CleanName == val.item.CleanValue)
+                    && context.BaseItems.Where(itemFilter).Any(e => e.CleanName == val.item.CleanValue)
                     && val.map.ItemId == item.Id) == !invert);
     }
 
@@ -1087,7 +1087,6 @@ public sealed class BaseItemRepository
                 .Where(f => itemValueTypes.Contains(f.Type))
                 .Select(f => f.CleanValue)
                 .Contains(e.CleanName));
-        // .Where(e => context.ItemValues!.Any(f => f.BaseItemsMap!.Any(m => itemValueTypes!.Contains(f.Type) && TranslateQuery(f.BaseItemsMap!.Select(g => g.Item).AsQueryable(), context, innerQueryFilter).Any())));
 
         var outerQueryFilter = new InternalItemsQuery(filter.User)
         {
@@ -1113,6 +1112,12 @@ public sealed class BaseItemRepository
         var query = TranslateQuery(innerQuery, context, outerQueryFilter)
             .GroupBy(e => e.PresentationUniqueKey);
 
+        var result = new QueryResult<(BaseItemDto, ItemCounts?)>();
+        if (filter.EnableTotalRecordCount)
+        {
+            result.TotalRecordCount = query.Count();
+        }
+
         if (filter.Limit.HasValue || filter.StartIndex.HasValue)
         {
             var offset = filter.StartIndex ?? 0;
@@ -1126,12 +1131,6 @@ public sealed class BaseItemRepository
             {
                 query = query.Take(filter.Limit.Value);
             }
-        }
-
-        var result = new QueryResult<(BaseItemDto, ItemCounts?)>();
-        if (filter.EnableTotalRecordCount)
-        {
-            result.TotalRecordCount = query.Count();
         }
 
         IQueryable<BaseItemEntity>? itemCountQuery = null;
