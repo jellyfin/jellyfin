@@ -21,4 +21,9 @@ public class BackupManifestDto
     /// Gets or Sets the date this backup was created with.
     /// </summary>
     public required DateTimeOffset DateOfCreation { get; set; }
+
+    /// <summary>
+    /// Gets or Sets the path to the backup on the system.
+    /// </summary>
+    public string? Path { get; set; }
 }

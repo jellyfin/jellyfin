@@ -75,10 +75,9 @@ public class SystemController : BaseJellyfinApiController
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> CreateBackup()
+    public async Task<ActionResult<BackupManifestDto>> CreateBackup()
     {
-        await _backupService.CreateBackupAsync().ConfigureAwait(false);
-        return Ok();
+        return Ok(await _backupService.CreateBackupAsync().ConfigureAwait(false));
     }
 
     /// <summary>
@@ -90,12 +89,18 @@ public class SystemController : BaseJellyfinApiController
     /// <returns>OK.</returns>
     [HttpPost("Backup/Restore")]
     [Authorize(Policy = Policies.RequiresElevation)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public IActionResult StartRestoreBackup(string archivePath)
     {
+        if (!System.IO.File.Exists(archivePath))
+        {
+            return NotFound();
+        }
+
         _backupService.ScheduleRestoreAndRestartServer(archivePath);
-        return Ok();
+        return NoContent();
     }
 
     /// <summary>
@@ -108,7 +113,7 @@ public class SystemController : BaseJellyfinApiController
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<BackupManifestDto[]>> Backups()
+    public async Task<ActionResult<BackupManifestDto[]>> GetBackups()
     {
         return Ok(await _backupService.EnumerateBackups().ConfigureAwait(false));
     }

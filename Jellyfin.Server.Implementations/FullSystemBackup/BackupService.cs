@@ -192,7 +192,7 @@ public class BackupService : IBackupService
     }
 
     /// <inheritdoc/>
-    public async Task CreateBackupAsync()
+    public async Task<BackupManifestDto> CreateBackupAsync()
     {
         var manifest = new BackupManifest()
         {
@@ -306,6 +306,7 @@ public class BackupService : IBackupService
         }
 
         _logger.LogInformation("Backup created");
+        return Map(manifest, backupPath);
     }
 
     /// <inheritdoc/>
@@ -333,12 +334,7 @@ public class BackupService : IBackupService
                     continue;
                 }
 
-                manifests.Add(new BackupManifestDto()
-                {
-                    BackupEngineVersion = manifest.BackupEngineVersion,
-                    DateOfCreation = manifest.DateOfCreation,
-                    JellyfinVersion = manifest.JellyfinVersion
-                });
+                manifests.Add(Map(manifest, item));
             }
             catch
             {
@@ -347,5 +343,16 @@ public class BackupService : IBackupService
         }
 
         return manifests.ToArray();
+    }
+
+    private static BackupManifestDto Map(BackupManifest manifest, string path)
+    {
+        return new BackupManifestDto()
+        {
+            BackupEngineVersion = manifest.BackupEngineVersion,
+            DateOfCreation = manifest.DateOfCreation,
+            JellyfinVersion = manifest.JellyfinVersion,
+            Path = path
+        };
     }
 }
