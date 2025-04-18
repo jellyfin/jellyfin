@@ -143,7 +143,7 @@ public static class JellyfinQueryHelperExtensions
                         .VisitAndConvert(expression);
         }
 
-        private class ParameterReplacerVisitor<TOutput> : ExpressionVisitor
+        private sealed class ParameterReplacerVisitor<TOutput> : ExpressionVisitor
         {
             private ParameterExpression _source;
             private ParameterExpression _target;
