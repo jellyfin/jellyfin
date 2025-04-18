@@ -227,7 +227,7 @@ namespace Emby.Server.Implementations.AppBase
 
             Logger.LogInformation("Setting cache path: {Path}", cachePath);
             ((BaseApplicationPaths)CommonApplicationPaths).CachePath = cachePath;
-            CommonApplicationPaths.CreateAndCheckMarker(((BaseApplicationPaths)CommonApplicationPaths).CachePath, "cache", true);
+            CommonApplicationPaths.CreateAndCheckMarker(((BaseApplicationPaths)CommonApplicationPaths).CachePath, "cache");
         }
 
         /// <summary>
