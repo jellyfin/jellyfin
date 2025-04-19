@@ -14,7 +14,7 @@ public static class StorageHelper
 {
     private const long TwoGigabyte = 2_147_483_647L;
     private const long FiveHundredAndTwelveMegaByte = 536_870_911L;
-    private static string[] _byteHumanizedSuffixes = ["B", "KB", "MB", "GB", "TB", "PB", "EB"];
+    private static readonly string[] _byteHumanizedSuffixes = ["B", "KB", "MB", "GB", "TB", "PB", "EB"];
 
     /// <summary>
     /// Tests the available storage capacity on the jellyfin paths with estimated minimum values.
