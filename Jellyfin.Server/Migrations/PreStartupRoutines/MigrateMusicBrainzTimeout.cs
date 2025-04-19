@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.Server.Migrations.PreStartupRoutines;
 
 /// <inheritdoc />
+[JellyfinMigration("01/01/0001 02:00:00", nameof(MigrateMusicBrainzTimeout), "A6DCACF4-C057-4Ef9-80D3-61CEF9DDB4F0", Stage = Stages.JellyfinMigrationStageTypes.PreInitialisation)]
 public class MigrateMusicBrainzTimeout : IMigrationRoutine
 {
     private readonly ServerApplicationPaths _applicationPaths;
@@ -24,15 +25,6 @@ public class MigrateMusicBrainzTimeout : IMigrationRoutine
         _applicationPaths = applicationPaths;
         _logger = loggerFactory.CreateLogger<MigrateMusicBrainzTimeout>();
     }
-
-    /// <inheritdoc />
-    public Guid Id => Guid.Parse("A6DCACF4-C057-4Ef9-80D3-61CEF9DDB4F0");
-
-    /// <inheritdoc />
-    public string Name => nameof(MigrateMusicBrainzTimeout);
-
-    /// <inheritdoc />
-    public bool PerformOnNewInstall => false;
 
     /// <inheritdoc />
     public void Perform()

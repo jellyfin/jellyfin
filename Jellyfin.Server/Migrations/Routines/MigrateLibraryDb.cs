@@ -29,6 +29,7 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// The migration routine for migrating the userdata database to EF Core.
 /// </summary>
+[JellyfinMigration("01/01/0001 22:00:00", nameof(MigrateLibraryDb), "36445464-849f-429f-9ad0-bb130efa0664")]
 internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 {
     private const string DbFilename = "library.db";
@@ -56,15 +57,6 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         _paths = paths;
         _jellyfinDatabaseProvider = jellyfinDatabaseProvider;
     }
-
-    /// <inheritdoc/>
-    public Guid Id => Guid.Parse("36445464-849f-429f-9ad0-bb130efa0664");
-
-    /// <inheritdoc/>
-    public string Name => "MigrateLibraryDbData";
-
-    /// <inheritdoc/>
-    public bool PerformOnNewInstall => false; // TODO Change back after testing
 
     /// <inheritdoc/>
     public void Perform()

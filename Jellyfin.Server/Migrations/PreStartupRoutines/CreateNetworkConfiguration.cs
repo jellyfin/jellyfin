@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.Server.Migrations.PreStartupRoutines;
 
 /// <inheritdoc />
+[JellyfinMigration("01/01/0001 00:00:00", nameof(CreateNetworkConfiguration), "9B354818-94D5-4B68-AC49-E35CB85F9D84", Stage = Stages.JellyfinMigrationStageTypes.PreInitialisation)]
 public class CreateNetworkConfiguration : IMigrationRoutine
 {
     private readonly ServerApplicationPaths _applicationPaths;
@@ -23,15 +24,6 @@ public class CreateNetworkConfiguration : IMigrationRoutine
         _applicationPaths = applicationPaths;
         _logger = loggerFactory.CreateLogger<CreateNetworkConfiguration>();
     }
-
-    /// <inheritdoc />
-    public Guid Id => Guid.Parse("9B354818-94D5-4B68-AC49-E35CB85F9D84");
-
-    /// <inheritdoc />
-    public string Name => nameof(CreateNetworkConfiguration);
-
-    /// <inheritdoc />
-    public bool PerformOnNewInstall => false;
 
     /// <inheritdoc />
     public void Perform()

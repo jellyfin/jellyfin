@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.Server.Migrations.PreStartupRoutines;
 
 /// <inheritdoc />
+[JellyfinMigration("01/01/0001 03:00:00", nameof(MigrateEncodingOptions), "A8E61960-7726-4450-8F3D-82C12DAABBCB", Stage = Stages.JellyfinMigrationStageTypes.PreInitialisation)]
 public class MigrateEncodingOptions : IMigrationRoutine
 {
     private readonly ServerApplicationPaths _applicationPaths;
@@ -25,15 +26,6 @@ public class MigrateEncodingOptions : IMigrationRoutine
         _applicationPaths = applicationPaths;
         _logger = loggerFactory.CreateLogger<MigrateEncodingOptions>();
     }
-
-    /// <inheritdoc />
-    public Guid Id => Guid.Parse("A8E61960-7726-4450-8F3D-82C12DAABBCB");
-
-    /// <inheritdoc />
-    public string Name => nameof(MigrateEncodingOptions);
-
-    /// <inheritdoc />
-    public bool PerformOnNewInstall => false;
 
     /// <inheritdoc />
     public void Perform()

@@ -3,7 +3,9 @@ namespace Jellyfin.Server.Migrations.Stages;
 /// <summary>
 /// Defines the stages the <see cref="JellyfinMigrationService"/> supports.
 /// </summary>
-internal enum JellyfinMigrationStageTypes
+#pragma warning disable CA1008 // Enums should have zero value
+public enum JellyfinMigrationStageTypes
+#pragma warning restore CA1008 // Enums should have zero value
 {
     /// <summary>
     /// Runs before services are initialised.

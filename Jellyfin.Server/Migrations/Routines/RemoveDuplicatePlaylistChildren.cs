@@ -11,6 +11,7 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// Remove duplicate playlist entries.
 /// </summary>
+[JellyfinMigration("01/01/0001 21:00:00", nameof(RemoveDuplicatePlaylistChildren), "96C156A2-7A13-4B3B-A8B8-FB80C94D20C0")]
 internal class RemoveDuplicatePlaylistChildren : IMigrationRoutine
 {
     private readonly ILibraryManager _libraryManager;
@@ -23,15 +24,6 @@ internal class RemoveDuplicatePlaylistChildren : IMigrationRoutine
         _libraryManager = libraryManager;
         _playlistManager = playlistManager;
     }
-
-    /// <inheritdoc/>
-    public Guid Id => Guid.Parse("{96C156A2-7A13-4B3B-A8B8-FB80C94D20C0}");
-
-    /// <inheritdoc/>
-    public string Name => "RemoveDuplicatePlaylistChildren";
-
-    /// <inheritdoc/>
-    public bool PerformOnNewInstall => false;
 
     /// <inheritdoc/>
     public void Perform()

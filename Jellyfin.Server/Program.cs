@@ -8,16 +8,19 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
 using Emby.Server.Implementations;
+using Emby.Server.Implementations.Configuration;
+using Emby.Server.Implementations.Serialization;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Helpers;
+using Jellyfin.Server.Implementations.DatabaseConfiguration;
+using Jellyfin.Server.Implementations.Extensions;
+using Jellyfin.Server.Migrations;
 using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -121,7 +124,8 @@ namespace Jellyfin.Server
             }
 
             StartupHelpers.PerformStaticInitialization();
-            await Migrations.MigrationRunner.RunPreStartup(appPaths, _loggerFactory).ConfigureAwait(false);
+
+            await RunStartupMigrationAsync(appPaths, startupConfig).ConfigureAwait(false);
 
             do
             {
@@ -134,6 +138,20 @@ namespace Jellyfin.Server
                     await _setupServer.RunAsync(static () => _jellyfinHost?.Services?.GetService<INetworkManager>(), appPaths, static () => _appHost).ConfigureAwait(false);
                 }
             } while (_restartOnShutdown);
+        }
+
+        private static async Task RunStartupMigrationAsync(ServerApplicationPaths appPaths, IConfiguration startupConfig)
+        {
+            var startupConfigurationManager = new ServerConfigurationManager(appPaths, _loggerFactory, new MyXmlSerializer());
+            startupConfigurationManager.AddParts([new DatabaseConfigurationFactory()]);
+            var migrationStartupServiceProvider = new ServiceCollection()
+                .AddLogging(d => d.AddSerilog())
+                .AddJellyfinDbContext(startupConfigurationManager, startupConfig)
+                .AddSingleton<IApplicationPaths>(appPaths);
+            var startupService = migrationStartupServiceProvider.BuildServiceProvider();
+            var jellyfinMigrationService = ActivatorUtilities.CreateInstance<JellyfinMigrationService>(startupService);
+            await jellyfinMigrationService.CheckFirstTimeRunOrMigration(appPaths).ConfigureAwait(false);
+            await jellyfinMigrationService.MigrateStepAsync(Migrations.Stages.JellyfinMigrationStageTypes.PreInitialisation, startupService).ConfigureAwait(false);
         }
 
         private static async Task StartServer(IServerApplicationPaths appPaths, StartupOptions options, IConfiguration startupConfig)
@@ -164,9 +182,10 @@ namespace Jellyfin.Server
 
                 // Re-use the host service provider in the app host since ASP.NET doesn't allow a custom service collection.
                 appHost.ServiceProvider = _jellyfinHost.Services;
-
                 await appHost.InitializeServices(startupConfig).ConfigureAwait(false);
-                await Migrations.MigrationRunner.Run(appHost, _loggerFactory).ConfigureAwait(false);
+
+                var jellyfinMigrationService = ActivatorUtilities.CreateInstance<JellyfinMigrationService>(appHost.ServiceProvider);
+                await jellyfinMigrationService.MigrateStepAsync(Migrations.Stages.JellyfinMigrationStageTypes.CoreInitialisaition, appHost.ServiceProvider).ConfigureAwait(false);
 
                 try
                 {

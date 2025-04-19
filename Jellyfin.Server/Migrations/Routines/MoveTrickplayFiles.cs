@@ -15,6 +15,7 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// Migration to move trickplay files to the new directory.
 /// </summary>
+[JellyfinMigration("01/01/0001 20:00:00", nameof(MoveTrickplayFiles), "9540D44A-D8DC-11EF-9CBB-B77274F77C52", RunMigrationOnSetup = true)]
 public class MoveTrickplayFiles : IDatabaseMigrationRoutine
 {
     private readonly ITrickplayManager _trickplayManager;
@@ -36,15 +37,6 @@ public class MoveTrickplayFiles : IDatabaseMigrationRoutine
         _libraryManager = libraryManager;
         _logger = logger;
     }
-
-    /// <inheritdoc />
-    public Guid Id => new("9540D44A-D8DC-11EF-9CBB-B77274F77C52");
-
-    /// <inheritdoc />
-    public string Name => "MoveTrickplayFiles";
-
-    /// <inheritdoc />
-    public bool PerformOnNewInstall => true;
 
     /// <inheritdoc />
     public void Perform()

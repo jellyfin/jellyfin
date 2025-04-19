@@ -57,15 +57,6 @@ public class MoveExtractedFiles : IDatabaseMigrationRoutine
     private string AttachmentCachePath => Path.Combine(_appPaths.DataPath, "attachments");
 
     /// <inheritdoc />
-    public Guid Id => new("9063b0Ef-CFF1-4EDC-9A13-74093681A89B");
-
-    /// <inheritdoc />
-    public string Name => "MoveExtractedFiles";
-
-    /// <inheritdoc />
-    public bool PerformOnNewInstall => false;
-
-    /// <inheritdoc />
     public void Perform()
     {
         const int Limit = 500;

@@ -13,6 +13,7 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// Properly set playlist owner.
 /// </summary>
+[JellyfinMigration("01/01/0001 15:00:00", nameof(FixPlaylistOwner), "615DFA9E-2497-4DBB-A472-61938B752C5B")]
 internal class FixPlaylistOwner : IMigrationRoutine
 {
     private readonly ILogger<FixPlaylistOwner> _logger;
@@ -28,15 +29,6 @@ internal class FixPlaylistOwner : IMigrationRoutine
         _libraryManager = libraryManager;
         _playlistManager = playlistManager;
     }
-
-    /// <inheritdoc/>
-    public Guid Id => Guid.Parse("{615DFA9E-2497-4DBB-A472-61938B752C5B}");
-
-    /// <inheritdoc/>
-    public string Name => "FixPlaylistOwner";
-
-    /// <inheritdoc/>
-    public bool PerformOnNewInstall => false;
 
     /// <inheritdoc/>
     public void Perform()

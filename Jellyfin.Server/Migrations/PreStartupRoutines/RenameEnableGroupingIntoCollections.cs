@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.Server.Migrations.PreStartupRoutines;
 
 /// <inheritdoc />
+[JellyfinMigration("01/01/0001 04:00:00", nameof(RenameEnableGroupingIntoCollections), "E73B777D-CD5C-4E71-957A-B86B3660B7CF", Stage = Stages.JellyfinMigrationStageTypes.PreInitialisation)]
 public class RenameEnableGroupingIntoCollections : IMigrationRoutine
 {
     private readonly ServerApplicationPaths _applicationPaths;
@@ -24,15 +25,6 @@ public class RenameEnableGroupingIntoCollections : IMigrationRoutine
         _applicationPaths = applicationPaths;
         _logger = loggerFactory.CreateLogger<RenameEnableGroupingIntoCollections>();
     }
-
-    /// <inheritdoc />
-    public Guid Id => Guid.Parse("E73B777D-CD5C-4E71-957A-B86B3660B7CF");
-
-    /// <inheritdoc />
-    public string Name => nameof(RenameEnableGroupingIntoCollections);
-
-    /// <inheritdoc />
-    public bool PerformOnNewInstall => false;
 
     /// <inheritdoc />
     public void Perform()

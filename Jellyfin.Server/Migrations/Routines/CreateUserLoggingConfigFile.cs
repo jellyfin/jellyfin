@@ -12,6 +12,7 @@ namespace Jellyfin.Server.Migrations.Routines
     /// If the deprecated logging.json file exists and has a custom config, it will be used as logging.user.json,
     /// otherwise a blank file will be created.
     /// </summary>
+    [JellyfinMigration("01/01/0001 06:00:00", nameof(CreateUserLoggingConfigFile), "EF103419-8451-40D8-9F34-D1A8E93A1679")]
     internal class CreateUserLoggingConfigFile : IMigrationRoutine
     {
         /// <summary>
@@ -41,15 +42,6 @@ namespace Jellyfin.Server.Migrations.Routines
         {
             _appPaths = appPaths;
         }
-
-        /// <inheritdoc/>
-        public Guid Id => Guid.Parse("{EF103419-8451-40D8-9F34-D1A8E93A1679}");
-
-        /// <inheritdoc/>
-        public string Name => "CreateLoggingConfigHierarchy";
-
-        /// <inheritdoc/>
-        public bool PerformOnNewInstall => false;
 
         /// <inheritdoc/>
         public void Perform()

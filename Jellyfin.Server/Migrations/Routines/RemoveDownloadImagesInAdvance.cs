@@ -8,6 +8,7 @@ namespace Jellyfin.Server.Migrations.Routines
     /// <summary>
     /// Removes the old 'RemoveDownloadImagesInAdvance' from library options.
     /// </summary>
+    [JellyfinMigration("01/01/0001 13:00:00", nameof(RemoveDownloadImagesInAdvance), "A81F75E0-8F43-416F-A5E8-516CCAB4D8CC")]
     internal class RemoveDownloadImagesInAdvance : IMigrationRoutine
     {
         private readonly ILogger<RemoveDownloadImagesInAdvance> _logger;
@@ -18,15 +19,6 @@ namespace Jellyfin.Server.Migrations.Routines
             _logger = logger;
             _libraryManager = libraryManager;
         }
-
-        /// <inheritdoc/>
-        public Guid Id => Guid.Parse("{A81F75E0-8F43-416F-A5E8-516CCAB4D8CC}");
-
-        /// <inheritdoc/>
-        public string Name => "RemoveDownloadImagesInAdvance";
-
-        /// <inheritdoc/>
-        public bool PerformOnNewInstall => false;
 
         /// <inheritdoc/>
         public void Perform()

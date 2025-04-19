@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Threading.Tasks;
 
 namespace Jellyfin.Server.Migrations.Stages;
 
@@ -16,19 +13,4 @@ internal class MigrationStage : Collection<CodeMigration>
     }
 
     public JellyfinMigrationStageTypes Stage { get; }
-
-    public virtual async Task ExecuteMigrationsAsync(IEnumerable<string> appliedMigrations, IServiceProvider? serviceProvider)
-    {
-
-    }
 }
-
-internal class CoreMigrationStage() : MigrationStage(JellyfinMigrationStageTypes.CoreInitialisaition)
-{
-    public override Task ExecuteMigrationsAsync(IEnumerable<string> appliedMigrations)
-    {
-
-    }
-}
-
-internal record CodeMigration(string Order, Type MigrationType);

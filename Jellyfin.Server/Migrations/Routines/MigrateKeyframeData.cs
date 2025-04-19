@@ -52,15 +52,6 @@ public class MigrateKeyframeData : IDatabaseMigrationRoutine
     private string KeyframeCachePath => Path.Combine(_appPaths.DataPath, "keyframes");
 
     /// <inheritdoc />
-    public Guid Id => new("EA4bCAE1-09A4-428E-9B90-4B4FD2EA1B24");
-
-    /// <inheritdoc />
-    public string Name => "MigrateKeyframeData";
-
-    /// <inheritdoc />
-    public bool PerformOnNewInstall => false;
-
-    /// <inheritdoc />
     public void Perform()
     {
         const int Limit = 100;

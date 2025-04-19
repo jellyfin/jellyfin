@@ -6,6 +6,7 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// Migration to update the default Jellyfin plugin repository.
 /// </summary>
+[JellyfinMigration("01/01/0001 18:00:00", nameof(UpdateDefaultPluginRepository), "852816E0-2712-49A9-9240-C6FC5FCAD1A8", RunMigrationOnSetup = true)]
 public class UpdateDefaultPluginRepository : IMigrationRoutine
 {
     private const string NewRepositoryUrl = "https://repo.jellyfin.org/files/plugin/manifest.json";
@@ -21,15 +22,6 @@ public class UpdateDefaultPluginRepository : IMigrationRoutine
     {
         _serverConfigurationManager = serverConfigurationManager;
     }
-
-    /// <inheritdoc />
-    public Guid Id => new("852816E0-2712-49A9-9240-C6FC5FCAD1A8");
-
-    /// <inheritdoc />
-    public string Name => "UpdateDefaultPluginRepository10.9";
-
-    /// <inheritdoc />
-    public bool PerformOnNewInstall => true;
 
     /// <inheritdoc />
     public void Perform()

@@ -7,6 +7,7 @@ namespace Jellyfin.Server.Migrations.Routines
     /// <summary>
     /// Migration to initialize system configuration with the default plugin repository.
     /// </summary>
+    [JellyfinMigration("01/01/0001 11:00:00", nameof(ReaddDefaultPluginRepository), "5F86E7F6-D966-4C77-849D-7A7B40B68C4E", RunMigrationOnSetup = true)]
     public class ReaddDefaultPluginRepository : IMigrationRoutine
     {
         private readonly IServerConfigurationManager _serverConfigurationManager;
@@ -25,15 +26,6 @@ namespace Jellyfin.Server.Migrations.Routines
         {
             _serverConfigurationManager = serverConfigurationManager;
         }
-
-        /// <inheritdoc/>
-        public Guid Id => Guid.Parse("5F86E7F6-D966-4C77-849D-7A7B40B68C4E");
-
-        /// <inheritdoc/>
-        public string Name => "ReaddDefaultPluginRepository";
-
-        /// <inheritdoc/>
-        public bool PerformOnNewInstall => true;
 
         /// <inheritdoc/>
         public void Perform()

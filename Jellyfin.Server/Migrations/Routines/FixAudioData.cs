@@ -16,6 +16,7 @@ namespace Jellyfin.Server.Migrations.Routines
     /// <summary>
     /// Fixes the data column of audio types to be deserializable.
     /// </summary>
+    [JellyfinMigration("01/01/0001 19:00:00", nameof(FixAudioData), "CF6FABC2-9FBE-4933-84A5-FFE52EF22A58")]
     internal class FixAudioData : IMigrationRoutine
     {
         private const string DbFilename = "library.db";
@@ -32,15 +33,6 @@ namespace Jellyfin.Server.Migrations.Routines
             _itemRepository = itemRepository;
             _logger = loggerFactory.CreateLogger<FixAudioData>();
         }
-
-        /// <inheritdoc/>
-        public Guid Id => Guid.Parse("{CF6FABC2-9FBE-4933-84A5-FFE52EF22A58}");
-
-        /// <inheritdoc/>
-        public string Name => "FixAudioData";
-
-        /// <inheritdoc/>
-        public bool PerformOnNewInstall => false;
 
         /// <inheritdoc/>
         public void Perform()
