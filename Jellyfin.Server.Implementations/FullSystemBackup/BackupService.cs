@@ -369,7 +369,8 @@ public class BackupService : IBackupService
             BackupEngineVersion = manifest.BackupEngineVersion,
             DateOfCreation = manifest.DateOfCreation,
             JellyfinVersion = manifest.JellyfinVersion,
-            Path = path
+            Path = path,
+            ContentOptions = Map(manifest.ContentOptions)
         };
     }
 

@@ -26,5 +26,9 @@ public class BackupManifestDto
     /// Gets or Sets the path to the backup on the system.
     /// </summary>
     public string? Path { get; set; }
-}
 
+    /// <summary>
+    /// Gets or Sets the contents of the backup archive.
+    /// </summary>
+    public required BackupOptionsDto ContentOptions { get; set; }
+}
