@@ -75,7 +75,6 @@ namespace Jellyfin.Server
         {
             _startTimestamp = Stopwatch.GetTimestamp();
             ServerApplicationPaths appPaths = StartupHelpers.CreateApplicationPaths(options);
-            await _setupServer.RunAsync(static () => _jellyfinHost?.Services?.GetService<INetworkManager>(), appPaths, static () => _appHost).ConfigureAwait(false);
             appPaths.MakeSanityCheckOrThrow();
 
             // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
