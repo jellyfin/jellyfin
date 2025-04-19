@@ -1,5 +1,6 @@
 using MediaBrowser.Model.System;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace MediaBrowser.Controller;
 
@@ -31,4 +32,10 @@ public interface ISystemManager
     /// Starts the application shutdown process.
     /// </summary>
     void Shutdown();
+
+    /// <summary>
+    /// Gets the systems storage resources.
+    /// </summary>
+    /// <returns>The <see cref="SystemStorageInfo"/>.</returns>
+    SystemStorageInfo GetSystemStorageInfo();
 }
