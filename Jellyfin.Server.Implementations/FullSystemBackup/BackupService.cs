@@ -82,7 +82,7 @@ public class BackupService : IBackupService
 
             if (zipArchiveEntry is null)
             {
-                throw new NotSupportedException($"The loaded archive '{archivePath}' does not appear to be a jellyfin backup as its missing the '{ManifestEntryName}'.");
+                throw new NotSupportedException($"The loaded archive '{archivePath}' does not appear to be a Jellyfin backup as its missing the '{ManifestEntryName}'.");
             }
 
             BackupManifest? manifest;
@@ -92,14 +92,14 @@ public class BackupService : IBackupService
                 manifest = await JsonSerializer.DeserializeAsync<BackupManifest>(manifestStream, _serializerSettings).ConfigureAwait(false);
             }
 
-            if (manifest!.JellyfinVersion > _applicationHost.ApplicationVersion) // newer versions of jellyfin should be able to load older versions as we have migrations.
+            if (manifest!.JellyfinVersion > _applicationHost.ApplicationVersion) // newer versions of Jellyfin should be able to load older versions as we have migrations.
             {
-                throw new NotSupportedException($"The loaded archive '{archivePath}' is made for a newer version of jellyfin ({manifest.JellyfinVersion}) and cannot be loaded in this version.");
+                throw new NotSupportedException($"The loaded archive '{archivePath}' is made for a newer version of Jellyfin ({manifest.JellyfinVersion}) and cannot be loaded in this version.");
             }
 
             if (!TestBackupVersionCompatibility(manifest.BackupEngineVersion))
             {
-                throw new NotSupportedException($"The loaded archive '{archivePath}' is made for a newer version of jellyfin ({manifest.JellyfinVersion}) and cannot be loaded in this version.");
+                throw new NotSupportedException($"The loaded archive '{archivePath}' is made for a newer version of Jellyfin ({manifest.JellyfinVersion}) and cannot be loaded in this version.");
             }
 
             static async Task CopyOverride(ZipArchiveEntry item, string targetPath)
@@ -122,7 +122,7 @@ public class BackupService : IBackupService
                     Directory.CreateDirectory(source);
                 }
 
-                var configFiles = zipArchive.Entries.Where(e => e.FullName.StartsWith(target, StringComparison.InvariantCultureIgnoreCase));
+                var configFiles = zipArchive.Entries.Where(e => e.FullName.StartsWith(target, StringComparison.OrdinalIgnoreCase));
 
                 foreach (var item in configFiles)
                 {
