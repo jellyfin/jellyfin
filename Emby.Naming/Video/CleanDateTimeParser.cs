@@ -1,6 +1,5 @@
-using System.Collections.Generic;
-using System.Globalization;
-using System.Text.RegularExpressions;
+using Emby.Naming.Common;
+using Emby.Naming.Video.DateTimeResolvers;
 
 namespace Emby.Naming.Video
 {
@@ -13,43 +12,21 @@ namespace Emby.Naming.Video
         /// Attempts to clean the name.
         /// </summary>
         /// <param name="name">Name of video.</param>
-        /// <param name="cleanDateTimeRegexes">Optional list of regexes to clean the name.</param>
+        /// <param name="namingOptions">intance of NamingOptions.</param>
         /// <returns>Returns <see cref="CleanDateTimeResult"/> object.</returns>
-        public static CleanDateTimeResult Clean(string name, IReadOnlyList<Regex> cleanDateTimeRegexes)
+        public static CleanDateTimeResult Clean(string name, NamingOptions namingOptions)
         {
-            CleanDateTimeResult result = new CleanDateTimeResult(name);
-            if (string.IsNullOrEmpty(name))
+            var resolver = new MovieDateTimeResolverComposite();
+
+            var result = resolver.Resolve(name, namingOptions);
+
+            if (string.IsNullOrEmpty(name) || result == null)
             {
-                return result;
+                name = DateTimeResolverHelpers.TrimAfterFirstNonTitleOccurrence(name, namingOptions.NonTitleStringsRegexes);
+                return new CleanDateTimeResult(name);
             }
 
-            var len = cleanDateTimeRegexes.Count;
-            for (int i = 0; i < len; i++)
-            {
-                if (TryClean(name, cleanDateTimeRegexes[i], ref result))
-                {
-                    return result;
-                }
-            }
-
-            return result;
-        }
-
-        private static bool TryClean(string name, Regex expression, ref CleanDateTimeResult result)
-        {
-            var match = expression.Match(name);
-
-            if (match.Success
-                && match.Groups.Count == 5
-                && match.Groups[1].Success
-                && match.Groups[2].Success
-                && int.TryParse(match.Groups[2].ValueSpan, NumberStyles.Integer, CultureInfo.InvariantCulture, out var year))
-            {
-                result = new CleanDateTimeResult(match.Groups[1].Value.TrimEnd(), year);
-                return true;
-            }
-
-            return false;
+            return result.Value;
         }
     }
 }
