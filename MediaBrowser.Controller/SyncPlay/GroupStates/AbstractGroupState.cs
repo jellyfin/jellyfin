@@ -80,7 +80,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
             }
 
             var playQueueUpdate = context.GetPlayQueueUpdate(PlayQueueUpdateReason.RemoveItems);
-            var update = context.NewSyncPlayGroupUpdate(GroupUpdateType.PlayQueue, playQueueUpdate);
+            var update = new SyncPlayPlayQueueUpdate(context.GroupId, playQueueUpdate);
             context.SendGroupUpdate(session, SyncPlayBroadcastType.AllGroup, update, cancellationToken);
 
             if (playingItemRemoved && !context.PlayQueue.IsItemPlaying())
@@ -106,7 +106,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
             }
 
             var playQueueUpdate = context.GetPlayQueueUpdate(PlayQueueUpdateReason.MoveItem);
-            var update = context.NewSyncPlayGroupUpdate(GroupUpdateType.PlayQueue, playQueueUpdate);
+            var update = new SyncPlayPlayQueueUpdate(context.GroupId, playQueueUpdate);
             context.SendGroupUpdate(session, SyncPlayBroadcastType.AllGroup, update, cancellationToken);
         }
 
@@ -127,7 +127,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
                 _ => PlayQueueUpdateReason.Queue
             };
             var playQueueUpdate = context.GetPlayQueueUpdate(reason);
-            var update = context.NewSyncPlayGroupUpdate(GroupUpdateType.PlayQueue, playQueueUpdate);
+            var update = new SyncPlayPlayQueueUpdate(context.GroupId, playQueueUpdate);
             context.SendGroupUpdate(session, SyncPlayBroadcastType.AllGroup, update, cancellationToken);
         }
 
@@ -184,7 +184,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
         {
             context.SetRepeatMode(request.Mode);
             var playQueueUpdate = context.GetPlayQueueUpdate(PlayQueueUpdateReason.RepeatMode);
-            var update = context.NewSyncPlayGroupUpdate(GroupUpdateType.PlayQueue, playQueueUpdate);
+            var update = new SyncPlayPlayQueueUpdate(context.GroupId, playQueueUpdate);
             context.SendGroupUpdate(session, SyncPlayBroadcastType.AllGroup, update, cancellationToken);
         }
 
@@ -193,7 +193,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
         {
             context.SetShuffleMode(request.Mode);
             var playQueueUpdate = context.GetPlayQueueUpdate(PlayQueueUpdateReason.ShuffleMode);
-            var update = context.NewSyncPlayGroupUpdate(GroupUpdateType.PlayQueue, playQueueUpdate);
+            var update = new SyncPlayPlayQueueUpdate(context.GroupId, playQueueUpdate);
             context.SendGroupUpdate(session, SyncPlayBroadcastType.AllGroup, update, cancellationToken);
         }
 
@@ -221,7 +221,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
         {
             // Notify relevant state change event.
             var stateUpdate = new GroupStateUpdate(Type, reason.Action);
-            var update = context.NewSyncPlayGroupUpdate(GroupUpdateType.StateUpdate, stateUpdate);
+            var update = new SyncPlayStateUpdate(context.GroupId, stateUpdate);
             context.SendGroupUpdate(session, SyncPlayBroadcastType.AllGroup, update, cancellationToken);
         }
 

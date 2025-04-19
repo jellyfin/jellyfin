@@ -161,7 +161,7 @@ namespace MediaBrowser.Controller.Session
         /// <param name="sessionId">The identifier of the session.</param>
         /// <param name="command">The group update.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <typeparam name="T">Type of group.</typeparam>
+        /// <typeparam name="T">The group update type.</typeparam>
         /// <returns>Task.</returns>
         Task SendSyncPlayGroupUpdate<T>(string sessionId, GroupUpdate<T> command, CancellationToken cancellationToken);
 

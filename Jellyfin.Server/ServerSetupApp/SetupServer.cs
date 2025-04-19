@@ -4,6 +4,9 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Server.Implementations.Configuration;
+using Emby.Server.Implementations.Serialization;
+using Jellyfin.Networking.Manager;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -11,9 +14,12 @@ using MediaBrowser.Model.System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 
 namespace Jellyfin.Server.ServerSetupApp;
 
@@ -22,20 +28,45 @@ namespace Jellyfin.Server.ServerSetupApp;
 /// </summary>
 public sealed class SetupServer : IDisposable
 {
+    private readonly Func<INetworkManager?> _networkManagerFactory;
+    private readonly IApplicationPaths _applicationPaths;
+    private readonly Func<IServerApplicationHost?> _serverFactory;
+    private readonly ILoggerFactory _loggerFactory;
+    private readonly IConfiguration _startupConfiguration;
+    private readonly ServerConfigurationManager _configurationManager;
     private IHost? _startupServer;
     private bool _disposed;
 
     /// <summary>
-    /// Starts the Bind-All Setup aspcore server to provide a reflection on the current core setup.
+    /// Initializes a new instance of the <see cref="SetupServer"/> class.
     /// </summary>
     /// <param name="networkManagerFactory">The networkmanager.</param>
     /// <param name="applicationPaths">The application paths.</param>
-    /// <param name="serverApplicationHost">The servers application host.</param>
-    /// <returns>A Task.</returns>
-    public async Task RunAsync(
+    /// <param name="serverApplicationHostFactory">The servers application host.</param>
+    /// <param name="loggerFactory">The logger factory.</param>
+    /// <param name="startupConfiguration">The startup configuration.</param>
+    public SetupServer(
         Func<INetworkManager?> networkManagerFactory,
         IApplicationPaths applicationPaths,
-        Func<IServerApplicationHost?> serverApplicationHost)
+        Func<IServerApplicationHost?> serverApplicationHostFactory,
+        ILoggerFactory loggerFactory,
+        IConfiguration startupConfiguration)
+    {
+        _networkManagerFactory = networkManagerFactory;
+        _applicationPaths = applicationPaths;
+        _serverFactory = serverApplicationHostFactory;
+        _loggerFactory = loggerFactory;
+        _startupConfiguration = startupConfiguration;
+        var xmlSerializer = new MyXmlSerializer();
+        _configurationManager = new ServerConfigurationManager(_applicationPaths, loggerFactory, xmlSerializer);
+        _configurationManager.RegisterConfiguration<NetworkConfigurationFactory>();
+    }
+
+    /// <summary>
+    /// Starts the Bind-All Setup aspcore server to provide a reflection on the current core setup.
+    /// </summary>
+    /// <returns>A Task.</returns>
+    public async Task RunAsync()
     {
         ThrowIfDisposed();
         _startupServer = Host.CreateDefaultBuilder()
@@ -48,7 +79,23 @@ public sealed class SetupServer : IDisposable
             .ConfigureWebHostDefaults(webHostBuilder =>
                     {
                         webHostBuilder
-                                .UseKestrel()
+                                .UseKestrel((builderContext, options) =>
+                                {
+                                    var config = _configurationManager.GetNetworkConfiguration()!;
+                                    var knownBindInterfaces = NetworkManager.GetInterfacesCore(_loggerFactory.CreateLogger<SetupServer>(), config.EnableIPv4, config.EnableIPv6);
+                                    knownBindInterfaces = NetworkManager.FilterBindSettings(config, knownBindInterfaces.ToList(), config.EnableIPv4, config.EnableIPv6);
+                                    var bindInterfaces = NetworkManager.GetAllBindInterfaces(false, _configurationManager, knownBindInterfaces, config.EnableIPv4, config.EnableIPv6);
+                                    Extensions.WebHostBuilderExtensions.SetupJellyfinWebServer(
+                                        bindInterfaces,
+                                        config.InternalHttpPort,
+                                        null,
+                                        null,
+                                        _startupConfiguration,
+                                        _applicationPaths,
+                                        _loggerFactory.CreateLogger<SetupServer>(),
+                                        builderContext,
+                                        options);
+                                })
                                 .Configure(app =>
                                 {
                                     app.UseHealthChecks("/health");
@@ -57,14 +104,14 @@ public sealed class SetupServer : IDisposable
                                     {
                                         loggerRoute.Run(async context =>
                                         {
-                                            var networkManager = networkManagerFactory();
+                                            var networkManager = _networkManagerFactory();
                                             if (context.Connection.RemoteIpAddress is null || networkManager is null || !networkManager.IsInLocalNetwork(context.Connection.RemoteIpAddress))
                                             {
                                                 context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
                                                 return;
                                             }
 
-                                            var logFilePath = new DirectoryInfo(applicationPaths.LogDirectoryPath)
+                                            var logFilePath = new DirectoryInfo(_applicationPaths.LogDirectoryPath)
                                                 .EnumerateFiles()
                                                 .OrderBy(f => f.CreationTimeUtc)
                                                 .FirstOrDefault()
@@ -80,20 +127,20 @@ public sealed class SetupServer : IDisposable
                                     {
                                         systemRoute.Run(async context =>
                                         {
-                                            var jfApplicationHost = serverApplicationHost();
+                                            var jfApplicationHost = _serverFactory();
 
                                             var retryCounter = 0;
                                             while (jfApplicationHost is null && retryCounter < 5)
                                             {
                                                 await Task.Delay(500).ConfigureAwait(false);
-                                                jfApplicationHost = serverApplicationHost();
+                                                jfApplicationHost = _serverFactory();
                                                 retryCounter++;
                                             }
 
                                             if (jfApplicationHost is null)
                                             {
                                                 context.Response.StatusCode = (int)HttpStatusCode.ServiceUnavailable;
-                                                context.Response.Headers.RetryAfter = new Microsoft.Extensions.Primitives.StringValues("60");
+                                                context.Response.Headers.RetryAfter = new StringValues("5");
                                                 return;
                                             }
 
@@ -114,9 +161,10 @@ public sealed class SetupServer : IDisposable
                                     app.Run((context) =>
                                     {
                                         context.Response.StatusCode = (int)HttpStatusCode.ServiceUnavailable;
-                                        context.Response.Headers.RetryAfter = new Microsoft.Extensions.Primitives.StringValues("60");
+                                        context.Response.Headers.RetryAfter = new StringValues("5");
+                                        context.Response.Headers.ContentType = new StringValues("text/html");
                                         context.Response.WriteAsync("<p>Jellyfin Server still starting. Please wait.</p>");
-                                        var networkManager = networkManagerFactory();
+                                        var networkManager = _networkManagerFactory();
                                         if (networkManager is not null && context.Connection.RemoteIpAddress is not null && networkManager.IsInLocalNetwork(context.Connection.RemoteIpAddress))
                                         {
                                             context.Response.WriteAsync("<p>You can download the current logfiles <a href='/startup/logger'>here</a>.</p>");
