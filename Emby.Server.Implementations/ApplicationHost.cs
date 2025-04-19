@@ -40,6 +40,7 @@ using Jellyfin.Drawing;
 using Jellyfin.MediaEncoding.Hls.Playlist;
 using Jellyfin.Networking.Manager;
 using Jellyfin.Networking.Udp;
+using Jellyfin.Server.Implementations.Backup;
 using Jellyfin.Server.Implementations.Item;
 using Jellyfin.Server.Implementations.MediaSegments;
 using MediaBrowser.Common;
@@ -267,6 +268,8 @@ namespace Emby.Server.Implementations
                 ? Environment.MachineName
                 : ConfigurationManager.Configuration.ServerName;
 
+        public string RestoreBackupPath { get; set; }
+
         public string ExpandVirtualPath(string path)
         {
             if (path is null)
@@ -471,6 +474,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IApplicationHost>(this);
             serviceCollection.AddSingleton<IPluginManager>(_pluginManager);
             serviceCollection.AddSingleton<IApplicationPaths>(ApplicationPaths);
+            serviceCollection.AddSingleton<IBackupService, BackupService>();
 
             serviceCollection.AddSingleton<IFileSystem, ManagedFileSystem>();
             serviceCollection.AddSingleton<IShortcutHandler, MbLinkShortcutHandler>();

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -62,4 +63,12 @@ public interface IJellyfinDatabaseProvider
     /// <param name="cancellationToken">A cancelation token.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
     Task RestoreBackupFast(string key, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Removes all contents from the database.
+    /// </summary>
+    /// <param name="dbContext">The Database context.</param>
+    /// <param name="tableNames">The names of the tables to purge or null for all tables to be purged.</param>
+    /// <returns>A Task.</returns>
+    Task PurgeDatabase(JellyfinDbContext dbContext, IEnumerable<string>? tableNames);
 }
