@@ -6,6 +6,7 @@ using Emby.Server.Implementations;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Helpers;
 using MediaBrowser.Common;
+using MediaBrowser.Common.Configuration;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
@@ -103,6 +104,9 @@ namespace Jellyfin.Server.Integration.Tests
             var host = builder.Build();
             var appHost = (TestAppHost)host.Services.GetRequiredService<IApplicationHost>();
             appHost.ServiceProvider = host.Services;
+            var applicationPaths = appHost.ServiceProvider.GetRequiredService<IApplicationPaths>();
+            Program.ApplyStartupMigrationAsync((ServerApplicationPaths)applicationPaths, appHost.ServiceProvider.GetRequiredService<IConfiguration>()).GetAwaiter().GetResult();
+            Program.ApplyCoreMigrationsAsync(appHost.ServiceProvider).GetAwaiter().GetResult();
             appHost.InitializeServices(Mock.Of<IConfiguration>()).GetAwaiter().GetResult();
             host.Start();
 
