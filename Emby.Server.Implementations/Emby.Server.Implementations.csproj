@@ -65,6 +65,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Ignore" />
+  </ItemGroup>
+
+  <ItemGroup>
     <EmbeddedResource Include="Localization\iso6392.txt" />
     <EmbeddedResource Include="Localization\countries.json" />
     <EmbeddedResource Include="Localization\Core\*.json" />

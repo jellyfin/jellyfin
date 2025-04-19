@@ -54,7 +54,7 @@ namespace Emby.Server.Implementations.Library
             {
                 if (parent is not null)
                 {
-                    // Ignore extras folders but allow it at the collection level
+                    // Ignore extras for unsupported types
                     if (_namingOptions.AllExtrasTypesFolderNames.ContainsKey(filename)
                         && parent is not AggregateFolder
                         && parent is not UserRootFolder)
@@ -67,7 +67,7 @@ namespace Emby.Server.Implementations.Library
             {
                 if (parent is not null)
                 {
-                    // Don't resolve these into audio files
+                    // Don't resolve theme songs
                     if (Path.GetFileNameWithoutExtension(filename.AsSpan()).Equals(BaseItem.ThemeSongFileName, StringComparison.Ordinal)
                         && AudioFileParser.IsAudioFile(filename, _namingOptions))
                     {
