@@ -4,8 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -565,6 +566,15 @@ namespace MediaBrowser.Controller.Library
         /// <param name="parents">Items to use for query.</param>
         /// <returns>List of items.</returns>
         IReadOnlyList<BaseItem> GetItemList(InternalItemsQuery query, List<BaseItem> parents);
+
+        /// <summary>
+        /// Gets the TVShow/Album items for Latest api.
+        /// </summary>
+        /// <param name="query">The query to use.</param>
+        /// <param name="parents">Items to use for query.</param>
+        /// <param name="collectionType">Collection Type.</param>
+        /// <returns>List of items.</returns>
+        IReadOnlyList<BaseItem> GetLatestItemList(InternalItemsQuery query, IReadOnlyList<BaseItem> parents, CollectionType collectionType);
 
         /// <summary>
         /// Gets the list of series presentation keys for next up.

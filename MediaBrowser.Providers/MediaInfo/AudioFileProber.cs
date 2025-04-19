@@ -180,8 +180,8 @@ namespace MediaBrowser.Providers.MediaInfo
             // That setter is meant for its own tag parser and external editor usage and will have unwanted side effects
             // For example, setting the Year property will also set the Date property, which is not what we want here.
             // To properly handle fallback values, we make a clone of those fields when valid.
-            var trackTitle = (string.IsNullOrEmpty(track.Title) ? mediaInfo.Name : track.Title).Trim();
-            var trackAlbum = (string.IsNullOrEmpty(track.Album) ? mediaInfo.Album : track.Album).Trim();
+            var trackTitle = (string.IsNullOrEmpty(track.Title) ? mediaInfo.Name : track.Title)?.Trim();
+            var trackAlbum = (string.IsNullOrEmpty(track.Album) ? mediaInfo.Album : track.Album)?.Trim();
             var trackYear = track.Year is null or 0 ? mediaInfo.ProductionYear : track.Year;
             var trackTrackNumber = track.TrackNumber is null or 0 ? mediaInfo.IndexNumber : track.TrackNumber;
             var trackDiscNumber = track.DiscNumber is null or 0 ? mediaInfo.ParentIndexNumber : track.DiscNumber;

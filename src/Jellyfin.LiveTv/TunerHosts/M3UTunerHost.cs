@@ -190,7 +190,7 @@ namespace Jellyfin.LiveTv.TunerHosts
                 RequiresClosing = true,
                 RequiresLooping = info.EnableStreamLooping,
 
-                ReadAtNativeFramerate = false,
+                ReadAtNativeFramerate = info.ReadAtNativeFramerate,
 
                 Id = channel.Path.GetMD5().ToString("N", CultureInfo.InvariantCulture),
                 IsInfiniteStream = true,

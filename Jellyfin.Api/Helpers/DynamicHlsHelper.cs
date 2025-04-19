@@ -8,8 +8,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Extensions;
-using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
@@ -345,13 +345,15 @@ public class DynamicHlsHelper
 
                 if (videoRange == VideoRange.HDR)
                 {
-                    if (videoRangeType == VideoRangeType.HLG)
+                    switch (videoRangeType)
                     {
-                        builder.Append(",VIDEO-RANGE=HLG");
-                    }
-                    else
-                    {
-                        builder.Append(",VIDEO-RANGE=PQ");
+                        case VideoRangeType.HLG:
+                        case VideoRangeType.DOVIWithHLG:
+                            builder.Append(",VIDEO-RANGE=HLG");
+                            break;
+                        default:
+                            builder.Append(",VIDEO-RANGE=PQ");
+                            break;
                     }
                 }
             }
@@ -418,36 +420,67 @@ public class DynamicHlsHelper
     /// <param name="state">StreamState of the current stream.</param>
     private void AppendPlaylistSupplementalCodecsField(StringBuilder builder, StreamState state)
     {
-        // Dolby Vision currently cannot exist when transcoding
+        // HDR dynamic metadata currently cannot exist when transcoding
         if (!EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
         {
             return;
         }
 
-        var dvProfile = state.VideoStream.DvProfile;
-        var dvLevel = state.VideoStream.DvLevel;
-        var dvRangeString = state.VideoStream.VideoRangeType switch
+        if (EncodingHelper.IsDovi(state.VideoStream) && !_encodingHelper.IsDoviRemoved(state))
         {
-            VideoRangeType.DOVIWithHDR10 => "db1p",
-            VideoRangeType.DOVIWithHLG => "db4h",
-            _ => string.Empty
-        };
-
-        if (dvProfile is null || dvLevel is null || string.IsNullOrEmpty(dvRangeString))
+            AppendDvString();
+        }
+        else if (EncodingHelper.IsHdr10Plus(state.VideoStream) && !_encodingHelper.IsHdr10PlusRemoved(state))
         {
-            return;
+            AppendHdr10PlusString();
         }
 
-        var dvFourCc = string.Equals(state.ActualOutputVideoCodec, "av1", StringComparison.OrdinalIgnoreCase) ? "dav1" : "dvh1";
-        builder.Append(",SUPPLEMENTAL-CODECS=\"")
-            .Append(dvFourCc)
-            .Append('.')
-            .Append(dvProfile.Value.ToString("D2", CultureInfo.InvariantCulture))
-            .Append('.')
-            .Append(dvLevel.Value.ToString("D2", CultureInfo.InvariantCulture))
-            .Append('/')
-            .Append(dvRangeString)
-            .Append('"');
+        return;
+
+        void AppendDvString()
+        {
+            var dvProfile = state.VideoStream.DvProfile;
+            var dvLevel = state.VideoStream.DvLevel;
+            var dvRangeString = state.VideoStream.VideoRangeType switch
+            {
+                VideoRangeType.DOVIWithHDR10 => "db1p",
+                VideoRangeType.DOVIWithHLG => "db4h",
+                VideoRangeType.DOVIWithHDR10Plus => "db1p", // The HDR10+ metadata would be removed if Dovi metadata is not removed
+                _ => string.Empty // Don't label Dovi with EL and SDR due to compatability issues, ignore invalid configurations
+            };
+
+            if (dvProfile is null || dvLevel is null || string.IsNullOrEmpty(dvRangeString))
+            {
+                return;
+            }
+
+            var dvFourCc = string.Equals(state.ActualOutputVideoCodec, "av1", StringComparison.OrdinalIgnoreCase) ? "dav1" : "dvh1";
+            builder.Append(",SUPPLEMENTAL-CODECS=\"")
+                .Append(dvFourCc)
+                .Append('.')
+                .Append(dvProfile.Value.ToString("D2", CultureInfo.InvariantCulture))
+                .Append('.')
+                .Append(dvLevel.Value.ToString("D2", CultureInfo.InvariantCulture))
+                .Append('/')
+                .Append(dvRangeString)
+                .Append('"');
+        }
+
+        void AppendHdr10PlusString()
+        {
+            var videoCodecLevel = GetOutputVideoCodecLevel(state);
+            if (string.IsNullOrEmpty(state.ActualOutputVideoCodec) || videoCodecLevel is null)
+            {
+                return;
+            }
+
+            var videoCodecString = GetPlaylistVideoCodecs(state, state.ActualOutputVideoCodec, videoCodecLevel.Value);
+            builder.Append(",SUPPLEMENTAL-CODECS=\"")
+                .Append(videoCodecString)
+                .Append('/')
+                .Append("cdm4")
+                .Append('"');
+        }
     }
 
     /// <summary>

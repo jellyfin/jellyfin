@@ -1,0 +1,55 @@
+{
+    "countryCode": "co",
+    "supportsSubScores": false,
+    "ratings": [
+        {
+            "ratingStrings": ["T"],
+            "ratingScore": {
+                "score": 0,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["7"],
+            "ratingScore": {
+                "score": 7,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["12"],
+            "ratingScore": {
+                "score": 12,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["15"],
+            "ratingScore": {
+                "score": 15,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["18"],
+            "ratingScore": {
+                "score": 18,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["X"],
+            "ratingScore": {
+                "score": 1000,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["Prohibited"],
+            "ratingScore": {
+                "score": 1001,
+                "subScore": null
+            }
+        }
+    ]
+}

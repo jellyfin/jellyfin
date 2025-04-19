@@ -1,7 +1,7 @@
 #pragma warning disable CS1591
 
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Authentication

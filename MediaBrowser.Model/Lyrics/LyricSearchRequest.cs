@@ -15,7 +15,12 @@ public class LyricSearchRequest : IHasProviderIds
     public string? MediaPath { get; set; }
 
     /// <summary>
-    /// Gets or sets the artist name.
+    /// Gets or sets the album artist names.
+    /// </summary>
+    public IReadOnlyList<string>? AlbumArtistsNames { get; set; }
+
+    /// <summary>
+    /// Gets or sets the artist names.
     /// </summary>
     public IReadOnlyList<string>? ArtistNames { get; set; }
 

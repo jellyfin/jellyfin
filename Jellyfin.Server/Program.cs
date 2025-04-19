@@ -4,12 +4,13 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
 using Emby.Server.Implementations;
+using Jellyfin.Database.Implementations;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Helpers;
-using Jellyfin.Server.Implementations;
 using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
@@ -121,7 +122,7 @@ namespace Jellyfin.Server
             }
 
             StartupHelpers.PerformStaticInitialization();
-            Migrations.MigrationRunner.RunPreStartup(appPaths, _loggerFactory);
+            await Migrations.MigrationRunner.RunPreStartup(appPaths, _loggerFactory).ConfigureAwait(false);
 
             do
             {
@@ -165,8 +166,8 @@ namespace Jellyfin.Server
                 // Re-use the host service provider in the app host since ASP.NET doesn't allow a custom service collection.
                 appHost.ServiceProvider = _jellyfinHost.Services;
 
-                await appHost.InitializeServices().ConfigureAwait(false);
-                Migrations.MigrationRunner.Run(appHost, _loggerFactory);
+                await appHost.InitializeServices(startupConfig).ConfigureAwait(false);
+                await Migrations.MigrationRunner.Run(appHost, _loggerFactory).ConfigureAwait(false);
 
                 try
                 {
@@ -205,23 +206,12 @@ namespace Jellyfin.Server
                 // Don't throw additional exception if startup failed.
                 if (appHost.ServiceProvider is not null)
                 {
-                    var isSqlite = false;
                     _logger.LogInformation("Running query planner optimizations in the database... This might take a while");
-                    // Run before disposing the application
-                    var context = await appHost.ServiceProvider.GetRequiredService<IDbContextFactory<JellyfinDbContext>>().CreateDbContextAsync().ConfigureAwait(false);
-                    await using (context.ConfigureAwait(false))
-                    {
-                        if (context.Database.IsSqlite())
-                        {
-                            isSqlite = true;
-                            await context.Database.ExecuteSqlRawAsync("PRAGMA optimize").ConfigureAwait(false);
-                        }
-                    }
 
-                    if (isSqlite)
-                    {
-                        SqliteConnection.ClearAllPools();
-                    }
+                    var databaseProvider = appHost.ServiceProvider.GetRequiredService<IJellyfinDatabaseProvider>();
+                    using var shutdownSource = new CancellationTokenSource();
+                    shutdownSource.CancelAfter((int)TimeSpan.FromSeconds(60).TotalMicroseconds);
+                    await databaseProvider.RunShutdownTask(shutdownSource.Token).ConfigureAwait(false);
                 }
 
                 _appHost = null;

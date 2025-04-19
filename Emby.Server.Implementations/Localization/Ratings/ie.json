@@ -1,0 +1,55 @@
+{
+    "countryCode": "ie",
+    "supportsSubScores": true,
+    "ratings": [
+        {
+            "ratingStrings": ["G"],
+            "ratingScore": {
+                "score": 4,
+                "subScore": 0
+            }
+        },
+        {
+            "ratingStrings": ["12A", "12PG", "PG"],
+            "ratingScore": {
+                "score": 12,
+                "subScore": 0
+            }
+        },
+        {
+            "ratingStrings": ["12"],
+            "ratingScore": {
+                "score": 12,
+                "subScore": 1
+            }
+        },
+        {
+            "ratingStrings": ["15A", "15PG"],
+            "ratingScore": {
+                "score": 15,
+                "subScore": 0
+            }
+        },
+        {
+            "ratingStrings": ["15"],
+            "ratingScore": {
+                "score": 15,
+                "subScore": 3
+            }
+        },
+        {
+            "ratingStrings": ["16"],
+            "ratingScore": {
+                "score": 16,
+                "subScore": 0
+            }
+        },
+        {
+            "ratingStrings": ["18"],
+            "ratingScore": {
+                "score": 18,
+                "subScore": 1
+            }
+        }
+    ]
+}

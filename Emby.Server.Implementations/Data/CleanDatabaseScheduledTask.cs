@@ -1,14 +1,14 @@
 #pragma warning disable CS1591
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Server.Implementations;
-using MediaBrowser.Controller;
+using Jellyfin.Database.Implementations;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Trickplay;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -19,15 +19,18 @@ public class CleanDatabaseScheduledTask : ILibraryPostScanTask
     private readonly ILibraryManager _libraryManager;
     private readonly ILogger<CleanDatabaseScheduledTask> _logger;
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
+    private readonly IPathManager _pathManager;
 
     public CleanDatabaseScheduledTask(
         ILibraryManager libraryManager,
         ILogger<CleanDatabaseScheduledTask> logger,
-        IDbContextFactory<JellyfinDbContext> dbProvider)
+        IDbContextFactory<JellyfinDbContext> dbProvider,
+        IPathManager pathManager)
     {
         _libraryManager = libraryManager;
         _logger = logger;
         _dbProvider = dbProvider;
+        _pathManager = pathManager;
     }
 
     public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
@@ -56,6 +59,38 @@ public class CleanDatabaseScheduledTask : ILibraryPostScanTask
             {
                 _logger.LogInformation("Cleaning item {Item} type: {Type} path: {Path}", item.Name, item.GetType().Name, item.Path ?? string.Empty);
 
+                foreach (var mediaSource in item.GetMediaSources(false))
+                {
+                    // Delete extracted subtitles
+                    try
+                    {
+                        var subtitleFolder = _pathManager.GetSubtitleFolderPath(mediaSource.Id);
+                        if (Directory.Exists(subtitleFolder))
+                        {
+                            Directory.Delete(subtitleFolder, true);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogWarning("Failed to remove subtitle cache folder for {Item}: {Exception}", item.Id, e.Message);
+                    }
+
+                    // Delete extracted attachments
+                    try
+                    {
+                        var attachmentFolder = _pathManager.GetAttachmentFolderPath(mediaSource.Id);
+                        if (Directory.Exists(attachmentFolder))
+                        {
+                            Directory.Delete(attachmentFolder, true);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogWarning("Failed to remove attachment cache folder for {Item}: {Exception}", item.Id, e.Message);
+                    }
+                }
+
+                // Delete item
                 _libraryManager.DeleteItem(item, new DeleteOptions
                 {
                     DeleteFileLocation = false
