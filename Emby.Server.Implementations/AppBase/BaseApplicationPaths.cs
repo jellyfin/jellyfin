@@ -96,12 +96,12 @@ namespace Emby.Server.Implementations.AppBase
                 Directory.CreateDirectory(path);
             }
 
-            CheckOrCreateMarker(path, $".jf{markerName}", recursive);
+            CheckOrCreateMarker(path, $".jellyfin-{markerName}", recursive);
         }
 
         private IEnumerable<string> GetMarkers(string path, bool recursive = false)
         {
-            return Directory.EnumerateFiles(path, ".*", recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
+            return Directory.EnumerateFiles(path, ".jellyfin-*", recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
         }
 
         private void CheckOrCreateMarker(string path, string markerName, bool recursive = false)
