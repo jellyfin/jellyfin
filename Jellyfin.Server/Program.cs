@@ -8,16 +8,19 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
 using Emby.Server.Implementations;
+using Emby.Server.Implementations.Configuration;
+using Emby.Server.Implementations.Serialization;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Helpers;
+using Jellyfin.Server.Implementations.DatabaseConfiguration;
+using Jellyfin.Server.Implementations.Extensions;
+using Jellyfin.Server.Migrations;
 using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -121,7 +124,8 @@ namespace Jellyfin.Server
             }
 
             StartupHelpers.PerformStaticInitialization();
-            await Migrations.MigrationRunner.RunPreStartup(appPaths, _loggerFactory).ConfigureAwait(false);
+
+            await ApplyStartupMigrationAsync(appPaths, startupConfig).ConfigureAwait(false);
 
             do
             {
@@ -166,9 +170,9 @@ namespace Jellyfin.Server
 
                 // Re-use the host service provider in the app host since ASP.NET doesn't allow a custom service collection.
                 appHost.ServiceProvider = _jellyfinHost.Services;
+                await ApplyCoreMigrationsAsync(appHost.ServiceProvider).ConfigureAwait(false);
 
                 await appHost.InitializeServices(startupConfig).ConfigureAwait(false);
-                await Migrations.MigrationRunner.Run(appHost, _loggerFactory).ConfigureAwait(false);
 
                 try
                 {
@@ -216,6 +220,44 @@ namespace Jellyfin.Server
                 _appHost = null;
                 _jellyfinHost?.Dispose();
             }
+        }
+
+        /// <summary>
+        /// [Internal]Runs the startup Migrations.
+        /// </summary>
+        /// <remarks>
+        /// Not intended to be used other then by jellyfin and its tests.
+        /// </remarks>
+        /// <param name="appPaths">Application Paths.</param>
+        /// <param name="startupConfig">Startup Config.</param>
+        /// <returns>A task.</returns>
+        public static async Task ApplyStartupMigrationAsync(ServerApplicationPaths appPaths, IConfiguration startupConfig)
+        {
+            var startupConfigurationManager = new ServerConfigurationManager(appPaths, _loggerFactory, new MyXmlSerializer());
+            startupConfigurationManager.AddParts([new DatabaseConfigurationFactory()]);
+            var migrationStartupServiceProvider = new ServiceCollection()
+                .AddLogging(d => d.AddSerilog())
+                .AddJellyfinDbContext(startupConfigurationManager, startupConfig)
+                .AddSingleton<IApplicationPaths>(appPaths)
+                .AddSingleton<ServerApplicationPaths>(appPaths);
+            var startupService = migrationStartupServiceProvider.BuildServiceProvider();
+            var jellyfinMigrationService = ActivatorUtilities.CreateInstance<JellyfinMigrationService>(startupService);
+            await jellyfinMigrationService.CheckFirstTimeRunOrMigration(appPaths).ConfigureAwait(false);
+            await jellyfinMigrationService.MigrateStepAsync(Migrations.Stages.JellyfinMigrationStageTypes.PreInitialisation, startupService).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// [Internal]Runs the Jellyfin migrator service with the Core stage.
+        /// </summary>
+        /// <remarks>
+        /// Not intended to be used other then by jellyfin and its tests.
+        /// </remarks>
+        /// <param name="serviceProvider">The service provider.</param>
+        /// <returns>A task.</returns>
+        public static async Task ApplyCoreMigrationsAsync(IServiceProvider serviceProvider)
+        {
+            var jellyfinMigrationService = ActivatorUtilities.CreateInstance<JellyfinMigrationService>(serviceProvider);
+            await jellyfinMigrationService.MigrateStepAsync(Migrations.Stages.JellyfinMigrationStageTypes.CoreInitialisaition, serviceProvider).ConfigureAwait(false);
         }
 
         /// <summary>

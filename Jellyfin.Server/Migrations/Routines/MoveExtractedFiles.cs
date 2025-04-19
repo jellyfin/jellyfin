@@ -22,6 +22,7 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// Migration to move extracted files to the new directories.
 /// </summary>
+[JellyfinMigration("04/20/2025 22:30:00", nameof(MoveExtractedFiles), "9063b0Ef-CFF1-4EDC-9A13-74093681A89B", Stage = Stages.JellyfinMigrationStageTypes.CoreInitialisaition)]
 public class MoveExtractedFiles : IDatabaseMigrationRoutine
 {
     private readonly IApplicationPaths _appPaths;
@@ -55,15 +56,6 @@ public class MoveExtractedFiles : IDatabaseMigrationRoutine
     private string SubtitleCachePath => Path.Combine(_appPaths.DataPath, "subtitles");
 
     private string AttachmentCachePath => Path.Combine(_appPaths.DataPath, "attachments");
-
-    /// <inheritdoc />
-    public Guid Id => new("9063b0Ef-CFF1-4EDC-9A13-74093681A89B");
-
-    /// <inheritdoc />
-    public string Name => "MoveExtractedFiles";
-
-    /// <inheritdoc />
-    public bool PerformOnNewInstall => false;
 
     /// <inheritdoc />
     public void Perform()
