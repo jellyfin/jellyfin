@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -24,13 +25,17 @@ namespace MediaBrowser.Providers.Music
         /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
+        /// <param name="pathManager">Instance of the <see cref="IPathManager"/> interface.</param>
+        /// <param name="keyframeManager">Instance of the <see cref="IKeyframeManager"/> interface.</param>
         public AudioMetadataService(
             IServerConfigurationManager serverConfigurationManager,
             ILogger<AudioMetadataService> logger,
             IProviderManager providerManager,
             IFileSystem fileSystem,
-            ILibraryManager libraryManager)
-            : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
+            ILibraryManager libraryManager,
+            IPathManager pathManager,
+            IKeyframeManager keyframeManager)
+            : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager, pathManager, keyframeManager)
         {
         }
 

@@ -1266,7 +1266,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Overrides the base implementation to refresh metadata for local trailers.
+        /// The base implementation to refresh metadata.
         /// </summary>
         /// <param name="options">The options.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -1363,9 +1363,7 @@ namespace MediaBrowser.Controller.Entities
 
         protected virtual FileSystemMetadata[] GetFileSystemChildren(IDirectoryService directoryService)
         {
-            var path = ContainingFolderPath;
-
-            return directoryService.GetFileSystemEntries(path);
+            return directoryService.GetFileSystemEntries(ContainingFolderPath);
         }
 
         private async Task<bool> RefreshExtras(BaseItem item, MetadataRefreshOptions options, IReadOnlyList<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
@@ -1394,6 +1392,23 @@ namespace MediaBrowser.Controller.Entities
                 return RefreshMetadataForOwnedItem(i, true, subOptions, cancellationToken);
             });
 
+            // Cleanup removed extras
+            var removedExtraIds = item.ExtraIds.Where(e => !newExtraIds.Contains(e)).ToArray();
+            if (removedExtraIds.Length > 0)
+            {
+                var removedExtras = LibraryManager.GetItemList(new InternalItemsQuery()
+                {
+                    ItemIds = removedExtraIds
+                });
+                foreach (var removedExtra in removedExtras)
+                {
+                    LibraryManager.DeleteItem(removedExtra, new DeleteOptions()
+                    {
+                        DeleteFileLocation = false
+                    });
+                }
+            }
+
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
             item.ExtraIds = newExtraIds;
@@ -1408,6 +1423,22 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual bool RequiresRefresh()
         {
+            if (string.IsNullOrEmpty(Path) || DateModified == default)
+            {
+                return false;
+            }
+
+            var info = FileSystem.GetFileSystemInfo(Path);
+            if (info.Exists)
+            {
+                if (info.IsDirectory)
+                {
+                    return info.LastWriteTimeUtc != DateModified;
+                }
+
+                return info.LastWriteTimeUtc != DateModified && info.Length != (Size ?? 0);
+            }
+
             return false;
         }
 

@@ -559,6 +559,7 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<ISubtitleParser, SubtitleEditParser>();
             serviceCollection.AddSingleton<ISubtitleEncoder, SubtitleEncoder>();
+            serviceCollection.AddSingleton<IKeyframeManager, KeyframeManager>();
 
             serviceCollection.AddSingleton<IAttachmentExtractor, MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor>();
 

@@ -220,10 +220,14 @@ namespace MediaBrowser.Providers.MediaInfo
                 mediaAttachments = mediaInfo.MediaAttachments;
                 video.TotalBitrate = mediaInfo.Bitrate;
                 video.RunTimeTicks = mediaInfo.RunTimeTicks;
-                video.Size = mediaInfo.Size;
                 video.Container = mediaInfo.Container;
+                var videoType = video.VideoType;
+                if (videoType == VideoType.BluRay || videoType == VideoType.Dvd)
+                {
+                    video.Size = mediaInfo.Size;
+                }
 
-                chapters = mediaInfo.Chapters ?? Array.Empty<ChapterInfo>();
+                chapters = mediaInfo.Chapters ?? [];
                 if (blurayInfo is not null)
                 {
                     FetchBdInfo(video, ref chapters, mediaStreams, blurayInfo);
@@ -240,8 +244,8 @@ namespace MediaBrowser.Providers.MediaInfo
                     }
                 }
 
-                mediaAttachments = Array.Empty<MediaAttachment>();
-                chapters = Array.Empty<ChapterInfo>();
+                mediaAttachments = [];
+                chapters = [];
             }
 
             var libraryOptions = _libraryManager.GetLibraryOptions(video);
@@ -406,7 +410,7 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 if (video.Genres.Length == 0 || replaceData)
                 {
-                    video.Genres = Array.Empty<string>();
+                    video.Genres = [];
 
                     foreach (var genre in data.Genres.Trimmed())
                     {
@@ -649,7 +653,7 @@ namespace MediaBrowser.Providers.MediaInfo
             long dummyChapterDuration = TimeSpan.FromSeconds(_config.Configuration.DummyChapterDuration).Ticks;
             if (runtime <= dummyChapterDuration)
             {
-                return Array.Empty<ChapterInfo>();
+                return [];
             }
 
             int chapterCount = (int)(runtime / dummyChapterDuration);
