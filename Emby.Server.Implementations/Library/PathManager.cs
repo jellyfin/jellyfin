@@ -29,9 +29,9 @@ public class PathManager : IPathManager
         _appPaths = appPaths;
     }
 
-    private string SubtitleCachePath => Path.Combine(_appPaths.DataPath, "subtitles");
+    private string SubtitleCachePath => Path.Join(_appPaths.DataPath, "subtitles");
 
-    private string AttachmentCachePath => Path.Combine(_appPaths.DataPath, "attachments");
+    private string AttachmentCachePath => Path.Join(_appPaths.DataPath, "attachments");
 
     /// <inheritdoc />
     public string GetAttachmentPath(string mediaSourceId, string fileName)
@@ -67,7 +67,21 @@ public class PathManager : IPathManager
         var id = item.Id.ToString("D", CultureInfo.InvariantCulture).AsSpan();
 
         return saveWithMedia
-            ? Path.Combine(item.ContainingFolderPath, Path.ChangeExtension(item.Path, ".trickplay"))
+            ? Path.Join(item.ContainingFolderPath, Path.ChangeExtension(item.Path, ".trickplay"))
             : Path.Join(_config.ApplicationPaths.TrickplayPath, id[..2], id);
+    }
+
+    /// <inheritdoc/>
+    public string GetChapterImageFolderPath(BaseItem item)
+    {
+        return Path.Join(item.GetInternalMetadataPath(), "chapters");
+    }
+
+    /// <inheritdoc/>
+    public string GetChapterImagePath(BaseItem item, long chapterPositionTicks)
+    {
+        var filename = item.DateModified.Ticks.ToString(CultureInfo.InvariantCulture) + "_" + chapterPositionTicks.ToString(CultureInfo.InvariantCulture) + ".jpg";
+
+        return Path.Join(GetChapterImageFolderPath(item), filename);
     }
 }
