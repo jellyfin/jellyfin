@@ -61,7 +61,7 @@ public class BackupService : IBackupService
     /// <inheritdoc/>
     public void ScheduleRestoreAndRestartServer(string archivePath)
     {
-        _applicationHost.RestoreBackup = archivePath;
+        _applicationHost.RestoreBackupPath = archivePath;
         _applicationHost.ShouldRestart = true;
         _applicationHost.NotifyPendingRestart();
     }

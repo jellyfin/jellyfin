@@ -41,7 +41,7 @@ namespace MediaBrowser.Controller
         /// <summary>
         /// Gets or sets the path to the backup archive used to restore upon restart.
         /// </summary>
-        string RestoreBackup { get; set; }
+        string RestoreBackupPath { get; set; }
 
         /// <summary>
         /// Gets a URL specific for the request.

@@ -208,7 +208,7 @@ namespace Jellyfin.Server
 
                 await _jellyfinHost.WaitForShutdownAsync().ConfigureAwait(false);
                 _restartOnShutdown = appHost.ShouldRestart;
-                _restoreFromBackup = appHost.RestoreBackup;
+                _restoreFromBackup = appHost.RestoreBackupPath;
             }
             catch (Exception ex)
             {
