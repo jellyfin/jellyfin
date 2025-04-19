@@ -112,7 +112,8 @@ namespace Jellyfin.Server.Migrations.Routines
                     {
                         Id = entry.GetGuid(1),
                         InternalId = entry.GetInt64(0),
-                        MaxParentalAgeRating = policy.MaxParentalRating,
+                        MaxParentalRatingScore = policy.MaxParentalRating,
+                        MaxParentalRatingSubScore = null,
                         EnableUserPreferenceAccess = policy.EnableUserPreferenceAccess,
                         RemoteClientBitrateLimit = policy.RemoteClientBitrateLimit,
                         InvalidLoginAttemptCount = policy.InvalidLoginAttemptCount,

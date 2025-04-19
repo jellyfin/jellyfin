@@ -198,14 +198,25 @@ public static partial class NetworkUtils
     /// <returns><c>True</c> if parsing was successful.</returns>
     public static bool TryParseToSubnet(ReadOnlySpan<char> value, [NotNullWhen(true)] out IPNetwork? result, bool negated = false)
     {
+        // If multiple IP addresses are in a comma-separated string, the individual addresses may contain leading and/or trailing whitespace
         value = value.Trim();
+
+        bool isAddressNegated = false;
+        if (value.StartsWith('!'))
+        {
+            isAddressNegated = true;
+            value = value[1..]; // Remove leading '!' character
+        }
+
+        if (isAddressNegated != negated)
+        {
+            result = null;
+            return false;
+        }
+
         if (value.Contains('/'))
         {
-            if (negated && value.StartsWith("!") && IPNetwork.TryParse(value[1..], out result))
-            {
-                return true;
-            }
-            else if (!negated && IPNetwork.TryParse(value, out result))
+            if (IPNetwork.TryParse(value, out result))
             {
                 return true;
             }

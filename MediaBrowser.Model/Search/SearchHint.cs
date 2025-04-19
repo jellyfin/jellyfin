@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using Jellyfin.Data.Enums;
 
 namespace MediaBrowser.Model.Search
@@ -115,6 +116,7 @@ namespace MediaBrowser.Model.Search
         /// Gets or sets the type of the media.
         /// </summary>
         /// <value>The type of the media.</value>
+        [DefaultValue(MediaType.Unknown)]
         public MediaType MediaType { get; set; }
 
         /// <summary>

@@ -505,6 +505,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IChapterRepository, ChapterRepository>();
             serviceCollection.AddSingleton<IMediaAttachmentRepository, MediaAttachmentRepository>();
             serviceCollection.AddSingleton<IMediaStreamRepository, MediaStreamRepository>();
+            serviceCollection.AddSingleton<IKeyframeRepository, KeyframeRepository>();
             serviceCollection.AddSingleton<IItemTypeLookup, ItemTypeLookup>();
 
             serviceCollection.AddSingleton<IMediaEncoder, MediaBrowser.MediaEncoding.Encoder.MediaEncoder>();

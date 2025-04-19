@@ -25,7 +25,7 @@ public class AttachmentStreamInfo
     /// <summary>
     /// Gets or Sets the codec of the attachment.
     /// </summary>
-    public required string Codec { get; set; }
+    public string? Codec { get; set; }
 
     /// <summary>
     /// Gets or Sets the codec tag of the attachment.

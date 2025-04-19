@@ -1727,7 +1727,8 @@ public class ImageController : BaseJellyfinApiController
         [FromQuery, Range(0, 100)] int quality = 90)
     {
         var brandingOptions = _serverConfigurationManager.GetConfiguration<BrandingOptions>("branding");
-        if (!brandingOptions.SplashscreenEnabled)
+        var isAdmin = User.IsInRole(Constants.UserRoles.Administrator);
+        if (!brandingOptions.SplashscreenEnabled && !isAdmin)
         {
             return NotFound();
         }

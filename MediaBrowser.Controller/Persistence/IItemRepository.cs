@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
@@ -58,6 +59,14 @@ public interface IItemRepository
     /// <param name="filter">The query.</param>
     /// <returns>List&lt;BaseItem&gt;.</returns>
     IReadOnlyList<BaseItem> GetItemList(InternalItemsQuery filter);
+
+    /// <summary>
+    /// Gets the item list. Used mainly by the Latest api endpoint.
+    /// </summary>
+    /// <param name="filter">The query.</param>
+    /// <param name="collectionType">Collection Type.</param>
+    /// <returns>List&lt;BaseItem&gt;.</returns>
+    IReadOnlyList<BaseItem> GetLatestItemList(InternalItemsQuery filter, CollectionType collectionType);
 
     /// <summary>
     /// Gets the list of series presentation keys for next up.

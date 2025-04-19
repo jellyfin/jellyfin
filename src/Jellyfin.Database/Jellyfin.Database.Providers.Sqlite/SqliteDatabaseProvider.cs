@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,6 +17,7 @@ namespace Jellyfin.Database.Providers.Sqlite;
 [JellyfinDatabaseProviderKey("Jellyfin-SQLite")]
 public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
 {
+    private const string BackupFolderName = "SQLiteBackups";
     private readonly IApplicationPaths _applicationPaths;
     private readonly ILogger<SqliteDatabaseProvider> _logger;
 
@@ -83,5 +85,39 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     public void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         configurationBuilder.Conventions.Add(_ => new DoNotUseReturningClauseConvention());
+    }
+
+    /// <inheritdoc />
+    public Task<string> MigrationBackupFast(CancellationToken cancellationToken)
+    {
+        var key = DateTime.UtcNow.ToString("yyyyMMddhhmmss", CultureInfo.InvariantCulture);
+        var path = Path.Combine(_applicationPaths.DataPath, "jellyfin.db");
+        var backupFile = Path.Combine(_applicationPaths.DataPath, BackupFolderName);
+        if (!Directory.Exists(backupFile))
+        {
+            Directory.CreateDirectory(backupFile);
+        }
+
+        backupFile = Path.Combine(backupFile, $"{key}_jellyfin.db");
+        File.Copy(path, backupFile);
+        return Task.FromResult(key);
+    }
+
+    /// <inheritdoc />
+    public Task RestoreBackupFast(string key, CancellationToken cancellationToken)
+    {
+        // ensure there are absolutly no dangling Sqlite connections.
+        SqliteConnection.ClearAllPools();
+        var path = Path.Combine(_applicationPaths.DataPath, "jellyfin.db");
+        var backupFile = Path.Combine(_applicationPaths.DataPath, BackupFolderName, $"{key}_jellyfin.db");
+
+        if (!File.Exists(backupFile))
+        {
+            _logger.LogCritical("Tried to restore a backup that does not exist.");
+            return Task.CompletedTask;
+        }
+
+        File.Copy(backupFile, path, true);
+        return Task.CompletedTask;
     }
 }

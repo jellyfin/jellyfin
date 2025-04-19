@@ -178,6 +178,11 @@ public class ServerConfiguration : BaseApplicationConfiguration
     public int LibraryUpdateDuration { get; set; } = 30;
 
     /// <summary>
+    /// Gets or sets the maximum amount of items to cache.
+    /// </summary>
+    public int CacheSize { get; set; } = Environment.ProcessorCount * 100;
+
+    /// <summary>
     /// Gets or sets the image saving convention.
     /// </summary>
     /// <value>The image saving convention.</value>
@@ -199,7 +204,9 @@ public class ServerConfiguration : BaseApplicationConfiguration
 
     public bool EnableFolderView { get; set; } = false;
 
-    public bool EnableGroupingIntoCollections { get; set; } = false;
+    public bool EnableGroupingMoviesIntoCollections { get; set; } = false;
+
+    public bool EnableGroupingShowsIntoCollections { get; set; } = false;
 
     public bool DisplaySpecialsWithinSeasons { get; set; } = true;
 

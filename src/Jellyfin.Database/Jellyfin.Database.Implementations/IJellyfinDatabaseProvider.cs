@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -45,4 +46,20 @@ public interface IJellyfinDatabaseProvider
     /// <param name="cancellationToken">The token that will be used to abort the operation.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     Task RunShutdownTask(CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Runs a full Database backup that can later be restored to.
+    /// </summary>
+    /// <param name="cancellationToken">A cancelation token.</param>
+    /// <returns>A key to identify the backup.</returns>
+    /// <exception cref="NotImplementedException">May throw an NotImplementException if this operation is not supported for this database.</exception>
+    Task<string> MigrationBackupFast(CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Restores a backup that has been previously created by <see cref="MigrationBackupFast(CancellationToken)"/>.
+    /// </summary>
+    /// <param name="key">The key to the backup from which the current database should be restored from.</param>
+    /// <param name="cancellationToken">A cancelation token.</param>
+    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+    Task RestoreBackupFast(string key, CancellationToken cancellationToken);
 }

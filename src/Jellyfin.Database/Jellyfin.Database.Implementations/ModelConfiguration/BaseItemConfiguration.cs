@@ -24,7 +24,7 @@ public class BaseItemConfiguration : IEntityTypeConfiguration<BaseItemEntity>
         builder.HasMany(e => e.MediaStreams);
         builder.HasMany(e => e.Chapters);
         builder.HasMany(e => e.Provider);
-        builder.HasMany(e => e.ParentAncestors);
+        builder.HasMany(e => e.Parents);
         builder.HasMany(e => e.Children);
         builder.HasMany(e => e.LockedFields);
         builder.HasMany(e => e.TrailerTypes);

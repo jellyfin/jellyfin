@@ -2,6 +2,7 @@ using Emby.Naming.Common;
 using Emby.Naming.Video;
 using MediaBrowser.Model.Entities;
 using Xunit;
+
 using MediaType = Emby.Naming.Common.MediaType;
 
 namespace Jellyfin.Naming.Tests.Video
@@ -20,6 +21,9 @@ namespace Jellyfin.Naming.Tests.Video
         {
             Test("trailer.mp4", ExtraType.Trailer);
             Test("300-trailer.mp4", ExtraType.Trailer);
+            Test("300.trailer.mp4", ExtraType.Trailer);
+            Test("300_trailer.mp4", ExtraType.Trailer);
+            Test("300 trailer.mp4", ExtraType.Trailer);
 
             Test("theme.mp3", ExtraType.ThemeSong);
         }
@@ -43,6 +47,19 @@ namespace Jellyfin.Naming.Tests.Video
             Test("300-deletedscene.mp4", ExtraType.DeletedScene);
             Test("300-interview.mp4", ExtraType.Interview);
             Test("300-behindthescenes.mp4", ExtraType.BehindTheScenes);
+            Test("300-featurette.mp4", ExtraType.Featurette);
+            Test("300-short.mp4", ExtraType.Short);
+            Test("300-extra.mp4", ExtraType.Unknown);
+            Test("300-other.mp4", ExtraType.Unknown);
+        }
+
+        [Theory]
+        [InlineData(ExtraType.ThemeSong, "theme-music")]
+        public void TestDirectoriesAudioExtras(ExtraType type, string dirName)
+        {
+            Test(dirName + "/300.mp3", type);
+            Test("300/" + dirName + "/something.mp3", type);
+            Test("/data/something/Movies/300/" + dirName + "/whoknows.mp3", type);
         }
 
         [Theory]
@@ -52,11 +69,14 @@ namespace Jellyfin.Naming.Tests.Video
         [InlineData(ExtraType.Scene, "scenes")]
         [InlineData(ExtraType.Sample, "samples")]
         [InlineData(ExtraType.Short, "shorts")]
+        [InlineData(ExtraType.Trailer, "trailers")]
         [InlineData(ExtraType.Featurette, "featurettes")]
         [InlineData(ExtraType.Clip, "clips")]
         [InlineData(ExtraType.ThemeVideo, "backdrops")]
+        [InlineData(ExtraType.Unknown, "extra")]
         [InlineData(ExtraType.Unknown, "extras")]
-        public void TestDirectories(ExtraType type, string dirName)
+        [InlineData(ExtraType.Unknown, "other")]
+        public void TestDirectoriesVideoExtras(ExtraType type, string dirName)
         {
             Test(dirName + "/300.mp4", type);
             Test("300/" + dirName + "/something.mkv", type);
@@ -75,16 +95,56 @@ namespace Jellyfin.Naming.Tests.Video
             Test("/data/something/Movies/" + dirName + "/" + dirName + ".mp4", null);
         }
 
+        [Theory]
+        [InlineData(ExtraType.ThemeSong, "theme-music")]
+        public void TestTopLevelDirectoriesWithAudioExtraNames(ExtraType typicalType, string dirName)
+        {
+            string libraryRoot = "/data/something/" + dirName;
+            TestWithLibraryRoot(libraryRoot + "/300.mp3", libraryRoot, null);
+            TestWithLibraryRoot(libraryRoot + "/300/" + dirName + "/something.mp3", libraryRoot, typicalType);
+        }
+
+        [Theory]
+        [InlineData(ExtraType.Trailer, "trailers")]
+        [InlineData(ExtraType.ThemeVideo, "backdrops")]
+        [InlineData(ExtraType.BehindTheScenes, "behind the scenes")]
+        [InlineData(ExtraType.DeletedScene, "deleted scenes")]
+        [InlineData(ExtraType.Interview, "interviews")]
+        [InlineData(ExtraType.Scene, "scenes")]
+        [InlineData(ExtraType.Sample, "samples")]
+        [InlineData(ExtraType.Short, "shorts")]
+        [InlineData(ExtraType.Featurette, "featurettes")]
+        [InlineData(ExtraType.Unknown, "extras")]
+        [InlineData(ExtraType.Unknown, "extra")]
+        [InlineData(ExtraType.Unknown, "other")]
+        [InlineData(ExtraType.Clip, "clips")]
+        public void TestTopLevelDirectoriesWithVideoExtraNames(ExtraType typicalType, string dirName)
+        {
+            string libraryRoot = "/data/something/" + dirName;
+            TestWithLibraryRoot(libraryRoot + "/300.mp4", libraryRoot, null);
+            TestWithLibraryRoot(libraryRoot + "/300/" + dirName + "/something.mkv", libraryRoot, typicalType);
+        }
+
         [Fact]
         public void TestSample()
         {
+            Test("sample.mp4", ExtraType.Sample);
             Test("300-sample.mp4", ExtraType.Sample);
+            Test("300.sample.mp4", ExtraType.Sample);
+            Test("300_sample.mp4", ExtraType.Sample);
+            Test("300 sample.mp4", ExtraType.Sample);
         }
 
         private void Test(string input, ExtraType? expectedType)
         {
             var extraType = ExtraRuleResolver.GetExtraInfo(input, _videoOptions).ExtraType;
 
+            Assert.Equal(expectedType, extraType);
+        }
+
+        private void TestWithLibraryRoot(string input, string libraryRoot, ExtraType? expectedType)
+        {
+            var extraType = ExtraRuleResolver.GetExtraInfo(input, _videoOptions, libraryRoot).ExtraType;
             Assert.Equal(expectedType, extraType);
         }
 

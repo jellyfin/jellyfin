@@ -342,5 +342,13 @@ namespace MediaBrowser.Controller.Session
         Task RevokeUserTokens(Guid userId, string currentAccessToken);
 
         Task CloseIfNeededAsync(SessionInfo session);
+
+        /// <summary>
+        /// Used to close the livestream if needed.
+        /// </summary>
+        /// <param name="liveStreamId">The livestream id.</param>
+        /// <param name="sessionIdOrPlaySessionId">The session id or playsession id.</param>
+        /// <returns>Task.</returns>
+        Task CloseLiveStreamIfNeededAsync(string liveStreamId, string sessionIdOrPlaySessionId);
     }
 }
