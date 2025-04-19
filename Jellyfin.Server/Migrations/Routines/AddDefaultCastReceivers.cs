@@ -7,7 +7,7 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// Migration to add the default cast receivers to the system config.
 /// </summary>
-[JellyfinMigration("01/01/0001 17:00:00", nameof(AddDefaultCastReceivers), "34A1A1C4-5572-418E-A2F8-32CDFE2668E8", RunMigrationOnSetup = true)]
+[JellyfinMigration("04/20/2025 17:00:00", nameof(AddDefaultCastReceivers), "34A1A1C4-5572-418E-A2F8-32CDFE2668E8", RunMigrationOnSetup = true)]
 public class AddDefaultCastReceivers : IMigrationRoutine
 {
     private readonly IServerConfigurationManager _serverConfigurationManager;

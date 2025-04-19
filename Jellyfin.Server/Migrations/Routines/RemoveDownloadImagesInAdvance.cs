@@ -8,7 +8,7 @@ namespace Jellyfin.Server.Migrations.Routines
     /// <summary>
     /// Removes the old 'RemoveDownloadImagesInAdvance' from library options.
     /// </summary>
-    [JellyfinMigration("01/01/0001 13:00:00", nameof(RemoveDownloadImagesInAdvance), "A81F75E0-8F43-416F-A5E8-516CCAB4D8CC")]
+    [JellyfinMigration("04/20/2025 13:00:00", nameof(RemoveDownloadImagesInAdvance), "A81F75E0-8F43-416F-A5E8-516CCAB4D8CC")]
     internal class RemoveDownloadImagesInAdvance : IMigrationRoutine
     {
         private readonly ILogger<RemoveDownloadImagesInAdvance> _logger;

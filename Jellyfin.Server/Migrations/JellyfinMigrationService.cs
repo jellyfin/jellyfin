@@ -78,7 +78,11 @@ internal class JellyfinMigrationService
                 var historyRepository = dbContext.GetService<IHistoryRepository>();
 
                 await historyRepository.CreateIfNotExistsAsync().ConfigureAwait(false);
-                var startupScripts = flatApplyMigrations.Select(e => (Migration: e.Metadata, Script: historyRepository.GetInsertScript(new HistoryRow(e.BuildCodeMigrationId(), GetJellyfinVersion()))));
+                var appliedMigrations = await dbContext.Database.GetAppliedMigrationsAsync().ConfigureAwait(false);
+                var startupScripts = flatApplyMigrations
+                    .Where(e => !appliedMigrations.Any(f => f != e.BuildCodeMigrationId()))
+                    .Select(e => (Migration: e.Metadata, Script: historyRepository.GetInsertScript(new HistoryRow(e.BuildCodeMigrationId(), GetJellyfinVersion()))))
+                    .ToArray();
                 foreach (var item in startupScripts)
                 {
                     logger.LogInformation("Seed migration {Key}-{Name}.", item.Migration.Key, item.Migration.Name);
@@ -147,7 +151,8 @@ internal class JellyfinMigrationService
 
             (string Key, IInternalMigration Migration)[] pendingMigrations = [.. pendingCodeMigrations, .. pendingDatabaseMigrations];
             logger.LogInformation("There are {Pending} migrations for stage {Stage}.", pendingCodeMigrations.Length, stage);
-            foreach (var item in pendingMigrations.OrderBy(e => e.Key))
+            var migrations = pendingMigrations.OrderBy(e => e.Key).ToArray();
+            foreach (var item in migrations)
             {
                 try
                 {

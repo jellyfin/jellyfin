@@ -147,7 +147,8 @@ namespace Jellyfin.Server
             var migrationStartupServiceProvider = new ServiceCollection()
                 .AddLogging(d => d.AddSerilog())
                 .AddJellyfinDbContext(startupConfigurationManager, startupConfig)
-                .AddSingleton<IApplicationPaths>(appPaths);
+                .AddSingleton<IApplicationPaths>(appPaths)
+                .AddSingleton<ServerApplicationPaths>(appPaths);
             var startupService = migrationStartupServiceProvider.BuildServiceProvider();
             var jellyfinMigrationService = ActivatorUtilities.CreateInstance<JellyfinMigrationService>(startupService);
             await jellyfinMigrationService.CheckFirstTimeRunOrMigration(appPaths).ConfigureAwait(false);
@@ -182,10 +183,10 @@ namespace Jellyfin.Server
 
                 // Re-use the host service provider in the app host since ASP.NET doesn't allow a custom service collection.
                 appHost.ServiceProvider = _jellyfinHost.Services;
-                await appHost.InitializeServices(startupConfig).ConfigureAwait(false);
-
                 var jellyfinMigrationService = ActivatorUtilities.CreateInstance<JellyfinMigrationService>(appHost.ServiceProvider);
                 await jellyfinMigrationService.MigrateStepAsync(Migrations.Stages.JellyfinMigrationStageTypes.CoreInitialisaition, appHost.ServiceProvider).ConfigureAwait(false);
+
+                await appHost.InitializeServices(startupConfig).ConfigureAwait(false);
 
                 try
                 {
