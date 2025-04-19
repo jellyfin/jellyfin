@@ -1130,18 +1130,31 @@ public sealed class BaseItemRepository
             });
 
             result.StartIndex = filter.StartIndex ?? 0;
-            result.Items = [.. resultQuery.ToArray().Where(e => e is not null).Select(e =>
-            {
-                return (DeserialiseBaseItem(e.item, filter.SkipDeserialization), e.itemCount);
-            })];
+            result.Items =
+            [
+                .. resultQuery
+                    .AsEnumerable()
+                    .Where(e => e is not null)
+                    .Select(e =>
+                    {
+                        return (DeserialiseBaseItem(e.item, filter.SkipDeserialization), e.itemCount);
+                    })
+            ];
         }
         else
         {
             result.StartIndex = filter.StartIndex ?? 0;
-            result.Items = [.. query.Select(e => e.First()).ToArray().Where(e => e is not null).Select<BaseItemEntity, (BaseItemDto, ItemCounts?)>(e =>
-            {
-                return (DeserialiseBaseItem(e, filter.SkipDeserialization), null);
-            })];
+            result.Items =
+            [
+                .. query
+                    .Select(e => e.First())
+                    .AsEnumerable()
+                    .Where(e => e is not null)
+                    .Select<BaseItemEntity, (BaseItemDto, ItemCounts?)>(e =>
+                    {
+                        return (DeserialiseBaseItem(e, filter.SkipDeserialization), null);
+                    })
+            ];
         }
 
         return result;

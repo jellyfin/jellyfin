@@ -35,7 +35,7 @@ public static class JellyfinQueryHelperExtensions
     }
 
     /// <summary>
-    /// Builds an query that checks referenced ItemValues for a cross BaseItem lookup.
+    /// Builds a query that checks referenced ItemValues for a cross BaseItem lookup.
     /// </summary>
     /// <param name="baseQuery">The source query.</param>
     /// <param name="context">The database context.</param>
@@ -54,7 +54,7 @@ public static class JellyfinQueryHelperExtensions
     }
 
     /// <summary>
-    /// Builds an query expression that checks referenced ItemValues for a cross BaseItem lookup.
+    /// Builds a query expression that checks referenced ItemValues for a cross BaseItem lookup.
     /// </summary>
     /// <param name="context">The database context.</param>
     /// <param name="itemValueType">The type of item value to reference.</param>
@@ -112,7 +112,7 @@ public static class JellyfinQueryHelperExtensions
 
         if (oneOf.Count < 4) // arbitrary value choosen.
         {
-            // if we have 3 or less values to check against its faster to do a IN(const,const,const) lookup
+            // if we have 3 or fewer values to check against its faster to do a IN(const,const,const) lookup
             return Expression.Lambda<Func<TEntity, bool>>(Expression.Call(null, containsMethodInfo, Expression.Constant(oneOf), property.Body), parameter);
         }
 
@@ -134,8 +134,8 @@ public static class JellyfinQueryHelperExtensions
 
         private sealed class ParameterReplacerVisitor<TOutput> : ExpressionVisitor
         {
-            private ParameterExpression _source;
-            private ParameterExpression _target;
+            private readonly ParameterExpression _source;
+            private readonly ParameterExpression _target;
 
             public ParameterReplacerVisitor(ParameterExpression source, ParameterExpression target)
             {
