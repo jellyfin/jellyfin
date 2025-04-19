@@ -22,6 +22,7 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// Migration to move extracted files to the new directories.
 /// </summary>
+[JellyfinMigration("01/01/0001 22:30:00", nameof(MoveExtractedFiles), "9063b0Ef-CFF1-4EDC-9A13-74093681A89B", Stage = Stages.JellyfinMigrationStageTypes.CoreInitialisaition)]
 public class MoveExtractedFiles : IDatabaseMigrationRoutine
 {
     private readonly IApplicationPaths _appPaths;
