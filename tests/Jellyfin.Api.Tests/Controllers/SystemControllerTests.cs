@@ -26,8 +26,7 @@ namespace Jellyfin.Api.Tests.Controllers
                 Mock.Of<IServerApplicationPaths>(),
                 mockFileSystem.Object,
                 Mock.Of<INetworkManager>(),
-                Mock.Of<ISystemManager>(),
-                Mock.Of<IBackupService>());
+                Mock.Of<ISystemManager>());
 
             var result = controller.GetLogFile("DOES_NOT_EXIST.txt");
 
