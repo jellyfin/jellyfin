@@ -8,27 +8,27 @@ namespace MediaBrowser.Controller.SystemBackupService;
 public class BackupManifestDto
 {
     /// <summary>
-    /// Gets or Sets the jellyfin version this backup was created with.
+    /// Gets or sets the jellyfin version this backup was created with.
     /// </summary>
     public required Version JellyfinVersion { get; set; }
 
     /// <summary>
-    /// Gets or Sets the backup engine version this backup was created with.
+    /// Gets or sets the backup engine version this backup was created with.
     /// </summary>
     public required Version BackupEngineVersion { get; set; }
 
     /// <summary>
-    /// Gets or Sets the date this backup was created with.
+    /// Gets or sets the date this backup was created with.
     /// </summary>
     public required DateTimeOffset DateOfCreation { get; set; }
 
     /// <summary>
-    /// Gets or Sets the path to the backup on the system.
+    /// Gets or sets the path to the backup on the system.
     /// </summary>
     public string? Path { get; set; }
 
     /// <summary>
-    /// Gets or Sets the contents of the backup archive.
+    /// Gets or sets the contents of the backup archive.
     /// </summary>
     public required BackupOptionsDto ContentOptions { get; set; }
 }

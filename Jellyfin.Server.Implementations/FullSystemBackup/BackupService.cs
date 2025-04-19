@@ -22,13 +22,13 @@ namespace Jellyfin.Server.Implementations.Backup;
 /// </summary>
 public class BackupService : IBackupService
 {
+    private const string ManifestEntryName = "manifest.json";
     private readonly ILogger<BackupService> _logger;
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
     private readonly IServerApplicationHost _applicationHost;
     private readonly IServerApplicationPaths _applicationPaths;
     private readonly IJellyfinDatabaseProvider _jellyfinDatabaseProvider;
-    private static string _manifestEntryName = "manifest.json";
-    private readonly JsonSerializerOptions _serializerSettings = new JsonSerializerOptions()
+    private readonly JsonSerializerOptions _serializerSettings = new JsonSerializerOptions(JsonSerializerDefaults.General)
     {
         AllowTrailingCommas = true,
         ReferenceHandler = ReferenceHandler.IgnoreCycles,
@@ -74,112 +74,126 @@ public class BackupService : IBackupService
             throw new FileNotFoundException($"Requested backup file '{archivePath}' does not exist.");
         }
 
-        using var fileStream = File.OpenRead(archivePath);
-        using var zipArchive = new ZipArchive(fileStream, ZipArchiveMode.Read, false);
-        var zipArchiveEntry = zipArchive.GetEntry(_manifestEntryName);
-
-        if (zipArchiveEntry is null)
+        var fileStream = File.OpenRead(archivePath);
+        await using (fileStream.ConfigureAwait(false))
         {
-            throw new NotSupportedException($"The loaded archive '{archivePath}' does not appear to be a jellyfin backup as its missing the '{_manifestEntryName}'.");
-        }
+            using var zipArchive = new ZipArchive(fileStream, ZipArchiveMode.Read, false);
+            var zipArchiveEntry = zipArchive.GetEntry(ManifestEntryName);
 
-        using var manifestStream = zipArchiveEntry.Open();
-        var manifest = await JsonSerializer.DeserializeAsync<BackupManifest>(manifestStream, _serializerSettings).ConfigureAwait(false);
-
-        if (manifest!.JellyfinVersion > _applicationHost.ApplicationVersion) // newer versions of jellyfin should be able to load older versions as we have migrations.
-        {
-            throw new NotSupportedException($"The loaded archive '{archivePath}' is made for a newer version of jellyfin ({manifest.JellyfinVersion}) and cannot be loaded in this version.");
-        }
-
-        if (!TestBackupVersionCompatibility(manifest.BackupEngineVersion))
-        {
-            throw new NotSupportedException($"The loaded archive '{archivePath}' is made for a newer version of jellyfin ({manifest.JellyfinVersion}) and cannot be loaded in this version.");
-        }
-
-        static async Task CopyOverride(ZipArchiveEntry item, string targetPath)
-        {
-            using var targetStream = File.Create(targetPath);
-            using var sourceStream = item.Open();
-            await sourceStream.CopyToAsync(targetStream).ConfigureAwait(false);
-        }
-
-        async Task CopyDirectory(string source, string target)
-        {
-            if (!Directory.Exists(source))
+            if (zipArchiveEntry is null)
             {
-                Directory.CreateDirectory(source);
+                throw new NotSupportedException($"The loaded archive '{archivePath}' does not appear to be a jellyfin backup as its missing the '{ManifestEntryName}'.");
             }
 
-            var configFiles = zipArchive.Entries.Where(e => e.FullName.StartsWith(target, StringComparison.InvariantCultureIgnoreCase));
-
-            foreach (var item in configFiles)
+            BackupManifest? manifest;
+            var manifestStream = zipArchiveEntry.Open();
+            await using (manifestStream.ConfigureAwait(false))
             {
-                var targetPath = Path.Combine(source, item.FullName[target.Length..].Trim('/'));
-                _logger.LogInformation("Restore and override {File}", targetPath);
-                await CopyOverride(item, targetPath).ConfigureAwait(false);
+                manifest = await JsonSerializer.DeserializeAsync<BackupManifest>(manifestStream, _serializerSettings).ConfigureAwait(false);
             }
-        }
 
-        await CopyDirectory(_applicationPaths.ConfigurationDirectoryPath, "Config/").ConfigureAwait(false);
-        await CopyDirectory(_applicationPaths.DataPath, "Data/").ConfigureAwait(false);
-        await CopyDirectory(_applicationPaths.RootFolderPath, "Root/").ConfigureAwait(false);
-
-        var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-        await using (dbContext.ConfigureAwait(false))
-        {
-            dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
-            var entityTypes = typeof(JellyfinDbContext).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
-                .Where(e => e.PropertyType.IsAssignableTo(typeof(IQueryable)))
-                .Select(e => (Type: e, Set: e.GetValue(dbContext) as IQueryable))
-                .ToArray();
-
-            var tableNames = entityTypes.Select(f => dbContext.Model.FindEntityType(f.Type.PropertyType.GetGenericArguments()[0])!.GetSchemaQualifiedTableName()!);
-            await _jellyfinDatabaseProvider.PurgeDatabase(dbContext, tableNames).ConfigureAwait(false);
-
-            foreach (var entityType in entityTypes)
+            if (manifest!.JellyfinVersion > _applicationHost.ApplicationVersion) // newer versions of jellyfin should be able to load older versions as we have migrations.
             {
-                _logger.LogInformation("Read backup of {Table}", entityType.Type.Name);
+                throw new NotSupportedException($"The loaded archive '{archivePath}' is made for a newer version of jellyfin ({manifest.JellyfinVersion}) and cannot be loaded in this version.");
+            }
 
-                var zipEntry = zipArchive.GetEntry($"Database\\{entityType.Type.Name}.json");
-                if (zipEntry is null)
+            if (!TestBackupVersionCompatibility(manifest.BackupEngineVersion))
+            {
+                throw new NotSupportedException($"The loaded archive '{archivePath}' is made for a newer version of jellyfin ({manifest.JellyfinVersion}) and cannot be loaded in this version.");
+            }
+
+            static async Task CopyOverride(ZipArchiveEntry item, string targetPath)
+            {
+                var targetStream = File.Create(targetPath);
+                await using (targetStream.ConfigureAwait(false))
                 {
-                    _logger.LogInformation("No backup of expected table {Table} is present in backup. Continue anyway.", entityType.Type.Name);
-                    continue;
+                    var sourceStream = item.Open();
+                    await using (sourceStream.ConfigureAwait(false))
+                    {
+                        await sourceStream.CopyToAsync(targetStream).ConfigureAwait(false);
+                    }
+                }
+            }
+
+            async Task CopyDirectory(string source, string target)
+            {
+                if (!Directory.Exists(source))
+                {
+                    Directory.CreateDirectory(source);
                 }
 
-                using var zipEntryStream = zipEntry.Open();
-                {
-                    _logger.LogInformation("Restore backup of {Table}", entityType.Type.Name);
-                    var records = 0;
-                    await foreach (JsonObject item in JsonSerializer.DeserializeAsyncEnumerable<JsonObject>(zipEntryStream, _serializerSettings).ConfigureAwait(false)!)
-                    {
-                        var entity = item.Deserialize(entityType.Type.PropertyType.GetGenericArguments()[0]);
-                        if (entity is null)
-                        {
-                            throw new InvalidOperationException($"Cannot deserialize entity '{item}'");
-                        }
+                var configFiles = zipArchive.Entries.Where(e => e.FullName.StartsWith(target, StringComparison.InvariantCultureIgnoreCase));
 
-                        try
-                        {
-                            records++;
-                            dbContext.Add(entity);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Could not store entity {Entity} continue anyway.", item);
-                        }
+                foreach (var item in configFiles)
+                {
+                    var targetPath = Path.Combine(source, item.FullName[target.Length..].Trim('/'));
+                    _logger.LogInformation("Restore and override {File}", targetPath);
+                    await CopyOverride(item, targetPath).ConfigureAwait(false);
+                }
+            }
+
+            await CopyDirectory(_applicationPaths.ConfigurationDirectoryPath, "Config/").ConfigureAwait(false);
+            await CopyDirectory(_applicationPaths.DataPath, "Data/").ConfigureAwait(false);
+            await CopyDirectory(_applicationPaths.RootFolderPath, "Root/").ConfigureAwait(false);
+
+            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+            await using (dbContext.ConfigureAwait(false))
+            {
+                dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+                var entityTypes = typeof(JellyfinDbContext).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
+                    .Where(e => e.PropertyType.IsAssignableTo(typeof(IQueryable)))
+                    .Select(e => (Type: e, Set: e.GetValue(dbContext) as IQueryable))
+                    .ToArray();
+
+                var tableNames = entityTypes.Select(f => dbContext.Model.FindEntityType(f.Type.PropertyType.GetGenericArguments()[0])!.GetSchemaQualifiedTableName()!);
+                await _jellyfinDatabaseProvider.PurgeDatabase(dbContext, tableNames).ConfigureAwait(false);
+
+                foreach (var entityType in entityTypes)
+                {
+                    _logger.LogInformation("Read backup of {Table}", entityType.Type.Name);
+
+                    var zipEntry = zipArchive.GetEntry($"Database\\{entityType.Type.Name}.json");
+                    if (zipEntry is null)
+                    {
+                        _logger.LogInformation("No backup of expected table {Table} is present in backup. Continue anyway.", entityType.Type.Name);
+                        continue;
                     }
 
-                    _logger.LogInformation("Prepared to restore {Number} entries for {Table}", records, entityType.Type.Name);
+                    var zipEntryStream = zipEntry.Open();
+                    await using (zipEntryStream.ConfigureAwait(false))
+                    {
+                        _logger.LogInformation("Restore backup of {Table}", entityType.Type.Name);
+                        var records = 0;
+                        await foreach (JsonObject item in JsonSerializer.DeserializeAsyncEnumerable<JsonObject>(zipEntryStream, _serializerSettings).ConfigureAwait(false)!)
+                        {
+                            var entity = item.Deserialize(entityType.Type.PropertyType.GetGenericArguments()[0]);
+                            if (entity is null)
+                            {
+                                throw new InvalidOperationException($"Cannot deserialize entity '{item}'");
+                            }
+
+                            try
+                            {
+                                records++;
+                                dbContext.Add(entity);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, "Could not store entity {Entity} continue anyway.", item);
+                            }
+                        }
+
+                        _logger.LogInformation("Prepared to restore {Number} entries for {Table}", records, entityType.Type.Name);
+                    }
                 }
+
+                _logger.LogInformation("Try restore Database");
+                await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                _logger.LogInformation("Restored database.");
             }
 
-            _logger.LogInformation("Try restore Database");
-            await dbContext.SaveChangesAsync().ConfigureAwait(false);
-            _logger.LogInformation("Restored database.");
+            _logger.LogInformation("Restored Jellyfin system from {Date}.", manifest.DateOfCreation);
         }
-
-        _logger.LogInformation("Restored Jellyfin system from {Date}.", manifest.DateOfCreation);
     }
 
     private bool TestBackupVersionCompatibility(Version backupEngineVersion)
@@ -217,7 +231,8 @@ public class BackupService : IBackupService
 
         var backupPath = Path.Combine(backupFolder, $"jellyfin-backup-{DateTime.Now:yyyyMMddHHmmss}.zip");
         _logger.LogInformation("Attempt to create a new backup at {BackupPath}", backupPath);
-        using var fileStream = File.OpenWrite(backupPath);
+        var fileStream = File.OpenWrite(backupPath);
+        await using (fileStream.ConfigureAwait(false))
         using (var zipArchive = new ZipArchive(fileStream, ZipArchiveMode.Create, false))
         {
             _logger.LogInformation("Start backup process.");
@@ -247,27 +262,31 @@ public class BackupService : IBackupService
                         _logger.LogInformation("Begin backup of entity {Table}", entityType.Type.Name);
                         var zipEntry = zipArchive.CreateEntry($"Database\\{entityType.Type.Name}.json");
                         var entities = 0;
-                        using var zipEntryStream = zipEntry.Open();
+                        var zipEntryStream = zipEntry.Open();
+                        await using (zipEntryStream.ConfigureAwait(false))
                         {
-                            using var jsonSerializer = new Utf8JsonWriter(zipEntryStream);
-                            jsonSerializer.WriteStartArray();
-
-                            var set = GetValues(entityType.Set!, entityType.Type.PropertyType).ConfigureAwait(false);
-                            await foreach (var item in set)
+                            var jsonSerializer = new Utf8JsonWriter(zipEntryStream);
+                            await using (jsonSerializer.ConfigureAwait(false))
                             {
-                                entities++;
-                                try
-                                {
-                                    JsonSerializer.SerializeToDocument(item, _serializerSettings).WriteTo(jsonSerializer);
-                                }
-                                catch (System.Exception ex)
-                                {
-                                    _logger.LogError(ex, "Could not load entity {Entity}", item);
-                                    throw;
-                                }
-                            }
+                                jsonSerializer.WriteStartArray();
 
-                            jsonSerializer.WriteEndArray();
+                                var set = GetValues(entityType.Set!, entityType.Type.PropertyType).ConfigureAwait(false);
+                                await foreach (var item in set.ConfigureAwait(false))
+                                {
+                                    entities++;
+                                    try
+                                    {
+                                        JsonSerializer.SerializeToDocument(item, _serializerSettings).WriteTo(jsonSerializer);
+                                    }
+                                    catch (System.Exception ex)
+                                    {
+                                        _logger.LogError(ex, "Could not load entity {Entity}", item);
+                                        throw;
+                                    }
+                                }
+
+                                jsonSerializer.WriteEndArray();
+                            }
                         }
 
                         _logger.LogInformation("backup of entity {Table} with {Number} created", entityType.Type.Name, entities);
@@ -318,8 +337,11 @@ public class BackupService : IBackupService
                 CopyDirectory(Path.Combine(_applicationPaths.InternalMetadataPath), Path.Combine("Data", "metadata"));
             }
 
-            using var manifestEntry = zipArchive.CreateEntry(_manifestEntryName).Open();
-            await JsonSerializer.SerializeAsync(manifestEntry, manifest).ConfigureAwait(false);
+            var manifestStream = zipArchive.CreateEntry(ManifestEntryName).Open();
+            await using (manifestStream.ConfigureAwait(false))
+            {
+                await JsonSerializer.SerializeAsync(manifestStream, manifest).ConfigureAwait(false);
+            }
         }
 
         _logger.LogInformation("Backup created");
@@ -335,16 +357,24 @@ public class BackupService : IBackupService
         {
             try
             {
-                using var archiveStream = File.OpenRead(item);
-                using var zipStream = new ZipArchive(archiveStream, ZipArchiveMode.Read);
-                var manifestEntry = zipStream.GetEntry(_manifestEntryName);
-                if (manifestEntry is null)
-                {
-                    continue;
-                }
+                BackupManifest? manifest;
 
-                using var manifestStream = manifestEntry.Open();
-                var manifest = await JsonSerializer.DeserializeAsync<BackupManifest>(manifestStream, _serializerSettings).ConfigureAwait(false);
+                var archiveStream = File.OpenRead(item);
+                await using (archiveStream.ConfigureAwait(false))
+                {
+                    using var zipStream = new ZipArchive(archiveStream, ZipArchiveMode.Read);
+                    var manifestEntry = zipStream.GetEntry(ManifestEntryName);
+                    if (manifestEntry is null)
+                    {
+                        continue;
+                    }
+
+                    var manifestStream = manifestEntry.Open();
+                    await using (manifestStream.ConfigureAwait(false))
+                    {
+                        manifest = await JsonSerializer.DeserializeAsync<BackupManifest>(manifestStream, _serializerSettings).ConfigureAwait(false);
+                    }
+                }
 
                 if (manifest is null)
                 {

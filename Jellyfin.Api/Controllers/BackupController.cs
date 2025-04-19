@@ -1,4 +1,3 @@
-using System;
 using System.Threading.Tasks;
 using Jellyfin.Server.Implementations.Backup;
 using MediaBrowser.Common.Api;
@@ -12,7 +11,6 @@ namespace Jellyfin.Api.Controllers;
 /// <summary>
 /// The backup controller.
 /// </summary>
-[Route("Backup")]
 [Authorize(Policy = Policies.RequiresElevation)]
 public class BackupController : BaseJellyfinApiController
 {
@@ -33,11 +31,11 @@ public class BackupController : BaseJellyfinApiController
     /// <param name="backupOptions">The backup options.</param>
     /// <response code="200">Backup created.</response>
     /// <response code="403">User does not have permission to retrieve information.</response>
-    /// <returns>OK.</returns>
+    /// <returns>The created backup manifest.</returns>
     [HttpPost("Create")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<BackupManifestDto>> CreateBackup(BackupOptionsDto? backupOptions)
+    public async Task<ActionResult<BackupManifestDto>> CreateBackup([FromBody] BackupOptionsDto? backupOptions)
     {
         return Ok(await _backupService.CreateBackupAsync(backupOptions ?? new()).ConfigureAwait(false));
     }
@@ -46,14 +44,14 @@ public class BackupController : BaseJellyfinApiController
     /// Restores to a backup by restarting the server and applying the backup.
     /// </summary>
     /// <param name="archivePath">The local path to the archive to restore from.</param>
-    /// <response code="200">Backup restore started.</response>
+    /// <response code="204">Backup restore started.</response>
     /// <response code="403">User does not have permission to retrieve information.</response>
-    /// <returns>OK.</returns>
+    /// <returns>No-Content.</returns>
     [HttpPost("Restore")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public IActionResult StartRestoreBackup(string archivePath)
+    public IActionResult StartRestoreBackup([FromQuery] string archivePath)
     {
         if (!System.IO.File.Exists(archivePath))
         {
@@ -69,8 +67,8 @@ public class BackupController : BaseJellyfinApiController
     /// </summary>
     /// <response code="200">Backups available.</response>
     /// <response code="403">User does not have permission to retrieve information.</response>
-    /// <returns>OK.</returns>
-    [HttpGet("")]
+    /// <returns>The list of backups.</returns>
+    [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<BackupManifestDto[]>> GetBackups()
