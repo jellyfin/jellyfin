@@ -30,15 +30,16 @@ public class BackupController : BaseJellyfinApiController
     /// <summary>
     /// Creates a new Backup.
     /// </summary>
+    /// <param name="backupOptions">The backup options.</param>
     /// <response code="200">Backup created.</response>
     /// <response code="403">User does not have permission to retrieve information.</response>
     /// <returns>OK.</returns>
     [HttpPost("Create")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<BackupManifestDto>> CreateBackup()
+    public async Task<ActionResult<BackupManifestDto>> CreateBackup(BackupOptionsDto? backupOptions)
     {
-        return Ok(await _backupService.CreateBackupAsync().ConfigureAwait(false));
+        return Ok(await _backupService.CreateBackupAsync(backupOptions ?? new()).ConfigureAwait(false));
     }
 
     /// <summary>

@@ -13,8 +13,9 @@ public interface IBackupService
     /// <summary>
     /// Creates a new Backup zip file containing the current state of the application.
     /// </summary>
+    /// <param name="backupOptions">The backup options.</param>
     /// <returns>A task.</returns>
-    Task<BackupManifestDto> CreateBackupAsync();
+    Task<BackupManifestDto> CreateBackupAsync(BackupOptionsDto backupOptions);
 
     /// <summary>
     /// Gets a list of backups that are available to be restored from.

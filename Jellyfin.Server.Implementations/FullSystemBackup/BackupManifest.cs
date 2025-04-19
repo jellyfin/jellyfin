@@ -14,4 +14,6 @@ internal class BackupManifest
     public required DateTimeOffset DateOfCreation { get; set; }
 
     public required string[] DatabaseTables { get; set; }
+
+    public required BackupOptions ContentOptions { get; set; }
 }

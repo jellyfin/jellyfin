@@ -25,7 +25,7 @@ public class BackupService : IBackupService
     private readonly ILogger<BackupService> _logger;
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
     private readonly IServerApplicationHost _applicationHost;
-    private readonly IApplicationPaths _applicationPaths;
+    private readonly IServerApplicationPaths _applicationPaths;
     private readonly IJellyfinDatabaseProvider _jellyfinDatabaseProvider;
     private static string _manifestEntryName = "manifest.json";
     private readonly JsonSerializerOptions _serializerSettings = new JsonSerializerOptions()
@@ -48,7 +48,7 @@ public class BackupService : IBackupService
         ILogger<BackupService> logger,
         IDbContextFactory<JellyfinDbContext> dbProvider,
         IServerApplicationHost applicationHost,
-        IApplicationPaths applicationPaths,
+        IServerApplicationPaths applicationPaths,
         IJellyfinDatabaseProvider jellyfinDatabaseProvider)
     {
         _logger = logger;
@@ -122,6 +122,7 @@ public class BackupService : IBackupService
 
         await CopyDirectory(_applicationPaths.ConfigurationDirectoryPath, "Config/").ConfigureAwait(false);
         await CopyDirectory(_applicationPaths.DataPath, "Data/").ConfigureAwait(false);
+        await CopyDirectory(_applicationPaths.RootFolderPath, "Root/").ConfigureAwait(false);
 
         var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
         await using (dbContext.ConfigureAwait(false))
@@ -192,14 +193,17 @@ public class BackupService : IBackupService
     }
 
     /// <inheritdoc/>
-    public async Task<BackupManifestDto> CreateBackupAsync()
+    public async Task<BackupManifestDto> CreateBackupAsync(BackupOptionsDto backupOptions)
     {
+        // TODO: after #13888 is merged a space check should be performed to ensure enough storage capacity is available for the backup.
+
         var manifest = new BackupManifest()
         {
             DateOfCreation = DateTime.UtcNow,
             JellyfinVersion = _applicationHost.ApplicationVersion,
             DatabaseTables = null!,
             BackupEngineVersion = _backupEngineVersion,
+            ContentOptions = Map(backupOptions)
         };
 
         await _jellyfinDatabaseProvider.RunScheduledOptimisation(CancellationToken.None).ConfigureAwait(false);
@@ -295,11 +299,24 @@ public class BackupService : IBackupService
 
             CopyDirectory(Path.Combine(_applicationPaths.ConfigurationDirectoryPath, "users"), Path.Combine("Config", "users"));
             CopyDirectory(Path.Combine(_applicationPaths.ConfigurationDirectoryPath, "ScheduledTasks"), Path.Combine("Config", "ScheduledTasks"));
+            CopyDirectory(Path.Combine(_applicationPaths.RootFolderPath), "Root");
             CopyDirectory(Path.Combine(_applicationPaths.DataPath, "collections"), Path.Combine("Data", "collections"));
             CopyDirectory(Path.Combine(_applicationPaths.DataPath, "playlists"), Path.Combine("Data", "playlists"));
             CopyDirectory(Path.Combine(_applicationPaths.DataPath, "ScheduledTasks"), Path.Combine("Data", "ScheduledTasks"));
-            CopyDirectory(Path.Combine(_applicationPaths.DataPath, "subtitles"), Path.Combine("Data", "subtitles"));
-            CopyDirectory(Path.Combine(_applicationPaths.DataPath, "trickplay"), Path.Combine("Data", "trickplay"));
+            if (backupOptions.Subtitles)
+            {
+                CopyDirectory(Path.Combine(_applicationPaths.DataPath, "subtitles"), Path.Combine("Data", "subtitles"));
+            }
+
+            if (backupOptions.Trickplay)
+            {
+                CopyDirectory(Path.Combine(_applicationPaths.DataPath, "trickplay"), Path.Combine("Data", "trickplay"));
+            }
+
+            if (backupOptions.Metadata)
+            {
+                CopyDirectory(Path.Combine(_applicationPaths.InternalMetadataPath), Path.Combine("Data", "metadata"));
+            }
 
             using var manifestEntry = zipArchive.CreateEntry(_manifestEntryName).Open();
             await JsonSerializer.SerializeAsync(manifestEntry, manifest).ConfigureAwait(false);
@@ -353,6 +370,26 @@ public class BackupService : IBackupService
             DateOfCreation = manifest.DateOfCreation,
             JellyfinVersion = manifest.JellyfinVersion,
             Path = path
+        };
+    }
+
+    private static BackupOptionsDto Map(BackupOptions options)
+    {
+        return new BackupOptionsDto()
+        {
+            Metadata = options.Metadata,
+            Subtitles = options.Subtitles,
+            Trickplay = options.Trickplay
+        };
+    }
+
+    private static BackupOptions Map(BackupOptionsDto options)
+    {
+        return new BackupOptions()
+        {
+            Metadata = options.Metadata,
+            Subtitles = options.Subtitles,
+            Trickplay = options.Trickplay
         };
     }
 }
