@@ -965,7 +965,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                     // Get average bitrate info from tag "NUMBER_OF_BYTES" and "DURATION" if possible.
                     var durationInSeconds = GetRuntimeSecondsFromTags(streamInfo);
                     var bytes = GetNumberOfBytesFromTags(streamInfo);
-                    if (durationInSeconds is not null && bytes is not null)
+                    if (durationInSeconds is not null && durationInSeconds.Value >= 1 && bytes is not null)
                     {
                         bps = Convert.ToInt32(bytes * 8 / durationInSeconds, CultureInfo.InvariantCulture);
                         if (bps > 0)

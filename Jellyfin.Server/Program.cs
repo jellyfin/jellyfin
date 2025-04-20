@@ -49,7 +49,7 @@ namespace Jellyfin.Server
         public const string LoggingConfigFileSystem = "logging.json";
 
         private static readonly SerilogLoggerFactory _loggerFactory = new SerilogLoggerFactory();
-        private static SetupServer _setupServer = new();
+        private static SetupServer? _setupServer;
         private static CoreAppHost? _appHost;
         private static IHost? _jellyfinHost = null;
         private static long _startTimestamp;
@@ -78,7 +78,6 @@ namespace Jellyfin.Server
         {
             _startTimestamp = Stopwatch.GetTimestamp();
             ServerApplicationPaths appPaths = StartupHelpers.CreateApplicationPaths(options);
-            await _setupServer.RunAsync(static () => _jellyfinHost?.Services?.GetService<INetworkManager>(), appPaths, static () => _appHost).ConfigureAwait(false);
 
             // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
             Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", appPaths.LogDirectoryPath);
@@ -91,7 +90,8 @@ namespace Jellyfin.Server
 
             // Create an instance of the application configuration to use for application startup
             IConfiguration startupConfig = CreateAppConfiguration(options, appPaths);
-
+            _setupServer = new SetupServer(static () => _jellyfinHost?.Services?.GetService<INetworkManager>(), appPaths, static () => _appHost, _loggerFactory, startupConfig);
+            await _setupServer.RunAsync().ConfigureAwait(false);
             StartupHelpers.InitializeLoggingFramework(startupConfig, appPaths);
             _logger = _loggerFactory.CreateLogger("Main");
 
@@ -134,10 +134,12 @@ namespace Jellyfin.Server
                 if (_restartOnShutdown)
                 {
                     _startTimestamp = Stopwatch.GetTimestamp();
-                    _setupServer = new SetupServer();
-                    await _setupServer.RunAsync(static () => _jellyfinHost?.Services?.GetService<INetworkManager>(), appPaths, static () => _appHost).ConfigureAwait(false);
+                    await _setupServer.StopAsync().ConfigureAwait(false);
+                    await _setupServer.RunAsync().ConfigureAwait(false);
                 }
             } while (_restartOnShutdown);
+
+            _setupServer.Dispose();
         }
 
         private static async Task StartServer(IServerApplicationPaths appPaths, StartupOptions options, IConfiguration startupConfig)
@@ -174,9 +176,7 @@ namespace Jellyfin.Server
 
                 try
                 {
-                    await _setupServer.StopAsync().ConfigureAwait(false);
-                    _setupServer.Dispose();
-                    _setupServer = null!;
+                    await _setupServer!.StopAsync().ConfigureAwait(false);
                     await _jellyfinHost.StartAsync().ConfigureAwait(false);
 
                     if (!OperatingSystem.IsWindows() && startupConfig.UseUnixSocket())
