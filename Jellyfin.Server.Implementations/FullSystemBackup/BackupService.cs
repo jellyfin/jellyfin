@@ -355,6 +355,11 @@ public class BackupService : IBackupService
     /// <inheritdoc/>
     public async Task<BackupManifestDto[]> EnumerateBackups()
     {
+        if (!Directory.Exists(_applicationPaths.BackupPath))
+        {
+            return [];
+        }
+
         var archives = Directory.EnumerateFiles(_applicationPaths.BackupPath, "*.zip");
         var manifests = new List<BackupManifestDto>();
         foreach (var item in archives)
