@@ -16,7 +16,7 @@ namespace Jellyfin.Server.Migrations.Routines
     /// <summary>
     /// Fixes the data column of audio types to be deserializable.
     /// </summary>
-    [JellyfinMigration("04/20/2025 19:00:00", nameof(FixAudioData), "CF6FABC2-9FBE-4933-84A5-FFE52EF22A58")]
+    [JellyfinMigration("04/20/2025 18:00:00", nameof(FixAudioData), "CF6FABC2-9FBE-4933-84A5-FFE52EF22A58")]
     internal class FixAudioData : IMigrationRoutine
     {
         private const string DbFilename = "library.db";
