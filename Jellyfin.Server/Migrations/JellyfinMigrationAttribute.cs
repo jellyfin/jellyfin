@@ -15,7 +15,7 @@ public sealed class JellyfinMigrationAttribute : Attribute
     /// <summary>
     /// Initializes a new instance of the <see cref="JellyfinMigrationAttribute"/> class.
     /// </summary>
-    /// <param name="order">The ordering this migration should be applied to. Must be a valid DateTime formatted string.</param>
+    /// <param name="order">The ordering this migration should be applied to. Must be a valid DateTime ISO8601 formatted string.</param>
     /// <param name="name">The name of this Migration.</param>
     public JellyfinMigrationAttribute(string order, string name) : this(order, name, null)
     {
@@ -24,7 +24,7 @@ public sealed class JellyfinMigrationAttribute : Attribute
     /// <summary>
     /// Initializes a new instance of the <see cref="JellyfinMigrationAttribute"/> class for legacy migrations.
     /// </summary>
-    /// <param name="order">The ordering this migration should be applied to. Must be a valid DateTime formatted string.</param>
+    /// <param name="order">The ordering this migration should be applied to. Must be a valid DateTime ISO8601 formatted string.</param>
     /// <param name="name">The name of this Migration.</param>
     /// <param name="key">[ONLY FOR LEGACY MIGRATIONS]The unique key of this migration. Must be a valid Guid formatted string.</param>
     public JellyfinMigrationAttribute(string order, string name, string? key)
