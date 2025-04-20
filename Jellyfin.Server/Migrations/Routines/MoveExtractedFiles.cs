@@ -1,6 +1,7 @@
 #pragma warning disable CA5351 // Do Not Use Broken Cryptographic Algorithms
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -13,6 +14,7 @@ using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -82,10 +84,17 @@ public class MoveExtractedFiles : IMigrationRoutine
         Directory.CreateDirectory(AttachmentCachePath);
         do
         {
-            var results = context.BaseItems.Where(b => b.MediaType == MediaType.Video.ToString() && !b.IsVirtualItem && !b.IsFolder).OrderBy(e => e.Id).Skip(offset).Take(Limit).Select(b => new Tuple<Guid, string?>(b.Id, b.Path)).ToList();
+            var results = context.BaseItems
+                            .Include(e => e.MediaStreams!.Where(s => s.StreamType == MediaStreamTypeEntity.Subtitle && !s.IsExternal))
+                            .Where(b => b.MediaType == MediaType.Video.ToString() && !b.IsVirtualItem && !b.IsFolder)
+                            .OrderBy(e => e.Id)
+                            .Skip(offset)
+                            .Take(Limit)
+                            .Select(b => new Tuple<Guid, string?, ICollection<MediaStreamInfo>?>(b.Id, b.Path, b.MediaStreams)).ToList();
+
             foreach (var result in results)
             {
-                if (MoveSubtitleAndAttachmentFiles(result.Item1, result.Item2, context))
+                if (MoveSubtitleAndAttachmentFiles(result.Item1, result.Item2, result.Item3, context))
                 {
                     itemCount++;
                 }
@@ -117,41 +126,43 @@ public class MoveExtractedFiles : IMigrationRoutine
         _logger.LogInformation("Cleaned up left over subtitles and attachments.");
     }
 
-    private bool MoveSubtitleAndAttachmentFiles(Guid id, string? path, JellyfinDbContext context)
+    private bool MoveSubtitleAndAttachmentFiles(Guid id, string? path, ICollection<MediaStreamInfo>? mediaStreams, JellyfinDbContext context)
     {
         var itemIdString = id.ToString("N", CultureInfo.InvariantCulture);
         var modified = false;
-        var mediaStreams = context.MediaStreamInfos.Where(s => s.ItemId.Equals(id) && s.StreamType == MediaStreamTypeEntity.Subtitle && !s.IsExternal).ToList();
-        foreach (var mediaStream in mediaStreams)
+        if (mediaStreams is not null)
         {
-            if (mediaStream.Codec is null)
+            foreach (var mediaStream in mediaStreams)
             {
-                continue;
-            }
-
-            var mediaStreamIndex = mediaStream.StreamIndex;
-            var extension = GetSubtitleExtension(mediaStream.Codec);
-            var oldSubtitleCachePath = GetOldSubtitleCachePath(path, mediaStreamIndex, extension);
-            if (string.IsNullOrEmpty(oldSubtitleCachePath) || !File.Exists(oldSubtitleCachePath))
-            {
-                continue;
-            }
-
-            var newSubtitleCachePath = _pathManager.GetSubtitlePath(itemIdString, mediaStreamIndex, extension);
-            if (File.Exists(newSubtitleCachePath))
-            {
-                File.Delete(oldSubtitleCachePath);
-            }
-            else
-            {
-                var newDirectory = Path.GetDirectoryName(newSubtitleCachePath);
-                if (newDirectory is not null)
+                if (mediaStream.Codec is null)
                 {
-                    Directory.CreateDirectory(newDirectory);
-                    File.Move(oldSubtitleCachePath, newSubtitleCachePath, false);
-                    _logger.LogDebug("Moved subtitle {Index} for {Item} from {Source} to {Destination}", mediaStreamIndex, id, oldSubtitleCachePath, newSubtitleCachePath);
+                    continue;
+                }
 
-                    modified = true;
+                var mediaStreamIndex = mediaStream.StreamIndex;
+                var extension = GetSubtitleExtension(mediaStream.Codec);
+                var oldSubtitleCachePath = GetOldSubtitleCachePath(path, mediaStreamIndex, extension);
+                if (string.IsNullOrEmpty(oldSubtitleCachePath) || !File.Exists(oldSubtitleCachePath))
+                {
+                    continue;
+                }
+
+                var newSubtitleCachePath = _pathManager.GetSubtitlePath(itemIdString, mediaStreamIndex, extension);
+                if (File.Exists(newSubtitleCachePath))
+                {
+                    File.Delete(oldSubtitleCachePath);
+                }
+                else
+                {
+                    var newDirectory = Path.GetDirectoryName(newSubtitleCachePath);
+                    if (newDirectory is not null)
+                    {
+                        Directory.CreateDirectory(newDirectory);
+                        File.Move(oldSubtitleCachePath, newSubtitleCachePath, false);
+                        _logger.LogDebug("Moved subtitle {Index} for {Item} from {Source} to {Destination}", mediaStreamIndex, id, oldSubtitleCachePath, newSubtitleCachePath);
+
+                        modified = true;
+                    }
                 }
             }
         }
