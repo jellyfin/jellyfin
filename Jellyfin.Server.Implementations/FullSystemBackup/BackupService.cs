@@ -69,6 +69,7 @@ public class BackupService : IBackupService
     /// <inheritdoc/>
     public async Task RestoreBackupAsync(string archivePath)
     {
+        _logger.LogWarning("Begin restoring system to {BackupArchive}", archivePath); // Info isn't cutting it
         if (!File.Exists(archivePath))
         {
             throw new FileNotFoundException($"Requested backup file '{archivePath}' does not exist.");
@@ -136,6 +137,7 @@ public class BackupService : IBackupService
             await CopyDirectory(_applicationPaths.DataPath, "Data/").ConfigureAwait(false);
             await CopyDirectory(_applicationPaths.RootFolderPath, "Root/").ConfigureAwait(false);
 
+            _logger.LogInformation("Begin restoring Database");
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
@@ -146,7 +148,9 @@ public class BackupService : IBackupService
                     .ToArray();
 
                 var tableNames = entityTypes.Select(f => dbContext.Model.FindEntityType(f.Type.PropertyType.GetGenericArguments()[0])!.GetSchemaQualifiedTableName()!);
+                _logger.LogInformation("Begin purging database");
                 await _jellyfinDatabaseProvider.PurgeDatabase(dbContext, tableNames).ConfigureAwait(false);
+                _logger.LogInformation("Database Purged");
 
                 foreach (var entityType in entityTypes)
                 {
