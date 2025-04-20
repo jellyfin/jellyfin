@@ -12,7 +12,7 @@ namespace Jellyfin.Server.Migrations.Routines
     /// <summary>
     /// Remove duplicate entries which were caused by a bug where a file was considered to be an "Extra" to itself.
     /// </summary>
-    [JellyfinMigration("04/20/2025 08:00:00", nameof(RemoveDuplicateExtras), "ACBE17B7-8435-4A83-8B64-6FCF162CB9BD")]
+    [JellyfinMigration("2025-04-20T08:00:00", nameof(RemoveDuplicateExtras), "ACBE17B7-8435-4A83-8B64-6FCF162CB9BD")]
     internal class RemoveDuplicateExtras : IMigrationRoutine
     {
         private const string DbFilename = "library.db";

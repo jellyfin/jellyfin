@@ -7,7 +7,7 @@ namespace Jellyfin.Server.Migrations.Routines
     /// <summary>
     /// Disable transcode throttling for all installations since it is currently broken for certain video formats.
     /// </summary>
-    [JellyfinMigration("04/20/2025 05:00:00", nameof(DisableTranscodingThrottling), "4124C2CD-E939-4FFB-9BE9-9B311C413638")]
+    [JellyfinMigration("2025-04-20T05:00:00", nameof(DisableTranscodingThrottling), "4124C2CD-E939-4FFB-9BE9-9B311C413638")]
     internal class DisableTranscodingThrottling : IMigrationRoutine
     {
         private readonly ILogger<DisableTranscodingThrottling> _logger;

@@ -13,7 +13,7 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// Properly set playlist owner.
 /// </summary>
-[JellyfinMigration("04/20/2025 15:00:00", nameof(FixPlaylistOwner), "615DFA9E-2497-4DBB-A472-61938B752C5B")]
+[JellyfinMigration("2025-04-20T15:00:00", nameof(FixPlaylistOwner), "615DFA9E-2497-4DBB-A472-61938B752C5B")]
 internal class FixPlaylistOwner : IMigrationRoutine
 {
     private readonly ILogger<FixPlaylistOwner> _logger;

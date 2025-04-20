@@ -7,7 +7,7 @@ namespace Jellyfin.Server.Migrations.Routines
     /// <summary>
     /// Migration to initialize system configuration with the default plugin repository.
     /// </summary>
-    [JellyfinMigration("04/20/2025 11:00:00", nameof(ReaddDefaultPluginRepository), "5F86E7F6-D966-4C77-849D-7A7B40B68C4E", RunMigrationOnSetup = true)]
+    [JellyfinMigration("2025-04-20T11:00:00", nameof(ReaddDefaultPluginRepository), "5F86E7F6-D966-4C77-849D-7A7B40B68C4E", RunMigrationOnSetup = true)]
     public class ReaddDefaultPluginRepository : IMigrationRoutine
     {
         private readonly IServerConfigurationManager _serverConfigurationManager;

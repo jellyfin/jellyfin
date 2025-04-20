@@ -10,7 +10,7 @@ namespace Jellyfin.Server.Migrations.Routines
     /// <summary>
     /// Migrate rating levels.
     /// </summary>
-    [JellyfinMigration("04/20/2025 22:00:00", nameof(MigrateRatingLevels), "98724538-EB11-40E3-931A-252C55BDDE7A")]
+    [JellyfinMigration("2025-04-20T22:00:00", nameof(MigrateRatingLevels), "98724538-EB11-40E3-931A-252C55BDDE7A")]
     internal class MigrateRatingLevels : IDatabaseMigrationRoutine
     {
         private readonly ILogger<MigrateRatingLevels> _logger;

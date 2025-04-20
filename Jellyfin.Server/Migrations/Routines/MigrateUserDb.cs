@@ -22,7 +22,7 @@ namespace Jellyfin.Server.Migrations.Routines
     /// <summary>
     /// The migration routine for migrating the user database to EF Core.
     /// </summary>
-    [JellyfinMigration("04/20/2025 10:00:00", nameof(MigrateUserDb), "5C4B82A2-F053-4009-BD05-B6FCAD82F14C")]
+    [JellyfinMigration("2025-04-20T10:00:00", nameof(MigrateUserDb), "5C4B82A2-F053-4009-BD05-B6FCAD82F14C")]
     public class MigrateUserDb : IMigrationRoutine
     {
         private const string DbFilename = "users.db";

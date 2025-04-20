@@ -12,7 +12,7 @@ namespace Jellyfin.Server.Migrations.Routines
     /// If the deprecated logging.json file exists and has a custom config, it will be used as logging.user.json,
     /// otherwise a blank file will be created.
     /// </summary>
-    [JellyfinMigration("04/20/2025 06:00:00", nameof(CreateUserLoggingConfigFile), "EF103419-8451-40D8-9F34-D1A8E93A1679")]
+    [JellyfinMigration("2025-04-20T06:00:00", nameof(CreateUserLoggingConfigFile), "EF103419-8451-40D8-9F34-D1A8E93A1679")]
     internal class CreateUserLoggingConfigFile : IMigrationRoutine
     {
         /// <summary>

@@ -6,7 +6,7 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// Migration to update the default Jellyfin plugin repository.
 /// </summary>
-[JellyfinMigration("04/20/2025 17:00:00", nameof(UpdateDefaultPluginRepository), "852816E0-2712-49A9-9240-C6FC5FCAD1A8", RunMigrationOnSetup = true)]
+[JellyfinMigration("2025-04-20T17:00:00", nameof(UpdateDefaultPluginRepository), "852816E0-2712-49A9-9240-C6FC5FCAD1A8", RunMigrationOnSetup = true)]
 public class UpdateDefaultPluginRepository : IMigrationRoutine
 {
     private const string NewRepositoryUrl = "https://repo.jellyfin.org/files/plugin/manifest.json";
