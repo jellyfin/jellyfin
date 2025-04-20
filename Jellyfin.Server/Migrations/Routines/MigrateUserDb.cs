@@ -23,7 +23,9 @@ namespace Jellyfin.Server.Migrations.Routines
     /// The migration routine for migrating the user database to EF Core.
     /// </summary>
     [JellyfinMigration("2025-04-20T10:00:00", nameof(MigrateUserDb), "5C4B82A2-F053-4009-BD05-B6FCAD82F14C")]
+#pragma warning disable CS0618 // Type or member is obsolete
     public class MigrateUserDb : IMigrationRoutine
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         private const string DbFilename = "users.db";
 

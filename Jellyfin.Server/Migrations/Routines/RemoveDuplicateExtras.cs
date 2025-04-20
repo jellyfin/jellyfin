@@ -13,7 +13,9 @@ namespace Jellyfin.Server.Migrations.Routines
     /// Remove duplicate entries which were caused by a bug where a file was considered to be an "Extra" to itself.
     /// </summary>
     [JellyfinMigration("2025-04-20T08:00:00", nameof(RemoveDuplicateExtras), "ACBE17B7-8435-4A83-8B64-6FCF162CB9BD")]
+#pragma warning disable CS0618 // Type or member is obsolete
     internal class RemoveDuplicateExtras : IMigrationRoutine
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         private const string DbFilename = "library.db";
         private readonly ILogger<RemoveDuplicateExtras> _logger;

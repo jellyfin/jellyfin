@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Serialization;
-using HarfBuzzSharp;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Server.Migrations.Stages;
 using MediaBrowser.Common.Configuration;
@@ -36,7 +35,8 @@ internal class JellyfinMigrationService
     {
         _dbContextFactory = dbContextFactory;
         _loggerFactory = loggerFactory;
-        Migrations = [.. typeof(IMigrationRoutine).Assembly.GetTypes().Where(e => typeof(IMigrationRoutine).IsAssignableFrom(e))
+#pragma warning disable CS0618 // Type or member is obsolete
+        Migrations = [.. typeof(IMigrationRoutine).Assembly.GetTypes().Where(e => typeof(IMigrationRoutine).IsAssignableFrom(e) || typeof(IAsyncMigrationRoutine).IsAssignableFrom(e))
             .Select(e => (Type: e, Metadata: e.GetCustomAttribute<JellyfinMigrationAttribute>()))
             .Where(e => e.Metadata != null)
             .GroupBy(e => e.Metadata!.Stage)
@@ -50,6 +50,7 @@ internal class JellyfinMigrationService
 
                 return stage;
             })];
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 
     private interface IInternalMigration
@@ -189,7 +190,7 @@ internal class JellyfinMigrationService
 
         public async Task PerformAsync(ILogger logger)
         {
-            _codeMigration.Construct(_serviceProvider).Perform();
+            await _codeMigration.Perform(_serviceProvider, CancellationToken.None).ConfigureAwait(false);
 
             var historyRepository = _dbContext.GetService<IHistoryRepository>();
             var createScript = historyRepository.GetInsertScript(new HistoryRow(_codeMigration.BuildCodeMigrationId(), GetJellyfinVersion()));

@@ -8,7 +8,9 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// Migration to add the default cast receivers to the system config.
 /// </summary>
 [JellyfinMigration("2025-04-20T16:00:00", nameof(AddDefaultCastReceivers), "34A1A1C4-5572-418E-A2F8-32CDFE2668E8", RunMigrationOnSetup = true)]
+#pragma warning disable CS0618 // Type or member is obsolete
 public class AddDefaultCastReceivers : IMigrationRoutine
+#pragma warning restore CS0618 // Type or member is obsolete
 {
     private readonly IServerConfigurationManager _serverConfigurationManager;
 

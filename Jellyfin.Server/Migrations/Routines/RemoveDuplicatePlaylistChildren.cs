@@ -12,7 +12,9 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// Remove duplicate playlist entries.
 /// </summary>
 [JellyfinMigration("2025-04-20T19:00:00", nameof(RemoveDuplicatePlaylistChildren), "96C156A2-7A13-4B3B-A8B8-FB80C94D20C0")]
+#pragma warning disable CS0618 // Type or member is obsolete
 internal class RemoveDuplicatePlaylistChildren : IMigrationRoutine
+#pragma warning restore CS0618 // Type or member is obsolete
 {
     private readonly ILibraryManager _libraryManager;
     private readonly IPlaylistManager _playlistManager;

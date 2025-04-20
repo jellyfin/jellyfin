@@ -14,7 +14,9 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// Properly set playlist owner.
 /// </summary>
 [JellyfinMigration("2025-04-20T15:00:00", nameof(FixPlaylistOwner), "615DFA9E-2497-4DBB-A472-61938B752C5B")]
+#pragma warning disable CS0618 // Type or member is obsolete
 internal class FixPlaylistOwner : IMigrationRoutine
+#pragma warning restore CS0618 // Type or member is obsolete
 {
     private readonly ILogger<FixPlaylistOwner> _logger;
     private readonly ILibraryManager _libraryManager;
