@@ -50,7 +50,7 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
 
         var folder = new DirectoryInfo(parentDirPath);
         var ignoreFile = FindIgnoreFile(folder);
-        if (ignoreFile == null)
+        if (ignoreFile is null)
         {
             return false;
         }
@@ -68,7 +68,7 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
         }
 
         // If file has content, base ignoring off the content .gitignore-style rules
-        var ignoreRules = ignoreFileString.Split("\n", StringSplitOptions.RemoveEmptyEntries);
+        var ignoreRules = ignoreFileString.Split('\n', StringSplitOptions.RemoveEmptyEntries);
         var ignore = new Ignore.Ignore();
         ignore.Add(ignoreRules);
 
