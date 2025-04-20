@@ -119,7 +119,7 @@ internal class JellyfinMigrationService
                     }
 
                     logger.LogInformation("Rename old migration.xml to migration.xml.backup");
-                    File.Move(migrationConfigPath, Path.ChangeExtension(migrationConfigPath, ".xml.backup"));
+                    File.Move(migrationConfigPath, Path.ChangeExtension(migrationConfigPath, ".xml.backup"), true);
                 }
             }
         }
