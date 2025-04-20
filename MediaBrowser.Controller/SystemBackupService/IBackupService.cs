@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.SystemBackupService;
 
-namespace Jellyfin.Server.Implementations.Backup;
+namespace Jellyfin.Server.Implementations.SystemBackupService;
 
 /// <summary>
 /// Defines an interface to restore and backup the jellyfin system.

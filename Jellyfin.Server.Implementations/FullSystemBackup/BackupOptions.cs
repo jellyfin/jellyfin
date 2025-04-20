@@ -1,4 +1,4 @@
-namespace Jellyfin.Server.Implementations.Backup;
+namespace Jellyfin.Server.Implementations.FullSystemBackup;
 
 /// <summary>
 /// Defines the optional contents of the backup archive.

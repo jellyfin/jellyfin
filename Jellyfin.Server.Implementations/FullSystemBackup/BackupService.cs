@@ -9,13 +9,13 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
-using MediaBrowser.Common.Configuration;
+using Jellyfin.Server.Implementations.SystemBackupService;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.SystemBackupService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Server.Implementations.Backup;
+namespace Jellyfin.Server.Implementations.FullSystemBackup;
 
 /// <summary>
 /// Contains methods for creating and restoring backups.
@@ -164,7 +164,7 @@ public class BackupService : IBackupService
                     {
                         _logger.LogInformation("Restore backup of {Table}", entityType.Type.Name);
                         var records = 0;
-                        await foreach (JsonObject item in JsonSerializer.DeserializeAsyncEnumerable<JsonObject>(zipEntryStream, _serializerSettings).ConfigureAwait(false)!)
+                        await foreach (var item in JsonSerializer.DeserializeAsyncEnumerable<JsonObject>(zipEntryStream, _serializerSettings).ConfigureAwait(false)!)
                         {
                             var entity = item.Deserialize(entityType.Type.PropertyType.GetGenericArguments()[0]);
                             if (entity is null)
@@ -278,7 +278,7 @@ public class BackupService : IBackupService
                                     {
                                         JsonSerializer.SerializeToDocument(item, _serializerSettings).WriteTo(jsonSerializer);
                                     }
-                                    catch (System.Exception ex)
+                                    catch (Exception ex)
                                     {
                                         _logger.LogError(ex, "Could not load entity {Entity}", item);
                                         throw;

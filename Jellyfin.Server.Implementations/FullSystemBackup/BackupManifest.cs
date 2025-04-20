@@ -1,6 +1,6 @@
 using System;
 
-namespace Jellyfin.Server.Implementations.Backup;
+namespace Jellyfin.Server.Implementations.FullSystemBackup;
 
 /// <summary>
 /// Manifest type for backups internal structure.
