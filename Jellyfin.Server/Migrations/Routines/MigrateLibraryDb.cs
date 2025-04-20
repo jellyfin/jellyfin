@@ -16,10 +16,19 @@ using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
 using Jellyfin.Server.Implementations.Item;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.IO;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using BaseItemEntity = Jellyfin.Database.Implementations.Entities.BaseItemEntity;
 using Chapter = Jellyfin.Database.Implementations.Entities.Chapter;
@@ -46,16 +55,33 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
     /// <param name="provider">The database provider.</param>
     /// <param name="paths">The server application paths.</param>
     /// <param name="jellyfinDatabaseProvider">The database provider for special access.</param>
+    /// <param name="serviceProvider">The Service provider.</param>
     public MigrateLibraryDb(
         ILogger<MigrateLibraryDb> logger,
         IDbContextFactory<JellyfinDbContext> provider,
         IServerApplicationPaths paths,
-        IJellyfinDatabaseProvider jellyfinDatabaseProvider)
+        IJellyfinDatabaseProvider jellyfinDatabaseProvider,
+        IServiceProvider serviceProvider)
     {
         _logger = logger;
         _provider = provider;
         _paths = paths;
         _jellyfinDatabaseProvider = jellyfinDatabaseProvider;
+
+        BaseItem.Logger = serviceProvider.GetService<ILogger<BaseItem>>();
+        // BaseItem.ConfigurationManager = ConfigurationManager;
+        BaseItem.LibraryManager = serviceProvider.GetService<ILibraryManager>();
+        BaseItem.ProviderManager = serviceProvider.GetService<IProviderManager>();
+        BaseItem.LocalizationManager = serviceProvider.GetService<ILocalizationManager>();
+        BaseItem.ItemRepository = serviceProvider.GetService<IItemRepository>();
+        BaseItem.ChapterRepository = serviceProvider.GetService<IChapterRepository>();
+        BaseItem.FileSystem = serviceProvider.GetService<IFileSystem>();
+        BaseItem.UserDataManager = serviceProvider.GetService<IUserDataManager>();
+        BaseItem.ChannelManager = serviceProvider.GetService<IChannelManager>();
+        BaseItem.MediaSourceManager = serviceProvider.GetService<IMediaSourceManager>();
+        BaseItem.MediaSegmentManager = serviceProvider.GetService<IMediaSegmentManager>();
+        Video.RecordingsManager = serviceProvider.GetService<IRecordingsManager>();
+        Folder.UserViewManager = serviceProvider.GetService<IUserViewManager>();
     }
 
     /// <inheritdoc/>
@@ -65,6 +91,12 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 
         var dataPath = _paths.DataPath;
         var libraryDbPath = Path.Combine(dataPath, DbFilename);
+        if (!File.Exists(libraryDbPath))
+        {
+            _logger.LogError("Cannot migrate {LibraryDb} as it does not exist..", libraryDbPath);
+            return;
+        }
+
         using var connection = new SqliteConnection($"Filename={libraryDbPath};Mode=ReadOnly");
 
         var fullOperationTimer = new Stopwatch();
@@ -388,7 +420,19 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         _logger.LogInformation("Move {0} to {1}.", libraryDbPath, libraryDbPath + ".old");
         File.Move(libraryDbPath, libraryDbPath + ".old", true);
 
-        _jellyfinDatabaseProvider.RunScheduledOptimisation(CancellationToken.None).ConfigureAwait(false).GetAwaiter().GetResult();
+        BaseItem.Logger = null;
+        BaseItem.LibraryManager = null;
+        BaseItem.ProviderManager = null;
+        BaseItem.LocalizationManager = null;
+        BaseItem.ItemRepository = null;
+        BaseItem.ChapterRepository = null;
+        BaseItem.FileSystem = null;
+        BaseItem.UserDataManager = null;
+        BaseItem.ChannelManager = null;
+        BaseItem.MediaSourceManager = null;
+        BaseItem.MediaSegmentManager = null;
+        Video.RecordingsManager = null;
+        Folder.UserViewManager = null;
     }
 
     private DatabaseMigrationStep GetPreparedDbContext(string operationName)
