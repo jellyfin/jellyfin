@@ -1010,7 +1010,7 @@ public sealed class BaseItemRepository
 
         using var context = _dbProvider.CreateDbContext();
 
-        var innerQueryFilter = new InternalItemsQuery(filter.User)
+        var innerQueryFilter = TranslateQuery(context.BaseItems, context, new InternalItemsQuery(filter.User)
         {
             ExcludeItemTypes = filter.ExcludeItemTypes,
             IncludeItemTypes = filter.IncludeItemTypes,
@@ -1025,13 +1025,22 @@ public sealed class BaseItemRepository
             IsKids = filter.IsKids,
             IsNews = filter.IsNews,
             IsSeries = filter.IsSeries
-        };
+        });
+
         var innerQuery = PrepareItemQuery(context, filter)
             .Where(e => e.Type == returnType)
             .Where(e => context.ItemValues!
                 .Where(f => itemValueTypes.Contains(f.Type))
+                .Where(f => innerQueryFilter.Any(g => f.BaseItemsMap!.Any(w => w.ItemId == g.Id)))
                 .Select(f => f.CleanValue)
                 .Contains(e.CleanName));
+
+        // innerQuery = PrepareItemQuery(context, filter)
+        //     .Where(e => e.Type == returnType)
+        //     .Where(e => context.ItemValues!
+        //         .Where(f => itemValueTypes.Contains(f.Type))
+        //         .Select(f => f.CleanValue)
+        //         .Contains(e.CleanName));
 
         var outerQueryFilter = new InternalItemsQuery(filter.User)
         {
