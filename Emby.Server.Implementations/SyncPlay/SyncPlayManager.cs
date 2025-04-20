@@ -292,10 +292,7 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public GroupInfoDto GetGroup(SessionInfo session, Guid groupId)
         {
-            if (session is null)
-            {
-                throw new InvalidOperationException("Session is null!");
-            }
+            ArgumentNullException.ThrowIfNull(session);
 
             var user = _userManager.GetUserById(session.UserId);
 
