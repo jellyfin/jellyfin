@@ -164,38 +164,35 @@ public class ChapterManager : IChapterManager
                         var time = chapter.StartPositionTicks == 0 ? TimeSpan.FromTicks(Math.Min(_firstChapterTicks, video.RunTimeTicks ?? 0)) : TimeSpan.FromTicks(chapter.StartPositionTicks);
 
                         var inputPath = video.Path;
-                        if (!string.IsNullOrEmpty(path))
+                        var directoryPath = Path.GetDirectoryName(path);
+                        if (!string.IsNullOrEmpty(directoryPath))
                         {
-                            var directoryPath = Path.GetDirectoryName(path);
-                            if (!string.IsNullOrEmpty(directoryPath))
-                            {
-                                Directory.CreateDirectory(directoryPath);
-                            }
-
-                            var container = video.Container;
-                            var mediaSource = new MediaSourceInfo
-                            {
-                                VideoType = video.VideoType,
-                                IsoType = video.IsoType,
-                                Protocol = video.PathProtocol ?? MediaProtocol.File,
-                            };
-
-                            var tempFile = await _encoder.ExtractVideoImage(inputPath, container, mediaSource, video.GetDefaultVideoStream(), video.Video3DFormat, time, cancellationToken).ConfigureAwait(false);
-                            File.Copy(tempFile, path, true);
-
-                            try
-                            {
-                                _fileSystem.DeleteFile(tempFile);
-                            }
-                            catch (IOException ex)
-                            {
-                                _logger.LogError(ex, "Error deleting temporary chapter image encoding file {Path}", tempFile);
-                            }
-
-                            chapter.ImagePath = path;
-                            chapter.ImageDateModified = _fileSystem.GetLastWriteTimeUtc(path);
-                            changesMade = true;
+                            Directory.CreateDirectory(directoryPath);
                         }
+
+                        var container = video.Container;
+                        var mediaSource = new MediaSourceInfo
+                        {
+                            VideoType = video.VideoType,
+                            IsoType = video.IsoType,
+                            Protocol = video.PathProtocol ?? MediaProtocol.File,
+                        };
+
+                        var tempFile = await _encoder.ExtractVideoImage(inputPath, container, mediaSource, video.GetDefaultVideoStream(), video.Video3DFormat, time, cancellationToken).ConfigureAwait(false);
+                        File.Copy(tempFile, path, true);
+
+                        try
+                        {
+                            _fileSystem.DeleteFile(tempFile);
+                        }
+                        catch (IOException ex)
+                        {
+                            _logger.LogError(ex, "Error deleting temporary chapter image encoding file {Path}", tempFile);
+                        }
+
+                        chapter.ImagePath = path;
+                        chapter.ImageDateModified = _fileSystem.GetLastWriteTimeUtc(path);
+                        changesMade = true;
                     }
                     catch (Exception ex)
                     {
@@ -298,18 +295,15 @@ public class ChapterManager : IChapterManager
 
         foreach (var image in deadImages)
         {
-            if (!string.IsNullOrEmpty(image))
-            {
-                _logger.LogDebug("Deleting dead chapter image {Path}", image);
+            _logger.LogDebug("Deleting dead chapter image {Path}", image);
 
-                try
-                {
-                    _fileSystem.DeleteFile(image);
-                }
-                catch (IOException ex)
-                {
-                    _logger.LogError(ex, "Error deleting {Path}.", image);
-                }
+            try
+            {
+                _fileSystem.DeleteFile(image);
+            }
+            catch (IOException ex)
+            {
+                _logger.LogError(ex, "Error deleting {Path}.", image);
             }
         }
     }
