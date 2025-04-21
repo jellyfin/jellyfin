@@ -8,7 +8,7 @@ namespace MediaBrowser.Controller.Library
         {
             CreateParent = false;
             Overwrite = true;
-            Recursive = false;
+            Recursive = true;
         }
 
         public bool CreateParent { get; set; }

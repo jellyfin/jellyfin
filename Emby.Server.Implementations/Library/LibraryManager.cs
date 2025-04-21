@@ -545,20 +545,20 @@ namespace Emby.Server.Implementations.Library
                 options.MoveOnFileSystem = false;
             }
 
-            var moveOptions = new MoveOptions
-            {
-                CreateParent = true,
-                Overwrite = true,
-                Recursive = true,
-            };
-
             var children = item.IsFolder
                 ? ((Folder)item).GetRecursiveChildren(false)
                 : [];
 
-            if (options.MoveOnFileSystem && !MoveItem(item.Path, destination, itemAttributes, moveOptions))
+            if (options.MoveOnFileSystem)
             {
-                return false;
+                var moveOptions = new MoveOptions
+                {
+                    CreateParent = true,
+                    Overwrite = true,
+                    Recursive = true,
+                };
+
+                _fileSystem.MoveItem(item.Path, destination, moveOptions);
             }
 
             var sourceParent = Path.GetDirectoryName(item.Path) ?? string.Empty;
@@ -569,7 +569,7 @@ namespace Emby.Server.Implementations.Library
 
             foreach (var child in children!)
             {
-                // children are moved recursively when item is moved, just update paths in repository
+                // children are moved recursively when item is moved on file system, just update paths in repository
                 var destinationChildRelative = Path.GetRelativePath(sourceParent, child.Path);
                 var destinationChild = Path.Combine(destinationParent, destinationChildRelative);
 
@@ -587,54 +587,6 @@ namespace Emby.Server.Implementations.Library
             }
 
             ReportItemUpdated(item, parent, ItemUpdateType.MetadataEdit);
-            return true;
-        }
-
-        private bool MoveItem(string source, string destination, string logAttributes, MoveOptions options)
-        {
-            var sourceMetadata = _fileSystem.GetFileSystemInfo(source);
-            var destinationMetadata = _fileSystem.GetFileSystemInfo(destination);
-
-            try
-            {
-                _fileSystem.MoveItem(sourceMetadata.FullName, destinationMetadata.FullName, options);
-            }
-            catch (FileNotFoundException)
-            {
-                _logger.LogWarning("Could not move item, {Attributes} - {Error}", logAttributes, "Source file does not exist");
-                return false;
-            }
-            catch (DirectoryNotFoundException)
-            {
-                _logger.LogWarning("Could not move item, {Attributes} - {Error}", logAttributes, "Source directory does not exist");
-                return false;
-            }
-            catch (UnauthorizedAccessException)
-            {
-                _logger.LogWarning("Could not move item, {Attributes} - {Error}", logAttributes, "Insufficient permissions to move item");
-                return false;
-            }
-            catch (IOException) when (sourceMetadata.IsDirectory && Directory.EnumerateDirectories(sourceMetadata.FullName).Any())
-            {
-                _logger.LogWarning("Could not move item, {Attributes} - {Error}", logAttributes, "Directory contains sub-folders and cannot be moved");
-                return false;
-            }
-            catch (IOException) when (!destinationMetadata.IsDirectory)
-            {
-                _logger.LogWarning("Could not move item, {Attributes} - {Error}", logAttributes, "File exists at target path");
-                return false;
-            }
-            catch (IOException) when (destinationMetadata.IsDirectory)
-            {
-                _logger.LogWarning("Could not move item, {Attributes} - {Error}", logAttributes, "Directory exists at target path");
-                return false;
-            }
-            catch (IOException ex)
-            {
-                _logger.LogWarning("Could not move item, {Attributes} - {Error}", logAttributes, ex.Message);
-                return false;
-            }
-
             return true;
         }
 

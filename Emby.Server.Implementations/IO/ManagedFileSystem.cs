@@ -246,7 +246,7 @@ namespace Emby.Server.Implementations.IO
                 }
             }
 
-            Directory.Delete(source, true);
+            Directory.Delete(source, options.Recursive);
         }
 
         private static void CreateDirectory(string? path)
