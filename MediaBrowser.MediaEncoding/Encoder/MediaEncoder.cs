@@ -720,13 +720,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             filters.Add(scaler);
 
-            // Use ffmpeg to sample 100 (we can drop this if required using thumbnail=50 for 50 frames) frames and pick the best thumbnail. Have a fall back just in case.
-            // mpegts need larger batch size otherwise the corrupted thumbnail will be created. Larger batch size will lower the processing speed.
+            // Use ffmpeg to sample N frames and pick the best thumbnail. Have a fall back just in case.
             var enableThumbnail = !useTradeoff && useIFrame && !string.Equals("wtv", container, StringComparison.OrdinalIgnoreCase);
             if (enableThumbnail)
             {
-                var useLargerBatchSize = string.Equals("mpegts", container, StringComparison.OrdinalIgnoreCase);
-                filters.Add("thumbnail=n=" + (useLargerBatchSize ? "50" : "24"));
+                filters.Add("thumbnail=n=24");
             }
 
             // Use SW tonemap on HDR video stream only when the zscale or tonemapx filter is available.
@@ -750,14 +748,26 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var vf = string.Join(',', filters);
             var mapArg = imageStreamIndex.HasValue ? (" -map 0:" + imageStreamIndex.Value.ToString(CultureInfo.InvariantCulture)) : string.Empty;
-            var args = string.Format(CultureInfo.InvariantCulture, "-i {0}{3} -threads {4} -v quiet -vframes 1 -vf {2}{5} -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg, _threads, isAudio ? string.Empty : GetImageResolutionParameter());
+            var args = string.Format(
+                CultureInfo.InvariantCulture,
+                "-i {0}{1} -threads {2} -v quiet -vframes 1 -vf {3}{4}{5} -f image2 \"{6}\"",
+                inputPath,
+                mapArg,
+                _threads,
+                vf,
+                isAudio ? string.Empty : GetImageResolutionParameter(),
+                EncodingHelper.GetVideoSyncOption("0", EncoderVersion).Trim(), // passthrough timestamp
+                tempExtractPath);
 
             if (offset.HasValue)
             {
                 args = string.Format(CultureInfo.InvariantCulture, "-ss {0} ", GetTimeParameter(offset.Value)) + args;
             }
 
-            if (useIFrame && useTradeoff)
+            // The mpegts demuxer cannot seek to keyframes, so we have to let the
+            // decoder discard non-keyframes, which may contain corrupted images.
+            var seekMpegTs = offset.HasValue && string.Equals("mpegts", container, StringComparison.OrdinalIgnoreCase);
+            if ((useIFrame && useTradeoff) || seekMpegTs)
             {
                 args = "-skip_frame nokey " + args;
             }
