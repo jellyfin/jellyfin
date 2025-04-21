@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using MediaBrowser.Controller.Library;
 
 namespace MediaBrowser.Model.IO
 {
@@ -34,11 +35,53 @@ namespace MediaBrowser.Model.IO
         string MakeAbsolutePath(string folderPath, string filePath);
 
         /// <summary>
+        /// Moves a file or directory.
+        /// </summary>
+        /// <param name="source">Source file or directory.</param>
+        /// <param name="destination">Destination file or directory.</param>
+        // ReSharper disable once MemberCanBePrivate.Global
+        void MoveItem(string source, string destination);
+
+        /// <summary>
+        /// Moves a file or directory.
+        /// </summary>
+        /// <param name="source">Source file or directory.</param>
+        /// <param name="destination">Destination file or directory.</param>
+        /// <param name="options">Options to use for moving.</param>
+        // ReSharper disable once MemberCanBePrivate.Global
+        void MoveItem(string source, string destination, MoveOptions options);
+
+        /// <summary>
+        /// Moves a file to a new location.
+        /// </summary>
+        /// <param name="source">Source file.</param>
+        /// <param name="destination">Destination path.</param>
+        // ReSharper disable once MemberCanBePrivate.Global
+        void MoveFile(string source, string destination);
+
+        /// <summary>
+        /// Moves a file to a new location.
+        /// </summary>
+        /// <param name="source">Source file.</param>
+        /// <param name="destination">Destination path.</param>
+        /// <param name="options">Options to use for moving.</param>
+        // ReSharper disable once MemberCanBePrivate.Global
+        void MoveFile(string source, string destination, MoveOptions options);
+
+        /// <summary>
         /// Moves a directory to a new location.
         /// </summary>
         /// <param name="source">Source directory.</param>
         /// <param name="destination">Destination directory.</param>
         void MoveDirectory(string source, string destination);
+
+        /// <summary>
+        /// Moves a directory to a new location.
+        /// </summary>
+        /// <param name="source">Source directory.</param>
+        /// <param name="destination">Destination directory.</param>
+        /// <param name="options">Options to use for moving.</param>
+        void MoveDirectory(string source, string destination, MoveOptions options);
 
         /// <summary>
         /// Returns a <see cref="FileSystemMetadata" /> object for the specified file or directory path.

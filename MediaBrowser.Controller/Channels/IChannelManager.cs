@@ -30,6 +30,10 @@ namespace MediaBrowser.Controller.Channels
 
         bool EnableMediaSourceDisplay(BaseItem item);
 
+        bool CanMove(BaseItem item);
+
+        Task MoveItem(BaseItem item, string path);
+
         bool CanDelete(BaseItem item);
 
         Task DeleteItem(BaseItem item);

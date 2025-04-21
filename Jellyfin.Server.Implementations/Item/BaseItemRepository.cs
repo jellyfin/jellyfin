@@ -567,6 +567,42 @@ public sealed class BaseItemRepository
     }
 
     /// <inheritdoc  />
+    public bool MoveItem(BaseItem item, string path)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        ArgumentException.ThrowIfNullOrWhiteSpace(path);
+
+        if (item.Path == path)
+        {
+            return false;
+        }
+
+        var savePath = GetPathToSave(path);
+        if (string.IsNullOrWhiteSpace(savePath))
+        {
+            return false;
+        }
+
+        var entity = Map(item);
+        // TODO: refactor this "inconsistency"
+        entity.TopParentId = item.GetTopParent()?.Id;
+
+        using var context = _dbProvider.CreateDbContext();
+        using var transaction = context.Database.BeginTransaction();
+
+        context.BaseItems.Update(entity);
+        context.BaseItems
+            .Where(e => e.Id == entity.Id)
+            .ExecuteUpdate(f => f.SetProperty(e => e.Path, savePath));
+
+        context.SaveChanges();
+        transaction.Commit();
+
+        item.Path = path;
+        return true;
+    }
+
+    /// <inheritdoc  />
     public BaseItemDto? RetrieveItem(Guid id)
     {
         if (id.IsEmpty())

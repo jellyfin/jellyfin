@@ -472,6 +472,159 @@ namespace Emby.Server.Implementations.Library
             ReportItemRemoved(item, parent);
         }
 
+        public bool MoveItem(BaseItem item, string destination, CancellationToken cancellationToken)
+        {
+            ArgumentNullException.ThrowIfNull(item);
+
+            var parent = item.GetOwner() ?? item.GetParent();
+            var options = new MoveItemOptions();
+            return MoveItem(item, destination, parent, options, cancellationToken);
+        }
+
+        public bool MoveItem(BaseItem item, string destination, MoveItemOptions options, CancellationToken cancellationToken)
+        {
+            ArgumentNullException.ThrowIfNull(item);
+
+            var parent = item.GetOwner() ?? item.GetParent();
+            return MoveItem(item, destination, parent, options, cancellationToken);
+        }
+
+        public bool MoveItem(BaseItem item, string destination, BaseItem parent, MoveItemOptions options, CancellationToken cancellationToken)
+        {
+            ArgumentNullException.ThrowIfNull(item);
+            ArgumentException.ThrowIfNullOrWhiteSpace(destination);
+            ArgumentNullException.ThrowIfNull(options);
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (item.Path.Equals(destination, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            if (item.SourceType == SourceType.Channel)
+            {
+                if (options.MoveOnFileSystem)
+                {
+                    try
+                    {
+                        BaseItem.ChannelManager.MoveItem(item, destination).GetAwaiter().GetResult();
+                    }
+                    catch (ArgumentException)
+                    {
+                        // channel no longer installed
+                    }
+                }
+
+                options.MoveOnFileSystem = false;
+            }
+
+            var itemAttributes = string.Format(
+                CultureInfo.InvariantCulture,
+                "Type: {0}, Name: {1}, Source Path: {2}, Target Path: {3}, Id: {4}",
+                item.GetType().Name,
+                item.Name ?? "Unknown name",
+                item.Path,
+                destination,
+                item.Id);
+
+            _logger.Log(
+                item is LiveTvProgram ? LogLevel.Debug : LogLevel.Information,
+                "Moving item, {Attributes}",
+                itemAttributes);
+
+            var moveOptions = new MoveOptions
+            {
+                CreateParent = true,
+                Overwrite = true,
+                Recursive = true,
+            };
+
+            var children = item.IsFolder
+                ? ((Folder)item).GetRecursiveChildren(false)
+                : [];
+
+            if (options.MoveOnFileSystem && !MoveItem(item.Path, destination, itemAttributes, moveOptions))
+            {
+                return false;
+            }
+
+            var sourceParent = Path.GetDirectoryName(item.Path) ?? string.Empty;
+            var destinationParent = Path.GetDirectoryName(destination) ?? string.Empty;
+
+            _itemRepository.MoveItem(item, destination);
+            _cache.TryRemove(item.Id, out _);
+
+            foreach (var child in children!)
+            {
+                // children are moved recursively when item is moved, just update paths in repository
+                var destinationChildRelative = Path.GetRelativePath(sourceParent, child.Path);
+                var destinationChild = Path.Combine(destinationParent, destinationChildRelative);
+
+                _logger.Log(
+                    item is LiveTvProgram ? LogLevel.Debug : LogLevel.Information,
+                    "Moving child item, Type: {0}, Name: {1}, Source Path: {2}, Target Path: {3}, Id: {4}",
+                    child.GetType().Name,
+                    child.Name ?? "Unknown name",
+                    child.Path,
+                    destinationChild,
+                    child.Id);
+
+                _itemRepository.MoveItem(child, destinationChild);
+                _cache.TryRemove(child.Id, out _);
+            }
+
+            ReportItemUpdated(item, parent, ItemUpdateType.MetadataEdit);
+            return true;
+        }
+
+        private bool MoveItem(string source, string destination, string logAttributes, MoveOptions options)
+        {
+            var sourceMetadata = _fileSystem.GetFileSystemInfo(source);
+            var destinationMetadata = _fileSystem.GetFileSystemInfo(destination);
+
+            try
+            {
+                _fileSystem.MoveItem(sourceMetadata.FullName, destinationMetadata.FullName, options);
+            }
+            catch (FileNotFoundException)
+            {
+                _logger.LogWarning("Could not move item, {Attributes} - {Error}", logAttributes, "Source file does not exist");
+                return false;
+            }
+            catch (DirectoryNotFoundException)
+            {
+                _logger.LogWarning("Could not move item, {Attributes} - {Error}", logAttributes, "Source directory does not exist");
+                return false;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                _logger.LogWarning("Could not move item, {Attributes} - {Error}", logAttributes, "Insufficient permissions to move item");
+                return false;
+            }
+            catch (IOException) when (sourceMetadata.IsDirectory && Directory.EnumerateDirectories(sourceMetadata.FullName).Any())
+            {
+                _logger.LogWarning("Could not move item, {Attributes} - {Error}", logAttributes, "Directory contains sub-folders and cannot be moved");
+                return false;
+            }
+            catch (IOException) when (!destinationMetadata.IsDirectory)
+            {
+                _logger.LogWarning("Could not move item, {Attributes} - {Error}", logAttributes, "File exists at target path");
+                return false;
+            }
+            catch (IOException) when (destinationMetadata.IsDirectory)
+            {
+                _logger.LogWarning("Could not move item, {Attributes} - {Error}", logAttributes, "Directory exists at target path");
+                return false;
+            }
+            catch (IOException ex)
+            {
+                _logger.LogWarning("Could not move item, {Attributes} - {Error}", logAttributes, ex.Message);
+                return false;
+            }
+
+            return true;
+        }
+
         private List<string> GetMetadataPaths(BaseItem item, IEnumerable<BaseItem> children)
         {
             var list = GetInternalMetadataPaths(item);
@@ -2039,27 +2192,7 @@ namespace Emby.Server.Implementations.Library
             {
                 foreach (var item in items)
                 {
-                    // With the live tv guide this just creates too much noise
-                    if (item.SourceType != SourceType.Library)
-                    {
-                        continue;
-                    }
-
-                    try
-                    {
-                        ItemUpdated(
-                            this,
-                            new ItemChangeEventArgs
-                            {
-                                Item = item,
-                                Parent = parent,
-                                UpdateReason = updateReason
-                            });
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error in ItemUpdated event handler");
-                    }
+                    ReportItemUpdated(item, parent, updateReason);
                 }
             }
         }
@@ -2078,6 +2211,39 @@ namespace Emby.Server.Implementations.Library
             item.DateLastSaved = DateTime.UtcNow;
 
             await UpdateImagesAsync(item, updateReason >= ItemUpdateType.ImageUpdate).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Reports the item updated.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="parent">The parent item.</param>
+        /// <param name="updateReason">The update reason.</param>
+        public void ReportItemUpdated(BaseItem item, BaseItem parent, ItemUpdateType updateReason)
+        {
+            ArgumentNullException.ThrowIfNull(item);
+
+            // With the live tv guide this just creates too much noise
+            if (ItemUpdated is null || item.SourceType != SourceType.Library)
+            {
+                return;
+            }
+
+            try
+            {
+                ItemUpdated(
+                    this,
+                    new ItemChangeEventArgs
+                    {
+                        Item = item,
+                        Parent = parent,
+                        UpdateReason = updateReason
+                    });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in ItemUpdated event handler");
+            }
         }
 
         /// <summary>

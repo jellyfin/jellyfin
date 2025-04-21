@@ -361,6 +361,7 @@ namespace Jellyfin.Server.Implementations.Users
                     EnableMediaPlayback = user.HasPermission(PermissionKind.EnableMediaPlayback),
                     EnableAudioPlaybackTranscoding = user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding),
                     EnableVideoPlaybackTranscoding = user.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding),
+                    EnableContentMoving = user.HasPermission(PermissionKind.EnableContentMoving),
                     EnableContentDeletion = user.HasPermission(PermissionKind.EnableContentDeletion),
                     EnableContentDownloading = user.HasPermission(PermissionKind.EnableContentDownloading),
                     EnableSyncTranscoding = user.HasPermission(PermissionKind.EnableSyncTranscoding),
@@ -380,6 +381,7 @@ namespace Jellyfin.Server.Implementations.Users
                     EnabledChannels = user.GetPreferenceValues<Guid>(PreferenceKind.EnabledChannels),
                     EnabledDevices = user.GetPreference(PreferenceKind.EnabledDevices),
                     EnabledFolders = user.GetPreferenceValues<Guid>(PreferenceKind.EnabledFolders),
+                    EnableContentMovingFromFolders = user.GetPreference(PreferenceKind.EnableContentMovingFromFolders),
                     EnableContentDeletionFromFolders = user.GetPreference(PreferenceKind.EnableContentDeletionFromFolders),
                     SyncPlayAccess = user.SyncPlayAccess,
                     BlockedChannels = user.GetPreferenceValues<Guid>(PreferenceKind.BlockedChannels),
@@ -564,6 +566,7 @@ namespace Jellyfin.Server.Implementations.Users
             {
                 var newUser = await CreateUserInternalAsync(defaultName, dbContext).ConfigureAwait(false);
                 newUser.SetPermission(PermissionKind.IsAdministrator, true);
+                newUser.SetPermission(PermissionKind.EnableContentMoving, true);
                 newUser.SetPermission(PermissionKind.EnableContentDeletion, true);
                 newUser.SetPermission(PermissionKind.EnableRemoteControlOfOtherUsers, true);
 
@@ -689,6 +692,7 @@ namespace Jellyfin.Server.Implementations.Users
                 user.SetPermission(PermissionKind.EnableMediaPlayback, policy.EnableMediaPlayback);
                 user.SetPermission(PermissionKind.EnableAudioPlaybackTranscoding, policy.EnableAudioPlaybackTranscoding);
                 user.SetPermission(PermissionKind.EnableVideoPlaybackTranscoding, policy.EnableVideoPlaybackTranscoding);
+                user.SetPermission(PermissionKind.EnableContentMoving, policy.EnableContentMoving);
                 user.SetPermission(PermissionKind.EnableContentDeletion, policy.EnableContentDeletion);
                 user.SetPermission(PermissionKind.EnableContentDownloading, policy.EnableContentDownloading);
                 user.SetPermission(PermissionKind.EnableSyncTranscoding, policy.EnableSyncTranscoding);
@@ -717,6 +721,7 @@ namespace Jellyfin.Server.Implementations.Users
                 user.SetPreference(PreferenceKind.EnabledChannels, policy.EnabledChannels);
                 user.SetPreference(PreferenceKind.EnabledDevices, policy.EnabledDevices);
                 user.SetPreference(PreferenceKind.EnabledFolders, policy.EnabledFolders);
+                user.SetPreference(PreferenceKind.EnableContentMovingFromFolders, policy.EnableContentMovingFromFolders);
                 user.SetPreference(PreferenceKind.EnableContentDeletionFromFolders, policy.EnableContentDeletionFromFolders);
 
                 dbContext.Update(user);
