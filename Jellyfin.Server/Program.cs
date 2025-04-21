@@ -17,6 +17,7 @@ using Jellyfin.Server.Helpers;
 using Jellyfin.Server.Implementations.DatabaseConfiguration;
 using Jellyfin.Server.Implementations.Extensions;
 using Jellyfin.Server.Implementations.StorageHelpers;
+using Jellyfin.Server.Migrations;
 using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
