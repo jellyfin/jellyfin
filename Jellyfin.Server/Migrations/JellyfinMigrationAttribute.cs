@@ -31,6 +31,7 @@ public sealed class JellyfinMigrationAttribute : Attribute
     {
         Order = DateTime.Parse(order, CultureInfo.InvariantCulture);
         Name = name;
+        Stage = JellyfinMigrationStageTypes.AppInitialisation;
         if (key is not null)
         {
             Key = Guid.Parse(key);
