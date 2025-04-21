@@ -15,5 +15,10 @@ public enum JellyfinMigrationStageTypes
     /// <summary>
     /// Runs after the host has been configured and includes the database migrations.
     /// </summary>
-    CoreInitialisaition = 2
+    CoreInitialisaition = 2,
+
+    /// <summary>
+    /// Runs after services has been registered and initialised. Last step before running the server.
+    /// </summary>
+    AppInitialisation = 3
 }

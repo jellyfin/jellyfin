@@ -174,9 +174,11 @@ namespace Jellyfin.Server
 
                 // Re-use the host service provider in the app host since ASP.NET doesn't allow a custom service collection.
                 appHost.ServiceProvider = _jellyfinHost.Services;
-                await ApplyCoreMigrationsAsync(appHost.ServiceProvider).ConfigureAwait(false);
+                await ApplyCoreMigrationsAsync(appHost.ServiceProvider, Migrations.Stages.JellyfinMigrationStageTypes.CoreInitialisaition).ConfigureAwait(false);
 
                 await appHost.InitializeServices(startupConfig).ConfigureAwait(false);
+
+                await ApplyCoreMigrationsAsync(appHost.ServiceProvider, Migrations.Stages.JellyfinMigrationStageTypes.AppInitialisation).ConfigureAwait(false);
 
                 try
                 {
@@ -257,11 +259,12 @@ namespace Jellyfin.Server
         /// Not intended to be used other then by jellyfin and its tests.
         /// </remarks>
         /// <param name="serviceProvider">The service provider.</param>
+        /// <param name="jellyfinMigrationStage">The stage to run.</param>
         /// <returns>A task.</returns>
-        public static async Task ApplyCoreMigrationsAsync(IServiceProvider serviceProvider)
+        public static async Task ApplyCoreMigrationsAsync(IServiceProvider serviceProvider, Migrations.Stages.JellyfinMigrationStageTypes jellyfinMigrationStage)
         {
             var jellyfinMigrationService = ActivatorUtilities.CreateInstance<JellyfinMigrationService>(serviceProvider);
-            await jellyfinMigrationService.MigrateStepAsync(Migrations.Stages.JellyfinMigrationStageTypes.CoreInitialisaition, serviceProvider).ConfigureAwait(false);
+            await jellyfinMigrationService.MigrateStepAsync(jellyfinMigrationStage, serviceProvider).ConfigureAwait(false);
         }
 
         /// <summary>
