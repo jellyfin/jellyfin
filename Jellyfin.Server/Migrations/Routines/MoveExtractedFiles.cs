@@ -76,7 +76,7 @@ public class MoveExtractedFiles : IMigrationRoutine
         var sw = Stopwatch.StartNew();
 
         using var context = _dbProvider.CreateDbContext();
-        var records = context.BaseItems.Where(b => b.MediaType == MediaType.Video.ToString() && !b.IsVirtualItem && !b.IsFolder).Count();
+        var records = context.BaseItems.Count(b => b.MediaType == MediaType.Video.ToString() && !b.IsVirtualItem && !b.IsFolder);
         _logger.LogInformation("Checking {Count} items for movable extracted files.", records);
 
         // Make sure directories exist

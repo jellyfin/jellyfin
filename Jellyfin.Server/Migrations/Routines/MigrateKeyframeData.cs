@@ -62,14 +62,15 @@ public class MigrateKeyframeData : IDatabaseMigrationRoutine
         var sw = Stopwatch.StartNew();
 
         using var context = _dbProvider.CreateDbContext();
-        var records = context.BaseItems.Where(b => b.MediaType == MediaType.Video.ToString() && !b.IsVirtualItem && !b.IsFolder).Count();
+        var baseQuery = context.BaseItems.Where(b => b.MediaType == MediaType.Video.ToString() && !b.IsVirtualItem && !b.IsFolder).OrderBy(e => e.Id);
+        var records = baseQuery.Count();
         _logger.LogInformation("Checking {Count} items for importable keyframe data.", records);
 
         context.KeyframeData.ExecuteDelete();
         using var transaction = context.Database.BeginTransaction();
         do
         {
-            var results = context.BaseItems.Where(b => b.MediaType == MediaType.Video.ToString() && !b.IsVirtualItem && !b.IsFolder).OrderBy(e => e.Id).Skip(offset).Take(Limit).Select(b => new Tuple<Guid, string?>(b.Id, b.Path)).ToList();
+            var results = baseQuery.Skip(offset).Take(Limit).Select(b => new Tuple<Guid, string?>(b.Id, b.Path)).ToList();
             foreach (var result in results)
             {
                 if (TryGetKeyframeData(result.Item1, result.Item2, out var data))
