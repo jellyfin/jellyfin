@@ -501,6 +501,33 @@ namespace Emby.Server.Implementations.Library
                 return false;
             }
 
+            var itemAttributes = string.Format(
+                CultureInfo.InvariantCulture,
+                "Type: {0}, Name: {1}, Source Path: {2}, Target Path: {3}, Id: {4}",
+                item.GetType().Name,
+                item.Name ?? "Unknown name",
+                item.Path,
+                destination,
+                item.Id);
+
+            _logger.Log(
+                item is LiveTvProgram ? LogLevel.Debug : LogLevel.Information,
+                "Moving item, {Attributes}",
+                itemAttributes);
+
+            switch (item.IsFolder)
+            {
+                case true when Path.HasExtension(destination):
+                    throw new IOException("Item is a folder and the given destination is a file path");
+                case false when Path.GetExtension(item.Path) != Path.GetExtension(destination):
+                    throw new IOException("Operation would change the file extension");
+            }
+
+            if (Path.GetRelativePath(item.GetTopParent().Path, destination) == destination)
+            {
+                throw new IOException("Operation would move the item out of the current library");
+            }
+
             if (item.SourceType == SourceType.Channel)
             {
                 if (options.MoveOnFileSystem)
@@ -517,20 +544,6 @@ namespace Emby.Server.Implementations.Library
 
                 options.MoveOnFileSystem = false;
             }
-
-            var itemAttributes = string.Format(
-                CultureInfo.InvariantCulture,
-                "Type: {0}, Name: {1}, Source Path: {2}, Target Path: {3}, Id: {4}",
-                item.GetType().Name,
-                item.Name ?? "Unknown name",
-                item.Path,
-                destination,
-                item.Id);
-
-            _logger.Log(
-                item is LiveTvProgram ? LogLevel.Debug : LogLevel.Information,
-                "Moving item, {Attributes}",
-                itemAttributes);
 
             var moveOptions = new MoveOptions
             {

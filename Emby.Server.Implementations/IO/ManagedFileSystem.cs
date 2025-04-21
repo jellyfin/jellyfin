@@ -192,11 +192,11 @@ namespace Emby.Server.Implementations.IO
             catch (IOException)
             {
                 // Cross device move requires a copy
-                MoveFileAsCopy(source, destination, options);
+                MoveFileViaCopy(source, destination, options);
             }
         }
 
-        private void MoveFileAsCopy(string source, string destination, MoveOptions options)
+        private void MoveFileViaCopy(string source, string destination, MoveOptions options)
         {
             File.Copy(source, destination, options.Overwrite);
             DeleteFile(source);
@@ -224,17 +224,17 @@ namespace Emby.Server.Implementations.IO
             catch (IOException)
             {
                 // Cross device move requires a copy
-                MoveDirectoryAsCopy(source, destination, options);
+                MoveDirectoryViaCopy(source, destination, options);
             }
         }
 
-        private void MoveDirectoryAsCopy(string source, string destination, MoveOptions options)
+        private void MoveDirectoryViaCopy(string source, string destination, MoveOptions options)
         {
             CreateDirectory(destination);
             foreach (string file in Directory.EnumerateFiles(source))
             {
                 var destinationFile = Path.Combine(destination, Path.GetFileName(file));
-                MoveFileAsCopy(source, destinationFile, options);
+                MoveFileViaCopy(source, destinationFile, options);
             }
 
             if (options.Recursive)
@@ -242,7 +242,7 @@ namespace Emby.Server.Implementations.IO
                 foreach (var sourceSub in Directory.EnumerateDirectories(source))
                 {
                     var destinationSub = Path.Combine(destination, new DirectoryInfo(source).Name);
-                    MoveDirectoryAsCopy(sourceSub, destinationSub, options);
+                    MoveDirectoryViaCopy(sourceSub, destinationSub, options);
                 }
             }
 
