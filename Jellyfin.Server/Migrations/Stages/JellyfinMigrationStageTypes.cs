@@ -9,11 +9,13 @@ public enum JellyfinMigrationStageTypes
 {
     /// <summary>
     /// Runs before services are initialised.
+    /// Reserved for migrations that are modifying the application server itself. Should be avoided if possible.
     /// </summary>
     PreInitialisation = 1,
 
     /// <summary>
     /// Runs after the host has been configured and includes the database migrations.
+    /// Allows the mix order of migrations that contain application code and database changes.
     /// </summary>
     CoreInitialisaition = 2,
 
