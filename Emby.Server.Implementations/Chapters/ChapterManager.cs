@@ -178,6 +178,7 @@ public class ChapterManager : IChapterManager
                             Protocol = video.PathProtocol ?? MediaProtocol.File,
                         };
 
+                        _logger.LogInformation("Extracting chapter image for {Name} at {Path}", video.Name, inputPath);
                         var tempFile = await _encoder.ExtractVideoImage(inputPath, container, mediaSource, video.GetDefaultVideoStream(), video.Video3DFormat, time, cancellationToken).ConfigureAwait(false);
                         File.Copy(tempFile, path, true);
 
@@ -257,6 +258,7 @@ public class ChapterManager : IChapterManager
         {
             if (Directory.Exists(path))
             {
+                _logger.LogInformation("Removing chapter images for {Name} [{Id}]", video.Name, video.Id);
                 Directory.Delete(path, true);
             }
         }
@@ -288,8 +290,9 @@ public class ChapterManager : IChapterManager
 
     private void DeleteDeadImages(IEnumerable<string> images, IEnumerable<ChapterInfo> chapters)
     {
+        var existingImages = chapters.Select(i => i.ImagePath).Where(i => !string.IsNullOrEmpty(i));
         var deadImages = images
-            .Except(chapters.Select(i => i.ImagePath).Where(i => !string.IsNullOrEmpty(i)), StringComparer.OrdinalIgnoreCase)
+            .Except(existingImages, StringComparer.OrdinalIgnoreCase)
             .Where(i => BaseItem.SupportedImageExtensions.Contains(Path.GetExtension(i.AsSpan()), StringComparison.OrdinalIgnoreCase))
             .ToList();
 
@@ -299,7 +302,7 @@ public class ChapterManager : IChapterManager
 
             try
             {
-                _fileSystem.DeleteFile(image);
+                _fileSystem.DeleteFile(image!);
             }
             catch (IOException ex)
             {
