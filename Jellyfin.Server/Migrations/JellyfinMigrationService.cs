@@ -130,7 +130,13 @@ internal class JellyfinMigrationService
     {
         var logger = _loggerFactory.CreateLogger<JellyfinMigrationService>();
         logger.LogInformation("Migrate stage {Stage}.", stage);
-        var migrationStage = Migrations.First(e => e.Stage == stage);
+        var migrationStage = Migrations.FirstOrDefault(e => e.Stage == stage);
+        if (migrationStage is null)
+        {
+            logger.LogInformation("No migrations for stage {Stage}.", stage);
+            return;
+        }
+
         var dbContext = await _dbContextFactory.CreateDbContextAsync().ConfigureAwait(false);
         await using (dbContext.ConfigureAwait(false))
         {
