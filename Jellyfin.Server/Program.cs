@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -15,7 +16,7 @@ using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Helpers;
 using Jellyfin.Server.Implementations.DatabaseConfiguration;
 using Jellyfin.Server.Implementations.Extensions;
-using Jellyfin.Server.Migrations;
+using Jellyfin.Server.Implementations.StorageHelpers;
 using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
@@ -122,6 +123,8 @@ namespace Jellyfin.Server
                     return;
                 }
             }
+
+            StorageHelper.TestCommonPathsForStorageCapacity(appPaths, _loggerFactory.CreateLogger<Startup>());
 
             StartupHelpers.PerformStaticInitialization();
 
