@@ -813,12 +813,12 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual bool IsAuthorizedToMove(User user, List<Folder> allCollectionFolders)
         {
-            if (user.HasPermission(PermissionKind.EnableContentMoving))
+            if (user.HasPermission(PermissionKind.EnableContentMove))
             {
                 return true;
             }
 
-            var allowed = user.GetPreferenceValues<Guid>(PreferenceKind.EnableContentMovingFromFolders);
+            var allowed = user.GetPreferenceValues<Guid>(PreferenceKind.EnableContentMoveFromFolders);
 
             if (SourceType == SourceType.Channel)
             {

@@ -19,8 +19,8 @@ namespace MediaBrowser.Model.Users
             EnableCollectionManagement = false;
             EnableSubtitleManagement = false;
 
-            EnableContentMoving = false;
-            EnableContentMovingFromFolders = Array.Empty<string>();
+            EnableContentMove = false;
+            EnableContentMoveFromFolders = Array.Empty<string>();
             EnableContentDeletion = false;
             EnableContentDeletionFromFolders = Array.Empty<string>();
 
@@ -145,11 +145,11 @@ namespace MediaBrowser.Model.Users
 
         public bool ForceRemoteSourceTranscoding { get; set; }
 
-        public bool EnableContentMoving { get; set; }
+        public bool EnableContentMove { get; set; }
 
         public bool EnableContentDeletion { get; set; }
 
-        public string[] EnableContentMovingFromFolders { get; set; }
+        public string[] EnableContentMoveFromFolders { get; set; }
 
         public string[] EnableContentDeletionFromFolders { get; set; }
 

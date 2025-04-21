@@ -7,8 +7,14 @@ namespace MediaBrowser.Controller.Library
         public MoveItemOptions()
         {
             MoveOnFileSystem = true;
+            UpdatePathInDb = true;
+            Overwrite = false;
         }
 
         public bool MoveOnFileSystem { get; set; }
+
+        public bool UpdatePathInDb { get; set; }
+
+        public bool Overwrite { get; set; }
     }
 }

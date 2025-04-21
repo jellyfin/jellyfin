@@ -175,7 +175,7 @@ public static class UserEntityExtensions
         entity.Permissions.Add(new Permission(PermissionKind.EnableAllChannels, true));
         entity.Permissions.Add(new Permission(PermissionKind.EnableAllDevices, true));
         entity.Permissions.Add(new Permission(PermissionKind.EnableAllFolders, true));
-        entity.Permissions.Add(new Permission(PermissionKind.EnableContentMoving, false));
+        entity.Permissions.Add(new Permission(PermissionKind.EnableContentMove, false));
         entity.Permissions.Add(new Permission(PermissionKind.EnableContentDeletion, false));
         entity.Permissions.Add(new Permission(PermissionKind.EnableContentDownloading, true));
         entity.Permissions.Add(new Permission(PermissionKind.EnableMediaConversion, true));

@@ -311,24 +311,24 @@ namespace Emby.Server.Implementations.Library
             _cache.AddOrUpdate(item.Id, item);
         }
 
-        public bool MoveItem(BaseItem item, string destination, CancellationToken cancellationToken)
+        public void MoveItem(BaseItem item, string destination, CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(item);
 
             var parent = item.GetOwner() ?? item.GetParent();
             var options = new MoveItemOptions();
-            return MoveItem(item, destination, parent, options, cancellationToken);
+            MoveItem(item, destination, parent, options, cancellationToken);
         }
 
-        public bool MoveItem(BaseItem item, string destination, MoveItemOptions options, CancellationToken cancellationToken)
+        public void MoveItem(BaseItem item, string destination, MoveItemOptions options, CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(item);
 
             var parent = item.GetOwner() ?? item.GetParent();
-            return MoveItem(item, destination, parent, options, cancellationToken);
+            MoveItem(item, destination, parent, options, cancellationToken);
         }
 
-        public bool MoveItem(BaseItem item, string destination, BaseItem parent, MoveItemOptions options, CancellationToken cancellationToken)
+        public void MoveItem(BaseItem item, string destination, BaseItem parent, MoveItemOptions options, CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(item);
             ArgumentException.ThrowIfNullOrWhiteSpace(destination);
@@ -337,7 +337,7 @@ namespace Emby.Server.Implementations.Library
 
             if (item.Path.Equals(destination, StringComparison.Ordinal))
             {
-                return false;
+                throw new IOException("Source and destination paths are the same");
             }
 
             var itemAttributes = string.Format(
@@ -349,9 +349,18 @@ namespace Emby.Server.Implementations.Library
                 destination,
                 item.Id);
 
+            var logMessage = (options.MoveOnFileSystem, options.UpdatePathInDb) switch
+            {
+                (true, true) => "Moving item on file system and updating path in the database",
+                (true, false) => "Moving item on the file system only",
+                (false, true) => "Updating path for item",
+                _ => "Dry run moving item"
+            };
+
             _logger.Log(
                 item is LiveTvProgram ? LogLevel.Debug : LogLevel.Information,
-                "Moving item, {Attributes}",
+                "{Message}, {Attributes}",
+                logMessage,
                 itemAttributes);
 
             switch (item.IsFolder)
@@ -367,9 +376,13 @@ namespace Emby.Server.Implementations.Library
                 throw new IOException("Operation would move the item out of the current library");
             }
 
-            if (item.SourceType == SourceType.Channel)
+            var children = item.IsFolder
+                ? ((Folder)item).GetRecursiveChildren(false)
+                : [];
+
+            if (options.MoveOnFileSystem)
             {
-                if (options.MoveOnFileSystem)
+                if (item.SourceType == SourceType.Channel)
                 {
                     try
                     {
@@ -380,24 +393,22 @@ namespace Emby.Server.Implementations.Library
                         // channel no longer installed
                     }
                 }
+                else
+                {
+                    var moveOptions = new MoveOptions
+                    {
+                        CreateParent = true,
+                        Overwrite = options.Overwrite,
+                        Recursive = true,
+                    };
 
-                options.MoveOnFileSystem = false;
+                    _fileSystem.MoveItem(item.Path, destination, moveOptions);
+                }
             }
 
-            var children = item.IsFolder
-                ? ((Folder)item).GetRecursiveChildren(false)
-                : [];
-
-            if (options.MoveOnFileSystem)
+            if (!options.UpdatePathInDb)
             {
-                var moveOptions = new MoveOptions
-                {
-                    CreateParent = true,
-                    Overwrite = true,
-                    Recursive = true,
-                };
-
-                _fileSystem.MoveItem(item.Path, destination, moveOptions);
+                return;
             }
 
             var sourceParent = Path.GetDirectoryName(item.Path) ?? string.Empty;
@@ -426,7 +437,6 @@ namespace Emby.Server.Implementations.Library
             }
 
             ReportItemUpdated(item, parent, ItemUpdateType.MetadataEdit);
-            return true;
         }
 
         public void DeleteItem(BaseItem item, DeleteOptions options)

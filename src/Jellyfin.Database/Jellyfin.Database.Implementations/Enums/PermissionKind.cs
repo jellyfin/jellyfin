@@ -128,5 +128,5 @@ public enum PermissionKind
     /// <summary>
     /// Whether the user can move content.
     /// </summary>
-    EnableContentMoving = 24,
+    EnableContentMove = 24,
 }

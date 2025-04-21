@@ -349,6 +349,9 @@ public class LibraryController : BaseJellyfinApiController
     /// </summary>
     /// <param name="itemId">The item id.</param>
     /// <param name="path">The path on the file system to move the item to.</param>
+    /// <param name="moveFile">Whether to move the file/s on the file system.</param>
+    /// <param name="updatePath">Whether to update the path to the item in the database.</param>
+    /// <param name="overwrite">Overwrite files/directories on the file system if they already exist at the destination.</param>
     /// <response code="200">Item moved.</response>
     /// <response code="401">Unauthorized access.</response>
     /// <response code="404">Item not found.</response>
@@ -362,7 +365,10 @@ public class LibraryController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     public ActionResult<BaseItemDto> MoveItem(
         [FromRoute, Required] Guid itemId,
-        [FromQuery, Required] string path)
+        [FromQuery, Required] string path,
+        [FromQuery] bool moveFile = true,
+        [FromQuery] bool updatePath = true,
+        [FromQuery] bool overwrite = true)
     {
         var userId = User.GetUserId();
         var isApiKey = User.GetIsApiKey();
@@ -398,7 +404,7 @@ public class LibraryController : BaseJellyfinApiController
         _libraryManager.MoveItem(
             item,
             path,
-            new MoveItemOptions { MoveOnFileSystem = true },
+            new MoveItemOptions { MoveOnFileSystem = moveFile, UpdatePathInDb = updatePath, Overwrite = overwrite },
             CancellationToken.None);
 
         return Ok(_dtoService.GetBaseItemDto(item, new DtoOptions(), user));

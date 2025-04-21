@@ -73,5 +73,5 @@ public enum PreferenceKind
     /// <summary>
     /// A list of folders to allow content moving from.
     /// </summary>
-    EnableContentMovingFromFolders = 13,
+    EnableContentMoveFromFolders = 13,
 }

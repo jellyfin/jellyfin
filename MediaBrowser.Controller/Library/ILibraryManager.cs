@@ -335,8 +335,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="item">The item to move.</param>
         /// <param name="destination">The path to move the item to.</param>
         /// <param name="cancellationToken">Instance of the <see cref="CancellationToken"/>.</param>
-        /// <returns>Bool indicating whether the item was moved.</returns>
-        public bool MoveItem(BaseItem item, string destination, CancellationToken cancellationToken);
+        public void MoveItem(BaseItem item, string destination, CancellationToken cancellationToken);
 
         /// <summary>
         /// Moves the item.
@@ -345,8 +344,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="destination">The path to move the item to.</param>
         /// <param name="options">Options to use for moving.</param>
         /// <param name="cancellationToken">Instance of the <see cref="CancellationToken"/>.</param>
-        /// <returns>Bool indicating whether the item was moved.</returns>
-        public bool MoveItem(BaseItem item, string destination, MoveItemOptions options, CancellationToken cancellationToken);
+        public void MoveItem(BaseItem item, string destination, MoveItemOptions options, CancellationToken cancellationToken);
 
         /// <summary>
         /// Moves the item.
@@ -356,8 +354,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="parent">Parent of item.</param>
         /// <param name="options">Options to use for moving.</param>
         /// <param name="cancellationToken">Instance of the <see cref="CancellationToken"/>.</param>
-        /// <returns>Bool indicating whether the item was moved.</returns>
-        public bool MoveItem(BaseItem item, string destination, BaseItem parent, MoveItemOptions options, CancellationToken cancellationToken);
+        public void MoveItem(BaseItem item, string destination, BaseItem parent, MoveItemOptions options, CancellationToken cancellationToken);
 
         /// <summary>
         /// Deletes the item.
