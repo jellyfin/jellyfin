@@ -653,12 +653,7 @@ namespace Emby.Server.Implementations.Library
             if (args.IsDirectory)
             {
                 var filtered = args.GetActualFileSystemChildren().ToArray();
-                if (filtered.Length == 0)
-                {
-                    return null;
-                }
-
-                args.FileSystemChildren = filtered;
+                args.FileSystemChildren = filtered ?? [];
             }
 
             return ResolveItem(args, resolvers);
