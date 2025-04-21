@@ -67,21 +67,6 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         _provider = provider;
         _paths = paths;
         _jellyfinDatabaseProvider = jellyfinDatabaseProvider;
-
-        BaseItem.Logger = serviceProvider.GetService<ILogger<BaseItem>>();
-        // BaseItem.ConfigurationManager = ConfigurationManager;
-        BaseItem.LibraryManager = serviceProvider.GetService<ILibraryManager>();
-        BaseItem.ProviderManager = serviceProvider.GetService<IProviderManager>();
-        BaseItem.LocalizationManager = serviceProvider.GetService<ILocalizationManager>();
-        BaseItem.ItemRepository = serviceProvider.GetService<IItemRepository>();
-        BaseItem.ChapterRepository = serviceProvider.GetService<IChapterRepository>();
-        BaseItem.FileSystem = serviceProvider.GetService<IFileSystem>();
-        BaseItem.UserDataManager = serviceProvider.GetService<IUserDataManager>();
-        BaseItem.ChannelManager = serviceProvider.GetService<IChannelManager>();
-        BaseItem.MediaSourceManager = serviceProvider.GetService<IMediaSourceManager>();
-        BaseItem.MediaSegmentManager = serviceProvider.GetService<IMediaSegmentManager>();
-        Video.RecordingsManager = serviceProvider.GetService<IRecordingsManager>();
-        Folder.UserViewManager = serviceProvider.GetService<IUserViewManager>();
     }
 
     /// <inheritdoc/>
@@ -419,20 +404,6 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 
         _logger.LogInformation("Move {0} to {1}.", libraryDbPath, libraryDbPath + ".old");
         File.Move(libraryDbPath, libraryDbPath + ".old", true);
-
-        BaseItem.Logger = null;
-        BaseItem.LibraryManager = null;
-        BaseItem.ProviderManager = null;
-        BaseItem.LocalizationManager = null;
-        BaseItem.ItemRepository = null;
-        BaseItem.ChapterRepository = null;
-        BaseItem.FileSystem = null;
-        BaseItem.UserDataManager = null;
-        BaseItem.ChannelManager = null;
-        BaseItem.MediaSourceManager = null;
-        BaseItem.MediaSegmentManager = null;
-        Video.RecordingsManager = null;
-        Folder.UserViewManager = null;
     }
 
     private DatabaseMigrationStep GetPreparedDbContext(string operationName)
