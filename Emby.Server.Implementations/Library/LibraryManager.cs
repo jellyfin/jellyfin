@@ -311,6 +311,124 @@ namespace Emby.Server.Implementations.Library
             _cache.AddOrUpdate(item.Id, item);
         }
 
+        public bool MoveItem(BaseItem item, string destination, CancellationToken cancellationToken)
+        {
+            ArgumentNullException.ThrowIfNull(item);
+
+            var parent = item.GetOwner() ?? item.GetParent();
+            var options = new MoveItemOptions();
+            return MoveItem(item, destination, parent, options, cancellationToken);
+        }
+
+        public bool MoveItem(BaseItem item, string destination, MoveItemOptions options, CancellationToken cancellationToken)
+        {
+            ArgumentNullException.ThrowIfNull(item);
+
+            var parent = item.GetOwner() ?? item.GetParent();
+            return MoveItem(item, destination, parent, options, cancellationToken);
+        }
+
+        public bool MoveItem(BaseItem item, string destination, BaseItem parent, MoveItemOptions options, CancellationToken cancellationToken)
+        {
+            ArgumentNullException.ThrowIfNull(item);
+            ArgumentException.ThrowIfNullOrWhiteSpace(destination);
+            ArgumentNullException.ThrowIfNull(options);
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (item.Path.Equals(destination, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            var itemAttributes = string.Format(
+                CultureInfo.InvariantCulture,
+                "Type: {0}, Name: {1}, Source Path: {2}, Target Path: {3}, Id: {4}",
+                item.GetType().Name,
+                item.Name ?? "Unknown name",
+                item.Path,
+                destination,
+                item.Id);
+
+            _logger.Log(
+                item is LiveTvProgram ? LogLevel.Debug : LogLevel.Information,
+                "Moving item, {Attributes}",
+                itemAttributes);
+
+            switch (item.IsFolder)
+            {
+                case true when Path.HasExtension(destination):
+                    throw new IOException("Item is a folder and the given destination is a file path");
+                case false when Path.GetExtension(item.Path) != Path.GetExtension(destination):
+                    throw new IOException("Operation would change the file extension");
+            }
+
+            if (Path.GetRelativePath(item.GetTopParent().Path, destination) == destination)
+            {
+                throw new IOException("Operation would move the item out of the current library");
+            }
+
+            if (item.SourceType == SourceType.Channel)
+            {
+                if (options.MoveOnFileSystem)
+                {
+                    try
+                    {
+                        BaseItem.ChannelManager.MoveItem(item, destination).GetAwaiter().GetResult();
+                    }
+                    catch (ArgumentException)
+                    {
+                        // channel no longer installed
+                    }
+                }
+
+                options.MoveOnFileSystem = false;
+            }
+
+            var children = item.IsFolder
+                ? ((Folder)item).GetRecursiveChildren(false)
+                : [];
+
+            if (options.MoveOnFileSystem)
+            {
+                var moveOptions = new MoveOptions
+                {
+                    CreateParent = true,
+                    Overwrite = true,
+                    Recursive = true,
+                };
+
+                _fileSystem.MoveItem(item.Path, destination, moveOptions);
+            }
+
+            var sourceParent = Path.GetDirectoryName(item.Path) ?? string.Empty;
+            var destinationParent = Path.GetDirectoryName(destination) ?? string.Empty;
+
+            _itemRepository.MoveItem(item, destination);
+            _cache.TryRemove(item.Id, out _);
+
+            foreach (var child in children!)
+            {
+                // children are moved recursively when item is moved on file system, just update paths in repository
+                var destinationChildRelative = Path.GetRelativePath(sourceParent, child.Path);
+                var destinationChild = Path.Combine(destinationParent, destinationChildRelative);
+
+                _logger.Log(
+                    item is LiveTvProgram ? LogLevel.Debug : LogLevel.Information,
+                    "Moving child item, Type: {0}, Name: {1}, Source Path: {2}, Target Path: {3}, Id: {4}",
+                    child.GetType().Name,
+                    child.Name ?? "Unknown name",
+                    child.Path,
+                    destinationChild,
+                    child.Id);
+
+                _itemRepository.MoveItem(child, destinationChild);
+                _cache.TryRemove(child.Id, out _);
+            }
+
+            ReportItemUpdated(item, parent, ItemUpdateType.MetadataEdit);
+            return true;
+        }
+
         public void DeleteItem(BaseItem item, DeleteOptions options)
         {
             DeleteItem(item, options, false);
@@ -470,124 +588,6 @@ namespace Emby.Server.Implementations.Library
             }
 
             ReportItemRemoved(item, parent);
-        }
-
-        public bool MoveItem(BaseItem item, string destination, CancellationToken cancellationToken)
-        {
-            ArgumentNullException.ThrowIfNull(item);
-
-            var parent = item.GetOwner() ?? item.GetParent();
-            var options = new MoveItemOptions();
-            return MoveItem(item, destination, parent, options, cancellationToken);
-        }
-
-        public bool MoveItem(BaseItem item, string destination, MoveItemOptions options, CancellationToken cancellationToken)
-        {
-            ArgumentNullException.ThrowIfNull(item);
-
-            var parent = item.GetOwner() ?? item.GetParent();
-            return MoveItem(item, destination, parent, options, cancellationToken);
-        }
-
-        public bool MoveItem(BaseItem item, string destination, BaseItem parent, MoveItemOptions options, CancellationToken cancellationToken)
-        {
-            ArgumentNullException.ThrowIfNull(item);
-            ArgumentException.ThrowIfNullOrWhiteSpace(destination);
-            ArgumentNullException.ThrowIfNull(options);
-            cancellationToken.ThrowIfCancellationRequested();
-
-            if (item.Path.Equals(destination, StringComparison.Ordinal))
-            {
-                return false;
-            }
-
-            var itemAttributes = string.Format(
-                CultureInfo.InvariantCulture,
-                "Type: {0}, Name: {1}, Source Path: {2}, Target Path: {3}, Id: {4}",
-                item.GetType().Name,
-                item.Name ?? "Unknown name",
-                item.Path,
-                destination,
-                item.Id);
-
-            _logger.Log(
-                item is LiveTvProgram ? LogLevel.Debug : LogLevel.Information,
-                "Moving item, {Attributes}",
-                itemAttributes);
-
-            switch (item.IsFolder)
-            {
-                case true when Path.HasExtension(destination):
-                    throw new IOException("Item is a folder and the given destination is a file path");
-                case false when Path.GetExtension(item.Path) != Path.GetExtension(destination):
-                    throw new IOException("Operation would change the file extension");
-            }
-
-            if (Path.GetRelativePath(item.GetTopParent().Path, destination) == destination)
-            {
-                throw new IOException("Operation would move the item out of the current library");
-            }
-
-            if (item.SourceType == SourceType.Channel)
-            {
-                if (options.MoveOnFileSystem)
-                {
-                    try
-                    {
-                        BaseItem.ChannelManager.MoveItem(item, destination).GetAwaiter().GetResult();
-                    }
-                    catch (ArgumentException)
-                    {
-                        // channel no longer installed
-                    }
-                }
-
-                options.MoveOnFileSystem = false;
-            }
-
-            var children = item.IsFolder
-                ? ((Folder)item).GetRecursiveChildren(false)
-                : [];
-
-            if (options.MoveOnFileSystem)
-            {
-                var moveOptions = new MoveOptions
-                {
-                    CreateParent = true,
-                    Overwrite = true,
-                    Recursive = true,
-                };
-
-                _fileSystem.MoveItem(item.Path, destination, moveOptions);
-            }
-
-            var sourceParent = Path.GetDirectoryName(item.Path) ?? string.Empty;
-            var destinationParent = Path.GetDirectoryName(destination) ?? string.Empty;
-
-            _itemRepository.MoveItem(item, destination);
-            _cache.TryRemove(item.Id, out _);
-
-            foreach (var child in children!)
-            {
-                // children are moved recursively when item is moved on file system, just update paths in repository
-                var destinationChildRelative = Path.GetRelativePath(sourceParent, child.Path);
-                var destinationChild = Path.Combine(destinationParent, destinationChildRelative);
-
-                _logger.Log(
-                    item is LiveTvProgram ? LogLevel.Debug : LogLevel.Information,
-                    "Moving child item, Type: {0}, Name: {1}, Source Path: {2}, Target Path: {3}, Id: {4}",
-                    child.GetType().Name,
-                    child.Name ?? "Unknown name",
-                    child.Path,
-                    destinationChild,
-                    child.Id);
-
-                _itemRepository.MoveItem(child, destinationChild);
-                _cache.TryRemove(child.Id, out _);
-            }
-
-            ReportItemUpdated(item, parent, ItemUpdateType.MetadataEdit);
-            return true;
         }
 
         private List<string> GetMetadataPaths(BaseItem item, IEnumerable<BaseItem> children)
