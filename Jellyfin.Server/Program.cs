@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -11,6 +12,7 @@ using Emby.Server.Implementations;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Helpers;
+using Jellyfin.Server.Implementations.StorageHelpers;
 using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
@@ -119,6 +121,8 @@ namespace Jellyfin.Server
                     return;
                 }
             }
+
+            StorageHelper.TestCommonPathsForStorageCapacity(appPaths, _loggerFactory.CreateLogger<Startup>());
 
             StartupHelpers.PerformStaticInitialization();
             await Migrations.MigrationRunner.RunPreStartup(appPaths, _loggerFactory).ConfigureAwait(false);
