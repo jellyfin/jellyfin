@@ -89,7 +89,6 @@ public static class StorageHelper
             drive.DriveType,
             HumanizeStorageSize(drive.AvailableFreeSpace),
             HumanizeStorageSize(threshold));
-
     }
 
     /// <summary>
