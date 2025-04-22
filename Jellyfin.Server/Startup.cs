@@ -61,10 +61,6 @@ namespace Jellyfin.Server
         {
             services.AddResponseCompression();
             services.AddHttpContextAccessor();
-            services.AddHttpsRedirection(options =>
-            {
-                options.HttpsPort = _serverApplicationHost.HttpsPort;
-            });
 
             services.AddJellyfinApi(_serverApplicationHost.GetApiPluginAssemblies(), _serverConfigurationManager.GetNetworkConfiguration());
             services.AddJellyfinDbContext(_serverApplicationHost.ConfigurationManager, _configuration);
@@ -168,10 +164,8 @@ namespace Jellyfin.Server
 
                 mainApp.UseCors();
 
-                if (config.RequireHttps && _serverApplicationHost.ListenWithHttps)
-                {
-                    mainApp.UseHttpsRedirection();
-                }
+                // This must be injected before any path related middleware.
+                mainApp.UsePathTrim();
 
                 if (appConfig.HostWebClient())
                 {
