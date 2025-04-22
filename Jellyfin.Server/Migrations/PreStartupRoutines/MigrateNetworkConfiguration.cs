@@ -67,9 +67,6 @@ public class MigrateNetworkConfiguration : IMigrationRoutine
         {
             AutoDiscovery = oldNetworkConfiguration.AutoDiscovery,
             BaseUrl = oldNetworkConfiguration.BaseUrl,
-            CertificatePassword = oldNetworkConfiguration.CertificatePassword,
-            CertificatePath = oldNetworkConfiguration.CertificatePath,
-            EnableHttps = oldNetworkConfiguration.EnableHttps,
             EnableIPv4 = oldNetworkConfiguration.EnableIPV4,
             EnableIPv6 = oldNetworkConfiguration.EnableIPV6,
             EnablePublishedServerUriByRequest = oldNetworkConfiguration.EnablePublishedServerUriByRequest,
@@ -77,16 +74,13 @@ public class MigrateNetworkConfiguration : IMigrationRoutine
             EnableUPnP = oldNetworkConfiguration.EnableUPnP,
             IgnoreVirtualInterfaces = oldNetworkConfiguration.IgnoreVirtualInterfaces,
             InternalHttpPort = oldNetworkConfiguration.HttpServerPortNumber,
-            InternalHttpsPort = oldNetworkConfiguration.HttpsPortNumber,
             IsRemoteIPFilterBlacklist = oldNetworkConfiguration.IsRemoteIPFilterBlacklist,
             KnownProxies = oldNetworkConfiguration.KnownProxies,
             LocalNetworkAddresses = oldNetworkConfiguration.LocalNetworkAddresses,
             LocalNetworkSubnets = oldNetworkConfiguration.LocalNetworkSubnets,
             PublicHttpPort = oldNetworkConfiguration.PublicPort,
-            PublicHttpsPort = oldNetworkConfiguration.PublicHttpsPort,
             PublishedServerUriBySubnet = oldNetworkConfiguration.PublishedServerUriBySubnet,
-            RemoteIPFilter = oldNetworkConfiguration.RemoteIPFilter,
-            RequireHttps = oldNetworkConfiguration.RequireHttps
+            RemoteIPFilter = oldNetworkConfiguration.RemoteIPFilter
         };
 
         // Migrate old virtual interface name schema

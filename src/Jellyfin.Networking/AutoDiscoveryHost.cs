@@ -9,6 +9,8 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.ApiClient;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -28,6 +30,7 @@ public sealed class AutoDiscoveryHost : BackgroundService
     private readonly IServerApplicationHost _appHost;
     private readonly IConfigurationManager _configurationManager;
     private readonly INetworkManager _networkManager;
+    private readonly IServerAddressesFeature _serverAddresses;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AutoDiscoveryHost" /> class.
@@ -36,16 +39,19 @@ public sealed class AutoDiscoveryHost : BackgroundService
     /// <param name="appHost">The <see cref="IServerApplicationHost"/>.</param>
     /// <param name="configurationManager">The <see cref="IConfigurationManager"/>.</param>
     /// <param name="networkManager">The <see cref="INetworkManager"/>.</param>
+    /// <param name="server">The kestrel server.</param>
     public AutoDiscoveryHost(
         ILogger<AutoDiscoveryHost> logger,
         IServerApplicationHost appHost,
         IConfigurationManager configurationManager,
-        INetworkManager networkManager)
+        INetworkManager networkManager,
+        IServer server)
     {
         _logger = logger;
         _appHost = appHost;
         _configurationManager = configurationManager;
         _networkManager = networkManager;
+        _serverAddresses = server.Features.Get<IServerAddressesFeature>()!;
     }
 
     /// <inheritdoc />
@@ -97,7 +103,7 @@ public sealed class AutoDiscoveryHost : BackgroundService
 
     private async Task RespondToV2Message(IPEndPoint endpoint, UdpClient broadCastUdpClient, CancellationToken cancellationToken)
     {
-        var localUrl = _appHost.GetSmartApiUrl(endpoint.Address);
+        var localUrl = _appHost.GetSmartApiUrl(_serverAddresses, endpoint.Address);
         if (string.IsNullOrEmpty(localUrl))
         {
             _logger.LogWarning("Unable to respond to server discovery request because the local ip address could not be determined");

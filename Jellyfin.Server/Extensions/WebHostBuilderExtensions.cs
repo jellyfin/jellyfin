@@ -42,8 +42,6 @@ public static class WebHostBuilderExtensions
                 SetupJellyfinWebServer(
                     appHost.NetManager.GetAllBindInterfaces(false),
                     appHost.HttpPort,
-                    appHost.ListenWithHttps ? appHost.HttpsPort : null,
-                    appHost.Certificate,
                     startupConfig,
                     appPaths,
                     logger,
@@ -58,8 +56,6 @@ public static class WebHostBuilderExtensions
     /// </summary>
     /// <param name="addresses">The IP addresses that should be listend to.</param>
     /// <param name="httpPort">The http port.</param>
-    /// <param name="httpsPort">If set the https port. If set you must also set the certificate.</param>
-    /// <param name="certificate">The certificate used for https port.</param>
     /// <param name="startupConfig">The startup config.</param>
     /// <param name="appPaths">The app paths.</param>
     /// <param name="logger">A logger.</param>
@@ -69,8 +65,6 @@ public static class WebHostBuilderExtensions
     public static void SetupJellyfinWebServer(
         IReadOnlyList<IPData> addresses,
         int httpPort,
-        int? httpsPort,
-        X509Certificate2? certificate,
         IConfiguration startupConfig,
         IApplicationPaths appPaths,
         ILogger logger,
@@ -83,37 +77,22 @@ public static class WebHostBuilderExtensions
             var address = netAdd.Address;
             logger.LogInformation("Kestrel is listening on {Address}", address.Equals(IPAddress.IPv6Any) ? "all interfaces" : address);
             options.Listen(netAdd.Address, httpPort);
-            if (httpsPort.HasValue)
+            if (builderContext.HostingEnvironment.IsDevelopment())
             {
-                if (builderContext.HostingEnvironment.IsDevelopment())
+                try
                 {
-                    try
-                    {
-                        options.Listen(
-                            address,
-                            httpsPort.Value,
-                            listenOptions => listenOptions.UseHttps());
-                    }
-                    catch (InvalidOperationException)
-                    {
-                        if (!flagged)
-                        {
-                            logger.LogWarning("Failed to listen to HTTPS using the ASP.NET Core HTTPS development certificate. Please ensure it has been installed and set as trusted");
-                            flagged = true;
-                        }
-                    }
-                }
-                else
-                {
-                    if (certificate is null)
-                    {
-                        throw new InvalidOperationException("Cannot run jellyfin with https without setting a valid certificate.");
-                    }
-
                     options.Listen(
                         address,
-                        httpsPort.Value,
-                        listenOptions => listenOptions.UseHttps(certificate));
+                        8090,
+                        listenOptions => listenOptions.UseHttps());
+                }
+                catch (InvalidOperationException)
+                {
+                    if (!flagged)
+                    {
+                        logger.LogWarning("Failed to listen to HTTPS using the ASP.NET Core HTTPS development certificate. Please ensure it has been installed and set as trusted");
+                        flagged = true;
+                    }
                 }
             }
         }
