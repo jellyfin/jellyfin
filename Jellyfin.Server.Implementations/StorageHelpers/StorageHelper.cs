@@ -72,7 +72,7 @@ public static class StorageHelper
     private static void TestDataDirectorySize(string path, ILogger logger, long threshold = -1)
     {
         logger.LogDebug("Check path {TestPath} for storage capacity", path);
-        if (Directory.Exists(path))
+        if (!Directory.Exists(path))
         {
             Directory.CreateDirectory(path);
         }
