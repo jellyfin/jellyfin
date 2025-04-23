@@ -84,6 +84,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         private readonly Version _minFFmpegQsvVppOutRangeOption = new Version(7, 0, 1);
         private readonly Version _minFFmpegVaapiDeviceVendorId = new Version(7, 0, 1);
         private readonly Version _minFFmpegQsvVppScaleModeOption = new Version(6, 0);
+        private readonly Version _minFFmpegRkmppHevcDecDoviRpu = new Version(7, 1, 1);
 
         private static readonly Regex _containerValidationRegex = new(ContainerValidationRegex, RegexOptions.Compiled);
 
@@ -349,8 +350,17 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (state.VideoStream.VideoRange == VideoRange.HDR
                 && state.VideoStream.VideoRangeType == VideoRangeType.DOVI)
             {
-                // Only native SW decoder and HW accelerator can parse dovi rpu.
+                // Only native SW decoder, HW accelerator and hevc_rkmpp decoder can parse dovi rpu.
                 var vidDecoder = GetHardwareVideoDecoder(state, options) ?? string.Empty;
+
+                var isRkmppDecoder = vidDecoder.Contains("rkmpp", StringComparison.OrdinalIgnoreCase);
+                if (isRkmppDecoder
+                    && _mediaEncoder.EncoderVersion >= _minFFmpegRkmppHevcDecDoviRpu
+                    && string.Equals(state.VideoStream?.Codec, "hevc", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
                 var isSwDecoder = string.IsNullOrEmpty(vidDecoder);
                 var isNvdecDecoder = vidDecoder.Contains("cuda", StringComparison.OrdinalIgnoreCase);
                 var isVaapiDecoder = vidDecoder.Contains("vaapi", StringComparison.OrdinalIgnoreCase);

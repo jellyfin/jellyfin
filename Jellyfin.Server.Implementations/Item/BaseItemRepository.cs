@@ -1348,34 +1348,39 @@ public sealed class BaseItemRepository
         JellyfinDbContext context,
         InternalItemsQuery filter)
     {
+        const int HDWidth = 1200;
+        const int UHDWidth = 3800;
+        const int UHDHeight = 2100;
+
         var minWidth = filter.MinWidth;
         var maxWidth = filter.MaxWidth;
         var now = DateTime.UtcNow;
 
-        if (filter.IsHD.HasValue)
+        if (filter.IsHD.HasValue || filter.Is4K.HasValue)
         {
-            const int Threshold = 1200;
-            if (filter.IsHD.Value)
-            {
-                minWidth = Threshold;
-            }
-            else
-            {
-                maxWidth = Threshold - 1;
-            }
-        }
+            bool includeSD = false;
+            bool includeHD = false;
+            bool include4K = false;
 
-        if (filter.Is4K.HasValue)
-        {
-            const int Threshold = 3800;
-            if (filter.Is4K.Value)
+            if (filter.IsHD.HasValue && !filter.IsHD.Value)
             {
-                minWidth = Threshold;
+                includeSD = true;
             }
-            else
+
+            if (filter.IsHD.HasValue && filter.IsHD.Value)
             {
-                maxWidth = Threshold - 1;
+                includeHD = true;
             }
+
+            if (filter.Is4K.HasValue && filter.Is4K.Value)
+            {
+                include4K = true;
+            }
+
+            baseQuery = baseQuery.Where(e =>
+                (includeSD && e.Width < HDWidth) ||
+                (includeHD && e.Width >= HDWidth && !(e.Width >= UHDWidth || e.Height >= UHDHeight)) ||
+                (include4K && (e.Width >= UHDWidth || e.Height >= UHDHeight)));
         }
 
         if (minWidth.HasValue)
@@ -2001,13 +2006,19 @@ public sealed class BaseItemRepository
         if (filter.IsDeadArtist.HasValue && filter.IsDeadArtist.Value)
         {
             baseQuery = baseQuery
-                    .Where(e => e.ItemValues!.Count(f => f.ItemValue.Type == ItemValueType.Artist || f.ItemValue.Type == ItemValueType.AlbumArtist) == 1);
+                    .Where(e => !context.ItemValues.Where(f => _getAllArtistsValueTypes.Contains(f.Type)).Any(f => f.Value == e.Name));
         }
 
         if (filter.IsDeadStudio.HasValue && filter.IsDeadStudio.Value)
         {
             baseQuery = baseQuery
-                    .Where(e => e.ItemValues!.Count(f => f.ItemValue.Type == ItemValueType.Studios) == 1);
+                    .Where(e => !context.ItemValues.Where(f => _getStudiosValueTypes.Contains(f.Type)).Any(f => f.Value == e.Name));
+        }
+
+        if (filter.IsDeadGenre.HasValue && filter.IsDeadGenre.Value)
+        {
+            baseQuery = baseQuery
+                    .Where(e => !context.ItemValues.Where(f => _getGenreValueTypes.Contains(f.Type)).Any(f => f.Value == e.Name));
         }
 
         if (filter.IsDeadPerson.HasValue && filter.IsDeadPerson.Value)
