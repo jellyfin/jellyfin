@@ -1283,7 +1283,7 @@ public class StreamInfo
             }
         }
 
-         return info;
+        return info;
     }
 
     /// <summary>
