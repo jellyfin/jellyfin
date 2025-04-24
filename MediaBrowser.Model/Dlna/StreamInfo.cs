@@ -1281,10 +1281,10 @@ public class StreamInfo
                 // Use "?ApiKey=" as seen in HEAD and other parts of the code
                 info.Url += "?ApiKey=" + accessToken;
             }
-         }
+        }
 
          return info;
-        }
+    }
 
     /// <summary>
     /// Gets the target video bit depth.
