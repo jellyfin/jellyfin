@@ -7,6 +7,7 @@ using Jellyfin.Database.Implementations;
 using MediaBrowser.Common.Configuration;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Database.Providers.Sqlite;
@@ -38,9 +39,13 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     /// <inheritdoc/>
     public void Initialise(DbContextOptionsBuilder options)
     {
-        options.UseSqlite(
-            $"Filename={Path.Combine(_applicationPaths.DataPath, "jellyfin.db")};Pooling=false",
-            sqLiteOptions => sqLiteOptions.MigrationsAssembly(GetType().Assembly));
+        options
+            .UseSqlite(
+                $"Filename={Path.Combine(_applicationPaths.DataPath, "jellyfin.db")};Pooling=false",
+                sqLiteOptions => sqLiteOptions.MigrationsAssembly(GetType().Assembly))
+            // TODO: Remove when https://github.com/dotnet/efcore/pull/35873 is merged & released
+            .ConfigureWarnings(warnings =>
+                warnings.Ignore(RelationalEventId.NonTransactionalMigrationOperationWarning));
     }
 
     /// <inheritdoc/>
