@@ -1365,6 +1365,7 @@ public sealed class BaseItemRepository
         }
 
         var tags = filter.Tags.ToList();
+        var allTags = filter.AllTags.ToList();
         var excludeTags = filter.ExcludeTags.ToList();
 
         if (filter.IsMovie == true)
@@ -1778,16 +1779,15 @@ public sealed class BaseItemRepository
         if (tags.Count > 0)
         {
             var cleanValues = tags.Select(e => GetCleanValue(e)).ToArray();
-            if (filter.MatchAllTags)
-            {
-                baseQuery = baseQuery
-                .Where(e => cleanValues.All(tag => e.ItemValues!.Any(f => f.ItemValue.Type == ItemValueType.Tags && f.ItemValue.CleanValue == tag)));
-            }
-            else
-            {
-                baseQuery = baseQuery
-                .Where(e => e.ItemValues!.Any(f => f.ItemValue.Type == ItemValueType.Tags && cleanValues.Contains(f.ItemValue.CleanValue)));
-            }
+            baseQuery = baseQuery
+                    .Where(e => e.ItemValues!.Any(f => f.ItemValue.Type == ItemValueType.Tags && cleanValues.Contains(f.ItemValue.CleanValue)));
+        }
+
+        if (allTags.Count > 0)
+        {
+            var cleanValues = allTags.Select(e => GetCleanValue(e)).ToArray();
+            baseQuery = baseQuery
+                    .Where(e => cleanValues.All(tag => e.ItemValues!.Any(f => f.ItemValue.Type == ItemValueType.Tags && f.ItemValue.CleanValue == tag)));
         }
 
         if (excludeTags.Count > 0)

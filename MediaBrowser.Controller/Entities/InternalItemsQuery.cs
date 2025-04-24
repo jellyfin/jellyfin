@@ -48,7 +48,7 @@ namespace MediaBrowser.Controller.Entities
             SourceTypes = Array.Empty<SourceType>();
             StudioIds = Array.Empty<Guid>();
             Tags = Array.Empty<string>();
-            MatchAllTags = false;
+            AllTags = Array.Empty<string>();
             TopParentIds = Array.Empty<Guid>();
             TrailerTypes = Array.Empty<TrailerType>();
             VideoTypes = Array.Empty<VideoType>();
@@ -181,7 +181,7 @@ namespace MediaBrowser.Controller.Entities
 
         public string[] Tags { get; set; }
 
-        public bool MatchAllTags { get; set; }
+        public string[] AllTags { get; set; }
 
         public string[] OfficialRatings { get; set; }
 
