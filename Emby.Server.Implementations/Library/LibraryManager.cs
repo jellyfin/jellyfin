@@ -340,13 +340,17 @@ namespace Emby.Server.Implementations.Library
                 throw new IOException("Source and destination paths are the same");
             }
 
+            if (item.SourceType != SourceType.Library)
+            {
+                throw new ArgumentException("Only libraries are supported for this operation");
+            }
+
             var itemAttributes = string.Format(
                 CultureInfo.InvariantCulture,
-                "Type: {0}, Name: {1}, Source Path: {2}, Target Path: {3}, Id: {4}",
+                "Type: {0}, Name: {1}, Path: {2}, Id: {3}",
                 item.GetType().Name,
                 item.Name ?? "Unknown name",
                 item.Path,
-                destination,
                 item.Id);
 
             var logMessage = (options.MoveOnFileSystem, options.UpdatePathInDb) switch
@@ -375,10 +379,6 @@ namespace Emby.Server.Implementations.Library
             {
                 throw new IOException("Operation would move the item out of the current library");
             }
-
-            var children = item.IsFolder
-                ? ((Folder)item).GetRecursiveChildren(false)
-                : [];
 
             if (options.MoveOnFileSystem)
             {
@@ -411,30 +411,8 @@ namespace Emby.Server.Implementations.Library
                 return;
             }
 
-            var sourceParent = Path.GetDirectoryName(item.Path) ?? string.Empty;
-            var destinationParent = Path.GetDirectoryName(destination) ?? string.Empty;
-
             _itemRepository.MoveItem(item, destination);
             _cache.TryRemove(item.Id, out _);
-
-            foreach (var child in children!)
-            {
-                // children are moved recursively when item is moved on file system, just update paths in repository
-                var destinationChildRelative = Path.GetRelativePath(sourceParent, child.Path);
-                var destinationChild = Path.Combine(destinationParent, destinationChildRelative);
-
-                _logger.Log(
-                    item is LiveTvProgram ? LogLevel.Debug : LogLevel.Information,
-                    "Moving child item, Type: {0}, Name: {1}, Source Path: {2}, Target Path: {3}, Id: {4}",
-                    child.GetType().Name,
-                    child.Name ?? "Unknown name",
-                    child.Path,
-                    destinationChild,
-                    child.Id);
-
-                _itemRepository.MoveItem(child, destinationChild);
-                _cache.TryRemove(child.Id, out _);
-            }
 
             ReportItemUpdated(item, parent, ItemUpdateType.MetadataEdit);
         }

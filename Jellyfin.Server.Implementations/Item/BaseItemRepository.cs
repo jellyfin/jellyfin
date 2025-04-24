@@ -8,6 +8,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -589,6 +590,28 @@ public sealed class BaseItemRepository
 
         using var context = _dbProvider.CreateDbContext();
         using var transaction = context.Database.BeginTransaction();
+
+        var childrenInFolder = item.IsFolder
+            ? ((Folder)item).GetRecursiveChildren(false)
+            : [];
+
+        foreach (var child in childrenInFolder)
+        {
+            var childPathRelative = Path.GetRelativePath(path, child.Path);
+            if (childPathRelative == child.Path)
+            {
+                // child is not in item folder
+                continue;
+            }
+
+            var childPath = GetPathToSave(Path.Combine(path, childPathRelative));
+            var childEntity = Map(item);
+
+            context.BaseItems.Update(childEntity);
+            context.BaseItems
+                .Where(e => e.Id == childEntity.Id)
+                .ExecuteUpdate(f => f.SetProperty(e => e.Path, childPath));
+        }
 
         context.BaseItems.Update(entity);
         context.BaseItems
