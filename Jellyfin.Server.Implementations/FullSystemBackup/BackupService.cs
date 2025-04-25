@@ -93,14 +93,14 @@ public class BackupService : IBackupService
                 manifest = await JsonSerializer.DeserializeAsync<BackupManifest>(manifestStream, _serializerSettings).ConfigureAwait(false);
             }
 
-            if (manifest!.JellyfinVersion > _applicationHost.ApplicationVersion) // newer versions of Jellyfin should be able to load older versions as we have migrations.
+            if (manifest!.ServerVersion > _applicationHost.ApplicationVersion) // newer versions of Jellyfin should be able to load older versions as we have migrations.
             {
-                throw new NotSupportedException($"The loaded archive '{archivePath}' is made for a newer version of Jellyfin ({manifest.JellyfinVersion}) and cannot be loaded in this version.");
+                throw new NotSupportedException($"The loaded archive '{archivePath}' is made for a newer version of Jellyfin ({manifest.ServerVersion}) and cannot be loaded in this version.");
             }
 
             if (!TestBackupVersionCompatibility(manifest.BackupEngineVersion))
             {
-                throw new NotSupportedException($"The loaded archive '{archivePath}' is made for a newer version of Jellyfin ({manifest.JellyfinVersion}) and cannot be loaded in this version.");
+                throw new NotSupportedException($"The loaded archive '{archivePath}' is made for a newer version of Jellyfin ({manifest.ServerVersion}) and cannot be loaded in this version.");
             }
 
             static async Task CopyOverride(ZipArchiveEntry item, string targetPath)
@@ -196,7 +196,7 @@ public class BackupService : IBackupService
                 _logger.LogInformation("Restored database.");
             }
 
-            _logger.LogInformation("Restored Jellyfin system from {Date}.", manifest.DateOfCreation);
+            _logger.LogInformation("Restored Jellyfin system from {Date}.", manifest.DateCreated);
         }
     }
 
@@ -217,11 +217,11 @@ public class BackupService : IBackupService
 
         var manifest = new BackupManifest()
         {
-            DateOfCreation = DateTime.UtcNow,
-            JellyfinVersion = _applicationHost.ApplicationVersion,
+            DateCreated = DateTime.UtcNow,
+            ServerVersion = _applicationHost.ApplicationVersion,
             DatabaseTables = null!,
             BackupEngineVersion = _backupEngineVersion,
-            ContentOptions = Map(backupOptions)
+            Options = Map(backupOptions)
         };
 
         await _jellyfinDatabaseProvider.RunScheduledOptimisation(CancellationToken.None).ConfigureAwait(false);
@@ -406,10 +406,10 @@ public class BackupService : IBackupService
         return new BackupManifestDto()
         {
             BackupEngineVersion = manifest.BackupEngineVersion,
-            DateOfCreation = manifest.DateOfCreation,
-            JellyfinVersion = manifest.JellyfinVersion,
+            DateCreated = manifest.DateCreated,
+            ServerVersion = manifest.ServerVersion,
             Path = path,
-            ContentOptions = Map(manifest.ContentOptions)
+            Options = Map(manifest.Options)
         };
     }
 

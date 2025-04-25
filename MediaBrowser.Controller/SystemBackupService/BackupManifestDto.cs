@@ -10,7 +10,7 @@ public class BackupManifestDto
     /// <summary>
     /// Gets or sets the jellyfin version this backup was created with.
     /// </summary>
-    public required Version JellyfinVersion { get; set; }
+    public required Version ServerVersion { get; set; }
 
     /// <summary>
     /// Gets or sets the backup engine version this backup was created with.
@@ -20,15 +20,15 @@ public class BackupManifestDto
     /// <summary>
     /// Gets or sets the date this backup was created with.
     /// </summary>
-    public required DateTimeOffset DateOfCreation { get; set; }
+    public required DateTimeOffset DateCreated { get; set; }
 
     /// <summary>
     /// Gets or sets the path to the backup on the system.
     /// </summary>
-    public string? Path { get; set; }
+    public required string Path { get; set; }
 
     /// <summary>
     /// Gets or sets the contents of the backup archive.
     /// </summary>
-    public required BackupOptionsDto ContentOptions { get; set; }
+    public required BackupOptionsDto Options { get; set; }
 }

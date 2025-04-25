@@ -35,7 +35,7 @@ public class BackupController : BaseJellyfinApiController
     [HttpPost("Create")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<BackupManifestDto>> CreateBackup([FromBody] BackupOptionsDto? backupOptions)
+    public async Task<ActionResult<BackupManifestDto>> CreateBackup([FromBody] BackupOptionsDto backupOptions)
     {
         return Ok(await _backupService.CreateBackupAsync(backupOptions ?? new()).ConfigureAwait(false));
     }
