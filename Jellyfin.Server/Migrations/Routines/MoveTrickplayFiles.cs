@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// Migration to move trickplay files to the new directory.
 /// </summary>
-public class MoveTrickplayFiles : IDatabaseMigrationRoutine
+public class MoveTrickplayFiles : IMigrationRoutine
 {
     private readonly ITrickplayManager _trickplayManager;
     private readonly IFileSystem _fileSystem;
@@ -29,7 +29,11 @@ public class MoveTrickplayFiles : IDatabaseMigrationRoutine
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="logger">The logger.</param>
-    public MoveTrickplayFiles(ITrickplayManager trickplayManager, IFileSystem fileSystem, ILibraryManager libraryManager, ILogger<MoveTrickplayFiles> logger)
+    public MoveTrickplayFiles(
+        ITrickplayManager trickplayManager,
+        IFileSystem fileSystem,
+        ILibraryManager libraryManager,
+        ILogger<MoveTrickplayFiles> logger)
     {
         _trickplayManager = trickplayManager;
         _fileSystem = fileSystem;
@@ -49,7 +53,7 @@ public class MoveTrickplayFiles : IDatabaseMigrationRoutine
     /// <inheritdoc />
     public void Perform()
     {
-        const int Limit = 100;
+        const int Limit = 5000;
         int itemCount = 0, offset = 0, previousCount;
 
         var sw = Stopwatch.StartNew();
@@ -64,9 +68,6 @@ public class MoveTrickplayFiles : IDatabaseMigrationRoutine
         do
         {
             var trickplayInfos = _trickplayManager.GetTrickplayItemsAsync(Limit, offset).GetAwaiter().GetResult();
-            previousCount = trickplayInfos.Count;
-            offset += Limit;
-
             trickplayQuery.ItemIds = trickplayInfos.Select(i => i.ItemId).Distinct().ToArray();
             var items = _libraryManager.GetItemList(trickplayQuery);
             foreach (var trickplayInfo in trickplayInfos)
@@ -77,24 +78,32 @@ public class MoveTrickplayFiles : IDatabaseMigrationRoutine
                     continue;
                 }
 
-                if (++itemCount % 1_000 == 0)
-                {
-                    _logger.LogInformation("Moved {Count} items in {Time}", itemCount, sw.Elapsed);
-                }
-
+                var moved = false;
                 var oldPath = GetOldTrickplayDirectory(item, trickplayInfo.Width);
                 var newPath = _trickplayManager.GetTrickplayDirectory(item, trickplayInfo.TileWidth, trickplayInfo.TileHeight, trickplayInfo.Width, false);
                 if (_fileSystem.DirectoryExists(oldPath))
                 {
                     _fileSystem.MoveDirectory(oldPath, newPath);
+                    moved = true;
                 }
 
                 oldPath = GetNewOldTrickplayDirectory(item, trickplayInfo.TileWidth, trickplayInfo.TileHeight, trickplayInfo.Width, false);
                 if (_fileSystem.DirectoryExists(oldPath))
                 {
                     _fileSystem.MoveDirectory(oldPath, newPath);
+                    moved = true;
+                }
+
+                if (moved)
+                {
+                    itemCount++;
                 }
             }
+
+            offset += Limit;
+            previousCount = trickplayInfos.Count;
+
+            _logger.LogInformation("Checked: {Checked} - Moved: {Count} - Time: {Time}", itemCount, offset, sw.Elapsed);
         } while (previousCount == Limit);
 
         _logger.LogInformation("Moved {Count} items in {Time}", itemCount, sw.Elapsed);
