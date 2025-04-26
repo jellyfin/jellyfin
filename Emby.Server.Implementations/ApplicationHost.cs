@@ -15,6 +15,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Emby.Naming.Common;
 using Emby.Photos;
+using Emby.Server.Implementations.Chapters;
 using Emby.Server.Implementations.Collections;
 using Emby.Server.Implementations.Configuration;
 using Emby.Server.Implementations.Cryptography;
@@ -552,7 +553,7 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<IUserViewManager, UserViewManager>();
 
-            serviceCollection.AddSingleton<IEncodingManager, MediaEncoder.EncodingManager>();
+            serviceCollection.AddSingleton<IChapterManager, ChapterManager>();
 
             serviceCollection.AddSingleton<IAuthService, AuthService>();
             serviceCollection.AddSingleton<IQuickConnect, QuickConnectManager>();
@@ -647,7 +648,7 @@ namespace Emby.Server.Implementations
             BaseItem.ProviderManager = Resolve<IProviderManager>();
             BaseItem.LocalizationManager = Resolve<ILocalizationManager>();
             BaseItem.ItemRepository = Resolve<IItemRepository>();
-            BaseItem.ChapterRepository = Resolve<IChapterRepository>();
+            BaseItem.ChapterManager = Resolve<IChapterManager>();
             BaseItem.FileSystem = Resolve<IFileSystem>();
             BaseItem.UserDataManager = Resolve<IUserDataManager>();
             BaseItem.ChannelManager = Resolve<IChannelManager>();
