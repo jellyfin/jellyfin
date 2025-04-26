@@ -123,7 +123,9 @@ public class BackupService : IBackupService
                     Directory.CreateDirectory(source);
                 }
 
-                var configFiles = zipArchive.Entries.Where(e => Path.GetFullPath(e.FullName).StartsWith(target, StringComparison.OrdinalIgnoreCase));
+                var configFiles = zipArchive.Entries
+                    .Where(e => Path.GetFullPath(e.FullName.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar)
+                        .StartsWith(target, StringComparison.OrdinalIgnoreCase));
 
                 foreach (var item in configFiles)
                 {
