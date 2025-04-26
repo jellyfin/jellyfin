@@ -81,7 +81,7 @@
     <PackageVersion Include="System.Text.Json" Version="9.0.4" />
     <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="9.0.4" />
     <PackageVersion Include="TagLibSharp" Version="2.3.0" />
-    <PackageVersion Include="z440.atl.core" Version="6.21.0" />
+    <PackageVersion Include="z440.atl.core" Version="6.22.0" />
     <PackageVersion Include="TMDbLib" Version="2.2.0" />
     <PackageVersion Include="UTF.Unknown" Version="2.5.1" />
     <PackageVersion Include="Xunit.Priority" Version="1.1.6" />
