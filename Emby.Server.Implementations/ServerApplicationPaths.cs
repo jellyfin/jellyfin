@@ -96,5 +96,12 @@ namespace Emby.Server.Implementations
 
         /// <inheritdoc />
         public string VirtualInternalMetadataPath => "%MetadataPath%";
+
+        /// <inheritdoc/>
+        public override void MakeSanityCheckOrThrow()
+        {
+            base.MakeSanityCheckOrThrow();
+            CreateAndCheckMarker(RootFolderPath, "root");
+        }
     }
 }

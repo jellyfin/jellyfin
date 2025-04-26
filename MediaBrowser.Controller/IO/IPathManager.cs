@@ -1,5 +1,4 @@
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Controller.IO;
 
@@ -46,4 +45,19 @@ public interface IPathManager
     /// <param name="mediaSourceId">The media source id.</param>
     /// <returns>The absolute path.</returns>
     public string GetAttachmentFolderPath(string mediaSourceId);
+
+    /// <summary>
+    /// Gets the chapter images data path.
+    /// </summary>
+    /// <param name="item">The base item.</param>
+    /// <returns>The chapter images data path.</returns>
+    public string GetChapterImageFolderPath(BaseItem item);
+
+    /// <summary>
+    /// Gets the chapter images path.
+    /// </summary>
+    /// <param name="item">The base item.</param>
+    /// <param name="chapterPositionTicks">The chapter position.</param>
+    /// <returns>The chapter images data path.</returns>
+    public string GetChapterImagePath(BaseItem item, long chapterPositionTicks);
 }
