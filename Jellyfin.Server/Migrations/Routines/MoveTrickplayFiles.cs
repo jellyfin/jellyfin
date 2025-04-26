@@ -97,7 +97,7 @@ public class MoveTrickplayFiles : IMigrationRoutine
             offset += Limit;
             previousCount = trickplayInfos.Count;
 
-            _logger.LogInformation("Checked: {Checked} - Moved: {Count} - Time: {Time}", itemCount, offset, sw.Elapsed);
+            _logger.LogInformation("Checked: {Checked} - Moved: {Count} - Time: {Time}", offset, itemCount, sw.Elapsed);
         } while (previousCount == Limit);
 
         _logger.LogInformation("Moved {Count} items in {Time}", itemCount, sw.Elapsed);
