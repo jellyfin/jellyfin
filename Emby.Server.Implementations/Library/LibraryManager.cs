@@ -668,10 +668,10 @@ namespace Emby.Server.Implementations.Library
 
             var list = originalList.Where(i => i.IsDirectory)
                 .Select(i => Path.TrimEndingDirectorySeparator(i.FullName))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Distinct()
                 .ToList();
 
-            var dupes = list.Where(subPath => !subPath.EndsWith(":\\", StringComparison.OrdinalIgnoreCase) && list.Any(i => _fileSystem.ContainsSubPath(i, subPath)))
+            var dupes = list.Where(subPath => !subPath.EndsWith(":\\", StringComparison.Ordinal) && list.Any(i => _fileSystem.ContainsSubPath(i, subPath)))
                 .ToList();
 
             foreach (var dupe in dupes)
@@ -679,7 +679,7 @@ namespace Emby.Server.Implementations.Library
                 _logger.LogInformation("Found duplicate path: {0}", dupe);
             }
 
-            var newList = list.Except(dupes, StringComparer.OrdinalIgnoreCase).Select(_fileSystem.GetDirectoryInfo).ToList();
+            var newList = list.Except(dupes, StringComparer.Ordinal).Select(_fileSystem.GetDirectoryInfo).ToList();
             newList.AddRange(originalList.Where(i => !i.IsDirectory));
             return newList;
         }

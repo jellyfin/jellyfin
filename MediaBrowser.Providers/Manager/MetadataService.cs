@@ -1041,7 +1041,7 @@ namespace MediaBrowser.Providers.Manager
                 }
                 else
                 {
-                    target.Studios = target.Studios.Concat(source.Studios).Distinct().ToArray();
+                    target.Studios = target.Studios.Concat(source.Studios).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
                 }
             }
 
@@ -1053,7 +1053,7 @@ namespace MediaBrowser.Providers.Manager
                 }
                 else
                 {
-                    target.Tags = target.Tags.Concat(source.Tags).Distinct().ToArray();
+                    target.Tags = target.Tags.Concat(source.Tags).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
                 }
             }
 
@@ -1065,7 +1065,7 @@ namespace MediaBrowser.Providers.Manager
                 }
                 else
                 {
-                    target.ProductionLocations = target.ProductionLocations.Concat(source.ProductionLocations).Distinct().ToArray();
+                    target.ProductionLocations = target.ProductionLocations.Concat(source.ProductionLocations).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
                 }
             }
 
@@ -1214,7 +1214,7 @@ namespace MediaBrowser.Providers.Manager
                 }
                 else if (sourceHasAlbumArtist.AlbumArtists.Count > 0)
                 {
-                    targetHasAlbumArtist.AlbumArtists = targetHasAlbumArtist.AlbumArtists.Concat(sourceHasAlbumArtist.AlbumArtists).Distinct().ToArray();
+                    targetHasAlbumArtist.AlbumArtists = targetHasAlbumArtist.AlbumArtists.Concat(sourceHasAlbumArtist.AlbumArtists).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
                 }
             }
         }

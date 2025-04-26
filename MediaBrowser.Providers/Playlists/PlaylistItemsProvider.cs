@@ -99,7 +99,7 @@ public class PlaylistItemsProvider : ILocalMetadataProvider<Playlist>,
                             .OfType<CollectionFolder>()
                             .Where(f => f.CollectionType.HasValue && !_ignoredCollections.Contains(f.CollectionType.Value))
                             .SelectMany(f => f.PhysicalLocations)
-                            .Distinct(StringComparer.OrdinalIgnoreCase)
+                            .Distinct()
                             .ToList();
 
         using (var stream = File.OpenRead(path))
