@@ -116,6 +116,11 @@ public class RefreshInternalDateModified : IDatabaseMigrationRoutine
             }
 
             offset += Limit;
+            if (offset > records)
+            {
+                offset = records;
+            }
+
             _logger.LogInformation("Checked: {Count} - Refreshed: {Items} - Time: {Time}", offset, itemCount, sw.Elapsed);
         } while (offset < records);
 
