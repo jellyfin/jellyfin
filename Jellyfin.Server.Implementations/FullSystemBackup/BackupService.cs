@@ -123,11 +123,11 @@ public class BackupService : IBackupService
                     Directory.CreateDirectory(source);
                 }
 
-                var configFiles = zipArchive.Entries.Where(e => e.FullName.StartsWith(target, StringComparison.OrdinalIgnoreCase));
+                var configFiles = zipArchive.Entries.Where(e => Path.GetFullPath(e.FullName).StartsWith(target, StringComparison.OrdinalIgnoreCase));
 
                 foreach (var item in configFiles)
                 {
-                    var targetPath = Path.Combine(source, item.FullName[target.Length..].Trim('/'));
+                    var targetPath = Path.Combine(source, Path.GetFullPath(item.FullName)[target.Length..].Trim('/'));
                     _logger.LogInformation("Restore and override {File}", targetPath);
                     await CopyOverride(item, targetPath).ConfigureAwait(false);
                 }
