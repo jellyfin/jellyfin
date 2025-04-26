@@ -16,7 +16,9 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// Migration to move trickplay files to the new directory.
 /// </summary>
 [JellyfinMigration("2025-04-20T23:00:00", nameof(MoveTrickplayFiles), "9540D44A-D8DC-11EF-9CBB-B77274F77C52", RunMigrationOnSetup = true)]
+#pragma warning disable CS0618 // Type or member is obsolete
 public class MoveTrickplayFiles : IMigrationRoutine
+#pragma warning restore CS0618 // Type or member is obsolete
 {
     private readonly ITrickplayManager _trickplayManager;
     private readonly IFileSystem _fileSystem;
