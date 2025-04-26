@@ -1035,13 +1035,6 @@ public sealed class BaseItemRepository
                 .Select(f => f.CleanValue)
                 .Contains(e.CleanName));
 
-        // innerQuery = PrepareItemQuery(context, filter)
-        //     .Where(e => e.Type == returnType)
-        //     .Where(e => context.ItemValues!
-        //         .Where(f => itemValueTypes.Contains(f.Type))
-        //         .Select(f => f.CleanValue)
-        //         .Contains(e.CleanName));
-
         var outerQueryFilter = new InternalItemsQuery(filter.User)
         {
             IsPlayed = filter.IsPlayed,
