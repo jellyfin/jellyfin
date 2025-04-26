@@ -453,11 +453,9 @@ public sealed class BaseItemRepository
 
         var images = item.ImageInfos.Select(e => Map(item.Id, e));
         using var context = _dbProvider.CreateDbContext();
-        using var transaction = context.Database.BeginTransaction();
         context.BaseItemImageInfos.Where(e => e.ItemId == item.Id).ExecuteDelete();
         context.BaseItemImageInfos.AddRange(images);
         context.SaveChanges();
-        transaction.Commit();
     }
 
     /// <inheritdoc  />
@@ -487,17 +485,19 @@ public sealed class BaseItemRepository
             tuples.Add((item, ancestorIds, topParent, userdataKey, inheritedTags));
         }
 
-        var localItemValueCache = new Dictionary<(int MagicNumber, string Value), Guid>();
-
         using var context = _dbProvider.CreateDbContext();
         using var transaction = context.Database.BeginTransaction();
+
+        var ids = tuples.Select(f => f.Item.Id).ToArray();
+        var existingItems = context.BaseItems.Where(e => ids.Contains(e.Id)).Select(f => f.Id).ToArray();
+
         foreach (var item in tuples)
         {
             var entity = Map(item.Item);
             // TODO: refactor this "inconsistency"
             entity.TopParentId = item.TopParent?.Id;
 
-            if (!context.BaseItems.Any(e => e.Id == entity.Id))
+            if (!existingItems.Any(e => e == entity.Id))
             {
                 context.BaseItems.Add(entity);
             }
@@ -506,59 +506,98 @@ public sealed class BaseItemRepository
                 context.BaseItemProviders.Where(e => e.ItemId == entity.Id).ExecuteDelete();
                 context.BaseItems.Attach(entity).State = EntityState.Modified;
             }
+        }
 
-            context.AncestorIds.Where(e => e.ItemId == entity.Id).ExecuteDelete();
-            if (item.Item.SupportsAncestors && item.AncestorIds != null)
+        context.SaveChanges();
+
+        var itemValueMaps = tuples
+            .Select(e => (Item: e.Item, Values: GetItemValuesToSave(e.Item, e.InheritedTags)))
+            .ToArray();
+        var allListedItemValues = itemValueMaps
+            .SelectMany(f => f.Values)
+            .Distinct()
+            .ToArray();
+        var existingValues = context.ItemValues
+            .Select(e => new
             {
-                foreach (var ancestorId in item.AncestorIds)
-                {
-                    if (!context.BaseItems.Any(f => f.Id == ancestorId))
-                    {
-                        continue;
-                    }
+                item = e,
+                Key = e.Type + "+" + e.Value
+            })
+            .Where(f => allListedItemValues.Select(e => $"{(int)e.MagicNumber}+{e.Value}").Contains(f.Key))
+            .Select(e => e.item)
+            .ToArray();
+        var missingItemValues = allListedItemValues.Except(existingValues.Select(f => (MagicNumber: f.Type, f.Value))).Select(f => new ItemValue()
+        {
+            CleanValue = GetCleanValue(f.Value),
+            ItemValueId = Guid.NewGuid(),
+            Type = f.MagicNumber,
+            Value = f.Value
+        }).ToArray();
+        context.ItemValues.AddRange(missingItemValues);
+        context.SaveChanges();
 
-                    context.AncestorIds.Add(new AncestorId()
+        var itemValuesStore = existingValues.Concat(missingItemValues).ToArray();
+        var valueMap = itemValueMaps
+            .Select(f => (Item: f.Item, Values: f.Values.Select(e => itemValuesStore.First(g => g.Value == e.Value && g.Type == e.MagicNumber)).ToArray()))
+            .ToArray();
+
+        var mappedValues = context.ItemValuesMap.Where(e => ids.Contains(e.ItemId)).ToList();
+
+        foreach (var item in valueMap)
+        {
+            var itemMappedValues = mappedValues.Where(e => e.ItemId == item.Item.Id).ToList();
+            foreach (var itemValue in item.Values)
+            {
+                var existingItem = itemMappedValues.FirstOrDefault(f => f.ItemValueId == itemValue.ItemValueId);
+                if (existingItem is null)
+                {
+                    context.ItemValuesMap.Add(new ItemValueMap()
                     {
-                        ParentItemId = ancestorId,
-                        ItemId = entity.Id,
                         Item = null!,
-                        ParentItem = null!
+                        ItemId = item.Item.Id,
+                        ItemValue = null!,
+                        ItemValueId = itemValue.ItemValueId
                     });
+                }
+                else
+                {
+                    // map exists, remove from list so its been handled.
+                    itemMappedValues.Remove(existingItem);
                 }
             }
 
-            // Never save duplicate itemValues as they are now mapped anyway.
-            var itemValuesToSave = GetItemValuesToSave(item.Item, item.InheritedTags).DistinctBy(e => (GetCleanValue(e.Value), e.MagicNumber));
-            context.ItemValuesMap.Where(e => e.ItemId == entity.Id).ExecuteDelete();
-            foreach (var itemValue in itemValuesToSave)
+            // all still listed values are not in the new list so remove them.
+            context.ItemValuesMap.RemoveRange(itemMappedValues);
+        }
+
+        context.SaveChanges();
+
+        foreach (var item in tuples)
+        {
+            if (item.Item.SupportsAncestors && item.AncestorIds != null)
             {
-                if (!localItemValueCache.TryGetValue(itemValue, out var refValue))
+                var existingAncestorIds = context.AncestorIds.Where(e => e.ItemId == item.Item.Id).ToList();
+                var validAncestorIds = context.BaseItems.Where(e => item.AncestorIds.Contains(e.Id)).Select(f => f.Id).ToArray();
+                foreach (var ancestorId in validAncestorIds)
                 {
-                    refValue = context.ItemValues
-                                .Where(f => f.Value == itemValue.Value && (int)f.Type == itemValue.MagicNumber)
-                                .Select(e => e.ItemValueId)
-                                .FirstOrDefault();
-                }
-
-                if (refValue.IsEmpty())
-                {
-                    context.ItemValues.Add(new ItemValue()
+                    var existingAncestorId = existingAncestorIds.FirstOrDefault(e => e.ParentItemId == ancestorId);
+                    if (existingAncestorId is null)
                     {
-                        CleanValue = GetCleanValue(itemValue.Value),
-                        Type = (ItemValueType)itemValue.MagicNumber,
-                        ItemValueId = refValue = Guid.NewGuid(),
-                        Value = itemValue.Value
-                    });
-                    localItemValueCache[itemValue] = refValue;
+                        context.AncestorIds.Add(new AncestorId()
+                        {
+                            ParentItemId = ancestorId,
+                            ItemId = item.Item.Id,
+                            Item = null!,
+                            ParentItem = null!
+                        });
+                    }
+                    else
+                    {
+                        existingAncestorIds.Remove(existingAncestorId);
+                    }
                 }
 
-                context.ItemValuesMap.Add(new ItemValueMap()
-                {
-                    Item = null!,
-                    ItemId = entity.Id,
-                    ItemValue = null!,
-                    ItemValueId = refValue
-                });
+                context.AncestorIds.RemoveRange(existingAncestorIds);
             }
         }
 
@@ -1102,27 +1141,27 @@ public sealed class BaseItemRepository
         return value.RemoveDiacritics().ToLowerInvariant();
     }
 
-    private List<(int MagicNumber, string Value)> GetItemValuesToSave(BaseItemDto item, List<string> inheritedTags)
+    private List<(ItemValueType MagicNumber, string Value)> GetItemValuesToSave(BaseItemDto item, List<string> inheritedTags)
     {
-        var list = new List<(int, string)>();
+        var list = new List<(ItemValueType, string)>();
 
         if (item is IHasArtist hasArtist)
         {
-            list.AddRange(hasArtist.Artists.Select(i => (0, i)));
+            list.AddRange(hasArtist.Artists.Select(i => ((ItemValueType)0, i)));
         }
 
         if (item is IHasAlbumArtist hasAlbumArtist)
         {
-            list.AddRange(hasAlbumArtist.AlbumArtists.Select(i => (1, i)));
+            list.AddRange(hasAlbumArtist.AlbumArtists.Select(i => (ItemValueType.AlbumArtist, i)));
         }
 
-        list.AddRange(item.Genres.Select(i => (2, i)));
-        list.AddRange(item.Studios.Select(i => (3, i)));
-        list.AddRange(item.Tags.Select(i => (4, i)));
+        list.AddRange(item.Genres.Select(i => (ItemValueType.Genre, i)));
+        list.AddRange(item.Studios.Select(i => (ItemValueType.Studios, i)));
+        list.AddRange(item.Tags.Select(i => (ItemValueType.Tags, i)));
 
         // keywords was 5
 
-        list.AddRange(inheritedTags.Select(i => (6, i)));
+        list.AddRange(inheritedTags.Select(i => (ItemValueType.InheritedTags, i)));
 
         // Remove all invalid values.
         list.RemoveAll(i => string.IsNullOrWhiteSpace(i.Item2));

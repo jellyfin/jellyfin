@@ -649,10 +649,11 @@ namespace Emby.Server.Implementations.Library
                 args.FileSystemChildren = files;
             }
 
-            // Check to see if we should resolve based on our contents
-            if (args.IsDirectory && !ShouldResolvePathContents(args))
+            // Filter content based on ignore rules
+            if (args.IsDirectory)
             {
-                return null;
+                var filtered = args.GetActualFileSystemChildren().ToArray();
+                args.FileSystemChildren = filtered ?? [];
             }
 
             return ResolveItem(args, resolvers);
@@ -681,17 +682,6 @@ namespace Emby.Server.Implementations.Library
             var newList = list.Except(dupes, StringComparer.OrdinalIgnoreCase).Select(_fileSystem.GetDirectoryInfo).ToList();
             newList.AddRange(originalList.Where(i => !i.IsDirectory));
             return newList;
-        }
-
-        /// <summary>
-        /// Determines whether a path should be ignored based on its contents - called after the contents have been read.
-        /// </summary>
-        /// <param name="args">The args.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
-        private static bool ShouldResolvePathContents(ItemResolveArgs args)
-        {
-            // Ignore any folders containing a file called .ignore
-            return !args.ContainsFileSystemEntryByName(".ignore");
         }
 
         public IEnumerable<BaseItem> ResolvePaths(IEnumerable<FileSystemMetadata> files, IDirectoryService directoryService, Folder parent, LibraryOptions libraryOptions, CollectionType? collectionType = null)
@@ -767,8 +757,6 @@ namespace Emby.Server.Implementations.Library
         public AggregateFolder CreateRootFolder()
         {
             var rootFolderPath = _configurationManager.ApplicationPaths.RootFolderPath;
-
-            Directory.CreateDirectory(rootFolderPath);
 
             var rootFolder = GetItemById(GetNewItemId(rootFolderPath, typeof(AggregateFolder))) as AggregateFolder ??
                              (ResolvePath(_fileSystem.GetDirectoryInfo(rootFolderPath)) as Folder ?? throw new InvalidOperationException("Something went very wong"))
@@ -2726,27 +2714,33 @@ namespace Emby.Server.Implementations.Library
 
         public IEnumerable<BaseItem> FindExtras(BaseItem owner, IReadOnlyList<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
         {
+            // Apply .ignore rules
+            var filtered = fileSystemChildren.Where(c => !DotIgnoreIgnoreRule.IsIgnored(c, owner)).ToList();
             var ownerVideoInfo = VideoResolver.Resolve(owner.Path, owner.IsFolder, _namingOptions, libraryRoot: owner.ContainingFolderPath);
             if (ownerVideoInfo is null)
             {
                 yield break;
             }
 
-            var count = fileSystemChildren.Count;
+            var count = filtered.Count;
             for (var i = 0; i < count; i++)
             {
-                var current = fileSystemChildren[i];
+                var current = filtered[i];
                 if (current.IsDirectory && _namingOptions.AllExtrasTypesFolderNames.ContainsKey(current.Name))
                 {
                     var filesInSubFolder = _fileSystem.GetFiles(current.FullName, null, false, false);
-                    foreach (var file in filesInSubFolder)
+                    var filesInSubFolderList = filesInSubFolder.ToList();
+
+                    bool subFolderIsMixedFolder = filesInSubFolderList.Count > 1;
+
+                    foreach (var file in filesInSubFolderList)
                     {
                         if (!_extraResolver.TryGetExtraTypeForOwner(file.FullName, ownerVideoInfo, out var extraType))
                         {
                             continue;
                         }
 
-                        var extra = GetExtra(file, extraType.Value);
+                        var extra = GetExtra(file, extraType.Value, subFolderIsMixedFolder);
                         if (extra is not null)
                         {
                             yield return extra;
@@ -2755,7 +2749,7 @@ namespace Emby.Server.Implementations.Library
                 }
                 else if (!current.IsDirectory && _extraResolver.TryGetExtraTypeForOwner(current.FullName, ownerVideoInfo, out var extraType))
                 {
-                    var extra = GetExtra(current, extraType.Value);
+                    var extra = GetExtra(current, extraType.Value, false);
                     if (extra is not null)
                     {
                         yield return extra;
@@ -2763,7 +2757,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            BaseItem? GetExtra(FileSystemMetadata file, ExtraType extraType)
+            BaseItem? GetExtra(FileSystemMetadata file, ExtraType extraType, bool isInMixedFolder)
             {
                 var extra = ResolvePath(_fileSystem.GetFileInfo(file.FullName), directoryService, _extraResolver.GetResolversForExtraType(extraType));
                 if (extra is not Video && extra is not Audio)
@@ -2786,6 +2780,7 @@ namespace Emby.Server.Implementations.Library
 
                 extra.ParentId = Guid.Empty;
                 extra.OwnerId = owner.Id;
+                extra.IsInMixedFolder = isInMixedFolder;
                 return extra;
             }
         }

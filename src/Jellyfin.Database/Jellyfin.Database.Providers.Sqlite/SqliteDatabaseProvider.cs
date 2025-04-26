@@ -7,6 +7,7 @@ using Jellyfin.Database.Implementations;
 using MediaBrowser.Common.Configuration;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Database.Providers.Sqlite;
@@ -38,9 +39,13 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     /// <inheritdoc/>
     public void Initialise(DbContextOptionsBuilder options)
     {
-        options.UseSqlite(
-            $"Filename={Path.Combine(_applicationPaths.DataPath, "jellyfin.db")};Pooling=false",
-            sqLiteOptions => sqLiteOptions.MigrationsAssembly(GetType().Assembly));
+        options
+            .UseSqlite(
+                $"Filename={Path.Combine(_applicationPaths.DataPath, "jellyfin.db")};Pooling=false",
+                sqLiteOptions => sqLiteOptions.MigrationsAssembly(GetType().Assembly))
+            // TODO: Remove when https://github.com/dotnet/efcore/pull/35873 is merged & released
+            .ConfigureWarnings(warnings =>
+                warnings.Ignore(RelationalEventId.NonTransactionalMigrationOperationWarning));
     }
 
     /// <inheritdoc/>
@@ -98,10 +103,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
         var key = DateTime.UtcNow.ToString("yyyyMMddhhmmss", CultureInfo.InvariantCulture);
         var path = Path.Combine(_applicationPaths.DataPath, "jellyfin.db");
         var backupFile = Path.Combine(_applicationPaths.DataPath, BackupFolderName);
-        if (!Directory.Exists(backupFile))
-        {
-            Directory.CreateDirectory(backupFile);
-        }
+        Directory.CreateDirectory(backupFile);
 
         backupFile = Path.Combine(backupFile, $"{key}_jellyfin.db");
         File.Copy(path, backupFile);
@@ -118,7 +120,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
 
         if (!File.Exists(backupFile))
         {
-            _logger.LogCritical("Tried to restore a backup that does not exist.");
+            _logger.LogCritical("Tried to restore a backup that does not exist: {Key}", key);
             return Task.CompletedTask;
         }
 
