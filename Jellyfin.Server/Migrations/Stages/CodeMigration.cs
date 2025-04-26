@@ -24,7 +24,6 @@ internal class CodeMigration(Type migrationType, JellyfinMigrationAttribute meta
         {
             if (serviceProvider is null)
             {
-#pragma warning disable CS0618 // Type or member is obsolete
                 ((IMigrationRoutine)Activator.CreateInstance(MigrationType)!).Perform();
             }
             else
@@ -48,6 +47,5 @@ internal class CodeMigration(Type migrationType, JellyfinMigrationAttribute meta
         {
             throw new InvalidOperationException($"The type {MigrationType} does not implement either IMigrationRoutine or IAsyncMigrationRoutine and is not a valid migration type");
         }
-#pragma warning restore CS0618 // Type or member is obsolete
     }
 }
