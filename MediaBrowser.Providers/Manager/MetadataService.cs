@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -12,6 +13,7 @@ using Jellyfin.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
@@ -26,13 +28,22 @@ namespace MediaBrowser.Providers.Manager
         where TItemType : BaseItem, IHasLookupInfo<TIdType>, new()
         where TIdType : ItemLookupInfo, new()
     {
-        protected MetadataService(IServerConfigurationManager serverConfigurationManager, ILogger<MetadataService<TItemType, TIdType>> logger, IProviderManager providerManager, IFileSystem fileSystem, ILibraryManager libraryManager)
+        protected MetadataService(
+            IServerConfigurationManager serverConfigurationManager,
+            ILogger<MetadataService<TItemType, TIdType>> logger,
+            IProviderManager providerManager,
+            IFileSystem fileSystem,
+            ILibraryManager libraryManager,
+            IPathManager pathManager,
+            IKeyframeManager keyframeManager)
         {
             ServerConfigurationManager = serverConfigurationManager;
             Logger = logger;
             ProviderManager = providerManager;
             FileSystem = fileSystem;
             LibraryManager = libraryManager;
+            PathManager = pathManager;
+            KeyframeManager = keyframeManager;
             ImageProvider = new ItemImageProvider(Logger, ProviderManager, FileSystem);
         }
 
@@ -47,6 +58,10 @@ namespace MediaBrowser.Providers.Manager
         protected IFileSystem FileSystem { get; }
 
         protected ILibraryManager LibraryManager { get; }
+
+        protected IPathManager PathManager { get; }
+
+        protected IKeyframeManager KeyframeManager { get; }
 
         protected virtual bool EnableUpdatingPremiereDateFromChildren => false;
 
@@ -301,6 +316,54 @@ namespace MediaBrowser.Providers.Manager
             {
                 item.PresentationUniqueKey = presentationUniqueKey;
                 updateType |= ItemUpdateType.MetadataImport;
+            }
+
+            // Cleanup extracted files if source file was modified
+            var itemPath = item.Path;
+            if (!string.IsNullOrEmpty(itemPath))
+            {
+                var info = FileSystem.GetFileSystemInfo(itemPath);
+                var modificationDate = info.LastWriteTimeUtc;
+                var itemLastModifiedFileSystem = item.DateModified;
+                if (info.Exists && itemLastModifiedFileSystem != modificationDate)
+                {
+                    Logger.LogDebug("File modification time changed from {Then} to {Now}: {Path}", itemLastModifiedFileSystem, modificationDate, itemPath);
+
+                    item.DateModified = modificationDate;
+                    if (ServerConfigurationManager.GetMetadataConfiguration().UseFileCreationTimeForDateAdded)
+                    {
+                        item.DateCreated = info.CreationTimeUtc;
+                    }
+
+                    var size = info.Length;
+                    if (item is Video video)
+                    {
+                        var videoType = video.VideoType;
+                        var sizeChanged = size != (video.Size ?? 0);
+                        if (videoType == VideoType.BluRay || video.VideoType == VideoType.Dvd || sizeChanged)
+                        {
+                            if (sizeChanged)
+                            {
+                                item.Size = size;
+                                Logger.LogDebug("File size changed from {Then} to {Now}: {Path}", video.Size, size, itemPath);
+                            }
+
+                            var validPaths = PathManager.GetExtractedDataPaths(video).Where(Directory.Exists).ToList();
+                            if (validPaths.Count > 0)
+                            {
+                                Logger.LogInformation("File changed, pruning extracted data: {Path}", itemPath);
+                                foreach (var path in validPaths)
+                                {
+                                    Directory.Delete(path, true);
+                                }
+                            }
+
+                            KeyframeManager.DeleteKeyframeDataAsync(video.Id, CancellationToken.None).GetAwaiter().GetResult();
+                        }
+                    }
+
+                    updateType |= ItemUpdateType.MetadataImport;
+                }
             }
 
             return updateType;
@@ -1130,6 +1193,11 @@ namespace MediaBrowser.Providers.Manager
                 if (source.DateCreated != default)
                 {
                     target.DateCreated = source.DateCreated;
+                }
+
+                if (replaceData || source.DateModified != default)
+                {
+                    target.DateModified = source.DateModified;
                 }
 
                 if (replaceData || string.IsNullOrEmpty(target.PreferredMetadataCountryCode))

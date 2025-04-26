@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using MediaBrowser.Common.Configuration;
@@ -83,5 +84,18 @@ public class PathManager : IPathManager
         var filename = item.DateModified.Ticks.ToString(CultureInfo.InvariantCulture) + "_" + chapterPositionTicks.ToString(CultureInfo.InvariantCulture) + ".jpg";
 
         return Path.Join(GetChapterImageFolderPath(item), filename);
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyList<string> GetExtractedDataPaths(BaseItem item)
+    {
+        var mediaSourceId = item.Id.ToString("N", CultureInfo.InvariantCulture);
+        return [
+            GetAttachmentFolderPath(mediaSourceId),
+            GetSubtitleFolderPath(mediaSourceId),
+            GetTrickplayDirectory(item, false),
+            GetTrickplayDirectory(item, true),
+            GetChapterImageFolderPath(item)
+        ];
     }
 }

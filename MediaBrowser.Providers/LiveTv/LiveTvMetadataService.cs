@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
@@ -17,8 +18,10 @@ namespace MediaBrowser.Providers.LiveTv
             ILogger<LiveTvMetadataService> logger,
             IProviderManager providerManager,
             IFileSystem fileSystem,
-            ILibraryManager libraryManager)
-            : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
+            ILibraryManager libraryManager,
+            IPathManager pathManager,
+            IKeyframeManager keyframeManager)
+            : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager, pathManager, keyframeManager)
         {
         }
     }
