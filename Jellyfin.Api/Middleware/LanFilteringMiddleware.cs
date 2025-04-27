@@ -1,9 +1,9 @@
-using System.Net;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Api.Middleware;
 
@@ -29,8 +29,9 @@ public class LanFilteringMiddleware
     /// <param name="httpContext">The current HTTP context.</param>
     /// <param name="networkManager">The network manager.</param>
     /// <param name="serverConfigurationManager">The server configuration manager.</param>
+    /// <param name="logger">The logger.</param>
     /// <returns>The async task.</returns>
-    public async Task Invoke(HttpContext httpContext, INetworkManager networkManager, IServerConfigurationManager serverConfigurationManager)
+    public async Task Invoke(HttpContext httpContext, INetworkManager networkManager, IServerConfigurationManager serverConfigurationManager, ILogger<LanFilteringMiddleware> logger)
     {
         if (serverConfigurationManager.GetNetworkConfiguration().EnableRemoteAccess)
         {
@@ -43,6 +44,7 @@ public class LanFilteringMiddleware
         {
             // No access from network, respond with 503 instead of 200.
             httpContext.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+            logger.LogWarning("Attempted connection from {Host} but it is not in the configured local network and remote access is disabled", host);
             return;
         }
 
