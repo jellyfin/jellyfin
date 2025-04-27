@@ -14,8 +14,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
 {
     public partial class EncoderValidator
     {
-        private static readonly string[] _requiredDecoders = new[]
-        {
+        private static readonly string[] _requiredDecoders =
+        [
             "h264",
             "hevc",
             "vp8",
@@ -57,10 +57,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "vp8_rkmpp",
             "vp9_rkmpp",
             "av1_rkmpp"
-        };
+        ];
 
-        private static readonly string[] _requiredEncoders = new[]
-        {
+        private static readonly string[] _requiredEncoders =
+        [
             "libx264",
             "libx265",
             "libsvtav1",
@@ -97,10 +97,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "h264_rkmpp",
             "hevc_rkmpp",
             "mjpeg_rkmpp"
-        };
+        ];
 
-        private static readonly string[] _requiredFilters = new[]
-        {
+        private static readonly string[] _requiredFilters =
+        [
             // sw
             "alphasrc",
             "zscale",
@@ -148,7 +148,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "scale_rkrga",
             "vpp_rkrga",
             "overlay_rkrga"
-        };
+        ];
 
         private static readonly Dictionary<int, string[]> _filterOptionsDict = new Dictionary<int, string[]>
         {
@@ -471,10 +471,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (string.IsNullOrWhiteSpace(output))
             {
-                return Enumerable.Empty<string>();
+                return [];
             }
 
-            var found = output.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).Skip(1).Distinct().ToList();
+            var found = output.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries).Skip(1).Distinct().ToList();
             _logger.LogInformation("Available hwaccel types: {Types}", found);
 
             return found;
@@ -580,12 +580,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error detecting available {Codec}", codecstr);
-                return Enumerable.Empty<string>();
+                return [];
             }
 
             if (string.IsNullOrWhiteSpace(output))
             {
-                return Enumerable.Empty<string>();
+                return [];
             }
 
             var required = codec == Codec.Encoder ? _requiredEncoders : _requiredDecoders;
@@ -610,12 +610,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error detecting available filters");
-                return Enumerable.Empty<string>();
+                return [];
             }
 
             if (string.IsNullOrWhiteSpace(output))
             {
-                return Enumerable.Empty<string>();
+                return [];
             }
 
             var found = FilterRegex()

@@ -63,7 +63,7 @@ namespace MediaBrowser.Providers.Music
             }
             else
             {
-                targetItem.Artists = targetItem.Artists.Concat(sourceItem.Artists).Distinct().ToArray();
+                targetItem.Artists = targetItem.Artists.Concat(sourceItem.Artists).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
             }
 
             if (replaceData || string.IsNullOrEmpty(targetItem.Album))

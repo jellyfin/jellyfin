@@ -223,6 +223,6 @@ public class YearsController : BaseJellyfinApiController
             .Select(i => i.ProductionYear ?? 0)
             .Where(i => i > 0)
             .Distinct()
-            .Select(year => _libraryManager.GetYear(year));
+            .Select(_libraryManager.GetYear);
     }
 }
