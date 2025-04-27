@@ -756,7 +756,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 _threads,
                 vf,
                 isAudio ? string.Empty : GetImageResolutionParameter(),
-                EncodingHelper.GetVideoSyncOption("-1", EncoderVersion).Trim(), // auto decide fps mode
+                EncodingHelper.GetVideoSyncOption("-1", EncoderVersion), // auto decide fps mode
                 tempExtractPath);
 
             if (offset.HasValue)
