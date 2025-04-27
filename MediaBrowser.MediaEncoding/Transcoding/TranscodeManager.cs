@@ -425,6 +425,25 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
             }
         }
 
+        if (!userId.IsEmpty() && state.MediaSource.LiveStreamId != null)
+        {
+            var user = userId.IsEmpty() ? null : _userManager.GetUserById(userId);
+            string username = "undefined";
+            if (user is not null)
+            {
+                username = user.Username;
+            }
+
+            var credentials = username + ":pass";
+            _logger.LogInformation("Credentials: {0} with username {1} and is live stream {2}", credentials, username, state.MediaSource.LiveStreamId != null);
+
+            var base64Credentials = Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes(credentials));
+            string headers = " -headers ";
+            headers += $"\"Authorization: Basic {base64Credentials}\" ";
+            commandLineArguments = headers + commandLineArguments;
+        }
+
+
         var process = new Process
         {
             StartInfo = new ProcessStartInfo
