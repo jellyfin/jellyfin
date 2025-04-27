@@ -767,7 +767,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // The mpegts demuxer cannot seek to keyframes, so we have to let the
             // decoder discard non-keyframes, which may contain corrupted images.
             var seekMpegTs = offset.HasValue && string.Equals("mpegts", container, StringComparison.OrdinalIgnoreCase);
-            if ((useIFrame && useTradeoff) || seekMpegTs)
+            if (useIFrame && (useTradeoff || seekMpegTs))
             {
                 args = "-skip_frame nokey " + args;
             }
