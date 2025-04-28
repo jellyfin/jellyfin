@@ -15,7 +15,10 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// Migration to move trickplay files to the new directory.
 /// </summary>
+[JellyfinMigration("2025-04-20T23:00:00", nameof(MoveTrickplayFiles), "9540D44A-D8DC-11EF-9CBB-B77274F77C52", RunMigrationOnSetup = true)]
+#pragma warning disable CS0618 // Type or member is obsolete
 public class MoveTrickplayFiles : IMigrationRoutine
+#pragma warning restore CS0618 // Type or member is obsolete
 {
     private readonly ITrickplayManager _trickplayManager;
     private readonly IFileSystem _fileSystem;
@@ -40,15 +43,6 @@ public class MoveTrickplayFiles : IMigrationRoutine
         _libraryManager = libraryManager;
         _logger = logger;
     }
-
-    /// <inheritdoc />
-    public Guid Id => new("9540D44A-D8DC-11EF-9CBB-B77274F77C52");
-
-    /// <inheritdoc />
-    public string Name => "MoveTrickplayFiles";
-
-    /// <inheritdoc />
-    public bool PerformOnNewInstall => true;
 
     /// <inheritdoc />
     public void Perform()
@@ -103,7 +97,7 @@ public class MoveTrickplayFiles : IMigrationRoutine
             offset += Limit;
             previousCount = trickplayInfos.Count;
 
-            _logger.LogInformation("Checked: {Checked} - Moved: {Count} - Time: {Time}", itemCount, offset, sw.Elapsed);
+            _logger.LogInformation("Checked: {Checked} - Moved: {Count} - Time: {Time}", offset, itemCount, sw.Elapsed);
         } while (previousCount == Limit);
 
         _logger.LogInformation("Moved {Count} items in {Time}", itemCount, sw.Elapsed);

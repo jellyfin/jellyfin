@@ -24,7 +24,10 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// Migration to move extracted files to the new directories.
 /// </summary>
+[JellyfinMigration("2025-04-20T21:00:00", nameof(MoveExtractedFiles), "9063b0Ef-CFF1-4EDC-9A13-74093681A89B")]
+#pragma warning disable CS0618 // Type or member is obsolete
 public class MoveExtractedFiles : IMigrationRoutine
+#pragma warning restore CS0618 // Type or member is obsolete
 {
     private readonly IApplicationPaths _appPaths;
     private readonly ILogger<MoveExtractedFiles> _logger;
@@ -57,15 +60,6 @@ public class MoveExtractedFiles : IMigrationRoutine
     private string SubtitleCachePath => Path.Combine(_appPaths.DataPath, "subtitles");
 
     private string AttachmentCachePath => Path.Combine(_appPaths.DataPath, "attachments");
-
-    /// <inheritdoc />
-    public Guid Id => new("9063b0Ef-CFF1-4EDC-9A13-74093681A89B");
-
-    /// <inheritdoc />
-    public string Name => "MoveExtractedFiles";
-
-    /// <inheritdoc />
-    public bool PerformOnNewInstall => false;
 
     /// <inheritdoc />
     public void Perform()

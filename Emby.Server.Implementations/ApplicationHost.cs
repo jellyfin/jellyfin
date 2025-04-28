@@ -580,21 +580,6 @@ namespace Emby.Server.Implementations
         /// <returns>A task representing the service initialization operation.</returns>
         public async Task InitializeServices(IConfiguration startupConfig)
         {
-            var factory = Resolve<IDbContextFactory<JellyfinDbContext>>();
-            var provider = Resolve<IJellyfinDatabaseProvider>();
-            provider.DbContextFactory = factory;
-
-            var jellyfinDb = await factory.CreateDbContextAsync().ConfigureAwait(false);
-            await using (jellyfinDb.ConfigureAwait(false))
-            {
-                if ((await jellyfinDb.Database.GetPendingMigrationsAsync().ConfigureAwait(false)).Any())
-                {
-                    Logger.LogInformation("There are pending EFCore migrations in the database. Applying... (This may take a while, do not stop Jellyfin)");
-                    await jellyfinDb.Database.MigrateAsync().ConfigureAwait(false);
-                    Logger.LogInformation("EFCore migrations applied successfully");
-                }
-            }
-
             var localizationManager = (LocalizationManager)Resolve<ILocalizationManager>();
             await localizationManager.LoadAll().ConfigureAwait(false);
 

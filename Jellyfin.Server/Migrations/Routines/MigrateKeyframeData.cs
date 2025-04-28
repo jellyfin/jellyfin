@@ -19,6 +19,7 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// Migration to move extracted files to the new directories.
 /// </summary>
+[JellyfinMigration("2025-04-21T00:00:00", nameof(MigrateKeyframeData), "EA4bCAE1-09A4-428E-9B90-4B4FD2EA1B24")]
 public class MigrateKeyframeData : IDatabaseMigrationRoutine
 {
     private readonly ILogger<MigrateKeyframeData> _logger;
@@ -43,15 +44,6 @@ public class MigrateKeyframeData : IDatabaseMigrationRoutine
     }
 
     private string KeyframeCachePath => Path.Combine(_appPaths.DataPath, "keyframes");
-
-    /// <inheritdoc />
-    public Guid Id => new("EA4bCAE1-09A4-428E-9B90-4B4FD2EA1B24");
-
-    /// <inheritdoc />
-    public string Name => "MigrateKeyframeData";
-
-    /// <inheritdoc />
-    public bool PerformOnNewInstall => false;
 
     /// <inheritdoc />
     public void Perform()

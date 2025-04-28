@@ -10,7 +10,10 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.Server.Migrations.PreStartupRoutines;
 
 /// <inheritdoc />
+[JellyfinMigration("2025-04-20T03:00:00", nameof(MigrateEncodingOptions), "A8E61960-7726-4450-8F3D-82C12DAABBCB", Stage = Stages.JellyfinMigrationStageTypes.PreInitialisation)]
+#pragma warning disable CS0618 // Type or member is obsolete
 public class MigrateEncodingOptions : IMigrationRoutine
+#pragma warning restore CS0618 // Type or member is obsolete
 {
     private readonly ServerApplicationPaths _applicationPaths;
     private readonly ILogger<MigrateEncodingOptions> _logger;
@@ -25,15 +28,6 @@ public class MigrateEncodingOptions : IMigrationRoutine
         _applicationPaths = applicationPaths;
         _logger = loggerFactory.CreateLogger<MigrateEncodingOptions>();
     }
-
-    /// <inheritdoc />
-    public Guid Id => Guid.Parse("A8E61960-7726-4450-8F3D-82C12DAABBCB");
-
-    /// <inheritdoc />
-    public string Name => nameof(MigrateEncodingOptions);
-
-    /// <inheritdoc />
-    public bool PerformOnNewInstall => false;
 
     /// <inheritdoc />
     public void Perform()

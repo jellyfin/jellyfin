@@ -76,6 +76,11 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     /// <inheritdoc/>
     public async Task RunShutdownTask(CancellationToken cancellationToken)
     {
+        if (DbContextFactory is null)
+        {
+            return;
+        }
+
         // Run before disposing the application
         var context = await DbContextFactory!.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (context.ConfigureAwait(false))
