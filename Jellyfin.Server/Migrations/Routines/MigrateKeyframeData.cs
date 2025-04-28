@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -12,8 +11,6 @@ using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Library;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -22,10 +19,10 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// Migration to move extracted files to the new directories.
 /// </summary>
+[JellyfinMigration("2025-04-21T00:00:00", nameof(MigrateKeyframeData), "EA4bCAE1-09A4-428E-9B90-4B4FD2EA1B24")]
 public class MigrateKeyframeData : IDatabaseMigrationRoutine
 {
-    private readonly ILibraryManager _libraryManager;
-    private readonly ILogger<MoveTrickplayFiles> _logger;
+    private readonly ILogger<MigrateKeyframeData> _logger;
     private readonly IApplicationPaths _appPaths;
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
     private static readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
@@ -33,17 +30,14 @@ public class MigrateKeyframeData : IDatabaseMigrationRoutine
     /// <summary>
     /// Initializes a new instance of the <see cref="MigrateKeyframeData"/> class.
     /// </summary>
-    /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="logger">The logger.</param>
     /// <param name="appPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
     /// <param name="dbProvider">The EFCore db factory.</param>
     public MigrateKeyframeData(
-        ILibraryManager libraryManager,
-        ILogger<MoveTrickplayFiles> logger,
+        ILogger<MigrateKeyframeData> logger,
         IApplicationPaths appPaths,
         IDbContextFactory<JellyfinDbContext> dbProvider)
     {
-        _libraryManager = libraryManager;
         _logger = logger;
         _appPaths = appPaths;
         _dbProvider = dbProvider;
@@ -52,59 +46,36 @@ public class MigrateKeyframeData : IDatabaseMigrationRoutine
     private string KeyframeCachePath => Path.Combine(_appPaths.DataPath, "keyframes");
 
     /// <inheritdoc />
-    public Guid Id => new("EA4bCAE1-09A4-428E-9B90-4B4FD2EA1B24");
-
-    /// <inheritdoc />
-    public string Name => "MigrateKeyframeData";
-
-    /// <inheritdoc />
-    public bool PerformOnNewInstall => false;
-
-    /// <inheritdoc />
     public void Perform()
     {
-        const int Limit = 100;
-        int itemCount = 0, offset = 0, previousCount;
+        const int Limit = 5000;
+        int itemCount = 0, offset = 0;
 
         var sw = Stopwatch.StartNew();
-        var itemsQuery = new InternalItemsQuery
-        {
-            MediaTypes = [MediaType.Video],
-            SourceTypes = [SourceType.Library],
-            IsVirtualItem = false,
-            IsFolder = false
-        };
 
         using var context = _dbProvider.CreateDbContext();
+        var baseQuery = context.BaseItems.Where(b => b.MediaType == MediaType.Video.ToString() && !b.IsVirtualItem && !b.IsFolder).OrderBy(e => e.Id);
+        var records = baseQuery.Count();
+        _logger.LogInformation("Checking {Count} items for importable keyframe data.", records);
+
         context.KeyframeData.ExecuteDelete();
         using var transaction = context.Database.BeginTransaction();
-        List<KeyframeData> keyframes = [];
-
         do
         {
-            var result = _libraryManager.GetItemsResult(itemsQuery);
-            _logger.LogInformation("Importing keyframes for {Count} items", result.TotalRecordCount);
-
-            var items = result.Items;
-            previousCount = items.Count;
-            offset += Limit;
-            foreach (var item in items)
+            var results = baseQuery.Skip(offset).Take(Limit).Select(b => new Tuple<Guid, string?>(b.Id, b.Path)).ToList();
+            foreach (var result in results)
             {
-                if (TryGetKeyframeData(item, out var data))
+                if (TryGetKeyframeData(result.Item1, result.Item2, out var data))
                 {
-                    keyframes.Add(data);
-                }
-
-                if (++itemCount % 10_000 == 0)
-                {
-                    context.KeyframeData.AddRange(keyframes);
-                    keyframes.Clear();
-                    _logger.LogInformation("Imported keyframes for {Count} items in {Time}", itemCount, sw.Elapsed);
+                    itemCount++;
+                    context.KeyframeData.Add(data);
                 }
             }
-        } while (previousCount == Limit);
 
-        context.KeyframeData.AddRange(keyframes);
+            offset += Limit;
+            _logger.LogInformation("Checked: {Count} - Imported: {Items} - Time: {Time}", offset, itemCount, sw.Elapsed);
+        } while (offset < records);
+
         context.SaveChanges();
         transaction.Commit();
 
@@ -116,10 +87,9 @@ public class MigrateKeyframeData : IDatabaseMigrationRoutine
         }
     }
 
-    private bool TryGetKeyframeData(BaseItem item, [NotNullWhen(true)] out KeyframeData? data)
+    private bool TryGetKeyframeData(Guid id, string? path, [NotNullWhen(true)] out KeyframeData? data)
     {
         data = null;
-        var path = item.Path;
         if (!string.IsNullOrEmpty(path))
         {
             var cachePath = GetCachePath(KeyframeCachePath, path);
@@ -127,7 +97,7 @@ public class MigrateKeyframeData : IDatabaseMigrationRoutine
             {
                 data = new()
                 {
-                    ItemId = item.Id,
+                    ItemId = id,
                     KeyframeTicks = keyframeData.KeyframeTicks.ToList(),
                     TotalDuration = keyframeData.TotalDuration
                 };

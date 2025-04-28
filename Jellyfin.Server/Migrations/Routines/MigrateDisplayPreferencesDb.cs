@@ -20,7 +20,10 @@ namespace Jellyfin.Server.Migrations.Routines
     /// <summary>
     /// The migration routine for migrating the display preferences database to EF Core.
     /// </summary>
+    [JellyfinMigration("2025-04-20T12:00:00", nameof(MigrateDisplayPreferencesDb), "06387815-C3CC-421F-A888-FB5F9992BEA8")]
+#pragma warning disable CS0618 // Type or member is obsolete
     public class MigrateDisplayPreferencesDb : IMigrationRoutine
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         private const string DbFilename = "displaypreferences.db";
 
@@ -50,15 +53,6 @@ namespace Jellyfin.Server.Migrations.Routines
             _jsonOptions = new JsonSerializerOptions();
             _jsonOptions.Converters.Add(new JsonStringEnumConverter());
         }
-
-        /// <inheritdoc />
-        public Guid Id => Guid.Parse("06387815-C3CC-421F-A888-FB5F9992BEA8");
-
-        /// <inheritdoc />
-        public string Name => "MigrateDisplayPreferencesDatabase";
-
-        /// <inheritdoc />
-        public bool PerformOnNewInstall => false;
 
         /// <inheritdoc />
         public void Perform()

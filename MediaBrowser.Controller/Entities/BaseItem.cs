@@ -1804,7 +1804,7 @@ namespace MediaBrowser.Controller.Entities
 
         public void SetStudios(IEnumerable<string> names)
         {
-            Studios = names.Trimmed().Distinct().ToArray();
+            Studios = names.Trimmed().Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
         }
 
         /// <summary>

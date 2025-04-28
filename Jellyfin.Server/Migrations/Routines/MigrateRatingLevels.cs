@@ -10,6 +10,7 @@ namespace Jellyfin.Server.Migrations.Routines
     /// <summary>
     /// Migrate rating levels.
     /// </summary>
+    [JellyfinMigration("2025-04-20T22:00:00", nameof(MigrateRatingLevels), "98724538-EB11-40E3-931A-252C55BDDE7A")]
     internal class MigrateRatingLevels : IDatabaseMigrationRoutine
     {
         private readonly ILogger<MigrateRatingLevels> _logger;
@@ -25,15 +26,6 @@ namespace Jellyfin.Server.Migrations.Routines
             _localizationManager = localizationManager;
             _logger = loggerFactory.CreateLogger<MigrateRatingLevels>();
         }
-
-        /// <inheritdoc/>
-        public Guid Id => Guid.Parse("{98724538-EB11-40E3-931A-252C55BDDE7A}");
-
-        /// <inheritdoc/>
-        public string Name => "MigrateRatingLevels";
-
-        /// <inheritdoc/>
-        public bool PerformOnNewInstall => false;
 
         /// <inheritdoc/>
         public void Perform()
