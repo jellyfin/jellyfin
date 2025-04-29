@@ -72,7 +72,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private List<string> _decoders = new List<string>();
         private List<string> _hwaccels = new List<string>();
         private List<string> _filters = new List<string>();
-        private IDictionary<int, bool> _filtersWithOption = new Dictionary<int, bool>();
+        private IDictionary<FilterOptionType, bool> _filtersWithOption = new Dictionary<FilterOptionType, bool>();
         private IDictionary<BitStreamFilterOptionType, bool> _bitStreamFiltersWithOption = new Dictionary<BitStreamFilterOptionType, bool>();
 
         private bool _isPkeyPauseSupported = false;
@@ -341,7 +341,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _filters = list.ToList();
         }
 
-        public void SetAvailableFiltersWithOption(IDictionary<int, bool> dict)
+        public void SetAvailableFiltersWithOption(IDictionary<FilterOptionType, bool> dict)
         {
             _filtersWithOption = dict;
         }
@@ -383,12 +383,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <inheritdoc />
         public bool SupportsFilterWithOption(FilterOptionType option)
         {
-            if (_filtersWithOption.TryGetValue((int)option, out var val))
-            {
-                return val;
-            }
-
-            return false;
+            return _filtersWithOption.TryGetValue(option, out var val) && val;
         }
 
         public bool SupportsBitStreamFilterWithOption(BitStreamFilterOptionType option)
