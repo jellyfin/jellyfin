@@ -2945,7 +2945,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     var path = Path.Combine(virtualFolderPath, collectionType.ToString()!.ToLowerInvariant() + ".collection"); // Can't be null with legal values?
 
-                    await File.WriteAllBytesAsync(path, []).ConfigureAwait(false);
+                    FileHelper.CreateEmpty(path);
                 }
 
                 CollectionFolder.SaveLibraryOptions(virtualFolderPath, options);
