@@ -347,8 +347,8 @@ pli||pi|Pali|pali
 pol||pl|Polish|polonais
 pon|||Pohnpeian|pohnpei
 por||pt|Portuguese|portugais
-pop||pt-pt|Portuguese (Portugal)|portugais (pt-pt)
-pob||pt-br|Portuguese (Brazil)|portugais (pt-br)
+por||pt-pt|Portuguese (Portugal)|portugais (pt-pt)
+por||pt-br|Portuguese (Brazil)|portugais (pt-br)
 pra|||Prakrit languages|prâkrit, langues
 pro|||Provençal, Old (to 1500)|provençal ancien (jusqu'à 1500)
 pus||ps|Pushto; Pashto|pachto
