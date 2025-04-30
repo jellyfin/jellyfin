@@ -15,6 +15,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.MediaSegments;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
@@ -35,7 +36,8 @@ namespace MediaBrowser.Providers.Manager
             IFileSystem fileSystem,
             ILibraryManager libraryManager,
             IPathManager pathManager,
-            IKeyframeManager keyframeManager)
+            IKeyframeManager keyframeManager,
+            IMediaSegmentManager mediaSegmentManager)
         {
             ServerConfigurationManager = serverConfigurationManager;
             Logger = logger;
@@ -44,6 +46,7 @@ namespace MediaBrowser.Providers.Manager
             LibraryManager = libraryManager;
             PathManager = pathManager;
             KeyframeManager = keyframeManager;
+            MediaSegmentManager = mediaSegmentManager;
             ImageProvider = new ItemImageProvider(Logger, ProviderManager, FileSystem);
         }
 
@@ -62,6 +65,8 @@ namespace MediaBrowser.Providers.Manager
         protected IPathManager PathManager { get; }
 
         protected IKeyframeManager KeyframeManager { get; }
+
+        protected IMediaSegmentManager MediaSegmentManager { get; }
 
         protected virtual bool EnableUpdatingPremiereDateFromChildren => false;
 
@@ -359,6 +364,7 @@ namespace MediaBrowser.Providers.Manager
                             }
 
                             KeyframeManager.DeleteKeyframeDataAsync(video.Id, CancellationToken.None).GetAwaiter().GetResult();
+                            MediaSegmentManager.DeleteSegmentsAsync(item.Id).GetAwaiter().GetResult();
                         }
                     }
 
