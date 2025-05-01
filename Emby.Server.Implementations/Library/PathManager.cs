@@ -67,7 +67,7 @@ public class PathManager : IPathManager
         var id = item.Id.ToString("D", CultureInfo.InvariantCulture).AsSpan();
 
         return saveWithMedia
-            ? Path.Join(item.ContainingFolderPath, Path.ChangeExtension(item.Path, ".trickplay"))
+            ? Path.Join(item.ContainingFolderPath, Path.ChangeExtension(Path.GetFileName(item.Path), ".trickplay"))
             : Path.Join(_config.ApplicationPaths.TrickplayPath, id[..2], id);
     }
 
