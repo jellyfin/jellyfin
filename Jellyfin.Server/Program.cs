@@ -177,9 +177,7 @@ namespace Jellyfin.Server
                 // Re-use the host service provider in the app host since ASP.NET doesn't allow a custom service collection.
                 appHost.ServiceProvider = _jellyfinHost.Services;
 
-                var factory = appHost.ServiceProvider.GetRequiredService<IDbContextFactory<JellyfinDbContext>>();
-                var provider = appHost.ServiceProvider.GetRequiredService<IJellyfinDatabaseProvider>();
-                provider.DbContextFactory = factory;
+                PrepareDatabaseProvider(appHost.ServiceProvider);
 
                 await ApplyCoreMigrationsAsync(appHost.ServiceProvider, Migrations.Stages.JellyfinMigrationStageTypes.CoreInitialisaition).ConfigureAwait(false);
 
@@ -255,9 +253,7 @@ namespace Jellyfin.Server
                 .AddSingleton<ServerApplicationPaths>(appPaths);
             var startupService = migrationStartupServiceProvider.BuildServiceProvider();
 
-            var factory = startupService.GetRequiredService<IDbContextFactory<JellyfinDbContext>>();
-            var provider = startupService.GetRequiredService<IJellyfinDatabaseProvider>();
-            provider.DbContextFactory = factory;
+            PrepareDatabaseProvider(startupService);
 
             var jellyfinMigrationService = ActivatorUtilities.CreateInstance<JellyfinMigrationService>(startupService);
             await jellyfinMigrationService.CheckFirstTimeRunOrMigration(appPaths).ConfigureAwait(false);
@@ -312,6 +308,13 @@ namespace Jellyfin.Server
                 .AddJsonFile(LoggingConfigFileSystem, optional: true, reloadOnChange: true)
                 .AddEnvironmentVariables("JELLYFIN_")
                 .AddInMemoryCollection(commandLineOpts.ConvertToConfig());
+        }
+
+        private static void PrepareDatabaseProvider(IServiceProvider services)
+        {
+            var factory = services.GetRequiredService<IDbContextFactory<JellyfinDbContext>>();
+            var provider = services.GetRequiredService<IJellyfinDatabaseProvider>();
+            provider.DbContextFactory = factory;
         }
     }
 }
