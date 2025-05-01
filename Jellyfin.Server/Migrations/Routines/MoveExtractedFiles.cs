@@ -76,24 +76,18 @@ public class MoveExtractedFiles : IAsyncMigrationRoutine
         Directory.CreateDirectory(SubtitleCachePath);
         Directory.CreateDirectory(AttachmentCachePath);
 
-        await foreach (var item in context.BaseItems
+        await foreach (var result in context.BaseItems
                           .Include(e => e.MediaStreams!.Where(s => s.StreamType == MediaStreamTypeEntity.Subtitle && !s.IsExternal))
                           .Where(b => b.MediaType == MediaType.Video.ToString() && !b.IsVirtualItem && !b.IsFolder)
                           .OrderBy(e => e.Id)
+                          .WithPartitionProgress((partition) => _logger.LogInformation("Checked: {Count} - Moved: {Items} - Time: {Time}", partition * Limit, itemCount, sw.Elapsed))
                           .PartitionEagerAsync(Limit, cancellationToken)
-                          .WithIndex(cancellationToken)
                           .WithCancellation(cancellationToken)
                           .ConfigureAwait(false))
         {
-            var result = item.Item;
             if (MoveSubtitleAndAttachmentFiles(result.Id, result.Path, result.MediaStreams, context))
             {
                 itemCount++;
-            }
-
-            if (item.Index % Limit == 0)
-            {
-                _logger.LogInformation("Checked: {Count} - Moved: {Items} - Time: {Time}", item.Index, itemCount, sw.Elapsed);
             }
         }
 
