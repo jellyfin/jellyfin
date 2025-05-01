@@ -23,6 +23,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -175,6 +176,11 @@ namespace Jellyfin.Server
 
                 // Re-use the host service provider in the app host since ASP.NET doesn't allow a custom service collection.
                 appHost.ServiceProvider = _jellyfinHost.Services;
+
+                var factory = appHost.ServiceProvider.GetRequiredService<IDbContextFactory<JellyfinDbContext>>();
+                var provider = appHost.ServiceProvider.GetRequiredService<IJellyfinDatabaseProvider>();
+                provider.DbContextFactory = factory;
+
                 await ApplyCoreMigrationsAsync(appHost.ServiceProvider, Migrations.Stages.JellyfinMigrationStageTypes.CoreInitialisaition).ConfigureAwait(false);
 
                 await appHost.InitializeServices(startupConfig).ConfigureAwait(false);
@@ -248,6 +254,11 @@ namespace Jellyfin.Server
                 .AddSingleton<IApplicationPaths>(appPaths)
                 .AddSingleton<ServerApplicationPaths>(appPaths);
             var startupService = migrationStartupServiceProvider.BuildServiceProvider();
+
+            var factory = startupService.GetRequiredService<IDbContextFactory<JellyfinDbContext>>();
+            var provider = startupService.GetRequiredService<IJellyfinDatabaseProvider>();
+            provider.DbContextFactory = factory;
+
             var jellyfinMigrationService = ActivatorUtilities.CreateInstance<JellyfinMigrationService>(startupService);
             await jellyfinMigrationService.CheckFirstTimeRunOrMigration(appPaths).ConfigureAwait(false);
             await jellyfinMigrationService.MigrateStepAsync(Migrations.Stages.JellyfinMigrationStageTypes.PreInitialisation, startupService).ConfigureAwait(false);

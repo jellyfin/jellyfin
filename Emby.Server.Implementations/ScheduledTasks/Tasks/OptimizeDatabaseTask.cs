@@ -17,7 +17,6 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
     {
         private readonly ILogger<OptimizeDatabaseTask> _logger;
         private readonly ILocalizationManager _localization;
-        private readonly IDbContextFactory<JellyfinDbContext> _provider;
         private readonly IJellyfinDatabaseProvider _jellyfinDatabaseProvider;
 
         /// <summary>
@@ -25,17 +24,14 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         /// </summary>
         /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
         /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
-        /// <param name="provider">Instance of the <see cref="IDbContextFactory{JellyfinDbContext}"/> interface.</param>
         /// <param name="jellyfinDatabaseProvider">Instance of the JellyfinDatabaseProvider that can be used for provider specific operations.</param>
         public OptimizeDatabaseTask(
             ILogger<OptimizeDatabaseTask> logger,
             ILocalizationManager localization,
-            IDbContextFactory<JellyfinDbContext> provider,
             IJellyfinDatabaseProvider jellyfinDatabaseProvider)
         {
             _logger = logger;
             _localization = localization;
-            _provider = provider;
             _jellyfinDatabaseProvider = jellyfinDatabaseProvider;
         }
 
