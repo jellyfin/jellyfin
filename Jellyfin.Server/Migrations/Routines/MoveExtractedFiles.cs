@@ -8,13 +8,14 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.IO;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -25,9 +26,7 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// Migration to move extracted files to the new directories.
 /// </summary>
 [JellyfinMigration("2025-04-20T21:00:00", nameof(MoveExtractedFiles), "9063b0Ef-CFF1-4EDC-9A13-74093681A89B")]
-#pragma warning disable CS0618 // Type or member is obsolete
-public class MoveExtractedFiles : IMigrationRoutine
-#pragma warning restore CS0618 // Type or member is obsolete
+public class MoveExtractedFiles : IAsyncMigrationRoutine
 {
     private readonly IApplicationPaths _appPaths;
     private readonly ILogger<MoveExtractedFiles> _logger;
@@ -62,10 +61,10 @@ public class MoveExtractedFiles : IMigrationRoutine
     private string AttachmentCachePath => Path.Combine(_appPaths.DataPath, "attachments");
 
     /// <inheritdoc />
-    public void Perform()
+    public async Task PerformAsync(CancellationToken cancellationToken)
     {
         const int Limit = 5000;
-        int itemCount = 0, offset = 0;
+        int itemCount = 0;
 
         var sw = Stopwatch.StartNew();
 
@@ -76,27 +75,27 @@ public class MoveExtractedFiles : IMigrationRoutine
         // Make sure directories exist
         Directory.CreateDirectory(SubtitleCachePath);
         Directory.CreateDirectory(AttachmentCachePath);
-        do
-        {
-            var results = context.BaseItems
-                            .Include(e => e.MediaStreams!.Where(s => s.StreamType == MediaStreamTypeEntity.Subtitle && !s.IsExternal))
-                            .Where(b => b.MediaType == MediaType.Video.ToString() && !b.IsVirtualItem && !b.IsFolder)
-                            .OrderBy(e => e.Id)
-                            .Skip(offset)
-                            .Take(Limit)
-                            .Select(b => new Tuple<Guid, string?, ICollection<MediaStreamInfo>?>(b.Id, b.Path, b.MediaStreams)).ToList();
 
-            foreach (var result in results)
+        await foreach (var item in context.BaseItems
+                          .Include(e => e.MediaStreams!.Where(s => s.StreamType == MediaStreamTypeEntity.Subtitle && !s.IsExternal))
+                          .Where(b => b.MediaType == MediaType.Video.ToString() && !b.IsVirtualItem && !b.IsFolder)
+                          .OrderBy(e => e.Id)
+                          .PartitionEagerAsync(Limit, cancellationToken)
+                          .WithIndex(cancellationToken)
+                          .WithCancellation(cancellationToken)
+                          .ConfigureAwait(false))
+        {
+            var result = item.Item;
+            if (MoveSubtitleAndAttachmentFiles(result.Id, result.Path, result.MediaStreams, context))
             {
-                if (MoveSubtitleAndAttachmentFiles(result.Item1, result.Item2, result.Item3, context))
-                {
-                    itemCount++;
-                }
+                itemCount++;
             }
 
-            offset += Limit;
-            _logger.LogInformation("Checked: {Count} - Moved: {Items} - Time: {Time}", offset, itemCount, sw.Elapsed);
-        } while (offset < records);
+            if (item.Index % Limit == 0)
+            {
+                _logger.LogInformation("Checked: {Count} - Moved: {Items} - Time: {Time}", item.Index, itemCount, sw.Elapsed);
+            }
+        }
 
         _logger.LogInformation("Moved files for {Count} items in {Time}", itemCount, sw.Elapsed);
 
