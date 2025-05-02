@@ -86,7 +86,7 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
             var dllPath = Path.GetDirectoryName(Path.Combine(_pluginPath, dllFile))!;
 
             Directory.CreateDirectory(dllPath);
-            FileHelper.CreateEmpty(filename);
+            FileHelper.CreateEmpty(Path.Combine(dllPath, filename));
             var metafilePath = Path.Combine(_pluginPath, "meta.json");
 
             File.WriteAllText(metafilePath, JsonSerializer.Serialize(manifest, _options));
