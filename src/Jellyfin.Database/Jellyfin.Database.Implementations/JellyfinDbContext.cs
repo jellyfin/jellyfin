@@ -1,9 +1,13 @@
 using System;
+using System.Data.Common;
 using System.Linq;
+using System.Threading;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Entities.Security;
 using Jellyfin.Database.Implementations.Interfaces;
+using Jellyfin.Database.Implementations.Locking;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Database.Implementations;
@@ -15,7 +19,8 @@ namespace Jellyfin.Database.Implementations;
 /// <param name="options">The database context options.</param>
 /// <param name="logger">Logger.</param>
 /// <param name="jellyfinDatabaseProvider">The provider for the database engine specific operations.</param>
-public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILogger<JellyfinDbContext> logger, IJellyfinDatabaseProvider jellyfinDatabaseProvider) : DbContext(options)
+/// <param name="entityFrameworkCoreLocking">The locking behavior.</param>
+public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILogger<JellyfinDbContext> logger, IJellyfinDatabaseProvider jellyfinDatabaseProvider, IEntityFrameworkCoreLockingBehavior entityFrameworkCoreLocking) : DbContext(options)
 {
     /// <summary>
     /// Gets the <see cref="DbSet{TEntity}"/> containing the access schedules.
@@ -259,7 +264,12 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
 
         try
         {
-            return base.SaveChanges();
+            var result = -1;
+            entityFrameworkCoreLocking.OnSaveChanges(this, () =>
+            {
+                result = base.SaveChanges();
+            });
+            return result;
         }
         catch (Exception e)
         {
