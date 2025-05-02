@@ -65,5 +65,28 @@ public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
 #pragma warning restore MT1013 // Releasing lock without guarantee of execution
             return base.ReaderExecuted(command, eventData, result);
         }
+
+        /// <inheritdoc/>
+        public override void CommandCanceled(DbCommand command, CommandEndEventData eventData)
+        {
+#pragma warning disable MT1013 // Releasing lock without guarantee of execution
+            if (!DatabaseLock.IsWriteLockHeld)
+            {
+                DatabaseLock.ExitReadLock();
+            }
+#pragma warning restore MT1013 // Releasing lock without guarantee of execution
+            base.CommandCanceled(command, eventData);
+        }
+
+        public override void CommandFailed(DbCommand command, CommandErrorEventData eventData)
+        {
+#pragma warning disable MT1013 // Releasing lock without guarantee of execution
+            if (!DatabaseLock.IsWriteLockHeld)
+            {
+                DatabaseLock.ExitReadLock();
+            }
+#pragma warning restore MT1013 // Releasing lock without guarantee of execution
+            base.CommandFailed(command, eventData);
+        }
     }
 }
