@@ -6,6 +6,7 @@ using System.Linq;
 using System.Security;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
 
@@ -150,8 +151,72 @@ namespace Emby.Server.Implementations.IO
         }
 
         /// <inheritdoc />
-        public void MoveDirectory(string source, string destination)
+        public void MoveItem(string source, string destination) => MoveItem(source, destination, new MoveOptions());
+
+        /// <inheritdoc />
+        public void MoveItem(string source, string destination, MoveOptions options)
         {
+            if (Directory.Exists(source))
+            {
+                MoveDirectory(source, destination, options);
+            }
+            else if (File.Exists(source))
+            {
+                MoveFile(source, destination, options);
+            }
+            else
+            {
+                throw new IOException($"Source doesn't exist: {source}");
+            }
+        }
+
+        /// <inheritdoc />
+        public void MoveFile(string source, string destination) => MoveFile(source, destination, new MoveOptions());
+
+        /// <inheritdoc />
+        public void MoveFile(string source, string destination, MoveOptions options)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(source);
+            ArgumentException.ThrowIfNullOrEmpty(destination);
+            ArgumentNullException.ThrowIfNull(options);
+
+            if (options.CreateParent)
+            {
+                CreateDirectory(Path.GetDirectoryName(destination));
+            }
+
+            try
+            {
+                File.Move(source, destination, options.Overwrite);
+            }
+            catch (IOException)
+            {
+                // Cross device move requires a copy
+                MoveFileViaCopy(source, destination, options);
+            }
+        }
+
+        private void MoveFileViaCopy(string source, string destination, MoveOptions options)
+        {
+            File.Copy(source, destination, options.Overwrite);
+            DeleteFile(source);
+        }
+
+        /// <inheritdoc />
+        public void MoveDirectory(string source, string destination) => MoveFile(source, destination, new MoveOptions());
+
+        /// <inheritdoc />
+        public void MoveDirectory(string source, string destination, MoveOptions options)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(source);
+            ArgumentException.ThrowIfNullOrEmpty(destination);
+            ArgumentNullException.ThrowIfNull(options);
+
+            if (options.CreateParent)
+            {
+                CreateDirectory(Path.GetDirectoryName(destination));
+            }
+
             try
             {
                 Directory.Move(source, destination);
@@ -159,13 +224,36 @@ namespace Emby.Server.Implementations.IO
             catch (IOException)
             {
                 // Cross device move requires a copy
-                Directory.CreateDirectory(destination);
-                foreach (string file in Directory.GetFiles(source))
-                {
-                    File.Copy(file, Path.Combine(destination, Path.GetFileName(file)), true);
-                }
+                MoveDirectoryViaCopy(source, destination, options);
+            }
+        }
 
-                Directory.Delete(source, true);
+        private void MoveDirectoryViaCopy(string source, string destination, MoveOptions options)
+        {
+            CreateDirectory(destination);
+            foreach (string file in Directory.EnumerateFiles(source))
+            {
+                var destinationFile = Path.Combine(destination, Path.GetFileName(file));
+                MoveFileViaCopy(source, destinationFile, options);
+            }
+
+            if (options.Recursive)
+            {
+                foreach (var sourceSub in Directory.EnumerateDirectories(source))
+                {
+                    var destinationSub = Path.Combine(destination, new DirectoryInfo(source).Name);
+                    MoveDirectoryViaCopy(sourceSub, destinationSub, options);
+                }
+            }
+
+            Directory.Delete(source, options.Recursive);
+        }
+
+        private static void CreateDirectory(string? path)
+        {
+            if (!string.IsNullOrEmpty(path))
+            {
+                Directory.CreateDirectory(path);
             }
         }
 

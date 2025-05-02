@@ -68,5 +68,10 @@ public enum PreferenceKind
     /// <summary>
     /// A list of allowed tags.
     /// </summary>
-    AllowedTags = 12
+    AllowedTags = 12,
+
+    /// <summary>
+    /// A list of folders to allow content moving from.
+    /// </summary>
+    EnableContentMoveFromFolders = 13,
 }

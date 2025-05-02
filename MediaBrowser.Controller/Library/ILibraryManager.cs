@@ -330,6 +330,33 @@ namespace MediaBrowser.Controller.Library
         void RegisterItem(BaseItem item);
 
         /// <summary>
+        /// Moves the item.
+        /// </summary>
+        /// <param name="item">The item to move.</param>
+        /// <param name="destination">The path to move the item to.</param>
+        /// <param name="cancellationToken">Instance of the <see cref="CancellationToken"/>.</param>
+        public void MoveItem(BaseItem item, string destination, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Moves the item.
+        /// </summary>
+        /// <param name="item">The item to move.</param>
+        /// <param name="destination">The path to move the item to.</param>
+        /// <param name="options">Options to use for moving.</param>
+        /// <param name="cancellationToken">Instance of the <see cref="CancellationToken"/>.</param>
+        public void MoveItem(BaseItem item, string destination, MoveItemOptions options, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Moves the item.
+        /// </summary>
+        /// <param name="item">The item to move.</param>
+        /// <param name="destination">The path to move the item to.</param>
+        /// <param name="parent">Parent of item.</param>
+        /// <param name="options">Options to use for moving.</param>
+        /// <param name="cancellationToken">Instance of the <see cref="CancellationToken"/>.</param>
+        public void MoveItem(BaseItem item, string destination, BaseItem parent, MoveItemOptions options, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Deletes the item.
         /// </summary>
         /// <param name="item">Item to delete.</param>

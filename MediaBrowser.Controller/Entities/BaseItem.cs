@@ -800,6 +800,43 @@ namespace MediaBrowser.Controller.Entities
             return Id.ToString("N", CultureInfo.InvariantCulture);
         }
 
+        public virtual bool CanMove()
+        {
+            if (SourceType == SourceType.Channel)
+            {
+                return ChannelManager.CanMove(this);
+            }
+
+            return IsFileProtocol;
+        }
+
+        public virtual bool IsAuthorizedToMove(User user, List<Folder> allCollectionFolders)
+        {
+            if (user.HasPermission(PermissionKind.EnableContentMove))
+            {
+                return true;
+            }
+
+            var allowed = user.GetPreferenceValues<Guid>(PreferenceKind.EnableContentMoveFromFolders);
+
+            if (SourceType == SourceType.Channel)
+            {
+                return allowed.Contains(ChannelId);
+            }
+
+            var collectionFolders = LibraryManager.GetCollectionFolders(this, allCollectionFolders);
+
+            foreach (var folder in collectionFolders)
+            {
+                if (allowed.Contains(folder.Id))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public virtual bool CanDelete()
         {
             if (SourceType == SourceType.Channel)
@@ -841,6 +878,18 @@ namespace MediaBrowser.Controller.Entities
         {
             var ownerId = OwnerId;
             return ownerId.IsEmpty() ? null : LibraryManager.GetItemById(ownerId);
+        }
+
+        public bool CanMove(User user, List<Folder> allCollectionFolders)
+        {
+            return CanMove() && IsAuthorizedToMove(user, allCollectionFolders);
+        }
+
+        public virtual bool CanMove(User user)
+        {
+            var allCollectionFolders = LibraryManager.GetUserRootFolder().Children.OfType<Folder>().ToList();
+
+            return CanMove(user, allCollectionFolders);
         }
 
         public bool CanDelete(User user, List<Folder> allCollectionFolders)

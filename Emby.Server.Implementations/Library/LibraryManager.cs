@@ -311,6 +311,112 @@ namespace Emby.Server.Implementations.Library
             _cache.AddOrUpdate(item.Id, item);
         }
 
+        public void MoveItem(BaseItem item, string destination, CancellationToken cancellationToken)
+        {
+            ArgumentNullException.ThrowIfNull(item);
+
+            var parent = item.GetOwner() ?? item.GetParent();
+            var options = new MoveItemOptions();
+            MoveItem(item, destination, parent, options, cancellationToken);
+        }
+
+        public void MoveItem(BaseItem item, string destination, MoveItemOptions options, CancellationToken cancellationToken)
+        {
+            ArgumentNullException.ThrowIfNull(item);
+
+            var parent = item.GetOwner() ?? item.GetParent();
+            MoveItem(item, destination, parent, options, cancellationToken);
+        }
+
+        public void MoveItem(BaseItem item, string destination, BaseItem parent, MoveItemOptions options, CancellationToken cancellationToken)
+        {
+            ArgumentNullException.ThrowIfNull(item);
+            ArgumentException.ThrowIfNullOrWhiteSpace(destination);
+            ArgumentNullException.ThrowIfNull(options);
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (item.Path.Equals(destination, StringComparison.Ordinal))
+            {
+                throw new IOException("Source and destination paths are the same");
+            }
+
+            if (item.SourceType != SourceType.Library)
+            {
+                throw new ArgumentException("Only libraries are supported for this operation");
+            }
+
+            var itemAttributes = string.Format(
+                CultureInfo.InvariantCulture,
+                "Type: {0}, Name: {1}, Path: {2}, Id: {3}",
+                item.GetType().Name,
+                item.Name ?? "Unknown name",
+                item.Path,
+                item.Id);
+
+            var logMessage = (options.MoveOnFileSystem, options.UpdatePathInDb) switch
+            {
+                (true, true) => "Moving item on file system and updating path in the database",
+                (true, false) => "Moving item on the file system only",
+                (false, true) => "Updating path for item",
+                _ => "Dry run moving item"
+            };
+
+            _logger.Log(
+                item is LiveTvProgram ? LogLevel.Debug : LogLevel.Information,
+                "{Message}, {Attributes}",
+                logMessage,
+                itemAttributes);
+
+            switch (item.IsFolder)
+            {
+                case true when Path.HasExtension(destination):
+                    throw new IOException("Item is a folder and the given destination is a file path");
+                case false when Path.GetExtension(item.Path) != Path.GetExtension(destination):
+                    throw new IOException("Operation would change the file extension");
+            }
+
+            if (Path.GetRelativePath(item.GetTopParent().Path, destination) == destination)
+            {
+                throw new IOException("Operation would move the item out of the current library");
+            }
+
+            if (options.MoveOnFileSystem)
+            {
+                if (item.SourceType == SourceType.Channel)
+                {
+                    try
+                    {
+                        BaseItem.ChannelManager.MoveItem(item, destination).GetAwaiter().GetResult();
+                    }
+                    catch (ArgumentException)
+                    {
+                        // channel no longer installed
+                    }
+                }
+                else
+                {
+                    var moveOptions = new MoveOptions
+                    {
+                        CreateParent = true,
+                        Overwrite = options.Overwrite,
+                        Recursive = true,
+                    };
+
+                    _fileSystem.MoveItem(item.Path, destination, moveOptions);
+                }
+            }
+
+            if (!options.UpdatePathInDb)
+            {
+                return;
+            }
+
+            _itemRepository.MoveItem(item, destination);
+            _cache.TryRemove(item.Id, out _);
+
+            ReportItemUpdated(item, parent, ItemUpdateType.MetadataEdit);
+        }
+
         public void DeleteItem(BaseItem item, DeleteOptions options)
         {
             DeleteItem(item, options, false);
@@ -2027,27 +2133,7 @@ namespace Emby.Server.Implementations.Library
             {
                 foreach (var item in items)
                 {
-                    // With the live tv guide this just creates too much noise
-                    if (item.SourceType != SourceType.Library)
-                    {
-                        continue;
-                    }
-
-                    try
-                    {
-                        ItemUpdated(
-                            this,
-                            new ItemChangeEventArgs
-                            {
-                                Item = item,
-                                Parent = parent,
-                                UpdateReason = updateReason
-                            });
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error in ItemUpdated event handler");
-                    }
+                    ReportItemUpdated(item, parent, updateReason);
                 }
             }
         }
@@ -2066,6 +2152,39 @@ namespace Emby.Server.Implementations.Library
             item.DateLastSaved = DateTime.UtcNow;
 
             await UpdateImagesAsync(item, updateReason >= ItemUpdateType.ImageUpdate).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Reports the item updated.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="parent">The parent item.</param>
+        /// <param name="updateReason">The update reason.</param>
+        public void ReportItemUpdated(BaseItem item, BaseItem parent, ItemUpdateType updateReason)
+        {
+            ArgumentNullException.ThrowIfNull(item);
+
+            // With the live tv guide this just creates too much noise
+            if (ItemUpdated is null || item.SourceType != SourceType.Library)
+            {
+                return;
+            }
+
+            try
+            {
+                ItemUpdated(
+                    this,
+                    new ItemChangeEventArgs
+                    {
+                        Item = item,
+                        Parent = parent,
+                        UpdateReason = updateReason
+                    });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in ItemUpdated event handler");
+            }
         }
 
         /// <summary>

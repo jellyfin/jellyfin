@@ -18,6 +18,14 @@ namespace MediaBrowser.Controller.Persistence;
 public interface IItemRepository
 {
     /// <summary>
+    /// Move the item on the file system.
+    /// </summary>
+    /// <param name="item">The item.</param>
+    /// <param name="path">The path to move the file to.</param>
+    /// <returns>Whether the item was moved.</returns>
+    bool MoveItem(BaseItem item, string path);
+
+    /// <summary>
     /// Deletes the item.
     /// </summary>
     /// <param name="id">The identifier.</param>

@@ -345,6 +345,72 @@ public class LibraryController : BaseJellyfinApiController
     }
 
     /// <summary>
+    /// Moves an item in the library on the filesystem.
+    /// </summary>
+    /// <param name="itemId">The item id.</param>
+    /// <param name="path">The path on the file system to move the item to.</param>
+    /// <param name="moveFile">Whether to move the file/s on the file system.</param>
+    /// <param name="updatePath">Whether to update the path to the item in the database.</param>
+    /// <param name="overwrite">Overwrite files/directories on the file system if they already exist at the destination.</param>
+    /// <response code="200">Item moved.</response>
+    /// <response code="401">Unauthorized access.</response>
+    /// <response code="404">Item not found.</response>
+    /// <response code="422">Given path is invalid.</response>
+    /// <returns>An <see cref="OkResult"/> containing the item.</returns>
+    [HttpPut("Items/{itemId}")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+    public ActionResult<BaseItemDto> MoveItem(
+        [FromRoute, Required] Guid itemId,
+        [FromQuery, Required] string path,
+        [FromQuery] bool moveFile = true,
+        [FromQuery] bool updatePath = true,
+        [FromQuery] bool overwrite = true)
+    {
+        var userId = User.GetUserId();
+        var isApiKey = User.GetIsApiKey();
+        var user = userId.IsEmpty() && isApiKey
+            ? null
+            : _userManager.GetUserById(userId);
+
+        if (user is null && !isApiKey)
+        {
+            return NotFound();
+        }
+
+        try
+        {
+            path = Path.GetFullPath(path);
+        }
+        catch (ArgumentException)
+        {
+            return UnprocessableEntity();
+        }
+
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, user);
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        if (user is not null && !item.CanMove(user))
+        {
+            return Unauthorized("Unauthorized access");
+        }
+
+        _libraryManager.MoveItem(
+            item,
+            path,
+            new MoveItemOptions { MoveOnFileSystem = moveFile, UpdatePathInDb = updatePath, Overwrite = overwrite },
+            CancellationToken.None);
+
+        return Ok(_dtoService.GetBaseItemDto(item, new DtoOptions(), user));
+    }
+
+    /// <summary>
     /// Deletes an item from the library and filesystem.
     /// </summary>
     /// <param name="itemId">The item id.</param>

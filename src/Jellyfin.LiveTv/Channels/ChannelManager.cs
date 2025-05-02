@@ -106,6 +106,34 @@ namespace Jellyfin.LiveTv.Channels
         }
 
         /// <inheritdoc />
+        public bool CanMove(BaseItem item)
+        {
+            var internalChannel = _libraryManager.GetItemById(item.ChannelId);
+            var channel = Channels.FirstOrDefault(i => GetInternalChannelId(i.Name).Equals(internalChannel.Id));
+
+            return channel is ISupportsMove supportsMove && supportsMove.CanMove(item);
+        }
+
+        /// <inheritdoc />
+        public Task MoveItem(BaseItem item, string path)
+        {
+            var internalChannel = _libraryManager.GetItemById(item.ChannelId);
+            if (internalChannel is null)
+            {
+                throw new ArgumentException(nameof(item.ChannelId));
+            }
+
+            var channel = Channels.FirstOrDefault(i => GetInternalChannelId(i.Name).Equals(internalChannel.Id));
+
+            if (channel is not ISupportsMove supportsMove)
+            {
+                throw new ArgumentException(nameof(channel));
+            }
+
+            return supportsMove.MoveItem(item.ExternalId, path, CancellationToken.None);
+        }
+
+        /// <inheritdoc />
         public bool CanDelete(BaseItem item)
         {
             var internalChannel = _libraryManager.GetItemById(item.ChannelId);
