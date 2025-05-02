@@ -1,0 +1,378 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Emby.Server.Implementations.Data;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Extensions;
+using MediaBrowser.Controller;
+using MediaBrowser.Controller.Library;
+using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.Logging;
+
+namespace Jellyfin.Server.Migrations.Routines;
+
+/// <summary>
+/// Updates the library.db to version 10.10.z; replaces the migration code from the old SqliteItemRepository and SqliteUserDataRepository.
+/// </summary>
+[JellyfinMigration("2025-04-19T00:00:00", nameof(UpdateDatabaseToTenDotTen), "462ED27A-8822-4115-9089-F060CB6BE32C")]
+#pragma warning disable CS0618 // Type or member is obsolete
+internal class UpdateDatabaseToTenDotTen : IMigrationRoutine
+#pragma warning restore CS0618 // Type or member is obsolete
+{
+    private const string DbFilename = "library.db";
+    private readonly ILogger<UpdateDatabaseToTenDotTen> _logger;
+    private readonly IServerApplicationPaths _paths;
+    private readonly IUserManager _userManager;
+
+    public UpdateDatabaseToTenDotTen(
+        ILogger<UpdateDatabaseToTenDotTen> logger,
+        IServerApplicationPaths paths,
+        IUserManager userManager)
+    {
+        _logger = logger;
+        _paths = paths;
+        _userManager = userManager;
+    }
+
+    /// <inheritdoc/>
+    public void Perform()
+    {
+        const string ChaptersTableName = "Chapters2";
+
+        string[] queries =
+        [
+            "create table if not exists TypedBaseItems (guid GUID primary key NOT NULL, type TEXT NOT NULL, data BLOB NULL, ParentId GUID NULL, Path TEXT NULL)",
+
+            "create table if not exists AncestorIds (ItemId GUID NOT NULL, AncestorId GUID NOT NULL, AncestorIdText TEXT NOT NULL, PRIMARY KEY (ItemId, AncestorId))",
+            "create index if not exists idx_AncestorIds1 on AncestorIds(AncestorId)",
+            "create index if not exists idx_AncestorIds5 on AncestorIds(AncestorIdText,ItemId)",
+
+            "create table if not exists ItemValues (ItemId GUID NOT NULL, Type INT NOT NULL, Value TEXT NOT NULL, CleanValue TEXT NOT NULL)",
+
+            "create table if not exists People (ItemId GUID, Name TEXT NOT NULL, Role TEXT, PersonType TEXT, SortOrder int, ListOrder int)",
+
+            "drop index if exists idxPeopleItemId",
+            "create index if not exists idxPeopleItemId1 on People(ItemId,ListOrder)",
+            "create index if not exists idxPeopleName on People(Name)",
+
+            "create table if not exists " + ChaptersTableName + " (ItemId GUID, ChapterIndex INT NOT NULL, StartPositionTicks BIGINT NOT NULL, Name TEXT, ImagePath TEXT, PRIMARY KEY (ItemId, ChapterIndex))",
+
+            "create table if not exists mediastreams (ItemId GUID, StreamIndex INT, StreamType TEXT, Codec TEXT, Language TEXT, ChannelLayout TEXT, Profile TEXT, AspectRatio TEXT, Path TEXT, IsInterlaced BIT, BitRate INT NULL, Channels INT NULL, SampleRate INT NULL, IsDefault BIT, IsForced BIT, IsExternal BIT, Height INT NULL, Width INT NULL, AverageFrameRate FLOAT NULL, RealFrameRate FLOAT NULL, Level FLOAT NULL, PixelFormat TEXT, BitDepth INT NULL, IsAnamorphic BIT NULL, RefFrames INT NULL, CodecTag TEXT NULL, Comment TEXT NULL, NalLengthSize TEXT NULL, IsAvc BIT NULL, Title TEXT NULL, TimeBase TEXT NULL, CodecTimeBase TEXT NULL, ColorPrimaries TEXT NULL, ColorSpace TEXT NULL, ColorTransfer TEXT NULL, DvVersionMajor INT NULL, DvVersionMinor INT NULL, DvProfile INT NULL, DvLevel INT NULL, RpuPresentFlag INT NULL, ElPresentFlag INT NULL, BlPresentFlag INT NULL, DvBlSignalCompatibilityId INT NULL, IsHearingImpaired BIT NULL, Rotation INT NULL, PRIMARY KEY (ItemId, StreamIndex))",
+            "create table if not exists mediaattachments (ItemId GUID, AttachmentIndex INT, Codec TEXT, CodecTag TEXT NULL, Comment TEXT NULL, Filename TEXT NULL, MIMEType TEXT NULL, PRIMARY KEY (ItemId, AttachmentIndex))",
+
+            "pragma shrink_memory"
+        ];
+
+        string[] postQueries =
+        [
+            "create index if not exists idx_PathTypedBaseItems on TypedBaseItems(Path)",
+            "create index if not exists idx_ParentIdTypedBaseItems on TypedBaseItems(ParentId)",
+
+            "create index if not exists idx_PresentationUniqueKey on TypedBaseItems(PresentationUniqueKey)",
+            "create index if not exists idx_GuidTypeIsFolderIsVirtualItem on TypedBaseItems(Guid,Type,IsFolder,IsVirtualItem)",
+            "create index if not exists idx_CleanNameType on TypedBaseItems(CleanName,Type)",
+
+            // covering index
+            "create index if not exists idx_TopParentIdGuid on TypedBaseItems(TopParentId,Guid)",
+
+            // series
+            "create index if not exists idx_TypeSeriesPresentationUniqueKey1 on TypedBaseItems(Type,SeriesPresentationUniqueKey,PresentationUniqueKey,SortName)",
+
+            // series counts
+            // seriesdateplayed sort order
+            "create index if not exists idx_TypeSeriesPresentationUniqueKey3 on TypedBaseItems(SeriesPresentationUniqueKey,Type,IsFolder,IsVirtualItem)",
+
+            // live tv programs
+            "create index if not exists idx_TypeTopParentIdStartDate on TypedBaseItems(Type,TopParentId,StartDate)",
+
+            // covering index for getitemvalues
+            "create index if not exists idx_TypeTopParentIdGuid on TypedBaseItems(Type,TopParentId,Guid)",
+
+            // used by movie suggestions
+            "create index if not exists idx_TypeTopParentIdGroup on TypedBaseItems(Type,TopParentId,PresentationUniqueKey)",
+            "create index if not exists idx_TypeTopParentId5 on TypedBaseItems(TopParentId,IsVirtualItem)",
+
+            // latest items
+            "create index if not exists idx_TypeTopParentId9 on TypedBaseItems(TopParentId,Type,IsVirtualItem,PresentationUniqueKey,DateCreated)",
+            "create index if not exists idx_TypeTopParentId8 on TypedBaseItems(TopParentId,IsFolder,IsVirtualItem,PresentationUniqueKey,DateCreated)",
+
+            // resume
+            "create index if not exists idx_TypeTopParentId7 on TypedBaseItems(TopParentId,MediaType,IsVirtualItem,PresentationUniqueKey)",
+
+            // items by name
+            "create index if not exists idx_ItemValues6 on ItemValues(ItemId,Type,CleanValue)",
+            "create index if not exists idx_ItemValues7 on ItemValues(Type,CleanValue,ItemId)",
+
+            // Used to update inherited tags
+            "create index if not exists idx_ItemValues8 on ItemValues(Type, ItemId, Value)",
+
+            "CREATE INDEX IF NOT EXISTS idx_TypedBaseItemsUserDataKeyType ON TypedBaseItems(UserDataKey, Type)",
+            "CREATE INDEX IF NOT EXISTS idx_PeopleNameListOrder ON People(Name, ListOrder)"
+        ];
+
+        string[] userDataQUeries =
+        [
+            "create table if not exists UserDatas (key nvarchar not null, userId INT not null, rating float null, played bit not null, playCount int not null, isFavorite bit not null, playbackPositionTicks bigint not null, lastPlayedDate datetime null, AudioStreamIndex INT, SubtitleStreamIndex INT)",
+            "drop index if exists idx_userdata",
+            "drop index if exists idx_userdata1",
+            "drop index if exists idx_userdata2",
+            "drop index if exists userdataindex1",
+            "drop index if exists userdataindex",
+            "drop index if exists userdataindex3",
+            "drop index if exists userdataindex4",
+            "create unique index if not exists UserDatasIndex1 on UserDatas (key, userId)",
+            "create index if not exists UserDatasIndex2 on UserDatas (key, userId, played)",
+            "create index if not exists UserDatasIndex3 on UserDatas (key, userId, playbackPositionTicks)",
+            "create index if not exists UserDatasIndex4 on UserDatas (key, userId, isFavorite)",
+            "create index if not exists UserDatasIndex5 on UserDatas (key, userId, lastPlayedDate)"
+        ];
+
+        _logger.LogInformation("Prepare database for EFCore migration: update to version 10.10.z");
+
+        var dataPath = _paths.DataPath;
+
+        var dbPath = Path.Combine(dataPath, DbFilename);
+        using var connection = new SqliteConnection($"Filename={dbPath}");
+        connection.Open();
+        using (var transaction = connection.BeginTransaction())
+        {
+            connection.Execute(string.Join(';', queries));
+
+            var existingColumnNames = GetColumnNames(connection, "AncestorIds");
+            AddColumn(connection, "AncestorIds", "AncestorIdText", "Text", existingColumnNames);
+
+            existingColumnNames = GetColumnNames(connection, "TypedBaseItems");
+            AddColumn(connection, "TypedBaseItems", "Path", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "StartDate", "DATETIME", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "EndDate", "DATETIME", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "ChannelId", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "IsMovie", "BIT", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "CommunityRating", "Float", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "CustomRating", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "IndexNumber", "INT", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "IsLocked", "BIT", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "Name", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "OfficialRating", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "MediaType", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "Overview", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "ParentIndexNumber", "INT", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "PremiereDate", "DATETIME", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "ProductionYear", "INT", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "ParentId", "GUID", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "Genres", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "SortName", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "ForcedSortName", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "RunTimeTicks", "BIGINT", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "DateCreated", "DATETIME", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "DateModified", "DATETIME", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "IsSeries", "BIT", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "EpisodeTitle", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "IsRepeat", "BIT", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "PreferredMetadataLanguage", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "PreferredMetadataCountryCode", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "DateLastRefreshed", "DATETIME", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "DateLastSaved", "DATETIME", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "IsInMixedFolder", "BIT", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "LockedFields", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "Studios", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "Audio", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "ExternalServiceId", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "Tags", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "IsFolder", "BIT", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "InheritedParentalRatingValue", "INT", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "UnratedType", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "TopParentId", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "TrailerTypes", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "CriticRating", "Float", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "CleanName", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "PresentationUniqueKey", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "OriginalTitle", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "PrimaryVersionId", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "DateLastMediaAdded", "DATETIME", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "Album", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "LUFS", "Float", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "NormalizationGain", "Float", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "IsVirtualItem", "BIT", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "SeriesName", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "UserDataKey", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "SeasonName", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "SeasonId", "GUID", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "SeriesId", "GUID", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "ExternalSeriesId", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "Tagline", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "ProviderIds", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "Images", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "ProductionLocations", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "ExtraIds", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "TotalBitrate", "INT", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "ExtraType", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "Artists", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "AlbumArtists", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "ExternalId", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "SeriesPresentationUniqueKey", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "ShowId", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "OwnerId", "Text", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "Width", "INT", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "Height", "INT", existingColumnNames);
+            AddColumn(connection, "TypedBaseItems", "Size", "BIGINT", existingColumnNames);
+
+            existingColumnNames = GetColumnNames(connection, "ItemValues");
+            AddColumn(connection, "ItemValues", "CleanValue", "Text", existingColumnNames);
+
+            existingColumnNames = GetColumnNames(connection, ChaptersTableName);
+            AddColumn(connection, ChaptersTableName, "ImageDateModified", "DATETIME", existingColumnNames);
+
+            existingColumnNames = GetColumnNames(connection, "MediaStreams");
+            AddColumn(connection, "MediaStreams", "IsAvc", "BIT", existingColumnNames);
+            AddColumn(connection, "MediaStreams", "TimeBase", "TEXT", existingColumnNames);
+            AddColumn(connection, "MediaStreams", "CodecTimeBase", "TEXT", existingColumnNames);
+            AddColumn(connection, "MediaStreams", "Title", "TEXT", existingColumnNames);
+            AddColumn(connection, "MediaStreams", "NalLengthSize", "TEXT", existingColumnNames);
+            AddColumn(connection, "MediaStreams", "Comment", "TEXT", existingColumnNames);
+            AddColumn(connection, "MediaStreams", "CodecTag", "TEXT", existingColumnNames);
+            AddColumn(connection, "MediaStreams", "PixelFormat", "TEXT", existingColumnNames);
+            AddColumn(connection, "MediaStreams", "BitDepth", "INT", existingColumnNames);
+            AddColumn(connection, "MediaStreams", "RefFrames", "INT", existingColumnNames);
+            AddColumn(connection, "MediaStreams", "KeyFrames", "TEXT", existingColumnNames);
+            AddColumn(connection, "MediaStreams", "IsAnamorphic", "BIT", existingColumnNames);
+
+            AddColumn(connection, "MediaStreams", "ColorPrimaries", "TEXT", existingColumnNames);
+            AddColumn(connection, "MediaStreams", "ColorSpace", "TEXT", existingColumnNames);
+            AddColumn(connection, "MediaStreams", "ColorTransfer", "TEXT", existingColumnNames);
+
+            AddColumn(connection, "MediaStreams", "DvVersionMajor", "INT", existingColumnNames);
+            AddColumn(connection, "MediaStreams", "DvVersionMinor", "INT", existingColumnNames);
+            AddColumn(connection, "MediaStreams", "DvProfile", "INT", existingColumnNames);
+            AddColumn(connection, "MediaStreams", "DvLevel", "INT", existingColumnNames);
+            AddColumn(connection, "MediaStreams", "RpuPresentFlag", "INT", existingColumnNames);
+            AddColumn(connection, "MediaStreams", "ElPresentFlag", "INT", existingColumnNames);
+            AddColumn(connection, "MediaStreams", "BlPresentFlag", "INT", existingColumnNames);
+            AddColumn(connection, "MediaStreams", "DvBlSignalCompatibilityId", "INT", existingColumnNames);
+
+            AddColumn(connection, "MediaStreams", "IsHearingImpaired", "BIT", existingColumnNames);
+
+            AddColumn(connection, "MediaStreams", "Rotation", "INT", existingColumnNames);
+
+            connection.Execute(string.Join(';', postQueries));
+
+            transaction.Commit();
+        }
+
+        using (var transaction = connection.BeginTransaction())
+        {
+            var userDatasTableExists = TableExists(connection, "UserDatas");
+            var userDataTableExists = TableExists(connection, "userdata");
+
+            var users = userDatasTableExists ? [] : _userManager.Users;
+
+            connection.Execute(string.Join(';', userDataQUeries));
+
+            if (userDataTableExists)
+            {
+                var existingColumnNames = GetColumnNames(connection, "userdata");
+
+                AddColumn(connection, "userdata", "InternalUserId", "int", existingColumnNames);
+                AddColumn(connection, "userdata", "AudioStreamIndex", "int", existingColumnNames);
+                AddColumn(connection, "userdata", "SubtitleStreamIndex", "int", existingColumnNames);
+
+                if (!userDatasTableExists)
+                {
+                    ImportUserIds(connection, users);
+                    connection.Execute("INSERT INTO UserDatas (key, userId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex) SELECT key, InternalUserId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex from userdata where InternalUserId not null");
+                }
+            }
+
+            transaction.Commit();
+        }
+
+        _logger.LogInformation("Database was successfully updated");
+    }
+
+    private void ImportUserIds(SqliteConnection connection, IEnumerable<User> users)
+    {
+        var userIdsWithUserData = GetAllUserIdsWithUserData(connection);
+
+        using (var statement = connection.PrepareStatement("update userdata set InternalUserId=@InternalUserId where UserId=@UserId"))
+        {
+            foreach (var user in users)
+            {
+                if (!userIdsWithUserData.Contains(user.Id))
+                {
+                    continue;
+                }
+
+                statement.TryBind("@UserId", user.Id);
+                statement.TryBind("@InternalUserId", user.InternalId);
+
+#pragma warning disable IDE0058 // Expression value is never used
+                statement.ExecuteNonQuery();
+#pragma warning restore IDE0058 // Expression value is never used
+            }
+        }
+    }
+
+    private List<Guid> GetAllUserIdsWithUserData(SqliteConnection connection)
+    {
+        var list = new List<Guid>();
+
+        using (var statement = connection.CreateCommand())
+        {
+            statement.CommandText = "select DISTINCT UserId from UserData where UserId not null";
+            foreach (var row in statement.ExecuteQuery())
+            {
+                try
+                {
+                    list.Add(row.GetGuid(0));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error while getting user");
+                }
+            }
+        }
+
+        return list;
+    }
+
+    private List<string> GetColumnNames(SqliteConnection connection, string table)
+    {
+        var columnNames = new List<string>();
+
+        foreach (var row in connection.Query("PRAGMA table_info(" + table + ")"))
+        {
+            if (row.TryGetString(1, out var columnName))
+            {
+                columnNames.Add(columnName);
+            }
+        }
+
+        return columnNames;
+    }
+
+    private void AddColumn(SqliteConnection connection, string table, string columnName, string type, List<string> existingColumnNames)
+    {
+        if (existingColumnNames.Contains(columnName, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        connection.Execute("alter table " + table + " add column " + columnName + " " + type + " NULL");
+    }
+
+    private bool TableExists(SqliteConnection connection, string name)
+    {
+        using var statement = connection.CreateCommand();
+        statement.CommandText = "select DISTINCT tbl_name from sqlite_master";
+
+        foreach (var row in statement.ExecuteQuery())
+        {
+            if (string.Equals(name, row.GetString(0), StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
