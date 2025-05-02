@@ -113,7 +113,7 @@ public sealed class SetupServer : IDisposable
 
                                             var logFilePath = new DirectoryInfo(_applicationPaths.LogDirectoryPath)
                                                 .EnumerateFiles()
-                                                .OrderBy(f => f.CreationTimeUtc)
+                                                .OrderByDescending(f => f.CreationTimeUtc)
                                                 .FirstOrDefault()
                                                 ?.FullName;
                                             if (logFilePath is not null)
