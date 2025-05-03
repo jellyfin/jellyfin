@@ -38,16 +38,17 @@ namespace Emby.Server.Implementations.Configuration
 
             // Check for environment variable override AFTER base constructor loads XML
             // You can enable metrics by setting the JELLYFIN_EnableMetrics environmental variable
-            if (bool.TryParse(_startupConfig["EnableMetrics"], out var enableMetricsEnv) && enableMetricsEnv)
+            if (bool.TryParse(_startupConfig["EnableMetrics"], out var enableMetricsEnv))
             {
-                if (!Configuration.EnableMetrics) // Only override if not already true from XML
+                if (enableMetricsEnv)
                 {
                     Configuration.EnableMetrics = true;
                     Logger.LogInformation("Metrics enabled via JELLYFIN_EnableMetrics environment variable, overriding configuration file setting.");
                 }
                 else
                 {
-                    Logger.LogInformation("Metrics enabled via JELLYFIN_EnableMetrics environment variable (matches configuration file setting).");
+                    Configuration.EnableMetrics = false;
+                    Logger.LogInformation("Metrics disabled via JELLYFIN_EnableMetrics environment variable, overriding configuration file setting.");
                 }
             }
 
