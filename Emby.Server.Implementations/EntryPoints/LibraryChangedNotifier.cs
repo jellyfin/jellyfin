@@ -118,35 +118,34 @@ public sealed class LibraryChangedNotifier : IHostedService, IDisposable
 
         _lastProgressMessageTimes.AddOrUpdate(item.Id, _ => DateTime.UtcNow, (_, _) => DateTime.UtcNow);
 
-        var dict = new Dictionary<string, string>();
-        dict["ItemId"] = item.Id.ToString("N", CultureInfo.InvariantCulture);
-        dict["Progress"] = progress.ToString(CultureInfo.InvariantCulture);
-
-        try
-        {
-            _sessionManager.SendMessageToAdminSessions(SessionMessageType.RefreshProgress, dict, CancellationToken.None);
-        }
-        catch
-        {
-        }
-
-        var collectionFolders = _libraryManager.GetCollectionFolders(item);
-
-        foreach (var collectionFolder in collectionFolders)
-        {
-            var collectionFolderDict = new Dictionary<string, string>
+        // Code can be simplified if calling item.GetRefreshProgress() returns the same progress value as the argument provided
+        // Push item & collectionFolders into a List<BaseItem>, iterate over them and create Dictionary when calling SendMessageToAdminSessions
+        List<Dictionary<string, string>> progressMessages = [
+            new Dictionary<string, string>
+            {
+                ["ItemId"] = item.Id.ToString("N", CultureInfo.InvariantCulture),
+                ["Progress"] = progress.ToString(CultureInfo.InvariantCulture)
+            },
+            .. _libraryManager.GetCollectionFolders(item).Select(collectionFolder => new Dictionary<string, string>()
             {
                 ["ItemId"] = collectionFolder.Id.ToString("N", CultureInfo.InvariantCulture),
                 ["Progress"] = (collectionFolder.GetRefreshProgress() ?? 0).ToString(CultureInfo.InvariantCulture)
-            };
+            }),
+        ];
 
-            try
+        foreach (var progressMessage in progressMessages)
+        {
+            // Explicit Fire & Forget
+            _ = Task.Run(async () =>
             {
-                _sessionManager.SendMessageToAdminSessions(SessionMessageType.RefreshProgress, collectionFolderDict, CancellationToken.None);
-            }
-            catch
-            {
-            }
+                try
+                {
+                    await _sessionManager.SendMessageToAdminSessions(SessionMessageType.RefreshProgress, progressMessage, CancellationToken.None).ConfigureAwait(false);
+                }
+                catch
+                {
+                }
+            });
         }
     }
 

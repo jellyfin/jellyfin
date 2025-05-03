@@ -1,5 +1,3 @@
-#nullable disable
-
 #pragma warning disable CS1591
 
 using System.Collections.Generic;
@@ -22,11 +20,9 @@ namespace Emby.Server.Implementations.Images
         {
         }
 
-        protected override IReadOnlyList<BaseItem> GetItemsWithImages(BaseItem item)
+        protected override IReadOnlyList<BaseItem> GetItemsWithImages(Playlist item)
         {
-            var playlist = (Playlist)item;
-
-            return playlist.GetManageableItems()
+            return item.GetManageableItems()
                 .Select(i =>
                 {
                     var subItem = i.Item2;
@@ -55,7 +51,7 @@ namespace Emby.Server.Implementations.Images
                         }
                     }
 
-                    return null;
+                    return null!;
                 })
                 .Where(i => i is not null)
                 .DistinctBy(x => x.Id)

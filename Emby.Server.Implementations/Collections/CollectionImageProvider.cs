@@ -47,11 +47,9 @@ namespace Emby.Server.Implementations.Collections
         }
 
         /// <inheritdoc />
-        protected override IReadOnlyList<BaseItem> GetItemsWithImages(BaseItem item)
+        protected override IReadOnlyList<BaseItem> GetItemsWithImages(BoxSet item)
         {
-            var playlist = (BoxSet)item;
-
-            return playlist.Children.Concat(playlist.GetLinkedChildren())
+            return item.Children.Concat(item.GetLinkedChildren())
                 .Select(i =>
                 {
                     var subItem = i;
@@ -79,12 +77,12 @@ namespace Emby.Server.Implementations.Collections
                         }
                     }
 
-                    return null;
+                    return null!;
                 })
                 .Where(i => i is not null)
-                .GroupBy(x => x!.Id) // We removed the null values
+                .GroupBy(x => x.Id)
                 .Select(x => x.First())
-                .ToList()!; // Again... the list doesn't contain any null values
+                .ToList();
         }
 
         /// <inheritdoc />
