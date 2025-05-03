@@ -150,15 +150,17 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "overlay_rkrga"
         ];
 
-        private static readonly Dictionary<int, string[]> _filterOptionsDict = new Dictionary<int, string[]>
+        private static readonly Dictionary<FilterOptionType, (string, string)> _filterOptionsDict = new Dictionary<FilterOptionType, (string, string)>
         {
-            { 0, new string[] { "scale_cuda", "format" } },
-            { 1, new string[] { "tonemap_cuda", "GPU accelerated HDR to SDR tonemapping" } },
-            { 2, new string[] { "tonemap_opencl", "bt2390" } },
-            { 3, new string[] { "overlay_opencl", "Action to take when encountering EOF from secondary input" } },
-            { 4, new string[] { "overlay_vaapi", "Action to take when encountering EOF from secondary input" } },
-            { 5, new string[] { "overlay_vulkan", "Action to take when encountering EOF from secondary input" } },
-            { 6, new string[] { "transpose_opencl", "rotate by half-turn" } }
+            { FilterOptionType.ScaleCudaFormat, ("scale_cuda", "format") },
+            { FilterOptionType.TonemapCudaName, ("tonemap_cuda", "GPU accelerated HDR to SDR tonemapping") },
+            { FilterOptionType.TonemapOpenclBt2390, ("tonemap_opencl", "bt2390") },
+            { FilterOptionType.OverlayOpenclFrameSync, ("overlay_opencl", "Action to take when encountering EOF from secondary input") },
+            { FilterOptionType.OverlayVaapiFrameSync, ("overlay_vaapi", "Action to take when encountering EOF from secondary input") },
+            { FilterOptionType.OverlayVulkanFrameSync, ("overlay_vulkan", "Action to take when encountering EOF from secondary input") },
+            { FilterOptionType.TransposeOpenclReversal, ("transpose_opencl", "rotate by half-turn") },
+            { FilterOptionType.OverlayOpenclAlphaFormat, ("overlay_opencl", "alpha_format") },
+            { FilterOptionType.OverlayCudaAlphaFormat, ("overlay_cuda", "alpha_format") }
         };
 
         private static readonly Dictionary<BitStreamFilterOptionType, (string, string)> _bsfOptionsDict = new Dictionary<BitStreamFilterOptionType, (string, string)>
@@ -294,7 +296,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public IEnumerable<string> GetFilters() => GetFFmpegFilters();
 
-        public IDictionary<int, bool> GetFiltersWithOption() => GetFFmpegFiltersWithOption();
+        public IDictionary<FilterOptionType, bool> GetFiltersWithOption() => _filterOptionsDict
+            .ToDictionary(item => item.Key, item => CheckFilterWithOption(item.Value.Item1, item.Value.Item2));
 
         public IDictionary<BitStreamFilterOptionType, bool> GetBitStreamFiltersWithOption() => _bsfOptionsDict
             .ToDictionary(item => item.Key, item => CheckBitStreamFilterWithOption(item.Value.Item1, item.Value.Item2));
@@ -626,20 +629,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _logger.LogInformation("Available filters: {Filters}", found);
 
             return found;
-        }
-
-        private Dictionary<int, bool> GetFFmpegFiltersWithOption()
-        {
-            Dictionary<int, bool> dict = new Dictionary<int, bool>();
-            for (int i = 0; i < _filterOptionsDict.Count; i++)
-            {
-                if (_filterOptionsDict.TryGetValue(i, out var val) && val.Length == 2)
-                {
-                    dict.Add(i, CheckFilterWithOption(val[0], val[1]));
-                }
-            }
-
-            return dict;
         }
 
         private string GetProcessOutput(string path, string arguments, bool readStdErr, string? testKey)
