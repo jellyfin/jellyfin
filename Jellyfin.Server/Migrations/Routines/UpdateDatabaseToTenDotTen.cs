@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using Emby.Server.Implementations.Data;
@@ -15,10 +16,8 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// Updates the library.db to version 10.10.z; replaces the migration code from the old SqliteItemRepository and SqliteUserDataRepository.
 /// </summary>
-[JellyfinMigration("2025-04-19T00:00:00", nameof(UpdateDatabaseToTenDotTen), "462ED27A-8822-4115-9089-F060CB6BE32C")]
-#pragma warning disable CS0618 // Type or member is obsolete
-internal class UpdateDatabaseToTenDotTen : IMigrationRoutine
-#pragma warning restore CS0618 // Type or member is obsolete
+[JellyfinMigration("2025-04-19T00:00:00", nameof(UpdateDatabaseToTenDotTen))]
+internal class UpdateDatabaseToTenDotTen : IDatabaseMigrationRoutine
 {
     private const string DbFilename = "library.db";
     private readonly ILogger<UpdateDatabaseToTenDotTen> _logger;
@@ -45,16 +44,10 @@ internal class UpdateDatabaseToTenDotTen : IMigrationRoutine
             "create table if not exists TypedBaseItems (guid GUID primary key NOT NULL, type TEXT NOT NULL, data BLOB NULL, ParentId GUID NULL, Path TEXT NULL)",
 
             "create table if not exists AncestorIds (ItemId GUID NOT NULL, AncestorId GUID NOT NULL, AncestorIdText TEXT NOT NULL, PRIMARY KEY (ItemId, AncestorId))",
-            "create index if not exists idx_AncestorIds1 on AncestorIds(AncestorId)",
-            "create index if not exists idx_AncestorIds5 on AncestorIds(AncestorIdText,ItemId)",
 
             "create table if not exists ItemValues (ItemId GUID NOT NULL, Type INT NOT NULL, Value TEXT NOT NULL, CleanValue TEXT NOT NULL)",
 
             "create table if not exists People (ItemId GUID, Name TEXT NOT NULL, Role TEXT, PersonType TEXT, SortOrder int, ListOrder int)",
-
-            "drop index if exists idxPeopleItemId",
-            "create index if not exists idxPeopleItemId1 on People(ItemId,ListOrder)",
-            "create index if not exists idxPeopleName on People(Name)",
 
             "create table if not exists " + ChaptersTableName + " (ItemId GUID, ChapterIndex INT NOT NULL, StartPositionTicks BIGINT NOT NULL, Name TEXT, ImagePath TEXT, PRIMARY KEY (ItemId, ChapterIndex))",
 
@@ -64,75 +57,32 @@ internal class UpdateDatabaseToTenDotTen : IMigrationRoutine
             "pragma shrink_memory"
         ];
 
-        string[] postQueries =
-        [
-            "create index if not exists idx_PathTypedBaseItems on TypedBaseItems(Path)",
-            "create index if not exists idx_ParentIdTypedBaseItems on TypedBaseItems(ParentId)",
-
-            "create index if not exists idx_PresentationUniqueKey on TypedBaseItems(PresentationUniqueKey)",
-            "create index if not exists idx_GuidTypeIsFolderIsVirtualItem on TypedBaseItems(Guid,Type,IsFolder,IsVirtualItem)",
-            "create index if not exists idx_CleanNameType on TypedBaseItems(CleanName,Type)",
-
-            // covering index
-            "create index if not exists idx_TopParentIdGuid on TypedBaseItems(TopParentId,Guid)",
-
-            // series
-            "create index if not exists idx_TypeSeriesPresentationUniqueKey1 on TypedBaseItems(Type,SeriesPresentationUniqueKey,PresentationUniqueKey,SortName)",
-
-            // series counts
-            // seriesdateplayed sort order
-            "create index if not exists idx_TypeSeriesPresentationUniqueKey3 on TypedBaseItems(SeriesPresentationUniqueKey,Type,IsFolder,IsVirtualItem)",
-
-            // live tv programs
-            "create index if not exists idx_TypeTopParentIdStartDate on TypedBaseItems(Type,TopParentId,StartDate)",
-
-            // covering index for getitemvalues
-            "create index if not exists idx_TypeTopParentIdGuid on TypedBaseItems(Type,TopParentId,Guid)",
-
-            // used by movie suggestions
-            "create index if not exists idx_TypeTopParentIdGroup on TypedBaseItems(Type,TopParentId,PresentationUniqueKey)",
-            "create index if not exists idx_TypeTopParentId5 on TypedBaseItems(TopParentId,IsVirtualItem)",
-
-            // latest items
-            "create index if not exists idx_TypeTopParentId9 on TypedBaseItems(TopParentId,Type,IsVirtualItem,PresentationUniqueKey,DateCreated)",
-            "create index if not exists idx_TypeTopParentId8 on TypedBaseItems(TopParentId,IsFolder,IsVirtualItem,PresentationUniqueKey,DateCreated)",
-
-            // resume
-            "create index if not exists idx_TypeTopParentId7 on TypedBaseItems(TopParentId,MediaType,IsVirtualItem,PresentationUniqueKey)",
-
-            // items by name
-            "create index if not exists idx_ItemValues6 on ItemValues(ItemId,Type,CleanValue)",
-            "create index if not exists idx_ItemValues7 on ItemValues(Type,CleanValue,ItemId)",
-
-            // Used to update inherited tags
-            "create index if not exists idx_ItemValues8 on ItemValues(Type, ItemId, Value)",
-
-            "CREATE INDEX IF NOT EXISTS idx_TypedBaseItemsUserDataKeyType ON TypedBaseItems(UserDataKey, Type)",
-            "CREATE INDEX IF NOT EXISTS idx_PeopleNameListOrder ON People(Name, ListOrder)"
-        ];
-
-        string[] userDataQUeries =
-        [
-            "create table if not exists UserDatas (key nvarchar not null, userId INT not null, rating float null, played bit not null, playCount int not null, isFavorite bit not null, playbackPositionTicks bigint not null, lastPlayedDate datetime null, AudioStreamIndex INT, SubtitleStreamIndex INT)",
-            "drop index if exists idx_userdata",
-            "drop index if exists idx_userdata1",
-            "drop index if exists idx_userdata2",
-            "drop index if exists userdataindex1",
-            "drop index if exists userdataindex",
-            "drop index if exists userdataindex3",
-            "drop index if exists userdataindex4",
-            "create unique index if not exists UserDatasIndex1 on UserDatas (key, userId)",
-            "create index if not exists UserDatasIndex2 on UserDatas (key, userId, played)",
-            "create index if not exists UserDatasIndex3 on UserDatas (key, userId, playbackPositionTicks)",
-            "create index if not exists UserDatasIndex4 on UserDatas (key, userId, isFavorite)",
-            "create index if not exists UserDatasIndex5 on UserDatas (key, userId, lastPlayedDate)"
-        ];
-
-        _logger.LogInformation("Prepare database for EFCore migration: update to version 10.10.z");
-
         var dataPath = _paths.DataPath;
 
         var dbPath = Path.Combine(dataPath, DbFilename);
+
+        // Back up the database before making any changes
+        for (var i = 1; ; i++)
+        {
+            var bakPath = string.Format(CultureInfo.InvariantCulture, "{0}.bak{1}", dbPath, i);
+            if (!File.Exists(bakPath))
+            {
+                try
+                {
+                    File.Copy(dbPath, bakPath);
+                    _logger.LogInformation("Library database backed up to {BackupPath}", bakPath);
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Cannot make a backup of {Library} at path {BackupPath}", DbFilename, bakPath);
+                    throw;
+                }
+            }
+        }
+
+        _logger.LogInformation("Prepare database for EFCore migration: update to version 10.10.z");
+
         using var connection = new SqliteConnection($"Filename={dbPath}");
         connection.Open();
         using (var transaction = connection.BeginTransaction())
@@ -254,8 +204,6 @@ internal class UpdateDatabaseToTenDotTen : IMigrationRoutine
 
             AddColumn(connection, "MediaStreams", "Rotation", "INT", existingColumnNames);
 
-            connection.Execute(string.Join(';', postQueries));
-
             transaction.Commit();
         }
 
@@ -266,7 +214,7 @@ internal class UpdateDatabaseToTenDotTen : IMigrationRoutine
 
             var users = userDatasTableExists ? [] : _userManager.Users;
 
-            connection.Execute(string.Join(';', userDataQUeries));
+            connection.Execute("create table if not exists UserDatas (key nvarchar not null, userId INT not null, rating float null, played bit not null, playCount int not null, isFavorite bit not null, playbackPositionTicks bigint not null, lastPlayedDate datetime null, AudioStreamIndex INT, SubtitleStreamIndex INT)");
 
             if (userDataTableExists)
             {
