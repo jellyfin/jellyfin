@@ -51,6 +51,7 @@ public class ArtistsController : BaseJellyfinApiController
     /// Gets all artists from a given item, folder, or the entire library.
     /// </summary>
     /// <param name="minCommunityRating">Optional filter by minimum community rating.</param>
+    /// <param name="minUserRating">Optional filter by minimum user rating.</param>
     /// <param name="startIndex">Optional. The record index to start at. All items with a lower index will be dropped from the results.</param>
     /// <param name="limit">Optional. The maximum number of records to return.</param>
     /// <param name="searchTerm">Optional. Search term.</param>
@@ -88,6 +89,7 @@ public class ArtistsController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<QueryResult<BaseItemDto>> GetArtists(
         [FromQuery] double? minCommunityRating,
+        [FromQuery] double? minUserRating,
         [FromQuery] int? startIndex,
         [FromQuery] int? limit,
         [FromQuery] string? searchTerm,
@@ -153,6 +155,7 @@ public class ArtistsController : BaseJellyfinApiController
             PersonTypes = personTypes,
             Years = years,
             MinCommunityRating = minCommunityRating,
+            MinUserRating = minUserRating,
             DtoOptions = dtoOptions,
             SearchTerm = searchTerm,
             EnableTotalRecordCount = enableTotalRecordCount,
@@ -254,6 +257,7 @@ public class ArtistsController : BaseJellyfinApiController
     /// Gets all album artists from a given item, folder, or the entire library.
     /// </summary>
     /// <param name="minCommunityRating">Optional filter by minimum community rating.</param>
+    /// <param name="minUserRating">Optional filter by minimum user rating.</param>
     /// <param name="startIndex">Optional. The record index to start at. All items with a lower index will be dropped from the results.</param>
     /// <param name="limit">Optional. The maximum number of records to return.</param>
     /// <param name="searchTerm">Optional. Search term.</param>
@@ -291,6 +295,7 @@ public class ArtistsController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<QueryResult<BaseItemDto>> GetAlbumArtists(
         [FromQuery] double? minCommunityRating,
+        [FromQuery] double? minUserRating,
         [FromQuery] int? startIndex,
         [FromQuery] int? limit,
         [FromQuery] string? searchTerm,
@@ -356,6 +361,7 @@ public class ArtistsController : BaseJellyfinApiController
             PersonTypes = personTypes,
             Years = years,
             MinCommunityRating = minCommunityRating,
+            MinUserRating = minUserRating,
             DtoOptions = dtoOptions,
             SearchTerm = searchTerm,
             EnableTotalRecordCount = enableTotalRecordCount,

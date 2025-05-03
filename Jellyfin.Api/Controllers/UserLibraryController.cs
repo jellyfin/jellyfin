@@ -349,7 +349,7 @@ public class UserLibraryController : BaseJellyfinApiController
     /// </summary>
     /// <param name="userId">User id.</param>
     /// <param name="itemId">Item id.</param>
-    /// <param name="likes">Whether this <see cref="UpdateUserItemRating" /> is likes.</param>
+    /// <param name="rating">Double representing a user item rating <see cref="UpdateUserItemRating" />.</param>
     /// <response code="200">Item rating updated.</response>
     /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
     [HttpPost("UserItems/{itemId}/Rating")]
@@ -357,7 +357,7 @@ public class UserLibraryController : BaseJellyfinApiController
     public ActionResult<UserItemDataDto?> UpdateUserItemRating(
         [FromQuery] Guid? userId,
         [FromRoute, Required] Guid itemId,
-        [FromQuery] bool? likes)
+        [FromQuery] double? rating)
     {
         userId = RequestHelpers.GetUserId(User, userId);
         var user = _userManager.GetUserById(userId.Value);
@@ -374,7 +374,7 @@ public class UserLibraryController : BaseJellyfinApiController
             return NotFound();
         }
 
-        return UpdateUserItemRatingInternal(user, item, likes);
+        return UpdateUserItemRatingInternal(user, item, rating);
     }
 
     /// <summary>
@@ -382,7 +382,7 @@ public class UserLibraryController : BaseJellyfinApiController
     /// </summary>
     /// <param name="userId">User id.</param>
     /// <param name="itemId">Item id.</param>
-    /// <param name="likes">Whether this <see cref="UpdateUserItemRating" /> is likes.</param>
+    /// <param name="rating">Double representing a user item rating <see cref="UpdateUserItemRating" />.</param>
     /// <response code="200">Item rating updated.</response>
     /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
     [HttpPost("Users/{userId}/Items/{itemId}/Rating")]
@@ -392,8 +392,8 @@ public class UserLibraryController : BaseJellyfinApiController
     public ActionResult<UserItemDataDto?> UpdateUserItemRatingLegacy(
         [FromRoute, Required] Guid userId,
         [FromRoute, Required] Guid itemId,
-        [FromQuery] bool? likes)
-        => UpdateUserItemRating(userId, itemId, likes);
+        [FromQuery] double? rating)
+        => UpdateUserItemRating(userId, itemId, rating);
 
     /// <summary>
     /// Gets local trailers for an item.
@@ -678,15 +678,15 @@ public class UserLibraryController : BaseJellyfinApiController
     /// </summary>
     /// <param name="user">The user.</param>
     /// <param name="item">The item.</param>
-    /// <param name="likes">if set to <c>true</c> [likes].</param>
-    private UserItemDataDto? UpdateUserItemRatingInternal(User user, BaseItem item, bool? likes)
+    /// <param name="rating">Value to set the user item rating.</param>
+    private UserItemDataDto? UpdateUserItemRatingInternal(User user, BaseItem item, double? rating)
     {
         // Get the user data for this item
         var data = _userDataRepository.GetUserData(user, item);
 
         if (data is not null)
         {
-            data.Likes = likes;
+            data.Rating = rating;
 
             _userDataRepository.SaveUserData(user, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
         }

@@ -34,6 +34,7 @@ public static class OrderMapper
             (ItemSortBy.DatePlayed, _) => e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id))!.LastPlayedDate,
             (ItemSortBy.PlayCount, _) => e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id))!.PlayCount,
             (ItemSortBy.IsFavoriteOrLiked, _) => e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id))!.IsFavorite,
+            (ItemSortBy.UserRating, _) => e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id))!.Rating, 
             (ItemSortBy.IsFolder, _) => e => e.IsFolder,
             (ItemSortBy.IsPlayed, _) => e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id))!.Played,
             (ItemSortBy.IsUnplayed, _) => e => !e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id))!.Played,
