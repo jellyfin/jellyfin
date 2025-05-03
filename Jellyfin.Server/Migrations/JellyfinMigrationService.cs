@@ -110,7 +110,8 @@ internal class JellyfinMigrationService
                 var historyRepository = dbContext.GetService<IHistoryRepository>();
                 var appliedMigrations = await dbContext.Database.GetAppliedMigrationsAsync().ConfigureAwait(false);
                 var oldMigrations = Migrations.SelectMany(e => e)
-                    .Where(e => migrationOptions.Applied.Any(f => f.Id.Equals(e.Metadata.Key!.Value))) // this is a legacy migration that will always have its own ID.
+                    .Where(e => e.Metadata.Key != null) // legacy migrations will always have their own ID.
+                    .Where(e => migrationOptions.Applied.Any(f => f.Id.Equals(e.Metadata.Key!.Value)))
                     .Where(e => !appliedMigrations.Contains(e.BuildCodeMigrationId()))
                     .ToArray();
                 var startupScripts = oldMigrations.Select(e => (Migration: e.Metadata, Script: historyRepository.GetInsertScript(new HistoryRow(e.BuildCodeMigrationId(), GetJellyfinVersion()))));
