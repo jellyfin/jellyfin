@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net; // Added for IPAddress
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -162,6 +163,24 @@ namespace Jellyfin.Server
                     .ConfigureServices(services => appHost.Init(services))
                     .ConfigureWebHostDefaults(webHostBuilder =>
                     {
+                        // Configure Kestrel to listen on the dedicated metrics port if specified
+                        var serverConfig = appHost.ConfigurationManager.Configuration;
+                        if (serverConfig.EnableMetrics && serverConfig.MetricsListenPort > 0)
+                        {
+                            webHostBuilder.ConfigureKestrel(options =>
+                            {
+                                var metricsPort = serverConfig.MetricsListenPort;
+                                var addresses = appHost.NetManager.GetAllBindInterfaces(false);
+                                _logger.LogInformation("Configuring Kestrel to listen for metrics on port {MetricsPort}", metricsPort);
+                                foreach (var netAdd in addresses)
+                                {
+                                    var address = netAdd.Address;
+                                    _logger.LogInformation("Kestrel metrics endpoint will listen on {Address}:{Port}", address.Equals(IPAddress.IPv6Any) ? "*" : address.ToString(), metricsPort);
+                                    options.Listen(address, metricsPort);
+                                }
+                            });
+                        }
+
                         webHostBuilder.ConfigureWebHostBuilder(appHost, startupConfig, appPaths, _logger);
                         if (bool.TryParse(Environment.GetEnvironmentVariable("JELLYFIN_ENABLE_IIS"), out var iisEnabled) && iisEnabled)
                         {

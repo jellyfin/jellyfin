@@ -51,6 +51,21 @@ namespace Emby.Server.Implementations.Configuration
                 }
             }
 
+            // Check for environment variable override for MetricsListenPort
+            // You can set the metrics port by setting the JELLYFIN_MetricsListenPort environmental variable
+            if (int.TryParse(_startupConfig["MetricsListenPort"], out var metricsPortEnv) && metricsPortEnv > 0)
+            {
+                if (Configuration.MetricsListenPort <= 0 || Configuration.MetricsListenPort != metricsPortEnv) // Only override if not set or different
+                {
+                    Configuration.MetricsListenPort = metricsPortEnv;
+                    Logger.LogInformation("Metrics listen port set to {Port} via JELLYFIN_MetricsListenPort environment variable, overriding configuration file setting.", metricsPortEnv);
+                }
+                else
+                {
+                    Logger.LogInformation("Metrics listen port set to {Port} via JELLYFIN_MetricsListenPort environment variable (matches configuration file setting).", metricsPortEnv);
+                }
+            }
+
             UpdateMetadataPath();
         }
 
