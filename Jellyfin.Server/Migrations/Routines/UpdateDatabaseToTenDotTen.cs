@@ -305,9 +305,7 @@ internal class UpdateDatabaseToTenDotTen : IMigrationRoutine
                 statement.TryBind("@UserId", user.Id);
                 statement.TryBind("@InternalUserId", user.InternalId);
 
-#pragma warning disable IDE0058 // Expression value is never used
-                statement.ExecuteNonQuery();
-#pragma warning restore IDE0058 // Expression value is never used
+                _ = statement.ExecuteNonQuery();
             }
         }
     }
