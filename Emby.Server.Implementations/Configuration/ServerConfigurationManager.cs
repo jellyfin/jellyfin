@@ -31,10 +31,10 @@ namespace Emby.Server.Implementations.Configuration
             IApplicationPaths applicationPaths,
             ILoggerFactory loggerFactory,
             IXmlSerializer xmlSerializer,
-            IConfiguration startupConfig) // Add IConfiguration parameter
+            IConfiguration startupConfig)
             : base(applicationPaths, loggerFactory, xmlSerializer)
         {
-            _startupConfig = startupConfig; // Store the configuration
+            _startupConfig = startupConfig;
 
             // Check for environment variable override AFTER base constructor loads XML
             // You can enable metrics by setting the JELLYFIN_EnableMetrics environmental variable
