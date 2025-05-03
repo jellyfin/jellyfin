@@ -240,7 +240,7 @@ namespace Jellyfin.Server
         /// <returns>A task.</returns>
         public static async Task ApplyStartupMigrationAsync(ServerApplicationPaths appPaths, IConfiguration startupConfig)
         {
-            var startupConfigurationManager = new ServerConfigurationManager(appPaths, _loggerFactory, new MyXmlSerializer());
+            var startupConfigurationManager = new ServerConfigurationManager(appPaths, _loggerFactory, new MyXmlSerializer(), startupConfig);
             startupConfigurationManager.AddParts([new DatabaseConfigurationFactory()]);
             var migrationStartupServiceProvider = new ServiceCollection()
                 .AddLogging(d => d.AddSerilog())

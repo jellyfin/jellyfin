@@ -8,6 +8,7 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Serialization;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Configuration
@@ -17,18 +18,39 @@ namespace Emby.Server.Implementations.Configuration
     /// </summary>
     public class ServerConfigurationManager : BaseConfigurationManager, IServerConfigurationManager
     {
+        private readonly IConfiguration _startupConfig;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfigurationManager" /> class.
         /// </summary>
         /// <param name="applicationPaths">The application paths.</param>
         /// <param name="loggerFactory">The logger factory.</param>
         /// <param name="xmlSerializer">The XML serializer.</param>
+        /// <param name="startupConfig">The startup configuration containing environment variables.</param>
         public ServerConfigurationManager(
             IApplicationPaths applicationPaths,
             ILoggerFactory loggerFactory,
-            IXmlSerializer xmlSerializer)
+            IXmlSerializer xmlSerializer,
+            IConfiguration startupConfig) // Add IConfiguration parameter
             : base(applicationPaths, loggerFactory, xmlSerializer)
         {
+            _startupConfig = startupConfig; // Store the configuration
+
+            // Check for environment variable override AFTER base constructor loads XML
+            // You can enable metrics by setting the JELLYFIN_EnableMetrics environmental variable
+            if (bool.TryParse(_startupConfig["EnableMetrics"], out var enableMetricsEnv) && enableMetricsEnv)
+            {
+                if (!Configuration.EnableMetrics) // Only override if not already true from XML
+                {
+                    Configuration.EnableMetrics = true;
+                    Logger.LogInformation("Metrics enabled via JELLYFIN_EnableMetrics environment variable, overriding configuration file setting.");
+                }
+                else
+                {
+                    Logger.LogInformation("Metrics enabled via JELLYFIN_EnableMetrics environment variable (matches configuration file setting).");
+                }
+            }
+
             UpdateMetadataPath();
         }
 
