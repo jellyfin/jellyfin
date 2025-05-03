@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 namespace Jellyfin.Database.Implementations.Locking;
 
 /// <summary>
-/// A locking behavior that will always block any operation while a write is requested. Mimikes the old SqliteRepository behavior.
+/// A locking behavior that will always block any operation while a write is requested. Mimicks the old SqliteRepository behavior.
 /// </summary>
 public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
 {
