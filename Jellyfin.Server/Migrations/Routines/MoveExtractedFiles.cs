@@ -79,6 +79,12 @@ public class MoveExtractedFiles : IAsyncMigrationRoutine
         await foreach (var result in context.BaseItems
                           .Include(e => e.MediaStreams!.Where(s => s.StreamType == MediaStreamTypeEntity.Subtitle && !s.IsExternal))
                           .Where(b => b.MediaType == MediaType.Video.ToString() && !b.IsVirtualItem && !b.IsFolder)
+                          .Select(b => new
+                          {
+                              b.Id,
+                              b.Path,
+                              b.MediaStreams
+                          })
                           .OrderBy(e => e.Id)
                           .WithPartitionProgress((partition) => _logger.LogInformation("Checked: {Count} - Moved: {Items} - Time: {Time}", partition * Limit, itemCount, sw.Elapsed))
                           .PartitionEagerAsync(Limit, cancellationToken)
