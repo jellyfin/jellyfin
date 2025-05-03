@@ -1,6 +1,7 @@
 using System;
 using System.Data.Common;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
@@ -31,6 +32,20 @@ public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
     public void Initialise(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.AddInterceptors(new LockingInterceptor());
+    }
+
+    /// <inheritdoc/>
+    public async Task OnSaveChangesAsync(JellyfinDbContext context, Func<Task> saveChanges)
+    {
+        try
+        {
+            DatabaseLock.EnterWriteLock();
+            await saveChanges().ConfigureAwait(false);
+        }
+        finally
+        {
+            DatabaseLock.ExitWriteLock();
+        }
     }
 
     /// <summary>

@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
 namespace Jellyfin.Database.Implementations.Locking;
@@ -17,5 +18,11 @@ public class NoLockBehavior : IEntityFrameworkCoreLockingBehavior
     /// <inheritdoc/>
     public void Initialise(DbContextOptionsBuilder optionsBuilder)
     {
+    }
+
+    /// <inheritdoc/>
+    public async Task OnSaveChangesAsync(JellyfinDbContext context, Func<Task> saveChanges)
+    {
+        await saveChanges().ConfigureAwait(false);
     }
 }

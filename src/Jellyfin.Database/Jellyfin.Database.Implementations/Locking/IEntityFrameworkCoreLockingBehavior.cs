@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
 namespace Jellyfin.Database.Implementations.Locking;
@@ -20,4 +21,12 @@ public interface IEntityFrameworkCoreLockingBehavior
     /// <param name="context">The database context invoking the action.</param>
     /// <param name="saveChanges">Callback for performing the actual save changes.</param>
     void OnSaveChanges(JellyfinDbContext context, Action saveChanges);
+
+    /// <summary>
+    /// Will be invoked when changes should be saved in the current locking behavior.
+    /// </summary>
+    /// <param name="context">The database context invoking the action.</param>
+    /// <param name="saveChanges">Callback for performing the actual save changes.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    Task OnSaveChangesAsync(JellyfinDbContext context, Func<Task> saveChanges);
 }

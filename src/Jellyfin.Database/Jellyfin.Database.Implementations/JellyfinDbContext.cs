@@ -2,6 +2,7 @@ using System;
 using System.Data.Common;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Entities.Security;
 using Jellyfin.Database.Implementations.Interfaces;
@@ -252,22 +253,39 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
     public DbSet<TrackMetadata> TrackMetadata => Set<TrackMetadata>();*/
 
     /// <inheritdoc/>
-    public override int SaveChanges()
+    public override async Task<int> SaveChangesAsync(
+        bool acceptAllChangesOnSuccess,
+        CancellationToken cancellationToken = default)
     {
-        foreach (var saveEntity in ChangeTracker.Entries()
-                     .Where(e => e.State == EntityState.Modified)
-                     .Select(entry => entry.Entity)
-                     .OfType<IHasConcurrencyToken>())
+        HandleConcurrencyToken();
+
+        try
         {
-            saveEntity.OnSavingChanges();
+            var result = -1;
+            await entityFrameworkCoreLocking.OnSaveChangesAsync(this, async () =>
+            {
+                result = await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken).ConfigureAwait(false);
+            }).ConfigureAwait(false);
+            return result;
         }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error trying to save changes.");
+            throw;
+        }
+    }
+
+    /// <inheritdoc/>
+    public override int SaveChanges(bool acceptAllChangesOnSuccess) // SaveChanges(bool) is beeing called by SaveChanges() with default to false.
+    {
+        HandleConcurrencyToken();
 
         try
         {
             var result = -1;
             entityFrameworkCoreLocking.OnSaveChanges(this, () =>
             {
-                result = base.SaveChanges();
+                result = base.SaveChanges(acceptAllChangesOnSuccess);
             });
             return result;
         }
@@ -275,6 +293,17 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
         {
             logger.LogError(e, "Error trying to save changes.");
             throw;
+        }
+    }
+
+    private void HandleConcurrencyToken()
+    {
+        foreach (var saveEntity in ChangeTracker.Entries()
+                     .Where(e => e.State == EntityState.Modified)
+                     .Select(entry => entry.Entity)
+                     .OfType<IHasConcurrencyToken>())
+        {
+            saveEntity.OnSavingChanges();
         }
     }
 
