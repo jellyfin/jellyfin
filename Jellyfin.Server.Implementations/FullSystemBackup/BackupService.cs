@@ -105,18 +105,18 @@ public class BackupService : IBackupService
 
             void CopyDirectory(string source, string target)
             {
-                if (!Directory.Exists(source))
-                {
-                    Directory.CreateDirectory(source);
-                }
+                source = Path.GetFullPath(source);
+                Directory.CreateDirectory(source);
 
-                var configFiles = zipArchive.Entries
-                    .Where(e => Path.GetFullPath(e.FullName.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar)
-                        .StartsWith(target, StringComparison.Ordinal));
-
-                foreach (var item in configFiles)
+                foreach (var item in zipArchive.Entries)
                 {
-                    var targetPath = Path.Combine(source, Path.GetFullPath(item.FullName)[target.Length..].Trim('/'));
+                    var sanitizedSourcePath = Path.GetFullPath(item.FullName.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar);
+                    if (!sanitizedSourcePath.StartsWith(target, StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+
+                    var targetPath = Path.Combine(source, sanitizedSourcePath[target.Length..].Trim('/'));
                     _logger.LogInformation("Restore and override {File}", targetPath);
                     item.ExtractToFile(targetPath);
                 }
