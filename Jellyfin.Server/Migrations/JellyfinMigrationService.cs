@@ -27,21 +27,16 @@ internal class JellyfinMigrationService
 {
     private readonly IDbContextFactory<JellyfinDbContext> _dbContextFactory;
     private readonly ILoggerFactory _loggerFactory;
-    private readonly IBackupService _backupService;
-
-    private static BackupManifestDto? _backupInfo;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="JellyfinMigrationService"/> class.
     /// </summary>
     /// <param name="dbContextFactory">Provides access to the jellyfin database.</param>
     /// <param name="loggerFactory">The logger factory.</param>
-    /// <param name="backupService">Backup service for creating rollback for migrations.</param>
-    public JellyfinMigrationService(IDbContextFactory<JellyfinDbContext> dbContextFactory, ILoggerFactory loggerFactory, IBackupService backupService)
+    public JellyfinMigrationService(IDbContextFactory<JellyfinDbContext> dbContextFactory, ILoggerFactory loggerFactory)
     {
         _dbContextFactory = dbContextFactory;
         _loggerFactory = loggerFactory;
-        _backupService = backupService;
 #pragma warning disable CS0618 // Type or member is obsolete
         Migrations = [.. typeof(IMigrationRoutine).Assembly.GetTypes().Where(e => typeof(IMigrationRoutine).IsAssignableFrom(e) || typeof(IAsyncMigrationRoutine).IsAssignableFrom(e))
             .Select(e => (Type: e, Metadata: e.GetCustomAttribute<JellyfinMigrationAttribute>()))
@@ -110,16 +105,6 @@ internal class JellyfinMigrationService
             if (migrationOptions != null && migrationOptions.Applied.Count > 0)
             {
                 logger.LogInformation("Old migration style migration.xml detected. Migrate now.");
-                logger.LogInformation("Create full system backup before migration.");
-
-                _backupInfo = await _backupService.CreateBackupAsync(new()
-                {
-                    Metadata = false,
-                    Subtitles = false,
-                    Trickplay = false,
-                }).ConfigureAwait(false);
-                logger.LogInformation("Pre migration.xml backup created.");
-
                 try
                 {
                     var dbContext = await _dbContextFactory.CreateDbContextAsync().ConfigureAwait(false);
@@ -142,11 +127,9 @@ internal class JellyfinMigrationService
                         File.Move(migrationConfigPath, Path.ChangeExtension(migrationConfigPath, ".xml.backup"), true);
                     }
                 }
-                catch (System.Exception)
+                catch (System.Exception ex)
                 {
-                    logger.LogCritical("Could not migrate migration.xml, will now try to roll back from system backup {BackupPath}.", _backupInfo.Path);
-                    await _backupService.RestoreBackupAsync(_backupInfo.Path).ConfigureAwait(false);
-                    logger.LogInformation("Rollback successful");
+                    logger.LogCritical(ex, "Failed to apply migrations");
                     throw;
                 }
             }
@@ -182,19 +165,6 @@ internal class JellyfinMigrationService
             logger.LogInformation("There are {Pending} migrations for stage {Stage}.", pendingCodeMigrations.Length, stage);
             var migrations = pendingMigrations.OrderBy(e => e.Key).ToArray();
 
-            if (migrations.Length != 0 && _backupInfo is null)
-            {
-                logger.LogInformation("Pending migrations detected, create system backup.");
-
-                _backupInfo = await _backupService.CreateBackupAsync(new()
-                {
-                    Metadata = false,
-                    Subtitles = false,
-                    Trickplay = false,
-                }).ConfigureAwait(false);
-                logger.LogInformation("Pre migration backup has been created at {BackupPath}.", _backupInfo.Path);
-            }
-
             foreach (var item in migrations)
             {
                 try
@@ -205,8 +175,7 @@ internal class JellyfinMigrationService
                 }
                 catch (Exception ex)
                 {
-                    logger.LogCritical(ex, "Migration {Name} failed, attempt to rollback to {BackupPath}", item.Key, _backupInfo!.Path);
-                    await _backupService.RestoreBackupAsync(_backupInfo.Path).ConfigureAwait(false);
+                    logger.LogCritical(ex, "Migration {Name} failed", item.Key);
                     throw;
                 }
             }

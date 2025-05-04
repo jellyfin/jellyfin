@@ -16,6 +16,7 @@ using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Helpers;
 using Jellyfin.Server.Implementations.DatabaseConfiguration;
 using Jellyfin.Server.Implementations.Extensions;
+using Jellyfin.Server.Implementations.FullSystemBackup;
 using Jellyfin.Server.Implementations.StorageHelpers;
 using Jellyfin.Server.Implementations.SystemBackupService;
 using Jellyfin.Server.Migrations;
