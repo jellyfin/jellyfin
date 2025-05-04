@@ -103,20 +103,7 @@ public class BackupService : IBackupService
                 throw new NotSupportedException($"The loaded archive '{archivePath}' is made for a newer version of Jellyfin ({manifest.ServerVersion}) and cannot be loaded in this version.");
             }
 
-            static async Task CopyOverride(ZipArchiveEntry item, string targetPath)
-            {
-                var targetStream = File.Create(targetPath);
-                await using (targetStream.ConfigureAwait(false))
-                {
-                    var sourceStream = item.Open();
-                    await using (sourceStream.ConfigureAwait(false))
-                    {
-                        await sourceStream.CopyToAsync(targetStream).ConfigureAwait(false);
-                    }
-                }
-            }
-
-            async Task CopyDirectory(string source, string target)
+            void CopyDirectory(string source, string target)
             {
                 if (!Directory.Exists(source))
                 {
@@ -131,13 +118,13 @@ public class BackupService : IBackupService
                 {
                     var targetPath = Path.Combine(source, Path.GetFullPath(item.FullName)[target.Length..].Trim('/'));
                     _logger.LogInformation("Restore and override {File}", targetPath);
-                    await CopyOverride(item, targetPath).ConfigureAwait(false);
+                    item.ExtractToFile(targetPath);
                 }
             }
 
-            await CopyDirectory(_applicationPaths.ConfigurationDirectoryPath, "Config/").ConfigureAwait(false);
-            await CopyDirectory(_applicationPaths.DataPath, "Data/").ConfigureAwait(false);
-            await CopyDirectory(_applicationPaths.RootFolderPath, "Root/").ConfigureAwait(false);
+            CopyDirectory(_applicationPaths.ConfigurationDirectoryPath, "Config/");
+            CopyDirectory(_applicationPaths.DataPath, "Data/");
+            CopyDirectory(_applicationPaths.RootFolderPath, "Root/");
 
             _logger.LogInformation("Begin restoring Database");
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
