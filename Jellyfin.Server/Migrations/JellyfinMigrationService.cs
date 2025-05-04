@@ -29,6 +29,8 @@ internal class JellyfinMigrationService
     private readonly ILoggerFactory _loggerFactory;
     private readonly IBackupService _backupService;
 
+    private static BackupManifestDto? _backupInfo;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="JellyfinMigrationService"/> class.
     /// </summary>
@@ -64,8 +66,6 @@ internal class JellyfinMigrationService
     }
 
     private HashSet<MigrationStage> Migrations { get; set; }
-
-    private static BackupManifestDto? _backupInfo;
 
     public async Task CheckFirstTimeRunOrMigration(IApplicationPaths appPaths)
     {
