@@ -156,14 +156,11 @@ public partial class AudioNormalizationTask : IScheduledTask
     /// <inheritdoc />
     public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
     {
-        return
-        [
-            new TaskTriggerInfo
-            {
-                Type = TaskTriggerInfoType.IntervalTrigger,
-                IntervalTicks = TimeSpan.FromHours(24).Ticks
-            }
-        ];
+        yield return new TaskTriggerInfo
+        {
+            Type = TaskTriggerInfoType.IntervalTrigger,
+            IntervalTicks = TimeSpan.FromHours(24).Ticks
+        };
     }
 
     private async Task<float?> CalculateLUFSAsync(string inputArgs, bool waitForExit, CancellationToken cancellationToken)
@@ -194,7 +191,7 @@ public partial class AudioNormalizationTask : IScheduledTask
 
             using var reader = process.StandardError;
             float? lufs = null;
-            await foreach (var line in reader.ReadAllLinesAsync(cancellationToken))
+            await foreach (var line in reader.ReadAllLinesAsync(cancellationToken).ConfigureAwait(false))
             {
                 Match match = LUFSRegex().Match(line);
                 if (match.Success)
