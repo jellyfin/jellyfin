@@ -125,7 +125,7 @@ public class BackupService : IBackupService
 
                 var configFiles = zipArchive.Entries
                     .Where(e => Path.GetFullPath(e.FullName.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar)
-                        .StartsWith(target, StringComparison.OrdinalIgnoreCase));
+                        .StartsWith(target, StringComparison.Ordinal));
 
                 foreach (var item in configFiles)
                 {
