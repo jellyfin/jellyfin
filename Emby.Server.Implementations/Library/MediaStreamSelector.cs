@@ -44,8 +44,8 @@ namespace Emby.Server.Implementations.Library
                 .Where(i => i.Type == MediaStreamType.Subtitle)
                 .OrderByDescending(x => x.IsExternal)
                 .ThenByDescending(x => x.IsDefault)
-                .ThenByDescending(x => !x.IsForced && MatchesPreferredLanguage(x.Language, preferredLanguages))
-                .ThenByDescending(x => x.IsForced && MatchesPreferredLanguage(x.Language, preferredLanguages))
+                .ThenByDescending(x => !x.IsForced && MatchesPreferredLanguage(x.Language, preferredLanguages) && !x.Title.Contains("latin", StringComparison.OrdinalIgnoreCase))
+                .ThenByDescending(x => x.IsForced && MatchesPreferredLanguage(x.Language, preferredLanguages) && !x.Title.Contains("latin", StringComparison.OrdinalIgnoreCase))
                 .ThenByDescending(x => x.IsForced && IsLanguageUndefined(x.Language))
                 .ThenByDescending(x => x.IsForced)
                 .ToList();
