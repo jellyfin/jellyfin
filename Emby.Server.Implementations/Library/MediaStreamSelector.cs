@@ -64,7 +64,7 @@ namespace Emby.Server.Implementations.Library
                 // If the audio language is one of the user's preferred subtitle languages behave like OnlyForced.
                 if (!preferredLanguages.Contains(audioTrackLanguage, StringComparison.OrdinalIgnoreCase))
                 {
-                    stream = sortedStreams.FirstOrDefault(x => MatchesPreferredLanguage(x.Language, preferredLanguages));
+                    stream = sortedStreams.FirstOrDefault(x => MatchesPreferredLanguage(x.Language, preferredLanguages) && (x.Language == audioTrackLanguage || !x.IsForced));
                 }
                 else
                 {
