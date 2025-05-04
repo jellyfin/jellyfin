@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
@@ -551,10 +552,16 @@ namespace MediaBrowser.Providers.Manager
                     var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
                     await using (stream.ConfigureAwait(false))
                     {
+                        var mimetype = response.Content.Headers.ContentType?.MediaType;
+                        if (mimetype is null || mimetype.Equals(MediaTypeNames.Application.Octet, StringComparison.OrdinalIgnoreCase))
+                        {
+                            mimetype = MimeTypes.GetMimeType(response.RequestMessage.RequestUri.GetLeftPart(UriPartial.Path));
+                        }
+
                         await _providerManager.SaveImage(
                             item,
                             stream,
-                            response.Content.Headers.ContentType?.MediaType,
+                            mimetype,
                             type,
                             null,
                             cancellationToken).ConfigureAwait(false);
@@ -677,10 +684,16 @@ namespace MediaBrowser.Providers.Manager
                     var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
                     await using (stream.ConfigureAwait(false))
                     {
+                        var mimetype = response.Content.Headers.ContentType?.MediaType;
+                        if (mimetype is null || mimetype.Equals(MediaTypeNames.Application.Octet, StringComparison.OrdinalIgnoreCase))
+                        {
+                            mimetype = MimeTypes.GetMimeType(response.RequestMessage.RequestUri.GetLeftPart(UriPartial.Path));
+                        }
+
                         await _providerManager.SaveImage(
                             item,
                             stream,
-                            response.Content.Headers.ContentType?.MediaType,
+                            mimetype,
                             imageType,
                             null,
                             cancellationToken).ConfigureAwait(false);

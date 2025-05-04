@@ -14,7 +14,4 @@
     <ProjectReference Include="..\..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Mono.Nat" />
-  </ItemGroup>
 </Project>

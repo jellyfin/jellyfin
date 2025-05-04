@@ -187,7 +187,7 @@ namespace Emby.Server.Implementations.Updates
                                 await _pluginManager.PopulateManifest(package, version.VersionNumber, plugin.Path, plugin.Manifest.Status).ConfigureAwait(false);
                             }
 
-                            // Remove versions with a target ABI greater then the current application version.
+                            // Remove versions with a target ABI greater than the current application version.
                             if (Version.TryParse(version.TargetAbi, out var targetAbi) && _applicationHost.ApplicationVersion < targetAbi)
                             {
                                 package.Versions.RemoveAt(i);

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using BlurHashSharp.SkiaSharp;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
@@ -24,6 +25,7 @@ public class SkiaEncoder : IImageEncoder
     private readonly ILogger<SkiaEncoder> _logger;
     private readonly IApplicationPaths _appPaths;
     private static readonly SKImageFilter _imageFilter;
+    private static readonly SKTypeface[] _typefaces;
 
 #pragma warning disable CA1810
     static SkiaEncoder()
@@ -46,6 +48,21 @@ public class SkiaEncoder : IImageEncoder
             kernelOffset,
             SKShaderTileMode.Clamp,
             true);
+
+        // Initialize the list of typefaces
+        // We have to statically build a list of typefaces because MatchCharacter only accepts a single character or code point
+        // But in reality a human-readable character (grapheme cluster) could be multiple code points. For example, 🚵🏻‍♀️ is a single emoji but 5 code points (U+1F6B5 + U+1F3FB + U+200D + U+2640 + U+FE0F)
+        _typefaces =
+        [
+            SKFontManager.Default.MatchCharacter(null, SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright, null, '鸡'), // CJK Simplified Chinese
+            SKFontManager.Default.MatchCharacter(null, SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright, null, '雞'), // CJK Traditional Chinese
+            SKFontManager.Default.MatchCharacter(null, SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright, null, 'ノ'), // CJK Japanese
+            SKFontManager.Default.MatchCharacter(null, SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright, null, '각'), // CJK Korean
+            SKFontManager.Default.MatchCharacter(null, SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright, null, 128169), // Emojis, 128169 is the 💩emoji
+            SKFontManager.Default.MatchCharacter(null, SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright, null, 'ז'), // Hebrew
+            SKFontManager.Default.MatchCharacter(null, SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright, null, 'ي'), // Arabic
+            SKTypeface.FromFamilyName("sans-serif", SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright) // Default font
+        ];
     }
 
     /// <summary>
@@ -96,6 +113,11 @@ public class SkiaEncoder : IImageEncoder
     /// <inheritdoc/>
     public IReadOnlyCollection<ImageFormat> SupportedOutputFormats
         => new HashSet<ImageFormat> { ImageFormat.Webp, ImageFormat.Jpg, ImageFormat.Png, ImageFormat.Svg };
+
+    /// <summary>
+    /// Gets the default typeface to use.
+    /// </summary>
+    public static SKTypeface DefaultTypeFace => _typefaces.Last();
 
     /// <summary>
     /// Check if the native lib is available.
@@ -195,8 +217,10 @@ public class SkiaEncoder : IImageEncoder
             return string.Empty;
         }
 
+        // Use FileStream with FileShare.Read instead of having Skia open the file to allow concurrent read access
+        using var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
         // Any larger than 128x128 is too slow and there's no visually discernible difference
-        return BlurHashEncoder.Encode(xComp, yComp, path, 128, 128);
+        return BlurHashEncoder.Encode(xComp, yComp, fileStream, 128, 128);
     }
 
     private bool RequiresSpecialCharacterHack(string path)
@@ -533,20 +557,14 @@ public class SkiaEncoder : IImageEncoder
             canvas.Clear(SKColor.Parse(options.BackgroundColor));
         }
 
+        using var paint = new SKPaint();
         // Add blur if option is present
-        if (blur > 0)
-        {
-            // create image from resized bitmap to apply blur
-            using var paint = new SKPaint();
-            using var filter = SKImageFilter.CreateBlur(blur, blur);
-            paint.ImageFilter = filter;
-            canvas.DrawBitmap(resizedBitmap, SKRect.Create(width, height), paint);
-        }
-        else
-        {
-            // draw resized bitmap onto canvas
-            canvas.DrawBitmap(resizedBitmap, SKRect.Create(width, height));
-        }
+        using var filter = blur > 0 ? SKImageFilter.CreateBlur(blur, blur) : null;
+        paint.FilterQuality = SKFilterQuality.High;
+        paint.ImageFilter = filter;
+
+        // create image from resized bitmap to apply blur
+        canvas.DrawBitmap(resizedBitmap, SKRect.Create(width, height), paint);
 
         // If foreground layer present then draw
         if (hasForegroundColor)
@@ -702,5 +720,23 @@ public class SkiaEncoder : IImageEncoder
         {
             _logger.LogError(ex, "Error drawing indicator overlay");
         }
+    }
+
+    /// <summary>
+    /// Return the typeface that contains the glyph for the given character.
+    /// </summary>
+    /// <param name="c">The text character.</param>
+    /// <returns>The typeface contains the character.</returns>
+    public static SKTypeface? GetFontForCharacter(string c)
+    {
+        foreach (var typeface in _typefaces)
+        {
+            if (typeface.ContainsGlyphs(c))
+            {
+                return typeface;
+            }
+        }
+
+        return null;
     }
 }

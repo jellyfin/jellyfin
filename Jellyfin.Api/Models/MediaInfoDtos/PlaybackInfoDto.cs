@@ -4,7 +4,7 @@ using MediaBrowser.Model.Dlna;
 namespace Jellyfin.Api.Models.MediaInfoDtos;
 
 /// <summary>
-/// Plabyback info dto.
+/// Playback info dto.
 /// </summary>
 public class PlaybackInfoDto
 {

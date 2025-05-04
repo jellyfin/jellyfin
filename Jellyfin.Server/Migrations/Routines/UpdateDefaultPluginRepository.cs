@@ -6,7 +6,10 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// Migration to update the default Jellyfin plugin repository.
 /// </summary>
+[JellyfinMigration("2025-04-20T17:00:00", nameof(UpdateDefaultPluginRepository), "852816E0-2712-49A9-9240-C6FC5FCAD1A8", RunMigrationOnSetup = true)]
+#pragma warning disable CS0618 // Type or member is obsolete
 public class UpdateDefaultPluginRepository : IMigrationRoutine
+#pragma warning restore CS0618 // Type or member is obsolete
 {
     private const string NewRepositoryUrl = "https://repo.jellyfin.org/files/plugin/manifest.json";
     private const string OldRepositoryUrl = "https://repo.jellyfin.org/releases/plugin/manifest-stable.json";
@@ -21,15 +24,6 @@ public class UpdateDefaultPluginRepository : IMigrationRoutine
     {
         _serverConfigurationManager = serverConfigurationManager;
     }
-
-    /// <inheritdoc />
-    public Guid Id => new("852816E0-2712-49A9-9240-C6FC5FCAD1A8");
-
-    /// <inheritdoc />
-    public string Name => "UpdateDefaultPluginRepository10.9";
-
-    /// <inheritdoc />
-    public bool PerformOnNewInstall => true;
 
     /// <inheritdoc />
     public void Perform()

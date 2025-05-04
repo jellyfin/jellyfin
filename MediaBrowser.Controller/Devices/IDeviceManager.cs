@@ -1,10 +1,10 @@
 using System;
 using System.Threading.Tasks;
 using Jellyfin.Data.Dtos;
-using Jellyfin.Data.Entities;
-using Jellyfin.Data.Entities.Security;
 using Jellyfin.Data.Events;
 using Jellyfin.Data.Queries;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Entities.Security;
 using MediaBrowser.Model.Devices;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
@@ -58,7 +58,7 @@ public interface IDeviceManager
     QueryResult<Device> GetDevices(DeviceQuery query);
 
     /// <summary>
-    /// Gets device infromation based on the provided query.
+    /// Gets device information based on the provided query.
     /// </summary>
     /// <param name="query">The device query.</param>
     /// <returns>A <see cref="Task{QueryResult}"/> representing the retrieval of the device information.</returns>
@@ -109,7 +109,7 @@ public interface IDeviceManager
     DeviceOptionsDto? GetDeviceOptions(string deviceId);
 
     /// <summary>
-    /// Gets the dto for client capabilites.
+    /// Gets the dto for client capabilities.
     /// </summary>
     /// <param name="capabilities">The client capabilities.</param>
     /// <returns><see cref="ClientCapabilitiesDto"/> of the device.</returns>

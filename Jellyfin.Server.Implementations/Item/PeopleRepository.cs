@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Entities.Libraries;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
@@ -11,6 +13,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Jellyfin.Server.Implementations.Item;
 #pragma warning disable RS0030 // Do not use banned APIs
+#pragma warning disable CA1304 // Specify CultureInfo
+#pragma warning disable CA1311 // Specify a culture or use an invariant version
+#pragma warning disable CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
 
 /// <summary>
 /// Manager for handling people.
@@ -36,6 +41,12 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
             dbQuery = dbQuery.Take(filter.Limit);
         }
 
+        // Include PeopleBaseItemMap
+        if (!filter.ItemId.IsEmpty())
+        {
+            dbQuery = dbQuery.Include(p => p.BaseItems!.Where(m => m.ItemId == filter.ItemId));
+        }
+
         return dbQuery.AsEnumerable().Select(Map).ToArray();
     }
 
@@ -58,42 +69,52 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
     public void UpdatePeople(Guid itemId, IReadOnlyList<PersonInfo> people)
     {
         using var context = _dbProvider.CreateDbContext();
-        using var transaction = context.Database.BeginTransaction();
 
-        context.PeopleBaseItemMap.Where(e => e.ItemId == itemId).ExecuteDelete();
         // TODO: yes for __SOME__ reason there can be duplicates.
-        foreach (var item in people.DistinctBy(e => e.Id))
-        {
-            var personEntity = Map(item);
-            var existingEntity = context.Peoples.FirstOrDefault(e => e.Id == personEntity.Id);
-            if (existingEntity is null)
-            {
-                context.Peoples.Add(personEntity);
-                existingEntity = personEntity;
-            }
+        people = people.DistinctBy(e => e.Id).ToArray();
+        var personids = people.Select(f => f.Id);
+        var existingPersons = context.Peoples.Where(p => personids.Contains(p.Id)).Select(f => f.Id).ToArray();
+        context.Peoples.AddRange(people.Where(e => !existingPersons.Contains(e.Id)).Select(Map));
+        context.SaveChanges();
 
-            context.PeopleBaseItemMap.Add(new PeopleBaseItemMap()
+        var maps = context.PeopleBaseItemMap.Where(e => e.ItemId == itemId).ToList();
+        foreach (var person in people)
+        {
+            var existingMap = maps.FirstOrDefault(e => e.PeopleId == person.Id);
+            if (existingMap is null)
             {
-                Item = null!,
-                ItemId = itemId,
-                People = existingEntity,
-                PeopleId = existingEntity.Id,
-                ListOrder = item.SortOrder,
-                SortOrder = item.SortOrder,
-                Role = item.Role
-            });
+                context.PeopleBaseItemMap.Add(new PeopleBaseItemMap()
+                {
+                    Item = null!,
+                    ItemId = itemId,
+                    People = null!,
+                    PeopleId = person.Id,
+                    ListOrder = person.SortOrder,
+                    SortOrder = person.SortOrder,
+                    Role = person.Role
+                });
+            }
+            else
+            {
+                // person mapping already exists so remove from list
+                maps.Remove(existingMap);
+            }
         }
 
+        context.PeopleBaseItemMap.RemoveRange(maps);
+
         context.SaveChanges();
-        transaction.Commit();
     }
 
     private PersonInfo Map(People people)
     {
+        var mapping = people.BaseItems?.FirstOrDefault();
         var personInfo = new PersonInfo()
         {
             Id = people.Id,
             Name = people.Name,
+            Role = mapping?.Role,
+            SortOrder = mapping?.SortOrder
         };
         if (Enum.TryParse<PersonKind>(people.PersonType, out var kind))
         {
@@ -120,9 +141,8 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         if (filter.User is not null && filter.IsFavorite.HasValue)
         {
             var personType = itemTypeLookup.BaseItemKindNames[BaseItemKind.Person];
-            query = query.Where(e => e.PersonType == personType)
-                .Where(e => context.BaseItems.Where(d => d.UserData!.Any(w => w.IsFavorite == filter.IsFavorite && w.UserId.Equals(filter.User.Id)))
-                    .Select(f => f.Name).Contains(e.Name));
+            query = query
+                .Where(e => context.BaseItems.Any(b => b.Type == personType && b.Name == e.Name && b.UserData!.Any(u => u.IsFavorite == filter.IsFavorite && u.UserId.Equals(filter.User.Id))));
         }
 
         if (!filter.ItemId.IsEmpty())
@@ -155,7 +175,8 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
 
         if (!string.IsNullOrWhiteSpace(filter.NameContains))
         {
-            query = query.Where(e => e.Name.Contains(filter.NameContains));
+            var nameContainsUpper = filter.NameContains.ToUpper();
+            query = query.Where(e => e.Name.ToUpper().Contains(nameContainsUpper));
         }
 
         return query;

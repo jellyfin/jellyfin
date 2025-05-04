@@ -187,7 +187,8 @@ namespace Emby.Naming.Common
                 "disc",
                 "disk",
                 "vol",
-                "volume"
+                "volume",
+                "part"
             };
 
             ArtistSubfolders = new[]
@@ -238,6 +239,7 @@ namespace Emby.Naming.Common
                 ".dsp",
                 ".dts",
                 ".dvf",
+                ".eac3",
                 ".far",
                 ".flac",
                 ".gdm",

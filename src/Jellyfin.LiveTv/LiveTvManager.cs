@@ -8,9 +8,11 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
+using Jellyfin.Data;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.LiveTv.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Channels;
@@ -123,8 +125,8 @@ namespace Jellyfin.LiveTv
                 IsKids = query.IsKids,
                 IsSports = query.IsSports,
                 IsSeries = query.IsSeries,
-                IncludeItemTypes = new[] { BaseItemKind.LiveTvChannel },
-                TopParentIds = new[] { topFolder.Id },
+                IncludeItemTypes = [BaseItemKind.LiveTvChannel],
+                TopParentIds = [topFolder.Id],
                 IsFavorite = query.IsFavorite,
                 IsLiked = query.IsLiked,
                 StartIndex = query.StartIndex,
@@ -197,17 +199,17 @@ namespace Jellyfin.LiveTv
             if (query.OrderBy.Count == 0)
             {
                 // Unless something else was specified, order by start date to take advantage of a specialized index
-                query.OrderBy = new[]
-                {
+                query.OrderBy =
+                [
                     (ItemSortBy.StartDate, SortOrder.Ascending)
-                };
+                ];
             }
 
             RemoveFields(options);
 
             var internalQuery = new InternalItemsQuery(user)
             {
-                IncludeItemTypes = new[] { BaseItemKind.LiveTvProgram },
+                IncludeItemTypes = [BaseItemKind.LiveTvProgram],
                 MinEndDate = query.MinEndDate,
                 MinStartDate = query.MinStartDate,
                 MaxEndDate = query.MaxEndDate,
@@ -224,7 +226,7 @@ namespace Jellyfin.LiveTv
                 Limit = query.Limit,
                 OrderBy = query.OrderBy,
                 EnableTotalRecordCount = query.EnableTotalRecordCount,
-                TopParentIds = new[] { topFolder.Id },
+                TopParentIds = [topFolder.Id],
                 Name = query.Name,
                 DtoOptions = options,
                 HasAired = query.HasAired,
@@ -270,7 +272,7 @@ namespace Jellyfin.LiveTv
 
             var internalQuery = new InternalItemsQuery(user)
             {
-                IncludeItemTypes = new[] { BaseItemKind.LiveTvProgram },
+                IncludeItemTypes = [BaseItemKind.LiveTvProgram],
                 IsAiring = query.IsAiring,
                 HasAired = query.HasAired,
                 IsNews = query.IsNews,
@@ -279,8 +281,8 @@ namespace Jellyfin.LiveTv
                 IsSports = query.IsSports,
                 IsKids = query.IsKids,
                 EnableTotalRecordCount = query.EnableTotalRecordCount,
-                OrderBy = new[] { (ItemSortBy.StartDate, SortOrder.Ascending) },
-                TopParentIds = new[] { topFolder.Id },
+                OrderBy = [(ItemSortBy.StartDate, SortOrder.Ascending)],
+                TopParentIds = [topFolder.Id],
                 DtoOptions = options,
                 GenreIds = query.GenreIds
             };
@@ -495,19 +497,19 @@ namespace Jellyfin.LiveTv
                 //    TotalRecordCount = items.Length
                 // };
 
-                dtoOptions.Fields = dtoOptions.Fields.Concat(new[] { ItemFields.Tags }).Distinct().ToArray();
+                dtoOptions.Fields = dtoOptions.Fields.Concat([ItemFields.Tags]).Distinct().ToArray();
             }
 
             var result = _libraryManager.GetItemsResult(new InternalItemsQuery(user)
             {
-                MediaTypes = new[] { MediaType.Video },
+                MediaTypes = [MediaType.Video],
                 Recursive = true,
                 AncestorIds = folderIds,
                 IsFolder = false,
                 IsVirtualItem = false,
                 Limit = limit,
                 StartIndex = query.StartIndex,
-                OrderBy = new[] { (ItemSortBy.DateCreated, SortOrder.Descending) },
+                OrderBy = [(ItemSortBy.DateCreated, SortOrder.Descending)],
                 EnableTotalRecordCount = query.EnableTotalRecordCount,
                 IncludeItemTypes = includeItemTypes.ToArray(),
                 ExcludeItemTypes = excludeItemTypes.ToArray(),
@@ -957,13 +959,13 @@ namespace Jellyfin.LiveTv
 
             var programs = options.AddCurrentProgram ? _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
-                IncludeItemTypes = new[] { BaseItemKind.LiveTvProgram },
+                IncludeItemTypes = [BaseItemKind.LiveTvProgram],
                 ChannelIds = channelIds,
                 MaxStartDate = now,
                 MinEndDate = now,
                 Limit = channelIds.Length,
-                OrderBy = new[] { (ItemSortBy.StartDate, SortOrder.Ascending) },
-                TopParentIds = new[] { GetInternalLiveTvFolder(CancellationToken.None).Id },
+                OrderBy = [(ItemSortBy.StartDate, SortOrder.Ascending)],
+                TopParentIds = [GetInternalLiveTvFolder(CancellationToken.None).Id],
                 DtoOptions = options
             }) : new List<BaseItem>();
 
@@ -1267,7 +1269,7 @@ namespace Jellyfin.LiveTv
         {
             var folders = _recordingsManager.GetRecordingFolders()
                 .SelectMany(i => i.Locations)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Distinct()
                 .Select(i => _libraryManager.FindByPath(i, true))
                 .Where(i => i is not null && i.IsVisibleStandalone(user))
                 .SelectMany(i => _libraryManager.GetCollectionFolders(i))

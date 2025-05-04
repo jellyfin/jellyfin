@@ -83,9 +83,9 @@ public class ServerConfiguration : BaseApplicationConfiguration
     public bool QuickConnectAvailable { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets a value indicating whether [enable case sensitive item ids].
+    /// Gets or sets a value indicating whether [enable case-sensitive item ids].
     /// </summary>
-    /// <value><c>true</c> if [enable case sensitive item ids]; otherwise, <c>false</c>.</value>
+    /// <value><c>true</c> if [enable case-sensitive item ids]; otherwise, <c>false</c>.</value>
     public bool EnableCaseSensitiveItemIds { get; set; } = true;
 
     public bool DisableLiveTvChannelUserDataName { get; set; } = true;
@@ -178,6 +178,11 @@ public class ServerConfiguration : BaseApplicationConfiguration
     public int LibraryUpdateDuration { get; set; } = 30;
 
     /// <summary>
+    /// Gets or sets the maximum amount of items to cache.
+    /// </summary>
+    public int CacheSize { get; set; } = Environment.ProcessorCount * 100;
+
+    /// <summary>
     /// Gets or sets the image saving convention.
     /// </summary>
     /// <value>The image saving convention.</value>
@@ -199,7 +204,9 @@ public class ServerConfiguration : BaseApplicationConfiguration
 
     public bool EnableFolderView { get; set; } = false;
 
-    public bool EnableGroupingIntoCollections { get; set; } = false;
+    public bool EnableGroupingMoviesIntoCollections { get; set; } = false;
+
+    public bool EnableGroupingShowsIntoCollections { get; set; } = false;
 
     public bool DisplaySpecialsWithinSeasons { get; set; } = true;
 
@@ -249,7 +256,7 @@ public class ServerConfiguration : BaseApplicationConfiguration
     public bool AllowClientLogUpload { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets the dummy chapter duration in seconds, use 0 (zero) or less to disable generation alltogether.
+    /// Gets or sets the dummy chapter duration in seconds, use 0 (zero) or less to disable generation altogether.
     /// </summary>
     /// <value>The dummy chapters duration.</value>
     public int DummyChapterDuration { get; set; }

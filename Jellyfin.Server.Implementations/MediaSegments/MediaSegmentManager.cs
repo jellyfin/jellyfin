@@ -5,8 +5,9 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
-using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
@@ -22,7 +23,7 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.Server.Implementations.MediaSegments;
 
 /// <summary>
-/// Manages media segments retrival and storage.
+/// Manages media segments retrieval and storage.
 /// </summary>
 public class MediaSegmentManager : IMediaSegmentManager
 {

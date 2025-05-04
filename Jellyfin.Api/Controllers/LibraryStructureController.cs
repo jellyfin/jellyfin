@@ -77,7 +77,7 @@ public class LibraryStructureController : BaseJellyfinApiController
     public async Task<ActionResult> AddVirtualFolder(
         [FromQuery] string name,
         [FromQuery] CollectionTypeOptions? collectionType,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] paths,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] paths,
         [FromBody] AddVirtualFolderDto? libraryOptionsDto,
         [FromQuery] bool refreshLibrary = false)
     {

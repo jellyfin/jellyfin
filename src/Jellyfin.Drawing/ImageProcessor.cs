@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AsyncKeyedLock;
-using Jellyfin.Data.Entities;
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -68,7 +68,7 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
         var semaphoreCount = config.Configuration.ParallelImageEncodingLimit;
         if (semaphoreCount < 1)
         {
-            semaphoreCount = 2 * Environment.ProcessorCount;
+            semaphoreCount = Environment.ProcessorCount;
         }
 
         _parallelEncodingLimit = new(semaphoreCount);

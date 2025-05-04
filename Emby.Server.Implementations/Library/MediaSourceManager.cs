@@ -13,8 +13,10 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using AsyncKeyedLock;
-using Jellyfin.Data.Entities;
+using Jellyfin.Data;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Configuration;
@@ -39,7 +41,7 @@ namespace Emby.Server.Implementations.Library
     public class MediaSourceManager : IMediaSourceManager, IDisposable
     {
         // Do not use a pipe here because Roku http requests to the server will fail, without any explicit error message.
-        private const char LiveStreamIdDelimeter = '_';
+        private const char LiveStreamIdDelimiter = '_';
 
         private readonly IServerApplicationHost _appHost;
         private readonly IItemRepository _itemRepo;
@@ -313,7 +315,7 @@ namespace Emby.Server.Implementations.Library
 
         private static void SetKeyProperties(IMediaSourceProvider provider, MediaSourceInfo mediaSource)
         {
-            var prefix = provider.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture) + LiveStreamIdDelimeter;
+            var prefix = provider.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture) + LiveStreamIdDelimiter;
 
             if (!string.IsNullOrEmpty(mediaSource.OpenToken) && !mediaSource.OpenToken.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
             {
@@ -425,6 +427,7 @@ namespace Emby.Server.Implementations.Library
                 if (source.MediaStreams.Any(i => i.Type == MediaStreamType.Audio && i.Index == index))
                 {
                     source.DefaultAudioStreamIndex = index;
+                    source.DefaultAudioIndexSource = AudioIndexSource.User;
                     return;
                 }
             }
@@ -432,6 +435,15 @@ namespace Emby.Server.Implementations.Library
             var preferredAudio = NormalizeLanguage(user.AudioLanguagePreference);
 
             source.DefaultAudioStreamIndex = MediaStreamSelector.GetDefaultAudioStreamIndex(source.MediaStreams, preferredAudio, user.PlayDefaultAudioTrack);
+            if (user.PlayDefaultAudioTrack)
+            {
+                source.DefaultAudioIndexSource |= AudioIndexSource.Default;
+            }
+
+            if (preferredAudio.Count > 0)
+            {
+                source.DefaultAudioIndexSource |= AudioIndexSource.Language;
+            }
         }
 
         public void SetDefaultAudioAndSubtitleStreamIndices(BaseItem item, MediaSourceInfo source, User user)
@@ -782,9 +794,13 @@ namespace Emby.Server.Implementations.Library
         {
             ArgumentException.ThrowIfNullOrEmpty(id);
 
-            // TODO probably shouldn't throw here but it is kept for "backwards compatibility"
-            var info = GetLiveStreamInfo(id) ?? throw new ResourceNotFoundException();
-            return Task.FromResult(new Tuple<MediaSourceInfo, IDirectStreamProvider>(info.MediaSource, info as IDirectStreamProvider));
+            var info = GetLiveStreamInfo(id);
+            if (info is null)
+            {
+                return Task.FromResult<Tuple<MediaSourceInfo, IDirectStreamProvider>>(new Tuple<MediaSourceInfo, IDirectStreamProvider>(null, null));
+            }
+
+            return Task.FromResult<Tuple<MediaSourceInfo, IDirectStreamProvider>>(new Tuple<MediaSourceInfo, IDirectStreamProvider>(info.MediaSource, info as IDirectStreamProvider));
         }
 
         public ILiveStream GetLiveStreamInfo(string id)
@@ -866,11 +882,11 @@ namespace Emby.Server.Implementations.Library
         {
             ArgumentException.ThrowIfNullOrEmpty(key);
 
-            var keys = key.Split(LiveStreamIdDelimeter, 2);
+            var keys = key.Split(LiveStreamIdDelimiter, 2);
 
             var provider = _providers.FirstOrDefault(i => string.Equals(i.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture), keys[0], StringComparison.OrdinalIgnoreCase));
 
-            var splitIndex = key.IndexOf(LiveStreamIdDelimeter, StringComparison.Ordinal);
+            var splitIndex = key.IndexOf(LiveStreamIdDelimiter, StringComparison.Ordinal);
             var keyId = key.Substring(splitIndex + 1);
 
             return (provider, keyId);

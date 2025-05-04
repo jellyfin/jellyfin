@@ -66,7 +66,7 @@ public class UserViewsController : BaseJellyfinApiController
     public QueryResult<BaseItemDto> GetUserViews(
         [FromQuery] Guid? userId,
         [FromQuery] bool? includeExternalContent,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] CollectionType?[] presetViews,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] CollectionType?[] presetViews,
         [FromQuery] bool includeHidden = false)
     {
         userId = RequestHelpers.GetUserId(User, userId);
@@ -110,7 +110,7 @@ public class UserViewsController : BaseJellyfinApiController
     public QueryResult<BaseItemDto> GetUserViewsLegacy(
         [FromRoute, Required] Guid userId,
         [FromQuery] bool? includeExternalContent,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] CollectionType?[] presetViews,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] CollectionType?[] presetViews,
         [FromQuery] bool includeHidden = false)
         => GetUserViews(userId, includeExternalContent, presetViews, includeHidden);
 

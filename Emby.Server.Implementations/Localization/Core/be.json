@@ -1,6 +1,6 @@
 {
     "Sync": "Сінхранізаваць",
-    "Playlists": "Плэйлісты",
+    "Playlists": "Спісы прайгравання",
     "Latest": "Апошні",
     "LabelIpAddressValue": "IP-адрас: {0}",
     "ItemAddedWithName": "{0} быў дададзены ў бібліятэку",
@@ -16,7 +16,7 @@
     "Collections": "Калекцыі",
     "Default": "Па змаўчанні",
     "FailedLoginAttemptWithUserName": "Няўдалая спроба ўваходу з {0}",
-    "Folders": "Папкі",
+    "Folders": "Тэчкі",
     "Favorites": "Абранае",
     "External": "Знешні",
     "Genres": "Жанры",

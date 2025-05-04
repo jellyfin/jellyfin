@@ -19,9 +19,6 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         public ExternalIdMediaType? Type => ExternalIdMediaType.Artist;
 
         /// <inheritdoc />
-        public string UrlFormatString => "https://www.theaudiodb.com/artist/{0}";
-
-        /// <inheritdoc />
         public bool Supports(IHasProviderIds item) => item is MusicArtist;
     }
 }

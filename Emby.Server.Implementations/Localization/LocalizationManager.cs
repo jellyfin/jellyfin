@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Frozen;
 using System.Collections.Generic;
-using System.Globalization;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -26,20 +27,20 @@ namespace Emby.Server.Implementations.Localization
         private const string CulturesPath = "Emby.Server.Implementations.Localization.iso6392.txt";
         private const string CountriesPath = "Emby.Server.Implementations.Localization.countries.json";
         private static readonly Assembly _assembly = typeof(LocalizationManager).Assembly;
-        private static readonly string[] _unratedValues = { "n/a", "unrated", "not rated", "nr" };
+        private static readonly string[] _unratedValues = ["n/a", "unrated", "not rated", "nr"];
 
         private readonly IServerConfigurationManager _configurationManager;
         private readonly ILogger<LocalizationManager> _logger;
 
-        private readonly Dictionary<string, Dictionary<string, ParentalRating>> _allParentalRatings =
-            new Dictionary<string, Dictionary<string, ParentalRating>>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, Dictionary<string, ParentalRatingScore?>> _allParentalRatings = new(StringComparer.OrdinalIgnoreCase);
 
-        private readonly ConcurrentDictionary<string, Dictionary<string, string>> _dictionaries =
-            new ConcurrentDictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, Dictionary<string, string>> _dictionaries = new(StringComparer.OrdinalIgnoreCase);
 
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
-        private List<CultureDto> _cultures = new List<CultureDto>();
+        private List<CultureDto> _cultures = [];
+
+        private FrozenDictionary<string, string> _iso6392BtoT = null!;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LocalizationManager" /> class.
@@ -68,35 +69,26 @@ namespace Emby.Server.Implementations.Localization
                     continue;
                 }
 
-                string countryCode = resource.Substring(RatingsPath.Length, 2);
-                var dict = new Dictionary<string, ParentalRating>(StringComparer.OrdinalIgnoreCase);
-
-                var stream = _assembly.GetManifestResourceStream(resource);
-                await using (stream!.ConfigureAwait(false)) // shouldn't be null here, we just got the resource path from Assembly.GetManifestResourceNames()
+                using var stream = _assembly.GetManifestResourceStream(resource);
+                if (stream is not null)
                 {
-                    using var reader = new StreamReader(stream!);
-                    await foreach (var line in reader.ReadAllLinesAsync().ConfigureAwait(false))
+                    var ratingSystem = await JsonSerializer.DeserializeAsync<ParentalRatingSystem>(stream, _jsonOptions).ConfigureAwait(false)
+                                ?? throw new InvalidOperationException($"Invalid resource path: '{CountriesPath}'");
+
+                    var dict = new Dictionary<string, ParentalRatingScore?>();
+                    if (ratingSystem.Ratings is not null)
                     {
-                        if (string.IsNullOrWhiteSpace(line))
+                        foreach (var ratingEntry in ratingSystem.Ratings)
                         {
-                            continue;
+                            foreach (var ratingString in ratingEntry.RatingStrings)
+                            {
+                                dict[ratingString] = ratingEntry.RatingScore;
+                            }
                         }
 
-                        string[] parts = line.Split(',');
-                        if (parts.Length == 2
-                            && int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
-                        {
-                            var name = parts[0];
-                            dict.Add(name, new ParentalRating(name, value));
-                        }
-                        else
-                        {
-                            _logger.LogWarning("Malformed line in ratings file for country {CountryCode}", countryCode);
-                        }
+                        _allParentalRatings[ratingSystem.CountryCode] = dict;
                     }
                 }
-
-                _allParentalRatings[countryCode] = dict;
             }
 
             await LoadCultures().ConfigureAwait(false);
@@ -111,22 +103,30 @@ namespace Emby.Server.Implementations.Localization
 
         private async Task LoadCultures()
         {
-            List<CultureDto> list = new List<CultureDto>();
+            List<CultureDto> list = [];
+            Dictionary<string, string> iso6392BtoTdict = new Dictionary<string, string>();
 
-            await using var stream = _assembly.GetManifestResourceStream(CulturesPath)
-                ?? throw new InvalidOperationException($"Invalid resource path: '{CulturesPath}'");
-            using var reader = new StreamReader(stream);
-            await foreach (var line in reader.ReadAllLinesAsync().ConfigureAwait(false))
+            using var stream = _assembly.GetManifestResourceStream(CulturesPath);
+            if (stream is null)
             {
-                if (string.IsNullOrWhiteSpace(line))
+                throw new InvalidOperationException($"Invalid resource path: '{CulturesPath}'");
+            }
+            else
+            {
+                using var reader = new StreamReader(stream);
+                await foreach (var line in reader.ReadAllLinesAsync().ConfigureAwait(false))
                 {
-                    continue;
-                }
+                    if (string.IsNullOrWhiteSpace(line))
+                    {
+                        continue;
+                    }
 
-                var parts = line.Split('|');
+                    var parts = line.Split('|');
+                    if (parts.Length != 5)
+                    {
+                        throw new InvalidDataException($"Invalid culture data found at: '{line}'");
+                    }
 
-                if (parts.Length == 5)
-                {
                     string name = parts[3];
                     if (string.IsNullOrWhiteSpace(name))
                     {
@@ -139,21 +139,26 @@ namespace Emby.Server.Implementations.Localization
                         continue;
                     }
 
-                    string[] threeletterNames;
+                    string[] threeLetterNames;
                     if (string.IsNullOrWhiteSpace(parts[1]))
                     {
-                        threeletterNames = new[] { parts[0] };
+                        threeLetterNames = [parts[0]];
                     }
                     else
                     {
-                        threeletterNames = new[] { parts[0], parts[1] };
+                        threeLetterNames = [parts[0], parts[1]];
+
+                        // In cases where there are two TLN the first one is ISO 639-2/T and the second one is ISO 639-2/B
+                        // We need ISO 639-2/T for the .NET cultures so we cultivate a dictionary for the translation B->T
+                        iso6392BtoTdict.TryAdd(parts[1], parts[0]);
                     }
 
-                    list.Add(new CultureDto(name, name, twoCharName, threeletterNames));
+                    list.Add(new CultureDto(name, name, twoCharName, threeLetterNames));
                 }
-            }
 
-            _cultures = list;
+                _cultures = list;
+                _iso6392BtoT = iso6392BtoTdict.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
+            }
         }
 
         /// <inheritdoc />
@@ -176,82 +181,80 @@ namespace Emby.Server.Implementations.Localization
         }
 
         /// <inheritdoc />
-        public IEnumerable<CountryInfo> GetCountries()
+        public IReadOnlyList<CountryInfo> GetCountries()
         {
-            using StreamReader reader = new StreamReader(
-                _assembly.GetManifestResourceStream(CountriesPath) ?? throw new InvalidOperationException($"Invalid resource path: '{CountriesPath}'"));
-            return JsonSerializer.Deserialize<IEnumerable<CountryInfo>>(reader.ReadToEnd(), _jsonOptions)
-                ?? throw new InvalidOperationException($"Resource contains invalid data: '{CountriesPath}'");
+            using var stream = _assembly.GetManifestResourceStream(CountriesPath) ?? throw new InvalidOperationException($"Invalid resource path: '{CountriesPath}'");
+
+            return JsonSerializer.Deserialize<IReadOnlyList<CountryInfo>>(stream, _jsonOptions) ?? [];
         }
 
         /// <inheritdoc />
-        public IEnumerable<ParentalRating> GetParentalRatings()
+        public IReadOnlyList<ParentalRating> GetParentalRatings()
         {
             // Use server default language for ratings
             // Fall back to empty list if there are no parental ratings for that language
-            var ratings = GetParentalRatingsDictionary()?.Values.ToList()
-                ?? new List<ParentalRating>();
+            var ratings = GetParentalRatingsDictionary()?.Select(x => new ParentalRating(x.Key, x.Value)).ToList() ?? [];
 
             // Add common ratings to ensure them being available for selection
             // Based on the US rating system due to it being the main source of rating in the metadata providers
             // Unrated
-            if (!ratings.Any(x => x.Value is null))
+            if (!ratings.Any(x => x is null))
             {
-                ratings.Add(new ParentalRating("Unrated", null));
+                ratings.Add(new("Unrated", null));
             }
 
             // Minimum rating possible
-            if (ratings.All(x => x.Value != 0))
+            if (ratings.All(x => x.RatingScore?.Score != 0))
             {
-                ratings.Add(new ParentalRating("Approved", 0));
+                ratings.Add(new("Approved", new(0, null)));
             }
 
             // Matches PG (this has different age restrictions depending on country)
-            if (ratings.All(x => x.Value != 10))
+            if (ratings.All(x => x.RatingScore?.Score != 10))
             {
-                ratings.Add(new ParentalRating("10", 10));
+                ratings.Add(new("10", new(10, null)));
             }
 
             // Matches PG-13
-            if (ratings.All(x => x.Value != 13))
+            if (ratings.All(x => x.RatingScore?.Score != 13))
             {
-                ratings.Add(new ParentalRating("13", 13));
+                ratings.Add(new("13", new(13, null)));
             }
 
             // Matches TV-14
-            if (ratings.All(x => x.Value != 14))
+            if (ratings.All(x => x.RatingScore?.Score != 14))
             {
-                ratings.Add(new ParentalRating("14", 14));
+                ratings.Add(new("14", new(14, null)));
             }
 
             // Catchall if max rating of country is less than 21
             // Using 21 instead of 18 to be sure to allow access to all rated content except adult and banned
-            if (!ratings.Any(x => x.Value >= 21))
+            if (!ratings.Any(x => x.RatingScore?.Score >= 21))
             {
-                ratings.Add(new ParentalRating("21", 21));
+                ratings.Add(new ParentalRating("21", new(21, null)));
             }
 
-            // A lot of countries don't excplicitly have a seperate rating for adult content
-            if (ratings.All(x => x.Value != 1000))
+            // A lot of countries don't explicitly have a separate rating for adult content
+            if (ratings.All(x => x.RatingScore?.Score != 1000))
             {
-                ratings.Add(new ParentalRating("XXX", 1000));
+                ratings.Add(new ParentalRating("XXX",  new(1000, null)));
             }
 
-            // A lot of countries don't excplicitly have a seperate rating for banned content
-            if (ratings.All(x => x.Value != 1001))
+            // A lot of countries don't explicitly have a separate rating for banned content
+            if (ratings.All(x => x.RatingScore?.Score != 1001))
             {
-                ratings.Add(new ParentalRating("Banned", 1001));
+                ratings.Add(new ParentalRating("Banned",  new(1001, null)));
             }
 
-            return ratings.OrderBy(r => r.Value);
+            return [.. ratings.OrderBy(r => r.RatingScore?.Score).ThenBy(r => r.RatingScore?.SubScore)];
         }
 
         /// <summary>
         /// Gets the parental ratings dictionary.
         /// </summary>
         /// <param name="countryCode">The optional two letter ISO language string.</param>
-        /// <returns><see cref="Dictionary{String, ParentalRating}" />.</returns>
-        private Dictionary<string, ParentalRating>? GetParentalRatingsDictionary(string? countryCode = null)
+        /// <returns><see cref="Dictionary{String, ParentalRatingScore}" />.</returns>
+        private Dictionary<string, ParentalRatingScore?>? GetParentalRatingsDictionary(string? countryCode = null)
         {
             // Fallback to server default if no country code is specified.
             if (string.IsNullOrEmpty(countryCode))
@@ -268,7 +271,7 @@ namespace Emby.Server.Implementations.Localization
         }
 
         /// <inheritdoc />
-        public int? GetRatingLevel(string rating, string? countryCode = null)
+        public ParentalRatingScore? GetRatingScore(string rating, string? countryCode = null)
         {
             ArgumentException.ThrowIfNullOrEmpty(rating);
 
@@ -278,24 +281,26 @@ namespace Emby.Server.Implementations.Localization
                 return null;
             }
 
-            // Convert integers directly
+            // Convert ints directly
             // This may override some of the locale specific age ratings (but those always map to the same age)
             if (int.TryParse(rating, out var ratingAge))
             {
-                return ratingAge;
+                return new(ratingAge, null);
             }
 
             // Fairly common for some users to have "Rated R" in their rating field
-            rating = rating.Replace("Rated :", string.Empty, StringComparison.OrdinalIgnoreCase);
-            rating = rating.Replace("Rated ", string.Empty, StringComparison.OrdinalIgnoreCase);
+            rating = rating.Replace("Rated :", string.Empty, StringComparison.OrdinalIgnoreCase)
+                            .Replace("Rated:", string.Empty, StringComparison.OrdinalIgnoreCase)
+                            .Replace("Rated ", string.Empty, StringComparison.OrdinalIgnoreCase)
+                            .Trim();
 
             // Use rating system matching the language
             if (!string.IsNullOrEmpty(countryCode))
             {
                 var ratingsDictionary = GetParentalRatingsDictionary(countryCode);
-                if (ratingsDictionary is not null && ratingsDictionary.TryGetValue(rating, out ParentalRating? value))
+                if (ratingsDictionary is not null && ratingsDictionary.TryGetValue(rating, out ParentalRatingScore? value))
                 {
-                    return value.Value;
+                    return value;
                 }
             }
             else
@@ -303,9 +308,9 @@ namespace Emby.Server.Implementations.Localization
                 // Fall back to server default language for ratings check
                 // If it has no ratings, use the US ratings
                 var ratingsDictionary = GetParentalRatingsDictionary() ?? GetParentalRatingsDictionary("us");
-                if (ratingsDictionary is not null && ratingsDictionary.TryGetValue(rating, out ParentalRating? value))
+                if (ratingsDictionary is not null && ratingsDictionary.TryGetValue(rating, out ParentalRatingScore? value))
                 {
-                    return value.Value;
+                    return value;
                 }
             }
 
@@ -314,7 +319,7 @@ namespace Emby.Server.Implementations.Localization
             {
                 if (dictionary.TryGetValue(rating, out var value))
                 {
-                    return value.Value;
+                    return value;
                 }
             }
 
@@ -324,7 +329,7 @@ namespace Emby.Server.Implementations.Localization
                 var ratingLevelRightPart = rating.AsSpan().RightPart(':');
                 if (ratingLevelRightPart.Length != 0)
                 {
-                    return GetRatingLevel(ratingLevelRightPart.ToString());
+                    return GetRatingScore(ratingLevelRightPart.ToString());
                 }
             }
 
@@ -340,7 +345,7 @@ namespace Emby.Server.Implementations.Localization
                 if (ratingLevelRightPart.Length != 0)
                 {
                     // Check rating system of culture
-                    return GetRatingLevel(ratingLevelRightPart.ToString(), culture?.TwoLetterISOLanguageName);
+                    return GetRatingScore(ratingLevelRightPart.ToString(), culture?.TwoLetterISOLanguageName);
                 }
             }
 
@@ -404,7 +409,7 @@ namespace Emby.Server.Implementations.Localization
 
         private async Task CopyInto(IDictionary<string, string> dictionary, string resourcePath)
         {
-            await using var stream = _assembly.GetManifestResourceStream(resourcePath);
+            using var stream = _assembly.GetManifestResourceStream(resourcePath);
             // If a Culture doesn't have a translation the stream will be null and it defaults to en-us further up the chain
             if (stream is null)
             {
@@ -412,12 +417,7 @@ namespace Emby.Server.Implementations.Localization
                 return;
             }
 
-            var dict = await JsonSerializer.DeserializeAsync<Dictionary<string, string>>(stream, _jsonOptions).ConfigureAwait(false);
-            if (dict is null)
-            {
-                throw new InvalidOperationException($"Resource contains invalid data: '{stream}'");
-            }
-
+            var dict = await JsonSerializer.DeserializeAsync<Dictionary<string, string>>(stream, _jsonOptions).ConfigureAwait(false) ?? throw new InvalidOperationException($"Resource contains invalid data: '{stream}'");
             foreach (var key in dict.Keys)
             {
                 dictionary[key] = dict[key];
@@ -514,6 +514,27 @@ namespace Emby.Server.Implementations.Localization
             yield return new LocalizationOption("汉语 (简体字)", "zh-CN");
             yield return new LocalizationOption("漢語 (繁體字)", "zh-TW");
             yield return new LocalizationOption("廣東話 (香港)", "zh-HK");
+        }
+
+        /// <inheritdoc />
+        public bool TryGetISO6392TFromB(string isoB, [NotNullWhen(true)] out string? isoT)
+        {
+            // Unlikely case the dictionary is not (yet) initialized properly
+            if (_iso6392BtoT == null)
+            {
+                isoT = null;
+                return false;
+            }
+
+            var result = _iso6392BtoT.TryGetValue(isoB, out isoT) && !string.IsNullOrEmpty(isoT);
+
+            // Ensure the ISO code being null if the result is false
+            if (!result)
+            {
+                isoT = null;
+            }
+
+            return result;
         }
     }
 }

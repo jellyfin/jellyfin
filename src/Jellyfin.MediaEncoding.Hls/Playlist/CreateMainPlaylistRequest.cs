@@ -1,3 +1,5 @@
+using System;
+
 namespace Jellyfin.MediaEncoding.Hls.Playlist;
 
 /// <summary>
@@ -8,6 +10,7 @@ public class CreateMainPlaylistRequest
     /// <summary>
     /// Initializes a new instance of the <see cref="CreateMainPlaylistRequest"/> class.
     /// </summary>
+    /// <param name="mediaSourceId">The media source id.</param>
     /// <param name="filePath">The absolute file path to the file.</param>
     /// <param name="desiredSegmentLengthMs">The desired segment length in milliseconds.</param>
     /// <param name="totalRuntimeTicks">The total duration of the file in ticks.</param>
@@ -15,8 +18,9 @@ public class CreateMainPlaylistRequest
     /// <param name="endpointPrefix">The URI prefix for the relative URL in the playlist.</param>
     /// <param name="queryString">The desired query string to append (must start with ?).</param>
     /// <param name="isRemuxingVideo">Whether the video is being remuxed.</param>
-    public CreateMainPlaylistRequest(string filePath, int desiredSegmentLengthMs, long totalRuntimeTicks, string segmentContainer, string endpointPrefix, string queryString, bool isRemuxingVideo)
+    public CreateMainPlaylistRequest(Guid? mediaSourceId, string filePath, int desiredSegmentLengthMs, long totalRuntimeTicks, string segmentContainer, string endpointPrefix, string queryString, bool isRemuxingVideo)
     {
+        MediaSourceId = mediaSourceId;
         FilePath = filePath;
         DesiredSegmentLengthMs = desiredSegmentLengthMs;
         TotalRuntimeTicks = totalRuntimeTicks;
@@ -25,6 +29,11 @@ public class CreateMainPlaylistRequest
         QueryString = queryString;
         IsRemuxingVideo = isRemuxingVideo;
     }
+
+    /// <summary>
+    /// Gets the media source id.
+    /// </summary>
+    public Guid? MediaSourceId { get; }
 
     /// <summary>
     /// Gets the file path.

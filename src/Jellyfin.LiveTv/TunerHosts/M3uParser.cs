@@ -93,7 +93,7 @@ namespace Jellyfin.LiveTv.TunerHosts
                 }
                 else if (!string.IsNullOrWhiteSpace(extInf) && !trimmedLine.StartsWith('#'))
                 {
-                    var channel = GetChannelnfo(extInf, tunerHostId, trimmedLine);
+                    var channel = GetChannelInfo(extInf, tunerHostId, trimmedLine);
                     channel.Id = channelIdPrefix + trimmedLine.GetMD5().ToString("N", CultureInfo.InvariantCulture);
 
                     channel.Path = trimmedLine;
@@ -106,7 +106,7 @@ namespace Jellyfin.LiveTv.TunerHosts
             return channels;
         }
 
-        private ChannelInfo GetChannelnfo(string extInf, string tunerHostId, string mediaUrl)
+        private ChannelInfo GetChannelInfo(string extInf, string tunerHostId, string mediaUrl)
         {
             var channel = new ChannelInfo()
             {

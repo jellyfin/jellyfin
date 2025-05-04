@@ -276,6 +276,13 @@ namespace Emby.Server.Implementations.IO
                         {
                             _logger.LogError(ex, "Reading the file at {Path} failed due to a permissions exception.", fileInfo.FullName);
                         }
+                        catch (IOException ex)
+                        {
+                            // IOException generally means the file is not accessible due to filesystem issues
+                            // Catch this exception and mark the file as not exist to ignore it
+                            _logger.LogError(ex, "Reading the file at {Path} failed due to an IO Exception. Marking the file as not existing", fileInfo.FullName);
+                            result.Exists = false;
+                        }
                     }
                 }
 
@@ -534,8 +541,8 @@ namespace Emby.Server.Implementations.IO
             return DriveInfo.GetDrives()
                 .Where(
                     d => (d.DriveType == DriveType.Fixed || d.DriveType == DriveType.Network || d.DriveType == DriveType.Removable)
-                        && d.IsReady
-                        && d.TotalSize != 0)
+                         && d.IsReady
+                         && d.TotalSize != 0)
                 .Select(d => new FileSystemMetadata
                 {
                     Name = d.Name,
@@ -553,22 +560,36 @@ namespace Emby.Server.Implementations.IO
         /// <inheritdoc />
         public virtual IEnumerable<FileSystemMetadata> GetFiles(string path, bool recursive = false)
         {
-            return GetFiles(path, null, false, recursive);
+            return GetFiles(path, "*", recursive);
         }
 
         /// <inheritdoc />
-        public virtual IEnumerable<FileSystemMetadata> GetFiles(string path, IReadOnlyList<string>? extensions, bool enableCaseSensitiveExtensions, bool recursive = false)
+        public virtual IEnumerable<FileSystemMetadata> GetFiles(string path, string searchPattern, bool recursive = false)
+        {
+            return GetFiles(path, searchPattern, null, false, recursive);
+        }
+
+        /// <inheritdoc />
+        public virtual IEnumerable<FileSystemMetadata> GetFiles(string path, IReadOnlyList<string>? extensions, bool enableCaseSensitiveExtensions, bool recursive)
+        {
+            return GetFiles(path, "*", extensions, enableCaseSensitiveExtensions, recursive);
+        }
+
+        /// <inheritdoc />
+        public virtual IEnumerable<FileSystemMetadata> GetFiles(string path, string searchPattern, IReadOnlyList<string>? extensions, bool enableCaseSensitiveExtensions, bool recursive = false)
         {
             var enumerationOptions = GetEnumerationOptions(recursive);
 
-            // On linux and osx the search pattern is case sensitive
+            // On linux and macOS the search pattern is case-sensitive
             // If we're OK with case-sensitivity, and we're only filtering for one extension, then use the native method
             if ((enableCaseSensitiveExtensions || _isEnvironmentCaseInsensitive) && extensions is not null && extensions.Count == 1)
             {
-                return ToMetadata(new DirectoryInfo(path).EnumerateFiles("*" + extensions[0], enumerationOptions));
+                searchPattern = searchPattern.EndsWith(extensions[0], StringComparison.Ordinal) ? searchPattern : searchPattern + extensions[0];
+
+                return ToMetadata(new DirectoryInfo(path).EnumerateFiles(searchPattern, enumerationOptions));
             }
 
-            var files = new DirectoryInfo(path).EnumerateFiles("*", enumerationOptions);
+            var files = new DirectoryInfo(path).EnumerateFiles(searchPattern, enumerationOptions);
 
             if (extensions is not null && extensions.Count > 0)
             {
@@ -590,6 +611,9 @@ namespace Emby.Server.Implementations.IO
         /// <inheritdoc />
         public virtual IEnumerable<FileSystemMetadata> GetFileSystemEntries(string path, bool recursive = false)
         {
+            // Note: any of unhandled exceptions thrown by this method may cause the caller to believe the whole path is not accessible.
+            // But what causing the exception may be a single file under that path. This could lead to unexpected behavior.
+            // For example, the scanner will remove everything in that path due to unhandled errors.
             var directoryInfo = new DirectoryInfo(path);
             var enumerationOptions = GetEnumerationOptions(recursive);
 
@@ -618,7 +642,7 @@ namespace Emby.Server.Implementations.IO
         {
             var enumerationOptions = GetEnumerationOptions(recursive);
 
-            // On linux and osx the search pattern is case sensitive
+            // On linux and macOS the search pattern is case-sensitive
             // If we're OK with case-sensitivity, and we're only filtering for one extension, then use the native method
             if ((enableCaseSensitiveExtensions || _isEnvironmentCaseInsensitive) && extensions is not null && extensions.Length == 1)
             {

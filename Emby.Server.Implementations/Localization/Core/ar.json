@@ -134,5 +134,7 @@
     "TaskDownloadMissingLyrics": "تنزيل عبارات القصيدة",
     "TaskDownloadMissingLyricsDescription": "كلمات",
     "TaskExtractMediaSegments": "فحص مقاطع الوسائط",
-    "TaskExtractMediaSegmentsDescription": "وسائط"
+    "TaskExtractMediaSegmentsDescription": "يستخرج مقاطع وسائط من إضافات MediaSegment المُفعّلة.",
+    "TaskMoveTrickplayImages": "تغيير مكان صور المعاينة السريعة",
+    "TaskMoveTrickplayImagesDescription": "تُنقل ملفات التشغيل السريع الحالية بناءً على إعدادات المكتبة."
 }

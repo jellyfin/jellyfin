@@ -131,7 +131,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             item.Overview = (overview ?? string.Empty).StripHtml();
         }
 
-        internal Task EnsureArtistInfo(string musicBrainzId, CancellationToken cancellationToken)
+        internal async Task EnsureArtistInfo(string musicBrainzId, CancellationToken cancellationToken)
         {
             var xmlPath = GetArtistInfoPath(_config.ApplicationPaths, musicBrainzId);
 
@@ -140,10 +140,10 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             if (fileInfo.Exists
                 && (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 2)
             {
-                return Task.CompletedTask;
+                return;
             }
 
-            return DownloadArtistInfo(musicBrainzId, cancellationToken);
+            await DownloadArtistInfo(musicBrainzId, cancellationToken).ConfigureAwait(false);
         }
 
         internal async Task DownloadArtistInfo(string musicBrainzId, CancellationToken cancellationToken)

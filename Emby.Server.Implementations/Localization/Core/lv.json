@@ -129,5 +129,11 @@
     "TaskAudioNormalization": "Audio normalizācija",
     "TaskCleanCollectionsAndPlaylistsDescription": "Noņem vairs neeksistējošus vienumus no kolekcijām un atskaņošanas sarakstiem.",
     "TaskAudioNormalizationDescription": "Skanē failus priekš audio normālizācijas informācijas.",
-    "TaskCleanCollectionsAndPlaylists": "Notīrīt kolekcijas un atskaņošanas sarakstus"
+    "TaskCleanCollectionsAndPlaylists": "Notīrīt kolekcijas un atskaņošanas sarakstus",
+    "TaskExtractMediaSegments": "Multivides segmenta skenēšana",
+    "TaskExtractMediaSegmentsDescription": "Izvelk vai iegūst multivides segmentus no MediaSegment iespējotiem spraudņiem.",
+    "TaskMoveTrickplayImages": "Trickplay attēlu pārvietošana",
+    "TaskMoveTrickplayImagesDescription": "Pārvieto esošos trickplay failus atbilstoši bibliotēkas iestatījumiem.",
+    "TaskDownloadMissingLyrics": "Lejupielādēt trūkstošos vārdus",
+    "TaskDownloadMissingLyricsDescription": "Lejupielādēt vārdus dziesmām"
 }

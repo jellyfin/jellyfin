@@ -29,7 +29,7 @@ public sealed class LibraryControllerTests : IClassFixture<JellyfinApplicationFa
     [InlineData("Shows/{0}/Similar")]
     [InlineData("Movies/{0}/Similar")]
     [InlineData("Trailers/{0}/Similar")]
-    public async Task Get_NonExistentItemId_NotFound(string format)
+    public async Task Get_NonexistentItemId_NotFound(string format)
     {
         var client = _factory.CreateClient();
         client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
@@ -41,7 +41,7 @@ public sealed class LibraryControllerTests : IClassFixture<JellyfinApplicationFa
     [Theory]
     [InlineData("Items/{0}")]
     [InlineData("Items?ids={0}")]
-    public async Task Delete_NonExistentItemId_Unauthorised(string format)
+    public async Task Delete_NonexistentItemId_Unauthorised(string format)
     {
         var client = _factory.CreateClient();
 
@@ -52,7 +52,7 @@ public sealed class LibraryControllerTests : IClassFixture<JellyfinApplicationFa
     [Theory]
     [InlineData("Items/{0}")]
     [InlineData("Items?ids={0}")]
-    public async Task Delete_NonExistentItemId_NotFound(string format)
+    public async Task Delete_NonexistentItemId_NotFound(string format)
     {
         var client = _factory.CreateClient();
         client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));

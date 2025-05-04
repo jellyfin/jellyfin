@@ -1,10 +1,11 @@
 using System;
 using System.IO;
 using Emby.Server.Implementations.Data;
-using Jellyfin.Data.Entities;
-using Jellyfin.Data.Enums;
+using Jellyfin.Data;
+using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions.Json;
-using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Users;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
@@ -21,7 +22,10 @@ namespace Jellyfin.Server.Migrations.Routines
     /// <summary>
     /// The migration routine for migrating the user database to EF Core.
     /// </summary>
+    [JellyfinMigration("2025-04-20T10:00:00", nameof(MigrateUserDb), "5C4B82A2-F053-4009-BD05-B6FCAD82F14C")]
+#pragma warning disable CS0618 // Type or member is obsolete
     public class MigrateUserDb : IMigrationRoutine
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         private const string DbFilename = "users.db";
 
@@ -48,15 +52,6 @@ namespace Jellyfin.Server.Migrations.Routines
             _provider = provider;
             _xmlSerializer = xmlSerializer;
         }
-
-        /// <inheritdoc/>
-        public Guid Id => Guid.Parse("5C4B82A2-F053-4009-BD05-B6FCAD82F14C");
-
-        /// <inheritdoc/>
-        public string Name => "MigrateUserDatabase";
-
-        /// <inheritdoc/>
-        public bool PerformOnNewInstall => false;
 
         /// <inheritdoc/>
         public void Perform()
@@ -111,7 +106,8 @@ namespace Jellyfin.Server.Migrations.Routines
                     {
                         Id = entry.GetGuid(1),
                         InternalId = entry.GetInt64(0),
-                        MaxParentalAgeRating = policy.MaxParentalRating,
+                        MaxParentalRatingScore = policy.MaxParentalRating,
+                        MaxParentalRatingSubScore = null,
                         EnableUserPreferenceAccess = policy.EnableUserPreferenceAccess,
                         RemoteClientBitrateLimit = policy.RemoteClientBitrateLimit,
                         InvalidLoginAttemptCount = policy.InvalidLoginAttemptCount,

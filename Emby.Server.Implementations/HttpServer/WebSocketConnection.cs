@@ -82,17 +82,17 @@ namespace Emby.Server.Implementations.HttpServer
         public WebSocketState State => _socket.State;
 
         /// <inheritdoc />
-        public Task SendAsync(OutboundWebSocketMessage message, CancellationToken cancellationToken)
+        public async Task SendAsync(OutboundWebSocketMessage message, CancellationToken cancellationToken)
         {
             var json = JsonSerializer.SerializeToUtf8Bytes(message, _jsonOptions);
-            return _socket.SendAsync(json, WebSocketMessageType.Text, true, cancellationToken);
+            await _socket.SendAsync(json, WebSocketMessageType.Text, true, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
-        public Task SendAsync<T>(OutboundWebSocketMessage<T> message, CancellationToken cancellationToken)
+        public async Task SendAsync<T>(OutboundWebSocketMessage<T> message, CancellationToken cancellationToken)
         {
             var json = JsonSerializer.SerializeToUtf8Bytes(message, _jsonOptions);
-            return _socket.SendAsync(json, WebSocketMessageType.Text, true, cancellationToken);
+            await _socket.SendAsync(json, WebSocketMessageType.Text, true, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
@@ -224,12 +224,12 @@ namespace Emby.Server.Implementations.HttpServer
             return ret;
         }
 
-        private Task SendKeepAliveResponse()
+        private async Task SendKeepAliveResponse()
         {
             LastKeepAliveDate = DateTime.UtcNow;
-            return SendAsync(
+            await SendAsync(
                 new OutboundKeepAliveMessage(),
-                CancellationToken.None);
+                CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <inheritdoc />

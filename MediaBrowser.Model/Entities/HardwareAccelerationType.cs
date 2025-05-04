@@ -8,7 +8,7 @@ namespace MediaBrowser.Model.Entities;
 public enum HardwareAccelerationType
 {
     /// <summary>
-    /// Software accelleration.
+    /// Software acceleration.
     /// </summary>
     none = 0,
 

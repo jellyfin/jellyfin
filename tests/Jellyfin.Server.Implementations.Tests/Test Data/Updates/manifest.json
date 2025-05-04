@@ -540,7 +540,7 @@
     {
         "guid": "022a3003-993f-45f1-8565-87d12af2e12a",
         "name": "InfuseSync",
-        "description": "This plugin will track all media changes while any Infuse clients are offline to decrease sync times when logging back in to your server.",
+        "description": "This plugin will track all media changes while any Infuse clients are offline to decrease sync times when logging back into your server.",
         "overview": "Blazing fast indexing for Infuse",
         "owner": "Firecore LLC",
         "category": "General",

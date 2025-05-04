@@ -58,6 +58,7 @@ public class StartupController : BaseJellyfinApiController
     {
         return new StartupConfigurationDto
         {
+            ServerName = _config.Configuration.ServerName,
             UICulture = _config.Configuration.UICulture,
             MetadataCountryCode = _config.Configuration.MetadataCountryCode,
             PreferredMetadataLanguage = _config.Configuration.PreferredMetadataLanguage
@@ -74,6 +75,7 @@ public class StartupController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public ActionResult UpdateInitialConfiguration([FromBody, Required] StartupConfigurationDto startupConfiguration)
     {
+        _config.Configuration.ServerName = startupConfiguration.ServerName ?? string.Empty;
         _config.Configuration.UICulture = startupConfiguration.UICulture ?? string.Empty;
         _config.Configuration.MetadataCountryCode = startupConfiguration.MetadataCountryCode ?? string.Empty;
         _config.Configuration.PreferredMetadataLanguage = startupConfiguration.PreferredMetadataLanguage ?? string.Empty;
@@ -93,7 +95,6 @@ public class StartupController : BaseJellyfinApiController
     {
         NetworkConfiguration settings = _config.GetNetworkConfiguration();
         settings.EnableRemoteAccess = startupRemoteAccessDto.EnableRemoteAccess;
-        settings.EnableUPnP = startupRemoteAccessDto.EnableAutomaticPortMapping;
         _config.SaveConfiguration(NetworkConfigurationStore.StoreKey, settings);
         return NoContent();
     }
@@ -113,8 +114,7 @@ public class StartupController : BaseJellyfinApiController
         var user = _userManager.Users.First();
         return new StartupUserDto
         {
-            Name = user.Username,
-            Password = user.Password
+            Name = user.Username
         };
     }
 

@@ -76,7 +76,7 @@ public class PlaylistsController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<PlaylistCreationResult>> CreatePlaylist(
         [FromQuery, ParameterObsolete] string? name,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder)), ParameterObsolete] IReadOnlyList<Guid> ids,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder)), ParameterObsolete] IReadOnlyList<Guid> ids,
         [FromQuery, ParameterObsolete] Guid? userId,
         [FromQuery, ParameterObsolete] MediaType? mediaType,
         [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] CreatePlaylistDto? createPlaylistRequest)
@@ -370,7 +370,7 @@ public class PlaylistsController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> AddItemToPlaylist(
         [FromRoute, Required] Guid playlistId,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] ids,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] ids,
         [FromQuery] Guid? userId)
     {
         userId = RequestHelpers.GetUserId(User, userId);
@@ -446,7 +446,7 @@ public class PlaylistsController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> RemoveItemFromPlaylist(
         [FromRoute, Required] string playlistId,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] entryIds)
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] entryIds)
     {
         var callingUserId = User.GetUserId();
 
@@ -493,11 +493,11 @@ public class PlaylistsController : BaseJellyfinApiController
         [FromQuery] Guid? userId,
         [FromQuery] int? startIndex,
         [FromQuery] int? limit,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFields[] fields,
         [FromQuery] bool? enableImages,
         [FromQuery] bool? enableUserData,
         [FromQuery] int? imageTypeLimit,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ImageType[] enableImageTypes)
     {
         var callingUserId = userId ?? User.GetUserId();
         var playlist = _playlistManager.GetPlaylistForUser(playlistId, callingUserId);

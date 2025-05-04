@@ -187,7 +187,7 @@ namespace MediaBrowser.Providers.Music
                 {
                     PeopleHelper.AddPerson(people, new PersonInfo
                     {
-                        Name = albumArtist,
+                        Name = albumArtist.Trim(),
                         Type = PersonKind.AlbumArtist
                     });
                 }
@@ -196,7 +196,7 @@ namespace MediaBrowser.Providers.Music
                 {
                     PeopleHelper.AddPerson(people, new PersonInfo
                     {
-                        Name = artist,
+                        Name = artist.Trim(),
                         Type = PersonKind.Artist
                     });
                 }
@@ -227,7 +227,7 @@ namespace MediaBrowser.Providers.Music
             }
             else
             {
-                targetItem.Artists = targetItem.Artists.Concat(sourceItem.Artists).Distinct().ToArray();
+                targetItem.Artists = targetItem.Artists.Concat(sourceItem.Artists).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
             }
 
             if (replaceData || string.IsNullOrEmpty(targetItem.GetProviderId(MetadataProvider.MusicBrainzAlbumArtist)))

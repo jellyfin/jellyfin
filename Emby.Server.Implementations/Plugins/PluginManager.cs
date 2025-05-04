@@ -119,7 +119,7 @@ namespace Emby.Server.Implementations.Plugins
             // Now load the assemblies..
             foreach (var plugin in _plugins)
             {
-                UpdatePluginSuperceedStatus(plugin);
+                UpdatePluginSupersededStatus(plugin);
 
                 if (plugin.IsEnabledAndSupported == false)
                 {
@@ -214,7 +214,7 @@ namespace Emby.Server.Implementations.Plugins
                     continue;
                 }
 
-                UpdatePluginSuperceedStatus(plugin);
+                UpdatePluginSupersededStatus(plugin);
                 if (!plugin.IsEnabledAndSupported)
                 {
                     continue;
@@ -624,9 +624,9 @@ namespace Emby.Server.Implementations.Plugins
             }
         }
 
-        private void UpdatePluginSuperceedStatus(LocalPlugin plugin)
+        private void UpdatePluginSupersededStatus(LocalPlugin plugin)
         {
-            if (plugin.Manifest.Status != PluginStatus.Superceded)
+            if (plugin.Manifest.Status != PluginStatus.Superseded)
             {
                 return;
             }
@@ -876,7 +876,7 @@ namespace Emby.Server.Implementations.Plugins
         }
 
         /// <summary>
-        /// Changes the status of the other versions of the plugin to "Superceded".
+        /// Changes the status of the other versions of the plugin to "Superseded".
         /// </summary>
         /// <param name="plugin">The <see cref="LocalPlugin"/> that's master.</param>
         private void ProcessAlternative(LocalPlugin plugin)
@@ -896,11 +896,11 @@ namespace Emby.Server.Implementations.Plugins
                 return;
             }
 
-            if (plugin.Manifest.Status == PluginStatus.Active && !ChangePluginState(previousVersion, PluginStatus.Superceded))
+            if (plugin.Manifest.Status == PluginStatus.Active && !ChangePluginState(previousVersion, PluginStatus.Superseded))
             {
                 _logger.LogError("Unable to enable version {Version} of {Name}", previousVersion.Version, previousVersion.Name);
             }
-            else if (plugin.Manifest.Status == PluginStatus.Superceded && !ChangePluginState(previousVersion, PluginStatus.Active))
+            else if (plugin.Manifest.Status == PluginStatus.Superseded && !ChangePluginState(previousVersion, PluginStatus.Active))
             {
                 _logger.LogError("Unable to supercede version {Version} of {Name}", previousVersion.Version, previousVersion.Name);
             }

@@ -19,6 +19,7 @@ using System.Threading.Tasks;
 using AsyncKeyedLock;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
+using Jellyfin.LiveTv.Guide;
 using Jellyfin.LiveTv.Listings.SchedulesDirectDtos;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Authentication;
@@ -38,7 +39,7 @@ namespace Jellyfin.LiveTv.Listings
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly AsyncNonKeyedLocker _tokenLock = new(1);
 
-        private readonly ConcurrentDictionary<string, NameValuePair> _tokens = new ConcurrentDictionary<string, NameValuePair>();
+        private readonly ConcurrentDictionary<string, NameValuePair> _tokens = new();
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
         private DateTime _lastErrorResponse;
         private bool _disposed = false;
@@ -86,7 +87,7 @@ namespace Jellyfin.LiveTv.Listings
             {
                 _logger.LogWarning("SchedulesDirect token is empty, returning empty program list");
 
-                return Enumerable.Empty<ProgramInfo>();
+                return [];
             }
 
             var dates = GetScheduleRequestDates(startDateUtc, endDateUtc);
@@ -94,7 +95,7 @@ namespace Jellyfin.LiveTv.Listings
             _logger.LogInformation("Channel Station ID is: {ChannelID}", channelId);
             var requestList = new List<RequestScheduleForChannelDto>()
                 {
-                    new RequestScheduleForChannelDto()
+                    new()
                     {
                         StationId = channelId,
                         Date = dates
@@ -109,7 +110,7 @@ namespace Jellyfin.LiveTv.Listings
             var dailySchedules = await Request<IReadOnlyList<DayDto>>(options, true, info, cancellationToken).ConfigureAwait(false);
             if (dailySchedules is null)
             {
-                return Array.Empty<ProgramInfo>();
+                return [];
             }
 
             _logger.LogDebug("Found {ScheduleCount} programs on {ChannelID} ScheduleDirect", dailySchedules.Count, channelId);
@@ -120,17 +121,17 @@ namespace Jellyfin.LiveTv.Listings
             var programIds = dailySchedules.SelectMany(d => d.Programs.Select(s => s.ProgramId)).Distinct();
             programRequestOptions.Content = JsonContent.Create(programIds, options: _jsonOptions);
 
-            var programDetails = await Request<IReadOnlyList<ProgramDetailsDto>>(programRequestOptions, true, info, cancellationToken)
-                    .ConfigureAwait(false);
+            var programDetails = await Request<IReadOnlyList<ProgramDetailsDto>>(programRequestOptions, true, info, cancellationToken).ConfigureAwait(false);
             if (programDetails is null)
             {
-                return Array.Empty<ProgramInfo>();
+                return [];
             }
 
             var programDict = programDetails.ToDictionary(p => p.ProgramId, y => y);
 
             var programIdsWithImages = programDetails
-                .Where(p => p.HasImageArtwork).Select(p => p.ProgramId)
+                .Where(p => p.HasImageArtwork)
+                .Select(p => p.ProgramId)
                 .ToList();
 
             var images = await GetImageForPrograms(info, programIdsWithImages, cancellationToken).ConfigureAwait(false);
@@ -138,17 +139,15 @@ namespace Jellyfin.LiveTv.Listings
             var programsInfo = new List<ProgramInfo>();
             foreach (ProgramDto schedule in dailySchedules.SelectMany(d => d.Programs))
             {
-                // _logger.LogDebug("Proccesing Schedule for statio ID " + stationID +
-                //              " which corresponds to channel " + channelNumber + " and program id " +
-                //              schedule.ProgramId + " which says it has images? " +
-                //              programDict[schedule.ProgramId].hasImageArtwork);
-
                 if (string.IsNullOrEmpty(schedule.ProgramId))
                 {
                     continue;
                 }
 
-                if (images is not null)
+                // Only add images which will be pre-cached until we can implement dynamic token fetching
+                var endDate = schedule.AirDateTime?.AddSeconds(schedule.Duration);
+                var willBeCached = endDate.HasValue && endDate.Value < DateTime.UtcNow.AddDays(GuideManager.MaxCacheDays);
+                if (willBeCached && images is not null)
                 {
                     var imageIndex = images.FindIndex(i => i.ProgramId == schedule.ProgramId[..10]);
                     if (imageIndex > -1)
@@ -456,7 +455,7 @@ namespace Jellyfin.LiveTv.Listings
 
             if (programIds.Count == 0)
             {
-                return Array.Empty<ShowImagesDto>();
+                return [];
             }
 
             StringBuilder str = new StringBuilder("[", 1 + (programIds.Count * 13));
@@ -483,7 +482,7 @@ namespace Jellyfin.LiveTv.Listings
             {
                 _logger.LogError(ex, "Error getting image info from schedules direct");
 
-                return Array.Empty<ShowImagesDto>();
+                return [];
             }
         }
 

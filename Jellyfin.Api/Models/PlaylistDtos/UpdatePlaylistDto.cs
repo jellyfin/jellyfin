@@ -19,7 +19,7 @@ public class UpdatePlaylistDto
     /// <summary>
     /// Gets or sets item ids of the playlist.
     /// </summary>
-    [JsonConverter(typeof(JsonCommaDelimitedArrayConverterFactory))]
+    [JsonConverter(typeof(JsonCommaDelimitedCollectionConverterFactory))]
     public IReadOnlyList<Guid>? Ids { get; set; }
 
     /// <summary>

@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
@@ -33,13 +34,11 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly ILogger<FFProbeVideoInfo> _logger;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IMediaEncoder _mediaEncoder;
-        private readonly IItemRepository _itemRepo;
         private readonly IBlurayExaminer _blurayExaminer;
         private readonly ILocalizationManager _localization;
-        private readonly IEncodingManager _encodingManager;
+        private readonly IChapterManager _chapterManager;
         private readonly IServerConfigurationManager _config;
         private readonly ISubtitleManager _subtitleManager;
-        private readonly IChapterRepository _chapterManager;
         private readonly ILibraryManager _libraryManager;
         private readonly AudioResolver _audioResolver;
         private readonly SubtitleResolver _subtitleResolver;
@@ -50,13 +49,11 @@ namespace MediaBrowser.Providers.MediaInfo
             ILogger<FFProbeVideoInfo> logger,
             IMediaSourceManager mediaSourceManager,
             IMediaEncoder mediaEncoder,
-            IItemRepository itemRepo,
             IBlurayExaminer blurayExaminer,
             ILocalizationManager localization,
-            IEncodingManager encodingManager,
+            IChapterManager chapterManager,
             IServerConfigurationManager config,
             ISubtitleManager subtitleManager,
-            IChapterRepository chapterManager,
             ILibraryManager libraryManager,
             AudioResolver audioResolver,
             SubtitleResolver subtitleResolver,
@@ -66,13 +63,11 @@ namespace MediaBrowser.Providers.MediaInfo
             _logger = logger;
             _mediaSourceManager = mediaSourceManager;
             _mediaEncoder = mediaEncoder;
-            _itemRepo = itemRepo;
             _blurayExaminer = blurayExaminer;
             _localization = localization;
-            _encodingManager = encodingManager;
+            _chapterManager = chapterManager;
             _config = config;
             _subtitleManager = subtitleManager;
-            _chapterManager = chapterManager;
             _libraryManager = libraryManager;
             _audioResolver = audioResolver;
             _subtitleResolver = subtitleResolver;
@@ -297,9 +292,9 @@ namespace MediaBrowser.Providers.MediaInfo
                     extractDuringScan = libraryOptions.ExtractChapterImagesDuringLibraryScan;
                 }
 
-                await _encodingManager.RefreshChapterImages(video, options.DirectoryService, chapters, extractDuringScan, false, cancellationToken).ConfigureAwait(false);
+                await _chapterManager.RefreshChapterImages(video, options.DirectoryService, chapters, extractDuringScan, false, cancellationToken).ConfigureAwait(false);
 
-                _chapterManager.SaveChapters(video.Id, chapters);
+                _chapterManager.SaveChapters(video, chapters);
             }
         }
 
@@ -361,7 +356,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 blurayVideoStream.Codec = ffmpegVideoStream.Codec;
                 blurayVideoStream.BitRate = blurayVideoStream.BitRate.GetValueOrDefault() == 0 ? ffmpegVideoStream.BitRate : blurayVideoStream.BitRate;
                 blurayVideoStream.Width = blurayVideoStream.Width.GetValueOrDefault() == 0 ? ffmpegVideoStream.Width : blurayVideoStream.Width;
-                blurayVideoStream.Height = blurayVideoStream.Height.GetValueOrDefault() == 0 ? ffmpegVideoStream.Width : blurayVideoStream.Height;
+                blurayVideoStream.Height = blurayVideoStream.Height.GetValueOrDefault() == 0 ? ffmpegVideoStream.Height : blurayVideoStream.Height;
                 blurayVideoStream.ColorRange = ffmpegVideoStream.ColorRange;
                 blurayVideoStream.ColorSpace = ffmpegVideoStream.ColorSpace;
                 blurayVideoStream.ColorTransfer = ffmpegVideoStream.ColorTransfer;
@@ -407,7 +402,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     video.Genres = Array.Empty<string>();
 
-                    foreach (var genre in data.Genres)
+                    foreach (var genre in data.Genres.Trimmed())
                     {
                         video.AddGenre(genre);
                     }
@@ -516,9 +511,9 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     PeopleHelper.AddPerson(people, new PersonInfo
                     {
-                        Name = person.Name,
+                        Name = person.Name.Trim(),
                         Type = person.Type,
-                        Role = person.Role
+                        Role = person.Role.Trim()
                     });
                 }
 
@@ -634,7 +629,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var runtime = video.RunTimeTicks.GetValueOrDefault();
 
-            // Only process files with a runtime higher than 0 and lower than 12h. The latter are likely corrupted.
+            // Only process files with a runtime greater than 0 and less than 12h. The latter are likely corrupted.
             if (runtime < 0 || runtime > TimeSpan.FromHours(12).Ticks)
             {
                 throw new ArgumentException(

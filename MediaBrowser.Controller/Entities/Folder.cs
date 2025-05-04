@@ -13,8 +13,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using J2N.Collections.Generic.Extensions;
-using Jellyfin.Data.Entities;
+using Jellyfin.Data;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Collections;
@@ -219,7 +221,7 @@ namespace MediaBrowser.Controller.Entities
             LibraryManager.CreateItem(item, this);
         }
 
-        public override bool IsVisible(User user)
+        public override bool IsVisible(User user, bool skipAllowedTagsCheck = false)
         {
             if (this is ICollectionFolder && this is not BasePluginFolder)
             {
@@ -241,7 +243,7 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            return base.IsVisible(user);
+            return base.IsVisible(user, skipAllowedTagsCheck);
         }
 
         /// <summary>
@@ -452,7 +454,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (newItems.Count > 0)
                 {
-                    LibraryManager.CreateOrUpdateItems(newItems, this, cancellationToken);
+                    LibraryManager.CreateItems(newItems, this, cancellationToken);
                 }
             }
             else
@@ -530,13 +532,13 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        private Task RefreshMetadataRecursive(IList<BaseItem> children, MetadataRefreshOptions refreshOptions, bool recursive, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task RefreshMetadataRecursive(IList<BaseItem> children, MetadataRefreshOptions refreshOptions, bool recursive, IProgress<double> progress, CancellationToken cancellationToken)
         {
-            return RunTasks(
+            await RunTasks(
                 (baseItem, innerProgress) => RefreshChildMetadata(baseItem, refreshOptions, recursive && baseItem.IsFolder, innerProgress, cancellationToken),
                 children,
                 progress,
-                cancellationToken);
+                cancellationToken).ConfigureAwait(false);
         }
 
         private async Task RefreshAllMetadataForContainer(IMetadataContainer container, MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
@@ -577,13 +579,13 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private Task ValidateSubFolders(IList<Folder> children, IDirectoryService directoryService, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task ValidateSubFolders(IList<Folder> children, IDirectoryService directoryService, IProgress<double> progress, CancellationToken cancellationToken)
         {
-            return RunTasks(
+            await RunTasks(
                 (folder, innerProgress) => folder.ValidateChildrenInternal(innerProgress, true, false, false, null, directoryService, cancellationToken),
                 children,
                 progress,
-                cancellationToken);
+                cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -1056,11 +1058,6 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            if (queryParent is Series)
-            {
-                return false;
-            }
-
             if (queryParent is Season)
             {
                 return false;
@@ -1080,12 +1077,15 @@ namespace MediaBrowser.Controller.Entities
 
             if (!param.HasValue)
             {
-                if (user is not null && !configurationManager.Configuration.EnableGroupingIntoCollections)
+                if (user is not null && query.IncludeItemTypes.Any(type =>
+                    (type == BaseItemKind.Movie && !configurationManager.Configuration.EnableGroupingMoviesIntoCollections) ||
+                    (type == BaseItemKind.Series && !configurationManager.Configuration.EnableGroupingShowsIntoCollections)))
                 {
                     return false;
                 }
 
-                if (query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains(BaseItemKind.Movie))
+                if (query.IncludeItemTypes.Length == 0
+                    || query.IncludeItemTypes.Any(type => type == BaseItemKind.Movie || type == BaseItemKind.Series))
                 {
                     param = true;
                 }
@@ -1196,6 +1196,11 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
+            if (request.Is4K.HasValue)
+            {
+                return false;
+            }
+
             if (request.IsHD.HasValue)
             {
                 return false;
@@ -1232,11 +1237,6 @@ namespace MediaBrowser.Controller.Entities
             }
 
             if (request.StudioIds.Length > 0)
-            {
-                return false;
-            }
-
-            if (request.GenreIds.Count > 0)
             {
                 return false;
             }

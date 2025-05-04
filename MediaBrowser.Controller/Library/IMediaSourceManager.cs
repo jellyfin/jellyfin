@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
@@ -53,7 +53,7 @@ namespace MediaBrowser.Controller.Library
         IReadOnlyList<MediaAttachment> GetMediaAttachments(MediaAttachmentQuery query);
 
         /// <summary>
-        /// Gets the playack media sources.
+        /// Gets the playback media sources.
         /// </summary>
         /// <param name="item">Item to use.</param>
         /// <param name="user">User to use for operation.</param>

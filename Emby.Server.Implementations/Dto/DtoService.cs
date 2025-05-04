@@ -5,8 +5,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
 using MediaBrowser.Common;
 using MediaBrowser.Controller.Channels;
@@ -17,7 +17,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Trickplay;
@@ -41,7 +40,6 @@ namespace Emby.Server.Implementations.Dto
         private readonly ILogger<DtoService> _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserDataManager _userDataRepository;
-        private readonly IItemRepository _itemRepo;
 
         private readonly IImageProcessor _imageProcessor;
         private readonly IProviderManager _providerManager;
@@ -52,13 +50,12 @@ namespace Emby.Server.Implementations.Dto
         private readonly Lazy<ILiveTvManager> _livetvManagerFactory;
 
         private readonly ITrickplayManager _trickplayManager;
-        private readonly IChapterRepository _chapterRepository;
+        private readonly IChapterManager _chapterManager;
 
         public DtoService(
             ILogger<DtoService> logger,
             ILibraryManager libraryManager,
             IUserDataManager userDataRepository,
-            IItemRepository itemRepo,
             IImageProcessor imageProcessor,
             IProviderManager providerManager,
             IRecordingsManager recordingsManager,
@@ -66,12 +63,11 @@ namespace Emby.Server.Implementations.Dto
             IMediaSourceManager mediaSourceManager,
             Lazy<ILiveTvManager> livetvManagerFactory,
             ITrickplayManager trickplayManager,
-            IChapterRepository chapterRepository)
+            IChapterManager chapterManager)
         {
             _logger = logger;
             _libraryManager = libraryManager;
             _userDataRepository = userDataRepository;
-            _itemRepo = itemRepo;
             _imageProcessor = imageProcessor;
             _providerManager = providerManager;
             _recordingsManager = recordingsManager;
@@ -79,7 +75,7 @@ namespace Emby.Server.Implementations.Dto
             _mediaSourceManager = mediaSourceManager;
             _livetvManagerFactory = livetvManagerFactory;
             _trickplayManager = trickplayManager;
-            _chapterRepository = chapterRepository;
+            _chapterManager = chapterManager;
         }
 
         private ILiveTvManager LivetvManager => _livetvManagerFactory.Value;
@@ -99,11 +95,11 @@ namespace Emby.Server.Implementations.Dto
 
                 if (item is LiveTvChannel tvChannel)
                 {
-                    (channelTuples ??= new()).Add((dto, tvChannel));
+                    (channelTuples ??= []).Add((dto, tvChannel));
                 }
                 else if (item is LiveTvProgram)
                 {
-                    (programTuples ??= new()).Add((item, dto));
+                    (programTuples ??= []).Add((item, dto));
                 }
 
                 if (item is IItemByName byName)
@@ -590,12 +586,12 @@ namespace Emby.Server.Implementations.Dto
                     if (dto.ImageBlurHashes is not null)
                     {
                         // Only add BlurHash for the person's image.
-                        baseItemPerson.ImageBlurHashes = new Dictionary<ImageType, Dictionary<string, string>>();
+                        baseItemPerson.ImageBlurHashes = [];
                         foreach (var (imageType, blurHash) in dto.ImageBlurHashes)
                         {
                             if (blurHash is not null)
                             {
-                                baseItemPerson.ImageBlurHashes[imageType] = new Dictionary<string, string>();
+                                baseItemPerson.ImageBlurHashes[imageType] = [];
                                 foreach (var (imageId, blurHashValue) in blurHash)
                                 {
                                     if (string.Equals(baseItemPerson.PrimaryImageTag, imageId, StringComparison.OrdinalIgnoreCase))
@@ -674,11 +670,11 @@ namespace Emby.Server.Implementations.Dto
 
             if (!string.IsNullOrEmpty(image.BlurHash))
             {
-                dto.ImageBlurHashes ??= new Dictionary<ImageType, Dictionary<string, string>>();
+                dto.ImageBlurHashes ??= [];
 
                 if (!dto.ImageBlurHashes.TryGetValue(image.Type, out var value))
                 {
-                    value = new Dictionary<string, string>();
+                    value = [];
                     dto.ImageBlurHashes[image.Type] = value;
                 }
 
@@ -709,7 +705,7 @@ namespace Emby.Server.Implementations.Dto
 
             if (hashes.Count > 0)
             {
-                dto.ImageBlurHashes ??= new Dictionary<ImageType, Dictionary<string, string>>();
+                dto.ImageBlurHashes ??= [];
 
                 dto.ImageBlurHashes[imageType] = hashes;
             }
@@ -756,7 +752,7 @@ namespace Emby.Server.Implementations.Dto
                 dto.AspectRatio = hasAspectRatio.AspectRatio;
             }
 
-            dto.ImageBlurHashes = new Dictionary<ImageType, Dictionary<string, string>>();
+            dto.ImageBlurHashes = [];
 
             var backdropLimit = options.GetImageLimit(ImageType.Backdrop);
             if (backdropLimit > 0)
@@ -772,7 +768,7 @@ namespace Emby.Server.Implementations.Dto
 
             if (options.EnableImages)
             {
-                dto.ImageTags = new Dictionary<ImageType, string>();
+                dto.ImageTags = [];
 
                 // Prevent implicitly captured closure
                 var currentItem = item;
@@ -1064,7 +1060,7 @@ namespace Emby.Server.Implementations.Dto
 
                 if (options.ContainsField(ItemFields.Chapters))
                 {
-                    dto.Chapters = _chapterRepository.GetChapters(item.Id).ToList();
+                    dto.Chapters = _chapterManager.GetChapters(item.Id).ToList();
                 }
 
                 if (options.ContainsField(ItemFields.Trickplay))

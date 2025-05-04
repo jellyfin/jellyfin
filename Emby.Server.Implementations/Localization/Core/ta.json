@@ -129,5 +129,9 @@
     "TaskCleanCollectionsAndPlaylists": "சேகரிப்புகள் மற்றும் பிளேலிஸ்ட்களை சுத்தம் செய்யவும்",
     "TaskCleanCollectionsAndPlaylistsDescription": "சேகரிப்புகள் மற்றும் பிளேலிஸ்ட்களில் இருந்து உருப்படிகளை நீக்குகிறது.",
     "TaskAudioNormalization": "ஆடியோ இயல்பாக்கம்",
-    "TaskAudioNormalizationDescription": "ஆடியோ இயல்பாக்குதல் தரவுக்காக கோப்புகளை ஸ்கேன் செய்கிறது."
+    "TaskAudioNormalizationDescription": "ஆடியோ இயல்பாக்குதல் தரவுக்காக கோப்புகளை ஸ்கேன் செய்கிறது.",
+    "TaskDownloadMissingLyrics": "விடுபட்ட பாடல் வரிகளைப் பதிவிறக்கவும்",
+    "TaskDownloadMissingLyricsDescription": "பாடல்களுக்கான வரிகளைப் பதிவிறக்குகிறது",
+    "TaskMoveTrickplayImages": "ட்ரிக்பிளே பட இருப்பிடத்தை நகர்த்து",
+    "TaskMoveTrickplayImagesDescription": "நூலக அமைப்புகளுக்கு ஏற்ப ஏற்கனவே உள்ள ட்ரிக்பிளே கோப்புகளை நகர்த்துகிறது."
 }

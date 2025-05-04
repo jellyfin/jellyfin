@@ -9,12 +9,13 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
+using Jellyfin.Data;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Querying;
 using MetadataProvider = MediaBrowser.Model.Entities.MetadataProvider;
 
@@ -23,7 +24,7 @@ namespace MediaBrowser.Controller.Entities.TV
     /// <summary>
     /// Class Series.
     /// </summary>
-    public class Series : Folder, IHasTrailers, IHasDisplayOrder, IHasLookupInfo<SeriesInfo>, IMetadataContainer
+    public class Series : Folder, IHasTrailers, IHasDisplayOrder, IHasLookupInfo<SeriesInfo>, IMetadataContainer, ISupportsBoxSetGrouping
     {
         public Series()
         {
@@ -225,6 +226,21 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             var user = query.User;
 
+            if (SourceType == SourceType.Channel)
+            {
+                try
+                {
+                    query.Parent = this;
+                    query.ChannelIds = [ChannelId];
+                    return ChannelManager.GetChannelItemsInternal(query, new Progress<double>(), CancellationToken.None).GetAwaiter().GetResult();
+                }
+                catch
+                {
+                    // Already logged at lower levels
+                    return new QueryResult<BaseItem>();
+                }
+            }
+
             if (query.Recursive)
             {
                 var seriesKey = GetUniqueSeriesKey(this);
@@ -371,7 +387,25 @@ namespace MediaBrowser.Controller.Entities.TV
                 query.IsMissing = false;
             }
 
-            var allItems = LibraryManager.GetItemList(query);
+            IReadOnlyList<BaseItem> allItems;
+            if (SourceType == SourceType.Channel)
+            {
+                try
+                {
+                    query.Parent = parentSeason;
+                    query.ChannelIds = [ChannelId];
+                    allItems = [.. ChannelManager.GetChannelItemsInternal(query, new Progress<double>(), CancellationToken.None).GetAwaiter().GetResult().Items];
+                }
+                catch
+                {
+                    // Already logged at lower levels
+                    return [];
+                }
+            }
+            else
+            {
+                allItems = LibraryManager.GetItemList(query);
+            }
 
             return GetSeasonEpisodes(parentSeason, user, allItems, options, shouldIncludeMissingEpisodes);
         }

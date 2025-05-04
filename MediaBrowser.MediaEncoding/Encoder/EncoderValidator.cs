@@ -5,15 +5,17 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Text.RegularExpressions;
+using MediaBrowser.Controller.MediaEncoding;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.MediaEncoding.Encoder
 {
     public partial class EncoderValidator
     {
-        private static readonly string[] _requiredDecoders = new[]
-        {
+        private static readonly string[] _requiredDecoders =
+        [
             "h264",
             "hevc",
             "vp8",
@@ -55,10 +57,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "vp8_rkmpp",
             "vp9_rkmpp",
             "av1_rkmpp"
-        };
+        ];
 
-        private static readonly string[] _requiredEncoders = new[]
-        {
+        private static readonly string[] _requiredEncoders =
+        [
             "libx264",
             "libx265",
             "libsvtav1",
@@ -95,10 +97,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "h264_rkmpp",
             "hevc_rkmpp",
             "mjpeg_rkmpp"
-        };
+        ];
 
-        private static readonly string[] _requiredFilters = new[]
-        {
+        private static readonly string[] _requiredFilters =
+        [
             // sw
             "alphasrc",
             "zscale",
@@ -146,7 +148,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "scale_rkrga",
             "vpp_rkrga",
             "overlay_rkrga"
-        };
+        ];
 
         private static readonly Dictionary<int, string[]> _filterOptionsDict = new Dictionary<int, string[]>
         {
@@ -157,6 +159,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
             { 4, new string[] { "overlay_vaapi", "Action to take when encountering EOF from secondary input" } },
             { 5, new string[] { "overlay_vulkan", "Action to take when encountering EOF from secondary input" } },
             { 6, new string[] { "transpose_opencl", "rotate by half-turn" } }
+        };
+
+        private static readonly Dictionary<BitStreamFilterOptionType, (string, string)> _bsfOptionsDict = new Dictionary<BitStreamFilterOptionType, (string, string)>
+        {
+            { BitStreamFilterOptionType.HevcMetadataRemoveDovi, ("hevc_metadata", "remove_dovi") },
+            { BitStreamFilterOptionType.HevcMetadataRemoveHdr10Plus, ("hevc_metadata", "remove_hdr10plus") },
+            { BitStreamFilterOptionType.Av1MetadataRemoveDovi, ("av1_metadata", "remove_dovi") },
+            { BitStreamFilterOptionType.Av1MetadataRemoveHdr10Plus, ("av1_metadata", "remove_hdr10plus") },
+            { BitStreamFilterOptionType.DoviRpuStrip, ("dovi_rpu", "strip") }
         };
 
         // These are the library versions that corresponds to our minimum ffmpeg version 4.4 according to the version table below
@@ -284,6 +295,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public IEnumerable<string> GetFilters() => GetFFmpegFilters();
 
         public IDictionary<int, bool> GetFiltersWithOption() => GetFFmpegFiltersWithOption();
+
+        public IDictionary<BitStreamFilterOptionType, bool> GetBitStreamFiltersWithOption() => _bsfOptionsDict
+            .ToDictionary(item => item.Key, item => CheckBitStreamFilterWithOption(item.Value.Item1, item.Value.Item2));
 
         public Version? GetFFmpegVersion()
         {
@@ -437,6 +451,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
         }
 
+        [SupportedOSPlatform("macos")]
+        public bool CheckIsVideoToolboxAv1DecodeAvailable()
+        {
+            return ApplePlatformHelper.HasAv1HardwareAccel(_logger);
+        }
+
         private IEnumerable<string> GetHwaccelTypes()
         {
             string? output = null;
@@ -451,10 +471,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (string.IsNullOrWhiteSpace(output))
             {
-                return Enumerable.Empty<string>();
+                return [];
             }
 
-            var found = output.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).Skip(1).Distinct().ToList();
+            var found = output.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries).Skip(1).Distinct().ToList();
             _logger.LogInformation("Available hwaccel types: {Types}", found);
 
             return found;
@@ -488,6 +508,34 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return false;
         }
 
+        public bool CheckBitStreamFilterWithOption(string filter, string option)
+        {
+            if (string.IsNullOrEmpty(filter) || string.IsNullOrEmpty(option))
+            {
+                return false;
+            }
+
+            string output;
+            try
+            {
+                output = GetProcessOutput(_encoderPath, "-h bsf=" + filter, false, null);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error detecting the given bit stream filter");
+                return false;
+            }
+
+            if (output.Contains("Bit stream filter " + filter, StringComparison.Ordinal))
+            {
+                return output.Contains(option, StringComparison.Ordinal);
+            }
+
+            _logger.LogWarning("Bit stream filter: {Name} with option {Option} is not available", filter, option);
+
+            return false;
+        }
+
         public bool CheckSupportedRuntimeKey(string keyDesc, Version? ffmpegVersion)
         {
             if (string.IsNullOrEmpty(keyDesc))
@@ -516,6 +564,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return !string.IsNullOrEmpty(flag) && GetProcessExitCode(_encoderPath, $"-loglevel quiet -hwaccel_flags +{flag} -hide_banner -f lavfi -i nullsrc=s=1x1:d=100 -f null -");
         }
 
+        public bool CheckSupportedProberOption(string option, string proberPath)
+        {
+            return !string.IsNullOrEmpty(option) && GetProcessExitCode(proberPath, $"-loglevel quiet -f lavfi -i nullsrc=s=1x1:d=1 -{option}");
+        }
+
         private IEnumerable<string> GetCodecs(Codec codec)
         {
             string codecstr = codec == Codec.Encoder ? "encoders" : "decoders";
@@ -527,12 +580,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error detecting available {Codec}", codecstr);
-                return Enumerable.Empty<string>();
+                return [];
             }
 
             if (string.IsNullOrWhiteSpace(output))
             {
-                return Enumerable.Empty<string>();
+                return [];
             }
 
             var required = codec == Codec.Encoder ? _requiredEncoders : _requiredDecoders;
@@ -557,12 +610,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error detecting available filters");
-                return Enumerable.Empty<string>();
+                return [];
             }
 
             if (string.IsNullOrWhiteSpace(output))
             {
-                return Enumerable.Empty<string>();
+                return [];
             }
 
             var found = FilterRegex()

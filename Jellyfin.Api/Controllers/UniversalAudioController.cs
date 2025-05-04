@@ -98,17 +98,17 @@ public class UniversalAudioController : BaseJellyfinApiController
     [ProducesAudioFile]
     public async Task<ActionResult> GetUniversalAudioStream(
         [FromRoute, Required] Guid itemId,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] container,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] container,
         [FromQuery] string? mediaSourceId,
         [FromQuery] string? deviceId,
         [FromQuery] Guid? userId,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? audioCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? audioCodec,
         [FromQuery] int? maxAudioChannels,
         [FromQuery] int? transcodingAudioChannels,
         [FromQuery] int? maxStreamingBitrate,
         [FromQuery] int? audioBitRate,
         [FromQuery] long? startTimeTicks,
-        [FromQuery] [RegularExpression(EncodingHelper.ValidationRegex)] string? transcodingContainer,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? transcodingContainer,
         [FromQuery] MediaStreamProtocol? transcodingProtocol,
         [FromQuery] int? maxAudioSampleRate,
         [FromQuery] int? maxAudioBitDepth,
@@ -222,7 +222,7 @@ public class UniversalAudioController : BaseJellyfinApiController
                 TranscodeReasons = mediaSource.TranscodeReasons == 0 ? null : mediaSource.TranscodeReasons.ToString(),
                 Context = EncodingContext.Static,
                 StreamOptions = new Dictionary<string, string>(),
-                EnableAdaptiveBitrateStreaming = true,
+                EnableAdaptiveBitrateStreaming = false,
                 EnableAudioVbrEncoding = enableAudioVbrEncoding
             };
 

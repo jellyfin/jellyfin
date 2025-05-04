@@ -12,7 +12,7 @@ public class SplashscreenBuilder
 {
     private const int FinalWidth = 1920;
     private const int FinalHeight = 1080;
-    // generated collage resolution should be higher than the final resolution
+    // generated collage resolution should be greater than the final resolution
     private const int WallWidth = FinalWidth * 3;
     private const int WallHeight = FinalHeight * 2;
     private const int Rows = 6;

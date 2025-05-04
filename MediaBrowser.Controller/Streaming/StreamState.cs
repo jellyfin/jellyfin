@@ -51,7 +51,7 @@ public class StreamState : EncodingJobInfo, IDisposable
     public VideoRequestDto? VideoRequest => Request as VideoRequestDto;
 
     /// <summary>
-    /// Gets or sets the direct stream provicer.
+    /// Gets or sets the direct stream provider.
     /// </summary>
     /// <remarks>
     /// Deprecated.
