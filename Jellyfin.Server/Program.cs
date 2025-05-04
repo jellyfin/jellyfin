@@ -179,12 +179,10 @@ namespace Jellyfin.Server
 
                 // Re-use the host service provider in the app host since ASP.NET doesn't allow a custom service collection.
                 appHost.ServiceProvider = _jellyfinHost.Services;
+                PrepareDatabaseProvider(appHost.ServiceProvider);
 
                 if (!string.IsNullOrWhiteSpace(_restoreFromBackup))
                 {
-                    var factory = appHost.ServiceProvider.GetService<IDbContextFactory<JellyfinDbContext>>()!;
-                    var provider = appHost.ServiceProvider.GetService<IJellyfinDatabaseProvider>()!;
-                    provider.DbContextFactory = factory;
                     await appHost.ServiceProvider.GetService<IBackupService>()!.RestoreBackupAsync(_restoreFromBackup).ConfigureAwait(false);
                     _restoreFromBackup = null;
                     _restartOnShutdown = true;
@@ -265,6 +263,9 @@ namespace Jellyfin.Server
                 .AddSingleton<IApplicationPaths>(appPaths)
                 .AddSingleton<ServerApplicationPaths>(appPaths);
             var startupService = migrationStartupServiceProvider.BuildServiceProvider();
+
+            PrepareDatabaseProvider(startupService);
+
             var jellyfinMigrationService = ActivatorUtilities.CreateInstance<JellyfinMigrationService>(startupService);
             await jellyfinMigrationService.CheckFirstTimeRunOrMigration(appPaths).ConfigureAwait(false);
             await jellyfinMigrationService.MigrateStepAsync(Migrations.Stages.JellyfinMigrationStageTypes.PreInitialisation, startupService).ConfigureAwait(false);
@@ -318,6 +319,13 @@ namespace Jellyfin.Server
                 .AddJsonFile(LoggingConfigFileSystem, optional: true, reloadOnChange: true)
                 .AddEnvironmentVariables("JELLYFIN_")
                 .AddInMemoryCollection(commandLineOpts.ConvertToConfig());
+        }
+
+        private static void PrepareDatabaseProvider(IServiceProvider services)
+        {
+            var factory = services.GetRequiredService<IDbContextFactory<JellyfinDbContext>>();
+            var provider = services.GetRequiredService<IJellyfinDatabaseProvider>();
+            provider.DbContextFactory = factory;
         }
     }
 }
