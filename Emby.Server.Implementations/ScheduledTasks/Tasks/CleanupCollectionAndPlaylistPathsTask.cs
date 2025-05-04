@@ -27,7 +27,6 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
     private readonly IPlaylistManager _playlistManager;
     private readonly ILogger<CleanupCollectionAndPlaylistPathsTask> _logger;
     private readonly IProviderManager _providerManager;
-    private readonly IFileSystem _fileSystem;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CleanupCollectionAndPlaylistPathsTask"/> class.
@@ -35,23 +34,20 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
     /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
     /// <param name="collectionManager">Instance of the <see cref="ICollectionManager"/> interface.</param>
     /// <param name="playlistManager">Instance of the <see cref="IPlaylistManager"/> interface.</param>
-    /// <param name="logger">The logger.</param>
-    /// <param name="providerManager">The provider manager.</param>
-    /// <param name="fileSystem">The filesystem.</param>
+    /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
+    /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
     public CleanupCollectionAndPlaylistPathsTask(
         ILocalizationManager localization,
         ICollectionManager collectionManager,
         IPlaylistManager playlistManager,
         ILogger<CleanupCollectionAndPlaylistPathsTask> logger,
-        IProviderManager providerManager,
-        IFileSystem fileSystem)
+        IProviderManager providerManager)
     {
         _localization = localization;
         _collectionManager = collectionManager;
         _playlistManager = playlistManager;
         _logger = logger;
         _providerManager = providerManager;
-        _fileSystem = fileSystem;
     }
 
     /// <inheritdoc />
@@ -84,7 +80,7 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
                 var collection = collections[index];
                 _logger.LogDebug("Checking boxset {CollectionName}", collection.Name);
 
-                CleanupLinkedChildren(collection, cancellationToken);
+                await CleanupLinkedChildrenAsync(collection, cancellationToken).ConfigureAwait(false);
                 progress.Report(50D / collections.Length * (index + 1));
             }
         }
@@ -104,20 +100,21 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
             var playlist = playlists[index];
             _logger.LogDebug("Checking playlist {PlaylistName}", playlist.Name);
 
-            CleanupLinkedChildren(playlist, cancellationToken);
+            await CleanupLinkedChildrenAsync(playlist, cancellationToken).ConfigureAwait(false);
             progress.Report(50D / playlists.Length * (index + 1));
         }
     }
 
-    private void CleanupLinkedChildren<T>(T folder, CancellationToken cancellationToken)
+    private async Task CleanupLinkedChildrenAsync<T>(T folder, CancellationToken cancellationToken)
         where T : Folder
     {
         List<LinkedChild>? itemsToRemove = null;
         foreach (var linkedChild in folder.LinkedChildren)
         {
-            if (!File.Exists(folder.Path))
+            var path = linkedChild.Path;
+            if (!File.Exists(path) && !Directory.Exists(path))
             {
-                _logger.LogInformation("Item in {FolderName} cannot be found at {ItemPath}", folder.Name, linkedChild.Path);
+                _logger.LogInformation("Item in {FolderName} cannot be found at {ItemPath}", folder.Name, path);
                 (itemsToRemove ??= new List<LinkedChild>()).Add(linkedChild);
             }
         }
@@ -126,21 +123,17 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
         {
             _logger.LogDebug("Updating {FolderName}", folder.Name);
             folder.LinkedChildren = folder.LinkedChildren.Except(itemsToRemove).ToArray();
-            folder.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken);
-
-            _providerManager.QueueRefresh(
-                folder.Id,
-                new MetadataRefreshOptions(new DirectoryService(_fileSystem))
-                {
-                    ForceSave = true
-                },
-                RefreshPriority.High);
+            await _providerManager.SaveMetadataAsync(folder, ItemUpdateType.MetadataEdit).ConfigureAwait(false);
+            await folder.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
         }
     }
 
     /// <inheritdoc />
     public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
     {
-        return new[] { new TaskTriggerInfo() { Type = TaskTriggerInfo.TriggerStartup } };
+        yield return new TaskTriggerInfo
+        {
+            Type = TaskTriggerInfoType.StartupTrigger,
+        };
     }
 }

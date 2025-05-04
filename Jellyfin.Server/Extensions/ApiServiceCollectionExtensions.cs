@@ -19,6 +19,7 @@ using Jellyfin.Api.Controllers;
 using Jellyfin.Api.Formatters;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions.Json;
 using Jellyfin.Server.Configuration;
 using Jellyfin.Server.Filters;
@@ -37,7 +38,6 @@ using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using AuthenticationSchemes = Jellyfin.Api.Constants.AuthenticationSchemes;
-using IPNetwork = System.Net.IPNetwork;
 
 namespace Jellyfin.Server.Extensions
 {
@@ -83,6 +83,7 @@ namespace Jellyfin.Server.Extensions
                 options.AddPolicy(Policies.SyncPlayJoinGroup, new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.JoinGroup));
                 options.AddPolicy(Policies.SyncPlayIsInGroup, new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.IsInGroup));
                 options.AddPolicy(Policies.SubtitleManagement, new UserPermissionRequirement(PermissionKind.EnableSubtitleManagement));
+                options.AddPolicy(Policies.LyricManagement, new UserPermissionRequirement(PermissionKind.EnableLyricManagement));
                 options.AddPolicy(
                     Policies.RequiresElevation,
                     policy => policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication)
@@ -118,15 +119,15 @@ namespace Jellyfin.Server.Extensions
                     // https://github.com/dotnet/aspnetcore/blob/master/src/Middleware/HttpOverrides/src/ForwardedHeadersMiddleware.cs
                     // Enable debug logging on Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersMiddleware to help investigate issues.
 
-                    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
-
                     if (config.KnownProxies.Length == 0)
                     {
+                        options.ForwardedHeaders = ForwardedHeaders.None;
                         options.KnownNetworks.Clear();
                         options.KnownProxies.Clear();
                     }
                     else
                     {
+                        options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
                         AddProxyAddresses(config, config.KnownProxies, options);
                     }
 
@@ -214,7 +215,7 @@ namespace Jellyfin.Server.Extensions
                 });
 
                 // Add all xml doc files to swagger generator.
-                var xmlFiles = Directory.GetFiles(
+                var xmlFiles = Directory.EnumerateFiles(
                     AppContext.BaseDirectory,
                     "*.xml",
                     SearchOption.TopDirectoryOnly);
@@ -247,6 +248,7 @@ namespace Jellyfin.Server.Extensions
                 c.AddSwaggerTypeMappings();
 
                 c.SchemaFilter<IgnoreEnumSchemaFilter>();
+                c.OperationFilter<RetryOnTemporarlyUnavailableFilter>();
                 c.OperationFilter<SecurityRequirementsOperationFilter>();
                 c.OperationFilter<FileResponseFilter>();
                 c.OperationFilter<FileRequestFilter>();

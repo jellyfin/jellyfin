@@ -5,7 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,15 +30,8 @@ namespace Jellyfin.LiveTv.TunerHosts
 {
     public class M3UTunerHost : BaseTunerHost, ITunerHost, IConfigurableTunerHost
     {
-        private static readonly string[] _disallowedMimeTypes =
-        {
-            "video/x-matroska",
-            "video/mp4",
-            "application/vnd.apple.mpegurl",
-            "application/mpegurl",
-            "application/x-mpegurl",
-            "video/vnd.mpeg.dash.mpd"
-        };
+        private static readonly string[] _mimeTypesCanShareHttpStream = ["video/MP2T"];
+        private static readonly string[] _extensionsCanShareHttpStream = [".ts", ".tsv", ".m2t"];
 
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IServerApplicationHost _appHost;
@@ -80,22 +75,6 @@ namespace Jellyfin.LiveTv.TunerHosts
                 .ConfigureAwait(false);
         }
 
-        public Task<List<LiveTvTunerInfo>> GetTunerInfos(CancellationToken cancellationToken)
-        {
-            var list = GetTunerHosts()
-            .Select(i => new LiveTvTunerInfo()
-            {
-                Name = Name,
-                SourceType = Type,
-                Status = LiveTvTunerStatus.Available,
-                Id = i.Url.GetMD5().ToString("N", CultureInfo.InvariantCulture),
-                Url = i.Url
-            })
-            .ToList();
-
-            return Task.FromResult(list);
-        }
-
         protected override async Task<ILiveStream> GetChannelStream(TunerHostInfo tunerHost, ChannelInfo channel, string streamId, IList<ILiveStream> currentLiveStreams, CancellationToken cancellationToken)
         {
             var tunerCount = tunerHost.TunerCount;
@@ -115,16 +94,33 @@ namespace Jellyfin.LiveTv.TunerHosts
 
             var mediaSource = sources[0];
 
-            if (mediaSource.Protocol == MediaProtocol.Http && !mediaSource.RequiresLooping)
+            if (tunerHost.AllowStreamSharing && mediaSource.Protocol == MediaProtocol.Http && !mediaSource.RequiresLooping)
             {
-                using var message = new HttpRequestMessage(HttpMethod.Head, mediaSource.Path);
-                using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
-                    .SendAsync(message, cancellationToken)
-                    .ConfigureAwait(false);
+                var extension = Path.GetExtension(new UriBuilder(mediaSource.Path).Path);
 
-                response.EnsureSuccessStatusCode();
+                if (string.IsNullOrEmpty(extension))
+                {
+                    try
+                    {
+                        using var message = new HttpRequestMessage(HttpMethod.Head, mediaSource.Path);
+                        using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
+                            .SendAsync(message, cancellationToken)
+                            .ConfigureAwait(false);
 
-                if (!_disallowedMimeTypes.Contains(response.Content.Headers.ContentType?.ToString(), StringComparison.OrdinalIgnoreCase))
+                        if (response.IsSuccessStatusCode)
+                        {
+                            if (_mimeTypesCanShareHttpStream.Contains(response.Content.Headers.ContentType?.MediaType, StringComparison.OrdinalIgnoreCase))
+                            {
+                                return new SharedHttpStream(mediaSource, tunerHost, streamId, FileSystem, _httpClientFactory, Logger, Config, _appHost, _streamHelper);
+                            }
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        Logger.LogWarning("HEAD request to check MIME type failed, shared stream disabled");
+                    }
+                }
+                else if (_extensionsCanShareHttpStream.Contains(extension, StringComparison.OrdinalIgnoreCase))
                 {
                     return new SharedHttpStream(mediaSource, tunerHost, streamId, FileSystem, _httpClientFactory, Logger, Config, _appHost, _streamHelper);
                 }
@@ -166,7 +162,7 @@ namespace Jellyfin.LiveTv.TunerHosts
             {
                 // Use user-defined user-agent. If there isn't one, make it look like a browser.
                 httpHeaders[HeaderNames.UserAgent] = string.IsNullOrWhiteSpace(info.UserAgent) ?
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.85 Safari/537.36" :
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36" :
                     info.UserAgent;
             }
 
@@ -194,7 +190,7 @@ namespace Jellyfin.LiveTv.TunerHosts
                 RequiresClosing = true,
                 RequiresLooping = info.EnableStreamLooping,
 
-                ReadAtNativeFramerate = false,
+                ReadAtNativeFramerate = info.ReadAtNativeFramerate,
 
                 Id = channel.Path.GetMD5().ToString("N", CultureInfo.InvariantCulture),
                 IsInfiniteStream = true,
@@ -204,7 +200,9 @@ namespace Jellyfin.LiveTv.TunerHosts
                 SupportsDirectPlay = supportsDirectPlay,
                 SupportsDirectStream = supportsDirectStream,
 
-                RequiredHttpHeaders = httpHeaders
+                RequiredHttpHeaders = httpHeaders,
+                UseMostCompatibleTranscodingProfile = !info.AllowFmp4TranscodingContainer,
+                FallbackMaxStreamingBitrate = info.FallbackMaxStreamingBitrate
             };
 
             mediaSource.InferTotalBitrate();

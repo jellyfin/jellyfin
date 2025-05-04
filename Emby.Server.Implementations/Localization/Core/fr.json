@@ -1,6 +1,6 @@
 {
     "Albums": "Albums",
-    "AppDeviceValues": "Application : {0}, Appareil : {1}",
+    "AppDeviceValues": "Application : {0}, Appareil : {1}",
     "Application": "Application",
     "Artists": "Artistes",
     "AuthenticationSucceededWithUserName": "{0} authentifié avec succès",
@@ -15,7 +15,7 @@
     "Favorites": "Favoris",
     "Folders": "Dossiers",
     "Genres": "Genres",
-    "HeaderAlbumArtists": "Artistes de l'album",
+    "HeaderAlbumArtists": "Artistes d'albums",
     "HeaderContinueWatching": "Continuer de regarder",
     "HeaderFavoriteAlbums": "Albums favoris",
     "HeaderFavoriteArtists": "Artistes préférés",
@@ -29,7 +29,7 @@
     "Inherit": "Hériter",
     "ItemAddedWithName": "{0} a été ajouté à la médiathèque",
     "ItemRemovedWithName": "{0} a été supprimé de la médiathèque",
-    "LabelIpAddressValue": "Adresse IP : {0}",
+    "LabelIpAddressValue": "Adresse IP : {0}",
     "LabelRunningTimeValue": "Durée : {0}",
     "Latest": "Derniers",
     "MessageApplicationUpdated": "Le serveur Jellyfin a été mis à jour",
@@ -126,5 +126,15 @@
     "External": "Externe",
     "HearingImpaired": "Malentendants",
     "TaskRefreshTrickplayImages": "Générer des images Trickplay",
-    "TaskRefreshTrickplayImagesDescription": "Crée des aperçus Trickplay pour les vidéos dans les médiathèques activées."
+    "TaskRefreshTrickplayImagesDescription": "Crée des aperçus Trickplay pour les vidéos dans les médiathèques activées.",
+    "TaskCleanCollectionsAndPlaylists": "Nettoyer les collections et les listes de lecture",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Supprime les éléments des collections et des listes de lecture qui n'existent plus.",
+    "TaskAudioNormalization": "Normalisation audio",
+    "TaskAudioNormalizationDescription": "Analyse les fichiers à la recherche de données de normalisation audio.",
+    "TaskDownloadMissingLyricsDescription": "Téléchargement des paroles des chansons",
+    "TaskDownloadMissingLyrics": "Télécharger les paroles des chansons manquantes",
+    "TaskExtractMediaSegments": "Analyse des segments de média",
+    "TaskMoveTrickplayImages": "Changer l'emplacement des images Trickplay",
+    "TaskExtractMediaSegmentsDescription": "Extrait ou obtient des segments de média à partir des plugins compatibles avec MediaSegment.",
+    "TaskMoveTrickplayImagesDescription": "Déplace les fichiers trickplay existants en fonction des paramètres de la bibliothèque."
 }

@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using DotNet.Globbing;
 
 namespace Emby.Server.Implementations.Library
@@ -49,6 +48,10 @@ namespace Emby.Server.Implementations.Library
             "**/.wd_tv",
             "**/lost+found/**",
             "**/lost+found",
+
+            // Trickplay files
+            "**/*.trickplay",
+            "**/*.trickplay/**",
 
             // WMC temp recording directories that will constantly be written to
             "**/TempRec/**",
@@ -103,7 +106,7 @@ namespace Emby.Server.Implementations.Library
             }
         };
 
-        private static readonly Glob[] _globs = _patterns.Select(p => Glob.Parse(p, _globOptions)).ToArray();
+        private static readonly Glob[] _globs = Array.ConvertAll(_patterns, p => Glob.Parse(p, _globOptions));
 
         /// <summary>
         /// Returns true if the supplied path should be ignored.

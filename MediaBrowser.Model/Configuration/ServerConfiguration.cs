@@ -83,9 +83,9 @@ public class ServerConfiguration : BaseApplicationConfiguration
     public bool QuickConnectAvailable { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets a value indicating whether [enable case sensitive item ids].
+    /// Gets or sets a value indicating whether [enable case-sensitive item ids].
     /// </summary>
-    /// <value><c>true</c> if [enable case sensitive item ids]; otherwise, <c>false</c>.</value>
+    /// <value><c>true</c> if [enable case-sensitive item ids]; otherwise, <c>false</c>.</value>
     public bool EnableCaseSensitiveItemIds { get; set; } = true;
 
     public bool DisableLiveTvChannelUserDataName { get; set; } = true;
@@ -95,8 +95,6 @@ public class ServerConfiguration : BaseApplicationConfiguration
     /// </summary>
     /// <value>The metadata path.</value>
     public string MetadataPath { get; set; } = string.Empty;
-
-    public string MetadataNetworkPath { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the preferred metadata language.
@@ -163,7 +161,7 @@ public class ServerConfiguration : BaseApplicationConfiguration
     /// If set to 0 the check for inactive sessions gets disabled.
     /// </summary>
     /// <value>The close inactive session threshold in minutes. 0 to disable.</value>
-    public int InactiveSessionThreshold { get; set; } = 10;
+    public int InactiveSessionThreshold { get; set; }
 
     /// <summary>
     /// Gets or sets the delay in seconds that we will wait after a file system change to try and discover what has been added/removed
@@ -178,6 +176,11 @@ public class ServerConfiguration : BaseApplicationConfiguration
     /// </summary>
     /// <value>The library update duration.</value>
     public int LibraryUpdateDuration { get; set; } = 30;
+
+    /// <summary>
+    /// Gets or sets the maximum amount of items to cache.
+    /// </summary>
+    public int CacheSize { get; set; } = Environment.ProcessorCount * 100;
 
     /// <summary>
     /// Gets or sets the image saving convention.
@@ -201,7 +204,9 @@ public class ServerConfiguration : BaseApplicationConfiguration
 
     public bool EnableFolderView { get; set; } = false;
 
-    public bool EnableGroupingIntoCollections { get; set; } = false;
+    public bool EnableGroupingMoviesIntoCollections { get; set; } = false;
+
+    public bool EnableGroupingShowsIntoCollections { get; set; } = false;
 
     public bool DisplaySpecialsWithinSeasons { get; set; } = true;
 
@@ -246,17 +251,12 @@ public class ServerConfiguration : BaseApplicationConfiguration
     public int LibraryMetadataRefreshConcurrency { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether older plugins should automatically be deleted from the plugin folder.
-    /// </summary>
-    public bool RemoveOldPlugins { get; set; }
-
-    /// <summary>
     /// Gets or sets a value indicating whether clients should be allowed to upload logs.
     /// </summary>
     public bool AllowClientLogUpload { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets the dummy chapter duration in seconds, use 0 (zero) or less to disable generation alltogether.
+    /// Gets or sets the dummy chapter duration in seconds, use 0 (zero) or less to disable generation altogether.
     /// </summary>
     /// <value>The dummy chapters duration.</value>
     public int DummyChapterDuration { get; set; }
@@ -283,4 +283,9 @@ public class ServerConfiguration : BaseApplicationConfiguration
     /// </summary>
     /// <value>The trickplay options.</value>
     public TrickplayOptions TrickplayOptions { get; set; } = new TrickplayOptions();
+
+    /// <summary>
+    /// Gets or sets a value indicating whether old authorization methods are allowed.
+    /// </summary>
+    public bool EnableLegacyAuthorization { get; set; } = true;
 }

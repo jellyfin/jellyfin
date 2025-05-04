@@ -1,3 +1,5 @@
+#pragma warning disable CA1826 // CA1826 Do not use Enumerable methods on Indexable collections.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;

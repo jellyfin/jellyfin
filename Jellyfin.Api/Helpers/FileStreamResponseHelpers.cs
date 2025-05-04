@@ -38,7 +38,7 @@ public static class FileStreamResponseHelpers
         }
 
         // Can't dispose the response as it's required up the call chain.
-        var response = await httpClient.GetAsync(new Uri(state.MediaPath), cancellationToken).ConfigureAwait(false);
+        var response = await httpClient.GetAsync(new Uri(state.MediaPath), HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
         var contentType = response.Content.Headers.ContentType?.ToString() ?? MediaTypeNames.Text.Plain;
 
         httpContext.Response.Headers[HeaderNames.AcceptRanges] = "none";
@@ -93,9 +93,7 @@ public static class FileStreamResponseHelpers
             return new OkResult();
         }
 
-        var transcodingLock = transcodeManager.GetTranscodingLock(outputPath);
-        await transcodingLock.WaitAsync(cancellationTokenSource.Token).ConfigureAwait(false);
-        try
+        using (await transcodeManager.LockAsync(outputPath, cancellationTokenSource.Token).ConfigureAwait(false))
         {
             TranscodingJob? job;
             if (!File.Exists(outputPath))
@@ -116,10 +114,6 @@ public static class FileStreamResponseHelpers
 
             var stream = new ProgressiveFileStream(outputPath, job, transcodeManager);
             return new FileStreamResult(stream, contentType);
-        }
-        finally
-        {
-            transcodingLock.Release();
         }
     }
 }

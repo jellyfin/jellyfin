@@ -13,6 +13,7 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Class Studio.
     /// </summary>
+    [Common.RequiresSourceSerialisation]
     public class Studio : BaseItem, IItemByName
     {
         /// <summary>
@@ -63,7 +64,7 @@ namespace MediaBrowser.Controller.Entities
             return true;
         }
 
-        public IList<BaseItem> GetTaggedItems(InternalItemsQuery query)
+        public IReadOnlyList<BaseItem> GetTaggedItems(InternalItemsQuery query)
         {
             query.StudioIds = new[] { Id };
 

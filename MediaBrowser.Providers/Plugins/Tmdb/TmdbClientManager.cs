@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
@@ -591,6 +591,15 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             {
                 var image = images[i];
 
+                var imageType = type;
+                var language = TmdbUtils.AdjustImageLanguage(image.Iso_639_1, requestLanguage);
+
+                // Return Backdrops with a language specified (it has text) as Thumb.
+                if (imageType == ImageType.Backdrop && !string.IsNullOrEmpty(language))
+                {
+                    imageType = ImageType.Thumb;
+                }
+
                 yield return new RemoteImageInfo
                 {
                     Url = GetUrl(size, image.FilePath),
@@ -598,9 +607,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                     VoteCount = image.VoteCount,
                     Width = scaleImage ? null : image.Width,
                     Height = scaleImage ? null : image.Height,
-                    Language = TmdbUtils.AdjustImageLanguage(image.Iso_639_1, requestLanguage),
+                    Language = language,
                     ProviderName = TmdbUtils.ProviderName,
-                    Type = type,
+                    Type = imageType,
                     RatingType = RatingType.Score
                 };
             }

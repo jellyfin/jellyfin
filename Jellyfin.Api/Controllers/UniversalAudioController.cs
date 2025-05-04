@@ -8,12 +8,16 @@ using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.StreamingDtos;
+using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -32,6 +36,7 @@ public class UniversalAudioController : BaseJellyfinApiController
     private readonly MediaInfoHelper _mediaInfoHelper;
     private readonly AudioHelper _audioHelper;
     private readonly DynamicHlsHelper _dynamicHlsHelper;
+    private readonly IUserManager _userManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UniversalAudioController"/> class.
@@ -41,18 +46,21 @@ public class UniversalAudioController : BaseJellyfinApiController
     /// <param name="mediaInfoHelper">Instance of <see cref="MediaInfoHelper"/>.</param>
     /// <param name="audioHelper">Instance of <see cref="AudioHelper"/>.</param>
     /// <param name="dynamicHlsHelper">Instance of <see cref="DynamicHlsHelper"/>.</param>
+    /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
     public UniversalAudioController(
         ILibraryManager libraryManager,
         ILogger<UniversalAudioController> logger,
         MediaInfoHelper mediaInfoHelper,
         AudioHelper audioHelper,
-        DynamicHlsHelper dynamicHlsHelper)
+        DynamicHlsHelper dynamicHlsHelper,
+        IUserManager userManager)
     {
         _libraryManager = libraryManager;
         _logger = logger;
         _mediaInfoHelper = mediaInfoHelper;
         _audioHelper = audioHelper;
         _dynamicHlsHelper = dynamicHlsHelper;
+        _userManager = userManager;
     }
 
     /// <summary>
@@ -74,53 +82,66 @@ public class UniversalAudioController : BaseJellyfinApiController
     /// <param name="maxAudioSampleRate">Optional. The maximum audio sample rate.</param>
     /// <param name="maxAudioBitDepth">Optional. The maximum audio bit depth.</param>
     /// <param name="enableRemoteMedia">Optional. Whether to enable remote media.</param>
+    /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
     /// <param name="breakOnNonKeyFrames">Optional. Whether to break on non key frames.</param>
     /// <param name="enableRedirection">Whether to enable redirection. Defaults to true.</param>
     /// <response code="200">Audio stream returned.</response>
     /// <response code="302">Redirected to remote audio stream.</response>
+    /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="Task"/> containing the audio file.</returns>
     [HttpGet("Audio/{itemId}/universal")]
     [HttpHead("Audio/{itemId}/universal", Name = "HeadUniversalAudioStream")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status302Found)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesAudioFile]
     public async Task<ActionResult> GetUniversalAudioStream(
         [FromRoute, Required] Guid itemId,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] container,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] container,
         [FromQuery] string? mediaSourceId,
         [FromQuery] string? deviceId,
         [FromQuery] Guid? userId,
-        [FromQuery] string? audioCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? audioCodec,
         [FromQuery] int? maxAudioChannels,
         [FromQuery] int? transcodingAudioChannels,
         [FromQuery] int? maxStreamingBitrate,
         [FromQuery] int? audioBitRate,
         [FromQuery] long? startTimeTicks,
-        [FromQuery] string? transcodingContainer,
-        [FromQuery] string? transcodingProtocol,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? transcodingContainer,
+        [FromQuery] MediaStreamProtocol? transcodingProtocol,
         [FromQuery] int? maxAudioSampleRate,
         [FromQuery] int? maxAudioBitDepth,
         [FromQuery] bool? enableRemoteMedia,
+        [FromQuery] bool enableAudioVbrEncoding = true,
         [FromQuery] bool breakOnNonKeyFrames = false,
         [FromQuery] bool enableRedirection = true)
     {
-        var deviceProfile = GetDeviceProfile(container, transcodingContainer, audioCodec, transcodingProtocol, breakOnNonKeyFrames, transcodingAudioChannels, maxAudioSampleRate, maxAudioBitDepth, maxAudioChannels);
         userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.IsNullOrEmpty()
+            ? null
+            : _userManager.GetUserById(userId.Value);
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, user);
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        var deviceProfile = GetDeviceProfile(container, transcodingContainer, audioCodec, transcodingProtocol, breakOnNonKeyFrames, transcodingAudioChannels, maxAudioSampleRate, maxAudioBitDepth, maxAudioChannels);
 
         _logger.LogInformation("GetPostedPlaybackInfo profile: {@Profile}", deviceProfile);
 
         var info = await _mediaInfoHelper.GetPlaybackInfo(
-                itemId,
-                userId,
+                item,
+                user,
                 mediaSourceId)
             .ConfigureAwait(false);
 
         // set device specific data
-        var item = _libraryManager.GetItemById(itemId);
-
         foreach (var sourceInfo in info.MediaSources)
         {
+            sourceInfo.TranscodingContainer = transcodingContainer;
+            sourceInfo.TranscodingSubProtocol = transcodingProtocol ?? sourceInfo.TranscodingSubProtocol;
             _mediaInfoHelper.SetDeviceSpecificData(
                 item,
                 sourceInfo,
@@ -139,6 +160,7 @@ public class UniversalAudioController : BaseJellyfinApiController
                 true,
                 true,
                 true,
+                false,
                 Request.HttpContext.GetNormalizedRemoteIP());
         }
 
@@ -155,27 +177,34 @@ public class UniversalAudioController : BaseJellyfinApiController
             return Redirect(mediaSource.Path);
         }
 
+        // This one is currently very misleading as the SupportsDirectStream actually means "can direct play"
+        // The definition of DirectStream also seems changed during development
         var isStatic = mediaSource.SupportsDirectStream;
-        if (!isStatic && string.Equals(mediaSource.TranscodingSubProtocol, "hls", StringComparison.OrdinalIgnoreCase))
+        if (!isStatic && mediaSource.TranscodingSubProtocol == MediaStreamProtocol.hls)
         {
             // hls segment container can only be mpegts or fmp4 per ffmpeg documentation
             // ffmpeg option -> file extension
             //        mpegts -> ts
             //          fmp4 -> mp4
-            // TODO: remove this when we switch back to the segment muxer
             var supportedHlsContainers = new[] { "ts", "mp4" };
 
+            // fallback to mpegts if device reports some weird value unsupported by hls
+            var requestedSegmentContainer = Array.Exists(
+                supportedHlsContainers,
+                element => string.Equals(element, transcodingContainer, StringComparison.OrdinalIgnoreCase)) ? transcodingContainer : "ts";
+            var segmentContainer = Array.Exists(
+                supportedHlsContainers,
+                element => string.Equals(element, mediaSource.TranscodingContainer, StringComparison.OrdinalIgnoreCase)) ? mediaSource.TranscodingContainer : requestedSegmentContainer;
             var dynamicHlsRequestDto = new HlsAudioRequestDto
             {
                 Id = itemId,
                 Container = ".m3u8",
                 Static = isStatic,
                 PlaySessionId = info.PlaySessionId,
-                // fallback to mpegts if device reports some weird value unsupported by hls
-                SegmentContainer = Array.Exists(supportedHlsContainers, element => element == transcodingContainer) ? transcodingContainer : "ts",
+                SegmentContainer = segmentContainer,
                 MediaSourceId = mediaSourceId,
                 DeviceId = deviceId,
-                AudioCodec = audioCodec,
+                AudioCodec = mediaSource.TranscodeReasons == TranscodeReason.ContainerNotSupported ? "copy" : audioCodec,
                 EnableAutoStreamCopy = true,
                 AllowAudioStreamCopy = true,
                 AllowVideoStreamCopy = true,
@@ -193,7 +222,8 @@ public class UniversalAudioController : BaseJellyfinApiController
                 TranscodeReasons = mediaSource.TranscodeReasons == 0 ? null : mediaSource.TranscodeReasons.ToString(),
                 Context = EncodingContext.Static,
                 StreamOptions = new Dictionary<string, string>(),
-                EnableAdaptiveBitrateStreaming = true
+                EnableAdaptiveBitrateStreaming = false,
+                EnableAudioVbrEncoding = enableAudioVbrEncoding
             };
 
             return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType.Hls, dynamicHlsRequestDto, true)
@@ -232,7 +262,7 @@ public class UniversalAudioController : BaseJellyfinApiController
         string[] containers,
         string? transcodingContainer,
         string? audioCodec,
-        string? transcodingProtocol,
+        MediaStreamProtocol? transcodingProtocol,
         bool? breakOnNonKeyFrames,
         int? transcodingAudioChannels,
         int? maxAudioSampleRate,
@@ -267,7 +297,7 @@ public class UniversalAudioController : BaseJellyfinApiController
                 Context = EncodingContext.Streaming,
                 Container = transcodingContainer ?? "mp3",
                 AudioCodec = audioCodec ?? "mp3",
-                Protocol = transcodingProtocol ?? "http",
+                Protocol = transcodingProtocol ?? MediaStreamProtocol.http,
                 BreakOnNonKeyFrames = breakOnNonKeyFrames ?? false,
                 MaxAudioChannels = transcodingAudioChannels?.ToString(CultureInfo.InvariantCulture)
             }

@@ -27,8 +27,9 @@ namespace Emby.Naming.Video
         /// <param name="namingOptions">The naming options.</param>
         /// <param name="supportMultiVersion">Indication we should consider multi-versions of content.</param>
         /// <param name="parseName">Whether to parse the name or use the filename.</param>
+        /// <param name="libraryRoot">Top-level folder for the containing library.</param>
         /// <returns>Returns enumerable of <see cref="VideoInfo"/> which groups files together when related.</returns>
-        public static IReadOnlyList<VideoInfo> Resolve(IReadOnlyList<VideoFileInfo> videoInfos, NamingOptions namingOptions, bool supportMultiVersion = true, bool parseName = true)
+        public static IReadOnlyList<VideoInfo> Resolve(IReadOnlyList<VideoFileInfo> videoInfos, NamingOptions namingOptions, bool supportMultiVersion = true, bool parseName = true, string? libraryRoot = "")
         {
             // Filter out all extras, otherwise they could cause stacks to not be resolved
             // See the unit test TestStackedWithTrailer
@@ -65,7 +66,7 @@ namespace Emby.Naming.Video
             {
                 var info = new VideoInfo(stack.Name)
                 {
-                    Files = stack.Files.Select(i => VideoResolver.Resolve(i, stack.IsDirectoryStack, namingOptions, parseName))
+                    Files = stack.Files.Select(i => VideoResolver.Resolve(i, stack.IsDirectoryStack, namingOptions, parseName, libraryRoot))
                         .OfType<VideoFileInfo>()
                         .ToList()
                 };
@@ -141,7 +142,9 @@ namespace Emby.Naming.Video
                 {
                     if (group.Key)
                     {
-                        videos.InsertRange(0, group.OrderByDescending(x => x.Files[0].FileNameWithoutExtension.ToString(), new AlphanumericComparator()));
+                        videos.InsertRange(0, group
+                            .OrderByDescending(x => ResolutionRegex().Match(x.Files[0].FileNameWithoutExtension.ToString()).Value, new AlphanumericComparator())
+                            .ThenBy(x => x.Files[0].FileNameWithoutExtension.ToString(), new AlphanumericComparator()));
                     }
                     else
                     {

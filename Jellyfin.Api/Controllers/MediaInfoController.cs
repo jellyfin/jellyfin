@@ -8,8 +8,10 @@ using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.MediaInfoDtos;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Devices;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.AspNetCore.Authorization;
@@ -32,6 +34,7 @@ public class MediaInfoController : BaseJellyfinApiController
     private readonly ILibraryManager _libraryManager;
     private readonly ILogger<MediaInfoController> _logger;
     private readonly MediaInfoHelper _mediaInfoHelper;
+    private readonly IUserManager _userManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MediaInfoController"/> class.
@@ -41,18 +44,21 @@ public class MediaInfoController : BaseJellyfinApiController
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger{MediaInfoController}"/> interface.</param>
     /// <param name="mediaInfoHelper">Instance of the <see cref="MediaInfoHelper"/>.</param>
+    /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface..</param>
     public MediaInfoController(
         IMediaSourceManager mediaSourceManager,
         IDeviceManager deviceManager,
         ILibraryManager libraryManager,
         ILogger<MediaInfoController> logger,
-        MediaInfoHelper mediaInfoHelper)
+        MediaInfoHelper mediaInfoHelper,
+        IUserManager userManager)
     {
         _mediaSourceManager = mediaSourceManager;
         _deviceManager = deviceManager;
         _libraryManager = libraryManager;
         _logger = logger;
         _mediaInfoHelper = mediaInfoHelper;
+        _userManager = userManager;
     }
 
     /// <summary>
@@ -61,15 +67,24 @@ public class MediaInfoController : BaseJellyfinApiController
     /// <param name="itemId">The item id.</param>
     /// <param name="userId">The user id.</param>
     /// <response code="200">Playback info returned.</response>
+    /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="Task"/> containing a <see cref="PlaybackInfoResponse"/> with the playback information.</returns>
     [HttpGet("Items/{itemId}/PlaybackInfo")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<PlaybackInfoResponse>> GetPlaybackInfo([FromRoute, Required] Guid itemId, [FromQuery, Required] Guid userId)
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<PlaybackInfoResponse>> GetPlaybackInfo([FromRoute, Required] Guid itemId, [FromQuery] Guid? userId)
     {
-        return await _mediaInfoHelper.GetPlaybackInfo(
-                itemId,
-                userId)
-            .ConfigureAwait(false);
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.IsNullOrEmpty()
+            ? null
+            : _userManager.GetUserById(userId.Value);
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, user);
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        return await _mediaInfoHelper.GetPlaybackInfo(item, user).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -96,9 +111,11 @@ public class MediaInfoController : BaseJellyfinApiController
     /// <param name="allowAudioStreamCopy">Whether to allow to copy the audio stream. Default: true.</param>
     /// <param name="playbackInfoDto">The playback info.</param>
     /// <response code="200">Playback info returned.</response>
+    /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="Task"/> containing a <see cref="PlaybackInfoResponse"/> with the playback info.</returns>
     [HttpPost("Items/{itemId}/PlaybackInfo")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<PlaybackInfoResponse>> GetPostedPlaybackInfo(
         [FromRoute, Required] Guid itemId,
         [FromQuery, ParameterObsolete] Guid? userId,
@@ -147,9 +164,19 @@ public class MediaInfoController : BaseJellyfinApiController
         allowVideoStreamCopy ??= playbackInfoDto?.AllowVideoStreamCopy ?? true;
         allowAudioStreamCopy ??= playbackInfoDto?.AllowAudioStreamCopy ?? true;
 
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.IsNullOrEmpty()
+            ? null
+            : _userManager.GetUserById(userId.Value);
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, user);
+        if (item is null)
+        {
+            return NotFound();
+        }
+
         var info = await _mediaInfoHelper.GetPlaybackInfo(
-                itemId,
-                userId,
+                item,
+                user,
                 mediaSourceId,
                 liveStreamId)
             .ConfigureAwait(false);
@@ -162,8 +189,6 @@ public class MediaInfoController : BaseJellyfinApiController
         if (profile is not null)
         {
             // set device specific data
-            var item = _libraryManager.GetItemById(itemId);
-
             foreach (var mediaSource in info.MediaSources)
             {
                 _mediaInfoHelper.SetDeviceSpecificData(
@@ -184,6 +209,7 @@ public class MediaInfoController : BaseJellyfinApiController
                     enableTranscoding.Value,
                     allowVideoStreamCopy.Value,
                     allowAudioStreamCopy.Value,
+                    playbackInfoDto?.AlwaysBurnInSubtitleWhenTranscoding ?? false,
                     Request.HttpContext.GetNormalizedRemoteIP());
             }
 
@@ -211,7 +237,8 @@ public class MediaInfoController : BaseJellyfinApiController
                         StartTimeTicks = startTimeTicks,
                         SubtitleStreamIndex = subtitleStreamIndex,
                         UserId = userId ?? Guid.Empty,
-                        OpenToken = mediaSource.OpenToken
+                        OpenToken = mediaSource.OpenToken,
+                        AlwaysBurnInSubtitleWhenTranscoding = playbackInfoDto?.AlwaysBurnInSubtitleWhenTranscoding ?? false
                     }).ConfigureAwait(false);
 
                 info.MediaSources = new[] { openStreamResult.MediaSource };
@@ -236,6 +263,7 @@ public class MediaInfoController : BaseJellyfinApiController
     /// <param name="openLiveStreamDto">The open live stream dto.</param>
     /// <param name="enableDirectPlay">Whether to enable direct play. Default: true.</param>
     /// <param name="enableDirectStream">Whether to enable direct stream. Default: true.</param>
+    /// <param name="alwaysBurnInSubtitleWhenTranscoding">Always burn-in subtitle when transcoding.</param>
     /// <response code="200">Media source opened.</response>
     /// <returns>A <see cref="Task"/> containing a <see cref="LiveStreamResponse"/>.</returns>
     [HttpPost("LiveStreams/Open")]
@@ -252,7 +280,8 @@ public class MediaInfoController : BaseJellyfinApiController
         [FromQuery] Guid? itemId,
         [FromBody] OpenLiveStreamDto? openLiveStreamDto,
         [FromQuery] bool? enableDirectPlay,
-        [FromQuery] bool? enableDirectStream)
+        [FromQuery] bool? enableDirectStream,
+        [FromQuery] bool? alwaysBurnInSubtitleWhenTranscoding)
     {
         userId ??= openLiveStreamDto?.UserId;
         userId = RequestHelpers.GetUserId(User, userId);
@@ -270,7 +299,8 @@ public class MediaInfoController : BaseJellyfinApiController
             DeviceProfile = openLiveStreamDto?.DeviceProfile,
             EnableDirectPlay = enableDirectPlay ?? openLiveStreamDto?.EnableDirectPlay ?? true,
             EnableDirectStream = enableDirectStream ?? openLiveStreamDto?.EnableDirectStream ?? true,
-            DirectPlayProtocols = openLiveStreamDto?.DirectPlayProtocols ?? new[] { MediaProtocol.Http }
+            DirectPlayProtocols = openLiveStreamDto?.DirectPlayProtocols ?? new[] { MediaProtocol.Http },
+            AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding ?? openLiveStreamDto?.AlwaysBurnInSubtitleWhenTranscoding ?? false
         };
         return await _mediaInfoHelper.OpenMediaSource(HttpContext, request).ConfigureAwait(false);
     }

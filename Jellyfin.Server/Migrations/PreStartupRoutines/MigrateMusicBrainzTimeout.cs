@@ -9,7 +9,10 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.Server.Migrations.PreStartupRoutines;
 
 /// <inheritdoc />
+[JellyfinMigration("2025-04-20T02:00:00", nameof(MigrateMusicBrainzTimeout), "A6DCACF4-C057-4Ef9-80D3-61CEF9DDB4F0", Stage = Stages.JellyfinMigrationStageTypes.PreInitialisation)]
+#pragma warning disable CS0618 // Type or member is obsolete
 public class MigrateMusicBrainzTimeout : IMigrationRoutine
+#pragma warning restore CS0618 // Type or member is obsolete
 {
     private readonly ServerApplicationPaths _applicationPaths;
     private readonly ILogger<MigrateMusicBrainzTimeout> _logger;
@@ -26,15 +29,6 @@ public class MigrateMusicBrainzTimeout : IMigrationRoutine
     }
 
     /// <inheritdoc />
-    public Guid Id => Guid.Parse("A6DCACF4-C057-4Ef9-80D3-61CEF9DDB4F0");
-
-    /// <inheritdoc />
-    public string Name => nameof(MigrateMusicBrainzTimeout);
-
-    /// <inheritdoc />
-    public bool PerformOnNewInstall => false;
-
-    /// <inheritdoc />
     public void Perform()
     {
         string path = Path.Combine(_applicationPaths.PluginConfigurationsPath, "Jellyfin.Plugin.MusicBrainz.xml");
@@ -48,9 +42,11 @@ public class MigrateMusicBrainzTimeout : IMigrationRoutine
 
         if (oldPluginConfiguration is not null)
         {
-            var newPluginConfiguration = new PluginConfiguration();
-            newPluginConfiguration.Server = oldPluginConfiguration.Server;
-            newPluginConfiguration.ReplaceArtistName = oldPluginConfiguration.ReplaceArtistName;
+            var newPluginConfiguration = new PluginConfiguration
+            {
+                Server = oldPluginConfiguration.Server,
+                ReplaceArtistName = oldPluginConfiguration.ReplaceArtistName
+            };
             var newRateLimit = oldPluginConfiguration.RateLimit / 1000.0;
             newPluginConfiguration.RateLimit = newRateLimit < 1.0 ? 1.0 : newRateLimit;
             WriteNew(path, newPluginConfiguration);
@@ -93,6 +89,4 @@ public class MigrateMusicBrainzTimeout : IMigrationRoutine
 
         public bool ReplaceArtistName { get; set; }
     }
-#pragma warning restore
-
 }

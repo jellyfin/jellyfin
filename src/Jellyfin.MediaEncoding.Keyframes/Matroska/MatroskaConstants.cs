@@ -1,4 +1,4 @@
-﻿namespace Jellyfin.MediaEncoding.Keyframes.Matroska;
+namespace Jellyfin.MediaEncoding.Keyframes.Matroska;
 
 /// <summary>
 /// Constants for the Matroska identifiers.

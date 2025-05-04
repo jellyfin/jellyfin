@@ -1,0 +1,684 @@
+[
+    {
+        "guid": "a4df60c5-6ab4-412a-8f79-2cab93fb2bc5",
+        "name": "Anime",
+        "description": "Manage your anime in Jellyfin. This plugin supports several different metadata providers and options for organizing your collection.\n",
+        "overview": "Manage your anime from Jellyfin",
+        "owner": "jellyfin",
+        "category": "Metadata",
+        "versions": [
+            {
+                "version": "10.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.6.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/anime/anime_10.0.0.0.zip",
+                "checksum": "93e969adeba1050423fc8817ed3c36f8",
+                "timestamp": "2020-08-17T01:41:13Z"
+            },
+            {
+                "version": "9.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.6.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/anime/anime_9.0.0.0.zip",
+                "checksum": "9b1cebff835813e15f414f44b40c41c8",
+                "timestamp": "2020-07-20T01:30:16Z"
+            }
+        ]
+    },
+    {
+        "guid": "70b7b43b-471b-4159-b4be-56750c795499",
+        "name": "Auto Organize",
+        "description": "Automatically organize your media",
+        "overview": "Automatically organize your media",
+        "owner": "jellyfin",
+        "category": "General",
+        "versions": [
+            {
+                "version": "9.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.7.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/auto-organize/auto-organize_9.0.0.0.zip",
+                "checksum": "ff29ac3cbe05d208b6af94cd6d9dea39",
+                "timestamp": "2020-12-05T22:31:12Z"
+            },
+            {
+                "version": "8.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.6.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/auto-organize/auto-organize_8.0.0.0.zip",
+                "checksum": "460bbb45e556464a8476b18e41c097f5",
+                "timestamp": "2020-07-20T01:30:25Z"
+            }
+        ]
+    },
+    {
+        "guid": "9c4e63f1-031b-4f25-988b-4f7d78a8b53e",
+        "name": "Bookshelf",
+        "description": "Supports several different metadata providers and options for organizing your collection.\n",
+        "overview": "Manage your books",
+        "owner": "jellyfin",
+        "category": "Metadata",
+        "versions": [
+            {
+                "version": "5.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.7.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/bookshelf/bookshelf_5.0.0.0.zip",
+                "checksum": "2063fb8ab317b8d77b200fde41eb5e1e",
+                "timestamp": "2020-12-05T22:03:13Z"
+            },
+            {
+                "version": "4.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.6.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/bookshelf/bookshelf_4.0.0.0.zip",
+                "checksum": "fc9f76c0815d766491e5b0f30ede55ed",
+                "timestamp": "2020-07-20T01:30:33Z"
+            }
+        ]
+    },
+    {
+        "guid": "cfa0f7f4-4155-4d71-849b-d6598dc4c5bb",
+        "name": "Email",
+        "description": "Send SMTP email notifications",
+        "overview": "Send SMTP email notifications",
+        "owner": "jellyfin",
+        "category": "Notifications",
+        "versions": [
+            {
+                "version": "9.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.7.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/email/email_9.0.0.0.zip",
+                "checksum": "cfe7afc00f3fbd6d6ab8244d7ff968ce",
+                "timestamp": "2020-12-05T22:20:32Z"
+            },
+            {
+                "version": "7.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.6.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/email/email_7.0.0.0.zip",
+                "checksum": "680ca511d8ad84923cb04f024fd8eb19",
+                "timestamp": "2020-07-20T01:30:40Z"
+            }
+        ]
+    },
+    {
+        "guid": "170a157f-ac6c-437a-abdd-ca9c25cebd39",
+        "name": "Fanart",
+        "description": "Scrape poster images for movies, shows, and artists in your library.",
+        "overview": "Scrape poster images from Fanart",
+        "owner": "jellyfin",
+        "category": "Metadata",
+        "versions": [
+            {
+                "version": "6.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.7.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/fanart/fanart_6.0.0.0.zip",
+                "checksum": "ee4360bfcc8722d5a3a54cfe7eef640f",
+                "timestamp": "2020-12-05T22:25:43Z"
+            },
+            {
+                "version": "5.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.6.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/fanart/fanart_5.0.0.0.zip",
+                "checksum": "f842f7d65d23f377761c907d40b89647",
+                "timestamp": "2020-07-20T01:30:48Z"
+            }
+        ]
+    },
+    {
+        "guid": "e29621a5-fa9e-4330-982e-ef6e54c0cad2",
+        "name": "Gotify Notification",
+        "description": "You must have a Gotify server to use this plugin!\n",
+        "overview": "Sends notifications to your Gotify server",
+        "owner": "crobibero",
+        "category": "Notifications",
+        "versions": [
+            {
+                "version": "7.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.6.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/gotify-notification/gotify-notification_7.0.0.0.zip",
+                "checksum": "7c5ff9e8792c8cdee7e8a2aaeb6cc093",
+                "timestamp": "2020-07-20T01:30:56Z"
+            }
+        ]
+    },
+    {
+        "guid": "a59b5c4b-05a8-488f-bfa8-7a63fffc7639",
+        "name": "IPTV",
+        "description": "Enable IPTV support in Jellyfin",
+        "overview": "Enable IPTV support in Jellyfin",
+        "owner": "jellyfin",
+        "category": "Channel",
+        "versions": [
+            {
+                "version": "6.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.6.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/iptv/iptv_6.0.0.0.zip",
+                "checksum": "9cf103bf67a4eda7c3a42d9b235f6447",
+                "timestamp": "2020-07-20T01:31:05Z"
+            }
+        ]
+    },
+    {
+        "guid": "4682DD4C-A675-4F1B-8E7C-79ADF137A8F8",
+        "name": "ISO Mounter",
+        "description": "Mount your ISO files for Jellyfin.\n",
+        "overview": "Mount your ISO files for Jellyfin",
+        "owner": "jellyfin",
+        "category": "Metadata",
+        "versions": [
+            {
+                "version": "1.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.6.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/iso-mounter/iso-mounter_1.0.0.0.zip",
+                "checksum": "847e5bc7ac34c1bf4dc5b28173170fae",
+                "timestamp": "2020-07-20T01:31:13Z"
+            }
+        ]
+    },
+    {
+        "guid": "771e19d6-5385-4caf-b35c-28a0e865cf63",
+        "name": "Kodi Sync Queue",
+        "description": "This plugin will track all media changes while Kodi clients are offline to decrease sync times.",
+        "overview": "Sync all media changes with Kodi clients",
+        "owner": "jellyfin",
+        "category": "General",
+        "versions": [
+            {
+                "version": "6.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.7.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/kodi-sync-queue/kodi-sync-queue_6.0.0.0.zip",
+                "checksum": "787c856c0d2ad2224cdd8b3094cf0329",
+                "timestamp": "2020-12-05T22:10:37Z"
+            },
+            {
+                "version": "5.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.6.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/kodi-sync-queue/kodi-sync-queue_5.0.0.0.zip",
+                "checksum": "08285397aecd93ea64a4f15d38b1bd7b",
+                "timestamp": "2020-07-20T01:31:22Z"
+            }
+        ]
+    },
+    {
+        "guid": "958aad66-3784-4d2a-b89a-a7b6fab6e25c",
+        "name": "LDAP Authentication",
+        "description": "Authenticate your Jellyfin users against an LDAP database, and optionally create users who do not yet exist automatically.\nAllows the administrator to customize most aspects of the LDAP authentication process, including customizable search attributes, username attribute, and a search filter for administrative users (set on user creation). The user, via the \"Manual Login\" process, can enter any valid attribute value, which will be mapped back to the specified username attribute automatically as well.\n",
+        "overview": "Authenticate users against an LDAP database",
+        "owner": "jellyfin",
+        "category": "Authentication",
+        "versions": [
+            {
+                "version": "10.0.0.0",
+                "changelog": "Update for 10.7 support\n",
+                "targetAbi": "10.7.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/ldap-authentication/ldap-authentication_10.0.0.0.zip",
+                "checksum": "62e7e1cd3ffae0944c14750a3c90df4f",
+                "timestamp": "2020-12-05T19:48:10Z"
+            },
+            {
+                "version": "9.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.6.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/ldap-authentication/ldap-authentication_9.0.0.0.zip",
+                "checksum": "7f2f83587a65a43ebf168e4058421463",
+                "timestamp": "2020-07-22T15:42:57Z"
+            },
+            {
+                "version": "8.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.6.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/ldap-authentication/ldap-authentication_8.0.0.0.zip",
+                "checksum": "8af8cee62717d63577f8b1e710839415",
+                "timestamp": "2020-07-20T01:31:30Z"
+            }
+        ]
+    },
+    {
+        "guid": "9574ac10-bf23-49bc-949f-924f23cfa48f",
+        "name": "NextPVR",
+        "description": "Provides access to live TV, program guide, and recordings from NextPVR.\n",
+        "overview": "Live TV plugin for NextPVR",
+        "owner": "jellyfin",
+        "category": "LiveTV",
+        "versions": [
+            {
+                "version": "5.0.0.0",
+                "changelog": "Updated to use NextPVR API v5, no longer compatible with API v4.\n",
+                "targetAbi": "10.7.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/nextpvr/nextpvr_5.0.0.0.zip",
+                "checksum": "d70f694d14bf9462ba2b2ebe110068d3",
+                "timestamp": "2020-12-05T22:24:03Z"
+            },
+            {
+                "version": "4.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.6.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/nextpvr/nextpvr_4.0.0.0.zip",
+                "checksum": "b15949d895ac5a8c89496581db350478",
+                "timestamp": "2020-07-20T01:31:38Z"
+            }
+        ]
+    },
+    {
+        "guid": "4b9ed42f-5185-48b5-9803-6ff2989014c4",
+        "name": "Open Subtitles",
+        "description": "Download subtitles from the internet to use with your media files.",
+        "overview": "Download subtitles for your media",
+        "owner": "jellyfin",
+        "category": "Metadata",
+        "versions": [
+            {
+                "version": "10.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.7.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/open-subtitles/open-subtitles_10.0.0.0.zip",
+                "checksum": "ed99d03ec463bf15fca1256a113f57b4",
+                "timestamp": "2020-12-05T21:56:19Z"
+            },
+            {
+                "version": "9.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.6.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/open-subtitles/open-subtitles_9.0.0.0.zip",
+                "checksum": "16789b26497cea0509daf6b18c579340",
+                "timestamp": "2020-07-20T01:32:00Z"
+            }
+        ]
+    },
+    {
+        "guid": "5c534381-91a3-43cb-907a-35aa02eb9d2c",
+        "name": "Playback Reporting",
+        "description": "Collect and show user play statistics",
+        "overview": "Collect and show user play statistics",
+        "owner": "jellyfin",
+        "category": "General",
+        "versions": [
+            {
+                "version": "9.0.0.0",
+                "changelog": "Add authentication to plugin endpoints\n",
+                "targetAbi": "10.7.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/playback-reporting/playback-reporting_9.0.0.0.zip",
+                "checksum": "ca323b3dcb2cb86cc2e72a7a0f1eee22",
+                "timestamp": "2020-12-05T22:15:48Z"
+            },
+            {
+                "version": "8.0.0.0",
+                "changelog": "Add authentication to plugin endpoints\n",
+                "targetAbi": "10.6.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/playback-reporting/playback-reporting_8.0.0.0.zip",
+                "checksum": "58644c505586542ef0b8b65e2f704bd1",
+                "timestamp": "2020-11-18T03:01:51Z"
+            },
+            {
+                "version": "7.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.6.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/playback-reporting/playback-reporting_7.0.0.0.zip",
+                "checksum": "6a361ef33bca97f9155856d02ff47380",
+                "timestamp": "2020-07-20T01:32:09Z"
+            }
+        ]
+    },
+    {
+        "guid": "de228f12-e43e-4bd9-9fc0-2830819c3b92",
+        "name": "Pushbullet",
+        "description": "Get notifications via Pushbullet.\n",
+        "overview": "Pushbullet notification plugin",
+        "owner": "jellyfin",
+        "category": "Notifications",
+        "versions": [
+            {
+                "version": "6.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.7.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/pushbullet/pushbullet_6.0.0.0.zip",
+                "checksum": "248cf3d56644f1d909e75aaddbdfb3a6",
+                "timestamp": "2020-12-06T02:47:53Z"
+            },
+            {
+                "version": "5.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.6.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/pushbullet/pushbullet_5.0.0.0.zip",
+                "checksum": "dabbdd86328b2922a69dfa0c9e1c8343",
+                "timestamp": "2020-07-20T01:32:17Z"
+            }
+        ]
+    },
+    {
+        "guid": "F240D6BE-5743-441B-87F1-A70ECAC42642",
+        "name": "Pushover",
+        "description": "Send messages to a wide range of devices through Pushover.",
+        "overview": "Send notifications via Pushover",
+        "owner": "crobibero",
+        "category": "Notifications",
+        "versions": [
+            {
+                "version": "4.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.6.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/pushover/pushover_4.0.0.0.zip",
+                "checksum": "56a0da16c7e48cc184987737b7e155dd",
+                "timestamp": "2020-07-20T01:32:25Z"
+            }
+        ]
+    },
+    {
+        "guid": "d4312cd9-5c90-4f38-82e8-51da566790e8",
+        "name": "Reports",
+        "description": "Generate reports of your media library",
+        "overview": "Generate reports of your media library",
+        "owner": "jellyfin",
+        "category": "General",
+        "versions": [
+            {
+                "version": "11.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.7.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/reports/reports_11.0.0.0.zip",
+                "checksum": "d71bc6a4c008e58ee70ad44c83bfd310",
+                "timestamp": "2020-12-05T22:00:46Z"
+            },
+            {
+                "version": "10.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.6.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/reports/reports_10.0.0.0.zip",
+                "checksum": "3917e75839337475b42daf2ba0b5bd7b",
+                "timestamp": "2020-10-19T19:30:41Z"
+            },
+            {
+                "version": "9.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.6.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/reports/reports_9.0.0.0.zip",
+                "checksum": "5b5ad8d885616a21e8d1e8eecf5ea979",
+                "timestamp": "2020-10-16T23:52:37Z"
+            }
+        ]
+    },
+    {
+        "guid": "1fc322a1-af2e-49a5-b2eb-a89b4240f700",
+        "name": "ServerWMC",
+        "description": "Provides access to Live TV, Program Guide and Recordings from your Windows MediaCenter Server running ServerWMC. Requires ServerWMC to be installed and running on your Windows MediaCenter machine.\n",
+        "overview": "Jellyfin Live TV plugin for Windows MediaCenter with ServerWMC",
+        "owner": "jellyfin",
+        "category": "LiveTV",
+        "versions": [
+            {
+                "version": "6.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.7.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/serverwmc/serverwmc_6.0.0.0.zip",
+                "checksum": "3120af0cea2c1cb8b7cf578d9b4b862c",
+                "timestamp": "2020-12-05T22:28:15Z"
+            },
+            {
+                "version": "5.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.6.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/serverwmc/serverwmc_5.0.0.0.zip",
+                "checksum": "dc44b039aa1b66eaf40a44fbf02d37e2",
+                "timestamp": "2020-07-20T01:32:42Z"
+            }
+        ]
+    },
+    {
+        "guid": "94fb77c3-55ad-4c50-bf4e-4e5497467b79",
+        "name": "Slack Notifications",
+        "description": "Get notifications via Slack.\n",
+        "overview": "Get notifications via Slack",
+        "owner": "jellyfin",
+        "category": "Notifications",
+        "versions": [
+            {
+                "version": "7.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.7.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/slack-notifications/slack-notifications_7.0.0.0.zip",
+                "checksum": "1d5330a77ce7b2a9ac8e5d58088a012c",
+                "timestamp": "2020-12-05T22:40:02Z"
+            },
+            {
+                "version": "6.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.6.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/slack-notifications/slack-notifications_6.0.0.0.zip",
+                "checksum": "ede4cbe064542d1ecccc5823921bee4b",
+                "timestamp": "2020-07-20T01:32:50Z"
+            }
+        ]
+    },
+    {
+        "guid": "bc4aad2e-d3d0-4725-a5e2-fd07949e5b42",
+        "name": "TMDb Box Sets",
+        "description": "Automatically create movie box sets based on TMDb collections",
+        "overview": "Automatically create movie box sets based on TMDb collections",
+        "owner": "jellyfin",
+        "category": "Metadata",
+        "versions": [
+            {
+                "version": "7.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.7.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/tmdb-box-sets/tmdb-box-sets_7.0.0.0.zip",
+                "checksum": "1551792e6af4d36f2cead01153c73cf0",
+                "timestamp": "2020-12-05T22:07:21Z"
+            },
+            {
+                "version": "6.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.6.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/tmdb-box-sets/tmdb-box-sets_6.0.0.0.zip",
+                "checksum": "b92b68a922c5fcbb8f4d47b8601b01b6",
+                "timestamp": "2020-07-20T01:32:58Z"
+            }
+        ]
+    },
+    {
+        "guid": "4fe3201e-d6ae-4f2e-8917-e12bda571281",
+        "name": "Trakt",
+        "description": "Record your watched media with Trakt.\n",
+        "overview": "Record your watched media with Trakt",
+        "owner": "jellyfin",
+        "category": "General",
+        "versions": [
+            {
+                "version": "11.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.7.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/trakt/trakt_11.0.0.0.zip",
+                "checksum": "2257ccde1e39114644a27e0966a0bf2d",
+                "timestamp": "2020-12-05T19:56:12Z"
+            },
+            {
+                "version": "10.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.6.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/trakt/trakt_10.0.0.0.zip",
+                "checksum": "ab67e6b59ea2e7860a6a3ff7b8452759",
+                "timestamp": "2020-07-20T01:33:06Z"
+            }
+        ]
+    },
+    {
+        "guid": "3fd018e5-5e78-4e58-b280-a0c068febee0",
+        "name": "TVHeadend",
+        "description": "Manage TVHeadend from Jellyfin",
+        "overview": "Manage TVHeadend from Jellyfin",
+        "owner": "jellyfin",
+        "category": "LiveTV",
+        "versions": [
+            {
+                "version": "7.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.7.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/tvheadend/tvheadend_7.0.0.0.zip",
+                "checksum": "1abbfce737b6962f4b1b2255dc63e932",
+                "timestamp": "2021-01-05T16:20:33Z"
+            },
+            {
+                "version": "6.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.6.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/tvheadend/tvheadend_6.0.0.0.zip",
+                "checksum": "143c34fd70d7173b8912cc03ce4b517d",
+                "timestamp": "2020-07-20T01:33:15Z"
+            }
+        ]
+    },
+    {
+        "guid": "022a3003-993f-45f1-8565-87d12af2e12a",
+        "name": "InfuseSync",
+        "description": "This plugin will track all media changes while any Infuse clients are offline to decrease sync times when logging back into your server.",
+        "overview": "Blazing fast indexing for Infuse",
+        "owner": "Firecore LLC",
+        "category": "General",
+        "versions": [
+            {
+                "version": "1.2.4.0",
+                "changelog": "New Playlist support.\n",
+                "targetAbi": "10.6.0.0",
+                "sourceUrl": "https://github.com/firecore/InfuseSync/releases/download/v1.2.4/InfuseSync-jellyfin-1.2.4.zip",
+                "checksum": "7adde11b8c8404fd2923f59d98fb1a30",
+                "timestamp": "2020-10-12T08:00:00Z"
+            },
+            {
+                "version": "1.2.1.3",
+                "changelog": "changelog\n",
+                "targetAbi": "10.6.0.0",
+                "sourceUrl": "https://github.com/firecore/InfuseSync/releases/download/v1.2.3/InfuseSync-jellyfin-1.2.3.zip",
+                "checksum": "d8e2c5fe736a302097bb3bac3d04b1c4",
+                "timestamp": "2020-09-18T12:19:00Z"
+            },
+            {
+                "version": "1.2.1.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.6.0.0",
+                "sourceUrl": "https://github.com/firecore/InfuseSync/releases/download/v1.2.1/InfuseSync-jellyfin-1.2.1.zip",
+                "checksum": "1a853e926cc422f5d79d398d9ae18ee8",
+                "timestamp": "2020-08-21T10:48:00Z"
+            },
+            {
+                "version": "1.2.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.6.0.0",
+                "sourceUrl": "https://github.com/firecore/InfuseSync/releases/download/v1.2.0/InfuseSync-jellyfin-1.2.0.zip",
+                "checksum": "2d3c7859852695a7f05adc6d3fcbc783",
+                "timestamp": "2020-07-20T11:51:00Z"
+            }
+        ]
+    },
+    {
+        "guid": "8119f3c6-cfc2-4d9c-a0ba-028f1d93e526",
+        "name": "Cover Art Archive",
+        "description": "This plugin provides images from the Cover Art Archive https://musicbrainz.org/doc/Cover_Art_Archive and depends on the MusicBrainz metadata provider to know what images belong where\n",
+        "overview": "MusicBrainz Cover Art Archive",
+        "owner": "jellyfin",
+        "category": "Metadata",
+        "versions": [
+            {
+                "version": "2.0.0.0",
+                "changelog": "changelog\n",
+                "targetAbi": "10.7.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/cover-art-archive/cover-art-archive_2.0.0.0.zip",
+                "checksum": "bea8fa4a37b3e7ed74e22266e7597a68",
+                "timestamp": "2020-12-06T02:51:03Z"
+            },
+            {
+                "version": "1.0.0.3",
+                "changelog": "changelog\n",
+                "targetAbi": "10.6.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/cover-art-archive/cover-art-archive_1.0.0.3.zip",
+                "checksum": "c502a5c54b168810614c1c40709b9598",
+                "timestamp": "2020-08-06T21:21:22Z"
+            }
+        ]
+    },
+    {
+        "guid": "A4A488D0-17A3-4919-8D82-7F3DE4F6B209",
+        "name": "TV Maze",
+        "description": "Get TV metadata from TV Maze\n",
+        "overview": "Get TV metadata from TV Maze",
+        "owner": "jellyfin",
+        "category": "Metadata",
+        "versions": [
+            {
+                "version": "5.0.0.0",
+                "changelog": "Get additional image types\n",
+                "targetAbi": "10.7.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/tv-maze/tv-maze_5.0.0.0.zip",
+                "checksum": "509a85e40b1d1ac36eef45673deaf606",
+                "timestamp": "2020-12-06T02:51:56Z"
+            },
+            {
+                "version": "4.0.0.0",
+                "changelog": "Get additional image types\n",
+                "targetAbi": "10.6.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/tv-maze/tv-maze_4.0.0.0.zip",
+                "checksum": "58ee9ab3f129151bdfff033ad889ad87",
+                "timestamp": "2020-11-24T14:44:37Z"
+            },
+            {
+                "version": "3.0.0.0",
+                "changelog": "Remove unused dependencies \n",
+                "targetAbi": "10.6.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/tv-maze/tv-maze_3.0.0.0.zip",
+                "checksum": "f3b2c70b3e136fb15c917e4420f4fdec",
+                "timestamp": "2020-11-09T14:32:56Z"
+            },
+            {
+                "version": "2.0.0.0",
+                "changelog": "Remove unused dependencies \n",
+                "targetAbi": "10.6.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/tv-maze/tv-maze_2.0.0.0.zip",
+                "checksum": "c7662ae8ae52ce8a4e8d685d55f36e80",
+                "timestamp": "2020-11-09T02:33:11Z"
+            },
+            {
+                "version": "1.0.0.0",
+                "changelog": "Initial release.\n",
+                "targetAbi": "10.6.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/tv-maze/tv-maze_1.0.0.0.zip",
+                "checksum": "c90eee48c12f2c07880b4b28e507fd14",
+                "timestamp": "2020-11-08T19:05:32Z"
+            }
+        ]
+    },
+    {
+        "guid": "a677c0da-fac5-4cde-941a-7134223f14c8",
+        "name": "TheTVDB",
+        "description": "Get TV metadata from TheTvdb\n",
+        "overview": "Get TV metadata from TheTvdb",
+        "owner": "jellyfin",
+        "category": "Metadata",
+        "versions": [
+            {
+                "version": "2.0.0.0",
+                "changelog": "Remove from Jellyfin core.\n",
+                "targetAbi": "10.7.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/thetvdb/thetvdb_2.0.0.0.zip",
+                "checksum": "e46cee334476a1b475e5c553171c4cb6",
+                "timestamp": "2020-12-16T20:03:28Z"
+            },
+            {
+                "version": "1.0.0.0",
+                "changelog": "Remove from Jellyfin core.\n",
+                "targetAbi": "10.7.0.0",
+                "sourceUrl": "https://repo.jellyfin.org/releases/plugin/thetvdb/thetvdb_1.0.0.0.zip",
+                "checksum": "5a3dca5c0db4824d83bfd4e7e2b7bf11",
+                "timestamp": "2020-12-06T02:56:40Z"
+            }
+        ]
+    }
+]

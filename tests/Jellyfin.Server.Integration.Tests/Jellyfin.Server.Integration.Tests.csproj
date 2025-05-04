@@ -18,6 +18,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="Test Data\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <!-- Don't run tests in parallel -->
     <None Update="xunit.runner.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

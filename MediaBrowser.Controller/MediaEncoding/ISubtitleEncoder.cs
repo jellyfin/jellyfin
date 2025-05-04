@@ -44,5 +44,14 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>System.String.</returns>
         Task<string> GetSubtitleFileCharacterSet(MediaStream subtitleStream, string language, MediaSourceInfo mediaSource, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the path to a subtitle file.
+        /// </summary>
+        /// <param name="subtitleStream">The subtitle stream.</param>
+        /// <param name="mediaSource">The media source.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>System.String.</returns>
+        Task<string> GetSubtitleFilePath(MediaStream subtitleStream, MediaSourceInfo mediaSource, CancellationToken cancellationToken);
     }
 }

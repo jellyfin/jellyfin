@@ -125,5 +125,15 @@
     "External": "外部",
     "HearingImpaired": "聴覚障害の方",
     "TaskRefreshTrickplayImages": "トリックプレー画像を生成",
-    "TaskRefreshTrickplayImagesDescription": "有効なライブラリ内のビデオをもとにトリックプレーのプレビューを生成します。"
+    "TaskRefreshTrickplayImagesDescription": "有効なライブラリ内のビデオをもとにトリックプレーのプレビューを生成します。",
+    "TaskCleanCollectionsAndPlaylists": "コレクションとプレイリストをクリーンアップ",
+    "TaskAudioNormalization": "音声の正規化",
+    "TaskAudioNormalizationDescription": "音声の正規化データのためにファイルをスキャンします。",
+    "TaskCleanCollectionsAndPlaylistsDescription": "在しなくなったコレクションやプレイリストからアイテムを削除します。",
+    "TaskDownloadMissingLyricsDescription": "歌詞をダウンロード",
+    "TaskExtractMediaSegments": "メディアセグメントを読み取る",
+    "TaskMoveTrickplayImages": "Trickplayの画像を移動",
+    "TaskMoveTrickplayImagesDescription": "ライブラリ設定によりTrickplayのファイルを移動。",
+    "TaskDownloadMissingLyrics": "失われた歌詞をダウンロード",
+    "TaskExtractMediaSegmentsDescription": "MediaSegment 対応プラグインからメディア セグメントを抽出または取得します。"
 }

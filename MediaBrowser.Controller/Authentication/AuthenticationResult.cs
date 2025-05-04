@@ -1,20 +1,31 @@
 #nullable disable
 
-#pragma warning disable CS1591
-
-using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
 
-namespace MediaBrowser.Controller.Authentication
+namespace MediaBrowser.Controller.Authentication;
+
+/// <summary>
+/// A class representing an authentication result.
+/// </summary>
+public class AuthenticationResult
 {
-    public class AuthenticationResult
-    {
-        public UserDto User { get; set; }
+    /// <summary>
+    /// Gets or sets the user.
+    /// </summary>
+    public UserDto User { get; set; }
 
-        public SessionInfo SessionInfo { get; set; }
+    /// <summary>
+    /// Gets or sets the session info.
+    /// </summary>
+    public SessionInfoDto SessionInfo { get; set; }
 
-        public string AccessToken { get; set; }
+    /// <summary>
+    /// Gets or sets the access token.
+    /// </summary>
+    public string AccessToken { get; set; }
 
-        public string ServerId { get; set; }
-    }
+    /// <summary>
+    /// Gets or sets the server id.
+    /// </summary>
+    public string ServerId { get; set; }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -7,8 +7,11 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Extensions;
-using Jellyfin.Data.Entities;
+using Jellyfin.Data;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -23,6 +26,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Api.Helpers;
@@ -75,21 +79,17 @@ public class MediaInfoHelper
     /// <summary>
     /// Get playback info.
     /// </summary>
-    /// <param name="id">Item id.</param>
-    /// <param name="userId">User Id.</param>
+    /// <param name="item">The item.</param>
+    /// <param name="user">The user.</param>
     /// <param name="mediaSourceId">Media source id.</param>
     /// <param name="liveStreamId">Live stream id.</param>
     /// <returns>A <see cref="Task"/> containing the <see cref="PlaybackInfoResponse"/>.</returns>
     public async Task<PlaybackInfoResponse> GetPlaybackInfo(
-        Guid id,
-        Guid? userId,
+        BaseItem item,
+        User? user,
         string? mediaSourceId = null,
         string? liveStreamId = null)
     {
-        var user = userId is null || userId.Value.Equals(default)
-            ? null
-            : _userManager.GetUserById(userId.Value);
-        var item = _libraryManager.GetItemById(id);
         var result = new PlaybackInfoResponse();
 
         MediaSourceInfo[] mediaSources;
@@ -129,6 +129,13 @@ public class MediaInfoHelper
             var mediaSourcesClone = JsonSerializer.Deserialize<MediaSourceInfo[]>(JsonSerializer.SerializeToUtf8Bytes(mediaSources));
             if (mediaSourcesClone is not null)
             {
+                // Carry over the default audio index source.
+                // This field is not intended to be exposed to API clients, but it is used internally by the server
+                for (int i = 0; i < mediaSourcesClone.Length && i < mediaSources.Length; i++)
+                {
+                    mediaSourcesClone[i].DefaultAudioIndexSource = mediaSources[i].DefaultAudioIndexSource;
+                }
+
                 result.MediaSources = mediaSourcesClone;
             }
 
@@ -158,6 +165,7 @@ public class MediaInfoHelper
     /// <param name="enableTranscoding">Enable transcoding.</param>
     /// <param name="allowVideoStreamCopy">Allow video stream copy.</param>
     /// <param name="allowAudioStreamCopy">Allow audio stream copy.</param>
+    /// <param name="alwaysBurnInSubtitleWhenTranscoding">Always burn-in subtitle when transcoding.</param>
     /// <param name="ipAddress">Requesting IP address.</param>
     public void SetDeviceSpecificData(
         BaseItem item,
@@ -177,6 +185,7 @@ public class MediaInfoHelper
         bool enableTranscoding,
         bool allowVideoStreamCopy,
         bool allowAudioStreamCopy,
+        bool alwaysBurnInSubtitleWhenTranscoding,
         IPAddress ipAddress)
     {
         var streamBuilder = new StreamBuilder(_mediaEncoder, _logger);
@@ -190,7 +199,8 @@ public class MediaInfoHelper
             Profile = profile,
             MaxAudioChannels = maxAudioChannels,
             AllowAudioStreamCopy = allowAudioStreamCopy,
-            AllowVideoStreamCopy = allowVideoStreamCopy
+            AllowVideoStreamCopy = allowVideoStreamCopy,
+            AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding,
         };
 
         if (string.Equals(mediaSourceId, mediaSource.Id, StringComparison.OrdinalIgnoreCase))
@@ -287,18 +297,20 @@ public class MediaInfoHelper
                 mediaSource.SupportsDirectPlay = false;
                 mediaSource.SupportsDirectStream = false;
 
-                mediaSource.TranscodingUrl = streamInfo.ToUrl("-", claimsPrincipal.GetToken()).TrimStart('-');
-                mediaSource.TranscodingUrl += "&allowVideoStreamCopy=false";
-                mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
+                mediaSource.TranscodingUrl = streamInfo.ToUrl(null, claimsPrincipal.GetToken(), "&allowVideoStreamCopy=false&allowAudioStreamCopy=false");
                 mediaSource.TranscodingContainer = streamInfo.Container;
                 mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
+                if (streamInfo.AlwaysBurnInSubtitleWhenTranscoding)
+                {
+                    mediaSource.TranscodingUrl += "&alwaysBurnInSubtitleWhenTranscoding=true";
+                }
             }
             else
             {
                 if (!mediaSource.SupportsDirectPlay && (mediaSource.SupportsTranscoding || mediaSource.SupportsDirectStream))
                 {
                     streamInfo.PlayMethod = PlayMethod.Transcode;
-                    mediaSource.TranscodingUrl = streamInfo.ToUrl("-", claimsPrincipal.GetToken()).TrimStart('-');
+                    mediaSource.TranscodingUrl = streamInfo.ToUrl(null, claimsPrincipal.GetToken(), null);
 
                     if (!allowVideoStreamCopy)
                     {
@@ -308,6 +320,11 @@ public class MediaInfoHelper
                     if (!allowAudioStreamCopy)
                     {
                         mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
+                    }
+
+                    if (streamInfo.AlwaysBurnInSubtitleWhenTranscoding)
+                    {
+                        mediaSource.TranscodingUrl += "&alwaysBurnInSubtitleWhenTranscoding=true";
                     }
                 }
             }
@@ -401,7 +418,8 @@ public class MediaInfoHelper
 
         if (profile is not null)
         {
-            var item = _libraryManager.GetItemById(request.ItemId);
+            var item = _libraryManager.GetItemById<BaseItem>(request.ItemId)
+                ?? throw new ResourceNotFoundException();
 
             SetDeviceSpecificData(
                 item,
@@ -421,6 +439,7 @@ public class MediaInfoHelper
                 true,
                 true,
                 true,
+                request.AlwaysBurnInSubtitleWhenTranscoding,
                 httpContext.GetNormalizedRemoteIP());
         }
         else

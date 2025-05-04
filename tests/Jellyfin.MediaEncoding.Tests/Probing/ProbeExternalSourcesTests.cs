@@ -35,7 +35,7 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
                     Protocol = MediaProtocol.Http,
                     RequiredHttpHeaders = new Dictionary<string, string>()
                     {
-                        { "user_agent", userAgent },
+                        { "User-Agent", userAgent },
                     }
                 },
                 ExtractChapters = false,
@@ -44,7 +44,7 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
 
             var extraArg = encoder.GetExtraArguments(req);
 
-            Assert.Contains(userAgent, extraArg, StringComparison.InvariantCulture);
+            Assert.Contains($"-user_agent \"{userAgent}\"", extraArg, StringComparison.InvariantCulture);
         }
     }
 }

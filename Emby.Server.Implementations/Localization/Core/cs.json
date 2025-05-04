@@ -22,7 +22,7 @@
     "HeaderFavoriteEpisodes": "Oblíbené epizody",
     "HeaderFavoriteShows": "Oblíbené seriály",
     "HeaderFavoriteSongs": "Oblíbená hudba",
-    "HeaderLiveTV": "Živý přenos",
+    "HeaderLiveTV": "TV vysílání",
     "HeaderNextUp": "Další díly",
     "HeaderRecordingGroups": "Skupiny nahrávek",
     "HomeVideos": "Domácí videa",
@@ -126,5 +126,15 @@
     "External": "Externí",
     "HearingImpaired": "Sluchově postižení",
     "TaskRefreshTrickplayImages": "Generovat obrázky pro Trickplay",
-    "TaskRefreshTrickplayImagesDescription": "Obrázky Trickplay se používají k zobrazení náhledů u videí v knihovnách, kde je to povoleno."
+    "TaskRefreshTrickplayImagesDescription": "Obrázky Trickplay se používají k zobrazení náhledů u videí v knihovnách, kde je to povoleno.",
+    "TaskCleanCollectionsAndPlaylists": "Pročistit kolekce a seznamy přehrávání",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Odstraní neexistující položky z kolekcí a seznamů přehrávání.",
+    "TaskAudioNormalization": "Normalizace zvuku",
+    "TaskAudioNormalizationDescription": "Skenovat soubory za účelem normalizace zvuku.",
+    "TaskDownloadMissingLyrics": "Stáhnout chybějící texty k písni",
+    "TaskDownloadMissingLyricsDescription": "Stáhne texty k písni",
+    "TaskExtractMediaSegments": "Skenování segmentů médií",
+    "TaskExtractMediaSegmentsDescription": "Extrahuje či získá segmenty médií pomocí zásuvných modulů MediaSegment.",
+    "TaskMoveTrickplayImages": "Přesunout úložiště obrázků Trickplay",
+    "TaskMoveTrickplayImagesDescription": "Přesune existující soubory Trickplay podle nastavení knihovny."
 }

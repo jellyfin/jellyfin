@@ -1,4 +1,4 @@
-﻿namespace MediaBrowser.Controller.Entities
+namespace MediaBrowser.Controller.Entities
 {
     /// <summary>
     /// The linked child type.

@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
@@ -14,7 +14,4 @@
     <ProjectReference Include="..\..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Mono.Nat" />
-  </ItemGroup>
 </Project>

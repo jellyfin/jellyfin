@@ -28,6 +28,11 @@ namespace MediaBrowser.Model.Entities
         /// <summary>
         /// The data.
         /// </summary>
-        Data
+        Data,
+
+        /// <summary>
+        /// The lyric.
+        /// </summary>
+        Lyric
     }
 }

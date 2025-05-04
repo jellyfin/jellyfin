@@ -1,94 +1,66 @@
 using System;
-using System.Globalization;
-using System.IO;
-using Emby.Server.Implementations.Data;
-using MediaBrowser.Controller;
+using System.Linq;
+using Jellyfin.Database.Implementations;
 using MediaBrowser.Model.Globalization;
-using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Migrations.Routines
 {
     /// <summary>
-    /// Migrate rating levels to new rating level system.
+    /// Migrate rating levels.
     /// </summary>
-    internal class MigrateRatingLevels : IMigrationRoutine
+    [JellyfinMigration("2025-04-20T22:00:00", nameof(MigrateRatingLevels), "98724538-EB11-40E3-931A-252C55BDDE7A")]
+    internal class MigrateRatingLevels : IDatabaseMigrationRoutine
     {
-        private const string DbFilename = "library.db";
         private readonly ILogger<MigrateRatingLevels> _logger;
-        private readonly IServerApplicationPaths _applicationPaths;
+        private readonly IDbContextFactory<JellyfinDbContext> _provider;
         private readonly ILocalizationManager _localizationManager;
 
         public MigrateRatingLevels(
-            IServerApplicationPaths applicationPaths,
+            IDbContextFactory<JellyfinDbContext> provider,
             ILoggerFactory loggerFactory,
             ILocalizationManager localizationManager)
         {
-            _applicationPaths = applicationPaths;
+            _provider = provider;
             _localizationManager = localizationManager;
             _logger = loggerFactory.CreateLogger<MigrateRatingLevels>();
         }
 
         /// <inheritdoc/>
-        public Guid Id => Guid.Parse("{67445D54-B895-4B24-9F4C-35CE0690EA07}");
-
-        /// <inheritdoc/>
-        public string Name => "MigrateRatingLevels";
-
-        /// <inheritdoc/>
-        public bool PerformOnNewInstall => false;
-
-        /// <inheritdoc/>
         public void Perform()
         {
-            var dbPath = Path.Combine(_applicationPaths.DataPath, DbFilename);
-
-            // Back up the database before modifying any entries
-            for (int i = 1; ; i++)
-            {
-                var bakPath = string.Format(CultureInfo.InvariantCulture, "{0}.bak{1}", dbPath, i);
-                if (!File.Exists(bakPath))
-                {
-                    try
-                    {
-                        File.Copy(dbPath, bakPath);
-                        _logger.LogInformation("Library database backed up to {BackupPath}", bakPath);
-                        break;
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Cannot make a backup of {Library} at path {BackupPath}", DbFilename, bakPath);
-                        throw;
-                    }
-                }
-            }
-
-            // Migrate parental rating strings to new levels
             _logger.LogInformation("Recalculating parental rating levels based on rating string.");
-            using var connection = new SqliteConnection($"Filename={dbPath}");
-            connection.Open();
-            using (var transaction = connection.BeginTransaction())
+            using var context = _provider.CreateDbContext();
+            using var transaction = context.Database.BeginTransaction();
+            var ratings = context.BaseItems.AsNoTracking().Select(e => e.OfficialRating).Distinct();
+            foreach (var rating in ratings)
             {
-                var queryResult = connection.Query("SELECT DISTINCT OfficialRating FROM TypedBaseItems");
-                foreach (var entry in queryResult)
+                if (string.IsNullOrEmpty(rating))
                 {
-                    if (!entry.TryGetString(0, out var ratingString) || string.IsNullOrEmpty(ratingString))
-                    {
-                        connection.Execute("UPDATE TypedBaseItems SET InheritedParentalRatingValue = NULL WHERE OfficialRating IS NULL OR OfficialRating='';");
-                    }
-                    else
-                    {
-                        var ratingValue = _localizationManager.GetRatingLevel(ratingString)?.ToString(CultureInfo.InvariantCulture) ?? "NULL";
-
-                        using var statement = connection.PrepareStatement("UPDATE TypedBaseItems SET InheritedParentalRatingValue = @Value WHERE OfficialRating = @Rating;");
-                        statement.TryBind("@Value", ratingValue);
-                        statement.TryBind("@Rating", ratingString);
-                        statement.ExecuteNonQuery();
-                    }
+                    int? value = null;
+                    context.BaseItems
+                        .Where(e => e.OfficialRating == null || e.OfficialRating == string.Empty)
+                        .ExecuteUpdate(f => f.SetProperty(e => e.InheritedParentalRatingValue, value));
+                    context.BaseItems
+                        .Where(e => e.OfficialRating == null || e.OfficialRating == string.Empty)
+                        .ExecuteUpdate(f => f.SetProperty(e => e.InheritedParentalRatingSubValue, value));
                 }
-
-                transaction.Commit();
+                else
+                {
+                    var ratingValue = _localizationManager.GetRatingScore(rating);
+                    var score = ratingValue?.Score;
+                    var subScore = ratingValue?.SubScore;
+                    context.BaseItems
+                        .Where(e => e.OfficialRating == rating)
+                        .ExecuteUpdate(f => f.SetProperty(e => e.InheritedParentalRatingValue, score));
+                    context.BaseItems
+                        .Where(e => e.OfficialRating == rating)
+                        .ExecuteUpdate(f => f.SetProperty(e => e.InheritedParentalRatingSubValue, subScore));
+                }
             }
+
+            transaction.Commit();
         }
     }
 }

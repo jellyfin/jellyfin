@@ -1,4 +1,4 @@
-﻿namespace Jellyfin.MediaEncoding.Keyframes.Matroska.Models;
+namespace Jellyfin.MediaEncoding.Keyframes.Matroska.Models;
 
 /// <summary>
 /// The matroska Info segment.

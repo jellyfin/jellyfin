@@ -126,5 +126,15 @@
     "External": "خارجی",
     "HearingImpaired": "مشکل شنوایی",
     "TaskRefreshTrickplayImages": "تولید تصاویر Trickplay",
-    "TaskRefreshTrickplayImagesDescription": "تولید پیش‌نمایش های trickplay برای ویدیو های فعال شده در کتابخانه."
+    "TaskRefreshTrickplayImagesDescription": "تولید پیش‌نمایش های trickplay برای ویدیو های فعال شده در کتابخانه.",
+    "TaskCleanCollectionsAndPlaylists": "پاکسازی مجموعه ها و لیست پخش",
+    "TaskCleanCollectionsAndPlaylistsDescription": "موارد را از مجموعه ها و لیست پخش هایی که دیگر وجود ندارند حذف میکند.",
+    "TaskAudioNormalizationDescription": "بررسی فایل برای داده‌های نرمال کردن صدا.",
+    "TaskDownloadMissingLyrics": "دانلود متن‌های ناموجود",
+    "TaskDownloadMissingLyricsDescription": "دانلود متن شعر‌ها",
+    "TaskAudioNormalization": "نرمال کردن صدا",
+    "TaskExtractMediaSegments": "بررسی بخش محتوا",
+    "TaskExtractMediaSegmentsDescription": "بخش‌های محتوا را از افزونه‌های مربوط استخراح می‌کند.",
+    "TaskMoveTrickplayImages": "جابه‌جایی عکس‌های Trickplay",
+    "TaskMoveTrickplayImagesDescription": "داده‌های Trickplay را با توجه به تنظیمات کتاب‌خانه جابه‌جا می‌کند."
 }

@@ -148,21 +148,19 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             item.Overview = (overview ?? string.Empty).StripHtml();
         }
 
-        internal Task EnsureInfo(string musicBrainzReleaseGroupId, CancellationToken cancellationToken)
+        internal async Task EnsureInfo(string musicBrainzReleaseGroupId, CancellationToken cancellationToken)
         {
             var xmlPath = GetAlbumInfoPath(_config.ApplicationPaths, musicBrainzReleaseGroupId);
 
             var fileInfo = _fileSystem.GetFileSystemInfo(xmlPath);
 
-            if (fileInfo.Exists)
+            if (fileInfo.Exists
+                && (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 2)
             {
-                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 2)
-                {
-                    return Task.CompletedTask;
-                }
+                return;
             }
 
-            return DownloadInfo(musicBrainzReleaseGroupId, cancellationToken);
+            await DownloadInfo(musicBrainzReleaseGroupId, cancellationToken).ConfigureAwait(false);
         }
 
         internal async Task DownloadInfo(string musicBrainzReleaseGroupId, CancellationToken cancellationToken)

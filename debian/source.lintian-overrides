@@ -1,3 +1,0 @@
-# This is an override for the following lintian errors:
-jellyfin source: license-problem-md5sum-non-free-file Emby.Drawing/ImageMagick/fonts/webdings.ttf*
-jellyfin source: source-is-missing

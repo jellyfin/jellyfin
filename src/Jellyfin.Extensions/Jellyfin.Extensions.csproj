@@ -1,19 +1,21 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <!-- ICU4N.Transliterator only has prerelease versions -->
+    <NoWarn>NU5104</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
     <Authors>Jellyfin Contributors</Authors>
     <PackageId>Jellyfin.Extensions</PackageId>
-    <VersionPrefix>10.9.0</VersionPrefix>
+    <VersionPrefix>10.11.0</VersionPrefix>
     <RepositoryUrl>https://github.com/jellyfin/jellyfin</RepositoryUrl>
     <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
   </PropertyGroup>
@@ -29,6 +31,7 @@
 
   <ItemGroup>
     <PackageReference Include="Diacritics" />
+    <PackageReference Include="ICU4N.Transliterator" />
   </ItemGroup>
 
 </Project>

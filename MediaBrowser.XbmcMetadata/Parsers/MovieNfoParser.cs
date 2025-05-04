@@ -50,30 +50,20 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             {
                 case "id":
                     {
-                        // get ids from attributes
+                        // Get ids from attributes
+                        item.TrySetProviderId(MetadataProvider.Tmdb, reader.GetAttribute("TMDB"));
+                        item.TrySetProviderId(MetadataProvider.Tvdb, reader.GetAttribute("TVDB"));
                         string? imdbId = reader.GetAttribute("IMDB");
-                        string? tmdbId = reader.GetAttribute("TMDB");
 
-                        // read id from content
+                        // Read id from content
+                        // Content can be arbitrary according to Kodi wiki, so only parse if we are sure it matches a provider-specific schema
                         var contentId = reader.ReadElementContentAsString();
-                        if (contentId.Contains("tt", StringComparison.Ordinal) && string.IsNullOrEmpty(imdbId))
+                        if (string.IsNullOrEmpty(imdbId) && contentId.StartsWith("tt", StringComparison.Ordinal))
                         {
                             imdbId = contentId;
                         }
-                        else if (string.IsNullOrEmpty(tmdbId))
-                        {
-                            tmdbId = contentId;
-                        }
 
-                        if (!string.IsNullOrWhiteSpace(imdbId))
-                        {
-                            item.SetProviderId(MetadataProvider.Imdb, imdbId);
-                        }
-
-                        if (!string.IsNullOrWhiteSpace(tmdbId))
-                        {
-                            item.SetProviderId(MetadataProvider.Tmdb, tmdbId);
-                        }
+                        item.TrySetProviderId(MetadataProvider.Imdb, imdbId);
 
                         break;
                     }
@@ -83,30 +73,19 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         var movie = item as Movie;
 
                         var tmdbcolid = reader.GetAttribute("tmdbcolid");
-                        if (!string.IsNullOrWhiteSpace(tmdbcolid) && movie is not null)
-                        {
-                            movie.SetProviderId(MetadataProvider.TmdbCollection, tmdbcolid);
-                        }
+                        movie?.TrySetProviderId(MetadataProvider.TmdbCollection, tmdbcolid);
 
                         var val = reader.ReadInnerXml();
 
                         if (!string.IsNullOrWhiteSpace(val) && movie is not null)
                         {
-                            // TODO Handle this better later
-                            if (!val.Contains('<', StringComparison.Ordinal))
+                            try
                             {
-                                movie.CollectionName = val;
+                                ParseSetXml(val, movie);
                             }
-                            else
+                            catch (Exception ex)
                             {
-                                try
-                                {
-                                    ParseSetXml(val, movie);
-                                }
-                                catch (Exception ex)
-                                {
-                                    Logger.LogError(ex, "Error parsing set node");
-                                }
+                                Logger.LogError(ex, "Error parsing set node");
                             }
                         }
 
@@ -117,9 +96,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     var artist = reader.ReadNormalizedString();
                     if (!string.IsNullOrEmpty(artist) && item is MusicVideo artistVideo)
                     {
-                        var list = artistVideo.Artists.ToList();
-                        list.Add(artist);
-                        artistVideo.Artists = list.ToArray();
+                        artistVideo.Artists = [..artistVideo.Artists, artist];
                     }
 
                     break;
@@ -151,7 +128,12 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     // Loop through each element
                     while (!reader.EOF && reader.ReadState == ReadState.Interactive)
                     {
-                        if (reader.NodeType == XmlNodeType.Element)
+                        if (reader.NodeType == XmlNodeType.Text && reader.Depth == 1)
+                        {
+                            movie.CollectionName = reader.Value;
+                            break;
+                        }
+                        else if (reader.NodeType == XmlNodeType.Element)
                         {
                             switch (reader.Name)
                             {

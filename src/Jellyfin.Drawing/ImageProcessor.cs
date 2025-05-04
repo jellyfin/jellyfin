@@ -4,16 +4,19 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Mime;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
+using AsyncKeyedLock;
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Drawing;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
@@ -38,7 +41,7 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
     private readonly IServerApplicationPaths _appPaths;
     private readonly IImageEncoder _imageEncoder;
 
-    private readonly SemaphoreSlim _parallelEncodingLimit;
+    private readonly AsyncNonKeyedLocker _parallelEncodingLimit;
 
     private bool _disposed;
 
@@ -65,10 +68,10 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
         var semaphoreCount = config.Configuration.ParallelImageEncodingLimit;
         if (semaphoreCount < 1)
         {
-            semaphoreCount = 2 * Environment.ProcessorCount;
+            semaphoreCount = Environment.ProcessorCount;
         }
 
-        _parallelEncodingLimit = new(semaphoreCount, semaphoreCount);
+        _parallelEncodingLimit = new(semaphoreCount);
     }
 
     private string ResizedImageCachePath => Path.Combine(_appPaths.ImageCachePath, "resized-images");
@@ -101,7 +104,8 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
             "astc",
             "ktx",
             "pkm",
-            "wbmp"
+            "wbmp",
+            "avif"
         };
 
     /// <inheritdoc />
@@ -193,17 +197,12 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
         {
             if (!File.Exists(cacheFilePath))
             {
-                // Limit number of parallel (more precisely: concurrent) image encodings to prevent a high memory usage
-                await _parallelEncodingLimit.WaitAsync().ConfigureAwait(false);
-
                 string resultPath;
-                try
+
+                // Limit number of parallel (more precisely: concurrent) image encodings to prevent a high memory usage
+                using (await _parallelEncodingLimit.LockAsync().ConfigureAwait(false))
                 {
                     resultPath = _imageEncoder.EncodeImage(originalImagePath, dateModified, cacheFilePath, autoOrient, orientation, quality, options, outputFormat);
-                }
-                finally
-                {
-                    _parallelEncodingLimit.Release();
                 }
 
                 if (string.Equals(resultPath, originalImagePath, StringComparison.OrdinalIgnoreCase))
@@ -407,8 +406,27 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
     }
 
     /// <inheritdoc />
+    public string GetImageCacheTag(string baseItemPath, DateTime imageDateModified)
+        => (baseItemPath + imageDateModified.Ticks).GetMD5().ToString("N", CultureInfo.InvariantCulture);
+
+    /// <inheritdoc />
     public string GetImageCacheTag(BaseItem item, ItemImageInfo image)
-        => (item.Path + image.DateModified.Ticks).GetMD5().ToString("N", CultureInfo.InvariantCulture);
+        => GetImageCacheTag(item.Path, image.DateModified);
+
+    /// <inheritdoc />
+    public string GetImageCacheTag(BaseItemDto item, ItemImageInfo image)
+        => GetImageCacheTag(item.Path, image.DateModified);
+
+    /// <inheritdoc />
+    public string? GetImageCacheTag(BaseItemDto item, ChapterInfo chapter)
+    {
+        if (chapter.ImagePath is null)
+        {
+            return null;
+        }
+
+        return GetImageCacheTag(item.Path, chapter.ImageDateModified);
+    }
 
     /// <inheritdoc />
     public string? GetImageCacheTag(BaseItem item, ChapterInfo chapter)
@@ -434,8 +452,7 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
             return null;
         }
 
-        return (user.ProfileImage.Path + user.ProfileImage.LastModified.Ticks).GetMD5()
-            .ToString("N", CultureInfo.InvariantCulture);
+        return GetImageCacheTag(user.ProfileImage.Path, user.ProfileImage.LastModified);
     }
 
     private Task<(string Path, DateTime DateModified)> GetSupportedImage(string originalImagePath, DateTime dateModified)

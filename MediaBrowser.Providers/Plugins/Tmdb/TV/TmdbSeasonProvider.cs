@@ -73,10 +73,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 result.Item.Name = seasonResult.Name;
             }
 
-            if (!string.IsNullOrEmpty(seasonResult.ExternalIds?.TvdbId))
-            {
-                result.Item.SetProviderId(MetadataProvider.Tvdb, seasonResult.ExternalIds.TvdbId);
-            }
+            result.Item.TrySetProviderId(MetadataProvider.Tvdb, seasonResult.ExternalIds.TvdbId);
 
             // TODO why was this disabled?
             var credits = seasonResult.Credits;
@@ -85,12 +82,13 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 var cast = credits.Cast.OrderBy(c => c.Order).Take(Plugin.Instance.Configuration.MaxCastMembers).ToList();
                 for (var i = 0; i < cast.Count; i++)
                 {
+                    var member = cast[i];
                     result.AddPerson(new PersonInfo
                     {
-                        Name = cast[i].Name.Trim(),
-                        Role = cast[i].Character,
+                        Name = member.Name.Trim(),
+                        Role = member.Character.Trim(),
                         Type = PersonKind.Actor,
-                        SortOrder = cast[i].Order
+                        SortOrder = member.Order
                     });
                 }
             }
@@ -111,7 +109,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     result.AddPerson(new PersonInfo
                     {
                         Name = person.Name.Trim(),
-                        Role = person.Job,
+                        Role = person.Job?.Trim(),
                         Type = type
                     });
                 }

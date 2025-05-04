@@ -1,4 +1,4 @@
-﻿using Emby.Naming.Common;
+using Emby.Naming.Common;
 using Emby.Naming.TV;
 using Xunit;
 

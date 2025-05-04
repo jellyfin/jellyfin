@@ -16,167 +16,160 @@ using TagLib.IFD;
 using TagLib.IFD.Entries;
 using TagLib.IFD.Tags;
 
-namespace Emby.Photos
+namespace Emby.Photos;
+
+/// <summary>
+/// Metadata provider for photos.
+/// </summary>
+public class PhotoProvider : ICustomMetadataProvider<Photo>, IForcedProvider, IHasItemChangeMonitor
 {
+    private readonly ILogger<PhotoProvider> _logger;
+    private readonly IImageProcessor _imageProcessor;
+
+    // Other extensions might cause taglib to hang
+    private readonly string[] _includeExtensions = [".jpg", ".jpeg", ".png", ".tiff", ".cr2", ".webp", ".avif"];
+
     /// <summary>
-    /// Metadata provider for photos.
+    /// Initializes a new instance of the <see cref="PhotoProvider" /> class.
     /// </summary>
-    public class PhotoProvider : ICustomMetadataProvider<Photo>, IForcedProvider, IHasItemChangeMonitor
+    /// <param name="logger">The logger.</param>
+    /// <param name="imageProcessor">The image processor.</param>
+    public PhotoProvider(ILogger<PhotoProvider> logger, IImageProcessor imageProcessor)
     {
-        private readonly ILogger<PhotoProvider> _logger;
-        private readonly IImageProcessor _imageProcessor;
+        _logger = logger;
+        _imageProcessor = imageProcessor;
+    }
 
-        // These are causing taglib to hang
-        private readonly string[] _includeExtensions = new string[] { ".jpg", ".jpeg", ".png", ".tiff", ".cr2", ".webp", ".avif" };
+    /// <inheritdoc />
+    public string Name => "Embedded Information";
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PhotoProvider" /> class.
-        /// </summary>
-        /// <param name="logger">The logger.</param>
-        /// <param name="imageProcessor">The image processor.</param>
-        public PhotoProvider(ILogger<PhotoProvider> logger, IImageProcessor imageProcessor)
+    /// <inheritdoc />
+    public bool HasChanged(BaseItem item, IDirectoryService directoryService)
+    {
+        if (item.IsFileProtocol)
         {
-            _logger = logger;
-            _imageProcessor = imageProcessor;
+            var file = directoryService.GetFile(item.Path);
+            return file is not null && file.LastWriteTimeUtc != item.DateModified;
         }
 
-        /// <inheritdoc />
-        public string Name => "Embedded Information";
+        return false;
+    }
 
-        /// <inheritdoc />
-        public bool HasChanged(BaseItem item, IDirectoryService directoryService)
+    /// <inheritdoc />
+    public Task<ItemUpdateType> FetchAsync(Photo item, MetadataRefreshOptions options, CancellationToken cancellationToken)
+    {
+        item.SetImagePath(ImageType.Primary, item.Path);
+
+        // Examples: https://github.com/mono/taglib-sharp/blob/a5f6949a53d09ce63ee7495580d6802921a21f14/tests/fixtures/TagLib.Tests.Images/NullOrientationTest.cs
+        if (_includeExtensions.Contains(Path.GetExtension(item.Path.AsSpan()), StringComparison.OrdinalIgnoreCase))
         {
-            if (item.IsFileProtocol)
+            try
             {
-                var file = directoryService.GetFile(item.Path);
-                return file is not null && file.LastWriteTimeUtc != item.DateModified;
-            }
-
-            return false;
-        }
-
-        /// <inheritdoc />
-        public Task<ItemUpdateType> FetchAsync(Photo item, MetadataRefreshOptions options, CancellationToken cancellationToken)
-        {
-            item.SetImagePath(ImageType.Primary, item.Path);
-
-            // Examples: https://github.com/mono/taglib-sharp/blob/a5f6949a53d09ce63ee7495580d6802921a21f14/tests/fixtures/TagLib.Tests.Images/NullOrientationTest.cs
-            if (_includeExtensions.Contains(Path.GetExtension(item.Path.AsSpan()), StringComparison.OrdinalIgnoreCase))
-            {
-                try
+                using var file = TagLib.File.Create(item.Path);
+                if (file.GetTag(TagTypes.TiffIFD) is IFDTag tag)
                 {
-                    using (var file = TagLib.File.Create(item.Path))
+                    var structure = tag.Structure;
+                    if (structure?.GetEntry(0, (ushort)IFDEntryTag.ExifIFD) is SubIFDEntry exif)
                     {
-                        if (file.GetTag(TagTypes.TiffIFD) is IFDTag tag)
+                        var exifStructure = exif.Structure;
+                        if (exifStructure is not null)
                         {
-                            var structure = tag.Structure;
-                            if (structure is not null
-                                && structure.GetEntry(0, (ushort)IFDEntryTag.ExifIFD) is SubIFDEntry exif)
+                            if (exifStructure.GetEntry(0, (ushort)ExifEntryTag.ApertureValue) is RationalIFDEntry apertureEntry)
                             {
-                                var exifStructure = exif.Structure;
-                                if (exifStructure is not null)
-                                {
-                                    var entry = exifStructure.GetEntry(0, (ushort)ExifEntryTag.ApertureValue) as RationalIFDEntry;
-                                    if (entry is not null)
-                                    {
-                                        item.Aperture = (double)entry.Value.Numerator / entry.Value.Denominator;
-                                    }
-
-                                    entry = exifStructure.GetEntry(0, (ushort)ExifEntryTag.ShutterSpeedValue) as RationalIFDEntry;
-                                    if (entry is not null)
-                                    {
-                                        item.ShutterSpeed = (double)entry.Value.Numerator / entry.Value.Denominator;
-                                    }
-                                }
-                            }
-                        }
-
-                        if (file is TagLib.Image.File image)
-                        {
-                            item.CameraMake = image.ImageTag.Make;
-                            item.CameraModel = image.ImageTag.Model;
-
-                            item.Width = image.Properties.PhotoWidth;
-                            item.Height = image.Properties.PhotoHeight;
-
-                            var rating = image.ImageTag.Rating;
-                            item.CommunityRating = rating.HasValue ? rating : null;
-
-                            item.Overview = image.ImageTag.Comment;
-
-                            if (!string.IsNullOrWhiteSpace(image.ImageTag.Title)
-                                && !item.LockedFields.Contains(MetadataField.Name))
-                            {
-                                item.Name = image.ImageTag.Title;
+                                item.Aperture = (double)apertureEntry.Value.Numerator / apertureEntry.Value.Denominator;
                             }
 
-                            var dateTaken = image.ImageTag.DateTime;
-                            if (dateTaken.HasValue)
+                            if (exifStructure.GetEntry(0, (ushort)ExifEntryTag.ShutterSpeedValue) is RationalIFDEntry shutterSpeedEntry)
                             {
-                                item.DateCreated = dateTaken.Value;
-                                item.PremiereDate = dateTaken.Value;
-                                item.ProductionYear = dateTaken.Value.Year;
-                            }
-
-                            item.Genres = image.ImageTag.Genres;
-                            item.Tags = image.ImageTag.Keywords;
-                            item.Software = image.ImageTag.Software;
-
-                            if (image.ImageTag.Orientation == TagLib.Image.ImageOrientation.None)
-                            {
-                                item.Orientation = null;
-                            }
-                            else if (Enum.TryParse(image.ImageTag.Orientation.ToString(), true, out ImageOrientation orientation))
-                            {
-                                item.Orientation = orientation;
-                            }
-
-                            item.ExposureTime = image.ImageTag.ExposureTime;
-                            item.FocalLength = image.ImageTag.FocalLength;
-
-                            item.Latitude = image.ImageTag.Latitude;
-                            item.Longitude = image.ImageTag.Longitude;
-                            item.Altitude = image.ImageTag.Altitude;
-
-                            if (image.ImageTag.ISOSpeedRatings.HasValue)
-                            {
-                                item.IsoSpeedRating = Convert.ToInt32(image.ImageTag.ISOSpeedRatings.Value);
-                            }
-                            else
-                            {
-                                item.IsoSpeedRating = null;
+                                item.ShutterSpeed = (double)shutterSpeedEntry.Value.Numerator / shutterSpeedEntry.Value.Denominator;
                             }
                         }
                     }
                 }
-                catch (Exception ex)
+
+                if (file is TagLib.Image.File image)
                 {
-                    _logger.LogError(ex, "Image Provider - Error reading image tag for {0}", item.Path);
-                }
-            }
+                    item.CameraMake = image.ImageTag.Make;
+                    item.CameraModel = image.ImageTag.Model;
 
-            if (item.Width <= 0 || item.Height <= 0)
-            {
-                var img = item.GetImageInfo(ImageType.Primary, 0);
+                    item.Width = image.Properties.PhotoWidth;
+                    item.Height = image.Properties.PhotoHeight;
 
-                try
-                {
-                    var size = _imageProcessor.GetImageDimensions(item, img);
+                    item.CommunityRating = image.ImageTag.Rating;
 
-                    if (size.Width > 0 && size.Height > 0)
+                    item.Overview = image.ImageTag.Comment;
+
+                    if (!string.IsNullOrWhiteSpace(image.ImageTag.Title)
+                        && !item.LockedFields.Contains(MetadataField.Name))
                     {
-                        item.Width = size.Width;
-                        item.Height = size.Height;
+                        item.Name = image.ImageTag.Title;
+                    }
+
+                    var dateTaken = image.ImageTag.DateTime;
+                    if (dateTaken.HasValue)
+                    {
+                        item.DateCreated = dateTaken.Value;
+                        item.PremiereDate = dateTaken.Value;
+                        item.ProductionYear = dateTaken.Value.Year;
+                    }
+
+                    item.Genres = image.ImageTag.Genres;
+                    item.Tags = image.ImageTag.Keywords;
+                    item.Software = image.ImageTag.Software;
+
+                    if (image.ImageTag.Orientation == TagLib.Image.ImageOrientation.None)
+                    {
+                        item.Orientation = null;
+                    }
+                    else if (Enum.TryParse(image.ImageTag.Orientation.ToString(), true, out ImageOrientation orientation))
+                    {
+                        item.Orientation = orientation;
+                    }
+
+                    item.ExposureTime = image.ImageTag.ExposureTime;
+                    item.FocalLength = image.ImageTag.FocalLength;
+
+                    item.Latitude = image.ImageTag.Latitude;
+                    item.Longitude = image.ImageTag.Longitude;
+                    item.Altitude = image.ImageTag.Altitude;
+
+                    if (image.ImageTag.ISOSpeedRatings.HasValue)
+                    {
+                        item.IsoSpeedRating = Convert.ToInt32(image.ImageTag.ISOSpeedRatings.Value);
+                    }
+                    else
+                    {
+                        item.IsoSpeedRating = null;
                     }
                 }
-                catch (ArgumentException)
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Image Provider - Error reading image tag for {0}", item.Path);
+            }
+        }
+
+        if (item.Width <= 0 || item.Height <= 0)
+        {
+            var img = item.GetImageInfo(ImageType.Primary, 0);
+
+            try
+            {
+                var size = _imageProcessor.GetImageDimensions(item, img);
+
+                if (size.Width > 0 && size.Height > 0)
                 {
-                    // format not supported
+                    item.Width = size.Width;
+                    item.Height = size.Height;
                 }
             }
-
-            const ItemUpdateType Result = ItemUpdateType.ImageUpdate | ItemUpdateType.MetadataImport;
-            return Task.FromResult(Result);
+            catch (ArgumentException)
+            {
+                // format not supported
+            }
         }
+
+        const ItemUpdateType Result = ItemUpdateType.ImageUpdate | ItemUpdateType.MetadataImport;
+        return Task.FromResult(Result);
     }
 }

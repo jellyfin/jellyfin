@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Providers.Plugins.Tmdb;
+using MediaBrowser.Providers.Plugins.Tmdb;
 using Xunit;
 
 namespace Jellyfin.Providers.Tests.Tmdb

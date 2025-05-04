@@ -4,7 +4,8 @@ using System.Linq;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
-using Jellyfin.Data.Entities;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -66,14 +67,14 @@ public class PersonsController : BaseJellyfinApiController
     public ActionResult<QueryResult<BaseItemDto>> GetPersons(
         [FromQuery] int? limit,
         [FromQuery] string? searchTerm,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFilter[] filters,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFields[] fields,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFilter[] filters,
         [FromQuery] bool? isFavorite,
         [FromQuery] bool? enableUserData,
         [FromQuery] int? imageTypeLimit,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] excludePersonTypes,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] personTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ImageType[] enableImageTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] excludePersonTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] personTypes,
         [FromQuery] Guid? appearsInItemId,
         [FromQuery] Guid? userId,
         [FromQuery] bool? enableImages = true)
@@ -83,7 +84,7 @@ public class PersonsController : BaseJellyfinApiController
             .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
-        User? user = userId.Value.Equals(default)
+        User? user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -129,7 +130,7 @@ public class PersonsController : BaseJellyfinApiController
             return NotFound();
         }
 
-        if (!userId.Value.Equals(default))
+        if (!userId.IsNullOrEmpty())
         {
             var user = _userManager.GetUserById(userId.Value);
             return _dtoService.GetBaseItemDto(item, dtoOptions, user);

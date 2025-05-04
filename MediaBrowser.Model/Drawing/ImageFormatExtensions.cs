@@ -17,11 +17,12 @@ public static class ImageFormatExtensions
     public static string GetMimeType(this ImageFormat format)
         => format switch
         {
-            ImageFormat.Bmp => "image/bmp",
+            ImageFormat.Bmp => MediaTypeNames.Image.Bmp,
             ImageFormat.Gif => MediaTypeNames.Image.Gif,
             ImageFormat.Jpg => MediaTypeNames.Image.Jpeg,
-            ImageFormat.Png => "image/png",
-            ImageFormat.Webp => "image/webp",
+            ImageFormat.Png => MediaTypeNames.Image.Png,
+            ImageFormat.Webp => MediaTypeNames.Image.Webp,
+            ImageFormat.Svg => MediaTypeNames.Image.Svg,
             _ => throw new InvalidEnumArgumentException(nameof(format), (int)format, typeof(ImageFormat))
         };
 
@@ -39,6 +40,7 @@ public static class ImageFormatExtensions
             ImageFormat.Jpg => ".jpg",
             ImageFormat.Png => ".png",
             ImageFormat.Webp => ".webp",
+            ImageFormat.Svg => ".svg",
             _ => throw new InvalidEnumArgumentException(nameof(format), (int)format, typeof(ImageFormat))
         };
 }

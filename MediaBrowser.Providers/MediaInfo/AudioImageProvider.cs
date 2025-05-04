@@ -1,4 +1,4 @@
-#nullable disable
+#pragma warning disable CA1826 // CA1826 Do not use Enumerable methods on Indexable collections.
 
 using System;
 using System.Collections.Generic;
@@ -74,18 +74,17 @@ namespace MediaBrowser.Providers.MediaInfo
             return GetImage((Audio)item, imageStreams, cancellationToken);
         }
 
-        private async Task<DynamicImageResponse> GetImage(Audio item, List<MediaStream> imageStreams, CancellationToken cancellationToken)
+        private async Task<DynamicImageResponse> GetImage(Audio item, IReadOnlyList<MediaStream> imageStreams, CancellationToken cancellationToken)
         {
             var path = GetAudioImagePath(item);
 
             if (!File.Exists(path))
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(path));
-
+                var directoryName = Path.GetDirectoryName(path) ?? throw new InvalidOperationException($"Invalid path '{path}'");
+                Directory.CreateDirectory(directoryName);
                 var imageStream = imageStreams.FirstOrDefault(i => (i.Comment ?? string.Empty).Contains("front", StringComparison.OrdinalIgnoreCase)) ??
                     imageStreams.FirstOrDefault(i => (i.Comment ?? string.Empty).Contains("cover", StringComparison.OrdinalIgnoreCase)) ??
                     imageStreams.FirstOrDefault();
-
                 var imageStreamIndex = imageStream?.Index;
 
                 var tempFile = await _mediaEncoder.ExtractAudioImage(item.Path, imageStreamIndex, cancellationToken).ConfigureAwait(false);

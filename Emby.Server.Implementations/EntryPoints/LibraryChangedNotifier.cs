@@ -5,26 +5,27 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
 using Jellyfin.Data.Events;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Session;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.EntryPoints;
 
 /// <summary>
-/// A <see cref="IServerEntryPoint"/> that notifies users when libraries are updated.
+/// A <see cref="IHostedService"/> responsible for notifying users when libraries are updated.
 /// </summary>
-public sealed class LibraryChangedNotifier : IServerEntryPoint
+public sealed class LibraryChangedNotifier : IHostedService, IDisposable
 {
     private readonly ILibraryManager _libraryManager;
     private readonly IServerConfigurationManager _configurationManager;
@@ -33,7 +34,7 @@ public sealed class LibraryChangedNotifier : IServerEntryPoint
     private readonly IUserManager _userManager;
     private readonly ILogger<LibraryChangedNotifier> _logger;
 
-    private readonly object _libraryChangedSyncLock = new();
+    private readonly Lock _libraryChangedSyncLock = new();
     private readonly List<Folder> _foldersAddedTo = new();
     private readonly List<Folder> _foldersRemovedFrom = new();
     private readonly List<BaseItem> _itemsAdded = new();
@@ -69,7 +70,7 @@ public sealed class LibraryChangedNotifier : IServerEntryPoint
     }
 
     /// <inheritdoc />
-    public Task RunAsync()
+    public Task StartAsync(CancellationToken cancellationToken)
     {
         _libraryManager.ItemAdded += OnLibraryItemAdded;
         _libraryManager.ItemUpdated += OnLibraryItemUpdated;
@@ -78,6 +79,20 @@ public sealed class LibraryChangedNotifier : IServerEntryPoint
         _providerManager.RefreshCompleted += OnProviderRefreshCompleted;
         _providerManager.RefreshStarted += OnProviderRefreshStarted;
         _providerManager.RefreshProgress += OnProviderRefreshProgress;
+
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        _libraryManager.ItemAdded -= OnLibraryItemAdded;
+        _libraryManager.ItemUpdated -= OnLibraryItemUpdated;
+        _libraryManager.ItemRemoved -= OnLibraryItemRemoved;
+
+        _providerManager.RefreshCompleted -= OnProviderRefreshCompleted;
+        _providerManager.RefreshStarted -= OnProviderRefreshStarted;
+        _providerManager.RefreshProgress -= OnProviderRefreshProgress;
 
         return Task.CompletedTask;
     }
@@ -136,9 +151,7 @@ public sealed class LibraryChangedNotifier : IServerEntryPoint
     }
 
     private void OnProviderRefreshStarted(object? sender, GenericEventArgs<BaseItem> e)
-    {
-        OnProviderRefreshProgress(sender, new GenericEventArgs<Tuple<BaseItem, double>>(new Tuple<BaseItem, double>(e.Argument, 0)));
-    }
+        => OnProviderRefreshProgress(sender, new GenericEventArgs<Tuple<BaseItem, double>>(new Tuple<BaseItem, double>(e.Argument, 0)));
 
     private void OnProviderRefreshCompleted(object? sender, GenericEventArgs<BaseItem> e)
     {
@@ -241,7 +254,7 @@ public sealed class LibraryChangedNotifier : IServerEntryPoint
     {
         var userIds = _sessionManager.Sessions
             .Select(i => i.UserId)
-            .Where(i => !i.Equals(default))
+            .Where(i => !i.IsEmpty())
             .Distinct()
             .ToArray();
 
@@ -341,7 +354,7 @@ public sealed class LibraryChangedNotifier : IServerEntryPoint
         return item.SourceType == SourceType.Library;
     }
 
-    private IEnumerable<string> GetTopParentIds(List<BaseItem> items, List<Folder> allUserRootChildren)
+    private static IEnumerable<string> GetTopParentIds(List<BaseItem> items, List<Folder> allUserRootChildren)
     {
         var list = new List<string>();
 
@@ -362,7 +375,7 @@ public sealed class LibraryChangedNotifier : IServerEntryPoint
         return list.Distinct(StringComparer.Ordinal);
     }
 
-    private IEnumerable<T> TranslatePhysicalItemToUserLibrary<T>(T item, User user, bool includeIfNotFound = false)
+    private T[] TranslatePhysicalItemToUserLibrary<T>(T item, User user, bool includeIfNotFound = false)
         where T : BaseItem
     {
         // If the physical root changed, return the user root
@@ -383,18 +396,7 @@ public sealed class LibraryChangedNotifier : IServerEntryPoint
     /// <inheritdoc />
     public void Dispose()
     {
-        _libraryManager.ItemAdded -= OnLibraryItemAdded;
-        _libraryManager.ItemUpdated -= OnLibraryItemUpdated;
-        _libraryManager.ItemRemoved -= OnLibraryItemRemoved;
-
-        _providerManager.RefreshCompleted -= OnProviderRefreshCompleted;
-        _providerManager.RefreshStarted -= OnProviderRefreshStarted;
-        _providerManager.RefreshProgress -= OnProviderRefreshProgress;
-
-        if (_libraryUpdateTimer is not null)
-        {
-            _libraryUpdateTimer.Dispose();
-            _libraryUpdateTimer = null;
-        }
+        _libraryUpdateTimer?.Dispose();
+        _libraryUpdateTimer = null;
     }
 }

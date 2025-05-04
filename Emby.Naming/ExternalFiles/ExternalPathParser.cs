@@ -45,7 +45,8 @@ namespace Emby.Naming.ExternalFiles
 
             var extension = Path.GetExtension(path.AsSpan());
             if (!(_type == DlnaProfileType.Subtitle && _namingOptions.SubtitleFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
-                && !(_type == DlnaProfileType.Audio && _namingOptions.AudioFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase)))
+                && !(_type == DlnaProfileType.Audio && _namingOptions.AudioFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
+                && !(_type == DlnaProfileType.Lyric && _namingOptions.LyricFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase)))
             {
                 return null;
             }
@@ -106,7 +107,7 @@ namespace Emby.Naming.ExternalFiles
                         pathInfo.Language = culture.ThreeLetterISOLanguageName;
                         extraString = extraString.Replace(currentSlice, string.Empty, StringComparison.OrdinalIgnoreCase);
                     }
-                    else if (_namingOptions.MediaHearingImpairedFlags.Any(s => currentSliceWithoutSeparator.Contains(s, StringComparison.OrdinalIgnoreCase)))
+                    else if (_namingOptions.MediaHearingImpairedFlags.Any(s => currentSliceWithoutSeparator.Equals(s, StringComparison.OrdinalIgnoreCase)))
                     {
                         pathInfo.IsHearingImpaired = true;
                         extraString = extraString.Replace(currentSlice, string.Empty, StringComparison.OrdinalIgnoreCase);

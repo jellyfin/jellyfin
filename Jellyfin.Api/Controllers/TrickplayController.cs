@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Extensions;
+using Jellyfin.Api.Helpers;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Trickplay;
 using MediaBrowser.Model;
@@ -78,21 +80,23 @@ public class TrickplayController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesImageFile]
-    public ActionResult GetTrickplayTileImage(
+    public async Task<ActionResult> GetTrickplayTileImage(
         [FromRoute, Required] Guid itemId,
         [FromRoute, Required] int width,
         [FromRoute, Required] int index,
         [FromQuery] Guid? mediaSourceId)
     {
-        var item = _libraryManager.GetItemById(mediaSourceId ?? itemId);
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, User.GetUserId());
         if (item is null)
         {
             return NotFound();
         }
 
-        var path = _trickplayManager.GetTrickplayTilePath(item, width, index);
-        if (System.IO.File.Exists(path))
+        var saveWithMedia = _libraryManager.GetLibraryOptions(item).SaveTrickplayWithMedia;
+        var path = await _trickplayManager.GetTrickplayTilePathAsync(item, width, index, saveWithMedia).ConfigureAwait(false);
+        if (!string.IsNullOrEmpty(path) && System.IO.File.Exists(path))
         {
+            Response.Headers.ContentDisposition = "attachment";
             return PhysicalFile(path, MediaTypeNames.Image.Jpeg);
         }
 

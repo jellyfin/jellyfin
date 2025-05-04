@@ -4,7 +4,10 @@ using System.Linq;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
+using Jellyfin.Data;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -75,6 +78,7 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="hasSpecialFeature">Optional filter by items with special features.</param>
     /// <param name="hasTrailer">Optional filter by items with trailers.</param>
     /// <param name="adjacentTo">Optional. Return items that are siblings of a supplied item.</param>
+    /// <param name="indexNumber">Optional filter by index number.</param>
     /// <param name="parentIndexNumber">Optional filter by parent index number.</param>
     /// <param name="hasParentalRating">Optional filter by items that have or do not have a parental rating.</param>
     /// <param name="isHd">Optional filter by items that are HD or not.</param>
@@ -164,12 +168,13 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery] bool? hasSpecialFeature,
         [FromQuery] bool? hasTrailer,
         [FromQuery] Guid? adjacentTo,
+        [FromQuery] int? indexNumber,
         [FromQuery] int? parentIndexNumber,
         [FromQuery] bool? hasParentalRating,
         [FromQuery] bool? isHd,
         [FromQuery] bool? is4K,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] LocationType[] locationTypes,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] LocationType[] excludeLocationTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] LocationType[] locationTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] LocationType[] excludeLocationTypes,
         [FromQuery] bool? isMissing,
         [FromQuery] bool? isUnaired,
         [FromQuery] double? minCommunityRating,
@@ -187,42 +192,42 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery] bool? isNews,
         [FromQuery] bool? isKids,
         [FromQuery] bool? isSports,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] excludeItemIds,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] excludeItemIds,
         [FromQuery] int? startIndex,
         [FromQuery] int? limit,
         [FromQuery] bool? recursive,
         [FromQuery] string? searchTerm,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] SortOrder[] sortOrder,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] SortOrder[] sortOrder,
         [FromQuery] Guid? parentId,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] excludeItemTypes,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFilter[] filters,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFields[] fields,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] BaseItemKind[] excludeItemTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] BaseItemKind[] includeItemTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFilter[] filters,
         [FromQuery] bool? isFavorite,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] MediaType[] mediaTypes,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] imageTypes,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemSortBy[] sortBy,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] MediaType[] mediaTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ImageType[] imageTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemSortBy[] sortBy,
         [FromQuery] bool? isPlayed,
-        [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] genres,
-        [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] officialRatings,
-        [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] tags,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] int[] years,
+        [FromQuery, ModelBinder(typeof(PipeDelimitedCollectionModelBinder))] string[] genres,
+        [FromQuery, ModelBinder(typeof(PipeDelimitedCollectionModelBinder))] string[] officialRatings,
+        [FromQuery, ModelBinder(typeof(PipeDelimitedCollectionModelBinder))] string[] tags,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] int[] years,
         [FromQuery] bool? enableUserData,
         [FromQuery] int? imageTypeLimit,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ImageType[] enableImageTypes,
         [FromQuery] string? person,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] personIds,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] personTypes,
-        [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] studios,
-        [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] artists,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] excludeArtistIds,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] artistIds,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] albumArtistIds,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] contributingArtistIds,
-        [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] albums,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] albumIds,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] ids,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] VideoType[] videoTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] personIds,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] personTypes,
+        [FromQuery, ModelBinder(typeof(PipeDelimitedCollectionModelBinder))] string[] studios,
+        [FromQuery, ModelBinder(typeof(PipeDelimitedCollectionModelBinder))] string[] artists,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] excludeArtistIds,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] artistIds,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] albumArtistIds,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] contributingArtistIds,
+        [FromQuery, ModelBinder(typeof(PipeDelimitedCollectionModelBinder))] string[] albums,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] albumIds,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] ids,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] VideoType[] videoTypes,
         [FromQuery] string? minOfficialRating,
         [FromQuery] bool? isLocked,
         [FromQuery] bool? isPlaceHolder,
@@ -233,26 +238,33 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery] int? maxWidth,
         [FromQuery] int? maxHeight,
         [FromQuery] bool? is3D,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] SeriesStatus[] seriesStatus,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] SeriesStatus[] seriesStatus,
         [FromQuery] string? nameStartsWithOrGreater,
         [FromQuery] string? nameStartsWith,
         [FromQuery] string? nameLessThan,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] studioIds,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] genreIds,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] studioIds,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] genreIds,
         [FromQuery] bool enableTotalRecordCount = true,
         [FromQuery] bool? enableImages = true)
     {
         var isApiKey = User.GetIsApiKey();
         // if api key is used (auth.IsApiKey == true), then `user` will be null throughout this method
         userId = RequestHelpers.GetUserId(User, userId);
-        var user = !isApiKey && !userId.Value.Equals(default)
-            ? _userManager.GetUserById(userId.Value) ?? throw new ResourceNotFoundException()
-            : null;
+        var user = userId.IsNullOrEmpty()
+            ? null
+            : _userManager.GetUserById(userId.Value) ?? throw new ResourceNotFoundException();
 
         // beyond this point, we're either using an api key or we have a valid user
         if (!isApiKey && user is null)
         {
             return BadRequest("userId is required");
+        }
+
+        if (user is not null
+            && user.GetPreference(PreferenceKind.AllowedTags).Length != 0
+            && !fields.Contains(ItemFields.Tags))
+        {
+            fields = [..fields, ItemFields.Tags];
         }
 
         var dtoOptions = new DtoOptions { Fields = fields }
@@ -358,6 +370,7 @@ public class ItemsController : BaseJellyfinApiController
                 MinCommunityRating = minCommunityRating,
                 MinCriticRating = minCriticRating,
                 ParentId = parentId ?? Guid.Empty,
+                IndexNumber = indexNumber,
                 ParentIndexNumber = parentIndexNumber,
                 EnableTotalRecordCount = enableTotalRecordCount,
                 ExcludeItemIds = excludeItemIds,
@@ -435,13 +448,13 @@ public class ItemsController : BaseJellyfinApiController
             // Min official rating
             if (!string.IsNullOrWhiteSpace(minOfficialRating))
             {
-                query.MinParentalRating = _localization.GetRatingLevel(minOfficialRating);
+                query.MinParentalRating = _localization.GetRatingScore(minOfficialRating);
             }
 
             // Max official rating
             if (!string.IsNullOrWhiteSpace(maxOfficialRating))
             {
-                query.MaxParentalRating = _localization.GetRatingLevel(maxOfficialRating);
+                query.MaxParentalRating = _localization.GetRatingScore(maxOfficialRating);
             }
 
             // Artists
@@ -611,8 +624,10 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="enableImages">Optional, include image information in output.</param>
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the items.</returns>
     [HttpGet("Users/{userId}/Items")]
+    [Obsolete("Kept for backwards compatibility")]
+    [ApiExplorerSettings(IgnoreApi = true)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<QueryResult<BaseItemDto>> GetItemsByUserId(
+    public ActionResult<QueryResult<BaseItemDto>> GetItemsByUserIdLegacy(
         [FromRoute] Guid userId,
         [FromQuery] string? maxOfficialRating,
         [FromQuery] bool? hasThemeSong,
@@ -625,8 +640,8 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery] bool? hasParentalRating,
         [FromQuery] bool? isHd,
         [FromQuery] bool? is4K,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] LocationType[] locationTypes,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] LocationType[] excludeLocationTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] LocationType[] locationTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] LocationType[] excludeLocationTypes,
         [FromQuery] bool? isMissing,
         [FromQuery] bool? isUnaired,
         [FromQuery] double? minCommunityRating,
@@ -644,42 +659,42 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery] bool? isNews,
         [FromQuery] bool? isKids,
         [FromQuery] bool? isSports,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] excludeItemIds,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] excludeItemIds,
         [FromQuery] int? startIndex,
         [FromQuery] int? limit,
         [FromQuery] bool? recursive,
         [FromQuery] string? searchTerm,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] SortOrder[] sortOrder,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] SortOrder[] sortOrder,
         [FromQuery] Guid? parentId,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] excludeItemTypes,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFilter[] filters,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFields[] fields,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] BaseItemKind[] excludeItemTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] BaseItemKind[] includeItemTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFilter[] filters,
         [FromQuery] bool? isFavorite,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] MediaType[] mediaTypes,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] imageTypes,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemSortBy[] sortBy,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] MediaType[] mediaTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ImageType[] imageTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemSortBy[] sortBy,
         [FromQuery] bool? isPlayed,
-        [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] genres,
-        [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] officialRatings,
-        [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] tags,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] int[] years,
+        [FromQuery, ModelBinder(typeof(PipeDelimitedCollectionModelBinder))] string[] genres,
+        [FromQuery, ModelBinder(typeof(PipeDelimitedCollectionModelBinder))] string[] officialRatings,
+        [FromQuery, ModelBinder(typeof(PipeDelimitedCollectionModelBinder))] string[] tags,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] int[] years,
         [FromQuery] bool? enableUserData,
         [FromQuery] int? imageTypeLimit,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ImageType[] enableImageTypes,
         [FromQuery] string? person,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] personIds,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] personTypes,
-        [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] studios,
-        [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] artists,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] excludeArtistIds,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] artistIds,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] albumArtistIds,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] contributingArtistIds,
-        [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] albums,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] albumIds,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] ids,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] VideoType[] videoTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] personIds,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] personTypes,
+        [FromQuery, ModelBinder(typeof(PipeDelimitedCollectionModelBinder))] string[] studios,
+        [FromQuery, ModelBinder(typeof(PipeDelimitedCollectionModelBinder))] string[] artists,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] excludeArtistIds,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] artistIds,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] albumArtistIds,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] contributingArtistIds,
+        [FromQuery, ModelBinder(typeof(PipeDelimitedCollectionModelBinder))] string[] albums,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] albumIds,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] ids,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] VideoType[] videoTypes,
         [FromQuery] string? minOfficialRating,
         [FromQuery] bool? isLocked,
         [FromQuery] bool? isPlaceHolder,
@@ -690,16 +705,15 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery] int? maxWidth,
         [FromQuery] int? maxHeight,
         [FromQuery] bool? is3D,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] SeriesStatus[] seriesStatus,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] SeriesStatus[] seriesStatus,
         [FromQuery] string? nameStartsWithOrGreater,
         [FromQuery] string? nameStartsWith,
         [FromQuery] string? nameLessThan,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] studioIds,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] genreIds,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] studioIds,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] genreIds,
         [FromQuery] bool enableTotalRecordCount = true,
         [FromQuery] bool? enableImages = true)
-    {
-        return GetItems(
+        => GetItems(
             userId,
             maxOfficialRating,
             hasThemeSong,
@@ -708,6 +722,7 @@ public class ItemsController : BaseJellyfinApiController
             hasSpecialFeature,
             hasTrailer,
             adjacentTo,
+            null,
             parentIndexNumber,
             hasParentalRating,
             isHd,
@@ -785,7 +800,6 @@ public class ItemsController : BaseJellyfinApiController
             genreIds,
             enableTotalRecordCount,
             enableImages);
-    }
 
     /// <summary>
     /// Gets items based on a query.
@@ -807,26 +821,27 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="excludeActiveSessions">Optional. Whether to exclude the currently active sessions.</param>
     /// <response code="200">Items returned.</response>
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the items that are resumable.</returns>
-    [HttpGet("Users/{userId}/Items/Resume")]
+    [HttpGet("UserItems/Resume")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<QueryResult<BaseItemDto>> GetResumeItems(
-        [FromRoute, Required] Guid userId,
+        [FromQuery] Guid? userId,
         [FromQuery] int? startIndex,
         [FromQuery] int? limit,
         [FromQuery] string? searchTerm,
         [FromQuery] Guid? parentId,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] MediaType[] mediaTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFields[] fields,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] MediaType[] mediaTypes,
         [FromQuery] bool? enableUserData,
         [FromQuery] int? imageTypeLimit,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] excludeItemTypes,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ImageType[] enableImageTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] BaseItemKind[] excludeItemTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] BaseItemKind[] includeItemTypes,
         [FromQuery] bool enableTotalRecordCount = true,
         [FromQuery] bool? enableImages = true,
         [FromQuery] bool excludeActiveSessions = false)
     {
-        var user = _userManager.GetUserById(userId);
+        var requestUserId = RequestHelpers.GetUserId(User, userId);
+        var user = _userManager.GetUserById(requestUserId);
         if (user is null)
         {
             return NotFound();
@@ -840,7 +855,7 @@ public class ItemsController : BaseJellyfinApiController
         var ancestorIds = Array.Empty<Guid>();
 
         var excludeFolderIds = user.GetPreferenceValues<Guid>(PreferenceKind.LatestItemExcludes);
-        if (parentIdGuid.Equals(default) && excludeFolderIds.Length > 0)
+        if (parentIdGuid.IsEmpty() && excludeFolderIds.Length > 0)
         {
             ancestorIds = _libraryManager.GetUserRootFolder().GetChildren(user, true)
                 .Where(i => i is Folder)
@@ -853,7 +868,7 @@ public class ItemsController : BaseJellyfinApiController
         if (excludeActiveSessions)
         {
             excludeItemIds = _sessionManager.Sessions
-                .Where(s => s.UserId.Equals(userId) && s.NowPlayingItem is not null)
+                .Where(s => s.UserId.Equals(requestUserId) && s.NowPlayingItem is not null)
                 .Select(s => s.NowPlayingItem.Id)
                 .ToArray();
         }
@@ -887,6 +902,99 @@ public class ItemsController : BaseJellyfinApiController
     }
 
     /// <summary>
+    /// Gets items based on a query.
+    /// </summary>
+    /// <param name="userId">The user id.</param>
+    /// <param name="startIndex">The start index.</param>
+    /// <param name="limit">The item limit.</param>
+    /// <param name="searchTerm">The search term.</param>
+    /// <param name="parentId">Specify this to localize the search to a specific item or folder. Omit to use the root.</param>
+    /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
+    /// <param name="mediaTypes">Optional. Filter by MediaType. Allows multiple, comma delimited.</param>
+    /// <param name="enableUserData">Optional. Include user data.</param>
+    /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
+    /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
+    /// <param name="excludeItemTypes">Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimited.</param>
+    /// <param name="includeItemTypes">Optional. If specified, results will be filtered based on the item type. This allows multiple, comma delimited.</param>
+    /// <param name="enableTotalRecordCount">Optional. Enable the total record count.</param>
+    /// <param name="enableImages">Optional. Include image information in output.</param>
+    /// <param name="excludeActiveSessions">Optional. Whether to exclude the currently active sessions.</param>
+    /// <response code="200">Items returned.</response>
+    /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the items that are resumable.</returns>
+    [HttpGet("Users/{userId}/Items/Resume")]
+    [Obsolete("Kept for backwards compatibility")]
+    [ApiExplorerSettings(IgnoreApi = true)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public ActionResult<QueryResult<BaseItemDto>> GetResumeItemsLegacy(
+        [FromRoute, Required] Guid userId,
+        [FromQuery] int? startIndex,
+        [FromQuery] int? limit,
+        [FromQuery] string? searchTerm,
+        [FromQuery] Guid? parentId,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFields[] fields,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] MediaType[] mediaTypes,
+        [FromQuery] bool? enableUserData,
+        [FromQuery] int? imageTypeLimit,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ImageType[] enableImageTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] BaseItemKind[] excludeItemTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] BaseItemKind[] includeItemTypes,
+        [FromQuery] bool enableTotalRecordCount = true,
+        [FromQuery] bool? enableImages = true,
+        [FromQuery] bool excludeActiveSessions = false)
+    => GetResumeItems(
+        userId,
+        startIndex,
+        limit,
+        searchTerm,
+        parentId,
+        fields,
+        mediaTypes,
+        enableUserData,
+        imageTypeLimit,
+        enableImageTypes,
+        excludeItemTypes,
+        includeItemTypes,
+        enableTotalRecordCount,
+        enableImages,
+        excludeActiveSessions);
+
+    /// <summary>
+    /// Get Item User Data.
+    /// </summary>
+    /// <param name="userId">The user id.</param>
+    /// <param name="itemId">The item id.</param>
+    /// <response code="200">return item user data.</response>
+    /// <response code="404">Item is not found.</response>
+    /// <returns>Return <see cref="UserItemDataDto"/>.</returns>
+    [HttpGet("UserItems/{itemId}/UserData")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public ActionResult<UserItemDataDto?> GetItemUserData(
+        [FromQuery] Guid? userId,
+        [FromRoute, Required] Guid itemId)
+    {
+        var requestUserId = RequestHelpers.GetUserId(User, userId);
+        var user = _userManager.GetUserById(requestUserId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        if (!RequestHelpers.AssertCanUpdateUser(User, user, true))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to view this item user data.");
+        }
+
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, user);
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        return _userDataRepository.GetUserDataDto(item, user);
+    }
+
+    /// <summary>
     /// Get Item User Data.
     /// </summary>
     /// <param name="userId">The user id.</param>
@@ -897,19 +1005,51 @@ public class ItemsController : BaseJellyfinApiController
     [HttpGet("Users/{userId}/Items/{itemId}/UserData")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult<UserItemDataDto> GetItemUserData(
+    [Obsolete("Kept for backwards compatibility")]
+    [ApiExplorerSettings(IgnoreApi = true)]
+    public ActionResult<UserItemDataDto?> GetItemUserDataLegacy(
         [FromRoute, Required] Guid userId,
         [FromRoute, Required] Guid itemId)
+        => GetItemUserData(userId, itemId);
+
+    /// <summary>
+    /// Update Item User Data.
+    /// </summary>
+    /// <param name="userId">The user id.</param>
+    /// <param name="itemId">The item id.</param>
+    /// <param name="userDataDto">New user data object.</param>
+    /// <response code="200">return updated user item data.</response>
+    /// <response code="404">Item is not found.</response>
+    /// <returns>Return <see cref="UserItemDataDto"/>.</returns>
+    [HttpPost("UserItems/{itemId}/UserData")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public ActionResult<UserItemDataDto?> UpdateItemUserData(
+        [FromQuery] Guid? userId,
+        [FromRoute, Required] Guid itemId,
+        [FromBody, Required] UpdateUserItemDataDto userDataDto)
     {
-        if (!RequestHelpers.AssertCanUpdateUser(_userManager, User, userId, true))
+        var requestUserId = RequestHelpers.GetUserId(User, userId);
+        var user = _userManager.GetUserById(requestUserId);
+        if (user is null)
         {
-            return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to view this item user data.");
+            return NotFound();
         }
 
-        var user = _userManager.GetUserById(userId) ?? throw new ResourceNotFoundException();
-        var item = _libraryManager.GetItemById(itemId);
+        if (!RequestHelpers.AssertCanUpdateUser(User, user, true))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update this item user data.");
+        }
 
-        return (item == null) ? NotFound() : _userDataRepository.GetUserDataDto(item, user);
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, user);
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        _userDataRepository.SaveUserData(user, item, userDataDto, UserDataSaveReason.UpdateUserData);
+
+        return _userDataRepository.GetUserDataDto(item, user);
     }
 
     /// <summary>
@@ -924,25 +1064,11 @@ public class ItemsController : BaseJellyfinApiController
     [HttpPost("Users/{userId}/Items/{itemId}/UserData")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult<UserItemDataDto> UpdateItemUserData(
+    [Obsolete("Kept for backwards compatibility")]
+    [ApiExplorerSettings(IgnoreApi = true)]
+    public ActionResult<UserItemDataDto?> UpdateItemUserDataLegacy(
         [FromRoute, Required] Guid userId,
         [FromRoute, Required] Guid itemId,
         [FromBody, Required] UpdateUserItemDataDto userDataDto)
-    {
-        if (!RequestHelpers.AssertCanUpdateUser(_userManager, User, userId, true))
-        {
-            return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update this item user data.");
-        }
-
-        var user = _userManager.GetUserById(userId) ?? throw new ResourceNotFoundException();
-        var item = _libraryManager.GetItemById(itemId);
-        if (item == null)
-        {
-            return NotFound();
-        }
-
-        _userDataRepository.SaveUserData(user, item, userDataDto, UserDataSaveReason.UpdateUserData);
-
-        return _userDataRepository.GetUserDataDto(item, user);
-    }
+        => UpdateItemUserData(userId, itemId, userDataDto);
 }

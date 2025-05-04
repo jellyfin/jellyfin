@@ -119,7 +119,7 @@ namespace Emby.Server.Implementations.Plugins
             // Now load the assemblies..
             foreach (var plugin in _plugins)
             {
-                UpdatePluginSuperceedStatus(plugin);
+                UpdatePluginSupersededStatus(plugin);
 
                 if (plugin.IsEnabledAndSupported == false)
                 {
@@ -214,7 +214,7 @@ namespace Emby.Server.Implementations.Plugins
                     continue;
                 }
 
-                UpdatePluginSuperceedStatus(plugin);
+                UpdatePluginSupersededStatus(plugin);
                 if (!plugin.IsEnabledAndSupported)
                 {
                     continue;
@@ -624,9 +624,9 @@ namespace Emby.Server.Implementations.Plugins
             }
         }
 
-        private void UpdatePluginSuperceedStatus(LocalPlugin plugin)
+        private void UpdatePluginSupersededStatus(LocalPlugin plugin)
         {
-            if (plugin.Manifest.Status != PluginStatus.Superceded)
+            if (plugin.Manifest.Status != PluginStatus.Superseded)
             {
                 return;
             }
@@ -785,30 +785,27 @@ namespace Emby.Server.Implementations.Plugins
 
                 var cleaned = false;
                 var path = entry.Path;
-                if (_config.RemoveOldPlugins)
+                // Attempt a cleanup of old folders.
+                try
                 {
-                    // Attempt a cleanup of old folders.
-                    try
-                    {
-                        _logger.LogDebug("Deleting {Path}", path);
-                        Directory.Delete(path, true);
-                        cleaned = true;
-                    }
+                    _logger.LogDebug("Deleting {Path}", path);
+                    Directory.Delete(path, true);
+                    cleaned = true;
+                }
 #pragma warning disable CA1031 // Do not catch general exception types
-                    catch (Exception e)
+                catch (Exception e)
 #pragma warning restore CA1031 // Do not catch general exception types
-                    {
-                        _logger.LogWarning(e, "Unable to delete {Path}", path);
-                    }
+                {
+                    _logger.LogWarning(e, "Unable to delete {Path}", path);
+                }
 
-                    if (cleaned)
-                    {
-                        versions.RemoveAt(x);
-                    }
-                    else
-                    {
-                        ChangePluginState(entry, PluginStatus.Deleted);
-                    }
+                if (cleaned)
+                {
+                    versions.RemoveAt(x);
+                }
+                else
+                {
+                    ChangePluginState(entry, PluginStatus.Deleted);
                 }
             }
 
@@ -835,7 +832,7 @@ namespace Emby.Server.Implementations.Plugins
         /// <exception cref="ArgumentNullException">If the <see cref="LocalPlugin"/> is null.</exception>
         private bool TryGetPluginDlls(LocalPlugin plugin, out IReadOnlyList<string> whitelistedDlls)
         {
-            ArgumentNullException.ThrowIfNull(nameof(plugin));
+            ArgumentNullException.ThrowIfNull(plugin);
 
             IReadOnlyList<string> pluginDlls = Directory.GetFiles(plugin.Path, "*.dll", SearchOption.AllDirectories);
 
@@ -879,7 +876,7 @@ namespace Emby.Server.Implementations.Plugins
         }
 
         /// <summary>
-        /// Changes the status of the other versions of the plugin to "Superceded".
+        /// Changes the status of the other versions of the plugin to "Superseded".
         /// </summary>
         /// <param name="plugin">The <see cref="LocalPlugin"/> that's master.</param>
         private void ProcessAlternative(LocalPlugin plugin)
@@ -899,11 +896,11 @@ namespace Emby.Server.Implementations.Plugins
                 return;
             }
 
-            if (plugin.Manifest.Status == PluginStatus.Active && !ChangePluginState(previousVersion, PluginStatus.Superceded))
+            if (plugin.Manifest.Status == PluginStatus.Active && !ChangePluginState(previousVersion, PluginStatus.Superseded))
             {
                 _logger.LogError("Unable to enable version {Version} of {Name}", previousVersion.Version, previousVersion.Name);
             }
-            else if (plugin.Manifest.Status == PluginStatus.Superceded && !ChangePluginState(previousVersion, PluginStatus.Active))
+            else if (plugin.Manifest.Status == PluginStatus.Superseded && !ChangePluginState(previousVersion, PluginStatus.Active))
             {
                 _logger.LogError("Unable to supercede version {Version} of {Name}", previousVersion.Version, previousVersion.Name);
             }

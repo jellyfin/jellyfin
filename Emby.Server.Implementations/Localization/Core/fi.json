@@ -125,5 +125,15 @@
     "External": "Ulkoinen",
     "HearingImpaired": "Kuulorajoitteinen",
     "TaskRefreshTrickplayImages": "Luo Trickplay-kuvat",
-    "TaskRefreshTrickplayImagesDescription": "Luo Trickplay-esikatselut käytössä olevien kirjastojen videoista."
+    "TaskRefreshTrickplayImagesDescription": "Luo Trickplay-esikatselut käytössä olevien kirjastojen videoista.",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Poistaa kohteet kokoelmista ja soittolistoista joita ei ole enää olemassa.",
+    "TaskCleanCollectionsAndPlaylists": "Puhdista kokoelmat ja soittolistat",
+    "TaskAudioNormalization": "Äänenvoimakkuuden normalisointi",
+    "TaskAudioNormalizationDescription": "Etsii tiedostoista äänenvoimakkuuden normalisointitietoja.",
+    "TaskDownloadMissingLyrics": "Lataa puuttuva lyriikka",
+    "TaskExtractMediaSegments": "Mediasegmentin skannaus",
+    "TaskDownloadMissingLyricsDescription": "Ladataan sanoituksia",
+    "TaskExtractMediaSegmentsDescription": "Poimii tai hankkii mediasegmenttejä MediaSegment-yhteensopivista laajennuksista.",
+    "TaskMoveTrickplayImages": "Siirrä Trickplay-kuvien sijainti",
+    "TaskMoveTrickplayImagesDescription": "Siirtää olemassa olevia trickplay-tiedostoja kirjaston asetusten mukaan."
 }

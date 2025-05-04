@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
@@ -12,8 +10,19 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.TV
 {
+    /// <summary>
+    /// Service to manage episode metadata.
+    /// </summary>
     public class EpisodeMetadataService : MetadataService<Episode, EpisodeInfo>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EpisodeMetadataService"/> class.
+        /// </summary>
+        /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+        /// <param name="logger">Instance of the <see cref="ILogger{SeasonMetadataService}"/> interface.</param>
+        /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
+        /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
+        /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         public EpisodeMetadataService(
             IServerConfigurationManager serverConfigurationManager,
             ILogger<EpisodeMetadataService> logger,
@@ -93,6 +102,11 @@ namespace MediaBrowser.Providers.TV
             if (replaceData || !targetItem.IndexNumberEnd.HasValue)
             {
                 targetItem.IndexNumberEnd = sourceItem.IndexNumberEnd;
+            }
+
+            if (replaceData || !targetItem.ParentIndexNumber.HasValue)
+            {
+                targetItem.ParentIndexNumber = sourceItem.ParentIndexNumber;
             }
         }
     }

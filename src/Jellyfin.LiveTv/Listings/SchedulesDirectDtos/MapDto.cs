@@ -23,7 +23,7 @@ namespace Jellyfin.LiveTv.Listings.SchedulesDirectDtos
         /// Gets or sets the provider callsign.
         /// </summary>
         [JsonPropertyName("providerCallsign")]
-        public string? ProvderCallsign { get; set; }
+        public string? ProviderCallsign { get; set; }
 
         /// <summary>
         /// Gets or sets the logical channel number.

@@ -21,11 +21,11 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (current.Length == 0)
                 {
-                    item.Tags = new[] { name };
+                    item.Tags = [name];
                 }
                 else
                 {
-                    item.Tags = current.Concat(new[] { name }).ToArray();
+                    item.Tags = [..current, name];
                 }
             }
         }

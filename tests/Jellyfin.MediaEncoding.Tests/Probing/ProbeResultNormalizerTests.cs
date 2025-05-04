@@ -18,7 +18,7 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
     public class ProbeResultNormalizerTests
     {
         private readonly JsonSerializerOptions _jsonOptions;
-        private readonly ProbeResultNormalizer _probeResultNormalizer = new ProbeResultNormalizer(new NullLogger<EncoderValidatorTests>(), null);
+        private readonly ProbeResultNormalizer _probeResultNormalizer = new ProbeResultNormalizer(new NullLogger<EncoderValidatorTests>(), new Mock<ILocalizationManager>().Object);
 
         public ProbeResultNormalizerTests()
         {
@@ -45,6 +45,8 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
             var bytes = File.ReadAllBytes("Test Data/Probing/video_metadata.json");
             var internalMediaInfoResult = JsonSerializer.Deserialize<InternalMediaInfoResult>(bytes, _jsonOptions);
             MediaInfo res = _probeResultNormalizer.GetMediaInfo(internalMediaInfoResult, VideoType.VideoFile, false, "Test Data/Probing/video_metadata.mkv", MediaProtocol.File);
+
+            Assert.Equal("mkv", res.Container);
 
             Assert.Equal(3, res.MediaStreams.Count);
 
@@ -82,6 +84,7 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
             Assert.Equal(0, res.VideoStream.ElPresentFlag);
             Assert.Equal(1, res.VideoStream.BlPresentFlag);
             Assert.Equal(0, res.VideoStream.DvBlSignalCompatibilityId);
+            Assert.Equal(-180, res.VideoStream.Rotation);
 
             var audio1 = res.MediaStreams[1];
             Assert.Equal("eac3", audio1.Codec);
@@ -171,6 +174,21 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
             var internalMediaInfoResult = JsonSerializer.Deserialize<InternalMediaInfoResult>(bytes, _jsonOptions);
 
             MediaInfo res = _probeResultNormalizer.GetMediaInfo(internalMediaInfoResult, VideoType.VideoFile, false, "Test Data/Probing/video_metadata.mkv", MediaProtocol.File);
+
+            Assert.Equal(2, res.MediaStreams.Count);
+
+            Assert.False(res.MediaStreams[0].IsAVC);
+        }
+
+        [Fact]
+        public void GetMediaInfo_WebM_Success()
+        {
+            var bytes = File.ReadAllBytes("Test Data/Probing/video_webm.json");
+            var internalMediaInfoResult = JsonSerializer.Deserialize<InternalMediaInfoResult>(bytes, _jsonOptions);
+
+            MediaInfo res = _probeResultNormalizer.GetMediaInfo(internalMediaInfoResult, VideoType.VideoFile, false, "Test Data/Probing/video_metadata.webm", MediaProtocol.File);
+
+            Assert.Equal("mkv,webm", res.Container);
 
             Assert.Equal(2, res.MediaStreams.Count);
 
@@ -268,6 +286,40 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
             Assert.Equal(56945, res.VideoStream.BitRate);
             Assert.Equal(8, res.VideoStream.BitDepth);
             Assert.True(res.VideoStream.IsDefault);
+        }
+
+        [Fact]
+        public void GetMediaInfo_VideoWithSingleFrameMjpeg_Success()
+        {
+            var bytes = File.ReadAllBytes("Test Data/Probing/video_single_frame_mjpeg.json");
+
+            var internalMediaInfoResult = JsonSerializer.Deserialize<InternalMediaInfoResult>(bytes, _jsonOptions);
+            MediaInfo res = _probeResultNormalizer.GetMediaInfo(internalMediaInfoResult, VideoType.VideoFile, false, "Test Data/Probing/video_interlaced.mp4", MediaProtocol.File);
+
+            Assert.Equal(3, res.MediaStreams.Count);
+
+            Assert.NotNull(res.VideoStream);
+            Assert.Equal(res.MediaStreams[0], res.VideoStream);
+            Assert.Equal(0, res.VideoStream.Index);
+            Assert.Equal("h264", res.VideoStream.Codec);
+            Assert.Equal("High", res.VideoStream.Profile);
+            Assert.Equal(MediaStreamType.Video, res.VideoStream.Type);
+            Assert.Equal(1080, res.VideoStream.Height);
+            Assert.Equal(1920, res.VideoStream.Width);
+            Assert.False(res.VideoStream.IsInterlaced);
+            Assert.Equal("16:9", res.VideoStream.AspectRatio);
+            Assert.Equal("yuv420p", res.VideoStream.PixelFormat);
+            Assert.Equal(42d, res.VideoStream.Level);
+            Assert.Equal(1, res.VideoStream.RefFrames);
+            Assert.True(res.VideoStream.IsAVC);
+            Assert.Equal(50f, res.VideoStream.RealFrameRate);
+            Assert.Equal("1/1000", res.VideoStream.TimeBase);
+            Assert.Equal(8, res.VideoStream.BitDepth);
+            Assert.True(res.VideoStream.IsDefault);
+
+            var mjpeg = res.MediaStreams[2];
+            Assert.NotNull(mjpeg);
+            Assert.Equal("mjpeg", mjpeg.Codec);
         }
 
         [Fact]

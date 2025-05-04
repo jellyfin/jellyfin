@@ -18,8 +18,8 @@ namespace Emby.Server.Implementations.IO
         private readonly ILibraryManager _libraryManager;
         private readonly IServerConfigurationManager _configurationManager;
 
-        private readonly List<string> _affectedPaths = new List<string>();
-        private readonly object _timerLock = new object();
+        private readonly List<string> _affectedPaths = new();
+        private readonly Lock _timerLock = new();
         private Timer? _timer;
         private bool _disposed;
 
@@ -130,7 +130,7 @@ namespace Emby.Server.Implementations.IO
         private void ProcessPathChanges(List<string> paths)
         {
             IEnumerable<BaseItem> itemsToRefresh = paths
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Distinct()
                 .Select(GetAffectedBaseItem)
                 .Where(item => item is not null)
                 .DistinctBy(x => x!.Id)!;  // Removed null values in the previous .Where()

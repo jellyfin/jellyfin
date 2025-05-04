@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions.Json.Converters;
+using MediaBrowser.Model.Entities;
 
 namespace Jellyfin.Api.Models.PlaylistDtos;
 
@@ -14,13 +15,13 @@ public class CreatePlaylistDto
     /// <summary>
     /// Gets or sets the name of the new playlist.
     /// </summary>
-    public string? Name { get; set; }
+    public required string Name { get; set; }
 
     /// <summary>
     /// Gets or sets item ids to add to the playlist.
     /// </summary>
-    [JsonConverter(typeof(JsonCommaDelimitedArrayConverterFactory))]
-    public IReadOnlyList<Guid> Ids { get; set; } = Array.Empty<Guid>();
+    [JsonConverter(typeof(JsonCommaDelimitedCollectionConverterFactory))]
+    public IReadOnlyList<Guid> Ids { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the user id.
@@ -31,4 +32,14 @@ public class CreatePlaylistDto
     /// Gets or sets the media type.
     /// </summary>
     public MediaType? MediaType { get; set; }
+
+    /// <summary>
+    /// Gets or sets the playlist users.
+    /// </summary>
+    public IReadOnlyList<PlaylistUserPermissions> Users { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the playlist is public.
+    /// </summary>
+    public bool IsPublic { get; set; } = true;
 }

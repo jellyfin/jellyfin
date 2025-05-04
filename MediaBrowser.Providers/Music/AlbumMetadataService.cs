@@ -47,11 +47,11 @@ namespace MediaBrowser.Providers.Music
         protected override bool EnableUpdatingStudiosFromChildren => true;
 
         /// <inheritdoc />
-        protected override IList<BaseItem> GetChildrenForMetadataUpdates(MusicAlbum item)
+        protected override IReadOnlyList<BaseItem> GetChildrenForMetadataUpdates(MusicAlbum item)
             => item.GetRecursiveChildren(i => i is Audio);
 
         /// <inheritdoc />
-        protected override ItemUpdateType UpdateMetadataFromChildren(MusicAlbum item, IList<BaseItem> children, bool isFullRefresh, ItemUpdateType currentUpdateType)
+        protected override ItemUpdateType UpdateMetadataFromChildren(MusicAlbum item, IReadOnlyList<BaseItem> children, bool isFullRefresh, ItemUpdateType currentUpdateType)
         {
             var updateType = base.UpdateMetadataFromChildren(item, children, isFullRefresh, currentUpdateType);
 
@@ -187,7 +187,7 @@ namespace MediaBrowser.Providers.Music
                 {
                     PeopleHelper.AddPerson(people, new PersonInfo
                     {
-                        Name = albumArtist,
+                        Name = albumArtist.Trim(),
                         Type = PersonKind.AlbumArtist
                     });
                 }
@@ -196,7 +196,7 @@ namespace MediaBrowser.Providers.Music
                 {
                     PeopleHelper.AddPerson(people, new PersonInfo
                     {
-                        Name = artist,
+                        Name = artist.Trim(),
                         Type = PersonKind.Artist
                     });
                 }
@@ -224,6 +224,10 @@ namespace MediaBrowser.Providers.Music
             if (replaceData || targetItem.Artists.Count == 0)
             {
                 targetItem.Artists = sourceItem.Artists;
+            }
+            else
+            {
+                targetItem.Artists = targetItem.Artists.Concat(sourceItem.Artists).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
             }
 
             if (replaceData || string.IsNullOrEmpty(targetItem.GetProviderId(MetadataProvider.MusicBrainzAlbumArtist)))

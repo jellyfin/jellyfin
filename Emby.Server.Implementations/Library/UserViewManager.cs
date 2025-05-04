@@ -6,8 +6,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using Jellyfin.Data.Entities;
+using Jellyfin.Data;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
@@ -15,7 +18,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Channels;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
@@ -26,17 +28,15 @@ namespace Emby.Server.Implementations.Library
     {
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _localizationManager;
-        private readonly IUserManager _userManager;
 
         private readonly IChannelManager _channelManager;
         private readonly ILiveTvManager _liveTvManager;
         private readonly IServerConfigurationManager _config;
 
-        public UserViewManager(ILibraryManager libraryManager, ILocalizationManager localizationManager, IUserManager userManager, IChannelManager channelManager, ILiveTvManager liveTvManager, IServerConfigurationManager config)
+        public UserViewManager(ILibraryManager libraryManager, ILocalizationManager localizationManager, IChannelManager channelManager, ILiveTvManager liveTvManager, IServerConfigurationManager config)
         {
             _libraryManager = libraryManager;
             _localizationManager = localizationManager;
-            _userManager = userManager;
             _channelManager = channelManager;
             _liveTvManager = liveTvManager;
             _config = config;
@@ -44,11 +44,7 @@ namespace Emby.Server.Implementations.Library
 
         public Folder[] GetUserViews(UserViewQuery query)
         {
-            var user = _userManager.GetUserById(query.UserId);
-            if (user is null)
-            {
-                throw new ArgumentException("User id specified in the query does not exist.", nameof(query));
-            }
+            var user = query.User;
 
             var folders = _libraryManager.GetUserRootFolder()
                 .GetChildren(user, true)
@@ -124,14 +120,14 @@ namespace Emby.Server.Implementations.Library
             {
                 var channelResult = _channelManager.GetChannelsInternalAsync(new ChannelQuery
                 {
-                    UserId = query.UserId
+                    UserId = user.Id
                 }).GetAwaiter().GetResult();
 
                 var channels = channelResult.Items;
 
                 list.AddRange(channels);
 
-                if (_liveTvManager.GetEnabledUsers().Select(i => i.Id).Contains(query.UserId))
+                if (_liveTvManager.GetEnabledUsers().Select(i => i.Id).Contains(user.Id))
                 {
                     list.Add(_liveTvManager.GetInternalLiveTvFolder(CancellationToken.None));
                 }
@@ -151,7 +147,7 @@ namespace Emby.Server.Implementations.Library
                     var index = Array.IndexOf(orders, i.Id);
                     if (index == -1
                         && i is UserView view
-                        && !view.DisplayParentId.Equals(default))
+                        && !view.DisplayParentId.IsEmpty())
                     {
                         index = Array.IndexOf(orders, view.DisplayParentId);
                     }
@@ -206,9 +202,7 @@ namespace Emby.Server.Implementations.Library
 
         public List<Tuple<BaseItem, List<BaseItem>>> GetLatestItems(LatestItemsQuery request, DtoOptions options)
         {
-            var user = _userManager.GetUserById(request.UserId);
-
-            var libraryItems = GetItemsForLatestItems(user, request, options);
+            var libraryItems = GetItemsForLatestItems(request.User, request, options);
 
             var list = new List<Tuple<BaseItem, List<BaseItem>>>();
 
@@ -253,7 +247,7 @@ namespace Emby.Server.Implementations.Library
 
             var parents = new List<BaseItem>();
 
-            if (!parentId.Equals(default))
+            if (!parentId.IsEmpty())
             {
                 var parentItem = _libraryManager.GetItemById(parentId);
                 if (parentItem is Channel)
@@ -302,8 +296,8 @@ namespace Emby.Server.Implementations.Library
             {
                 // Handle situations with the grouping setting, e.g. movies showing up in tv, etc.
                 // Thanks to mixed content libraries included in the UserView
-                var hasCollectionType = parents.OfType<UserView>().ToArray();
-                if (hasCollectionType.Length > 0)
+                var hasCollectionType = parents.OfType<UserView>().ToList();
+                if (hasCollectionType.Count > 0)
                 {
                     if (hasCollectionType.All(i => i.CollectionType == CollectionType.movies))
                     {
@@ -316,39 +310,40 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            var mediaTypes = new List<MediaType>();
+            MediaType[] mediaTypes = [];
 
             if (includeItemTypes.Length == 0)
             {
+                HashSet<MediaType> tmpMediaTypes = [];
                 foreach (var parent in parents.OfType<ICollectionFolder>())
                 {
                     switch (parent.CollectionType)
                     {
                         case CollectionType.books:
-                            mediaTypes.Add(MediaType.Book);
-                            mediaTypes.Add(MediaType.Audio);
+                            tmpMediaTypes.Add(MediaType.Book);
+                            tmpMediaTypes.Add(MediaType.Audio);
                             break;
                         case CollectionType.music:
-                            mediaTypes.Add(MediaType.Audio);
+                            tmpMediaTypes.Add(MediaType.Audio);
                             break;
                         case CollectionType.photos:
-                            mediaTypes.Add(MediaType.Photo);
-                            mediaTypes.Add(MediaType.Video);
+                            tmpMediaTypes.Add(MediaType.Photo);
+                            tmpMediaTypes.Add(MediaType.Video);
                             break;
                         case CollectionType.homevideos:
-                            mediaTypes.Add(MediaType.Photo);
-                            mediaTypes.Add(MediaType.Video);
+                            tmpMediaTypes.Add(MediaType.Photo);
+                            tmpMediaTypes.Add(MediaType.Video);
                             break;
                         default:
-                            mediaTypes.Add(MediaType.Video);
+                            tmpMediaTypes.Add(MediaType.Video);
                             break;
                     }
                 }
 
-                mediaTypes = mediaTypes.Distinct().ToList();
+                mediaTypes = tmpMediaTypes.ToArray();
             }
 
-            var excludeItemTypes = includeItemTypes.Length == 0 && mediaTypes.Count == 0
+            var excludeItemTypes = includeItemTypes.Length == 0 && mediaTypes.Length == 0
                 ? new[]
                 {
                     BaseItemKind.Person,
@@ -374,12 +369,22 @@ namespace Emby.Server.Implementations.Library
                 Limit = limit * 5,
                 IsPlayed = isPlayed,
                 DtoOptions = options,
-                MediaTypes = mediaTypes.ToArray()
+                MediaTypes = mediaTypes
             };
 
-            if (parents.Count == 0)
+            if (request.GroupItems)
             {
-                return _libraryManager.GetItemList(query, false);
+                if (parents.OfType<ICollectionFolder>().All(i => i.CollectionType == CollectionType.tvshows))
+                {
+                    query.Limit = limit;
+                    return _libraryManager.GetLatestItemList(query, parents, CollectionType.tvshows);
+                }
+
+                if (parents.OfType<ICollectionFolder>().All(i => i.CollectionType == CollectionType.music))
+                {
+                    query.Limit = limit;
+                    return _libraryManager.GetLatestItemList(query, parents, CollectionType.music);
+                }
             }
 
             return _libraryManager.GetItemList(query, parents);

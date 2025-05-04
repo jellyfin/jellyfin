@@ -3,6 +3,7 @@ using System.Linq;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -49,11 +50,11 @@ public class FilterController : BaseJellyfinApiController
     public ActionResult<QueryFiltersLegacy> GetQueryFiltersLegacy(
         [FromQuery] Guid? userId,
         [FromQuery] Guid? parentId,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] MediaType[] mediaTypes)
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] BaseItemKind[] includeItemTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] MediaType[] mediaTypes)
     {
         userId = RequestHelpers.GetUserId(User, userId);
-        var user = userId.Value.Equals(default)
+        var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -136,7 +137,7 @@ public class FilterController : BaseJellyfinApiController
     public ActionResult<QueryFilters> GetQueryFilters(
         [FromQuery] Guid? userId,
         [FromQuery] Guid? parentId,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] BaseItemKind[] includeItemTypes,
         [FromQuery] bool? isAiring,
         [FromQuery] bool? isMovie,
         [FromQuery] bool? isSports,
@@ -146,7 +147,7 @@ public class FilterController : BaseJellyfinApiController
         [FromQuery] bool? recursive)
     {
         userId = RequestHelpers.GetUserId(User, userId);
-        var user = userId.Value.Equals(default)
+        var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -161,7 +162,7 @@ public class FilterController : BaseJellyfinApiController
         }
         else if (parentId.HasValue)
         {
-            parentItem = _libraryManager.GetItemById(parentId.Value);
+            parentItem = _libraryManager.GetItemById<BaseItem>(parentId.Value);
         }
 
         var filters = new QueryFilters();

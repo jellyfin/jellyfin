@@ -20,26 +20,37 @@ namespace Jellyfin.Server.Implementations.Tests.IO
             _sut = _fixture.Create<ManagedFileSystem>();
         }
 
-        [Theory]
+        [SkippableTheory]
         [InlineData("/Volumes/Library/Sample/Music/Playlists/", "../Beethoven/Misc/Moonlight Sonata.mp3", "/Volumes/Library/Sample/Music/Beethoven/Misc/Moonlight Sonata.mp3")]
         [InlineData("/Volumes/Library/Sample/Music/Playlists/", "../../Beethoven/Misc/Moonlight Sonata.mp3", "/Volumes/Library/Sample/Beethoven/Misc/Moonlight Sonata.mp3")]
         [InlineData("/Volumes/Library/Sample/Music/Playlists/", "Beethoven/Misc/Moonlight Sonata.mp3", "/Volumes/Library/Sample/Music/Playlists/Beethoven/Misc/Moonlight Sonata.mp3")]
-        public void MakeAbsolutePathCorrectlyHandlesRelativeFilePaths(
+        [InlineData("/Volumes/Library/Sample/Music/Playlists/", "/mnt/Beethoven/Misc/Moonlight Sonata.mp3", "/mnt/Beethoven/Misc/Moonlight Sonata.mp3")]
+        public void MakeAbsolutePathCorrectlyHandlesRelativeFilePathsOnUnixLike(
             string folderPath,
             string filePath,
             string expectedAbsolutePath)
         {
+            Skip.If(OperatingSystem.IsWindows());
+
+            var generatedPath = _sut.MakeAbsolutePath(folderPath, filePath);
+            Assert.Equal(expectedAbsolutePath, generatedPath);
+        }
+
+        [SkippableTheory]
+        [InlineData(@"C:\\Volumes\Library\Sample\Music\Playlists\", @"..\Beethoven\Misc\Moonlight Sonata.mp3", @"C:\Volumes\Library\Sample\Music\Beethoven\Misc\Moonlight Sonata.mp3")]
+        [InlineData(@"C:\\Volumes\Library\Sample\Music\Playlists\", @"..\..\Beethoven\Misc\Moonlight Sonata.mp3", @"C:\Volumes\Library\Sample\Beethoven\Misc\Moonlight Sonata.mp3")]
+        [InlineData(@"C:\\Volumes\Library\Sample\Music\Playlists\", @"Beethoven\Misc\Moonlight Sonata.mp3", @"C:\Volumes\Library\Sample\Music\Playlists\Beethoven\Misc\Moonlight Sonata.mp3")]
+        [InlineData(@"C:\\Volumes\Library\Sample\Music\Playlists\", @"D:\\Beethoven\Misc\Moonlight Sonata.mp3", @"D:\\Beethoven\Misc\Moonlight Sonata.mp3")]
+        public void MakeAbsolutePathCorrectlyHandlesRelativeFilePathsOnWindows(
+            string folderPath,
+            string filePath,
+            string expectedAbsolutePath)
+        {
+            Skip.If(!OperatingSystem.IsWindows());
+
             var generatedPath = _sut.MakeAbsolutePath(folderPath, filePath);
 
-            if (OperatingSystem.IsWindows())
-            {
-                var expectedWindowsPath = expectedAbsolutePath.Replace('/', '\\');
-                Assert.Equal(expectedWindowsPath, generatedPath.Split(':')[1]);
-            }
-            else
-            {
-                Assert.Equal(expectedAbsolutePath, generatedPath);
-            }
+            Assert.Equal(expectedAbsolutePath, generatedPath);
         }
 
         [Theory]

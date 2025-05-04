@@ -7,7 +7,7 @@ set -o pipefail
 set -o xtrace
 
 usage() {
-    echo -e "bump_version - increase the shared version and generate changelogs"
+    echo -e "bump_version - increase the shared version"
     echo -e ""
     echo -e "Usage:"
     echo -e " $ bump_version <new_version>"
@@ -19,9 +19,8 @@ if [[ -z $1 ]]; then
 fi
 
 shared_version_file="./SharedVersion.cs"
-build_file="./build.yaml"
 # csproj files for nuget packages
-jellyfin_subprojects=( 
+jellyfin_subprojects=(
   MediaBrowser.Common/MediaBrowser.Common.csproj
   Jellyfin.Data/Jellyfin.Data.csproj
   MediaBrowser.Controller/MediaBrowser.Controller.csproj
@@ -29,31 +28,19 @@ jellyfin_subprojects=(
   Emby.Naming/Emby.Naming.csproj
   src/Jellyfin.Extensions/Jellyfin.Extensions.csproj
 )
+issue_template_file="./.github/ISSUE_TEMPLATE/issue report.yml"
 
 new_version="$1"
+new_version_sed="$( cut -f1 -d'-' <<<"${new_version}" )"
 
-# Parse the version from the AssemblyVersion
 old_version="$(
     grep "AssemblyVersion" ${shared_version_file} \
         | sed -E 's/\[assembly: ?AssemblyVersion\("([0-9\.]+)"\)\]/\1/'
 )"
-echo $old_version
+echo old assembly version: $old_version
 
-# Set the shared version to the specified new_version
-old_version_sed="$( sed 's/\./\\./g' <<<"${old_version}" )" # Escape the '.' chars
-new_version_sed="$( cut -f1 -d'-' <<<"${new_version}" )"
-sed -i "s/${old_version_sed}/${new_version_sed}/g" ${shared_version_file}
-
-old_version="$(
-    grep "version:" ${build_file} \
-        | sed -E 's/version: "([0-9\.]+[-a-z0-9]*)"/\1/'
-)"
-echo $old_version
-
-# Set the build.yaml version to the specified new_version
-old_version_sed="$( sed 's/\./\\./g' <<<"${old_version}" )" # Escape the '.' chars
-new_version_sed="$( cut -f1 -d'-' <<<"${new_version}" )"
-sed -i "s/${old_version_sed}/${new_version_sed}/g" ${build_file}
+# Set the assembly version to the specified new_version
+sed -i "s|${old_version}|${new_version_sed}|g" ${shared_version_file}
 
 # update nuget package version
 for subproject in ${jellyfin_subprojects[@]}; do
@@ -65,64 +52,13 @@ for subproject in ${jellyfin_subprojects[@]}; do
             | sed -E 's/<VersionPrefix>([0-9\.]+[-a-z0-9]*)<\/VersionPrefix>/\1/'
     )"
     echo old nuget version: $old_version
-    new_version_sed="$( cut -f1 -d'-' <<<"${new_version}" )"
 
     # Set the nuget version to the specified new_version
     sed -i "s|${old_version}|${new_version_sed}|g" ${subproject}
 done
 
-if [[ ${new_version} == *"-"* ]]; then
-    new_version_pkg="$( sed 's/-/~/g' <<<"${new_version}" )"
-    new_version_deb_sup=""
-else
-    new_version_pkg="${new_version}"
-    new_version_deb_sup="-1"
-fi
-
-# Update the metapackage equivs file
-debian_equivs_file="debian/metapackage/jellyfin"
-sed -i "s/${old_version_sed}/${new_version_pkg}/g" ${debian_equivs_file}
-
-# Write out a temporary Debian changelog with our new stuff appended and some templated formatting
-debian_changelog_file="debian/changelog"
-debian_changelog_temp="$( mktemp )"
-# Create new temp file with our changelog
-echo -e "jellyfin-server (${new_version_pkg}${new_version_deb_sup}) unstable; urgency=medium
-
-  * New upstream version ${new_version}; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v${new_version}
-
- -- Jellyfin Packaging Team <packaging@jellyfin.org>  $( date --rfc-2822 )
-" >> ${debian_changelog_temp}
-cat ${debian_changelog_file} >> ${debian_changelog_temp}
-# Move into place
-mv ${debian_changelog_temp} ${debian_changelog_file}
-
-# Write out a temporary Yum changelog with our new stuff prepended and some templated formatting
-fedora_spec_file="fedora/jellyfin.spec"
-fedora_changelog_temp="$( mktemp )"
-fedora_spec_temp_dir="$( mktemp -d )"
-fedora_spec_temp="${fedora_spec_temp_dir}/jellyfin.spec.tmp"
-# Make a copy of our spec file for hacking
-cp ${fedora_spec_file} ${fedora_spec_temp_dir}/
-pushd ${fedora_spec_temp_dir}
-# Split out the stuff before and after changelog
-csplit jellyfin.spec  "/^%changelog/" # produces xx00 xx01
-# Update the version in xx00
-sed -i "s/${old_version_sed}/${new_version_pkg}/g" xx00
-# Remove the header from xx01
-sed -i '/^%changelog/d' xx01
-# Create new temp file with our changelog
-echo -e "%changelog
-* $( LANG=C date '+%a %b %d %Y' ) Jellyfin Packaging Team <packaging@jellyfin.org>
-- New upstream version ${new_version}; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v${new_version}" >> ${fedora_changelog_temp}
-cat xx01 >> ${fedora_changelog_temp}
-# Reassembble
-cat xx00 ${fedora_changelog_temp} > ${fedora_spec_temp}
-popd
-# Move into place
-mv ${fedora_spec_temp} ${fedora_spec_file}
-# Clean up
-rm -rf ${fedora_spec_temp_dir}
+# Set the version in the GitHub issue template file
+sed -i "s|${old_version}|${new_version_sed}|g" ${issue_template_file}
 
 # Stage the changed files for commit
 git add .

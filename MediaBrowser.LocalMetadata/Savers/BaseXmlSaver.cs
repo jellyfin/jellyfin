@@ -96,7 +96,7 @@ namespace MediaBrowser.LocalMetadata.Savers
             var directory = Path.GetDirectoryName(path) ?? throw new InvalidDataException($"Provided path ({path}) is not valid.");
             Directory.CreateDirectory(directory);
 
-            // On Windows, savint the file will fail if the file is hidden or readonly
+            // On Windows, saving the file will fail if the file is hidden or readonly
             FileSystem.SetAttributes(path, false, false);
 
             var fileStreamOptions = new FileStreamOptions()
@@ -420,19 +420,16 @@ namespace MediaBrowser.LocalMetadata.Savers
 
             foreach (var share in item.Shares)
             {
-                if (share.UserId is not null)
-                {
-                    await writer.WriteStartElementAsync(null, "Share", null).ConfigureAwait(false);
+                await writer.WriteStartElementAsync(null, "Share", null).ConfigureAwait(false);
 
-                    await writer.WriteElementStringAsync(null, "UserId", null, share.UserId).ConfigureAwait(false);
-                    await writer.WriteElementStringAsync(
-                        null,
-                        "CanEdit",
-                        null,
-                        share.CanEdit.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()).ConfigureAwait(false);
+                await writer.WriteElementStringAsync(null, "UserId", null, share.UserId.ToString()).ConfigureAwait(false);
+                await writer.WriteElementStringAsync(
+                    null,
+                    "CanEdit",
+                    null,
+                    share.CanEdit.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()).ConfigureAwait(false);
 
-                    await writer.WriteEndElementAsync().ConfigureAwait(false);
-                }
+                await writer.WriteEndElementAsync().ConfigureAwait(false);
             }
 
             await writer.WriteEndElementAsync().ConfigureAwait(false);

@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Xml;
+using Emby.Naming.TV;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Extensions;
@@ -48,29 +49,20 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             {
                 case "id":
                     {
+                        // Get ids from attributes
+                        item.TrySetProviderId(MetadataProvider.Tmdb, reader.GetAttribute("TMDB"));
+                        item.TrySetProviderId(MetadataProvider.Tvdb, reader.GetAttribute("TVDB"));
                         string? imdbId = reader.GetAttribute("IMDB");
-                        string? tmdbId = reader.GetAttribute("TMDB");
-                        string? tvdbId = reader.GetAttribute("TVDB");
 
-                        if (string.IsNullOrWhiteSpace(tvdbId))
+                        // Read id from content
+                        // Content can be arbitrary according to Kodi wiki, so only parse if we are sure it matches a provider-specific schema
+                        var contentId = reader.ReadElementContentAsString();
+                        if (string.IsNullOrEmpty(imdbId) && contentId.StartsWith("tt", StringComparison.Ordinal))
                         {
-                            tvdbId = reader.ReadElementContentAsString();
+                            imdbId = contentId;
                         }
 
-                        if (!string.IsNullOrWhiteSpace(imdbId))
-                        {
-                            item.SetProviderId(MetadataProvider.Imdb, imdbId);
-                        }
-
-                        if (!string.IsNullOrWhiteSpace(tmdbId))
-                        {
-                            item.SetProviderId(MetadataProvider.Tmdb, tmdbId);
-                        }
-
-                        if (!string.IsNullOrWhiteSpace(tvdbId))
-                        {
-                            item.SetProviderId(MetadataProvider.Tvdb, tvdbId);
-                        }
+                        item.TrySetProviderId(MetadataProvider.Imdb, imdbId);
 
                         break;
                     }
@@ -87,7 +79,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(status))
                         {
-                            if (Enum.TryParse(status, true, out SeriesStatus seriesStatus))
+                            if (TvParserHelpers.TryParseSeriesStatus(status, out var seriesStatus))
                             {
                                 item.Status = seriesStatus;
                             }
@@ -100,19 +92,10 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
+                // Season names are processed by SeriesNfoSeasonParser
                 case "namedseason":
-                    {
-                        var parsed = int.TryParse(reader.GetAttribute("number"), NumberStyles.Integer, CultureInfo.InvariantCulture, out var seasonNumber);
-                        var name = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(name) && parsed)
-                        {
-                            item.SeasonNames[seasonNumber] = name;
-                        }
-
-                        break;
-                    }
-
+                    reader.Skip();
+                    break;
                 default:
                     base.FetchDataFromXmlNode(reader, itemResult);
                     break;

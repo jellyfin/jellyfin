@@ -59,6 +59,11 @@ public static class NetworkConstants
     public static readonly IPNetwork IPv4RFC1918PrivateClassC = new IPNetwork(IPAddress.Parse("192.168.0.0"), 16);
 
     /// <summary>
+    /// IPv4 Link-Local as defined in RFC 3927.
+    /// </summary>
+    public static readonly IPNetwork IPv4RFC3927LinkLocal = new IPNetwork(IPAddress.Parse("169.254.0.0"), 16);
+
+    /// <summary>
     /// IPv6 loopback as defined in RFC 4291.
     /// </summary>
     public static readonly IPNetwork IPv6RFC4291Loopback = new IPNetwork(IPAddress.IPv6Loopback, 128);

@@ -54,7 +54,7 @@ namespace MediaBrowser.Controller.LiveTv
         public string ChannelGroup { get; set; }
 
         /// <summary>
-        /// Gets or sets the the image path if it can be accessed directly from the file system.
+        /// Gets or sets the image path if it can be accessed directly from the file system.
         /// </summary>
         /// <value>The image path.</value>
         public string ImagePath { get; set; }

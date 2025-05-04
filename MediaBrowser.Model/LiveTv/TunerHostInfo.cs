@@ -9,6 +9,10 @@ namespace MediaBrowser.Model.LiveTv
         {
             AllowHWTranscoding = true;
             IgnoreDts = true;
+            ReadAtNativeFramerate = false;
+            AllowStreamSharing = true;
+            AllowFmp4TranscodingContainer = false;
+            FallbackMaxStreamingBitrate = 30000000;
         }
 
         public string Id { get; set; }
@@ -25,6 +29,12 @@ namespace MediaBrowser.Model.LiveTv
 
         public bool AllowHWTranscoding { get; set; }
 
+        public bool AllowFmp4TranscodingContainer { get; set; }
+
+        public bool AllowStreamSharing { get; set; }
+
+        public int FallbackMaxStreamingBitrate { get; set; }
+
         public bool EnableStreamLooping { get; set; }
 
         public string Source { get; set; }
@@ -34,5 +44,7 @@ namespace MediaBrowser.Model.LiveTv
         public string UserAgent { get; set; }
 
         public bool IgnoreDts { get; set; }
+
+        public bool ReadAtNativeFramerate { get; set; }
     }
 }

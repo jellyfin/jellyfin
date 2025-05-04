@@ -6,8 +6,10 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Jellyfin.Data.Entities;
+using Jellyfin.Data;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.TV;
@@ -236,7 +238,7 @@ namespace MediaBrowser.Controller.Entities
             return ConvertToResult(_libraryManager.GetItemList(query));
         }
 
-        private QueryResult<BaseItem> ConvertToResult(List<BaseItem> items)
+        private QueryResult<BaseItem> ConvertToResult(IReadOnlyList<BaseItem> items)
         {
             return new QueryResult<BaseItem>(items);
         }
@@ -337,7 +339,7 @@ namespace MediaBrowser.Controller.Entities
                 {
                     Limit = query.Limit,
                     StartIndex = query.StartIndex,
-                    UserId = query.User.Id
+                    User = query.User
                 },
                 parentFolders,
                 query.DtoOptions);
@@ -430,10 +432,8 @@ namespace MediaBrowser.Controller.Entities
             InternalItemsQuery query,
             ILibraryManager libraryManager)
         {
-            var user = query.User;
-
             // This must be the last filter
-            if (query.AdjacentTo.HasValue && !query.AdjacentTo.Value.Equals(default))
+            if (!query.AdjacentTo.IsNullOrEmpty())
             {
                 items = FilterForAdjacency(items.ToList(), query.AdjacentTo.Value);
             }
@@ -744,7 +744,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 var filterValue = query.HasThemeSong.Value;
 
-                var themeCount = item.GetThemeSongs().Count;
+                var themeCount = item.GetThemeSongs(user).Count;
                 var ok = filterValue ? themeCount > 0 : themeCount == 0;
 
                 if (!ok)
@@ -757,7 +757,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 var filterValue = query.HasThemeVideo.Value;
 
-                var themeCount = item.GetThemeVideos().Count;
+                var themeCount = item.GetThemeVideos(user).Count;
                 var ok = filterValue ? themeCount > 0 : themeCount == 0;
 
                 if (!ok)

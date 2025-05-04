@@ -116,8 +116,8 @@ namespace MediaBrowser.Controller.Library
         {
             get
             {
-                var paths = string.IsNullOrEmpty(Path) ? Array.Empty<string>() : new[] { Path };
-                return AdditionalLocations is null ? paths : paths.Concat(AdditionalLocations).ToArray();
+                var paths = string.IsNullOrEmpty(Path) ? Array.Empty<string>() : [Path];
+                return AdditionalLocations is null ? paths : [..paths, ..AdditionalLocations];
             }
         }
 

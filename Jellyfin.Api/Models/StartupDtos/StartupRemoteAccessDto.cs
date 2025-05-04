@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace Jellyfin.Api.Models.StartupDtos;
 
@@ -17,5 +18,6 @@ public class StartupRemoteAccessDto
     /// Gets or sets a value indicating whether enable automatic port mapping.
     /// </summary>
     [Required]
+    [Obsolete("No longer supported")]
     public bool EnableAutomaticPortMapping { get; set; }
 }

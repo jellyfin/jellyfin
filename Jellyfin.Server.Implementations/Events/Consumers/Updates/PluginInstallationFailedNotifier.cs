@@ -1,4 +1,4 @@
-﻿using System.Threading;
+using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller.Events;

@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 
 namespace MediaBrowser.Model.Dto
@@ -66,12 +65,12 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the key.
         /// </summary>
         /// <value>The key.</value>
-        public string Key { get; set; }
+        public required string Key { get; set; }
 
         /// <summary>
         /// Gets or sets the item identifier.
         /// </summary>
         /// <value>The item identifier.</value>
-        public string ItemId { get; set; }
+        public Guid ItemId { get; set; }
     }
 }

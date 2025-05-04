@@ -5,7 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.SyncPlay;
@@ -272,7 +273,7 @@ namespace Emby.Server.Implementations.SyncPlay
                 SetState(waitingState);
             }
 
-            var updateSession = NewSyncPlayGroupUpdate(GroupUpdateType.GroupJoined, GetInfo());
+            var updateSession = new SyncPlayGroupJoinedUpdate(GroupId, GetInfo());
             SendGroupUpdate(session, SyncPlayBroadcastType.CurrentSession, updateSession, cancellationToken);
 
             _state.SessionJoined(this, _state.Type, session, cancellationToken);
@@ -290,10 +291,10 @@ namespace Emby.Server.Implementations.SyncPlay
         {
             AddSession(session);
 
-            var updateSession = NewSyncPlayGroupUpdate(GroupUpdateType.GroupJoined, GetInfo());
+            var updateSession = new SyncPlayGroupJoinedUpdate(GroupId, GetInfo());
             SendGroupUpdate(session, SyncPlayBroadcastType.CurrentSession, updateSession, cancellationToken);
 
-            var updateOthers = NewSyncPlayGroupUpdate(GroupUpdateType.UserJoined, session.UserName);
+            var updateOthers = new SyncPlayUserJoinedUpdate(GroupId, session.UserName);
             SendGroupUpdate(session, SyncPlayBroadcastType.AllExceptCurrentSession, updateOthers, cancellationToken);
 
             _state.SessionJoined(this, _state.Type, session, cancellationToken);
@@ -313,10 +314,10 @@ namespace Emby.Server.Implementations.SyncPlay
 
             RemoveSession(session);
 
-            var updateSession = NewSyncPlayGroupUpdate(GroupUpdateType.GroupLeft, GroupId.ToString());
+            var updateSession = new SyncPlayGroupLeftUpdate(GroupId, GroupId.ToString());
             SendGroupUpdate(session, SyncPlayBroadcastType.CurrentSession, updateSession, cancellationToken);
 
-            var updateOthers = NewSyncPlayGroupUpdate(GroupUpdateType.UserLeft, session.UserName);
+            var updateOthers = new SyncPlayUserLeftUpdate(GroupId, session.UserName);
             SendGroupUpdate(session, SyncPlayBroadcastType.AllExceptCurrentSession, updateOthers, cancellationToken);
 
             _logger.LogInformation("Session {SessionId} left group {GroupId}.", session.Id, GroupId.ToString());
@@ -422,12 +423,6 @@ namespace Emby.Server.Implementations.SyncPlay
                 type,
                 PositionTicks,
                 DateTime.UtcNow);
-        }
-
-        /// <inheritdoc />
-        public GroupUpdate<T> NewSyncPlayGroupUpdate<T>(GroupUpdateType type, T data)
-        {
-            return new GroupUpdate<T>(GroupId, type, data);
         }
 
         /// <inheritdoc />
@@ -553,7 +548,7 @@ namespace Emby.Server.Implementations.SyncPlay
             if (playingItemRemoved)
             {
                 var itemId = PlayQueue.GetPlayingItemId();
-                if (!itemId.Equals(default))
+                if (!itemId.IsEmpty())
                 {
                     var item = _libraryManager.GetItemById(itemId);
                     RunTimeTicks = item.RunTimeTicks ?? 0;

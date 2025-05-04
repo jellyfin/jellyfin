@@ -79,7 +79,10 @@ namespace Jellyfin.Networking.Tests
         [InlineData("[fe80::7add:12ff:febb:c67b%16]")]
         [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517/56")]
         public static void TryParseValidIPStringsTrue(string address)
-            => Assert.True(NetworkUtils.TryParseToSubnet(address, out _));
+        {
+            Assert.True(NetworkUtils.TryParseToSubnet(address, out _));
+            Assert.True(NetworkUtils.TryParseToSubnet('!' + address, out _, true));
+        }
 
         /// <summary>
         /// Checks invalid IP address formats.
@@ -238,7 +241,7 @@ namespace Jellyfin.Networking.Tests
         // User on external network, internal binding only - so assumption is a proxy forward, return external override.
         [InlineData("jellyfin.org", "192.168.1.0/24", "eth16", false, "external=http://helloworld.com", "http://helloworld.com")]
 
-        // User on external network, no binding - so result is the 1st external which is overriden.
+        // User on external network, no binding - so result is the 1st external which is overridden.
         [InlineData("jellyfin.org", "192.168.1.0/24", "", false, "external=http://helloworld.com", "http://helloworld.com")]
 
         // User assumed to be internal, no binding - so result is the 1st matching interface.

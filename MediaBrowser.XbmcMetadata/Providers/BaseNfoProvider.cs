@@ -42,7 +42,10 @@ namespace MediaBrowser.XbmcMetadata.Providers
 
             try
             {
-                result.Item = new T();
+                result.Item = new T
+                {
+                    IndexNumber = info.IndexNumber
+                };
 
                 Fetch(result, path, cancellationToken);
                 result.HasMetadata = true;

@@ -63,7 +63,7 @@ public class TrickplayImagesTask : IScheduledTask
         {
             new TaskTriggerInfo
             {
-                Type = TaskTriggerInfo.TriggerDaily,
+                Type = TaskTriggerInfoType.DailyTrigger,
                 TimeOfDayTicks = TimeSpan.FromHours(3).Ticks
             }
         };
@@ -98,7 +98,8 @@ public class TrickplayImagesTask : IScheduledTask
 
                 try
                 {
-                    await _trickplayManager.RefreshTrickplayDataAsync(video, false, cancellationToken).ConfigureAwait(false);
+                    var libraryOptions = _libraryManager.GetLibraryOptions(video);
+                    await _trickplayManager.RefreshTrickplayDataAsync(video, false, libraryOptions, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {

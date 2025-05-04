@@ -1,51 +1,131 @@
 name: Issue Report
 description: File an issue report
-title: "[Issue]: "
 labels: [bug, triage]
 body:
   - type: markdown
+    id: introduction
     attributes:
       value: |
-        Thanks for taking the time to fill out this bug report! Please provide as much detail as necessary, most questions may not be applicable to you. If you need real-time help, join us on [Matrix](https://matrix.to/#/#jellyfin-troubleshooting:matrix.org) or [Discord](https://discord.gg/zHBxVSXdBV).
-  - type: textarea
-    id: what-happened
+        ### Thank you for taking the time to report an issue!
+        Please keep in mind that Jellyfin is a [free and open-source](https://jellyfin.org/docs/general/about) project, made up entirely and exclusively of **volunteers** who donate their free time to the project.
+  - type: checkboxes
+    id: before-posting
     attributes:
-      label: Please describe your bug
-      description: Also tell us, what did you expect to happen?
+      label: "This issue respects the following points:"
+      description: All conditions are **required**. Failure to comply with any of these conditions may cause your issue to be closed without comment.
+      options:
+        - label: This is a **bug**, not a question or a configuration issue; Please visit our [forum or chat rooms](https://jellyfin.org/contact/) first to troubleshoot with volunteers, before creating a report.
+          required: true
+        - label: This issue is **not** already reported on [GitHub](https://github.com/jellyfin/jellyfin/issues?q=is%3Aopen+is%3Aissue) _(I've searched it)_.
+          required: true
+        - label: I'm using an up to date version of Jellyfin Server stable, unstable or master; We generally do not support previous older versions. If possible, please update to the latest version before opening an issue.
+          required: true
+        - label: I agree to follow Jellyfin's [Code of Conduct](https://jellyfin.org/docs/general/community-standards.html#code-of-conduct).
+          required: true
+        - label: This report addresses only a single issue; If you encounter multiple issues, kindly create separate reports for each one.
+          required: true
+  - type: markdown
+    id: preliminary-information
+    attributes:
+      value: |
+        ### General preliminary information
+
+        Please keep the following in mind when creating this issue:
+
+        1. Fill in as much of the template as possible. When you are unsure about the relevancy of a section, do include the information requested in that section. Only leave out information in sections when you are completely sure about it not being relevant.
+        2. Provide as much detail as possible. Do not assume other people to know what is going on.
+        3. Keep everything readable and structured. Nobody enjoys reading poorly written reports that are difficult to understand.
+        4. Keep an eye on your report as long as it is open, your involvement might be requested at a later moment.
+        5. Keep the title short and descriptive. The title is not the place to write down a full description of the issue.
+        6. When deciding to leave out information in a field, leave it blank and empty. Avoid writing things such as `n/a` for empty fields.
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: Description of the bug
+      description: Please provide a detailed description on the bug you encountered, in a readable and comprehensible way.
       placeholder: |
-        The more information that you are able to provide, the better. Did you do anything before this happened? Did you upgrade or change anything? Any screenshots or logs you can provide will be helpful.
-
-        This is my issue.
-
-        Steps to Reproduce
-          1. In this environment...
-          2. With this config...
-          3. Run '...'
-          4. See error...
+        After upgrading to version x.y.z of Jellyfin, the "login disclaimer" is showing incorrect text. It appears to me that it is appending the server name to the end of the login disclaimer, and showing that to a user. It might be a regression from pull request x. I have tried rebooting my host as well as my container multiple times. I tested this functionality on different clients, and it happens to all the tested clients (client x, y, z), that support the login disclaimer functionality. This makes me believe it is a server side issue.
+    validations:
+      required: true
+  - type: textarea
+    id: repro-steps
+    attributes:
+      label: Reproduction steps
+      description: Reproduction steps should be complete and self-contained. Anyone can reproduce this issue by following these steps. Furthermore, the steps should be clear and easy to follow.
+      placeholder: |
+        1. Sign in on the Jellyfin web client, with an admin account, using a browser of your choice.
+        2. Navigate to the dashboard.
+        3. Select "general".
+        4. Change the login disclaimer to something like "I am a cool disclaimer!"
+        5. Save the settings.
+        6. Sign out.
+        7. Make sure you are on the sign in screen. Otherwise, navigate to the sign in screen manually.
+    validations:
+      required: true
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: What is the current _bug_ behavior?
+      description: Write down the incorrect behavior that currently happens after following the reproduction steps.
+      placeholder: |
+        The login disclaimer on the sign in screen has the server name appended to the text. The text shown is: "I am a cool disclaimer!jellyfinserver".
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: What is the expected _correct_ behavior?
+      description: Write down the correct expected behavior that is supposed to happen after following the reproduction steps.
+      placeholder: |
+        The login disclaimer on the sign in screen should only show the configured text. The text that should be shown is: "I am a cool disclaimer!".
     validations:
       required: true
   - type: dropdown
     id: version
     attributes:
-      label: Jellyfin Version
-      description: What version of Jellyfin are you running?
+      label: Jellyfin Server version
+      description: What version of Jellyfin are you using?
       options:
-        - 10.8.z
-        - 10.8.9
-        - 10.7.7
-        - 10.6.4
-        - Other
+        - 10.10.0+
+        - Master
+        - Unstable
+        - Older*
     validations:
       required: true
   - type: input
-    id: version-other
+    id: version-master
     attributes:
-      label: "if other:"
-      placeholder: Other
+      label: "Specify commit id"
+      description: Fill in this field in case the option 'master' is selected. Provide the commit id it was built on.
+      placeholder: |
+        610e56baafc3011e1bfa043bdabb567bda0c2ab0
+  - type: input
+    id: version-unstable
+    attributes:
+      label: "Specify unstable release number"
+      description: Fill in this field in case the option 'unstable' is selected. Provide the unstable release number.
+      placeholder: |
+        2024050906
+  - type: input
+    id: version-older
+    attributes:
+      label: "Specify version number"
+      description: Fill in this field in case the option 'older' is selected. Provide the version number.
+      placeholder: |
+        x.y.z
+  - type: input
+    id: build-version
+    attributes:
+      label: "Specify the build version"
+      description: Please provide the build version that is shown in the dashboard.
+    validations:
+      required: true
   - type: textarea
+    id: environment-information
     attributes:
       label: Environment
       description: |
+        Accurately fill in as much environment details as possible. If a certain environment field is not shown in the template below, but you consider useful information, please include it.
         Examples:
         - **OS**: [e.g. Debian 11, Windows 10]
         - **Linux Kernel**: [e.g. none, 5.15, 6.1, etc.]
@@ -77,35 +157,46 @@ body:
         - Networking:
         - Storage:
       render: markdown
+    validations:
+      required: true
+  - type: markdown
+    id: general-information-logs
+    attributes:
+      value: |
+        When providing logs, please keep the following things in mind:
+        1. **DO NOT** use external paste services. If logs are too large to paste into the field, upload them as text files.
+        2. Please provide complete logs.
+          - For server logs, ensure to capture all relevant information, encompassing both the events leading up to and following the occurrence of the issue. Typically, providing 10 *lines preceding and succeeding* the problem should be adequate.
+          - For ffmpeg logs, please provide the entire file unmodified.
+        3. Please do not run logs through any translation program. We exclusively accept raw, untranslated logs. Particularly exercise caution if your browser automatically translates pages by default.
+          - Do not forget to censor out personal information such as public IP addresses.
+        4. Please do not include logs as screenshots, with the only exception being client logs in browsers.
   - type: textarea
-    id: logs
+    id: jellyfin-logs
     attributes:
       label: Jellyfin logs
       description: Please copy and paste any relevant log output. This can be found in Dashboard > Logs.
-      placeholder: For playback issues, browser/client and FFmpeg logs may be more useful.
       render: shell
+    validations:
+      required: true
   - type: textarea
     id: ffmpeg-logs
     attributes:
       label: FFmpeg logs
-      description: Please copy and paste recent FFmpeg log output. This can be found in Dashboard > Logs > FFmpeg*.log.
-      placeholder: This field is mandatory for debugging hardware transcoding issues. It's important to include the specific codec details. If no FFmpeg logs appear, the file was Direct Played and did not use FFmpeg.
+      description: Relevant FFmpeg log output. This can be found in Dashboard > Logs > FFmpeg*.log. This field is considered mandatory for transcoding related issues. It's also important to include the specific codec details.
       render: shell
   - type: textarea
-    id: browserlogs
+    id: browser-logs
     attributes:
-      label: Please attach any browser or client logs here
-      placeholder: Access browser logs by using the F12 to bring up the console. Screenshots are typically easier to read than raw logs. For clients such as Android or iOS, please see our documentation.
+      label: Client / Browser logs
+      description: Access browser logs by using the F12 to bring up the console. Screenshots are typically easier to read than raw logs. For clients such as Android or iOS, please see our documentation.
   - type: textarea
     id: screenshots
     attributes:
-      label: Please attach any screenshots here
-      placeholder: Images can be pasted directly into the textbox and will be hosted by github.
-  - type: checkboxes
-    id: terms
+      label: Relevant screenshots or videos
+      description: Attach relevant screenshots or videos related to this report.
+  - type: textarea
+    id: additional-information
     attributes:
-      label: Code of Conduct
-      description: By submitting this issue, you agree to follow our [Code of Conduct](https://jellyfin.org/docs/general/community-standards.html#code-of-conduct)
-      options:
-        - label: I agree to follow this project's Code of Conduct
-          required: true
+      label: Additional information
+      description: Any additional information that might be useful to this issue.

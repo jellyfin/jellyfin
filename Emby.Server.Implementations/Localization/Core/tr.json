@@ -11,7 +11,7 @@
     "Collections": "Koleksiyonlar",
     "DeviceOfflineWithName": "{0} bağlantısı kesildi",
     "DeviceOnlineWithName": "{0} bağlı",
-    "FailedLoginAttemptWithUserName": "{0} kullanıcısının giriş denemesi başarısız oldu",
+    "FailedLoginAttemptWithUserName": "{0} kullanıcısının başarısız oturum açma girişimi",
     "Favorites": "Favoriler",
     "Folders": "Klasörler",
     "Genres": "Türler",
@@ -126,5 +126,15 @@
     "External": "Harici",
     "HearingImpaired": "Duyma Engelli",
     "TaskRefreshTrickplayImages": "Trickplay Görselleri Oluştur",
-    "TaskRefreshTrickplayImagesDescription": "Etkin kütüphanelerdeki videolar için trickplay önizlemeleri oluşturur."
+    "TaskRefreshTrickplayImagesDescription": "Etkin kütüphanelerdeki videolar için trickplay önizlemeleri oluşturur.",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Artık var olmayan koleksiyon ve çalma listelerindeki ögeleri kaldırır.",
+    "TaskCleanCollectionsAndPlaylists": "Koleksiyonları ve çalma listelerini temizleyin",
+    "TaskAudioNormalizationDescription": "Ses normalleştirme verileri için dosyaları tarar.",
+    "TaskAudioNormalization": "Ses Normalleştirme",
+    "TaskExtractMediaSegments": "Medya Segmenti Tarama",
+    "TaskMoveTrickplayImages": "Trickplay Görsel Konumunu Taşıma",
+    "TaskMoveTrickplayImagesDescription": "Mevcut trickplay dosyalarını kütüphane ayarlarına göre taşır.",
+    "TaskDownloadMissingLyrics": "Eksik şarkı sözlerini indir",
+    "TaskDownloadMissingLyricsDescription": "Şarkı sözlerini indirir",
+    "TaskExtractMediaSegmentsDescription": "MediaSegment özelliği etkin olan eklentilerden medya segmentlerini çıkarır veya alır."
 }

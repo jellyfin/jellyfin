@@ -1,20 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
-using Jellyfin.Api.Models.SessionDtos;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Api;
-using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -30,22 +27,18 @@ public class SessionController : BaseJellyfinApiController
 {
     private readonly ISessionManager _sessionManager;
     private readonly IUserManager _userManager;
-    private readonly IDeviceManager _deviceManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SessionController"/> class.
     /// </summary>
     /// <param name="sessionManager">Instance of <see cref="ISessionManager"/> interface.</param>
     /// <param name="userManager">Instance of <see cref="IUserManager"/> interface.</param>
-    /// <param name="deviceManager">Instance of <see cref="IDeviceManager"/> interface.</param>
     public SessionController(
         ISessionManager sessionManager,
-        IUserManager userManager,
-        IDeviceManager deviceManager)
+        IUserManager userManager)
     {
         _sessionManager = sessionManager;
         _userManager = userManager;
-        _deviceManager = deviceManager;
     }
 
     /// <summary>
@@ -55,61 +48,22 @@ public class SessionController : BaseJellyfinApiController
     /// <param name="deviceId">Filter by device Id.</param>
     /// <param name="activeWithinSeconds">Optional. Filter by sessions that were active in the last n seconds.</param>
     /// <response code="200">List of sessions returned.</response>
-    /// <returns>An <see cref="IEnumerable{SessionInfo}"/> with the available sessions.</returns>
+    /// <returns>An <see cref="IReadOnlyList{SessionInfoDto}"/> with the available sessions.</returns>
     [HttpGet("Sessions")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<IEnumerable<SessionInfo>> GetSessions(
+    public ActionResult<IReadOnlyList<SessionInfoDto>> GetSessions(
         [FromQuery] Guid? controllableByUserId,
         [FromQuery] string? deviceId,
         [FromQuery] int? activeWithinSeconds)
     {
-        var result = _sessionManager.Sessions;
-
-        if (!string.IsNullOrEmpty(deviceId))
-        {
-            result = result.Where(i => string.Equals(i.DeviceId, deviceId, StringComparison.OrdinalIgnoreCase));
-        }
-
-        if (controllableByUserId.HasValue && !controllableByUserId.Equals(default))
-        {
-            result = result.Where(i => i.SupportsRemoteControl);
-
-            var user = _userManager.GetUserById(controllableByUserId.Value);
-            if (user is null)
-            {
-                return NotFound();
-            }
-
-            if (!user.HasPermission(PermissionKind.EnableRemoteControlOfOtherUsers))
-            {
-                result = result.Where(i => i.UserId.Equals(default) || i.ContainsUser(controllableByUserId.Value));
-            }
-
-            if (!user.HasPermission(PermissionKind.EnableSharedDeviceControl))
-            {
-                result = result.Where(i => !i.UserId.Equals(default));
-            }
-
-            result = result.Where(i =>
-            {
-                if (!string.IsNullOrWhiteSpace(i.DeviceId))
-                {
-                    if (!_deviceManager.CanAccessDevice(user, i.DeviceId))
-                    {
-                        return false;
-                    }
-                }
-
-                return true;
-            });
-        }
-
-        if (activeWithinSeconds.HasValue && activeWithinSeconds.Value > 0)
-        {
-            var minActiveDate = DateTime.UtcNow.AddSeconds(0 - activeWithinSeconds.Value);
-            result = result.Where(i => i.LastActivityDate >= minActiveDate);
-        }
+        Guid? controllableUserToCheck = controllableByUserId is null ? null : RequestHelpers.GetUserId(User, controllableByUserId);
+        var result = _sessionManager.GetSessions(
+            User.GetUserId(),
+            deviceId,
+            activeWithinSeconds,
+            controllableUserToCheck,
+            User.GetIsApiKey());
 
         return Ok(result);
     }
@@ -168,7 +122,7 @@ public class SessionController : BaseJellyfinApiController
     public async Task<ActionResult> Play(
         [FromRoute, Required] string sessionId,
         [FromQuery, Required] PlayCommand playCommand,
-        [FromQuery, Required, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] itemIds,
+        [FromQuery, Required, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] itemIds,
         [FromQuery] long? startPositionTicks,
         [FromQuery] string? mediaSourceId,
         [FromQuery] int? audioStreamIndex,
@@ -393,8 +347,8 @@ public class SessionController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> PostCapabilities(
         [FromQuery] string? id,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] MediaType[] playableMediaTypes,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] GeneralCommandType[] supportedCommands,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] MediaType[] playableMediaTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] GeneralCommandType[] supportedCommands,
         [FromQuery] bool supportsMediaControl = false,
         [FromQuery] bool supportsPersistentIdentifier = true)
     {

@@ -8,12 +8,13 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
+using AsyncKeyedLock;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
@@ -50,7 +51,7 @@ namespace Jellyfin.LiveTv.Channels
         private readonly IFileSystem _fileSystem;
         private readonly IProviderManager _providerManager;
         private readonly IMemoryCache _memoryCache;
-        private readonly SemaphoreSlim _resourcePool = new SemaphoreSlim(1, 1);
+        private readonly AsyncNonKeyedLocker _resourcePool = new(1);
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
         private bool _disposed = false;
 
@@ -114,15 +115,6 @@ namespace Jellyfin.LiveTv.Channels
         }
 
         /// <inheritdoc />
-        public bool EnableMediaProbe(BaseItem item)
-        {
-            var internalChannel = _libraryManager.GetItemById(item.ChannelId);
-            var channel = Channels.FirstOrDefault(i => GetInternalChannelId(i.Name).Equals(internalChannel.Id));
-
-            return channel is ISupportsMediaProbe;
-        }
-
-        /// <inheritdoc />
         public Task DeleteItem(BaseItem item)
         {
             var internalChannel = _libraryManager.GetItemById(item.ChannelId);
@@ -159,7 +151,7 @@ namespace Jellyfin.LiveTv.Channels
         /// <inheritdoc />
         public async Task<QueryResult<Channel>> GetChannelsInternalAsync(ChannelQuery query)
         {
-            var user = query.UserId.Equals(default)
+            var user = query.UserId.IsEmpty()
                 ? null
                 : _userManager.GetUserById(query.UserId);
 
@@ -272,7 +264,7 @@ namespace Jellyfin.LiveTv.Channels
         /// <inheritdoc />
         public async Task<QueryResult<BaseItemDto>> GetChannelsAsync(ChannelQuery query)
         {
-            var user = query.UserId.Equals(default)
+            var user = query.UserId.IsEmpty()
                 ? null
                 : _userManager.GetUserById(query.UserId);
 
@@ -371,7 +363,7 @@ namespace Jellyfin.LiveTv.Channels
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-            FileStream createStream = File.Create(path);
+            FileStream createStream = AsyncFile.Create(path);
             await using (createStream.ConfigureAwait(false))
             {
                 await JsonSerializer.SerializeAsync(createStream, mediaSources, _jsonOptions).ConfigureAwait(false);
@@ -563,18 +555,6 @@ namespace Jellyfin.LiveTv.Channels
         }
 
         /// <summary>
-        /// Checks whether the provided Guid supports external transfer.
-        /// </summary>
-        /// <param name="channelId">The Guid.</param>
-        /// <returns>Whether or not the provided Guid supports external transfer.</returns>
-        public bool SupportsExternalTransfer(Guid channelId)
-        {
-            var channelProvider = GetChannelProvider(channelId);
-
-            return channelProvider.GetChannelFeatures().SupportsContentDownloading;
-        }
-
-        /// <summary>
         /// Gets the provided channel's supported features.
         /// </summary>
         /// <param name="channel">The channel.</param>
@@ -591,7 +571,6 @@ namespace Jellyfin.LiveTv.Channels
             return new ChannelFeatures(channel.Name, channel.Id)
             {
                 CanFilter = !features.MaxPageSize.HasValue,
-                CanSearch = provider is ISearchableChannel,
                 ContentTypes = features.ContentTypes.ToArray(),
                 DefaultSortFields = features.DefaultSortFields.ToArray(),
                 MaxPageSize = features.MaxPageSize,
@@ -688,7 +667,7 @@ namespace Jellyfin.LiveTv.Channels
                 ChannelIds = new Guid[] { internalChannel.Id }
             };
 
-            var result = await GetChannelItemsInternal(query, new SimpleProgress<double>(), cancellationToken).ConfigureAwait(false);
+            var result = await GetChannelItemsInternal(query, new Progress<double>(), cancellationToken).ConfigureAwait(false);
 
             foreach (var item in result.Items)
             {
@@ -701,7 +680,7 @@ namespace Jellyfin.LiveTv.Channels
                             EnableTotalRecordCount = false,
                             ChannelIds = new Guid[] { internalChannel.Id }
                         },
-                        new SimpleProgress<double>(),
+                        new Progress<double>(),
                         cancellationToken).ConfigureAwait(false);
                 }
             }
@@ -716,7 +695,7 @@ namespace Jellyfin.LiveTv.Channels
             // Find the corresponding channel provider plugin
             var channelProvider = GetChannelProvider(channel);
 
-            var parentItem = query.ParentId.Equals(default)
+            var parentItem = query.ParentId.IsEmpty()
                 ? channel
                 : _libraryManager.GetItemById(query.ParentId);
 
@@ -729,7 +708,7 @@ namespace Jellyfin.LiveTv.Channels
                 cancellationToken)
                 .ConfigureAwait(false);
 
-            if (query.ParentId.Equals(default))
+            if (query.ParentId.IsEmpty())
             {
                 query.Parent = channel;
             }
@@ -783,7 +762,7 @@ namespace Jellyfin.LiveTv.Channels
         /// <inheritdoc />
         public async Task<QueryResult<BaseItemDto>> GetChannelItems(InternalItemsQuery query, CancellationToken cancellationToken)
         {
-            var internalResult = await GetChannelItemsInternal(query, new SimpleProgress<double>(), cancellationToken).ConfigureAwait(false);
+            var internalResult = await GetChannelItemsInternal(query, new Progress<double>(), cancellationToken).ConfigureAwait(false);
 
             var returnItems = _dtoService.GetBaseItemDtos(internalResult.Items, query.DtoOptions, query.User);
 
@@ -832,9 +811,7 @@ namespace Jellyfin.LiveTv.Channels
             {
             }
 
-            await _resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
+            using (await _resourcePool.LockAsync(cancellationToken).ConfigureAwait(false))
             {
                 try
                 {
@@ -881,10 +858,6 @@ namespace Jellyfin.LiveTv.Channels
 
                 return result;
             }
-            finally
-            {
-                _resourcePool.Release();
-            }
         }
 
         private async Task CacheResponse(ChannelItemResult result, string path)
@@ -893,7 +866,7 @@ namespace Jellyfin.LiveTv.Channels
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-                var createStream = File.Create(path);
+                var createStream = AsyncFile.Create(path);
                 await using (createStream.ConfigureAwait(false))
                 {
                     await JsonSerializer.SerializeAsync(createStream, result, _jsonOptions).ConfigureAwait(false);
@@ -1158,7 +1131,7 @@ namespace Jellyfin.LiveTv.Channels
             {
                 if (!item.Tags.Contains("livestream", StringComparison.OrdinalIgnoreCase))
                 {
-                    item.Tags = item.Tags.Concat(new[] { "livestream" }).ToArray();
+                    item.Tags = [..item.Tags, "livestream"];
                     _logger.LogDebug("Forcing update due to Tags {0}", item.Name);
                     forceUpdate = true;
                 }
@@ -1210,19 +1183,6 @@ namespace Jellyfin.LiveTv.Channels
             if (result is null)
             {
                 throw new ResourceNotFoundException("No channel provider found for channel " + channel.Name);
-            }
-
-            return result;
-        }
-
-        internal IChannel GetChannelProvider(Guid internalChannelId)
-        {
-            var result = GetAllChannels()
-                .FirstOrDefault(i => internalChannelId.Equals(GetInternalChannelId(i.Name)));
-
-            if (result is null)
-            {
-                throw new ResourceNotFoundException("No channel provider found for channel id " + internalChannelId);
             }
 
             return result;

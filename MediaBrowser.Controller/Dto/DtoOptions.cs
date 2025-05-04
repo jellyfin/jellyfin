@@ -1,5 +1,3 @@
-#nullable disable
-
 #pragma warning disable CS1591
 
 using System;
@@ -36,7 +34,7 @@ namespace MediaBrowser.Controller.Dto
             EnableUserData = true;
             AddCurrentProgram = true;
 
-            Fields = allFields ? AllItemFields : Array.Empty<ItemFields>();
+            Fields = allFields ? AllItemFields : [];
             ImageTypes = AllImageTypes;
         }
 

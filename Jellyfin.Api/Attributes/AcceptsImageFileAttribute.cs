@@ -1,4 +1,4 @@
-﻿namespace Jellyfin.Api.Attributes;
+namespace Jellyfin.Api.Attributes;
 
 /// <summary>
 /// Produces file attribute of "image/*".

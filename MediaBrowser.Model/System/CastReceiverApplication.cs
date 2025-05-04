@@ -1,4 +1,4 @@
-﻿namespace MediaBrowser.Model.System;
+namespace MediaBrowser.Model.System;
 
 /// <summary>
 /// The cast receiver application model.

@@ -13,14 +13,17 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// Properly set playlist owner.
 /// </summary>
+[JellyfinMigration("2025-04-20T15:00:00", nameof(FixPlaylistOwner), "615DFA9E-2497-4DBB-A472-61938B752C5B")]
+#pragma warning disable CS0618 // Type or member is obsolete
 internal class FixPlaylistOwner : IMigrationRoutine
+#pragma warning restore CS0618 // Type or member is obsolete
 {
-    private readonly ILogger<RemoveDuplicateExtras> _logger;
+    private readonly ILogger<FixPlaylistOwner> _logger;
     private readonly ILibraryManager _libraryManager;
     private readonly IPlaylistManager _playlistManager;
 
     public FixPlaylistOwner(
-        ILogger<RemoveDuplicateExtras> logger,
+        ILogger<FixPlaylistOwner> logger,
         ILibraryManager libraryManager,
         IPlaylistManager playlistManager)
     {
@@ -28,15 +31,6 @@ internal class FixPlaylistOwner : IMigrationRoutine
         _libraryManager = libraryManager;
         _playlistManager = playlistManager;
     }
-
-    /// <inheritdoc/>
-    public Guid Id => Guid.Parse("{615DFA9E-2497-4DBB-A472-61938B752C5B}");
-
-    /// <inheritdoc/>
-    public string Name => "FixPlaylistOwner";
-
-    /// <inheritdoc/>
-    public bool PerformOnNewInstall => false;
 
     /// <inheritdoc/>
     public void Perform()
@@ -54,12 +48,12 @@ internal class FixPlaylistOwner : IMigrationRoutine
             foreach (var playlist in playlists)
             {
                 var shares = playlist.Shares;
-                if (shares.Length > 0)
+                if (shares.Count > 0)
                 {
                     var firstEditShare = shares.First(x => x.CanEdit);
-                    if (firstEditShare is not null && Guid.TryParse(firstEditShare.UserId, out var guid))
+                    if (firstEditShare is not null)
                     {
-                        playlist.OwnerUserId = guid;
+                        playlist.OwnerUserId = firstEditShare.UserId;
                         playlist.Shares = shares.Where(x => x != firstEditShare).ToArray();
                         playlist.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).GetAwaiter().GetResult();
                         _playlistManager.SavePlaylistFile(playlist);

@@ -1,5 +1,6 @@
 #pragma warning disable CS1591
 
+using System.Linq;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -24,22 +25,6 @@ namespace MediaBrowser.Providers.Movies
         }
 
         /// <inheritdoc />
-        protected override bool IsFullLocalMetadata(Trailer item)
-        {
-            if (string.IsNullOrWhiteSpace(item.Overview))
-            {
-                return false;
-            }
-
-            if (!item.ProductionYear.HasValue)
-            {
-                return false;
-            }
-
-            return base.IsFullLocalMetadata(item);
-        }
-
-        /// <inheritdoc />
         protected override void MergeData(MetadataResult<Trailer> source, MetadataResult<Trailer> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             base.MergeData(source, target, lockedFields, replaceData, mergeMetadataSettings);
@@ -47,6 +32,10 @@ namespace MediaBrowser.Providers.Movies
             if (replaceData || target.Item.TrailerTypes.Length == 0)
             {
                 target.Item.TrailerTypes = source.Item.TrailerTypes;
+            }
+            else
+            {
+                target.Item.TrailerTypes = target.Item.TrailerTypes.Concat(source.Item.TrailerTypes).Distinct().ToArray();
             }
         }
     }

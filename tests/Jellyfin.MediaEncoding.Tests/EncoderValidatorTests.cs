@@ -17,16 +17,12 @@ namespace Jellyfin.MediaEncoding.Tests
         }
 
         [Theory]
+        [InlineData(EncoderValidatorTestsData.FFmpegV701Output, true)]
+        [InlineData(EncoderValidatorTestsData.FFmpegV611Output, true)]
         [InlineData(EncoderValidatorTestsData.FFmpegV60Output, true)]
         [InlineData(EncoderValidatorTestsData.FFmpegV512Output, true)]
         [InlineData(EncoderValidatorTestsData.FFmpegV44Output, true)]
-        [InlineData(EncoderValidatorTestsData.FFmpegV432Output, true)]
-        [InlineData(EncoderValidatorTestsData.FFmpegV431Output, true)]
-        [InlineData(EncoderValidatorTestsData.FFmpegV43Output, true)]
-        [InlineData(EncoderValidatorTestsData.FFmpegV421Output, true)]
-        [InlineData(EncoderValidatorTestsData.FFmpegV42Output, true)]
-        [InlineData(EncoderValidatorTestsData.FFmpegV414Output, true)]
-        [InlineData(EncoderValidatorTestsData.FFmpegV404Output, true)]
+        [InlineData(EncoderValidatorTestsData.FFmpegV432Output, false)]
         [InlineData(EncoderValidatorTestsData.FFmpegGitUnknownOutput2, true)]
         [InlineData(EncoderValidatorTestsData.FFmpegGitUnknownOutput, false)]
         public void ValidateVersionInternalTest(string versionOutput, bool valid)
@@ -38,17 +34,13 @@ namespace Jellyfin.MediaEncoding.Tests
         {
             public GetFFmpegVersionTestData()
             {
+                Add(EncoderValidatorTestsData.FFmpegV701Output, new Version(7, 0, 1));
+                Add(EncoderValidatorTestsData.FFmpegV611Output, new Version(6, 1, 1));
                 Add(EncoderValidatorTestsData.FFmpegV60Output, new Version(6, 0));
                 Add(EncoderValidatorTestsData.FFmpegV512Output, new Version(5, 1, 2));
                 Add(EncoderValidatorTestsData.FFmpegV44Output, new Version(4, 4));
                 Add(EncoderValidatorTestsData.FFmpegV432Output, new Version(4, 3, 2));
-                Add(EncoderValidatorTestsData.FFmpegV431Output, new Version(4, 3, 1));
-                Add(EncoderValidatorTestsData.FFmpegV43Output, new Version(4, 3));
-                Add(EncoderValidatorTestsData.FFmpegV421Output, new Version(4, 2, 1));
-                Add(EncoderValidatorTestsData.FFmpegV42Output, new Version(4, 2));
-                Add(EncoderValidatorTestsData.FFmpegV414Output, new Version(4, 1, 4));
-                Add(EncoderValidatorTestsData.FFmpegV404Output, new Version(4, 0, 4));
-                Add(EncoderValidatorTestsData.FFmpegGitUnknownOutput2, new Version(4, 0));
+                Add(EncoderValidatorTestsData.FFmpegGitUnknownOutput2, new Version(4, 4));
                 Add(EncoderValidatorTestsData.FFmpegGitUnknownOutput, null);
             }
         }

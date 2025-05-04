@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using MediaBrowser.Common.Providers;
 using Xunit;
 

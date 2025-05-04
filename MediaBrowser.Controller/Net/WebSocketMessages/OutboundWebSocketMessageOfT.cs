@@ -1,4 +1,4 @@
-﻿#pragma warning disable SA1649 // File name must equal class name.
+#pragma warning disable SA1649 // File name must equal class name.
 
 using System;
 

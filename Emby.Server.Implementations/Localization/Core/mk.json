@@ -55,7 +55,7 @@
     "Genres": "Жанрови",
     "Folders": "Папки",
     "Favorites": "Омилени",
-    "FailedLoginAttemptWithUserName": "Неуспешно поврзување од {0}",
+    "FailedLoginAttemptWithUserName": "Неуспешен обид за најавување од {0}",
     "DeviceOnlineWithName": "{0} е приклучен",
     "DeviceOfflineWithName": "{0} се исклучи",
     "Collections": "Колекции",
@@ -122,5 +122,15 @@
     "TaskRefreshChapterImagesDescription": "Создава тамбнеил за видеата шти имаат поглавја.",
     "TaskCleanActivityLogDescription": "Избришува логови на активности постари од определеното време.",
     "TaskCleanActivityLog": "Избриши Лог на Активности",
-    "External": "Надворешен"
+    "External": "Надворешен",
+    "HearingImpaired": "Оштетен слух",
+    "TaskCleanCollectionsAndPlaylists": "Исчисти ги колекциите и плејлистите",
+    "TaskAudioNormalizationDescription": "Скенирање датотеки за податоци за нормализација на звукот.",
+    "TaskDownloadMissingLyrics": "Преземи стихови кои недостасуваат",
+    "TaskDownloadMissingLyricsDescription": "Преземи стихови/текстови за песни",
+    "TaskRefreshTrickplayImages": "Генерирај слики за прегледување (Trickplay)",
+    "TaskAudioNormalization": "Нормализација на звукот",
+    "TaskRefreshTrickplayImagesDescription": "Креира трикплеј прегледи за видеа во овозможените библиотеки.",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Отстранува ставки од колекциите и плејлистите што веќе не постојат.",
+    "TaskExtractMediaSegments": "Скенирање на сегменти на содржина"
 }

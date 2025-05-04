@@ -1,5 +1,7 @@
 #pragma warning disable CS1591
 
+using System;
+using System.Linq;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -44,6 +46,10 @@ namespace MediaBrowser.Providers.Music
             if (replaceData || targetItem.Artists.Count == 0)
             {
                 targetItem.Artists = sourceItem.Artists;
+            }
+            else
+            {
+                targetItem.Artists = targetItem.Artists.Concat(sourceItem.Artists).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
             }
         }
     }

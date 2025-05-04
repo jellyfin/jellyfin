@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Jellyfin.MediaEncoding.Hls.Playlist;
 using Jellyfin.MediaEncoding.Keyframes;
 using Xunit;

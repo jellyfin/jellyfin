@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Globalization;
@@ -66,7 +65,7 @@ namespace Jellyfin.LiveTv.Channels
         {
             var manager = (ChannelManager)_channelManager;
 
-            await manager.RefreshChannels(new SimpleProgress<double>(), cancellationToken).ConfigureAwait(false);
+            await manager.RefreshChannels(new Progress<double>(), cancellationToken).ConfigureAwait(false);
 
             await new ChannelPostScanTask(_channelManager, _logger, _libraryManager).Run(progress, cancellationToken)
                     .ConfigureAwait(false);
@@ -80,7 +79,7 @@ namespace Jellyfin.LiveTv.Channels
                 // Every so often
                 new TaskTriggerInfo
                 {
-                    Type = TaskTriggerInfo.TriggerInterval, IntervalTicks = TimeSpan.FromHours(24).Ticks
+                    Type = TaskTriggerInfoType.IntervalTrigger, IntervalTicks = TimeSpan.FromHours(24).Ticks
                 }
             };
         }

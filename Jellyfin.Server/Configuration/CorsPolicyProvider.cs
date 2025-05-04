@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Cors.Infrastructure;

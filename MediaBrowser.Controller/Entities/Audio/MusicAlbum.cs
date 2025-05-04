@@ -8,8 +8,10 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
+using Jellyfin.Data;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -21,6 +23,7 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// <summary>
     /// Class MusicAlbum.
     /// </summary>
+    [Common.RequiresSourceSerialisation]
     public class MusicAlbum : Folder, IHasAlbumArtist, IHasArtist, IHasMusicGenres, IHasLookupInfo<AlbumInfo>, IMetadataContainer
     {
         public MusicAlbum()
@@ -169,8 +172,7 @@ namespace MediaBrowser.Controller.Entities.Audio
 
             var childUpdateType = ItemUpdateType.None;
 
-            // Refresh songs only and not m3u files in album folder
-            foreach (var item in items.OfType<Audio>())
+            foreach (var item in items)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -183,14 +185,13 @@ namespace MediaBrowser.Controller.Entities.Audio
                 progress.Report(percent * 95);
             }
 
-            // get album LUFS
-            LUFS = items.OfType<Audio>().Max(item => item.LUFS);
-
             var parentRefreshOptions = refreshOptions;
             if (childUpdateType > ItemUpdateType.None)
             {
-                parentRefreshOptions = new MetadataRefreshOptions(refreshOptions);
-                parentRefreshOptions.MetadataRefreshMode = MetadataRefreshMode.FullRefresh;
+                parentRefreshOptions = new MetadataRefreshOptions(refreshOptions)
+                {
+                    MetadataRefreshMode = MetadataRefreshMode.FullRefresh
+                };
             }
 
             // Refresh current item

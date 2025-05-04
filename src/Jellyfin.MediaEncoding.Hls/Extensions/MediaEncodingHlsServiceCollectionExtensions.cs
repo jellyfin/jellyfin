@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Jellyfin.MediaEncoding.Hls.Cache;
 using Jellyfin.MediaEncoding.Hls.Extractors;
 using Jellyfin.MediaEncoding.Hls.Playlist;

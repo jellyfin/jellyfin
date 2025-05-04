@@ -59,6 +59,10 @@
                     "el_present_flag": 0,
                     "bl_present_flag": 1,
                     "dv_bl_signal_compatibility_id": 0
+                },
+                {
+                    "side_data_type": "Display Matrix",
+                    "rotation": -180
                 }
             ]
         },

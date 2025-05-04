@@ -4,7 +4,10 @@ using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
+using Jellyfin.Api.Extensions;
+using Jellyfin.Api.Helpers;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using Microsoft.AspNetCore.Http;
@@ -54,7 +57,7 @@ public class VideoAttachmentsController : BaseJellyfinApiController
     {
         try
         {
-            var item = _libraryManager.GetItemById(videoId);
+            var item = _libraryManager.GetItemById<BaseItem>(videoId, User.GetUserId());
             if (item is null)
             {
                 return NotFound();

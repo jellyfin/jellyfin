@@ -50,6 +50,11 @@ namespace MediaBrowser.Model.Dlna
         public bool AllowVideoStreamCopy { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether always burn in subtitles when transcoding.
+        /// </summary>
+        public bool AlwaysBurnInSubtitleWhenTranscoding { get; set; }
+
+        /// <summary>
         /// Gets or sets the item id.
         /// </summary>
         public Guid ItemId { get; set; }

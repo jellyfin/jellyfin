@@ -81,11 +81,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                     }
 
                     remoteResult.SetProviderId(MetadataProvider.Tmdb, movie.Id.ToString(CultureInfo.InvariantCulture));
-
-                    if (!string.IsNullOrWhiteSpace(movie.ImdbId))
-                    {
-                        remoteResult.SetProviderId(MetadataProvider.Imdb, movie.ImdbId);
-                    }
+                    remoteResult.TrySetProviderId(MetadataProvider.Imdb, movie.ImdbId);
 
                     return new[] { remoteResult };
                 }
@@ -202,7 +198,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             };
 
             movie.SetProviderId(MetadataProvider.Tmdb, tmdbId);
-            movie.SetProviderId(MetadataProvider.Imdb, movieResult.ImdbId);
+            movie.TrySetProviderId(MetadataProvider.Imdb, movieResult.ImdbId);
             if (movieResult.BelongsToCollection is not null)
             {
                 movie.SetProviderId(MetadataProvider.TmdbCollection, movieResult.BelongsToCollection.Id.ToString(CultureInfo.InvariantCulture));
@@ -238,7 +234,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
             var genres = movieResult.Genres;
 
-            foreach (var genre in genres.Select(g => g.Name))
+            foreach (var genre in genres.Select(g => g.Name).Trimmed())
             {
                 movie.AddGenre(genre);
             }
@@ -258,7 +254,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                     var personInfo = new PersonInfo
                     {
                         Name = actor.Name.Trim(),
-                        Role = actor.Character,
+                        Role = actor.Character.Trim(),
                         Type = PersonKind.Actor,
                         SortOrder = actor.Order
                     };
@@ -293,7 +289,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                     var personInfo = new PersonInfo
                     {
                         Name = person.Name.Trim(),
-                        Role = person.Job,
+                        Role = person.Job?.Trim(),
                         Type = type
                     };
 

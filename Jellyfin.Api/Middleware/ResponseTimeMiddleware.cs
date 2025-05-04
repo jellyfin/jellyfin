@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Globalization;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;

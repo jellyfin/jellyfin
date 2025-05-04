@@ -4,9 +4,8 @@
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <IsPackable>false</IsPackable>
-    <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)/jellyfin-tests.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <!-- Code Analyzers -->

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
@@ -8,7 +8,10 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.Server.Migrations.PreStartupRoutines;
 
 /// <inheritdoc />
+[JellyfinMigration("2025-04-20T00:00:00", nameof(CreateNetworkConfiguration), "9B354818-94D5-4B68-AC49-E35CB85F9D84", Stage = Stages.JellyfinMigrationStageTypes.PreInitialisation)]
+#pragma warning disable CS0618 // Type or member is obsolete
 public class CreateNetworkConfiguration : IMigrationRoutine
+#pragma warning restore CS0618 // Type or member is obsolete
 {
     private readonly ServerApplicationPaths _applicationPaths;
     private readonly ILogger<CreateNetworkConfiguration> _logger;
@@ -23,15 +26,6 @@ public class CreateNetworkConfiguration : IMigrationRoutine
         _applicationPaths = applicationPaths;
         _logger = loggerFactory.CreateLogger<CreateNetworkConfiguration>();
     }
-
-    /// <inheritdoc />
-    public Guid Id => Guid.Parse("9B354818-94D5-4B68-AC49-E35CB85F9D84");
-
-    /// <inheritdoc />
-    public string Name => nameof(CreateNetworkConfiguration);
-
-    /// <inheritdoc />
-    public bool PerformOnNewInstall => false;
 
     /// <inheritdoc />
     public void Perform()
@@ -132,5 +126,4 @@ public class CreateNetworkConfiguration : IMigrationRoutine
 
         public string[] KnownProxies { get; set; } = Array.Empty<string>();
     }
-#pragma warning restore
 }

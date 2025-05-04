@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
+using ICU4N.Text;
 
 namespace Jellyfin.Extensions
 {
@@ -8,6 +11,22 @@ namespace Jellyfin.Extensions
     /// </summary>
     public static partial class StringExtensions
     {
+        private static readonly Lazy<string> _transliteratorId = new(() =>
+            Environment.GetEnvironmentVariable("JELLYFIN_TRANSLITERATOR_ID")
+            ?? "Any-Latin; Latin-Ascii; Lower; NFD; [:Nonspacing Mark:] Remove; [:Punctuation:] Remove;");
+
+        private static readonly Lazy<Transliterator?> _transliterator = new(() =>
+        {
+            try
+            {
+                return Transliterator.GetInstance(_transliteratorId.Value);
+            }
+            catch (ArgumentException)
+            {
+                return null;
+            }
+        });
+
         // Matches non-conforming unicode chars
         // https://mnaoumov.wordpress.com/2014/06/14/stripping-invalid-characters-from-utf-16-strings/
 
@@ -61,6 +80,11 @@ namespace Jellyfin.Extensions
         /// <returns>The part left of the <paramref name="needle" />.</returns>
         public static ReadOnlySpan<char> LeftPart(this ReadOnlySpan<char> haystack, char needle)
         {
+            if (haystack.IsEmpty)
+            {
+                return ReadOnlySpan<char>.Empty;
+            }
+
             var pos = haystack.IndexOf(needle);
             return pos == -1 ? haystack : haystack[..pos];
         }
@@ -73,6 +97,11 @@ namespace Jellyfin.Extensions
         /// <returns>The part right of the <paramref name="needle" />.</returns>
         public static ReadOnlySpan<char> RightPart(this ReadOnlySpan<char> haystack, char needle)
         {
+            if (haystack.IsEmpty)
+            {
+                return ReadOnlySpan<char>.Empty;
+            }
+
             var pos = haystack.LastIndexOf(needle);
             if (pos == -1)
             {
@@ -85,6 +114,26 @@ namespace Jellyfin.Extensions
             }
 
             return haystack[(pos + 1)..];
+        }
+
+        /// <summary>
+        /// Returns a transliterated string which only contain ascii characters.
+        /// </summary>
+        /// <param name="text">The string to act on.</param>
+        /// <returns>The transliterated string.</returns>
+        public static string Transliterated(this string text)
+        {
+            return (_transliterator.Value is null) ? text : _transliterator.Value.Transliterate(text);
+        }
+
+        /// <summary>
+        /// Ensures all strings are non-null and trimmed of leading an trailing blanks.
+        /// </summary>
+        /// <param name="values">The enumerable of strings to trim.</param>
+        /// <returns>The enumeration of trimmed strings.</returns>
+        public static IEnumerable<string> Trimmed(this IEnumerable<string> values)
+        {
+            return values.Select(i => (i ?? string.Empty).Trim());
         }
     }
 }

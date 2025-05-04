@@ -4,10 +4,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
-using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
@@ -305,7 +306,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (BaseRequest.Static
                     || EncodingHelper.IsCopyCodec(OutputVideoCodec))
                 {
-                    return VideoStream is null ? null : (VideoStream.AverageFrameRate ?? VideoStream.RealFrameRate);
+                    return VideoStream?.ReferenceFrameRate;
                 }
 
                 return BaseRequest.MaxFramerate ?? BaseRequest.Framerate;
@@ -508,6 +509,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
         }
 
+        public bool EnableAudioVbrEncoding => BaseRequest.EnableAudioVbrEncoding;
+
         public int HlsListSize => 0;
 
         public bool EnableBreakOnNonKeyFrames(string videoCodec)
@@ -613,6 +616,26 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (!string.IsNullOrEmpty(rangetype))
                 {
                     return rangetype.Split(new[] { '|', ',' }, StringSplitOptions.RemoveEmptyEntries);
+                }
+            }
+
+            return Array.Empty<string>();
+        }
+
+        public string[] GetRequestedCodecTags(string codec)
+        {
+            if (!string.IsNullOrEmpty(BaseRequest.CodecTag))
+            {
+                return BaseRequest.CodecTag.Split(new[] { '|', ',' }, StringSplitOptions.RemoveEmptyEntries);
+            }
+
+            if (!string.IsNullOrEmpty(codec))
+            {
+                var codectag = BaseRequest.GetOption(codec, "codectag");
+
+                if (!string.IsNullOrEmpty(codectag))
+                {
+                    return codectag.Split(new[] { '|', ',' }, StringSplitOptions.RemoveEmptyEntries);
                 }
             }
 

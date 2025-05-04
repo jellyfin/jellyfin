@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using MediaBrowser.Model.Dlna;
 
 namespace Jellyfin.Api.Models.MediaInfoDtos;
 
 /// <summary>
-/// Plabyback info dto.
+/// Playback info dto.
 /// </summary>
 public class PlaybackInfoDto
 {
@@ -82,4 +82,9 @@ public class PlaybackInfoDto
     /// Gets or sets a value indicating whether to auto open the live stream.
     /// </summary>
     public bool? AutoOpenLiveStream { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether always burn in subtitles when transcoding.
+    /// </summary>
+    public bool? AlwaysBurnInSubtitleWhenTranscoding { get; set; }
 }

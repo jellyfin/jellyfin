@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.Plugins;
+using MediaBrowser.Model.Plugins;
 
 namespace MediaBrowser.Providers.Plugins.StudioImages.Configuration
 {

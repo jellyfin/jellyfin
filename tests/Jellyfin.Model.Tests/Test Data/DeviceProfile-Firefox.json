@@ -15,426 +15,357 @@
     "IgnoreTranscodeByteRangeRequests": false,
     "DirectPlayProfiles": [
         {
-            "Container": "webm",
             "AudioCodec": "vorbis,opus",
-            "VideoCodec": "vp8,vp9,av1",
+            "Container": "webm",
             "Type": "Video",
-            "$type": "DirectPlayProfile"
+            "VideoCodec": "vp8,vp9,av1"
         },
         {
+            "AudioCodec": "aac,mp3,mp2,opus,flac,vorbis",
             "Container": "mp4,m4v",
-            "AudioCodec": "aac,mp3,opus,flac,alac,vorbis",
-            "VideoCodec": "h264,vp8,vp9,av1",
             "Type": "Video",
-            "$type": "DirectPlayProfile"
+            "VideoCodec": "h264,vp9,av1"
         },
         {
             "Container": "opus",
-            "Type": "Audio",
-            "$type": "DirectPlayProfile"
+            "Type": "Audio"
         },
         {
-            "Container": "webm",
             "AudioCodec": "opus",
-            "Type": "Audio",
-            "$type": "DirectPlayProfile"
+            "Container": "webm",
+            "Type": "Audio"
+        },
+        {
+            "AudioCodec": "mp3",
+            "Container": "ts",
+            "Type": "Audio"
         },
         {
             "Container": "mp3",
-            "Type": "Audio",
-            "$type": "DirectPlayProfile"
+            "Type": "Audio"
         },
         {
             "Container": "aac",
-            "Type": "Audio",
-            "$type": "DirectPlayProfile"
+            "Type": "Audio"
         },
         {
+            "AudioCodec": "aac",
             "Container": "m4a",
-            "AudioCodec": "aac",
-            "Type": "Audio",
-            "$type": "DirectPlayProfile"
+            "Type": "Audio"
         },
         {
-            "Container": "m4b",
             "AudioCodec": "aac",
-            "Type": "Audio",
-            "$type": "DirectPlayProfile"
+            "Container": "m4b",
+            "Type": "Audio"
         },
         {
             "Container": "flac",
-            "Type": "Audio",
-            "$type": "DirectPlayProfile"
-        },
-        {
-            "Container": "alac",
-            "Type": "Audio",
-            "$type": "DirectPlayProfile"
-        },
-        {
-            "Container": "m4a",
-            "AudioCodec": "alac",
-            "Type": "Audio",
-            "$type": "DirectPlayProfile"
-        },
-        {
-            "Container": "m4b",
-            "AudioCodec": "alac",
-            "Type": "Audio",
-            "$type": "DirectPlayProfile"
+            "Type": "Audio"
         },
         {
             "Container": "webma",
-            "Type": "Audio",
-            "$type": "DirectPlayProfile"
+            "Type": "Audio"
         },
         {
-            "Container": "webm",
             "AudioCodec": "webma",
-            "Type": "Audio",
-            "$type": "DirectPlayProfile"
+            "Container": "webm",
+            "Type": "Audio"
         },
         {
             "Container": "wav",
-            "Type": "Audio",
-            "$type": "DirectPlayProfile"
+            "Type": "Audio"
         },
         {
             "Container": "ogg",
-            "Type": "Audio",
-            "$type": "DirectPlayProfile"
+            "Type": "Audio"
+        },
+        {
+            "AudioCodec": "aac,mp2,opus,flac",
+            "Container": "hls",
+            "Type": "Video",
+            "VideoCodec": "av1,h264,vp9"
+        },
+        {
+            "AudioCodec": "aac,mp3,mp2",
+            "Container": "hls",
+            "Type": "Video",
+            "VideoCodec": "h264"
         }
     ],
     "TranscodingProfiles": [
         {
-            "Container": "ts",
-            "Type": "Audio",
             "AudioCodec": "aac",
-            "Protocol": "hls",
-            "EstimateContentLength": false,
-            "EnableMpegtsM2TsMode": false,
-            "TranscodeSeekInfo": "Auto",
-            "CopyTimestamps": false,
-            "Context": "Streaming",
-            "EnableSubtitlesInManifest": false,
-            "MaxAudioChannels": "6",
-            "MinSegments": 2,
-            "SegmentLength": 0,
             "BreakOnNonKeyFrames": true,
-            "$type": "TranscodingProfile"
-        },
-        {
-            "Container": "aac",
-            "Type": "Audio",
-            "AudioCodec": "aac",
-            "Protocol": "http",
-            "EstimateContentLength": false,
-            "EnableMpegtsM2TsMode": false,
-            "TranscodeSeekInfo": "Auto",
-            "CopyTimestamps": false,
-            "Context": "Streaming",
-            "EnableSubtitlesInManifest": false,
-            "MaxAudioChannels": "6",
-            "MinSegments": 0,
-            "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
-            "$type": "TranscodingProfile"
-        },
-        {
-            "Container": "mp3",
-            "Type": "Audio",
-            "AudioCodec": "mp3",
-            "Protocol": "http",
-            "EstimateContentLength": false,
-            "EnableMpegtsM2TsMode": false,
-            "TranscodeSeekInfo": "Auto",
-            "CopyTimestamps": false,
-            "Context": "Streaming",
-            "EnableSubtitlesInManifest": false,
-            "MaxAudioChannels": "6",
-            "MinSegments": 0,
-            "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
-            "$type": "TranscodingProfile"
-        },
-        {
-            "Container": "opus",
-            "Type": "Audio",
-            "AudioCodec": "opus",
-            "Protocol": "http",
-            "EstimateContentLength": false,
-            "EnableMpegtsM2TsMode": false,
-            "TranscodeSeekInfo": "Auto",
-            "CopyTimestamps": false,
-            "Context": "Streaming",
-            "EnableSubtitlesInManifest": false,
-            "MaxAudioChannels": "6",
-            "MinSegments": 0,
-            "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
-            "$type": "TranscodingProfile"
-        },
-        {
-            "Container": "wav",
-            "Type": "Audio",
-            "AudioCodec": "wav",
-            "Protocol": "http",
-            "EstimateContentLength": false,
-            "EnableMpegtsM2TsMode": false,
-            "TranscodeSeekInfo": "Auto",
-            "CopyTimestamps": false,
-            "Context": "Streaming",
-            "EnableSubtitlesInManifest": false,
-            "MaxAudioChannels": "6",
-            "MinSegments": 0,
-            "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
-            "$type": "TranscodingProfile"
-        },
-        {
-            "Container": "opus",
-            "Type": "Audio",
-            "AudioCodec": "opus",
-            "Protocol": "http",
-            "EstimateContentLength": false,
-            "EnableMpegtsM2TsMode": false,
-            "TranscodeSeekInfo": "Auto",
-            "CopyTimestamps": false,
-            "Context": "Static",
-            "EnableSubtitlesInManifest": false,
-            "MaxAudioChannels": "6",
-            "MinSegments": 0,
-            "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
-            "$type": "TranscodingProfile"
-        },
-        {
-            "Container": "mp3",
-            "Type": "Audio",
-            "AudioCodec": "mp3",
-            "Protocol": "http",
-            "EstimateContentLength": false,
-            "EnableMpegtsM2TsMode": false,
-            "TranscodeSeekInfo": "Auto",
-            "CopyTimestamps": false,
-            "Context": "Static",
-            "EnableSubtitlesInManifest": false,
-            "MaxAudioChannels": "6",
-            "MinSegments": 0,
-            "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
-            "$type": "TranscodingProfile"
-        },
-        {
-            "Container": "aac",
-            "Type": "Audio",
-            "AudioCodec": "aac",
-            "Protocol": "http",
-            "EstimateContentLength": false,
-            "EnableMpegtsM2TsMode": false,
-            "TranscodeSeekInfo": "Auto",
-            "CopyTimestamps": false,
-            "Context": "Static",
-            "EnableSubtitlesInManifest": false,
-            "MaxAudioChannels": "6",
-            "MinSegments": 0,
-            "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
-            "$type": "TranscodingProfile"
-        },
-        {
-            "Container": "wav",
-            "Type": "Audio",
-            "AudioCodec": "wav",
-            "Protocol": "http",
-            "EstimateContentLength": false,
-            "EnableMpegtsM2TsMode": false,
-            "TranscodeSeekInfo": "Auto",
-            "CopyTimestamps": false,
-            "Context": "Static",
-            "EnableSubtitlesInManifest": false,
-            "MaxAudioChannels": "6",
-            "MinSegments": 0,
-            "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
-            "$type": "TranscodingProfile"
-        },
-        {
-            "Container": "ts",
-            "Type": "Video",
-            "VideoCodec": "h264",
-            "AudioCodec": "aac,mp3",
-            "Protocol": "hls",
-            "EstimateContentLength": false,
-            "EnableMpegtsM2TsMode": false,
-            "TranscodeSeekInfo": "Auto",
-            "CopyTimestamps": false,
-            "Context": "Streaming",
-            "EnableSubtitlesInManifest": false,
-            "MaxAudioChannels": "6",
-            "MinSegments": 2,
-            "SegmentLength": 0,
-            "BreakOnNonKeyFrames": true,
-            "$type": "TranscodingProfile"
-        },
-        {
-            "Container": "webm",
-            "Type": "Video",
-            "VideoCodec": "vp8,vp9,av1,vpx",
-            "AudioCodec": "vorbis,opus",
-            "Protocol": "http",
-            "EstimateContentLength": false,
-            "EnableMpegtsM2TsMode": false,
-            "TranscodeSeekInfo": "Auto",
-            "CopyTimestamps": false,
-            "Context": "Streaming",
-            "EnableSubtitlesInManifest": false,
-            "MaxAudioChannels": "6",
-            "MinSegments": 0,
-            "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
-            "$type": "TranscodingProfile"
-        },
-        {
             "Container": "mp4",
-            "Type": "Video",
-            "VideoCodec": "h264",
-            "AudioCodec": "aac,mp3,opus,flac,alac,vorbis",
+            "Context": "Streaming",
+            "EnableAudioVbrEncoding": true,
+            "MaxAudioChannels": "2",
+            "MinSegments": "2",
+            "Protocol": "hls",
+            "Type": "Audio"
+        },
+        {
+            "AudioCodec": "aac",
+            "Container": "aac",
+            "Context": "Streaming",
+            "MaxAudioChannels": "2",
             "Protocol": "http",
-            "EstimateContentLength": false,
-            "EnableMpegtsM2TsMode": false,
-            "TranscodeSeekInfo": "Auto",
-            "CopyTimestamps": false,
+            "Type": "Audio"
+        },
+        {
+            "AudioCodec": "mp3",
+            "Container": "mp3",
+            "Context": "Streaming",
+            "MaxAudioChannels": "2",
+            "Protocol": "http",
+            "Type": "Audio"
+        },
+        {
+            "AudioCodec": "opus",
+            "Container": "opus",
+            "Context": "Streaming",
+            "MaxAudioChannels": "2",
+            "Protocol": "http",
+            "Type": "Audio"
+        },
+        {
+            "AudioCodec": "wav",
+            "Container": "wav",
+            "Context": "Streaming",
+            "MaxAudioChannels": "2",
+            "Protocol": "http",
+            "Type": "Audio"
+        },
+        {
+            "AudioCodec": "opus",
+            "Container": "opus",
             "Context": "Static",
-            "EnableSubtitlesInManifest": false,
-            "MinSegments": 0,
-            "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
-            "$type": "TranscodingProfile"
+            "MaxAudioChannels": "2",
+            "Protocol": "http",
+            "Type": "Audio"
+        },
+        {
+            "AudioCodec": "mp3",
+            "Container": "mp3",
+            "Context": "Static",
+            "MaxAudioChannels": "2",
+            "Protocol": "http",
+            "Type": "Audio"
+        },
+        {
+            "AudioCodec": "aac",
+            "Container": "aac",
+            "Context": "Static",
+            "MaxAudioChannels": "2",
+            "Protocol": "http",
+            "Type": "Audio"
+        },
+        {
+            "AudioCodec": "wav",
+            "Container": "wav",
+            "Context": "Static",
+            "MaxAudioChannels": "2",
+            "Protocol": "http",
+            "Type": "Audio"
+        },
+        {
+            "AudioCodec": "aac,mp2,opus,flac",
+            "BreakOnNonKeyFrames": true,
+            "Container": "mp4",
+            "Context": "Streaming",
+            "MaxAudioChannels": "2",
+            "MinSegments": "2",
+            "Protocol": "hls",
+            "Type": "Video",
+            "VideoCodec": "av1,h264,vp9"
+        },
+        {
+            "AudioCodec": "aac,mp3,mp2",
+            "BreakOnNonKeyFrames": true,
+            "Container": "ts",
+            "Context": "Streaming",
+            "MaxAudioChannels": "2",
+            "MinSegments": "2",
+            "Protocol": "hls",
+            "Type": "Video",
+            "VideoCodec": "h264"
         }
     ],
     "CodecProfiles": [
         {
-            "Type": "VideoAudio",
-            "Conditions": [
-                {
-                    "Condition": "Equals",
-                    "Property": "IsSecondaryAudio",
-                    "Value": "false",
-                    "IsRequired": false,
-                    "$type": "ProfileCondition"
-                }
-            ],
             "Codec": "aac",
-            "$type": "CodecProfile"
-        },
-        {
-            "Type": "VideoAudio",
             "Conditions": [
                 {
                     "Condition": "Equals",
+                    "IsRequired": false,
                     "Property": "IsSecondaryAudio",
-                    "Value": "false",
-                    "IsRequired": false,
-                    "$type": "ProfileCondition"
+                    "Value": "false"
                 }
             ],
-            "$type": "CodecProfile"
+            "Type": "VideoAudio"
         },
         {
-            "Type": "Video",
             "Conditions": [
                 {
-                    "Condition": "NotEquals",
-                    "Property": "IsAnamorphic",
-                    "Value": "true",
-                    "IsRequired": false,
-                    "$type": "ProfileCondition"
-                },
-                {
-                    "Condition": "EqualsAny",
-                    "Property": "VideoProfile",
-                    "Value": "high|main|baseline|constrained baseline",
-                    "IsRequired": false,
-                    "$type": "ProfileCondition"
-                },
-                {
                     "Condition": "LessThanEqual",
-                    "Property": "VideoLevel",
-                    "Value": "52",
                     "IsRequired": false,
-                    "$type": "ProfileCondition"
-                },
-                {
-                    "Condition": "NotEquals",
-                    "Property": "IsInterlaced",
-                    "Value": "true",
-                    "IsRequired": false,
-                    "$type": "ProfileCondition"
+                    "Property": "AudioChannels",
+                    "Value": "2"
                 }
             ],
+            "Type": "Audio"
+        },
+        {
+            "Conditions": [
+                {
+                    "Condition": "LessThanEqual",
+                    "IsRequired": false,
+                    "Property": "AudioChannels",
+                    "Value": "2"
+                },
+                {
+                    "Condition": "Equals",
+                    "IsRequired": false,
+                    "Property": "IsSecondaryAudio",
+                    "Value": "false"
+                }
+            ],
+            "Type": "VideoAudio"
+        },
+        {
             "Codec": "h264",
-            "$type": "CodecProfile"
-        },
-        {
-            "Type": "Video",
             "Conditions": [
                 {
                     "Condition": "NotEquals",
-                    "Property": "IsAnamorphic",
-                    "Value": "true",
                     "IsRequired": false,
-                    "$type": "ProfileCondition"
+                    "Property": "IsAnamorphic",
+                    "Value": "true"
                 },
                 {
                     "Condition": "EqualsAny",
-                    "Property": "VideoProfile",
-                    "Value": "main",
                     "IsRequired": false,
-                    "$type": "ProfileCondition"
+                    "Property": "VideoProfile",
+                    "Value": "high|main|baseline|constrained baseline"
+                },
+                {
+                    "Condition": "EqualsAny",
+                    "IsRequired": false,
+                    "Property": "VideoRangeType",
+                    "Value": "SDR"
                 },
                 {
                     "Condition": "LessThanEqual",
-                    "Property": "VideoLevel",
-                    "Value": "120",
                     "IsRequired": false,
-                    "$type": "ProfileCondition"
+                    "Property": "VideoLevel",
+                    "Value": "52"
                 },
                 {
                     "Condition": "NotEquals",
-                    "Property": "IsInterlaced",
-                    "Value": "true",
                     "IsRequired": false,
-                    "$type": "ProfileCondition"
+                    "Property": "IsInterlaced",
+                    "Value": "true"
                 }
             ],
+            "Type": "Video"
+        },
+        {
             "Codec": "hevc",
-            "$type": "CodecProfile"
+            "Conditions": [
+                {
+                    "Condition": "NotEquals",
+                    "IsRequired": false,
+                    "Property": "IsAnamorphic",
+                    "Value": "true"
+                },
+                {
+                    "Condition": "EqualsAny",
+                    "IsRequired": false,
+                    "Property": "VideoProfile",
+                    "Value": "main"
+                },
+                {
+                    "Condition": "EqualsAny",
+                    "IsRequired": false,
+                    "Property": "VideoRangeType",
+                    "Value": "SDR"
+                },
+                {
+                    "Condition": "LessThanEqual",
+                    "IsRequired": false,
+                    "Property": "VideoLevel",
+                    "Value": "120"
+                },
+                {
+                    "Condition": "NotEquals",
+                    "IsRequired": false,
+                    "Property": "IsInterlaced",
+                    "Value": "true"
+                }
+            ],
+            "Type": "Video"
+        },
+        {
+            "Codec": "vp9",
+            "Conditions": [
+                {
+                    "Condition": "EqualsAny",
+                    "IsRequired": false,
+                    "Property": "VideoRangeType",
+                    "Value": "SDR"
+                }
+            ],
+            "Type": "Video"
+        },
+        {
+            "Codec": "av1",
+            "Conditions": [
+                {
+                    "Condition": "NotEquals",
+                    "IsRequired": false,
+                    "Property": "IsAnamorphic",
+                    "Value": "true"
+                },
+                {
+                    "Condition": "EqualsAny",
+                    "IsRequired": false,
+                    "Property": "VideoProfile",
+                    "Value": "main"
+                },
+                {
+                    "Condition": "EqualsAny",
+                    "IsRequired": false,
+                    "Property": "VideoRangeType",
+                    "Value": "SDR"
+                },
+                {
+                    "Condition": "LessThanEqual",
+                    "IsRequired": false,
+                    "Property": "VideoLevel",
+                    "Value": "19"
+                }
+            ],
+            "Type": "Video"
         }
     ],
     "ResponseProfiles": [
         {
             "Container": "m4v",
-            "Type": "Video",
             "MimeType": "video/mp4",
-            "$type": "ResponseProfile"
+            "Type": "Video"
         }
     ],
     "SubtitleProfiles": [
         {
             "Format": "vtt",
-            "Method": "External",
-            "$type": "SubtitleProfile"
+            "Method": "External"
         },
         {
             "Format": "ass",
-            "Method": "External",
-            "$type": "SubtitleProfile"
+            "Method": "External"
         },
         {
             "Format": "ssa",
-            "Method": "External",
-            "$type": "SubtitleProfile"
+            "Method": "External"
         }
     ],
     "$type": "DeviceProfile"

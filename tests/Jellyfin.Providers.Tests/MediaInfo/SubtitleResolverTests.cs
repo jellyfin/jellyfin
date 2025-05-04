@@ -26,7 +26,7 @@ public class SubtitleResolverTests
     public SubtitleResolverTests()
     {
         // prep BaseItem and Video for calls made that expect managers
-        Video.LiveTvManager = Mock.Of<ILiveTvManager>();
+        Video.RecordingsManager = Mock.Of<IRecordingsManager>();
 
         var applicationPaths = new Mock<IServerApplicationPaths>().Object;
         var serverConfig = new Mock<IServerConfigurationManager>();
@@ -64,7 +64,7 @@ public class SubtitleResolverTests
     [InlineData("My.Video.mp3", false, false)]
     [InlineData("My.Video.srt", true, true)]
     [InlineData("My.Video.mp3", true, false)]
-    public async void GetExternalStreams_MixedFilenames_PicksSubtitles(string file, bool metadataDirectory, bool matches)
+    public async Task GetExternalStreams_MixedFilenames_PicksSubtitles(string file, bool metadataDirectory, bool matches)
     {
         BaseItem.MediaSourceManager = Mock.Of<IMediaSourceManager>();
 

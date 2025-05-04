@@ -3,8 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using Jellyfin.Data.Entities;
+using System.ComponentModel;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Library;
@@ -65,7 +66,7 @@ namespace MediaBrowser.Model.Dto
 
         public DateTime? DateLastMediaAdded { get; set; }
 
-        public string ExtraType { get; set; }
+        public ExtraType? ExtraType { get; set; }
 
         public int? AirsBeforeSeasonNumber { get; set; }
 
@@ -550,7 +551,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the parent primary image item identifier.
         /// </summary>
         /// <value>The parent primary image item identifier.</value>
-        public string ParentPrimaryImageItemId { get; set; }
+        public Guid? ParentPrimaryImageItemId { get; set; }
 
         /// <summary>
         /// Gets or sets the parent primary image tag.
@@ -586,6 +587,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the type of the media.
         /// </summary>
         /// <value>The type of the media.</value>
+        [DefaultValue(MediaType.Unknown)]
         public MediaType MediaType { get; set; }
 
         /// <summary>
@@ -782,10 +784,10 @@ namespace MediaBrowser.Model.Dto
         public string TimerId { get; set; }
 
         /// <summary>
-        /// Gets or sets the LUFS value.
+        /// Gets or sets the gain required for audio normalization.
         /// </summary>
-        /// <value>The LUFS Value.</value>
-        public float? LUFS { get; set; }
+        /// <value>The gain required for audio normalization.</value>
+        public float? NormalizationGain { get; set; }
 
         /// <summary>
         /// Gets or sets the current program.

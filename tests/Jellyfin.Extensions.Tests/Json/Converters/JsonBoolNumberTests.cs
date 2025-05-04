@@ -1,5 +1,6 @@
 using System.Text.Json;
 using FsCheck;
+using FsCheck.Fluent;
 using FsCheck.Xunit;
 using Jellyfin.Extensions.Json.Converters;
 using Xunit;

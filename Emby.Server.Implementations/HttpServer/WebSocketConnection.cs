@@ -82,17 +82,17 @@ namespace Emby.Server.Implementations.HttpServer
         public WebSocketState State => _socket.State;
 
         /// <inheritdoc />
-        public Task SendAsync(OutboundWebSocketMessage message, CancellationToken cancellationToken)
+        public async Task SendAsync(OutboundWebSocketMessage message, CancellationToken cancellationToken)
         {
             var json = JsonSerializer.SerializeToUtf8Bytes(message, _jsonOptions);
-            return _socket.SendAsync(json, WebSocketMessageType.Text, true, cancellationToken);
+            await _socket.SendAsync(json, WebSocketMessageType.Text, true, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
-        public Task SendAsync<T>(OutboundWebSocketMessage<T> message, CancellationToken cancellationToken)
+        public async Task SendAsync<T>(OutboundWebSocketMessage<T> message, CancellationToken cancellationToken)
         {
             var json = JsonSerializer.SerializeToUtf8Bytes(message, _jsonOptions);
-            return _socket.SendAsync(json, WebSocketMessageType.Text, true, cancellationToken);
+            await _socket.SendAsync(json, WebSocketMessageType.Text, true, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
@@ -101,14 +101,14 @@ namespace Emby.Server.Implementations.HttpServer
             var pipe = new Pipe();
             var writer = pipe.Writer;
 
-            ValueWebSocketReceiveResult receiveresult;
+            ValueWebSocketReceiveResult receiveResult;
             do
             {
                 // Allocate at least 512 bytes from the PipeWriter
                 Memory<byte> memory = writer.GetMemory(512);
                 try
                 {
-                    receiveresult = await _socket.ReceiveAsync(memory, cancellationToken).ConfigureAwait(false);
+                    receiveResult = await _socket.ReceiveAsync(memory, cancellationToken).ConfigureAwait(false);
                 }
                 catch (WebSocketException ex)
                 {
@@ -116,7 +116,7 @@ namespace Emby.Server.Implementations.HttpServer
                     break;
                 }
 
-                int bytesRead = receiveresult.Count;
+                int bytesRead = receiveResult.Count;
                 if (bytesRead == 0)
                 {
                     break;
@@ -135,13 +135,13 @@ namespace Emby.Server.Implementations.HttpServer
 
                 LastActivityDate = DateTime.UtcNow;
 
-                if (receiveresult.EndOfMessage)
+                if (receiveResult.EndOfMessage)
                 {
                     await ProcessInternal(pipe.Reader).ConfigureAwait(false);
                 }
             }
             while ((_socket.State == WebSocketState.Open || _socket.State == WebSocketState.Connecting)
-                && receiveresult.MessageType != WebSocketMessageType.Close);
+                && receiveResult.MessageType != WebSocketMessageType.Close);
 
             Closed?.Invoke(this, EventArgs.Empty);
 
@@ -199,13 +199,20 @@ namespace Emby.Server.Implementations.HttpServer
             }
             else
             {
-                await OnReceive(
-                    new WebSocketMessageInfo
-                    {
-                        MessageType = stub.MessageType,
-                        Data = stub.Data?.ToString(), // Data can be null
-                        Connection = this
-                    }).ConfigureAwait(false);
+                try
+                {
+                    await OnReceive(
+                        new WebSocketMessageInfo
+                        {
+                            MessageType = stub.MessageType,
+                            Data = stub.Data?.ToString(), // Data can be null
+                            Connection = this
+                        }).ConfigureAwait(false);
+                }
+                catch (Exception exception)
+                {
+                    _logger.LogWarning(exception, "Failed to process WebSocket message");
+                }
             }
         }
 
@@ -217,12 +224,12 @@ namespace Emby.Server.Implementations.HttpServer
             return ret;
         }
 
-        private Task SendKeepAliveResponse()
+        private async Task SendKeepAliveResponse()
         {
             LastKeepAliveDate = DateTime.UtcNow;
-            return SendAsync(
+            await SendAsync(
                 new OutboundKeepAliveMessage(),
-                CancellationToken.None);
+                CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <inheritdoc />

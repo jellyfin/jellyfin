@@ -7,7 +7,10 @@ namespace Jellyfin.Server.Migrations.Routines
     /// <summary>
     /// Disable transcode throttling for all installations since it is currently broken for certain video formats.
     /// </summary>
+    [JellyfinMigration("2025-04-20T05:00:00", nameof(DisableTranscodingThrottling), "4124C2CD-E939-4FFB-9BE9-9B311C413638")]
+#pragma warning disable CS0618 // Type or member is obsolete
     internal class DisableTranscodingThrottling : IMigrationRoutine
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         private readonly ILogger<DisableTranscodingThrottling> _logger;
         private readonly IConfigurationManager _configManager;
@@ -17,15 +20,6 @@ namespace Jellyfin.Server.Migrations.Routines
             _logger = logger;
             _configManager = configManager;
         }
-
-        /// <inheritdoc/>
-        public Guid Id => Guid.Parse("{4124C2CD-E939-4FFB-9BE9-9B311C413638}");
-
-        /// <inheritdoc/>
-        public string Name => "DisableTranscodingThrottling";
-
-        /// <inheritdoc/>
-        public bool PerformOnNewInstall => false;
 
         /// <inheritdoc/>
         public void Perform()

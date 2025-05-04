@@ -126,5 +126,15 @@
     "External": "Externé",
     "HearingImpaired": "Sluchovo postihnutí",
     "TaskRefreshTrickplayImages": "Generovanie obrázkov Trickplay",
-    "TaskRefreshTrickplayImagesDescription": "Vytvára trickplay náhľady pre videá v povolených knižniciach."
+    "TaskRefreshTrickplayImagesDescription": "Vytvára trickplay náhľady pre videá v povolených knižniciach.",
+    "TaskCleanCollectionsAndPlaylists": "Vyčistiť kolekcie a playlisty",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Odstráni položky z kolekcií a playlistov, ktoré už neexistujú.",
+    "TaskAudioNormalization": "Normalizácia zvuku",
+    "TaskAudioNormalizationDescription": "Skenovať súbory za účelom normalizácie zvuku.",
+    "TaskExtractMediaSegments": "Skenovanie segmentov médií",
+    "TaskExtractMediaSegmentsDescription": "Extrahuje alebo získava segmenty médií zo zásuvných modulov s povolenou funkciou MediaSegment.",
+    "TaskMoveTrickplayImages": "Presunúť umiestnenie obrázkov Trickplay",
+    "TaskMoveTrickplayImagesDescription": "Presunie existujúce súbory Trickplay podľa nastavení knižnice.",
+    "TaskDownloadMissingLyrics": "Stiahnuť chýbajúce texty piesní",
+    "TaskDownloadMissingLyricsDescription": "Stiahne texty pre piesne"
 }

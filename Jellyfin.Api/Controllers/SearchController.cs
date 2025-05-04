@@ -84,9 +84,9 @@ public class SearchController : BaseJellyfinApiController
         [FromQuery] int? limit,
         [FromQuery] Guid? userId,
         [FromQuery, Required] string searchTerm,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] excludeItemTypes,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] MediaType[] mediaTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] BaseItemKind[] includeItemTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] BaseItemKind[] excludeItemTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] MediaType[] mediaTypes,
         [FromQuery] Guid? parentId,
         [FromQuery] bool? isMovie,
         [FromQuery] bool? isSeries,
@@ -209,9 +209,9 @@ public class SearchController : BaseJellyfinApiController
                 break;
         }
 
-        if (!item.ChannelId.Equals(default))
+        if (!item.ChannelId.IsEmpty())
         {
-            var channel = _libraryManager.GetItemById(item.ChannelId);
+            var channel = _libraryManager.GetItemById<BaseItem>(item.ChannelId);
             result.ChannelName = channel?.Name;
         }
 

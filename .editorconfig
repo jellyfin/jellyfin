@@ -192,3 +192,341 @@ csharp_space_between_method_call_empty_parameter_list_parentheses = false
 # Wrapping preferences
 csharp_preserve_single_line_statements = true
 csharp_preserve_single_line_blocks = true
+
+###############################
+# C# Analyzer Rules           #
+###############################
+### ERROR #
+###########
+# error on SA1000: The keyword 'new' should be followed by a space
+dotnet_diagnostic.SA1000.severity = error
+
+# error on SA1001: Commas should not be preceded by whitespace
+dotnet_diagnostic.SA1001.severity = error
+
+# error on SA1106: Code should not contain empty statements
+dotnet_diagnostic.SA1106.severity = error
+
+# error on SA1107: Code should not contain multiple statements on one line
+dotnet_diagnostic.SA1107.severity = error
+
+# error on SA1028: Code should not contain trailing whitespace
+dotnet_diagnostic.SA1028.severity = error
+
+# error on SA1117: The parameters should all be placed on the same line or each parameter should be placed on its own line
+dotnet_diagnostic.SA1117.severity = error
+
+# error on SA1137: Elements should have the same indentation
+dotnet_diagnostic.SA1137.severity = error
+
+# error on SA1142: Refer to tuple fields by name
+dotnet_diagnostic.SA1142.severity = error
+
+# error on SA1210: Using directives should be ordered alphabetically by the namespaces
+dotnet_diagnostic.SA1210.severity = error
+
+# error on SA1316: Tuple element names should use correct casing
+dotnet_diagnostic.SA1316.severity = error
+
+# error on SA1414: Tuple types in signatures should have element names
+dotnet_diagnostic.SA1414.severity = error
+
+# disable warning SA1513: Closing brace should be followed by blank line
+dotnet_diagnostic.SA1513.severity = error
+
+# error on SA1518: File is required to end with a single newline character
+dotnet_diagnostic.SA1518.severity = error
+
+# error on SA1629: Documentation text should end with a period
+dotnet_diagnostic.SA1629.severity = error
+
+# error on CA1001: Types that own disposable fields should be disposable
+dotnet_diagnostic.CA1001.severity = error
+
+# error on CA1012: Abstract types should not have public constructors
+dotnet_diagnostic.CA1012.severity = error
+
+# error on CA1063: Implement IDisposable correctly
+dotnet_diagnostic.CA1063.severity = error
+
+# error on CA1305: Specify IFormatProvider
+dotnet_diagnostic.CA1305.severity = error
+
+# error on CA1307: Specify StringComparison for clarity
+dotnet_diagnostic.CA1307.severity = error
+
+# error on CA1309: Use ordinal StringComparison
+dotnet_diagnostic.CA1309.severity = error
+
+# error on CA1310: Specify StringComparison for correctness
+dotnet_diagnostic.CA1310.severity = error
+
+# error on CA1513: Use 'ObjectDisposedException.ThrowIf' instead of explicitly throwing a new exception instance
+dotnet_diagnostic.CA1513.severity = error
+
+# error on CA1725: Parameter names should match base declaration
+dotnet_diagnostic.CA1725.severity = error
+
+# error on CA1725: Call async methods when in an async method
+dotnet_diagnostic.CA1727.severity = error
+
+# error on CA1813: Avoid unsealed attributes
+dotnet_diagnostic.CA1813.severity = error
+
+# error on CA1834: Use 'StringBuilder.Append(char)' instead of 'StringBuilder.Append(string)' when the input is a constant unit string
+dotnet_diagnostic.CA1834.severity = error
+
+# error on CA1843: Do not use 'WaitAll' with a single task
+dotnet_diagnostic.CA1843.severity = error
+
+# error on CA1845: Use span-based 'string.Concat'
+dotnet_diagnostic.CA1845.severity = error
+
+# error on CA1849: Call async methods when in an async method
+dotnet_diagnostic.CA1849.severity = error
+
+# error on CA1851: Possible multiple enumerations of IEnumerable collection
+dotnet_diagnostic.CA1851.severity = error
+
+# error on CA1854: Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check to avoid double lookup
+dotnet_diagnostic.CA1854.severity = error
+
+# error on CA1860: Avoid using 'Enumerable.Any()' extension method
+dotnet_diagnostic.CA1860.severity = error
+
+# error on CA1862: Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
+dotnet_diagnostic.CA1862.severity = error
+
+# error on CA1863: Use 'CompositeFormat'
+dotnet_diagnostic.CA1863.severity = error
+
+# error on CA1864: Prefer the 'IDictionary.TryAdd(TKey, TValue)' method
+dotnet_diagnostic.CA1864.severity = error
+
+# error on CA1865-CA1867: Use 'string.Method(char)' instead of 'string.Method(string)' for string with single char
+dotnet_diagnostic.CA1865.severity = error
+dotnet_diagnostic.CA1866.severity = error
+dotnet_diagnostic.CA1867.severity = error
+
+# error on CA1868: Unnecessary call to 'Contains' for sets
+dotnet_diagnostic.CA1868.severity = error
+
+# error on CA1869: Cache and reuse 'JsonSerializerOptions' instances
+dotnet_diagnostic.CA1869.severity = error
+
+# error on CA1870: Use a cached 'SearchValues' instance
+dotnet_diagnostic.CA1870.severity = error
+
+# error on CA1871: Do not pass a nullable struct to 'ArgumentNullException.ThrowIfNull'
+dotnet_diagnostic.CA1871.severity = error
+
+# error on CA1872: Prefer 'Convert.ToHexString' and 'Convert.ToHexStringLower' over call chains based on 'BitConverter.ToString'
+dotnet_diagnostic.CA1872.severity = error
+
+# error on CA2016: Forward the CancellationToken parameter to methods that take one
+#  or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token
+dotnet_diagnostic.CA2016.severity = error
+
+# error on CA2201: Exception type System.Exception is not sufficiently specific
+dotnet_diagnostic.CA2201.severity = error
+
+# error on CA2215: Dispose methods should call base class dispose
+dotnet_diagnostic.CA2215.severity = error
+
+# error on CA2249: Use 'string.Contains' instead of 'string.IndexOf' to improve readability
+dotnet_diagnostic.CA2249.severity = error
+
+# error on CA2254: Template should be a static expression
+dotnet_diagnostic.CA2254.severity = error
+
+################
+### SUGGESTION #
+################
+# disable warning CA1014: Mark assemblies with CLSCompliantAttribute
+dotnet_diagnostic.CA1014.severity = suggestion
+
+# disable warning CA1024: Use properties where appropriate
+dotnet_diagnostic.CA1024.severity = suggestion
+
+# disable warning CA1031: Do not catch general exception types
+dotnet_diagnostic.CA1031.severity = suggestion
+
+# disable warning CA1032: Implement standard exception constructors
+dotnet_diagnostic.CA1032.severity = suggestion
+
+# disable warning CA1040: Avoid empty interfaces
+dotnet_diagnostic.CA1040.severity = suggestion
+
+# disable warning CA1062: Validate arguments of public methods
+dotnet_diagnostic.CA1062.severity = suggestion
+
+# TODO: enable when false positives are fixed
+# disable warning CA1508: Avoid dead conditional code
+dotnet_diagnostic.CA1508.severity = suggestion
+
+# disable warning CA1515: Consider making public types internal
+dotnet_diagnostic.CA1515.severity = suggestion
+
+# disable warning CA1716: Identifiers should not match keywords
+dotnet_diagnostic.CA1716.severity = suggestion
+
+# disable warning CA1720: Identifiers should not contain type names
+dotnet_diagnostic.CA1720.severity = suggestion
+
+# disable warning CA1724: Type names should not match namespaces
+dotnet_diagnostic.CA1724.severity = suggestion
+
+# disable warning CA1805: Do not initialize unnecessarily
+dotnet_diagnostic.CA1805.severity = suggestion
+
+# disable warning CA1812: internal class that is apparently never instantiated.
+# If so, remove the code from the assembly.
+# If this class is intended to contain only static members, make it static
+dotnet_diagnostic.CA1812.severity = suggestion
+
+# disable warning CA1822: Member does not access instance data and can be marked as static
+dotnet_diagnostic.CA1822.severity = suggestion
+
+# CA1859: Use concrete types when possible for improved performance
+dotnet_diagnostic.CA1859.severity = suggestion
+
+# TODO: Enable
+# CA1861: Prefer 'static readonly' fields over constant array arguments if the called method is called repeatedly and is not mutating the passed array
+dotnet_diagnostic.CA1861.severity = suggestion
+
+# disable warning CA2000: Dispose objects before losing scope
+dotnet_diagnostic.CA2000.severity = suggestion
+
+# disable warning CA2253: Named placeholders should not be numeric values
+dotnet_diagnostic.CA2253.severity = suggestion
+
+# disable warning CA5394: Do not use insecure randomness
+dotnet_diagnostic.CA5394.severity = suggestion
+
+# error on CA3003: Review code for file path injection vulnerabilities
+dotnet_diagnostic.CA3003.severity = suggestion
+
+# error on CA3006: Review code for process command injection vulnerabilities
+dotnet_diagnostic.CA3006.severity = suggestion
+
+###############
+### DISABLED  #
+###############
+# disable warning SA1009: Closing parenthesis should be followed by a space.
+dotnet_diagnostic.SA1009.severity = none
+
+# disable warning SA1011: Closing square bracket should be followed by a space.
+dotnet_diagnostic.SA1011.severity = none
+
+# disable warning SA1101: Prefix local calls with 'this.'
+dotnet_diagnostic.SA1101.severity = none
+
+# disable warning SA1108: Block statements should not contain embedded comments
+dotnet_diagnostic.SA1108.severity = none
+
+# disable warning SA1118: Parameter must not span multiple lines.
+dotnet_diagnostic.SA1118.severity = none
+
+# disable warning SA1128:: Put constructor initializers on their own line
+dotnet_diagnostic.SA1128.severity = none
+
+# disable warning SA1130: Use lambda syntax
+dotnet_diagnostic.SA1130.severity = none
+
+# disable warning SA1200: 'using' directive must appear within a namespace declaration
+dotnet_diagnostic.SA1200.severity = none
+
+# disable warning SA1202: 'public' members must come before 'private' members
+dotnet_diagnostic.SA1202.severity = none
+
+# disable warning SA1204: Static members must appear before non-static members
+dotnet_diagnostic.SA1204.severity = none
+
+# disable warning SA1309: Fields must not begin with an underscore
+dotnet_diagnostic.SA1309.severity = none
+
+# disable warning SA1311: Static readonly fields should begin with upper-case letter
+dotnet_diagnostic.SA1311.severity = none
+
+# disable warning SA1413: Use trailing comma in multi-line initializers
+dotnet_diagnostic.SA1413.severity = none
+
+# disable warning SA1512: Single-line comments must not be followed by blank line
+dotnet_diagnostic.SA1512.severity = none
+
+# disable warning SA1515: Single-line comment should be preceded by blank line
+dotnet_diagnostic.SA1515.severity = none
+
+# disable warning SA1600: Elements should be documented
+dotnet_diagnostic.SA1600.severity = none
+
+# disable warning SA1601: Partial elements should be documented
+dotnet_diagnostic.SA1601.severity = none
+
+# disable warning SA1602: Enumeration items should be documented
+dotnet_diagnostic.SA1602.severity = none
+
+# disable warning SA1633: The file header is missing or not located at the top of the file
+dotnet_diagnostic.SA1633.severity = none
+
+# disable warning CA1054: Change the type of parameter url from string to System.Uri
+dotnet_diagnostic.CA1054.severity = none
+
+# disable warning CA1055: URI return values should not be strings
+dotnet_diagnostic.CA1055.severity = none
+
+# disable warning CA1056: URI properties should not be strings
+dotnet_diagnostic.CA1056.severity = none
+
+# disable warning CA1303: Do not pass literals as localized parameters
+dotnet_diagnostic.CA1303.severity = none
+
+# disable warning CA1308: Normalize strings to uppercase
+dotnet_diagnostic.CA1308.severity = none
+
+# disable warning CA1848: Use the LoggerMessage delegates
+dotnet_diagnostic.CA1848.severity = none
+
+# disable warning CA2101: Specify marshaling for P/Invoke string arguments
+dotnet_diagnostic.CA2101.severity = none
+
+# disable warning CA2234: Pass System.Uri objects instead of strings
+dotnet_diagnostic.CA2234.severity = none
+
+# error on RS0030: Do not used banned APIs
+dotnet_diagnostic.RS0030.severity = error
+
+# disable warning IDISP001: Dispose created
+dotnet_diagnostic.IDISP001.severity = suggestion
+
+# TODO: Enable when false positives are fixed
+# disable warning IDISP003: Dispose previous before re-assigning
+dotnet_diagnostic.IDISP003.severity = suggestion
+
+# disable warning IDISP004: Don't ignore created IDisposable
+dotnet_diagnostic.IDISP004.severity = suggestion
+
+# disable warning IDISP007: Don't dispose injected
+dotnet_diagnostic.IDISP007.severity = suggestion
+
+# disable warning IDISP008: Don't assign member with injected and created disposables
+dotnet_diagnostic.IDISP008.severity = suggestion
+
+[tests/**.{cs,vb}]
+# disable warning SA0001: XML comment analysis is disabled due to project configuration
+dotnet_diagnostic.SA0001.severity = none
+
+# disable warning CA1707: Identifiers should not contain underscores
+dotnet_diagnostic.CA1707.severity = none
+
+# disable warning CA2007: Consider calling ConfigureAwait on the awaited task
+dotnet_diagnostic.CA2007.severity = none
+
+# disable warning CA2234: Pass system uri objects instead of strings
+dotnet_diagnostic.CA2234.severity = suggestion
+
+# disable warning xUnit1028: Test methods must have a supported return type.
+dotnet_diagnostic.xUnit1028.severity = none
+
+# CA1826: Do not use Enumerable methods on indexable collections
+dotnet_diagnostic.CA1826.severity = suggestion

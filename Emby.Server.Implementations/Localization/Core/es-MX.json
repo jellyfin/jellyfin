@@ -11,7 +11,7 @@
     "Collections": "Colecciones",
     "DeviceOfflineWithName": "{0} se ha desconectado",
     "DeviceOnlineWithName": "{0} está conectado",
-    "FailedLoginAttemptWithUserName": "Intento fallido de inicio de sesión desde {0}",
+    "FailedLoginAttemptWithUserName": "Intento fallido de inicio de sesión de {0}",
     "Favorites": "Favoritos",
     "Folders": "Carpetas",
     "Genres": "Géneros",
@@ -124,5 +124,17 @@
     "TaskKeyframeExtractorDescription": "Extrae los cuadros clave de los archivos de vídeo para crear listas HLS más precisas. Esta tarea puede tardar un buen rato.",
     "TaskKeyframeExtractor": "Extractor de Cuadros Clave",
     "External": "Externo",
-    "HearingImpaired": "Discapacidad Auditiva"
+    "HearingImpaired": "Discapacidad Auditiva",
+    "TaskRefreshTrickplayImagesDescription": "Crea previsualizaciones para la barra de reproducción en las bibliotecas habilitadas.",
+    "TaskRefreshTrickplayImages": "Generar imágenes de la barra de reproducción",
+    "TaskAudioNormalization": "Normalización de audio",
+    "TaskAudioNormalizationDescription": "Analiza los archivos para normalizar el audio.",
+    "TaskCleanCollectionsAndPlaylists": "Limpieza de colecciones y listas de reproducción",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Quita elementos que ya no existen de colecciones y listas de reproducción.",
+    "TaskDownloadMissingLyrics": "descargar letras que faltan",
+    "TaskDownloadMissingLyricsDescription": "Descargar letras de canciones",
+    "TaskExtractMediaSegments": "Escaneo de segmentos de medios",
+    "TaskExtractMediaSegmentsDescription": "Extrae u obtiene segmentos de medios de plugins habilitados para MediaSegment.",
+    "TaskMoveTrickplayImages": "Migrar la ubicación de la imagen de Trickplay",
+    "TaskMoveTrickplayImagesDescription": "Mueve archivos de trickplay existentes según la configuración de la biblioteca."
 }

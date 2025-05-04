@@ -104,6 +104,7 @@ public class ExternalPathParserTests
     [InlineData(".en.cc.title", "title", "eng", false, false, true)]
     [InlineData(".hi.en.title", "title", "eng", false, false, true)]
     [InlineData(".en.hi.title", "title", "eng", false, false, true)]
+    [InlineData(".Subs for Chinese Audio.eng", "Subs for Chinese Audio", "eng", false, false, false)]
     public void ParseFile_ExtraTokens_ParseToValues(string tokens, string? title, string? language, bool isDefault = false, bool isForced = false, bool isHearingImpaired = false)
     {
         var path = "My.Video" + tokens + ".srt";

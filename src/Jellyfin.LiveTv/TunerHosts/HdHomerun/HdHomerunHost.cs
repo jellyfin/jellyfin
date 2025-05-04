@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -161,152 +160,6 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
 
                 throw;
             }
-        }
-
-        private async Task<List<LiveTvTunerInfo>> GetTunerInfosHttp(TunerHostInfo info, CancellationToken cancellationToken)
-        {
-            var model = await GetModelInfo(info, false, cancellationToken).ConfigureAwait(false);
-
-            using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
-                .GetAsync(string.Format(CultureInfo.InvariantCulture, "{0}/tuners.html", GetApiUrl(info)), HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-                .ConfigureAwait(false);
-            var tuners = new List<LiveTvTunerInfo>();
-            var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            await using (stream.ConfigureAwait(false))
-            {
-                using var sr = new StreamReader(stream, System.Text.Encoding.UTF8);
-                await foreach (var line in sr.ReadAllLinesAsync().ConfigureAwait(false))
-                {
-                    string stripedLine = StripXML(line);
-                    if (stripedLine.Contains("Channel", StringComparison.Ordinal))
-                    {
-                        LiveTvTunerStatus status;
-                        var index = stripedLine.IndexOf("Channel", StringComparison.OrdinalIgnoreCase);
-                        var name = stripedLine.Substring(0, index - 1);
-                        var currentChannel = stripedLine.Substring(index + 7);
-                        if (string.Equals(currentChannel, "none", StringComparison.Ordinal))
-                        {
-                            status = LiveTvTunerStatus.LiveTv;
-                        }
-                        else
-                        {
-                            status = LiveTvTunerStatus.Available;
-                        }
-
-                        tuners.Add(new LiveTvTunerInfo
-                        {
-                            Name = name,
-                            SourceType = string.IsNullOrWhiteSpace(model.ModelNumber) ? Name : model.ModelNumber,
-                            ProgramName = currentChannel,
-                            Status = status
-                        });
-                    }
-                }
-            }
-
-            return tuners;
-        }
-
-        private static string StripXML(string source)
-        {
-            if (string.IsNullOrEmpty(source))
-            {
-                return string.Empty;
-            }
-
-            char[] buffer = new char[source.Length];
-            int bufferIndex = 0;
-            bool inside = false;
-
-            for (int i = 0; i < source.Length; i++)
-            {
-                char let = source[i];
-                if (let == '<')
-                {
-                    inside = true;
-                    continue;
-                }
-
-                if (let == '>')
-                {
-                    inside = false;
-                    continue;
-                }
-
-                if (!inside)
-                {
-                    buffer[bufferIndex++] = let;
-                }
-            }
-
-            return new string(buffer, 0, bufferIndex);
-        }
-
-        private async Task<List<LiveTvTunerInfo>> GetTunerInfosUdp(TunerHostInfo info, CancellationToken cancellationToken)
-        {
-            var model = await GetModelInfo(info, false, cancellationToken).ConfigureAwait(false);
-
-            var tuners = new List<LiveTvTunerInfo>(model.TunerCount);
-
-            var uri = new Uri(GetApiUrl(info));
-
-            using (var manager = new HdHomerunManager())
-            {
-                // Legacy HdHomeruns are IPv4 only
-                var ipInfo = IPAddress.Parse(uri.Host);
-
-                for (int i = 0; i < model.TunerCount; i++)
-                {
-                    var name = string.Format(CultureInfo.InvariantCulture, "Tuner {0}", i + 1);
-                    var currentChannel = "none"; // TODO: Get current channel and map back to Station Id
-                    var isAvailable = await manager.CheckTunerAvailability(ipInfo, i, cancellationToken).ConfigureAwait(false);
-                    var status = isAvailable ? LiveTvTunerStatus.Available : LiveTvTunerStatus.LiveTv;
-                    tuners.Add(new LiveTvTunerInfo
-                    {
-                        Name = name,
-                        SourceType = string.IsNullOrWhiteSpace(model.ModelNumber) ? Name : model.ModelNumber,
-                        ProgramName = currentChannel,
-                        Status = status
-                    });
-                }
-            }
-
-            return tuners;
-        }
-
-        public async Task<List<LiveTvTunerInfo>> GetTunerInfos(CancellationToken cancellationToken)
-        {
-            var list = new List<LiveTvTunerInfo>();
-
-            foreach (var host in GetConfiguration().TunerHosts
-                .Where(i => string.Equals(i.Type, Type, StringComparison.OrdinalIgnoreCase)))
-            {
-                try
-                {
-                    list.AddRange(await GetTunerInfos(host, cancellationToken).ConfigureAwait(false));
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, "Error getting tuner info");
-                }
-            }
-
-            return list;
-        }
-
-        public async Task<List<LiveTvTunerInfo>> GetTunerInfos(TunerHostInfo info, CancellationToken cancellationToken)
-        {
-            // TODO Need faster way to determine UDP vs HTTP
-            var channels = await GetChannels(info, true, cancellationToken).ConfigureAwait(false);
-
-            var hdHomerunChannelInfo = channels.FirstOrDefault() as HdHomerunChannelInfo;
-
-            if (hdHomerunChannelInfo is null || hdHomerunChannelInfo.IsLegacyTuner)
-            {
-                return await GetTunerInfosUdp(info, cancellationToken).ConfigureAwait(false);
-            }
-
-            return await GetTunerInfosHttp(info, cancellationToken).ConfigureAwait(false);
         }
 
         private static string GetApiUrl(TunerHostInfo info)
@@ -478,6 +331,8 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
                 SupportsTranscoding = true,
                 IsInfiniteStream = true,
                 IgnoreDts = true,
+                UseMostCompatibleTranscodingProfile = true, // All HDHR tuners require this
+                FallbackMaxStreamingBitrate = info.FallbackMaxStreamingBitrate,
                 // IgnoreIndex = true,
                 // ReadAtNativeFramerate = true
             };
@@ -574,40 +429,24 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
                     _streamHelper);
             }
 
-            var enableHttpStream = true;
-            if (enableHttpStream)
+            mediaSource.Protocol = MediaProtocol.Http;
+
+            var httpUrl = channel.Path;
+
+            // If raw was used, the tuner doesn't support params
+            if (!string.IsNullOrWhiteSpace(profile) && !string.Equals(profile, "native", StringComparison.OrdinalIgnoreCase))
             {
-                mediaSource.Protocol = MediaProtocol.Http;
-
-                var httpUrl = channel.Path;
-
-                // If raw was used, the tuner doesn't support params
-                if (!string.IsNullOrWhiteSpace(profile) && !string.Equals(profile, "native", StringComparison.OrdinalIgnoreCase))
-                {
-                    httpUrl += "?transcode=" + profile;
-                }
-
-                mediaSource.Path = httpUrl;
-
-                return new SharedHttpStream(
-                    mediaSource,
-                    tunerHost,
-                    streamId,
-                    FileSystem,
-                    _httpClientFactory,
-                    Logger,
-                    Config,
-                    _appHost,
-                    _streamHelper);
+                httpUrl += "?transcode=" + profile;
             }
 
-            return new HdHomerunUdpStream(
+            mediaSource.Path = httpUrl;
+
+            return new SharedHttpStream(
                 mediaSource,
                 tunerHost,
                 streamId,
-                new HdHomerunChannelCommands(hdhomerunChannel.Number, profile),
-                modelInfo.TunerCount,
                 FileSystem,
+                _httpClientFactory,
                 Logger,
                 Config,
                 _appHost,

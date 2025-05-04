@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Configuration;
+using Jellyfin.LiveTv.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
@@ -69,7 +69,7 @@ namespace Jellyfin.LiveTv.TunerHosts
 
         protected virtual IList<TunerHostInfo> GetTunerHosts()
         {
-            return GetConfiguration().TunerHosts
+            return Config.GetLiveTvConfiguration().TunerHosts
                 .Where(i => string.Equals(i.Type, Type, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
@@ -219,7 +219,7 @@ namespace Jellyfin.LiveTv.TunerHosts
                 }
             }
 
-            throw new LiveTvConflictException();
+            throw new LiveTvConflictException("Unable to find host to play channel");
         }
 
         protected virtual bool IsValidChannelId(string channelId)
@@ -227,11 +227,6 @@ namespace Jellyfin.LiveTv.TunerHosts
             ArgumentException.ThrowIfNullOrEmpty(channelId);
 
             return channelId.StartsWith(ChannelIdPrefix, StringComparison.OrdinalIgnoreCase);
-        }
-
-        protected LiveTvOptions GetConfiguration()
-        {
-            return Config.GetConfiguration<LiveTvOptions>("livetv");
         }
     }
 }

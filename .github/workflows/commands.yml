@@ -17,14 +17,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Notify as seen
-        uses: peter-evans/create-or-update-comment@23ff15729ef2fc348714a3bb66d2f655ca9066f2 # v3.1.0
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
           token: ${{ secrets.JF_BOT_TOKEN }}
           comment-id: ${{ github.event.comment.id }}
           reactions: '+1'
 
       - name: Checkout the latest code
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           token: ${{ secrets.JF_BOT_TOKEN }}
           fetch-depth: 0
@@ -34,90 +34,27 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.JF_BOT_TOKEN }}
 
-  check-backport:
-    permissions:
-      contents: read
-
-    name: Check Backport
-    if: ${{ ( github.event.issue.pull_request && contains(github.event.comment.body, '@jellyfin-bot check backport') ) || github.event.label.name == 'stable backport' || contains(github.event.pull_request.labels.*.name, 'stable backport' ) }}
+  rename:
+    name: Rename
+    if: contains(github.event.comment.body, '@jellyfin-bot rename') && github.event.comment.author_association == 'MEMBER'
     runs-on: ubuntu-latest
     steps:
-      - name: Notify as seen
-        uses: peter-evans/create-or-update-comment@23ff15729ef2fc348714a3bb66d2f655ca9066f2 # v3.1.0
-        if: ${{ github.event.comment != null }}
+      - name: pull in script
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          token: ${{ secrets.JF_BOT_TOKEN }}
-          comment-id: ${{ github.event.comment.id }}
-          reactions: eyes
-
-      - name: Checkout the latest code
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+          repository: jellyfin/jellyfin-triage-script
+      - name: install python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
-          token: ${{ secrets.JF_BOT_TOKEN }}
-          fetch-depth: 0
-
-      - name: Notify as running
-        id: comment_running
-        uses: peter-evans/create-or-update-comment@23ff15729ef2fc348714a3bb66d2f655ca9066f2 # v3.1.0
-        if: ${{ github.event.comment != null }}
-        with:
-          token: ${{ secrets.JF_BOT_TOKEN }}
-          issue-number: ${{ github.event.issue.number }}
-          body: |
-            Running backport tests...
-
-      - name: Perform test backport
-        id: run_tests
-        run: |
-          set +o errexit
-          git config --global user.name "Jellyfin Bot"
-          git config --global user.email "team@jellyfin.org"
-          CURRENT_BRANCH="origin/${GITHUB_HEAD_REF}"
-          git checkout master
-          git merge --no-ff ${CURRENT_BRANCH}
-          MERGE_COMMIT_HASH=$( git log -q -1 | head -1 | awk '{ print $2 }' )
-          git fetch --all
-          CURRENT_STABLE=$( git branch -r | grep 'origin/release' | sort -rV | head -1 | awk -F '/' '{ print $NF }' )
-          stable_branch="Current stable release branch: ${CURRENT_STABLE}"
-          echo ${stable_branch}
-          echo ::set-output name=branch::${stable_branch}
-          git checkout -t origin/${CURRENT_STABLE} -b ${CURRENT_STABLE}
-          git cherry-pick -sx -m1 ${MERGE_COMMIT_HASH} &>output.txt
-          retcode=$?
-          cat output.txt | grep -v 'hint:'
-          output="$( grep -v 'hint:'  output.txt )"
-          output="${output//'%'/'%25'}"
-          output="${output//$'\n'/'%0A'}"
-          output="${output//$'\r'/'%0D'}" 
-          echo ::set-output name=output::$output
-          exit ${retcode}
-
-      - name: Notify with result success
-        uses: peter-evans/create-or-update-comment@23ff15729ef2fc348714a3bb66d2f655ca9066f2 # v3.1.0
-        if: ${{ github.event.comment != null && success() }}
-        with:
-          token: ${{ secrets.JF_BOT_TOKEN }}
-          comment-id: ${{ steps.comment_running.outputs.comment-id }}
-          body: |
-            ${{ steps.run_tests.outputs.branch }}
-            Output from `git cherry-pick`:
-
-            ---
-
-            ${{ steps.run_tests.outputs.output }}
-          reactions: hooray
-
-      - name: Notify with result failure
-        uses: peter-evans/create-or-update-comment@23ff15729ef2fc348714a3bb66d2f655ca9066f2 # v3.1.0
-        if: ${{ github.event.comment != null && failure() }}
-        with:
-          token: ${{ secrets.JF_BOT_TOKEN }}
-          comment-id: ${{ steps.comment_running.outputs.comment-id }}
-          body: |
-            ${{ steps.run_tests.outputs.branch }}
-            Output from `git cherry-pick`:
-
-            ---
-
-            ${{ steps.run_tests.outputs.output }}
-          reactions: confused
+          python-version: '3.13'
+          cache: 'pip'
+      - name: install python packages
+        run: pip install -r rename/requirements.txt
+      - name: run rename script
+        run: python3 rename.py
+        working-directory: ./rename
+        env:
+          GH_TOKEN: ${{ secrets.JF_BOT_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          ISSUE: ${{ github.event.issue.number }}
+          COMMENT_ID: ${{ github.event.comment.id }}

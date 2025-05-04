@@ -95,12 +95,6 @@ namespace MediaBrowser.Common.Net
         string GetBindAddress(string source, out int? port);
 
         /// <summary>
-        /// Get a list of all the MAC addresses associated with active interfaces.
-        /// </summary>
-        /// <returns>List of MAC addresses.</returns>
-        IReadOnlyList<PhysicalAddress> GetMacAddresses();
-
-        /// <summary>
         /// Returns true if the address is part of the user defined LAN.
         /// </summary>
         /// <param name="address">IP to check.</param>

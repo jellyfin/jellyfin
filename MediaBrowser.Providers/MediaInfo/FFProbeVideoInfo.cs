@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
@@ -31,47 +32,48 @@ namespace MediaBrowser.Providers.MediaInfo
     public class FFProbeVideoInfo
     {
         private readonly ILogger<FFProbeVideoInfo> _logger;
+        private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IMediaEncoder _mediaEncoder;
-        private readonly IItemRepository _itemRepo;
         private readonly IBlurayExaminer _blurayExaminer;
         private readonly ILocalizationManager _localization;
-        private readonly IEncodingManager _encodingManager;
+        private readonly IChapterManager _chapterManager;
         private readonly IServerConfigurationManager _config;
         private readonly ISubtitleManager _subtitleManager;
-        private readonly IChapterManager _chapterManager;
         private readonly ILibraryManager _libraryManager;
         private readonly AudioResolver _audioResolver;
         private readonly SubtitleResolver _subtitleResolver;
-        private readonly IMediaSourceManager _mediaSourceManager;
+        private readonly IMediaAttachmentRepository _mediaAttachmentRepository;
+        private readonly IMediaStreamRepository _mediaStreamRepository;
 
         public FFProbeVideoInfo(
             ILogger<FFProbeVideoInfo> logger,
             IMediaSourceManager mediaSourceManager,
             IMediaEncoder mediaEncoder,
-            IItemRepository itemRepo,
             IBlurayExaminer blurayExaminer,
             ILocalizationManager localization,
-            IEncodingManager encodingManager,
+            IChapterManager chapterManager,
             IServerConfigurationManager config,
             ISubtitleManager subtitleManager,
-            IChapterManager chapterManager,
             ILibraryManager libraryManager,
             AudioResolver audioResolver,
-            SubtitleResolver subtitleResolver)
+            SubtitleResolver subtitleResolver,
+            IMediaAttachmentRepository mediaAttachmentRepository,
+            IMediaStreamRepository mediaStreamRepository)
         {
             _logger = logger;
             _mediaSourceManager = mediaSourceManager;
             _mediaEncoder = mediaEncoder;
-            _itemRepo = itemRepo;
             _blurayExaminer = blurayExaminer;
             _localization = localization;
-            _encodingManager = encodingManager;
+            _chapterManager = chapterManager;
             _config = config;
             _subtitleManager = subtitleManager;
-            _chapterManager = chapterManager;
             _libraryManager = libraryManager;
             _audioResolver = audioResolver;
             _subtitleResolver = subtitleResolver;
+            _mediaAttachmentRepository = mediaAttachmentRepository;
+            _mediaStreamRepository = mediaStreamRepository;
+            _mediaStreamRepository = mediaStreamRepository;
         }
 
         public async Task<ItemUpdateType> ProbeVideo<T>(
@@ -124,11 +126,8 @@ namespace MediaBrowser.Providers.MediaInfo
                     // Get BD disc information
                     blurayDiscInfo = GetBDInfo(item.Path);
 
-                    // Get playable .m2ts files
-                    var m2ts = _mediaEncoder.GetPrimaryPlaylistM2tsFiles(item.Path);
-
                     // Return if no playable .m2ts files are found
-                    if (blurayDiscInfo is null || blurayDiscInfo.Files.Length == 0 || m2ts.Count == 0)
+                    if (blurayDiscInfo is null || blurayDiscInfo.Files.Length == 0)
                     {
                         _logger.LogError("No playable .m2ts files found in Blu-ray structure, skipping FFprobe.");
                         return ItemUpdateType.MetadataImport;
@@ -138,7 +137,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     mediaInfoResult = await GetMediaInfo(
                         new Video
                         {
-                            Path = m2ts[0]
+                            Path = blurayDiscInfo.Files[0]
                         },
                         cancellationToken).ConfigureAwait(false);
                 }
@@ -270,11 +269,11 @@ namespace MediaBrowser.Providers.MediaInfo
 
             video.HasSubtitles = mediaStreams.Any(i => i.Type == MediaStreamType.Subtitle);
 
-            _itemRepo.SaveMediaStreams(video.Id, mediaStreams, cancellationToken);
+            _mediaStreamRepository.SaveMediaStreams(video.Id, mediaStreams, cancellationToken);
 
             if (mediaAttachments.Any())
             {
-                _itemRepo.SaveMediaAttachments(video.Id, mediaAttachments, cancellationToken);
+                _mediaAttachmentRepository.SaveMediaAttachments(video.Id, mediaAttachments, cancellationToken);
             }
 
             if (options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh
@@ -293,9 +292,9 @@ namespace MediaBrowser.Providers.MediaInfo
                     extractDuringScan = libraryOptions.ExtractChapterImagesDuringLibraryScan;
                 }
 
-                await _encodingManager.RefreshChapterImages(video, options.DirectoryService, chapters, extractDuringScan, false, cancellationToken).ConfigureAwait(false);
+                await _chapterManager.RefreshChapterImages(video, options.DirectoryService, chapters, extractDuringScan, false, cancellationToken).ConfigureAwait(false);
 
-                _chapterManager.SaveChapters(video.Id, chapters);
+                _chapterManager.SaveChapters(video, chapters);
             }
         }
 
@@ -324,20 +323,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 return;
             }
 
-            // Use BD Info if it has multiple m2ts. Otherwise, treat it like a video file and rely more on ffprobe output
-            int? currentHeight = null;
-            int? currentWidth = null;
-            int? currentBitRate = null;
-
-            var videoStream = mediaStreams.FirstOrDefault(s => s.Type == MediaStreamType.Video);
-
-            // Grab the values that ffprobe recorded
-            if (videoStream is not null)
-            {
-                currentBitRate = videoStream.BitRate;
-                currentWidth = videoStream.Width;
-                currentHeight = videoStream.Height;
-            }
+            var ffmpegVideoStream = mediaStreams.FirstOrDefault(s => s.Type == MediaStreamType.Video);
 
             // Fill video properties from the BDInfo result
             mediaStreams.Clear();
@@ -361,14 +347,20 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            videoStream = mediaStreams.FirstOrDefault(s => s.Type == MediaStreamType.Video);
+            var blurayVideoStream = mediaStreams.FirstOrDefault(s => s.Type == MediaStreamType.Video);
 
             // Use the ffprobe values if these are empty
-            if (videoStream is not null)
+            if (blurayVideoStream is not null && ffmpegVideoStream is not null)
             {
-                videoStream.BitRate = videoStream.BitRate.GetValueOrDefault() == 0 ? currentBitRate : videoStream.BitRate;
-                videoStream.Width = videoStream.Width.GetValueOrDefault() == 0 ? currentWidth : videoStream.Width;
-                videoStream.Height = videoStream.Height.GetValueOrDefault() == 0 ? currentHeight : videoStream.Height;
+                // Always use ffmpeg's detected codec since that is what the rest of the codebase expects.
+                blurayVideoStream.Codec = ffmpegVideoStream.Codec;
+                blurayVideoStream.BitRate = blurayVideoStream.BitRate.GetValueOrDefault() == 0 ? ffmpegVideoStream.BitRate : blurayVideoStream.BitRate;
+                blurayVideoStream.Width = blurayVideoStream.Width.GetValueOrDefault() == 0 ? ffmpegVideoStream.Width : blurayVideoStream.Width;
+                blurayVideoStream.Height = blurayVideoStream.Height.GetValueOrDefault() == 0 ? ffmpegVideoStream.Height : blurayVideoStream.Height;
+                blurayVideoStream.ColorRange = ffmpegVideoStream.ColorRange;
+                blurayVideoStream.ColorSpace = ffmpegVideoStream.ColorSpace;
+                blurayVideoStream.ColorTransfer = ffmpegVideoStream.ColorTransfer;
+                blurayVideoStream.ColorPrimaries = ffmpegVideoStream.ColorPrimaries;
             }
         }
 
@@ -410,7 +402,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     video.Genres = Array.Empty<string>();
 
-                    foreach (var genre in data.Genres)
+                    foreach (var genre in data.Genres.Trimmed())
                     {
                         video.AddGenre(genre);
                     }
@@ -519,9 +511,9 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     PeopleHelper.AddPerson(people, new PersonInfo
                     {
-                        Name = person.Name,
+                        Name = person.Name.Trim(),
                         Type = person.Type,
-                        Role = person.Role
+                        Role = person.Role.Trim()
                     });
                 }
 
@@ -637,7 +629,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var runtime = video.RunTimeTicks.GetValueOrDefault();
 
-            // Only process files with a runtime higher than 0 and lower than 12h. The latter are likely corrupted.
+            // Only process files with a runtime greater than 0 and less than 12h. The latter are likely corrupted.
             if (runtime < 0 || runtime > TimeSpan.FromHours(12).Ticks)
             {
                 throw new ArgumentException(

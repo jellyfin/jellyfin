@@ -4,32 +4,29 @@ using System.Reflection;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.Session;
 using Jellyfin.Api.WebSocketListeners;
+using Jellyfin.Database.Implementations;
 using Jellyfin.Drawing;
 using Jellyfin.Drawing.Skia;
 using Jellyfin.LiveTv;
-using Jellyfin.LiveTv.Channels;
-using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Activity;
 using Jellyfin.Server.Implementations.Devices;
 using Jellyfin.Server.Implementations.Events;
+using Jellyfin.Server.Implementations.Extensions;
 using Jellyfin.Server.Implementations.Security;
 using Jellyfin.Server.Implementations.Trickplay;
 using Jellyfin.Server.Implementations.Users;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.BaseItemManager;
-using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Trickplay;
 using MediaBrowser.Model.Activity;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Providers.Lyric;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -101,11 +98,6 @@ namespace Jellyfin.Server
 
             serviceCollection.AddScoped<IAuthenticationManager, AuthenticationManager>();
 
-            serviceCollection.AddSingleton<LiveTvDtoService>();
-            serviceCollection.AddSingleton<ILiveTvManager, LiveTvManager>();
-            serviceCollection.AddSingleton<IChannelManager, ChannelManager>();
-            serviceCollection.AddSingleton<IStreamHelper, StreamHelper>();
-
             foreach (var type in GetExportTypes<ILyricProvider>())
             {
                 serviceCollection.AddSingleton(typeof(ILyricProvider), type);
@@ -125,8 +117,11 @@ namespace Jellyfin.Server
             // Jellyfin.Server
             yield return typeof(CoreAppHost).Assembly;
 
-            // Jellyfin.Server.Implementations
+            // Jellyfin.Database.Implementations
             yield return typeof(JellyfinDbContext).Assembly;
+
+            // Jellyfin.Server.Implementations
+            yield return typeof(ServiceCollectionExtensions).Assembly;
 
             // Jellyfin.LiveTv
             yield return typeof(LiveTvManager).Assembly;

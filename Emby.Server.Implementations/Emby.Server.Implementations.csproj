@@ -18,9 +18,11 @@
     <ProjectReference Include="..\Emby.Photos\Emby.Photos.csproj" />
     <ProjectReference Include="..\src\Jellyfin.Drawing\Jellyfin.Drawing.csproj" />
     <ProjectReference Include="..\MediaBrowser.MediaEncoding\MediaBrowser.MediaEncoding.csproj" />
+    <ProjectReference Include="..\src\Jellyfin.Database\Jellyfin.Database.Implementations\Jellyfin.Database.Implementations.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="BitFaster.Caching" />
     <PackageReference Include="DiscUtils.Udf" />
     <PackageReference Include="Microsoft.Data.Sqlite" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
@@ -37,7 +39,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
@@ -63,9 +65,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Ignore" />
+  </ItemGroup>
+
+  <ItemGroup>
     <EmbeddedResource Include="Localization\iso6392.txt" />
     <EmbeddedResource Include="Localization\countries.json" />
     <EmbeddedResource Include="Localization\Core\*.json" />
-    <EmbeddedResource Include="Localization\Ratings\*.csv" />
+    <EmbeddedResource Include="Localization\Ratings\*.json" />
   </ItemGroup>
 </Project>

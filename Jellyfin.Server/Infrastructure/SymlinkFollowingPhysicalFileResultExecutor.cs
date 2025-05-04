@@ -1,4 +1,4 @@
-﻿// The MIT License (MIT)
+// The MIT License (MIT)
 //
 // Copyright (c) .NET Foundation and Contributors
 //
@@ -67,41 +67,43 @@ namespace Jellyfin.Server.Infrastructure
         }
 
         /// <inheritdoc />
-        protected override Task WriteFileAsync(ActionContext context, PhysicalFileResult result, RangeItemHeaderValue? range, long rangeLength)
+        protected override async Task WriteFileAsync(ActionContext context, PhysicalFileResult result, RangeItemHeaderValue? range, long rangeLength)
         {
             ArgumentNullException.ThrowIfNull(context);
             ArgumentNullException.ThrowIfNull(result);
 
             if (range is not null && rangeLength == 0)
             {
-                return Task.CompletedTask;
+                return;
             }
 
             // It's a bit of wasted IO to perform this check again, but non-symlinks shouldn't use this code
             if (!IsSymLink(result.FileName))
             {
-                return base.WriteFileAsync(context, result, range, rangeLength);
+                await base.WriteFileAsync(context, result, range, rangeLength).ConfigureAwait(false);
+                return;
             }
 
             var response = context.HttpContext.Response;
 
             if (range is not null)
             {
-                return SendFileAsync(
+                await SendFileAsync(
                     result.FileName,
                     response,
                     offset: range.From ?? 0L,
-                    count: rangeLength);
+                    count: rangeLength).ConfigureAwait(false);
+                return;
             }
 
-            return SendFileAsync(
+            await SendFileAsync(
                 result.FileName,
                 response,
                 offset: 0,
-                count: null);
+                count: null).ConfigureAwait(false);
         }
 
-        private async Task SendFileAsync(string filePath, HttpResponse response, long offset, long? count)
+        private async Task SendFileAsync(string filePath, HttpResponse response, long offset, long? count, CancellationToken cancellationToken = default)
         {
             var fileInfo = GetFileInfo(filePath);
             if (offset < 0 || offset > fileInfo.Length)
@@ -118,6 +120,9 @@ namespace Jellyfin.Server.Infrastructure
             // Copied from SendFileFallback.SendFileAsync
             const int BufferSize = 1024 * 16;
 
+            var useRequestAborted = !cancellationToken.CanBeCanceled;
+            var localCancel = useRequestAborted ? response.HttpContext.RequestAborted : cancellationToken;
+
             var fileStream = new FileStream(
                 filePath,
                 FileMode.Open,
@@ -127,10 +132,17 @@ namespace Jellyfin.Server.Infrastructure
                 options: FileOptions.Asynchronous | FileOptions.SequentialScan);
             await using (fileStream.ConfigureAwait(false))
             {
-                fileStream.Seek(offset, SeekOrigin.Begin);
-                await StreamCopyOperation
-                    .CopyToAsync(fileStream, response.Body, count, BufferSize, CancellationToken.None)
-                    .ConfigureAwait(true);
+                try
+                {
+                    localCancel.ThrowIfCancellationRequested();
+                    fileStream.Seek(offset, SeekOrigin.Begin);
+                    await StreamCopyOperation
+                        .CopyToAsync(fileStream, response.Body, count, BufferSize, localCancel)
+                        .ConfigureAwait(true);
+                }
+                catch (OperationCanceledException) when (useRequestAborted)
+                {
+                }
             }
         }
 

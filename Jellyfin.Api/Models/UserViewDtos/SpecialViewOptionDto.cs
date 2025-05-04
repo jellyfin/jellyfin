@@ -1,4 +1,4 @@
-﻿namespace Jellyfin.Api.Models.UserViewDtos;
+namespace Jellyfin.Api.Models.UserViewDtos;
 
 /// <summary>
 /// Special view option dto.
