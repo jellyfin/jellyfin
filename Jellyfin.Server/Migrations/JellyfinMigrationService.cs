@@ -7,8 +7,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Serialization;
 using Jellyfin.Database.Implementations;
+using Jellyfin.Server.Implementations.SystemBackupService;
 using Jellyfin.Server.Migrations.Stages;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.SystemBackupService;
 using MediaBrowser.Model.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -25,16 +27,19 @@ internal class JellyfinMigrationService
 {
     private readonly IDbContextFactory<JellyfinDbContext> _dbContextFactory;
     private readonly ILoggerFactory _loggerFactory;
+    private readonly IBackupService _backupService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="JellyfinMigrationService"/> class.
     /// </summary>
     /// <param name="dbContextFactory">Provides access to the jellyfin database.</param>
     /// <param name="loggerFactory">The logger factory.</param>
-    public JellyfinMigrationService(IDbContextFactory<JellyfinDbContext> dbContextFactory, ILoggerFactory loggerFactory)
+    /// <param name="backupService">Backup service for creating rollback for migrations.</param>
+    public JellyfinMigrationService(IDbContextFactory<JellyfinDbContext> dbContextFactory, ILoggerFactory loggerFactory, IBackupService backupService)
     {
         _dbContextFactory = dbContextFactory;
         _loggerFactory = loggerFactory;
+        _backupService = backupService;
 #pragma warning disable CS0618 // Type or member is obsolete
         Migrations = [.. typeof(IMigrationRoutine).Assembly.GetTypes().Where(e => typeof(IMigrationRoutine).IsAssignableFrom(e) || typeof(IAsyncMigrationRoutine).IsAssignableFrom(e))
             .Select(e => (Type: e, Metadata: e.GetCustomAttribute<JellyfinMigrationAttribute>()))
@@ -59,6 +64,8 @@ internal class JellyfinMigrationService
     }
 
     private HashSet<MigrationStage> Migrations { get; set; }
+
+    private static BackupManifestDto? _backupInfo;
 
     public async Task CheckFirstTimeRunOrMigration(IApplicationPaths appPaths)
     {
@@ -103,24 +110,44 @@ internal class JellyfinMigrationService
             if (migrationOptions != null && migrationOptions.Applied.Count > 0)
             {
                 logger.LogInformation("Old migration style migration.xml detected. Migrate now.");
-                var dbContext = await _dbContextFactory.CreateDbContextAsync().ConfigureAwait(false);
-                await using (dbContext.ConfigureAwait(false))
-                {
-                    var historyRepository = dbContext.GetService<IHistoryRepository>();
-                    var appliedMigrations = await dbContext.Database.GetAppliedMigrationsAsync().ConfigureAwait(false);
-                    var oldMigrations = Migrations.SelectMany(e => e)
-                        .Where(e => migrationOptions.Applied.Any(f => f.Id.Equals(e.Metadata.Key!.Value))) // this is a legacy migration that will always have its own ID.
-                        .Where(e => !appliedMigrations.Contains(e.BuildCodeMigrationId()))
-                        .ToArray();
-                    var startupScripts = oldMigrations.Select(e => (Migration: e.Metadata, Script: historyRepository.GetInsertScript(new HistoryRow(e.BuildCodeMigrationId(), GetJellyfinVersion()))));
-                    foreach (var item in startupScripts)
-                    {
-                        logger.LogInformation("Migrate migration {Key}-{Name}.", item.Migration.Key, item.Migration.Name);
-                        await dbContext.Database.ExecuteSqlRawAsync(item.Script).ConfigureAwait(false);
-                    }
+                logger.LogInformation("Create full system backup before migration.");
 
-                    logger.LogInformation("Rename old migration.xml to migration.xml.backup");
-                    File.Move(migrationConfigPath, Path.ChangeExtension(migrationConfigPath, ".xml.backup"), true);
+                _backupInfo = await _backupService.CreateBackupAsync(new()
+                {
+                    Metadata = false,
+                    Subtitles = false,
+                    Trickplay = false,
+                }).ConfigureAwait(false);
+                logger.LogInformation("Pre migration.xml backup created.");
+
+                try
+                {
+                    var dbContext = await _dbContextFactory.CreateDbContextAsync().ConfigureAwait(false);
+                    await using (dbContext.ConfigureAwait(false))
+                    {
+                        var historyRepository = dbContext.GetService<IHistoryRepository>();
+                        var appliedMigrations = await dbContext.Database.GetAppliedMigrationsAsync().ConfigureAwait(false);
+                        var oldMigrations = Migrations.SelectMany(e => e)
+                            .Where(e => migrationOptions.Applied.Any(f => f.Id.Equals(e.Metadata.Key!.Value))) // this is a legacy migration that will always have its own ID.
+                            .Where(e => !appliedMigrations.Contains(e.BuildCodeMigrationId()))
+                            .ToArray();
+                        var startupScripts = oldMigrations.Select(e => (Migration: e.Metadata, Script: historyRepository.GetInsertScript(new HistoryRow(e.BuildCodeMigrationId(), GetJellyfinVersion()))));
+                        foreach (var item in startupScripts)
+                        {
+                            logger.LogInformation("Migrate migration {Key}-{Name}.", item.Migration.Key, item.Migration.Name);
+                            await dbContext.Database.ExecuteSqlRawAsync(item.Script).ConfigureAwait(false);
+                        }
+
+                        logger.LogInformation("Rename old migration.xml to migration.xml.backup");
+                        File.Move(migrationConfigPath, Path.ChangeExtension(migrationConfigPath, ".xml.backup"), true);
+                    }
+                }
+                catch (System.Exception)
+                {
+                    logger.LogCritical("Could not migrate migration.xml, will now try to roll back from system backup {BackupPath}.", _backupInfo.Path);
+                    await _backupService.RestoreBackupAsync(_backupInfo.Path).ConfigureAwait(false);
+                    logger.LogInformation("Rollback successful");
+                    throw;
                 }
             }
         }
@@ -154,6 +181,20 @@ internal class JellyfinMigrationService
             (string Key, IInternalMigration Migration)[] pendingMigrations = [.. pendingCodeMigrations, .. pendingDatabaseMigrations];
             logger.LogInformation("There are {Pending} migrations for stage {Stage}.", pendingCodeMigrations.Length, stage);
             var migrations = pendingMigrations.OrderBy(e => e.Key).ToArray();
+
+            if (migrations.Length != 0 && _backupInfo is null)
+            {
+                logger.LogInformation("Pending migrations detected, create system backup.");
+
+                _backupInfo = await _backupService.CreateBackupAsync(new()
+                {
+                    Metadata = false,
+                    Subtitles = false,
+                    Trickplay = false,
+                }).ConfigureAwait(false);
+                logger.LogInformation("Pre migration backup has been created at {BackupPath}.", _backupInfo.Path);
+            }
+
             foreach (var item in migrations)
             {
                 try
@@ -164,7 +205,8 @@ internal class JellyfinMigrationService
                 }
                 catch (Exception ex)
                 {
-                    logger.LogCritical(ex, "Migration {Name} failed", item.Key);
+                    logger.LogCritical(ex, "Migration {Name} failed, attempt to rollback to {BackupPath}", item.Key, _backupInfo!.Path);
+                    await _backupService.RestoreBackupAsync(_backupInfo.Path).ConfigureAwait(false);
                     throw;
                 }
             }

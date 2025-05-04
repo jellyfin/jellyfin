@@ -235,7 +235,7 @@ public class BackupService : IBackupService
             Directory.CreateDirectory(backupFolder);
         }
 
-        var backupPath = Path.Combine(backupFolder, $"jellyfin-backup-{DateTime.Now:yyyyMMddHHmmss}.zip");
+        var backupPath = Path.Combine(backupFolder, $"jellyfin-backup-{manifest.DateCreated.ToLocalTime():yyyyMMddHHmmss}.zip");
         _logger.LogInformation("Attempt to create a new backup at {BackupPath}", backupPath);
         var fileStream = File.OpenWrite(backupPath);
         await using (fileStream.ConfigureAwait(false))
