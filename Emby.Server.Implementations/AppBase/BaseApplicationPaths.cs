@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 
 namespace Emby.Server.Implementations.AppBase
@@ -91,10 +92,7 @@ namespace Emby.Server.Implementations.AppBase
         /// <inheritdoc />
         public void CreateAndCheckMarker(string path, string markerName, bool recursive = false)
         {
-            if (!Directory.Exists(path))
-            {
-                Directory.CreateDirectory(path);
-            }
+            Directory.CreateDirectory(path);
 
             CheckOrCreateMarker(path, $".jellyfin-{markerName}", recursive);
         }
@@ -115,7 +113,7 @@ namespace Emby.Server.Implementations.AppBase
             var markerPath = Path.Combine(path, markerName);
             if (!File.Exists(markerPath))
             {
-                File.Create(markerPath).Dispose();
+                FileHelper.CreateEmpty(markerPath);
             }
         }
     }

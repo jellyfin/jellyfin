@@ -363,7 +363,7 @@ namespace Jellyfin.LiveTv.Channels
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-            FileStream createStream = File.Create(path);
+            FileStream createStream = AsyncFile.Create(path);
             await using (createStream.ConfigureAwait(false))
             {
                 await JsonSerializer.SerializeAsync(createStream, mediaSources, _jsonOptions).ConfigureAwait(false);
@@ -866,7 +866,7 @@ namespace Jellyfin.LiveTv.Channels
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-                var createStream = File.Create(path);
+                var createStream = AsyncFile.Create(path);
                 await using (createStream.ConfigureAwait(false))
                 {
                     await JsonSerializer.SerializeAsync(createStream, result, _jsonOptions).ConfigureAwait(false);
