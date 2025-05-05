@@ -1,9 +1,10 @@
+using System.Collections.Generic;
 using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Controller.IO;
 
 /// <summary>
-/// Interface ITrickplayManager.
+/// Interface IPathManager.
 /// </summary>
 public interface IPathManager
 {
@@ -60,4 +61,11 @@ public interface IPathManager
     /// <param name="chapterPositionTicks">The chapter position.</param>
     /// <returns>The chapter images data path.</returns>
     public string GetChapterImagePath(BaseItem item, long chapterPositionTicks);
+
+    /// <summary>
+    /// Gets the paths of extracted data folders.
+    /// </summary>
+    /// <param name="item">The base item.</param>
+    /// <returns>The absolute paths.</returns>
+    public IReadOnlyList<string> GetExtractedDataPaths(BaseItem item);
 }

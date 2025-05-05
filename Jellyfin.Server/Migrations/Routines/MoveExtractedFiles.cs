@@ -95,6 +95,11 @@ public class MoveExtractedFiles : IMigrationRoutine
             }
 
             offset += Limit;
+            if (offset > records)
+            {
+                offset = records;
+            }
+
             _logger.LogInformation("Checked: {Count} - Moved: {Items} - Time: {Time}", offset, itemCount, sw.Elapsed);
         } while (offset < records);
 

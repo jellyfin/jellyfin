@@ -130,9 +130,9 @@ namespace MediaBrowser.Providers.MediaInfo
                 if (!string.IsNullOrWhiteSpace(path) && item.IsFileProtocol)
                 {
                     var file = directoryService.GetFile(path);
-                    if (file is not null && file.LastWriteTimeUtc != item.DateModified)
+                    if (file is not null && file.LastWriteTimeUtc != item.DateModified && file.Length != item.Size)
                     {
-                        _logger.LogDebug("Refreshing {ItemPath} due to date modified timestamp change.", path);
+                        _logger.LogDebug("Refreshing {ItemPath} due to file system modification.", path);
                         return true;
                     }
                 }

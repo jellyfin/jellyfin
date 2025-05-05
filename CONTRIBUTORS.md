@@ -270,3 +270,4 @@
  - [Nathan McCrina](https://github.com/nfmccrina)
  - [Martin Reuter](https://github.com/reuterma24)
  - [Michael McElroy](https://github.com/mcmcelro)
+ - [Soumyadip Auddy](https://github.com/SoumyadipAuddy)
