@@ -9,6 +9,7 @@ using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Entities.Libraries;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -382,7 +383,7 @@ public class UserLibraryController : BaseJellyfinApiController
     /// </summary>
     /// <param name="userId">User id.</param>
     /// <param name="itemId">Item id.</param>
-    /// <param name="rating">Double representing a user item rating <see cref="UpdateUserItemRating" />.</param>
+    /// <param name="likes">Whether this <see cref="UpdateUserItemRating" /> is likes.</param>
     /// <response code="200">Item rating updated.</response>
     /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
     [HttpPost("Users/{userId}/Items/{itemId}/Rating")]
@@ -392,8 +393,17 @@ public class UserLibraryController : BaseJellyfinApiController
     public ActionResult<UserItemDataDto?> UpdateUserItemRatingLegacy(
         [FromRoute, Required] Guid userId,
         [FromRoute, Required] Guid itemId,
-        [FromQuery] double? rating)
-        => UpdateUserItemRating(userId, itemId, rating);
+        [FromQuery] bool? likes)
+    {
+        if (likes.HasValue)
+        {
+            return UpdateUserItemRating(userId, itemId, likes.Value ? 10 : 1);
+        }
+        else
+        {
+            return UpdateUserItemRating(userId, itemId, null);
+        }
+    }
 
     /// <summary>
     /// Gets local trailers for an item.
