@@ -31,25 +31,25 @@ public class ProgressablePartitionReporting<TEntity>
 
     internal IOrderedQueryable<TEntity> Source => _source;
 
-    internal void BeginItem(TEntity entity, int itteration, int itemIndex)
+    internal void BeginItem(TEntity entity, int iteration, int itemIndex)
     {
         _itemTime.Restart();
-        OnBeginItem?.Invoke(entity, itteration, itemIndex);
+        OnBeginItem?.Invoke(entity, iteration, itemIndex);
     }
 
-    internal void BeginPartition(int itteration)
+    internal void BeginPartition(int iteration)
     {
         _partitionTime.Restart();
-        OnBeginPartition?.Invoke(itteration);
+        OnBeginPartition?.Invoke(iteration);
     }
 
-    internal void EndItem(TEntity entity, int itteration, int itemIndex)
+    internal void EndItem(TEntity entity, int iteration, int itemIndex)
     {
-        OnEndItem?.Invoke(entity, itteration, itemIndex, _itemTime.Elapsed);
+        OnEndItem?.Invoke(entity, iteration, itemIndex, _itemTime.Elapsed);
     }
 
-    internal void EndPartition(int itteration)
+    internal void EndPartition(int iteration)
     {
-        OnEndPartition?.Invoke(itteration, _partitionTime.Elapsed);
+        OnEndPartition?.Invoke(iteration, _partitionTime.Elapsed);
     }
 }

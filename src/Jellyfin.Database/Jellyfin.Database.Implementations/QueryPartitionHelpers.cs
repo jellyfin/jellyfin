@@ -123,27 +123,27 @@ public static class QueryPartitionHelpers
         ProgressablePartitionReporting<TEntity>? progressablePartition = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var itterator = 0;
+        var iterator = 0;
         int itemCounter;
         do
         {
-            progressablePartition?.BeginPartition(itterator);
+            progressablePartition?.BeginPartition(iterator);
             itemCounter = 0;
             await foreach (var item in query
-                .Skip(partitionSize * itterator)
+                .Skip(partitionSize * iterator)
                 .Take(partitionSize)
                 .AsAsyncEnumerable()
                 .WithCancellation(cancellationToken)
                 .ConfigureAwait(false))
             {
-                progressablePartition?.BeginItem(item, itterator, itemCounter);
+                progressablePartition?.BeginItem(item, iterator, itemCounter);
                 yield return item;
-                progressablePartition?.EndItem(item, itterator, itemCounter);
+                progressablePartition?.EndItem(item, iterator, itemCounter);
                 itemCounter++;
             }
 
-            progressablePartition?.EndPartition(itterator);
-            itterator++;
+            progressablePartition?.EndPartition(iterator);
+            iterator++;
         } while (itemCounter == partitionSize && !cancellationToken.IsCancellationRequested);
     }
 
@@ -162,17 +162,17 @@ public static class QueryPartitionHelpers
         ProgressablePartitionReporting<TEntity>? progressablePartition = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var itterator = 0;
+        var iterator = 0;
         int itemCounter;
         var items = ArrayPool<TEntity>.Shared.Rent(partitionSize);
         try
         {
             do
             {
-                progressablePartition?.BeginPartition(itterator);
+                progressablePartition?.BeginPartition(iterator);
                 itemCounter = 0;
                 await foreach (var item in query
-                    .Skip(partitionSize * itterator)
+                    .Skip(partitionSize * iterator)
                     .Take(partitionSize)
                     .AsAsyncEnumerable()
                     .WithCancellation(cancellationToken)
@@ -183,13 +183,13 @@ public static class QueryPartitionHelpers
 
                 for (int i = 0; i < itemCounter; i++)
                 {
-                    progressablePartition?.BeginItem(items[i], itterator, itemCounter);
+                    progressablePartition?.BeginItem(items[i], iterator, itemCounter);
                     yield return items[i];
-                    progressablePartition?.EndItem(items[i], itterator, itemCounter);
+                    progressablePartition?.EndItem(items[i], iterator, itemCounter);
                 }
 
-                progressablePartition?.EndPartition(itterator);
-                itterator++;
+                progressablePartition?.EndPartition(iterator);
+                iterator++;
             } while (itemCounter == partitionSize && !cancellationToken.IsCancellationRequested);
         }
         finally
