@@ -7,7 +7,7 @@ using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.MediaSegments;
 
-namespace MediaBrowser.Controller;
+namespace MediaBrowser.Controller.MediaSegments;
 
 /// <summary>
 /// Defines methods for interacting with media segments.
@@ -44,6 +44,13 @@ public interface IMediaSegmentManager
     /// <param name="segmentId">The <see cref="MediaSegment.Id"/> to delete.</param>
     /// <returns>a task.</returns>
     Task DeleteSegmentAsync(Guid segmentId);
+
+    /// <summary>
+    /// Deletes all media segments of an item.
+    /// </summary>
+    /// <param name="itemId">The <see cref="BaseItem.Id"/> to delete all segments for.</param>
+    /// <returns>a task.</returns>
+    Task DeleteSegmentsAsync(Guid itemId);
 
     /// <summary>
     /// Obtains all segments associated with the itemId.

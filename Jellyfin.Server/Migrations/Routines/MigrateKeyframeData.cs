@@ -73,6 +73,11 @@ public class MigrateKeyframeData : IDatabaseMigrationRoutine
             }
 
             offset += Limit;
+            if (offset > records)
+            {
+                offset = records;
+            }
+
             _logger.LogInformation("Checked: {Count} - Imported: {Items} - Time: {Time}", offset, itemCount, sw.Elapsed);
         } while (offset < records);
 

@@ -520,7 +520,7 @@ namespace Emby.Server.Implementations.Localization
         public bool TryGetISO6392TFromB(string isoB, [NotNullWhen(true)] out string? isoT)
         {
             // Unlikely case the dictionary is not (yet) initialized properly
-            if (_iso6392BtoT == null)
+            if (_iso6392BtoT is null)
             {
                 isoT = null;
                 return false;

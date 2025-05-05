@@ -20,7 +20,7 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
         }
 
         var parentDir = directory.Parent;
-        if (parentDir == null || parentDir.FullName == directory.FullName)
+        if (parentDir is null)
         {
             return null;
         }

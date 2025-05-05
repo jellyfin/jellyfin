@@ -125,7 +125,7 @@ public class SyncPlayController : BaseJellyfinApiController
     {
         var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
         var group = _syncPlayManager.GetGroup(currentSession, id);
-        return group == null ? NotFound() : Ok(group);
+        return group is null ? NotFound() : Ok(group);
     }
 
     /// <summary>

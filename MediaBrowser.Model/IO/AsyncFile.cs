@@ -27,6 +27,14 @@ namespace MediaBrowser.Model.IO
         };
 
         /// <summary>
+        /// Creates, or truncates and overwrites, a file in the specified path.
+        /// </summary>
+        /// <param name="path">The path and name of the file to create.</param>
+        /// <returns>A <see cref="FileStream" /> that provides read/write access to the file specified in path.</returns>
+        public static FileStream Create(string path)
+            => new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
+
+        /// <summary>
         /// Opens an existing file for reading.
         /// </summary>
         /// <param name="path">The file to be opened for reading.</param>

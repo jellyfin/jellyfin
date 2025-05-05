@@ -10,10 +10,10 @@ using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.MediaSegments;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model;
 using MediaBrowser.Model.MediaSegments;
@@ -137,6 +137,13 @@ public class MediaSegmentManager : IMediaSegmentManager
     {
         using var db = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
         await db.MediaSegments.Where(e => e.Id.Equals(segmentId)).ExecuteDeleteAsync().ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task DeleteSegmentsAsync(Guid itemId)
+    {
+        using var db = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+        await db.MediaSegments.Where(e => e.ItemId.Equals(itemId)).ExecuteDeleteAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc />

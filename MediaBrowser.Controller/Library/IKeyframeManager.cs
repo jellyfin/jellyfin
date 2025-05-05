@@ -4,12 +4,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.MediaEncoding.Keyframes;
 
-namespace MediaBrowser.Controller.Persistence;
+namespace MediaBrowser.Controller.IO;
 
 /// <summary>
-/// Provides methods for accessing keyframe data.
+/// Interface IKeyframeManager.
 /// </summary>
-public interface IKeyframeRepository
+public interface IKeyframeManager
 {
     /// <summary>
     /// Gets the keyframe data.

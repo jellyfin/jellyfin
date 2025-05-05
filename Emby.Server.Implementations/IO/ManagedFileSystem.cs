@@ -159,13 +159,13 @@ namespace Emby.Server.Implementations.IO
             catch (IOException)
             {
                 // Cross device move requires a copy
-                Directory.CreateDirectory(destination);
-                foreach (string file in Directory.GetFiles(source))
+                var directory = Directory.CreateDirectory(destination);
+                foreach (var file in directory.EnumerateFiles())
                 {
-                    File.Copy(file, Path.Combine(destination, Path.GetFileName(file)), true);
+                    file.CopyTo(Path.Combine(destination, file.Name), true);
                 }
 
-                Directory.Delete(source, true);
+                directory.Delete(true);
             }
         }
 

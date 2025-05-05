@@ -215,7 +215,7 @@ namespace Jellyfin.Server.Extensions
                 });
 
                 // Add all xml doc files to swagger generator.
-                var xmlFiles = Directory.GetFiles(
+                var xmlFiles = Directory.EnumerateFiles(
                     AppContext.BaseDirectory,
                     "*.xml",
                     SearchOption.TopDirectoryOnly);
