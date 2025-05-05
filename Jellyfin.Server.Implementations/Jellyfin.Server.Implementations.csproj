@@ -39,8 +39,4 @@
     <ProjectReference Include="..\src\Jellyfin.Database\Jellyfin.Database.Providers.Sqlite\Jellyfin.Database.Providers.Sqlite.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Helpers/" />
-  </ItemGroup>
-
 </Project>
