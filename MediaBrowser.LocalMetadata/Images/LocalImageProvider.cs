@@ -33,7 +33,8 @@ namespace MediaBrowser.LocalMetadata.Images
             "poster",
             "cover",
             "jacket",
-            "default"
+            "default",
+            "albumart"
         };
 
         private static readonly string[] _personImageFileNames =
