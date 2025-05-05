@@ -19,7 +19,7 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// Migration to re-read creation dates for library items with internal metadata paths.
 /// </summary>
-[JellyfinMigration("2025-04-20T23:00:00", nameof(RefreshInternalDateModified), "32E762EB-4918-45CE-A44C-C801F66B877D", RunMigrationOnSetup = false)]
+[JellyfinMigration("2025-04-20T23:00:00", nameof(RefreshInternalDateModified))]
 public class RefreshInternalDateModified : IDatabaseMigrationRoutine
 {
     private readonly ILogger<RefreshInternalDateModified> _logger;
