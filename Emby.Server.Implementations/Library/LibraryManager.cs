@@ -2263,7 +2263,7 @@ namespace Emby.Server.Implementations.Library
             return GetContentTypeOverride(item.ContainingFolderPath, inheritConfiguredPath);
         }
 
-        public async Task DeleteExternalItemData(BaseItem item, CancellationToken cancellationToken)
+        public async Task DeleteExternalItemDataAsync(BaseItem item, CancellationToken cancellationToken)
         {
             var validPaths = _pathManager.GetExtractedDataPaths(item).Where(Directory.Exists).ToList();
             var itemId = item.Id;

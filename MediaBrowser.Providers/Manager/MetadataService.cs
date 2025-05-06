@@ -331,7 +331,7 @@ namespace MediaBrowser.Providers.Manager
                         var videoType = video.VideoType;
                         if (videoType == VideoType.BluRay || video.VideoType == VideoType.Dvd)
                         {
-                            LibraryManager.DeleteExternalItemData(video, CancellationToken.None).GetAwaiter().GetResult();
+                            LibraryManager.DeleteExternalItemDataAsync(video, CancellationToken.None).GetAwaiter().GetResult();
                         }
                     }
 

@@ -322,7 +322,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="item">The <see cref="BaseItem"/>.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Returns a Task that can be awaited.</returns>
-        Task DeleteExternalItemData(BaseItem item, CancellationToken cancellationToken);
+        Task DeleteExternalItemDataAsync(BaseItem item, CancellationToken cancellationToken);
 
         /// <summary>
         /// Normalizes the root path list.
