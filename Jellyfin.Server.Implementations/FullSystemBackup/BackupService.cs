@@ -9,6 +9,7 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
+using Jellyfin.Server.Implementations.StorageHelpers;
 using Jellyfin.Server.Implementations.SystemBackupService;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.SystemBackupService;
@@ -74,6 +75,8 @@ public class BackupService : IBackupService
         {
             throw new FileNotFoundException($"Requested backup file '{archivePath}' does not exist.");
         }
+
+        StorageHelper.TestCommonPathsForStorageCapacity(_applicationPaths, _logger);
 
         var fileStream = File.OpenRead(archivePath);
         await using (fileStream.ConfigureAwait(false))
@@ -220,6 +223,14 @@ public class BackupService : IBackupService
         if (!Directory.Exists(backupFolder))
         {
             Directory.CreateDirectory(backupFolder);
+        }
+
+        var backupStorageSpace = StorageHelper.GetFreeSpaceOf(_applicationPaths.BackupPath);
+
+        const long FiveGigabyte = 5_368_709_115;
+        if (backupStorageSpace.FreeSpace < FiveGigabyte)
+        {
+            throw new InvalidOperationException($"The backup directory '{backupStorageSpace.Path}' does not have at least '{StorageHelper.HumanizeStorageSize(FiveGigabyte)}' free space. Cannot create backup.");
         }
 
         var backupPath = Path.Combine(backupFolder, $"jellyfin-backup-{manifest.DateCreated.ToLocalTime():yyyyMMddHHmmss}.zip");
