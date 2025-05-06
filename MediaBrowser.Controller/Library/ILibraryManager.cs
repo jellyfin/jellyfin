@@ -317,6 +317,14 @@ namespace MediaBrowser.Controller.Library
         CollectionType? GetConfiguredContentType(string path);
 
         /// <summary>
+        /// Deletes all external item data.
+        /// </summary>
+        /// <param name="item">The <see cref="BaseItem"/>.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Returns a Task that can be awaited.</returns>
+        Task DeleteExternalItemData(BaseItem item, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Normalizes the root path list.
         /// </summary>
         /// <param name="paths">The paths.</param>

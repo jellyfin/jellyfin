@@ -34,10 +34,12 @@ using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.MediaSegments;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Sorting;
+using MediaBrowser.Controller.Trickplay;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
@@ -66,11 +68,14 @@ namespace Emby.Server.Implementations.Library
         private readonly ILogger<LibraryManager> _logger;
         private readonly ITaskManager _taskManager;
         private readonly IUserManager _userManager;
-        private readonly IUserDataManager _userDataRepository;
+        private readonly IUserDataManager _userDataManager;
+        private readonly IKeyframeManager _keyframeManager;
+        private readonly IMediaSegmentManager _mediaSegmentManager;
+        private readonly ITrickplayManager _trickplayManager;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly Lazy<ILibraryMonitor> _libraryMonitorFactory;
         private readonly Lazy<IProviderManager> _providerManagerFactory;
-        private readonly Lazy<IUserViewManager> _userviewManagerFactory;
+        private readonly Lazy<IUserViewManager> _userViewManagerFactory;
         private readonly IServerApplicationHost _appHost;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IFileSystem _fileSystem;
@@ -106,11 +111,14 @@ namespace Emby.Server.Implementations.Library
         /// <param name="taskManager">The task manager.</param>
         /// <param name="userManager">The user manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
-        /// <param name="userDataRepository">The user data repository.</param>
+        /// <param name="userDataManager">The user data manager.</param>
+        /// <param name="keyframeManager">The keyframe manager.</param>
+        /// <param name="mediaSegmentManager">The media segment manager.</param>
+        /// <param name="trickplayManager">The user trickplay manager.</param>
         /// <param name="libraryMonitorFactory">The library monitor.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="providerManagerFactory">The provider manager.</param>
-        /// <param name="userviewManagerFactory">The userview manager.</param>
+        /// <param name="userViewManagerFactory">The user view manager.</param>
         /// <param name="mediaEncoder">The media encoder.</param>
         /// <param name="itemRepository">The item repository.</param>
         /// <param name="imageProcessor">The image processor.</param>
@@ -124,11 +132,14 @@ namespace Emby.Server.Implementations.Library
             ITaskManager taskManager,
             IUserManager userManager,
             IServerConfigurationManager configurationManager,
-            IUserDataManager userDataRepository,
+            IUserDataManager userDataManager,
+            IKeyframeManager keyframeManager,
+            IMediaSegmentManager mediaSegmentManager,
+            ITrickplayManager trickplayManager,
             Lazy<ILibraryMonitor> libraryMonitorFactory,
             IFileSystem fileSystem,
             Lazy<IProviderManager> providerManagerFactory,
-            Lazy<IUserViewManager> userviewManagerFactory,
+            Lazy<IUserViewManager> userViewManagerFactory,
             IMediaEncoder mediaEncoder,
             IItemRepository itemRepository,
             IImageProcessor imageProcessor,
@@ -142,11 +153,14 @@ namespace Emby.Server.Implementations.Library
             _taskManager = taskManager;
             _userManager = userManager;
             _configurationManager = configurationManager;
-            _userDataRepository = userDataRepository;
+            _userDataManager = userDataManager;
+            _keyframeManager = keyframeManager;
+            _mediaSegmentManager = mediaSegmentManager;
+            _trickplayManager = trickplayManager;
             _libraryMonitorFactory = libraryMonitorFactory;
             _fileSystem = fileSystem;
             _providerManagerFactory = providerManagerFactory;
-            _userviewManagerFactory = userviewManagerFactory;
+            _userViewManagerFactory = userViewManagerFactory;
             _mediaEncoder = mediaEncoder;
             _itemRepository = itemRepository;
             _imageProcessor = imageProcessor;
@@ -202,7 +216,7 @@ namespace Emby.Server.Implementations.Library
 
         private IProviderManager ProviderManager => _providerManagerFactory.Value;
 
-        private IUserViewManager UserViewManager => _userviewManagerFactory.Value;
+        private IUserViewManager UserViewManager => _userViewManagerFactory.Value;
 
         /// <summary>
         /// Gets or sets the postscan tasks.
@@ -1889,7 +1903,7 @@ namespace Emby.Server.Implementations.Library
 
                 userComparer.User = user;
                 userComparer.UserManager = _userManager;
-                userComparer.UserDataRepository = _userDataRepository;
+                userComparer.UserDataManager = _userDataManager;
 
                 return userComparer;
             }
@@ -2247,6 +2261,24 @@ namespace Emby.Server.Implementations.Library
             }
 
             return GetContentTypeOverride(item.ContainingFolderPath, inheritConfiguredPath);
+        }
+
+        public async Task DeleteExternalItemData(BaseItem item, CancellationToken cancellationToken)
+        {
+            var validPaths = _pathManager.GetExtractedDataPaths(item).Where(Directory.Exists).ToList();
+            var itemId = item.Id;
+            if (validPaths.Count > 0)
+            {
+                _logger.LogInformation("File changed, pruning extracted data: {Path}", item.Path);
+                foreach (var path in validPaths)
+                {
+                    Directory.Delete(path, true);
+                }
+            }
+
+            await _keyframeManager.DeleteKeyframeDataAsync(itemId, cancellationToken).ConfigureAwait(false);
+            await _mediaSegmentManager.DeleteSegmentsAsync(itemId, cancellationToken).ConfigureAwait(false);
+            await _trickplayManager.DeleteTrickplayDataAsync(itemId, cancellationToken).ConfigureAwait(false);
         }
 
         private CollectionType? GetContentTypeOverride(string path, bool inherit)

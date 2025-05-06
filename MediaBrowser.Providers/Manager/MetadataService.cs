@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -13,9 +12,7 @@ using Jellyfin.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.MediaSegments;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
@@ -34,19 +31,13 @@ namespace MediaBrowser.Providers.Manager
             ILogger<MetadataService<TItemType, TIdType>> logger,
             IProviderManager providerManager,
             IFileSystem fileSystem,
-            ILibraryManager libraryManager,
-            IPathManager pathManager,
-            IKeyframeManager keyframeManager,
-            IMediaSegmentManager mediaSegmentManager)
+            ILibraryManager libraryManager)
         {
             ServerConfigurationManager = serverConfigurationManager;
             Logger = logger;
             ProviderManager = providerManager;
             FileSystem = fileSystem;
             LibraryManager = libraryManager;
-            PathManager = pathManager;
-            KeyframeManager = keyframeManager;
-            MediaSegmentManager = mediaSegmentManager;
             ImageProvider = new ItemImageProvider(Logger, ProviderManager, FileSystem);
         }
 
@@ -61,12 +52,6 @@ namespace MediaBrowser.Providers.Manager
         protected IFileSystem FileSystem { get; }
 
         protected ILibraryManager LibraryManager { get; }
-
-        protected IPathManager PathManager { get; }
-
-        protected IKeyframeManager KeyframeManager { get; }
-
-        protected IMediaSegmentManager MediaSegmentManager { get; }
 
         protected virtual bool EnableUpdatingPremiereDateFromChildren => false;
 
@@ -344,27 +329,9 @@ namespace MediaBrowser.Providers.Manager
                     if (item is Video video)
                     {
                         var videoType = video.VideoType;
-                        var sizeChanged = size != (video.Size ?? 0);
-                        if (videoType == VideoType.BluRay || video.VideoType == VideoType.Dvd || sizeChanged)
+                        if (videoType == VideoType.BluRay || video.VideoType == VideoType.Dvd)
                         {
-                            if (sizeChanged)
-                            {
-                                item.Size = size;
-                                Logger.LogDebug("File size changed from {Then} to {Now}: {Path}", video.Size, size, itemPath);
-                            }
-
-                            var validPaths = PathManager.GetExtractedDataPaths(video).Where(Directory.Exists).ToList();
-                            if (validPaths.Count > 0)
-                            {
-                                Logger.LogInformation("File changed, pruning extracted data: {Path}", itemPath);
-                                foreach (var path in validPaths)
-                                {
-                                    Directory.Delete(path, true);
-                                }
-                            }
-
-                            KeyframeManager.DeleteKeyframeDataAsync(video.Id, CancellationToken.None).GetAwaiter().GetResult();
-                            MediaSegmentManager.DeleteSegmentsAsync(item.Id).GetAwaiter().GetResult();
+                            LibraryManager.DeleteExternalItemData(video, CancellationToken.None);
                         }
                     }
 

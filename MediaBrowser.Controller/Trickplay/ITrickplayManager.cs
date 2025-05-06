@@ -59,6 +59,14 @@ public interface ITrickplayManager
     Task SaveTrickplayInfo(TrickplayInfo info);
 
     /// <summary>
+    /// Deletes all trickplay info for an item.
+    /// </summary>
+    /// <param name="itemId">The item id.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>Task.</returns>
+    Task DeleteTrickplayDataAsync(Guid itemId, CancellationToken cancellationToken);
+
+    /// <summary>
     /// Gets all trickplay infos for all media streams of an item.
     /// </summary>
     /// <param name="item">The item.</param>

@@ -49,8 +49,9 @@ public interface IMediaSegmentManager
     /// Deletes all media segments of an item.
     /// </summary>
     /// <param name="itemId">The <see cref="BaseItem.Id"/> to delete all segments for.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>a task.</returns>
-    Task DeleteSegmentsAsync(Guid itemId);
+    Task DeleteSegmentsAsync(Guid itemId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Obtains all segments associated with the itemId.

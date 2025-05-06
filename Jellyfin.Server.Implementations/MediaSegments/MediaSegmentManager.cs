@@ -140,10 +140,10 @@ public class MediaSegmentManager : IMediaSegmentManager
     }
 
     /// <inheritdoc />
-    public async Task DeleteSegmentsAsync(Guid itemId)
+    public async Task DeleteSegmentsAsync(Guid itemId, CancellationToken cancellationToken)
     {
-        using var db = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-        await db.MediaSegments.Where(e => e.ItemId.Equals(itemId)).ExecuteDeleteAsync().ConfigureAwait(false);
+        using var db = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await db.MediaSegments.Where(e => e.ItemId.Equals(itemId)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
