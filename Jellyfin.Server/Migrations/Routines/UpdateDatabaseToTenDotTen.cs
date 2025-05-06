@@ -14,7 +14,8 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.Server.Migrations.Routines;
 
 /// <summary>
-/// Updates the library.db to version 10.10.z; replaces the migration code from the old SqliteItemRepository and SqliteUserDataRepository.
+/// Updates the library.db to version 10.10.z in preperation for the EFCore migration.
+/// Replaces the migration code from the old SqliteItemRepository and SqliteUserDataRepository.
 /// </summary>
 [JellyfinMigration("2025-04-19T00:00:00", nameof(UpdateDatabaseToTenDotTen))]
 internal class UpdateDatabaseToTenDotTen : IDatabaseMigrationRoutine
@@ -37,26 +38,6 @@ internal class UpdateDatabaseToTenDotTen : IDatabaseMigrationRoutine
     /// <inheritdoc/>
     public void Perform()
     {
-        const string ChaptersTableName = "Chapters2";
-
-        string[] queries =
-        [
-            "create table if not exists TypedBaseItems (guid GUID primary key NOT NULL, type TEXT NOT NULL, data BLOB NULL, ParentId GUID NULL, Path TEXT NULL)",
-
-            "create table if not exists AncestorIds (ItemId GUID NOT NULL, AncestorId GUID NOT NULL, AncestorIdText TEXT NOT NULL, PRIMARY KEY (ItemId, AncestorId))",
-
-            "create table if not exists ItemValues (ItemId GUID NOT NULL, Type INT NOT NULL, Value TEXT NOT NULL, CleanValue TEXT NOT NULL)",
-
-            "create table if not exists People (ItemId GUID, Name TEXT NOT NULL, Role TEXT, PersonType TEXT, SortOrder int, ListOrder int)",
-
-            "create table if not exists " + ChaptersTableName + " (ItemId GUID, ChapterIndex INT NOT NULL, StartPositionTicks BIGINT NOT NULL, Name TEXT, ImagePath TEXT, PRIMARY KEY (ItemId, ChapterIndex))",
-
-            "create table if not exists mediastreams (ItemId GUID, StreamIndex INT, StreamType TEXT, Codec TEXT, Language TEXT, ChannelLayout TEXT, Profile TEXT, AspectRatio TEXT, Path TEXT, IsInterlaced BIT, BitRate INT NULL, Channels INT NULL, SampleRate INT NULL, IsDefault BIT, IsForced BIT, IsExternal BIT, Height INT NULL, Width INT NULL, AverageFrameRate FLOAT NULL, RealFrameRate FLOAT NULL, Level FLOAT NULL, PixelFormat TEXT, BitDepth INT NULL, IsAnamorphic BIT NULL, RefFrames INT NULL, CodecTag TEXT NULL, Comment TEXT NULL, NalLengthSize TEXT NULL, IsAvc BIT NULL, Title TEXT NULL, TimeBase TEXT NULL, CodecTimeBase TEXT NULL, ColorPrimaries TEXT NULL, ColorSpace TEXT NULL, ColorTransfer TEXT NULL, DvVersionMajor INT NULL, DvVersionMinor INT NULL, DvProfile INT NULL, DvLevel INT NULL, RpuPresentFlag INT NULL, ElPresentFlag INT NULL, BlPresentFlag INT NULL, DvBlSignalCompatibilityId INT NULL, IsHearingImpaired BIT NULL, Rotation INT NULL, PRIMARY KEY (ItemId, StreamIndex))",
-            "create table if not exists mediaattachments (ItemId GUID, AttachmentIndex INT, Codec TEXT, CodecTag TEXT NULL, Comment TEXT NULL, Filename TEXT NULL, MIMEType TEXT NULL, PRIMARY KEY (ItemId, AttachmentIndex))",
-
-            "pragma shrink_memory"
-        ];
-
         var dataPath = _paths.DataPath;
 
         var dbPath = Path.Combine(dataPath, DbFilename);
@@ -83,12 +64,11 @@ internal class UpdateDatabaseToTenDotTen : IDatabaseMigrationRoutine
 
         _logger.LogInformation("Prepare database for EFCore migration: update to version 10.10.z");
 
+        // add missing columns
         using var connection = new SqliteConnection($"Filename={dbPath}");
         connection.Open();
         using (var transaction = connection.BeginTransaction())
         {
-            connection.Execute(string.Join(';', queries));
-
             var existingColumnNames = GetColumnNames(connection, "AncestorIds");
             AddColumn(connection, "AncestorIds", "AncestorIdText", "Text", existingColumnNames);
 
@@ -170,8 +150,8 @@ internal class UpdateDatabaseToTenDotTen : IDatabaseMigrationRoutine
             existingColumnNames = GetColumnNames(connection, "ItemValues");
             AddColumn(connection, "ItemValues", "CleanValue", "Text", existingColumnNames);
 
-            existingColumnNames = GetColumnNames(connection, ChaptersTableName);
-            AddColumn(connection, ChaptersTableName, "ImageDateModified", "DATETIME", existingColumnNames);
+            existingColumnNames = GetColumnNames(connection, "Chapters2");
+            AddColumn(connection, "Chapters2", "ImageDateModified", "DATETIME", existingColumnNames);
 
             existingColumnNames = GetColumnNames(connection, "MediaStreams");
             AddColumn(connection, "MediaStreams", "IsAvc", "BIT", existingColumnNames);
@@ -207,6 +187,7 @@ internal class UpdateDatabaseToTenDotTen : IDatabaseMigrationRoutine
             transaction.Commit();
         }
 
+        // move the content of the userdata table to UserDatas
         using (var transaction = connection.BeginTransaction())
         {
             var userDatasTableExists = TableExists(connection, "UserDatas");
@@ -237,19 +218,15 @@ internal class UpdateDatabaseToTenDotTen : IDatabaseMigrationRoutine
         _logger.LogInformation("Database was successfully updated");
     }
 
+    /// <summary>
+    /// Sets the InternalUserId in the userdata table for existing users.
+    /// </summary>
     private void ImportUserIds(SqliteConnection connection, IEnumerable<User> users)
     {
-        var userIdsWithUserData = GetAllUserIdsWithUserData(connection);
-
         using (var statement = connection.PrepareStatement("update userdata set InternalUserId=@InternalUserId where UserId=@UserId"))
         {
             foreach (var user in users)
             {
-                if (!userIdsWithUserData.Contains(user.Id))
-                {
-                    continue;
-                }
-
                 statement.TryBind("@UserId", user.Id);
                 statement.TryBind("@InternalUserId", user.InternalId);
 
@@ -258,29 +235,9 @@ internal class UpdateDatabaseToTenDotTen : IDatabaseMigrationRoutine
         }
     }
 
-    private List<Guid> GetAllUserIdsWithUserData(SqliteConnection connection)
-    {
-        var list = new List<Guid>();
-
-        using (var statement = connection.CreateCommand())
-        {
-            statement.CommandText = "select DISTINCT UserId from UserData where UserId not null";
-            foreach (var row in statement.ExecuteQuery())
-            {
-                try
-                {
-                    list.Add(row.GetGuid(0));
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error while getting user");
-                }
-            }
-        }
-
-        return list;
-    }
-
+    /// <summary>
+    /// Retrieves all existing columns of a specific table from the database.
+    /// </summary>
     private List<string> GetColumnNames(SqliteConnection connection, string table)
     {
         var columnNames = new List<string>();
@@ -296,6 +253,10 @@ internal class UpdateDatabaseToTenDotTen : IDatabaseMigrationRoutine
         return columnNames;
     }
 
+    /// <summary>
+    /// Creates the given column for the given table in the database,
+    /// if the column name is not present in the list of existing columns.
+    /// </summary>
     private void AddColumn(SqliteConnection connection, string table, string columnName, string type, List<string> existingColumnNames)
     {
         if (existingColumnNames.Contains(columnName, StringComparison.OrdinalIgnoreCase))
@@ -306,6 +267,9 @@ internal class UpdateDatabaseToTenDotTen : IDatabaseMigrationRoutine
         connection.Execute("alter table " + table + " add column " + columnName + " " + type + " NULL");
     }
 
+    /// <summary>
+    /// Checks if the table with the given name already exists in the database.
+    /// </summary>
     private bool TableExists(SqliteConnection connection, string name)
     {
         using var statement = connection.CreateCommand();
