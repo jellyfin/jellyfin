@@ -1,44 +1,44 @@
 {
-    "countryCode": "fi",
+    "countryCode": "sg",
     "supportsSubScores": false,
     "ratings": [
         {
-            "ratingStrings": ["S", "T"],
+            "ratingStrings": ["G"],
             "ratingScore": {
                 "score": 0,
                 "subScore": null
             }
         },
         {
-            "ratingStrings": ["7", "K7", "K-7"],
+            "ratingStrings": ["PG"],
             "ratingScore": {
                 "score": 7,
                 "subScore": null
             }
         },
         {
-            "ratingStrings": ["12", "K12", "K-12"],
+            "ratingStrings": ["PG13"],
             "ratingScore": {
-                "score": 12,
+                "score": 13,
                 "subScore": null
             }
         },
         {
-            "ratingStrings": ["16", "K16", "K-16"],
+            "ratingStrings": ["NC16"],
             "ratingScore": {
                 "score": 16,
                 "subScore": null
             }
         },
         {
-            "ratingStrings": ["18", "K18", "K-18"],
+            "ratingStrings": ["M18"],
             "ratingScore": {
                 "score": 18,
                 "subScore": null
             }
         },
         {
-            "ratingStrings": ["KK"],
+            "ratingStrings": ["R21"],
             "ratingScore": {
                 "score": 1001,
                 "subScore": null
