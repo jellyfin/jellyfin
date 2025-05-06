@@ -134,14 +134,16 @@ namespace Emby.Server.Implementations.Playlists
 
             try
             {
-                Directory.CreateDirectory(path);
+                var info = Directory.CreateDirectory(path);
                 var playlist = new Playlist
                 {
                     Name = name,
                     Path = path,
                     OwnerUserId = request.UserId,
                     Shares = request.Users ?? [],
-                    OpenAccess = request.Public ?? false
+                    OpenAccess = request.Public ?? false,
+                    DateCreated = info.CreationTimeUtc,
+                    DateModified = info.LastWriteTimeUtc
                 };
 
                 playlist.SetMediaType(request.MediaType);

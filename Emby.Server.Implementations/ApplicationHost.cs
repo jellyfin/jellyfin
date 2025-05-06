@@ -36,7 +36,6 @@ using Emby.Server.Implementations.SyncPlay;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
 using Jellyfin.Api.Helpers;
-using Jellyfin.Database.Implementations;
 using Jellyfin.Drawing;
 using Jellyfin.MediaEncoding.Hls.Playlist;
 using Jellyfin.Networking.Manager;
@@ -65,6 +64,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.MediaSegments;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Playlists;
@@ -95,7 +95,6 @@ using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.XbmcMetadata.Providers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -565,6 +564,7 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<ISubtitleParser, SubtitleEditParser>();
             serviceCollection.AddSingleton<ISubtitleEncoder, SubtitleEncoder>();
+            serviceCollection.AddSingleton<IKeyframeManager, KeyframeManager>();
 
             serviceCollection.AddSingleton<IAttachmentExtractor, MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor>();
 
