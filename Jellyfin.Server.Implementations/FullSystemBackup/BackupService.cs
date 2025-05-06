@@ -205,8 +205,6 @@ public class BackupService : IBackupService
     /// <inheritdoc/>
     public async Task<BackupManifestDto> CreateBackupAsync(BackupOptionsDto backupOptions)
     {
-        // TODO: after #13888 is merged a space check should be performed to ensure enough storage capacity is available for the backup.
-
         var manifest = new BackupManifest()
         {
             DateCreated = DateTime.UtcNow,
