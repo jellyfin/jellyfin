@@ -97,28 +97,28 @@ public class TrickplayManager : ITrickplayManager
             var existingResolution = resolution.Key;
             var tileWidth = resolution.Value.TileWidth;
             var tileHeight = resolution.Value.TileHeight;
-            var shouldBeSavedWithMedia = libraryOptions is null ? false : libraryOptions.SaveTrickplayWithMedia;
-            var localOutputDir = GetTrickplayDirectory(video, tileWidth, tileHeight, existingResolution, false);
-            var mediaOutputDir = GetTrickplayDirectory(video, tileWidth, tileHeight, existingResolution, true);
-            if (shouldBeSavedWithMedia && Directory.Exists(localOutputDir))
+            var shouldBeSavedWithMedia = libraryOptions is not null && libraryOptions.SaveTrickplayWithMedia;
+            var localOutputDir = new DirectoryInfo(GetTrickplayDirectory(video, tileWidth, tileHeight, existingResolution, false));
+            var mediaOutputDir = new DirectoryInfo(GetTrickplayDirectory(video, tileWidth, tileHeight, existingResolution, true));
+            if (shouldBeSavedWithMedia && localOutputDir.Exists)
             {
-                var localDirFiles = Directory.GetFiles(localOutputDir);
-                var mediaDirExists = Directory.Exists(mediaOutputDir);
-                if (localDirFiles.Length > 0 && ((mediaDirExists && Directory.GetFiles(mediaOutputDir).Length == 0) || !mediaDirExists))
+                var localDirFiles = localOutputDir.EnumerateFiles();
+                var mediaDirExists = mediaOutputDir.Exists;
+                if (localDirFiles.Any() && ((mediaDirExists && mediaOutputDir.EnumerateFiles().Any()) || !mediaDirExists))
                 {
                     // Move images from local dir to media dir
-                    MoveContent(localOutputDir, mediaOutputDir);
+                    MoveContent(localOutputDir.FullName, mediaOutputDir.FullName);
                     _logger.LogInformation("Moved trickplay images for {ItemName} to {Location}", video.Name, mediaOutputDir);
                 }
             }
-            else if (!shouldBeSavedWithMedia && Directory.Exists(mediaOutputDir))
+            else if (!shouldBeSavedWithMedia && mediaOutputDir.Exists)
             {
-                var mediaDirFiles = Directory.GetFiles(mediaOutputDir);
-                var localDirExists = Directory.Exists(localOutputDir);
-                if (mediaDirFiles.Length > 0 && ((localDirExists && Directory.GetFiles(localOutputDir).Length == 0) || !localDirExists))
+                var mediaDirFiles = mediaOutputDir.EnumerateFiles();
+                var localDirExists = localOutputDir.Exists;
+                if (mediaDirFiles.Any() && ((localDirExists && localOutputDir.EnumerateFiles().Any()) || !localDirExists))
                 {
                     // Move images from media dir to local dir
-                    MoveContent(mediaOutputDir, localOutputDir);
+                    MoveContent(mediaOutputDir.FullName, localOutputDir.FullName);
                     _logger.LogInformation("Moved trickplay images for {ItemName} to {Location}", video.Name, localOutputDir);
                 }
             }
@@ -131,10 +131,10 @@ public class TrickplayManager : ITrickplayManager
         var parent = Directory.GetParent(sourceFolder);
         if (parent is not null)
         {
-            var parentContent = Directory.GetDirectories(parent.FullName);
-            if (parentContent.Length == 0)
+            var parentContent = parent.EnumerateDirectories();
+            if (!parentContent.Any())
             {
-                Directory.Delete(parent.FullName);
+                parent.Delete();
             }
         }
     }
@@ -220,13 +220,13 @@ public class TrickplayManager : ITrickplayManager
 
                 var tileWidth = options.TileWidth;
                 var tileHeight = options.TileHeight;
-                var saveWithMedia = libraryOptions is null ? false : libraryOptions.SaveTrickplayWithMedia;
-                var outputDir = GetTrickplayDirectory(video, tileWidth, tileHeight, actualWidth, saveWithMedia);
+                var saveWithMedia = libraryOptions is not null && libraryOptions.SaveTrickplayWithMedia;
+                var outputDir = new DirectoryInfo(GetTrickplayDirectory(video, tileWidth, tileHeight, actualWidth, saveWithMedia));
 
                 // Import existing trickplay tiles
-                if (!replace && Directory.Exists(outputDir))
+                if (!replace && outputDir.Exists)
                 {
-                    var existingFiles = Directory.GetFiles(outputDir);
+                    var existingFiles = outputDir.GetFiles();
                     if (existingFiles.Length > 0)
                     {
                         var hasTrickplayResolution = await HasTrickplayResolutionAsync(video.Id, actualWidth).ConfigureAwait(false);
@@ -251,9 +251,9 @@ public class TrickplayManager : ITrickplayManager
 
                         foreach (var tile in existingFiles)
                         {
-                            var image = _imageEncoder.GetImageSize(tile);
+                            var image = _imageEncoder.GetImageSize(tile.FullName);
                             localTrickplayInfo.Height = Math.Max(localTrickplayInfo.Height, (int)Math.Ceiling((double)image.Height / localTrickplayInfo.TileHeight));
-                            var bitrate = (int)Math.Ceiling((decimal)new FileInfo(tile).Length * 8 / localTrickplayInfo.TileWidth / localTrickplayInfo.TileHeight / (localTrickplayInfo.Interval / 1000));
+                            var bitrate = (int)Math.Ceiling((decimal)tile.Length * 8 / localTrickplayInfo.TileWidth / localTrickplayInfo.TileHeight / (localTrickplayInfo.Interval / 1000));
                             localTrickplayInfo.Bandwidth = Math.Max(localTrickplayInfo.Bandwidth, bitrate);
                         }
 
@@ -296,7 +296,7 @@ public class TrickplayManager : ITrickplayManager
                     .ToList();
 
                 // Create tiles
-                var trickplayInfo = CreateTiles(images, actualWidth, options, outputDir);
+                var trickplayInfo = CreateTiles(images, actualWidth, options, outputDir.FullName);
 
                 // Save tiles info
                 try
@@ -319,7 +319,7 @@ public class TrickplayManager : ITrickplayManager
 
                     // Make sure no files stay in metadata folders on failure
                     // if tiles info wasn't saved.
-                    Directory.Delete(outputDir, true);
+                    outputDir.Delete(true);
                 }
             }
             catch (Exception ex)

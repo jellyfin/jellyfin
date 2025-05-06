@@ -9,8 +9,8 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.Server.Migrations.PreStartupRoutines;
 
 /// <inheritdoc />
-[JellyfinMigration("2025-04-20T04:00:00", nameof(RenameEnableGroupingIntoCollections), "E73B777D-CD5C-4E71-957A-B86B3660B7CF", Stage = Stages.JellyfinMigrationStageTypes.PreInitialisation)]
 #pragma warning disable CS0618 // Type or member is obsolete
+[JellyfinMigration("2025-04-20T04:00:00", nameof(RenameEnableGroupingIntoCollections), "E73B777D-CD5C-4E71-957A-B86B3660B7CF", Stage = Stages.JellyfinMigrationStageTypes.PreInitialisation)]
 public class RenameEnableGroupingIntoCollections : IMigrationRoutine
 #pragma warning restore CS0618 // Type or member is obsolete
 {
