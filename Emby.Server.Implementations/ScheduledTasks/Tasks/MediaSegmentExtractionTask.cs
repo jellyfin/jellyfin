@@ -91,7 +91,8 @@ public class MediaSegmentExtractionTask : IScheduledTask
                 // Only local files supported
                 if (item.IsFileProtocol && File.Exists(item.Path))
                 {
-                    await _mediaSegmentManager.RunSegmentPluginProviders(item, false, cancellationToken).ConfigureAwait(false);
+                    var libraryOptions = _libraryManager.GetLibraryOptions(item);
+                    await _mediaSegmentManager.RunSegmentPluginProviders(item, libraryOptions, false, cancellationToken).ConfigureAwait(false);
                 }
 
                 // Update progress
