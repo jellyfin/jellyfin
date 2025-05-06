@@ -25,7 +25,9 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// Migration to move extracted files to the new directories.
 /// </summary>
+#pragma warning disable CS0618 // Type or member is obsolete
 [JellyfinMigration("2025-04-20T21:00:00", nameof(MoveExtractedFiles), "9063b0Ef-CFF1-4EDC-9A13-74093681A89B")]
+#pragma warning restore CS0618 // Type or member is obsolete
 public class MoveExtractedFiles : IAsyncMigrationRoutine
 {
     private readonly IApplicationPaths _appPaths;

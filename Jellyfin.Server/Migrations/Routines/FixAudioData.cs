@@ -16,8 +16,8 @@ namespace Jellyfin.Server.Migrations.Routines
     /// <summary>
     /// Fixes the data column of audio types to be deserializable.
     /// </summary>
-    [JellyfinMigration("2025-04-20T18:00:00", nameof(FixAudioData), "CF6FABC2-9FBE-4933-84A5-FFE52EF22A58")]
 #pragma warning disable CS0618 // Type or member is obsolete
+    [JellyfinMigration("2025-04-20T18:00:00", nameof(FixAudioData), "CF6FABC2-9FBE-4933-84A5-FFE52EF22A58")]
     internal class FixAudioData : IMigrationRoutine
 #pragma warning restore CS0618 // Type or member is obsolete
     {

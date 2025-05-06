@@ -9,26 +9,16 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using Emby.Server.Implementations.Data;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
 using Jellyfin.Server.Implementations.Item;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Channels;
-using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.IO;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using BaseItemEntity = Jellyfin.Database.Implementations.Entities.BaseItemEntity;
 using Chapter = Jellyfin.Database.Implementations.Entities.Chapter;
@@ -38,7 +28,7 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// The migration routine for migrating the userdata database to EF Core.
 /// </summary>
-[JellyfinMigration("2025-04-20T20:00:00", nameof(MigrateLibraryDb), "36445464-849f-429f-9ad0-bb130efa0664")]
+[JellyfinMigration("2025-04-20T20:00:00", nameof(MigrateLibraryDb))]
 internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 {
     private const string DbFilename = "library.db";
