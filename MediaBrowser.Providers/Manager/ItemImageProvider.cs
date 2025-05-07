@@ -299,6 +299,10 @@ namespace MediaBrowser.Providers.Manager
                     cancellationToken).ConfigureAwait(false);
 
                 var list = images.ToList();
+
+                // If the item is a logo and the language doesn't match the preferred language, remove it as it's not useful
+                list.RemoveAll((image) => image.Type == ImageType.Logo && image.Language != item.GetPreferredMetadataLanguage());
+
                 int minWidth;
 
                 foreach (var imageType in _singularImages)
