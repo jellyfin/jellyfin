@@ -133,19 +133,13 @@ namespace MediaBrowser.MediaEncoding.Attachments
             var outputFolder = _pathManager.GetAttachmentFolderPath(mediaSource.Id);
             using (await _semaphoreLocks.LockAsync(outputFolder, cancellationToken).ConfigureAwait(false))
             {
-                if (!Directory.Exists(outputFolder))
+                var directory = Directory.CreateDirectory(outputFolder);
+                var fileNames = directory.GetFiles("*", SearchOption.TopDirectoryOnly).Select(f => f.Name).ToHashSet();
+                var missingFiles = mediaSource.MediaAttachments.Where(a => a.FileName is not null && !fileNames.Contains(a.FileName) && !string.Equals(a.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase));
+                if (!missingFiles.Any())
                 {
-                    Directory.CreateDirectory(outputFolder);
-                }
-                else
-                {
-                    var fileNames = Directory.GetFiles(outputFolder, "*", SearchOption.TopDirectoryOnly).Select(f => Path.GetFileName(f));
-                    var missingFiles = mediaSource.MediaAttachments.Where(a => !fileNames.Contains(a.FileName) && !string.Equals(a.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase));
-                    if (!missingFiles.Any())
-                    {
-                        // Skip extraction if all files already exist
-                        return;
-                    }
+                    // Skip extraction if all files already exist
+                    return;
                 }
 
                 var processArgs = string.Format(

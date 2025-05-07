@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using MediaBrowser.Common.Configuration;
@@ -36,7 +37,7 @@ public class PathManager : IPathManager
     /// <inheritdoc />
     public string GetAttachmentPath(string mediaSourceId, string fileName)
     {
-        return Path.Join(GetAttachmentFolderPath(mediaSourceId), fileName);
+        return Path.Combine(GetAttachmentFolderPath(mediaSourceId), fileName);
     }
 
     /// <inheritdoc />
@@ -58,7 +59,7 @@ public class PathManager : IPathManager
     /// <inheritdoc />
     public string GetSubtitlePath(string mediaSourceId, int streamIndex, string extension)
     {
-        return Path.Join(GetSubtitleFolderPath(mediaSourceId), streamIndex.ToString(CultureInfo.InvariantCulture) + extension);
+        return Path.Combine(GetSubtitleFolderPath(mediaSourceId), streamIndex.ToString(CultureInfo.InvariantCulture) + extension);
     }
 
     /// <inheritdoc />
@@ -67,7 +68,34 @@ public class PathManager : IPathManager
         var id = item.Id.ToString("D", CultureInfo.InvariantCulture).AsSpan();
 
         return saveWithMedia
-            ? Path.Combine(item.ContainingFolderPath, Path.ChangeExtension(item.Path, ".trickplay"))
+            ? Path.Combine(item.ContainingFolderPath, Path.ChangeExtension(Path.GetFileName(item.Path), ".trickplay"))
             : Path.Join(_config.ApplicationPaths.TrickplayPath, id[..2], id);
+    }
+
+    /// <inheritdoc/>
+    public string GetChapterImageFolderPath(BaseItem item)
+    {
+        return Path.Combine(item.GetInternalMetadataPath(), "chapters");
+    }
+
+    /// <inheritdoc/>
+    public string GetChapterImagePath(BaseItem item, long chapterPositionTicks)
+    {
+        var filename = item.DateModified.Ticks.ToString(CultureInfo.InvariantCulture) + "_" + chapterPositionTicks.ToString(CultureInfo.InvariantCulture) + ".jpg";
+
+        return Path.Combine(GetChapterImageFolderPath(item), filename);
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyList<string> GetExtractedDataPaths(BaseItem item)
+    {
+        var mediaSourceId = item.Id.ToString("N", CultureInfo.InvariantCulture);
+        return [
+            GetAttachmentFolderPath(mediaSourceId),
+            GetSubtitleFolderPath(mediaSourceId),
+            GetTrickplayDirectory(item, false),
+            GetTrickplayDirectory(item, true),
+            GetChapterImageFolderPath(item)
+        ];
     }
 }

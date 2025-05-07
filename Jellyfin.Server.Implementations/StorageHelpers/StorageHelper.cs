@@ -72,6 +72,8 @@ public static class StorageHelper
     private static void TestDataDirectorySize(string path, ILogger logger, long threshold = -1)
     {
         logger.LogDebug("Check path {TestPath} for storage capacity", path);
+        Directory.CreateDirectory(path);
+
         var drive = new DriveInfo(path);
         if (threshold != -1 && drive.AvailableFreeSpace < threshold)
         {

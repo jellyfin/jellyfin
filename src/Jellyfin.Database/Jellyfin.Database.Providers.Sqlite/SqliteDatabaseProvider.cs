@@ -76,6 +76,11 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     /// <inheritdoc/>
     public async Task RunShutdownTask(CancellationToken cancellationToken)
     {
+        if (DbContextFactory is null)
+        {
+            return;
+        }
+
         // Run before disposing the application
         var context = await DbContextFactory!.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (context.ConfigureAwait(false))
@@ -98,10 +103,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
         var key = DateTime.UtcNow.ToString("yyyyMMddhhmmss", CultureInfo.InvariantCulture);
         var path = Path.Combine(_applicationPaths.DataPath, "jellyfin.db");
         var backupFile = Path.Combine(_applicationPaths.DataPath, BackupFolderName);
-        if (!Directory.Exists(backupFile))
-        {
-            Directory.CreateDirectory(backupFile);
-        }
+        Directory.CreateDirectory(backupFile);
 
         backupFile = Path.Combine(backupFile, $"{key}_jellyfin.db");
         File.Copy(path, backupFile);
@@ -118,7 +120,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
 
         if (!File.Exists(backupFile))
         {
-            _logger.LogCritical("Tried to restore a backup that does not exist.");
+            _logger.LogCritical("Tried to restore a backup that does not exist: {Key}", key);
             return Task.CompletedTask;
         }
 

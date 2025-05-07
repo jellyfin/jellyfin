@@ -25,6 +25,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.MediaSegments;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
@@ -34,7 +35,6 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Providers;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities
@@ -484,7 +484,7 @@ namespace MediaBrowser.Controller.Entities
 
         public static IItemRepository ItemRepository { get; set; }
 
-        public static IChapterRepository ChapterRepository { get; set; }
+        public static IChapterManager ChapterManager { get; set; }
 
         public static IFileSystem FileSystem { get; set; }
 
@@ -1266,7 +1266,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Overrides the base implementation to refresh metadata for local trailers.
+        /// The base implementation to refresh metadata.
         /// </summary>
         /// <param name="options">The options.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -1363,9 +1363,7 @@ namespace MediaBrowser.Controller.Entities
 
         protected virtual FileSystemMetadata[] GetFileSystemChildren(IDirectoryService directoryService)
         {
-            var path = ContainingFolderPath;
-
-            return directoryService.GetFileSystemEntries(path);
+            return directoryService.GetFileSystemEntries(ContainingFolderPath);
         }
 
         private async Task<bool> RefreshExtras(BaseItem item, MetadataRefreshOptions options, IReadOnlyList<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
@@ -1394,6 +1392,23 @@ namespace MediaBrowser.Controller.Entities
                 return RefreshMetadataForOwnedItem(i, true, subOptions, cancellationToken);
             });
 
+            // Cleanup removed extras
+            var removedExtraIds = item.ExtraIds.Where(e => !newExtraIds.Contains(e)).ToArray();
+            if (removedExtraIds.Length > 0)
+            {
+                var removedExtras = LibraryManager.GetItemList(new InternalItemsQuery()
+                {
+                    ItemIds = removedExtraIds
+                });
+                foreach (var removedExtra in removedExtras)
+                {
+                    LibraryManager.DeleteItem(removedExtra, new DeleteOptions()
+                    {
+                        DeleteFileLocation = false
+                    });
+                }
+            }
+
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
             item.ExtraIds = newExtraIds;
@@ -1408,6 +1423,22 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual bool RequiresRefresh()
         {
+            if (string.IsNullOrEmpty(Path) || DateModified == default)
+            {
+                return false;
+            }
+
+            var info = FileSystem.GetFileSystemInfo(Path);
+            if (info.Exists)
+            {
+                if (info.IsDirectory)
+                {
+                    return info.LastWriteTimeUtc != DateModified;
+                }
+
+                return info.LastWriteTimeUtc != DateModified && info.Length != (Size ?? 0);
+            }
+
             return false;
         }
 
@@ -1805,7 +1836,7 @@ namespace MediaBrowser.Controller.Entities
 
         public void SetStudios(IEnumerable<string> names)
         {
-            Studios = names.Trimmed().Distinct().ToArray();
+            Studios = names.Trimmed().Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
         }
 
         /// <summary>
@@ -2051,7 +2082,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (imageType == ImageType.Chapter)
             {
-                var chapter = ChapterRepository.GetChapter(this.Id, imageIndex);
+                var chapter = ChapterManager.GetChapter(Id, imageIndex);
 
                 if (chapter is null)
                 {
@@ -2101,7 +2132,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (image.Type == ImageType.Chapter)
             {
-                var chapters = ChapterRepository.GetChapters(this.Id);
+                var chapters = ChapterManager.GetChapters(Id);
                 for (var i = 0; i < chapters.Count; i++)
                 {
                     if (chapters[i].ImagePath == image.Path)

@@ -32,7 +32,6 @@ namespace MediaBrowser.Providers.MediaInfo
         private const char InternalValueSeparator = '\u001F';
 
         private readonly IMediaEncoder _mediaEncoder;
-        private readonly IItemRepository _itemRepo;
         private readonly ILibraryManager _libraryManager;
         private readonly ILogger<AudioFileProber> _logger;
         private readonly IMediaSourceManager _mediaSourceManager;
@@ -46,7 +45,6 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
         /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
         /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
-        /// <param name="itemRepo">Instance of the <see cref="IItemRepository"/> interface.</param>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         /// <param name="lyricResolver">Instance of the <see cref="LyricResolver"/> interface.</param>
         /// <param name="lyricManager">Instance of the <see cref="ILyricManager"/> interface.</param>
@@ -55,14 +53,12 @@ namespace MediaBrowser.Providers.MediaInfo
             ILogger<AudioFileProber> logger,
             IMediaSourceManager mediaSourceManager,
             IMediaEncoder mediaEncoder,
-            IItemRepository itemRepo,
             ILibraryManager libraryManager,
             LyricResolver lyricResolver,
             ILyricManager lyricManager,
             IMediaStreamRepository mediaStreamRepository)
         {
             _mediaEncoder = mediaEncoder;
-            _itemRepo = itemRepo;
             _libraryManager = libraryManager;
             _logger = logger;
             _mediaSourceManager = mediaSourceManager;
@@ -137,7 +133,6 @@ namespace MediaBrowser.Providers.MediaInfo
             audio.TotalBitrate = mediaInfo.Bitrate;
 
             audio.RunTimeTicks = mediaInfo.RunTimeTicks;
-            audio.Size = mediaInfo.Size;
 
             // Add external lyrics first to prevent the lrc file get overwritten on first scan
             var mediaStreams = new List<MediaStream>(mediaInfo.MediaStreams);
