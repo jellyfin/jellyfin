@@ -1,6 +1,8 @@
+using System.IO;
 using System.Threading.Tasks;
 using Jellyfin.Server.Implementations.SystemBackupService;
 using MediaBrowser.Common.Api;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.SystemBackupService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -15,14 +17,17 @@ namespace Jellyfin.Api.Controllers;
 public class BackupController : BaseJellyfinApiController
 {
     private readonly IBackupService _backupService;
+    private readonly IApplicationPaths _applicationPaths;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BackupController"/> class.
     /// </summary>
     /// <param name="backupService">Instance of the <see cref="IBackupService"/> interface.</param>
-    public BackupController(IBackupService backupService)
+    /// <param name="applicationPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
+    public BackupController(IBackupService backupService, IApplicationPaths applicationPaths)
     {
         _backupService = backupService;
+        _applicationPaths = applicationPaths;
     }
 
     /// <summary>
@@ -43,7 +48,7 @@ public class BackupController : BaseJellyfinApiController
     /// <summary>
     /// Restores to a backup by restarting the server and applying the backup.
     /// </summary>
-    /// <param name="archivePath">The local path to the archive to restore from.</param>
+    /// <param name="archiveName">The name of the backup archive to restore from. Must be present in <see cref="IApplicationPaths.BackupPath"/>.</param>
     /// <response code="204">Backup restore started.</response>
     /// <response code="403">User does not have permission to retrieve information.</response>
     /// <returns>No-Content.</returns>
@@ -51,8 +56,11 @@ public class BackupController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public IActionResult StartRestoreBackup([FromQuery] string archivePath)
+    public IActionResult StartRestoreBackup([FromQuery] string archiveName)
     {
+        // sanitize path
+        archiveName = Path.GetFileName(Path.GetFullPath(archiveName));
+        var archivePath = Path.Combine(_applicationPaths.BackupPath, archiveName);
         if (!System.IO.File.Exists(archivePath))
         {
             return NotFound();
