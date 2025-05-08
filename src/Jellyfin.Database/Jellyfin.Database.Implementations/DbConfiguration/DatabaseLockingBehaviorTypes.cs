@@ -6,7 +6,7 @@ namespace Jellyfin.Database.Implementations.DbConfiguration;
 public enum DatabaseLockingBehaviorTypes
 {
     /// <summary>
-    /// Defines that no explicit locking for reads and writes should be done.
+    /// Defines that no explicit application level locking for reads and writes should be done and only provider specific locking should be relied on.
     /// </summary>
     NoLock = 0,
 
