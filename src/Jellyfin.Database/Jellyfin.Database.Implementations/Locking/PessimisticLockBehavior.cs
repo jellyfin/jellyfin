@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Database.Implementations.Locking;
 
@@ -12,6 +13,17 @@ namespace Jellyfin.Database.Implementations.Locking;
 /// </summary>
 public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
 {
+    private readonly ILogger<PessimisticLockBehavior> _logger;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PessimisticLockBehavior"/> class.
+    /// </summary>
+    /// <param name="logger">The application logger.</param>
+    public PessimisticLockBehavior(ILogger<PessimisticLockBehavior> logger)
+    {
+        _logger = logger;
+    }
+
     private static ReaderWriterLockSlim DatabaseLock { get; } = new();
 
     /// <inheritdoc/>
@@ -31,6 +43,7 @@ public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
     /// <inheritdoc/>
     public void Initialise(DbContextOptionsBuilder optionsBuilder)
     {
+        _logger.LogInformation("The database locking mode has been set to: Pessimistic.");
         optionsBuilder.AddInterceptors(new LockingInterceptor());
     }
 
