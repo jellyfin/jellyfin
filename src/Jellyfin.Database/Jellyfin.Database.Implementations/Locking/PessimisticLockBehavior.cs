@@ -30,7 +30,7 @@ public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
         _loggerFactory = loggerFactory;
     }
 
-    private static ReaderWriterLockSlim DatabaseLock { get; } = new();
+    private static ReaderWriterLockSlim DatabaseLock { get; } = new(LockRecursionPolicy.SupportsRecursion);
 
     /// <inheritdoc/>
     public void OnSaveChanges(JellyfinDbContext context, Action saveChanges)
@@ -60,7 +60,6 @@ public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
 
     private sealed class TransactionLockingInterceptor : DbTransactionInterceptor
     {
-        private static Guid? _lockInitiator;
         private readonly ILogger _logger;
 
         public TransactionLockingInterceptor(ILogger logger)
@@ -68,42 +67,33 @@ public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
             _logger = logger;
         }
 
-        public override InterceptionResult<DbTransaction> TransactionStarting(DbConnection connection, TransactionStartingEventData eventData, InterceptionResult<DbTransaction> result)
-        {
-            WriteLock(eventData);
-
-            return base.TransactionStarting(connection, eventData, result);
-        }
-
         private void WriteLock(TransactionStartingEventData eventData)
         {
             _logger.LogTrace("Write Lock");
-            if (!DatabaseLock.IsWriteLockHeld)
-            {
-                _logger.LogTrace("Aquire Write Lock for {Connection}", eventData.ConnectionId);
-                DatabaseLock.EnterWriteLock();
-                _logger.LogTrace("Write Lock Aquired {Connection}", eventData.ConnectionId);
-                _lockInitiator = eventData.ConnectionId;
-            }
-            else
-            {
-                _logger.LogTrace("Write Lock already aquired {CurrentConnection}", _lockInitiator.ToString());
-            }
+            _logger.LogTrace("Aquire Write Lock for {Connection}", eventData.ConnectionId);
+            DatabaseLock.EnterWriteLock();
+            _logger.LogTrace("Write Lock Aquired {Connection}", eventData.ConnectionId);
         }
 
         private void HandleWriteLock(TransactionEndEventData eventData)
         {
-            _logger.LogTrace("End Write Lock for {Connection} from {CurrentLock}", eventData.ConnectionId, _lockInitiator);
-            if (DatabaseLock.IsWriteLockHeld && _lockInitiator.Equals(eventData.ConnectionId))
+            _logger.LogTrace("End Write Lock for {Connection}", eventData.ConnectionId);
+            if (DatabaseLock.IsWriteLockHeld)
             {
-                _logger.LogTrace("Finish Write Lock {Connection}", _lockInitiator.Value);
+                _logger.LogTrace("Finish Write Lock {Connection}", eventData.ConnectionId);
                 DatabaseLock.ExitWriteLock();
-                _lockInitiator = null;
             }
             else
             {
                 _logger.LogTrace("Not Initiator, skip handling.");
             }
+        }
+
+        public override InterceptionResult<DbTransaction> TransactionStarting(DbConnection connection, TransactionStartingEventData eventData, InterceptionResult<DbTransaction> result)
+        {
+            WriteLock(eventData);
+
+            return base.TransactionStarting(connection, eventData, result);
         }
 
         public override ValueTask<InterceptionResult<DbTransaction>> TransactionStartingAsync(DbConnection connection, TransactionStartingEventData eventData, InterceptionResult<DbTransaction> result, CancellationToken cancellationToken = default)
