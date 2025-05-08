@@ -86,7 +86,7 @@ public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
         public override DbDataReader ReaderExecuted(DbCommand command, CommandExecutedEventData eventData, DbDataReader result)
         {
 #pragma warning disable MT1013 // Releasing lock without guarantee of execution
-            if (!DatabaseLock.IsWriteLockHeld) // if the current thread has no write lock, it will have entered a read lock. As the write lock is managed by saveChanges only handle readlock here
+            if (!DatabaseLock.IsWriteLockHeld && DatabaseLock.IsReadLockHeld) // if the current thread has no write lock, it will have entered a read lock. As the write lock is managed by saveChanges only handle readlock here
             {
                 DatabaseLock.ExitReadLock();
             }
@@ -98,7 +98,7 @@ public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
         public override void CommandCanceled(DbCommand command, CommandEndEventData eventData)
         {
 #pragma warning disable MT1013 // Releasing lock without guarantee of execution
-            if (!DatabaseLock.IsWriteLockHeld) // if the current thread has no write lock, it will have entered a read lock. As the write lock is managed by saveChanges only handle readlock here
+            if (!DatabaseLock.IsWriteLockHeld && DatabaseLock.IsReadLockHeld) // if the current thread has no write lock, it will have entered a read lock. As the write lock is managed by saveChanges only handle readlock here
             {
                 DatabaseLock.ExitReadLock();
             }
@@ -109,7 +109,7 @@ public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
         public override void CommandFailed(DbCommand command, CommandErrorEventData eventData)
         {
 #pragma warning disable MT1013 // Releasing lock without guarantee of execution
-            if (!DatabaseLock.IsWriteLockHeld) // if the current thread has no write lock, it will have entered a read lock. As the write lock is managed by saveChanges only handle readlock here
+            if (!DatabaseLock.IsWriteLockHeld && DatabaseLock.IsReadLockHeld) // if the current thread has no write lock, it will have entered a read lock. As the write lock is managed by saveChanges only handle readlock here
             {
                 DatabaseLock.ExitReadLock();
             }
