@@ -71,7 +71,7 @@ public class OptimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
         await _writeAsyncPolicy.ExecuteAndCaptureAsync(saveChanges).ConfigureAwait(false);
     }
 
-    private class TransactionLockingInterceptor : DbTransactionInterceptor
+    private sealed class TransactionLockingInterceptor : DbTransactionInterceptor
     {
         private readonly AsyncPolicy _asyncRetryPolicy;
         private readonly Policy _retryPolicy;
@@ -93,7 +93,7 @@ public class OptimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
         }
     }
 
-    private class RetryInterceptor : DbCommandInterceptor
+    private sealed class RetryInterceptor : DbCommandInterceptor
     {
         private readonly AsyncPolicy _asyncRetryPolicy;
         private readonly Policy _retryPolicy;

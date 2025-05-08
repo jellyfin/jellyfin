@@ -55,7 +55,7 @@ public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
         }
     }
 
-    private class TransactionLockingInterceptor : DbTransactionInterceptor
+    private sealed class TransactionLockingInterceptor : DbTransactionInterceptor
     {
         private static AsyncLocal<Guid> _lockInitiator = new();
 
