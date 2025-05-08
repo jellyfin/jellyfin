@@ -201,27 +201,33 @@ public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
         private readonly Action? _action;
         private bool _disposed;
 
+        private static readonly IDisposable _noLock = new DbLock(null) { _disposed = true };
+
         public DbLock(Action? action = null)
         {
             _action = action;
         }
 
+#pragma warning disable IDISP015 // Member should not return created and cached instance
         public static IDisposable EnterWrite()
+#pragma warning restore IDISP015 // Member should not return created and cached instance
         {
             if (DatabaseLock.IsWriteLockHeld)
             {
-                return new DbLock();
+                return _noLock;
             }
 
             DatabaseLock.EnterWriteLock();
             return new DbLock(() => DatabaseLock.ExitWriteLock());
         }
 
+#pragma warning disable IDISP015 // Member should not return created and cached instance
         public static IDisposable EnterRead()
+#pragma warning restore IDISP015 // Member should not return created and cached instance
         {
             if (DatabaseLock.IsWriteLockHeld)
             {
-                return new DbLock();
+                return _noLock;
             }
 
             DatabaseLock.EnterReadLock();
