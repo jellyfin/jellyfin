@@ -32,17 +32,9 @@ public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
     /// <inheritdoc/>
     public void OnSaveChanges(JellyfinDbContext context, Action saveChanges)
     {
-        try
+        using (DbLock.EnterWrite())
         {
-            DatabaseLock.EnterWriteLock();
             saveChanges();
-        }
-        finally
-        {
-            if (DatabaseLock.IsWriteLockHeld)
-            {
-                DatabaseLock.ExitWriteLock();
-            }
         }
     }
 
@@ -50,123 +42,204 @@ public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
     public void Initialise(DbContextOptionsBuilder optionsBuilder)
     {
         _logger.LogInformation("The database locking mode has been set to: Pessimistic.");
-        optionsBuilder.AddInterceptors(new LockingInterceptor());
+        optionsBuilder.AddInterceptors(new CommandLockingInterceptor());
+        optionsBuilder.AddInterceptors(new TransactionLockingInterceptor());
     }
 
     /// <inheritdoc/>
     public async Task OnSaveChangesAsync(JellyfinDbContext context, Func<Task> saveChanges)
     {
-        try
+        using (DbLock.EnterWrite())
         {
-            DatabaseLock.EnterWriteLock();
             await saveChanges().ConfigureAwait(false);
         }
-        finally
+    }
+
+    private class TransactionLockingInterceptor : DbTransactionInterceptor
+    {
+        private static AsyncLocal<Guid> _lockInitiator = new();
+
+        public override InterceptionResult<DbTransaction> TransactionStarting(DbConnection connection, TransactionStartingEventData eventData, InterceptionResult<DbTransaction> result)
         {
-            if (DatabaseLock.IsWriteLockHeld)
+            if (!DatabaseLock.IsWriteLockHeld)
+            {
+                DatabaseLock.EnterWriteLock();
+                _lockInitiator.Value = eventData.ConnectionId;
+            }
+
+            return base.TransactionStarting(connection, eventData, result);
+        }
+
+        public override ValueTask<InterceptionResult<DbTransaction>> TransactionStartingAsync(DbConnection connection, TransactionStartingEventData eventData, InterceptionResult<DbTransaction> result, CancellationToken cancellationToken = default)
+        {
+            if (!DatabaseLock.IsWriteLockHeld)
+            {
+                DatabaseLock.EnterWriteLock();
+                _lockInitiator.Value = eventData.ConnectionId;
+            }
+
+            return base.TransactionStartingAsync(connection, eventData, result, cancellationToken);
+        }
+
+        public override void TransactionCommitted(DbTransaction transaction, TransactionEndEventData eventData)
+        {
+            if (DatabaseLock.IsWriteLockHeld && _lockInitiator.Value.Equals(eventData.ConnectionId))
             {
                 DatabaseLock.ExitWriteLock();
             }
+
+            base.TransactionCommitted(transaction, eventData);
+        }
+
+        public override Task TransactionCommittedAsync(DbTransaction transaction, TransactionEndEventData eventData, CancellationToken cancellationToken = default)
+        {
+            if (DatabaseLock.IsWriteLockHeld && _lockInitiator.Value.Equals(eventData.ConnectionId))
+            {
+                DatabaseLock.ExitWriteLock();
+            }
+
+            return base.TransactionCommittedAsync(transaction, eventData, cancellationToken);
+        }
+
+        public override void TransactionFailed(DbTransaction transaction, TransactionErrorEventData eventData)
+        {
+            if (DatabaseLock.IsWriteLockHeld && _lockInitiator.Value.Equals(eventData.ConnectionId))
+            {
+                DatabaseLock.ExitWriteLock();
+            }
+
+            base.TransactionFailed(transaction, eventData);
+        }
+
+        public override Task TransactionFailedAsync(DbTransaction transaction, TransactionErrorEventData eventData, CancellationToken cancellationToken = default)
+        {
+            if (DatabaseLock.IsWriteLockHeld && _lockInitiator.Value.Equals(eventData.ConnectionId))
+            {
+                DatabaseLock.ExitWriteLock();
+            }
+
+            return base.TransactionFailedAsync(transaction, eventData, cancellationToken);
+        }
+
+        public override void TransactionRolledBack(DbTransaction transaction, TransactionEndEventData eventData)
+        {
+            if (DatabaseLock.IsWriteLockHeld && _lockInitiator.Value.Equals(eventData.ConnectionId))
+            {
+                DatabaseLock.ExitWriteLock();
+            }
+
+            base.TransactionRolledBack(transaction, eventData);
+        }
+
+        public override Task TransactionRolledBackAsync(DbTransaction transaction, TransactionEndEventData eventData, CancellationToken cancellationToken = default)
+        {
+            if (DatabaseLock.IsWriteLockHeld && _lockInitiator.Value.Equals(eventData.ConnectionId))
+            {
+                DatabaseLock.ExitWriteLock();
+            }
+
+            return base.TransactionRolledBackAsync(transaction, eventData, cancellationToken);
         }
     }
 
     /// <summary>
     /// Adds strict read/write locking.
     /// </summary>
-    private sealed class LockingInterceptor : DbCommandInterceptor
+    private sealed class CommandLockingInterceptor : DbCommandInterceptor
     {
         public override InterceptionResult<int> NonQueryExecuting(DbCommand command, CommandEventData eventData, InterceptionResult<int> result)
         {
-            if (!DatabaseLock.IsWriteLockHeld) // enter a write lock as NonQueries are used to manipulate data only if not already held
+            using (DbLock.EnterWrite())
             {
-                DatabaseLock.EnterWriteLock();
+                return InterceptionResult<int>.SuppressWithResult(command.ExecuteNonQuery());
             }
-
-            return base.NonQueryExecuting(command, eventData, result);
         }
 
-        public override int NonQueryExecuted(DbCommand command, CommandExecutedEventData eventData, int result)
+        public override async ValueTask<InterceptionResult<int>> NonQueryExecutingAsync(DbCommand command, CommandEventData eventData, InterceptionResult<int> result, CancellationToken cancellationToken = default)
+        {
+            using (DbLock.EnterWrite())
+            {
+                return InterceptionResult<int>.SuppressWithResult(await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false));
+            }
+        }
+
+        public override InterceptionResult<object> ScalarExecuting(DbCommand command, CommandEventData eventData, InterceptionResult<object> result)
+        {
+            using (DbLock.EnterRead())
+            {
+                return InterceptionResult<object>.SuppressWithResult(command.ExecuteScalar()!);
+            }
+        }
+
+        public override async ValueTask<InterceptionResult<object>> ScalarExecutingAsync(DbCommand command, CommandEventData eventData, InterceptionResult<object> result, CancellationToken cancellationToken = default)
+        {
+            using (DbLock.EnterRead())
+            {
+                return InterceptionResult<object>.SuppressWithResult((await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false))!);
+            }
+        }
+
+        public override InterceptionResult<DbDataReader> ReaderExecuting(DbCommand command, CommandEventData eventData, InterceptionResult<DbDataReader> result)
+        {
+            using (DbLock.EnterRead())
+            {
+                return InterceptionResult<DbDataReader>.SuppressWithResult(command.ExecuteReader()!);
+            }
+        }
+
+        public override async ValueTask<InterceptionResult<DbDataReader>> ReaderExecutingAsync(DbCommand command, CommandEventData eventData, InterceptionResult<DbDataReader> result, CancellationToken cancellationToken = default)
+        {
+            using (DbLock.EnterRead())
+            {
+                return InterceptionResult<DbDataReader>.SuppressWithResult(await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false));
+            }
+        }
+    }
+
+    private sealed class DbLock : IDisposable
+    {
+        private readonly Action? _action;
+        private bool _disposed;
+
+        public DbLock(Action? action = null)
+        {
+            _action = action;
+        }
+
+        public static IDisposable EnterWrite()
         {
             if (DatabaseLock.IsWriteLockHeld)
             {
-                DatabaseLock.ExitWriteLock();
+                return new DbLock();
             }
 
-            return base.NonQueryExecuted(command, eventData, result);
+            DatabaseLock.EnterWriteLock();
+            return new DbLock(() => DatabaseLock.ExitWriteLock());
         }
 
-        public override ValueTask<InterceptionResult<int>> NonQueryExecutingAsync(DbCommand command, CommandEventData eventData, InterceptionResult<int> result, CancellationToken cancellationToken = default)
-        {
-            if (!DatabaseLock.IsWriteLockHeld) // enter a write lock as NonQueries are used to manipulate data only if not already held
-            {
-                DatabaseLock.EnterWriteLock();
-            }
-
-            return base.NonQueryExecutingAsync(command, eventData, result, cancellationToken);
-        }
-
-        public override ValueTask<int> NonQueryExecutedAsync(DbCommand command, CommandExecutedEventData eventData, int result, CancellationToken cancellationToken = default)
+        public static IDisposable EnterRead()
         {
             if (DatabaseLock.IsWriteLockHeld)
             {
-                DatabaseLock.ExitWriteLock();
+                return new DbLock();
             }
 
-            return base.NonQueryExecutedAsync(command, eventData, result, cancellationToken);
+            DatabaseLock.EnterReadLock();
+            return new DbLock(() => DatabaseLock.ExitReadLock());
         }
 
-        /// <inheritdoc/>
-        public override InterceptionResult<DbDataReader> ReaderExecuting(
-            DbCommand command,
-            CommandEventData eventData,
-            InterceptionResult<DbDataReader> result)
+        public void Dispose()
         {
-            if (!DatabaseLock.IsWriteLockHeld) // enter a read lock only if not already a write lock has been issued by the savechanges invocation
+            if (_disposed)
             {
-                DatabaseLock.EnterReadLock();
+                return;
             }
 
-            return base.ReaderExecuting(command, eventData, result);
-        }
-
-        /// <inheritdoc/>
-        public override DbDataReader ReaderExecuted(DbCommand command, CommandExecutedEventData eventData, DbDataReader result)
-        {
-            if (!DatabaseLock.IsWriteLockHeld && DatabaseLock.IsReadLockHeld) // if the current thread has no write lock, it will have entered a read lock. As the write lock is managed by saveChanges only handle readlock here
+            _disposed = true;
+            if (_action is not null)
             {
-                DatabaseLock.ExitReadLock();
+                _action();
             }
-
-            return base.ReaderExecuted(command, eventData, result);
-        }
-
-        /// <inheritdoc/>
-        public override void CommandCanceled(DbCommand command, CommandEndEventData eventData)
-        {
-            if (!DatabaseLock.IsWriteLockHeld && DatabaseLock.IsReadLockHeld) // if the current thread has no write lock, it will have entered a read lock. As the write lock is managed by saveChanges only handle readlock here
-            {
-                DatabaseLock.ExitReadLock();
-            }
-            else if (DatabaseLock.IsWriteLockHeld)
-            {
-                DatabaseLock.ExitWriteLock();
-            }
-
-            base.CommandCanceled(command, eventData);
-        }
-
-        public override void CommandFailed(DbCommand command, CommandErrorEventData eventData)
-        {
-            if (!DatabaseLock.IsWriteLockHeld && DatabaseLock.IsReadLockHeld) // if the current thread has no write lock, it will have entered a read lock. As the write lock is managed by saveChanges only handle readlock here
-            {
-                DatabaseLock.ExitReadLock();
-            }
-            else if (DatabaseLock.IsWriteLockHeld)
-            {
-                DatabaseLock.ExitWriteLock();
-            }
-
-            base.CommandFailed(command, eventData);
         }
     }
 }
