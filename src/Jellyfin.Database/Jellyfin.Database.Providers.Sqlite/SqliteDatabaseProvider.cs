@@ -41,7 +41,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     {
         options
             .UseSqlite(
-                $"Filename={Path.Combine(_applicationPaths.DataPath, "jellyfin.db")};Pooling=false",
+                $"Filename={Path.Combine(_applicationPaths.DataPath, "jellyfin.db")};Pooling=true",
                 sqLiteOptions => sqLiteOptions.MigrationsAssembly(GetType().Assembly))
             // TODO: Remove when https://github.com/dotnet/efcore/pull/35873 is merged & released
             .ConfigureWarnings(warnings =>
