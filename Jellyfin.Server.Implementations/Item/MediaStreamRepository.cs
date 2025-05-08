@@ -39,13 +39,13 @@ public class MediaStreamRepository : IMediaStreamRepository
     public void SaveMediaStreams(Guid id, IReadOnlyList<MediaStream> streams, CancellationToken cancellationToken)
     {
         using var context = _dbProvider.CreateDbContext();
-        // using var transaction = context.Database.BeginTransaction();
+        using var transaction = context.Database.BeginTransaction();
 
         context.MediaStreamInfos.Where(e => e.ItemId.Equals(id)).ExecuteDelete();
         context.MediaStreamInfos.AddRange(streams.Select(f => Map(f, id)));
         context.SaveChanges();
 
-        // transaction.Commit();
+        transaction.Commit();
     }
 
     /// <inheritdoc />

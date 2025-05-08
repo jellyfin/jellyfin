@@ -32,7 +32,7 @@ namespace Jellyfin.Server.Migrations.Routines
         {
             _logger.LogInformation("Recalculating parental rating levels based on rating string.");
             using var context = _provider.CreateDbContext();
-            // using var transaction = context.Database.BeginTransaction();
+            using var transaction = context.Database.BeginTransaction();
             var ratings = context.BaseItems.AsNoTracking().Select(e => e.OfficialRating).Distinct();
             foreach (var rating in ratings)
             {
@@ -60,7 +60,7 @@ namespace Jellyfin.Server.Migrations.Routines
                 }
             }
 
-            // transaction.Commit();
+            transaction.Commit();
         }
     }
 }
