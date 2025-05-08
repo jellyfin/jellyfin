@@ -101,7 +101,7 @@ public sealed class BaseItemRepository
         }
 
         using var context = _dbProvider.CreateDbContext();
-        using var transaction = context.Database.BeginTransaction();
+        // using var transaction = context.Database.BeginTransaction();
         context.AncestorIds.Where(e => e.ItemId == id || e.ParentItemId == id).ExecuteDelete();
         context.AttachmentStreamInfos.Where(e => e.ItemId == id).ExecuteDelete();
         context.BaseItemImageInfos.Where(e => e.ItemId == id).ExecuteDelete();
@@ -121,20 +121,20 @@ public sealed class BaseItemRepository
         context.Peoples.Where(e => e.BaseItems!.Count == 0).ExecuteDelete();
         context.TrickplayInfos.Where(e => e.ItemId == id).ExecuteDelete();
         context.SaveChanges();
-        transaction.Commit();
+        // transaction.Commit();
     }
 
     /// <inheritdoc />
     public void UpdateInheritedValues()
     {
         using var context = _dbProvider.CreateDbContext();
-        using var transaction = context.Database.BeginTransaction();
+        // using var transaction = context.Database.BeginTransaction();
 
         context.ItemValuesMap.Where(e => e.ItemValue.Type == ItemValueType.InheritedTags).ExecuteDelete();
         // ItemValue Inheritance is now correctly mapped via AncestorId on demand
         context.SaveChanges();
 
-        transaction.Commit();
+        // transaction.Commit();
     }
 
     /// <inheritdoc />
@@ -487,7 +487,7 @@ public sealed class BaseItemRepository
         }
 
         using var context = _dbProvider.CreateDbContext();
-        using var transaction = context.Database.BeginTransaction();
+        // using var transaction = context.Database.BeginTransaction();
 
         var ids = tuples.Select(f => f.Item.Id).ToArray();
         var existingItems = context.BaseItems.Where(e => ids.Contains(e.Id)).Select(f => f.Id).ToArray();
@@ -603,7 +603,7 @@ public sealed class BaseItemRepository
         }
 
         context.SaveChanges();
-        transaction.Commit();
+        // transaction.Commit();
     }
 
     /// <inheritdoc  />

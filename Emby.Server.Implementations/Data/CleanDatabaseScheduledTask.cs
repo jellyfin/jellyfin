@@ -106,12 +106,12 @@ public class CleanDatabaseScheduledTask : ILibraryPostScanTask
         var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (context.ConfigureAwait(false))
         {
-            var transaction = await context.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
-            await using (transaction.ConfigureAwait(false))
-            {
+            // var transaction = await context.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
+            // await using (transaction.ConfigureAwait(false))
+            // {
                 await context.ItemValues.Where(e => e.BaseItemsMap!.Count == 0).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
-                await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
-            }
+                // await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+            // }
         }
 
         progress.Report(100);

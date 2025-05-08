@@ -58,7 +58,7 @@ namespace Emby.Server.Implementations.Library
             var keys = item.GetUserDataKeys();
 
             using var dbContext = _repository.CreateDbContext();
-            using var transaction = dbContext.Database.BeginTransaction();
+            // using var transaction = dbContext.Database.BeginTransaction();
 
             foreach (var key in keys)
             {
@@ -75,7 +75,7 @@ namespace Emby.Server.Implementations.Library
             }
 
             dbContext.SaveChanges();
-            transaction.Commit();
+            // transaction.Commit();
 
             var userId = user.InternalId;
             var cacheKey = GetCacheKey(userId, item.Id);

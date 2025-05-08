@@ -47,6 +47,7 @@ public class OptimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
     public void Initialise(DbContextOptionsBuilder optionsBuilder)
     {
         _logger.LogInformation("The database locking mode has been set to: Optimistic.");
+        optionsBuilder.AddInterceptors(new RetryInterceptor(_writeAsyncPolicy, _writePolicy));
     }
 
     /// <inheritdoc/>
@@ -59,5 +60,47 @@ public class OptimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
     public async Task OnSaveChangesAsync(JellyfinDbContext context, Func<Task> saveChanges)
     {
         await _writeAsyncPolicy.ExecuteAndCaptureAsync(saveChanges).ConfigureAwait(false);
+    }
+
+    private class RetryInterceptor : DbCommandInterceptor
+    {
+        private readonly AsyncPolicy _asyncRetryPolicy;
+        private readonly Policy _retryPolicy;
+
+        public RetryInterceptor(AsyncPolicy asyncRetryPolicy, Policy retryPolicy)
+        {
+            _asyncRetryPolicy = asyncRetryPolicy;
+            _retryPolicy = retryPolicy;
+        }
+
+        public override InterceptionResult<int> NonQueryExecuting(DbCommand command, CommandEventData eventData, InterceptionResult<int> result)
+        {
+            return InterceptionResult<int>.SuppressWithResult(_retryPolicy.Execute(command.ExecuteNonQuery));
+        }
+
+        public override async ValueTask<InterceptionResult<int>> NonQueryExecutingAsync(DbCommand command, CommandEventData eventData, InterceptionResult<int> result, CancellationToken cancellationToken = default)
+        {
+            return InterceptionResult<int>.SuppressWithResult(await _asyncRetryPolicy.ExecuteAsync(command.ExecuteNonQueryAsync).ConfigureAwait(false));
+        }
+
+        public override InterceptionResult<object> ScalarExecuting(DbCommand command, CommandEventData eventData, InterceptionResult<object> result)
+        {
+            return InterceptionResult<object>.SuppressWithResult(_retryPolicy.Execute(() => command.ExecuteScalar()!));
+        }
+
+        public override async ValueTask<InterceptionResult<object>> ScalarExecutingAsync(DbCommand command, CommandEventData eventData, InterceptionResult<object> result, CancellationToken cancellationToken = default)
+        {
+            return InterceptionResult<object>.SuppressWithResult((await _asyncRetryPolicy.ExecuteAsync(async () => await command.ExecuteScalarAsync().ConfigureAwait(false)!).ConfigureAwait(false))!);
+        }
+
+        public override InterceptionResult<DbDataReader> ReaderExecuting(DbCommand command, CommandEventData eventData, InterceptionResult<DbDataReader> result)
+        {
+            return InterceptionResult<DbDataReader>.SuppressWithResult(_retryPolicy.Execute(command.ExecuteReader));
+        }
+
+        public override async ValueTask<InterceptionResult<DbDataReader>> ReaderExecutingAsync(DbCommand command, CommandEventData eventData, InterceptionResult<DbDataReader> result, CancellationToken cancellationToken = default)
+        {
+            return InterceptionResult<DbDataReader>.SuppressWithResult(await _asyncRetryPolicy.ExecuteAsync(command.ExecuteReaderAsync).ConfigureAwait(false));
+        }
     }
 }

@@ -24,11 +24,11 @@ public class MediaAttachmentRepository(IDbContextFactory<JellyfinDbContext> dbPr
         CancellationToken cancellationToken)
     {
         using var context = dbProvider.CreateDbContext();
-        using var transaction = context.Database.BeginTransaction();
+        // using var transaction = context.Database.BeginTransaction();
         context.AttachmentStreamInfos.Where(e => e.ItemId.Equals(id)).ExecuteDelete();
         context.AttachmentStreamInfos.AddRange(attachments.Select(e => Map(e, id)));
         context.SaveChanges();
-        transaction.Commit();
+        // transaction.Commit();
     }
 
     /// <inheritdoc />
