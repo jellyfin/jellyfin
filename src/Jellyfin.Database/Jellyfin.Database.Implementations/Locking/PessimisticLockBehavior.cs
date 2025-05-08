@@ -35,10 +35,10 @@ public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
     /// <inheritdoc/>
     public void OnSaveChanges(JellyfinDbContext context, Action saveChanges)
     {
-        // using (DbLock.EnterWrite(_logger))
-        // {
-        // }
-        saveChanges();
+        using (DbLock.EnterWrite(_logger))
+        {
+            saveChanges();
+        }
     }
 
     /// <inheritdoc/>
@@ -52,10 +52,10 @@ public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
     /// <inheritdoc/>
     public async Task OnSaveChangesAsync(JellyfinDbContext context, Func<Task> saveChanges)
     {
-        await saveChanges().ConfigureAwait(false);
-        // using (DbLock.EnterWrite(_logger))
-        // {
-        // }
+        using (DbLock.EnterWrite(_logger))
+        {
+            await saveChanges().ConfigureAwait(false);
+        }
     }
 
     private sealed class TransactionLockingInterceptor : DbTransactionInterceptor
