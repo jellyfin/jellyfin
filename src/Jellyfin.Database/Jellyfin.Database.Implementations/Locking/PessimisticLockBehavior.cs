@@ -60,7 +60,7 @@ public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
 
     private sealed class TransactionLockingInterceptor : DbTransactionInterceptor
     {
-        private static AsyncLocal<Guid> _lockInitiator = new();
+        private static Guid? _lockInitiator;
         private readonly ILogger _logger;
 
         public TransactionLockingInterceptor(ILogger logger)
@@ -83,21 +83,22 @@ public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
                 _logger.LogInformation("Aquire Write Lock for {Connection}", eventData.ConnectionId);
                 DatabaseLock.EnterWriteLock();
                 _logger.LogInformation("Write Lock Aquired {Connection}", eventData.ConnectionId);
-                _lockInitiator.Value = eventData.ConnectionId;
+                _lockInitiator = eventData.ConnectionId;
             }
             else
             {
-                _logger.LogInformation("Write Lock already aquired {CurrentConnection}", _lockInitiator.Value.ToString());
+                _logger.LogInformation("Write Lock already aquired {CurrentConnection}", _lockInitiator.ToString());
             }
         }
 
         private void HandleWriteLock(TransactionEndEventData eventData)
         {
-            _logger.LogInformation("End Write Lock for {Connection} from {CurrentLock}", eventData.ConnectionId, _lockInitiator.Value);
-            if (DatabaseLock.IsWriteLockHeld && _lockInitiator.Value.Equals(eventData.ConnectionId))
+            _logger.LogInformation("End Write Lock for {Connection} from {CurrentLock}", eventData.ConnectionId, _lockInitiator);
+            if (DatabaseLock.IsWriteLockHeld && _lockInitiator.Equals(eventData.ConnectionId))
             {
                 _logger.LogInformation("Finish Write Lock {Connection}", _lockInitiator.Value);
                 DatabaseLock.ExitWriteLock();
+                _lockInitiator = null;
             }
             else
             {
