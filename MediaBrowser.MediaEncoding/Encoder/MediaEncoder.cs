@@ -72,7 +72,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private List<string> _decoders = new List<string>();
         private List<string> _hwaccels = new List<string>();
         private List<string> _filters = new List<string>();
-        private IDictionary<int, bool> _filtersWithOption = new Dictionary<int, bool>();
+        private IDictionary<FilterOptionType, bool> _filtersWithOption = new Dictionary<FilterOptionType, bool>();
         private IDictionary<BitStreamFilterOptionType, bool> _bitStreamFiltersWithOption = new Dictionary<BitStreamFilterOptionType, bool>();
 
         private bool _isPkeyPauseSupported = false;
@@ -341,7 +341,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _filters = list.ToList();
         }
 
-        public void SetAvailableFiltersWithOption(IDictionary<int, bool> dict)
+        public void SetAvailableFiltersWithOption(IDictionary<FilterOptionType, bool> dict)
         {
             _filtersWithOption = dict;
         }
@@ -383,12 +383,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <inheritdoc />
         public bool SupportsFilterWithOption(FilterOptionType option)
         {
-            if (_filtersWithOption.TryGetValue((int)option, out var val))
-            {
-                return val;
-            }
-
-            return false;
+            return _filtersWithOption.TryGetValue(option, out var val) && val;
         }
 
         public bool SupportsBitStreamFilterWithOption(BitStreamFilterOptionType option)
@@ -542,7 +537,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 EnableRaisingEvents = true
             };
 
-            _logger.LogInformation("Starting {ProcessFileName} with args {ProcessArgs}", _ffprobePath, args);
+            _logger.LogDebug("Starting {ProcessFileName} with args {ProcessArgs}", _ffprobePath, args);
 
             var memoryStream = new MemoryStream();
             await using (memoryStream.ConfigureAwait(false))
@@ -642,7 +637,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "I-frame image extraction failed, will attempt standard way. Input: {Arguments}", inputArgument);
+                    _logger.LogWarning(ex, "I-frame image extraction failed, will attempt standard way. Input: {Arguments}", inputArgument);
                 }
             }
 
@@ -737,12 +732,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 {
                     var peak = videoStream.VideoRangeType == VideoRangeType.DOVI ? "400" : "100";
                     enableHdrExtraction = true;
-                    filters.Add($"tonemapx=tonemap=bt2390:desat=0:peak={peak}:t=bt709:m=bt709:p=bt709:format=yuv420p");
+                    filters.Add($"tonemapx=tonemap=bt2390:desat=0:peak={peak}:t=bt709:m=bt709:p=bt709:format=yuv420p:range=full");
                 }
                 else if (SupportsFilter("zscale") && videoStream.VideoRangeType != VideoRangeType.DOVI)
                 {
                     enableHdrExtraction = true;
-                    filters.Add("zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0:peak=100,zscale=t=bt709:m=bt709,format=yuv420p");
+                    filters.Add("zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0:peak=100,zscale=t=bt709:m=bt709:out_range=full,format=yuv420p");
                 }
             }
 
@@ -756,7 +751,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 _threads,
                 vf,
                 isAudio ? string.Empty : GetImageResolutionParameter(),
-                EncodingHelper.GetVideoSyncOption("-1", EncoderVersion).Trim(), // auto decide fps mode
+                EncodingHelper.GetVideoSyncOption("-1", EncoderVersion), // auto decide fps mode
                 tempExtractPath);
 
             if (offset.HasValue)
@@ -767,7 +762,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // The mpegts demuxer cannot seek to keyframes, so we have to let the
             // decoder discard non-keyframes, which may contain corrupted images.
             var seekMpegTs = offset.HasValue && string.Equals("mpegts", container, StringComparison.OrdinalIgnoreCase);
-            if ((useIFrame && useTradeoff) || seekMpegTs)
+            if (useIFrame && (useTradeoff || seekMpegTs))
             {
                 args = "-skip_frame nokey " + args;
             }

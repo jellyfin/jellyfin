@@ -19,7 +19,7 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// Migration to move extracted files to the new directories.
 /// </summary>
-[JellyfinMigration("2025-04-21T00:00:00", nameof(MigrateKeyframeData), "EA4bCAE1-09A4-428E-9B90-4B4FD2EA1B24")]
+[JellyfinMigration("2025-04-21T00:00:00", nameof(MigrateKeyframeData))]
 public class MigrateKeyframeData : IDatabaseMigrationRoutine
 {
     private readonly ILogger<MigrateKeyframeData> _logger;
@@ -73,6 +73,11 @@ public class MigrateKeyframeData : IDatabaseMigrationRoutine
             }
 
             offset += Limit;
+            if (offset > records)
+            {
+                offset = records;
+            }
+
             _logger.LogInformation("Checked: {Count} - Imported: {Items} - Time: {Time}", offset, itemCount, sw.Elapsed);
         } while (offset < records);
 

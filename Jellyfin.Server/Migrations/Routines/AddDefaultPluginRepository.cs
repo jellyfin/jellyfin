@@ -7,8 +7,8 @@ namespace Jellyfin.Server.Migrations.Routines
     /// <summary>
     /// Migration to initialize system configuration with the default plugin repository.
     /// </summary>
-    [JellyfinMigration("2025-04-20T09:00:00", nameof(AddDefaultPluginRepository), "EB58EBEE-9514-4B9B-8225-12E1A40020DF", RunMigrationOnSetup = true)]
 #pragma warning disable CS0618 // Type or member is obsolete
+    [JellyfinMigration("2025-04-20T09:00:00", nameof(AddDefaultPluginRepository), "EB58EBEE-9514-4B9B-8225-12E1A40020DF", RunMigrationOnSetup = true)]
     public class AddDefaultPluginRepository : IMigrationRoutine
 #pragma warning restore CS0618 // Type or member is obsolete
     {
