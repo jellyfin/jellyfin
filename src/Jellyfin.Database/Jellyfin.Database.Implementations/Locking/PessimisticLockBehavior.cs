@@ -77,32 +77,32 @@ public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
 
         private void WriteLock(TransactionStartingEventData eventData)
         {
-            _logger.LogInformation("Write Lock");
+            _logger.LogTrace("Write Lock");
             if (!DatabaseLock.IsWriteLockHeld)
             {
-                _logger.LogInformation("Aquire Write Lock for {Connection}", eventData.ConnectionId);
+                _logger.LogTrace("Aquire Write Lock for {Connection}", eventData.ConnectionId);
                 DatabaseLock.EnterWriteLock();
-                _logger.LogInformation("Write Lock Aquired {Connection}", eventData.ConnectionId);
+                _logger.LogTrace("Write Lock Aquired {Connection}", eventData.ConnectionId);
                 _lockInitiator = eventData.ConnectionId;
             }
             else
             {
-                _logger.LogInformation("Write Lock already aquired {CurrentConnection}", _lockInitiator.ToString());
+                _logger.LogTrace("Write Lock already aquired {CurrentConnection}", _lockInitiator.ToString());
             }
         }
 
         private void HandleWriteLock(TransactionEndEventData eventData)
         {
-            _logger.LogInformation("End Write Lock for {Connection} from {CurrentLock}", eventData.ConnectionId, _lockInitiator);
+            _logger.LogTrace("End Write Lock for {Connection} from {CurrentLock}", eventData.ConnectionId, _lockInitiator);
             if (DatabaseLock.IsWriteLockHeld && _lockInitiator.Equals(eventData.ConnectionId))
             {
-                _logger.LogInformation("Finish Write Lock {Connection}", _lockInitiator.Value);
+                _logger.LogTrace("Finish Write Lock {Connection}", _lockInitiator.Value);
                 DatabaseLock.ExitWriteLock();
                 _lockInitiator = null;
             }
             else
             {
-                _logger.LogInformation("Not Initiator, skip handling.");
+                _logger.LogTrace("Not Initiator, skip handling.");
             }
         }
 
@@ -233,18 +233,18 @@ public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
         public static IDisposable EnterWrite(ILogger logger)
 #pragma warning restore IDISP015 // Member should not return created and cached instance
         {
-            logger.LogInformation("Enter Write");
+            logger.LogTrace("Enter Write");
             if (DatabaseLock.IsWriteLockHeld)
             {
-                logger.LogInformation("Write Held");
+                logger.LogTrace("Write Held");
                 return _noLock;
             }
 
-            logger.LogInformation("Aquire Write");
+            logger.LogTrace("Aquire Write");
             DatabaseLock.EnterWriteLock();
             return new DbLock(() =>
             {
-                logger.LogInformation("Release Write");
+                logger.LogTrace("Release Write");
                 DatabaseLock.ExitWriteLock();
             });
         }
@@ -253,18 +253,18 @@ public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
         public static IDisposable EnterRead(ILogger logger)
 #pragma warning restore IDISP015 // Member should not return created and cached instance
         {
-            logger.LogInformation("Enter Read");
+            logger.LogTrace("Enter Read");
             if (DatabaseLock.IsWriteLockHeld)
             {
-                logger.LogInformation("Write Held");
+                logger.LogTrace("Write Held");
                 return _noLock;
             }
 
-            logger.LogInformation("Aquire Write");
+            logger.LogTrace("Aquire Write");
             DatabaseLock.EnterReadLock();
             return new DbLock(() =>
             {
-                logger.LogInformation("Release Read");
+                logger.LogTrace("Release Read");
                 DatabaseLock.ExitReadLock();
             });
         }
