@@ -21,7 +21,7 @@ public interface ITrickplayManager
     /// <param name="libraryOptions">The library options.</param>
     /// <param name="cancellationToken">CancellationToken to use for operation.</param>
     /// <returns>Task.</returns>
-    Task RefreshTrickplayDataAsync(Video video, bool replace, LibraryOptions? libraryOptions, CancellationToken cancellationToken);
+    Task RefreshTrickplayDataAsync(Video video, bool replace, LibraryOptions libraryOptions, CancellationToken cancellationToken);
 
     /// <summary>
     /// Creates trickplay tiles out of individual thumbnails.
@@ -101,7 +101,7 @@ public interface ITrickplayManager
     /// <param name="libraryOptions">The library options.</param>
     /// <param name="cancellationToken">CancellationToken to use for operation.</param>
     /// <returns>Task.</returns>
-    Task MoveGeneratedTrickplayDataAsync(Video video, LibraryOptions? libraryOptions, CancellationToken cancellationToken);
+    Task MoveGeneratedTrickplayDataAsync(Video video, LibraryOptions libraryOptions, CancellationToken cancellationToken);
 
     /// <summary>
     /// Gets the trickplay HLS playlist.
