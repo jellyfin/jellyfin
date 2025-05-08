@@ -12,6 +12,7 @@ using Jellyfin.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
@@ -31,13 +32,15 @@ namespace MediaBrowser.Providers.Manager
             ILogger<MetadataService<TItemType, TIdType>> logger,
             IProviderManager providerManager,
             IFileSystem fileSystem,
-            ILibraryManager libraryManager)
+            ILibraryManager libraryManager,
+            IExternalDataManager externalDataManager)
         {
             ServerConfigurationManager = serverConfigurationManager;
             Logger = logger;
             ProviderManager = providerManager;
             FileSystem = fileSystem;
             LibraryManager = libraryManager;
+            ExternalDataManager = externalDataManager;
             ImageProvider = new ItemImageProvider(Logger, ProviderManager, FileSystem);
         }
 
@@ -52,6 +55,8 @@ namespace MediaBrowser.Providers.Manager
         protected IFileSystem FileSystem { get; }
 
         protected ILibraryManager LibraryManager { get; }
+
+        protected IExternalDataManager ExternalDataManager { get; }
 
         protected virtual bool EnableUpdatingPremiereDateFromChildren => false;
 
@@ -331,7 +336,8 @@ namespace MediaBrowser.Providers.Manager
                         var videoType = video.VideoType;
                         if (videoType == VideoType.BluRay || video.VideoType == VideoType.Dvd)
                         {
-                            LibraryManager.DeleteExternalItemDataAsync(video, CancellationToken.None).GetAwaiter().GetResult();
+                            Logger.LogInformation("File changed, pruning extracted data: {Path}", item.Path);
+                            ExternalDataManager.DeleteExternalItemDataAsync(video, CancellationToken.None).GetAwaiter().GetResult();
                         }
                     }
 

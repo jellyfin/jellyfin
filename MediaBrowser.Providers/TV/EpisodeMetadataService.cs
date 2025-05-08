@@ -1,6 +1,7 @@
 using System;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -23,13 +24,15 @@ public class EpisodeMetadataService : MetadataService<Episode, EpisodeInfo>
     /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
+    /// <param name="externalDataManager">Instance of the <see cref="IExternalDataManager"/> interface.</param>
     public EpisodeMetadataService(
         IServerConfigurationManager serverConfigurationManager,
         ILogger<EpisodeMetadataService> logger,
         IProviderManager providerManager,
         IFileSystem fileSystem,
-        ILibraryManager libraryManager)
-        : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
+        ILibraryManager libraryManager,
+        IExternalDataManager externalDataManager)
+        : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager, externalDataManager)
     {
     }
 

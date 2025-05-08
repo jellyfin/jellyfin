@@ -1,4 +1,5 @@
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
@@ -21,13 +22,15 @@ public class LiveTvMetadataService : MetadataService<LiveTvChannel, ItemLookupIn
     /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
+    /// <param name="externalDataManager">Instance of the <see cref="IExternalDataManager"/> interface.</param>
     public LiveTvMetadataService(
         IServerConfigurationManager serverConfigurationManager,
         ILogger<LiveTvMetadataService> logger,
         IProviderManager providerManager,
         IFileSystem fileSystem,
-        ILibraryManager libraryManager)
-        : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
+        ILibraryManager libraryManager,
+        IExternalDataManager externalDataManager)
+        : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager, externalDataManager)
     {
     }
 }

@@ -69,9 +69,6 @@ namespace Emby.Server.Implementations.Library
         private readonly ITaskManager _taskManager;
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataManager;
-        private readonly IKeyframeManager _keyframeManager;
-        private readonly IMediaSegmentManager _mediaSegmentManager;
-        private readonly ITrickplayManager _trickplayManager;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly Lazy<ILibraryMonitor> _libraryMonitorFactory;
         private readonly Lazy<IProviderManager> _providerManagerFactory;
@@ -112,9 +109,6 @@ namespace Emby.Server.Implementations.Library
         /// <param name="userManager">The user manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="userDataManager">The user data manager.</param>
-        /// <param name="keyframeManager">The keyframe manager.</param>
-        /// <param name="mediaSegmentManager">The media segment manager.</param>
-        /// <param name="trickplayManager">The user trickplay manager.</param>
         /// <param name="libraryMonitorFactory">The library monitor.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="providerManagerFactory">The provider manager.</param>
@@ -133,9 +127,6 @@ namespace Emby.Server.Implementations.Library
             IUserManager userManager,
             IServerConfigurationManager configurationManager,
             IUserDataManager userDataManager,
-            IKeyframeManager keyframeManager,
-            IMediaSegmentManager mediaSegmentManager,
-            ITrickplayManager trickplayManager,
             Lazy<ILibraryMonitor> libraryMonitorFactory,
             IFileSystem fileSystem,
             Lazy<IProviderManager> providerManagerFactory,
@@ -154,9 +145,6 @@ namespace Emby.Server.Implementations.Library
             _userManager = userManager;
             _configurationManager = configurationManager;
             _userDataManager = userDataManager;
-            _keyframeManager = keyframeManager;
-            _mediaSegmentManager = mediaSegmentManager;
-            _trickplayManager = trickplayManager;
             _libraryMonitorFactory = libraryMonitorFactory;
             _fileSystem = fileSystem;
             _providerManagerFactory = providerManagerFactory;
@@ -2263,24 +2251,6 @@ namespace Emby.Server.Implementations.Library
             return GetContentTypeOverride(item.ContainingFolderPath, inheritConfiguredPath);
         }
 
-        public async Task DeleteExternalItemDataAsync(BaseItem item, CancellationToken cancellationToken)
-        {
-            var validPaths = _pathManager.GetExtractedDataPaths(item).Where(Directory.Exists).ToList();
-            var itemId = item.Id;
-            if (validPaths.Count > 0)
-            {
-                _logger.LogInformation("File changed, pruning extracted data: {Path}", item.Path);
-                foreach (var path in validPaths)
-                {
-                    Directory.Delete(path, true);
-                }
-            }
-
-            await _keyframeManager.DeleteKeyframeDataAsync(itemId, cancellationToken).ConfigureAwait(false);
-            await _mediaSegmentManager.DeleteSegmentsAsync(itemId, cancellationToken).ConfigureAwait(false);
-            await _trickplayManager.DeleteTrickplayDataAsync(itemId, cancellationToken).ConfigureAwait(false);
-        }
-
         private CollectionType? GetContentTypeOverride(string path, bool inherit)
         {
             var nameValuePair = _configurationManager.Configuration.ContentTypes
@@ -2618,7 +2588,6 @@ namespace Emby.Server.Implementations.Library
 
             var isFolder = episode.VideoType == VideoType.BluRay || episode.VideoType == VideoType.Dvd;
 
-            // TODO nullable - what are we trying to do there with empty episodeInfo?
             EpisodeInfo? episodeInfo = null;
             if (episode.IsFileProtocol)
             {
@@ -2636,43 +2605,11 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            episodeInfo ??= new EpisodeInfo(episode.Path);
-
-            try
-            {
-                var libraryOptions = GetLibraryOptions(episode);
-                if (libraryOptions.EnableEmbeddedEpisodeInfos && string.Equals(episodeInfo.Container, "mp4", StringComparison.OrdinalIgnoreCase))
-                {
-                    // Read from metadata
-                    var mediaInfo = _mediaEncoder.GetMediaInfo(
-                        new MediaInfoRequest
-                        {
-                            MediaSource = episode.GetMediaSources(false)[0],
-                            MediaType = DlnaProfileType.Video
-                        },
-                        CancellationToken.None).GetAwaiter().GetResult();
-                    if (mediaInfo.ParentIndexNumber > 0)
-                    {
-                        episodeInfo.SeasonNumber = mediaInfo.ParentIndexNumber;
-                    }
-
-                    if (mediaInfo.IndexNumber > 0)
-                    {
-                        episodeInfo.EpisodeNumber = mediaInfo.IndexNumber;
-                    }
-
-                    if (!string.IsNullOrEmpty(mediaInfo.ShowName))
-                    {
-                        episodeInfo.SeriesName = mediaInfo.ShowName;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error reading the episode information with ffprobe. Episode: {EpisodeInfo}", episodeInfo.Path);
-            }
-
             var changed = false;
+            if (episodeInfo is null)
+            {
+                return changed;
+            }
 
             if (episodeInfo.IsByDate)
             {
