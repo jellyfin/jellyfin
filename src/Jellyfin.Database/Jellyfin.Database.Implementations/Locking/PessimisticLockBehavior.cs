@@ -35,10 +35,10 @@ public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
     /// <inheritdoc/>
     public void OnSaveChanges(JellyfinDbContext context, Action saveChanges)
     {
-        using (DbLock.EnterWrite(_logger))
-        {
-            saveChanges();
-        }
+        // using (DbLock.EnterWrite(_logger))
+        // {
+        // }
+        saveChanges();
     }
 
     /// <inheritdoc/>
@@ -52,10 +52,10 @@ public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
     /// <inheritdoc/>
     public async Task OnSaveChangesAsync(JellyfinDbContext context, Func<Task> saveChanges)
     {
-        using (DbLock.EnterWrite(_logger))
-        {
-            await saveChanges().ConfigureAwait(false);
-        }
+        await saveChanges().ConfigureAwait(false);
+        // using (DbLock.EnterWrite(_logger))
+        // {
+        // }
     }
 
     private sealed class TransactionLockingInterceptor : DbTransactionInterceptor
@@ -82,6 +82,7 @@ public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
             {
                 _logger.LogInformation("Aquire Write Lock for {Connection}", eventData.ConnectionId);
                 DatabaseLock.EnterWriteLock();
+                _logger.LogInformation("Write Lock Aquired {Connection}", eventData.ConnectionId);
                 _lockInitiator.Value = eventData.ConnectionId;
             }
             else
@@ -95,7 +96,7 @@ public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
             _logger.LogInformation("End Write Lock for {Connection} from {CurrentLock}", eventData.ConnectionId, _lockInitiator.Value);
             if (DatabaseLock.IsWriteLockHeld && _lockInitiator.Value.Equals(eventData.ConnectionId))
             {
-                _logger.LogInformation("Finish Write Lock");
+                _logger.LogInformation("Finish Write Lock {Connection}", _lockInitiator.Value);
                 DatabaseLock.ExitWriteLock();
             }
             else
