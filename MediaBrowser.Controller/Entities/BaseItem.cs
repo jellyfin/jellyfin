@@ -1436,7 +1436,7 @@ namespace MediaBrowser.Controller.Entities
                     return info.LastWriteTimeUtc != DateModified;
                 }
 
-                return info.LastWriteTimeUtc != DateModified && info.Length != (Size ?? 0);
+                return info.LastWriteTimeUtc != DateModified;
             }
 
             return false;
