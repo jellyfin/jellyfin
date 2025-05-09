@@ -3,6 +3,7 @@
 
 using System;
 using System.Data.Common;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -67,7 +68,7 @@ public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
             _logger = logger;
         }
 
-        private void WriteLock(Guid connectionId)
+        private void StartWriteLock(Guid connectionId)
         {
             _logger.LogInformation("Write Lock");
             _logger.LogInformation("Aquire Write Lock for {Connection}", connectionId);
@@ -75,7 +76,7 @@ public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
             _logger.LogInformation("Write Lock Aquired {Connection}", connectionId);
         }
 
-        private void HandleWriteLock(TransactionEventData eventData)
+        private void EndWriteLock(TransactionEventData eventData)
         {
             _logger.LogInformation("End Write Lock for {Connection}", eventData.ConnectionId);
             if (DatabaseLock.IsWriteLockHeld)
@@ -91,56 +92,56 @@ public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
 
         public override InterceptionResult<DbTransaction> TransactionStarting(DbConnection connection, TransactionStartingEventData eventData, InterceptionResult<DbTransaction> result)
         {
-            WriteLock(eventData.ConnectionId);
+            StartWriteLock(eventData.ConnectionId);
 
             return base.TransactionStarting(connection, eventData, result);
         }
 
         public override ValueTask<InterceptionResult<DbTransaction>> TransactionStartingAsync(DbConnection connection, TransactionStartingEventData eventData, InterceptionResult<DbTransaction> result, CancellationToken cancellationToken = default)
         {
-            WriteLock(eventData.ConnectionId);
+            StartWriteLock(eventData.ConnectionId);
 
             return base.TransactionStartingAsync(connection, eventData, result, cancellationToken);
         }
 
         public override void TransactionCommitted(DbTransaction transaction, TransactionEndEventData eventData)
         {
-            HandleWriteLock(eventData);
+            EndWriteLock(eventData);
 
             base.TransactionCommitted(transaction, eventData);
         }
 
         public override Task TransactionCommittedAsync(DbTransaction transaction, TransactionEndEventData eventData, CancellationToken cancellationToken = default)
         {
-            HandleWriteLock(eventData);
+            EndWriteLock(eventData);
 
             return base.TransactionCommittedAsync(transaction, eventData, cancellationToken);
         }
 
         public override void TransactionFailed(DbTransaction transaction, TransactionErrorEventData eventData)
         {
-            HandleWriteLock(eventData);
+            EndWriteLock(eventData);
 
             base.TransactionFailed(transaction, eventData);
         }
 
         public override Task TransactionFailedAsync(DbTransaction transaction, TransactionErrorEventData eventData, CancellationToken cancellationToken = default)
         {
-            HandleWriteLock(eventData);
+            EndWriteLock(eventData);
 
             return base.TransactionFailedAsync(transaction, eventData, cancellationToken);
         }
 
         public override void TransactionRolledBack(DbTransaction transaction, TransactionEndEventData eventData)
         {
-            HandleWriteLock(eventData);
+            EndWriteLock(eventData);
 
             base.TransactionRolledBack(transaction, eventData);
         }
 
         public override Task TransactionRolledBackAsync(DbTransaction transaction, TransactionEndEventData eventData, CancellationToken cancellationToken = default)
         {
-            HandleWriteLock(eventData);
+            EndWriteLock(eventData);
 
             return base.TransactionRolledBackAsync(transaction, eventData, cancellationToken);
         }
@@ -220,41 +221,42 @@ public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
         }
 
 #pragma warning disable IDISP015 // Member should not return created and cached instance
-        public static IDisposable EnterWrite(ILogger logger)
+        public static IDisposable EnterWrite(ILogger logger, [CallerMemberName] string? callerMemberName = null, [CallerLineNumber]int? callerNo = null)
 #pragma warning restore IDISP015 // Member should not return created and cached instance
         {
-            logger.LogInformation("Enter Write");
+            logger.LogInformation("Enter Write for {Caller}:{Line}", callerMemberName, callerNo);
             if (DatabaseLock.IsWriteLockHeld)
             {
-                logger.LogInformation("Write Held");
+                logger.LogInformation("Write Held {Caller}:{Line}", callerMemberName, callerNo);
                 return _noLock;
             }
 
-            logger.LogInformation("Aquire Write");
+            logger.LogInformation("Aquire Write {Caller}:{Line}", callerMemberName, callerNo);
             DatabaseLock.EnterWriteLock();
+            logger.LogInformation("Write Aquired {Caller}:{Line}", callerMemberName, callerNo);
             return new DbLock(() =>
             {
-                logger.LogInformation("Release Write");
+                logger.LogInformation("Release Write {Caller}:{Line}", callerMemberName, callerNo);
                 DatabaseLock.ExitWriteLock();
             });
         }
 
 #pragma warning disable IDISP015 // Member should not return created and cached instance
-        public static IDisposable EnterRead(ILogger logger)
+        public static IDisposable EnterRead(ILogger logger, [CallerMemberName] string? callerMemberName = null, [CallerLineNumber]int? callerNo = null)
 #pragma warning restore IDISP015 // Member should not return created and cached instance
         {
-            logger.LogInformation("Enter Read");
+            logger.LogInformation("Enter Read {Caller}:{Line}", callerMemberName, callerNo);
             if (DatabaseLock.IsWriteLockHeld)
             {
-                logger.LogInformation("Write Held");
+                logger.LogInformation("Write Held {Caller}:{Line}", callerMemberName, callerNo);
                 return _noLock;
             }
 
-            logger.LogInformation("Aquire Write");
+            logger.LogInformation("Aquire Write {Caller}:{Line}", callerMemberName, callerNo);
             DatabaseLock.EnterReadLock();
             return new DbLock(() =>
             {
-                logger.LogInformation("Release Read");
+                logger.LogInformation("Release Read {Caller}:{Line}", callerMemberName, callerNo);
                 DatabaseLock.ExitReadLock();
             });
         }
