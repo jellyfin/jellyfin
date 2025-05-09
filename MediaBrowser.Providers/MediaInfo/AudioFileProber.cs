@@ -343,7 +343,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     trackGainTag = trackGainTag[..^2].Trim();
                 }
 
-                if (float.TryParse(trackGainTag, NumberStyles.Float, CultureInfo.InvariantCulture, out var value))
+                if (float.TryParse(trackGainTag, NumberStyles.Float, CultureInfo.InvariantCulture, out var value) && float.IsFinite(value))
                 {
                     audio.NormalizationGain = value;
                 }
