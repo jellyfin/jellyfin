@@ -330,15 +330,10 @@ namespace MediaBrowser.Providers.Manager
                         item.DateCreated = info.CreationTimeUtc;
                     }
 
-                    var size = info.Length;
                     if (item is Video video)
                     {
-                        var videoType = video.VideoType;
-                        if (videoType == VideoType.BluRay || video.VideoType == VideoType.Dvd)
-                        {
-                            Logger.LogInformation("File changed, pruning extracted data: {Path}", item.Path);
-                            ExternalDataManager.DeleteExternalItemDataAsync(video, CancellationToken.None).GetAwaiter().GetResult();
-                        }
+                        Logger.LogInformation("File changed, pruning extracted data: {Path}", item.Path);
+                        ExternalDataManager.DeleteExternalItemDataAsync(video, CancellationToken.None).GetAwaiter().GetResult();
                     }
 
                     updateType |= ItemUpdateType.MetadataImport;
