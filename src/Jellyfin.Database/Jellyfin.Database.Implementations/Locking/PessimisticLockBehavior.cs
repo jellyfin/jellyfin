@@ -252,7 +252,7 @@ public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
 
                 DatabaseLock.EnterWriteLock();
 
-                logger.LogInformation("Query congestion cleared: '{Id}' since '{Date}'", blockingQuery.Id, blockingQuery.QueryDate);
+                logger.LogInformation("Query congestion cleared: '{Id}' for '{Date}'", blockingQuery.Id, DateTimeOffset.Now - blockingQuery.QueryDate);
             }
 
             _blockQuery = (command?.CommandText ?? "Transaction", Guid.NewGuid(), DateTimeOffset.Now, false);

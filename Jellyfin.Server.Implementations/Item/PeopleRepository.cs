@@ -54,7 +54,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
     public IReadOnlyList<string> GetPeopleNames(InternalPeopleQuery filter)
     {
         using var context = _dbProvider.CreateDbContext();
-        var dbQuery = TranslateQuery(context.Peoples.AsNoTracking(), context, filter);
+        var dbQuery = TranslateQuery(context.Peoples.AsNoTracking(), context, filter).Select(e => e.Name).Distinct();
 
         // dbQuery = dbQuery.OrderBy(e => e.ListOrder);
         if (filter.Limit > 0)
@@ -62,7 +62,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
             dbQuery = dbQuery.Take(filter.Limit);
         }
 
-        return dbQuery.Select(e => e.Name).ToArray();
+        return dbQuery.ToArray();
     }
 
     /// <inheritdoc />
