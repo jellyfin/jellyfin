@@ -10,7 +10,7 @@
             }
         },
         {
-            "ratingStrings": ["PG", "R-13"],
+            "ratingStrings": ["PG"],
             "ratingScore": {
                 "score": 13,
                 "subScore": 0
