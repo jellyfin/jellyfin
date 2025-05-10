@@ -29,7 +29,7 @@ public class BackupService : IBackupService
     private readonly IServerApplicationHost _applicationHost;
     private readonly IServerApplicationPaths _applicationPaths;
     private readonly IJellyfinDatabaseProvider _jellyfinDatabaseProvider;
-    private readonly JsonSerializerOptions _serializerSettings = new JsonSerializerOptions(JsonSerializerDefaults.General)
+    private static readonly JsonSerializerOptions _serializerSettings = new JsonSerializerOptions(JsonSerializerDefaults.General)
     {
         AllowTrailingCommas = true,
         ReferenceHandler = ReferenceHandler.IgnoreCycles,
@@ -351,6 +351,33 @@ public class BackupService : IBackupService
     }
 
     /// <inheritdoc/>
+    public async Task<BackupManifestDto?> GetBackupManifest(string archivePath)
+    {
+        if (!File.Exists(archivePath))
+        {
+            return null;
+        }
+
+        BackupManifest? manifest;
+        try
+        {
+            manifest = await GetManifest(archivePath).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Tried to load archive from {Path} but failed.", archivePath);
+            return null;
+        }
+
+        if (manifest is null)
+        {
+            return null;
+        }
+
+        return Map(manifest, archivePath);
+    }
+
+    /// <inheritdoc/>
     public async Task<BackupManifestDto[]> EnumerateBackups()
     {
         if (!Directory.Exists(_applicationPaths.BackupPath))
@@ -364,24 +391,7 @@ public class BackupService : IBackupService
         {
             try
             {
-                BackupManifest? manifest;
-
-                var archiveStream = File.OpenRead(item);
-                await using (archiveStream.ConfigureAwait(false))
-                {
-                    using var zipStream = new ZipArchive(archiveStream, ZipArchiveMode.Read);
-                    var manifestEntry = zipStream.GetEntry(ManifestEntryName);
-                    if (manifestEntry is null)
-                    {
-                        continue;
-                    }
-
-                    var manifestStream = manifestEntry.Open();
-                    await using (manifestStream.ConfigureAwait(false))
-                    {
-                        manifest = await JsonSerializer.DeserializeAsync<BackupManifest>(manifestStream, _serializerSettings).ConfigureAwait(false);
-                    }
-                }
+                var manifest = await GetManifest(item).ConfigureAwait(false);
 
                 if (manifest is null)
                 {
@@ -397,6 +407,26 @@ public class BackupService : IBackupService
         }
 
         return manifests.ToArray();
+    }
+
+    private static async ValueTask<BackupManifest?> GetManifest(string archivePath)
+    {
+        var archiveStream = File.OpenRead(archivePath);
+        await using (archiveStream.ConfigureAwait(false))
+        {
+            using var zipStream = new ZipArchive(archiveStream, ZipArchiveMode.Read);
+            var manifestEntry = zipStream.GetEntry(ManifestEntryName);
+            if (manifestEntry is null)
+            {
+                return null;
+            }
+
+            var manifestStream = manifestEntry.Open();
+            await using (manifestStream.ConfigureAwait(false))
+            {
+                return await JsonSerializer.DeserializeAsync<BackupManifest>(manifestStream, _serializerSettings).ConfigureAwait(false);
+            }
+        }
     }
 
     private static BackupManifestDto Map(BackupManifest manifest, string path)

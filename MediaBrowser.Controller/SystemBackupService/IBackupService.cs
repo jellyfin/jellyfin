@@ -24,6 +24,13 @@ public interface IBackupService
     Task<BackupManifestDto[]> EnumerateBackups();
 
     /// <summary>
+    /// Gets a single backup manifest if the path defines a valid Jellyfin backup archive.
+    /// </summary>
+    /// <param name="archivePath">The path to be loaded.</param>
+    /// <returns>The containing backup manifest or null if not existing or compatiable.</returns>
+    Task<BackupManifestDto?> GetBackupManifest(string archivePath);
+
+    /// <summary>
     /// Restores an backup zip file created by jellyfin.
     /// </summary>
     /// <param name="archivePath">Path to the archive.</param>
