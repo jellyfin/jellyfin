@@ -79,6 +79,9 @@ namespace Emby.Server.Implementations.AppBase
         public string TrickplayPath => Path.Combine(DataPath, "trickplay");
 
         /// <inheritdoc />
+        public string BackupPath => Path.Combine(DataPath, "backups");
+
+        /// <inheritdoc />
         public virtual void MakeSanityCheckOrThrow()
         {
             CreateAndCheckMarker(ConfigurationDirectoryPath, "config");
