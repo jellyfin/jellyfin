@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AsyncKeyedLock;
+using J2N.Collections.Generic.Extensions;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Common.Configuration;
@@ -80,7 +81,12 @@ public class TrickplayManager : ITrickplayManager
     public async Task MoveGeneratedTrickplayDataAsync(Video video, LibraryOptions libraryOptions, CancellationToken cancellationToken)
     {
         var options = _config.Configuration.TrickplayOptions;
-        if (!CanGenerateTrickplay(video, options.Interval, libraryOptions))
+        if (!CanGenerateTrickplay(video, options.Interval))
+        {
+            return;
+        }
+
+        if (libraryOptions is null || !libraryOptions.EnableTrickplayImageExtraction)
         {
             return;
         }
@@ -137,9 +143,40 @@ public class TrickplayManager : ITrickplayManager
     /// <inheritdoc />
     public async Task RefreshTrickplayDataAsync(Video video, bool replace, LibraryOptions libraryOptions, CancellationToken cancellationToken)
     {
+        var options = _config.Configuration.TrickplayOptions;
+        if (!CanGenerateTrickplay(video, options.Interval) || libraryOptions is null)
+        {
+            return;
+        }
+
+        using var dbContext = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        var saveWithMedia = libraryOptions.SaveTrickplayWithMedia;
+        var trickplayDirectory = _pathManager.GetTrickplayDirectory(video, saveWithMedia);
+        if (!libraryOptions.EnableTrickplayImageExtraction || replace)
+        {
+            // Prune existing data
+            try
+            {
+                Directory.Delete(trickplayDirectory, true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning("Unable to clear trickplay directory: {Directory}: {Exception}", trickplayDirectory, ex);
+            }
+
+            await dbContext.TrickplayInfos
+                    .Where(i => i.ItemId.Equals(video.Id))
+                    .ExecuteDeleteAsync(cancellationToken)
+                    .ConfigureAwait(false);
+
+            if (!replace)
+            {
+                return;
+            }
+        }
+
         _logger.LogDebug("Trickplay refresh for {ItemId} (replace existing: {Replace})", video.Id, replace);
 
-        var options = _config.Configuration.TrickplayOptions;
         if (options.Interval < 1000)
         {
             _logger.LogWarning("Trickplay image interval {Interval} is too small, reset to the minimum valid value of 1000", options.Interval);
@@ -154,8 +191,29 @@ public class TrickplayManager : ITrickplayManager
                 replace,
                 width,
                 options,
-                libraryOptions,
+                saveWithMedia,
                 cancellationToken).ConfigureAwait(false);
+        }
+
+        // Cleanup old trickplay files
+        var existingFolders = Directory.GetDirectories(trickplayDirectory).ToList();
+        var trickplayInfos = await dbContext.TrickplayInfos
+                .AsNoTracking()
+                .Where(i => i.ItemId.Equals(video.Id))
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
+        var expectedFolders = trickplayInfos.Select(i => GetTrickplayDirectory(video, i.TileWidth, i.TileHeight, i.Width, saveWithMedia)).ToList();
+        var foldersToRemove = existingFolders.Except(expectedFolders);
+        foreach (var folder in foldersToRemove)
+        {
+            try
+            {
+                Directory.Delete(folder, true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning("Unable to remove trickplay directory: {Directory}: {Exception}", folder, ex);
+            }
         }
     }
 
@@ -164,14 +222,9 @@ public class TrickplayManager : ITrickplayManager
         bool replace,
         int width,
         TrickplayOptions options,
-        LibraryOptions libraryOptions,
+        bool saveWithMedia,
         CancellationToken cancellationToken)
     {
-        if (!CanGenerateTrickplay(video, options.Interval, libraryOptions))
-        {
-            return;
-        }
-
         var imgTempDir = string.Empty;
 
         using (await _resourcePool.LockAsync(cancellationToken).ConfigureAwait(false))
@@ -215,7 +268,6 @@ public class TrickplayManager : ITrickplayManager
 
                 var tileWidth = options.TileWidth;
                 var tileHeight = options.TileHeight;
-                var saveWithMedia = libraryOptions is not null && libraryOptions.SaveTrickplayWithMedia;
                 var outputDir = new DirectoryInfo(GetTrickplayDirectory(video, tileWidth, tileHeight, actualWidth, saveWithMedia));
 
                 // Import existing trickplay tiles
@@ -402,7 +454,7 @@ public class TrickplayManager : ITrickplayManager
         return trickplayInfo;
     }
 
-    private bool CanGenerateTrickplay(Video video, int interval, LibraryOptions libraryOptions)
+    private bool CanGenerateTrickplay(Video video, int interval)
     {
         var videoType = video.VideoType;
         if (videoType == VideoType.Iso || videoType == VideoType.Dvd || videoType == VideoType.BluRay)
@@ -426,11 +478,6 @@ public class TrickplayManager : ITrickplayManager
         }
 
         if (!video.RunTimeTicks.HasValue || video.RunTimeTicks.Value < TimeSpan.FromMilliseconds(interval).Ticks)
-        {
-            return false;
-        }
-
-        if (libraryOptions is null || !libraryOptions.EnableTrickplayImageExtraction)
         {
             return false;
         }
