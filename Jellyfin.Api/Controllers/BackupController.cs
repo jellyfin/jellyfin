@@ -60,7 +60,7 @@ public class BackupController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public IActionResult StartRestoreBackup([FromBody, BindRequired] BackupRestoreRequestDto archiveRestoreDto)
     {
-        var archivePath = SanatisePath(archiveRestoreDto.ArchiveFileName);
+        var archivePath = SanitizePath(archiveRestoreDto.ArchiveFileName);
         if (!System.IO.File.Exists(archivePath))
         {
             return NotFound();
@@ -100,7 +100,7 @@ public class BackupController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<BackupManifestDto>> GetBackup([BindRequired] string path)
     {
-        var backupPath = SanatisePath(path);
+        var backupPath = SanitizePath(path);
 
         if (!System.IO.File.Exists(backupPath))
         {
@@ -117,7 +117,7 @@ public class BackupController : BaseJellyfinApiController
     }
 
     [NonAction]
-    private string SanatisePath(string path)
+    private string SanitizePath(string path)
     {
         // sanitize path
         var archiveRestorePath = Path.GetFileName(Path.GetFullPath(path));
