@@ -44,6 +44,8 @@ namespace Emby.Naming.Common
                 ".m2t",
                 ".m2ts",
                 ".m2v",
+                ".m3u8",
+                ".m3u",
                 ".m4v",
                 ".mkv",
                 ".mk3d",
