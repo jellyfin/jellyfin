@@ -18,6 +18,11 @@ namespace MediaBrowser.Controller.Entities
         private double? _rating;
 
         /// <summary>
+        /// Is item liked or not.
+        /// </summary>
+        private bool? _likes;
+
+        /// <summary>
         /// Gets or sets the key.
         /// </summary>
         /// <value>The key.</value>
@@ -39,6 +44,19 @@ namespace MediaBrowser.Controller.Entities
                     {
                         throw new ArgumentOutOfRangeException(nameof(value), "A 0 to 10 rating is required for UserItemData.");
                     }
+
+                    if (value.Value >= MinLikeValue)
+                    {
+                        Likes = true;
+                    }
+                    else
+                    {
+                        Likes = false;
+                    }
+                }
+                else
+                {
+                    Likes = null;
                 }
 
                 _rating = value;
@@ -95,25 +113,12 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public bool? Likes
         {
-            get
-            {
-                if (Rating is not null)
-                {
-                    return Rating >= MinLikeValue;
-                }
-
-                return null;
-            }
-
+            get => _likes;
             set
             {
-                if (value.HasValue)
+                if (_likes != value)
                 {
-                    Rating = value.Value ? 10 : 1;
-                }
-                else
-                {
-                    Rating = null;
+                    _likes = value;
                 }
             }
         }
