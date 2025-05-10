@@ -93,7 +93,7 @@ public class BackupController : BaseJellyfinApiController
     /// <response code="404">Not a valid path.</response>
     /// <response code="403">User does not have permission to retrieve information.</response>
     /// <returns>The backup manifest.</returns>
-    [HttpGet]
+    [HttpGet("Manifest")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
