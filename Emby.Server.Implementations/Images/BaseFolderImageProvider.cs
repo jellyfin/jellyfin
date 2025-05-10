@@ -26,7 +26,7 @@ namespace Emby.Server.Implementations.Images
             _libraryManager = libraryManager;
         }
 
-        protected override IReadOnlyList<BaseItem> GetItemsWithImages(BaseItem item)
+        protected override IReadOnlyList<BaseItem> GetItemsWithImages(T item)
         {
             return _libraryManager.GetItemList(new InternalItemsQuery
             {
