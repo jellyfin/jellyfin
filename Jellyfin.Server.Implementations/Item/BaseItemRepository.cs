@@ -664,6 +664,7 @@ public sealed class BaseItemRepository
         dto.CriticRating = entity.CriticRating;
         dto.PresentationUniqueKey = entity.PresentationUniqueKey;
         dto.OriginalTitle = entity.OriginalTitle;
+        dto.OriginalLanguage = entity.OriginalLanguage;
         dto.Album = entity.Album;
         dto.LUFS = entity.LUFS;
         dto.NormalizationGain = entity.NormalizationGain;
@@ -829,6 +830,7 @@ public sealed class BaseItemRepository
         entity.CriticRating = dto.CriticRating;
         entity.PresentationUniqueKey = dto.PresentationUniqueKey;
         entity.OriginalTitle = dto.OriginalTitle;
+        entity.OriginalLanguage = dto.OriginalLanguage;
         entity.Album = dto.Album;
         entity.LUFS = dto.LUFS;
         entity.NormalizationGain = dto.NormalizationGain;

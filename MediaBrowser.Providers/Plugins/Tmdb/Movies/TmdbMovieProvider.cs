@@ -328,6 +328,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 movie.RemoteTrailers = trailers;
             }
 
+            if (!string.IsNullOrEmpty(movieResult.OriginalLanguage))
+            {
+                movie.OriginalLanguage = movieResult.OriginalLanguage;
+            }
+
             return metadataResult;
         }
 
