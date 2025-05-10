@@ -4,6 +4,7 @@
 
 using System.Net;
 using MediaBrowser.Common;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 
 namespace MediaBrowser.Controller
@@ -22,17 +23,6 @@ namespace MediaBrowser.Controller
         int HttpPort { get; }
 
         /// <summary>
-        /// Gets the HTTPS port.
-        /// </summary>
-        /// <value>The HTTPS port.</value>
-        int HttpsPort { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether the server should listen on an HTTPS port.
-        /// </summary>
-        bool ListenWithHttps { get; }
-
-        /// <summary>
         /// Gets the name of the friendly.
         /// </summary>
         /// <value>The name of the friendly.</value>
@@ -48,40 +38,40 @@ namespace MediaBrowser.Controller
         /// <summary>
         /// Gets a URL specific for the request.
         /// </summary>
+        /// <param name="serverAddresses">The kestrel Server address feature.</param>
         /// <param name="remoteAddr">The remote <see cref="IPAddress"/> of the connection.</param>
         /// <returns>An accessible URL.</returns>
-        string GetSmartApiUrl(IPAddress remoteAddr);
+        string GetSmartApiUrl(IServerAddressesFeature serverAddresses, IPAddress remoteAddr);
 
         /// <summary>
         /// Gets a URL specific for the request.
         /// </summary>
+        /// <param name="serverAddresses">The kestrel Server address feature.</param>
         /// <param name="hostname">The hostname used in the connection.</param>
         /// <returns>An accessible URL.</returns>
-        string GetSmartApiUrl(string hostname);
+        string GetSmartApiUrl(IServerAddressesFeature serverAddresses, string hostname);
 
         /// <summary>
         /// Gets an URL that can be used to access the API over LAN.
         /// </summary>
+        /// <param name="serverAddresses">The kestrel Server address feature.</param>
         /// <param name="ipAddress">An optional IP address to use.</param>
         /// <param name="allowHttps">A value indicating whether to allow HTTPS.</param>
         /// <returns>The API URL.</returns>
-        string GetApiUrlForLocalAccess(IPAddress ipAddress = null, bool allowHttps = true);
+        string GetApiUrlForLocalAccess(IServerAddressesFeature serverAddresses, IPAddress ipAddress = null, bool allowHttps = true);
 
         /// <summary>
         /// Gets a local (LAN) URL that can be used to access the API.
         /// Note: if passing non-null scheme or port it is up to the caller to ensure they form the correct pair.
         /// </summary>
+        /// <param name="serverAddresses">The kestrel Server address feature.</param>
         /// <param name="hostname">The hostname to use in the URL.</param>
         /// <param name="scheme">
         /// The scheme to use for the URL. If null, the scheme will be selected automatically,
         /// preferring HTTPS, if available.
         /// </param>
-        /// <param name="port">
-        /// The port to use for the URL. If null, the port will be selected automatically,
-        /// preferring the HTTPS port, if available.
-        /// </param>
         /// <returns>The API URL.</returns>
-        string GetLocalApiUrl(string hostname, string scheme = null, int? port = null);
+        string GetLocalApiUrl(IServerAddressesFeature serverAddresses, string hostname, string scheme = null);
 
         string ExpandVirtualPath(string path);
 
