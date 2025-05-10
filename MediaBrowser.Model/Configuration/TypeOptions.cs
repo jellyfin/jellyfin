@@ -309,6 +309,8 @@ namespace MediaBrowser.Model.Configuration
             ImageFetchers = Array.Empty<string>();
             ImageFetcherOrder = Array.Empty<string>();
             ImageOptions = Array.Empty<ImageOption>();
+            MetadataResolvers = Array.Empty<string>();
+            MetadataResolverOrder = Array.Empty<string>();
         }
 
         public string Type { get; set; }
@@ -320,6 +322,10 @@ namespace MediaBrowser.Model.Configuration
         public string[] ImageFetchers { get; set; }
 
         public string[] ImageFetcherOrder { get; set; }
+
+        public string[] MetadataResolvers { get; set; }
+
+        public string[] MetadataResolverOrder { get; set; }
 
         public ImageOption[] ImageOptions { get; set; }
 
