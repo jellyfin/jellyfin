@@ -21,6 +21,7 @@ public class EncodingOptions
         DownMixStereoAlgorithm = DownMixStereoAlgorithms.None;
         MaxMuxingQueueSize = 2048;
         EnableThrottling = false;
+        EnableNoAccurateSeek = true;
         ThrottleDelaySeconds = 180;
         EnableSegmentDeletion = false;
         SegmentKeepSeconds = 720;
@@ -105,6 +106,11 @@ public class EncodingOptions
     /// Gets or sets a value indicating whether throttling is enabled.
     /// </summary>
     public bool EnableThrottling { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether ffmpeg noaccurate_seek is enabled.
+    /// </summary>
+    public bool EnableNoAccurateSeek { get; set; }
 
     /// <summary>
     /// Gets or sets the delay after which throttling happens.

@@ -2922,7 +2922,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                         && !string.Equals(segmentFormat, "ts", StringComparison.OrdinalIgnoreCase)
                         && state.TranscodingType != TranscodingJobType.Progressive
                         && !state.EnableBreakOnNonKeyFrames(outputVideoCodec)
-                        && (state.BaseRequest.StartTimeTicks ?? 0) > 0)
+                        && (state.BaseRequest.StartTimeTicks ?? 0) > 0
+                        && options.EnableNoAccurateSeek)
                     {
                         seekParam += " -noaccurate_seek";
                     }
