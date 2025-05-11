@@ -81,12 +81,7 @@ public class TrickplayManager : ITrickplayManager
     public async Task MoveGeneratedTrickplayDataAsync(Video video, LibraryOptions libraryOptions, CancellationToken cancellationToken)
     {
         var options = _config.Configuration.TrickplayOptions;
-        if (!CanGenerateTrickplay(video, options.Interval))
-        {
-            return;
-        }
-
-        if (libraryOptions is null || !libraryOptions.EnableTrickplayImageExtraction)
+        if (libraryOptions is null || !libraryOptions.EnableTrickplayImageExtraction || !CanGenerateTrickplay(video, options.Interval))
         {
             return;
         }
@@ -149,70 +144,73 @@ public class TrickplayManager : ITrickplayManager
             return;
         }
 
-        using var dbContext = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        var saveWithMedia = libraryOptions.SaveTrickplayWithMedia;
-        var trickplayDirectory = _pathManager.GetTrickplayDirectory(video, saveWithMedia);
-        if (!libraryOptions.EnableTrickplayImageExtraction || replace)
+        var dbContext = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using (dbContext.ConfigureAwait(false))
         {
-            // Prune existing data
-            try
+            var saveWithMedia = libraryOptions.SaveTrickplayWithMedia;
+            var trickplayDirectory = _pathManager.GetTrickplayDirectory(video, saveWithMedia);
+            if (!libraryOptions.EnableTrickplayImageExtraction || replace)
             {
-                Directory.Delete(trickplayDirectory, true);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning("Unable to clear trickplay directory: {Directory}: {Exception}", trickplayDirectory, ex);
+                // Prune existing data
+                try
+                {
+                    Directory.Delete(trickplayDirectory, true);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning("Unable to clear trickplay directory: {Directory}: {Exception}", trickplayDirectory, ex);
+                }
+
+                await dbContext.TrickplayInfos
+                        .Where(i => i.ItemId.Equals(video.Id))
+                        .ExecuteDeleteAsync(cancellationToken)
+                        .ConfigureAwait(false);
+
+                if (!replace)
+                {
+                    return;
+                }
             }
 
-            await dbContext.TrickplayInfos
+            _logger.LogDebug("Trickplay refresh for {ItemId} (replace existing: {Replace})", video.Id, replace);
+
+            if (options.Interval < 1000)
+            {
+                _logger.LogWarning("Trickplay image interval {Interval} is too small, reset to the minimum valid value of 1000", options.Interval);
+                options.Interval = 1000;
+            }
+
+            foreach (var width in options.WidthResolutions)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                await RefreshTrickplayDataInternal(
+                    video,
+                    replace,
+                    width,
+                    options,
+                    saveWithMedia,
+                    cancellationToken).ConfigureAwait(false);
+            }
+
+            // Cleanup old trickplay files
+            var existingFolders = Directory.GetDirectories(trickplayDirectory).ToList();
+            var trickplayInfos = await dbContext.TrickplayInfos
+                    .AsNoTracking()
                     .Where(i => i.ItemId.Equals(video.Id))
-                    .ExecuteDeleteAsync(cancellationToken)
+                    .ToListAsync(cancellationToken)
                     .ConfigureAwait(false);
-
-            if (!replace)
+            var expectedFolders = trickplayInfos.Select(i => GetTrickplayDirectory(video, i.TileWidth, i.TileHeight, i.Width, saveWithMedia)).ToList();
+            var foldersToRemove = existingFolders.Except(expectedFolders);
+            foreach (var folder in foldersToRemove)
             {
-                return;
-            }
-        }
-
-        _logger.LogDebug("Trickplay refresh for {ItemId} (replace existing: {Replace})", video.Id, replace);
-
-        if (options.Interval < 1000)
-        {
-            _logger.LogWarning("Trickplay image interval {Interval} is too small, reset to the minimum valid value of 1000", options.Interval);
-            options.Interval = 1000;
-        }
-
-        foreach (var width in options.WidthResolutions)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            await RefreshTrickplayDataInternal(
-                video,
-                replace,
-                width,
-                options,
-                saveWithMedia,
-                cancellationToken).ConfigureAwait(false);
-        }
-
-        // Cleanup old trickplay files
-        var existingFolders = Directory.GetDirectories(trickplayDirectory).ToList();
-        var trickplayInfos = await dbContext.TrickplayInfos
-                .AsNoTracking()
-                .Where(i => i.ItemId.Equals(video.Id))
-                .ToListAsync(cancellationToken)
-                .ConfigureAwait(false);
-        var expectedFolders = trickplayInfos.Select(i => GetTrickplayDirectory(video, i.TileWidth, i.TileHeight, i.Width, saveWithMedia)).ToList();
-        var foldersToRemove = existingFolders.Except(expectedFolders);
-        foreach (var folder in foldersToRemove)
-        {
-            try
-            {
-                Directory.Delete(folder, true);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning("Unable to remove trickplay directory: {Directory}: {Exception}", folder, ex);
+                try
+                {
+                    Directory.Delete(folder, true);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning("Unable to remove trickplay directory: {Directory}: {Exception}", folder, ex);
+                }
             }
         }
     }
