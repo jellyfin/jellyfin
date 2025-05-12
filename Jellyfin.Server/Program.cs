@@ -94,9 +94,9 @@ namespace Jellyfin.Server
 
             // Create an instance of the application configuration to use for application startup
             IConfiguration startupConfig = CreateAppConfiguration(options, appPaths);
+            StartupHelpers.InitializeLoggingFramework(startupConfig, appPaths);
             _setupServer = new SetupServer(static () => _jellyfinHost?.Services?.GetService<INetworkManager>(), appPaths, static () => _appHost, _loggerFactory, startupConfig);
             await _setupServer.RunAsync().ConfigureAwait(false);
-            StartupHelpers.InitializeLoggingFramework(startupConfig, appPaths);
             _logger = _loggerFactory.CreateLogger("Main");
 
             // Use the logging framework for uncaught exceptions instead of std error
@@ -156,6 +156,7 @@ namespace Jellyfin.Server
                             options,
                             startupConfig);
             _appHost = appHost;
+            var configurationCompleted = false;
             try
             {
                 _jellyfinHost = Host.CreateDefaultBuilder()
@@ -187,6 +188,7 @@ namespace Jellyfin.Server
 
                 try
                 {
+                    configurationCompleted = true;
                     await _setupServer!.StopAsync().ConfigureAwait(false);
                     await _jellyfinHost.StartAsync().ConfigureAwait(false);
 
@@ -214,6 +216,11 @@ namespace Jellyfin.Server
             {
                 _restartOnShutdown = false;
                 _logger.LogCritical(ex, "Error while starting server");
+                if (_setupServer!.IsAlive && !configurationCompleted)
+                {
+                    await Task.Delay(TimeSpan.FromMinutes(10)).ConfigureAwait(false);
+                    await _setupServer!.StopAsync().ConfigureAwait(false);
+                }
             }
             finally
             {

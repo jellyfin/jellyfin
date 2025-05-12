@@ -51,6 +51,7 @@
     <PackageVersion Include="Microsoft.Extensions.Options" Version="9.0.4" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
     <PackageVersion Include="MimeTypes" Version="2.5.2" />
+    <PackageVersion Include="Morestachio" Version="5.0.1.631" />
     <PackageVersion Include="Moq" Version="4.18.4" />
     <PackageVersion Include="NEbml" Version="0.12.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />

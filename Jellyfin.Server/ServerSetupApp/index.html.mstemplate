@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>🗿 Jellyfin Startup UI 🗿</title>
+    <style>
+        * {
+            font-family: sans-serif;
+        }
+
+        .flex-row {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            justify-content: center;
+            align-items: center;
+            align-content: normal;
+        }
+
+        .flex-col {
+            display: flex;
+            flex-direction: column;
+            flex-wrap: nowrap;
+            justify-content: center;
+            align-items: center;
+            align-content: normal;
+        }
+
+        header {
+            height: 5rem;
+            width: 100%;
+        }
+
+        header img {
+            height: 3rem;
+            width: 9rem;
+            margin-right: 1rem;
+        }
+
+        ol.action-list {
+            list-style-type: none;
+            position: relative;
+            /* It's needed for setting position to absolute in the next rule. */
+        }
+
+        ol.action-list li {
+            padding-top: .5rem;
+        }
+
+        ol.action-list li.danger-item::before {
+            content: '❌';
+            position: absolute;
+            left: -0.8em;
+            /* Adjust this value so that it appears where you want. */
+            font-size: 1.1em;
+            /* Adjust this value so that it appears what size you want. */
+        }
+
+        ol.action-list li.warn-item::before {
+            content: '⚠️';
+            position: absolute;
+            left: -0.8em;
+            /* Adjust this value so that it appears where you want. */
+            font-size: 1.1em;
+            /* Adjust this value so that it appears what size you want. */
+        }
+
+        ol.action-list li.success-item::before {
+            content: '✅';
+            position: absolute;
+            left: -0.8em;
+            /* Adjust this value so that it appears where you want. */
+            font-size: 1.1em;
+            /* Adjust this value so that it appears what size you want. */
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        <header class="flex-row">
+            <img
+                src="https://raw.githubusercontent.com/jellyfin/jellyfin-ux/refs/heads/master/branding/SVG/banner-dark.svg" />
+            <p>Jellyfin Server still starting. Please wait.</p>
+
+            {{#IF localNetworkRequest}}
+            <p style="margin-left: 1rem;">You can download the current logfiles <a href='/startup/logger'>here</a>.</p>
+            {{/IF}}
+        </header>
+
+        <div class="flex-col">
+            <ol class="action-list">
+                {{#FOREACH log IN logs.Reverse()}}
+                <li class="{{log.LogLevel.FormatLogLevel()}}-item">{{log.DateOfCreation}} - {{&log.Content}}</li>
+                {{/FOREACH}}
+            </ol>
+        </div>
+    </div>
+</body>
+
+<script>
+    setTimeout(() => {
+        window.location.reload();
+    }, 10000);
+</script>
+
+</html>
