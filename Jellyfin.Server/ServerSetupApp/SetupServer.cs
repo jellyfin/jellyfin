@@ -42,6 +42,7 @@ public sealed class SetupServer : IDisposable
     private IRenderer? _startupUiRenderer;
     private IHost? _startupServer;
     private bool _disposed;
+    private bool _isUnhealthy;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SetupServer"/> class.
@@ -258,10 +259,27 @@ public sealed class SetupServer : IDisposable
         ObjectDisposedException.ThrowIf(_disposed, this);
     }
 
+    internal void SoftStop()
+    {
+        _isUnhealthy = true;
+    }
+
     private class SetupHealthcheck : IHealthCheck
     {
+        private readonly SetupServer _startupServer;
+
+        public SetupHealthcheck(SetupServer startupServer)
+        {
+            _startupServer = startupServer;
+        }
+
         public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
         {
+            if (_startupServer._isUnhealthy)
+            {
+                return Task.FromResult(HealthCheckResult.Unhealthy("Server is could not complete startup. Check logfiles."));
+            }
+
             return Task.FromResult(HealthCheckResult.Degraded("Server is still starting up."));
         }
     }

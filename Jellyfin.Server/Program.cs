@@ -218,6 +218,7 @@ namespace Jellyfin.Server
                 _logger.LogCritical(ex, "Error while starting server");
                 if (_setupServer!.IsAlive && !configurationCompleted)
                 {
+                    _setupServer!.SoftStop();
                     await Task.Delay(TimeSpan.FromMinutes(10)).ConfigureAwait(false);
                     await _setupServer!.StopAsync().ConfigureAwait(false);
                 }
