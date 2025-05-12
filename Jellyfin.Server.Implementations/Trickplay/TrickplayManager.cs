@@ -152,13 +152,16 @@ public class TrickplayManager : ITrickplayManager
             if (!libraryOptions.EnableTrickplayImageExtraction || replace)
             {
                 // Prune existing data
-                try
+                if (Directory.Exists(trickplayDirectory))
                 {
-                    Directory.Delete(trickplayDirectory, true);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning("Unable to clear trickplay directory: {Directory}: {Exception}", trickplayDirectory, ex);
+                    try
+                    {
+                        Directory.Delete(trickplayDirectory, true);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning("Unable to clear trickplay directory: {Directory}: {Exception}", trickplayDirectory, ex);
+                    }
                 }
 
                 await dbContext.TrickplayInfos
@@ -205,6 +208,7 @@ public class TrickplayManager : ITrickplayManager
             {
                 try
                 {
+                    _logger.LogWarning("Pruning trickplay files for {Item}", video.Path);
                     Directory.Delete(folder, true);
                 }
                 catch (Exception ex)
