@@ -41,7 +41,6 @@
         ol.action-list {
             list-style-type: none;
             position: relative;
-            /* It's needed for setting position to absolute in the next rule. */
         }
 
         ol.action-list li {
@@ -52,27 +51,21 @@
             content: '❌';
             position: absolute;
             left: -0.8em;
-            /* Adjust this value so that it appears where you want. */
             font-size: 1.1em;
-            /* Adjust this value so that it appears what size you want. */
         }
 
         ol.action-list li.warn-item::before {
             content: '⚠️';
             position: absolute;
             left: -0.8em;
-            /* Adjust this value so that it appears where you want. */
             font-size: 1.1em;
-            /* Adjust this value so that it appears what size you want. */
         }
 
         ol.action-list li.success-item::before {
             content: '✅';
             position: absolute;
             left: -0.8em;
-            /* Adjust this value so that it appears where you want. */
             font-size: 1.1em;
-            /* Adjust this value so that it appears what size you want. */
         }
     </style>
 </head>
