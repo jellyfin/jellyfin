@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8" />
-    <title>🗿 Jellyfin Startup UI 🗿</title>
+    <title>Jellyfin Startup</title>
     <style>
         * {
             font-family: sans-serif;
