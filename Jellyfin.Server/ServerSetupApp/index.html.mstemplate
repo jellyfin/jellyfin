@@ -130,7 +130,7 @@
 <script>
     setTimeout(() => {
         window.location.reload();
-    }, 10000);
+    }, {{retryValue.TotalMilliseconds}});
 </script>
 
 </html>

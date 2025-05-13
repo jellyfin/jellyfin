@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -112,6 +113,7 @@ public sealed class SetupServer : IDisposable
             .CreateCompiledRenderer();
 
         ThrowIfDisposed();
+        var retryAfterValue = TimeSpan.FromSeconds(5);
         _startupServer = Host.CreateDefaultBuilder()
             .UseConsoleLifetime()
             .ConfigureServices(serv =>
@@ -183,7 +185,7 @@ public sealed class SetupServer : IDisposable
                                             if (jfApplicationHost is null)
                                             {
                                                 context.Response.StatusCode = (int)HttpStatusCode.ServiceUnavailable;
-                                                context.Response.Headers.RetryAfter = new StringValues("5");
+                                                context.Response.Headers.RetryAfter = new StringValues(retryAfterValue.TotalSeconds.ToString("000", CultureInfo.InvariantCulture));
                                                 return;
                                             }
 
@@ -204,13 +206,14 @@ public sealed class SetupServer : IDisposable
                                     app.Run(async (context) =>
                                     {
                                         context.Response.StatusCode = (int)HttpStatusCode.ServiceUnavailable;
-                                        context.Response.Headers.RetryAfter = new StringValues("5");
+                                        context.Response.Headers.RetryAfter = new StringValues(retryAfterValue.TotalSeconds.ToString("000", CultureInfo.InvariantCulture));
                                         context.Response.Headers.ContentType = new StringValues("text/html");
                                         var networkManager = _networkManagerFactory();
 
                                         await _startupUiRenderer.RenderAsync(
                                             new Dictionary<string, object>()
                                             {
+                                                { "retryValue", retryAfterValue },
                                                 { "logs", LogQueue?.ToArray() ?? [] },
                                                 { "localNetworkRequest", networkManager is not null && context.Connection.RemoteIpAddress is not null && networkManager.IsInLocalNetwork(context.Connection.RemoteIpAddress) }
                                             },
