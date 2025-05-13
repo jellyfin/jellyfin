@@ -113,7 +113,7 @@
             <p>Jellyfin Server still starting. Please wait.</p>
 
             {{#IF localNetworkRequest}}
-            <p style="margin-left: 1rem;">You can download the current logfiles <a href='/startup/logger'>here</a>.</p>
+            <p style="margin-left: 1rem;">You can download the current log file <a href='/startup/logger' target="_blank">here</a>.</p>
             {{/IF}}
         </header>
 

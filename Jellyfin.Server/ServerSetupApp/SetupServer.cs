@@ -213,7 +213,7 @@ public sealed class SetupServer : IDisposable
                                                 { "logs", LogQueue?.ToArray() ?? [] },
                                                 { "localNetworkRequest", networkManager is not null && context.Connection.RemoteIpAddress is not null && networkManager.IsInLocalNetwork(context.Connection.RemoteIpAddress) }
                                             },
-                                            new ByteCounterStream(context.Response.BodyWriter.AsStream(), 2042, true, _startupUiRenderer.ParserOptions))
+                                            new ByteCounterStream(context.Response.BodyWriter.AsStream(), IODefaults.FileStreamBufferSize, true, _startupUiRenderer.ParserOptions))
                                             .ConfigureAwait(false);
                                     });
                                 });
@@ -277,7 +277,7 @@ public sealed class SetupServer : IDisposable
         {
             if (_startupServer._isUnhealthy)
             {
-                return Task.FromResult(HealthCheckResult.Unhealthy("Server is could not complete startup. Check logfiles."));
+                return Task.FromResult(HealthCheckResult.Unhealthy("Server is could not complete startup. Check logs."));
             }
 
             return Task.FromResult(HealthCheckResult.Degraded("Server is still starting up."));
@@ -290,7 +290,7 @@ public sealed class SetupServer : IDisposable
 
         public ILogger CreateLogger(string categoryName)
         {
-            if (categoryName is "Startup")
+            if (string.Equals(categoryName, nameof(Startup), StringComparison.Ordinal))
             {
                 return new SetupServerLogger();
             }
