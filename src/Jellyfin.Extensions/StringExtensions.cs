@@ -146,13 +146,7 @@ namespace Jellyfin.Extensions
         /// </returns>
         public static string TruncateAtNull(this string text)
         {
-            if (string.IsNullOrEmpty(text))
-            {
-                return text;
-            }
-
-            var idx = text.IndexOf('\0', StringComparison.Ordinal);
-            return idx < 0 ? text : text[..idx];
+            return string.IsNullOrEmpty(text) ? text : text.AsSpan().LeftPart('\0').ToString();
         }
     }
 }
