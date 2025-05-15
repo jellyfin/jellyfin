@@ -400,12 +400,12 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 
     private static void CheckMigratableVersion(SqliteConnection connection)
     {
-        CheckColumnExstitance(connection, "TypedBaseItems", "lufs");
-        CheckColumnExstitance(connection, "TypedBaseItems", "normalizationgain");
-        CheckColumnExstitance(connection, "mediastreams", "normalizationgain");
-        CheckColumnExstitance(connection, "mediastreams", "dvversionmajor");
+        CheckColumnExistance(connection, "TypedBaseItems", "lufs");
+        CheckColumnExistance(connection, "TypedBaseItems", "normalizationgain");
+        CheckColumnExistance(connection, "mediastreams", "normalizationgain");
+        CheckColumnExistance(connection, "mediastreams", "dvversionmajor");
 
-        static void CheckColumnExstitance(SqliteConnection connection, string table, string column)
+        static void CheckColumnExistance(SqliteConnection connection, string table, string column)
         {
             using (var cmd = connection.CreateCommand())
             {
