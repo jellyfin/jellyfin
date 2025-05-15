@@ -3,7 +3,12 @@
 
 <head>
     <meta charset="UTF-8" />
-    <title>Jellyfin Startup</title>
+    <title>
+        {{#IF isInReportingMode}}
+        ❌
+        {{/IF}}
+        Jellyfin Startup
+    </title>
     <style>
         * {
             font-family: sans-serif;
@@ -43,29 +48,41 @@
             position: relative;
         }
 
+        ol.action-list * {
+            font-family: monospace;
+        }
+
         ol.action-list li {
             padding-top: .5rem;
         }
 
-        ol.action-list li.danger-item::before {
-            content: '❌';
+        ol.action-list li::before {
             position: absolute;
             left: -0.8em;
             font-size: 1.1em;
+        }
+
+        ol.action-list li.danger-item::before,
+        ol.action-list li.danger-strong-item::before {
+            content: '❌';
+        }
+
+        ol.action-list li.danger-strong-item {
+            text-decoration-style: solid;
+            text-decoration-color: red;
+            text-decoration-line: underline;
         }
 
         ol.action-list li.warn-item::before {
             content: '⚠️';
-            position: absolute;
-            left: -0.8em;
-            font-size: 1.1em;
         }
 
         ol.action-list li.success-item::before {
             content: '✅';
-            position: absolute;
-            left: -0.8em;
-            font-size: 1.1em;
+        }
+
+        ol.action-list li.info-item::before {
+            content: '❕️';
         }
     </style>
 </head>
@@ -110,10 +127,16 @@
                     </g>
                 </g>
             </svg>
+            {{^IF isInReportingMode}}
             <p>Jellyfin Server still starting. Please wait.</p>
+            {{#ELSE}}
+            <p>Jellyfin Server has encountered an error and was not able to start.</p>
+            {{/ELSE}}
+            {{/IF}}
 
             {{#IF localNetworkRequest}}
-            <p style="margin-left: 1rem;">You can download the current log file <a href='/startup/logger' target="_blank">here</a>.</p>
+            <p style="margin-left: 1rem;">You can download the current log file <a href='/startup/logger'
+                    target="_blank">here</a>.</p>
             {{/IF}}
         </header>
 
@@ -130,7 +153,7 @@
 <script>
     setTimeout(() => {
         window.location.reload();
-    }, {{retryValue.TotalMilliseconds}});
+    }, {{ retryValue.TotalMilliseconds }});
 </script>
 
 </html>

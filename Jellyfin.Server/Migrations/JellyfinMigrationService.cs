@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Emby.Server.Implementations.Serialization;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Server.Migrations.Stages;
+using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Configuration;
 using Microsoft.EntityFrameworkCore;
@@ -25,16 +26,19 @@ internal class JellyfinMigrationService
 {
     private readonly IDbContextFactory<JellyfinDbContext> _dbContextFactory;
     private readonly ILoggerFactory _loggerFactory;
+    private readonly IStartupLogger _startupLogger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="JellyfinMigrationService"/> class.
     /// </summary>
     /// <param name="dbContextFactory">Provides access to the jellyfin database.</param>
     /// <param name="loggerFactory">The logger factory.</param>
-    public JellyfinMigrationService(IDbContextFactory<JellyfinDbContext> dbContextFactory, ILoggerFactory loggerFactory)
+    /// <param name="startupLogger">The startup logger for Startup UI intigration.</param>
+    public JellyfinMigrationService(IDbContextFactory<JellyfinDbContext> dbContextFactory, ILoggerFactory loggerFactory, IStartupLogger startupLogger)
     {
         _dbContextFactory = dbContextFactory;
         _loggerFactory = loggerFactory;
+        _startupLogger = startupLogger;
 #pragma warning disable CS0618 // Type or member is obsolete
         Migrations = [.. typeof(IMigrationRoutine).Assembly.GetTypes().Where(e => typeof(IMigrationRoutine).IsAssignableFrom(e) || typeof(IAsyncMigrationRoutine).IsAssignableFrom(e))
             .Select(e => (Type: e, Metadata: e.GetCustomAttribute<JellyfinMigrationAttribute>()))
@@ -62,7 +66,7 @@ internal class JellyfinMigrationService
 
     public async Task CheckFirstTimeRunOrMigration(IApplicationPaths appPaths)
     {
-        var logger = _loggerFactory.CreateLogger<JellyfinMigrationService>();
+        var logger = _startupLogger.With(_loggerFactory.CreateLogger<JellyfinMigrationService>());
         logger.LogInformation("Initialise Migration service.");
         var xmlSerializer = new MyXmlSerializer();
         var serverConfig = File.Exists(appPaths.SystemConfigurationFilePath)
@@ -129,7 +133,7 @@ internal class JellyfinMigrationService
 
     public async Task MigrateStepAsync(JellyfinMigrationStageTypes stage, IServiceProvider? serviceProvider)
     {
-        var logger = _loggerFactory.CreateLogger<JellyfinMigrationService>();
+        var logger = _startupLogger.With(_loggerFactory.CreateLogger<JellyfinMigrationService>());
         logger.LogInformation("Migrate stage {Stage}.", stage);
         ICollection<CodeMigration> migrationStage = (Migrations.FirstOrDefault(e => e.Stage == stage) as ICollection<CodeMigration>) ?? [];
 
@@ -165,7 +169,8 @@ internal class JellyfinMigrationService
                 }
                 catch (Exception ex)
                 {
-                    logger.LogCritical(ex, "Migration {Name} failed", item.Key);
+                    logger.LogError(ex, "Migration {Name} failed", item.Key);
+                    _startupLogger.LogCritical("Error: {Error}", ex.Message);
                     throw;
                 }
             }

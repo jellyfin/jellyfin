@@ -80,7 +80,7 @@
     <None Update="wwwroot\api-docs\banner-dark.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="ServerSetupApp\index.html.mstemplate">
+    <None Update="ServerSetupApp/index.mstemplate.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

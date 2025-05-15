@@ -11,6 +11,7 @@ using System.Text;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.IO;
@@ -30,7 +31,7 @@ public class MoveExtractedFiles : IMigrationRoutine
 #pragma warning restore CS0618 // Type or member is obsolete
 {
     private readonly IApplicationPaths _appPaths;
-    private readonly ILogger<MoveExtractedFiles> _logger;
+    private readonly ILogger _logger;
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
     private readonly IPathManager _pathManager;
     private readonly IFileSystem _fileSystem;
@@ -40,18 +41,20 @@ public class MoveExtractedFiles : IMigrationRoutine
     /// </summary>
     /// <param name="appPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
     /// <param name="logger">The logger.</param>
+    /// <param name="startupLogger">The startup logger for Startup UI intigration.</param>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     /// <param name="pathManager">Instance of the <see cref="IPathManager"/> interface.</param>
     /// <param name="dbProvider">Instance of the <see cref="IDbContextFactory{JellyfinDbContext}"/> interface.</param>
     public MoveExtractedFiles(
         IApplicationPaths appPaths,
         ILogger<MoveExtractedFiles> logger,
+        IStartupLogger startupLogger,
         IPathManager pathManager,
         IFileSystem fileSystem,
         IDbContextFactory<JellyfinDbContext> dbProvider)
     {
         _appPaths = appPaths;
-        _logger = logger;
+        _logger = startupLogger.With(logger);
         _pathManager = pathManager;
         _fileSystem = fileSystem;
         _dbProvider = dbProvider;

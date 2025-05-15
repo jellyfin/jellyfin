@@ -84,7 +84,7 @@ public sealed class SetupServer : IDisposable
     /// <returns>A Task.</returns>
     public async Task RunAsync()
     {
-        var fileTemplate = await File.ReadAllTextAsync(Path.Combine("ServerSetupApp", "index.html.mstemplate")).ConfigureAwait(false);
+        var fileTemplate = await File.ReadAllTextAsync(Path.Combine("ServerSetupApp", "index.mstemplate.html")).ConfigureAwait(false);
         _startupUiRenderer = (await ParserOptionsBuilder.New()
             .WithTemplate(fileTemplate)
             .WithFormatter(
@@ -95,14 +95,15 @@ public sealed class SetupServer : IDisposable
                         case LogLevel.Trace:
                         case LogLevel.Debug:
                         case LogLevel.None:
-                            return string.Empty;
-                        case LogLevel.Information:
                             return "success";
+                        case LogLevel.Information:
+                            return "info";
                         case LogLevel.Warning:
                             return "warn";
                         case LogLevel.Error:
-                        case LogLevel.Critical:
                             return "danger";
+                        case LogLevel.Critical:
+                            return "danger-strong";
                     }
 
                     return string.Empty;
@@ -213,6 +214,7 @@ public sealed class SetupServer : IDisposable
                                         await _startupUiRenderer.RenderAsync(
                                             new Dictionary<string, object>()
                                             {
+                                                { "isInReportingMode", _isUnhealthy },
                                                 { "retryValue", retryAfterValue },
                                                 { "logs", LogQueue?.ToArray() ?? [] },
                                                 { "localNetworkRequest", networkManager is not null && context.Connection.RemoteIpAddress is not null && networkManager.IsInLocalNetwork(context.Connection.RemoteIpAddress) }
