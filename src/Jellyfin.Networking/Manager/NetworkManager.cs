@@ -690,33 +690,42 @@ public class NetworkManager : INetworkManager, IDisposable
     }
 
     /// <inheritdoc/>
-    public bool HasRemoteAccess(IPAddress remoteIP)
+    public RemoteAccessPolicyResult ShouldAllowServerAccess(IPAddress remoteIP)
     {
         var config = _configurationManager.GetNetworkConfiguration();
+        if (IsInLocalNetwork(remoteIP))
+        {
+            return RemoteAccessPolicyResult.Allow;
+        }
+
         if (config.EnableRemoteAccess)
         {
+            if (!_remoteAddressFilter.Any())
+            {
+                // No filter on remote addresses, allow any of them.
+                return RemoteAccessPolicyResult.Allow;
+            }
+
             // Comma separated list of IP addresses or IP/netmask entries for networks that will be allowed to connect remotely.
             // If left blank, all remote addresses will be allowed.
-            if (_remoteAddressFilter.Any() && !IsInLocalNetwork(remoteIP))
+
+            // remoteAddressFilter is a whitelist or blacklist.
+            var anyMatches = _remoteAddressFilter.Any(remoteNetwork => NetworkUtils.SubnetContainsAddress(remoteNetwork, remoteIP));
+            if (config.IsRemoteIPFilterBlacklist)
             {
-                // remoteAddressFilter is a whitelist or blacklist.
-                var matches = _remoteAddressFilter.Count(remoteNetwork => NetworkUtils.SubnetContainsAddress(remoteNetwork, remoteIP));
-                if ((!config.IsRemoteIPFilterBlacklist && matches > 0)
-                    || (config.IsRemoteIPFilterBlacklist && matches == 0))
-                {
-                    return true;
-                }
-
-                return false;
+                return anyMatches
+                    ? RemoteAccessPolicyResult.RejectDueToIPBlocklist
+                    : RemoteAccessPolicyResult.Allow;
             }
-        }
-        else if (!IsInLocalNetwork(remoteIP))
-        {
-            // Remote not enabled. So everyone should be LAN.
-            return false;
+
+            // Allow-list
+            return anyMatches
+                ? RemoteAccessPolicyResult.Allow
+                : RemoteAccessPolicyResult.RejectDueToNotAllowlistedRemoteIP;
         }
 
-        return true;
+        // Remote not enabled. So everyone should be LAN.
+        return RemoteAccessPolicyResult.RejectDueToRemoteAccessDisabled;
     }
 
     /// <inheritdoc/>
