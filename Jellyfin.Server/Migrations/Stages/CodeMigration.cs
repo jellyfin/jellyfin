@@ -14,7 +14,7 @@ internal class CodeMigration(Type migrationType, JellyfinMigrationAttribute meta
 
     public string BuildCodeMigrationId()
     {
-        return Metadata.Order.ToString("yyyyMMddHHmmsss", CultureInfo.InvariantCulture) + "_" + MigrationType.Name!;
+        return Metadata.Order.ToString("yyyyMMddHHmmsss", CultureInfo.InvariantCulture) + "_" + Metadata.Name!;
     }
 
     public async Task Perform(IServiceProvider? serviceProvider, CancellationToken cancellationToken)
