@@ -23,7 +23,7 @@ namespace Jellyfin.Server.Migrations.Routines;
 [JellyfinMigration("2025-04-21T00:00:00", nameof(MigrateKeyframeData))]
 public class MigrateKeyframeData : IDatabaseMigrationRoutine
 {
-    private readonly ILogger _logger;
+    private readonly IStartupLogger _logger;
     private readonly IApplicationPaths _appPaths;
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
     private static readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
@@ -31,17 +31,15 @@ public class MigrateKeyframeData : IDatabaseMigrationRoutine
     /// <summary>
     /// Initializes a new instance of the <see cref="MigrateKeyframeData"/> class.
     /// </summary>
-    /// <param name="logger">The logger.</param>
     /// <param name="startupLogger">The startup logger for Startup UI intigration.</param>
     /// <param name="appPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
     /// <param name="dbProvider">The EFCore db factory.</param>
     public MigrateKeyframeData(
-        ILogger<MigrateKeyframeData> logger,
         IStartupLogger startupLogger,
         IApplicationPaths appPaths,
         IDbContextFactory<JellyfinDbContext> dbProvider)
     {
-        _logger = startupLogger.With(logger);
+        _logger = startupLogger;
         _appPaths = appPaths;
         _dbProvider = dbProvider;
     }

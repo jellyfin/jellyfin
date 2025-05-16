@@ -23,19 +23,21 @@ public class StartupLogger : IStartupLogger
     /// <summary>
     /// Initializes a new instance of the <see cref="StartupLogger"/> class.
     /// </summary>
-    private StartupLogger(SetupServer.StartupLogEntry groupEntry) : this()
+    private StartupLogger(SetupServer.StartupLogEntry? groupEntry) : this()
     {
         _groupEntry = groupEntry;
     }
 
+    internal static IStartupLogger Logger { get; } = new StartupLogger();
+
     private List<ILogger> Loggers { get; set; }
 
     /// <inheritdoc/>
-    public IStartupLogger BeginGroup(string format, params object[] arguments)
+    public IStartupLogger BeginGroup(FormattableString logEntry)
     {
         var startupEntry = new SetupServer.StartupLogEntry()
         {
-            Content = string.Format(CultureInfo.InvariantCulture, format, arguments),
+            Content = logEntry.ToString(CultureInfo.InvariantCulture),
             DateOfCreation = DateTimeOffset.Now
         };
 
@@ -90,9 +92,9 @@ public class StartupLogger : IStartupLogger
     }
 
     /// <inheritdoc/>
-    public ILogger With(ILogger logger)
+    public IStartupLogger With(ILogger logger)
     {
-        return new StartupLogger()
+        return new StartupLogger(_groupEntry)
         {
             Loggers = [.. Loggers, logger]
         };

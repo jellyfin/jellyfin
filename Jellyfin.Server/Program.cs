@@ -58,6 +58,7 @@ namespace Jellyfin.Server
         private static long _startTimestamp;
         private static ILogger _logger = NullLogger.Instance;
         private static bool _restartOnShutdown;
+        private static IStartupLogger? _migrationLogger;
 
         /// <summary>
         /// The entry point of the application.
@@ -127,7 +128,7 @@ namespace Jellyfin.Server
                 }
             }
 
-            StorageHelper.TestCommonPathsForStorageCapacity(appPaths, _loggerFactory.CreateLogger<Startup>());
+            StorageHelper.TestCommonPathsForStorageCapacity(appPaths, StartupLogger.Logger.With(_loggerFactory.CreateLogger<Startup>()).BeginGroup($"Storage Check"));
 
             StartupHelpers.PerformStaticInitialization();
 
@@ -253,6 +254,7 @@ namespace Jellyfin.Server
         /// <returns>A task.</returns>
         public static async Task ApplyStartupMigrationAsync(ServerApplicationPaths appPaths, IConfiguration startupConfig)
         {
+            _migrationLogger = StartupLogger.Logger.BeginGroup($"Migration Service");
             var startupConfigurationManager = new ServerConfigurationManager(appPaths, _loggerFactory, new MyXmlSerializer());
             startupConfigurationManager.AddParts([new DatabaseConfigurationFactory()]);
             var migrationStartupServiceProvider = new ServiceCollection()
@@ -260,7 +262,7 @@ namespace Jellyfin.Server
                 .AddJellyfinDbContext(startupConfigurationManager, startupConfig)
                 .AddSingleton<IApplicationPaths>(appPaths)
                 .AddSingleton<ServerApplicationPaths>(appPaths)
-                .AddTransient<IStartupLogger, StartupLogger>();
+                .AddSingleton<IStartupLogger>(_migrationLogger);
             var startupService = migrationStartupServiceProvider.BuildServiceProvider();
 
             PrepareDatabaseProvider(startupService);
@@ -281,7 +283,7 @@ namespace Jellyfin.Server
         /// <returns>A task.</returns>
         public static async Task ApplyCoreMigrationsAsync(IServiceProvider serviceProvider, Migrations.Stages.JellyfinMigrationStageTypes jellyfinMigrationStage)
         {
-            var jellyfinMigrationService = ActivatorUtilities.CreateInstance<JellyfinMigrationService>(serviceProvider);
+            var jellyfinMigrationService = ActivatorUtilities.CreateInstance<JellyfinMigrationService>(serviceProvider, _migrationLogger!);
             await jellyfinMigrationService.MigrateStepAsync(jellyfinMigrationStage, serviceProvider).ConfigureAwait(false);
         }
 

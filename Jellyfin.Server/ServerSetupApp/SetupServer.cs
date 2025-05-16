@@ -92,7 +92,19 @@ public sealed class SetupServer : IDisposable
                 {
                     if (children.Any())
                     {
-                        return children.Select(e => e.LogLevel).Where(e => e != LogLevel.None).Max();
+                        var maxLevel = logEntry.LogLevel;
+                        var stack = new Stack<StartupLogEntry>(children);
+
+                        while (maxLevel != LogLevel.Error && stack.Count > 0 && (logEntry = stack.Pop()) != null) // error is the highest inherted error level.
+                        {
+                            maxLevel = maxLevel < logEntry.LogLevel ? logEntry.LogLevel : maxLevel;
+                            foreach (var child in logEntry.Children)
+                            {
+                                stack.Push(child);
+                            }
+                        }
+
+                        return maxLevel;
                     }
 
                     return logEntry.LogLevel;

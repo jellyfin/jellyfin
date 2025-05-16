@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Server.ServerSetupApp;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Jellyfin.Server.Migrations.Stages;
@@ -17,7 +18,7 @@ internal class CodeMigration(Type migrationType, JellyfinMigrationAttribute meta
         return Metadata.Order.ToString("yyyyMMddHHmmsss", CultureInfo.InvariantCulture) + "_" + Metadata.Name!;
     }
 
-    public async Task Perform(IServiceProvider? serviceProvider, CancellationToken cancellationToken)
+    public async Task Perform(IServiceProvider? serviceProvider, IStartupLogger logger, CancellationToken cancellationToken)
     {
 #pragma warning disable CS0618 // Type or member is obsolete
         if (typeof(IMigrationRoutine).IsAssignableFrom(MigrationType))
@@ -28,7 +29,7 @@ internal class CodeMigration(Type migrationType, JellyfinMigrationAttribute meta
             }
             else
             {
-                ((IMigrationRoutine)ActivatorUtilities.CreateInstance(serviceProvider, MigrationType)).Perform();
+                ((IMigrationRoutine)ActivatorUtilities.CreateInstance(serviceProvider, MigrationType, logger)).Perform();
 #pragma warning restore CS0618 // Type or member is obsolete
             }
         }
@@ -40,7 +41,7 @@ internal class CodeMigration(Type migrationType, JellyfinMigrationAttribute meta
             }
             else
             {
-                await ((IAsyncMigrationRoutine)ActivatorUtilities.CreateInstance(serviceProvider, MigrationType)).PerformAsync(cancellationToken).ConfigureAwait(false);
+                await ((IAsyncMigrationRoutine)ActivatorUtilities.CreateInstance(serviceProvider, MigrationType, logger)).PerformAsync(cancellationToken).ConfigureAwait(false);
             }
         }
         else

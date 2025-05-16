@@ -29,12 +29,12 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// The migration routine for migrating the userdata database to EF Core.
 /// </summary>
-[JellyfinMigration("2025-04-20T20:00:00", nameof(MigrateLibraryDb))]
+[JellyfinMigration("2025-04-20T20:00:00", nameof(MigrateLibraryDb) + "XXX")]
 internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 {
     private const string DbFilename = "library.db";
 
-    private readonly ILogger _logger;
+    private readonly IStartupLogger _logger;
     private readonly IServerApplicationPaths _paths;
     private readonly IJellyfinDatabaseProvider _jellyfinDatabaseProvider;
     private readonly IDbContextFactory<JellyfinDbContext> _provider;
@@ -42,19 +42,17 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
     /// <summary>
     /// Initializes a new instance of the <see cref="MigrateLibraryDb"/> class.
     /// </summary>
-    /// <param name="logger">The logger.</param>
     /// <param name="startupLogger">The startup logger for Startup UI intigration.</param>
     /// <param name="provider">The database provider.</param>
     /// <param name="paths">The server application paths.</param>
     /// <param name="jellyfinDatabaseProvider">The database provider for special access.</param>
     public MigrateLibraryDb(
-        ILogger<MigrateLibraryDb> logger,
         IStartupLogger startupLogger,
         IDbContextFactory<JellyfinDbContext> provider,
         IServerApplicationPaths paths,
         IJellyfinDatabaseProvider jellyfinDatabaseProvider)
     {
-        _logger = startupLogger.With(logger);
+        _logger = startupLogger;
         _provider = provider;
         _paths = paths;
         _jellyfinDatabaseProvider = jellyfinDatabaseProvider;
