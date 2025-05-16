@@ -134,6 +134,11 @@ namespace Jellyfin.Server.Integration.Tests
 
         private sealed class NullStartupLogger : IStartupLogger
         {
+            public IStartupLogger BeginGroup(FormattableString logEntry)
+            {
+                return this;
+            }
+
             public IDisposable? BeginScope<TState>(TState state)
                 where TState : notnull
             {
@@ -153,6 +158,11 @@ namespace Jellyfin.Server.Integration.Tests
             public Microsoft.Extensions.Logging.ILogger With(Microsoft.Extensions.Logging.ILogger logger)
             {
                 return this;
+            }
+
+            IStartupLogger IStartupLogger.With(Microsoft.Extensions.Logging.ILogger logger)
+            {
+                throw new NotImplementedException();
             }
         }
     }
