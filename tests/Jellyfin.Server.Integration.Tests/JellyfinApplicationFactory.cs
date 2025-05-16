@@ -162,7 +162,7 @@ namespace Jellyfin.Server.Integration.Tests
 
             IStartupLogger IStartupLogger.With(Microsoft.Extensions.Logging.ILogger logger)
             {
-                throw new NotImplementedException();
+                return this;
             }
         }
     }
