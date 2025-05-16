@@ -174,7 +174,7 @@ namespace Jellyfin.Server
                     })
                     .ConfigureAppConfiguration(config => config.ConfigureAppConfiguration(options, appPaths, startupConfig))
                     .UseSerilog()
-                    .ConfigureServices(e => e.AddTransient<IStartupLogger, StartupLogger>())
+                    .ConfigureServices(e => e.AddTransient<IStartupLogger, StartupLogger>().AddSingleton<IServiceCollection>(e))
                     .Build();
 
                 // Re-use the host service provider in the app host since ASP.NET doesn't allow a custom service collection.
@@ -263,6 +263,8 @@ namespace Jellyfin.Server
                 .AddSingleton<IApplicationPaths>(appPaths)
                 .AddSingleton<ServerApplicationPaths>(appPaths)
                 .AddSingleton<IStartupLogger>(_migrationLogger);
+
+            migrationStartupServiceProvider.AddSingleton(migrationStartupServiceProvider);
             var startupService = migrationStartupServiceProvider.BuildServiceProvider();
 
             PrepareDatabaseProvider(startupService);

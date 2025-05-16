@@ -98,7 +98,7 @@ namespace Jellyfin.Server.Integration.Tests
                         .AddEnvironmentVariables("JELLYFIN_")
                         .AddInMemoryCollection(commandLineOpts.ConvertToConfig());
                 })
-                .ConfigureServices(e => e.AddSingleton<IStartupLogger, NullStartupLogger>());
+                .ConfigureServices(e => e.AddSingleton<IStartupLogger, NullStartupLogger>().AddSingleton(e));
         }
 
         /// <inheritdoc/>
