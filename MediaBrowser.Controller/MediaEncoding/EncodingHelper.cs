@@ -106,6 +106,13 @@ namespace MediaBrowser.Controller.MediaEncoding
             "Main10"
         ];
 
+        private static readonly string[] _videoProfilesVp9 = [
+            "Profile 0",
+            "Profile 1",
+            "Profile 2",
+            "Profile 3",
+        ];
+
         private static readonly string[] _videoProfilesAv1 =
         [
             "Main",
@@ -721,6 +728,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (string.Equals("av1", videoCodec, StringComparison.OrdinalIgnoreCase))
             {
                 return Array.FindIndex(_videoProfilesAv1, x => string.Equals(x, profile, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (string.Equals("vp9", videoCodec, StringComparison.OrdinalIgnoreCase))
+            {
+                return Array.FindIndex(_videoProfilesVp9, x => string.Equals(x.Replace(" ", string.Empty, StringComparison.Ordinal), profile, StringComparison.OrdinalIgnoreCase));
             }
 
             return -1;
@@ -1715,13 +1727,13 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 param += encoderPreset switch
                 {
-                        EncoderPreset.veryslow => " -preset p7",
-                        EncoderPreset.slower => " -preset p6",
-                        EncoderPreset.slow => " -preset p5",
-                        EncoderPreset.medium => " -preset p4",
-                        EncoderPreset.fast => " -preset p3",
-                        EncoderPreset.faster => " -preset p2",
-                        _ => " -preset p1"
+                    EncoderPreset.veryslow => " -preset p7",
+                    EncoderPreset.slower => " -preset p6",
+                    EncoderPreset.slow => " -preset p5",
+                    EncoderPreset.medium => " -preset p4",
+                    EncoderPreset.fast => " -preset p3",
+                    EncoderPreset.faster => " -preset p2",
+                    _ => " -preset p1"
                 };
             }
             else if (string.Equals(videoEncoder, "h264_amf", StringComparison.OrdinalIgnoreCase) // h264 (h264_amf)
@@ -1731,11 +1743,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 param += encoderPreset switch
                 {
-                        EncoderPreset.veryslow => " -quality quality",
-                        EncoderPreset.slower => " -quality quality",
-                        EncoderPreset.slow => " -quality quality",
-                        EncoderPreset.medium => " -quality balanced",
-                        _ => " -quality speed"
+                    EncoderPreset.veryslow => " -quality quality",
+                    EncoderPreset.slower => " -quality quality",
+                    EncoderPreset.slow => " -quality quality",
+                    EncoderPreset.medium => " -quality balanced",
+                    _ => " -quality speed"
                 };
 
                 if (string.Equals(videoEncoder, "hevc_amf", StringComparison.OrdinalIgnoreCase)
@@ -1755,11 +1767,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 param += encoderPreset switch
                 {
-                        EncoderPreset.veryslow => " -prio_speed 0",
-                        EncoderPreset.slower => " -prio_speed 0",
-                        EncoderPreset.slow => " -prio_speed 0",
-                        EncoderPreset.medium => " -prio_speed 0",
-                        _ => " -prio_speed 1"
+                    EncoderPreset.veryslow => " -prio_speed 0",
+                    EncoderPreset.slower => " -prio_speed 0",
+                    EncoderPreset.slow => " -prio_speed 0",
+                    EncoderPreset.medium => " -prio_speed 0",
+                    _ => " -prio_speed 1"
                 };
             }
 
@@ -2092,10 +2104,20 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 videoProfiles = _videoProfilesAv1;
             }
+            else if (string.Equals("vp9", targetVideoCodec, StringComparison.OrdinalIgnoreCase))
+            {
+                videoProfiles = _videoProfilesVp9;
+            }
 
             if (!videoProfiles.Contains(profile, StringComparison.OrdinalIgnoreCase))
             {
                 profile = string.Empty;
+            }
+
+            // Replace the "profile" prefix for VP9.
+            if (string.Equals("vp9", targetVideoCodec, StringComparison.OrdinalIgnoreCase))
+            {
+                profile = profile.Replace("Profile", string.Empty, StringComparison.OrdinalIgnoreCase);
             }
 
             // We only transcode to HEVC 8-bit for now, force Main Profile.
