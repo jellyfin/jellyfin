@@ -88,6 +88,17 @@ public sealed class SetupServer : IDisposable
         _startupUiRenderer = (await ParserOptionsBuilder.New()
             .WithTemplate(fileTemplate)
             .WithFormatter(
+                (StartupLogEntry logEntry, IEnumerable<StartupLogEntry> children) =>
+                {
+                    if (children.Any())
+                    {
+                        return children.Select(e => e.LogLevel).Where(e => e != LogLevel.None).Max();
+                    }
+
+                    return logEntry.LogLevel;
+                },
+                "FormatLogLevel")
+            .WithFormatter(
                 (LogLevel logLevel) =>
                 {
                     switch (logLevel)
@@ -108,7 +119,7 @@ public sealed class SetupServer : IDisposable
 
                     return string.Empty;
                 },
-                "FormatLogLevel")
+                "ToString")
             .BuildAndParseAsync()
             .ConfigureAwait(false))
             .CreateCompiledRenderer();
@@ -211,12 +222,13 @@ public sealed class SetupServer : IDisposable
                                         context.Response.Headers.ContentType = new StringValues("text/html");
                                         var networkManager = _networkManagerFactory();
 
+                                        var startupLogEntries = LogQueue?.ToArray() ?? [];
                                         await _startupUiRenderer.RenderAsync(
                                             new Dictionary<string, object>()
                                             {
                                                 { "isInReportingMode", _isUnhealthy },
                                                 { "retryValue", retryAfterValue },
-                                                { "logs", LogQueue?.ToArray() ?? [] },
+                                                { "logs", startupLogEntries },
                                                 { "localNetworkRequest", networkManager is not null && context.Connection.RemoteIpAddress is not null && networkManager.IsInLocalNetwork(context.Connection.RemoteIpAddress) }
                                             },
                                             new ByteCounterStream(context.Response.BodyWriter.AsStream(), IODefaults.FileStreamBufferSize, true, _startupUiRenderer.ParserOptions))
@@ -296,11 +308,6 @@ public sealed class SetupServer : IDisposable
 
         public ILogger CreateLogger(string categoryName)
         {
-            if (string.Equals(categoryName, nameof(Startup), StringComparison.Ordinal))
-            {
-                return new SetupServerLogger();
-            }
-
             return new CatchingSetupServerLogger();
         }
 
@@ -312,30 +319,6 @@ public sealed class SetupServer : IDisposable
             }
 
             _disposed = true;
-        }
-    }
-
-    internal sealed class SetupServerLogger : ILogger
-    {
-        public IDisposable? BeginScope<TState>(TState state)
-            where TState : notnull
-        {
-            return null;
-        }
-
-        public bool IsEnabled(LogLevel logLevel)
-        {
-            return true;
-        }
-
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
-        {
-            LogQueue?.Enqueue(new()
-            {
-                LogLevel = logLevel,
-                Content = formatter(state, exception),
-                DateOfCreation = DateTimeOffset.Now
-            });
         }
     }
 
@@ -375,5 +358,7 @@ public sealed class SetupServer : IDisposable
         public string? Content { get; set; }
 
         public DateTimeOffset DateOfCreation { get; set; }
+
+        public List<StartupLogEntry> Children { get; set; } = [];
     }
 }

@@ -1,4 +1,5 @@
-using Microsoft.Extensions.Logging;
+using Morestachio.Helper.Logging;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Jellyfin.Server.ServerSetupApp;
 
@@ -13,4 +14,12 @@ public interface IStartupLogger : ILogger
     /// <param name="logger">Other logger to rely messages to.</param>
     /// <returns>A combined logger.</returns>
     ILogger With(ILogger logger);
+
+    /// <summary>
+    /// Opens a new Group logger within the parent logger.
+    /// </summary>
+    /// <param name="format">Defines the log message that introduces the new group.</param>
+    /// <param name="arguments">Defines the log message arguments that introduces the new group.</param>
+    /// <returns>A new logger that can write to the group.</returns>
+    IStartupLogger BeginGroup(string format, params object[] arguments);
 }
