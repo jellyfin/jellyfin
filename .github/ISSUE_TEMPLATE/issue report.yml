@@ -1,6 +1,7 @@
 name: Issue Report
 description: File an issue report
 labels: [bug, triage]
+type: Bug
 body:
   - type: markdown
     id: introduction
@@ -140,7 +141,9 @@ body:
         - **Reverse Proxy**: [e.g. none, nginx, apache, etc.]
         - **Base URL**: [e.g. none, yes: /example]
         - **Networking**: [e.g. Host, Bridge/NAT]
-        - **Storage**: [e.g. local, NFS, cloud]
+        - **Jellyfin Data Storage**: [e.g. local SATA SSD, local HDD]
+        - **Media Storage**: [e.g. Local HDD, SMB Share]
+        - **External Integrations**: [e.g. Jellystat, Jellyseerr]
       value: |
         - OS:
         - Linux Kernel:
@@ -155,7 +158,9 @@ body:
         - Reverse Proxy:
         - Base URL:
         - Networking:
-        - Storage:
+        - Jellyfin Data Storage:
+        - Media Storage:
+        - External Integrations:
       render: markdown
     validations:
       required: true
