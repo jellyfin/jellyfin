@@ -10,8 +10,8 @@
     <PackageVersion Include="AutoFixture" Version="4.18.1" />
     <PackageVersion Include="BDInfo" Version="0.8.0" />
     <PackageVersion Include="BitFaster.Caching" Version="2.5.3" />
-    <PackageVersion Include="BlurHashSharp.SkiaSharp" Version="1.3.4" />
-    <PackageVersion Include="BlurHashSharp" Version="1.3.4" />
+    <PackageVersion Include="BlurHashSharp.SkiaSharp" Version="1.4.0-pre.1" />
+    <PackageVersion Include="BlurHashSharp" Version="1.4.0-pre.1" />
     <PackageVersion Include="CommandLineParser" Version="2.9.1" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
     <PackageVersion Include="Diacritics" Version="3.3.29" />
@@ -72,7 +72,7 @@
     <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="3.119.0" />
     <PackageVersion Include="SmartAnalyzers.MultithreadingAnalyzer" Version="1.1.31" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.556" />
-    <PackageVersion Include="Svg.Skia" Version="2.0.0.8" />
+    <PackageVersion Include="Svg.Skia" Version="3.0.2" />
     <PackageVersion Include="Swashbuckle.AspNetCore.ReDoc" Version="6.5.0" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.2.3" />
     <PackageVersion Include="System.Globalization" Version="4.3.0" />
