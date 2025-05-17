@@ -62,10 +62,6 @@ namespace Jellyfin.Server
         {
             services.AddResponseCompression();
             services.AddHttpContextAccessor();
-            services.AddHttpsRedirection(options =>
-            {
-                options.HttpsPort = _serverApplicationHost.HttpsPort;
-            });
 
             // TODO remove once this is fixed upstream https://github.com/dotnet/aspnetcore/issues/34371
             services.AddSingleton<IActionResultExecutor<PhysicalFileResult>, SymlinkFollowingPhysicalFileResultExecutor>();
@@ -170,11 +166,6 @@ namespace Jellyfin.Server
                 mainApp.UseResponseCompression();
 
                 mainApp.UseCors();
-
-                if (config.RequireHttps && _serverApplicationHost.ListenWithHttps)
-                {
-                    mainApp.UseHttpsRedirection();
-                }
 
                 // This must be injected before any path related middleware.
                 mainApp.UsePathTrim();
