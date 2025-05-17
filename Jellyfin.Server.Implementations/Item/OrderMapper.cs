@@ -51,6 +51,7 @@ public static class OrderMapper
             ItemSortBy.VideoBitRate => e => e.TotalBitrate,
             ItemSortBy.ParentIndexNumber => e => e.ParentIndexNumber,
             ItemSortBy.IndexNumber => e => e.IndexNumber,
+            ItemSortBy.UserRating => e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id))!.Rating,
             _ => e => e.SortName
         };
     }
