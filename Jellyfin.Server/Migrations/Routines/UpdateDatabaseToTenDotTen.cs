@@ -4,10 +4,8 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using Emby.Server.Implementations.Data;
-using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Library;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;
 
@@ -23,16 +21,13 @@ internal class UpdateDatabaseToTenDotTen : IDatabaseMigrationRoutine
     private const string DbFilename = "library.db";
     private readonly ILogger<UpdateDatabaseToTenDotTen> _logger;
     private readonly IServerApplicationPaths _paths;
-    private readonly IUserManager _userManager;
 
     public UpdateDatabaseToTenDotTen(
         ILogger<UpdateDatabaseToTenDotTen> logger,
-        IServerApplicationPaths paths,
-        IUserManager userManager)
+        IServerApplicationPaths paths)
     {
         _logger = logger;
         _paths = paths;
-        _userManager = userManager;
     }
 
     /// <inheritdoc/>
@@ -187,52 +182,7 @@ internal class UpdateDatabaseToTenDotTen : IDatabaseMigrationRoutine
             transaction.Commit();
         }
 
-        // move the content of the userdata table to UserDatas
-        using (var transaction = connection.BeginTransaction())
-        {
-            var userDatasTableExists = TableExists(connection, "UserDatas");
-            var userDataTableExists = TableExists(connection, "userdata");
-
-            var users = userDatasTableExists ? [] : _userManager.Users;
-
-            connection.Execute("create table if not exists UserDatas (key nvarchar not null, userId INT not null, rating float null, played bit not null, playCount int not null, isFavorite bit not null, playbackPositionTicks bigint not null, lastPlayedDate datetime null, AudioStreamIndex INT, SubtitleStreamIndex INT)");
-
-            if (userDataTableExists)
-            {
-                var existingColumnNames = GetColumnNames(connection, "userdata");
-
-                AddColumn(connection, "userdata", "InternalUserId", "int", existingColumnNames);
-                AddColumn(connection, "userdata", "AudioStreamIndex", "int", existingColumnNames);
-                AddColumn(connection, "userdata", "SubtitleStreamIndex", "int", existingColumnNames);
-
-                if (!userDatasTableExists)
-                {
-                    ImportUserIds(connection, users);
-                    connection.Execute("INSERT INTO UserDatas (key, userId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex) SELECT key, InternalUserId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex from userdata where InternalUserId not null");
-                }
-            }
-
-            transaction.Commit();
-        }
-
         _logger.LogInformation("Database was successfully updated");
-    }
-
-    /// <summary>
-    /// Sets the InternalUserId in the userdata table for existing users.
-    /// </summary>
-    private void ImportUserIds(SqliteConnection connection, IEnumerable<User> users)
-    {
-        using (var statement = connection.PrepareStatement("update userdata set InternalUserId=@InternalUserId where UserId=@UserId"))
-        {
-            foreach (var user in users)
-            {
-                statement.TryBind("@UserId", user.Id);
-                statement.TryBind("@InternalUserId", user.InternalId);
-
-                _ = statement.ExecuteNonQuery();
-            }
-        }
     }
 
     /// <summary>
@@ -265,24 +215,5 @@ internal class UpdateDatabaseToTenDotTen : IDatabaseMigrationRoutine
         }
 
         connection.Execute("alter table " + table + " add column " + columnName + " " + type + " NULL");
-    }
-
-    /// <summary>
-    /// Checks if the table with the given name already exists in the database.
-    /// </summary>
-    private bool TableExists(SqliteConnection connection, string name)
-    {
-        using var statement = connection.CreateCommand();
-        statement.CommandText = "select DISTINCT tbl_name from sqlite_master";
-
-        foreach (var row in statement.ExecuteQuery())
-        {
-            if (string.Equals(name, row.GetString(0), StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 }
