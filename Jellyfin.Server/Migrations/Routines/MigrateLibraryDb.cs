@@ -14,6 +14,7 @@ using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
 using Jellyfin.Server.Implementations.Item;
+using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
@@ -33,7 +34,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 {
     private const string DbFilename = "library.db";
 
-    private readonly ILogger<MigrateLibraryDb> _logger;
+    private readonly IStartupLogger _logger;
     private readonly IServerApplicationPaths _paths;
     private readonly IJellyfinDatabaseProvider _jellyfinDatabaseProvider;
     private readonly IDbContextFactory<JellyfinDbContext> _provider;
@@ -41,19 +42,17 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
     /// <summary>
     /// Initializes a new instance of the <see cref="MigrateLibraryDb"/> class.
     /// </summary>
-    /// <param name="logger">The logger.</param>
+    /// <param name="startupLogger">The startup logger for Startup UI intigration.</param>
     /// <param name="provider">The database provider.</param>
     /// <param name="paths">The server application paths.</param>
     /// <param name="jellyfinDatabaseProvider">The database provider for special access.</param>
-    /// <param name="serviceProvider">The Service provider.</param>
     public MigrateLibraryDb(
-        ILogger<MigrateLibraryDb> logger,
+        IStartupLogger startupLogger,
         IDbContextFactory<JellyfinDbContext> provider,
         IServerApplicationPaths paths,
-        IJellyfinDatabaseProvider jellyfinDatabaseProvider,
-        IServiceProvider serviceProvider)
+        IJellyfinDatabaseProvider jellyfinDatabaseProvider)
     {
-        _logger = logger;
+        _logger = startupLogger;
         _provider = provider;
         _paths = paths;
         _jellyfinDatabaseProvider = jellyfinDatabaseProvider;
@@ -92,6 +91,8 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 
         var legacyBaseItemWithUserKeys = new Dictionary<string, BaseItemEntity>();
         connection.Open();
+
+        CheckMigratableVersion(connection);
 
         var baseItemIds = new HashSet<Guid>();
         using (var operation = GetPreparedDbContext("moving TypedBaseItem"))
@@ -394,6 +395,28 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 
         _logger.LogInformation("Move {0} to {1}.", libraryDbPath, libraryDbPath + ".old");
         File.Move(libraryDbPath, libraryDbPath + ".old", true);
+    }
+
+    private static void CheckMigratableVersion(SqliteConnection connection)
+    {
+        CheckColumnExistance(connection, "TypedBaseItems", "lufs");
+        CheckColumnExistance(connection, "TypedBaseItems", "normalizationgain");
+        CheckColumnExistance(connection, "mediastreams", "dvversionmajor");
+
+        static void CheckColumnExistance(SqliteConnection connection, string table, string column)
+        {
+            using (var cmd = connection.CreateCommand())
+            {
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
+                cmd.CommandText = $"Select COUNT(1) FROM pragma_table_xinfo('{table}') WHERE lower(name) = '{column}';";
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
+                var result = cmd.ExecuteScalar()!;
+                if (!result.Equals(1L))
+                {
+                    throw new InvalidOperationException("Your database does not meet the required standard. Only upgrades from server version 10.9.11 or above are supported. Please upgrade first to server version 10.10.7 before attempting to upgrade afterwards to 10.10");
+                }
+            }
+        }
     }
 
     private DatabaseMigrationStep GetPreparedDbContext(string operationName)
