@@ -30,7 +30,7 @@ public class TmdbExternalUrlProvider : IExternalUrlProvider
 
                 break;
             case Season season:
-                if (season.Series != null && season.Series.TryGetProviderId(MetadataProvider.Tmdb, out var seriesExternalId))
+                if (season.Series?.TryGetProviderId(MetadataProvider.Tmdb, out var seriesExternalId) == true)
                 {
                     var orderString = season.Series.DisplayOrder;
                     var seasonNumber = season.IndexNumber;
@@ -51,7 +51,7 @@ public class TmdbExternalUrlProvider : IExternalUrlProvider
 
                 break;
             case Episode episode:
-                if (episode.Series != null && episode.Series.TryGetProviderId(MetadataProvider.Tmdb, out seriesExternalId))
+                if (episode.Series?.TryGetProviderId(MetadataProvider.Tmdb, out seriesExternalId) == true)
                 {
                     var orderString = episode.Series.DisplayOrder;
                     var seasonNumber = episode.Season?.IndexNumber;
