@@ -487,7 +487,7 @@ public class SkiaEncoder : IImageEncoder
         paint.IsDither = isDither;
 
         // Historically, kHigh implied cubic filtering, but only when upsampling.
-        // If specified kHigh, and were down-sampling, Skia used switch back to kMedium (bilinear filtering plus mipmaps).
+        // If specified kHigh, and were down-sampling, Skia used to switch back to kMedium (bilinear filtering plus mipmaps).
         // With current skia API, passing Mitchell cubic when down-sampling will cause serious quality degradation.
         var samplingOptions = source.Width > targetInfo.Width || source.Height > targetInfo.Height
             ? DefaultSamplingOptions
