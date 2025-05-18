@@ -2191,7 +2191,7 @@ public sealed class BaseItemRepository
 
         if (filter.AncestorIds.Length > 0)
         {
-            baseQuery = baseQuery.Where(e => e.Children!.Any(f => filter.AncestorIds.Contains(f.ItemId)));
+            baseQuery = baseQuery.Where(e => e.Parents!.Any(f => filter.AncestorIds.Contains(f.ParentItemId)));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.AncestorWithPresentationUniqueKey))

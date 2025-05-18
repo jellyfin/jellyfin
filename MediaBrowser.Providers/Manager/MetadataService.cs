@@ -12,6 +12,7 @@ using Jellyfin.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
@@ -26,13 +27,20 @@ namespace MediaBrowser.Providers.Manager
         where TItemType : BaseItem, IHasLookupInfo<TIdType>, new()
         where TIdType : ItemLookupInfo, new()
     {
-        protected MetadataService(IServerConfigurationManager serverConfigurationManager, ILogger<MetadataService<TItemType, TIdType>> logger, IProviderManager providerManager, IFileSystem fileSystem, ILibraryManager libraryManager)
+        protected MetadataService(
+            IServerConfigurationManager serverConfigurationManager,
+            ILogger<MetadataService<TItemType, TIdType>> logger,
+            IProviderManager providerManager,
+            IFileSystem fileSystem,
+            ILibraryManager libraryManager,
+            IExternalDataManager externalDataManager)
         {
             ServerConfigurationManager = serverConfigurationManager;
             Logger = logger;
             ProviderManager = providerManager;
             FileSystem = fileSystem;
             LibraryManager = libraryManager;
+            ExternalDataManager = externalDataManager;
             ImageProvider = new ItemImageProvider(Logger, ProviderManager, FileSystem);
         }
 
@@ -47,6 +55,8 @@ namespace MediaBrowser.Providers.Manager
         protected IFileSystem FileSystem { get; }
 
         protected ILibraryManager LibraryManager { get; }
+
+        protected IExternalDataManager ExternalDataManager { get; }
 
         protected virtual bool EnableUpdatingPremiereDateFromChildren => false;
 
@@ -301,6 +311,33 @@ namespace MediaBrowser.Providers.Manager
             {
                 item.PresentationUniqueKey = presentationUniqueKey;
                 updateType |= ItemUpdateType.MetadataImport;
+            }
+
+            // Cleanup extracted files if source file was modified
+            var itemPath = item.Path;
+            if (!string.IsNullOrEmpty(itemPath))
+            {
+                var info = FileSystem.GetFileSystemInfo(itemPath);
+                var modificationDate = info.LastWriteTimeUtc;
+                var itemLastModifiedFileSystem = item.DateModified;
+                if (info.Exists && itemLastModifiedFileSystem != modificationDate)
+                {
+                    Logger.LogDebug("File modification time changed from {Then} to {Now}: {Path}", itemLastModifiedFileSystem, modificationDate, itemPath);
+
+                    item.DateModified = modificationDate;
+                    if (ServerConfigurationManager.GetMetadataConfiguration().UseFileCreationTimeForDateAdded)
+                    {
+                        item.DateCreated = info.CreationTimeUtc;
+                    }
+
+                    if (item is Video video)
+                    {
+                        Logger.LogInformation("File changed, pruning extracted data: {Path}", item.Path);
+                        ExternalDataManager.DeleteExternalItemDataAsync(video, CancellationToken.None).GetAwaiter().GetResult();
+                    }
+
+                    updateType |= ItemUpdateType.MetadataImport;
+                }
             }
 
             return updateType;
@@ -1130,6 +1167,11 @@ namespace MediaBrowser.Providers.Manager
                 if (source.DateCreated != default)
                 {
                     target.DateCreated = source.DateCreated;
+                }
+
+                if (replaceData || source.DateModified != default)
+                {
+                    target.DateModified = source.DateModified;
                 }
 
                 if (replaceData || string.IsNullOrEmpty(target.PreferredMetadataCountryCode))

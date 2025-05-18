@@ -1572,6 +1572,26 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return FormattableString.Invariant($" -maxrate {bitrate} -bufsize {bufsize}");
             }
 
+            if (string.Equals(videoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(videoCodec, "hevc_qsv", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(videoCodec, "av1_qsv", StringComparison.OrdinalIgnoreCase))
+            {
+                // TODO: probe QSV encoders' capabilities and enable more tuning options
+                // See also https://github.com/intel/media-delivery/blob/master/doc/quality.rst
+
+                // Enable MacroBlock level bitrate control for better subjective visual quality
+                var mbbrcOpt = string.Empty;
+                if (string.Equals(videoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(videoCodec, "hevc_qsv", StringComparison.OrdinalIgnoreCase))
+                {
+                    mbbrcOpt = " -mbbrc 1";
+                }
+
+                // Set (maxrate == bitrate + 1) to trigger VBR for better bitrate allocation
+                // Set (rc_init_occupancy == 2 * bitrate) and (bufsize == 4 * bitrate) to deal with drastic scene changes
+                return FormattableString.Invariant($"{mbbrcOpt} -b:v {bitrate} -maxrate {bitrate + 1} -rc_init_occupancy {bitrate * 2} -bufsize {bitrate * 4}");
+            }
+
             if (string.Equals(videoCodec, "h264_amf", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(videoCodec, "hevc_amf", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(videoCodec, "av1_amf", StringComparison.OrdinalIgnoreCase))
@@ -3947,6 +3967,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasSubs)
                 {
+                    var alphaFormatOpt = string.Empty;
                     if (hasGraphicalSubs)
                     {
                         var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, reqMaxH);
@@ -3964,10 +3985,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                         subFilters.Add(alphaSrcFilter);
                         subFilters.Add("format=yuva420p");
                         subFilters.Add(subTextSubtitlesFilter);
+
+                        alphaFormatOpt = _mediaEncoder.SupportsFilterWithOption(FilterOptionType.OverlayCudaAlphaFormat)
+                            ? ":alpha_format=premultiplied" : string.Empty;
                     }
 
                     subFilters.Add("hwupload=derive_device=cuda");
-                    overlayFilters.Add("overlay_cuda=eof_action=pass:repeatlast=0");
+                    overlayFilters.Add($"overlay_cuda=eof_action=pass:repeatlast=0{alphaFormatOpt}");
                 }
             }
             else
@@ -4164,6 +4188,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasSubs)
                 {
+                    var alphaFormatOpt = string.Empty;
                     if (hasGraphicalSubs)
                     {
                         var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, reqMaxH);
@@ -4181,10 +4206,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                         subFilters.Add(alphaSrcFilter);
                         subFilters.Add("format=yuva420p");
                         subFilters.Add(subTextSubtitlesFilter);
+
+                        alphaFormatOpt = _mediaEncoder.SupportsFilterWithOption(FilterOptionType.OverlayOpenclAlphaFormat)
+                            ? ":alpha_format=premultiplied" : string.Empty;
                     }
 
                     subFilters.Add("hwupload=derive_device=opencl");
-                    overlayFilters.Add("overlay_opencl=eof_action=pass:repeatlast=0");
+                    overlayFilters.Add($"overlay_opencl=eof_action=pass:repeatlast=0{alphaFormatOpt}");
                     overlayFilters.Add("hwmap=derive_device=d3d11va:mode=write:reverse=1");
                     overlayFilters.Add("format=d3d11");
                 }
@@ -6947,7 +6975,8 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 if (string.Equals(videoStream.Codec, "av1", StringComparison.OrdinalIgnoreCase))
                 {
-                    return GetHwaccelType(state, options, "av1", bitDepth, hwSurface);
+                    var accelType = GetHwaccelType(state, options, "av1", bitDepth, hwSurface);
+                    return accelType + ((!string.IsNullOrEmpty(accelType) && isAfbcSupported) ? " -afbc rga" : string.Empty);
                 }
             }
 

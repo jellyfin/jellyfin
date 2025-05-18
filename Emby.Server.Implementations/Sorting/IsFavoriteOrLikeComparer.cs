@@ -25,10 +25,10 @@ namespace Emby.Server.Implementations.Sorting
         public ItemSortBy Type => ItemSortBy.IsFavoriteOrLiked;
 
         /// <summary>
-        /// Gets or sets the user data repository.
+        /// Gets or sets the user data manager.
         /// </summary>
-        /// <value>The user data repository.</value>
-        public IUserDataManager UserDataRepository { get; set; }
+        /// <value>The user data manager.</value>
+        public IUserDataManager UserDataManager { get; set; }
 
         /// <summary>
         /// Gets or sets the user manager.

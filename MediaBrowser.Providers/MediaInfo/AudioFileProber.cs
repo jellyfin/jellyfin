@@ -133,7 +133,6 @@ namespace MediaBrowser.Providers.MediaInfo
             audio.TotalBitrate = mediaInfo.Bitrate;
 
             audio.RunTimeTicks = mediaInfo.RunTimeTicks;
-            audio.Size = mediaInfo.Size;
 
             // Add external lyrics first to prevent the lrc file get overwritten on first scan
             var mediaStreams = new List<MediaStream>(mediaInfo.MediaStreams);
@@ -344,7 +343,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     trackGainTag = trackGainTag[..^2].Trim();
                 }
 
-                if (float.TryParse(trackGainTag, NumberStyles.Float, CultureInfo.InvariantCulture, out var value))
+                if (float.TryParse(trackGainTag, NumberStyles.Float, CultureInfo.InvariantCulture, out var value) && float.IsFinite(value))
                 {
                     audio.NormalizationGain = value;
                 }

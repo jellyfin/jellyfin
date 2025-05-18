@@ -195,6 +195,7 @@
  - [Kenneth Cochran](https://github.com/kennethcochran)
  - [benedikt257](https://github.com/benedikt257)
  - [revam](https://github.com/revam)
+ - [allesmi](https://github.com/allesmi)
 
 # Emby Contributors
 
@@ -270,3 +271,4 @@
  - [Nathan McCrina](https://github.com/nfmccrina)
  - [Martin Reuter](https://github.com/reuterma24)
  - [Michael McElroy](https://github.com/mcmcelro)
+ - [Soumyadip Auddy](https://github.com/SoumyadipAuddy)
