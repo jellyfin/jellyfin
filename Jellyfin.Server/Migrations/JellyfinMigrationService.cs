@@ -268,7 +268,7 @@ internal class JellyfinMigrationService
 
             if (_backupKey.JellyfinDb is not null && _jellyfinDatabaseProvider is not null)
             {
-                logger.LogInformation("Attempt to cleanup librarydb backup.");
+                logger.LogInformation("Attempt to cleanup JellyfinDb backup.");
                 try
                 {
                     await _jellyfinDatabaseProvider.DeleteBackup(_backupKey.JellyfinDb).ConfigureAwait(false);
