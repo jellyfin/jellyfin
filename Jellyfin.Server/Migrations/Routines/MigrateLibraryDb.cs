@@ -92,8 +92,6 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         var legacyBaseItemWithUserKeys = new Dictionary<string, BaseItemEntity>();
         connection.Open();
 
-        CheckMigratableVersion(connection);
-
         var baseItemIds = new HashSet<Guid>();
         using (var operation = GetPreparedDbContext("moving TypedBaseItem"))
         {
@@ -395,28 +393,6 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 
         _logger.LogInformation("Move {0} to {1}.", libraryDbPath, libraryDbPath + ".old");
         File.Move(libraryDbPath, libraryDbPath + ".old", true);
-    }
-
-    private static void CheckMigratableVersion(SqliteConnection connection)
-    {
-        CheckColumnExistance(connection, "TypedBaseItems", "lufs");
-        CheckColumnExistance(connection, "TypedBaseItems", "normalizationgain");
-        CheckColumnExistance(connection, "mediastreams", "dvversionmajor");
-
-        static void CheckColumnExistance(SqliteConnection connection, string table, string column)
-        {
-            using (var cmd = connection.CreateCommand())
-            {
-#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
-                cmd.CommandText = $"Select COUNT(1) FROM pragma_table_xinfo('{table}') WHERE lower(name) = '{column}';";
-#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
-                var result = cmd.ExecuteScalar()!;
-                if (!result.Equals(1L))
-                {
-                    throw new InvalidOperationException("Your database does not meet the required standard. Only upgrades from server version 10.9.11 or above are supported. Please upgrade first to server version 10.10.7 before attempting to upgrade afterwards to 10.10");
-                }
-            }
-        }
     }
 
     private DatabaseMigrationStep GetPreparedDbContext(string operationName)
