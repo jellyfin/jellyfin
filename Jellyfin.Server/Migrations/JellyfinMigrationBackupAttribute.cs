@@ -14,7 +14,7 @@ public sealed class JellyfinMigrationBackupAttribute : System.Attribute
     public bool LegacyLibraryDb { get; set; }
 
     /// <summary>
-    /// Gets or Sets a value indicating whether a backup of the old library.db should be performed.
+    /// Gets or Sets a value indicating whether a backup of the Database should be performed.
     /// </summary>
     public bool JellyfinDb { get; set; }
 
