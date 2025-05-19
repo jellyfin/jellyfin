@@ -1478,7 +1478,7 @@ public sealed class BaseItemRepository
 
         if (maxWidth.HasValue)
         {
-            baseQuery = baseQuery.Where(e => e.Width >= maxWidth);
+            baseQuery = baseQuery.Where(e => e.Width <= maxWidth);
         }
 
         if (filter.MaxHeight.HasValue)
@@ -1696,7 +1696,7 @@ public sealed class BaseItemRepository
 
         if (filter.MinPremiereDate.HasValue)
         {
-            baseQuery = baseQuery.Where(e => e.PremiereDate <= filter.MinPremiereDate.Value);
+            baseQuery = baseQuery.Where(e => e.PremiereDate >= filter.MinPremiereDate.Value);
         }
 
         if (filter.MaxPremiereDate.HasValue)
@@ -2191,7 +2191,7 @@ public sealed class BaseItemRepository
 
         if (filter.AncestorIds.Length > 0)
         {
-            baseQuery = baseQuery.Where(e => e.Children!.Any(f => filter.AncestorIds.Contains(f.ItemId)));
+            baseQuery = baseQuery.Where(e => e.Parents!.Any(f => filter.AncestorIds.Contains(f.ParentItemId)));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.AncestorWithPresentationUniqueKey))
