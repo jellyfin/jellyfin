@@ -29,7 +29,7 @@ internal class JellyfinMigrationService
     private const string DbFilename = "library.db";
     private readonly IDbContextFactory<JellyfinDbContext> _dbContextFactory;
     private readonly ILoggerFactory _loggerFactory;
-    private readonly IBackupService _backupService;
+    private readonly IBackupService? _backupService;
     private readonly IApplicationPaths _applicationPaths;
     private (string? LibraryDb, BackupManifestDto? FullBackup) _backupKey;
 
@@ -38,9 +38,13 @@ internal class JellyfinMigrationService
     /// </summary>
     /// <param name="dbContextFactory">Provides access to the jellyfin database.</param>
     /// <param name="loggerFactory">The logger factory.</param>
-    /// <param name="backupService">The jellyfin backup service.</param>
     /// <param name="applicationPaths">Application paths for library.db backup.</param>
-    public JellyfinMigrationService(IDbContextFactory<JellyfinDbContext> dbContextFactory, ILoggerFactory loggerFactory, IBackupService backupService, IApplicationPaths applicationPaths)
+    /// <param name="backupService">The jellyfin backup service.</param>
+    public JellyfinMigrationService(
+        IDbContextFactory<JellyfinDbContext> dbContextFactory,
+        ILoggerFactory loggerFactory,
+        IApplicationPaths applicationPaths,
+        IBackupService? backupService = null)
     {
         _dbContextFactory = dbContextFactory;
         _loggerFactory = loggerFactory;
@@ -187,7 +191,7 @@ internal class JellyfinMigrationService
                 {
                     logger.LogCritical(ex, "Migration {Name} failed, migration service will attempt to roll back.", item.Key);
 
-                    if (_backupKey != default)
+                    if (_backupKey != default && _backupService is not null)
                     {
                         if (_backupKey.LibraryDb is not null)
                         {
@@ -324,7 +328,7 @@ internal class JellyfinMigrationService
             }
         }
 
-        if (backupInstruction.JellyfinDb || backupInstruction.Metadata || backupInstruction.Subtitles || backupInstruction.Trickplay)
+        if (_backupService is not null && (backupInstruction.JellyfinDb || backupInstruction.Metadata || backupInstruction.Subtitles || backupInstruction.Trickplay))
         {
             logger.LogInformation("A migration will attempt to modify system resources. Will attempt to create backup now.");
             _backupKey = (_backupKey.LibraryDb, await _backupService.CreateBackupAsync(new BackupOptionsDto()
