@@ -197,7 +197,7 @@ namespace Jellyfin.Server
                 await appHost.InitializeServices(startupConfig).ConfigureAwait(false);
 
                 await jellyfinMigrationService.MigrateStepAsync(JellyfinMigrationStageTypes.AppInitialisation, appHost.ServiceProvider).ConfigureAwait(false);
-                jellyfinMigrationService.CleanupSystemAfterMigration(_logger);
+                await jellyfinMigrationService.CleanupSystemAfterMigration(_logger).ConfigureAwait(false);
                 try
                 {
                     await _setupServer!.StopAsync().ConfigureAwait(false);
