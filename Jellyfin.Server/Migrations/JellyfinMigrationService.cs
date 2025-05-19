@@ -275,7 +275,7 @@ internal class JellyfinMigrationService
                 }
                 catch (Exception inner)
                 {
-                    logger.LogCritical(inner, "Could not cleanup {LibraryPath}.", _backupKey.LibraryDb);
+                    logger.LogCritical(inner, "Could not cleanup {LibraryPath}.", _backupKey.JellyfinDb);
                 }
             }
 
