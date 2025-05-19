@@ -213,14 +213,14 @@ internal class JellyfinMigrationService
 
                         if (_backupKey.JellyfinDb is not null)
                         {
-                            logger.LogInformation("Attempt to rollback librarydb.");
+                            logger.LogInformation("Attempt to rollback JellyfinDb.");
                             try
                             {
                                 await _jellyfinDatabaseProvider.RestoreBackupFast(_backupKey.JellyfinDb, CancellationToken.None).ConfigureAwait(false);
                             }
                             catch (Exception inner)
                             {
-                                logger.LogCritical(inner, "Could not rollback {LibraryPath}. Manual intervention might be required to restore a operational state.", _backupKey.LibraryDb);
+                                logger.LogCritical(inner, "Could not rollback {LibraryPath}. Manual intervention might be required to restore a operational state.", _backupKey.JellyfinDb);
                             }
                         }
 
