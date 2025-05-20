@@ -65,7 +65,7 @@ public class MigrateLibraryDbCompatibilityCheck : IAsyncMigrationRoutine
                 var result = cmd.ExecuteScalar()!;
                 if (!result.Equals(1L))
                 {
-                    throw new InvalidOperationException("Your database does not meet the required standard. Only upgrades from server version 10.9.11 or above are supported. Please upgrade first to server version 10.10.7 before attempting to upgrade afterwards to 10.10");
+                    throw new InvalidOperationException("Your database does not meet the required standard. Only upgrades from server version 10.9.11 or above are supported. Please upgrade first to server version 10.10.7 before attempting to upgrade afterwards to 10.11");
                 }
             }
         }
