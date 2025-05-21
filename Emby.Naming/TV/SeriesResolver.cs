@@ -28,7 +28,7 @@ namespace Emby.Naming.TV
             string seriesName = Path.GetFileName(path);
 
             // First check if the name starts with 4 digits (potential series name)
-            var match = Regex.Match(seriesName, @"^-?([0-9]{4})\s*(?:\(.*\))?");
+            var match = Regex.Match(seriesName, @"^-?([0-9])\s*(?:\(.*\))?");
             if (match.Success)
             {
                 seriesName = match.Groups[1].Value; // Just take the numeric part as series name
