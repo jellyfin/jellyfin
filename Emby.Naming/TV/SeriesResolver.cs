@@ -27,10 +27,17 @@ namespace Emby.Naming.TV
         {
             string seriesName = Path.GetFileName(path);
 
-            SeriesPathParserResult result = SeriesPathParser.Parse(options, path);
-            if (result.Success)
+            // First check if the name starts with 4 digits (potential series name)
+            var match = Regex.Match(seriesName, @"^-?([0-9]{4})\s*(?:\(.*\))?");
+            if (match.Success)
             {
-                if (!string.IsNullOrEmpty(result.SeriesName))
+                seriesName = match.Groups[1].Value; // Just take the numeric part as series name
+            }
+            else
+            {
+                // Fall back to original SeriesPathParser way
+                SeriesPathParserResult result = SeriesPathParser.Parse(options, path);
+                if (result.Success && !string.IsNullOrEmpty(result.SeriesName))
                 {
                     seriesName = result.SeriesName;
                 }
