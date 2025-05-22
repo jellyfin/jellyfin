@@ -58,7 +58,7 @@ public class SyncPlayController : BaseJellyfinApiController
         [FromBody, Required] NewGroupRequestDto requestData)
     {
         var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
-        var syncPlayRequest = new NewGroupRequest(requestData.GroupName);
+        var syncPlayRequest = new NewGroupRequest(requestData.GroupName, requestData.StartingPlaybackRate);
         return Ok(_syncPlayManager.NewGroup(currentSession, syncPlayRequest, CancellationToken.None));
     }
 

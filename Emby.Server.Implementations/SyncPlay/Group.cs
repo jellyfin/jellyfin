@@ -136,7 +136,7 @@ namespace Emby.Server.Implementations.SyncPlay
         /// Gets or sets the playback rate.
         /// </summary>
         /// <value>The playback rate.</value>
-        public float PlaybackRate { get; set; } = 1;
+        public float PlaybackRate { get; set; }
 
         /// <summary>
         /// Gets or sets the last activity.
@@ -256,6 +256,7 @@ namespace Emby.Server.Implementations.SyncPlay
         public void CreateGroup(SessionInfo session, NewGroupRequest request, CancellationToken cancellationToken)
         {
             GroupName = request.GroupName;
+            PlaybackRate = SanitizePlaybackRate(request.StartingPlaybackRate);
             AddSession(session);
 
             var sessionIsPlayingAnItem = session.FullNowPlayingItem is not null;
