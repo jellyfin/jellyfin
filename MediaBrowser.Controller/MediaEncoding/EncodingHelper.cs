@@ -3491,6 +3491,21 @@ namespace MediaBrowser.Controller.MediaEncoding
                     doubleRateDeint ? "1" : "0");
             }
 
+            if (hwDeintSuffix.Contains("opencl", StringComparison.OrdinalIgnoreCase))
+            {
+                var useBwdif = options.DeinterlaceMethod == DeinterlaceMethod.bwdif;
+
+                if (_mediaEncoder.SupportsFilter("yadif_opencl")
+                    && _mediaEncoder.SupportsFilter("bwdif_opencl"))
+                {
+                    return string.Format(
+                        CultureInfo.InvariantCulture,
+                        "{0}_opencl={1}:-1:0",
+                        useBwdif ? "bwdif" : "yadif",
+                        doubleRateDeint ? "1" : "0");
+                }
+            }
+
             if (hwDeintSuffix.Contains("vaapi", StringComparison.OrdinalIgnoreCase))
             {
                 return string.Format(
@@ -4123,7 +4138,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // map from d3d11va to opencl via d3d11-opencl interop.
                 mainFilters.Add("hwmap=derive_device=opencl:mode=read");
 
-                // hw deint <= TODO: finish the 'yadif_opencl' filter
+                // hw deint
+                if (doDeintH2645)
+                {
+                    var deintFilter = GetHwDeinterlaceFilter(state, options, "opencl");
+                    mainFilters.Add(deintFilter);
+                }
 
                 // hw transpose
                 if (doOclTranspose)
