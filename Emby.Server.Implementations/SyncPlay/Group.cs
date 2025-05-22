@@ -440,6 +440,13 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
+        public float SanitizePlaybackRate(float? playbackRate)
+        {
+            var newPlaybackRate = playbackRate ?? 1f;
+            return Math.Clamp(newPlaybackRate, 0.1f, 4f);
+        }
+
+        /// <inheritdoc />
         public void UpdatePing(SessionInfo session, long ping)
         {
             if (_participants.TryGetValue(session.Id, out GroupMember value))

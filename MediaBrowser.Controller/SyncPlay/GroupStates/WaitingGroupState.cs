@@ -345,8 +345,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
                 ResumePlaying = false;
             }
 
-            // TODO: Sanitize the playback rate?
-            context.PlaybackRate = request.PlaybackRate;
+            context.PlaybackRate = context.SanitizePlaybackRate(request.PlaybackRate);
 
             var command = context.NewSyncPlayCommand(SendCommandType.Seek);
             context.SendCommand(session, SyncPlayBroadcastType.AllGroup, command, cancellationToken);

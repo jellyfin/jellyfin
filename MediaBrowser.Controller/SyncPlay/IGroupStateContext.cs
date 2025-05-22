@@ -105,6 +105,13 @@ namespace MediaBrowser.Controller.SyncPlay
         long SanitizePositionTicks(long? positionTicks);
 
         /// <summary>
+        /// Sanitizes the playback rate.
+        /// </summary>
+        /// <param name="playbackRate">The playback rate.</param>
+        /// <returns>The sanitized playback rate.</returns>
+        float SanitizePlaybackRate(float? playbackRate);
+
+        /// <summary>
         /// Updates the ping of a session, in milliseconds.
         /// </summary>
         /// <param name="session">The session.</param>
