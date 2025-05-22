@@ -132,6 +132,12 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
         }
 
         /// <inheritdoc />
+        public virtual void HandleRequest(SetPlaybackRateRequest request, IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken)
+        {
+            UnhandledRequest(request);
+        }
+
+        /// <inheritdoc />
         public virtual void HandleRequest(UnpauseGroupRequest request, IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken)
         {
             UnhandledRequest(request);

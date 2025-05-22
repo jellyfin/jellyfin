@@ -133,6 +133,12 @@ namespace Emby.Server.Implementations.SyncPlay
         public long PositionTicks { get; set; }
 
         /// <summary>
+        /// Gets or sets the playback rate.
+        /// </summary>
+        /// <value>The playback rate.</value>
+        public float PlaybackRate { get; set; } = 1;
+
+        /// <summary>
         /// Gets or sets the last activity.
         /// </summary>
         /// <value>The last activity.</value>
@@ -422,6 +428,7 @@ namespace Emby.Server.Implementations.SyncPlay
                 LastActivity,
                 type,
                 PositionTicks,
+                PlaybackRate,
                 DateTime.UtcNow);
         }
 
@@ -650,12 +657,13 @@ namespace Emby.Server.Implementations.SyncPlay
         public PlayQueueUpdate GetPlayQueueUpdate(PlayQueueUpdateReason reason)
         {
             var startPositionTicks = PositionTicks;
+            var startPlaybackRate = PlaybackRate;
             var isPlaying = _state.Type.Equals(GroupStateType.Playing);
 
             if (isPlaying)
             {
                 var currentTime = DateTime.UtcNow;
-                var elapsedTime = currentTime - LastActivity;
+                var elapsedTime = (currentTime - LastActivity) * PlaybackRate;
                 // Elapsed time is negative if event happens
                 // during the delay added to account for latency.
                 // In this phase clients haven't started the playback yet.
@@ -671,6 +679,7 @@ namespace Emby.Server.Implementations.SyncPlay
                 PlayQueue.GetPlaylist(),
                 PlayQueue.PlayingItemIndex,
                 startPositionTicks,
+                startPlaybackRate,
                 isPlaying,
                 PlayQueue.ShuffleMode,
                 PlayQueue.RepeatMode);

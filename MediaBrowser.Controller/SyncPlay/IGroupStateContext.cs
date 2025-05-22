@@ -46,6 +46,12 @@ namespace MediaBrowser.Controller.SyncPlay
         long PositionTicks { get; set; }
 
         /// <summary>
+        /// Gets or sets the playback rate.
+        /// </summary>
+        /// <value>The playback rate.</value>
+        float PlaybackRate { get; set; }
+
+        /// <summary>
         /// Gets or sets the last activity.
         /// </summary>
         /// <value>The last activity.</value>

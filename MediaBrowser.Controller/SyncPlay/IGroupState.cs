@@ -97,6 +97,16 @@ namespace MediaBrowser.Controller.SyncPlay
         void HandleRequest(QueueGroupRequest request, IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Handles a set playback rate request from a session. Context's state can change.
+        /// </summary>
+        /// <param name="request">The queue request.</param>
+        /// <param name="context">The context of the state.</param>
+        /// <param name="prevState">The previous state.</param>
+        /// <param name="session">The session.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        void HandleRequest(SetPlaybackRateRequest request, IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Handles an unpause request from a session. Context's state can change.
         /// </summary>
         /// <param name="request">The unpause request.</param>
