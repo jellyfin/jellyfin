@@ -125,16 +125,16 @@
     "TaskKeyframeExtractor": "מחלץ תמונות מפתח",
     "External": "חיצוני",
     "HearingImpaired": "לקוי שמיעה",
-    "TaskRefreshTrickplayImages": "יצירת תמונות המחשה",
-    "TaskRefreshTrickplayImagesDescription": "יוצר תמונות המחשה לסרטונים שפעילים בספריות.",
+    "TaskRefreshTrickplayImages": "יצירת תמונות Trickplay",
+    "TaskRefreshTrickplayImagesDescription": "יוצר תמונות Trickplay לסרטונים בספריות הפעילות.",
     "TaskAudioNormalization": "נרמול שמע",
     "TaskCleanCollectionsAndPlaylistsDescription": "מנקה פריטים לא קיימים מאוספים ורשימות השמעה.",
     "TaskAudioNormalizationDescription": "מחפש קבצי נורמליזציה של שמע.",
     "TaskCleanCollectionsAndPlaylists": "מנקה אוספים ורשימות השמעה",
     "TaskDownloadMissingLyrics": "הורדת מילים חסרות",
     "TaskDownloadMissingLyricsDescription": "הורדת מילים לשירים",
-    "TaskMoveTrickplayImages": "העברת מיקום התמונות",
+    "TaskMoveTrickplayImages": "העברת מיקום של תמונות Trickplay",
     "TaskExtractMediaSegments": "סריקת מדיה",
     "TaskExtractMediaSegmentsDescription": "מחלץ חלקי מדיה מתוספים המאפשרים זאת.",
-    "TaskMoveTrickplayImagesDescription": "הזזת קבצי טריקפליי קיימים בהתאם להגדרות הספרייה."
+    "TaskMoveTrickplayImagesDescription": "הזזת קבצי Trickplay קיימים בהתאם להגדרות הספרייה."
 }

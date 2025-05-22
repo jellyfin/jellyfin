@@ -123,6 +123,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "tonemap_opencl",
             "overlay_opencl",
             "transpose_opencl",
+            "yadif_opencl",
+            "bwdif_opencl",
             // vaapi
             "scale_vaapi",
             "deinterlace_vaapi",

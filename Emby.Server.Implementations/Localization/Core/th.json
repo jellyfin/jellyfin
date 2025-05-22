@@ -125,5 +125,12 @@
     "TaskKeyframeExtractor": "ตัวแยกคีย์เฟรม",
     "TaskKeyframeExtractorDescription": "แยกคีย์เฟรมจากไฟล์วีดีโอเพื่อสร้างรายการ HLS ให้ถูกต้อง. กระบวนการนี้อาจใช้ระยะเวลานาน",
     "TaskRefreshTrickplayImages": "สร้างไฟล์รูปภาพสำหรับ Trickplay",
-    "TaskRefreshTrickplayImagesDescription": "สร้างภาพตัวอย่างของวีดีโอในคลังที่เปิดใช้งาน Trickplay"
+    "TaskRefreshTrickplayImagesDescription": "สร้างภาพตัวอย่างของวีดีโอในคลังที่เปิดใช้งาน Trickplay",
+    "TaskDownloadMissingLyrics": "ดาวน์โหลดเนื้อเพลงที่หายไป",
+    "TaskDownloadMissingLyricsDescription": "ดาวน์โหลดเนื้อเพลงสำหรับเพลง",
+    "TaskAudioNormalization": "ปรับระดับเสียงให้สม่ำเสมอ",
+    "TaskAudioNormalizationDescription": "สแกนไฟล์เพื่อค้นหาข้อมูลการปรับระดับเสียงให้สม่ำเสมอ",
+    "TaskCleanCollectionsAndPlaylists": "จัดระเบียบคอลเลกชันและเพลย์ลิสต์",
+    "TaskCleanCollectionsAndPlaylistsDescription": "ลบรายการออกจากคอลเลกชันและเพลย์ลิสต์ที่ไม่มีแล้ว",
+    "TaskExtractMediaSegments": "การสแกนส่วนของสื่อมีเดีย"
 }

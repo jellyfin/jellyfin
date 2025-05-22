@@ -1,5 +1,3 @@
-#pragma warning disable RS0030 // Do not use banned APIs
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,8 +7,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Serialization;
 using Jellyfin.Database.Implementations;
+using Jellyfin.Server.Implementations.SystemBackupService;
 using Jellyfin.Server.Migrations.Stages;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.SystemBackupService;
 using MediaBrowser.Model.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -104,25 +104,33 @@ internal class JellyfinMigrationService
         if (migrationOptions != null && migrationOptions.Applied.Count > 0)
         {
             logger.LogInformation("Old migration style migration.xml detected. Migrate now.");
-            var dbContext = await _dbContextFactory.CreateDbContextAsync().ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
+            try
             {
-                var historyRepository = dbContext.GetService<IHistoryRepository>();
-                var appliedMigrations = await dbContext.Database.GetAppliedMigrationsAsync().ConfigureAwait(false);
-                var oldMigrations = Migrations
-                    .SelectMany(e => e.Where(e => e.Metadata.Key is not null)) // only consider migrations that have the key set as its the reference marker for legacy migrations.
-                    .Where(e => migrationOptions.Applied.Any(f => f.Id.Equals(e.Metadata.Key!.Value)))
-                    .Where(e => !appliedMigrations.Contains(e.BuildCodeMigrationId()))
-                    .ToArray();
-                var startupScripts = oldMigrations.Select(e => (Migration: e.Metadata, Script: historyRepository.GetInsertScript(new HistoryRow(e.BuildCodeMigrationId(), GetJellyfinVersion()))));
-                foreach (var item in startupScripts)
+                var dbContext = await _dbContextFactory.CreateDbContextAsync().ConfigureAwait(false);
+                await using (dbContext.ConfigureAwait(false))
                 {
-                    logger.LogInformation("Migrate migration {Key}-{Name}.", item.Migration.Key, item.Migration.Name);
-                    await dbContext.Database.ExecuteSqlRawAsync(item.Script).ConfigureAwait(false);
-                }
+                    var historyRepository = dbContext.GetService<IHistoryRepository>();
+                    var appliedMigrations = await dbContext.Database.GetAppliedMigrationsAsync().ConfigureAwait(false);
+                    var oldMigrations = Migrations
+                        .SelectMany(e => e.Where(e => e.Metadata.Key is not null)) // only consider migrations that have the key set as its the reference marker for legacy migrations.
+                        .Where(e => migrationOptions.Applied.Any(f => f.Id.Equals(e.Metadata.Key!.Value)))
+                        .Where(e => !appliedMigrations.Contains(e.BuildCodeMigrationId()))
+                        .ToArray();
+                    var startupScripts = oldMigrations.Select(e => (Migration: e.Metadata, Script: historyRepository.GetInsertScript(new HistoryRow(e.BuildCodeMigrationId(), GetJellyfinVersion()))));
+                    foreach (var item in startupScripts)
+                    {
+                        logger.LogInformation("Migrate migration {Key}-{Name}.", item.Migration.Key, item.Migration.Name);
+                        await dbContext.Database.ExecuteSqlRawAsync(item.Script).ConfigureAwait(false);
+                    }
 
-                logger.LogInformation("Rename old migration.xml to migration.xml.backup");
-                File.Move(migrationConfigPath, Path.ChangeExtension(migrationConfigPath, ".xml.backup"), true);
+                    logger.LogInformation("Rename old migration.xml to migration.xml.backup");
+                    File.Move(migrationConfigPath, Path.ChangeExtension(migrationConfigPath, ".xml.backup"), true);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogCritical(ex, "Failed to apply migrations");
+                throw;
             }
         }
     }
@@ -155,6 +163,7 @@ internal class JellyfinMigrationService
             (string Key, IInternalMigration Migration)[] pendingMigrations = [.. pendingCodeMigrations, .. pendingDatabaseMigrations];
             logger.LogInformation("There are {Pending} migrations for stage {Stage}.", pendingCodeMigrations.Length, stage);
             var migrations = pendingMigrations.OrderBy(e => e.Key).ToArray();
+
             foreach (var item in migrations)
             {
                 try

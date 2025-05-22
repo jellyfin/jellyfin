@@ -74,6 +74,12 @@ namespace Jellyfin.Server
         public bool NoDetectNetworkChange { get; set; }
 
         /// <summary>
+        /// Gets or sets the path to an jellyfin backup archive to restore the application to.
+        /// </summary>
+        [Option("restore-archive", Required = false, HelpText = "Path to a Jellyfin backup archive to restore from")]
+        public string? RestoreArchive { get; set; }
+
+        /// <summary>
         /// Gets the command line options as a dictionary that can be used in the .NET configuration system.
         /// </summary>
         /// <returns>The configuration dictionary.</returns>
