@@ -3250,5 +3250,136 @@ namespace Emby.Server.Implementations.Library
 
             return item is UserRootFolder || item.IsVisibleStandalone(user);
         }
+
+        public async Task<bool> AddUploadedMediaFile(Microsoft.AspNetCore.Http.IFormFile file, Guid? libraryId, string? collectionType)
+        {
+            if (file == null || file.Length == 0)
+            {
+                _logger.LogError("Uploaded file is null or empty.");
+                return false;
+            }
+
+            try
+            {
+                string? targetLibraryPath = null;
+                CollectionFolder? targetLibrary = null;
+
+                var userRootFolder = GetUserRootFolder();
+                var collectionFolders = userRootFolder.Children.OfType<CollectionFolder>().ToList();
+
+                if (libraryId.HasValue)
+                {
+                    targetLibrary = collectionFolders.FirstOrDefault(cf => cf.Id == libraryId.Value);
+                    if (targetLibrary == null)
+                    {
+                        _logger.LogError("Library with ID {LibraryId} not found.", libraryId.Value);
+                        return false;
+                    }
+                    // Use the first physical path of the library. Consider if multiple paths need special handling.
+                    targetLibraryPath = targetLibrary.PhysicalLocations.FirstOrDefault();
+                }
+                else if (!string.IsNullOrEmpty(collectionType))
+                {
+                    targetLibrary = collectionFolders.FirstOrDefault(cf => string.Equals(cf.CollectionType.ToString(), collectionType, StringComparison.OrdinalIgnoreCase));
+                    if (targetLibrary == null)
+                    {
+                        _logger.LogWarning("No library found for collection type {CollectionType}. Trying to find a default.", collectionType);
+                        // Fallback: try to find a library that can accept the content type based on common names if specific type not found
+                        targetLibrary = collectionFolders.FirstOrDefault(cf =>
+                            (collectionType.Equals("movies", StringComparison.OrdinalIgnoreCase) && cf.Path.ToLowerInvariant().Contains("movie")) ||
+                            (collectionType.Equals("tvshows", StringComparison.OrdinalIgnoreCase) && (cf.Path.ToLowerInvariant().Contains("tv") || cf.Path.ToLowerInvariant().Contains("show"))) ||
+                            (collectionType.Equals("music", StringComparison.OrdinalIgnoreCase) && cf.Path.ToLowerInvariant().Contains("music")));
+                    }
+
+                    if (targetLibrary != null)
+                    {
+                        targetLibraryPath = targetLibrary.PhysicalLocations.FirstOrDefault();
+                    }
+                }
+
+                // If no specific library found, try to use a general default or the first available one.
+                if (targetLibraryPath == null)
+                {
+                    targetLibrary = collectionFolders.FirstOrDefault(); // Or a specially designated "uploads" library
+                    if (targetLibrary == null)
+                    {
+                        _logger.LogError("No libraries available to upload the file.");
+                        return false;
+                    }
+                    targetLibraryPath = targetLibrary.PhysicalLocations.FirstOrDefault();
+                }
+                
+                if (string.IsNullOrEmpty(targetLibraryPath))
+                {
+                    _logger.LogError("Could not determine a valid target library path for file {FileName}.", file.FileName);
+                    return false;
+                }
+
+                // Ensure the target directory exists
+                if (!Directory.Exists(targetLibraryPath))
+                {
+                    _logger.LogInformation("Target library path {Path} does not exist, attempting to create it.", targetLibraryPath);
+                    Directory.CreateDirectory(targetLibraryPath);
+                }
+
+                // Sanitize filename (basic sanitization)
+                var fileName = Path.GetFileName(file.FileName);
+                var invalidChars = Path.GetInvalidFileNameChars();
+                var sanitizedFileName = string.Join("_", fileName.Split(invalidChars, StringSplitOptions.RemoveEmptyEntries)).TrimEnd('.');
+                if (string.IsNullOrWhiteSpace(sanitizedFileName))
+                {
+                    sanitizedFileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                }
+                
+                var destinationPath = Path.Combine(targetLibraryPath, sanitizedFileName);
+
+                // Prevent directory traversal
+                if (!Path.GetFullPath(destinationPath).StartsWith(Path.GetFullPath(targetLibraryPath), StringComparison.OrdinalIgnoreCase))
+                {
+                    _logger.LogError("Potential directory traversal attempt for file {FileName} to path {DestinationPath}", file.FileName, destinationPath);
+                    return false;
+                }
+
+                _logger.LogInformation("Attempting to save uploaded file {FileName} to {DestinationPath}", sanitizedFileName, destinationPath);
+
+                await using (var stream = new FileStream(destinationPath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                _logger.LogInformation("File {FileName} saved successfully to {DestinationPath}", sanitizedFileName, destinationPath);
+
+                // Trigger library scan/refresh for the parent directory of the new file.
+                // Using ReportFileSystemChange with the directory path.
+                // The false parameter indicates it's not a deletion.
+                LibraryMonitor.ReportFileSystemChange(destinationPath, false);
+                _logger.LogInformation("Library scan triggered for path {Path}", destinationPath);
+
+                // Optionally, if a specific library item was targeted, queue a refresh for it.
+                if (targetLibrary != null)
+                {
+                     ProviderManager.QueueRefresh(targetLibrary.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.Normal);
+                    _logger.LogInformation("Queued metadata refresh for library {LibraryName} ({LibraryId})", targetLibrary.Name, targetLibrary.Id);
+                }
+
+
+                return true;
+            }
+            catch (IOException ex)
+            {
+                _logger.LogError(ex, "IO Error saving uploaded file {FileName}", file.FileName);
+                return false;
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogError(ex, "Unauthorized access while saving file {FileName}", file.FileName);
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing uploaded file {FileName}", file.FileName);
+                return false;
+            }
+        }
     }
 }
