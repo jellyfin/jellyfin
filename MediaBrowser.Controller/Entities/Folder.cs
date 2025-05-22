@@ -1277,6 +1277,11 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
+            if (request.MinUserRating.HasValue)
+            {
+                return false;
+            }
+
             if (request.MinIndexNumber.HasValue)
             {
                 return false;
