@@ -281,11 +281,11 @@ namespace Jellyfin.Networking.Tests
         }
 
         [Theory]
-        [InlineData("185.10.10.10,200.200.200.200", "79.2.3.4", true)]
-        [InlineData("185.10.10.10", "185.10.10.10", false)]
-        [InlineData("", "100.100.100.100", false)]
+        [InlineData("185.10.10.10,200.200.200.200", "79.2.3.4", RemoteAccessPolicyResult.RejectDueToNotAllowlistedRemoteIP)]
+        [InlineData("185.10.10.10", "185.10.10.10", RemoteAccessPolicyResult.Allow)]
+        [InlineData("", "100.100.100.100", RemoteAccessPolicyResult.Allow)]
 
-        public void HasRemoteAccess_GivenWhitelist_AllowsOnlyIPsInWhitelist(string addresses, string remoteIP, bool denied)
+        public void HasRemoteAccess_GivenWhitelist_AllowsOnlyIPsInWhitelist(string addresses, string remoteIP, RemoteAccessPolicyResult expectedResult)
         {
             // Comma separated list of IP addresses or IP/netmask entries for networks that will be allowed to connect remotely.
             // If left blank, all remote addresses will be allowed.
@@ -299,15 +299,38 @@ namespace Jellyfin.Networking.Tests
             var startupConf = new Mock<IConfiguration>();
             using var nm = new NetworkManager(NetworkParseTests.GetMockConfig(conf), startupConf.Object, new NullLogger<NetworkManager>());
 
-            Assert.NotEqual(nm.HasRemoteAccess(IPAddress.Parse(remoteIP)), denied);
+            Assert.Equal(expectedResult, nm.ShouldAllowServerAccess(IPAddress.Parse(remoteIP)));
         }
 
         [Theory]
-        [InlineData("185.10.10.10", "79.2.3.4", false)]
-        [InlineData("185.10.10.10", "185.10.10.10", true)]
-        [InlineData("", "100.100.100.100", false)]
+        [InlineData("185.10.10.10,200.200.200.200", "79.2.3.4", RemoteAccessPolicyResult.RejectDueToRemoteAccessDisabled)]
+        [InlineData("185.10.10.10", "127.0.0.1", RemoteAccessPolicyResult.Allow)]
+        [InlineData("", "100.100.100.100", RemoteAccessPolicyResult.RejectDueToRemoteAccessDisabled)]
 
-        public void HasRemoteAccess_GivenBlacklist_BlacklistTheIPs(string addresses, string remoteIP, bool denied)
+        public void HasRemoteAccess_GivenRemoteAccessDisabled_IgnoresAllowlist(string addresses, string remoteIP, RemoteAccessPolicyResult expectedResult)
+        {
+            // Comma separated list of IP addresses or IP/netmask entries for networks that will be allowed to connect remotely.
+            // If left blank, all remote addresses will be allowed.
+            var conf = new NetworkConfiguration()
+            {
+                EnableIPv4 = true,
+                EnableRemoteAccess = false,
+                RemoteIPFilter = addresses.Split(','),
+                IsRemoteIPFilterBlacklist = false
+            };
+
+            var startupConf = new Mock<IConfiguration>();
+            using var nm = new NetworkManager(NetworkParseTests.GetMockConfig(conf), startupConf.Object, new NullLogger<NetworkManager>());
+
+            Assert.Equal(expectedResult, nm.ShouldAllowServerAccess(IPAddress.Parse(remoteIP)));
+        }
+
+        [Theory]
+        [InlineData("185.10.10.10", "79.2.3.4", RemoteAccessPolicyResult.Allow)]
+        [InlineData("185.10.10.10", "185.10.10.10", RemoteAccessPolicyResult.RejectDueToIPBlocklist)]
+        [InlineData("", "100.100.100.100", RemoteAccessPolicyResult.Allow)]
+
+        public void HasRemoteAccess_GivenBlacklist_BlacklistTheIPs(string addresses, string remoteIP, RemoteAccessPolicyResult expectedResult)
         {
             // Comma separated list of IP addresses or IP/netmask entries for networks that will be allowed to connect remotely.
             // If left blank, all remote addresses will be allowed.
@@ -321,7 +344,7 @@ namespace Jellyfin.Networking.Tests
             var startupConf = new Mock<IConfiguration>();
             using var nm = new NetworkManager(NetworkParseTests.GetMockConfig(conf), startupConf.Object, new NullLogger<NetworkManager>());
 
-            Assert.NotEqual(nm.HasRemoteAccess(IPAddress.Parse(remoteIP)), denied);
+            Assert.Equal(expectedResult, nm.ShouldAllowServerAccess(IPAddress.Parse(remoteIP)));
         }
 
         [Theory]
