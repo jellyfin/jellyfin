@@ -59,14 +59,14 @@ public class TrickplayImagesTask : IScheduledTask
     /// <inheritdoc />
     public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
     {
-        return new[]
-        {
+        return
+        [
             new TaskTriggerInfo
             {
                 Type = TaskTriggerInfoType.DailyTrigger,
                 TimeOfDayTicks = TimeSpan.FromHours(3).Ticks
             }
-        };
+        ];
     }
 
     /// <inheritdoc />
@@ -74,8 +74,8 @@ public class TrickplayImagesTask : IScheduledTask
     {
         var query = new InternalItemsQuery
         {
-            MediaTypes = new[] { MediaType.Video },
-            SourceTypes = new[] { SourceType.Library },
+            MediaTypes = [MediaType.Video],
+            SourceTypes = [SourceType.Library],
             IsVirtualItem = false,
             IsFolder = false,
             Recursive = true,
