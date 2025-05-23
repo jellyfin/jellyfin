@@ -78,7 +78,7 @@ namespace Emby.Server.Implementations.Images
             return updateType;
         }
 
-        protected Task<ItemUpdateType> FetchAsync(BaseItem item, ImageType imageType, MetadataRefreshOptions options, CancellationToken cancellationToken)
+        protected Task<ItemUpdateType> FetchAsync(T item, ImageType imageType, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             var image = item.GetImageInfo(imageType, 0);
 
@@ -127,7 +127,7 @@ namespace Emby.Server.Implementations.Images
             return ItemUpdateType.ImageUpdate;
         }
 
-        protected abstract IReadOnlyList<BaseItem> GetItemsWithImages(BaseItem item);
+        protected abstract IReadOnlyList<BaseItem> GetItemsWithImages(T item);
 
         protected string CreateThumbCollage(BaseItem primaryItem, IEnumerable<BaseItem> items, string outputPath)
         {
