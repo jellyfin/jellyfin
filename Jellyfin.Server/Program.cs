@@ -17,7 +17,9 @@ using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Helpers;
 using Jellyfin.Server.Implementations.DatabaseConfiguration;
 using Jellyfin.Server.Implementations.Extensions;
+using Jellyfin.Server.Implementations.FullSystemBackup;
 using Jellyfin.Server.Implementations.StorageHelpers;
+using Jellyfin.Server.Implementations.SystemBackupService;
 using Jellyfin.Server.Migrations;
 using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Common.Configuration;
@@ -59,6 +61,7 @@ namespace Jellyfin.Server
         private static long _startTimestamp;
         private static ILogger _logger = NullLogger.Instance;
         private static bool _restartOnShutdown;
+        private static string? _restoreFromBackup;
 
         /// <summary>
         /// The entry point of the application.
@@ -80,6 +83,7 @@ namespace Jellyfin.Server
 
         private static async Task StartApp(StartupOptions options)
         {
+            _restoreFromBackup = options.RestoreArchive;
             _startTimestamp = Stopwatch.GetTimestamp();
             ServerApplicationPaths appPaths = StartupHelpers.CreateApplicationPaths(options);
             appPaths.MakeSanityCheckOrThrow();
@@ -195,8 +199,15 @@ namespace Jellyfin.Server
 
                 // Re-use the host service provider in the app host since ASP.NET doesn't allow a custom service collection.
                 appHost.ServiceProvider = _jellyfinHost.Services;
-
                 PrepareDatabaseProvider(appHost.ServiceProvider);
+
+                if (!string.IsNullOrWhiteSpace(_restoreFromBackup))
+                {
+                    await appHost.ServiceProvider.GetService<IBackupService>()!.RestoreBackupAsync(_restoreFromBackup).ConfigureAwait(false);
+                    _restoreFromBackup = null;
+                    _restartOnShutdown = true;
+                    return;
+                }
 
                 await ApplyCoreMigrationsAsync(appHost.ServiceProvider, Migrations.Stages.JellyfinMigrationStageTypes.CoreInitialisaition).ConfigureAwait(false);
 
@@ -228,6 +239,7 @@ namespace Jellyfin.Server
 
                 await _jellyfinHost.WaitForShutdownAsync().ConfigureAwait(false);
                 _restartOnShutdown = appHost.ShouldRestart;
+                _restoreFromBackup = appHost.RestoreBackupPath;
             }
             catch (Exception ex)
             {

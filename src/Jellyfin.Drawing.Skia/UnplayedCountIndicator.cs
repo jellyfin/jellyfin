@@ -34,10 +34,12 @@ public static class UnplayedCountIndicator
             Style = SKPaintStyle.Fill
         };
 
+        using var font = new SKFont();
+
         canvas.DrawCircle(x, OffsetFromTopRightCorner, 20, paint);
 
         paint.Color = new SKColor(255, 255, 255, 255);
-        paint.TextSize = 24;
+        font.Size = 24;
         paint.IsAntialias = true;
 
         var y = OffsetFromTopRightCorner + 9;
@@ -55,9 +57,9 @@ public static class UnplayedCountIndicator
         {
             x -= 15;
             y -= 2;
-            paint.TextSize = 18;
+            font.Size = 18;
         }
 
-        canvas.DrawText(text, x, y, paint);
+        canvas.DrawText(text, x, y, font, paint);
     }
 }

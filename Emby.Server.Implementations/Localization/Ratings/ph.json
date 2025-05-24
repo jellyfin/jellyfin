@@ -1,0 +1,48 @@
+{
+    "countryCode": "ph",
+    "supportsSubScores": true,
+    "ratings": [
+        {
+            "ratingStrings": ["G"],
+            "ratingScore": {
+                "score": 0,
+                "subScore": 0
+            }
+        },
+        {
+            "ratingStrings": ["PG"],
+            "ratingScore": {
+                "score": 13,
+                "subScore": 0
+            }
+        },
+        {
+            "ratingStrings": ["R-13"],
+            "ratingScore": {
+                "score": 13,
+                "subScore": 1
+            }
+        },
+        {
+            "ratingStrings": ["R-16"],
+            "ratingScore": {
+                "score": 16,
+                "subScore": 0
+            }
+        },
+        {
+            "ratingStrings": ["R-18"],
+            "ratingScore": {
+                "score": 18,
+                "subScore": 0
+            }
+        },
+        {
+            "ratingStrings": ["X"],
+            "ratingScore": {
+                "score": 1001,
+                "subScore": 0
+            }
+        }
+    ]
+}

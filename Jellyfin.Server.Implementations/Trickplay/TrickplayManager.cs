@@ -14,7 +14,6 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Trickplay;
 using MediaBrowser.Model.Configuration;
@@ -34,7 +33,6 @@ public class TrickplayManager : ITrickplayManager
     private readonly IMediaEncoder _mediaEncoder;
     private readonly IFileSystem _fileSystem;
     private readonly EncodingHelper _encodingHelper;
-    private readonly ILibraryManager _libraryManager;
     private readonly IServerConfigurationManager _config;
     private readonly IImageEncoder _imageEncoder;
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
@@ -51,7 +49,6 @@ public class TrickplayManager : ITrickplayManager
     /// <param name="mediaEncoder">The media encoder.</param>
     /// <param name="fileSystem">The file system.</param>
     /// <param name="encodingHelper">The encoding helper.</param>
-    /// <param name="libraryManager">The library manager.</param>
     /// <param name="config">The server configuration manager.</param>
     /// <param name="imageEncoder">The image encoder.</param>
     /// <param name="dbProvider">The database provider.</param>
@@ -62,7 +59,6 @@ public class TrickplayManager : ITrickplayManager
         IMediaEncoder mediaEncoder,
         IFileSystem fileSystem,
         EncodingHelper encodingHelper,
-        ILibraryManager libraryManager,
         IServerConfigurationManager config,
         IImageEncoder imageEncoder,
         IDbContextFactory<JellyfinDbContext> dbProvider,
@@ -73,7 +69,6 @@ public class TrickplayManager : ITrickplayManager
         _mediaEncoder = mediaEncoder;
         _fileSystem = fileSystem;
         _encodingHelper = encodingHelper;
-        _libraryManager = libraryManager;
         _config = config;
         _imageEncoder = imageEncoder;
         _dbProvider = dbProvider;
@@ -82,10 +77,10 @@ public class TrickplayManager : ITrickplayManager
     }
 
     /// <inheritdoc />
-    public async Task MoveGeneratedTrickplayDataAsync(Video video, LibraryOptions? libraryOptions, CancellationToken cancellationToken)
+    public async Task MoveGeneratedTrickplayDataAsync(Video video, LibraryOptions libraryOptions, CancellationToken cancellationToken)
     {
         var options = _config.Configuration.TrickplayOptions;
-        if (!CanGenerateTrickplay(video, options.Interval))
+        if (!CanGenerateTrickplay(video, options.Interval, libraryOptions))
         {
             return;
         }
@@ -140,7 +135,7 @@ public class TrickplayManager : ITrickplayManager
     }
 
     /// <inheritdoc />
-    public async Task RefreshTrickplayDataAsync(Video video, bool replace, LibraryOptions? libraryOptions, CancellationToken cancellationToken)
+    public async Task RefreshTrickplayDataAsync(Video video, bool replace, LibraryOptions libraryOptions, CancellationToken cancellationToken)
     {
         _logger.LogDebug("Trickplay refresh for {ItemId} (replace existing: {Replace})", video.Id, replace);
 
@@ -169,10 +164,10 @@ public class TrickplayManager : ITrickplayManager
         bool replace,
         int width,
         TrickplayOptions options,
-        LibraryOptions? libraryOptions,
+        LibraryOptions libraryOptions,
         CancellationToken cancellationToken)
     {
-        if (!CanGenerateTrickplay(video, options.Interval))
+        if (!CanGenerateTrickplay(video, options.Interval, libraryOptions))
         {
             return;
         }
@@ -407,7 +402,7 @@ public class TrickplayManager : ITrickplayManager
         return trickplayInfo;
     }
 
-    private bool CanGenerateTrickplay(Video video, int interval)
+    private bool CanGenerateTrickplay(Video video, int interval, LibraryOptions libraryOptions)
     {
         var videoType = video.VideoType;
         if (videoType == VideoType.Iso || videoType == VideoType.Dvd || videoType == VideoType.BluRay)
@@ -435,7 +430,6 @@ public class TrickplayManager : ITrickplayManager
             return false;
         }
 
-        var libraryOptions = _libraryManager.GetLibraryOptions(video);
         if (libraryOptions is null || !libraryOptions.EnableTrickplayImageExtraction)
         {
             return false;
@@ -504,6 +498,13 @@ public class TrickplayManager : ITrickplayManager
 
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
+    }
+
+    /// <inheritdoc />
+    public async Task DeleteTrickplayDataAsync(Guid itemId, CancellationToken cancellationToken)
+    {
+        var dbContext = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await dbContext.TrickplayInfos.Where(i => i.ItemId.Equals(itemId)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />

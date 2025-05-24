@@ -1222,11 +1222,6 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            if (request.IsPlayed.HasValue)
-            {
-                return false;
-            }
-
             if (!string.IsNullOrWhiteSpace(request.Person))
             {
                 return false;
@@ -1267,17 +1262,15 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            if (request.MinCommunityRating.HasValue)
-            {
-                return false;
-            }
-
-            if (request.MinCriticRating.HasValue)
-            {
-                return false;
-            }
-
             if (request.MinIndexNumber.HasValue)
+            {
+                return false;
+            }
+
+            if (request.OrderBy.Any(o =>
+                o.OrderBy == ItemSortBy.CommunityRating ||
+                o.OrderBy == ItemSortBy.CriticRating ||
+                o.OrderBy == ItemSortBy.Runtime))
             {
                 return false;
             }

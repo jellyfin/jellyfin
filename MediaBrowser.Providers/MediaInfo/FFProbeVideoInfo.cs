@@ -322,16 +322,19 @@ namespace MediaBrowser.Providers.MediaInfo
 
         private void FetchBdInfo(Video video, ref ChapterInfo[] chapters, List<MediaStream> mediaStreams, BlurayDiscInfo blurayInfo)
         {
-            if (blurayInfo.Files.Length <= 1)
-            {
-                return;
-            }
-
             var ffmpegVideoStream = mediaStreams.FirstOrDefault(s => s.Type == MediaStreamType.Video);
+            var externalStreams = mediaStreams.Where(s => s.IsExternal).ToList();
 
             // Fill video properties from the BDInfo result
             mediaStreams.Clear();
-            mediaStreams.AddRange(blurayInfo.MediaStreams);
+
+            // Rebuild the list with external streams first
+            int index = 0;
+            foreach (var stream in externalStreams.Concat(blurayInfo.MediaStreams))
+            {
+                stream.Index = index++;
+                mediaStreams.Add(stream);
+            }
 
             if (blurayInfo.RunTimeTicks.HasValue && blurayInfo.RunTimeTicks.Value > 0)
             {

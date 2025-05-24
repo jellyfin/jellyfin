@@ -17,7 +17,9 @@ public sealed class JellyfinMigrationAttribute : Attribute
     /// </summary>
     /// <param name="order">The ordering this migration should be applied to. Must be a valid DateTime ISO8601 formatted string.</param>
     /// <param name="name">The name of this Migration.</param>
+#pragma warning disable CS0618 // Type or member is obsolete
     public JellyfinMigrationAttribute(string order, string name) : this(order, name, null)
+#pragma warning restore CS0618 // Type or member is obsolete
     {
     }
 
@@ -27,6 +29,7 @@ public sealed class JellyfinMigrationAttribute : Attribute
     /// <param name="order">The ordering this migration should be applied to. Must be a valid DateTime ISO8601 formatted string.</param>
     /// <param name="name">The name of this Migration.</param>
     /// <param name="key">[ONLY FOR LEGACY MIGRATIONS]The unique key of this migration. Must be a valid Guid formatted string.</param>
+    [Obsolete("This Constructor should only be used for Legacy migrations. Use the (Order,Name) one for all new ones instead.")]
     public JellyfinMigrationAttribute(string order, string name, string? key)
     {
         Order = DateTime.Parse(order, CultureInfo.InvariantCulture);

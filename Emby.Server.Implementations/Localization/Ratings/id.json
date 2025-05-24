@@ -1,0 +1,34 @@
+{
+    "countryCode": "id",
+    "supportsSubScores": false,
+    "ratings": [
+        {
+            "ratingStrings": ["SU"],
+            "ratingScore": {
+                "score": 0,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["13+"],
+            "ratingScore": {
+                "score": 13,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["17+"],
+            "ratingScore": {
+                "score": 17,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["21+"],
+            "ratingScore": {
+                "score": 21,
+                "subScore": null
+            }
+        }
+    ]
+}
