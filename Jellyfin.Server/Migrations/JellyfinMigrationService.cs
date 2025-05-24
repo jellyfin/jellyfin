@@ -178,7 +178,7 @@ internal class JellyfinMigrationService
                 .ToArray();
 
             (string Key, InternalDatabaseMigration Migration)[] pendingDatabaseMigrations = [];
-            if (stage is JellyfinMigrationStageTypes.CoreInitialisaition)
+            if (stage is JellyfinMigrationStageTypes.CoreInitialisation)
             {
                 pendingDatabaseMigrations = migrationsAssembly.Migrations.Where(f => appliedMigrations.All(e => e.MigrationId != f.Key))
                    .Select(e => (Key: e.Key, Migration: new InternalDatabaseMigration(e, dbContext)))
