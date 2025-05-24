@@ -10,4 +10,6 @@ internal class BackupOptions
     public bool Trickplay { get; set; }
 
     public bool Subtitles { get; set; }
+
+    public bool Database { get; set; }
 }

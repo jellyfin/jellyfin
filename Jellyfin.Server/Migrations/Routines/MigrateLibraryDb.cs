@@ -29,6 +29,7 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// The migration routine for migrating the userdata database to EF Core.
 /// </summary>
 [JellyfinMigration("2025-04-20T20:00:00", nameof(MigrateLibraryDb))]
+[JellyfinMigrationBackup(JellyfinDb = true, LegacyLibraryDb = true)]
 internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 {
     private const string DbFilename = "library.db";

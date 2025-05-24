@@ -47,9 +47,9 @@ public sealed class JellyfinMigrationAttribute : Attribute
     public bool RunMigrationOnSetup { get; set; }
 
     /// <summary>
-    /// Gets or Sets the stage the annoated migration should be executed at. Defaults to <see cref="JellyfinMigrationStageTypes.CoreInitialisaition"/>.
+    /// Gets or Sets the stage the annoated migration should be executed at. Defaults to <see cref="JellyfinMigrationStageTypes.CoreInitialisation"/>.
     /// </summary>
-    public JellyfinMigrationStageTypes Stage { get; set; } = JellyfinMigrationStageTypes.CoreInitialisaition;
+    public JellyfinMigrationStageTypes Stage { get; set; } = JellyfinMigrationStageTypes.CoreInitialisation;
 
     /// <summary>
     /// Gets the ordering of the migration.
