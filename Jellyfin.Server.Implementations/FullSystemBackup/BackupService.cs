@@ -136,10 +136,10 @@ public class BackupService : IBackupService
             await using (dbContext.ConfigureAwait(false))
             {
                 // restore migration history manually
-                var historyEntry = zipArchive.GetEntry($"Database\\{typeof(HistoryRow).Name}.json");
+                var historyEntry = zipArchive.GetEntry($"Database\\{nameof(HistoryRow)}.json");
                 if (historyEntry is null)
                 {
-                    _logger.LogInformation("No backup of the history table in archive. This is required for Jellyfins operation");
+                    _logger.LogInformation("No backup of the history table in archive. This is required for Jellyfin operation");
                     throw new InvalidOperationException("Cannot restore backup that has no History data.");
                 }
 
