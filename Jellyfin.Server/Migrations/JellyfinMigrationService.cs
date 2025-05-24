@@ -56,7 +56,7 @@ internal class JellyfinMigrationService
         _applicationPaths = applicationPaths;
 #pragma warning disable CS0618 // Type or member is obsolete
         Migrations = [.. typeof(IMigrationRoutine).Assembly.GetTypes().Where(e => typeof(IMigrationRoutine).IsAssignableFrom(e) || typeof(IAsyncMigrationRoutine).IsAssignableFrom(e))
-            .Select(e => (Type: e, Metadata: e.GetCustomAttribute<JellyfinMigrationAttribute>(), Backup: e.GetCustomAttribute<JellyfinMigrationBackupAttribute>()))
+            .Select(e => (Type: e, Metadata: e.GetCustomAttribute<JellyfinMigrationAttribute>(), Backup: e.GetCustomAttributes<JellyfinMigrationBackupAttribute>()))
             .Where(e => e.Metadata != null)
             .GroupBy(e => e.Metadata!.Stage)
             .Select(f =>
@@ -64,7 +64,13 @@ internal class JellyfinMigrationService
                 var stage = new MigrationStage(f.Key);
                 foreach (var item in f)
                 {
-                    stage.Add(new(item.Type, item.Metadata!, item.Backup));
+                    JellyfinMigrationBackupAttribute? backupMetadata = null;
+                    if (item.Backup?.Any() == true)
+                    {
+                        backupMetadata = item.Backup.Aggregate(MergeBackupAttributes);
+                    }
+
+                    stage.Add(new(item.Type, item.Metadata!, backupMetadata));
                 }
 
                 return stage;
@@ -315,14 +321,7 @@ internal class JellyfinMigrationService
            .Where(e => appliedMigrations.All(f => f.MigrationId != e.BuildCodeMigrationId()))
            .Select(e => e.BackupRequirements)
            .Where(e => e is not null)
-           .Aggregate(backupInstruction, (left, right) => new JellyfinMigrationBackupAttribute()
-           {
-               JellyfinDb = left!.JellyfinDb || right!.JellyfinDb,
-               LegacyLibraryDb = left.LegacyLibraryDb || right!.LegacyLibraryDb,
-               Metadata = left.Metadata || right!.Metadata,
-               Subtitles = left.Subtitles || right!.Subtitles,
-               Trickplay = left.Trickplay || right!.Trickplay
-           });
+           .Aggregate(backupInstruction, MergeBackupAttributes!);
 
         if (backupInstruction.LegacyLibraryDb)
         {
@@ -379,6 +378,18 @@ internal class JellyfinMigrationService
             }).ConfigureAwait(false));
             logger.LogInformation("Pre-Migration backup successfully created as {BackupKey}", _backupKey.FullBackup.Path);
         }
+    }
+
+    private static JellyfinMigrationBackupAttribute MergeBackupAttributes(JellyfinMigrationBackupAttribute left, JellyfinMigrationBackupAttribute right)
+    {
+        return new JellyfinMigrationBackupAttribute()
+        {
+            JellyfinDb = left!.JellyfinDb || right!.JellyfinDb,
+            LegacyLibraryDb = left.LegacyLibraryDb || right!.LegacyLibraryDb,
+            Metadata = left.Metadata || right!.Metadata,
+            Subtitles = left.Subtitles || right!.Subtitles,
+            Trickplay = left.Trickplay || right!.Trickplay
+        };
     }
 
     private class InternalCodeMigration : IInternalMigration
