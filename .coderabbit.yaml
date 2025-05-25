@@ -1,0 +1,7 @@
+tone_instructions: "Be precise"
+reviews:
+  review_status: false
+  collapse_walkthrough: true
+  suggested_labels: false
+  suggested_reviewers: false
+  poem: false
