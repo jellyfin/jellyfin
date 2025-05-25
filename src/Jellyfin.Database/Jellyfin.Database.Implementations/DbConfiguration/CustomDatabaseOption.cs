@@ -8,12 +8,12 @@ namespace Jellyfin.Database.Implementations.DbConfiguration;
 public class CustomDatabaseOption
 {
     /// <summary>
-    /// Get or sets the key of the value.
+    /// Gets or sets the key of the value.
     /// </summary>
-    public string Key { get; set; }
+    public required string Key { get; set; }
 
     /// <summary>
     /// Gets or sets the value.
     /// </summary>
-    public string Value { get; set; }
+    public required string Value { get; set; }
 }
