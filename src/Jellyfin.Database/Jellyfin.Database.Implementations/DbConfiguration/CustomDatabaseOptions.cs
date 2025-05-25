@@ -26,6 +26,6 @@ public class CustomDatabaseOptions
     /// Gets or sets the list of extra options for the custom provider.
     /// </summary>
 #pragma warning disable CA2227 // Collection properties should be read only
-    public Dictionary<string, string> Options { get; set; } = new Dictionary<string, string>();
+    public ICollection<CustomDatabaseOption> Options { get; set; } = [];
 #pragma warning restore CA2227 // Collection properties should be read only
 }
