@@ -46,7 +46,7 @@ public static class ServiceCollectionExtensions
     private static JellyfinDbProviderFactory? LoadDatabasePlugin(CustomDatabaseOptions customProviderOptions, IApplicationPaths applicationPaths)
     {
         var plugin = Directory.EnumerateDirectories(applicationPaths.PluginsPath)
-            .Where(e => Path.GetDirectoryName(e)!.StartsWith(customProviderOptions.PluginName, StringComparison.OrdinalIgnoreCase))
+            .Where(e => Path.GetFileName(e)!.StartsWith(customProviderOptions.PluginName, StringComparison.OrdinalIgnoreCase))
             .Order()
             .FirstOrDefault()
             ?? throw new InvalidOperationException($"The requested custom database plugin with the name '{customProviderOptions.PluginName}' could not been found in '{applicationPaths.PluginsPath}'");
