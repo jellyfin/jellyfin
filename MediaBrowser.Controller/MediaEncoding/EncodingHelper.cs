@@ -5940,7 +5940,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         // Use NV15 instead of P010 to avoid the issue.
                         // SDR inputs are using BGRA formats already which is not affected.
                         var intermediateFormat = string.Equals(outFormat, "p010", StringComparison.OrdinalIgnoreCase) ? "nv15" : outFormat;
-                        var hwScaleFilterFirstPass = $"scale_rkrga=w=iw/7.9:h=ih/7.9:format={intermediateFormat}:force_divisible_by=4:afbc=1";
+                        var hwScaleFilterFirstPass = $"scale_rkrga=w=iw/7.9:h=ih/7.9:format={intermediateFormat}:force_original_aspect_ratio=increase:force_divisible_by=4:afbc=1";
                         mainFilters.Add(hwScaleFilterFirstPass);
                     }
 
