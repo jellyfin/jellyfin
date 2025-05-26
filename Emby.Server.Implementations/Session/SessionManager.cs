@@ -326,33 +326,83 @@ namespace Emby.Server.Implementations.Session
         {
             bool liveStreamNeedsToBeClosed = false;
 
+            // Try to get the active session mappings for the given live stream ID.
             if (_activeLiveStreamSessions.TryGetValue(liveStreamId, out var activeSessionMappings))
             {
-                if (activeSessionMappings.TryRemove(sessionIdOrPlaySessionId, out var correspondingId))
-                {
-                    if (!string.IsNullOrEmpty(correspondingId))
-                    {
-                        activeSessionMappings.TryRemove(correspondingId, out _);
-                    }
+                // Attempt to remove the primary session/playSession ID.
+                bool mainIdRemoved = activeSessionMappings.TryRemove(sessionIdOrPlaySessionId, out var correspondingId);
 
+                if (mainIdRemoved && !string.IsNullOrEmpty(correspondingId))
+                {
+                    // If a corresponding ID was found (e.g., linking a PlaySessionId to a SessionId or vice-versa),
+                    // attempt to remove that as well to fully clear this client's association.
+                    activeSessionMappings.TryRemove(correspondingId, out _);
+                    // We don't strictly need to check the return of the second TryRemove here for the core logic,
+                    // as the goal is to ensure both are attempted if a link exists.
+                }
+
+                // Only if we successfully removed an identifier AND the map for this live stream is now empty,
+                // should we consider closing the underlying stream.
+                if (mainIdRemoved && activeSessionMappings.IsEmpty)
+                {
                     liveStreamNeedsToBeClosed = true;
+                    // Clean up the entry for this liveStreamId from the main tracking dictionary.
+                    if (_activeLiveStreamSessions.TryRemove(liveStreamId, out _))
+                    {
+                        _logger.LogInformation("Live stream {LiveStreamId} has no more active sessions and is being closed by SessionManager.", liveStreamId);
+                    }
+                    else
+                    {
+                        // This case should ideally not happen if we just found it in _activeLiveStreamSessions.
+                        // Logging it as a warning if it does.
+                        _logger.LogWarning("Live stream {LiveStreamId} had no more active session mappings, but was not found in _activeLiveStreamSessions for removal.", liveStreamId);
+                    }
                 }
-
-                if (activeSessionMappings.IsEmpty)
+                else if (mainIdRemoved)
                 {
-                    _activeLiveStreamSessions.TryRemove(liveStreamId, out _);
+                    // A session identifier was removed, but others remain for this live stream.
+                    // Logged at Debug level as this is an intermediate state and can be frequent.
+                    _logger.LogDebug(
+                        "Session identifier {RemovedIdentifier} removed for live stream {LiveStreamId}. " +
+                        "Other session identifiers ({RemainingMappingCount}) still active for this stream.",
+                        sessionIdOrPlaySessionId,
+                        liveStreamId,
+                        activeSessionMappings.Count);
                 }
+                else
+                {
+                    // The sessionIdOrPlaySessionId was not found in the mappings for this liveStreamId.
+                    // This can happen if CloseLiveStreamIfNeededAsync is called redundantly after
+                    // the session identifiers have already been cleared by a previous event.
+                    _logger.LogDebug(// Changed from Warning to Debug as it's often benign/expected
+                        "Attempted to remove session identifier {SessionIdentifier} for live stream {LiveStreamId}, " +
+                        "but it was not found in active mappings (possibly already removed).",
+                        sessionIdOrPlaySessionId,
+                        liveStreamId);
+                }
+            }
+            else
+            {
+                // CloseLiveStreamIfNeededAsync was called for a liveStreamId that SessionManager
+                // has no record of in _activeLiveStreamSessions. This could be a redundant call
+                // after the stream was fully closed and its entry removed from _activeLiveStreamSessions.
+                _logger.LogDebug(// Changed from Warning to Debug
+                    "Attempted to process session stop for live stream {LiveStreamId}, " +
+                    "but no active session mappings were found for it (possibly already fully closed).",
+                    liveStreamId);
             }
 
             if (liveStreamNeedsToBeClosed)
             {
                 try
                 {
+                    // This call is now only made when SessionManager is certain no more of its tracked
+                    // sessions are using this liveStreamId.
                     await _mediaSourceManager.CloseLiveStream(liveStreamId).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error closing live stream");
+                    _logger.LogError(ex, "Error during MediaSourceManager.CloseLiveStream for live stream {LiveStreamId}", liveStreamId);
                 }
             }
         }
