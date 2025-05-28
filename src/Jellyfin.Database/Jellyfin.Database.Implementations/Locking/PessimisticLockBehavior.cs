@@ -244,7 +244,7 @@ public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
                 var blockingQuery = _blockQuery;
                 if (!blockingQuery.Printed)
                 {
-                    blockingQuery = (blockingQuery.Command, blockingQuery.Id, blockingQuery.QueryDate, true);
+                    _blockQuery = (blockingQuery.Command, blockingQuery.Id, blockingQuery.QueryDate, true);
                     logger.LogInformation("QueryLock: {Id} --- {Query}", blockingQuery.Id, blockingQuery.Command);
                 }
 
