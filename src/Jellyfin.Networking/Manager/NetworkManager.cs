@@ -91,7 +91,10 @@ public class NetworkManager : INetworkManager, IDisposable
         _networkEventLock = new();
         _remoteAddressFilter = new List<IPNetwork>();
 
-        _ = bool.TryParse(startupConfig[DetectNetworkChangeKey], out var detectNetworkChange);
+        if (!bool.TryParse(startupConfig[DetectNetworkChangeKey], out var detectNetworkChange))
+        {
+            detectNetworkChange = true; // Set to default value
+        }
 
         UpdateSettings(_configurationManager.GetNetworkConfiguration());
 
@@ -316,32 +319,14 @@ public class NetworkManager : INetworkManager, IDisposable
             // Get configuration options
             var subnets = config.LocalNetworkSubnets;
 
-            // If no LAN addresses are specified, all private subnets and Loopback are deemed to be the LAN
-            if (!NetworkUtils.TryParseToSubnets(subnets, out var lanSubnets, false) || lanSubnets.Count == 0)
+            if (NetworkUtils.TryParseToSubnets(subnets, out var lanSubnets, false) && lanSubnets.Count != 0)
             {
-                _logger.LogDebug("Using LAN interface addresses as user provided no LAN details.");
-
-                var fallbackLanSubnets = new List<IPNetwork>();
-                if (IsIPv6Enabled)
-                {
-                    fallbackLanSubnets.Add(NetworkConstants.IPv6RFC4291Loopback); // RFC 4291 (Loopback)
-                    fallbackLanSubnets.Add(NetworkConstants.IPv6RFC4291SiteLocal); // RFC 4291 (Site local)
-                    fallbackLanSubnets.Add(NetworkConstants.IPv6RFC4193UniqueLocal); // RFC 4193 (Unique local)
-                }
-
-                if (IsIPv4Enabled)
-                {
-                    fallbackLanSubnets.Add(NetworkConstants.IPv4RFC5735Loopback); // RFC 5735 (Loopback)
-                    fallbackLanSubnets.Add(NetworkConstants.IPv4RFC1918PrivateClassA); // RFC 1918 (private Class A)
-                    fallbackLanSubnets.Add(NetworkConstants.IPv4RFC1918PrivateClassB); // RFC 1918 (private Class B)
-                    fallbackLanSubnets.Add(NetworkConstants.IPv4RFC1918PrivateClassC); // RFC 1918 (private Class C)
-                }
-
-                _lanSubnets = fallbackLanSubnets;
+                _lanSubnets = lanSubnets;
             }
             else
             {
-                _lanSubnets = lanSubnets;
+                _logger.LogDebug("Using LAN interface addresses as user provided no LAN details.");
+                _lanSubnets = _interfaces.Select(iface => iface.Subnet).ToList();
             }
 
             _excludedSubnets = NetworkUtils.TryParseToSubnets(subnets, out var excludedSubnets, true)
@@ -606,9 +591,6 @@ public class NetworkManager : INetworkManager, IDisposable
         var config = (NetworkConfiguration)configuration;
         HappyEyeballs.HttpClientExtension.UseIPv6 = config.EnableIPv6;
 
-        InitializeLan(config);
-        InitializeRemote(config);
-
         if (string.IsNullOrEmpty(MockNetworkSettings))
         {
             InitializeInterfaces();
@@ -642,6 +624,9 @@ public class NetworkManager : INetworkManager, IDisposable
 
             _interfaces = interfaces;
         }
+
+        InitializeLan(config);
+        InitializeRemote(config);
 
         EnforceBindSettings(config);
         InitializeOverrides(config);
