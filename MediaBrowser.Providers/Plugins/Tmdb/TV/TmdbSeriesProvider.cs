@@ -222,7 +222,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             result = new MetadataResult<Series>
             {
-                Item = MapTvShowToSeries(tvShow, info.MetadataCountryCode),
+                Item = MapTvShowToSeries(tvShow, info.MetadataCountryCode, info.DisplayOrder),
                 ResultLanguage = info.MetadataLanguage ?? tvShow.OriginalLanguage
             };
 
@@ -236,7 +236,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             return result;
         }
 
-        private static Series MapTvShowToSeries(TvShow seriesResult, string preferredCountryCode)
+        private static Series MapTvShowToSeries(TvShow seriesResult, string preferredCountryCode, string? displayOrder)
         {
             var series = new Series
             {
@@ -315,6 +315,15 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     {
                         series.AddTrailerUrl("https://www.youtube.com/watch?v=" + video.Key);
                     }
+                }
+            }
+
+            if (seriesResult.EpisodeGroups?.Results is not null && MapDisplayOrderToTvGroupType(displayOrder) is { } tvGroupType)
+            {
+                var episodeGroup = seriesResult.EpisodeGroups.Results.Find(g => g.Type == tvGroupType);
+                if (episodeGroup is not null)
+                {
+                    series.TrySetProviderId(TmdbEpisodeGroupId.ProviderKey, episodeGroup.Id);
                 }
             }
 
@@ -407,6 +416,18 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
             return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
+        }
+
+        private static TvGroupType? MapDisplayOrderToTvGroupType(string? displayOrder)
+        {
+            return string.Equals(displayOrder, "originalAirDate", StringComparison.Ordinal) ? TvGroupType.OriginalAirDate :
+                string.Equals(displayOrder, "absolute", StringComparison.Ordinal) ? TvGroupType.Absolute :
+                string.Equals(displayOrder, "dvd", StringComparison.Ordinal) ? TvGroupType.DVD :
+                string.Equals(displayOrder, "digital", StringComparison.Ordinal) ? TvGroupType.Digital :
+                string.Equals(displayOrder, "storyArc", StringComparison.Ordinal) ? TvGroupType.StoryArc :
+                string.Equals(displayOrder, "production", StringComparison.Ordinal) ? TvGroupType.Production :
+                string.Equals(displayOrder, "tv", StringComparison.Ordinal) ? TvGroupType.TV :
+                null;
         }
     }
 }
