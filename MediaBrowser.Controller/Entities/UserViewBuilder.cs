@@ -924,6 +924,11 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
+            if (query.ExcludeItemIds.Contains(item.Id))
+            {
+                return false;
+            }
+
             return true;
         }
 
