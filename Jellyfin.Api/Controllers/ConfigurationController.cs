@@ -1,14 +1,14 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Net.Mime;
 using System.Text.Json;
 using Jellyfin.Api.Attributes;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.Models.ConfigurationDtos;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Api;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Branding;
 using MediaBrowser.Model.Configuration;
 using Microsoft.AspNetCore.Authorization;
@@ -25,7 +25,7 @@ namespace Jellyfin.Api.Controllers;
 public class ConfigurationController : BaseJellyfinApiController
 {
     private readonly IServerConfigurationManager _configurationManager;
-    private readonly IMediaEncoder _mediaEncoder;
+    private readonly INetworkManager _networkManager;
 
     private readonly JsonSerializerOptions _serializerOptions = JsonDefaults.Options;
 
@@ -33,13 +33,13 @@ public class ConfigurationController : BaseJellyfinApiController
     /// Initializes a new instance of the <see cref="ConfigurationController"/> class.
     /// </summary>
     /// <param name="configurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
-    /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
+    /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
     public ConfigurationController(
         IServerConfigurationManager configurationManager,
-        IMediaEncoder mediaEncoder)
+        INetworkManager networkManager)
     {
         _configurationManager = configurationManager;
-        _mediaEncoder = mediaEncoder;
+        _networkManager = networkManager;
     }
 
     /// <summary>
@@ -140,6 +140,29 @@ public class ConfigurationController : BaseJellyfinApiController
         currentBranding.SplashscreenEnabled = configuration.SplashscreenEnabled;
 
         _configurationManager.SaveConfiguration("branding", currentBranding);
+
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Updates trusted network.
+    /// </summary>
+    /// <param name="configuration">Trusted network configuration.</param>
+    /// <response code="204">Trusted network configuration updated.</response>
+    /// <returns>Update status.</returns>
+    [HttpPost("Configuration/UpdateTrustedNetwork")]
+    [Authorize(Policy = Policies.RequiresElevation)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public ActionResult UpdateTrustedNetworkConfiguration([FromBody, Required] TrustedNetworkDto configuration)
+    {
+        var networkConfig = (NetworkConfiguration)_configurationManager.GetConfiguration("network");
+
+        networkConfig.LocalNetworkSubnets = configuration.LocalNetworkSubnets?.ToArray() ?? networkConfig.LocalNetworkSubnets;
+        networkConfig.RemoteIPFilter = configuration.RemoteIPFilter?.ToArray() ?? networkConfig.RemoteIPFilter;
+        networkConfig.IsRemoteIPFilterBlacklist = configuration.IsRemoteIPFilterBlacklist ?? networkConfig.IsRemoteIPFilterBlacklist;
+
+        _networkManager.UpdateSettings(networkConfig);
+        _configurationManager.SaveConfiguration("network", networkConfig);
 
         return NoContent();
     }
