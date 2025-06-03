@@ -54,7 +54,7 @@ public class XmlTvListingsProviderTests
             Path = path
         };
 
-        var startDate = new DateTime(2022, 11, 4, 0, 0, 0, 0, DateTimeKind.Utc);
+        var startDate = new DateTime(2022, 11, 4, 0, 0, 0, DateTimeKind.Utc);
         var programs = await _xmlTvListingsProvider.GetProgramsAsync(info, "3297", startDate, startDate.AddDays(1), CancellationToken.None);
         var programsList = programs.ToList();
         Assert.Single(programsList);
