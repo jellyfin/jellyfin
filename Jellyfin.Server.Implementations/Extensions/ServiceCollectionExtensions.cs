@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.DbConfiguration;
+using Jellyfin.Database.Implementations.Locking;
 using Jellyfin.Database.Providers.Sqlite;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
@@ -96,6 +97,7 @@ public static class ServiceCollectionExtensions
                 efCoreConfiguration = new DatabaseConfigurationOptions()
                 {
                     DatabaseType = "Jellyfin-SQLite",
+                    LockingBehavior = DatabaseLockingBehaviorTypes.NoLock
                 };
                 configurationManager.SaveConfiguration("database", efCoreConfiguration);
             }
@@ -121,10 +123,25 @@ public static class ServiceCollectionExtensions
 
         serviceCollection.AddSingleton<IJellyfinDatabaseProvider>(providerFactory!);
 
+        switch (efCoreConfiguration.LockingBehavior)
+        {
+            case DatabaseLockingBehaviorTypes.NoLock:
+                serviceCollection.AddSingleton<IEntityFrameworkCoreLockingBehavior, NoLockBehavior>();
+                break;
+            case DatabaseLockingBehaviorTypes.Pessimistic:
+                serviceCollection.AddSingleton<IEntityFrameworkCoreLockingBehavior, PessimisticLockBehavior>();
+                break;
+            case DatabaseLockingBehaviorTypes.Optimistic:
+                serviceCollection.AddSingleton<IEntityFrameworkCoreLockingBehavior, OptimisticLockBehavior>();
+                break;
+        }
+
         serviceCollection.AddPooledDbContextFactory<JellyfinDbContext>((serviceProvider, opt) =>
         {
             var provider = serviceProvider.GetRequiredService<IJellyfinDatabaseProvider>();
             provider.Initialise(opt);
+            var lockingBehavior = serviceProvider.GetRequiredService<IEntityFrameworkCoreLockingBehavior>();
+            lockingBehavior.Initialise(opt);
         });
 
         return serviceCollection;

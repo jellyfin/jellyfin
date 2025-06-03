@@ -690,33 +690,42 @@ public class NetworkManager : INetworkManager, IDisposable
     }
 
     /// <inheritdoc/>
-    public bool HasRemoteAccess(IPAddress remoteIP)
+    public RemoteAccessPolicyResult ShouldAllowServerAccess(IPAddress remoteIP)
     {
         var config = _configurationManager.GetNetworkConfiguration();
-        if (config.EnableRemoteAccess)
+        if (IsInLocalNetwork(remoteIP))
         {
-            // Comma separated list of IP addresses or IP/netmask entries for networks that will be allowed to connect remotely.
-            // If left blank, all remote addresses will be allowed.
-            if (_remoteAddressFilter.Any() && !IsInLocalNetwork(remoteIP))
-            {
-                // remoteAddressFilter is a whitelist or blacklist.
-                var matches = _remoteAddressFilter.Count(remoteNetwork => NetworkUtils.SubnetContainsAddress(remoteNetwork, remoteIP));
-                if ((!config.IsRemoteIPFilterBlacklist && matches > 0)
-                    || (config.IsRemoteIPFilterBlacklist && matches == 0))
-                {
-                    return true;
-                }
-
-                return false;
-            }
+            return RemoteAccessPolicyResult.Allow;
         }
-        else if (!IsInLocalNetwork(remoteIP))
+
+        if (!config.EnableRemoteAccess)
         {
             // Remote not enabled. So everyone should be LAN.
-            return false;
+            return RemoteAccessPolicyResult.RejectDueToRemoteAccessDisabled;
         }
 
-        return true;
+        if (!_remoteAddressFilter.Any())
+        {
+            // No filter on remote addresses, allow any of them.
+            return RemoteAccessPolicyResult.Allow;
+        }
+
+        // Comma separated list of IP addresses or IP/netmask entries for networks that will be allowed to connect remotely.
+        // If left blank, all remote addresses will be allowed.
+
+        // remoteAddressFilter is a whitelist or blacklist.
+        var anyMatches = _remoteAddressFilter.Any(remoteNetwork => NetworkUtils.SubnetContainsAddress(remoteNetwork, remoteIP));
+        if (config.IsRemoteIPFilterBlacklist)
+        {
+            return anyMatches
+                ? RemoteAccessPolicyResult.RejectDueToIPBlocklist
+                : RemoteAccessPolicyResult.Allow;
+        }
+
+        // Allow-list
+        return anyMatches
+            ? RemoteAccessPolicyResult.Allow
+            : RemoteAccessPolicyResult.RejectDueToNotAllowlistedRemoteIP;
     }
 
     /// <inheritdoc/>

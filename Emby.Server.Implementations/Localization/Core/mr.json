@@ -118,12 +118,17 @@
     "MessageNamedServerConfigurationUpdatedWithValue": "सर्व्हर कॉन्फिगरेशन विभाग {0} अद्यतनित केला गेला आहे",
     "Inherit": "वारसा",
     "Forced": "सक्ती केली आहे",
-    "FailedLoginAttemptWithUserName": "अयशस्वी लॉगिन {0} पासून प्रयत्न करा",
+    "FailedLoginAttemptWithUserName": "{0} कडून लॉगिन करण्याचा प्रयत्न अयशस्वी झाला",
     "External": "बाहेरचा",
     "DeviceOnlineWithName": "{0} कनेक्ट झाले",
     "DeviceOfflineWithName": "{0} डिस्कनेक्ट झाला आहे",
     "AuthenticationSucceededWithUserName": "{0} यशस्वीरित्या प्रमाणीकृत",
     "HearingImpaired": "कर्णबधीर",
     "TaskRefreshTrickplayImages": "ट्रिकप्ले प्रतिमा तयार करा",
-    "TaskRefreshTrickplayImagesDescription": "सक्षम लायब्ररीमधील व्हिडिओंसाठी ट्रिकप्ले पूर्वावलोकन तयार करते."
+    "TaskRefreshTrickplayImagesDescription": "सक्षम लायब्ररीमधील व्हिडिओंसाठी ट्रिकप्ले पूर्वावलोकन तयार करते.",
+    "TaskCleanCollectionsAndPlaylists": "संग्रह आणि प्लेलिस्ट व्यवस्थित करा",
+    "TaskExtractMediaSegments": "मिडिया विभाग तपासणी",
+    "TaskMoveTrickplayImages": "ट्रिकप्ले प्रतिमेचे स्थान स्थलांतर करा",
+    "TaskDownloadMissingLyrics": "उपलब्ध नसलेली गीतपट्टी (Lyrics) डाउनलोड करा",
+    "TaskAudioNormalization": "ऑडिओ सामान्यीकरण"
 }
