@@ -129,5 +129,11 @@ namespace MediaBrowser.Common.Net
         /// <param name="remoteIP">IP address of the client.</param>
         /// <returns><b>True</b> if it has access, otherwise <b>false</b>.</returns>
         bool HasRemoteAccess(IPAddress remoteIP);
+
+        /// <summary>
+        /// Reloads all settings and re-Initializes the instance.
+        /// </summary>
+        /// <param name="configuration">The <see cref="NetworkConfiguration"/> to use.</param>
+        public void UpdateSettings(object configuration);
     }
 }
