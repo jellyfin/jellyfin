@@ -14,6 +14,8 @@ using Jellyfin.Server.Implementations.SystemBackupService;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.SystemBackupService;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Implementations.FullSystemBackup;
@@ -133,6 +135,30 @@ public class BackupService : IBackupService
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
+                // restore migration history manually
+                var historyEntry = zipArchive.GetEntry($"Database\\{nameof(HistoryRow)}.json");
+                if (historyEntry is null)
+                {
+                    _logger.LogInformation("No backup of the history table in archive. This is required for Jellyfin operation");
+                    throw new InvalidOperationException("Cannot restore backup that has no History data.");
+                }
+
+                HistoryRow[] historyEntries;
+                var historyArchive = historyEntry.Open();
+                await using (historyArchive.ConfigureAwait(false))
+                {
+                    historyEntries = await JsonSerializer.DeserializeAsync<HistoryRow[]>(historyArchive).ConfigureAwait(false) ??
+                        throw new InvalidOperationException("Cannot restore backup that has no History data.");
+                }
+
+                var historyRepository = dbContext.GetService<IHistoryRepository>();
+                await historyRepository.CreateIfNotExistsAsync().ConfigureAwait(false);
+                foreach (var item in historyEntries)
+                {
+                    var insertScript = historyRepository.GetInsertScript(item);
+                    await dbContext.Database.ExecuteSqlRawAsync(insertScript).ConfigureAwait(false);
+                }
+
                 dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
                 var entityTypes = typeof(JellyfinDbContext).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
                     .Where(e => e.PropertyType.IsAssignableTo(typeof(IQueryable)))
@@ -242,22 +268,30 @@ public class BackupService : IBackupService
             await using (dbContext.ConfigureAwait(false))
             {
                 dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
-                var entityTypes = typeof(JellyfinDbContext).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
+                static IAsyncEnumerable<object> GetValues(IQueryable dbSet, Type type)
+                {
+                    var method = dbSet.GetType().GetMethod(nameof(DbSet<object>.AsAsyncEnumerable))!;
+                    var enumerable = method.Invoke(dbSet, null)!;
+                    return (IAsyncEnumerable<object>)enumerable;
+                }
+
+                // include the migration history as well
+                var historyRepository = dbContext.GetService<IHistoryRepository>();
+                var migrations = await historyRepository.GetAppliedMigrationsAsync().ConfigureAwait(false);
+
+                ICollection<(Type Type, Func<IAsyncEnumerable<object>> ValueFactory)> entityTypes = [
+                    .. typeof(JellyfinDbContext)
+                    .GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
                     .Where(e => e.PropertyType.IsAssignableTo(typeof(IQueryable)))
-                    .Select(e => (Type: e, Set: e.GetValue(dbContext) as IQueryable))
-                    .ToArray();
+                    .Select(e => (Type: e.PropertyType, ValueFactory: new Func<IAsyncEnumerable<object>>(() => GetValues((IQueryable)e.GetValue(dbContext)!, e.PropertyType)))),
+                    (Type: typeof(HistoryRow), ValueFactory: new Func<IAsyncEnumerable<object>>(() => migrations.ToAsyncEnumerable()))
+                ];
                 manifest.DatabaseTables = entityTypes.Select(e => e.Type.Name).ToArray();
                 var transaction = await dbContext.Database.BeginTransactionAsync().ConfigureAwait(false);
 
                 await using (transaction.ConfigureAwait(false))
                 {
                     _logger.LogInformation("Begin Database backup");
-                    static IAsyncEnumerable<object> GetValues(IQueryable dbSet, Type type)
-                    {
-                        var method = dbSet.GetType().GetMethod(nameof(DbSet<object>.AsAsyncEnumerable))!;
-                        var enumerable = method.Invoke(dbSet, null)!;
-                        return (IAsyncEnumerable<object>)enumerable;
-                    }
 
                     foreach (var entityType in entityTypes)
                     {
@@ -272,7 +306,7 @@ public class BackupService : IBackupService
                             {
                                 jsonSerializer.WriteStartArray();
 
-                                var set = GetValues(entityType.Set!, entityType.Type.PropertyType).ConfigureAwait(false);
+                                var set = entityType.ValueFactory().ConfigureAwait(false);
                                 await foreach (var item in set.ConfigureAwait(false))
                                 {
                                     entities++;
