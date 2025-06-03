@@ -21,4 +21,9 @@ public class BackupOptionsDto
     /// Gets or sets a value indicating whether the archive contains the Subtitle contents.
     /// </summary>
     public bool Subtitles { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the archive contains the Database contents.
+    /// </summary>
+    public bool Database { get; set; } = true;
 }
