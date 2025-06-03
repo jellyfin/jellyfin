@@ -127,7 +127,7 @@ namespace MediaBrowser.Common.Net
         /// Checks if <paramref name="remoteIP"/> has access to the server.
         /// </summary>
         /// <param name="remoteIP">IP address of the client.</param>
-        /// <returns><b>True</b> if it has access, otherwise <b>false</b>.</returns>
-        bool HasRemoteAccess(IPAddress remoteIP);
+        /// <returns>The result of evaluating the access policy, <c>Allow</c> if it should be allowed.</returns>
+        RemoteAccessPolicyResult ShouldAllowServerAccess(IPAddress remoteIP);
     }
 }
