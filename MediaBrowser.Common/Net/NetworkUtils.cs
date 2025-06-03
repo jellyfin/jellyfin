@@ -259,7 +259,7 @@ public static partial class NetworkUtils
         // See if it's an IPv6 with port address e.g. [::1] or [::1]:120.
         if (host[0] == '[')
         {
-            int i = host.IndexOf(']');
+            int i = host.IndexOf("]");
             if (i != -1)
             {
                 return TryParseHost(host[1..(i - 1)], out addresses);

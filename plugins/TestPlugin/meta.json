@@ -1,0 +1,10 @@
+{
+  "Name": "Test Plugin",
+  "Id": "00000000-0000-0000-0000-000000000001",
+  "Version": "1.0.0.0",
+  "Description": "A simple test plugin.",
+  "TargetAbi": "0.0.0.1",
+  "Assemblies": [
+    "Jellyfin.Server.Implementations.dll"
+  ]
+}
