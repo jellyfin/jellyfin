@@ -29,6 +29,7 @@ public class BackupService : IBackupService
     private readonly IServerApplicationHost _applicationHost;
     private readonly IServerApplicationPaths _applicationPaths;
     private readonly IJellyfinDatabaseProvider _jellyfinDatabaseProvider;
+    private readonly ISystemManager _systemManager;
     private static readonly JsonSerializerOptions _serializerSettings = new JsonSerializerOptions(JsonSerializerDefaults.General)
     {
         AllowTrailingCommas = true,
@@ -45,18 +46,21 @@ public class BackupService : IBackupService
     /// <param name="applicationHost">The Application host.</param>
     /// <param name="applicationPaths">The application paths.</param>
     /// <param name="jellyfinDatabaseProvider">The Jellyfin database Provider in use.</param>
+    /// <param name="systemManager">The SystemManager.</param>
     public BackupService(
         ILogger<BackupService> logger,
         IDbContextFactory<JellyfinDbContext> dbProvider,
         IServerApplicationHost applicationHost,
         IServerApplicationPaths applicationPaths,
-        IJellyfinDatabaseProvider jellyfinDatabaseProvider)
+        IJellyfinDatabaseProvider jellyfinDatabaseProvider,
+        ISystemManager systemManager)
     {
         _logger = logger;
         _dbProvider = dbProvider;
         _applicationHost = applicationHost;
         _applicationPaths = applicationPaths;
         _jellyfinDatabaseProvider = jellyfinDatabaseProvider;
+        _systemManager = systemManager;
     }
 
     /// <inheritdoc/>
@@ -65,6 +69,7 @@ public class BackupService : IBackupService
         _applicationHost.RestoreBackupPath = archivePath;
         _applicationHost.ShouldRestart = true;
         _applicationHost.NotifyPendingRestart();
+        _systemManager.Restart();
     }
 
     /// <inheritdoc/>
