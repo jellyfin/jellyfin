@@ -112,11 +112,22 @@ internal class JellyfinMigrationService
                     {
                         var historyRepository = dbContext.GetService<IHistoryRepository>();
                         var appliedMigrations = await dbContext.Database.GetAppliedMigrationsAsync().ConfigureAwait(false);
-                        var oldMigrations = Migrations
+                        var lastOldAppliedMigration = Migrations
                             .SelectMany(e => e.Where(e => e.Metadata.Key is not null)) // only consider migrations that have the key set as its the reference marker for legacy migrations.
                             .Where(e => migrationOptions.Applied.Any(f => f.Id.Equals(e.Metadata.Key!.Value)))
                             .Where(e => !appliedMigrations.Contains(e.BuildCodeMigrationId()))
-                            .ToArray();
+                            .OrderBy(e => e.BuildCodeMigrationId())
+                            .Last(); // this is the latest migration applied in the old migration.xml
+
+                        IReadOnlyList<CodeMigration> oldMigrations = [
+                            .. Migrations
+                            .SelectMany(e => e)
+                            .OrderBy(e => e.BuildCodeMigrationId())
+                            .TakeWhile(e => e.BuildCodeMigrationId() != lastOldAppliedMigration.BuildCodeMigrationId()),
+                            lastOldAppliedMigration
+                        ];
+                        // those are all migrations that had to run in the old migration system, even if not noted in the migration.xml file.
+
                         var startupScripts = oldMigrations.Select(e => (Migration: e.Metadata, Script: historyRepository.GetInsertScript(new HistoryRow(e.BuildCodeMigrationId(), GetJellyfinVersion()))));
                         foreach (var item in startupScripts)
                         {
