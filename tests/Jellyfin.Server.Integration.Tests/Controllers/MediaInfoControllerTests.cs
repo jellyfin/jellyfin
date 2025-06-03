@@ -6,7 +6,8 @@ using Xunit;
 
 namespace Jellyfin.Server.Integration.Tests.Controllers
 {
-    public sealed class MediaInfoControllerTests : IClassFixture<JellyfinApplicationFactory>
+    [Collection("Controller collection")]
+    public sealed class MediaInfoControllerTests
     {
         private readonly JellyfinApplicationFactory _factory;
         private static string? _accessToken;
