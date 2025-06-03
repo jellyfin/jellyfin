@@ -14,6 +14,8 @@ using Jellyfin.Server.Implementations.SystemBackupService;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.SystemBackupService;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Implementations.FullSystemBackup;
@@ -29,6 +31,7 @@ public class BackupService : IBackupService
     private readonly IServerApplicationHost _applicationHost;
     private readonly IServerApplicationPaths _applicationPaths;
     private readonly IJellyfinDatabaseProvider _jellyfinDatabaseProvider;
+    private readonly ISystemManager _systemManager;
     private static readonly JsonSerializerOptions _serializerSettings = new JsonSerializerOptions(JsonSerializerDefaults.General)
     {
         AllowTrailingCommas = true,
@@ -45,18 +48,21 @@ public class BackupService : IBackupService
     /// <param name="applicationHost">The Application host.</param>
     /// <param name="applicationPaths">The application paths.</param>
     /// <param name="jellyfinDatabaseProvider">The Jellyfin database Provider in use.</param>
+    /// <param name="systemManager">The SystemManager.</param>
     public BackupService(
         ILogger<BackupService> logger,
         IDbContextFactory<JellyfinDbContext> dbProvider,
         IServerApplicationHost applicationHost,
         IServerApplicationPaths applicationPaths,
-        IJellyfinDatabaseProvider jellyfinDatabaseProvider)
+        IJellyfinDatabaseProvider jellyfinDatabaseProvider,
+        ISystemManager systemManager)
     {
         _logger = logger;
         _dbProvider = dbProvider;
         _applicationHost = applicationHost;
         _applicationPaths = applicationPaths;
         _jellyfinDatabaseProvider = jellyfinDatabaseProvider;
+        _systemManager = systemManager;
     }
 
     /// <inheritdoc/>
@@ -65,6 +71,7 @@ public class BackupService : IBackupService
         _applicationHost.RestoreBackupPath = archivePath;
         _applicationHost.ShouldRestart = true;
         _applicationHost.NotifyPendingRestart();
+        _systemManager.Restart();
     }
 
     /// <inheritdoc/>
@@ -135,6 +142,30 @@ public class BackupService : IBackupService
                 var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
                 await using (dbContext.ConfigureAwait(false))
                 {
+                    // restore migration history manually
+                    var historyEntry = zipArchive.GetEntry($"Database\\{nameof(HistoryRow)}.json");
+                    if (historyEntry is null)
+                    {
+                        _logger.LogInformation("No backup of the history table in archive. This is required for Jellyfin operation");
+                        throw new InvalidOperationException("Cannot restore backup that has no History data.");
+                    }
+
+                    HistoryRow[] historyEntries;
+                    var historyArchive = historyEntry.Open();
+                    await using (historyArchive.ConfigureAwait(false))
+                    {
+                        historyEntries = await JsonSerializer.DeserializeAsync<HistoryRow[]>(historyArchive).ConfigureAwait(false) ??
+                            throw new InvalidOperationException("Cannot restore backup that has no History data.");
+                    }
+
+                    var historyRepository = dbContext.GetService<IHistoryRepository>();
+                    await historyRepository.CreateIfNotExistsAsync().ConfigureAwait(false);
+                    foreach (var item in historyEntries)
+                    {
+                        var insertScript = historyRepository.GetInsertScript(item);
+                        await dbContext.Database.ExecuteSqlRawAsync(insertScript).ConfigureAwait(false);
+                    }
+
                     dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
                     var entityTypes = typeof(JellyfinDbContext).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
                         .Where(e => e.PropertyType.IsAssignableTo(typeof(IQueryable)))
@@ -241,64 +272,68 @@ public class BackupService : IBackupService
         using (var zipArchive = new ZipArchive(fileStream, ZipArchiveMode.Create, false))
         {
             _logger.LogInformation("Start backup process.");
-
-            if (backupOptions.Database)
+            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+            await using (dbContext.ConfigureAwait(false))
             {
-                var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-                await using (dbContext.ConfigureAwait(false))
+                dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+                static IAsyncEnumerable<object> GetValues(IQueryable dbSet, Type type)
                 {
-                    dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
-                    var entityTypes = typeof(JellyfinDbContext).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
-                        .Where(e => e.PropertyType.IsAssignableTo(typeof(IQueryable)))
-                        .Select(e => (Type: e, Set: e.GetValue(dbContext) as IQueryable))
-                        .ToArray();
-                    manifest.DatabaseTables = entityTypes.Select(e => e.Type.Name).ToArray();
-                    var transaction = await dbContext.Database.BeginTransactionAsync().ConfigureAwait(false);
+                    var method = dbSet.GetType().GetMethod(nameof(DbSet<object>.AsAsyncEnumerable))!;
+                    var enumerable = method.Invoke(dbSet, null)!;
+                    return (IAsyncEnumerable<object>)enumerable;
+                }
 
-                    await using (transaction.ConfigureAwait(false))
+                // include the migration history as well
+                var historyRepository = dbContext.GetService<IHistoryRepository>();
+                var migrations = await historyRepository.GetAppliedMigrationsAsync().ConfigureAwait(false);
+
+                ICollection<(Type Type, Func<IAsyncEnumerable<object>> ValueFactory)> entityTypes = [
+                    .. typeof(JellyfinDbContext)
+                    .GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
+                    .Where(e => e.PropertyType.IsAssignableTo(typeof(IQueryable)))
+                    .Select(e => (Type: e.PropertyType, ValueFactory: new Func<IAsyncEnumerable<object>>(() => GetValues((IQueryable)e.GetValue(dbContext)!, e.PropertyType)))),
+                    (Type: typeof(HistoryRow), ValueFactory: new Func<IAsyncEnumerable<object>>(() => migrations.ToAsyncEnumerable()))
+                ];
+                manifest.DatabaseTables = entityTypes.Select(e => e.Type.Name).ToArray();
+                var transaction = await dbContext.Database.BeginTransactionAsync().ConfigureAwait(false);
+
+                await using (transaction.ConfigureAwait(false))
+                {
+                    _logger.LogInformation("Begin Database backup");
+
+                    foreach (var entityType in entityTypes)
                     {
-                        _logger.LogInformation("Begin Database backup");
-                        static IAsyncEnumerable<object> GetValues(IQueryable dbSet, Type type)
+                        _logger.LogInformation("Begin backup of entity {Table}", entityType.Type.Name);
+                        var zipEntry = zipArchive.CreateEntry($"Database\\{entityType.Type.Name}.json");
+                        var entities = 0;
+                        var zipEntryStream = zipEntry.Open();
+                        await using (zipEntryStream.ConfigureAwait(false))
                         {
-                            var method = dbSet.GetType().GetMethod(nameof(DbSet<object>.AsAsyncEnumerable))!;
-                            var enumerable = method.Invoke(dbSet, null)!;
-                            return (IAsyncEnumerable<object>)enumerable;
-                        }
-
-                        foreach (var entityType in entityTypes)
-                        {
-                            _logger.LogInformation("Begin backup of entity {Table}", entityType.Type.Name);
-                            var zipEntry = zipArchive.CreateEntry($"Database\\{entityType.Type.Name}.json");
-                            var entities = 0;
-                            var zipEntryStream = zipEntry.Open();
-                            await using (zipEntryStream.ConfigureAwait(false))
+                            var jsonSerializer = new Utf8JsonWriter(zipEntryStream);
+                            await using (jsonSerializer.ConfigureAwait(false))
                             {
-                                var jsonSerializer = new Utf8JsonWriter(zipEntryStream);
-                                await using (jsonSerializer.ConfigureAwait(false))
+                                jsonSerializer.WriteStartArray();
+
+                                var set = entityType.ValueFactory().ConfigureAwait(false);
+                                await foreach (var item in set.ConfigureAwait(false))
                                 {
-                                    jsonSerializer.WriteStartArray();
-
-                                    var set = GetValues(entityType.Set!, entityType.Type.PropertyType).ConfigureAwait(false);
-                                    await foreach (var item in set.ConfigureAwait(false))
+                                    entities++;
+                                    try
                                     {
-                                        entities++;
-                                        try
-                                        {
-                                            JsonSerializer.SerializeToDocument(item, _serializerSettings).WriteTo(jsonSerializer);
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            _logger.LogError(ex, "Could not load entity {Entity}", item);
-                                            throw;
-                                        }
+                                        JsonSerializer.SerializeToDocument(item, _serializerSettings).WriteTo(jsonSerializer);
                                     }
-
-                                    jsonSerializer.WriteEndArray();
+                                    catch (Exception ex)
+                                    {
+                                        _logger.LogError(ex, "Could not load entity {Entity}", item);
+                                        throw;
+                                    }
                                 }
-                            }
 
-                            _logger.LogInformation("backup of entity {Table} with {Number} created", entityType.Type.Name, entities);
+                                jsonSerializer.WriteEndArray();
+                            }
                         }
+
+                        _logger.LogInformation("backup of entity {Table} with {Number} created", entityType.Type.Name, entities);
                     }
                 }
             }
