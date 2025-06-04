@@ -134,6 +134,6 @@ namespace MediaBrowser.Common.Net
         /// Reloads all settings and re-Initializes the instance.
         /// </summary>
         /// <param name="configuration">The <see cref="NetworkConfiguration"/> to use.</param>
-        public void UpdateSettings(object configuration);
+        void UpdateSettings(object configuration);
     }
 }
