@@ -21,12 +21,30 @@ namespace MediaBrowser.Common.Extensions
         }
 
         /// <summary>
-        /// Extracts the remote IP address of the caller of the HTTP context.
+        /// Gets the client IP address, preferring the first IP in X-Forwarded-For if there are multiple,
+        /// otherwise falls back to the remote IP address of the caller of the HTTP context.
         /// </summary>
         /// <param name="context">The HTTP context.</param>
         /// <returns>The remote caller IP address.</returns>
         public static IPAddress GetNormalizedRemoteIP(this HttpContext context)
         {
+            string? xForwardedFor = context.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+            
+            if (!string.IsNullOrWhiteSpace(xForwardedFor))
+            {
+                var forwardedIps = xForwardedFor.Split(',').Select(ip => ip.Trim()).ToArray();
+                
+                if (forwardedIps.Length >= 2 && IPAddress.TryParse(forwardedIps[0], out var firstForwardedIp))
+                {
+                    if (firstForwardedIp.IsIPv4MappedToIPv6)
+                    {
+                        firstForwardedIp = firstForwardedIp.MapToIPv4();
+                    }
+                    
+                    return firstForwardedIp;
+                }
+            }
+            
             // Default to the loopback address if no RemoteIpAddress is specified (i.e. during integration tests)
             var ip = context.Connection.RemoteIpAddress ?? IPAddress.Loopback;
 
