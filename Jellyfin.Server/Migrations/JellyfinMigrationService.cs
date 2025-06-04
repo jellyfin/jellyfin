@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -16,7 +17,6 @@ using MediaBrowser.Model.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Migrations;
@@ -26,9 +26,14 @@ namespace Jellyfin.Server.Migrations;
 /// </summary>
 internal class JellyfinMigrationService
 {
+    private const string DbFilename = "library.db";
     private readonly IDbContextFactory<JellyfinDbContext> _dbContextFactory;
     private readonly ILoggerFactory _loggerFactory;
     private readonly IStartupLogger _startupLogger;
+    private readonly IBackupService? _backupService;
+    private readonly IJellyfinDatabaseProvider? _jellyfinDatabaseProvider;
+    private readonly IApplicationPaths _applicationPaths;
+    private (string? LibraryDb, string? JellyfinDb, BackupManifestDto? FullBackup) _backupKey;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="JellyfinMigrationService"/> class.
@@ -36,14 +41,26 @@ internal class JellyfinMigrationService
     /// <param name="dbContextFactory">Provides access to the jellyfin database.</param>
     /// <param name="loggerFactory">The logger factory.</param>
     /// <param name="startupLogger">The startup logger for Startup UI intigration.</param>
-    public JellyfinMigrationService(IDbContextFactory<JellyfinDbContext> dbContextFactory, ILoggerFactory loggerFactory, IStartupLogger startupLogger)
+    /// <param name="applicationPaths">Application paths for library.db backup.</param>
+    /// <param name="backupService">The jellyfin backup service.</param>
+    /// <param name="jellyfinDatabaseProvider">The jellyfin database provider.</param>
+    public JellyfinMigrationService(
+        IDbContextFactory<JellyfinDbContext> dbContextFactory,
+        ILoggerFactory loggerFactory,
+        IStartupLogger startupLogger,
+        IApplicationPaths applicationPaths,
+        IBackupService? backupService = null,
+        IJellyfinDatabaseProvider? jellyfinDatabaseProvider = null)
     {
         _dbContextFactory = dbContextFactory;
         _loggerFactory = loggerFactory;
         _startupLogger = startupLogger;
+        _backupService = backupService;
+        _jellyfinDatabaseProvider = jellyfinDatabaseProvider;
+        _applicationPaths = applicationPaths;
 #pragma warning disable CS0618 // Type or member is obsolete
         Migrations = [.. typeof(IMigrationRoutine).Assembly.GetTypes().Where(e => typeof(IMigrationRoutine).IsAssignableFrom(e) || typeof(IAsyncMigrationRoutine).IsAssignableFrom(e))
-            .Select(e => (Type: e, Metadata: e.GetCustomAttribute<JellyfinMigrationAttribute>()))
+            .Select(e => (Type: e, Metadata: e.GetCustomAttribute<JellyfinMigrationAttribute>(), Backup: e.GetCustomAttributes<JellyfinMigrationBackupAttribute>()))
             .Where(e => e.Metadata != null)
             .GroupBy(e => e.Metadata!.Stage)
             .Select(f =>
@@ -51,7 +68,13 @@ internal class JellyfinMigrationService
                 var stage = new MigrationStage(f.Key);
                 foreach (var item in f)
                 {
-                    stage.Add(new(item.Type, item.Metadata!));
+                    JellyfinMigrationBackupAttribute? backupMetadata = null;
+                    if (item.Backup?.Any() == true)
+                    {
+                        backupMetadata = item.Backup.Aggregate(MergeBackupAttributes);
+                    }
+
+                    stage.Add(new(item.Type, item.Metadata!, backupMetadata));
                 }
 
                 return stage;
@@ -158,7 +181,7 @@ internal class JellyfinMigrationService
                 .ToArray();
 
             (string Key, InternalDatabaseMigration Migration)[] pendingDatabaseMigrations = [];
-            if (stage is JellyfinMigrationStageTypes.CoreInitialisaition)
+            if (stage is JellyfinMigrationStageTypes.CoreInitialisation)
             {
                 pendingDatabaseMigrations = migrationsAssembly.Migrations.Where(f => appliedMigrations.All(e => e.MigrationId != f.Key))
                    .Select(e => (Key: e.Key, Migration: new InternalDatabaseMigration(e, dbContext)))
@@ -182,6 +205,50 @@ internal class JellyfinMigrationService
                 {
                     migrationLogger.LogCritical("Error: {Error}", ex.Message);
                     migrationLogger.LogError(ex, "Migration {Name} failed", item.Key);
+
+                    if (_backupKey != default && _backupService is not null && _jellyfinDatabaseProvider is not null)
+                    {
+                        if (_backupKey.LibraryDb is not null)
+                        {
+                            migrationLogger.LogInformation("Attempt to rollback librarydb.");
+                            try
+                            {
+                                var libraryDbPath = Path.Combine(_applicationPaths.DataPath, DbFilename);
+                                File.Move(_backupKey.LibraryDb, libraryDbPath, true);
+                            }
+                            catch (Exception inner)
+                            {
+                                migrationLogger.LogCritical(inner, "Could not rollback {LibraryPath}. Manual intervention might be required to restore a operational state.", _backupKey.LibraryDb);
+                            }
+                        }
+
+                        if (_backupKey.JellyfinDb is not null)
+                        {
+                            migrationLogger.LogInformation("Attempt to rollback JellyfinDb.");
+                            try
+                            {
+                                await _jellyfinDatabaseProvider.RestoreBackupFast(_backupKey.JellyfinDb, CancellationToken.None).ConfigureAwait(false);
+                            }
+                            catch (Exception inner)
+                            {
+                                migrationLogger.LogCritical(inner, "Could not rollback {LibraryPath}. Manual intervention might be required to restore a operational state.", _backupKey.JellyfinDb);
+                            }
+                        }
+
+                        if (_backupKey.FullBackup is not null)
+                        {
+                            migrationLogger.LogInformation("Attempt to rollback from backup.");
+                            try
+                            {
+                                await _backupService.RestoreBackupAsync(_backupKey.FullBackup.Path).ConfigureAwait(false);
+                            }
+                            catch (Exception inner)
+                            {
+                                migrationLogger.LogCritical(inner, "Could not rollback from backup {Backup}. Manual intervention might be required to restore a operational state.", _backupKey.FullBackup.Path);
+                            }
+                        }
+                    }
+
                     throw;
                 }
             }
@@ -191,6 +258,143 @@ internal class JellyfinMigrationService
     private static string GetJellyfinVersion()
     {
         return Assembly.GetEntryAssembly()!.GetName().Version!.ToString();
+    }
+
+    public async Task CleanupSystemAfterMigration(ILogger logger)
+    {
+        if (_backupKey != default)
+        {
+            if (_backupKey.LibraryDb is not null)
+            {
+                logger.LogInformation("Attempt to cleanup librarydb backup.");
+                try
+                {
+                    File.Delete(_backupKey.LibraryDb);
+                }
+                catch (Exception inner)
+                {
+                    logger.LogCritical(inner, "Could not cleanup {LibraryPath}.", _backupKey.LibraryDb);
+                }
+            }
+
+            if (_backupKey.JellyfinDb is not null && _jellyfinDatabaseProvider is not null)
+            {
+                logger.LogInformation("Attempt to cleanup JellyfinDb backup.");
+                try
+                {
+                    await _jellyfinDatabaseProvider.DeleteBackup(_backupKey.JellyfinDb).ConfigureAwait(false);
+                }
+                catch (Exception inner)
+                {
+                    logger.LogCritical(inner, "Could not cleanup {LibraryPath}.", _backupKey.JellyfinDb);
+                }
+            }
+
+            if (_backupKey.FullBackup is not null)
+            {
+                logger.LogInformation("Attempt to cleanup from migration backup.");
+                try
+                {
+                    File.Delete(_backupKey.FullBackup.Path);
+                }
+                catch (Exception inner)
+                {
+                    logger.LogCritical(inner, "Could not cleanup backup {Backup}.", _backupKey.FullBackup.Path);
+                }
+            }
+        }
+    }
+
+    public async Task PrepareSystemForMigration(ILogger logger)
+    {
+        logger.LogInformation("Prepare system for possible migrations");
+        JellyfinMigrationBackupAttribute backupInstruction;
+        IReadOnlyList<HistoryRow> appliedMigrations;
+        var dbContext = await _dbContextFactory.CreateDbContextAsync().ConfigureAwait(false);
+        await using (dbContext.ConfigureAwait(false))
+        {
+            var historyRepository = dbContext.GetService<IHistoryRepository>();
+            var migrationsAssembly = dbContext.GetService<IMigrationsAssembly>();
+            appliedMigrations = await historyRepository.GetAppliedMigrationsAsync().ConfigureAwait(false);
+            backupInstruction = new JellyfinMigrationBackupAttribute()
+            {
+                JellyfinDb = migrationsAssembly.Migrations.Any(f => appliedMigrations.All(e => e.MigrationId != f.Key))
+            };
+        }
+
+        backupInstruction = Migrations.SelectMany(e => e)
+           .Where(e => appliedMigrations.All(f => f.MigrationId != e.BuildCodeMigrationId()))
+           .Select(e => e.BackupRequirements)
+           .Where(e => e is not null)
+           .Aggregate(backupInstruction, MergeBackupAttributes!);
+
+        if (backupInstruction.LegacyLibraryDb)
+        {
+            logger.LogInformation("A migration will attempt to modify the library.db, will attempt to backup the file now.");
+            // for legacy migrations that still operates on the library.db
+            var libraryDbPath = Path.Combine(_applicationPaths.DataPath, DbFilename);
+            if (File.Exists(libraryDbPath))
+            {
+                for (int i = 1; ; i++)
+                {
+                    var bakPath = string.Format(CultureInfo.InvariantCulture, "{0}.bak{1}", libraryDbPath, i);
+                    if (!File.Exists(bakPath))
+                    {
+                        try
+                        {
+                            logger.LogInformation("Backing up {Library} to {BackupPath}", DbFilename, bakPath);
+                            File.Copy(libraryDbPath, bakPath);
+                            _backupKey = (bakPath, _backupKey.JellyfinDb, _backupKey.FullBackup);
+                            logger.LogInformation("{Library} backed up to {BackupPath}", DbFilename, bakPath);
+                            break;
+                        }
+                        catch (Exception ex)
+                        {
+                            logger.LogError(ex, "Cannot make a backup of {Library} at path {BackupPath}", DbFilename, bakPath);
+                            throw;
+                        }
+                    }
+                }
+
+                logger.LogInformation("{Library} has been backed up as {BackupPath}", DbFilename, _backupKey.LibraryDb);
+            }
+            else
+            {
+                logger.LogError("Cannot make a backup of {Library} at path {BackupPath} because file could not be found at {LibraryPath}", DbFilename, libraryDbPath, _applicationPaths.DataPath);
+            }
+        }
+
+        if (backupInstruction.JellyfinDb && _jellyfinDatabaseProvider != null)
+        {
+            logger.LogInformation("A migration will attempt to modify the jellyfin.db, will attempt to backup the file now.");
+            _backupKey = (_backupKey.LibraryDb, await _jellyfinDatabaseProvider.MigrationBackupFast(CancellationToken.None).ConfigureAwait(false), _backupKey.FullBackup);
+            logger.LogInformation("Jellyfin database has been backed up as {BackupPath}", _backupKey.JellyfinDb);
+        }
+
+        if (_backupService is not null && (backupInstruction.Metadata || backupInstruction.Subtitles || backupInstruction.Trickplay))
+        {
+            logger.LogInformation("A migration will attempt to modify system resources. Will attempt to create backup now.");
+            _backupKey = (_backupKey.LibraryDb, _backupKey.JellyfinDb, await _backupService.CreateBackupAsync(new BackupOptionsDto()
+            {
+                Metadata = backupInstruction.Metadata,
+                Subtitles = backupInstruction.Subtitles,
+                Trickplay = backupInstruction.Trickplay,
+                Database = false // database backups are explicitly handled by the provider itself as the backup service requires parity with the current model
+            }).ConfigureAwait(false));
+            logger.LogInformation("Pre-Migration backup successfully created as {BackupKey}", _backupKey.FullBackup.Path);
+        }
+    }
+
+    private static JellyfinMigrationBackupAttribute MergeBackupAttributes(JellyfinMigrationBackupAttribute left, JellyfinMigrationBackupAttribute right)
+    {
+        return new JellyfinMigrationBackupAttribute()
+        {
+            JellyfinDb = left!.JellyfinDb || right!.JellyfinDb,
+            LegacyLibraryDb = left.LegacyLibraryDb || right!.LegacyLibraryDb,
+            Metadata = left.Metadata || right!.Metadata,
+            Subtitles = left.Subtitles || right!.Subtitles,
+            Trickplay = left.Trickplay || right!.Trickplay
+        };
     }
 
     private class InternalCodeMigration : IInternalMigration

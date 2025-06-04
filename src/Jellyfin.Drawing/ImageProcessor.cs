@@ -34,7 +34,7 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
     private const char Version = '3';
 
     private static readonly HashSet<string> _transparentImageTypes
-        = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".png", ".webp", ".gif" };
+        = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".png", ".webp", ".gif", ".svg" };
 
     private readonly ILogger<ImageProcessor> _logger;
     private readonly IFileSystem _fileSystem;

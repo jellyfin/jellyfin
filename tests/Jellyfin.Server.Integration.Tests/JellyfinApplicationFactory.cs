@@ -109,7 +109,7 @@ namespace Jellyfin.Server.Integration.Tests
             appHost.ServiceProvider = host.Services;
             var applicationPaths = appHost.ServiceProvider.GetRequiredService<IApplicationPaths>();
             Program.ApplyStartupMigrationAsync((ServerApplicationPaths)applicationPaths, appHost.ServiceProvider.GetRequiredService<IConfiguration>()).GetAwaiter().GetResult();
-            Program.ApplyCoreMigrationsAsync(appHost.ServiceProvider, Migrations.Stages.JellyfinMigrationStageTypes.CoreInitialisaition).GetAwaiter().GetResult();
+            Program.ApplyCoreMigrationsAsync(appHost.ServiceProvider, Migrations.Stages.JellyfinMigrationStageTypes.CoreInitialisation).GetAwaiter().GetResult();
             appHost.InitializeServices(Mock.Of<IConfiguration>()).GetAwaiter().GetResult();
             Program.ApplyCoreMigrationsAsync(appHost.ServiceProvider, Migrations.Stages.JellyfinMigrationStageTypes.AppInitialisation).GetAwaiter().GetResult();
             host.Start();

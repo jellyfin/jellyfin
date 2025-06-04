@@ -8,11 +8,13 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Jellyfin.Server.Migrations.Stages;
 
-internal class CodeMigration(Type migrationType, JellyfinMigrationAttribute metadata)
+internal class CodeMigration(Type migrationType, JellyfinMigrationAttribute metadata, JellyfinMigrationBackupAttribute? migrationBackupAttribute)
 {
     public Type MigrationType { get; } = migrationType;
 
     public JellyfinMigrationAttribute Metadata { get; } = metadata;
+
+    public JellyfinMigrationBackupAttribute? BackupRequirements { get; set; } = migrationBackupAttribute;
 
     public string BuildCodeMigrationId()
     {
