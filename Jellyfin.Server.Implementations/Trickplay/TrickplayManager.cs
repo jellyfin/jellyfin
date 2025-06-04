@@ -144,6 +144,13 @@ public class TrickplayManager : ITrickplayManager
             return;
         }
 
+        var parentDirectory = Directory.GetParent(video.Path);
+        if (parentDirectory is not null && string.Equals(parentDirectory.Name, "backdrops", StringComparison.OrdinalIgnoreCase))
+        {
+            _logger.LogDebug("Ignoring backdrop media found at {Path} for item {ItemID}", video.Path, video.Id);
+            return;
+        }
+
         var dbContext = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (dbContext.ConfigureAwait(false))
         {
