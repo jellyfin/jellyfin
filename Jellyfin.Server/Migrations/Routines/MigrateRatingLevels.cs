@@ -12,6 +12,7 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// </summary>
 #pragma warning disable CS0618 // Type or member is obsolete
 [JellyfinMigration("2025-04-20T22:00:00", nameof(MigrateRatingLevels))]
+[JellyfinMigrationBackup(JellyfinDb = true)]
 #pragma warning restore CS0618 // Type or member is obsolete
 internal class MigrateRatingLevels : IDatabaseMigrationRoutine
 {
