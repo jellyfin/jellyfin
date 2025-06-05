@@ -86,7 +86,7 @@ namespace MediaBrowser.Providers.Manager
             var itemOfType = (TItemType)item;
             var updateType = ItemUpdateType.None;
             var libraryOptions = LibraryManager.GetLibraryOptions(item);
-            var isFirstRefresh = item.DateLastRefreshed == default;
+            var isFirstRefresh = item.DateLastRefreshed.Date == DateTime.MinValue.Date;
             var hasRefreshedMetadata = true;
             var hasRefreshedImages = true;
 
@@ -650,7 +650,7 @@ namespace MediaBrowser.Providers.Manager
             var dateLastImageRefresh = item.DateLastRefreshed;
 
             // Run all if either of these flags are true
-            var runAllProviders = options.ImageRefreshMode == MetadataRefreshMode.FullRefresh || dateLastImageRefresh == default(DateTime);
+            var runAllProviders = options.ImageRefreshMode == MetadataRefreshMode.FullRefresh || dateLastImageRefresh.Date == DateTime.MinValue.Date;
 
             if (!runAllProviders)
             {
