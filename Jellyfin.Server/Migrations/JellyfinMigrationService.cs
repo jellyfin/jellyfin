@@ -118,44 +118,42 @@ internal class JellyfinMigrationService
 
             logger.LogInformation("Migration system initialisation completed.");
         }
-        else
-        {
-            // migrate any existing migration.xml files
-            var migrationConfigPath = Path.Join(appPaths.ConfigurationDirectoryPath, "migrations.xml");
-            var migrationOptions = File.Exists(migrationConfigPath)
-                 ? (MigrationOptions)xmlSerializer.DeserializeFromFile(typeof(MigrationOptions), migrationConfigPath)!
-                 : null;
-            if (migrationOptions != null && migrationOptions.Applied.Count > 0)
-            {
-                logger.LogInformation("Old migration style migration.xml detected. Migrate now.");
-                try
-                {
-                    var dbContext = await _dbContextFactory.CreateDbContextAsync().ConfigureAwait(false);
-                    await using (dbContext.ConfigureAwait(false))
-                    {
-                        var historyRepository = dbContext.GetService<IHistoryRepository>();
-                        var appliedMigrations = await dbContext.Database.GetAppliedMigrationsAsync().ConfigureAwait(false);
-                        var oldMigrations = Migrations
-                            .SelectMany(e => e.Where(e => e.Metadata.Key is not null)) // only consider migrations that have the key set as its the reference marker for legacy migrations.
-                            .Where(e => migrationOptions.Applied.Any(f => f.Id.Equals(e.Metadata.Key!.Value)))
-                            .Where(e => !appliedMigrations.Contains(e.BuildCodeMigrationId()))
-                            .ToArray();
-                        var startupScripts = oldMigrations.Select(e => (Migration: e.Metadata, Script: historyRepository.GetInsertScript(new HistoryRow(e.BuildCodeMigrationId(), GetJellyfinVersion()))));
-                        foreach (var item in startupScripts)
-                        {
-                            logger.LogInformation("Migrate migration {Key}-{Name}.", item.Migration.Key, item.Migration.Name);
-                            await dbContext.Database.ExecuteSqlRawAsync(item.Script).ConfigureAwait(false);
-                        }
 
-                        logger.LogInformation("Rename old migration.xml to migration.xml.backup");
-                        File.Move(migrationConfigPath, Path.ChangeExtension(migrationConfigPath, ".xml.backup"), true);
-                    }
-                }
-                catch (Exception ex)
+        // migrate any existing migration.xml files
+        var migrationConfigPath = Path.Join(appPaths.ConfigurationDirectoryPath, "migrations.xml");
+        var migrationOptions = File.Exists(migrationConfigPath)
+            ? (MigrationOptions)xmlSerializer.DeserializeFromFile(typeof(MigrationOptions), migrationConfigPath)!
+            : null;
+        if (migrationOptions != null && migrationOptions.Applied.Count > 0)
+        {
+            logger.LogInformation("Old migration style migration.xml detected. Migrate now.");
+            try
+            {
+                var dbContext = await _dbContextFactory.CreateDbContextAsync().ConfigureAwait(false);
+                await using (dbContext.ConfigureAwait(false))
                 {
-                    logger.LogCritical(ex, "Failed to apply migrations");
-                    throw;
+                    var historyRepository = dbContext.GetService<IHistoryRepository>();
+                    var appliedMigrations = await dbContext.Database.GetAppliedMigrationsAsync().ConfigureAwait(false);
+                    var oldMigrations = Migrations
+                        .SelectMany(e => e.Where(e => e.Metadata.Key is not null)) // only consider migrations that have the key set as its the reference marker for legacy migrations.
+                        .Where(e => migrationOptions.Applied.Any(f => f.Id.Equals(e.Metadata.Key!.Value)))
+                        .Where(e => !appliedMigrations.Contains(e.BuildCodeMigrationId()))
+                        .ToArray();
+                    var startupScripts = oldMigrations.Select(e => (Migration: e.Metadata, Script: historyRepository.GetInsertScript(new HistoryRow(e.BuildCodeMigrationId(), GetJellyfinVersion()))));
+                    foreach (var item in startupScripts)
+                    {
+                        logger.LogInformation("Migrate migration {Key}-{Name}.", item.Migration.Key, item.Migration.Name);
+                        await dbContext.Database.ExecuteSqlRawAsync(item.Script).ConfigureAwait(false);
+                    }
+
+                    logger.LogInformation("Rename old migration.xml to migration.xml.backup");
+                    File.Move(migrationConfigPath, Path.ChangeExtension(migrationConfigPath, ".xml.backup"), true);
                 }
+            }
+            catch (Exception ex)
+            {
+                logger.LogCritical(ex, "Failed to apply migrations");
+                throw;
             }
         }
     }
