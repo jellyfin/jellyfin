@@ -86,11 +86,20 @@ public class MediaSegmentManager : IMediaSegmentManager
                 continue;
             }
 
-            var existingSegments = db.MediaSegments.Where(e => e.ItemId.Equals(baseItem.Id) && e.SegmentProviderId == GetProviderId(provider.Name));
+            IQueryable<MediaSegment> existingSegments;
+            if (forceOverwrite)
+            {
+                existingSegments = Array.Empty<MediaSegment>().AsQueryable();
+            }
+            else
+            {
+                existingSegments = db.MediaSegments.Where(e => e.ItemId.Equals(baseItem.Id) && e.SegmentProviderId == GetProviderId(provider.Name));
+            }
+
             var requestItem = new MediaSegmentGenerationRequest()
             {
                 ItemId = baseItem.Id,
-                ExistingSegments = existingSegments.Select(e => Map(e)).ToList()
+                ExistingSegments = existingSegments.Select(e => Map(e)).ToArray()
             };
 
             try
@@ -100,7 +109,7 @@ public class MediaSegmentManager : IMediaSegmentManager
 
                 if (!forceOverwrite)
                 {
-                    var existingSegmentsList = existingSegments.ToList(); // Cannot use requestItem's list, as the provider might tamper with its items.
+                    var existingSegmentsList = existingSegments.ToArray(); // Cannot use requestItem's list, as the provider might tamper with its items.
                     if (segments.Count == requestItem.ExistingSegments.Count && segments.All(e => existingSegmentsList.Any(f =>
                     {
                         return
