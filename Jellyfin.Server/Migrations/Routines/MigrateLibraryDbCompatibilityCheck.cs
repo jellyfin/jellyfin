@@ -14,7 +14,7 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// The migration routine for checking if the current instance of Jellyfin is compatiable to be upgraded.
 /// </summary>
-[JellyfinMigration("2025-01-01T01:00:00", nameof(MigrateLibraryDbCompatibilityCheck))]
+[JellyfinMigration("2025-04-20T19:30:00", nameof(MigrateLibraryDbCompatibilityCheck))]
 public class MigrateLibraryDbCompatibilityCheck : IAsyncMigrationRoutine
 {
     private const string DbFilename = "library.db";
