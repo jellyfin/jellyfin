@@ -14,6 +14,7 @@ using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
 using Jellyfin.Server.Implementations.Item;
+using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
@@ -34,7 +35,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 {
     private const string DbFilename = "library.db";
 
-    private readonly ILogger<MigrateLibraryDb> _logger;
+    private readonly IStartupLogger _logger;
     private readonly IServerApplicationPaths _paths;
     private readonly IJellyfinDatabaseProvider _jellyfinDatabaseProvider;
     private readonly IDbContextFactory<JellyfinDbContext> _provider;
@@ -42,19 +43,17 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
     /// <summary>
     /// Initializes a new instance of the <see cref="MigrateLibraryDb"/> class.
     /// </summary>
-    /// <param name="logger">The logger.</param>
+    /// <param name="startupLogger">The startup logger for Startup UI intigration.</param>
     /// <param name="provider">The database provider.</param>
     /// <param name="paths">The server application paths.</param>
     /// <param name="jellyfinDatabaseProvider">The database provider for special access.</param>
-    /// <param name="serviceProvider">The Service provider.</param>
     public MigrateLibraryDb(
-        ILogger<MigrateLibraryDb> logger,
+        IStartupLogger startupLogger,
         IDbContextFactory<JellyfinDbContext> provider,
         IServerApplicationPaths paths,
-        IJellyfinDatabaseProvider jellyfinDatabaseProvider,
-        IServiceProvider serviceProvider)
+        IJellyfinDatabaseProvider jellyfinDatabaseProvider)
     {
-        _logger = logger;
+        _logger = startupLogger;
         _provider = provider;
         _paths = paths;
         _jellyfinDatabaseProvider = jellyfinDatabaseProvider;

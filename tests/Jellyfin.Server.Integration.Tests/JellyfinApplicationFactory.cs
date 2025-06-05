@@ -5,6 +5,7 @@ using System.IO;
 using Emby.Server.Implementations;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Helpers;
+using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using Microsoft.AspNetCore.Hosting;
@@ -16,6 +17,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Serilog;
+using Serilog.Core;
 using Serilog.Extensions.Logging;
 
 namespace Jellyfin.Server.Integration.Tests
@@ -95,7 +97,8 @@ namespace Jellyfin.Server.Integration.Tests
                         .AddInMemoryCollection(ConfigurationOptions.DefaultConfiguration)
                         .AddEnvironmentVariables("JELLYFIN_")
                         .AddInMemoryCollection(commandLineOpts.ConvertToConfig());
-                });
+                })
+                .ConfigureServices(e => e.AddSingleton<IStartupLogger, NullStartupLogger>().AddSingleton(e));
         }
 
         /// <inheritdoc/>
@@ -127,6 +130,40 @@ namespace Jellyfin.Server.Integration.Tests
             _disposableComponents.Clear();
 
             base.Dispose(disposing);
+        }
+
+        private sealed class NullStartupLogger : IStartupLogger
+        {
+            public IStartupLogger BeginGroup(FormattableString logEntry)
+            {
+                return this;
+            }
+
+            public IDisposable? BeginScope<TState>(TState state)
+                where TState : notnull
+            {
+                return NullLogger.Instance.BeginScope(state);
+            }
+
+            public bool IsEnabled(LogLevel logLevel)
+            {
+                return NullLogger.Instance.IsEnabled(logLevel);
+            }
+
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+            {
+                NullLogger.Instance.Log(logLevel, eventId, state, exception, formatter);
+            }
+
+            public Microsoft.Extensions.Logging.ILogger With(Microsoft.Extensions.Logging.ILogger logger)
+            {
+                return this;
+            }
+
+            IStartupLogger IStartupLogger.With(Microsoft.Extensions.Logging.ILogger logger)
+            {
+                return this;
+            }
         }
     }
 }

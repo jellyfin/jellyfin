@@ -10,13 +10,13 @@ using Emby.Server.Implementations.Serialization;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Server.Implementations.SystemBackupService;
 using Jellyfin.Server.Migrations.Stages;
+using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.SystemBackupService;
 using MediaBrowser.Model.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Migrations;
@@ -29,6 +29,7 @@ internal class JellyfinMigrationService
     private const string DbFilename = "library.db";
     private readonly IDbContextFactory<JellyfinDbContext> _dbContextFactory;
     private readonly ILoggerFactory _loggerFactory;
+    private readonly IStartupLogger _startupLogger;
     private readonly IBackupService? _backupService;
     private readonly IJellyfinDatabaseProvider? _jellyfinDatabaseProvider;
     private readonly IApplicationPaths _applicationPaths;
@@ -39,18 +40,21 @@ internal class JellyfinMigrationService
     /// </summary>
     /// <param name="dbContextFactory">Provides access to the jellyfin database.</param>
     /// <param name="loggerFactory">The logger factory.</param>
+    /// <param name="startupLogger">The startup logger for Startup UI intigration.</param>
     /// <param name="applicationPaths">Application paths for library.db backup.</param>
     /// <param name="backupService">The jellyfin backup service.</param>
     /// <param name="jellyfinDatabaseProvider">The jellyfin database provider.</param>
     public JellyfinMigrationService(
         IDbContextFactory<JellyfinDbContext> dbContextFactory,
         ILoggerFactory loggerFactory,
+        IStartupLogger startupLogger,
         IApplicationPaths applicationPaths,
         IBackupService? backupService = null,
         IJellyfinDatabaseProvider? jellyfinDatabaseProvider = null)
     {
         _dbContextFactory = dbContextFactory;
         _loggerFactory = loggerFactory;
+        _startupLogger = startupLogger;
         _backupService = backupService;
         _jellyfinDatabaseProvider = jellyfinDatabaseProvider;
         _applicationPaths = applicationPaths;
@@ -80,14 +84,14 @@ internal class JellyfinMigrationService
 
     private interface IInternalMigration
     {
-        Task PerformAsync(ILogger logger);
+        Task PerformAsync(IStartupLogger logger);
     }
 
     private HashSet<MigrationStage> Migrations { get; set; }
 
     public async Task CheckFirstTimeRunOrMigration(IApplicationPaths appPaths)
     {
-        var logger = _loggerFactory.CreateLogger<JellyfinMigrationService>();
+        var logger = _startupLogger.With(_loggerFactory.CreateLogger<JellyfinMigrationService>()).BeginGroup($"Migration Startup");
         logger.LogInformation("Initialise Migration service.");
         var xmlSerializer = new MyXmlSerializer();
         var serverConfig = File.Exists(appPaths.SystemConfigurationFilePath)
@@ -173,8 +177,7 @@ internal class JellyfinMigrationService
 
     public async Task MigrateStepAsync(JellyfinMigrationStageTypes stage, IServiceProvider? serviceProvider)
     {
-        var logger = _loggerFactory.CreateLogger<JellyfinMigrationService>();
-        logger.LogInformation("Migrate stage {Stage}.", stage);
+        var logger = _startupLogger.With(_loggerFactory.CreateLogger<JellyfinMigrationService>()).BeginGroup($"Migrate stage {stage}.");
         ICollection<CodeMigration> migrationStage = (Migrations.FirstOrDefault(e => e.Stage == stage) as ICollection<CodeMigration>) ?? [];
 
         var dbContext = await _dbContextFactory.CreateDbContextAsync().ConfigureAwait(false);
@@ -202,21 +205,23 @@ internal class JellyfinMigrationService
 
             foreach (var item in migrations)
             {
+                var migrationLogger = logger.With(_loggerFactory.CreateLogger(item.Migration.GetType().Name)).BeginGroup($"{item.Key}");
                 try
                 {
-                    logger.LogInformation("Perform migration {Name}", item.Key);
-                    await item.Migration.PerformAsync(_loggerFactory.CreateLogger(item.GetType().Name)).ConfigureAwait(false);
-                    logger.LogInformation("Migration {Name} was successfully applied", item.Key);
+                    migrationLogger.LogInformation("Perform migration {Name}", item.Key);
+                    await item.Migration.PerformAsync(migrationLogger).ConfigureAwait(false);
+                    migrationLogger.LogInformation("Migration {Name} was successfully applied", item.Key);
                 }
                 catch (Exception ex)
                 {
-                    logger.LogCritical(ex, "Migration {Name} failed, migration service will attempt to roll back.", item.Key);
+                    migrationLogger.LogCritical("Error: {Error}", ex.Message);
+                    migrationLogger.LogError(ex, "Migration {Name} failed", item.Key);
 
                     if (_backupKey != default && _backupService is not null && _jellyfinDatabaseProvider is not null)
                     {
                         if (_backupKey.LibraryDb is not null)
                         {
-                            logger.LogInformation("Attempt to rollback librarydb.");
+                            migrationLogger.LogInformation("Attempt to rollback librarydb.");
                             try
                             {
                                 var libraryDbPath = Path.Combine(_applicationPaths.DataPath, DbFilename);
@@ -224,33 +229,33 @@ internal class JellyfinMigrationService
                             }
                             catch (Exception inner)
                             {
-                                logger.LogCritical(inner, "Could not rollback {LibraryPath}. Manual intervention might be required to restore a operational state.", _backupKey.LibraryDb);
+                                migrationLogger.LogCritical(inner, "Could not rollback {LibraryPath}. Manual intervention might be required to restore a operational state.", _backupKey.LibraryDb);
                             }
                         }
 
                         if (_backupKey.JellyfinDb is not null)
                         {
-                            logger.LogInformation("Attempt to rollback JellyfinDb.");
+                            migrationLogger.LogInformation("Attempt to rollback JellyfinDb.");
                             try
                             {
                                 await _jellyfinDatabaseProvider.RestoreBackupFast(_backupKey.JellyfinDb, CancellationToken.None).ConfigureAwait(false);
                             }
                             catch (Exception inner)
                             {
-                                logger.LogCritical(inner, "Could not rollback {LibraryPath}. Manual intervention might be required to restore a operational state.", _backupKey.JellyfinDb);
+                                migrationLogger.LogCritical(inner, "Could not rollback {LibraryPath}. Manual intervention might be required to restore a operational state.", _backupKey.JellyfinDb);
                             }
                         }
 
                         if (_backupKey.FullBackup is not null)
                         {
-                            logger.LogInformation("Attempt to rollback from backup.");
+                            migrationLogger.LogInformation("Attempt to rollback from backup.");
                             try
                             {
                                 await _backupService.RestoreBackupAsync(_backupKey.FullBackup.Path).ConfigureAwait(false);
                             }
                             catch (Exception inner)
                             {
-                                logger.LogCritical(inner, "Could not rollback from backup {Backup}. Manual intervention might be required to restore a operational state.", _backupKey.FullBackup.Path);
+                                migrationLogger.LogCritical(inner, "Could not rollback from backup {Backup}. Manual intervention might be required to restore a operational state.", _backupKey.FullBackup.Path);
                             }
                         }
                     }
@@ -416,9 +421,9 @@ internal class JellyfinMigrationService
             _dbContext = dbContext;
         }
 
-        public async Task PerformAsync(ILogger logger)
+        public async Task PerformAsync(IStartupLogger logger)
         {
-            await _codeMigration.Perform(_serviceProvider, CancellationToken.None).ConfigureAwait(false);
+            await _codeMigration.Perform(_serviceProvider, logger, CancellationToken.None).ConfigureAwait(false);
 
             var historyRepository = _dbContext.GetService<IHistoryRepository>();
             var createScript = historyRepository.GetInsertScript(new HistoryRow(_codeMigration.BuildCodeMigrationId(), GetJellyfinVersion()));
@@ -437,7 +442,7 @@ internal class JellyfinMigrationService
             _jellyfinDbContext = jellyfinDbContext;
         }
 
-        public async Task PerformAsync(ILogger logger)
+        public async Task PerformAsync(IStartupLogger logger)
         {
             var migrator = _jellyfinDbContext.GetService<IMigrator>();
             await migrator.MigrateAsync(_databaseMigrationInfo.Key).ConfigureAwait(false);
