@@ -100,7 +100,8 @@ public class MediaSegmentManager : IMediaSegmentManager
 
                 if (!forceOverwrite)
                 {
-                    if (segments.Count == requestItem.ExistingSegments.Count && segments.All(e => existingSegments.ToList().Any(f =>
+                    var existingSegmentsList = existingSegments.ToList(); // Cannot use requestItem's list, as the provider might tamper with its items.
+                    if (segments.Count == requestItem.ExistingSegments.Count && segments.All(e => existingSegmentsList.Any(f =>
                     {
                         return
                             e.StartTicks == f.StartTicks &&
