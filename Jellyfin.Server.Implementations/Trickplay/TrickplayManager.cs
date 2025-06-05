@@ -196,24 +196,27 @@ public class TrickplayManager : ITrickplayManager
             }
 
             // Cleanup old trickplay files
-            var existingFolders = Directory.GetDirectories(trickplayDirectory).ToList();
-            var trickplayInfos = await dbContext.TrickplayInfos
-                    .AsNoTracking()
-                    .Where(i => i.ItemId.Equals(video.Id))
-                    .ToListAsync(cancellationToken)
-                    .ConfigureAwait(false);
-            var expectedFolders = trickplayInfos.Select(i => GetTrickplayDirectory(video, i.TileWidth, i.TileHeight, i.Width, saveWithMedia)).ToList();
-            var foldersToRemove = existingFolders.Except(expectedFolders);
-            foreach (var folder in foldersToRemove)
+            if (Directory.Exists(trickplayDirectory))
             {
-                try
+                var existingFolders = Directory.GetDirectories(trickplayDirectory).ToList();
+                var trickplayInfos = await dbContext.TrickplayInfos
+                        .AsNoTracking()
+                        .Where(i => i.ItemId.Equals(video.Id))
+                        .ToListAsync(cancellationToken)
+                        .ConfigureAwait(false);
+                var expectedFolders = trickplayInfos.Select(i => GetTrickplayDirectory(video, i.TileWidth, i.TileHeight, i.Width, saveWithMedia)).ToList();
+                var foldersToRemove = existingFolders.Except(expectedFolders);
+                foreach (var folder in foldersToRemove)
                 {
-                    _logger.LogWarning("Pruning trickplay files for {Item}", video.Path);
-                    Directory.Delete(folder, true);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning("Unable to remove trickplay directory: {Directory}: {Exception}", folder, ex);
+                    try
+                    {
+                        _logger.LogWarning("Pruning trickplay files for {Item}", video.Path);
+                        Directory.Delete(folder, true);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning("Unable to remove trickplay directory: {Directory}: {Exception}", folder, ex);
+                    }
                 }
             }
         }
