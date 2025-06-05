@@ -58,7 +58,7 @@ public sealed class SetupServer : IDisposable
         _loggerFactory = loggerFactory;
         _startupConfiguration = startupConfiguration;
         var xmlSerializer = new MyXmlSerializer();
-        _configurationManager = new ServerConfigurationManager(_applicationPaths, loggerFactory, xmlSerializer);
+        _configurationManager = new ServerConfigurationManager(_applicationPaths, loggerFactory, xmlSerializer, _startupConfiguration);
         _configurationManager.RegisterConfiguration<NetworkConfigurationFactory>();
     }
 
