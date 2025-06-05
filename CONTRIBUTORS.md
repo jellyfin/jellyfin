@@ -196,6 +196,7 @@
  - [benedikt257](https://github.com/benedikt257)
  - [revam](https://github.com/revam)
  - [allesmi](https://github.com/allesmi)
+ - [ThunderClapLP](https://github.com/ThunderClapLP)
 
 # Emby Contributors
 
