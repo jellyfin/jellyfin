@@ -72,18 +72,18 @@ public class MediaSegmentManager : IMediaSegmentManager
 
         _logger.LogDebug("Start media segment extraction for {MediaPath} with {CountProviders} providers enabled", baseItem.Path, providers.Count);
 
+        if (forceOverwrite)
+        {
+            // delete all existing media segments if forceOverwrite is set.
+            await db.MediaSegments.Where(e => e.ItemId.Equals(baseItem.Id)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        }
+
         foreach (var provider in providers)
         {
             if (!await provider.Supports(baseItem).ConfigureAwait(false))
             {
                 _logger.LogDebug("Media Segment provider {ProviderName} does not support item with path {MediaPath}", provider.Name, baseItem.Path);
                 continue;
-            }
-
-            if (forceOverwrite)
-            {
-                // delete all existing media segments if forceOverwrite is set.
-                await db.MediaSegments.Where(e => e.ItemId.Equals(baseItem.Id)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
             }
 
             var existingSegments = db.MediaSegments.Where(e => e.ItemId.Equals(baseItem.Id) && e.SegmentProviderId == GetProviderId(provider.Name));
