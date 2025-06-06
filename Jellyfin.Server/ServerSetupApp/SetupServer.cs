@@ -84,7 +84,7 @@ public sealed class SetupServer : IDisposable
     /// <returns>A Task.</returns>
     public async Task RunAsync()
     {
-        var fileTemplate = await File.ReadAllTextAsync(Path.Combine("ServerSetupApp", "index.mstemplate.html")).ConfigureAwait(false);
+        var fileTemplate = await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "ServerSetupApp", "index.mstemplate.html")).ConfigureAwait(false);
         _startupUiRenderer = (await ParserOptionsBuilder.New()
             .WithTemplate(fileTemplate)
             .WithFormatter(
