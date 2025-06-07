@@ -39,6 +39,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         public int MaxCastMembers { get; set; } = 15;
 
         /// <summary>
+        /// Gets or sets a value indicating whether to fetch and display missing movies of the collection.
+        /// </summary>
+        public bool ShowMissing { get; set; } = false;
+
+        /// <summary>
         /// Gets or sets a value indicating the poster image size to fetch.
         /// </summary>
         public string? PosterSize { get; set; }
