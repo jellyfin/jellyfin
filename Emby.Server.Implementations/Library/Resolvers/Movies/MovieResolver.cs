@@ -16,6 +16,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
@@ -65,9 +66,10 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             Folder parent,
             List<FileSystemMetadata> files,
             CollectionType? collectionType,
-            IDirectoryService directoryService)
+            IDirectoryService directoryService,
+            LibraryOptions libraryOptions)
         {
-            var result = ResolveMultipleInternal(parent, files, collectionType);
+            var result = ResolveMultipleInternal(parent, files, collectionType, libraryOptions.EnableVersionGrouping);
 
             if (result is not null)
             {
@@ -188,7 +190,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
         private MultiItemResolverResult ResolveMultipleInternal(
             Folder parent,
             List<FileSystemMetadata> files,
-            CollectionType? collectionType)
+            CollectionType? collectionType,
+            bool supportMultiEditions)
         {
             if (IsInvalid(parent, collectionType))
             {
@@ -197,7 +200,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
 
             if (collectionType is CollectionType.musicvideos)
             {
-                return ResolveVideos<MusicVideo>(parent, files, true, collectionType, false);
+                return ResolveVideos<MusicVideo>(parent, files, supportMultiEditions, collectionType, false);
             }
 
             if (collectionType == CollectionType.homevideos || collectionType == CollectionType.photos)
@@ -223,12 +226,12 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
 
             if (collectionType == CollectionType.movies)
             {
-                return ResolveVideos<Movie>(parent, files, true, collectionType, true);
+                return ResolveVideos<Movie>(parent, files, supportMultiEditions, collectionType, true);
             }
 
             if (collectionType == CollectionType.tvshows)
             {
-                return ResolveVideos<Episode>(parent, files, false, collectionType, true);
+                return ResolveVideos<Episode>(parent, files, supportMultiEditions, collectionType, true);
             }
 
             return null;
