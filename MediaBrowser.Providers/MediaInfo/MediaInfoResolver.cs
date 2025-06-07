@@ -230,7 +230,7 @@ namespace MediaBrowser.Providers.MediaInfo
             ReadOnlySpan<char> prefix = video.FileNameWithoutExtension;
 
             var delimiter = " - ";
-            var parts = video.FileNameWithoutExtension.Split(delimiter);
+            var parts = video.FileNameWithoutExtension.Split(delimiter, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             ReadOnlySpan<char> fallbackPrefix = parts[0];
             ReadOnlySpan<char> fallbackSuffix = parts.Length > 1 ? parts[1] : ReadOnlySpan<char>.Empty;
 
@@ -238,7 +238,8 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 var fileExtension = Path.GetExtension(file.AsSpan()).ToString();
                 var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(file.AsSpan());
-                var fileParts = fileNameWithoutExtension.ToString().Split(delimiter);
+                var fileParts = fileNameWithoutExtension.ToString().Split(delimiter, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                ReadOnlySpan<char> filePrefix = parts[0];
                 ReadOnlySpan<char> fileSuffix = fileParts.Length > 1 ? fileParts[1] : ReadOnlySpan<char>.Empty;
 
                 if (fileNameWithoutExtension.Length >= prefix.Length
@@ -253,7 +254,7 @@ namespace MediaBrowser.Providers.MediaInfo
                         externalPathInfos.Add(externalPathInfo);
                     }
                 }
-                else if (useFallbackDetection && (fallbackSuffix.IsEmpty || fileSuffix.IsEmpty || fallbackSuffix.Equals(fileSuffix, StringComparison.OrdinalIgnoreCase))
+                else if (useFallbackDetection && fallbackPrefix.Equals(filePrefix, StringComparison.OrdinalIgnoreCase) && !fallbackSuffix.IsEmpty && fileSuffix.IsEmpty
                                               && Array.Exists(_namingOptions.SubtitleFileExtensions, ext => ext.Equals(fileExtension, StringComparison.OrdinalIgnoreCase)))
                 {
                     var externalPathInfo = _externalPathParser.ParseFile(file, fileNameWithoutExtension[fallbackPrefix.Length..].ToString());
