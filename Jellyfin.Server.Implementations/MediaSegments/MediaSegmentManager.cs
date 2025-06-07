@@ -51,7 +51,7 @@ public class MediaSegmentManager : IMediaSegmentManager
     }
 
     /// <inheritdoc/>
-    public async Task RunSegmentPluginProviders(BaseItem baseItem, LibraryOptions libraryOptions, bool overwrite, CancellationToken cancellationToken)
+    public async Task RunSegmentPluginProviders(BaseItem baseItem, LibraryOptions libraryOptions, bool forceOverwrite, CancellationToken cancellationToken)
     {
         var providers = _segmentProviders
             .Where(e => !libraryOptions.DisabledMediaSegmentProviders.Contains(GetProviderId(e.Name)))
@@ -70,18 +70,13 @@ public class MediaSegmentManager : IMediaSegmentManager
 
         using var db = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
-        if (!overwrite && (await db.MediaSegments.AnyAsync(e => e.ItemId.Equals(baseItem.Id), cancellationToken).ConfigureAwait(false)))
-        {
-            _logger.LogDebug("Skip {MediaPath} as it already contains media segments", baseItem.Path);
-            return;
-        }
-
         _logger.LogDebug("Start media segment extraction for {MediaPath} with {CountProviders} providers enabled", baseItem.Path, providers.Count);
 
-        await db.MediaSegments.Where(e => e.ItemId.Equals(baseItem.Id)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
-
-        // no need to recreate the request object every time.
-        var requestItem = new MediaSegmentGenerationRequest() { ItemId = baseItem.Id };
+        if (forceOverwrite)
+        {
+            // delete all existing media segments if forceOverwrite is set.
+            await db.MediaSegments.Where(e => e.ItemId.Equals(baseItem.Id)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        }
 
         foreach (var provider in providers)
         {
@@ -91,13 +86,54 @@ public class MediaSegmentManager : IMediaSegmentManager
                 continue;
             }
 
+            IQueryable<MediaSegment> existingSegments;
+            if (forceOverwrite)
+            {
+                existingSegments = Array.Empty<MediaSegment>().AsQueryable();
+            }
+            else
+            {
+                existingSegments = db.MediaSegments.Where(e => e.ItemId.Equals(baseItem.Id) && e.SegmentProviderId == GetProviderId(provider.Name));
+            }
+
+            var requestItem = new MediaSegmentGenerationRequest()
+            {
+                ItemId = baseItem.Id,
+                ExistingSegments = existingSegments.Select(e => Map(e)).ToArray()
+            };
+
             try
             {
                 var segments = await provider.GetMediaSegments(requestItem, cancellationToken)
                     .ConfigureAwait(false);
-                if (segments.Count == 0)
+
+                if (!forceOverwrite)
+                {
+                    var existingSegmentsList = existingSegments.ToArray(); // Cannot use requestItem's list, as the provider might tamper with its items.
+                    if (segments.Count == requestItem.ExistingSegments.Count && segments.All(e => existingSegmentsList.Any(f =>
+                    {
+                        return
+                            e.StartTicks == f.StartTicks &&
+                            e.EndTicks == f.EndTicks &&
+                            e.Type == f.Type;
+                    })))
+                    {
+                        _logger.LogDebug("Media Segment provider {ProviderName} did not modify any segments for {MediaPath}", provider.Name, baseItem.Path);
+                        continue;
+                    }
+
+                    // delete existing media segments that were re-generated.
+                    await existingSegments.ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+                }
+
+                if (segments.Count == 0 && !requestItem.ExistingSegments.Any())
                 {
                     _logger.LogDebug("Media Segment provider {ProviderName} did not find any segments for {MediaPath}", provider.Name, baseItem.Path);
+                    continue;
+                }
+                else if (segments.Count == 0 && requestItem.ExistingSegments.Any())
+                {
+                    _logger.LogDebug("Media Segment provider {ProviderName} deleted all segments for {MediaPath}", provider.Name, baseItem.Path);
                     continue;
                 }
 
