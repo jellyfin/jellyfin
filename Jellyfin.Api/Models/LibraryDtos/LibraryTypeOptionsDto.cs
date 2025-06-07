@@ -18,6 +18,11 @@ public class LibraryTypeOptionsDto
     /// <summary>
     /// Gets or sets the metadata fetchers.
     /// </summary>
+    public IReadOnlyList<LibraryOptionInfoDto> MetadataResolvers { get; set; } = Array.Empty<LibraryOptionInfoDto>();
+
+    /// <summary>
+    /// Gets or sets the metadata fetchers.
+    /// </summary>
     public IReadOnlyList<LibraryOptionInfoDto> MetadataFetchers { get; set; } = Array.Empty<LibraryOptionInfoDto>();
 
     /// <summary>
