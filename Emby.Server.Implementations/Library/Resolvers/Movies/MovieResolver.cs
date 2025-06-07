@@ -462,7 +462,11 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 {
                     var movie = (T)result.Items[0];
                     movie.IsInMixedFolder = false;
-                    movie.Name = Path.GetFileName(movie.ContainingFolderPath);
+                    if (collectionType == CollectionType.movies || collectionType is null)
+                    {
+                        movie.Name = Path.GetFileName(movie.ContainingFolderPath);
+                    }
+
                     return movie;
                 }
             }
