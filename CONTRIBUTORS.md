@@ -196,6 +196,7 @@
  - [benedikt257](https://github.com/benedikt257)
  - [revam](https://github.com/revam)
  - [allesmi](https://github.com/allesmi)
+ - [Shoham Peller](https://github.com/spellr)
 
 # Emby Contributors
 
