@@ -28,9 +28,9 @@ namespace MediaBrowser.Model.Extensions
                 {
                     // Image priority ordering:
                     //  - Images that match the requested language
+                    //  - Images in English
                     //  - Images with no language
                     //  - TODO: Images that match the original language
-                    //  - Images in English
                     //  - Images that don't match the requested language
 
                     if (string.Equals(requestedLanguage, i.Language, StringComparison.OrdinalIgnoreCase))
@@ -38,12 +38,12 @@ namespace MediaBrowser.Model.Extensions
                         return 4;
                     }
 
-                    if (string.IsNullOrEmpty(i.Language))
+                    if (string.Equals(i.Language, "en", StringComparison.OrdinalIgnoreCase))
                     {
                         return 3;
                     }
 
-                    if (string.Equals(i.Language, "en", StringComparison.OrdinalIgnoreCase))
+                    if (string.IsNullOrEmpty(i.Language))
                     {
                         return 2;
                     }
