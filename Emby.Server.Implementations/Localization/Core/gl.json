@@ -123,5 +123,17 @@
     "TaskKeyframeExtractorDescription": "Extrae fragmentos do vídeo para crear listas de reprodución HLS máis precisas. Podería levarlle bastante tempo.",
     "External": "Externo",
     "HearingImpaired": "Problemas de audición",
-    "TaskKeyframeExtractor": "Extractor de fragmentos"
+    "TaskKeyframeExtractor": "Extractor de fragmentos",
+    "TaskAudioNormalization": "Normalización do audio",
+    "TaskRefreshTrickplayImagesDescription": "Crea vistas previas de reprodución con truco para vídeos en bibliotecas activadas.",
+    "TaskDownloadMissingLyrics": "Descargar letras que faltan",
+    "TaskDownloadMissingLyricsDescription": "Descargas de letras das cancións",
+    "TaskCleanCollectionsAndPlaylists": "Limpar coleccións e listas de reprodución",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Elimina elementos de coleccións e listas de reprodución que xa non existen.",
+    "TaskExtractMediaSegmentsDescription": "Extrae ou obtén segmentos multimedia de complementos habilitados para o Segmento de medios.",
+    "TaskExtractMediaSegments": "Escaneo de segmentos multimedia",
+    "TaskMoveTrickplayImages": "Migrar a localización da imaxe de Trickplay",
+    "TaskMoveTrickplayImagesDescription": "Move os ficheiros de reprodución con trickplay existentes segundo a configuración da biblioteca.",
+    "TaskRefreshTrickplayImages": "Xerar imaxes de Trickplay",
+    "TaskAudioNormalizationDescription": "Analiza ficheiros para obter datos de normalización de audio."
 }

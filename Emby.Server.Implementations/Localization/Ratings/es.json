@@ -3,7 +3,7 @@
     "supportsSubScores": false,
     "ratings": [
         {
-            "ratingStrings": ["0+", "A", "A/i", "A/fig", "A/i/fig", "APTA", "ERI", "TP"],
+            "ratingStrings": ["0+", "A", "Ai","A/i", "A/fig", "A/i/fig", "APTA", "ERI", "TP"],
             "ratingScore": {
                 "score": 0,
                 "subScore": null
@@ -17,7 +17,7 @@
             }
         },
         {
-            "ratingStrings": ["7", "7/i", "7/fig", "7/i/fig"],
+            "ratingStrings": ["7", "7i", "7/i", "7/fig", "7/i/fig"],
             "ratingScore": {
                 "score": 11,
                 "subScore": null

@@ -14,7 +14,6 @@ public class TrickplayInfo
     /// <remarks>
     /// Required.
     /// </remarks>
-    [JsonIgnore]
     public Guid ItemId { get; set; }
 
     /// <summary>

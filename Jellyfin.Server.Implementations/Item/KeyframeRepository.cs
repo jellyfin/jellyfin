@@ -61,4 +61,12 @@ public class KeyframeRepository : IKeyframeRepository
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
     }
+
+    /// <inheritdoc />
+    public async Task DeleteKeyframeDataAsync(Guid itemId, CancellationToken cancellationToken)
+    {
+        using var context = _dbProvider.CreateDbContext();
+        await context.KeyframeData.Where(e => e.ItemId.Equals(itemId)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+    }
 }

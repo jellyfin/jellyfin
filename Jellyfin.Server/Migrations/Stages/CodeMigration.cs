@@ -2,22 +2,50 @@ using System;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Server.ServerSetupApp;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Jellyfin.Server.Migrations.Stages;
 
-internal class CodeMigration(Type migrationType, JellyfinMigrationAttribute metadata)
+internal class CodeMigration(Type migrationType, JellyfinMigrationAttribute metadata, JellyfinMigrationBackupAttribute? migrationBackupAttribute)
 {
     public Type MigrationType { get; } = migrationType;
 
     public JellyfinMigrationAttribute Metadata { get; } = metadata;
 
+    public JellyfinMigrationBackupAttribute? BackupRequirements { get; set; } = migrationBackupAttribute;
+
     public string BuildCodeMigrationId()
     {
-        return Metadata.Order.ToString("yyyyMMddHHmmsss", CultureInfo.InvariantCulture) + "_" + MigrationType.Name!;
+        return Metadata.Order.ToString("yyyyMMddHHmmsss", CultureInfo.InvariantCulture) + "_" + Metadata.Name!;
     }
 
-    public async Task Perform(IServiceProvider? serviceProvider, CancellationToken cancellationToken)
+    private ServiceCollection MigrationServices(IServiceProvider serviceProvider, IStartupLogger logger)
+    {
+        var childServiceCollection = new ServiceCollection();
+        childServiceCollection.AddSingleton(serviceProvider);
+        childServiceCollection.AddSingleton(logger);
+
+        foreach (ServiceDescriptor service in serviceProvider.GetRequiredService<IServiceCollection>())
+        {
+            if (service.Lifetime == ServiceLifetime.Singleton && !service.ServiceType.IsGenericTypeDefinition)
+            {
+                object? serviceInstance = serviceProvider.GetService(service.ServiceType);
+                if (serviceInstance != null)
+                {
+                    childServiceCollection.AddSingleton(service.ServiceType, serviceInstance);
+                    continue;
+                }
+            }
+
+            childServiceCollection.Add(service);
+        }
+
+        return childServiceCollection;
+    }
+
+    public async Task Perform(IServiceProvider? serviceProvider, IStartupLogger logger, CancellationToken cancellationToken)
     {
 #pragma warning disable CS0618 // Type or member is obsolete
         if (typeof(IMigrationRoutine).IsAssignableFrom(MigrationType))
@@ -28,7 +56,8 @@ internal class CodeMigration(Type migrationType, JellyfinMigrationAttribute meta
             }
             else
             {
-                ((IMigrationRoutine)ActivatorUtilities.CreateInstance(serviceProvider, MigrationType)).Perform();
+                using var migrationServices = MigrationServices(serviceProvider, logger).BuildServiceProvider();
+                ((IMigrationRoutine)ActivatorUtilities.CreateInstance(migrationServices, MigrationType)).Perform();
 #pragma warning restore CS0618 // Type or member is obsolete
             }
         }
@@ -40,7 +69,8 @@ internal class CodeMigration(Type migrationType, JellyfinMigrationAttribute meta
             }
             else
             {
-                await ((IAsyncMigrationRoutine)ActivatorUtilities.CreateInstance(serviceProvider, MigrationType)).PerformAsync(cancellationToken).ConfigureAwait(false);
+                using var migrationServices = MigrationServices(serviceProvider, logger).BuildServiceProvider();
+                await ((IAsyncMigrationRoutine)ActivatorUtilities.CreateInstance(migrationServices, MigrationType)).PerformAsync(cancellationToken).ConfigureAwait(false);
             }
         }
         else

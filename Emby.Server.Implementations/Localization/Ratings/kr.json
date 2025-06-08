@@ -1,0 +1,41 @@
+{
+    "countryCode": "kr",
+    "supportsSubScores": false,
+    "ratings": [
+        {
+            "ratingStrings": ["ALL"],
+            "ratingScore": {
+                "score": 0,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["12"],
+            "ratingScore": {
+                "score": 12,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["15"],
+            "ratingScore": {
+                "score": 15,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["19"],
+            "ratingScore": {
+                "score": 19,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["Restricted Screening"],
+            "ratingScore": {
+                "score": 1001,
+                "subScore": null
+            }
+        }
+    ]
+}
