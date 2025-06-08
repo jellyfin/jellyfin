@@ -71,7 +71,7 @@ public sealed class SetupServer : IDisposable
         _configurationManager.RegisterConfiguration<NetworkConfigurationFactory>();
     }
 
-    internal static ConcurrentQueue<StartupLogEntry>? LogQueue { get; set; } = new();
+    internal static ConcurrentQueue<StartupLogTopic>? LogQueue { get; set; } = new();
 
     /// <summary>
     /// Gets a value indicating whether Startup server is currently running.
@@ -88,12 +88,12 @@ public sealed class SetupServer : IDisposable
         _startupUiRenderer = (await ParserOptionsBuilder.New()
             .WithTemplate(fileTemplate)
             .WithFormatter(
-                (StartupLogEntry logEntry, IEnumerable<StartupLogEntry> children) =>
+                (StartupLogTopic logEntry, IEnumerable<StartupLogTopic> children) =>
                 {
                     if (children.Any())
                     {
                         var maxLevel = logEntry.LogLevel;
-                        var stack = new Stack<StartupLogEntry>(children);
+                        var stack = new Stack<StartupLogTopic>(children);
 
                         while (maxLevel != LogLevel.Error && stack.Count > 0 && (logEntry = stack.Pop()) != null) // error is the highest inherted error level.
                         {
@@ -361,16 +361,5 @@ public sealed class SetupServer : IDisposable
                 DateOfCreation = DateTimeOffset.Now
             });
         }
-    }
-
-    internal class StartupLogEntry
-    {
-        public LogLevel LogLevel { get; set; }
-
-        public string? Content { get; set; }
-
-        public DateTimeOffset DateOfCreation { get; set; }
-
-        public List<StartupLogEntry> Children { get; set; } = [];
     }
 }

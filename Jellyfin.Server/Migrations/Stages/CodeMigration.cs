@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Jellyfin.Server.ServerSetupApp;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Migrations.Stages;
 
@@ -21,11 +22,13 @@ internal class CodeMigration(Type migrationType, JellyfinMigrationAttribute meta
         return Metadata.Order.ToString("yyyyMMddHHmmsss", CultureInfo.InvariantCulture) + "_" + Metadata.Name!;
     }
 
-    private ServiceCollection MigrationServices(IServiceProvider serviceProvider, IStartupLogger logger)
+    private IServiceCollection MigrationServices(IServiceProvider serviceProvider, IStartupLogger logger)
     {
-        var childServiceCollection = new ServiceCollection();
-        childServiceCollection.AddSingleton(serviceProvider);
-        childServiceCollection.AddSingleton(logger);
+        var childServiceCollection = new ServiceCollection()
+            .AddSingleton(serviceProvider)
+            .AddSingleton(logger)
+            .AddSingleton(typeof(IStartupLogger<>), typeof(NestedStartupLogger<>))
+            .AddSingleton<StartupLogTopic>(logger.Topic!);
 
         foreach (ServiceDescriptor service in serviceProvider.GetRequiredService<IServiceCollection>())
         {
@@ -76,6 +79,13 @@ internal class CodeMigration(Type migrationType, JellyfinMigrationAttribute meta
         else
         {
             throw new InvalidOperationException($"The type {MigrationType} does not implement either IMigrationRoutine or IAsyncMigrationRoutine and is not a valid migration type");
+        }
+    }
+
+    private class NestedStartupLogger<TCategory> : StartupLogger<TCategory>, IStartupLogger<TCategory>
+    {
+        public NestedStartupLogger(ILogger logger, StartupLogTopic topic) : base(logger, topic)
+        {
         }
     }
 }
