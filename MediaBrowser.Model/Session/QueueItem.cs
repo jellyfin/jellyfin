@@ -5,10 +5,12 @@ using System;
 
 namespace MediaBrowser.Model.Session
 {
-    public class QueueItem
+    public class QueueItem : IEquatable<QueueItem>
     {
         public Guid Id { get; set; }
 
         public string PlaylistItemId { get; set; }
+
+        public bool Equals(QueueItem other) => other != null && Id.Equals(other.Id) && string.Equals(PlaylistItemId, other.PlaylistItemId, StringComparison.Ordinal);
     }
 }
