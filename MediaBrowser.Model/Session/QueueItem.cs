@@ -11,6 +11,6 @@ namespace MediaBrowser.Model.Session
 
         public string PlaylistItemId { get; set; }
 
-        public bool Equals(QueueItem other) => other != null && Id.Equals(other.Id) && string.Equals(PlaylistItemId, other.PlaylistItemId, StringComparison.Ordinal);
+        public bool Equals(QueueItem other) => other is not null && Id.Equals(other.Id) && string.Equals(PlaylistItemId, other.PlaylistItemId, StringComparison.Ordinal);
     }
 }
