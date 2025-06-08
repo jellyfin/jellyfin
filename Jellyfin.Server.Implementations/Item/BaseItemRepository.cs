@@ -2151,13 +2151,13 @@ public sealed class BaseItemRepository
         if (filter.ExcludeProviderIds is not null && filter.ExcludeProviderIds.Count > 0)
         {
             var exclude = filter.ExcludeProviderIds.Select(e => $"{e.Key}:{e.Value}").ToArray();
-            baseQuery = baseQuery.Where(e => !e.Provider!.Select(f => $"{f.ProviderId}:{f.ProviderValue}")!.All(f => exclude.Contains(f)));
+            baseQuery = baseQuery.Where(e => !e.Provider!.Select(f => f.ProviderId + ":" + f.ProviderValue)!.All(f => exclude.Contains(f)));
         }
 
         if (filter.HasAnyProviderId is not null && filter.HasAnyProviderId.Count > 0)
         {
             var include = filter.HasAnyProviderId.Select(e => $"{e.Key}:{e.Value}").ToArray();
-            baseQuery = baseQuery.Where(e => e.Provider!.Select(f => $"{f.ProviderId}:{f.ProviderValue}")!.Any(f => include.Contains(f)));
+            baseQuery = baseQuery.Where(e => e.Provider!.Select(f => f.ProviderId + ":" + f.ProviderValue)!.Any(f => include.Contains(f)));
         }
 
         if (filter.HasImdbId.HasValue)
