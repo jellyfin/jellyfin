@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Emby.Server.Implementations.Configuration;
 using Emby.Server.Implementations.Serialization;
 using Jellyfin.Networking.Manager;
+using Jellyfin.Server.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -18,6 +19,7 @@ using MediaBrowser.Model.System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -138,19 +140,23 @@ public sealed class SetupServer : IDisposable
 
         ThrowIfDisposed();
         var retryAfterValue = TimeSpan.FromSeconds(5);
+        var config = _configurationManager.GetNetworkConfiguration()!;
         _startupServer = Host.CreateDefaultBuilder()
             .UseConsoleLifetime()
             .ConfigureServices(serv =>
             {
                 serv.AddHealthChecks()
                     .AddCheck<SetupHealthcheck>("StartupCheck");
+                serv.Configure<ForwardedHeadersOptions>(options =>
+                {
+                    ApiServiceCollectionExtensions.ConfigureForwardHeaders(config, options);
+                });
             })
             .ConfigureWebHostDefaults(webHostBuilder =>
                     {
                         webHostBuilder
                                 .UseKestrel((builderContext, options) =>
                                 {
-                                    var config = _configurationManager.GetNetworkConfiguration()!;
                                     var knownBindInterfaces = NetworkManager.GetInterfacesCore(_loggerFactory.CreateLogger<SetupServer>(), config.EnableIPv4, config.EnableIPv6);
                                     knownBindInterfaces = NetworkManager.FilterBindSettings(config, knownBindInterfaces.ToList(), config.EnableIPv4, config.EnableIPv6);
                                     var bindInterfaces = NetworkManager.GetAllBindInterfaces(false, _configurationManager, knownBindInterfaces, config.EnableIPv4, config.EnableIPv6);
@@ -168,7 +174,7 @@ public sealed class SetupServer : IDisposable
                                 .Configure(app =>
                                 {
                                     app.UseHealthChecks("/health");
-
+                                    app.UseForwardedHeaders();
                                     app.Map("/startup/logger", loggerRoute =>
                                     {
                                         loggerRoute.Run(async context =>
