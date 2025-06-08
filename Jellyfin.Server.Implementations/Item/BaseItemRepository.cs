@@ -2145,7 +2145,7 @@ public sealed class BaseItemRepository
         if (filter.ExcludeItemIds.Length > 0)
         {
             baseQuery = baseQuery
-                .Where(e => !filter.ItemIds.Contains(e.Id));
+                .Where(e => !filter.ExcludeItemIds.Contains(e.Id));
         }
 
         if (filter.ExcludeProviderIds is not null && filter.ExcludeProviderIds.Count > 0)
