@@ -54,6 +54,11 @@ public sealed class BaseItemRepository
     : IItemRepository
 {
     /// <summary>
+    /// Gets the placeholder id for UserData detached items.
+    /// </summary>
+    public static readonly Guid PlaceholderId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+
+    /// <summary>
     /// This holds all the types in the running assemblies
     /// so that we can de-serialize properly when we don't have strong types.
     /// </summary>
@@ -102,6 +107,14 @@ public sealed class BaseItemRepository
 
         using var context = _dbProvider.CreateDbContext();
         using var transaction = context.Database.BeginTransaction();
+
+        var date = (DateTimeOffset?)DateTimeOffset.Now;
+        // Detach all user watch data
+        context.UserData.Where(e => e.ItemId == id)
+            .ExecuteUpdate(e => e
+                .SetProperty(f => f.RetentionDate, date)
+                .SetProperty(f => f.ItemId, PlaceholderId));
+
         context.AncestorIds.Where(e => e.ItemId == id || e.ParentItemId == id).ExecuteDelete();
         context.AttachmentStreamInfos.Where(e => e.ItemId == id).ExecuteDelete();
         context.BaseItemImageInfos.Where(e => e.ItemId == id).ExecuteDelete();
@@ -491,6 +504,7 @@ public sealed class BaseItemRepository
 
         var ids = tuples.Select(f => f.Item.Id).ToArray();
         var existingItems = context.BaseItems.Where(e => ids.Contains(e.Id)).Select(f => f.Id).ToArray();
+        var newItems = tuples.Where(e => !existingItems.Contains(e.Item.Id)).ToArray();
 
         foreach (var item in tuples)
         {
@@ -510,6 +524,19 @@ public sealed class BaseItemRepository
         }
 
         context.SaveChanges();
+
+        foreach (var item in newItems)
+        {
+            // reattach old userData entries
+            var userKeys = item.UserDataKey.ToArray();
+            var retentionDate = (DateTimeOffset?)null;
+            context.UserData
+                .Where(e => e.ItemId == PlaceholderId)
+                .Where(e => userKeys.Contains(e.CustomDataKey))
+                .ExecuteUpdate(e => e
+                    .SetProperty(f => f.ItemId, item.Item.Id)
+                    .SetProperty(f => f.RetentionDate, retentionDate));
+        }
 
         var itemValueMaps = tuples
             .Select(e => (Item: e.Item, Values: GetItemValuesToSave(e.Item, e.InheritedTags)))
