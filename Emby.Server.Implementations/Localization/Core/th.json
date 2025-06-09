@@ -58,11 +58,11 @@
     "DeviceOnlineWithName": "{0} เชื่อมต่อสำเร็จแล้ว",
     "DeviceOfflineWithName": "{0} ยกเลิกการเชื่อมต่อแล้ว",
     "Collections": "คอลเลกชัน",
-    "ChapterNameValue": "บท {0}",
+    "ChapterNameValue": "บทที่ {0}",
     "Channels": "ช่อง",
     "CameraImageUploadedFrom": "ภาพถ่ายใหม่ได้ถูกอัปโหลดมาจาก {0}",
     "Books": "หนังสือ",
-    "AuthenticationSucceededWithUserName": "{0} ยืนยันตัวสำเร็จแล้ว",
+    "AuthenticationSucceededWithUserName": "{0} ยืนยันตัวตนสำเร็จแล้ว",
     "Artists": "ศิลปิน",
     "Application": "แอปพลิเคชัน",
     "AppDeviceValues": "แอป: {0}, อุปกรณ์: {1}",
@@ -132,5 +132,8 @@
     "TaskAudioNormalizationDescription": "สแกนไฟล์เพื่อค้นหาข้อมูลการปรับระดับเสียงให้สม่ำเสมอ",
     "TaskCleanCollectionsAndPlaylists": "จัดระเบียบคอลเลกชันและเพลย์ลิสต์",
     "TaskCleanCollectionsAndPlaylistsDescription": "ลบรายการออกจากคอลเลกชันและเพลย์ลิสต์ที่ไม่มีแล้ว",
-    "TaskExtractMediaSegments": "การสแกนส่วนของสื่อมีเดีย"
+    "TaskExtractMediaSegments": "การสแกนส่วนของสื่อมีเดีย",
+    "TaskMoveTrickplayImagesDescription": "ย้ายไฟล์ Trickplay ตามการตั้งค่าของไลบรารี",
+    "TaskExtractMediaSegmentsDescription": "แยกหรือดึงส่วนของสื่อจากปลั๊กอินที่เปิดใช้งาน MediaSegment",
+    "TaskMoveTrickplayImages": "ย้ายตำแหน่งเก็บภาพตัวอย่าง Trickplay"
 }
