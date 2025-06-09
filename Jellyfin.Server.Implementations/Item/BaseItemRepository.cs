@@ -529,10 +529,13 @@ public sealed class BaseItemRepository
         {
             // reattach old userData entries
             var userKeys = item.UserDataKey.ToArray();
+            var retentionDate = (DateTimeOffset?)null;
             context.UserData
                 .Where(e => e.ItemId == PlaceholderId)
                 .Where(e => userKeys.Contains(e.CustomDataKey))
-                .ExecuteUpdate(e => e.SetProperty(f => f.ItemId, item.Item.Id));
+                .ExecuteUpdate(e => e
+                    .SetProperty(f => f.ItemId, item.Item.Id)
+                    .SetProperty(f => f.RetentionDate, retentionDate));
         }
 
         var itemValueMaps = tuples
