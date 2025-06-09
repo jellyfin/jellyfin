@@ -11,43 +11,29 @@ namespace Jellyfin.Server.Implementations.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_UserData_BaseItems_ItemId",
-                table: "UserData");
-
             migrationBuilder.AddColumn<DateTimeOffset>(
                 name: "RetentionDate",
                 table: "UserData",
                 type: "TEXT",
                 nullable: true);
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_UserData_BaseItems_ItemId",
-                table: "UserData",
-                column: "ItemId",
-                principalTable: "BaseItems",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.SetNull);
+            migrationBuilder.InsertData(
+                table: "BaseItems",
+                columns: new[] { "Id", "Album", "AlbumArtists", "Artists", "Audio", "ChannelId", "CleanName", "CommunityRating", "CriticRating", "CustomRating", "Data", "DateCreated", "DateLastMediaAdded", "DateLastRefreshed", "DateLastSaved", "DateModified", "EndDate", "EpisodeTitle", "ExternalId", "ExternalSeriesId", "ExternalServiceId", "ExtraIds", "ExtraType", "ForcedSortName", "Genres", "Height", "IndexNumber", "InheritedParentalRatingSubValue", "InheritedParentalRatingValue", "IsFolder", "IsInMixedFolder", "IsLocked", "IsMovie", "IsRepeat", "IsSeries", "IsVirtualItem", "LUFS", "MediaType", "Name", "NormalizationGain", "OfficialRating", "OriginalTitle", "Overview", "OwnerId", "ParentId", "ParentIndexNumber", "Path", "PreferredMetadataCountryCode", "PreferredMetadataLanguage", "PremiereDate", "PresentationUniqueKey", "PrimaryVersionId", "ProductionLocations", "ProductionYear", "RunTimeTicks", "SeasonId", "SeasonName", "SeriesId", "SeriesName", "SeriesPresentationUniqueKey", "ShowId", "Size", "SortName", "StartDate", "Studios", "Tagline", "Tags", "TopParentId", "TotalBitrate", "Type", "UnratedType", "Width" },
+                values: new object[] { new Guid("00000000-0000-0000-0000-000000000001"), null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, false, false, false, false, false, false, false, null, null, "This is a placeholder item for UserData that has been detacted from its original item", null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, "PLACEHOLDER", null, null });
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_UserData_BaseItems_ItemId",
-                table: "UserData");
-
             migrationBuilder.DropColumn(
                 name: "RetentionDate",
                 table: "UserData");
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_UserData_BaseItems_ItemId",
-                table: "UserData",
-                column: "ItemId",
-                principalTable: "BaseItems",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+            migrationBuilder.DeleteData(
+                table: "BaseItems",
+                keyColumn: "Id",
+                keyValue: new Guid("00000000-0000-0000-0000-000000000001"));
         }
     }
 }

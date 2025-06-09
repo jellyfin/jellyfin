@@ -17,6 +17,6 @@ public class UserDataConfiguration : IEntityTypeConfiguration<UserData>
         builder.HasIndex(d => new { d.ItemId, d.UserId, d.PlaybackPositionTicks });
         builder.HasIndex(d => new { d.ItemId, d.UserId, d.IsFavorite });
         builder.HasIndex(d => new { d.ItemId, d.UserId, d.LastPlayedDate });
-        builder.HasOne(e => e.Item).WithMany(e => e.UserData).OnDelete(DeleteBehavior.SetNull).IsRequired(false);
+        builder.HasOne(e => e.Item).WithMany(e => e.UserData);
     }
 }

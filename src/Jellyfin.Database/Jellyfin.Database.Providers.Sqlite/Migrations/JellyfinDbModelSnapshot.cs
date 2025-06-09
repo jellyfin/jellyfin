@@ -392,6 +392,21 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.ToTable("BaseItems");
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000000001"),
+                            IsFolder = false,
+                            IsInMixedFolder = false,
+                            IsLocked = false,
+                            IsMovie = false,
+                            IsRepeat = false,
+                            IsSeries = false,
+                            IsVirtualItem = false,
+                            Name = "This is a placeholder item for UserData that has been detacted from its original item",
+                            Type = "PLACEHOLDER"
+                        });
                 });
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.BaseItemImageInfo", b =>
@@ -1617,7 +1632,8 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "Item")
                         .WithMany("UserData")
                         .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Jellyfin.Database.Implementations.Entities.User", "User")
                         .WithMany()

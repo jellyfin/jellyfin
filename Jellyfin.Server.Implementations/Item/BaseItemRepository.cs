@@ -53,6 +53,8 @@ namespace Jellyfin.Server.Implementations.Item;
 public sealed class BaseItemRepository
     : IItemRepository
 {
+    private static readonly Guid PlaceholderId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+
     /// <summary>
     /// This holds all the types in the running assemblies
     /// so that we can de-serialize properly when we don't have strong types.
@@ -102,6 +104,13 @@ public sealed class BaseItemRepository
 
         using var context = _dbProvider.CreateDbContext();
         using var transaction = context.Database.BeginTransaction();
+
+        // Detach all user watch data
+        context.UserData.Where(e => e.ItemId == id)
+            .ExecuteUpdate(e => e
+                .SetProperty(f => f.RetentionDate, DateTimeOffset.UtcNow)
+                .SetProperty(f => f.ItemId, PlaceholderId));
+
         context.AncestorIds.Where(e => e.ItemId == id || e.ParentItemId == id).ExecuteDelete();
         context.AttachmentStreamInfos.Where(e => e.ItemId == id).ExecuteDelete();
         context.BaseItemImageInfos.Where(e => e.ItemId == id).ExecuteDelete();
@@ -120,11 +129,6 @@ public sealed class BaseItemRepository
         context.PeopleBaseItemMap.Where(e => e.ItemId == id).ExecuteDelete();
         context.Peoples.Where(e => e.BaseItems!.Count == 0).ExecuteDelete();
         context.TrickplayInfos.Where(e => e.ItemId == id).ExecuteDelete();
-        // Detach all user watch data
-        context.UserData.Where(e => e.ItemId == id)
-            .ExecuteUpdate(e => e
-                .SetProperty(f => f.RetentionDate, DateTimeOffset.UtcNow)
-                .SetProperty(f => f.ItemId, (Guid?)null));
         context.SaveChanges();
         transaction.Commit();
     }
@@ -522,7 +526,7 @@ public sealed class BaseItemRepository
             // reattach old userData entries
             var userKeys = item.UserDataKey.ToArray();
             context.UserData
-                .Where(e => e.ItemId == null)
+                .Where(e => e.ItemId == PlaceholderId)
                 .Where(e => userKeys.Contains(e.CustomDataKey))
                 .ExecuteUpdate(e => e.SetProperty(f => f.ItemId, item.Item.Id));
         }
