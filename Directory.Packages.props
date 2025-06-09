@@ -70,9 +70,9 @@
     <PackageVersion Include="SerilogAnalyzer" Version="0.15.0" />
     <PackageVersion Include="SharpFuzz" Version="2.2.0" />
      <!-- Pinned to 3.116.1 because https://github.com/jellyfin/jellyfin/pull/14255 -->
-    <PackageVersion Include="SkiaSharp" Version="3.116.1" />
-    <PackageVersion Include="SkiaSharp.HarfBuzz" Version="3.116.1" />
-    <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="3.116.1" />
+    <PackageVersion Include="SkiaSharp" Version="3.119.0" />
+    <PackageVersion Include="SkiaSharp.HarfBuzz" Version="3.119.0" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="3.119.0" />
     <PackageVersion Include="SmartAnalyzers.MultithreadingAnalyzer" Version="1.1.31" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.556" />
     <PackageVersion Include="Svg.Skia" Version="3.0.3" />
