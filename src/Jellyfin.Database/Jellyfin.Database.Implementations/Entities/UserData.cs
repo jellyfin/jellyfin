@@ -77,7 +77,7 @@ public class UserData
     /// Gets or sets the key.
     /// </summary>
     /// <value>The key.</value>
-    public required Guid? ItemId { get; set; }
+    public Guid? ItemId { get; set; }
 
     /// <summary>
     /// Gets or Sets the BaseItem.
