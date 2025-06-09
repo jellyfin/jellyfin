@@ -108,10 +108,11 @@ public sealed class BaseItemRepository
         using var context = _dbProvider.CreateDbContext();
         using var transaction = context.Database.BeginTransaction();
 
+        var date = (DateTimeOffset?)DateTimeOffset.Now;
         // Detach all user watch data
         context.UserData.Where(e => e.ItemId == id)
             .ExecuteUpdate(e => e
-                .SetProperty(f => f.RetentionDate, DateTimeOffset.UtcNow)
+                .SetProperty(f => f.RetentionDate, date)
                 .SetProperty(f => f.ItemId, PlaceholderId));
 
         context.AncestorIds.Where(e => e.ItemId == id || e.ParentItemId == id).ExecuteDelete();
