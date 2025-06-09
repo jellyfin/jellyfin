@@ -35,7 +35,7 @@ public class MigrateKeyframeData : IDatabaseMigrationRoutine
     /// <param name="appPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
     /// <param name="dbProvider">The EFCore db factory.</param>
     public MigrateKeyframeData(
-        IStartupLogger startupLogger,
+        IStartupLogger<MigrateKeyframeData> startupLogger,
         IApplicationPaths appPaths,
         IDbContextFactory<JellyfinDbContext> dbProvider)
     {

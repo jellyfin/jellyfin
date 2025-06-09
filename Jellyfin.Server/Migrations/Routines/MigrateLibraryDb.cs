@@ -48,7 +48,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
     /// <param name="paths">The server application paths.</param>
     /// <param name="jellyfinDatabaseProvider">The database provider for special access.</param>
     public MigrateLibraryDb(
-        IStartupLogger startupLogger,
+        IStartupLogger<MigrateLibraryDb> startupLogger,
         IDbContextFactory<JellyfinDbContext> provider,
         IServerApplicationPaths paths,
         IJellyfinDatabaseProvider jellyfinDatabaseProvider)

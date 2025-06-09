@@ -47,7 +47,7 @@ internal class JellyfinMigrationService
     public JellyfinMigrationService(
         IDbContextFactory<JellyfinDbContext> dbContextFactory,
         ILoggerFactory loggerFactory,
-        IStartupLogger startupLogger,
+        IStartupLogger<JellyfinMigrationService> startupLogger,
         IApplicationPaths applicationPaths,
         IBackupService? backupService = null,
         IJellyfinDatabaseProvider? jellyfinDatabaseProvider = null)
