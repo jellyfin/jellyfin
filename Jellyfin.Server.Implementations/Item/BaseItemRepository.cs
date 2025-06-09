@@ -120,6 +120,11 @@ public sealed class BaseItemRepository
         context.PeopleBaseItemMap.Where(e => e.ItemId == id).ExecuteDelete();
         context.Peoples.Where(e => e.BaseItems!.Count == 0).ExecuteDelete();
         context.TrickplayInfos.Where(e => e.ItemId == id).ExecuteDelete();
+        // Detach all user watch data
+        context.UserData.Where(e => e.ItemId == id)
+            .ExecuteUpdate(e => e
+                .SetProperty(f => f.RetentionDate, DateTimeOffset.UtcNow)
+                .SetProperty(f => f.ItemId, (Guid?)null));
         context.SaveChanges();
         transaction.Commit();
     }
@@ -491,6 +496,7 @@ public sealed class BaseItemRepository
 
         var ids = tuples.Select(f => f.Item.Id).ToArray();
         var existingItems = context.BaseItems.Where(e => ids.Contains(e.Id)).Select(f => f.Id).ToArray();
+        var newItems = tuples.Where(e => !existingItems.Contains(e.Item.Id)).ToArray();
 
         foreach (var item in tuples)
         {
@@ -510,6 +516,16 @@ public sealed class BaseItemRepository
         }
 
         context.SaveChanges();
+
+        foreach (var item in newItems)
+        {
+            // reattach old userData entries
+            var userKeys = item.UserDataKey.ToArray();
+            context.UserData
+                .Where(e => e.ItemId == null)
+                .Where(e => userKeys.Contains(e.CustomDataKey))
+                .ExecuteUpdate(e => e.SetProperty(f => f.ItemId, item.Item.Id));
+        }
 
         var itemValueMaps = tuples
             .Select(e => (Item: e.Item, Values: GetItemValuesToSave(e.Item, e.InheritedTags)))

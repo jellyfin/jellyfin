@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Implementations.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "9.0.3");
+            modelBuilder.HasAnnotation("ProductVersion", "9.0.5");
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.AccessSchedule", b =>
                 {
@@ -1373,6 +1373,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<double?>("Rating")
                         .HasColumnType("REAL");
 
+                    b.Property<DateTimeOffset?>("RetentionDate")
+                        .HasColumnType("TEXT");
+
                     b.Property<int?>("SubtitleStreamIndex")
                         .HasColumnType("INTEGER");
 
@@ -1614,8 +1617,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "Item")
                         .WithMany("UserData")
                         .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("Jellyfin.Database.Implementations.Entities.User", "User")
                         .WithMany()
