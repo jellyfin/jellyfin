@@ -116,26 +116,7 @@ namespace Jellyfin.Server.Extensions
                 .AddTransient<ICorsPolicyProvider, CorsPolicyProvider>()
                 .Configure<ForwardedHeadersOptions>(options =>
                 {
-                    // https://github.com/dotnet/aspnetcore/blob/master/src/Middleware/HttpOverrides/src/ForwardedHeadersMiddleware.cs
-                    // Enable debug logging on Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersMiddleware to help investigate issues.
-
-                    if (config.KnownProxies.Length == 0)
-                    {
-                        options.ForwardedHeaders = ForwardedHeaders.None;
-                        options.KnownNetworks.Clear();
-                        options.KnownProxies.Clear();
-                    }
-                    else
-                    {
-                        options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
-                        AddProxyAddresses(config, config.KnownProxies, options);
-                    }
-
-                    // Only set forward limit if we have some known proxies or some known networks.
-                    if (options.KnownProxies.Count != 0 || options.KnownNetworks.Count != 0)
-                    {
-                        options.ForwardLimit = null;
-                    }
+                    ConfigureForwardHeaders(config, options);
                 })
                 .AddMvc(opts =>
                 {
@@ -181,6 +162,30 @@ namespace Jellyfin.Server.Extensions
             }
 
             return mvcBuilder.AddControllersAsServices();
+        }
+
+        internal static void ConfigureForwardHeaders(NetworkConfiguration config, ForwardedHeadersOptions options)
+        {
+            // https://github.com/dotnet/aspnetcore/blob/master/src/Middleware/HttpOverrides/src/ForwardedHeadersMiddleware.cs
+            // Enable debug logging on Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersMiddleware to help investigate issues.
+
+            if (config.KnownProxies.Length == 0)
+            {
+                options.ForwardedHeaders = ForwardedHeaders.None;
+                options.KnownNetworks.Clear();
+                options.KnownProxies.Clear();
+            }
+            else
+            {
+                options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
+                AddProxyAddresses(config, config.KnownProxies, options);
+            }
+
+            // Only set forward limit if we have some known proxies or some known networks.
+            if (options.KnownProxies.Count != 0 || options.KnownNetworks.Count != 0)
+            {
+                options.ForwardLimit = null;
+            }
         }
 
         /// <summary>
