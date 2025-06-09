@@ -125,7 +125,6 @@ public class CollectionPostScanTask : ILibraryPostScanTask
                         boxSet = await _collectionManager.CreateCollectionAsync(new CollectionCreationOptions
                         {
                             Name = collectionName,
-                            IsLocked = true
                         }).ConfigureAwait(false);
 
                         await _collectionManager.AddToCollectionAsync(boxSet.Id, movieIds).ConfigureAwait(false);
