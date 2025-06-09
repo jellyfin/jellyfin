@@ -87,7 +87,7 @@ public class SystemManager : ISystemManager
     {
         var virtualFolderInfos = _libraryManager
             .GetVirtualFolders()
-            .Where(e => e.ItemId is not null) // this should not be null but for some users it is.
+            .Where(e => !e.ItemId.IsNullOrEmpty()) // this should not be null but for some users it is.
             .Select(e => new LibraryStorageInfo()
         {
             Id = Guid.Parse(e.ItemId),
