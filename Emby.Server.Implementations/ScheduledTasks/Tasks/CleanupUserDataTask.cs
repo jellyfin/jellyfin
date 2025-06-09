@@ -43,7 +43,7 @@ public class CleanupUserDataTask : IScheduledTask
     public string Description => _localization.GetLocalizedString("CleanupUserDataTaskDescription");
 
     /// <inheritdoc />
-    public string Category => _localization.GetLocalizedString("CleanupUserDataTaskCategory");
+    public string Category => _localization.GetLocalizedString("TasksMaintenanceCategory");
 
     /// <inheritdoc />
     public string Key => nameof(CleanupUserDataTask);
