@@ -3,12 +3,11 @@
 
 using System;
 
-namespace MediaBrowser.Model.Session
-{
-    public class QueueItem
-    {
-        public Guid Id { get; set; }
+namespace MediaBrowser.Model.Session;
 
-        public string PlaylistItemId { get; set; }
-    }
+public record QueueItem
+{
+    public Guid Id { get; set; }
+
+    public string PlaylistItemId { get; set; }
 }

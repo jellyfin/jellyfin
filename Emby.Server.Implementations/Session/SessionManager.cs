@@ -456,7 +456,7 @@ namespace Emby.Server.Implementations.Session
 
             var nowPlayingQueue = info.NowPlayingQueue;
 
-            if (nowPlayingQueue?.Length > 0)
+            if (nowPlayingQueue?.Length > 0 && !nowPlayingQueue.SequenceEqual(session.NowPlayingQueue))
             {
                 session.NowPlayingQueue = nowPlayingQueue;
 
