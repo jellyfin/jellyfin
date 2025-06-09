@@ -53,7 +53,10 @@ namespace Jellyfin.Server.Implementations.Item;
 public sealed class BaseItemRepository
     : IItemRepository
 {
-    private static readonly Guid PlaceholderId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+    /// <summary>
+    /// Gets the placeholder id for UserData detached items.
+    /// </summary>
+    public static readonly Guid PlaceholderId = Guid.Parse("00000000-0000-0000-0000-000000000001");
 
     /// <summary>
     /// This holds all the types in the running assemblies
