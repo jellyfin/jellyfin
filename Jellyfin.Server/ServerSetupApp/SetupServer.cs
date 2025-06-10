@@ -163,9 +163,13 @@ public sealed class SetupServer : IDisposable
                         webHostBuilder
                                 .UseKestrel((builderContext, options) =>
                                 {
+                                    logger.LogInformation("GetInterfacesCore");
                                     var knownBindInterfaces = NetworkManager.GetInterfacesCore(_loggerFactory.CreateLogger<SetupServer>(), config.EnableIPv4, config.EnableIPv6);
+                                    logger.LogInformation("FilterBindSettings");
                                     knownBindInterfaces = NetworkManager.FilterBindSettings(config, knownBindInterfaces.ToList(), config.EnableIPv4, config.EnableIPv6);
+                                    logger.LogInformation("GetAllBindInterfaces");
                                     var bindInterfaces = NetworkManager.GetAllBindInterfaces(false, _configurationManager, knownBindInterfaces, config.EnableIPv4, config.EnableIPv6);
+                                    logger.LogInformation("SetupJellyfinWebServer");
                                     Extensions.WebHostBuilderExtensions.SetupJellyfinWebServer(
                                         bindInterfaces,
                                         config.InternalHttpPort,
@@ -176,6 +180,7 @@ public sealed class SetupServer : IDisposable
                                         _loggerFactory.CreateLogger<SetupServer>(),
                                         builderContext,
                                         options);
+                                    logger.LogInformation("SetupJellyfinWebServer Done");
                                 })
                                 .Configure(app =>
                                 {
@@ -208,6 +213,7 @@ public sealed class SetupServer : IDisposable
                                     {
                                         systemRoute.Run(async context =>
                                         {
+                                            logger.LogInformation("systemRoute");
                                             var jfApplicationHost = _serverFactory();
 
                                             var retryCounter = 0;
@@ -236,6 +242,7 @@ public sealed class SetupServer : IDisposable
                                             };
 
                                             await context.Response.WriteAsJsonAsync(sysInfo).ConfigureAwait(false);
+                                            logger.LogInformation("systemRoute Done");
                                         });
                                     });
 
@@ -247,6 +254,7 @@ public sealed class SetupServer : IDisposable
                                         var networkManager = _networkManagerFactory();
 
                                         var startupLogEntries = LogQueue?.ToArray() ?? [];
+                                        logger.LogInformation("RenderAsync");
                                         await _startupUiRenderer.RenderAsync(
                                             new Dictionary<string, object>()
                                             {
@@ -257,6 +265,7 @@ public sealed class SetupServer : IDisposable
                                             },
                                             new ByteCounterStream(context.Response.BodyWriter.AsStream(), IODefaults.FileStreamBufferSize, true, _startupUiRenderer.ParserOptions))
                                             .ConfigureAwait(false);
+                                        logger.LogInformation("RenderAsync Done");
                                     });
                                 });
                     })
