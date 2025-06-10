@@ -297,7 +297,7 @@ public class BackupService : IBackupService
                     .GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
                     .Where(e => e.PropertyType.IsAssignableTo(typeof(IQueryable)))
                     .Select(e => (Type: e.PropertyType, ValueFactory: new Func<IAsyncEnumerable<object>>(() => GetValues((IQueryable)e.GetValue(dbContext)!, e.PropertyType)))),
-                    (Type: typeof(HistoryRow), ValueFactory: new Func<IAsyncEnumerable<object>>(() => migrations.ToAsyncEnumerable()))
+                    (Type: typeof(IQueryable<HistoryRow>), ValueFactory: new Func<IAsyncEnumerable<object>>(() => migrations.ToAsyncEnumerable()))
                 ];
                 manifest.DatabaseTables = entityTypes.Select(e => e.Type.Name).ToArray();
                 var transaction = await dbContext.Database.BeginTransactionAsync().ConfigureAwait(false);
@@ -308,6 +308,7 @@ public class BackupService : IBackupService
 
                     foreach (var entityType in entityTypes)
                     {
+                        var schemaName = dbContext.Model.FindEntityType(entityType.Type.GetGenericArguments()[0])!.GetSchemaQualifiedTableName()!;
                         _logger.LogInformation("Begin backup of entity {Table}", entityType.Type.Name);
                         var zipEntry = zipArchive.CreateEntry($"Database\\{entityType.Type.Name}.json");
                         var entities = 0;
