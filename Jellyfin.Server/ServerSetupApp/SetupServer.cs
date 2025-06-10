@@ -172,11 +172,8 @@ public sealed class SetupServer : IDisposable
         ThrowIfDisposed();
         var retryAfterValue = TimeSpan.FromSeconds(5);
         var config = _configurationManager.GetNetworkConfiguration()!;
-        HostBuilder builder = new();
-        _startupServer = builder
-            .ConfigureHostConfiguration(config => ApplyDefaultHostConfiguration(config, Environment.GetCommandLineArgs()))
-            .ConfigureAppConfiguration((hostingContext, config) => ApplyDefaultAppConfiguration(hostingContext, config, Environment.GetCommandLineArgs()))
-            .UseServiceProviderFactory(context => new DefaultServiceProviderFactory(new ServiceProviderOptions()))
+        _startupServer = Host.CreateDefaultBuilder()
+            .ConfigureHostConfiguration(config => config.SetBasePath(_applicationPaths.ConfigurationDirectoryPath))
             .UseConsoleLifetime()
             .ConfigureServices(serv =>
             {
