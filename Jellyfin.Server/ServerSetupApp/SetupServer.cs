@@ -47,6 +47,7 @@ public sealed class SetupServer : IDisposable
     private IHost? _startupServer;
     private bool _disposed;
     private bool _isUnhealthy;
+    private Task _startupTask = Task.CompletedTask;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SetupServer"/> class.
@@ -255,7 +256,7 @@ public sealed class SetupServer : IDisposable
                                 });
                     })
                     .Build();
-        await _startupServer.StartAsync().ConfigureAwait(false);
+        _startupTask = _startupServer.StartAsync();
         IsAlive = true;
     }
 
@@ -271,6 +272,7 @@ public sealed class SetupServer : IDisposable
             throw new InvalidOperationException("Tried to stop a non existing startup server");
         }
 
+        await _startupTask.ConfigureAwait(false);
         await _startupServer.StopAsync().ConfigureAwait(false);
         IsAlive = false;
     }
