@@ -57,7 +57,7 @@ public class CleanupUserDataTask : IScheduledTask
         await using (dbContext.ConfigureAwait(false))
         {
             var detachedUserData = dbContext.UserData.Where(e => e.ItemId == BaseItemRepository.PlaceholderId);
-            _logger.LogInformation("There are {NoDetached} detached UserData entires.", detachedUserData.Count());
+            _logger.LogInformation("There are {NoDetached} detached UserData entries.", detachedUserData.Count());
 
             detachedUserData = detachedUserData.Where(e => e.RetentionDate < userDataDate);
 
