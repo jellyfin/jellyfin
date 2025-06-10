@@ -153,10 +153,10 @@ public sealed class SetupServer : IDisposable
             {
                 serv.AddHealthChecks()
                     .AddCheck<SetupHealthcheck>("StartupCheck");
-                serv.Configure<ForwardedHeadersOptions>(options =>
-                {
-                    ApiServiceCollectionExtensions.ConfigureForwardHeaders(config, options);
-                });
+                // serv.Configure<ForwardedHeadersOptions>(options =>
+                // {
+                //     ApiServiceCollectionExtensions.ConfigureForwardHeaders(config, options);
+                // });
             })
             .ConfigureWebHostDefaults(webHostBuilder =>
                     {
