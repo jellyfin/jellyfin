@@ -147,129 +147,139 @@ public sealed class SetupServer : IDisposable
         logger.LogInformation("Read Network config");
         var config = _configurationManager.GetNetworkConfiguration()!;
         logger.LogInformation("Build Startup Host");
-        _startupServer = Host.CreateDefaultBuilder()
-            .UseConsoleLifetime()
-            .ConfigureServices(serv =>
+        var startupServer = Host.CreateDefaultBuilder();
+        logger.LogInformation("UseConsoleLifetime");
+        startupServer = startupServer.UseConsoleLifetime();
+        logger.LogInformation("ConfigureServices");
+        startupServer = startupServer.ConfigureServices(serv =>
             {
+                logger.LogInformation("AddHealthChecks");
                 serv.AddHealthChecks()
                     .AddCheck<SetupHealthcheck>("StartupCheck");
-                // serv.Configure<ForwardedHeadersOptions>(options =>
-                // {
-                //     ApiServiceCollectionExtensions.ConfigureForwardHeaders(config, options);
-                // });
-            })
-            .ConfigureWebHostDefaults(webHostBuilder =>
+                logger.LogInformation("ForwardedHeadersOptions");
+                serv.Configure<ForwardedHeadersOptions>(options =>
+                {
+                    logger.LogInformation("ConfigureForwardHeaders");
+                    ApiServiceCollectionExtensions.ConfigureForwardHeaders(config, options);
+                    logger.LogInformation("ConfigureForwardHeaders Done");
+                });
+            });
+        logger.LogInformation("ConfigureWebHostDefaults");
+        startupServer = startupServer
+        .ConfigureWebHostDefaults(webHostBuilder =>
+                {
+                    webHostBuilder = webHostBuilder
+                            .UseKestrel((builderContext, options) =>
+                            {
+                                logger.LogInformation("GetInterfacesCore");
+                                var knownBindInterfaces = NetworkManager.GetInterfacesCore(_loggerFactory.CreateLogger<SetupServer>(), config.EnableIPv4, config.EnableIPv6);
+                                logger.LogInformation("FilterBindSettings");
+                                knownBindInterfaces = NetworkManager.FilterBindSettings(config, knownBindInterfaces.ToList(), config.EnableIPv4, config.EnableIPv6);
+                                logger.LogInformation("GetAllBindInterfaces");
+                                var bindInterfaces = NetworkManager.GetAllBindInterfaces(false, _configurationManager, knownBindInterfaces, config.EnableIPv4, config.EnableIPv6);
+                                logger.LogInformation("SetupJellyfinWebServer");
+                                Extensions.WebHostBuilderExtensions.SetupJellyfinWebServer(
+                                    bindInterfaces,
+                                    config.InternalHttpPort,
+                                    null,
+                                    null,
+                                    _startupConfiguration,
+                                    _applicationPaths,
+                                    _loggerFactory.CreateLogger<SetupServer>(),
+                                    builderContext,
+                                    options);
+                                logger.LogInformation("SetupJellyfinWebServer Done");
+                            });
+                    webHostBuilder = webHostBuilder
+                    .Configure(app =>
                     {
-                        webHostBuilder
-                                .UseKestrel((builderContext, options) =>
+                        app.UseHealthChecks("/health");
+                        // app.UseForwardedHeaders();
+                        app.Map("/startup/logger", loggerRoute =>
+                        {
+                            loggerRoute.Run(async context =>
+                            {
+                                var networkManager = _networkManagerFactory();
+                                if (context.Connection.RemoteIpAddress is null || networkManager is null || !networkManager.IsInLocalNetwork(context.Connection.RemoteIpAddress))
                                 {
-                                    logger.LogInformation("GetInterfacesCore");
-                                    var knownBindInterfaces = NetworkManager.GetInterfacesCore(_loggerFactory.CreateLogger<SetupServer>(), config.EnableIPv4, config.EnableIPv6);
-                                    logger.LogInformation("FilterBindSettings");
-                                    knownBindInterfaces = NetworkManager.FilterBindSettings(config, knownBindInterfaces.ToList(), config.EnableIPv4, config.EnableIPv6);
-                                    logger.LogInformation("GetAllBindInterfaces");
-                                    var bindInterfaces = NetworkManager.GetAllBindInterfaces(false, _configurationManager, knownBindInterfaces, config.EnableIPv4, config.EnableIPv6);
-                                    logger.LogInformation("SetupJellyfinWebServer");
-                                    Extensions.WebHostBuilderExtensions.SetupJellyfinWebServer(
-                                        bindInterfaces,
-                                        config.InternalHttpPort,
-                                        null,
-                                        null,
-                                        _startupConfiguration,
-                                        _applicationPaths,
-                                        _loggerFactory.CreateLogger<SetupServer>(),
-                                        builderContext,
-                                        options);
-                                    logger.LogInformation("SetupJellyfinWebServer Done");
-                                })
-                                .Configure(app =>
+                                    context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                                    return;
+                                }
+
+                                var logFilePath = new DirectoryInfo(_applicationPaths.LogDirectoryPath)
+                                    .EnumerateFiles()
+                                    .OrderByDescending(f => f.CreationTimeUtc)
+                                    .FirstOrDefault()
+                                    ?.FullName;
+                                if (logFilePath is not null)
                                 {
-                                    app.UseHealthChecks("/health");
-                                    // app.UseForwardedHeaders();
-                                    app.Map("/startup/logger", loggerRoute =>
-                                    {
-                                        loggerRoute.Run(async context =>
-                                        {
-                                            var networkManager = _networkManagerFactory();
-                                            if (context.Connection.RemoteIpAddress is null || networkManager is null || !networkManager.IsInLocalNetwork(context.Connection.RemoteIpAddress))
-                                            {
-                                                context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-                                                return;
-                                            }
+                                    await context.Response.SendFileAsync(logFilePath, CancellationToken.None).ConfigureAwait(false);
+                                }
+                            });
+                        });
 
-                                            var logFilePath = new DirectoryInfo(_applicationPaths.LogDirectoryPath)
-                                                .EnumerateFiles()
-                                                .OrderByDescending(f => f.CreationTimeUtc)
-                                                .FirstOrDefault()
-                                                ?.FullName;
-                                            if (logFilePath is not null)
-                                            {
-                                                await context.Response.SendFileAsync(logFilePath, CancellationToken.None).ConfigureAwait(false);
-                                            }
-                                        });
-                                    });
+                        app.Map("/System/Info/Public", systemRoute =>
+                        {
+                            systemRoute.Run(async context =>
+                            {
+                                logger.LogInformation("systemRoute");
+                                var jfApplicationHost = _serverFactory();
 
-                                    app.Map("/System/Info/Public", systemRoute =>
-                                    {
-                                        systemRoute.Run(async context =>
-                                        {
-                                            logger.LogInformation("systemRoute");
-                                            var jfApplicationHost = _serverFactory();
+                                var retryCounter = 0;
+                                while (jfApplicationHost is null && retryCounter < 5)
+                                {
+                                    await Task.Delay(500).ConfigureAwait(false);
+                                    jfApplicationHost = _serverFactory();
+                                    retryCounter++;
+                                }
 
-                                            var retryCounter = 0;
-                                            while (jfApplicationHost is null && retryCounter < 5)
-                                            {
-                                                await Task.Delay(500).ConfigureAwait(false);
-                                                jfApplicationHost = _serverFactory();
-                                                retryCounter++;
-                                            }
+                                if (jfApplicationHost is null)
+                                {
+                                    context.Response.StatusCode = (int)HttpStatusCode.ServiceUnavailable;
+                                    context.Response.Headers.RetryAfter = new StringValues(retryAfterValue.TotalSeconds.ToString("000", CultureInfo.InvariantCulture));
+                                    return;
+                                }
 
-                                            if (jfApplicationHost is null)
-                                            {
-                                                context.Response.StatusCode = (int)HttpStatusCode.ServiceUnavailable;
-                                                context.Response.Headers.RetryAfter = new StringValues(retryAfterValue.TotalSeconds.ToString("000", CultureInfo.InvariantCulture));
-                                                return;
-                                            }
+                                var sysInfo = new PublicSystemInfo
+                                {
+                                    Version = jfApplicationHost.ApplicationVersionString,
+                                    ProductName = jfApplicationHost.Name,
+                                    Id = jfApplicationHost.SystemId,
+                                    ServerName = jfApplicationHost.FriendlyName,
+                                    LocalAddress = jfApplicationHost.GetSmartApiUrl(context.Request),
+                                    StartupWizardCompleted = false
+                                };
 
-                                            var sysInfo = new PublicSystemInfo
-                                            {
-                                                Version = jfApplicationHost.ApplicationVersionString,
-                                                ProductName = jfApplicationHost.Name,
-                                                Id = jfApplicationHost.SystemId,
-                                                ServerName = jfApplicationHost.FriendlyName,
-                                                LocalAddress = jfApplicationHost.GetSmartApiUrl(context.Request),
-                                                StartupWizardCompleted = false
-                                            };
+                                await context.Response.WriteAsJsonAsync(sysInfo).ConfigureAwait(false);
+                                logger.LogInformation("systemRoute Done");
+                            });
+                        });
 
-                                            await context.Response.WriteAsJsonAsync(sysInfo).ConfigureAwait(false);
-                                            logger.LogInformation("systemRoute Done");
-                                        });
-                                    });
+                        app.Run(async (context) =>
+                        {
+                            context.Response.StatusCode = (int)HttpStatusCode.ServiceUnavailable;
+                            context.Response.Headers.RetryAfter = new StringValues(retryAfterValue.TotalSeconds.ToString("000", CultureInfo.InvariantCulture));
+                            context.Response.Headers.ContentType = new StringValues("text/html");
+                            var networkManager = _networkManagerFactory();
 
-                                    app.Run(async (context) =>
-                                    {
-                                        context.Response.StatusCode = (int)HttpStatusCode.ServiceUnavailable;
-                                        context.Response.Headers.RetryAfter = new StringValues(retryAfterValue.TotalSeconds.ToString("000", CultureInfo.InvariantCulture));
-                                        context.Response.Headers.ContentType = new StringValues("text/html");
-                                        var networkManager = _networkManagerFactory();
-
-                                        var startupLogEntries = LogQueue?.ToArray() ?? [];
-                                        logger.LogInformation("RenderAsync");
-                                        await _startupUiRenderer.RenderAsync(
-                                            new Dictionary<string, object>()
-                                            {
+                            var startupLogEntries = LogQueue?.ToArray() ?? [];
+                            logger.LogInformation("RenderAsync");
+                            await _startupUiRenderer.RenderAsync(
+                                new Dictionary<string, object>()
+                                {
                                                 { "isInReportingMode", _isUnhealthy },
                                                 { "retryValue", retryAfterValue },
                                                 { "logs", startupLogEntries },
                                                 { "localNetworkRequest", networkManager is not null && context.Connection.RemoteIpAddress is not null && networkManager.IsInLocalNetwork(context.Connection.RemoteIpAddress) }
-                                            },
-                                            new ByteCounterStream(context.Response.BodyWriter.AsStream(), IODefaults.FileStreamBufferSize, true, _startupUiRenderer.ParserOptions))
-                                            .ConfigureAwait(false);
-                                        logger.LogInformation("RenderAsync Done");
-                                    });
-                                });
-                    })
-                    .Build();
+                                },
+                                new ByteCounterStream(context.Response.BodyWriter.AsStream(), IODefaults.FileStreamBufferSize, true, _startupUiRenderer.ParserOptions))
+                                .ConfigureAwait(false);
+                            logger.LogInformation("RenderAsync Done");
+                        });
+                    });
+                });
+        logger.LogInformation("Build Startup Server");
+        _startupServer = startupServer.Build();
         logger.LogInformation("Start Startup Server");
         _startupTask = _startupServer.StartAsync();
 
