@@ -168,6 +168,7 @@ public sealed class SetupServer : IDisposable
         startupServer = startupServer
         .ConfigureWebHostDefaults(webHostBuilder =>
                 {
+                    logger.LogInformation("UseKestrel");
                     webHostBuilder = webHostBuilder
                             .UseKestrel((builderContext, options) =>
                             {
@@ -190,6 +191,7 @@ public sealed class SetupServer : IDisposable
                                     options);
                                 logger.LogInformation("SetupJellyfinWebServer Done");
                             });
+                    logger.LogInformation("Configure");
                     webHostBuilder = webHostBuilder
                     .Configure(app =>
                     {
@@ -277,6 +279,7 @@ public sealed class SetupServer : IDisposable
                             logger.LogInformation("RenderAsync Done");
                         });
                     });
+                    logger.LogInformation("Configure END");
                 });
         logger.LogInformation("Build Startup Server");
         _startupServer = startupServer.Build();
