@@ -185,7 +185,7 @@ public sealed class SetupServer : IDisposable
                                 .Configure(app =>
                                 {
                                     app.UseHealthChecks("/health");
-                                    app.UseForwardedHeaders();
+                                    // app.UseForwardedHeaders();
                                     app.Map("/startup/logger", loggerRoute =>
                                     {
                                         loggerRoute.Run(async context =>
