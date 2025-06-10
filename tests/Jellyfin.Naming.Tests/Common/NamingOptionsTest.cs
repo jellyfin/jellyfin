@@ -10,7 +10,7 @@ namespace Jellyfin.Naming.Tests.Common
         {
             var options = new NamingOptions();
 
-            Assert.NotEmpty(options.CleanDateTimeRegexes);
+            Assert.NotEmpty(options.NonTitleStringsRegexes);
             Assert.NotEmpty(options.CleanStringRegexes);
         }
 
