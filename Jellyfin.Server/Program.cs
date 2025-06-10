@@ -154,6 +154,37 @@ namespace Jellyfin.Server
             _setupServer.Dispose();
         }
 
+        private static void ApplyDefaultHostConfiguration(IConfigurationBuilder hostConfigBuilder, string[]? args)
+        {
+            string cwd = Environment.CurrentDirectory;
+            if (
+                Environment.OSVersion.Platform != PlatformID.Win32NT ||
+                !string.Equals(cwd, Environment.SystemDirectory, StringComparison.OrdinalIgnoreCase))
+            {
+                hostConfigBuilder.AddInMemoryCollection(new[]
+                {
+                    new KeyValuePair<string, string?>(HostDefaults.ContentRootKey, cwd),
+                });
+            }
+
+            hostConfigBuilder.AddEnvironmentVariables(prefix: "DOTNET_");
+
+            if (args is { Length: > 0 })
+            {
+                hostConfigBuilder.AddCommandLine(args);
+            }
+        }
+
+        internal static void ApplyDefaultAppConfiguration(HostBuilderContext hostingContext, IConfigurationBuilder appConfigBuilder, string[]? args)
+        {
+            appConfigBuilder.AddEnvironmentVariables();
+
+            if (args is { Length: > 0 })
+            {
+                appConfigBuilder.AddCommandLine(args);
+            }
+        }
+
         private static async Task StartServer(IServerApplicationPaths appPaths, StartupOptions options, IConfiguration startupConfig)
         {
             using CoreAppHost appHost = new CoreAppHost(
@@ -165,7 +196,11 @@ namespace Jellyfin.Server
             var configurationCompleted = false;
             try
             {
-                _jellyfinHost = Host.CreateDefaultBuilder()
+                HostBuilder builder = new();
+                _jellyfinHost = builder
+                    .ConfigureHostConfiguration(config => ApplyDefaultHostConfiguration(config, Environment.GetCommandLineArgs()))
+                    .ConfigureAppConfiguration((hostingContext, config) => ApplyDefaultAppConfiguration(hostingContext, config, Environment.GetCommandLineArgs()))
+                    .UseServiceProviderFactory(context => new DefaultServiceProviderFactory(new ServiceProviderOptions()))
                     .UseConsoleLifetime()
                     .ConfigureServices(services => appHost.Init(services))
                     .ConfigureWebHostDefaults(webHostBuilder =>
