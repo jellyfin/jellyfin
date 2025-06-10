@@ -87,7 +87,10 @@ public sealed class SetupServer : IDisposable
     /// <returns>A Task.</returns>
     public async Task RunAsync()
     {
+        var logger = _loggerFactory.CreateLogger("StartupServer");
+        logger.LogInformation("Read Startup UI template");
         var fileTemplate = await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "ServerSetupApp", "index.mstemplate.html")).ConfigureAwait(false);
+        logger.LogInformation("Render Startup UI template");
         _startupUiRenderer = (await ParserOptionsBuilder.New()
             .WithTemplate(fileTemplate)
             .WithFormatter(
@@ -141,7 +144,9 @@ public sealed class SetupServer : IDisposable
 
         ThrowIfDisposed();
         var retryAfterValue = TimeSpan.FromSeconds(5);
+        logger.LogInformation("Read Network config");
         var config = _configurationManager.GetNetworkConfiguration()!;
+        logger.LogInformation("Build Startup Host");
         _startupServer = Host.CreateDefaultBuilder()
             .UseConsoleLifetime()
             .ConfigureServices(serv =>
@@ -256,7 +261,15 @@ public sealed class SetupServer : IDisposable
                                 });
                     })
                     .Build();
+        logger.LogInformation("Start Startup Server");
         _startupTask = _startupServer.StartAsync();
+
+        _ = _startupTask.ContinueWith(
+            (task) =>
+            {
+                logger.LogInformation("Server Started");
+            },
+            TaskScheduler.Default);
         IsAlive = true;
     }
 
