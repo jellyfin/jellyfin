@@ -191,6 +191,23 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
             };
         }).ToArray();
 
+        if (BaseItem.ConfigurationManager.Configuration.LibraryScanFanoutConcurrency == 1)
+        {
+            try
+            {
+                foreach (var item in workItems)
+                {
+                    await ProcessItem(item).ConfigureAwait(false);
+                }
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                // operation is cancled. Do nothing.
+            }
+
+            return;
+        }
+
         for (var i = 0; i < workItems.Length; i++)
         {
             var item = workItems[i]!;
