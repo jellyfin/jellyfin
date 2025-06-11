@@ -13,7 +13,7 @@ namespace MediaBrowser.Controller.LibraryTaskScheduler;
 /// <summary>
 /// Provides Parallel action interface to process tasks with a set concurrency level.
 /// </summary>
-public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibraryScheduler, IDisposable
+public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibraryScheduler, IAsyncDisposable
 {
     private readonly IHostApplicationLifetime _hostApplicationLifetime;
     private readonly ILogger<LimitedConcurrencyLibraryScheduler> _logger;
@@ -60,6 +60,11 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
             _cleanupTask = Task.Delay(TimeSpan.FromSeconds(10)).ContinueWith(
                 t =>
                 {
+                    if (_disposed)
+                    {
+                        return;
+                    }
+
                     lock (_taskLock)
                     {
                         if (_tasks.Count > 0)
@@ -153,6 +158,11 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
     /// <inheritdoc/>
     public async Task Enqueue<T>(T[] data, Func<T, IProgress<double>, Task> worker, IProgress<double> progress, CancellationToken cancellationToken)
     {
+        if (_disposed)
+        {
+            return;
+        }
+
         TaskQueueItem[] workItems = null!;
 
         void UpdateProgress()
@@ -204,7 +214,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
     }
 
     /// <inheritdoc/>
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
         if (_disposed)
         {
@@ -212,10 +222,16 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
         }
 
         _disposed = true;
+        _tasks.CompleteAdding();
+        foreach (var item in _taskRunners)
+        {
+            await item.Key.CancelAsync().ConfigureAwait(false);
+        }
+
         _tasks.Dispose();
         if (_cleanupTask is not null)
         {
-            _cleanupTask.GetAwaiter().GetResult();
+            await _cleanupTask.ConfigureAwait(false);
             _cleanupTask?.Dispose();
         }
     }
