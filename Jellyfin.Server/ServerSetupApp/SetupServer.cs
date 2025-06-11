@@ -80,6 +80,9 @@ public sealed class SetupServer : IDisposable
     /// </summary>
     public bool IsAlive { get; internal set; }
 
+    /// <summary>
+    /// Shim for <see cref="HostingHostBuilderExtensions.ConfigureDefaults"/> private part of HostingHostBuilderExtensions.ApplyDefaultHostConfiguration.
+    /// </summary>
     private static void ApplyDefaultHostConfiguration(IConfigurationBuilder hostConfigBuilder, string[]? args)
     {
         string cwd = Environment.CurrentDirectory;
@@ -101,7 +104,11 @@ public sealed class SetupServer : IDisposable
         }
     }
 
-    internal static void ApplyDefaultAppConfiguration(HostBuilderContext hostingContext, IConfigurationBuilder appConfigBuilder, string[]? args)
+    /// <summary>
+    /// Shim for <see cref="HostingHostBuilderExtensions.ConfigureDefaults"/> private part of HostingHostBuilderExtensions.ApplyDefaultAppConfiguration.
+    /// Removes the functionality of the shimed method to load json files to not install any file watchers because of jf#14275 .
+    /// </summary>
+    private static void ApplyDefaultAppConfiguration(HostBuilderContext hostingContext, IConfigurationBuilder appConfigBuilder, string[]? args)
     {
         appConfigBuilder.AddEnvironmentVariables();
 
@@ -174,9 +181,11 @@ public sealed class SetupServer : IDisposable
         var config = _configurationManager.GetNetworkConfiguration()!;
         HostBuilder builder = new();
         _startupServer = builder
+        // Shim for Host.CreateDefaultBuilder() -> HostingBuilderExtensions.ConfigureDefaults
             .ConfigureHostConfiguration(config => ApplyDefaultHostConfiguration(config, Environment.GetCommandLineArgs()))
             .ConfigureAppConfiguration((hostingContext, config) => ApplyDefaultAppConfiguration(hostingContext, config, Environment.GetCommandLineArgs()))
             .UseServiceProviderFactory(context => new DefaultServiceProviderFactory(new ServiceProviderOptions()))
+        // end Shim
             .UseConsoleLifetime()
             .ConfigureServices(serv =>
             {
