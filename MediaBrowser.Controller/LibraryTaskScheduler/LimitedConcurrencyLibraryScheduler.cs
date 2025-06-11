@@ -199,10 +199,17 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
 
         if (_deadlockDetector.Value is not null)
         {
-            // we are in a nested loop. There is no reason to spawn a task here as that would just lead to deadlocks and no additional concurrency is achieved
-            while (workItems.Any(e => !e.Done.Task.IsCompleted) && _tasks.TryTake(out var item, 0, _deadlockDetector.Value.Token))
+            try
             {
-                await ProcessItem(item).ConfigureAwait(false);
+                // we are in a nested loop. There is no reason to spawn a task here as that would just lead to deadlocks and no additional concurrency is achieved
+                while (workItems.Any(e => !e.Done.Task.IsCompleted) && _tasks.TryTake(out var item, 0, _deadlockDetector.Value.Token))
+                {
+                    await ProcessItem(item).ConfigureAwait(false);
+                }
+            }
+            catch (OperationCanceledException) when (_deadlockDetector.Value.IsCancellationRequested)
+            {
+                // operation is cancled. Do nothing.
             }
         }
         else
