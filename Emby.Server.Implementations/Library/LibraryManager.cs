@@ -3007,7 +3007,7 @@ namespace Emby.Server.Implementations.Library
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogWarning("Failed to create person {Name}: {Exception}", person.Name, ex);
+                        _logger.LogWarning(ex, "Failed to create person {Name}", person.Name);
                         continue;
                     }
                 }
