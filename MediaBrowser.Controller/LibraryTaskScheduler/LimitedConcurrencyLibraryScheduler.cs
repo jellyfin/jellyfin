@@ -213,6 +213,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
 
         _disposed = true;
         _tasks.Dispose();
+        _cleanupTask?.Dispose();
     }
 
     private class TaskQueueItem
