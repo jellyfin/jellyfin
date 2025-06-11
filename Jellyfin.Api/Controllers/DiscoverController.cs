@@ -9,6 +9,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Controllers;
 using Jellyfin.Api.Models;
+using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
@@ -43,6 +45,8 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="query"><see cref="string"/> query to search for movies and series.</param>
         /// <param name="maxResults">Maximum number of results to fetch for each type (movies/series).</param>
+        /// <param name="sortBy">Optional. Specify one or more sort orders, comma delimited. Options: Popularity, Name, ProductionYear.</param>
+        /// <param name="sortOrder">Sort Order - Ascending, Descending.</param>
         /// <param name="cancellationToken"><see cref="CancellationToken"/> to cancel the operation.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [HttpGet("Search")]
@@ -50,6 +54,8 @@ namespace Jellyfin.Api.Controllers
         public async Task<IActionResult> Search(
             [FromQuery] string query,
             [FromQuery] int maxResults = 50,
+            [FromQuery] string sortBy = "Popularity",
+            [FromQuery] string sortOrder = "Descending",
             CancellationToken cancellationToken = default)
         {
             Console.WriteLine($"[DiscoverController] Received /Discover/Search with query: '{query}'");
@@ -157,10 +163,76 @@ namespace Jellyfin.Api.Controllers
                 }
             }
 
-            // Sort by popularity descending (nulls last) and take top 20 for display
-            // TODO: Implement sorting and filtering options later
-            mappedMovies = mappedMovies.OrderByDescending(m => m.Popularity ?? double.MinValue).Take(20).ToList();
-            mappedSeries = mappedSeries.OrderByDescending(s => s.Popularity ?? double.MinValue).Take(20).ToList();
+            // Parse sortBy and sortOrder (comma delimited, like ItemsController)
+            var sortFields = (sortBy ?? "Popularity").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            // Use the SortOrder enum for robust comparison
+            var descending = SortOrder.Descending.ToString().Equals(sortOrder, StringComparison.OrdinalIgnoreCase);
+
+            // Helper for sorting by multiple fields using ItemSortBy enum
+            IEnumerable<DiscoverItemDto> SortItems(IEnumerable<DiscoverItemDto> items)
+            {
+                // If any sort field is 'Random', shuffle the items and return
+                if (sortFields.Any(f => f.Equals("Random", StringComparison.OrdinalIgnoreCase)))
+                {
+                    // Fast non-cryptographic shuffle using xorshift
+                    var list = items.ToList();
+                    int n = list.Count;
+                    // Seed with current time ticks for new order each request
+                    uint x = (uint)DateTime.UtcNow.Ticks;
+                    for (int i = n - 1; i > 0; i--)
+                    {
+                        // Xorshift32
+                        x ^= x << 13;
+                        x ^= x >> 17;
+                        x ^= x << 5;
+                        int k = (int)(x % (uint)(i + 1));
+                        var value = list[k];
+                        list[k] = list[i];
+                        list[i] = value;
+                    }
+
+                    return list;
+                }
+
+                IOrderedEnumerable<DiscoverItemDto>? ordered = null;
+                foreach (var (field, idx) in sortFields.Select((f, i) => (f, i)))
+                {
+                    // Only allow supported sort fields
+                    ItemSortBy sortEnum;
+                    if (!Enum.TryParse<ItemSortBy>(field, true, out sortEnum) ||
+                        !(sortEnum == ItemSortBy.Name || sortEnum == ItemSortBy.ProductionYear))
+                    {
+                        // Fallback to Default (used for Popularity)
+                        sortEnum = ItemSortBy.Default;
+                    }
+
+                    Func<DiscoverItemDto, object?> keySelector = sortEnum switch
+                    {
+                        ItemSortBy.Name => x => x.Name ?? string.Empty,
+                        ItemSortBy.ProductionYear => x => x.ProductionYear ?? 0,
+                        ItemSortBy.Default => x => x.Popularity ?? double.MinValue,
+                        _ => x => x.Popularity ?? double.MinValue // Fallback
+                    };
+                    if (idx == 0)
+                    {
+                        ordered = descending
+                            ? items.OrderByDescending(keySelector)
+                            : items.OrderBy(keySelector);
+                    }
+                    else if (ordered != null)
+                    {
+                        ordered = descending
+                            ? ordered.ThenByDescending(keySelector)
+                            : ordered.ThenBy(keySelector);
+                    }
+                }
+
+                return ordered ?? items.OrderBy(x => 0); // fallback: no sort
+            }
+
+            // Always limit to maxResults items for both movies and series
+            mappedMovies = SortItems(mappedMovies).Take(maxResults).ToList();
+            mappedSeries = SortItems(mappedSeries).Take(maxResults).ToList();
 
             var result = new
             {
