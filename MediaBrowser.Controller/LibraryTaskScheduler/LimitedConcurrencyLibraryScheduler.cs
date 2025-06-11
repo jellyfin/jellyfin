@@ -13,20 +13,23 @@ namespace MediaBrowser.Controller.LibraryTaskScheduler;
 /// <summary>
 /// Provides Parallel action interface to process tasks with a set concurrency level.
 /// </summary>
-public class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibraryScheduler
+public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibraryScheduler, IDisposable
 {
     private readonly IHostApplicationLifetime _hostApplicationLifetime;
     private readonly ILogger<LimitedConcurrencyLibraryScheduler> _logger;
     private readonly Dictionary<CancellationTokenSource, Task> _taskRunners = new();
 
-    private static AsyncLocal<CancellationTokenSource> _deadlockDetector = new();
+    private static readonly AsyncLocal<CancellationTokenSource> _deadlockDetector = new();
 
     /// <summary>
     /// Gets used to lock all operations on the Tasks queue and creating workers.
     /// </summary>
     private readonly Lock _taskLock = new();
 
+    private readonly BlockingCollection<TaskQueueItem> _tasks = new();
+
     private Task? _cleanupTask;
+    private bool _disposed;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LimitedConcurrencyLibraryScheduler"/> class.
@@ -38,8 +41,6 @@ public class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibrarySche
         _hostApplicationLifetime = hostApplicationLifetime;
         _logger = logger;
     }
-
-    private BlockingCollection<TaskQueueItem> Tasks { get; set; } = new();
 
     private void ScheduleTaskCleanup()
     {
@@ -61,7 +62,7 @@ public class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibrarySche
                 {
                     lock (_taskLock)
                     {
-                        if (Tasks.Count > 0)
+                        if (_tasks.Count > 0)
                         {
                             // tasks are still there so its still in use. Reschedule cleanup task.
                             // we cannot just exit here and rely on the other invoker because there is a considerable timeframe where it could have already ended.
@@ -94,7 +95,7 @@ public class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibrarySche
                     combinedSource,
                     Task.Factory.StartNew(
                         ItemWorker,
-                        combinedSource,
+                        (combinedSource, stopToken),
                         combinedSource.Token,
                         TaskCreationOptions.LongRunning | TaskCreationOptions.PreferFairness,
                         TaskScheduler.Default));
@@ -104,23 +105,25 @@ public class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibrarySche
 
     private async Task ItemWorker(object? obj)
     {
-        var stopToken = (CancellationTokenSource)obj!;
-        _deadlockDetector.Value = stopToken;
+        var stopToken = ((CancellationTokenSource TaskStop, CancellationTokenSource GlobalStop))obj!;
+        _deadlockDetector.Value = stopToken.TaskStop;
         try
         {
-            foreach (var item in Tasks.GetConsumingEnumerable(stopToken.Token))
+            foreach (var item in _tasks.GetConsumingEnumerable(stopToken.GlobalStop.Token))
             {
                 await ProcessItem(item).ConfigureAwait(false);
             }
         }
-        catch (OperationCanceledException) when (stopToken.IsCancellationRequested)
+        catch (OperationCanceledException) when (stopToken.TaskStop.IsCancellationRequested)
         {
             // thats how you do it, interupt the waiter thread. There is nothing to do here when it was on purpose.
         }
         finally
         {
             _deadlockDetector.Value = default!;
-            _taskRunners.Remove(stopToken);
+            _taskRunners.Remove(stopToken.TaskStop);
+            stopToken.GlobalStop.Dispose();
+            stopToken.TaskStop.Dispose();
         }
     }
 
@@ -138,7 +141,7 @@ public class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibrarySche
         }
         catch (System.Exception ex)
         {
-            _logger.LogError(ex, "Error while performing a library operation.");
+            _logger.LogError(ex, "Error while performing a library operation");
         }
         finally
         {
@@ -167,7 +170,7 @@ public class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibrarySche
                     {
                         // round the percent and only update progress if it changed to prevent excessive UpdateProgress calls
                         var innerPercentRounded = Math.Round(innerPercent);
-                        if (queueItem!.ProgressValue != innerPercentRounded)
+                        if (queueItem.ProgressValue != innerPercentRounded)
                         {
                             queueItem.ProgressValue = innerPercentRounded;
                             UpdateProgress();
@@ -181,13 +184,13 @@ public class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibrarySche
         for (var i = 0; i < workItems.Length; i++)
         {
             var item = workItems[i]!;
-            Tasks.Add(item, CancellationToken.None);
+            _tasks.Add(item, CancellationToken.None);
         }
 
         if (_deadlockDetector.Value is not null)
         {
-            // we are in a nested loop. There is no reason to spawn a task here as that would just lead to deadlocks and no additional concurrency is achived
-            while (workItems.Any(e => !e.Done.Task.IsCompleted) && Tasks.TryTake(out var item, 0, _deadlockDetector.Value.Token))
+            // we are in a nested loop. There is no reason to spawn a task here as that would just lead to deadlocks and no additional concurrency is achieved
+            while (workItems.Any(e => !e.Done.Task.IsCompleted) && _tasks.TryTake(out var item, 0, _deadlockDetector.Value.Token))
             {
                 await ProcessItem(item).ConfigureAwait(false);
             }
@@ -198,6 +201,18 @@ public class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibrarySche
             await Task.WhenAll([.. workItems.Select(f => f.Done.Task)]).ConfigureAwait(false);
             ScheduleTaskCleanup();
         }
+    }
+
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+        _tasks.Dispose();
     }
 
     private class TaskQueueItem
