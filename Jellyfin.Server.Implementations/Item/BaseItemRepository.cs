@@ -108,7 +108,7 @@ public sealed class BaseItemRepository
         using var context = _dbProvider.CreateDbContext();
         using var transaction = context.Database.BeginTransaction();
 
-        var date = (DateTimeOffset?)DateTimeOffset.Now;
+        var date = (DateTime?)DateTime.UtcNow;
         // Detach all user watch data
         context.UserData.Where(e => e.ItemId == id)
             .ExecuteUpdate(e => e
@@ -529,7 +529,7 @@ public sealed class BaseItemRepository
         {
             // reattach old userData entries
             var userKeys = item.UserDataKey.ToArray();
-            var retentionDate = (DateTimeOffset?)null;
+            var retentionDate = (DateTime?)null;
             context.UserData
                 .Where(e => e.ItemId == PlaceholderId)
                 .Where(e => userKeys.Contains(e.CustomDataKey))

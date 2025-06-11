@@ -71,7 +71,7 @@ public class UserData
     /// <summary>
     /// Gets or Sets the date the referenced <see cref="Item"/> has been deleted.
     /// </summary>
-    public DateTimeOffset? RetentionDate { get; set; }
+    public DateTime? RetentionDate { get; set; }
 
     /// <summary>
     /// Gets or sets the key.
