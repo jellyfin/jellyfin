@@ -52,7 +52,7 @@ public class CleanupUserDataTask : IScheduledTask
     public async Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
     {
         const int LimitDays = 90;
-        var userDataDate = DateTimeOffset.UtcNow.AddDays(LimitDays * -1);
+        var userDataDate = DateTime.UtcNow.AddDays(LimitDays * -1);
         var dbContext = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (dbContext.ConfigureAwait(false))
         {
