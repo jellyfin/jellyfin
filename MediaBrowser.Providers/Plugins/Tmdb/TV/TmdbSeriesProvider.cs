@@ -129,7 +129,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 Name = series.Name ?? series.OriginalName,
                 SearchProviderName = Name,
                 ImageUrl = _tmdbClientManager.GetPosterUrl(series.PosterPath),
-                Overview = series.Overview
+                Overview = series.Overview,
+                Popularity = series.Popularity // Map TMDb popularity
             };
 
             remoteResult.SetProviderId(MetadataProvider.Tmdb, series.Id.ToString(CultureInfo.InvariantCulture));
@@ -152,7 +153,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 Name = series.Name ?? series.OriginalName,
                 SearchProviderName = Name,
                 ImageUrl = _tmdbClientManager.GetPosterUrl(series.PosterPath),
-                Overview = series.Overview
+                Overview = series.Overview,
+                Popularity = series.Popularity // Map TMDb popularity result parameter to RemoteSearchResult
             };
 
             remoteResult.SetProviderId(MetadataProvider.Tmdb, series.Id.ToString(CultureInfo.InvariantCulture));

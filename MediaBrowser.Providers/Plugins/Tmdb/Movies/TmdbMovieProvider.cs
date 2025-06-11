@@ -125,7 +125,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                     Name = movieResult.Title ?? movieResult.OriginalTitle,
                     ImageUrl = _tmdbClientManager.GetPosterUrl(movieResult.PosterPath),
                     Overview = movieResult.Overview,
-                    SearchProviderName = Name
+                    SearchProviderName = Name,
+                    Popularity = movieResult.Popularity // Map TMDb popularity result parameter to RemoteSearchResult
                 };
 
                 var releaseDate = movieResult.ReleaseDate?.ToUniversalTime();

@@ -50,5 +50,7 @@ namespace MediaBrowser.Model.Providers
         public RemoteSearchResult AlbumArtist { get; set; }
 
         public RemoteSearchResult[] Artists { get; set; }
+
+        public double? Popularity { get; set; }
     }
 }
