@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -54,6 +56,16 @@ public class AlbumMetadataService : MetadataService<MusicAlbum, AlbumInfo>
         => item.GetRecursiveChildren(i => i is Audio);
 
     /// <inheritdoc />
+    protected override Task AfterMetadataRefresh(MusicAlbum item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
+    {
+        base.AfterMetadataRefresh(item, refreshOptions, cancellationToken);
+
+        SetPeople(item);
+
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
     protected override ItemUpdateType UpdateMetadataFromChildren(MusicAlbum item, IReadOnlyList<BaseItem> children, bool isFullRefresh, ItemUpdateType currentUpdateType)
     {
         var updateType = base.UpdateMetadataFromChildren(item, children, isFullRefresh, currentUpdateType);
@@ -83,7 +95,6 @@ public class AlbumMetadataService : MetadataService<MusicAlbum, AlbumInfo>
             updateType |= SetArtistsFromSongs(item, songs);
             updateType |= SetAlbumArtistFromSongs(item, songs);
             updateType |= SetAlbumFromSongs(item, songs);
-            updateType |= SetPeople(item);
         }
 
         return updateType;
@@ -178,10 +189,8 @@ public class AlbumMetadataService : MetadataService<MusicAlbum, AlbumInfo>
         }
     }
 
-    private ItemUpdateType SetPeople(MusicAlbum item)
+    private void SetPeople(MusicAlbum item)
     {
-        var updateType = ItemUpdateType.None;
-
         if (item.AlbumArtists.Any() || item.Artists.Any())
         {
             var people = new List<PersonInfo>();
@@ -205,10 +214,7 @@ public class AlbumMetadataService : MetadataService<MusicAlbum, AlbumInfo>
             }
 
             LibraryManager.UpdatePeople(item, people);
-            updateType |= ItemUpdateType.MetadataEdit;
         }
-
-        return updateType;
     }
 
     /// <inheritdoc />

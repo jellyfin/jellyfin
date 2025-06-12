@@ -2987,21 +2987,29 @@ namespace Emby.Server.Implementations.Library
 
                 if (personEntity is null)
                 {
-                    var path = Person.GetPath(person.Name);
-                    var info = Directory.CreateDirectory(path);
-                    var lastWriteTime = info.LastWriteTimeUtc;
-                    personEntity = new Person()
+                    try
                     {
-                        Name = person.Name,
-                        Id = GetItemByNameId<Person>(path),
-                        DateCreated = info.CreationTimeUtc,
-                        DateModified = lastWriteTime,
-                        Path = path
-                    };
+                        var path = Person.GetPath(person.Name);
+                        var info = Directory.CreateDirectory(path);
+                        var lastWriteTime = info.LastWriteTimeUtc;
+                        personEntity = new Person()
+                        {
+                            Name = person.Name,
+                            Id = GetItemByNameId<Person>(path),
+                            DateCreated = info.CreationTimeUtc,
+                            DateModified = lastWriteTime,
+                            Path = path
+                        };
 
-                    personEntity.PresentationUniqueKey = personEntity.CreatePresentationUniqueKey();
-                    saveEntity = true;
-                    createEntity = true;
+                        personEntity.PresentationUniqueKey = personEntity.CreatePresentationUniqueKey();
+                        saveEntity = true;
+                        createEntity = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to create person {Name}", person.Name);
+                        continue;
+                    }
                 }
 
                 foreach (var id in person.ProviderIds)
