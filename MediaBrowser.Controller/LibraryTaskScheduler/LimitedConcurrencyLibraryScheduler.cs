@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
@@ -52,37 +53,33 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
                 return;
             }
 
-            RunCleanupTask();
+            _cleanupTask = RunCleanupTask();
         }
 
-        void RunCleanupTask()
+        async Task RunCleanupTask()
         {
-            _cleanupTask = Task.Delay(TimeSpan.FromSeconds(10)).ContinueWith(
-                t =>
+            await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+            if (_disposed)
+            {
+                return;
+            }
+
+            lock (_taskLock)
+            {
+                if (_tasks.Count > 0)
                 {
-                    if (_disposed)
-                    {
-                        return;
-                    }
+                    // tasks are still there so its still in use. Reschedule cleanup task.
+                    // we cannot just exit here and rely on the other invoker because there is a considerable timeframe where it could have already ended.
+                    _cleanupTask = RunCleanupTask();
+                    return;
+                }
+            }
 
-                    lock (_taskLock)
-                    {
-                        if (_tasks.Count > 0)
-                        {
-                            // tasks are still there so its still in use. Reschedule cleanup task.
-                            // we cannot just exit here and rely on the other invoker because there is a considerable timeframe where it could have already ended.
-                            RunCleanupTask();
-                            return;
-                        }
-
-                        foreach (var item in _taskRunners.ToArray())
-                        {
-                            item.Key.Cancel();
-                            _taskRunners.Remove(item.Key);
-                        }
-                    }
-                },
-                TaskScheduler.Default);
+            foreach (var item in _taskRunners.ToArray())
+            {
+                await item.Key.CancelAsync().ConfigureAwait(false);
+                _taskRunners.Remove(item.Key);
+            }
         }
     }
 
@@ -102,7 +99,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
                         ItemWorker,
                         (combinedSource, stopToken),
                         combinedSource.Token,
-                        TaskCreationOptions.LongRunning | TaskCreationOptions.PreferFairness,
+                        TaskCreationOptions.PreferFairness,
                         TaskScheduler.Default));
             }
         }
