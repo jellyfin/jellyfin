@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
@@ -16,6 +16,7 @@ namespace MediaBrowser.Controller.LibraryTaskScheduler;
 /// </summary>
 public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibraryScheduler, IAsyncDisposable
 {
+    private const int _cleanupGracePerioid = 60;
     private readonly IHostApplicationLifetime _hostApplicationLifetime;
     private readonly ILogger<LimitedConcurrencyLibraryScheduler> _logger;
     private readonly Dictionary<CancellationTokenSource, Task> _taskRunners = new();
@@ -29,6 +30,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
 
     private readonly BlockingCollection<TaskQueueItem> _tasks = new();
 
+    private volatile int _workCounter;
     private Task? _cleanupTask;
     private bool _disposed;
 
@@ -59,8 +61,8 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
 
         async Task RunCleanupTask()
         {
-            _logger.LogDebug("Schedule cleanup task in 10 sec.");
-            await Task.Delay(TimeSpan.FromSeconds(120)).ConfigureAwait(false);
+            _logger.LogDebug("Schedule cleanup task in {CleanupGracePerioid} sec.", _cleanupGracePerioid);
+            await Task.Delay(TimeSpan.FromSeconds(_cleanupGracePerioid)).ConfigureAwait(false);
             if (_disposed)
             {
                 _logger.LogDebug("Abort cleaning up, already disposed.");
@@ -69,7 +71,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
 
             lock (_taskLock)
             {
-                if (_tasks.Count > 0)
+                if (_tasks.Count > 0 || _workCounter > 0)
                 {
                     _logger.LogDebug("Delay cleanup task, operations still running.");
                     // tasks are still there so its still in use. Reschedule cleanup task.
@@ -119,8 +121,18 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
         {
             foreach (var item in _tasks.GetConsumingEnumerable(stopToken.GlobalStop.Token))
             {
-                _logger.LogDebug("Process new item '{Data}'.", item.Data);
-                await ProcessItem(item).ConfigureAwait(false);
+                try
+                {
+                    var newWorkerLimit = Interlocked.Increment(ref _workCounter) < 0;
+                    Debug.Assert(newWorkerLimit, "_workCounter > 0");
+                    _logger.LogDebug("Process new item '{Data}'.", item.Data);
+                    await ProcessItem(item).ConfigureAwait(false);
+                }
+                finally
+                {
+                    var newWorkerLimit = Interlocked.Decrement(ref _workCounter) > 0;
+                    Debug.Assert(newWorkerLimit, "_workCounter > 0");
+                }
             }
         }
         catch (OperationCanceledException) when (stopToken.TaskStop.IsCancellationRequested)
@@ -155,8 +167,8 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
         }
         finally
         {
-            item.Done.SetResult();
             item.Progress.Report(100);
+            item.Done.SetResult();
         }
     }
 
