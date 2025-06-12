@@ -121,6 +121,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
         {
             foreach (var item in _tasks.GetConsumingEnumerable(stopToken.GlobalStop.Token))
             {
+                stopToken.GlobalStop.Token.ThrowIfCancellationRequested();
                 try
                 {
                     var newWorkerLimit = Interlocked.Increment(ref _workCounter) > 0;
