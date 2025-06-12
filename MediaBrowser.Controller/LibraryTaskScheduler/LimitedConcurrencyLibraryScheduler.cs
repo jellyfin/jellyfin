@@ -49,6 +49,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
         {
             if (_cleanupTask is not null)
             {
+                _logger.LogDebug("Cleanup task already scheduled.");
                 // cleanup task is already running.
                 return;
             }
@@ -58,9 +59,11 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
 
         async Task RunCleanupTask()
         {
+            _logger.LogDebug("Schedule cleanup task in 10 sec.");
             await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
             if (_disposed)
             {
+                _logger.LogDebug("Abort cleaning up, already disposed.");
                 return;
             }
 
@@ -68,6 +71,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
             {
                 if (_tasks.Count > 0)
                 {
+                    _logger.LogDebug("Delay cleanup task, operations still running.");
                     // tasks are still there so its still in use. Reschedule cleanup task.
                     // we cannot just exit here and rely on the other invoker because there is a considerable timeframe where it could have already ended.
                     _cleanupTask = RunCleanupTask();
@@ -75,6 +79,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
                 }
             }
 
+            _logger.LogDebug("Cleanup runners.");
             foreach (var item in _taskRunners.ToArray())
             {
                 await item.Key.CancelAsync().ConfigureAwait(false);
@@ -89,6 +94,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
         {
             var fanoutConcurrency = BaseItem.ConfigurationManager.Configuration.LibraryScanFanoutConcurrency;
             var parallelism = (fanoutConcurrency > 0 ? fanoutConcurrency : Environment.ProcessorCount) - _taskRunners.Count;
+            _logger.LogDebug("Spawn {NumberRunners} new runners.", parallelism);
             for (int i = 0; i < parallelism; i++)
             {
                 var stopToken = new CancellationTokenSource();
@@ -113,6 +119,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
         {
             foreach (var item in _tasks.GetConsumingEnumerable(stopToken.GlobalStop.Token))
             {
+                _logger.LogDebug("Process new item '{Data}'.", item.Data);
                 await ProcessItem(item).ConfigureAwait(false);
             }
         }
@@ -122,6 +129,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
         }
         finally
         {
+            _logger.LogDebug("Cleanup Runner'.");
             _deadlockDetector.Value = default!;
             _taskRunners.Remove(stopToken.TaskStop);
             stopToken.GlobalStop.Dispose();
@@ -160,6 +168,14 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
             return;
         }
 
+        if (data.Length == 0 || cancellationToken.IsCancellationRequested)
+        {
+            progress.Report(100);
+            return;
+        }
+
+        _logger.LogDebug("Enqueue new Workset of {NoItems} items.", data.Length);
+
         TaskQueueItem[] workItems = null!;
 
         void UpdateProgress()
@@ -190,6 +206,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
 
         if (BaseItem.ConfigurationManager.Configuration.LibraryScanFanoutConcurrency == 1)
         {
+            _logger.LogDebug("Process sequentially.");
             try
             {
                 foreach (var item in workItems)
@@ -202,6 +219,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
                 // operation is cancled. Do nothing.
             }
 
+            _logger.LogDebug("Process sequentially done.");
             return;
         }
 
@@ -213,10 +231,11 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
 
         if (_deadlockDetector.Value is not null)
         {
+            _logger.LogDebug("Nested invocation detected, process in-place.");
             try
             {
                 // we are in a nested loop. There is no reason to spawn a task here as that would just lead to deadlocks and no additional concurrency is achieved
-                while (workItems.Any(e => !e.Done.Task.IsCompleted) && _tasks.TryTake(out var item, 0, _deadlockDetector.Value.Token))
+                while (workItems.Any(e => !e.Done.Task.IsCompleted) && _tasks.TryTake(out var item, 200, _deadlockDetector.Value.Token))
                 {
                     await ProcessItem(item).ConfigureAwait(false);
                 }
@@ -225,11 +244,15 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
             {
                 // operation is cancled. Do nothing.
             }
+
+            _logger.LogDebug("process in-place done.");
         }
         else
         {
             Worker();
+            _logger.LogDebug("Wait for {NoWorkers} to complete.", workItems.Length);
             await Task.WhenAll([.. workItems.Select(f => f.Done.Task)]).ConfigureAwait(false);
+            _logger.LogDebug("{NoWorkers} completed.", workItems.Length);
             ScheduleTaskCleanup();
         }
     }
