@@ -60,7 +60,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
         async Task RunCleanupTask()
         {
             _logger.LogDebug("Schedule cleanup task in 10 sec.");
-            await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+            await Task.Delay(TimeSpan.FromSeconds(120)).ConfigureAwait(false);
             if (_disposed)
             {
                 _logger.LogDebug("Abort cleaning up, already disposed.");
