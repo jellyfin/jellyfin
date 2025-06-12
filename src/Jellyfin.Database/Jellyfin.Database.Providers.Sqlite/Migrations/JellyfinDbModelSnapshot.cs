@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Implementations.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "9.0.5");
+            modelBuilder.HasAnnotation("ProductVersion", "9.0.6");
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.AccessSchedule", b =>
                 {
@@ -1388,7 +1388,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<double?>("Rating")
                         .HasColumnType("REAL");
 
-                    b.Property<DateTimeOffset?>("RetentionDate")
+                    b.Property<DateTime?>("RetentionDate")
                         .HasColumnType("TEXT");
 
                     b.Property<int?>("SubtitleStreamIndex")
