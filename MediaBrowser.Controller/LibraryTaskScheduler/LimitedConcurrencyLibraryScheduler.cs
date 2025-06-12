@@ -123,14 +123,14 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
             {
                 try
                 {
-                    var newWorkerLimit = Interlocked.Increment(ref _workCounter) < 0;
+                    var newWorkerLimit = Interlocked.Increment(ref _workCounter) > 0;
                     Debug.Assert(newWorkerLimit, "_workCounter > 0");
                     _logger.LogDebug("Process new item '{Data}'.", item.Data);
                     await ProcessItem(item).ConfigureAwait(false);
                 }
                 finally
                 {
-                    var newWorkerLimit = Interlocked.Decrement(ref _workCounter) > 0;
+                    var newWorkerLimit = Interlocked.Decrement(ref _workCounter) >= 0;
                     Debug.Assert(newWorkerLimit, "_workCounter > 0");
                 }
             }
