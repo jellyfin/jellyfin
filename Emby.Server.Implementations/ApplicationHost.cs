@@ -94,6 +94,7 @@ using MediaBrowser.Providers.Manager;
 using MediaBrowser.Providers.Plugins.Tmdb;
 using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.XbmcMetadata.Providers;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -224,11 +225,6 @@ namespace Emby.Server.Implementations
         /// </summary>
         public int HttpPort { get; private set; }
 
-        /// <summary>
-        /// Gets the https port for the webhost.
-        /// </summary>
-        public int HttpsPort { get; private set; }
-
         /// <inheritdoc />
         public Version ApplicationVersion { get; }
 
@@ -257,13 +253,6 @@ namespace Emby.Server.Implementations
 
         /// <inheritdoc/>
         public string Name => ApplicationProductName;
-
-        private string CertificatePath { get; set; }
-
-        public X509Certificate2 Certificate { get; private set; }
-
-        /// <inheritdoc/>
-        public bool ListenWithHttps => Certificate is not null && ConfigurationManager.GetNetworkConfiguration().EnableHttps;
 
         public string FriendlyName =>
             string.IsNullOrEmpty(ConfigurationManager.Configuration.ServerName)
@@ -444,17 +433,6 @@ namespace Emby.Server.Implementations
 
             var networkConfiguration = ConfigurationManager.GetNetworkConfiguration();
             HttpPort = networkConfiguration.InternalHttpPort;
-            HttpsPort = networkConfiguration.InternalHttpsPort;
-
-            // Safeguard against invalid configuration
-            if (HttpPort == HttpsPort)
-            {
-                HttpPort = NetworkConfiguration.DefaultHttpPort;
-                HttpsPort = NetworkConfiguration.DefaultHttpsPort;
-            }
-
-            CertificatePath = networkConfiguration.CertificatePath;
-            Certificate = GetCertificate(CertificatePath, networkConfiguration.CertificatePassword);
 
             RegisterServices(serviceCollection);
 
@@ -595,39 +573,6 @@ namespace Emby.Server.Implementations
             FindParts();
         }
 
-        private X509Certificate2 GetCertificate(string path, string password)
-        {
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                return null;
-            }
-
-            try
-            {
-                if (!File.Exists(path))
-                {
-                    return null;
-                }
-
-                // Don't use an empty string password
-                password = string.IsNullOrWhiteSpace(password) ? null : password;
-
-                var localCert = X509CertificateLoader.LoadPkcs12FromFile(path, password, X509KeyStorageFlags.UserKeySet);
-                if (!localCert.HasPrivateKey)
-                {
-                    Logger.LogError("No private key included in SSL cert {CertificateLocation}.", path);
-                    return null;
-                }
-
-                return localCert;
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error loading cert from {CertificateLocation}", path);
-                return null;
-            }
-        }
-
         /// <summary>
         /// Dirty hacks.
         /// </summary>
@@ -739,11 +684,10 @@ namespace Emby.Server.Implementations
             var networkConfiguration = ConfigurationManager.GetNetworkConfiguration();
 
             // Don't do anything if these haven't been set yet
-            if (HttpPort != 0 && HttpsPort != 0)
+            if (HttpPort != 0)
             {
                 // Need to restart if ports have changed
-                if (networkConfiguration.InternalHttpPort != HttpPort
-                    || networkConfiguration.InternalHttpsPort != HttpsPort)
+                if (networkConfiguration.InternalHttpPort != HttpPort)
                 {
                     if (ConfigurationManager.Configuration.IsPortAuthorized)
                     {
@@ -755,44 +699,12 @@ namespace Emby.Server.Implementations
                 }
             }
 
-            if (ValidateSslCertificate(networkConfiguration))
-            {
-                requiresRestart = true;
-            }
-
             if (requiresRestart)
             {
                 Logger.LogInformation("App needs to be restarted due to configuration change.");
 
                 NotifyPendingRestart();
             }
-        }
-
-        /// <summary>
-        /// Validates the SSL certificate.
-        /// </summary>
-        /// <param name="networkConfig">The new configuration.</param>
-        /// <exception cref="FileNotFoundException">The certificate path doesn't exist.</exception>
-        private bool ValidateSslCertificate(NetworkConfiguration networkConfig)
-        {
-            var newPath = networkConfig.CertificatePath;
-
-            if (!string.IsNullOrWhiteSpace(newPath)
-                && !string.Equals(CertificatePath, newPath, StringComparison.Ordinal))
-            {
-                if (File.Exists(newPath))
-                {
-                    return true;
-                }
-
-                throw new FileNotFoundException(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "Certificate file '{0}' does not exist.",
-                        newPath));
-            }
-
-            return false;
         }
 
         /// <summary>
@@ -865,7 +777,7 @@ namespace Emby.Server.Implementations
         protected abstract IEnumerable<Assembly> GetAssembliesWithPartsInternal();
 
         /// <inheritdoc/>
-        public string GetSmartApiUrl(IPAddress remoteAddr)
+        public string GetSmartApiUrl(IServerAddressesFeature serverAddresses, IPAddress remoteAddr)
         {
             // Published server ends with a /
             if (!string.IsNullOrEmpty(PublishedServerUrl))
@@ -875,7 +787,7 @@ namespace Emby.Server.Implementations
             }
 
             string smart = NetManager.GetBindAddress(remoteAddr, out var port);
-            return GetLocalApiUrl(smart.Trim('/'), null, port);
+            return GetLocalApiUrl(serverAddresses, smart.Trim('/'), null);
         }
 
         /// <inheritdoc/>
@@ -884,22 +796,14 @@ namespace Emby.Server.Implementations
             // Return the host in the HTTP request as the API URL if not configured otherwise
             if (ConfigurationManager.GetNetworkConfiguration().EnablePublishedServerUriByRequest)
             {
-                int? requestPort = request.Host.Port;
-                if (requestPort is null
-                    || (requestPort == 80 && string.Equals(request.Scheme, "http", StringComparison.OrdinalIgnoreCase))
-                    || (requestPort == 443 && string.Equals(request.Scheme, "https", StringComparison.OrdinalIgnoreCase)))
-                {
-                    requestPort = -1;
-                }
-
-                return GetLocalApiUrl(request.Host.Host, request.Scheme, requestPort);
+                return GetLocalApiUrl(request.HttpContext.Features.Get<IServerAddressesFeature>(), request.Host.Host, request.Scheme);
             }
 
-            return GetSmartApiUrl(request.HttpContext.Connection.RemoteIpAddress ?? IPAddress.Loopback);
+            return GetSmartApiUrl(request.HttpContext.Features.Get<IServerAddressesFeature>(), request.HttpContext.Connection.RemoteIpAddress ?? IPAddress.Loopback);
         }
 
         /// <inheritdoc/>
-        public string GetSmartApiUrl(string hostname)
+        public string GetSmartApiUrl(IServerAddressesFeature serverAddresses, string hostname)
         {
             // Published server ends with a /
             if (!string.IsNullOrEmpty(PublishedServerUrl))
@@ -909,21 +813,20 @@ namespace Emby.Server.Implementations
             }
 
             string smart = NetManager.GetBindAddress(hostname, out var port);
-            return GetLocalApiUrl(smart.Trim('/'), null, port);
+            return GetLocalApiUrl(serverAddresses, smart.Trim('/'), null);
         }
 
         /// <inheritdoc/>
-        public string GetApiUrlForLocalAccess(IPAddress ipAddress = null, bool allowHttps = true)
+        public string GetApiUrlForLocalAccess(IServerAddressesFeature serverAddresses, IPAddress ipAddress = null, bool allowHttps = true)
         {
             // With an empty source, the port will be null
             var smart = NetManager.GetBindAddress(ipAddress, out _, false);
             var scheme = !allowHttps ? Uri.UriSchemeHttp : null;
-            int? port = !allowHttps ? HttpPort : null;
-            return GetLocalApiUrl(smart, scheme, port);
+            return GetLocalApiUrl(serverAddresses, smart, scheme);
         }
 
         /// <inheritdoc/>
-        public string GetLocalApiUrl(string hostname, string scheme = null, int? port = null)
+        public string GetLocalApiUrl(IServerAddressesFeature serverAddresses, string hostname, string scheme = null)
         {
             // If the smartAPI doesn't start with http then treat it as a host or ip.
             if (hostname.StartsWith("http", StringComparison.OrdinalIgnoreCase))
@@ -931,15 +834,20 @@ namespace Emby.Server.Implementations
                 return hostname.TrimEnd('/');
             }
 
-            // NOTE: If no BaseUrl is set then UriBuilder appends a trailing slash, but if there is no BaseUrl it does
-            // not. For consistency, always trim the trailing slash.
-            scheme ??= ListenWithHttps ? Uri.UriSchemeHttps : Uri.UriSchemeHttp;
-            var isHttps = string.Equals(scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase);
-            return new UriBuilder
+            var bindingAddress = serverAddresses.Addresses.Select(e => new Uri(e)).FirstOrDefault(e => e.Scheme == scheme && e.Host == hostname);
+
+            if (bindingAddress is null)
             {
-                Scheme = scheme,
-                Host = hostname,
-                Port = port ?? (isHttps ? HttpsPort : HttpPort),
+                return new UriBuilder()
+                {
+                    Host = hostname,
+                    Port = HttpPort,
+                    Path = ConfigurationManager.GetNetworkConfiguration().BaseUrl
+                }.ToString().TrimEnd('/');
+            }
+
+            return new UriBuilder(bindingAddress)
+            {
                 Path = ConfigurationManager.GetNetworkConfiguration().BaseUrl
             }.ToString().TrimEnd('/');
         }
