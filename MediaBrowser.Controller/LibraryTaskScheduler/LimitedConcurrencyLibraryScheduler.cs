@@ -16,7 +16,7 @@ namespace MediaBrowser.Controller.LibraryTaskScheduler;
 /// </summary>
 public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibraryScheduler, IAsyncDisposable
 {
-    private const int _cleanupGracePerioid = 60;
+    private const int CleanupGracePeriod = 60;
     private readonly IHostApplicationLifetime _hostApplicationLifetime;
     private readonly ILogger<LimitedConcurrencyLibraryScheduler> _logger;
     private readonly Dictionary<CancellationTokenSource, Task> _taskRunners = new();
@@ -61,8 +61,8 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
 
         async Task RunCleanupTask()
         {
-            _logger.LogDebug("Schedule cleanup task in {CleanupGracePerioid} sec.", _cleanupGracePerioid);
-            await Task.Delay(TimeSpan.FromSeconds(_cleanupGracePerioid)).ConfigureAwait(false);
+            _logger.LogDebug("Schedule cleanup task in {CleanupGracePerioid} sec.", CleanupGracePeriod);
+            await Task.Delay(TimeSpan.FromSeconds(CleanupGracePeriod)).ConfigureAwait(false);
             if (_disposed)
             {
                 _logger.LogDebug("Abort cleaning up, already disposed.");
@@ -156,7 +156,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
         {
             if (item.CancellationToken.IsCancellationRequested)
             {
-                // if item is cancled, just skip it
+                // if item is cancelled, just skip it
                 return;
             }
 
@@ -229,7 +229,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
-                // operation is cancled. Do nothing.
+                // operation is cancelled. Do nothing.
             }
 
             _logger.LogDebug("Process sequentially done.");
@@ -255,7 +255,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
             }
             catch (OperationCanceledException) when (_deadlockDetector.Value.IsCancellationRequested)
             {
-                // operation is cancled. Do nothing.
+                // operation is cancelled. Do nothing.
             }
 
             _logger.LogDebug("process in-place done.");
