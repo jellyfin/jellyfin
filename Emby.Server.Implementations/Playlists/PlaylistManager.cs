@@ -61,7 +61,7 @@ namespace Emby.Server.Implementations.Playlists
 
         public Playlist GetPlaylistForUser(Guid playlistId, Guid userId)
         {
-            return GetPlaylists(userId).Where(p => p.Id.Equals(playlistId)).FirstOrDefault();
+            return GetPlaylists(userId).FirstOrDefault(p => p.Id.Equals(playlistId));
         }
 
         public IEnumerable<Playlist> GetPlaylists(Guid userId)
@@ -109,8 +109,7 @@ namespace Emby.Server.Implementations.Playlists
                         if (item is Folder folder)
                         {
                             request.MediaType = folder.GetRecursiveChildren(i => !i.IsFolder && i.SupportsAddingToPlaylist)
-                                .Select(i => i.MediaType)
-                                .FirstOrDefault(i => i != MediaType.Unknown);
+                                                      .FirstOrDefault(i => i.MediaType != MediaType.Unknown)?.MediaType;
                         }
                     }
 

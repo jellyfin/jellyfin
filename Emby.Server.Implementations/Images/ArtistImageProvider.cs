@@ -26,7 +26,7 @@ namespace Emby.Server.Implementations.Images
         /// </summary>
         /// <param name="item">The artist used to create the image.</param>
         /// <returns>Any relevant children objects.</returns>
-        protected override IReadOnlyList<BaseItem> GetItemsWithImages(BaseItem item)
+        protected override IReadOnlyList<BaseItem> GetItemsWithImages(MusicArtist item)
         {
             return Array.Empty<BaseItem>();
 

@@ -314,45 +314,16 @@ namespace Emby.Server.Implementations.Collections
             {
                 if (item is ISupportsBoxSetGrouping)
                 {
-                    var itemId = item.Id;
-
-                    var itemIsInBoxSet = false;
-                    foreach (var boxSet in allBoxSets)
+                    var boxSetsContainingItem = allBoxSets.Where(x => x.ContainsLinkedChildByItemId(item.Id)).ToList();
+                    if (boxSetsContainingItem.Count != 0)
                     {
-                        if (!boxSet.ContainsLinkedChildByItemId(itemId))
-                        {
-                            continue;
-                        }
-
-                        itemIsInBoxSet = true;
-
-                        results.TryAdd(boxSet.Id, boxSet);
-                    }
-
-                    // skip any item that is in a box set
-                    if (itemIsInBoxSet)
-                    {
+                        boxSetsContainingItem.ForEach(boxSet => results.TryAdd(boxSet.Id, boxSet));
+                        // skip any item that is in a box set
                         continue;
                     }
 
-                    var alreadyInResults = false;
-
                     // this is kind of a performance hack because only Video has alternate versions that should be in a box set?
-                    if (item is Video video)
-                    {
-                        foreach (var childId in video.GetLocalAlternateVersionIds())
-                        {
-                            if (!results.ContainsKey(childId))
-                            {
-                                continue;
-                            }
-
-                            alreadyInResults = true;
-                            break;
-                        }
-                    }
-
-                    if (alreadyInResults)
+                    if (item is Video video && video.GetLocalAlternateVersionIds().Any(results.ContainsKey))
                     {
                         continue;
                     }
