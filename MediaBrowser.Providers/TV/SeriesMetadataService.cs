@@ -10,6 +10,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
@@ -36,6 +37,7 @@ public class SeriesMetadataService : MetadataService<Series, SeriesInfo>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="localizationManager">Instance of the <see cref="ILocalizationManager"/> interface.</param>
     /// <param name="externalDataManager">Instance of the <see cref="IExternalDataManager"/> interface.</param>
+    /// <param name="itemRepository">Instance of the <see cref="IItemRepository"/> interface.</param>
     public SeriesMetadataService(
         IServerConfigurationManager serverConfigurationManager,
         ILogger<SeriesMetadataService> logger,
@@ -43,8 +45,9 @@ public class SeriesMetadataService : MetadataService<Series, SeriesInfo>
         IFileSystem fileSystem,
         ILibraryManager libraryManager,
         ILocalizationManager localizationManager,
-        IExternalDataManager externalDataManager)
-        : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager, externalDataManager)
+        IExternalDataManager externalDataManager,
+        IItemRepository itemRepository)
+        : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager, externalDataManager, itemRepository)
     {
         _localizationManager = localizationManager;
     }

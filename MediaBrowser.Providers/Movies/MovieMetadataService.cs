@@ -2,6 +2,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -24,14 +25,16 @@ public class MovieMetadataService : MetadataService<Movie, MovieInfo>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="externalDataManager">Instance of the <see cref="IExternalDataManager"/> interface.</param>
+    /// <param name="itemRepository">Instance of the <see cref="IItemRepository"/> interface.</param>
     public MovieMetadataService(
         IServerConfigurationManager serverConfigurationManager,
         ILogger<MovieMetadataService> logger,
         IProviderManager providerManager,
         IFileSystem fileSystem,
         ILibraryManager libraryManager,
-        IExternalDataManager externalDataManager)
-        : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager, externalDataManager)
+        IExternalDataManager externalDataManager,
+        IItemRepository itemRepository)
+        : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager, externalDataManager, itemRepository)
     {
     }
 

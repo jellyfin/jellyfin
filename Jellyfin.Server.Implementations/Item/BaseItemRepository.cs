@@ -14,6 +14,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
@@ -2352,5 +2353,15 @@ public sealed class BaseItemRepository
         }
 
         return baseQuery;
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> ItemExistsAsync(Guid id)
+    {
+        var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+        await using (dbContext.ConfigureAwait(false))
+        {
+            return await dbContext.BaseItems.AnyAsync(f => f.Id == id).ConfigureAwait(false);
+        }
     }
 }
