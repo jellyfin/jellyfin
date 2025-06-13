@@ -2361,7 +2361,7 @@ public sealed class BaseItemRepository
         var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
         await using (dbContext.ConfigureAwait(false))
         {
-            return dbContext.BaseItems.Any(f => f.Id == id);
+            return await dbContext.BaseItems.AnyAsync(f => f.Id == id).ConfigureAwait(false);
         }
     }
 }

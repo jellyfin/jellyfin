@@ -301,7 +301,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 if (!await ItemRepository.ItemExistsAsync(item.Id).ConfigureAwait(false))
                 {
-                    return ItemUpdateType.MetadataEdit;
+                    return ItemUpdateType.MetadataImport;
                 }
             }
 
