@@ -100,9 +100,9 @@ public sealed class BaseItemRepository
     /// <inheritdoc />
     public void DeleteItem(Guid id)
     {
-        if (id.IsEmpty())
+        if (id.IsEmpty() || id.Equals(PlaceholderId))
         {
-            throw new ArgumentException("Guid can't be empty", nameof(id));
+            throw new ArgumentException("Guid can't be empty or the placeholder id.", nameof(id));
         }
 
         using var context = _dbProvider.CreateDbContext();
@@ -157,7 +157,7 @@ public sealed class BaseItemRepository
         PrepareFilterQuery(filter);
 
         using var context = _dbProvider.CreateDbContext();
-        return ApplyQueryFilter(context.BaseItems.AsNoTracking(), context, filter).Select(e => e.Id).ToArray();
+        return ApplyQueryFilter(context.BaseItems.AsNoTracking().Where(e => e.Id != EF.Constant(PlaceholderId)), context, filter).Select(e => e.Id).ToArray();
     }
 
     /// <inheritdoc />
@@ -332,7 +332,7 @@ public sealed class BaseItemRepository
             .Where(i => filter.TopParentIds.Contains(i.TopParentId!.Value))
             .Where(i => i.Type == _itemTypeLookup.BaseItemKindNames[BaseItemKind.Episode])
             .Join(
-                context.UserData.AsNoTracking(),
+                context.UserData.AsNoTracking().Where(e => e.ItemId != EF.Constant(PlaceholderId)),
                 i => new { UserId = filter.User.Id, ItemId = i.Id },
                 u => new { UserId = u.UserId, ItemId = u.ItemId },
                 (entity, data) => new { Item = entity, UserData = data })
@@ -485,7 +485,7 @@ public sealed class BaseItemRepository
         cancellationToken.ThrowIfCancellationRequested();
 
         var tuples = new List<(BaseItemDto Item, List<Guid>? AncestorIds, BaseItemDto TopParent, IEnumerable<string> UserDataKey, List<string> InheritedTags)>();
-        foreach (var item in items.GroupBy(e => e.Id).Select(e => e.Last()))
+        foreach (var item in items.GroupBy(e => e.Id).Select(e => e.Last()).Where(e => e.Id != PlaceholderId))
         {
             var ancestorIds = item.SupportsAncestors ?
                 item.GetAncestorIds().Distinct().ToList() :
@@ -1076,7 +1076,7 @@ public sealed class BaseItemRepository
 
         using var context = _dbProvider.CreateDbContext();
 
-        var innerQueryFilter = TranslateQuery(context.BaseItems, context, new InternalItemsQuery(filter.User)
+        var innerQueryFilter = TranslateQuery(context.BaseItems.Where(e => e.Id != EF.Constant(PlaceholderId)), context, new InternalItemsQuery(filter.User)
         {
             ExcludeItemTypes = filter.ExcludeItemTypes,
             IncludeItemTypes = filter.IncludeItemTypes,
@@ -1165,7 +1165,7 @@ public sealed class BaseItemRepository
                 IsPlayed = filter.IsPlayed
             };
 
-            itemCountQuery = TranslateQuery(context.BaseItems.AsNoTracking(), context, typeSubQuery)
+            itemCountQuery = TranslateQuery(context.BaseItems.AsNoTracking().Where(e => e.Id != EF.Constant(PlaceholderId)), context, typeSubQuery)
                 .Where(e => e.ItemValues!.Any(f => itemValueTypes!.Contains(f.ItemValue.Type)));
 
             var seriesTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Series];
@@ -1841,7 +1841,7 @@ public sealed class BaseItemRepository
             // We should probably figure this out for all folders, but for right now, this is the only place where we need it
             if (filter.IncludeItemTypes.Length == 1 && filter.IncludeItemTypes[0] == BaseItemKind.Series)
             {
-                baseQuery = baseQuery.Where(e => context.BaseItems
+                baseQuery = baseQuery.Where(e => context.BaseItems.Where(e => e.Id != EF.Constant(PlaceholderId))
                     .Where(e => e.IsFolder == false && e.IsVirtualItem == false)
                     .Where(f => f.UserData!.FirstOrDefault(e => e.UserId == filter.User!.Id && e.Played)!.Played)
                     .Any(f => f.SeriesPresentationUniqueKey == e.PresentationUniqueKey) == filter.IsPlayed);
@@ -2091,7 +2091,7 @@ public sealed class BaseItemRepository
         if (filter.HasDeadParentId.HasValue && filter.HasDeadParentId.Value)
         {
             baseQuery = baseQuery
-                .Where(e => e.ParentId.HasValue && !context.BaseItems.Any(f => f.Id == e.ParentId.Value));
+                .Where(e => e.ParentId.HasValue && !context.BaseItems.Where(e => e.Id != EF.Constant(PlaceholderId)).Any(f => f.Id == e.ParentId.Value));
         }
 
         if (filter.IsDeadArtist.HasValue && filter.IsDeadArtist.Value)
@@ -2226,7 +2226,7 @@ public sealed class BaseItemRepository
         if (!string.IsNullOrWhiteSpace(filter.AncestorWithPresentationUniqueKey))
         {
             baseQuery = baseQuery
-                .Where(e => context.BaseItems.Where(f => f.PresentationUniqueKey == filter.AncestorWithPresentationUniqueKey).Any(f => f.Children!.Any(w => w.ItemId == e.Id)));
+                .Where(e => context.BaseItems.Where(e => e.Id != EF.Constant(PlaceholderId)).Where(f => f.PresentationUniqueKey == filter.AncestorWithPresentationUniqueKey).Any(f => f.Children!.Any(w => w.ItemId == e.Id)));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.SeriesPresentationUniqueKey))
