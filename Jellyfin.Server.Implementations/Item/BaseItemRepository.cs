@@ -100,9 +100,9 @@ public sealed class BaseItemRepository
     /// <inheritdoc />
     public void DeleteItem(Guid id)
     {
-        if (id.IsEmpty() || id == PlaceholderId)
+        if (id.IsEmpty() || id.Equals(PlaceholderId))
         {
-            throw new ArgumentException("Guid can't be empty", nameof(id));
+            throw new ArgumentException("Guid can't be empty or the placeholder id.", nameof(id));
         }
 
         using var context = _dbProvider.CreateDbContext();
