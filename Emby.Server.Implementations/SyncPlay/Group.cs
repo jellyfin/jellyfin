@@ -133,6 +133,12 @@ namespace Emby.Server.Implementations.SyncPlay
         public long PositionTicks { get; set; }
 
         /// <summary>
+        /// Gets or sets the playback rate.
+        /// </summary>
+        /// <value>The playback rate.</value>
+        public float PlaybackRate { get; set; }
+
+        /// <summary>
         /// Gets or sets the last activity.
         /// </summary>
         /// <value>The last activity.</value>
@@ -250,6 +256,7 @@ namespace Emby.Server.Implementations.SyncPlay
         public void CreateGroup(SessionInfo session, NewGroupRequest request, CancellationToken cancellationToken)
         {
             GroupName = request.GroupName;
+            PlaybackRate = SanitizePlaybackRate(request.StartingPlaybackRate);
             AddSession(session);
 
             var sessionIsPlayingAnItem = session.FullNowPlayingItem is not null;
@@ -422,6 +429,7 @@ namespace Emby.Server.Implementations.SyncPlay
                 LastActivity,
                 type,
                 PositionTicks,
+                PlaybackRate,
                 DateTime.UtcNow);
         }
 
@@ -430,6 +438,13 @@ namespace Emby.Server.Implementations.SyncPlay
         {
             var ticks = positionTicks ?? 0;
             return Math.Clamp(ticks, 0, RunTimeTicks);
+        }
+
+        /// <inheritdoc />
+        public float SanitizePlaybackRate(float? playbackRate)
+        {
+            var newPlaybackRate = playbackRate ?? 1f;
+            return Math.Clamp(newPlaybackRate, 0.1f, 4f);
         }
 
         /// <inheritdoc />
@@ -650,12 +665,13 @@ namespace Emby.Server.Implementations.SyncPlay
         public PlayQueueUpdate GetPlayQueueUpdate(PlayQueueUpdateReason reason)
         {
             var startPositionTicks = PositionTicks;
+            var startPlaybackRate = PlaybackRate;
             var isPlaying = _state.Type.Equals(GroupStateType.Playing);
 
             if (isPlaying)
             {
                 var currentTime = DateTime.UtcNow;
-                var elapsedTime = currentTime - LastActivity;
+                var elapsedTime = (currentTime - LastActivity) * PlaybackRate;
                 // Elapsed time is negative if event happens
                 // during the delay added to account for latency.
                 // In this phase clients haven't started the playback yet.
@@ -671,6 +687,7 @@ namespace Emby.Server.Implementations.SyncPlay
                 PlayQueue.GetPlaylist(),
                 PlayQueue.PlayingItemIndex,
                 startPositionTicks,
+                startPlaybackRate,
                 isPlaying,
                 PlayQueue.ShuffleMode,
                 PlayQueue.RepeatMode);
