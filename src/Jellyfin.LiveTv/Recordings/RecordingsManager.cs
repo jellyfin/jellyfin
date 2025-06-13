@@ -808,8 +808,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
         }
         while (File.Exists(path) || _activeRecordings.Any(i =>
                 string.Equals(i.Value.Path, path, StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(i.Value.Timer.Id, timerId, StringComparison.OrdinalIgnoreCase)
-            )
+                !string.Equals(i.Value.Timer.Id, timerId, StringComparison.OrdinalIgnoreCase))
         );
         return path;
     }
