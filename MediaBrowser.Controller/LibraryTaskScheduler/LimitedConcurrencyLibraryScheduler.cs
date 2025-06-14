@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -19,6 +19,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
     private const int CleanupGracePeriod = 60;
     private readonly IHostApplicationLifetime _hostApplicationLifetime;
     private readonly ILogger<LimitedConcurrencyLibraryScheduler> _logger;
+    private readonly IServerConfigurationManager _serverConfigurationManager;
     private readonly Dictionary<CancellationTokenSource, Task> _taskRunners = new();
 
     private static readonly AsyncLocal<CancellationTokenSource> _deadlockDetector = new();
@@ -39,10 +40,15 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
     /// </summary>
     /// <param name="hostApplicationLifetime">The hosting lifetime.</param>
     /// <param name="logger">The logger.</param>
-    public LimitedConcurrencyLibraryScheduler(IHostApplicationLifetime hostApplicationLifetime, ILogger<LimitedConcurrencyLibraryScheduler> logger)
+    /// <param name="serverConfigurationManager">The server configuration manager.</param>
+    public LimitedConcurrencyLibraryScheduler(
+        IHostApplicationLifetime hostApplicationLifetime,
+        ILogger<LimitedConcurrencyLibraryScheduler> logger,
+        IServerConfigurationManager serverConfigurationManager)
     {
         _hostApplicationLifetime = hostApplicationLifetime;
         _logger = logger;
+        _serverConfigurationManager = serverConfigurationManager;
     }
 
     private void ScheduleTaskCleanup()
@@ -94,7 +100,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
     {
         lock (_taskLock)
         {
-            var fanoutConcurrency = BaseItem.ConfigurationManager.Configuration.LibraryScanFanoutConcurrency;
+            var fanoutConcurrency = _serverConfigurationManager.Configuration.LibraryScanFanoutConcurrency;
             var parallelism = (fanoutConcurrency > 0 ? fanoutConcurrency : Environment.ProcessorCount) - _taskRunners.Count;
             _logger.LogDebug("Spawn {NumberRunners} new runners.", parallelism);
             for (int i = 0; i < parallelism; i++)
@@ -217,7 +223,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
             };
         }).ToArray();
 
-        if (BaseItem.ConfigurationManager.Configuration.LibraryScanFanoutConcurrency == 1)
+        if (_serverConfigurationManager.Configuration.LibraryScanFanoutConcurrency == 1)
         {
             _logger.LogDebug("Process sequentially.");
             try
