@@ -11,7 +11,6 @@ using System.Security;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 using J2N.Collections.Generic.Extensions;
 using Jellyfin.Data;
 using Jellyfin.Data.Enums;
@@ -25,6 +24,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LibraryTaskScheduler;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
@@ -48,6 +48,8 @@ namespace MediaBrowser.Controller.Entities
         }
 
         public static IUserViewManager UserViewManager { get; set; }
+
+        public static ILimitedConcurrencyLibraryScheduler LimitedConcurrencyLibraryScheduler { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is root.
@@ -598,51 +600,13 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Task.</returns>
         private async Task RunTasks<T>(Func<T, IProgress<double>, Task> task, IList<T> children, IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var childrenCount = children.Count;
-            var childrenProgress = new double[childrenCount];
-
-            void UpdateProgress()
-            {
-                progress.Report(childrenProgress.Average());
-            }
-
-            var fanoutConcurrency = ConfigurationManager.Configuration.LibraryScanFanoutConcurrency;
-            var parallelism = fanoutConcurrency > 0 ? fanoutConcurrency : Environment.ProcessorCount;
-
-            var actionBlock = new ActionBlock<int>(
-                async i =>
-                {
-                    var innerProgress = new Progress<double>(innerPercent =>
-                    {
-                        // round the percent and only update progress if it changed to prevent excessive UpdateProgress calls
-                        var innerPercentRounded = Math.Round(innerPercent);
-                        if (childrenProgress[i] != innerPercentRounded)
-                        {
-                            childrenProgress[i] = innerPercentRounded;
-                            UpdateProgress();
-                        }
-                    });
-
-                    await task(children[i], innerProgress).ConfigureAwait(false);
-
-                    childrenProgress[i] = 100;
-
-                    UpdateProgress();
-                },
-                new ExecutionDataflowBlockOptions
-                {
-                    MaxDegreeOfParallelism = parallelism,
-                    CancellationToken = cancellationToken,
-                });
-
-            for (var i = 0; i < childrenCount; i++)
-            {
-                await actionBlock.SendAsync(i, cancellationToken).ConfigureAwait(false);
-            }
-
-            actionBlock.Complete();
-
-            await actionBlock.Completion.ConfigureAwait(false);
+            await LimitedConcurrencyLibraryScheduler
+                .Enqueue(
+                    children.ToArray(),
+                    task,
+                    progress,
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
         /// <summary>
@@ -1008,7 +972,7 @@ namespace MediaBrowser.Controller.Entities
                 items = CollapseBoxSetItemsIfNeeded(items, query, this, user, ConfigurationManager, CollectionManager);
             }
 
-            #pragma warning disable CA1309
+#pragma warning disable CA1309
             if (!string.IsNullOrEmpty(query.NameStartsWithOrGreater))
             {
                 items = items.Where(i => string.Compare(query.NameStartsWithOrGreater, i.SortName, StringComparison.InvariantCultureIgnoreCase) < 1);
@@ -1023,7 +987,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 items = items.Where(i => string.Compare(query.NameLessThan, i.SortName, StringComparison.InvariantCultureIgnoreCase) == 1);
             }
-            #pragma warning restore CA1309
+#pragma warning restore CA1309
 
             // This must be the last filter
             if (!query.AdjacentTo.IsNullOrEmpty())
