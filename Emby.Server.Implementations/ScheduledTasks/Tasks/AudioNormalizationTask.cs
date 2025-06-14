@@ -76,6 +76,10 @@ public partial class AudioNormalizationTask : IScheduledTask
     /// <inheritdoc />
     public async Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
     {
+        var numComplete = 0;
+        var numlibraries = _libraryManager.RootFolder.Children.Count();
+        double percent = 0;
+
         foreach (var library in _libraryManager.RootFolder.Children)
         {
             var libraryOptions = _libraryManager.GetLibraryOptions(library);
@@ -91,6 +95,12 @@ public partial class AudioNormalizationTask : IScheduledTask
                 Parent = library,
                 Recursive = true
             });
+
+            double nextPercent = numComplete + 1;
+            nextPercent /= numlibraries;
+            nextPercent -= percent;
+            nextPercent /= 2;
+            var albumComplete = 0;
 
             foreach (var a in albums)
             {
@@ -123,7 +133,16 @@ public partial class AudioNormalizationTask : IScheduledTask
                 {
                     File.Delete(tempFile);
                 }
+
+                // Update progress
+                albumComplete++;
+                double albumPercent = albumComplete;
+                albumPercent /= albums.Count;
+
+                progress.Report(100 * (percent + (albumPercent * nextPercent)));
             }
+
+            percent += nextPercent;
 
             _itemRepository.SaveItems(albums, cancellationToken);
 
@@ -136,6 +155,7 @@ public partial class AudioNormalizationTask : IScheduledTask
                 Recursive = true
             });
 
+            var tracksComplete = 0;
             foreach (var t in tracks)
             {
                 if (t.NormalizationGain.HasValue || t.LUFS.HasValue || !t.IsFileProtocol)
@@ -147,10 +167,26 @@ public partial class AudioNormalizationTask : IScheduledTask
                     string.Format(CultureInfo.InvariantCulture, "-i \"{0}\"", t.Path.Replace("\"", "\\\"", StringComparison.Ordinal)),
                     false,
                     cancellationToken).ConfigureAwait(false);
+
+                // Update progress
+                tracksComplete++;
+                double trackPercent = tracksComplete;
+                trackPercent /= tracks.Count;
+
+                progress.Report(100 * (percent + (trackPercent * nextPercent)));
             }
 
             _itemRepository.SaveItems(tracks, cancellationToken);
+
+            // Update progress
+            numComplete++;
+            percent = numComplete;
+            percent /= numlibraries;
+
+            progress.Report(100 * percent);
         }
+
+        progress.Report(100.0);
     }
 
     /// <inheritdoc />
