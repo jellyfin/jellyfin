@@ -161,5 +161,11 @@ public enum CollectionType
     /// Movie genre collection.
     /// </summary>
     [OpenApiIgnoreEnum]
-    moviegenre = 115
+    moviegenre = 115,
+
+    /// <summary>
+    /// Mixed collection.
+    /// </summary>
+    [OpenApiIgnoreEnum]
+    mixed = 116
 }
