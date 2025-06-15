@@ -11,6 +11,7 @@ using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Entities.Security;
 using Jellyfin.Database.Implementations.Enums;
+using Jellyfin.Database.Implementations.Locking;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Devices;
@@ -30,6 +31,7 @@ namespace Jellyfin.Server.Implementations.Devices
     {
         private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
         private readonly IUserManager _userManager;
+        private readonly IEntityFrameworkDatabaseLockingBehavior _writeBehavior;
         private readonly ConcurrentDictionary<string, ClientCapabilities> _capabilitiesMap = new();
         private readonly ConcurrentDictionary<int, Device> _devices;
         private readonly ConcurrentDictionary<string, DeviceOptions> _deviceOptions;
@@ -38,15 +40,18 @@ namespace Jellyfin.Server.Implementations.Devices
         /// Initializes a new instance of the <see cref="DeviceManager"/> class.
         /// </summary>
         /// <param name="dbProvider">The database provider.</param>
+        /// <param name="writeBehavior">Instance of the <see cref="IEntityFrameworkDatabaseLockingBehavior"/> interface.</param>
         /// <param name="userManager">The user manager.</param>
-        public DeviceManager(IDbContextFactory<JellyfinDbContext> dbProvider, IUserManager userManager)
+        public DeviceManager(IDbContextFactory<JellyfinDbContext> dbProvider, IEntityFrameworkDatabaseLockingBehavior writeBehavior, IUserManager userManager)
         {
             _dbProvider = dbProvider;
             _userManager = userManager;
+            _writeBehavior = writeBehavior;
             _devices = new ConcurrentDictionary<int, Device>();
             _deviceOptions = new ConcurrentDictionary<string, DeviceOptions>();
 
             using var dbContext = _dbProvider.CreateDbContext();
+            using var dbLock = _writeBehavior.AcquireReaderLock(dbContext);
             foreach (var device in dbContext.Devices
                          .OrderBy(d => d.Id)
                          .AsEnumerable())
@@ -78,6 +83,7 @@ namespace Jellyfin.Server.Implementations.Devices
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
+                using var dbLock = await _writeBehavior.AcquireWriterLockAsync(dbContext).ConfigureAwait(false);
                 deviceOptions = await dbContext.DeviceOptions.FirstOrDefaultAsync(dev => dev.DeviceId == deviceId).ConfigureAwait(false);
                 if (deviceOptions is null)
                 {
@@ -100,11 +106,12 @@ namespace Jellyfin.Server.Implementations.Devices
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
+                using var dbLock = await _writeBehavior.AcquireWriterLockAsync(dbContext).ConfigureAwait(false);
                 dbContext.Devices.Add(device);
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
-                _devices.TryAdd(device.Id, device);
             }
 
+            _devices.TryAdd(device.Id, device);
             return device;
         }
 
@@ -213,6 +220,7 @@ namespace Jellyfin.Server.Implementations.Devices
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
+                using var dbLock = await _writeBehavior.AcquireWriterLockAsync(dbContext).ConfigureAwait(false);
                 dbContext.Devices.Remove(device);
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
             }
@@ -224,6 +232,7 @@ namespace Jellyfin.Server.Implementations.Devices
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
+                using var dbLock = await _writeBehavior.AcquireWriterLockAsync(dbContext).ConfigureAwait(false);
                 dbContext.Devices.Update(device);
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
             }

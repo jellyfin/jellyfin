@@ -5,6 +5,7 @@ using Jellyfin.Data.Events;
 using Jellyfin.Data.Queries;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Locking;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Querying;
 using Microsoft.EntityFrameworkCore;
@@ -17,14 +18,17 @@ namespace Jellyfin.Server.Implementations.Activity
     public class ActivityManager : IActivityManager
     {
         private readonly IDbContextFactory<JellyfinDbContext> _provider;
+        private readonly IEntityFrameworkDatabaseLockingBehavior _writeBehavior;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ActivityManager"/> class.
         /// </summary>
         /// <param name="provider">The Jellyfin database provider.</param>
-        public ActivityManager(IDbContextFactory<JellyfinDbContext> provider)
+        /// <param name="writeBehavior">Instance of the <see cref="IEntityFrameworkDatabaseLockingBehavior"/> interface.</param>
+        public ActivityManager(IDbContextFactory<JellyfinDbContext> provider, IEntityFrameworkDatabaseLockingBehavior writeBehavior)
         {
             _provider = provider;
+            _writeBehavior = writeBehavior;
         }
 
         /// <inheritdoc/>
@@ -36,6 +40,7 @@ namespace Jellyfin.Server.Implementations.Activity
             var dbContext = await _provider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
+                using var dbLock = await _writeBehavior.AcquireWriterLockAsync(dbContext).ConfigureAwait(false);
                 dbContext.ActivityLogs.Add(entry);
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
             }
@@ -49,6 +54,7 @@ namespace Jellyfin.Server.Implementations.Activity
             var dbContext = await _provider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
+                using var dbLock = await _writeBehavior.AcquireReaderLockAsync(dbContext).ConfigureAwait(false);
                 var entries = dbContext.ActivityLogs
                     .OrderByDescending(entry => entry.DateCreated)
                     .Where(entry => query.MinDate == null || entry.DateCreated >= query.MinDate)
@@ -80,6 +86,7 @@ namespace Jellyfin.Server.Implementations.Activity
             var dbContext = await _provider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
+                using var dbLock = await _writeBehavior.AcquireWriterLockAsync(dbContext).ConfigureAwait(false);
                 await dbContext.ActivityLogs
                     .Where(entry => entry.DateCreated <= startDate)
                     .ExecuteDeleteAsync()

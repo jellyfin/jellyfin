@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Locking;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
@@ -19,18 +20,21 @@ namespace Jellyfin.Server.Implementations.Item;
 public class MediaStreamRepository : IMediaStreamRepository
 {
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
+    private readonly IEntityFrameworkDatabaseLockingBehavior _writeBehavior;
     private readonly IServerApplicationHost _serverApplicationHost;
     private readonly ILocalizationManager _localization;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MediaStreamRepository"/> class.
     /// </summary>
+    /// <param name="writeBehavior">Instance of the <see cref="IEntityFrameworkDatabaseLockingBehavior"/> interface.</param>
     /// <param name="dbProvider">The EFCore db factory.</param>
     /// <param name="serverApplicationHost">The Application host.</param>
     /// <param name="localization">The Localisation Provider.</param>
-    public MediaStreamRepository(IDbContextFactory<JellyfinDbContext> dbProvider, IServerApplicationHost serverApplicationHost, ILocalizationManager localization)
+    public MediaStreamRepository(IDbContextFactory<JellyfinDbContext> dbProvider, IEntityFrameworkDatabaseLockingBehavior writeBehavior, IServerApplicationHost serverApplicationHost, ILocalizationManager localization)
     {
         _dbProvider = dbProvider;
+        _writeBehavior = writeBehavior;
         _serverApplicationHost = serverApplicationHost;
         _localization = localization;
     }
@@ -39,6 +43,7 @@ public class MediaStreamRepository : IMediaStreamRepository
     public void SaveMediaStreams(Guid id, IReadOnlyList<MediaStream> streams, CancellationToken cancellationToken)
     {
         using var context = _dbProvider.CreateDbContext();
+        using var dbLock = _writeBehavior.AcquireWriterLock(context);
         using var transaction = context.Database.BeginTransaction();
 
         context.MediaStreamInfos.Where(e => e.ItemId.Equals(id)).ExecuteDelete();
@@ -51,8 +56,14 @@ public class MediaStreamRepository : IMediaStreamRepository
     /// <inheritdoc />
     public IReadOnlyList<MediaStream> GetMediaStreams(MediaStreamQuery filter)
     {
-        using var context = _dbProvider.CreateDbContext();
-        return TranslateQuery(context.MediaStreamInfos.AsNoTracking(), filter).AsEnumerable().Select(Map).ToArray();
+        MediaStreamInfo[] items;
+        using (var context = _dbProvider.CreateDbContext())
+        {
+            using var dbLock = _writeBehavior.AcquireReaderLock(context);
+            items = TranslateQuery(context.MediaStreamInfos.AsNoTracking(), filter).ToArray();
+        }
+
+        return items.Select(Map).ToArray();
     }
 
     private string? GetPathToSave(string? path)

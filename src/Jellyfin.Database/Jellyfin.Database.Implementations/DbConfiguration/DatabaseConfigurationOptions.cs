@@ -22,4 +22,10 @@ public class DatabaseConfigurationOptions
     /// Defaults to "NoLock".
     /// </summary>
     public DatabaseLockingBehaviorTypes LockingBehavior { get; set; }
+
+    /// <summary>
+    /// Gets or Sets the kind of database write behavior jellyfin should perform. Possible options are "ConcurrentWrites", "SerialWrites".
+    /// Defaults to "NoLock".
+    /// </summary>
+    public DatabaseWriteBehaviorTypes WriteBehavior { get; set; }
 }

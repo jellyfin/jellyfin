@@ -14,6 +14,7 @@ using Jellyfin.Data.Events.Users;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
+using Jellyfin.Database.Implementations.Locking;
 using Jellyfin.Extensions;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
@@ -38,6 +39,7 @@ namespace Jellyfin.Server.Implementations.Users
     public partial class UserManager : IUserManager
     {
         private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
+        private readonly IEntityFrameworkDatabaseLockingBehavior _writeBehavior;
         private readonly IEventManager _eventManager;
         private readonly INetworkManager _networkManager;
         private readonly IApplicationHost _appHost;
@@ -56,6 +58,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// Initializes a new instance of the <see cref="UserManager"/> class.
         /// </summary>
         /// <param name="dbProvider">The database provider.</param>
+        /// <param name="writeBehavior">Instance of the <see cref="IEntityFrameworkDatabaseLockingBehavior"/> interface.</param>
         /// <param name="eventManager">The event manager.</param>
         /// <param name="networkManager">The network manager.</param>
         /// <param name="appHost">The application host.</param>
@@ -66,6 +69,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// <param name="authenticationProviders">The authentication providers.</param>
         public UserManager(
             IDbContextFactory<JellyfinDbContext> dbProvider,
+            IEntityFrameworkDatabaseLockingBehavior writeBehavior,
             IEventManager eventManager,
             INetworkManager networkManager,
             IApplicationHost appHost,
@@ -76,6 +80,7 @@ namespace Jellyfin.Server.Implementations.Users
             IEnumerable<IAuthenticationProvider> authenticationProviders)
         {
             _dbProvider = dbProvider;
+            _writeBehavior = writeBehavior;
             _eventManager = eventManager;
             _networkManager = networkManager;
             _appHost = appHost;
@@ -92,6 +97,7 @@ namespace Jellyfin.Server.Implementations.Users
 
             _users = new ConcurrentDictionary<Guid, User>();
             using var dbContext = _dbProvider.CreateDbContext();
+            using var dbLock = _writeBehavior.AcquireReaderLock(dbContext);
             foreach (var user in dbContext.Users
                 .AsSplitQuery()
                 .Include(user => user.Permissions)
@@ -157,6 +163,8 @@ namespace Jellyfin.Server.Implementations.Users
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
+                using var dbLock = await _writeBehavior.AcquireWriterLockAsync(dbContext).ConfigureAwait(false);
+
 #pragma warning disable CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
 #pragma warning disable CA1311 // Specify a culture or use an invariant version to avoid implicit dependency on current culture
 #pragma warning disable CA1304 // The behavior of 'string.ToUpper()' could vary based on the current user's locale settings
@@ -188,6 +196,7 @@ namespace Jellyfin.Server.Implementations.Users
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
+                using var dbLock = await _writeBehavior.AcquireWriterLockAsync(dbContext).ConfigureAwait(false);
                 await UpdateUserInternalAsync(dbContext, user).ConfigureAwait(false);
             }
         }
@@ -230,11 +239,14 @@ namespace Jellyfin.Server.Implementations.Users
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
-                newUser = await CreateUserInternalAsync(name, dbContext).ConfigureAwait(false);
+                using (await _writeBehavior.AcquireWriterLockAsync(dbContext).ConfigureAwait(false))
+                {
+                    newUser = await CreateUserInternalAsync(name, dbContext).ConfigureAwait(false);
 
-                dbContext.Users.Add(newUser);
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
-                _users.Add(newUser.Id, newUser);
+                    dbContext.Users.Add(newUser);
+                    await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                    _users.Add(newUser.Id, newUser);
+                }
             }
 
             await _eventManager.PublishAsync(new UserCreatedEventArgs(newUser)).ConfigureAwait(false);
@@ -272,8 +284,11 @@ namespace Jellyfin.Server.Implementations.Users
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
-                dbContext.Users.Remove(user);
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                using (await _writeBehavior.AcquireWriterLockAsync(dbContext).ConfigureAwait(false))
+                {
+                    dbContext.Users.Remove(user);
+                    await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                }
             }
 
             _users.Remove(userId);
@@ -562,14 +577,17 @@ namespace Jellyfin.Server.Implementations.Users
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
-                var newUser = await CreateUserInternalAsync(defaultName, dbContext).ConfigureAwait(false);
-                newUser.SetPermission(PermissionKind.IsAdministrator, true);
-                newUser.SetPermission(PermissionKind.EnableContentDeletion, true);
-                newUser.SetPermission(PermissionKind.EnableRemoteControlOfOtherUsers, true);
+                using (await _writeBehavior.AcquireWriterLockAsync(dbContext).ConfigureAwait(false))
+                {
+                    var newUser = await CreateUserInternalAsync(defaultName, dbContext).ConfigureAwait(false);
+                    newUser.SetPermission(PermissionKind.IsAdministrator, true);
+                    newUser.SetPermission(PermissionKind.EnableContentDeletion, true);
+                    newUser.SetPermission(PermissionKind.EnableRemoteControlOfOtherUsers, true);
 
-                dbContext.Users.Add(newUser);
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
-                _users.Add(newUser.Id, newUser);
+                    dbContext.Users.Add(newUser);
+                    await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                    _users.Add(newUser.Id, newUser);
+                }
             }
         }
 
@@ -609,6 +627,7 @@ namespace Jellyfin.Server.Implementations.Users
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
+                using var dbLock = await _writeBehavior.AcquireWriterLockAsync(dbContext).ConfigureAwait(false);
                 var user = dbContext.Users
                                .Include(u => u.Permissions)
                                .Include(u => u.Preferences)
@@ -653,6 +672,7 @@ namespace Jellyfin.Server.Implementations.Users
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
+                using var dbLock = await _writeBehavior.AcquireWriterLockAsync(dbContext).ConfigureAwait(false);
                 var user = dbContext.Users
                                .Include(u => u.Permissions)
                                .Include(u => u.Preferences)
@@ -736,8 +756,11 @@ namespace Jellyfin.Server.Implementations.Users
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
-                dbContext.Remove(user.ProfileImage);
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                using (await _writeBehavior.AcquireWriterLockAsync(dbContext).ConfigureAwait(false))
+                {
+                    dbContext.Remove(user.ProfileImage);
+                    await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                }
             }
 
             user.ProfileImage = null;

@@ -5,6 +5,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Locking;
 using MediaBrowser.Common.Configuration;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -38,6 +39,9 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     public IDbContextFactory<JellyfinDbContext>? DbContextFactory { get; set; }
 
     /// <inheritdoc/>
+    public IEntityFrameworkDatabaseLockingBehavior? WriteBehavior { get; set; }
+
+    /// <inheritdoc/>
     public void Initialise(DbContextOptionsBuilder options)
     {
         options
@@ -57,6 +61,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
         {
             if (context.Database.IsSqlite())
             {
+                using var dbLock = await WriteBehavior!.AcquireWriterLockAsync(context, cancellationToken).ConfigureAwait(false);
                 await context.Database.ExecuteSqlRawAsync("PRAGMA optimize", cancellationToken).ConfigureAwait(false);
                 await context.Database.ExecuteSqlRawAsync("VACUUM", cancellationToken).ConfigureAwait(false);
                 _logger.LogInformation("jellyfin.db optimized successfully!");

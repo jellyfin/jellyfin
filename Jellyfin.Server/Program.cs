@@ -12,6 +12,7 @@ using Emby.Server.Implementations;
 using Emby.Server.Implementations.Configuration;
 using Emby.Server.Implementations.Serialization;
 using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Locking;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Helpers;
 using Jellyfin.Server.Implementations.DatabaseConfiguration;
@@ -345,7 +346,9 @@ namespace Jellyfin.Server
         {
             var factory = services.GetRequiredService<IDbContextFactory<JellyfinDbContext>>();
             var provider = services.GetRequiredService<IJellyfinDatabaseProvider>();
+            var writeBehavior = services.GetRequiredService<IEntityFrameworkDatabaseLockingBehavior>();
             provider.DbContextFactory = factory;
+            provider.WriteBehavior = writeBehavior;
         }
     }
 }

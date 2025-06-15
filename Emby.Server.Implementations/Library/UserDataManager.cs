@@ -8,6 +8,7 @@ using System.Threading;
 using BitFaster.Caching.Lru;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Locking;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -27,6 +28,7 @@ namespace Emby.Server.Implementations.Library
     {
         private readonly IServerConfigurationManager _config;
         private readonly IDbContextFactory<JellyfinDbContext> _repository;
+        private readonly IEntityFrameworkDatabaseLockingBehavior _writeBehavior;
         private readonly FastConcurrentLru<string, UserItemData> _cache;
 
         /// <summary>
@@ -34,12 +36,15 @@ namespace Emby.Server.Implementations.Library
         /// </summary>
         /// <param name="config">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
         /// <param name="repository">Instance of the <see cref="IDbContextFactory{JellyfinDbContext}"/> interface.</param>
+        /// <param name="writeBehavior">Instance of the <see cref="IEntityFrameworkDatabaseLockingBehavior"/> interface.</param>
         public UserDataManager(
             IServerConfigurationManager config,
-            IDbContextFactory<JellyfinDbContext> repository)
+            IDbContextFactory<JellyfinDbContext> repository,
+            IEntityFrameworkDatabaseLockingBehavior writeBehavior)
         {
             _config = config;
             _repository = repository;
+            _writeBehavior = writeBehavior;
             _cache = new FastConcurrentLru<string, UserItemData>(Environment.ProcessorCount, _config.Configuration.CacheSize, StringComparer.OrdinalIgnoreCase);
         }
 
@@ -57,25 +62,28 @@ namespace Emby.Server.Implementations.Library
 
             var keys = item.GetUserDataKeys();
 
-            using var dbContext = _repository.CreateDbContext();
-            using var transaction = dbContext.Database.BeginTransaction();
-
-            foreach (var key in keys)
+            using (var dbContext = _repository.CreateDbContext())
             {
-                userData.Key = key;
-                var userDataEntry = Map(userData, user.Id, item.Id);
-                if (dbContext.UserData.Any(f => f.ItemId == userDataEntry.ItemId && f.UserId == userDataEntry.UserId && f.CustomDataKey == userDataEntry.CustomDataKey))
-                {
-                    dbContext.UserData.Attach(userDataEntry).State = EntityState.Modified;
-                }
-                else
-                {
-                    dbContext.UserData.Add(userDataEntry);
-                }
-            }
+                using var dbLock = _writeBehavior.AcquireWriterLock(dbContext);
+                using var transaction = dbContext.Database.BeginTransaction();
 
-            dbContext.SaveChanges();
-            transaction.Commit();
+                foreach (var key in keys)
+                {
+                    userData.Key = key;
+                    var userDataEntry = Map(userData, user.Id, item.Id);
+                    if (dbContext.UserData.Any(f => f.ItemId == userDataEntry.ItemId && f.UserId == userDataEntry.UserId && f.CustomDataKey == userDataEntry.CustomDataKey))
+                    {
+                        dbContext.UserData.Attach(userDataEntry).State = EntityState.Modified;
+                    }
+                    else
+                    {
+                        dbContext.UserData.Add(userDataEntry);
+                    }
+                }
+
+                dbContext.SaveChanges();
+                transaction.Commit();
+            }
 
             var userId = user.InternalId;
             var cacheKey = GetCacheKey(userId, item.Id);
@@ -205,8 +213,12 @@ namespace Emby.Server.Implementations.Library
                 return null;
             }
 
-            using var context = _repository.CreateDbContext();
-            var userData = context.UserData.AsNoTracking().Where(e => e.ItemId == itemId && keys.Contains(e.CustomDataKey) && e.UserId.Equals(userId)).ToArray();
+            UserData[] userData;
+            using (var context = _repository.CreateDbContext())
+            {
+                using var dbLock = _writeBehavior.AcquireReaderLock(context);
+                userData = context.UserData.AsNoTracking().Where(e => e.ItemId == itemId && keys.Contains(e.CustomDataKey) && e.UserId.Equals(userId)).ToArray();
+            }
 
             if (userData.Length > 0)
             {

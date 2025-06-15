@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Locking;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
@@ -19,17 +20,20 @@ public class CleanDatabaseScheduledTask : ILibraryPostScanTask
     private readonly ILibraryManager _libraryManager;
     private readonly ILogger<CleanDatabaseScheduledTask> _logger;
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
+    private readonly IEntityFrameworkDatabaseLockingBehavior _writeBehavior;
     private readonly IPathManager _pathManager;
 
     public CleanDatabaseScheduledTask(
         ILibraryManager libraryManager,
         ILogger<CleanDatabaseScheduledTask> logger,
         IDbContextFactory<JellyfinDbContext> dbProvider,
+        IEntityFrameworkDatabaseLockingBehavior writeBehavior,
         IPathManager pathManager)
     {
         _libraryManager = libraryManager;
         _logger = logger;
         _dbProvider = dbProvider;
+        _writeBehavior = writeBehavior;
         _pathManager = pathManager;
     }
 
@@ -101,6 +105,7 @@ public class CleanDatabaseScheduledTask : ILibraryPostScanTask
         var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (context.ConfigureAwait(false))
         {
+            using var dbLock = await _writeBehavior.AcquireWriterLockAsync(context, cancellationToken).ConfigureAwait(false);
             var transaction = await context.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
             await using (transaction.ConfigureAwait(false))
             {

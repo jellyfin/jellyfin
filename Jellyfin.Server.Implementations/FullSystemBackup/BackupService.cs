@@ -9,6 +9,7 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Locking;
 using Jellyfin.Server.Implementations.StorageHelpers;
 using Jellyfin.Server.Implementations.SystemBackupService;
 using MediaBrowser.Controller;
@@ -29,6 +30,7 @@ public class BackupService : IBackupService
     private const string ManifestEntryName = "manifest.json";
     private readonly ILogger<BackupService> _logger;
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
+    private readonly IEntityFrameworkDatabaseLockingBehavior _writeBehavior;
     private readonly IServerApplicationHost _applicationHost;
     private readonly IServerApplicationPaths _applicationPaths;
     private readonly IJellyfinDatabaseProvider _jellyfinDatabaseProvider;
@@ -46,6 +48,7 @@ public class BackupService : IBackupService
     /// </summary>
     /// <param name="logger">A logger.</param>
     /// <param name="dbProvider">A Database Factory.</param>
+    /// <param name="writeBehavior">Instance of the <see cref="IEntityFrameworkDatabaseLockingBehavior"/> interface.</param>
     /// <param name="applicationHost">The Application host.</param>
     /// <param name="applicationPaths">The application paths.</param>
     /// <param name="jellyfinDatabaseProvider">The Jellyfin database Provider in use.</param>
@@ -53,6 +56,7 @@ public class BackupService : IBackupService
     public BackupService(
         ILogger<BackupService> logger,
         IDbContextFactory<JellyfinDbContext> dbProvider,
+        IEntityFrameworkDatabaseLockingBehavior writeBehavior,
         IServerApplicationHost applicationHost,
         IServerApplicationPaths applicationPaths,
         IJellyfinDatabaseProvider jellyfinDatabaseProvider,
@@ -60,6 +64,7 @@ public class BackupService : IBackupService
     {
         _logger = logger;
         _dbProvider = dbProvider;
+        _writeBehavior = writeBehavior;
         _applicationHost = applicationHost;
         _applicationPaths = applicationPaths;
         _jellyfinDatabaseProvider = jellyfinDatabaseProvider;
@@ -147,6 +152,7 @@ public class BackupService : IBackupService
                 var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
                 await using (dbContext.ConfigureAwait(false))
                 {
+                    using var dbLock = await _writeBehavior.AcquireWriterLockAsync(dbContext).ConfigureAwait(false);
                     // restore migration history manually
                     var historyEntry = zipArchive.GetEntry($"Database\\{nameof(HistoryRow)}.json");
                     if (historyEntry is null)
@@ -280,6 +286,11 @@ public class BackupService : IBackupService
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
+                // this reader lock is a special case, this only works because no other code
+                // creates a database transaction with a reader lock (as only one transaction
+                // can be active at any one time in sqlite)
+                using var dbLock = await _writeBehavior.AcquireReaderLockAsync(dbContext).ConfigureAwait(false);
+
                 dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
                 static IAsyncEnumerable<object> GetValues(IQueryable dbSet, Type type)
                 {

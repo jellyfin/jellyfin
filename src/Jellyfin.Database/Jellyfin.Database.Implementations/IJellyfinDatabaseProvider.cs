@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Database.Implementations.Locking;
 using Microsoft.EntityFrameworkCore;
 
 namespace Jellyfin.Database.Implementations;
@@ -12,9 +13,14 @@ namespace Jellyfin.Database.Implementations;
 public interface IJellyfinDatabaseProvider
 {
     /// <summary>
-    /// Gets or Sets the Database Factory when initialisaition is done.
+    /// Gets or Sets the Database Factory when initialization is done.
     /// </summary>
     IDbContextFactory<JellyfinDbContext>? DbContextFactory { get; set; }
+
+    /// <summary>
+    /// Gets or Sets the WriteBehavior when initialization is done.
+    /// </summary>
+    public IEntityFrameworkDatabaseLockingBehavior? WriteBehavior { get; set; }
 
     /// <summary>
     /// Initialises jellyfins EFCore database access.

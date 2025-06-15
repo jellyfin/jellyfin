@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Locking;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +16,8 @@ namespace Jellyfin.Server.Implementations.Item;
 /// Manager for handling Media Attachments.
 /// </summary>
 /// <param name="dbProvider">Efcore Factory.</param>
-public class MediaAttachmentRepository(IDbContextFactory<JellyfinDbContext> dbProvider) : IMediaAttachmentRepository
+/// <param name="writeBehavior">Instance of the <see cref="IEntityFrameworkDatabaseLockingBehavior"/> interface.</param>
+public class MediaAttachmentRepository(IDbContextFactory<JellyfinDbContext> dbProvider, IEntityFrameworkDatabaseLockingBehavior writeBehavior) : IMediaAttachmentRepository
 {
     /// <inheritdoc />
     public void SaveMediaAttachments(
@@ -24,6 +26,7 @@ public class MediaAttachmentRepository(IDbContextFactory<JellyfinDbContext> dbPr
         CancellationToken cancellationToken)
     {
         using var context = dbProvider.CreateDbContext();
+        using var dbLock = writeBehavior.AcquireWriterLock(context);
         using var transaction = context.Database.BeginTransaction();
         context.AttachmentStreamInfos.Where(e => e.ItemId.Equals(id)).ExecuteDelete();
         context.AttachmentStreamInfos.AddRange(attachments.Select(e => Map(e, id)));
@@ -34,14 +37,20 @@ public class MediaAttachmentRepository(IDbContextFactory<JellyfinDbContext> dbPr
     /// <inheritdoc />
     public IReadOnlyList<MediaAttachment> GetMediaAttachments(MediaAttachmentQuery filter)
     {
-        using var context = dbProvider.CreateDbContext();
-        var query = context.AttachmentStreamInfos.AsNoTracking().Where(e => e.ItemId.Equals(filter.ItemId));
-        if (filter.Index.HasValue)
+        AttachmentStreamInfo[] items;
+        using (var context = dbProvider.CreateDbContext())
         {
-            query = query.Where(e => e.Index == filter.Index);
+            using var dbLock = writeBehavior.AcquireReaderLock(context);
+            var query = context.AttachmentStreamInfos.AsNoTracking().Where(e => e.ItemId.Equals(filter.ItemId));
+            if (filter.Index.HasValue)
+            {
+                query = query.Where(e => e.Index == filter.Index);
+            }
+
+            items = query.ToArray();
         }
 
-        return query.AsEnumerable().Select(Map).ToArray();
+        return items.Select(Map).ToArray();
     }
 
     private MediaAttachment Map(AttachmentStreamInfo attachment)

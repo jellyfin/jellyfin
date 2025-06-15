@@ -7,9 +7,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AsyncKeyedLock;
-using J2N.Collections.Generic.Extensions;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Locking;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
@@ -37,6 +37,7 @@ public class TrickplayManager : ITrickplayManager
     private readonly IServerConfigurationManager _config;
     private readonly IImageEncoder _imageEncoder;
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
+    private readonly IEntityFrameworkDatabaseLockingBehavior _writeBehavior;
     private readonly IApplicationPaths _appPaths;
     private readonly IPathManager _pathManager;
 
@@ -53,6 +54,7 @@ public class TrickplayManager : ITrickplayManager
     /// <param name="config">The server configuration manager.</param>
     /// <param name="imageEncoder">The image encoder.</param>
     /// <param name="dbProvider">The database provider.</param>
+    /// <param name="writeBehavior">Instance of the <see cref="IEntityFrameworkDatabaseLockingBehavior"/> interface.</param>
     /// <param name="appPaths">The application paths.</param>
     /// <param name="pathManager">The path manager.</param>
     public TrickplayManager(
@@ -63,6 +65,7 @@ public class TrickplayManager : ITrickplayManager
         IServerConfigurationManager config,
         IImageEncoder imageEncoder,
         IDbContextFactory<JellyfinDbContext> dbProvider,
+        IEntityFrameworkDatabaseLockingBehavior writeBehavior,
         IApplicationPaths appPaths,
         IPathManager pathManager)
     {
@@ -73,6 +76,7 @@ public class TrickplayManager : ITrickplayManager
         _config = config;
         _imageEncoder = imageEncoder;
         _dbProvider = dbProvider;
+        _writeBehavior = writeBehavior;
         _appPaths = appPaths;
         _pathManager = pathManager;
     }
@@ -144,79 +148,87 @@ public class TrickplayManager : ITrickplayManager
             return;
         }
 
-        var dbContext = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        await using (dbContext.ConfigureAwait(false))
+        var saveWithMedia = libraryOptions.SaveTrickplayWithMedia;
+        var trickplayDirectory = _pathManager.GetTrickplayDirectory(video, saveWithMedia);
+        if (!libraryOptions.EnableTrickplayImageExtraction || replace)
         {
-            var saveWithMedia = libraryOptions.SaveTrickplayWithMedia;
-            var trickplayDirectory = _pathManager.GetTrickplayDirectory(video, saveWithMedia);
-            if (!libraryOptions.EnableTrickplayImageExtraction || replace)
-            {
-                // Prune existing data
-                if (Directory.Exists(trickplayDirectory))
-                {
-                    try
-                    {
-                        Directory.Delete(trickplayDirectory, true);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogWarning("Unable to clear trickplay directory: {Directory}: {Exception}", trickplayDirectory, ex);
-                    }
-                }
-
-                await dbContext.TrickplayInfos
-                        .Where(i => i.ItemId.Equals(video.Id))
-                        .ExecuteDeleteAsync(cancellationToken)
-                        .ConfigureAwait(false);
-
-                if (!replace)
-                {
-                    return;
-                }
-            }
-
-            _logger.LogDebug("Trickplay refresh for {ItemId} (replace existing: {Replace})", video.Id, replace);
-
-            if (options.Interval < 1000)
-            {
-                _logger.LogWarning("Trickplay image interval {Interval} is too small, reset to the minimum valid value of 1000", options.Interval);
-                options.Interval = 1000;
-            }
-
-            foreach (var width in options.WidthResolutions)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                await RefreshTrickplayDataInternal(
-                    video,
-                    replace,
-                    width,
-                    options,
-                    saveWithMedia,
-                    cancellationToken).ConfigureAwait(false);
-            }
-
-            // Cleanup old trickplay files
+            // Prune existing data
             if (Directory.Exists(trickplayDirectory))
             {
-                var existingFolders = Directory.GetDirectories(trickplayDirectory).ToList();
-                var trickplayInfos = await dbContext.TrickplayInfos
+                try
+                {
+                    Directory.Delete(trickplayDirectory, true);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning("Unable to clear trickplay directory: {Directory}: {Exception}", trickplayDirectory, ex);
+                }
+            }
+
+            var dbContext = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+            await using (dbContext.ConfigureAwait(false))
+            {
+                using var dbLock = await _writeBehavior.AcquireWriterLockAsync(dbContext, cancellationToken).ConfigureAwait(false);
+                await dbContext.TrickplayInfos
+                    .Where(i => i.ItemId.Equals(video.Id))
+                    .ExecuteDeleteAsync(cancellationToken)
+                    .ConfigureAwait(false);
+            }
+
+            if (!replace)
+            {
+                return;
+            }
+        }
+
+        _logger.LogDebug("Trickplay refresh for {ItemId} (replace existing: {Replace})", video.Id, replace);
+
+        if (options.Interval < 1000)
+        {
+            _logger.LogWarning("Trickplay image interval {Interval} is too small, reset to the minimum valid value of 1000", options.Interval);
+            options.Interval = 1000;
+        }
+
+        foreach (var width in options.WidthResolutions)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            await RefreshTrickplayDataInternal(
+                video,
+                replace,
+                width,
+                options,
+                saveWithMedia,
+                cancellationToken).ConfigureAwait(false);
+        }
+
+        // Cleanup old trickplay files
+        if (Directory.Exists(trickplayDirectory))
+        {
+            var existingFolders = Directory.GetDirectories(trickplayDirectory).ToList();
+            List<TrickplayInfo> trickplayInfos;
+            var dbContext = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+            await using (dbContext.ConfigureAwait(false))
+            {
+                using var dbLock = await _writeBehavior.AcquireReaderLockAsync(dbContext, cancellationToken).ConfigureAwait(false);
+                trickplayInfos = await dbContext.TrickplayInfos
                         .AsNoTracking()
                         .Where(i => i.ItemId.Equals(video.Id))
                         .ToListAsync(cancellationToken)
                         .ConfigureAwait(false);
-                var expectedFolders = trickplayInfos.Select(i => GetTrickplayDirectory(video, i.TileWidth, i.TileHeight, i.Width, saveWithMedia)).ToList();
-                var foldersToRemove = existingFolders.Except(expectedFolders);
-                foreach (var folder in foldersToRemove)
+            }
+
+            var expectedFolders = trickplayInfos.Select(i => GetTrickplayDirectory(video, i.TileWidth, i.TileHeight, i.Width, saveWithMedia)).ToList();
+            var foldersToRemove = existingFolders.Except(expectedFolders);
+            foreach (var folder in foldersToRemove)
+            {
+                try
                 {
-                    try
-                    {
-                        _logger.LogWarning("Pruning trickplay files for {Item}", video.Path);
-                        Directory.Delete(folder, true);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogWarning("Unable to remove trickplay directory: {Directory}: {Exception}", folder, ex);
-                    }
+                    _logger.LogWarning("Pruning trickplay files for {Item}", video.Path);
+                    Directory.Delete(folder, true);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning("Unable to remove trickplay directory: {Directory}: {Exception}", folder, ex);
                 }
             }
         }
@@ -495,20 +507,22 @@ public class TrickplayManager : ITrickplayManager
     public async Task<Dictionary<int, TrickplayInfo>> GetTrickplayResolutions(Guid itemId)
     {
         var trickplayResolutions = new Dictionary<int, TrickplayInfo>();
+        List<TrickplayInfo> trickplayInfos;
 
         var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
         await using (dbContext.ConfigureAwait(false))
         {
-            var trickplayInfos = await dbContext.TrickplayInfos
+            using var dbLock = await _writeBehavior.AcquireReaderLockAsync(dbContext).ConfigureAwait(false);
+            trickplayInfos = await dbContext.TrickplayInfos
                 .AsNoTracking()
                 .Where(i => i.ItemId.Equals(itemId))
                 .ToListAsync()
                 .ConfigureAwait(false);
+        }
 
-            foreach (var info in trickplayInfos)
-            {
-                trickplayResolutions[info.Width] = info;
-            }
+        foreach (var info in trickplayInfos)
+        {
+            trickplayResolutions[info.Width] = info;
         }
 
         return trickplayResolutions;
@@ -522,6 +536,7 @@ public class TrickplayManager : ITrickplayManager
         var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
         await using (dbContext.ConfigureAwait(false))
         {
+            using var dbLock = await _writeBehavior.AcquireReaderLockAsync(dbContext).ConfigureAwait(false);
             trickplayItems = await dbContext.TrickplayInfos
                 .AsNoTracking()
                 .OrderBy(i => i.ItemId)
@@ -540,6 +555,7 @@ public class TrickplayManager : ITrickplayManager
         var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
         await using (dbContext.ConfigureAwait(false))
         {
+            using var dbLock = await _writeBehavior.AcquireWriterLockAsync(dbContext).ConfigureAwait(false);
             var oldInfo = await dbContext.TrickplayInfos.FindAsync(info.ItemId, info.Width).ConfigureAwait(false);
             if (oldInfo is not null)
             {
@@ -556,7 +572,11 @@ public class TrickplayManager : ITrickplayManager
     public async Task DeleteTrickplayDataAsync(Guid itemId, CancellationToken cancellationToken)
     {
         var dbContext = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        await dbContext.TrickplayInfos.Where(i => i.ItemId.Equals(itemId)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        await using (dbContext.ConfigureAwait(false))
+        {
+            using var dbLock = await _writeBehavior.AcquireWriterLockAsync(dbContext, cancellationToken).ConfigureAwait(false);
+            await dbContext.TrickplayInfos.Where(i => i.ItemId.Equals(itemId)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        }
     }
 
     /// <inheritdoc />
@@ -685,6 +705,7 @@ public class TrickplayManager : ITrickplayManager
         var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
         await using (dbContext.ConfigureAwait(false))
         {
+            using var dbLock = await _writeBehavior.AcquireReaderLockAsync(dbContext).ConfigureAwait(false);
             return await dbContext.TrickplayInfos
                 .AsNoTracking()
                 .Where(i => i.ItemId.Equals(itemId))

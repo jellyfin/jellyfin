@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Locking;
 using MediaBrowser.Controller.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,14 +17,17 @@ namespace Jellyfin.Server.Implementations.Item;
 public class KeyframeRepository : IKeyframeRepository
 {
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
+    private readonly IEntityFrameworkDatabaseLockingBehavior _writeBehavior;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KeyframeRepository"/> class.
     /// </summary>
     /// <param name="dbProvider">The EFCore db factory.</param>
-    public KeyframeRepository(IDbContextFactory<JellyfinDbContext> dbProvider)
+    /// <param name="writeBehavior">Instance of the <see cref="IEntityFrameworkDatabaseLockingBehavior"/> interface.</param>
+    public KeyframeRepository(IDbContextFactory<JellyfinDbContext> dbProvider, IEntityFrameworkDatabaseLockingBehavior writeBehavior)
     {
         _dbProvider = dbProvider;
+        _writeBehavior = writeBehavior;
     }
 
     private static MediaEncoding.Keyframes.KeyframeData Map(KeyframeData entity)
@@ -47,6 +51,7 @@ public class KeyframeRepository : IKeyframeRepository
     public IReadOnlyList<MediaEncoding.Keyframes.KeyframeData> GetKeyframeData(Guid itemId)
     {
         using var context = _dbProvider.CreateDbContext();
+        using var dbLock = _writeBehavior.AcquireReaderLock(context);
 
         return context.KeyframeData.AsNoTracking().Where(e => e.ItemId.Equals(itemId)).Select(e => Map(e)).ToList();
     }
@@ -54,19 +59,30 @@ public class KeyframeRepository : IKeyframeRepository
     /// <inheritdoc />
     public async Task SaveKeyframeDataAsync(Guid itemId, MediaEncoding.Keyframes.KeyframeData data, CancellationToken cancellationToken)
     {
-        using var context = _dbProvider.CreateDbContext();
-        using var transaction = await context.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
-        await context.KeyframeData.Where(e => e.ItemId.Equals(itemId)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
-        await context.KeyframeData.AddAsync(Map(data, itemId), cancellationToken).ConfigureAwait(false);
-        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-        await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+        var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using (context.ConfigureAwait(false))
+        {
+            using var dbLock = await _writeBehavior.AcquireWriterLockAsync(context, cancellationToken).ConfigureAwait(false);
+            var transaction = await context.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
+            await using (transaction.ConfigureAwait(false))
+            {
+                await context.KeyframeData.Where(e => e.ItemId.Equals(itemId)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+                await context.KeyframeData.AddAsync(Map(data, itemId), cancellationToken).ConfigureAwait(false);
+                await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+            }
+        }
     }
 
     /// <inheritdoc />
     public async Task DeleteKeyframeDataAsync(Guid itemId, CancellationToken cancellationToken)
     {
-        using var context = _dbProvider.CreateDbContext();
-        await context.KeyframeData.Where(e => e.ItemId.Equals(itemId)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
-        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using (context.ConfigureAwait(false))
+        {
+            using var dbLock = await _writeBehavior.AcquireWriterLockAsync(context, cancellationToken).ConfigureAwait(false);
+            await context.KeyframeData.Where(e => e.ItemId.Equals(itemId)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        }
     }
 }

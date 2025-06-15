@@ -695,7 +695,7 @@ namespace MediaBrowser.Providers.Manager
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Error in metadata saver");
+                        _logger.LogError(ex, "Error in metadata saver for {Path}", path);
                     }
                     finally
                     {

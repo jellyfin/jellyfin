@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
@@ -17,6 +18,7 @@ public class OptimizeDatabaseTask : IScheduledTask, IConfigurableScheduledTask
     private readonly ILogger<OptimizeDatabaseTask> _logger;
     private readonly ILocalizationManager _localization;
     private readonly IJellyfinDatabaseProvider _jellyfinDatabaseProvider;
+    private readonly ILibraryManager _libraryManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OptimizeDatabaseTask" /> class.
@@ -24,14 +26,17 @@ public class OptimizeDatabaseTask : IScheduledTask, IConfigurableScheduledTask
     /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
     /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
     /// <param name="jellyfinDatabaseProvider">Instance of the JellyfinDatabaseProvider that can be used for provider specific operations.</param>
+    /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     public OptimizeDatabaseTask(
         ILogger<OptimizeDatabaseTask> logger,
         ILocalizationManager localization,
-        IJellyfinDatabaseProvider jellyfinDatabaseProvider)
+        IJellyfinDatabaseProvider jellyfinDatabaseProvider,
+        ILibraryManager libraryManager)
     {
         _logger = logger;
         _localization = localization;
         _jellyfinDatabaseProvider = jellyfinDatabaseProvider;
+        _libraryManager = libraryManager;
     }
 
     /// <inheritdoc />
@@ -68,6 +73,11 @@ public class OptimizeDatabaseTask : IScheduledTask, IConfigurableScheduledTask
     /// <inheritdoc />
     public async Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
     {
+        if (_libraryManager.IsScanRunning)
+        {
+            return;
+        }
+
         _logger.LogInformation("Optimizing and vacuuming jellyfin.db...");
 
         try

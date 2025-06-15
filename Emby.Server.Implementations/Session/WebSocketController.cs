@@ -75,7 +75,7 @@ namespace Emby.Server.Implementations.Session
             }
         }
 
-        private async void OnConnectionClosed(object? sender, EventArgs e)
+        private void OnConnectionClosed(object? sender, EventArgs e)
         {
             var connection = sender as IWebSocketConnection ?? throw new ArgumentException($"{nameof(sender)} is not of type {nameof(IWebSocketConnection)}", nameof(sender));
             _logger.LogDebug("Removing websocket from session {Session}", _session.Id);
@@ -91,7 +91,16 @@ namespace Emby.Server.Implementations.Session
                 _socketsLock.ExitWriteLock();
             }
 
-            await _sessionManager.CloseIfNeededAsync(_session).ConfigureAwait(false);
+            Task.Run(() => _sessionManager.CloseIfNeededAsync(_session).ConfigureAwait(false), CancellationToken.None)
+                .ContinueWith(
+                    t =>
+                    {
+                        if (t.IsFaulted)
+                        {
+                            _logger.LogError(t.Exception, "Error closing session {Session}", _session.Id);
+                        }
+                    },
+                    TaskScheduler.Default);
         }
 
         /// <inheritdoc />

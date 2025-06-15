@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities.Security;
+using Jellyfin.Database.Implementations.Locking;
 using MediaBrowser.Controller.Security;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,14 +13,17 @@ namespace Jellyfin.Server.Implementations.Security
     public class AuthenticationManager : IAuthenticationManager
     {
         private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
+        private readonly IEntityFrameworkDatabaseLockingBehavior _writeBehavior;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthenticationManager"/> class.
         /// </summary>
         /// <param name="dbProvider">The database provider.</param>
-        public AuthenticationManager(IDbContextFactory<JellyfinDbContext> dbProvider)
+        /// <param name="writeBehavior">Instance of the <see cref="IEntityFrameworkDatabaseLockingBehavior"/> interface.</param>
+        public AuthenticationManager(IDbContextFactory<JellyfinDbContext> dbProvider, IEntityFrameworkDatabaseLockingBehavior writeBehavior)
         {
             _dbProvider = dbProvider;
+            _writeBehavior = writeBehavior;
         }
 
         /// <inheritdoc />
@@ -28,6 +32,7 @@ namespace Jellyfin.Server.Implementations.Security
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
+                using var dbLock = await _writeBehavior.AcquireWriterLockAsync(dbContext).ConfigureAwait(false);
                 dbContext.ApiKeys.Add(new ApiKey(name));
 
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
@@ -40,6 +45,7 @@ namespace Jellyfin.Server.Implementations.Security
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
+                using var dbLock = await _writeBehavior.AcquireReaderLockAsync(dbContext).ConfigureAwait(false);
                 return await dbContext.ApiKeys
                     .Select(key => new AuthenticationInfo
                     {
@@ -59,6 +65,7 @@ namespace Jellyfin.Server.Implementations.Security
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
+                using var dbLock = await _writeBehavior.AcquireWriterLockAsync(dbContext).ConfigureAwait(false);
                 await dbContext.ApiKeys
                     .Where(apiKey => apiKey.AccessToken == accessToken)
                     .ExecuteDeleteAsync()

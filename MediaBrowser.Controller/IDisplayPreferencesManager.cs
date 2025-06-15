@@ -63,5 +63,17 @@ namespace MediaBrowser.Controller
         /// Saves changes made to the database.
         /// </summary>
         void SaveChanges();
+
+        /// <summary>
+        /// Acquires the database writer lock.
+        /// </summary>
+        /// <returns>Lock scope.</returns>
+        IDisposable AcquireWriterLock();
+
+        /// <summary>
+        /// Acquires the database reader lock.
+        /// </summary>
+        /// <returns>Lock scope.</returns>
+        IDisposable AcquireReaderLock();
     }
 }

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Locking;
 using MediaBrowser.Controller;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,15 +18,30 @@ namespace Jellyfin.Server.Implementations.Users
     /// </summary>
     public sealed class DisplayPreferencesManager : IDisplayPreferencesManager, IAsyncDisposable
     {
+        private readonly IEntityFrameworkDatabaseLockingBehavior _writeBehavior;
         private readonly JellyfinDbContext _dbContext;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DisplayPreferencesManager"/> class.
         /// </summary>
         /// <param name="dbContextFactory">The database context factory.</param>
-        public DisplayPreferencesManager(IDbContextFactory<JellyfinDbContext> dbContextFactory)
+        /// <param name="writeBehavior">Instance of the <see cref="IEntityFrameworkDatabaseLockingBehavior"/> interface.</param>
+        public DisplayPreferencesManager(IDbContextFactory<JellyfinDbContext> dbContextFactory, IEntityFrameworkDatabaseLockingBehavior writeBehavior)
         {
+            _writeBehavior = writeBehavior;
             _dbContext = dbContextFactory.CreateDbContext();
+        }
+
+        /// <inheritdoc />
+        public IDisposable AcquireWriterLock()
+        {
+            return _writeBehavior.AcquireWriterLock(_dbContext);
+        }
+
+        /// <inheritdoc />
+        public IDisposable AcquireReaderLock()
+        {
+            return _writeBehavior.AcquireReaderLock(_dbContext);
         }
 
         /// <inheritdoc />

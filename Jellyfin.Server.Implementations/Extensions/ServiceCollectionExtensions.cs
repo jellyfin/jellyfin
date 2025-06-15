@@ -97,7 +97,8 @@ public static class ServiceCollectionExtensions
                 efCoreConfiguration = new DatabaseConfigurationOptions()
                 {
                     DatabaseType = "Jellyfin-SQLite",
-                    LockingBehavior = DatabaseLockingBehaviorTypes.NoLock
+                    LockingBehavior = DatabaseLockingBehaviorTypes.NoLock,
+                    WriteBehavior = DatabaseWriteBehaviorTypes.SerializedWrites
                 };
                 configurationManager.SaveConfiguration("database", efCoreConfiguration);
             }
@@ -133,6 +134,16 @@ public static class ServiceCollectionExtensions
                 break;
             case DatabaseLockingBehaviorTypes.Optimistic:
                 serviceCollection.AddSingleton<IEntityFrameworkCoreLockingBehavior, OptimisticLockBehavior>();
+                break;
+        }
+
+        switch (efCoreConfiguration.WriteBehavior)
+        {
+            case DatabaseWriteBehaviorTypes.ConcurrentWrites:
+                serviceCollection.AddSingleton<IEntityFrameworkDatabaseLockingBehavior, ConcurrentDatabaseLockingBehavior>();
+                break;
+            case DatabaseWriteBehaviorTypes.SerializedWrites:
+                serviceCollection.AddSingleton<IEntityFrameworkDatabaseLockingBehavior, SerializedDatabaseLockingBehavior>();
                 break;
         }
 

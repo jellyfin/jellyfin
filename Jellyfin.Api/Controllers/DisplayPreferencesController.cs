@@ -12,6 +12,7 @@ using MediaBrowser.Model.Dto;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Api.Controllers;
@@ -58,6 +59,8 @@ public class DisplayPreferencesController : BaseJellyfinApiController
         {
             itemId = displayPreferencesId.GetMD5();
         }
+
+        using var dbLock = _displayPreferencesManager.AcquireWriterLock();
 
         var displayPreferences = _displayPreferencesManager.GetDisplayPreferences(userId.Value, itemId, client);
         var itemPreferences = _displayPreferencesManager.GetItemDisplayPreferences(displayPreferences.UserId, itemId, displayPreferences.Client);
@@ -138,6 +141,8 @@ public class DisplayPreferencesController : BaseJellyfinApiController
         {
             itemId = displayPreferencesId.GetMD5();
         }
+
+        using var dbLock = _displayPreferencesManager.AcquireWriterLock();
 
         var existingDisplayPreferences = _displayPreferencesManager.GetDisplayPreferences(userId.Value, itemId, client);
         existingDisplayPreferences.IndexBy = Enum.TryParse<IndexingKind>(displayPreferences.IndexBy, true, out var indexBy) ? indexBy : null;

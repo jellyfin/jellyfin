@@ -6,6 +6,7 @@ using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Entities.Libraries;
+using Jellyfin.Database.Implementations.Locking;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
@@ -21,39 +22,48 @@ namespace Jellyfin.Server.Implementations.Item;
 /// Manager for handling people.
 /// </summary>
 /// <param name="dbProvider">Efcore Factory.</param>
+/// <param name="writeBehavior">Instance of the <see cref="IEntityFrameworkDatabaseLockingBehavior"/> interface.</param>
 /// <param name="itemTypeLookup">Items lookup service.</param>
 /// <remarks>
 /// Initializes a new instance of the <see cref="PeopleRepository"/> class.
 /// </remarks>
-public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, IItemTypeLookup itemTypeLookup) : IPeopleRepository
+public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, IEntityFrameworkDatabaseLockingBehavior writeBehavior, IItemTypeLookup itemTypeLookup) : IPeopleRepository
 {
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider = dbProvider;
+    private readonly IEntityFrameworkDatabaseLockingBehavior _writeBehavior = writeBehavior;
 
     /// <inheritdoc/>
     public IReadOnlyList<PersonInfo> GetPeople(InternalPeopleQuery filter)
     {
-        using var context = _dbProvider.CreateDbContext();
-        var dbQuery = TranslateQuery(context.Peoples.AsNoTracking(), context, filter);
-
-        // dbQuery = dbQuery.OrderBy(e => e.ListOrder);
-        if (filter.Limit > 0)
+        People[] items;
+        using (var context = _dbProvider.CreateDbContext())
         {
-            dbQuery = dbQuery.Take(filter.Limit);
+            using var dbLock = _writeBehavior.AcquireReaderLock(context);
+            var dbQuery = TranslateQuery(context.Peoples.AsNoTracking(), context, filter);
+
+            // dbQuery = dbQuery.OrderBy(e => e.ListOrder);
+            if (filter.Limit > 0)
+            {
+                dbQuery = dbQuery.Take(filter.Limit);
+            }
+
+            // Include PeopleBaseItemMap
+            if (!filter.ItemId.IsEmpty())
+            {
+                dbQuery = dbQuery.Include(p => p.BaseItems!.Where(m => m.ItemId == filter.ItemId));
+            }
+
+            items = dbQuery.ToArray();
         }
 
-        // Include PeopleBaseItemMap
-        if (!filter.ItemId.IsEmpty())
-        {
-            dbQuery = dbQuery.Include(p => p.BaseItems!.Where(m => m.ItemId == filter.ItemId));
-        }
-
-        return dbQuery.AsEnumerable().Select(Map).ToArray();
+        return items.Select(Map).ToArray();
     }
 
     /// <inheritdoc/>
     public IReadOnlyList<string> GetPeopleNames(InternalPeopleQuery filter)
     {
         using var context = _dbProvider.CreateDbContext();
+        using var dbLock = _writeBehavior.AcquireReaderLock(context);
         var dbQuery = TranslateQuery(context.Peoples.AsNoTracking(), context, filter).Select(e => e.Name).Distinct();
 
         // dbQuery = dbQuery.OrderBy(e => e.ListOrder);
@@ -69,6 +79,8 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
     public void UpdatePeople(Guid itemId, IReadOnlyList<PersonInfo> people)
     {
         using var context = _dbProvider.CreateDbContext();
+        using var dbLock = _writeBehavior.AcquireWriterLock(context);
+        using var transaction = context.Database.BeginTransaction();
 
         // TODO: yes for __SOME__ reason there can be duplicates.
         people = people.DistinctBy(e => e.Id).ToArray();
@@ -104,6 +116,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         context.PeopleBaseItemMap.RemoveRange(maps);
 
         context.SaveChanges();
+        transaction.Commit();
     }
 
     private PersonInfo Map(People people)

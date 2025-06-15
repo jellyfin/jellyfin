@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Locking;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
@@ -16,50 +17,58 @@ namespace Jellyfin.Server.Implementations.Item;
 public class ChapterRepository : IChapterRepository
 {
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
+    private readonly IEntityFrameworkDatabaseLockingBehavior _writeBehavior;
     private readonly IImageProcessor _imageProcessor;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChapterRepository"/> class.
     /// </summary>
     /// <param name="dbProvider">The EFCore provider.</param>
+    /// <param name="writeBehavior">Instance of the <see cref="IEntityFrameworkDatabaseLockingBehavior"/> interface.</param>
     /// <param name="imageProcessor">The Image Processor.</param>
-    public ChapterRepository(IDbContextFactory<JellyfinDbContext> dbProvider, IImageProcessor imageProcessor)
+    public ChapterRepository(IDbContextFactory<JellyfinDbContext> dbProvider, IEntityFrameworkDatabaseLockingBehavior writeBehavior, IImageProcessor imageProcessor)
     {
         _dbProvider = dbProvider;
+        _writeBehavior = writeBehavior;
         _imageProcessor = imageProcessor;
     }
 
     /// <inheritdoc />
     public ChapterInfo? GetChapter(Guid baseItemId, int index)
     {
-        using var context = _dbProvider.CreateDbContext();
-        var chapter = context.Chapters.AsNoTracking()
-            .Select(e => new
-            {
-                chapter = e,
-                baseItemPath = e.Item.Path
-            })
-            .FirstOrDefault(e => e.chapter.ItemId.Equals(baseItemId) && e.chapter.ChapterIndex == index);
+        var chapter = DoGetChapter(baseItemId, index);
         if (chapter is not null)
         {
-            return Map(chapter.chapter, chapter.baseItemPath!);
+            return Map(chapter.Chapter, chapter.BaseItemPath!);
         }
 
         return null;
     }
 
+    private ChapterWithPath? DoGetChapter(Guid baseItemId, int index)
+    {
+        using var context = _dbProvider.CreateDbContext();
+        using var dbLock = _writeBehavior.AcquireReaderLock(context);
+        return context.Chapters.AsNoTracking()
+            .Select(e => (ChapterWithPath?)new ChapterWithPath(e, e.Item.Path))
+            .FirstOrDefault(e => e!.Chapter.ItemId.Equals(baseItemId) && e.Chapter.ChapterIndex == index);
+    }
+
     /// <inheritdoc />
     public IReadOnlyList<ChapterInfo> GetChapters(Guid baseItemId)
     {
+        return DoGetChapters(baseItemId)
+            .Select(e => Map(e.Chapter, e.BaseItemPath!))
+            .ToArray();
+    }
+
+    private ChapterWithPath[] DoGetChapters(Guid baseItemId)
+    {
         using var context = _dbProvider.CreateDbContext();
-        return context.Chapters.AsNoTracking().Where(e => e.ItemId.Equals(baseItemId))
-            .Select(e => new
-            {
-                chapter = e,
-                baseItemPath = e.Item.Path
-            })
-            .AsEnumerable()
-            .Select(e => Map(e.chapter, e.baseItemPath!))
+        using var dbLock = _writeBehavior.AcquireReaderLock(context);
+        return context.Chapters.AsNoTracking()
+            .Where(e => e.ItemId.Equals(baseItemId))
+            .Select(e => new ChapterWithPath(e, e.Item.Path))
             .ToArray();
     }
 
@@ -67,24 +76,24 @@ public class ChapterRepository : IChapterRepository
     public void SaveChapters(Guid itemId, IReadOnlyList<ChapterInfo> chapters)
     {
         using var context = _dbProvider.CreateDbContext();
-        using (var transaction = context.Database.BeginTransaction())
+        using var dbLock = _writeBehavior.AcquireWriterLock(context);
+        using var transaction = context.Database.BeginTransaction();
+        context.Chapters.Where(e => e.ItemId.Equals(itemId)).ExecuteDelete();
+        for (var i = 0; i < chapters.Count; i++)
         {
-            context.Chapters.Where(e => e.ItemId.Equals(itemId)).ExecuteDelete();
-            for (var i = 0; i < chapters.Count; i++)
-            {
-                var chapter = chapters[i];
-                context.Chapters.Add(Map(chapter, i, itemId));
-            }
-
-            context.SaveChanges();
-            transaction.Commit();
+            var chapter = chapters[i];
+            context.Chapters.Add(Map(chapter, i, itemId));
         }
+
+        context.SaveChanges();
+        transaction.Commit();
     }
 
     /// <inheritdoc />
     public void DeleteChapters(Guid itemId)
     {
         using var context = _dbProvider.CreateDbContext();
+        using var dbLock = _writeBehavior.AcquireWriterLock(context);
         context.Chapters.Where(c => c.ItemId.Equals(itemId)).ExecuteDelete();
         context.SaveChanges();
     }
@@ -120,4 +129,6 @@ public class ChapterRepository : IChapterRepository
 
         return chapterEntity;
     }
+
+    private record ChapterWithPath(Chapter Chapter, string? BaseItemPath);
 }

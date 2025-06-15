@@ -216,7 +216,7 @@ namespace Emby.Server.Implementations.Session
                 },
                 _logger);
 
-            _eventManager.Publish(new SessionEndedEventArgs(info));
+            await _eventManager.PublishAsync(new SessionEndedEventArgs(info));
 
             await info.DisposeAsync().ConfigureAwait(false);
         }

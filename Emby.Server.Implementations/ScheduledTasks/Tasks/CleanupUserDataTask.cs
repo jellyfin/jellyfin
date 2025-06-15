@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Locking;
 using Jellyfin.Server.Implementations.Item;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Tasks;
@@ -21,6 +22,7 @@ public class CleanupUserDataTask : IScheduledTask
 {
     private readonly ILocalizationManager _localization;
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
+    private readonly IEntityFrameworkDatabaseLockingBehavior _writeBehavior;
     private readonly ILogger<CleanupUserDataTask> _logger;
 
     /// <summary>
@@ -28,11 +30,13 @@ public class CleanupUserDataTask : IScheduledTask
     /// </summary>
     /// <param name="localization">The localisation Provider.</param>
     /// <param name="dbProvider">The DB context factory.</param>
+    /// <param name="writeBehavior">Instance of the <see cref="IEntityFrameworkDatabaseLockingBehavior"/> interface.</param>
     /// <param name="logger">A logger.</param>
-    public CleanupUserDataTask(ILocalizationManager localization, IDbContextFactory<JellyfinDbContext> dbProvider, ILogger<CleanupUserDataTask> logger)
+    public CleanupUserDataTask(ILocalizationManager localization, IDbContextFactory<JellyfinDbContext> dbProvider, IEntityFrameworkDatabaseLockingBehavior writeBehavior, ILogger<CleanupUserDataTask> logger)
     {
         _localization = localization;
         _dbProvider = dbProvider;
+        _writeBehavior = writeBehavior;
         _logger = logger;
     }
 
@@ -56,6 +60,7 @@ public class CleanupUserDataTask : IScheduledTask
         var dbContext = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (dbContext.ConfigureAwait(false))
         {
+            using var dbLock = await _writeBehavior.AcquireWriterLockAsync(dbContext, cancellationToken);
             var detachedUserData = dbContext.UserData.Where(e => e.ItemId == BaseItemRepository.PlaceholderId);
             _logger.LogInformation("There are {NoDetached} detached UserData entries.", detachedUserData.Count());
 
