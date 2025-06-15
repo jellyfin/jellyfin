@@ -206,7 +206,7 @@ public partial class AudioNormalizationTask : IScheduledTask
 
             try
             {
-                return await ReadLUFSAsync(process, sb, cancellationToken).WithTimeout(TimeSpan.FromMinutes(30));
+                return await ReadLUFSAsync(process, sb, cancellationToken).WaitAsync(TimeSpan.FromMinutes(30), cancellationToken);
             }
             catch (Exception ex)
             {
