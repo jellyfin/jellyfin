@@ -18,4 +18,10 @@ public class NewGroupRequestDto
     /// </summary>
     /// <value>The name of the new group.</value>
     public string GroupName { get; set; }
+
+    /// <summary>
+    /// Gets or sets the starting playback rate.
+    /// </summary>
+    /// <value>The starting playback rate.</value>
+    public float StartingPlaybackRate { get; set; }
 }
