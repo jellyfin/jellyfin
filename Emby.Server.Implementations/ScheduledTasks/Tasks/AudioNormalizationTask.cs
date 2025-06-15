@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -116,12 +117,18 @@ public partial class AudioNormalizationTask : IScheduledTask
                 {
                     a.LUFS = await CalculateLUFSAsync(
                         string.Format(CultureInfo.InvariantCulture, "-f concat -safe 0 -i \"{0}\"", tempFile),
-                        OperatingSystem.IsWindows(), // Wait for process to exit on Windows before we try deleting the concat file
                         cancellationToken).ConfigureAwait(false);
                 }
                 finally
                 {
-                    File.Delete(tempFile);
+                    try
+                    {
+                        File.Delete(tempFile);
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError(e, "Failed to delete {TempFile}", tempFile);
+                    }
                 }
             }
 
@@ -145,7 +152,6 @@ public partial class AudioNormalizationTask : IScheduledTask
 
                 t.LUFS = await CalculateLUFSAsync(
                     string.Format(CultureInfo.InvariantCulture, "-i \"{0}\"", t.Path.Replace("\"", "\\\"", StringComparison.Ordinal)),
-                    false,
                     cancellationToken).ConfigureAwait(false);
             }
 
@@ -163,7 +169,7 @@ public partial class AudioNormalizationTask : IScheduledTask
         };
     }
 
-    private async Task<float?> CalculateLUFSAsync(string inputArgs, bool waitForExit, CancellationToken cancellationToken)
+    private async Task<float?> CalculateLUFSAsync(string inputArgs, CancellationToken cancellationToken)
     {
         var args = $"-hide_banner {inputArgs} -af ebur128=framelog=verbose -f null -";
 
@@ -178,6 +184,13 @@ public partial class AudioNormalizationTask : IScheduledTask
             },
         })
         {
+            var sb = new StringBuilder();
+
+            process.ErrorDataReceived += (_, e) =>
+                {
+                    sb.AppendLine(e.Data);
+                };
+
             try
             {
                 _logger.LogDebug("Starting ffmpeg with arguments: {Arguments}", args);
@@ -189,29 +202,55 @@ public partial class AudioNormalizationTask : IScheduledTask
                 return null;
             }
 
-            using var reader = process.StandardError;
-            float? lufs = null;
-            await foreach (var line in reader.ReadAllLinesAsync(cancellationToken).ConfigureAwait(false))
+            process.BeginErrorReadLine();
+
+            try
             {
-                Match match = LUFSRegex().Match(line);
-                if (match.Success)
+                return await ReadLUFSAsync(process, sb, cancellationToken).WithTimeout(TimeSpan.FromMinutes(30));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error waiting for ffmpeg process to exit with arguments: {Arguments}", args);
+
+                try
                 {
-                    lufs = float.Parse(match.Groups[1].ValueSpan, CultureInfo.InvariantCulture.NumberFormat);
-                    break;
+                    if (!process.HasExited)
+                    {
+                        process.Kill(true);
+                        await process.WaitForExitAsync(cancellationToken);
+                    }
                 }
-            }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "Failed to kill ffmpeg process");
+                    throw;
+                }
 
-            if (lufs is null)
-            {
-                _logger.LogError("Failed to find LUFS value in output");
+                return null;
             }
-
-            if (waitForExit)
-            {
-                await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
-            }
-
-            return lufs;
         }
+    }
+
+    private async Task<float?> ReadLUFSAsync(Process process, StringBuilder sb, CancellationToken cancellationToken)
+    {
+        await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
+
+        float? lufs = null;
+        foreach (var line in sb.ToString().Split('\r', '\n'))
+        {
+            Match match = LUFSRegex().Match(line);
+            if (match.Success)
+            {
+                lufs = float.Parse(match.Groups[1].ValueSpan, CultureInfo.InvariantCulture.NumberFormat);
+                break;
+            }
+        }
+
+        if (lufs is null)
+        {
+            _logger.LogError("Failed to find LUFS value in output");
+        }
+
+        return lufs;
     }
 }
