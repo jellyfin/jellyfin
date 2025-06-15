@@ -92,11 +92,12 @@ public partial class AudioNormalizationTask : IScheduledTask
 
             foreach (var a in albums)
             {
-                // Skip albums that don't have multiple tracks, album gain is useless here
                 if (!a.NormalizationGain.HasValue && !a.LUFS.HasValue)
                 {
                     // Album gain
                     var albumTracks = ((MusicAlbum)a).Tracks.Where(x => x.IsFileProtocol).ToList();
+
+                    // Skip albums that don't have multiple tracks, album gain is useless here
                     if (albumTracks.Count > 1)
                     {
                         _logger.LogInformation("Calculating LUFS for album: {Album} with id: {Id}", a.Name, a.Id);
