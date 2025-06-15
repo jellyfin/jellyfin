@@ -104,34 +104,30 @@ public partial class AudioNormalizationTask : IScheduledTask
 
             foreach (var a in albums)
             {
-                if (a.NormalizationGain.HasValue || a.LUFS.HasValue)
-                {
-                    continue;
-                }
-
                 // Skip albums that don't have multiple tracks, album gain is useless here
-                var albumTracks = ((MusicAlbum)a).Tracks.Where(x => x.IsFileProtocol).ToList();
-                if (albumTracks.Count <= 1)
+                if (!a.NormalizationGain.HasValue && !a.LUFS.HasValue)
                 {
-                    continue;
-                }
-
-                _logger.LogInformation("Calculating LUFS for album: {Album} with id: {Id}", a.Name, a.Id);
-                var tempDir = _applicationPaths.TempDirectory;
-                Directory.CreateDirectory(tempDir);
-                var tempFile = Path.Join(tempDir, a.Id + ".concat");
-                var inputLines = albumTracks.Select(x => string.Format(CultureInfo.InvariantCulture, "file '{0}'", x.Path.Replace("'", @"'\''", StringComparison.Ordinal)));
-                await File.WriteAllLinesAsync(tempFile, inputLines, cancellationToken).ConfigureAwait(false);
-                try
-                {
-                    a.LUFS = await CalculateLUFSAsync(
-                        string.Format(CultureInfo.InvariantCulture, "-f concat -safe 0 -i \"{0}\"", tempFile),
-                        OperatingSystem.IsWindows(), // Wait for process to exit on Windows before we try deleting the concat file
-                        cancellationToken).ConfigureAwait(false);
-                }
-                finally
-                {
-                    File.Delete(tempFile);
+                    var albumTracks = ((MusicAlbum)a).Tracks.Where(x => x.IsFileProtocol).ToList();
+                    if (albumTracks.Count > 1)
+                    {
+                        _logger.LogInformation("Calculating LUFS for album: {Album} with id: {Id}", a.Name, a.Id);
+                        var tempDir = _applicationPaths.TempDirectory;
+                        Directory.CreateDirectory(tempDir);
+                        var tempFile = Path.Join(tempDir, a.Id + ".concat");
+                        var inputLines = albumTracks.Select(x => string.Format(CultureInfo.InvariantCulture, "file '{0}'", x.Path.Replace("'", @"'\''", StringComparison.Ordinal)));
+                        await File.WriteAllLinesAsync(tempFile, inputLines, cancellationToken).ConfigureAwait(false);
+                        try
+                        {
+                            a.LUFS = await CalculateLUFSAsync(
+                                string.Format(CultureInfo.InvariantCulture, "-f concat -safe 0 -i \"{0}\"", tempFile),
+                                OperatingSystem.IsWindows(), // Wait for process to exit on Windows before we try deleting the concat file
+                                cancellationToken).ConfigureAwait(false);
+                        }
+                        finally
+                        {
+                            File.Delete(tempFile);
+                        }
+                    }
                 }
 
                 // Update progress
@@ -158,15 +154,13 @@ public partial class AudioNormalizationTask : IScheduledTask
             var tracksComplete = 0;
             foreach (var t in tracks)
             {
-                if (t.NormalizationGain.HasValue || t.LUFS.HasValue || !t.IsFileProtocol)
+                if (!t.NormalizationGain.HasValue && !t.LUFS.HasValue && t.IsFileProtocol)
                 {
-                    continue;
+                    t.LUFS = await CalculateLUFSAsync(
+                        string.Format(CultureInfo.InvariantCulture, "-i \"{0}\"", t.Path.Replace("\"", "\\\"", StringComparison.Ordinal)),
+                        false,
+                        cancellationToken).ConfigureAwait(false);
                 }
-
-                t.LUFS = await CalculateLUFSAsync(
-                    string.Format(CultureInfo.InvariantCulture, "-i \"{0}\"", t.Path.Replace("\"", "\\\"", StringComparison.Ordinal)),
-                    false,
-                    cancellationToken).ConfigureAwait(false);
 
                 // Update progress
                 tracksComplete++;
