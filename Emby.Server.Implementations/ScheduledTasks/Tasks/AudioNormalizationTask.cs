@@ -83,94 +83,82 @@ public partial class AudioNormalizationTask : IScheduledTask
         foreach (var library in _libraryManager.RootFolder.Children)
         {
             var libraryOptions = _libraryManager.GetLibraryOptions(library);
-            if (!libraryOptions.EnableLUFSScan)
+            if (libraryOptions.EnableLUFSScan)
             {
-                continue;
-            }
+                var albums = _libraryManager.GetItemList(new InternalItemsQuery { IncludeItemTypes = [BaseItemKind.MusicAlbum], Parent = library, Recursive = true });
 
-            // Album gain
-            var albums = _libraryManager.GetItemList(new InternalItemsQuery
-            {
-                IncludeItemTypes = [BaseItemKind.MusicAlbum],
-                Parent = library,
-                Recursive = true
-            });
+                double nextPercent = numComplete + 1;
+                nextPercent /= numlibraries;
+                nextPercent -= percent;
+                nextPercent /= 2;
+                var albumComplete = 0;
 
-            double nextPercent = numComplete + 1;
-            nextPercent /= numlibraries;
-            nextPercent -= percent;
-            nextPercent /= 2;
-            var albumComplete = 0;
-
-            foreach (var a in albums)
-            {
-                // Skip albums that don't have multiple tracks, album gain is useless here
-                if (!a.NormalizationGain.HasValue && !a.LUFS.HasValue)
+                foreach (var a in albums)
                 {
-                    var albumTracks = ((MusicAlbum)a).Tracks.Where(x => x.IsFileProtocol).ToList();
-                    if (albumTracks.Count > 1)
+                    // Skip albums that don't have multiple tracks, album gain is useless here
+                    if (!a.NormalizationGain.HasValue && !a.LUFS.HasValue)
                     {
-                        _logger.LogInformation("Calculating LUFS for album: {Album} with id: {Id}", a.Name, a.Id);
-                        var tempDir = _applicationPaths.TempDirectory;
-                        Directory.CreateDirectory(tempDir);
-                        var tempFile = Path.Join(tempDir, a.Id + ".concat");
-                        var inputLines = albumTracks.Select(x => string.Format(CultureInfo.InvariantCulture, "file '{0}'", x.Path.Replace("'", @"'\''", StringComparison.Ordinal)));
-                        await File.WriteAllLinesAsync(tempFile, inputLines, cancellationToken).ConfigureAwait(false);
-                        try
+                        // Album gain
+                        var albumTracks = ((MusicAlbum)a).Tracks.Where(x => x.IsFileProtocol).ToList();
+                        if (albumTracks.Count > 1)
                         {
-                            a.LUFS = await CalculateLUFSAsync(
-                                string.Format(CultureInfo.InvariantCulture, "-f concat -safe 0 -i \"{0}\"", tempFile),
-                                OperatingSystem.IsWindows(), // Wait for process to exit on Windows before we try deleting the concat file
-                                cancellationToken).ConfigureAwait(false);
-                        }
-                        finally
-                        {
-                            File.Delete(tempFile);
+                            _logger.LogInformation("Calculating LUFS for album: {Album} with id: {Id}", a.Name, a.Id);
+                            var tempDir = _applicationPaths.TempDirectory;
+                            Directory.CreateDirectory(tempDir);
+                            var tempFile = Path.Join(tempDir, a.Id + ".concat");
+                            var inputLines = albumTracks.Select(x => string.Format(CultureInfo.InvariantCulture, "file '{0}'", x.Path.Replace("'", @"'\''", StringComparison.Ordinal)));
+                            await File.WriteAllLinesAsync(tempFile, inputLines, cancellationToken).ConfigureAwait(false);
+                            try
+                            {
+                                a.LUFS = await CalculateLUFSAsync(
+                                    string.Format(CultureInfo.InvariantCulture, "-f concat -safe 0 -i \"{0}\"", tempFile),
+                                    OperatingSystem.IsWindows(), // Wait for process to exit on Windows before we try deleting the concat file
+                                    cancellationToken).ConfigureAwait(false);
+                            }
+                            finally
+                            {
+                                File.Delete(tempFile);
+                            }
                         }
                     }
+
+                    // Update progress
+                    albumComplete++;
+                    double albumPercent = albumComplete;
+                    albumPercent /= albums.Count;
+
+                    progress.Report(100 * (percent + (albumPercent * nextPercent)));
                 }
 
-                // Update progress
-                albumComplete++;
-                double albumPercent = albumComplete;
-                albumPercent /= albums.Count;
+                percent += nextPercent;
 
-                progress.Report(100 * (percent + (albumPercent * nextPercent)));
-            }
+                _itemRepository.SaveItems(albums, cancellationToken);
 
-            percent += nextPercent;
+                // Track gain
+                var tracks = _libraryManager.GetItemList(new InternalItemsQuery { MediaTypes = [MediaType.Audio], IncludeItemTypes = [BaseItemKind.Audio], Parent = library, Recursive = true });
 
-            _itemRepository.SaveItems(albums, cancellationToken);
-
-            // Track gain
-            var tracks = _libraryManager.GetItemList(new InternalItemsQuery
-            {
-                MediaTypes = [MediaType.Audio],
-                IncludeItemTypes = [BaseItemKind.Audio],
-                Parent = library,
-                Recursive = true
-            });
-
-            var tracksComplete = 0;
-            foreach (var t in tracks)
-            {
-                if (!t.NormalizationGain.HasValue && !t.LUFS.HasValue && t.IsFileProtocol)
+                var tracksComplete = 0;
+                foreach (var t in tracks)
                 {
-                    t.LUFS = await CalculateLUFSAsync(
-                        string.Format(CultureInfo.InvariantCulture, "-i \"{0}\"", t.Path.Replace("\"", "\\\"", StringComparison.Ordinal)),
-                        false,
-                        cancellationToken).ConfigureAwait(false);
+                    if (!t.NormalizationGain.HasValue && !t.LUFS.HasValue && t.IsFileProtocol)
+                    {
+                        t.LUFS = await CalculateLUFSAsync(
+                            string.Format(CultureInfo.InvariantCulture, "-i \"{0}\"", t.Path.Replace("\"", "\\\"", StringComparison.Ordinal)),
+                            false,
+                            cancellationToken).ConfigureAwait(false);
+                    }
+
+                    // Update progress
+                    tracksComplete++;
+                    double trackPercent = tracksComplete;
+                    trackPercent /= tracks.Count;
+
+                    progress.Report(100 * (percent + (trackPercent * nextPercent)));
                 }
 
-                // Update progress
-                tracksComplete++;
-                double trackPercent = tracksComplete;
-                trackPercent /= tracks.Count;
-
-                progress.Report(100 * (percent + (trackPercent * nextPercent)));
+                _itemRepository.SaveItems(tracks, cancellationToken);
             }
 
-            _itemRepository.SaveItems(tracks, cancellationToken);
 
             // Update progress
             numComplete++;
