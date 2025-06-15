@@ -43,6 +43,7 @@ namespace MediaBrowser.Model.Dlna
                 }
             }
 
+            // Our reference bitrate is based on SDR h264 at 30fps
             var referenceFps = targetFps ?? 30.0f;
             var referenceScale = referenceFps <= 30.0f
                 ? 30.0f / referenceFps
