@@ -201,17 +201,14 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 foreach (var albumArtist in albumArtists)
                 {
-                    var name = albumArtist.Trim();
-                    if (string.IsNullOrEmpty(name))
+                    if (!string.IsNullOrWhiteSpace(albumArtist))
                     {
-                        continue;
+                        PeopleHelper.AddPerson(people, new PersonInfo
+                        {
+                            Name = albumArtist,
+                            Type = PersonKind.AlbumArtist
+                        });
                     }
-
-                    PeopleHelper.AddPerson(people, new PersonInfo
-                    {
-                        Name = name,
-                        Type = PersonKind.AlbumArtist
-                    });
                 }
 
                 string[]? performers = null;
@@ -236,34 +233,28 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 foreach (var performer in performers)
                 {
-                    var name = performer.Trim();
-                    if (string.IsNullOrEmpty(name))
+                    if (!string.IsNullOrWhiteSpace(performer))
                     {
-                        continue;
+                        PeopleHelper.AddPerson(people, new PersonInfo
+                        {
+                            Name = performer,
+                            Type = PersonKind.Artist
+                        });
                     }
-
-                    PeopleHelper.AddPerson(people, new PersonInfo
-                    {
-                        Name = name,
-                        Type = PersonKind.Artist
-                    });
                 }
 
                 if (!string.IsNullOrWhiteSpace(trackComposer))
                 {
                     foreach (var composer in trackComposer.Split(InternalValueSeparator))
                     {
-                        var name = composer.Trim();
-                        if (string.IsNullOrEmpty(name))
+                        if (!string.IsNullOrWhiteSpace(composer))
                         {
-                            continue;
+                            PeopleHelper.AddPerson(people, new PersonInfo
+                            {
+                                Name = composer,
+                                Type = PersonKind.Composer
+                            });
                         }
-
-                        PeopleHelper.AddPerson(people, new PersonInfo
-                        {
-                            Name = name,
-                            Type = PersonKind.Composer
-                        });
                     }
                 }
 
