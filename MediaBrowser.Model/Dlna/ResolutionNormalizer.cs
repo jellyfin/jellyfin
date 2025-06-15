@@ -43,7 +43,11 @@ namespace MediaBrowser.Model.Dlna
                 }
             }
 
-            var referenceBitrate = h264EquivalentOutputBitrate * (30.0f / (targetFps ?? 30.0f));
+            var referenceFps = targetFps ?? 30.0f;
+            var referenceScale = referenceFps <= 30.0f
+                ? 30.0f / referenceFps
+                : 1.0f / MathF.Sqrt(referenceFps / 30.0f);
+            var referenceBitrate = h264EquivalentOutputBitrate * referenceScale;
 
             if (isHdr)
             {
