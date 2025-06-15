@@ -516,9 +516,15 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 foreach (var person in data.People)
                 {
+                    var name = person.Name.Trim();
+                    if (string.IsNullOrEmpty(name))
+                    {
+                        continue;
+                    }
+
                     PeopleHelper.AddPerson(people, new PersonInfo
                     {
-                        Name = person.Name.Trim(),
+                        Name = name,
                         Type = person.Type,
                         Role = person.Role.Trim()
                     });
