@@ -26,7 +26,7 @@ public class MigrateLibraryDbCompatibilityCheck : IAsyncMigrationRoutine
     /// </summary>
     /// <param name="startupLogger">The startup logger.</param>
     /// <param name="paths">The Path service.</param>
-    public MigrateLibraryDbCompatibilityCheck(IStartupLogger startupLogger, IServerApplicationPaths paths)
+    public MigrateLibraryDbCompatibilityCheck(IStartupLogger<MigrateLibraryDbCompatibilityCheck> startupLogger, IServerApplicationPaths paths)
     {
         _logger = startupLogger;
         _paths = paths;

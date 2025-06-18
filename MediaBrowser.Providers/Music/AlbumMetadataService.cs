@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -29,14 +32,16 @@ public class AlbumMetadataService : MetadataService<MusicAlbum, AlbumInfo>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="externalDataManager">Instance of the <see cref="IExternalDataManager"/> interface.</param>
+    /// <param name="itemRepository">Instance of the <see cref="IItemRepository"/> interface.</param>
     public AlbumMetadataService(
         IServerConfigurationManager serverConfigurationManager,
         ILogger<AlbumMetadataService> logger,
         IProviderManager providerManager,
         IFileSystem fileSystem,
         ILibraryManager libraryManager,
-        IExternalDataManager externalDataManager)
-        : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager, externalDataManager)
+        IExternalDataManager externalDataManager,
+        IItemRepository itemRepository)
+        : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager, externalDataManager, itemRepository)
     {
     }
 
@@ -52,6 +57,16 @@ public class AlbumMetadataService : MetadataService<MusicAlbum, AlbumInfo>
     /// <inheritdoc />
     protected override IReadOnlyList<BaseItem> GetChildrenForMetadataUpdates(MusicAlbum item)
         => item.GetRecursiveChildren(i => i is Audio);
+
+    /// <inheritdoc />
+    protected override Task AfterMetadataRefresh(MusicAlbum item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
+    {
+        base.AfterMetadataRefresh(item, refreshOptions, cancellationToken);
+
+        SetPeople(item);
+
+        return Task.CompletedTask;
+    }
 
     /// <inheritdoc />
     protected override ItemUpdateType UpdateMetadataFromChildren(MusicAlbum item, IReadOnlyList<BaseItem> children, bool isFullRefresh, ItemUpdateType currentUpdateType)
@@ -83,7 +98,6 @@ public class AlbumMetadataService : MetadataService<MusicAlbum, AlbumInfo>
             updateType |= SetArtistsFromSongs(item, songs);
             updateType |= SetAlbumArtistFromSongs(item, songs);
             updateType |= SetAlbumFromSongs(item, songs);
-            updateType |= SetPeople(item);
         }
 
         return updateType;
@@ -178,10 +192,8 @@ public class AlbumMetadataService : MetadataService<MusicAlbum, AlbumInfo>
         }
     }
 
-    private ItemUpdateType SetPeople(MusicAlbum item)
+    private void SetPeople(MusicAlbum item)
     {
-        var updateType = ItemUpdateType.None;
-
         if (item.AlbumArtists.Any() || item.Artists.Any())
         {
             var people = new List<PersonInfo>();
@@ -205,10 +217,7 @@ public class AlbumMetadataService : MetadataService<MusicAlbum, AlbumInfo>
             }
 
             LibraryManager.UpdatePeople(item, people);
-            updateType |= ItemUpdateType.MetadataEdit;
         }
-
-        return updateType;
     }
 
     /// <inheritdoc />

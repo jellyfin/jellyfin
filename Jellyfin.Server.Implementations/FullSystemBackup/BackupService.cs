@@ -292,12 +292,12 @@ public class BackupService : IBackupService
                 var historyRepository = dbContext.GetService<IHistoryRepository>();
                 var migrations = await historyRepository.GetAppliedMigrationsAsync().ConfigureAwait(false);
 
-                ICollection<(Type Type, Func<IAsyncEnumerable<object>> ValueFactory)> entityTypes = [
+                ICollection<(Type Type, string SourceName, Func<IAsyncEnumerable<object>> ValueFactory)> entityTypes = [
                     .. typeof(JellyfinDbContext)
                     .GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
                     .Where(e => e.PropertyType.IsAssignableTo(typeof(IQueryable)))
-                    .Select(e => (Type: e.PropertyType, ValueFactory: new Func<IAsyncEnumerable<object>>(() => GetValues((IQueryable)e.GetValue(dbContext)!, e.PropertyType)))),
-                    (Type: typeof(HistoryRow), ValueFactory: new Func<IAsyncEnumerable<object>>(() => migrations.ToAsyncEnumerable()))
+                    .Select(e => (Type: e.PropertyType, dbContext.Model.FindEntityType(e.PropertyType.GetGenericArguments()[0])!.GetSchemaQualifiedTableName()!, ValueFactory: new Func<IAsyncEnumerable<object>>(() => GetValues((IQueryable)e.GetValue(dbContext)!, e.PropertyType)))),
+                    (Type: typeof(HistoryRow), SourceName: nameof(HistoryRow), ValueFactory: new Func<IAsyncEnumerable<object>>(() => migrations.ToAsyncEnumerable()))
                 ];
                 manifest.DatabaseTables = entityTypes.Select(e => e.Type.Name).ToArray();
                 var transaction = await dbContext.Database.BeginTransactionAsync().ConfigureAwait(false);
@@ -308,8 +308,8 @@ public class BackupService : IBackupService
 
                     foreach (var entityType in entityTypes)
                     {
-                        _logger.LogInformation("Begin backup of entity {Table}", entityType.Type.Name);
-                        var zipEntry = zipArchive.CreateEntry($"Database\\{entityType.Type.Name}.json");
+                        _logger.LogInformation("Begin backup of entity {Table}", entityType.SourceName);
+                        var zipEntry = zipArchive.CreateEntry($"Database\\{entityType.SourceName}.json");
                         var entities = 0;
                         var zipEntryStream = zipEntry.Open();
                         await using (zipEntryStream.ConfigureAwait(false))

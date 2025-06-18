@@ -2002,9 +2002,10 @@ namespace MediaBrowser.Controller.Entities
             }
 
             // Remove from file system
-            if (info.IsLocalFile)
+            var path = info.Path;
+            if (info.IsLocalFile && !string.IsNullOrWhiteSpace(path))
             {
-                FileSystem.DeleteFile(info.Path);
+                FileSystem.DeleteFile(path);
             }
 
             // Remove from item
