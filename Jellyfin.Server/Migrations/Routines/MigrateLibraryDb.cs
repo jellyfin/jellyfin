@@ -183,12 +183,12 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 
             using (new TrackedMigrationStep("loading UserData", _logger))
             {
-                var users = operation.JellyfinDbContext.Users.AsNoTracking().ToImmutableArray();
+                var users = operation.JellyfinDbContext.Users.AsNoTracking().ToArray();
                 var userIdBlacklist = new HashSet<int>();
 
                 foreach (var entity in queryResult)
                 {
-                    var userData = GetUserData(users, entity, userIdBlacklist);
+                    var userData = GetUserData(users, entity, userIdBlacklist, _logger);
                     if (userData is null)
                     {
                         var userDataId = entity.GetString(0);
@@ -212,8 +212,6 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
                     userData.ItemId = refItem.Id;
                     operation.JellyfinDbContext.UserData.Add(userData);
                 }
-
-                users.Clear();
             }
 
             legacyBaseItemWithUserKeys.Clear();
@@ -404,7 +402,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         return new DatabaseMigrationStep(dbContext, operationName, _logger);
     }
 
-    private UserData? GetUserData(ImmutableArray<User> users, SqliteDataReader dto, HashSet<int> userIdBlacklist)
+    internal static UserData? GetUserData(User[] users, SqliteDataReader dto, HashSet<int> userIdBlacklist, ILogger logger)
     {
         var internalUserId = dto.GetInt32(1);
         var user = users.FirstOrDefault(e => e.InternalId == internalUserId);
@@ -416,7 +414,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
                 return null;
             }
 
-            _logger.LogError("Tried to find user with index '{Idx}' but there are only '{MaxIdx}' users.", internalUserId, users.Length);
+            logger.LogError("Tried to find user with index '{Idx}' but there are only '{MaxIdx}' users.", internalUserId, users.Length);
             return null;
         }
 
