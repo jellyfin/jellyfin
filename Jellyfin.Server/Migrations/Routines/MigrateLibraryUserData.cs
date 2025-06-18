@@ -83,7 +83,7 @@ internal class MigrateLibraryUserData : IAsyncMigrationRoutine
                 dbContext.UserData.Add(userData);
             }
 
-            _logger.LogInformation("try saving {NewSaved} UserData entries", dbContext.UserData.Local.Count);
+            _logger.LogInformation("Try saving {NewSaved} UserData entries.", dbContext.UserData.Local.Count);
             await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
     }
