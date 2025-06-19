@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using SkiaSharp;
 
 namespace Jellyfin.Drawing.Skia;
@@ -27,7 +28,14 @@ public static class SkiaHelper
                 currentIndex = 0;
             }
 
-            SKBitmap? bitmap = skiaEncoder.Decode(paths[currentIndex], false, null, out _);
+            var imagePath = paths[currentIndex];
+            if (Path.Exists(imagePath))
+            {
+                currentIndex++;
+                continue;
+            }
+
+            SKBitmap? bitmap = skiaEncoder.Decode(imagePath, false, null, out _);
 
             imagesTested[currentIndex] = 0;
 
