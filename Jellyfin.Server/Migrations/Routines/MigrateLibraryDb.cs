@@ -224,7 +224,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             }
         }
 
-        using (var operation = GetPreparedDbContext("moving MediaStreamInfos"))
+        using (var operation = GetPreparedDbContext("Moving MediaStreamInfos"))
         {
             const string mediaStreamQuery =
             """
