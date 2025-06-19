@@ -2991,13 +2991,12 @@ namespace Emby.Server.Implementations.Library
                     {
                         var path = Person.GetPath(person.Name);
                         var info = Directory.CreateDirectory(path);
-                        var lastWriteTime = info.LastWriteTimeUtc;
                         personEntity = new Person()
                         {
                             Name = person.Name,
                             Id = GetItemByNameId<Person>(path),
                             DateCreated = info.CreationTimeUtc,
-                            DateModified = lastWriteTime,
+                            DateModified = info.LastWriteTimeUtc,
                             Path = path
                         };
 

@@ -73,11 +73,11 @@ namespace MediaBrowser.Providers.Manager
 
         public virtual int Order => 0;
 
-        private FileSystemMetadata TryGetFile(string path, IDirectoryService directoryService)
+        private FileSystemMetadata TryGetFileSystemMetadata(string path, IDirectoryService directoryService)
         {
             try
             {
-                return directoryService.GetFile(path);
+                return directoryService.GetFileSystemEntry(path);
             }
             catch (Exception ex)
             {
@@ -225,7 +225,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     if (item.IsFileProtocol)
                     {
-                        var file = TryGetFile(item.Path, refreshOptions.DirectoryService);
+                        var file = TryGetFileSystemMetadata(item.Path, refreshOptions.DirectoryService);
                         if (file is not null)
                         {
                             item.DateModified = file.LastWriteTimeUtc;

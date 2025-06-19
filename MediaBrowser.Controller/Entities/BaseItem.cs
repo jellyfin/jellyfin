@@ -1429,17 +1429,10 @@ namespace MediaBrowser.Controller.Entities
             }
 
             var info = FileSystem.GetFileSystemInfo(Path);
-            if (info.Exists)
-            {
-                if (info.IsDirectory)
-                {
-                    return info.LastWriteTimeUtc != DateModified;
-                }
 
-                return info.LastWriteTimeUtc != DateModified;
-            }
-
-            return false;
+            return info.Exists
+                ? info.LastWriteTimeUtc != DateModified
+                : false;
         }
 
         public virtual List<string> GetUserDataKeys()
