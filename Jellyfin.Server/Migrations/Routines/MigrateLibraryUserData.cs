@@ -1,3 +1,5 @@
+#pragma warning disable RS0030 // Do not use banned APIs
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -50,6 +52,21 @@ internal class MigrateLibraryUserData : IAsyncMigrationRoutine
         var dbContext = await _provider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (dbContext.ConfigureAwait(false))
         {
+            if (!await dbContext.BaseItems.AnyAsync(e => e.Id == BaseItemRepository.PlaceholderId, cancellationToken).ConfigureAwait(false))
+            {
+                // the placeholder baseitem has been deleted by the librarydb migration so we need to readd it.
+                await dbContext.BaseItems.AddAsync(
+                    new Database.Implementations.Entities.BaseItemEntity()
+                    {
+                        Id = BaseItemRepository.PlaceholderId,
+                        Type = "PLACEHOLDER",
+                        Name = "This is a placeholder item for UserData that has been detacted from its original item"
+                    },
+                    cancellationToken)
+                    .ConfigureAwait(false);
+                await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            }
+
             var users = dbContext.Users.AsNoTracking().ToArray();
             var userIdBlacklist = new HashSet<int>();
             using var connection = new SqliteConnection($"Filename={libraryDbPath};Mode=ReadOnly");
