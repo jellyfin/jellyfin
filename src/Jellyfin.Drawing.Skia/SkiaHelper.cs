@@ -29,7 +29,7 @@ public static class SkiaHelper
             }
 
             var imagePath = paths[currentIndex];
-            if (Path.Exists(imagePath))
+            if (!Path.Exists(imagePath))
             {
                 currentIndex++;
                 continue;
