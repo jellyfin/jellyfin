@@ -2097,8 +2097,6 @@ namespace Emby.Server.Implementations.Library
                 await ProviderManager.SaveMetadataAsync(item, updateReason).ConfigureAwait(false);
             }
 
-            item.DateLastSaved = DateTime.UtcNow;
-
             await UpdateImagesAsync(item, updateReason >= ItemUpdateType.ImageUpdate).ConfigureAwait(false);
         }
 
