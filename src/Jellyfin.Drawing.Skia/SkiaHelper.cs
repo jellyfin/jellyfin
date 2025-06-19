@@ -28,18 +28,16 @@ public static class SkiaHelper
                 currentIndex = 0;
             }
 
+            imagesTested[currentIndex] = 0;
+            currentIndex++;
+
             var imagePath = paths[currentIndex];
             if (!Path.Exists(imagePath))
             {
-                currentIndex++;
                 continue;
             }
 
             SKBitmap? bitmap = skiaEncoder.Decode(imagePath, false, null, out _);
-
-            imagesTested[currentIndex] = 0;
-
-            currentIndex++;
 
             if (bitmap is not null)
             {
