@@ -4442,6 +4442,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var swapOutputWandH = doVppTranspose && swapWAndH;
                 var hwScaleFilter = GetHwScaleFilter("vpp", "qsv", outFormat, swapOutputWandH, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
 
+                // d3d11va doesn't support dynamic pool size, use vpp filter ctx to relay
+                // to prevent encoder async and bframes from exhausting the decoder pool.
+                if (!string.IsNullOrEmpty(hwScaleFilter) && isD3d11vaDecoder)
+                {
+                    hwScaleFilter += ":passthrough=0";
+                }
+
                 if (!string.IsNullOrEmpty(hwScaleFilter) && doVppTranspose)
                 {
                     hwScaleFilter += $":transpose={transposeDir}";
