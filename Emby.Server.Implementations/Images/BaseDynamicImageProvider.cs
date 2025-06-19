@@ -48,8 +48,6 @@ namespace Emby.Server.Implementations.Images
         /// <inheritdoc />
         public string Name => "Dynamic Image Provider";
 
-        protected virtual int MaxImageAgeDays => 7;
-
         public int Order => 0;
 
         protected virtual bool Supports(BaseItem item) => true;
