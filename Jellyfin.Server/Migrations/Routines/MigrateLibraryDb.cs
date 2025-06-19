@@ -176,7 +176,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         {
             var queryResult = connection.Query(
             """
-            SELECT key, userId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex FROM UserDatas
+            SELECT key, userId, rating, played, playCount, isFavorite, isHiddenByUser, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex FROM UserDatas
 
             WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.UserDataKey = UserDatas.key)
             """);
@@ -431,6 +431,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             Played = dto.GetBoolean(3),
             PlayCount = dto.GetInt32(4),
             IsFavorite = dto.GetBoolean(5),
+            IsHiddenByUser = false, // Todo: The old library did not have a hidden flag. or whatever
             PlaybackPositionTicks = dto.GetInt64(6),
             LastPlayedDate = dto.IsDBNull(7) ? null : dto.GetDateTime(7),
             AudioStreamIndex = dto.IsDBNull(8) ? null : dto.GetInt32(8),

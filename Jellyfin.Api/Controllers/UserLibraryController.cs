@@ -297,6 +297,100 @@ public class UserLibraryController : BaseJellyfinApiController
         => UnmarkFavoriteItem(userId, itemId);
 
     /// <summary>
+    /// Marks an item as a hidden by the user.
+    /// </summary>
+    /// <param name="userId">User id.</param>
+    /// <param name="itemId">Item id.</param>
+    /// <response code="200">Item marked as hidden by the user.</response>
+    /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
+    [HttpPost("UserHiddenItems/{itemId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public ActionResult<UserItemDataDto> MarkHiddenItem(
+        [FromQuery] Guid? userId,
+        [FromRoute, Required] Guid itemId)
+    {
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = _userManager.GetUserById(userId.Value);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        var item = itemId.IsEmpty()
+            ? _libraryManager.GetUserRootFolder()
+            : _libraryManager.GetItemById<BaseItem>(itemId, user);
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        return MarkHidden(user, item, true);
+    }
+
+    /// <summary>
+    /// Marks an item as a hidden by the user.
+    /// </summary>
+    /// <param name="userId">User id.</param>
+    /// <param name="itemId">Item id.</param>
+    /// <response code="200">Item marked as hidden.</response>
+    /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
+    [HttpPost("Users/{userId}/HiddenItems/{itemId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Obsolete("Kept for backwards compatibility")]
+    [ApiExplorerSettings(IgnoreApi = true)]
+    public ActionResult<UserItemDataDto> MarkHiddenItemLegacy(
+        [FromRoute, Required] Guid userId,
+        [FromRoute, Required] Guid itemId)
+        => MarkHiddenItem(userId, itemId);
+
+    /// <summary>
+    /// Unmarks item as a hidden by the user.
+    /// </summary>
+    /// <param name="userId">User id.</param>
+    /// <param name="itemId">Item id.</param>
+    /// <response code="200">Item unmarked as hidden.</response>
+    /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
+    [HttpDelete("UserHiddenItems/{itemId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public ActionResult<UserItemDataDto> UnmarkHiddenItem(
+        [FromQuery] Guid? userId,
+        [FromRoute, Required] Guid itemId)
+    {
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = _userManager.GetUserById(userId.Value);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        var item = itemId.IsEmpty()
+            ? _libraryManager.GetUserRootFolder()
+            : _libraryManager.GetItemById<BaseItem>(itemId, user);
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        return MarkHidden(user, item, false);
+    }
+
+    /// <summary>
+    /// Unmarks item as a hidden by the user.
+    /// </summary>
+    /// <param name="userId">User id.</param>
+    /// <param name="itemId">Item id.</param>
+    /// <response code="200">Item unmarked as hidden.</response>
+    /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
+    [HttpDelete("Users/{userId}/HiddenItems/{itemId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Obsolete("Kept for backwards compatibility")]
+    [ApiExplorerSettings(IgnoreApi = true)]
+    public ActionResult<UserItemDataDto> UnmarkHiddenItemLegacy(
+        [FromRoute, Required] Guid userId,
+        [FromRoute, Required] Guid itemId)
+        => UnmarkHiddenItem(userId, itemId);
+
+    /// <summary>
     /// Deletes a user's saved personal rating for an item.
     /// </summary>
     /// <param name="userId">User id.</param>
@@ -666,6 +760,28 @@ public class UserLibraryController : BaseJellyfinApiController
         {
             // Set favorite status
             data.IsFavorite = isFavorite;
+
+            _userDataRepository.SaveUserData(user, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
+        }
+
+        return _userDataRepository.GetUserDataDto(item, user)!;
+    }
+
+    /// <summary>
+    /// Marks as hidden.
+    /// </summary>
+    /// <param name="user">The user.</param>
+    /// <param name="item">The item.</param>
+    /// <param name="isHiddenByUser">if set to <c>true</c> [is hidden].</param>
+    private UserItemDataDto MarkHidden(User user, BaseItem item, bool isHiddenByUser)
+    {
+        // Get the user data for this item
+        var data = _userDataRepository.GetUserData(user, item);
+
+        if (data is not null)
+        {
+            // Set hidden status
+            data.IsHiddenByUser = isHiddenByUser;
 
             _userDataRepository.SaveUserData(user, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
         }
