@@ -157,6 +157,11 @@ namespace MediaBrowser.Model.Dto
         public string ChannelName { get; set; }
 
         /// <summary>
+        /// Gets or sets the channel group.
+        /// </summary>
+        public string ChannelGroup { get; set; }
+
+        /// <summary>
         /// Gets or sets the overview.
         /// </summary>
         /// <value>The overview.</value>
