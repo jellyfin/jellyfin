@@ -123,7 +123,7 @@ public class FixDates : IAsyncMigrationRoutine
             return null;
         }
 
-        if (dateTime == default)
+        if (dateTime == DateTime.MinValue)
         {
             return DateTimeOffset.MinValue.UtcDateTime;
         }
