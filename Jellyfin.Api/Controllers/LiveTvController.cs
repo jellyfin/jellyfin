@@ -218,12 +218,17 @@ public class LiveTvController : BaseJellyfinApiController
     /// Gets live tv channel groups.
     /// </summary>
     /// <param name="userId">Optional. Filter by user and attach user data.</param>
+    /// <param name="startIndex">Optional. The index of the first channel to return within each group.</param>
+    /// <param name="limit">Optional. The maximum number of channels to return for each group.</param>
     /// <response code="200">Channel groups returned.</response>
     /// <returns>An <see cref="OkResult"/> containing the channel groups.</returns>
     [HttpGet("Channels/Groups")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Authorize(Policy = Policies.LiveTvAccess)]
-    public ActionResult<IEnumerable<ChannelGroupDto>> GetChannelGroups([FromQuery] Guid? userId)
+    public ActionResult<IEnumerable<ChannelGroupDto>> GetChannelGroups(
+        [FromQuery] Guid? userId,
+        [FromQuery] int? startIndex,
+        [FromQuery] int? limit)
     {
         userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions()
@@ -240,9 +245,17 @@ public class LiveTvController : BaseJellyfinApiController
         var user = _userManager.GetUserById(userId.Value);
         var channels = _dtoService.GetBaseItemDtos(channelResult.Items, dtoOptions, user);
 
+        var index = startIndex ?? 0;
+        var count = limit ?? int.MaxValue;
+
         var groups = channels
             .GroupBy(c => c.ChannelGroup ?? string.Empty)
-            .Select(g => new ChannelGroupDto { Name = g.Key, Channels = g.ToArray() })
+            .Select(g => new ChannelGroupDto
+            {
+                Name = g.Key,
+                TotalCount = g.Count(),
+                Channels = g.Skip(index).Take(count).ToArray()
+            })
             .ToArray();
 
         return groups;
