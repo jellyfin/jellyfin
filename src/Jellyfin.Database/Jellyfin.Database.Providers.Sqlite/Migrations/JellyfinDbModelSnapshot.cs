@@ -1370,6 +1370,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<bool>("IsFavorite")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("IsHiddenByUser")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime?>("LastPlayedDate")
                         .HasColumnType("TEXT");
 
@@ -1399,6 +1402,8 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasIndex("UserId");
 
                     b.HasIndex("ItemId", "UserId", "IsFavorite");
+
+                    b.HasIndex("ItemId", "UserId", "IsHiddenByUser");
 
                     b.HasIndex("ItemId", "UserId", "LastPlayedDate");
 
