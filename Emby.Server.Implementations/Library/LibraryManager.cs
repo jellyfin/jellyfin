@@ -2446,13 +2446,13 @@ namespace Emby.Server.Implementations.Library
                 isNew = true;
             }
 
-            var lastRefreshedUtc = item.DateLastRefreshed.ToUniversalTime();
+            var lastRefreshedUtc = item.DateLastRefreshed;
             var refresh = isNew || DateTime.UtcNow - lastRefreshedUtc >= _viewRefreshInterval;
 
             if (!refresh && !item.DisplayParentId.IsEmpty())
             {
                 var displayParent = GetItemById(item.DisplayParentId);
-                refresh = displayParent is not null && displayParent.DateLastSaved.ToUniversalTime() > lastRefreshedUtc;
+                refresh = displayParent is not null && displayParent.DateLastSaved > lastRefreshedUtc;
             }
 
             if (refresh)
@@ -2522,13 +2522,13 @@ namespace Emby.Server.Implementations.Library
                 item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).GetAwaiter().GetResult();
             }
 
-            var lastRefreshedUtc = item.DateLastRefreshed.ToUniversalTime();
+            var lastRefreshedUtc = item.DateLastRefreshed;
             var refresh = isNew || DateTime.UtcNow - lastRefreshedUtc >= _viewRefreshInterval;
 
             if (!refresh && !item.DisplayParentId.IsEmpty())
             {
                 var displayParent = GetItemById(item.DisplayParentId);
-                refresh = displayParent is not null && displayParent.DateLastSaved.ToUniversalTime() > lastRefreshedUtc;
+                refresh = displayParent is not null && displayParent.DateLastSaved > lastRefreshedUtc;
             }
 
             if (refresh)

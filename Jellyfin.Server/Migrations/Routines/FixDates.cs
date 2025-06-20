@@ -49,117 +49,70 @@ public class FixDates : IAsyncMigrationRoutine
         await FixBaseItemImageInfos(context, sw, cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task FixBaseItemImageInfos(JellyfinDbContext context, Stopwatch sw, CancellationToken cancellationToken)
+    private async Task FixBaseItemsAsync(JellyfinDbContext context, Stopwatch sw, CancellationToken cancellationToken)
     {
-        int offset = 0;
+        int itemCount = 0;
 
-        var baseQuery = context.BaseItemImageInfos;
+        var baseQuery = context.BaseItems.OrderBy(e => e.Id);
         var records = baseQuery.Count();
-        _logger.LogInformation("Modifying dates for {Count} BaseItemImageInfos.", records);
+        _logger.LogInformation("Fixing dates for {Count} BaseItems.", records);
 
-        var transaction = await context.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
-        await using (transaction.ConfigureAwait(false))
+        await foreach (var result in context.BaseItems.OrderBy(e => e.Id)
+                        .WithPartitionProgress((partition) => _logger.LogInformation("Processed: {Count} - Time: {Time}", itemCount, sw.Elapsed))
+                        .PartitionEagerAsync(PageSize, cancellationToken)
+                        .WithCancellation(cancellationToken)
+                        .ConfigureAwait(false))
         {
-            do
-            {
-                var results = baseQuery.Skip(offset).Take(PageSize).ToList();
-                foreach (var result in results)
-                {
-                    result.DateModified = ToUniversalTime(result.DateModified) ?? DateTimeOffset.MinValue.UtcDateTime;
-                }
-
-                offset += PageSize;
-                if (offset > records)
-                {
-                    offset = records;
-                }
-
-                _logger.LogInformation("Modified: {Count} - Time: {Time}", offset, sw.Elapsed);
-            } while (offset < records);
-
-            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-            await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+            result.DateCreated = ToUniversalTime(result.DateCreated);
+            result.DateLastMediaAdded = ToUniversalTime(result.DateLastMediaAdded);
+            result.DateLastRefreshed = ToUniversalTime(result.DateLastRefreshed);
+            result.DateLastSaved = ToUniversalTime(result.DateLastSaved);
+            result.DateModified = ToUniversalTime(result.DateModified);
+            itemCount++;
         }
-
-        _logger.LogInformation("Modified dates for {Count} BaseItemImageInfos in {Time}", offset, sw.Elapsed);
     }
 
     private async Task FixChaptersAsync(JellyfinDbContext context, Stopwatch sw, CancellationToken cancellationToken)
     {
-        int offset = 0;
+        int itemCount = 0;
 
         var baseQuery = context.Chapters;
         var records = baseQuery.Count();
-        _logger.LogInformation("Modifying dates for {Count} Chapters.", records);
+        _logger.LogInformation("Fixing dates for {Count} Chapters.", records);
 
-        var transaction = await context.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
-        await using (transaction.ConfigureAwait(false))
+        sw.Start();
+        await foreach (var result in context.Chapters.OrderBy(e => e.ItemId)
+                        .WithPartitionProgress((partition) => _logger.LogInformation("Processed: {Count} - Time: {Time}", itemCount, sw.Elapsed))
+                        .PartitionEagerAsync(PageSize, cancellationToken)
+                        .WithCancellation(cancellationToken)
+                        .ConfigureAwait(false))
         {
-            do
-            {
-                var results = baseQuery.Skip(offset).Take(PageSize).ToList();
-                foreach (var result in results)
-                {
-                    result.ImageDateModified = ToUniversalTime(result.ImageDateModified, true);
-                }
-
-                offset += PageSize;
-                if (offset > records)
-                {
-                    offset = records;
-                }
-
-                _logger.LogInformation("Modified: {Count} - Time: {Time}", offset, sw.Elapsed);
-            } while (offset < records);
-
-            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-            await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+            result.ImageDateModified = ToUniversalTime(result.ImageDateModified);
+            itemCount++;
         }
-
-        _logger.LogInformation("Modified dates for {Count} Chapters in {Time}", offset, sw.Elapsed);
     }
 
-    private async Task FixBaseItemsAsync(JellyfinDbContext context, Stopwatch sw, CancellationToken cancellationToken)
+    private async Task FixBaseItemImageInfos(JellyfinDbContext context, Stopwatch sw, CancellationToken cancellationToken)
     {
-        const int Limit = 5000;
-        int offset = 0;
+        int itemCount = 0;
 
-        var baseQuery = context.BaseItems.OrderBy(e => e.Id);
+        var baseQuery = context.BaseItemImageInfos;
         var records = baseQuery.Count();
-        _logger.LogInformation("Modifying dates for {Count} BaseItems.", records);
+        _logger.LogInformation("Fixing dates for {Count} BaseItemImageInfos.", records);
 
-        var transaction = await context.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
-        await using (transaction.ConfigureAwait(false))
+        sw.Start();
+        await foreach (var result in context.BaseItemImageInfos.OrderBy(e => e.Id)
+                        .WithPartitionProgress((partition) => _logger.LogInformation("Processed: {Count} - Time: {Time}", itemCount, sw.Elapsed))
+                        .PartitionEagerAsync(PageSize, cancellationToken)
+                        .WithCancellation(cancellationToken)
+                        .ConfigureAwait(false))
         {
-            do
-            {
-                var results = baseQuery.Skip(offset).Take(Limit).ToList();
-                foreach (var result in results)
-                {
-                    result.DateCreated = ToUniversalTime(result.DateCreated);
-                    result.DateLastMediaAdded = ToUniversalTime(result.DateLastMediaAdded);
-                    result.DateLastRefreshed = ToUniversalTime(result.DateLastRefreshed);
-                    result.DateLastSaved = ToUniversalTime(result.DateLastSaved);
-                    result.DateModified = ToUniversalTime(result.DateModified);
-                }
-
-                offset += Limit;
-                if (offset > records)
-                {
-                    offset = records;
-                }
-
-                _logger.LogInformation("Modified: {Count} - Time: {Time}", offset, sw.Elapsed);
-            } while (offset < records);
-
-            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-            await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+            result.DateModified = ToUniversalTime(result.DateModified) ?? DateTimeOffset.MinValue.UtcDateTime;
+            itemCount++;
         }
-
-        _logger.LogInformation("Modified dates for {Count} BaseItems in {Time}", offset, sw.Elapsed);
     }
 
-    private DateTime? ToUniversalTime(DateTime? dateTime, bool isUtc = false)
+    private DateTime? ToUniversalTime(DateTime? dateTime, bool isUTC = false)
     {
         if (dateTime == null)
         {
@@ -171,6 +124,8 @@ public class FixDates : IAsyncMigrationRoutine
             return DateTimeOffset.MinValue.UtcDateTime;
         }
 
-        return dateTime.Value.ToUniversalTime();
+        return isUTC
+            ? dateTime.Value
+            : DateTime.SpecifyKind(dateTime.Value, DateTimeKind.Local).ToUniversalTime();
     }
 }
