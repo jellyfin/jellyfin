@@ -7,7 +7,6 @@ using Jellyfin.Database.Implementations;
 using Jellyfin.Server.ServerSetupApp;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using TMDbLib.Objects.Timezones;
 
 namespace Jellyfin.Server.Migrations.Routines;
 
@@ -118,12 +117,12 @@ public class FixDates : IAsyncMigrationRoutine
 
     private DateTime? ToUniversalTime(DateTime? dateTime, bool isUTC = false)
     {
-        if (dateTime == null)
+        if (dateTime is null)
         {
             return null;
         }
 
-        if (dateTime == DateTime.MinValue || dateTime == DateTime.MinValue.ToLocalTime() || dateTime == DateTime.MinValue.ToUniversalTime())
+        if (dateTime.Value.Year == 1 && dateTime.Value.Month == 1 && dateTime.Value.Day == 1)
         {
             return DateTime.MinValue;
         }
