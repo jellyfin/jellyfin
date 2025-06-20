@@ -702,11 +702,11 @@ public sealed class BaseItemRepository
         dto.ExternalId = entity.ExternalId;
         dto.Size = entity.Size;
         dto.Genres = string.IsNullOrWhiteSpace(entity.Genres) ? [] : entity.Genres.Split('|');
-        dto.DateCreated = entity.DateCreated ?? DateTimeOffset.MinValue.UtcDateTime;
-        dto.DateModified = entity.DateModified ?? DateTimeOffset.MinValue.UtcDateTime;
+        dto.DateCreated = entity.DateCreated.GetValueOrDefault();
+        dto.DateModified = entity.DateModified.GetValueOrDefault();
         dto.ChannelId = entity.ChannelId ?? Guid.Empty;
-        dto.DateLastRefreshed = entity.DateLastRefreshed ?? DateTimeOffset.MinValue.UtcDateTime;
-        dto.DateLastSaved = entity.DateLastSaved ?? DateTimeOffset.MinValue.UtcDateTime;
+        dto.DateLastRefreshed = entity.DateLastRefreshed.GetValueOrDefault();
+        dto.DateLastSaved = entity.DateLastSaved.GetValueOrDefault();
         dto.OwnerId = string.IsNullOrWhiteSpace(entity.OwnerId) ? Guid.Empty : (Guid.TryParse(entity.OwnerId, out var ownerId) ? ownerId : Guid.Empty);
         dto.Width = entity.Width.GetValueOrDefault();
         dto.Height = entity.Height.GetValueOrDefault();
@@ -796,7 +796,7 @@ public sealed class BaseItemRepository
         // dto.MediaType = Enum.TryParse<MediaType>(entity.MediaType);
         if (dto is IHasStartDate hasStartDate)
         {
-            hasStartDate.StartDate = entity.StartDate ?? DateTimeOffset.MinValue.UtcDateTime;
+            hasStartDate.StartDate = entity.StartDate.GetValueOrDefault();
         }
 
         // Fields that are present in the DB but are never actually used

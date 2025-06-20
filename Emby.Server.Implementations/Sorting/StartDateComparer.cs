@@ -39,7 +39,7 @@ namespace Emby.Server.Implementations.Sorting
                 return hasStartDate.StartDate;
             }
 
-            return DateTimeOffset.MinValue.UtcDateTime;
+            return DateTime.MinValue;
         }
     }
 }

@@ -140,7 +140,7 @@ namespace Emby.Server.Implementations.Library
                 if (fileCreationDate is not null)
                 {
                     var dateCreated = fileCreationDate;
-                    if (dateCreated.Equals(DateTimeOffset.MinValue.UtcDateTime))
+                    if (dateCreated == DateTime.MinValue)
                     {
                         dateCreated = DateTime.UtcNow;
                     }

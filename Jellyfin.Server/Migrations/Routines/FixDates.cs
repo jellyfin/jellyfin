@@ -111,7 +111,7 @@ public class FixDates : IAsyncMigrationRoutine
                         .WithCancellation(cancellationToken)
                         .ConfigureAwait(false))
         {
-            result.DateModified = ToUniversalTime(result.DateModified) ?? DateTimeOffset.MinValue.UtcDateTime;
+            result.DateModified = ToUniversalTime(result.DateModified) ?? DateTime.MinValue;
             itemCount++;
         }
     }
@@ -123,9 +123,9 @@ public class FixDates : IAsyncMigrationRoutine
             return null;
         }
 
-        if (dateTime == DateTime.MinValue)
+        if (dateTime == DateTime.MinValue || dateTime == DateTime.MinValue.ToLocalTime() || dateTime == DateTime.MinValue.ToUniversalTime())
         {
-            return DateTimeOffset.MinValue.UtcDateTime;
+            return DateTime.MinValue;
         }
 
         return isUTC
