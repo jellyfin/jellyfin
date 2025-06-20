@@ -108,7 +108,7 @@ public class ChapterRepository : IChapterRepository
         var chapterEntity = new ChapterInfo()
         {
             StartPositionTicks = chapterInfo.StartPositionTicks,
-            ImageDateModified = chapterInfo.ImageDateModified.GetValueOrDefault(),
+            ImageDateModified = chapterInfo.ImageDateModified ?? DateTimeOffset.MinValue.UtcDateTime,
             ImagePath = chapterInfo.ImagePath,
             Name = chapterInfo.Name,
         };

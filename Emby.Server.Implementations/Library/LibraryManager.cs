@@ -2382,12 +2382,13 @@ namespace Emby.Server.Implementations.Library
                 isNew = true;
             }
 
-            var refresh = isNew || DateTime.UtcNow - item.DateLastRefreshed >= _viewRefreshInterval;
+            var lastRefreshedUtc = item.DateLastRefreshed;
+            var refresh = isNew || DateTime.UtcNow - lastRefreshedUtc >= _viewRefreshInterval;
 
             if (!refresh && !item.DisplayParentId.IsEmpty())
             {
                 var displayParent = GetItemById(item.DisplayParentId);
-                refresh = displayParent is not null && displayParent.DateLastSaved > item.DateLastRefreshed;
+                refresh = displayParent is not null && displayParent.DateLastSaved > lastRefreshedUtc;
             }
 
             if (refresh)
@@ -2445,12 +2446,13 @@ namespace Emby.Server.Implementations.Library
                 isNew = true;
             }
 
-            var refresh = isNew || DateTime.UtcNow - item.DateLastRefreshed >= _viewRefreshInterval;
+            var lastRefreshedUtc = item.DateLastRefreshed.ToUniversalTime();
+            var refresh = isNew || DateTime.UtcNow - lastRefreshedUtc >= _viewRefreshInterval;
 
             if (!refresh && !item.DisplayParentId.IsEmpty())
             {
                 var displayParent = GetItemById(item.DisplayParentId);
-                refresh = displayParent is not null && displayParent.DateLastSaved > item.DateLastRefreshed;
+                refresh = displayParent is not null && displayParent.DateLastSaved.ToUniversalTime() > lastRefreshedUtc;
             }
 
             if (refresh)
@@ -2520,12 +2522,13 @@ namespace Emby.Server.Implementations.Library
                 item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).GetAwaiter().GetResult();
             }
 
-            var refresh = isNew || DateTime.UtcNow - item.DateLastRefreshed >= _viewRefreshInterval;
+            var lastRefreshedUtc = item.DateLastRefreshed.ToUniversalTime();
+            var refresh = isNew || DateTime.UtcNow - lastRefreshedUtc >= _viewRefreshInterval;
 
             if (!refresh && !item.DisplayParentId.IsEmpty())
             {
                 var displayParent = GetItemById(item.DisplayParentId);
-                refresh = displayParent is not null && displayParent.DateLastSaved > item.DateLastRefreshed;
+                refresh = displayParent is not null && displayParent.DateLastSaved.ToUniversalTime() > lastRefreshedUtc;
             }
 
             if (refresh)

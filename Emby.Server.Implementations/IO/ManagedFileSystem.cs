@@ -351,7 +351,7 @@ namespace Emby.Server.Implementations.IO
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error determining CreationTimeUtc for {FullName}", info.FullName);
-                return DateTime.MinValue;
+                return DateTimeOffset.MinValue.UtcDateTime;
             }
         }
 
