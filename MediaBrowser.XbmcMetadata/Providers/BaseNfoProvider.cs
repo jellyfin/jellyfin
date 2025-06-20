@@ -1,5 +1,6 @@
 #pragma warning disable CS1591
 
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -72,7 +73,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
                 return false;
             }
 
-            return file.Exists && item.DateLastSaved != default && _fileSystem.GetLastWriteTimeUtc(file) > item.DateLastSaved;
+            return file.Exists && item.DateLastSaved != DateTimeOffset.MinValue && _fileSystem.GetLastWriteTimeUtc(file) > item.DateLastSaved;
         }
 
         protected abstract void Fetch(MetadataResult<T> result, string path, CancellationToken cancellationToken);

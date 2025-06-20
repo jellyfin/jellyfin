@@ -1180,12 +1180,12 @@ namespace MediaBrowser.Providers.Manager
                     target.LockedFields = target.LockedFields.Concat(source.LockedFields).Distinct().ToArray();
                 }
 
-                if (source.DateCreated != default)
+                if (source.DateCreated != DateTimeOffset.MinValue)
                 {
                     target.DateCreated = source.DateCreated;
                 }
 
-                if (replaceData || source.DateModified != default)
+                if (replaceData || source.DateModified != DateTimeOffset.MinValue)
                 {
                     target.DateModified = source.DateModified;
                 }

@@ -1423,7 +1423,7 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual bool RequiresRefresh()
         {
-            if (string.IsNullOrEmpty(Path) || DateModified == default)
+            if (string.IsNullOrEmpty(Path) || DateModified == DateTimeOffset.MinValue)
             {
                 return false;
             }

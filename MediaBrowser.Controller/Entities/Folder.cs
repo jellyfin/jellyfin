@@ -210,12 +210,12 @@ namespace MediaBrowser.Controller.Entities
                 item.Id = LibraryManager.GetNewItemId(item.Path, item.GetType());
             }
 
-            if (item.DateCreated == default)
+            if (item.DateCreated == DateTimeOffset.MinValue)
             {
                 item.DateCreated = DateTime.UtcNow;
             }
 
-            if (item.DateModified == default)
+            if (item.DateModified == DateTimeOffset.MinValue)
             {
                 item.DateModified = DateTime.UtcNow;
             }
