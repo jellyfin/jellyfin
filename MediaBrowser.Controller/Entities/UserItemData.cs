@@ -64,6 +64,12 @@ namespace MediaBrowser.Controller.Entities
         public bool IsFavorite { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is hidden ny the user.
+        /// </summary>
+        /// <value><c>true</c> if this instance is hidden by the user; otherwise, <c>false</c>.</value>
+        public bool IsHiddenByUser { get; set; }
+
+        /// <summary>
         /// Gets or sets the last played date.
         /// </summary>
         /// <value>The last played date.</value>
