@@ -136,5 +136,7 @@
     "TaskMoveTrickplayImages": "העברת מיקום של תמונות Trickplay",
     "TaskExtractMediaSegments": "סריקת מדיה",
     "TaskExtractMediaSegmentsDescription": "מחלץ חלקי מדיה מתוספים המאפשרים זאת.",
-    "TaskMoveTrickplayImagesDescription": "הזזת קבצי Trickplay קיימים בהתאם להגדרות הספרייה."
+    "TaskMoveTrickplayImagesDescription": "הזזת קבצי Trickplay קיימים בהתאם להגדרות הספרייה.",
+    "CleanupUserDataTaskDescription": "ניקוי כל המידע של המשתמש (מצב צפייה, מועדפים וכו) ממדיה שאינה קיימת מעל 90 יום.",
+    "CleanupUserDataTask": "משימת ניקוי מידע משתמש"
 }
