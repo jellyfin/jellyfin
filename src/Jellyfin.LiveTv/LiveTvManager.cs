@@ -979,6 +979,7 @@ namespace Jellyfin.LiveTv
                 dto.Number = channel.Number;
                 dto.ChannelNumber = channel.Number;
                 dto.ChannelType = channel.ChannelType;
+                dto.ChannelGroup = channel.ChannelGroup;
 
                 currentChannelsDict[dto.Id] = dto;
 

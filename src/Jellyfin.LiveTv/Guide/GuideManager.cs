@@ -414,6 +414,7 @@ public class GuideManager : IGuideManager
         item.ParentId = parentFolderId;
 
         item.ChannelType = channelInfo.ChannelType;
+        item.ChannelGroup = channelInfo.ChannelGroup;
         item.ServiceName = serviceName;
 
         if (!string.Equals(item.GetProviderId(ExternalServiceTag), serviceName, StringComparison.OrdinalIgnoreCase))
