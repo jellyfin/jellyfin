@@ -215,6 +215,39 @@ public class LiveTvController : BaseJellyfinApiController
     }
 
     /// <summary>
+    /// Gets live tv channel groups.
+    /// </summary>
+    /// <param name="userId">Optional. Filter by user and attach user data.</param>
+    /// <response code="200">Channel groups returned.</response>
+    [HttpGet("Channels/Groups")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Authorize(Policy = Policies.LiveTvAccess)]
+    public ActionResult<IEnumerable<ChannelGroupDto>> GetChannelGroups([FromQuery] Guid? userId)
+    {
+        userId = RequestHelpers.GetUserId(User, userId);
+        var dtoOptions = new DtoOptions()
+            .AddClientFields(User);
+
+        var channelResult = _liveTvManager.GetInternalChannels(
+            new LiveTvChannelQuery
+            {
+                UserId = userId.Value
+            },
+            dtoOptions,
+            CancellationToken.None);
+
+        var user = _userManager.GetUserById(userId.Value);
+        var channels = _dtoService.GetBaseItemDtos(channelResult.Items, dtoOptions, user);
+
+        var groups = channels
+            .GroupBy(c => c.ChannelGroup ?? string.Empty)
+            .Select(g => new ChannelGroupDto { Name = g.Key, Channels = g.ToArray() })
+            .ToArray();
+
+        return groups;
+    }
+
+    /// <summary>
     /// Gets a live tv channel.
     /// </summary>
     /// <param name="channelId">Channel id.</param>
