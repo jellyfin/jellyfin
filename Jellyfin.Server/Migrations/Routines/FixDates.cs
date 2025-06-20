@@ -7,6 +7,7 @@ using Jellyfin.Database.Implementations;
 using Jellyfin.Server.ServerSetupApp;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using TMDbLib.Objects.Timezones;
 
 namespace Jellyfin.Server.Migrations.Routines;
 
@@ -39,14 +40,17 @@ public class FixDates : IAsyncMigrationRoutine
     /// <inheritdoc />
     public async Task PerformAsync(CancellationToken cancellationToken)
     {
-        using var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        var sw = Stopwatch.StartNew();
+        if (!TimeZoneInfo.Local.Equals(TimeZoneInfo.Utc))
+        {
+            using var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+            var sw = Stopwatch.StartNew();
 
-        await FixBaseItemsAsync(context, sw, cancellationToken).ConfigureAwait(false);
-        sw.Reset();
-        await FixChaptersAsync(context, sw, cancellationToken).ConfigureAwait(false);
-        sw.Reset();
-        await FixBaseItemImageInfos(context, sw, cancellationToken).ConfigureAwait(false);
+            await FixBaseItemsAsync(context, sw, cancellationToken).ConfigureAwait(false);
+            sw.Reset();
+            await FixChaptersAsync(context, sw, cancellationToken).ConfigureAwait(false);
+            sw.Reset();
+            await FixBaseItemImageInfos(context, sw, cancellationToken).ConfigureAwait(false);
+        }
     }
 
     private async Task FixBaseItemsAsync(JellyfinDbContext context, Stopwatch sw, CancellationToken cancellationToken)
