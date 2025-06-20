@@ -28,8 +28,8 @@ public class FixDates : IAsyncMigrationRoutine
     /// <param name="startupLogger">The startup logger for Startup UI integration.</param>
     /// <param name="dbProvider">Instance of the <see cref="IDbContextFactory{JellyfinDbContext}"/> interface.</param>
     public FixDates(
-        ILogger<MoveExtractedFiles> logger,
-        IStartupLogger<MoveExtractedFiles> startupLogger,
+        ILogger<FixDates> logger,
+        IStartupLogger<FixDates> startupLogger,
         IDbContextFactory<JellyfinDbContext> dbProvider)
     {
         _logger = startupLogger.With(logger);
@@ -39,7 +39,7 @@ public class FixDates : IAsyncMigrationRoutine
     /// <inheritdoc />
     public async Task PerformAsync(CancellationToken cancellationToken)
     {
-        using var context = _dbProvider.CreateDbContext();
+        using var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         var sw = Stopwatch.StartNew();
 
         await FixBaseItemsAsync(context, sw, cancellationToken).ConfigureAwait(false);
