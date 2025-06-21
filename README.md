@@ -142,6 +142,33 @@ If the Server is configured to host the Web Client, and the Server is running, t
 
 API documentation can be viewed at `http://localhost:8096/api-docs/swagger/index.html`
 
+### Random Movies Endpoint
+
+Retrieve a random movie using `GET /Movies/Random`. The request accepts an optional
+`userId` query parameter to filter movies accessible to a specific user and include
+their user data. When no movie is found the server responds with **404 Not Found**.
+
+Example request:
+
+```http
+GET http://localhost:8096/Movies/Random?userId=<user-guid>
+```
+
+Example response:
+
+```json
+{
+  "Items": [
+    {
+      "Name": "Random Movie",
+      "Id": "01234567-89ab-cdef-0123-456789abcdef"
+    }
+  ],
+  "TotalRecordCount": 1,
+  "StartIndex": 0
+}
+```
+
 
 ### Running from GitHub Codespaces
 
