@@ -702,11 +702,11 @@ public sealed class BaseItemRepository
         dto.ExternalId = entity.ExternalId;
         dto.Size = entity.Size;
         dto.Genres = entity.Genres?.Split('|') ?? [];
-        dto.DateCreated = entity.DateCreated.GetValueOrDefault();
-        dto.DateModified = entity.DateModified.GetValueOrDefault();
+        dto.DateCreated = entity.DateCreated ?? DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc);
+        dto.DateModified = entity.DateModified ?? DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc);
         dto.ChannelId = entity.ChannelId ?? Guid.Empty;
-        dto.DateLastRefreshed = entity.DateLastRefreshed.GetValueOrDefault();
-        dto.DateLastSaved = entity.DateLastSaved.GetValueOrDefault();
+        dto.DateLastRefreshed = entity.DateLastRefreshed ?? DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc);
+        dto.DateLastSaved = entity.DateLastSaved ?? DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc);
         dto.OwnerId = string.IsNullOrWhiteSpace(entity.OwnerId) ? Guid.Empty : (Guid.TryParse(entity.OwnerId, out var ownerId) ? ownerId : Guid.Empty);
         dto.Width = entity.Width.GetValueOrDefault();
         dto.Height = entity.Height.GetValueOrDefault();
