@@ -92,7 +92,7 @@ namespace MediaBrowser.Providers.Manager
             var updateType = ItemUpdateType.None;
 
             var libraryOptions = LibraryManager.GetLibraryOptions(item);
-            var isFirstRefresh = item.DateLastRefreshed.Date == DateTime.MinValue.Date;
+            var isFirstRefresh = item.DateLastRefreshed == DateTime.MinValue;
             var hasRefreshedMetadata = true;
             var hasRefreshedImages = true;
 

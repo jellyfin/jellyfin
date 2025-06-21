@@ -94,7 +94,7 @@ public class FixDates : IAsyncMigrationRoutine
                         .WithCancellation(cancellationToken)
                         .ConfigureAwait(false))
         {
-            result.ImageDateModified = ToUniversalTime(result.ImageDateModified);
+            result.ImageDateModified = ToUniversalTime(result.ImageDateModified, true);
             itemCount++;
         }
 
@@ -142,6 +142,6 @@ public class FixDates : IAsyncMigrationRoutine
             return dateTime.Value;
         }
 
-        return DateTime.SpecifyKind(dateTime.Value, DateTimeKind.Local).ToUniversalTime();
+        return dateTime.Value.ToUniversalTime();
     }
 }
