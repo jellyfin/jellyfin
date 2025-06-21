@@ -185,7 +185,7 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
                 Description = packageInfo.Description,
                 Overview = packageInfo.Overview,
                 TargetAbi = packageInfo.Versions[0].TargetAbi!,
-                Timestamp = DateTime.Parse(packageInfo.Versions[0].Timestamp!, CultureInfo.InvariantCulture),
+                Timestamp = DateTimeOffset.Parse(packageInfo.Versions[0].Timestamp!, CultureInfo.InvariantCulture).UtcDateTime,
                 Changelog = packageInfo.Versions[0].Changelog!,
                 Version = new Version(1, 0).ToString(),
                 ImagePath = string.Empty
@@ -221,7 +221,7 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
                 Description = packageInfo.Description,
                 Overview = packageInfo.Overview,
                 TargetAbi = packageInfo.Versions[0].TargetAbi!,
-                Timestamp = DateTime.Parse(packageInfo.Versions[0].Timestamp!, CultureInfo.InvariantCulture),
+                Timestamp = DateTimeOffset.Parse(packageInfo.Versions[0].Timestamp!, CultureInfo.InvariantCulture).UtcDateTime,
                 Changelog = packageInfo.Versions[0].Changelog!,
                 Version = packageInfo.Versions[0].Version,
                 ImagePath = string.Empty

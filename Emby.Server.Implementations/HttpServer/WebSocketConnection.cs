@@ -57,7 +57,7 @@ namespace Emby.Server.Implementations.HttpServer
             RemoteEndPoint = remoteEndPoint;
 
             _jsonOptions = JsonDefaults.Options;
-            LastActivityDate = DateTime.Now;
+            LastActivityDate = DateTime.UtcNow;
         }
 
         /// <inheritdoc />

@@ -73,11 +73,11 @@ namespace MediaBrowser.Providers.Manager
 
         public virtual int Order => 0;
 
-        private FileSystemMetadata TryGetFile(string path, IDirectoryService directoryService)
+        private FileSystemMetadata TryGetFileSystemMetadata(string path, IDirectoryService directoryService)
         {
             try
             {
-                return directoryService.GetFile(path);
+                return directoryService.GetFileSystemEntry(path);
             }
             catch (Exception ex)
             {
@@ -92,7 +92,7 @@ namespace MediaBrowser.Providers.Manager
             var updateType = ItemUpdateType.None;
 
             var libraryOptions = LibraryManager.GetLibraryOptions(item);
-            var isFirstRefresh = item.DateLastRefreshed.Date == DateTime.MinValue.Date;
+            var isFirstRefresh = item.DateLastRefreshed == DateTime.MinValue;
             var hasRefreshedMetadata = true;
             var hasRefreshedImages = true;
 
@@ -225,7 +225,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     if (item.IsFileProtocol)
                     {
-                        var file = TryGetFile(item.Path, refreshOptions.DirectoryService);
+                        var file = TryGetFileSystemMetadata(item.Path, refreshOptions.DirectoryService);
                         if (file is not null)
                         {
                             item.DateModified = file.LastWriteTimeUtc;
@@ -1180,12 +1180,12 @@ namespace MediaBrowser.Providers.Manager
                     target.LockedFields = target.LockedFields.Concat(source.LockedFields).Distinct().ToArray();
                 }
 
-                if (source.DateCreated != default)
+                if (source.DateCreated != DateTime.MinValue)
                 {
                     target.DateCreated = source.DateCreated;
                 }
 
-                if (replaceData || source.DateModified != default)
+                if (replaceData || source.DateModified != DateTime.MinValue)
                 {
                     target.DateModified = source.DateModified;
                 }

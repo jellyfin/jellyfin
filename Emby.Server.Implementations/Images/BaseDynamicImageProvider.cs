@@ -43,12 +43,10 @@ namespace Emby.Server.Implementations.Images
         protected IImageProcessor ImageProcessor { get; set; }
 
         protected virtual IReadOnlyCollection<ImageType> SupportedImages { get; }
-            = new ImageType[] { ImageType.Primary };
+            = [ImageType.Primary];
 
         /// <inheritdoc />
         public string Name => "Dynamic Image Provider";
-
-        protected virtual int MaxImageAgeDays => 7;
 
         public int Order => 0;
 
@@ -292,8 +290,14 @@ namespace Emby.Server.Implementations.Images
 
         protected virtual bool HasChangedByDate(BaseItem item, ItemImageInfo image)
         {
-            var age = DateTime.UtcNow - image.DateModified;
-            return age.TotalDays > MaxImageAgeDays;
+            var path = image.Path;
+            if (!string.IsNullOrEmpty(path))
+            {
+                var modificationDate = FileSystem.GetLastWriteTimeUtc(path);
+                return image.DateModified != modificationDate;
+            }
+
+            return false;
         }
 
         protected string CreateSingleImage(IEnumerable<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType)

@@ -1423,23 +1423,16 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual bool RequiresRefresh()
         {
-            if (string.IsNullOrEmpty(Path) || DateModified == default)
+            if (string.IsNullOrEmpty(Path) || DateModified == DateTime.MinValue)
             {
                 return false;
             }
 
             var info = FileSystem.GetFileSystemInfo(Path);
-            if (info.Exists)
-            {
-                if (info.IsDirectory)
-                {
-                    return info.LastWriteTimeUtc != DateModified;
-                }
 
-                return info.LastWriteTimeUtc != DateModified;
-            }
-
-            return false;
+            return info.Exists
+                ? info.LastWriteTimeUtc != DateModified
+                : false;
         }
 
         public virtual List<string> GetUserDataKeys()

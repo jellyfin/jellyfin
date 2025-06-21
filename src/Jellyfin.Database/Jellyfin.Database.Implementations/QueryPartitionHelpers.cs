@@ -82,7 +82,7 @@ public static class QueryPartitionHelpers
     /// <typeparam name="TEntity">The entity to load.</typeparam>
     /// <param name="partitionInfo">The source query.</param>
     /// <param name="partitionSize">The number of elements to load per partition.</param>
-    /// <param name="cancellationToken">The cancelation token.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A enumerable representing the whole of the query.</returns>
     public static async IAsyncEnumerable<TEntity> PartitionAsync<TEntity>(this ProgressablePartitionReporting<TEntity> partitionInfo, int partitionSize, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -98,7 +98,7 @@ public static class QueryPartitionHelpers
     /// <typeparam name="TEntity">The entity to load.</typeparam>
     /// <param name="partitionInfo">The source query.</param>
     /// <param name="partitionSize">The number of elements to load per partition.</param>
-    /// <param name="cancellationToken">The cancelation token.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A enumerable representing the whole of the query.</returns>
     public static async IAsyncEnumerable<TEntity> PartitionEagerAsync<TEntity>(this ProgressablePartitionReporting<TEntity> partitionInfo, int partitionSize, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -115,7 +115,7 @@ public static class QueryPartitionHelpers
     /// <param name="query">The source query.</param>
     /// <param name="partitionSize">The number of elements to load per partition.</param>
     /// <param name="progressablePartition">Reporting helper.</param>
-    /// <param name="cancellationToken">The cancelation token.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A enumerable representing the whole of the query.</returns>
     public static async IAsyncEnumerable<TEntity> PartitionAsync<TEntity>(
         this IOrderedQueryable<TEntity> query,
@@ -154,7 +154,7 @@ public static class QueryPartitionHelpers
     /// <param name="query">The source query.</param>
     /// <param name="partitionSize">The number of elements to load per partition.</param>
     /// <param name="progressablePartition">Reporting helper.</param>
-    /// <param name="cancellationToken">The cancelation token.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A enumerable representing the whole of the query.</returns>
     public static async IAsyncEnumerable<TEntity> PartitionEagerAsync<TEntity>(
         this IOrderedQueryable<TEntity> query,

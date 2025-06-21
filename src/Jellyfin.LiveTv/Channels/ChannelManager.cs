@@ -1166,7 +1166,7 @@ namespace Jellyfin.LiveTv.Channels
                 }
             }
 
-            if (isNew || forceUpdate || item.DateLastRefreshed == default)
+            if (isNew || forceUpdate || item.DateLastRefreshed == DateTime.MinValue)
             {
                 _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.Normal);
             }
