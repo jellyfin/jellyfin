@@ -340,9 +340,10 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 genres = genres.Trimmed().Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
 
-                audio.Genres = options.ReplaceAllMetadata || audio.Genres is null || audio.Genres.Length == 0
-                    ? genres
-                    : audio.Genres;
+                if (options.ReplaceAllMetadata || audio.Genres is null || audio.Genres.Length == 0 || audio.Genres.All(string.IsNullOrWhiteSpace))
+                {
+                    audio.Genres = genres;
+                }
             }
 
             TryGetSanitizedAdditionalFields(track, "REPLAYGAIN_TRACK_GAIN", out var trackGainTag);
