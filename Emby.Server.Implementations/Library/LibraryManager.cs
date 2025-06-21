@@ -1947,8 +1947,21 @@ namespace Emby.Server.Implementations.Library
         {
             if (image.Path is not null && image.IsLocalFile)
             {
-                if (image.Width == 0 || image.Height == 0 || string.IsNullOrEmpty(image.BlurHash))
+                if (image.Width == 0 || image.Height == 0)
                 {
+                    return true;
+                }
+
+                if (string.IsNullOrEmpty(image.BlurHash))
+                {
+                    // this is only refreshable if a blurhash can be computed
+                    var extension = Path.GetExtension(image.Path.AsSpan()).TrimStart('.');
+                    if (extension.Equals("svg", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // svg files can't compute a blurhash
+                        return false;
+                    }
+
                     return true;
                 }
 
