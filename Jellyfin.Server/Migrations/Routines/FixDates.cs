@@ -60,8 +60,9 @@ public class FixDates : IAsyncMigrationRoutine
         var records = baseQuery.Count();
         _logger.LogInformation("Fixing dates for {Count} BaseItems.", records);
 
+        sw.Start();
         await foreach (var result in context.BaseItems.OrderBy(e => e.Id)
-                        .WithPartitionProgress((partition) => _logger.LogInformation("Processed: {Count} - Time: {Time}", itemCount, sw.Elapsed))
+                        .WithPartitionProgress((partition) => _logger.LogInformation("Processing BaseItems batch {BatchNumber} ({ProcessedSoFar}/{TotalRecords}) - Time: {ElapsedTime}", partition + 1, partition * PageSize, records, sw.Elapsed))
                         .PartitionEagerAsync(PageSize, cancellationToken)
                         .WithCancellation(cancellationToken)
                         .ConfigureAwait(false))
@@ -73,6 +74,9 @@ public class FixDates : IAsyncMigrationRoutine
             result.DateModified = ToUniversalTime(result.DateModified);
             itemCount++;
         }
+
+        var saveCount = await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        _logger.LogInformation("BaseItems: Processed {ItemCount} items, saved {SaveCount} changes in {ElapsedTime}", itemCount, saveCount, sw.Elapsed);
     }
 
     private async Task FixChaptersAsync(JellyfinDbContext context, Stopwatch sw, CancellationToken cancellationToken)
@@ -85,7 +89,7 @@ public class FixDates : IAsyncMigrationRoutine
 
         sw.Start();
         await foreach (var result in context.Chapters.OrderBy(e => e.ItemId)
-                        .WithPartitionProgress((partition) => _logger.LogInformation("Processed: {Count} - Time: {Time}", itemCount, sw.Elapsed))
+                        .WithPartitionProgress((partition) => _logger.LogInformation("Processing Chapters batch {BatchNumber} ({ProcessedSoFar}/{TotalRecords}) - Time: {ElapsedTime}", partition + 1, partition * PageSize, records, sw.Elapsed))
                         .PartitionEagerAsync(PageSize, cancellationToken)
                         .WithCancellation(cancellationToken)
                         .ConfigureAwait(false))
@@ -93,6 +97,9 @@ public class FixDates : IAsyncMigrationRoutine
             result.ImageDateModified = ToUniversalTime(result.ImageDateModified);
             itemCount++;
         }
+
+        var saveCount = await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        _logger.LogInformation("Chapters: Processed {ItemCount} items, saved {SaveCount} changes in {ElapsedTime}", itemCount, saveCount, sw.Elapsed);
     }
 
     private async Task FixBaseItemImageInfos(JellyfinDbContext context, Stopwatch sw, CancellationToken cancellationToken)
@@ -105,7 +112,7 @@ public class FixDates : IAsyncMigrationRoutine
 
         sw.Start();
         await foreach (var result in context.BaseItemImageInfos.OrderBy(e => e.Id)
-                        .WithPartitionProgress((partition) => _logger.LogInformation("Processed: {Count} - Time: {Time}", itemCount, sw.Elapsed))
+                        .WithPartitionProgress((partition) => _logger.LogInformation("Processing BaseItemImageInfos batch {BatchNumber} ({ProcessedSoFar}/{TotalRecords}) - Time: {ElapsedTime}", partition + 1, partition * PageSize, records, sw.Elapsed))
                         .PartitionEagerAsync(PageSize, cancellationToken)
                         .WithCancellation(cancellationToken)
                         .ConfigureAwait(false))
@@ -113,6 +120,9 @@ public class FixDates : IAsyncMigrationRoutine
             result.DateModified = ToUniversalTime(result.DateModified) ?? DateTime.MinValue;
             itemCount++;
         }
+
+        var saveCount = await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        _logger.LogInformation("BaseItemImageInfos: Processed {ItemCount} items, saved {SaveCount} changes in {ElapsedTime}", itemCount, saveCount, sw.Elapsed);
     }
 
     private DateTime? ToUniversalTime(DateTime? dateTime, bool isUTC = false)
@@ -124,11 +134,14 @@ public class FixDates : IAsyncMigrationRoutine
 
         if (dateTime.Value.Year == 1 && dateTime.Value.Month == 1 && dateTime.Value.Day == 1)
         {
-            return DateTime.MinValue;
+            return DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc);
         }
 
-        return isUTC
-            ? dateTime.Value
-            : DateTime.SpecifyKind(dateTime.Value, DateTimeKind.Local).ToUniversalTime();
+        if (dateTime.Value.Kind == DateTimeKind.Utc || isUTC)
+        {
+            return dateTime.Value;
+        }
+
+        return DateTime.SpecifyKind(dateTime.Value, DateTimeKind.Local).ToUniversalTime();
     }
 }
