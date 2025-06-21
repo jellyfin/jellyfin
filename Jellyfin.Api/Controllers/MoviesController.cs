@@ -18,6 +18,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Jellyfin.Api.Controllers;
@@ -174,6 +175,55 @@ public class MoviesController : BaseJellyfinApiController
         }
 
         return Ok(categories.OrderBy(i => i.RecommendationType).AsEnumerable());
+    }
+
+    /// <summary>
+    /// Gets random movies.
+    /// </summary>
+    /// <param name="userId">Optional. Filter by user id and attach user data.</param>
+    /// <param name="startIndex">Optional. The start index.</param>
+    /// <param name="limit">Optional. The max number of items to return.</param>
+    /// <param name="enableTotalRecordCount">Whether to enable the total record count.</param>
+    /// <response code="200">Random movies returned.</response>
+    /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the random movies.</returns>
+    [HttpGet("Random")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public ActionResult<QueryResult<BaseItemDto>> GetRandomMovies(
+        [FromQuery] Guid? userId,
+        [FromQuery] int? startIndex,
+        [FromQuery] int? limit,
+        [FromQuery] bool enableTotalRecordCount = false)
+    {
+        User? user;
+        if (userId.IsNullOrEmpty())
+        {
+            user = null;
+        }
+        else
+        {
+            var requestUserId = RequestHelpers.GetUserId(User, userId);
+            user = _userManager.GetUserById(requestUserId);
+        }
+
+        var dtoOptions = new DtoOptions().AddClientFields(User);
+        var result = _libraryManager.GetItemsResult(new InternalItemsQuery(user)
+        {
+            OrderBy = new[] { (ItemSortBy.Random, SortOrder.Descending) },
+            IncludeItemTypes = new[] { BaseItemKind.Movie },
+            StartIndex = startIndex,
+            Limit = limit,
+            IsVirtualItem = false,
+            DtoOptions = dtoOptions,
+            EnableTotalRecordCount = enableTotalRecordCount,
+            Recursive = true
+        });
+
+        var dtoList = _dtoService.GetBaseItemDtos(result.Items, dtoOptions, user);
+
+        return new QueryResult<BaseItemDto>(
+            startIndex,
+            result.TotalRecordCount,
+            dtoList);
     }
 
     private IEnumerable<RecommendationDto> GetWithDirector(
