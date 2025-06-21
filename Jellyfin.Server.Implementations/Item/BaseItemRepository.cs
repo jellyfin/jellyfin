@@ -867,11 +867,11 @@ public sealed class BaseItemRepository
         entity.ExternalId = dto.ExternalId;
         entity.Size = dto.Size;
         entity.Genres = string.Join('|', dto.Genres);
-        entity.DateCreated = dto.DateCreated;
-        entity.DateModified = dto.DateModified;
+        entity.DateCreated = dto.DateCreated == DateTime.MinValue ? null : dto.DateCreated;
+        entity.DateModified = dto.DateModified == DateTime.MinValue ? null : dto.DateModified;
         entity.ChannelId = dto.ChannelId;
-        entity.DateLastRefreshed = dto.DateLastRefreshed;
-        entity.DateLastSaved = dto.DateLastSaved;
+        entity.DateLastRefreshed = dto.DateLastRefreshed == DateTime.MinValue ? null : dto.DateLastRefreshed;
+        entity.DateLastSaved = dto.DateLastSaved == DateTime.MinValue ? null : dto.DateLastSaved;
         entity.OwnerId = dto.OwnerId.ToString();
         entity.Width = dto.Width;
         entity.Height = dto.Height;

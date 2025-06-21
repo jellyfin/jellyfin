@@ -134,7 +134,7 @@ public class FixDates : IAsyncMigrationRoutine
 
         if (dateTime.Value.Year == 1 && dateTime.Value.Month == 1 && dateTime.Value.Day == 1)
         {
-            return DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc);
+            return null;
         }
 
         if (dateTime.Value.Kind == DateTimeKind.Utc || isUTC)
