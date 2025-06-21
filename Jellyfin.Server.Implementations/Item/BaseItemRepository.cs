@@ -1106,6 +1106,7 @@ public sealed class BaseItemRepository
         {
             IsPlayed = filter.IsPlayed,
             IsFavorite = filter.IsFavorite,
+            IsHiddenByUser = filter.IsHiddenByUser,
             IsFavoriteOrLiked = filter.IsFavoriteOrLiked,
             IsLiked = filter.IsLiked,
             IsLocked = filter.IsLocked,
@@ -1835,6 +1836,12 @@ public sealed class BaseItemRepository
         {
             baseQuery = baseQuery
                 .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id)!.IsFavorite == filter.IsFavorite);
+        }
+
+        if (filter.IsHiddenByUser.HasValue)
+        {
+            baseQuery = baseQuery
+                .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id)!.IsHiddenByUser == filter.IsHiddenByUser);
         }
 
         if (filter.IsPlayed.HasValue)

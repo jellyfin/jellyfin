@@ -161,5 +161,29 @@ public enum CollectionType
     /// Movie genre collection.
     /// </summary>
     [OpenApiIgnoreEnum]
-    moviegenre = 115
+    moviegenre = 115,
+
+    /// <summary>
+    /// Tv series hidden by the user collection.
+    /// </summary>
+    [OpenApiIgnoreEnum]
+    tvhiddenbyuserseries = 116,
+
+    /// <summary>
+    /// Tv series not hidden by the user collection.
+    /// </summary>
+    [OpenApiIgnoreEnum]
+    tvnothiddenbyuserseries = 117,
+
+    /// <summary>
+    /// Movie hidden by the user collection.
+    /// </summary>
+    [OpenApiIgnoreEnum]
+    moviehiddenbyuser = 118,
+
+    /// <summary>
+    /// Movie not hidden by the user collection.
+    /// </summary>
+    [OpenApiIgnoreEnum]
+    movienothiddenbyuser = 119
 }

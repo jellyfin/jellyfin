@@ -90,6 +90,12 @@ namespace MediaBrowser.Controller.Entities
                 case CollectionType.moviefavorites:
                     return GetFavoriteMovies(queryParent, user, query);
 
+                case CollectionType.moviehiddenbyuser:
+                    return GetHiddenByUserMovies(queryParent, user, query);
+
+                case CollectionType.movienothiddenbyuser:
+                    return GetNotHiddenByUserMovies(queryParent, user, query);
+
                 case CollectionType.movielatest:
                     return GetMovieLatest(queryParent, user, query);
 
@@ -113,6 +119,12 @@ namespace MediaBrowser.Controller.Entities
 
                 case CollectionType.tvfavoriteseries:
                     return GetFavoriteSeries(queryParent, user, query);
+
+                case CollectionType.tvhiddenbyuserseries:
+                    return GetHiddenByUserSeries(queryParent, user, query);
+
+                case CollectionType.tvnothiddenbyuserseries:
+                    return GetNotHiddenByUserSeries(queryParent, user, query);
 
                 default:
                     {
@@ -170,12 +182,56 @@ namespace MediaBrowser.Controller.Entities
             return _libraryManager.GetItemsResult(query);
         }
 
+        private QueryResult<BaseItem> GetHiddenByUserMovies(Folder parent, User user, InternalItemsQuery query)
+        {
+            query.Recursive = true;
+            query.Parent = parent;
+            query.SetUser(user);
+            query.IsHiddenByUser = true;
+            query.IncludeItemTypes = new[] { BaseItemKind.Movie };
+
+            return _libraryManager.GetItemsResult(query);
+        }
+
+        private QueryResult<BaseItem> GetNotHiddenByUserMovies(Folder parent, User user, InternalItemsQuery query)
+        {
+            query.Recursive = true;
+            query.Parent = parent;
+            query.SetUser(user);
+            query.IsHiddenByUser = false;
+            query.IncludeItemTypes = new[] { BaseItemKind.Movie };
+
+            return _libraryManager.GetItemsResult(query);
+        }
+
         private QueryResult<BaseItem> GetFavoriteSeries(Folder parent, User user, InternalItemsQuery query)
         {
             query.Recursive = true;
             query.Parent = parent;
             query.SetUser(user);
             query.IsFavorite = true;
+            query.IncludeItemTypes = new[] { BaseItemKind.Series };
+
+            return _libraryManager.GetItemsResult(query);
+        }
+
+        private QueryResult<BaseItem> GetHiddenByUserSeries(Folder parent, User user, InternalItemsQuery query)
+        {
+            query.Recursive = true;
+            query.Parent = parent;
+            query.SetUser(user);
+            query.IsHiddenByUser = true;
+            query.IncludeItemTypes = new[] { BaseItemKind.Series };
+
+            return _libraryManager.GetItemsResult(query);
+        }
+
+        private QueryResult<BaseItem> GetNotHiddenByUserSeries(Folder parent, User user, InternalItemsQuery query)
+        {
+            query.Recursive = true;
+            query.Parent = parent;
+            query.SetUser(user);
+            query.IsHiddenByUser = false;
             query.IncludeItemTypes = new[] { BaseItemKind.Series };
 
             return _libraryManager.GetItemsResult(query);
@@ -529,6 +585,16 @@ namespace MediaBrowser.Controller.Entities
                 userData = userData ?? userDataManager.GetUserData(user, item);
 
                 if (userData.IsFavorite != query.IsFavorite.Value)
+                {
+                    return false;
+                }
+            }
+
+            if (query.IsHiddenByUser.HasValue)
+            {
+                userData = userData ?? userDataManager.GetUserData(user, item);
+
+                if (userData.IsHiddenByUser != query.IsHiddenByUser.Value)
                 {
                     return false;
                 }

@@ -120,6 +120,11 @@ namespace Emby.Server.Implementations.Library
                 userData.Likes = userDataDto.Likes.Value;
             }
 
+            if (userDataDto.IsHiddenByUser.HasValue)
+            {
+                userData.IsHiddenByUser = userDataDto.IsHiddenByUser.Value;
+            }
+
             if (userDataDto.Played.HasValue)
             {
                 userData.Played = userDataDto.Played.Value;
@@ -152,6 +157,7 @@ namespace Emby.Server.Implementations.Library
                 Likes = dto.Likes,
                 PlaybackPositionTicks = dto.PlaybackPositionTicks,
                 PlayCount = dto.PlayCount,
+                IsHiddenByUser = dto.IsHiddenByUser,
                 Played = dto.Played,
                 Rating = dto.Rating,
                 UserId = userId,
@@ -170,6 +176,7 @@ namespace Emby.Server.Implementations.Library
                 Likes = dto.Likes,
                 PlaybackPositionTicks = dto.PlaybackPositionTicks,
                 PlayCount = dto.PlayCount,
+                IsHiddenByUser = dto.IsHiddenByUser,
                 Played = dto.Played,
                 Rating = dto.Rating,
                 SubtitleStreamIndex = dto.SubtitleStreamIndex,
@@ -277,6 +284,7 @@ namespace Emby.Server.Implementations.Library
                 PlaybackPositionTicks = data.PlaybackPositionTicks,
                 PlayCount = data.PlayCount,
                 Rating = data.Rating,
+                IsHiddenByUser = data.IsHiddenByUser,
                 Played = data.Played,
                 LastPlayedDate = data.LastPlayedDate,
                 ItemId = itemId,

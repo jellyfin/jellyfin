@@ -114,6 +114,7 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="includeItemTypes">Optional. If specified, results will be filtered based on the item type. This allows multiple, comma delimited.</param>
     /// <param name="filters">Optional. Specify additional filters to apply. This allows multiple, comma delimited. Options: IsFolder, IsNotFolder, IsUnplayed, IsPlayed, IsFavorite, IsResumable, Likes, Dislikes.</param>
     /// <param name="isFavorite">Optional filter by items that are marked as favorite, or not.</param>
+    /// <param name="isHiddenByUser">Optional filter by items that are marked as hidden by the user, or not.</param>
     /// <param name="mediaTypes">Optional filter by MediaType. Allows multiple, comma delimited.</param>
     /// <param name="imageTypes">Optional. If specified, results will be filtered based on those containing image types. This allows multiple, comma delimited.</param>
     /// <param name="sortBy">Optional. Specify one or more sort orders, comma delimited. Options: Album, AlbumArtist, Artist, Budget, CommunityRating, CriticRating, DateCreated, DatePlayed, PlayCount, PremiereDate, ProductionYear, SortName, Random, Revenue, Runtime.</param>
@@ -204,6 +205,7 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] BaseItemKind[] includeItemTypes,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFilter[] filters,
         [FromQuery] bool? isFavorite,
+        [FromQuery] bool? isHiddenByUser,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] MediaType[] mediaTypes,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ImageType[] imageTypes,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemSortBy[] sortBy,
@@ -318,6 +320,7 @@ public class ItemsController : BaseJellyfinApiController
                 Recursive = recursive ?? false,
                 OrderBy = RequestHelpers.GetOrderBy(sortBy, sortOrder),
                 IsFavorite = isFavorite,
+                IsHiddenByUser = isHiddenByUser,
                 Limit = limit,
                 StartIndex = startIndex,
                 IsMissing = isMissing,
@@ -399,6 +402,9 @@ public class ItemsController : BaseJellyfinApiController
                         break;
                     case ItemFilter.IsFavoriteOrLikes:
                         query.IsFavoriteOrLiked = true;
+                        break;
+                    case ItemFilter.IsHiddenByUser:
+                        query.IsHiddenByUser = true;
                         break;
                     case ItemFilter.IsFolder:
                         query.IsFolder = true;
@@ -580,6 +586,7 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="includeItemTypes">Optional. If specified, results will be filtered based on the item type. This allows multiple, comma delimited.</param>
     /// <param name="filters">Optional. Specify additional filters to apply. This allows multiple, comma delimited. Options: IsFolder, IsNotFolder, IsUnplayed, IsPlayed, IsFavorite, IsResumable, Likes, Dislikes.</param>
     /// <param name="isFavorite">Optional filter by items that are marked as favorite, or not.</param>
+    /// <param name="isHiddenByUser">Optional filter by items that are marked as hidden, or not.</param>
     /// <param name="mediaTypes">Optional filter by MediaType. Allows multiple, comma delimited.</param>
     /// <param name="imageTypes">Optional. If specified, results will be filtered based on those containing image types. This allows multiple, comma delimited.</param>
     /// <param name="sortBy">Optional. Specify one or more sort orders, comma delimited. Options: Album, AlbumArtist, Artist, Budget, CommunityRating, CriticRating, DateCreated, DatePlayed, PlayCount, PremiereDate, ProductionYear, SortName, Random, Revenue, Runtime.</param>
@@ -671,6 +678,7 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] BaseItemKind[] includeItemTypes,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFilter[] filters,
         [FromQuery] bool? isFavorite,
+        [FromQuery] bool? isHiddenByUser,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] MediaType[] mediaTypes,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ImageType[] imageTypes,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemSortBy[] sortBy,
@@ -758,6 +766,7 @@ public class ItemsController : BaseJellyfinApiController
             includeItemTypes,
             filters,
             isFavorite,
+            isHiddenByUser,
             mediaTypes,
             imageTypes,
             sortBy,

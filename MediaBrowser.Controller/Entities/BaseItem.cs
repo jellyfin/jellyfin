@@ -2323,6 +2323,13 @@ namespace MediaBrowser.Controller.Entities
             return userdata is not null && userdata.Played;
         }
 
+        public virtual bool IsHiddenByUser(User user)
+        {
+            var userdata = UserDataManager.GetUserData(user, this);
+
+            return userdata is not null && userdata.IsHiddenByUser;
+        }
+
         public bool IsFavoriteOrLiked(User user)
         {
             var userdata = UserDataManager.GetUserData(user, this);
