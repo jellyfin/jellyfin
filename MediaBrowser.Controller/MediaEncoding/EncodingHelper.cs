@@ -2390,6 +2390,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                             || (requestHasSDR && videoStream.VideoRangeType == VideoRangeType.DOVIWithSDR)
                             || (requestHasHDR10 && videoStream.VideoRangeType == VideoRangeType.HDR10Plus)))
                 {
+                    // If the video stream is in a static HDR format, don't allow copy if the client does not support HDR10 or HLG.
+                    if (videoStream.VideoRangeType is VideoRangeType.HDR10 or VideoRangeType.HLG)
+                    {
+                        return false;
+                    }
+
                     // Check complicated cases where we need to remove dynamic metadata
                     // Conservatively refuse to copy if the encoder can't remove dynamic metadata,
                     // but a removal is required for compatability reasons.
@@ -4441,6 +4447,13 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 var swapOutputWandH = doVppTranspose && swapWAndH;
                 var hwScaleFilter = GetHwScaleFilter("vpp", "qsv", outFormat, swapOutputWandH, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
+
+                // d3d11va doesn't support dynamic pool size, use vpp filter ctx to relay
+                // to prevent encoder async and bframes from exhausting the decoder pool.
+                if (!string.IsNullOrEmpty(hwScaleFilter) && isD3d11vaDecoder)
+                {
+                    hwScaleFilter += ":passthrough=0";
+                }
 
                 if (!string.IsNullOrEmpty(hwScaleFilter) && doVppTranspose)
                 {

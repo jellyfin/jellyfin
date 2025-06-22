@@ -135,5 +135,7 @@
     "TaskMoveTrickplayImages": "Trickplayの画像を移動",
     "TaskMoveTrickplayImagesDescription": "ライブラリ設定によりTrickplayのファイルを移動。",
     "TaskDownloadMissingLyrics": "失われた歌詞をダウンロード",
-    "TaskExtractMediaSegmentsDescription": "MediaSegment 対応プラグインからメディア セグメントを抽出または取得します。"
+    "TaskExtractMediaSegmentsDescription": "MediaSegment 対応プラグインからメディア セグメントを抽出または取得します。",
+    "CleanupUserDataTask": "ユーザーデータのクリーンアップタスク",
+    "CleanupUserDataTaskDescription": "90日以上存在しないメディアに対して、視聴状態やお気に入り状態などのユーザーデータをすべて削除します。"
 }
