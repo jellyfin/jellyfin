@@ -1302,7 +1302,7 @@ public sealed class BaseItemRepository
         {
             Path = appHost?.ExpandVirtualPath(e.Path) ?? e.Path,
             BlurHash = e.Blurhash is null ? null : Encoding.UTF8.GetString(e.Blurhash),
-            DateModified = e.DateModified,
+            DateModified = e.DateModified ?? DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc),
             Height = e.Height,
             Width = e.Width,
             Type = (ImageType)e.ImageType

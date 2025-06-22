@@ -117,7 +117,7 @@ public class FixDates : IAsyncMigrationRoutine
                         .WithCancellation(cancellationToken)
                         .ConfigureAwait(false))
         {
-            result.DateModified = ToUniversalTime(result.DateModified) ?? DateTime.MinValue;
+            result.DateModified = ToUniversalTime(result.DateModified);
             itemCount++;
         }
 

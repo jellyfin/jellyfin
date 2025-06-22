@@ -418,7 +418,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<byte[]>("Blurhash")
                         .HasColumnType("BLOB");
 
-                    b.Property<DateTime>("DateModified")
+                    b.Property<DateTime?>("DateModified")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Height")
