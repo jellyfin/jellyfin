@@ -336,9 +336,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
                 foreach (var actor in castQuery.Take(config.MaxCastMembers))
                 {
+                    if (string.IsNullOrWhiteSpace(actor.Name))
+                    {
+                        continue;
+                    }
+
                     var personInfo = new PersonInfo
                     {
-                        Name = actor.Name?.Trim() ?? string.Empty,
+                        Name = actor.Name.Trim(),
                         Role = actor.Character?.Trim() ?? string.Empty,
                         Type = PersonKind.Actor,
                         SortOrder = actor.Order,
@@ -375,9 +380,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 {
                     var crewMember = entry.CrewMember;
 
+                    if (string.IsNullOrWhiteSpace(crewMember.Name))
+                    {
+                        continue;
+                    }
+
                     var personInfo = new PersonInfo
                     {
-                        Name = crewMember.Name?.Trim() ?? string.Empty,
+                        Name = crewMember.Name.Trim(),
                         Role = crewMember.Job?.Trim() ?? string.Empty,
                         Type = entry.PersonType,
                         ImageUrl = _tmdbClientManager.GetProfileUrl(crewMember.ProfilePath)

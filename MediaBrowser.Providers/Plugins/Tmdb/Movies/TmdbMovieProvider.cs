@@ -261,9 +261,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
                 foreach (var actor in castQuery)
                 {
+                    if (string.IsNullOrWhiteSpace(actor.Name))
+                    {
+                        continue;
+                    }
+
                     var personInfo = new PersonInfo
                     {
-                        Name = actor.Name?.Trim() ?? string.Empty,
+                        Name = actor.Name.Trim(),
                         Role = actor.Character?.Trim() ?? string.Empty,
                         Type = PersonKind.Actor,
                         SortOrder = actor.Order
@@ -306,9 +311,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 {
                     var crewMember = entry.CrewMember;
 
+                    if (string.IsNullOrWhiteSpace(crewMember.Name))
+                    {
+                        continue;
+                    }
+
                     var personInfo = new PersonInfo
                     {
-                        Name = crewMember.Name?.Trim() ?? string.Empty,
+                        Name = crewMember.Name.Trim(),
                         Role = crewMember.Job?.Trim() ?? string.Empty,
                         Type = entry.PersonType
                     };
