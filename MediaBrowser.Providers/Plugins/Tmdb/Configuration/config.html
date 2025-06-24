@@ -30,6 +30,13 @@
                         <div class="fieldDescription">The maximum number of cast members to fetch for an item.</div>
                     </div>
                     <div class="verticalSection verticalSection-extrabottompadding">
+                        <h2>Collection</h2>
+                        <label class="checkboxContainer">
+                            <input is="emby-checkbox" type="checkbox" id="showMissing" />
+                            <span>Show missing movies of a collection.</span>
+                        </label>
+                    </div>
+                    <div class="verticalSection verticalSection-extrabottompadding">
                         <h2>Image Scaling</h2>
                         <div class="selectContainer">
                             <select is="emby-select" id="selectPosterSize" label="Poster"></select>
@@ -129,6 +136,7 @@
                         document.querySelector('#excludeTagsSeries').checked = config.ExcludeTagsSeries;
                         document.querySelector('#excludeTagsMovies').checked = config.ExcludeTagsMovies;
                         document.querySelector('#importSeasonName').checked = config.ImportSeasonName;
+                        document.querySelector('#showMissing').checked = config.ShowMissing;
 
                         var maxCastMembers = document.querySelector('#maxCastMembers');
                         maxCastMembers.value = config.MaxCastMembers;
@@ -152,6 +160,7 @@
                         config.ExcludeTagsSeries = document.querySelector('#excludeTagsSeries').checked;
                         config.ExcludeTagsMovies = document.querySelector('#excludeTagsMovies').checked;
                         config.ImportSeasonName = document.querySelector('#importSeasonName').checked;
+                        config.ShowMissing = document.querySelector('#showMissing').checked;
                         config.MaxCastMembers = document.querySelector('#maxCastMembers').value;
                         config.PosterSize = document.querySelector('#selectPosterSize').value;
                         config.BackdropSize = document.querySelector('#selectBackdropSize').value;
