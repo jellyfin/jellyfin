@@ -91,6 +91,7 @@ public partial class LrcLyricParser : ILyricParser
                     {
                         cues.Add(new LyricLineCue(
                             position: currentPos,
+                            endPosition: nextPos,
                             start: TimeSpan.FromMilliseconds(currentMs).Ticks,
                             end: TimeSpan.FromMilliseconds(nextMs).Ticks));
                     }
@@ -106,6 +107,7 @@ public partial class LrcLyricParser : ILyricParser
                 {
                     cues.Add(new LyricLineCue(
                         position: lastPos,
+                        endPosition: lyric.Text.Length,
                         start: TimeSpan.FromMilliseconds(lastMs).Ticks,
                         end: lineIndex + 1 < sortedLyricData.Count ? TimeSpan.FromMilliseconds(sortedLyricData[lineIndex + 1].StartTime).Ticks : null));
                 }
