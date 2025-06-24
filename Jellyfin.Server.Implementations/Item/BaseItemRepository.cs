@@ -256,7 +256,7 @@ public sealed class BaseItemRepository
         dbQuery = ApplyGroupingFilter(dbQuery, filter);
         dbQuery = ApplyQueryPaging(dbQuery, filter);
 
-        result.Items = dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToArray();
+        result.Items = dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).ToArray();
         result.StartIndex = filter.StartIndex ?? 0;
         return result;
     }
@@ -275,7 +275,7 @@ public sealed class BaseItemRepository
         dbQuery = ApplyGroupingFilter(dbQuery, filter);
         dbQuery = ApplyQueryPaging(dbQuery, filter);
 
-        return dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToArray();
+        return dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).ToArray();
     }
 
     /// <inheritdoc/>
@@ -317,7 +317,7 @@ public sealed class BaseItemRepository
         mainquery = ApplyGroupingFilter(mainquery, filter);
         mainquery = ApplyQueryPaging(mainquery, filter);
 
-        return mainquery.AsEnumerable().Where(e => e is not null).Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToArray();
+        return mainquery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).ToArray();
     }
 
     /// <inheritdoc />
@@ -655,7 +655,7 @@ public sealed class BaseItemRepository
             return null;
         }
 
-        return DeserialiseBaseItem(item);
+        return DeserializeBaseItem(item);
     }
 
     /// <summary>
@@ -701,7 +701,7 @@ public sealed class BaseItemRepository
         dto.TotalBitrate = entity.TotalBitrate;
         dto.ExternalId = entity.ExternalId;
         dto.Size = entity.Size;
-        dto.Genres = entity.Genres?.Split('|') ?? [];
+        dto.Genres = string.IsNullOrWhiteSpace(entity.Genres) ? [] : entity.Genres.Split('|');
         dto.DateCreated = entity.DateCreated.GetValueOrDefault();
         dto.DateModified = entity.DateModified.GetValueOrDefault();
         dto.ChannelId = entity.ChannelId ?? Guid.Empty;
@@ -733,7 +733,7 @@ public sealed class BaseItemRepository
         dto.ExtraIds = string.IsNullOrWhiteSpace(entity.ExtraIds) ? [] : entity.ExtraIds.Split('|').Select(e => Guid.Parse(e)).ToArray();
         dto.ProductionLocations = entity.ProductionLocations?.Split('|') ?? [];
         dto.Studios = entity.Studios?.Split('|') ?? [];
-        dto.Tags = entity.Tags?.Split('|') ?? [];
+        dto.Tags = string.IsNullOrWhiteSpace(entity.Tags) ? [] : entity.Tags.Split('|');
 
         if (dto is IHasProgramAttributes hasProgramAttributes)
         {
@@ -1017,7 +1017,7 @@ public sealed class BaseItemRepository
         return type.GetCustomAttribute<RequiresSourceSerialisationAttribute>() == null;
     }
 
-    private BaseItemDto DeserialiseBaseItem(BaseItemEntity baseItemEntity, bool skipDeserialization = false)
+    private BaseItemDto DeserializeBaseItem(BaseItemEntity baseItemEntity, bool skipDeserialization = false)
     {
         ArgumentNullException.ThrowIfNull(baseItemEntity, nameof(baseItemEntity));
         if (_serverConfigurationManager?.Configuration is null)
@@ -1026,7 +1026,7 @@ public sealed class BaseItemRepository
         }
 
         var typeToSerialise = GetType(baseItemEntity.Type);
-        return BaseItemRepository.DeserialiseBaseItem(
+        return BaseItemRepository.DeserializeBaseItem(
             baseItemEntity,
             _logger,
             _appHost,
@@ -1034,7 +1034,7 @@ public sealed class BaseItemRepository
     }
 
     /// <summary>
-    /// Deserialises a BaseItemEntity and sets all properties.
+    /// Deserializes a BaseItemEntity and sets all properties.
     /// </summary>
     /// <param name="baseItemEntity">The DB entity.</param>
     /// <param name="logger">Logger.</param>
@@ -1042,9 +1042,9 @@ public sealed class BaseItemRepository
     /// <param name="skipDeserialization">If only mapping should be processed.</param>
     /// <returns>A mapped BaseItem.</returns>
     /// <exception cref="InvalidOperationException">Will be thrown if an invalid serialisation is requested.</exception>
-    public static BaseItemDto DeserialiseBaseItem(BaseItemEntity baseItemEntity, ILogger logger, IServerApplicationHost? appHost, bool skipDeserialization = false)
+    public static BaseItemDto DeserializeBaseItem(BaseItemEntity baseItemEntity, ILogger logger, IServerApplicationHost? appHost, bool skipDeserialization = false)
     {
-        var type = GetType(baseItemEntity.Type) ?? throw new InvalidOperationException("Cannot deserialise unknown type.");
+        var type = GetType(baseItemEntity.Type) ?? throw new InvalidOperationException("Cannot deserialize unknown type.");
         BaseItemDto? dto = null;
         if (TypeRequiresDeserialization(type) && baseItemEntity.Data is not null && !skipDeserialization)
         {
@@ -1060,7 +1060,7 @@ public sealed class BaseItemRepository
 
         if (dto is null)
         {
-            dto = Activator.CreateInstance(type) as BaseItemDto ?? throw new InvalidOperationException("Cannot deserialise unknown type.");
+            dto = Activator.CreateInstance(type) as BaseItemDto ?? throw new InvalidOperationException("Cannot deserialize unknown type.");
         }
 
         return Map(baseItemEntity, dto, appHost);
@@ -1206,7 +1206,7 @@ public sealed class BaseItemRepository
                     .Where(e => e is not null)
                     .Select(e =>
                     {
-                        return (DeserialiseBaseItem(e.item, filter.SkipDeserialization), e.itemCount);
+                        return (DeserializeBaseItem(e.item, filter.SkipDeserialization), e.itemCount);
                     })
             ];
         }
@@ -1221,7 +1221,7 @@ public sealed class BaseItemRepository
                     .Where(e => e is not null)
                     .Select<BaseItemEntity, (BaseItemDto, ItemCounts?)>(e =>
                     {
-                        return (DeserialiseBaseItem(e, filter.SkipDeserialization), null);
+                        return (DeserializeBaseItem(e, filter.SkipDeserialization), null);
                     })
             ];
         }

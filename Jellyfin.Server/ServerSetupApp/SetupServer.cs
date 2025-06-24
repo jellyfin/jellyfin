@@ -19,7 +19,6 @@ using MediaBrowser.Model.System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -29,6 +28,8 @@ using Microsoft.Extensions.Primitives;
 using Morestachio;
 using Morestachio.Framework.IO.SingleStream;
 using Morestachio.Rendering;
+using Serilog;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Jellyfin.Server.ServerSetupApp;
 
@@ -143,8 +144,10 @@ public sealed class SetupServer : IDisposable
         var config = _configurationManager.GetNetworkConfiguration()!;
         _startupServer = Host.CreateDefaultBuilder(["hostBuilder:reloadConfigOnChange=false"])
             .UseConsoleLifetime()
+            .UseSerilog()
             .ConfigureServices(serv =>
             {
+                serv.AddSingleton(this);
                 serv.AddHealthChecks()
                     .AddCheck<SetupHealthcheck>("StartupCheck");
                 serv.Configure<ForwardedHeadersOptions>(options =>

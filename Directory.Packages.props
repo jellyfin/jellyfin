@@ -59,7 +59,7 @@
     <PackageVersion Include="prometheus-net.AspNetCore" Version="8.2.1" />
     <PackageVersion Include="prometheus-net.DotNetRuntime" Version="4.4.1" />
     <PackageVersion Include="prometheus-net" Version="8.2.1" />
-    <PackageVersion Include="Polly" Version="8.6.0" />
+    <PackageVersion Include="Polly" Version="8.6.1" />
     <PackageVersion Include="Serilog.AspNetCore" Version="9.0.0" />
     <PackageVersion Include="Serilog.Enrichers.Thread" Version="4.0.0" />
     <PackageVersion Include="Serilog.Settings.Configuration" Version="9.0.0" />
@@ -79,7 +79,7 @@
     <PackageVersion Include="Swashbuckle.AspNetCore.ReDoc" Version="6.5.0" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.2.3" />
     <PackageVersion Include="System.Globalization" Version="4.3.0" />
-    <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
+    <PackageVersion Include="System.Linq.Async" Version="6.0.3" />
     <PackageVersion Include="System.Text.Encoding.CodePages" Version="9.0.6" />
     <PackageVersion Include="System.Text.Json" Version="9.0.6" />
     <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="9.0.6" />
