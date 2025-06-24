@@ -67,49 +67,48 @@ public partial class LrcLyricParser : ILyricParser
         }
 
         List<LyricLine> lyricList = [];
-        for (var l = 0; l < sortedLyricData.Count; l++)
+        for (var lineIndex = 0; lineIndex < sortedLyricData.Count; lineIndex++)
         {
-            var lyric = sortedLyricData[l];
+            var lyric = sortedLyricData[lineIndex];
 
             // Extract cues from time tags
             var cues = new List<LyricLineCue>();
-            var keys = lyric.TimeTags.Keys.ToList();
-            int current = 0, next = 1;
-            while (next < keys.Count)
+            if (lyric.TimeTags.Count > 0)
             {
-                var currentKey = keys[current];
-                var nextKey = keys[next];
-
-                var currentPos = currentKey.State == IndexState.End ? currentKey.Index + 1 : currentKey.Index;
-                var nextPos = nextKey.State == IndexState.End ? nextKey.Index + 1 : nextKey.Index;
-                var currentMs = lyric.TimeTags[currentKey] ?? 0;
-                var nextMs = lyric.TimeTags[keys[next]] ?? 0;
-                var currentSlice = lyric.Text[currentPos..nextPos];
-                var currentSliceTrimmed = currentSlice.Trim();
-                if (currentSliceTrimmed.Length > 0)
+                var keys = lyric.TimeTags.Keys.ToList();
+                for (var tagIndex = 0; tagIndex < keys.Count - 1; tagIndex++)
                 {
-                    cues.Add(new LyricLineCue(
-                        position: currentPos,
-                        start: TimeSpan.FromMilliseconds(currentMs).Ticks,
-                        end: TimeSpan.FromMilliseconds(nextMs).Ticks));
+                    var currentKey = keys[tagIndex];
+                    var nextKey = keys[tagIndex + 1];
+
+                    var currentPos = currentKey.State == IndexState.End ? currentKey.Index + 1 : currentKey.Index;
+                    var nextPos = nextKey.State == IndexState.End ? nextKey.Index + 1 : nextKey.Index;
+                    var currentMs = lyric.TimeTags[currentKey] ?? 0;
+                    var nextMs = lyric.TimeTags[keys[tagIndex + 1]] ?? 0;
+                    var currentSlice = lyric.Text[currentPos..nextPos];
+                    var currentSliceTrimmed = currentSlice.Trim();
+                    if (currentSliceTrimmed.Length > 0)
+                    {
+                        cues.Add(new LyricLineCue(
+                            position: currentPos,
+                            start: TimeSpan.FromMilliseconds(currentMs).Ticks,
+                            end: TimeSpan.FromMilliseconds(nextMs).Ticks));
+                    }
                 }
 
-                current++;
-                next++;
-            }
+                var lastKey = keys[^1];
+                var lastPos = lastKey.State == IndexState.End ? lastKey.Index + 1 : lastKey.Index;
+                var lastMs = lyric.TimeTags[lastKey] ?? 0;
+                var lastSlice = lyric.Text[lastPos..];
+                var lastSliceTrimmed = lastSlice.Trim();
 
-            var lastKey = keys[current];
-            var lastPos = lastKey.State == IndexState.End ? lastKey.Index + 1 : lastKey.Index;
-            var lastMs = lyric.TimeTags[lastKey] ?? 0;
-            var lastSlice = lyric.Text[lastPos..];
-            var lastSliceTrimmed = lastSlice.Trim();
-
-            if (lastSliceTrimmed.Length > 0)
-            {
-                cues.Add(new LyricLineCue(
-                    position: lastPos,
-                    start: TimeSpan.FromMilliseconds(lastMs).Ticks,
-                    end: l + 1 < sortedLyricData.Count ? TimeSpan.FromMilliseconds(sortedLyricData[l + 1].StartTime).Ticks : null));
+                if (lastSliceTrimmed.Length > 0)
+                {
+                    cues.Add(new LyricLineCue(
+                        position: lastPos,
+                        start: TimeSpan.FromMilliseconds(lastMs).Ticks,
+                        end: lineIndex + 1 < sortedLyricData.Count ? TimeSpan.FromMilliseconds(sortedLyricData[lineIndex + 1].StartTime).Ticks : null));
+                }
             }
 
             long lyricStartTicks = TimeSpan.FromMilliseconds(lyric.StartTime).Ticks;
