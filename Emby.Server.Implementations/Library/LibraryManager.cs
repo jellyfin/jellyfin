@@ -2054,6 +2054,8 @@ namespace Emby.Server.Implementations.Library
             {
                 item.DateLastSaved = DateTime.UtcNow;
                 await RunMetadataSavers(item, updateReason).ConfigureAwait(false);
+
+                // Modify again, so saved value is after write time of externally saved metadata
                 item.DateLastSaved = DateTime.UtcNow;
             }
 

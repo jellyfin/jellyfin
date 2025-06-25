@@ -807,7 +807,7 @@ public sealed class BaseItemRepository
 
         if (dto is Folder folder)
         {
-            folder.DateLastMediaAdded = entity.DateLastMediaAdded;
+            folder.DateLastMediaAdded = entity.DateLastMediaAdded ?? DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc);
         }
 
         return dto;
@@ -981,7 +981,7 @@ public sealed class BaseItemRepository
 
         if (dto is Folder folder)
         {
-            entity.DateLastMediaAdded = folder.DateLastMediaAdded;
+            entity.DateLastMediaAdded = folder.DateLastMediaAdded == DateTime.MinValue ? null : folder.DateLastMediaAdded;
             entity.IsFolder = folder.IsFolder;
         }
 
