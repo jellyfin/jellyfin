@@ -136,5 +136,7 @@
     "TaskCleanCollectionsAndPlaylists": "Bersihkan koleksi dan senarai audio video",
     "TaskAudioNormalization": "Normalisasi Audio",
     "TaskAudioNormalizationDescription": "Mengimbas fail-fail untuk data normalisasi audio.",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Mengalih keluar item daripada koleksi dan senarai audio video yang tidak wujud lagi."
+    "TaskCleanCollectionsAndPlaylistsDescription": "Mengalih keluar item daripada koleksi dan senarai audio video yang tidak wujud lagi.",
+    "CleanupUserDataTaskDescription": "Membersihkan semua data pengguna (keadaan tontonan, status kegemaran, dan sebagainya) daripada media yang tidak lagi wujud sekurang-kurangnya selama 90 hari.",
+    "CleanupUserDataTask": "Tugas pembersihan data pengguna"
 }
