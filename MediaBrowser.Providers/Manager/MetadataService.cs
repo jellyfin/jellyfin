@@ -454,7 +454,7 @@ namespace MediaBrowser.Providers.Manager
 
             if (item is Folder folder && folder.SupportsDateLastMediaAdded)
             {
-                DateTime? dateLastMediaAdded = null;
+                var dateLastMediaAdded = DateTime.MinValue;
                 var any = false;
 
                 foreach (var child in children)
