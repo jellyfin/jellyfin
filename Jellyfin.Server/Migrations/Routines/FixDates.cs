@@ -69,8 +69,7 @@ public class FixDates : IAsyncMigrationRoutine
                                     partition + 1,
                                     Math.Min((partition + 1) * PageSize, records),
                                     records,
-                                    sw.Elapsed),
-                            async (partition, time) => await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false))
+                                    sw.Elapsed))
                         .PartitionEagerAsync(PageSize, cancellationToken)
                         .WithCancellation(cancellationToken)
                         .ConfigureAwait(false))
@@ -104,8 +103,7 @@ public class FixDates : IAsyncMigrationRoutine
                                     partition + 1,
                                     Math.Min((partition + 1) * PageSize, records),
                                     records,
-                                    sw.Elapsed),
-                            async (partition, time) => await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false))
+                                    sw.Elapsed))
                         .PartitionEagerAsync(PageSize, cancellationToken)
                         .WithCancellation(cancellationToken)
                         .ConfigureAwait(false))
@@ -135,8 +133,7 @@ public class FixDates : IAsyncMigrationRoutine
                                     partition + 1,
                                     Math.Min((partition + 1) * PageSize, records),
                                     records,
-                                    sw.Elapsed),
-                            async (partition, time) => await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false))
+                                    sw.Elapsed))
                         .PartitionEagerAsync(PageSize, cancellationToken)
                         .WithCancellation(cancellationToken)
                         .ConfigureAwait(false))
