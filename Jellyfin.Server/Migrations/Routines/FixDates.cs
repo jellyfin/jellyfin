@@ -67,19 +67,10 @@ public class FixDates : IAsyncMigrationRoutine
                                 _logger.LogInformation(
                                     "Processing BaseItems batch {BatchNumber} ({ProcessedSoFar}/{TotalRecords}) - Time: {ElapsedTime}",
                                     partition + 1,
-                                    () =>
-                                        {
-                                            var end = partition * PageSize;
-                                            if (end > records)
-                                            {
-                                                end = records;
-                                            }
-
-                                            return end;
-                                        },
+                                    Math.Min((partition + 1) * PageSize, records),
                                     records,
                                     sw.Elapsed),
-                            async (partiiton, time) => await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false))
+                            async (partition, time) => await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false))
                         .PartitionEagerAsync(PageSize, cancellationToken)
                         .WithCancellation(cancellationToken)
                         .ConfigureAwait(false))
@@ -111,19 +102,10 @@ public class FixDates : IAsyncMigrationRoutine
                                 _logger.LogInformation(
                                     "Processing Chapter batch {BatchNumber} ({ProcessedSoFar}/{TotalRecords}) - Time: {ElapsedTime}",
                                     partition + 1,
-                                    () =>
-                                        {
-                                            var end = partition * PageSize;
-                                            if (end > records)
-                                            {
-                                                end = records;
-                                            }
-
-                                            return end;
-                                        },
+                                    Math.Min((partition + 1) * PageSize, records),
                                     records,
                                     sw.Elapsed),
-                            async (partiiton, time) => await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false))
+                            async (partition, time) => await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false))
                         .PartitionEagerAsync(PageSize, cancellationToken)
                         .WithCancellation(cancellationToken)
                         .ConfigureAwait(false))
@@ -151,19 +133,10 @@ public class FixDates : IAsyncMigrationRoutine
                                 _logger.LogInformation(
                                     "Processing BaseItemImageInfos batch {BatchNumber} ({ProcessedSoFar}/{TotalRecords}) - Time: {ElapsedTime}",
                                     partition + 1,
-                                    () =>
-                                        {
-                                            var end = partition * PageSize;
-                                            if (end > records)
-                                            {
-                                                end = records;
-                                            }
-
-                                            return end;
-                                        },
+                                    Math.Min((partition + 1) * PageSize, records),
                                     records,
                                     sw.Elapsed),
-                            async (partiiton, time) => await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false))
+                            async (partition, time) => await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false))
                         .PartitionEagerAsync(PageSize, cancellationToken)
                         .WithCancellation(cancellationToken)
                         .ConfigureAwait(false))
