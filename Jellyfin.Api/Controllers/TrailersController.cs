@@ -71,8 +71,9 @@ public class TrailersController : BaseJellyfinApiController
     /// <param name="parentId">Specify this to localize the search to a specific item or folder. Omit to use the root.</param>
     /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
     /// <param name="excludeItemTypes">Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimited.</param>
-    /// <param name="filters">Optional. Specify additional filters to apply. This allows multiple, comma delimited. Options: IsFolder, IsNotFolder, IsUnplayed, IsPlayed, IsFavorite, IsResumable, Likes, Dislikes.</param>
+    /// <param name="filters">Optional. Specify additional filters to apply. This allows multiple, comma delimited. Options: IsFolder, IsNotFolder, IsUnplayed, IsPlayed, IsFavorite, IsHiddenByUser, IsResumable, Likes, Dislikes.</param>
     /// <param name="isFavorite">Optional filter by items that are marked as favorite, or not.</param>
+    /// <param name="isHiddenByUser">Optional filter by items that are marked as hidden by the user, or not.</param>
     /// <param name="mediaTypes">Optional filter by MediaType. Allows multiple, comma delimited.</param>
     /// <param name="imageTypes">Optional. If specified, results will be filtered based on those containing image types. This allows multiple, comma delimited.</param>
     /// <param name="sortBy">Optional. Specify one or more sort orders, comma delimited. Options: Album, AlbumArtist, Artist, Budget, CommunityRating, CriticRating, DateCreated, DatePlayed, PlayCount, PremiereDate, ProductionYear, SortName, Random, Revenue, Runtime.</param>
@@ -161,6 +162,7 @@ public class TrailersController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] BaseItemKind[] excludeItemTypes,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFilter[] filters,
         [FromQuery] bool? isFavorite,
+        [FromQuery] bool? isHiddenByUser,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] MediaType[] mediaTypes,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ImageType[] imageTypes,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemSortBy[] sortBy,
@@ -252,6 +254,7 @@ public class TrailersController : BaseJellyfinApiController
                 includeItemTypes,
                 filters,
                 isFavorite,
+                isHiddenByUser,
                 mediaTypes,
                 imageTypes,
                 sortBy,

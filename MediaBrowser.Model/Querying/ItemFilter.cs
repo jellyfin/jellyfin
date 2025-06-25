@@ -31,6 +31,11 @@ namespace MediaBrowser.Model.Querying
         IsFavorite = 5,
 
         /// <summary>
+        /// The item is a hidden.
+        /// </summary>
+        IsHiddenByUser = 6,
+
+        /// <summary>
         /// The item is resumable.
         /// </summary>
         IsResumable = 7,
