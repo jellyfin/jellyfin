@@ -2050,12 +2050,14 @@ namespace Emby.Server.Implementations.Library
         /// <inheritdoc />
         public async Task UpdateItemsAsync(IReadOnlyList<BaseItem> items, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
         {
-            _itemRepository.SaveItems(items, cancellationToken);
-
             foreach (var item in items)
             {
+                item.DateLastSaved = DateTime.UtcNow;
                 await RunMetadataSavers(item, updateReason).ConfigureAwait(false);
+                item.DateLastSaved = DateTime.UtcNow;
             }
+
+            _itemRepository.SaveItems(items, cancellationToken);
 
             if (ItemUpdated is not null)
             {

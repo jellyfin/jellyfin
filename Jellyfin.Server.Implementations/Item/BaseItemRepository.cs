@@ -540,7 +540,7 @@ public sealed class BaseItemRepository
         }
 
         var itemValueMaps = tuples
-            .Select(e => (Item: e.Item, Values: GetItemValuesToSave(e.Item, e.InheritedTags)))
+            .Select(e => (e.Item, Values: GetItemValuesToSave(e.Item, e.InheritedTags)))
             .ToArray();
         var allListedItemValues = itemValueMaps
             .SelectMany(f => f.Values)
@@ -567,7 +567,7 @@ public sealed class BaseItemRepository
 
         var itemValuesStore = existingValues.Concat(missingItemValues).ToArray();
         var valueMap = itemValueMaps
-            .Select(f => (Item: f.Item, Values: f.Values.Select(e => itemValuesStore.First(g => g.Value == e.Value && g.Type == e.MagicNumber)).ToArray()))
+            .Select(f => (f.Item, Values: f.Values.Select(e => itemValuesStore.First(g => g.Value == e.Value && g.Type == e.MagicNumber)).ToArray()))
             .ToArray();
 
         var mappedValues = context.ItemValuesMap.Where(e => ids.Contains(e.ItemId)).ToList();

@@ -720,7 +720,6 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            item.DateLastSaved = DateTime.UtcNow;
             _libraryManager.CreateItem(item, null);
         }
 

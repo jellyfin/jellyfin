@@ -73,7 +73,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
                 return false;
             }
 
-            return file.Exists && item.DateLastSaved != DateTimeOffset.MinValue && _fileSystem.GetLastWriteTimeUtc(file) > item.DateLastSaved;
+            return file.Exists && _fileSystem.GetLastWriteTimeUtc(file) > item.DateLastSaved;
         }
 
         protected abstract void Fetch(MetadataResult<T> result, string path, CancellationToken cancellationToken);
