@@ -1699,7 +1699,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (SupportsPlayedStatus)
             {
-                var unplayedQueryResult = GetItems(new InternalItemsQuery(user)
+                var unplayedQueryResult = LibraryManager.GetCount(new InternalItemsQuery(user)
                 {
                     Recursive = true,
                     IsFolder = false,
@@ -1707,12 +1707,7 @@ namespace MediaBrowser.Controller.Entities
                     EnableTotalRecordCount = true,
                     Limit = 0,
                     IsPlayed = false,
-                    DtoOptions = new DtoOptions(false)
-                    {
-                        EnableImages = false
-                    }
-                }).TotalRecordCount;
-
+                });
                 dto.UnplayedItemCount = unplayedQueryResult;
 
                 if (itemDto?.RecursiveItemCount > 0)
