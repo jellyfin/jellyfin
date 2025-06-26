@@ -7151,7 +7151,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 inputModifier += " -async " + state.InputAudioSync;
             }
 
-            if (!string.IsNullOrEmpty(state.InputVideoSync))
+            // The -fps_mode option cannot be applied to input
+            if (!string.IsNullOrEmpty(state.InputVideoSync) && _mediaEncoder.EncoderVersion < new Version(5, 1))
             {
                 inputModifier += GetVideoSyncOption(state.InputVideoSync, _mediaEncoder.EncoderVersion);
             }
