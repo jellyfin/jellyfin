@@ -2050,12 +2050,16 @@ namespace Emby.Server.Implementations.Library
         /// <inheritdoc />
         public async Task UpdateItemsAsync(IReadOnlyList<BaseItem> items, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
         {
-            _itemRepository.SaveItems(items, cancellationToken);
-
             foreach (var item in items)
             {
+                item.DateLastSaved = DateTime.UtcNow;
                 await RunMetadataSavers(item, updateReason).ConfigureAwait(false);
+
+                // Modify again, so saved value is after write time of externally saved metadata
+                item.DateLastSaved = DateTime.UtcNow;
             }
+
+            _itemRepository.SaveItems(items, cancellationToken);
 
             if (ItemUpdated is not null)
             {
@@ -2096,8 +2100,6 @@ namespace Emby.Server.Implementations.Library
             {
                 await ProviderManager.SaveMetadataAsync(item, updateReason).ConfigureAwait(false);
             }
-
-            item.DateLastSaved = DateTime.UtcNow;
 
             await UpdateImagesAsync(item, updateReason >= ItemUpdateType.ImageUpdate).ConfigureAwait(false);
         }
@@ -2384,12 +2386,13 @@ namespace Emby.Server.Implementations.Library
                 isNew = true;
             }
 
-            var refresh = isNew || DateTime.UtcNow - item.DateLastRefreshed >= _viewRefreshInterval;
+            var lastRefreshedUtc = item.DateLastRefreshed;
+            var refresh = isNew || DateTime.UtcNow - lastRefreshedUtc >= _viewRefreshInterval;
 
             if (!refresh && !item.DisplayParentId.IsEmpty())
             {
                 var displayParent = GetItemById(item.DisplayParentId);
-                refresh = displayParent is not null && displayParent.DateLastSaved > item.DateLastRefreshed;
+                refresh = displayParent is not null && displayParent.DateLastSaved > lastRefreshedUtc;
             }
 
             if (refresh)
@@ -2447,12 +2450,13 @@ namespace Emby.Server.Implementations.Library
                 isNew = true;
             }
 
-            var refresh = isNew || DateTime.UtcNow - item.DateLastRefreshed >= _viewRefreshInterval;
+            var lastRefreshedUtc = item.DateLastRefreshed;
+            var refresh = isNew || DateTime.UtcNow - lastRefreshedUtc >= _viewRefreshInterval;
 
             if (!refresh && !item.DisplayParentId.IsEmpty())
             {
                 var displayParent = GetItemById(item.DisplayParentId);
-                refresh = displayParent is not null && displayParent.DateLastSaved > item.DateLastRefreshed;
+                refresh = displayParent is not null && displayParent.DateLastSaved > lastRefreshedUtc;
             }
 
             if (refresh)
@@ -2522,12 +2526,13 @@ namespace Emby.Server.Implementations.Library
                 item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).GetAwaiter().GetResult();
             }
 
-            var refresh = isNew || DateTime.UtcNow - item.DateLastRefreshed >= _viewRefreshInterval;
+            var lastRefreshedUtc = item.DateLastRefreshed;
+            var refresh = isNew || DateTime.UtcNow - lastRefreshedUtc >= _viewRefreshInterval;
 
             if (!refresh && !item.DisplayParentId.IsEmpty())
             {
                 var displayParent = GetItemById(item.DisplayParentId);
-                refresh = displayParent is not null && displayParent.DateLastSaved > item.DateLastRefreshed;
+                refresh = displayParent is not null && displayParent.DateLastSaved > lastRefreshedUtc;
             }
 
             if (refresh)
@@ -2991,13 +2996,12 @@ namespace Emby.Server.Implementations.Library
                     {
                         var path = Person.GetPath(person.Name);
                         var info = Directory.CreateDirectory(path);
-                        var lastWriteTime = info.LastWriteTimeUtc;
                         personEntity = new Person()
                         {
                             Name = person.Name,
                             Id = GetItemByNameId<Person>(path),
                             DateCreated = info.CreationTimeUtc,
-                            DateModified = lastWriteTime,
+                            DateModified = info.LastWriteTimeUtc,
                             Path = path
                         };
 
