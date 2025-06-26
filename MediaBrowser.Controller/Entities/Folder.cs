@@ -647,18 +647,17 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            var result = LibraryManager.GetCount(new InternalItemsQuery(user)
+            return LibraryManager.GetCount(new InternalItemsQuery(user)
             {
                 Recursive = false,
                 Limit = 0,
                 Parent = this,
                 DtoOptions = new DtoOptions(false)
                 {
-                    EnableImages = false
+                    EnableImages = false,
+                    EnableUserData = false,
                 }
             });
-
-            return result;
         }
 
         public virtual int GetRecursiveChildCount(User user)
@@ -666,13 +665,13 @@ namespace MediaBrowser.Controller.Entities
             return LibraryManager.GetCount(new InternalItemsQuery(user)
             {
                 Recursive = true,
+                Limit = 0,
                 IsFolder = false,
                 IsVirtualItem = false,
-                EnableTotalRecordCount = true,
-                Limit = 0,
                 DtoOptions = new DtoOptions(false)
                 {
-                    EnableImages = false
+                    EnableImages = false,
+                    EnableUserData = false,
                 }
             });
         }

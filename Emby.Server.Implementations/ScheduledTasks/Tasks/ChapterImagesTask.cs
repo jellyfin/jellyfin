@@ -89,7 +89,8 @@ public class ChapterImagesTask : IScheduledTask
             Recursive = true,
             DtoOptions = new DtoOptions(false)
             {
-                EnableImages = false
+                EnableImages = false,
+                EnableUserData = false,
             },
             SourceTypes = [SourceType.Library],
             IsVirtualItem = false

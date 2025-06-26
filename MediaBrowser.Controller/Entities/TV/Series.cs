@@ -126,12 +126,13 @@ namespace MediaBrowser.Controller.Entities.TV
             {
                 AncestorWithPresentationUniqueKey = null,
                 SeriesPresentationUniqueKey = seriesKey,
-                IncludeItemTypes = new[] { BaseItemKind.Season },
+                IncludeItemTypes = [BaseItemKind.Season],
                 IsVirtualItem = false,
                 Limit = 0,
                 DtoOptions = new DtoOptions(false)
                 {
-                    EnableImages = false
+                    EnableImages = false,
+                    EnableUserData = false,
                 }
             });
 
@@ -144,24 +145,23 @@ namespace MediaBrowser.Controller.Entities.TV
 
             var query = new InternalItemsQuery(user)
             {
+                Limit = 0,
+                IsVirtualItem = false,
                 AncestorWithPresentationUniqueKey = null,
                 SeriesPresentationUniqueKey = seriesKey,
                 DtoOptions = new DtoOptions(false)
                 {
-                    EnableImages = false
+                    EnableImages = false,
+                    EnableUserData = false,
                 }
             };
 
             if (query.IncludeItemTypes.Length == 0)
             {
-                query.IncludeItemTypes = new[] { BaseItemKind.Episode };
+                query.IncludeItemTypes = [BaseItemKind.Episode];
             }
 
-            query.IsVirtualItem = false;
-            query.Limit = 0;
-            var totalRecordCount = LibraryManager.GetCount(query);
-
-            return totalRecordCount;
+            return LibraryManager.GetCount(query);
         }
 
         /// <summary>
@@ -213,7 +213,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
             query.AncestorWithPresentationUniqueKey = null;
             query.SeriesPresentationUniqueKey = seriesKey;
-            query.IncludeItemTypes = new[] { BaseItemKind.Season };
+            query.IncludeItemTypes = [BaseItemKind.Season];
             query.OrderBy = new[] { (ItemSortBy.IndexNumber, SortOrder.Ascending) };
 
             if (user is not null && !user.DisplayMissingEpisodes)
@@ -250,7 +250,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
                 if (query.IncludeItemTypes.Length == 0)
                 {
-                    query.IncludeItemTypes = new[] { BaseItemKind.Episode, BaseItemKind.Season };
+                    query.IncludeItemTypes = [BaseItemKind.Episode, BaseItemKind.Season];
                 }
 
                 query.IsVirtualItem = false;
@@ -270,7 +270,7 @@ namespace MediaBrowser.Controller.Entities.TV
             {
                 AncestorWithPresentationUniqueKey = null,
                 SeriesPresentationUniqueKey = seriesKey,
-                IncludeItemTypes = new[] { BaseItemKind.Episode, BaseItemKind.Season },
+                IncludeItemTypes = [BaseItemKind.Episode, BaseItemKind.Season],
                 OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) },
                 DtoOptions = options,
             };
@@ -373,7 +373,7 @@ namespace MediaBrowser.Controller.Entities.TV
             {
                 AncestorWithPresentationUniqueKey = queryFromSeries ? null : seriesKey,
                 SeriesPresentationUniqueKey = queryFromSeries ? seriesKey : null,
-                IncludeItemTypes = new[] { BaseItemKind.Episode },
+                IncludeItemTypes = [BaseItemKind.Episode],
                 OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) },
                 DtoOptions = options
             };
