@@ -1952,16 +1952,9 @@ namespace Emby.Server.Implementations.Library
                     return true;
                 }
 
-                if (string.IsNullOrEmpty(image.BlurHash))
+                // this is only refreshable if a blurhash can be computed
+                if (string.IsNullOrEmpty(image.BlurHash) && _imageProcessor.CanComputeBlurHash(image.Path))
                 {
-                    // this is only refreshable if a blurhash can be computed
-                    var extension = Path.GetExtension(image.Path.AsSpan()).TrimStart('.');
-                    if (extension.Equals("svg", StringComparison.OrdinalIgnoreCase))
-                    {
-                        // svg files can't compute a blurhash
-                        return false;
-                    }
-
                     return true;
                 }
 
@@ -1997,6 +1990,7 @@ namespace Emby.Server.Implementations.Library
             foreach (var img in outdated)
             {
                 var image = img;
+                _logger.LogInformation("Refresh {ImagePath}", img.Path);
                 if (!img.IsLocalFile)
                 {
                     try
@@ -2036,14 +2030,21 @@ namespace Emby.Server.Implementations.Library
                     image.Height = 0;
                 }
 
+                image.BlurHash = string.Empty;
                 try
                 {
-                    image.BlurHash = _imageProcessor.GetImageBlurHash(image.Path, size);
+                    if (_imageProcessor.CanComputeBlurHash(image.Path))
+                    {
+                        image.BlurHash = _imageProcessor.GetImageBlurHash(image.Path, size);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Cannot compute blurhash for {ImagePath}", image.Path);
+                    }
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Cannot compute blurhash for {ImagePath}", image.Path);
-                    image.BlurHash = string.Empty;
                 }
 
                 try
