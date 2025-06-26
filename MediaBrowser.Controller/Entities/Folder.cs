@@ -655,7 +655,6 @@ namespace MediaBrowser.Controller.Entities
                 DtoOptions = new DtoOptions(false)
                 {
                     EnableImages = false,
-                    EnableUserData = false,
                 }
             });
         }
@@ -671,7 +670,6 @@ namespace MediaBrowser.Controller.Entities
                 DtoOptions = new DtoOptions(false)
                 {
                     EnableImages = false,
-                    EnableUserData = false,
                 }
             });
         }
