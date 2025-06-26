@@ -88,7 +88,7 @@ namespace Emby.Server.Implementations.Dto
             List<(BaseItem, BaseItemDto)>? programTuples = null;
             List<(BaseItemDto, LiveTvChannel)>? channelTuples = null;
 
-            for (int index = 0; index < accessibleItems.Count; index++)
+            Enumerable.Range(0, accessibleItems.Count).AsParallel().ForAll(index =>
             {
                 var item = accessibleItems[index];
                 var dto = GetBaseItemDtoInternal(item, options, user, owner);
@@ -120,7 +120,7 @@ namespace Emby.Server.Implementations.Dto
                 }
 
                 returnItems[index] = dto;
-            }
+            });
 
             if (programTuples is not null)
             {
