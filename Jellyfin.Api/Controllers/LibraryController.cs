@@ -578,8 +578,7 @@ public class LibraryController : BaseJellyfinApiController
             IncludeItemTypes = [BaseItemKind.Series],
             DtoOptions = new DtoOptions(false)
             {
-                    EnableImages = false,
-                    EnableUserData = false,
+                EnableImages = false,
             }
         }).Where(i => string.Equals(tvdbId, i.GetProviderId(MediaBrowser.Model.Entities.MetadataProvider.Tvdb), StringComparison.OrdinalIgnoreCase)).ToArray();
 
@@ -936,7 +935,6 @@ public class LibraryController : BaseJellyfinApiController
             DtoOptions = new DtoOptions(false)
             {
                 EnableImages = false,
-                EnableUserData = false,
             }
         };
 
