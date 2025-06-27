@@ -132,7 +132,7 @@ namespace Emby.Naming.Video
             }
         }
 
-        private class StackMetadata
+        private sealed class StackMetadata
         {
             public StackMetadata(bool isDirectory, bool isNumerical, string partType)
             {

@@ -243,7 +243,7 @@ public class TvShowsController : BaseJellyfinApiController
                 return NotFound("No season exists with Id " + seasonId);
             }
 
-            episodes = seasonItem.GetEpisodes(user, dtoOptions, shouldIncludeMissingEpisodes);
+            episodes = seasonItem.GetEpisodes(user, dtoOptions, shouldIncludeMissingEpisodes).ToList();
         }
         else if (season.HasValue) // Season number was supplied. Get episodes by season number
         {
@@ -258,8 +258,8 @@ public class TvShowsController : BaseJellyfinApiController
                 .FirstOrDefault(i => i.IndexNumber == season.Value);
 
             episodes = seasonItem is null ?
-                new List<BaseItem>()
-                : ((Season)seasonItem).GetEpisodes(user, dtoOptions, shouldIncludeMissingEpisodes);
+                []
+                : ((Season)seasonItem).GetEpisodes(user, dtoOptions, shouldIncludeMissingEpisodes).ToList();
         }
         else // No season number or season id was supplied. Returning all episodes.
         {

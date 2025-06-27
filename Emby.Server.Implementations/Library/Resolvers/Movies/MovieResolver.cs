@@ -29,14 +29,14 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
     {
         private readonly IImageProcessor _imageProcessor;
 
-        private static readonly CollectionType[] _validCollectionTypes = new[]
-        {
+        private static readonly CollectionType[] _validCollectionTypes =
+        [
             CollectionType.movies,
             CollectionType.homevideos,
             CollectionType.musicvideos,
             CollectionType.tvshows,
             CollectionType.photos
-        };
+        ];
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MovieResolver"/> class.
@@ -63,7 +63,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
         /// <inheritdoc />
         public MultiItemResolverResult ResolveMultiple(
             Folder parent,
-            List<FileSystemMetadata> files,
+            IReadOnlyList<FileSystemMetadata> files,
             CollectionType? collectionType,
             IDirectoryService directoryService)
         {
@@ -187,7 +187,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
 
         private MultiItemResolverResult ResolveMultipleInternal(
             Folder parent,
-            List<FileSystemMetadata> files,
+            IReadOnlyList<FileSystemMetadata> files,
             CollectionType? collectionType)
         {
             if (IsInvalid(parent, collectionType))

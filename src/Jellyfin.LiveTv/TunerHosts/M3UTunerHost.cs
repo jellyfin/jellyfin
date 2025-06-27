@@ -75,7 +75,7 @@ namespace Jellyfin.LiveTv.TunerHosts
                 .ConfigureAwait(false);
         }
 
-        protected override async Task<ILiveStream> GetChannelStream(TunerHostInfo tunerHost, ChannelInfo channel, string streamId, IList<ILiveStream> currentLiveStreams, CancellationToken cancellationToken)
+        protected override async Task<ILiveStream> GetChannelStream(TunerHostInfo tunerHost, ChannelInfo channel, string streamId, IReadOnlyList<ILiveStream> currentLiveStreams, CancellationToken cancellationToken)
         {
             var tunerCount = tunerHost.TunerCount;
 

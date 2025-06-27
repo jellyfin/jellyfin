@@ -1,3 +1,4 @@
+#pragma warning disable CA1819 // Properties should not return arrays
 #pragma warning disable CS1591
 
 using System;
@@ -14,12 +15,12 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         public LibraryUpdateInfo()
         {
-            FoldersAddedTo = Array.Empty<string>();
-            FoldersRemovedFrom = Array.Empty<string>();
-            ItemsAdded = Array.Empty<string>();
-            ItemsRemoved = Array.Empty<string>();
-            ItemsUpdated = Array.Empty<string>();
-            CollectionFolders = Array.Empty<string>();
+            FoldersAddedTo = [];
+            FoldersRemovedFrom = [];
+            ItemsAdded = [];
+            ItemsRemoved = [];
+            ItemsUpdated = [];
+            CollectionFolders = [];
         }
 
         /// <summary>

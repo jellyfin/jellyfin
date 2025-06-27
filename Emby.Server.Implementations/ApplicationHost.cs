@@ -121,7 +121,9 @@ namespace Emby.Server.Implementations
         private readonly IConfiguration _startupConfig;
         private readonly IXmlSerializer _xmlSerializer;
         private readonly IStartupOptions _startupOptions;
+#pragma warning disable CA2213 // Disposable fields should be disposed
         private readonly PluginManager _pluginManager;
+#pragma warning restore CA2213 // Disposable fields should be disposed
 
         private List<Type> _creatingInstances;
 

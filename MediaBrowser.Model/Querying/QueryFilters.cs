@@ -1,7 +1,8 @@
 #nullable disable
+
+#pragma warning disable CA1819 // Properties should not return arrays
 #pragma warning disable CS1591
 
-using System;
 using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Model.Querying
@@ -10,8 +11,8 @@ namespace MediaBrowser.Model.Querying
     {
         public QueryFilters()
         {
-            Tags = Array.Empty<string>();
-            Genres = Array.Empty<NameGuidPair>();
+            Tags = [];
+            Genres = [];
         }
 
         public NameGuidPair[] Genres { get; set; }

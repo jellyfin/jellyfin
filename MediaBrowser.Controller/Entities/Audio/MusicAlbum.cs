@@ -96,9 +96,9 @@ namespace MediaBrowser.Controller.Entities.Audio
             return 1;
         }
 
-        public override List<string> GetUserDataKeys()
+        public override IReadOnlyList<string> GetUserDataKeys()
         {
-            var list = base.GetUserDataKeys();
+            var list = base.GetUserDataKeys().ToList();
 
             var albumArtist = AlbumArtist;
             if (!string.IsNullOrEmpty(albumArtist))

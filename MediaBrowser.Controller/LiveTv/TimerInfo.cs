@@ -1,5 +1,6 @@
 #nullable disable
 
+#pragma warning disable CA1819 // Properties should not return arrays
 #pragma warning disable CS1591
 
 using System;
@@ -14,11 +15,11 @@ namespace MediaBrowser.Controller.LiveTv
     {
         public TimerInfo()
         {
-            Genres = Array.Empty<string>();
+            Genres = [];
             KeepUntil = KeepUntil.UntilDeleted;
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             SeriesProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            Tags = Array.Empty<string>();
+            Tags = [];
         }
 
         public Dictionary<string, string> ProviderIds { get; set; }

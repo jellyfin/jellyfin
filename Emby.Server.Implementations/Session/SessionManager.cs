@@ -2051,7 +2051,7 @@ namespace Emby.Server.Implementations.Session
         }
 
         /// <inheritdoc />
-        public Task SendMessageToUserSessions<T>(List<Guid> userIds, SessionMessageType name, Func<T> dataFn, CancellationToken cancellationToken)
+        public Task SendMessageToUserSessions<T>(IEnumerable<Guid> userIds, SessionMessageType name, Func<T> dataFn, CancellationToken cancellationToken)
         {
             CheckDisposed();
 
@@ -2066,7 +2066,7 @@ namespace Emby.Server.Implementations.Session
         }
 
         /// <inheritdoc />
-        public Task SendMessageToUserSessions<T>(List<Guid> userIds, SessionMessageType name, T data, CancellationToken cancellationToken)
+        public Task SendMessageToUserSessions<T>(IEnumerable<Guid> userIds, SessionMessageType name, T data, CancellationToken cancellationToken)
         {
             CheckDisposed();
 

@@ -494,8 +494,8 @@ public sealed class BaseItemRepository
 
             var topParent = item.GetTopParent();
 
-            var userdataKey = item.GetUserDataKeys();
-            var inheritedTags = item.GetInheritedTags();
+            var userdataKey = item.GetUserDataKeys().ToList();
+            var inheritedTags = item.GetInheritedTags().ToList();
 
             tuples.Add((item, ancestorIds, topParent, userdataKey, inheritedTags));
         }

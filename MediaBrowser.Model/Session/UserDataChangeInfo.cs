@@ -1,23 +1,24 @@
+#pragma warning disable CA1819 // Properties should not return arrays
+
 using System;
 using MediaBrowser.Model.Dto;
 
-namespace MediaBrowser.Model.Session
+namespace MediaBrowser.Model.Session;
+
+/// <summary>
+/// Class UserDataChangeInfo.
+/// </summary>
+public class UserDataChangeInfo
 {
     /// <summary>
-    /// Class UserDataChangeInfo.
+    /// Gets or sets the user id.
     /// </summary>
-    public class UserDataChangeInfo
-    {
-        /// <summary>
-        /// Gets or sets the user id.
-        /// </summary>
-        /// <value>The user id.</value>
-        public Guid UserId { get; set; }
+    /// <value>The user id.</value>
+    public Guid UserId { get; set; }
 
-        /// <summary>
-        /// Gets or sets the user data list.
-        /// </summary>
-        /// <value>The user data list.</value>
-        public required UserItemDataDto[] UserDataList { get; set; }
-    }
+    /// <summary>
+    /// Gets or sets the user data list.
+    /// </summary>
+    /// <value>The user data list.</value>
+    public required UserItemDataDto[] UserDataList { get; set; }
 }

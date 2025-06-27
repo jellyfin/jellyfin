@@ -83,7 +83,7 @@ namespace Emby.Server.Implementations.Library
 
             UserDataSaved?.Invoke(this, new UserDataSaveEventArgs
             {
-                Keys = keys,
+                Keys = keys.ToList(),
                 UserData = userData,
                 SaveReason = reason,
                 UserId = user.Id,
@@ -237,7 +237,7 @@ namespace Emby.Server.Implementations.Library
         /// <inheritdoc />
         public UserItemData? GetUserData(User user, BaseItem item)
         {
-            return GetUserData(user, item.Id, item.GetUserDataKeys());
+            return GetUserData(user, item.Id, item.GetUserDataKeys().ToList());
         }
 
         /// <inheritdoc />

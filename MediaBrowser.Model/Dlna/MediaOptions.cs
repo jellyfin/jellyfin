@@ -1,3 +1,5 @@
+#pragma warning disable CA1819 // Properties should not return arrays
+
 using System;
 using MediaBrowser.Model.Dto;
 
@@ -62,7 +64,7 @@ namespace MediaBrowser.Model.Dlna
         /// <summary>
         /// Gets or sets the media sources.
         /// </summary>
-        public MediaSourceInfo[] MediaSources { get; set; } = Array.Empty<MediaSourceInfo>();
+        public MediaSourceInfo[] MediaSources { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the device profile.

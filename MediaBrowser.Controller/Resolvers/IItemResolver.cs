@@ -1,3 +1,4 @@
+#pragma warning disable CA1002 // Do not expose generic lists
 #pragma warning disable CS1591
 
 using System.Collections.Generic;
@@ -32,7 +33,7 @@ namespace MediaBrowser.Controller.Resolvers
     {
         MultiItemResolverResult ResolveMultiple(
             Folder parent,
-            List<FileSystemMetadata> files,
+            IReadOnlyList<FileSystemMetadata> files,
             CollectionType? collectionType,
             IDirectoryService directoryService);
     }
@@ -41,8 +42,8 @@ namespace MediaBrowser.Controller.Resolvers
     {
         public MultiItemResolverResult()
         {
-            Items = new List<BaseItem>();
-            ExtraFiles = new List<FileSystemMetadata>();
+            Items = [];
+            ExtraFiles = [];
         }
 
         public List<BaseItem> Items { get; set; }
