@@ -667,6 +667,9 @@ namespace MediaBrowser.Controller.Entities
                 Limit = 0,
                 IsFolder = false,
                 IsVirtualItem = false,
+                Parent = this is not UserRootFolder
+                        && this is not AggregateFolder
+                        ? this : null,
                 DtoOptions = new DtoOptions(false)
                 {
                     EnableImages = false,
@@ -1704,6 +1707,9 @@ namespace MediaBrowser.Controller.Entities
                     EnableTotalRecordCount = true,
                     Limit = 0,
                     IsPlayed = false,
+                    Parent = this is not UserRootFolder
+                        && this is not AggregateFolder
+                        ? this : null
                 });
                 dto.UnplayedItemCount = unplayedQueryResult;
 
