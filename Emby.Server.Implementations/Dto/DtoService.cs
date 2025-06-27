@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -85,8 +86,8 @@ namespace Emby.Server.Implementations.Dto
         {
             var accessibleItems = user is null ? items : items.Where(x => x.IsVisible(user)).ToList();
             var returnItems = new BaseItemDto[accessibleItems.Count];
-            List<(BaseItem, BaseItemDto)>? programTuples = null;
-            List<(BaseItemDto, LiveTvChannel)>? channelTuples = null;
+            ConcurrentBag<(BaseItem, BaseItemDto)>? programTuples = [];
+            ConcurrentBag<(BaseItemDto, LiveTvChannel)>? channelTuples = [];
 
             Enumerable.Range(0, accessibleItems.Count).AsParallel().ForAll(index =>
             {
@@ -95,11 +96,11 @@ namespace Emby.Server.Implementations.Dto
 
                 if (item is LiveTvChannel tvChannel)
                 {
-                    (channelTuples ??= []).Add((dto, tvChannel));
+                    channelTuples.Add((dto, tvChannel));
                 }
                 else if (item is LiveTvProgram)
                 {
-                    (programTuples ??= []).Add((item, dto));
+                    programTuples.Add((item, dto));
                 }
 
                 if (item is IItemByName byName)
@@ -122,12 +123,12 @@ namespace Emby.Server.Implementations.Dto
                 returnItems[index] = dto;
             });
 
-            if (programTuples is not null)
+            if (programTuples is not { Count: 0 })
             {
                 LivetvManager.AddInfoToProgramDto(programTuples, options.Fields, user).GetAwaiter().GetResult();
             }
 
-            if (channelTuples is not null)
+            if (channelTuples is not { Count: 0 })
             {
                 LivetvManager.AddChannelInfo(channelTuples, options, user);
             }
