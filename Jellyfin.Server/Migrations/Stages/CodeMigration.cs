@@ -82,7 +82,7 @@ internal class CodeMigration(Type migrationType, JellyfinMigrationAttribute meta
         }
     }
 
-    private class NestedStartupLogger<TCategory> : StartupLogger<TCategory>, IStartupLogger<TCategory>
+    private class NestedStartupLogger<TCategory> : StartupLogger<TCategory>
     {
         public NestedStartupLogger(ILogger logger, StartupLogTopic topic) : base(logger, topic)
         {
