@@ -135,5 +135,7 @@
     "TaskExtractMediaSegmentsDescription": "Extrage sau obține segmentele media de la pluginurile MediaSegment activate.",
     "TaskMoveTrickplayImages": "Migrează locația imaginii Trickplay",
     "TaskDownloadMissingLyrics": "Descarcă versurile lipsă",
-    "TaskDownloadMissingLyricsDescription": "Descarcă versuri pentru melodii"
+    "TaskDownloadMissingLyricsDescription": "Descarcă versuri pentru melodii",
+    "CleanupUserDataTask": "Sarcina de curatare a datelor utilizatorului",
+    "CleanupUserDataTaskDescription": "Sterge toate datele utilizatorului (starea vizionarii, starea favoritelor etc.) de pe suporturile media care nu mai sunt prezente timp de cel puțin 90 de zile."
 }
