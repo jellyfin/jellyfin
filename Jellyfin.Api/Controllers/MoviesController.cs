@@ -110,7 +110,7 @@ public class MoviesController : BaseJellyfinApiController
         var likedMovies = _libraryManager.GetItemList(new InternalItemsQuery(user)
         {
             IncludeItemTypes = itemTypes.ToArray(),
-            IsMovie = true,
+            // IsMovie = true, was giving issues
             OrderBy = new[] { (ItemSortBy.Random, SortOrder.Descending) },
             Limit = 10,
             IsFavoriteOrLiked = true,
@@ -143,11 +143,17 @@ public class MoviesController : BaseJellyfinApiController
                 similarToRecentlyPlayed,
 
                 // Give this extra weight
+                // I think liked items are more impactful on recommendations than recently played
+                similarToLiked,
+                similarToLiked,
                 similarToLiked,
                 similarToLiked,
                 hasDirectorFromRecentlyPlayed,
                 hasActorFromRecentlyPlayed
             };
+
+        // randomize the order of categories so that the same categories don't always appear first
+        categoryTypes = categoryTypes.OrderBy(_ => Guid.NewGuid()).ToList();
 
         while (categories.Count < categoryLimit)
         {
