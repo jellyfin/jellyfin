@@ -142,8 +142,11 @@ namespace Emby.Naming.Video
                 {
                     if (group.Key)
                     {
+                        // Custom sort: 1080p always first, then others descending, then filename
                         videos.InsertRange(0, group
-                            .OrderByDescending(x => ResolutionRegex().Match(x.Files[0].FileNameWithoutExtension.ToString()).Value, new AlphanumericComparator())
+                            .OrderByDescending(x =>
+                                ResolutionRegex().Match(x.Files[0].FileNameWithoutExtension.ToString()).Value.Equals("1080p", StringComparison.OrdinalIgnoreCase) ? 1 : 0)
+                            .ThenByDescending(x => ResolutionRegex().Match(x.Files[0].FileNameWithoutExtension.ToString()).Value, new AlphanumericComparator())
                             .ThenBy(x => x.Files[0].FileNameWithoutExtension.ToString(), new AlphanumericComparator()));
                     }
                     else
