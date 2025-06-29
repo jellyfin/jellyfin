@@ -205,7 +205,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     {
                         PeopleHelper.AddPerson(people, new PersonInfo
                         {
-                            Name = albumArtist.Trim(),
+                            Name = albumArtist,
                             Type = PersonKind.AlbumArtist
                         });
                     }
@@ -237,7 +237,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     {
                         PeopleHelper.AddPerson(people, new PersonInfo
                         {
-                            Name = performer.Trim(),
+                            Name = performer,
                             Type = PersonKind.Artist
                         });
                     }
@@ -251,7 +251,7 @@ namespace MediaBrowser.Providers.MediaInfo
                         {
                             PeopleHelper.AddPerson(people, new PersonInfo
                             {
-                                Name = composer.Trim(),
+                                Name = composer,
                                 Type = PersonKind.Composer
                             });
                         }
