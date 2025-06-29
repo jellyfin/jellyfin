@@ -647,34 +647,34 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            var result = GetItems(new InternalItemsQuery(user)
+            return LibraryManager.GetCount(new InternalItemsQuery(user)
             {
                 Recursive = false,
                 Limit = 0,
                 Parent = this,
                 DtoOptions = new DtoOptions(false)
                 {
-                    EnableImages = false
+                    EnableImages = false,
                 }
             });
-
-            return result.TotalRecordCount;
         }
 
         public virtual int GetRecursiveChildCount(User user)
         {
-            return GetItems(new InternalItemsQuery(user)
+            return LibraryManager.GetCount(new InternalItemsQuery(user)
             {
                 Recursive = true,
+                Limit = 0,
                 IsFolder = false,
                 IsVirtualItem = false,
-                EnableTotalRecordCount = true,
-                Limit = 0,
+                Parent = this is not UserRootFolder
+                        && this is not AggregateFolder
+                        ? this : null,
                 DtoOptions = new DtoOptions(false)
                 {
-                    EnableImages = false
+                    EnableImages = false,
                 }
-            }).TotalRecordCount;
+            });
         }
 
         public QueryResult<BaseItem> QueryRecursive(InternalItemsQuery query)
@@ -1699,7 +1699,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (SupportsPlayedStatus)
             {
-                var unplayedQueryResult = GetItems(new InternalItemsQuery(user)
+                var unplayedQueryResult = LibraryManager.GetCount(new InternalItemsQuery(user)
                 {
                     Recursive = true,
                     IsFolder = false,
@@ -1707,12 +1707,10 @@ namespace MediaBrowser.Controller.Entities
                     EnableTotalRecordCount = true,
                     Limit = 0,
                     IsPlayed = false,
-                    DtoOptions = new DtoOptions(false)
-                    {
-                        EnableImages = false
-                    }
-                }).TotalRecordCount;
-
+                    Parent = this is not UserRootFolder
+                        && this is not AggregateFolder
+                        ? this : null
+                });
                 dto.UnplayedItemCount = unplayedQueryResult;
 
                 if (itemDto?.RecursiveItemCount > 0)
