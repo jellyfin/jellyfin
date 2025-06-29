@@ -24,50 +24,28 @@ namespace Emby.Server.Implementations.Images
         {
         }
 
-        protected override IReadOnlyList<BaseItem> GetItemsWithImages(BaseItem item)
+        protected override IReadOnlyList<BaseItem> GetItemsWithImages(CollectionFolder item)
         {
-            var view = (CollectionFolder)item;
-            var viewType = view.CollectionType;
-
-            BaseItemKind[] includeItemTypes;
-
-            switch (viewType)
+            var viewType = item.CollectionType;
+            BaseItemKind[] includeItemTypes = viewType switch
             {
-                case CollectionType.movies:
-                    includeItemTypes = new[] { BaseItemKind.Movie };
-                    break;
-                case CollectionType.tvshows:
-                    includeItemTypes = new[] { BaseItemKind.Series };
-                    break;
-                case CollectionType.music:
-                    includeItemTypes = new[] { BaseItemKind.MusicAlbum };
-                    break;
-                case CollectionType.musicvideos:
-                    includeItemTypes = new[] { BaseItemKind.MusicVideo };
-                    break;
-                case CollectionType.books:
-                    includeItemTypes = new[] { BaseItemKind.Book, BaseItemKind.AudioBook };
-                    break;
-                case CollectionType.boxsets:
-                    includeItemTypes = new[] { BaseItemKind.BoxSet };
-                    break;
-                case CollectionType.homevideos:
-                case CollectionType.photos:
-                    includeItemTypes = new[] { BaseItemKind.Video, BaseItemKind.Photo };
-                    break;
-                default:
-                    includeItemTypes = new[] { BaseItemKind.Video, BaseItemKind.Audio, BaseItemKind.Photo, BaseItemKind.Movie, BaseItemKind.Series };
-                    break;
-            }
-
+                CollectionType.movies => [BaseItemKind.Movie],
+                CollectionType.tvshows => [BaseItemKind.Series],
+                CollectionType.music => [BaseItemKind.MusicAlbum],
+                CollectionType.musicvideos => [BaseItemKind.MusicVideo],
+                CollectionType.books => [BaseItemKind.Book, BaseItemKind.AudioBook],
+                CollectionType.boxsets => [BaseItemKind.BoxSet],
+                CollectionType.homevideos or CollectionType.photos => [BaseItemKind.Video, BaseItemKind.Photo],
+                _ => [BaseItemKind.Video, BaseItemKind.Audio, BaseItemKind.Photo, BaseItemKind.Movie, BaseItemKind.Series],
+            };
             var recursive = viewType != CollectionType.playlists;
 
-            return view.GetItemList(new InternalItemsQuery
+            return item.GetItemList(new InternalItemsQuery
             {
                 CollapseBoxSetItems = false,
                 Recursive = recursive,
                 DtoOptions = new DtoOptions(false),
-                ImageTypes = new[] { ImageType.Primary },
+                ImageTypes = [ImageType.Primary],
                 Limit = 8,
                 OrderBy = new[]
                 {
