@@ -9,7 +9,7 @@
     <PackageVersion Include="AutoFixture.Xunit2" Version="4.18.1" />
     <PackageVersion Include="AutoFixture" Version="4.18.1" />
     <PackageVersion Include="BDInfo" Version="0.8.0" />
-    <PackageVersion Include="BitFaster.Caching" Version="2.5.3" />
+    <PackageVersion Include="BitFaster.Caching" Version="2.5.4" />
     <PackageVersion Include="BlurHashSharp.SkiaSharp" Version="1.4.0-pre.1" />
     <PackageVersion Include="BlurHashSharp" Version="1.4.0-pre.1" />
     <PackageVersion Include="CommandLineParser" Version="2.9.1" />
