@@ -278,9 +278,13 @@ public class MoviesController : BaseJellyfinApiController
                 IncludeItemTypes = itemTypes.ToArray(),
                 // IsMovie = true,
                 Genres = item.Genres,
+                Tags = item.Tags,
                 EnableGroupByMetadataKey = true,
                 DtoOptions = dtoOptions
             });
+
+            // remove the item itself from the results
+            similar = similar.Where(i => !Guid.Equals(i.Id, item.Id)).ToList();
 
             if (similar.Count > 0)
             {
