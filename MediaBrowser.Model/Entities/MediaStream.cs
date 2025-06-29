@@ -20,7 +20,9 @@ namespace MediaBrowser.Model.Entities
     /// <summary>
     /// Class MediaStream.
     /// </summary>
+#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
     public class MediaStream
+#pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     {
         private static readonly string[] _specialCodes =
         {

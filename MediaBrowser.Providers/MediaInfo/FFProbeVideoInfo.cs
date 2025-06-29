@@ -127,7 +127,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     blurayDiscInfo = GetBDInfo(item.Path);
 
                     // Return if no playable .m2ts files are found
-                    if (blurayDiscInfo is null || blurayDiscInfo.Files.Length == 0)
+                    if (blurayDiscInfo is null || blurayDiscInfo.Files.Count == 0)
                     {
                         _logger.LogError("No playable .m2ts files found in Blu-ray structure, skipping FFprobe.");
                         return ItemUpdateType.MetadataImport;
@@ -343,9 +343,9 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (blurayInfo.Chapters is not null)
             {
-                double[] brChapter = blurayInfo.Chapters;
-                chapters = new ChapterInfo[brChapter.Length];
-                for (int i = 0; i < brChapter.Length; i++)
+                var brChapter = blurayInfo.Chapters;
+                chapters = new ChapterInfo[brChapter.Count];
+                for (int i = 0; i < brChapter.Count; i++)
                 {
                     chapters[i] = new ChapterInfo
                     {

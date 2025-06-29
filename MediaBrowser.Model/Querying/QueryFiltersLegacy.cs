@@ -1,7 +1,7 @@
 #nullable disable
-#pragma warning disable CS1591
 
-using System;
+#pragma warning disable CA1819 // Properties should not return arrays
+#pragma warning disable CS1591
 
 namespace MediaBrowser.Model.Querying
 {
@@ -9,10 +9,10 @@ namespace MediaBrowser.Model.Querying
     {
         public QueryFiltersLegacy()
         {
-            Genres = Array.Empty<string>();
-            Tags = Array.Empty<string>();
-            OfficialRatings = Array.Empty<string>();
-            Years = Array.Empty<int>();
+            Genres = [];
+            Tags = [];
+            OfficialRatings = [];
+            Years = [];
         }
 
         public string[] Genres { get; set; }
