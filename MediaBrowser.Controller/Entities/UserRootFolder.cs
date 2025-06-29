@@ -80,7 +80,7 @@ namespace MediaBrowser.Controller.Entities
                 PresetViews = query.PresetViews
             });
 
-            return UserViewBuilder.SortAndPage(result, null, query, LibraryManager, true);
+            return UserViewBuilder.SortAndPage(result, null, query, LibraryManager);
         }
 
         public override int GetChildCount(User user)
