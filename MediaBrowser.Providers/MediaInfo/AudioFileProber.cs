@@ -436,7 +436,11 @@ namespace MediaBrowser.Providers.MediaInfo
 
             // Save extracted lyrics if they exist,
             // and if the audio doesn't yet have lyrics.
-            var lyrics = track.Lyrics.SynchronizedLyrics.Count > 0 ? track.Lyrics.FormatSynchToLRC() : track.Lyrics.UnsynchronizedLyrics;
+            // ATL supports both SRT and LRC formats as synchronized lyrics, but we only want to save LRC format.
+            var supportedLyrics = track.Lyrics.Where(l => l.Format != LyricsInfo.LyricsFormat.SRT).ToList();
+            var candidateSynchronizedLyric = supportedLyrics.FirstOrDefault(l => l.Format is not LyricsInfo.LyricsFormat.UNSYNCHRONIZED and not LyricsInfo.LyricsFormat.OTHER && l.SynchronizedLyrics is not null);
+            var candidateUnsynchronizedLyric = supportedLyrics.FirstOrDefault(l => l.Format is LyricsInfo.LyricsFormat.UNSYNCHRONIZED or LyricsInfo.LyricsFormat.OTHER && l.UnsynchronizedLyrics is not null);
+            var lyrics = candidateSynchronizedLyric is not null ? candidateSynchronizedLyric.FormatSynch() : candidateUnsynchronizedLyric?.UnsynchronizedLyrics;
             if (!string.IsNullOrWhiteSpace(lyrics)
                 && tryExtractEmbeddedLyrics)
             {
