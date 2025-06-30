@@ -1798,7 +1798,7 @@ public sealed class BaseItemRepository
 
         if (!string.IsNullOrWhiteSpace(filter.NameStartsWith))
         {
-            baseQuery = baseQuery.Where(e => e.SortName!.StartsWith(filter.NameStartsWith) || e.Name!.StartsWith(filter.NameStartsWith));
+            baseQuery = baseQuery.Where(e => e.SortName!.StartsWith(filter.NameStartsWith));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.NameStartsWithOrGreater))
