@@ -779,6 +779,7 @@ public class LibraryController : BaseJellyfinApiController
         var query = new InternalItemsQuery(user)
         {
             Genres = item.Genres,
+            Tags = item.Tags,
             Limit = limit,
             IncludeItemTypes = includeItemTypes.ToArray(),
             DtoOptions = dtoOptions,
@@ -793,6 +794,8 @@ public class LibraryController : BaseJellyfinApiController
         }
 
         var itemsResult = _libraryManager.GetItemList(query);
+        // remove the item itself from the results
+        itemsResult = itemsResult.Where(i => !Guid.Equals(i.Id, itemId)).ToList();
 
         var returnList = _dtoService.GetBaseItemDtos(itemsResult, dtoOptions, user);
 

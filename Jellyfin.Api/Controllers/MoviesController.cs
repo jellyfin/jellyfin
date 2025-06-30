@@ -143,11 +143,17 @@ public class MoviesController : BaseJellyfinApiController
                 similarToRecentlyPlayed,
 
                 // Give this extra weight
+                // I think liked items are more impactful on recommendations than recently played
+                similarToLiked,
+                similarToLiked,
                 similarToLiked,
                 similarToLiked,
                 hasDirectorFromRecentlyPlayed,
                 hasActorFromRecentlyPlayed
             };
+
+        // randomize the order of categories so that the same categories don't always appear first
+        categoryTypes = categoryTypes.OrderBy(_ => Guid.NewGuid()).ToList();
 
         while (categories.Count < categoryLimit)
         {
@@ -276,10 +282,14 @@ public class MoviesController : BaseJellyfinApiController
             {
                 Limit = itemLimit,
                 IncludeItemTypes = itemTypes.ToArray(),
-                IsMovie = true,
+                Genres = item.Genres,
+                Tags = item.Tags,
                 EnableGroupByMetadataKey = true,
                 DtoOptions = dtoOptions
             });
+
+            // remove the item itself from the results
+            similar = similar.Where(i => !Guid.Equals(i.Id, item.Id)).ToList();
 
             if (similar.Count > 0)
             {
