@@ -37,6 +37,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Drawing.Skia", "sr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Api", "Jellyfin.Api\Jellyfin.Api.csproj", "{DFBEFB4C-DA19-4143-98B7-27320C7F7163}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Cli", "Jellyfin.Cli\Jellyfin.Cli.csproj", "{DFBEFB4C-DA19-4143-98B7-27320C7F7164}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{FBBB5129-006E-4AD7-BAD5-8B7CA1D10ED6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Common.Tests", "tests\Jellyfin.Common.Tests\Jellyfin.Common.Tests.csproj", "{DF194677-DFD3-42AF-9F75-D44D5A416478}"
@@ -160,6 +162,10 @@ Global
 		{DFBEFB4C-DA19-4143-98B7-27320C7F7163}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DFBEFB4C-DA19-4143-98B7-27320C7F7163}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DFBEFB4C-DA19-4143-98B7-27320C7F7163}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DFBEFB4C-DA19-4143-98B7-27320C7F7164}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DFBEFB4C-DA19-4143-98B7-27320C7F7164}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DFBEFB4C-DA19-4143-98B7-27320C7F7164}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DFBEFB4C-DA19-4143-98B7-27320C7F7164}.Release|Any CPU.Build.0 = Release|Any CPU
 		{DF194677-DFD3-42AF-9F75-D44D5A416478}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DF194677-DFD3-42AF-9F75-D44D5A416478}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DF194677-DFD3-42AF-9F75-D44D5A416478}.Release|Any CPU.ActiveCfg = Release|Any CPU
