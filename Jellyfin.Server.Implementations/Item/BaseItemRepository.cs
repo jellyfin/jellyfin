@@ -566,7 +566,8 @@ public sealed class BaseItemRepository
         context.SaveChanges();
 
         context.BaseItemImageInfos.WhereOneOrMany(ids, e => e.ItemId).ExecuteDelete();
-        context.BaseItemImageInfos.AddRange(items.SelectMany(f => f.ImageInfos.Select(e => Map(f.Id, e))).ToArray());
+        var addedImages = items.SelectMany(f => f.ImageInfos.Select(e => Map(f.Id, e))).ToArray();
+        context.BaseItemImageInfos.AddRange(addedImages);
 
         context.SaveChanges();
 
