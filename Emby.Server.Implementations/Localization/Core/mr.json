@@ -130,5 +130,7 @@
     "TaskExtractMediaSegments": "मिडिया विभाग तपासणी",
     "TaskMoveTrickplayImages": "ट्रिकप्ले प्रतिमेचे स्थान स्थलांतर करा",
     "TaskDownloadMissingLyrics": "उपलब्ध नसलेली गीतपट्टी (Lyrics) डाउनलोड करा",
-    "TaskAudioNormalization": "ऑडिओ सामान्यीकरण"
+    "TaskAudioNormalization": "ऑडिओ सामान्यीकरण",
+    "TaskAudioNormalizationDescription": "ऑडिओ सामान्यीकरणाचा डाटा स्कॅन करतो.",
+    "TaskDownloadMissingLyricsDescription": "गाण्यांची गीतपट्टी (Lyrics) डाउनलोड करतो"
 }
