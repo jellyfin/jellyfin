@@ -565,12 +565,6 @@ public sealed class BaseItemRepository
         context.ItemValues.AddRange(missingItemValues);
         context.SaveChanges();
 
-        context.BaseItemImageInfos.WhereOneOrMany(ids, e => e.ItemId).ExecuteDelete();
-        var addedImages = items.SelectMany(f => f.ImageInfos.Select(e => Map(f.Id, e))).ToArray();
-        context.BaseItemImageInfos.AddRange(addedImages);
-
-        context.SaveChanges();
-
         var itemValuesStore = existingValues.Concat(missingItemValues).ToArray();
         var valueMap = itemValueMaps
             .Select(f => (f.Item, Values: f.Values.Select(e => itemValuesStore.First(g => g.Value == e.Value && g.Type == e.MagicNumber)).ToArray()))
@@ -1293,7 +1287,7 @@ public sealed class BaseItemRepository
             ItemId = baseItemId,
             Id = Guid.NewGuid(),
             Path = e.Path,
-            Blurhash = e.BlurHash is null ? null : Encoding.UTF8.GetBytes(e.BlurHash),
+            Blurhash = e.BlurHash is null or [] ? null : Encoding.UTF8.GetBytes(e.BlurHash),
             DateModified = e.DateModified,
             Height = e.Height,
             Width = e.Width,
