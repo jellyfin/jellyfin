@@ -565,6 +565,11 @@ public sealed class BaseItemRepository
         context.ItemValues.AddRange(missingItemValues);
         context.SaveChanges();
 
+        context.BaseItemImageInfos.WhereOneOrMany(ids, e => e.ItemId).ExecuteDelete();
+        context.BaseItemImageInfos.AddRange(items.SelectMany(f => f.ImageInfos.Select(e => Map(f.Id, e))).ToArray());
+
+        context.SaveChanges();
+
         var itemValuesStore = existingValues.Concat(missingItemValues).ToArray();
         var valueMap = itemValueMaps
             .Select(f => (f.Item, Values: f.Values.Select(e => itemValuesStore.First(g => g.Value == e.Value && g.Type == e.MagicNumber)).ToArray()))
