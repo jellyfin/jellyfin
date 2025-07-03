@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Jellyfin.Database.Implementations.DbConfiguration;
 
 /// <summary>

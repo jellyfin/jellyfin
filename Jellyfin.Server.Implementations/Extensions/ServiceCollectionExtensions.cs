@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using EFCoreSecondLevelCacheInterceptor;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.DbConfiguration;
 using Jellyfin.Database.Implementations.Locking;
@@ -78,6 +79,12 @@ public static class ServiceCollectionExtensions
         IServerConfigurationManager configurationManager,
         IConfiguration configuration)
     {
+        serviceCollection.AddEFSecondLevelCache(options =>
+            options.UseMemoryCacheProvider()
+                .ConfigureLogging(true)
+                .UseCacheKeyPrefix("EF_")
+                .UseDbCallsIfCachingProviderIsDown(TimeSpan.FromMinutes(1)));
+
         var efCoreConfiguration = configurationManager.GetConfiguration<DatabaseConfigurationOptions>("database");
         JellyfinDbProviderFactory? providerFactory = null;
 
@@ -121,7 +128,7 @@ public static class ServiceCollectionExtensions
             }
         }
 
-        serviceCollection.AddSingleton<IJellyfinDatabaseProvider>(providerFactory!);
+        serviceCollection.AddSingleton(providerFactory!);
 
         switch (efCoreConfiguration.LockingBehavior)
         {
@@ -142,6 +149,7 @@ public static class ServiceCollectionExtensions
             provider.Initialise(opt);
             var lockingBehavior = serviceProvider.GetRequiredService<IEntityFrameworkCoreLockingBehavior>();
             lockingBehavior.Initialise(opt);
+            opt.AddInterceptors(serviceProvider.GetRequiredService<SecondLevelCacheInterceptor>());
         });
 
         return serviceCollection;
