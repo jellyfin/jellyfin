@@ -192,7 +192,7 @@ namespace Jellyfin.Server.Implementations.Users
             }
         }
 
-        internal async Task<User> CreateUserInternalAsync(string name, JellyfinDbContext dbContext)
+        internal async Task<User> CreateUserInternalAsync(string name, JellyfinDbContext dbContext, string? email = null)
         {
             // TODO: Remove after user item data is migrated.
             var max = await dbContext.Users.AsQueryable().AnyAsync().ConfigureAwait(false)
@@ -204,7 +204,8 @@ namespace Jellyfin.Server.Implementations.Users
                 _defaultAuthenticationProvider.GetType().FullName!,
                 _defaultPasswordResetProvider.GetType().FullName!)
             {
-                InternalId = max + 1
+                InternalId = max + 1,
+                Email = email
             };
 
             user.AddDefaultPermissions();
@@ -214,9 +215,13 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public async Task<User> CreateUserAsync(string name)
+        public async Task<User> CreateUserAsync(string name, string? email = null)
         {
             ThrowIfInvalidUsername(name);
+
+            // It's good practice to also validate the email format here if provided,
+            // though primary validation might be at the API/DTO level.
+            // For now, we assume basic validation or rely on DTO validation.
 
             if (Users.Any(u => u.Username.Equals(name, StringComparison.OrdinalIgnoreCase)))
             {
@@ -230,7 +235,7 @@ namespace Jellyfin.Server.Implementations.Users
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
-                newUser = await CreateUserInternalAsync(name, dbContext).ConfigureAwait(false);
+                newUser = await CreateUserInternalAsync(name, dbContext, email).ConfigureAwait(false);
 
                 dbContext.Users.Add(newUser);
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
@@ -310,6 +315,7 @@ namespace Jellyfin.Server.Implementations.Users
             return new UserDto
             {
                 Name = user.Username,
+                Email = user.Email,
                 Id = user.Id,
                 ServerId = _appHost.SystemId,
                 HasPassword = hasPassword,

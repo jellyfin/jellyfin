@@ -18,6 +18,7 @@ namespace Jellyfin.Database.Implementations.Entities
         /// Public constructor with required data.
         /// </summary>
         /// <param name="username">The username for the new user.</param>
+    /// <param name="email">The email for the new user.</param>
         /// <param name="authenticationProviderId">The Id of the user's authentication provider.</param>
         /// <param name="passwordResetProviderId">The Id of the user's password reset provider.</param>
         public User(string username, string authenticationProviderId, string passwordResetProviderId)
@@ -72,6 +73,16 @@ namespace Jellyfin.Database.Implementations.Entities
         [MaxLength(255)]
         [StringLength(255)]
         public string Username { get; set; }
+
+        /// <summary>
+        /// Gets or sets the user's email address.
+        /// </summary>
+        /// <remarks>
+        /// Max length = 255.
+        /// </remarks>
+        [MaxLength(255)]
+        [StringLength(255)]
+        public string? Email { get; set; }
 
         /// <summary>
         /// Gets or sets the user's password, or <c>null</c> if none is set.

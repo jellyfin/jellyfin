@@ -395,7 +395,18 @@ public class UserController : BaseJellyfinApiController
             await _userManager.RenameUser(user, updateUser.Name).ConfigureAwait(false);
         }
 
+        // Update email if it has changed.
+        // Ensure to handle null/whitespace if email is optional and can be cleared.
+        // For now, direct assignment. Add validation if necessary (e.g. if email is cleared, should it be set to null or empty string?)
+        if (user.Email != updateUser.Email)
+        {
+            user.Email = updateUser.Email;
+        }
+
         await _userManager.UpdateConfigurationAsync(requestUserId, updateUser.Configuration).ConfigureAwait(false);
+        // After specific updates like RenameUser and UpdateConfigurationAsync,
+        // call UpdateUserAsync to save any other direct changes to the user object like Email.
+        await _userManager.UpdateUserAsync(user).ConfigureAwait(false);
 
         return NoContent();
     }
@@ -540,7 +551,7 @@ public class UserController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<UserDto>> CreateUserByName([FromBody, Required] CreateUserByName request)
     {
-        var newUser = await _userManager.CreateUserAsync(request.Name).ConfigureAwait(false);
+        var newUser = await _userManager.CreateUserAsync(request.Name, request.Email).ConfigureAwait(false);
 
         // no need to authenticate password for new user
         if (request.Password is not null)
