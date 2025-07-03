@@ -1967,7 +1967,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
-        public async Task UpdateImagesAsync(BaseItem item, bool forceUpdate = false)
+        public async Task RebuildImages(BaseItem item, bool forceUpdate = false)
         {
             ArgumentNullException.ThrowIfNull(item);
 
@@ -2043,7 +2043,6 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            _itemRepository.SaveImages(item);
             RegisterItem(item);
         }
 
@@ -2100,6 +2099,8 @@ namespace Emby.Server.Implementations.Library
             {
                 await ProviderManager.SaveMetadataAsync(item, updateReason).ConfigureAwait(false);
             }
+
+            await RebuildImages(item, updateReason >= ItemUpdateType.ImageUpdate).ConfigureAwait(false);
         }
 
         /// <summary>

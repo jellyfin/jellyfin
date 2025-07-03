@@ -1284,7 +1284,7 @@ namespace MediaBrowser.Controller.Entities
                         requiresSave = await RefreshedOwnedItems(options, GetFileSystemChildren(options.DirectoryService), cancellationToken).ConfigureAwait(false);
                     }
 
-                    await LibraryManager.UpdateImagesAsync(this).ConfigureAwait(false); // ensure all image properties in DB are fresh
+                    await LibraryManager.RebuildImages(this).ConfigureAwait(false); // ensure all image properties are refreshed. The item gets updated later down the callstack.
                 }
                 catch (Exception ex)
                 {

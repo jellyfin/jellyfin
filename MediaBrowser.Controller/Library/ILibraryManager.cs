@@ -158,7 +158,13 @@ namespace MediaBrowser.Controller.Library
         /// <returns>Task.</returns>
         Task ValidateTopLibraryFolders(CancellationToken cancellationToken, bool removeRoot = false);
 
-        Task UpdateImagesAsync(BaseItem item, bool forceUpdate = false);
+        /// <summary>
+        /// Refreshes all images if nessesary on the base item.
+        /// </summary>
+        /// <param name="item">The base item to update.</param>
+        /// <param name="forceUpdate">Flag to force a refresh.</param>
+        /// <returns>A task.</returns>
+        Task RebuildImages(BaseItem item, bool forceUpdate = false);
 
         /// <summary>
         /// Gets the default view.

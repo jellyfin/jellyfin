@@ -20,6 +20,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Branding;
 using MediaBrowser.Model.Drawing;
@@ -49,6 +50,7 @@ public class ImageController : BaseJellyfinApiController
     private readonly ILogger<ImageController> _logger;
     private readonly IServerConfigurationManager _serverConfigurationManager;
     private readonly IApplicationPaths _appPaths;
+    private readonly IItemRepository _itemRepository;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ImageController"/> class.
@@ -61,6 +63,7 @@ public class ImageController : BaseJellyfinApiController
     /// <param name="logger">Instance of the <see cref="ILogger{ImageController}"/> interface.</param>
     /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
     /// <param name="appPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
+    /// <param name="itemRepository">Instance of the <see cref="IItemRepository"/> interface.</param>
     public ImageController(
         IUserManager userManager,
         ILibraryManager libraryManager,
@@ -69,7 +72,8 @@ public class ImageController : BaseJellyfinApiController
         IFileSystem fileSystem,
         ILogger<ImageController> logger,
         IServerConfigurationManager serverConfigurationManager,
-        IApplicationPaths appPaths)
+        IApplicationPaths appPaths,
+        IItemRepository itemRepository)
     {
         _userManager = userManager;
         _libraryManager = libraryManager;
@@ -79,6 +83,7 @@ public class ImageController : BaseJellyfinApiController
         _logger = logger;
         _serverConfigurationManager = serverConfigurationManager;
         _appPaths = appPaths;
+        _itemRepository = itemRepository;
     }
 
     private static CryptoStream GetFromBase64Stream(Stream inputStream)
@@ -478,7 +483,8 @@ public class ImageController : BaseJellyfinApiController
             return list;
         }
 
-        await _libraryManager.UpdateImagesAsync(item).ConfigureAwait(false); // this makes sure dimensions and hashes are correct
+        await _libraryManager.RebuildImages(item).ConfigureAwait(false); // this makes sure dimensions and hashes are correct
+        _itemRepository.SaveImages(item);
 
         foreach (var image in itemImages)
         {

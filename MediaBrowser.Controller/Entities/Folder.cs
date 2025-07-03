@@ -423,8 +423,8 @@ namespace MediaBrowser.Controller.Entities
                         }
                         else
                         {
-                            // metadata is up-to-date; make sure DB has correct images dimensions and hash
-                            await LibraryManager.UpdateImagesAsync(currentChild).ConfigureAwait(false);
+                            // Images are refreshed. The item gets saved down later.
+                            await LibraryManager.RebuildImages(currentChild).ConfigureAwait(false);
                         }
 
                         continue;
