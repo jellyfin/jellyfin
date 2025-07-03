@@ -483,8 +483,10 @@ public class ImageController : BaseJellyfinApiController
             return list;
         }
 
-        await _libraryManager.RebuildImages(item).ConfigureAwait(false); // this makes sure dimensions and hashes are correct
-        _itemRepository.SaveImages(item);
+        if (await _libraryManager.RebuildImages(item).ConfigureAwait(false)) // this makes sure dimensions and hashes are correct
+        {
+            _itemRepository.SaveImages(item);
+        }
 
         foreach (var image in itemImages)
         {

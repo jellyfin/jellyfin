@@ -423,8 +423,11 @@ namespace MediaBrowser.Controller.Entities
                         }
                         else
                         {
-                            // Images are refreshed. The item gets saved down later.
-                            await LibraryManager.RebuildImages(currentChild).ConfigureAwait(false);
+                            // Images are refreshed.
+                            if (await LibraryManager.RebuildImages(currentChild).ConfigureAwait(false))
+                            {
+                                ItemRepository.SaveImages(currentChild);
+                            }
                         }
 
                         continue;

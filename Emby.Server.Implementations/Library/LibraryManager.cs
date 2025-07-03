@@ -1967,7 +1967,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
-        public async Task RebuildImages(BaseItem item, bool forceUpdate = false)
+        public async Task<bool> RebuildImages(BaseItem item, bool forceUpdate = false)
         {
             ArgumentNullException.ThrowIfNull(item);
 
@@ -1978,7 +1978,7 @@ namespace Emby.Server.Implementations.Library
             if (outdated.Length == 0 || item.SourceType != SourceType.Library)
             {
                 RegisterItem(item);
-                return;
+                return false;
             }
 
             foreach (var img in outdated)
@@ -2044,6 +2044,8 @@ namespace Emby.Server.Implementations.Library
             }
 
             RegisterItem(item);
+
+            return outdated.Length != 0;
         }
 
         /// <inheritdoc />

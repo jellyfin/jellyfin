@@ -163,8 +163,8 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="item">The base item to update.</param>
         /// <param name="forceUpdate">Flag to force a refresh.</param>
-        /// <returns>A task.</returns>
-        Task RebuildImages(BaseItem item, bool forceUpdate = false);
+        /// <returns>A task that resolves to a value indicating if changes to the image have been done.</returns>
+        Task<bool> RebuildImages(BaseItem item, bool forceUpdate = false);
 
         /// <summary>
         /// Gets the default view.
