@@ -29,7 +29,13 @@
     <PackageReference Include="AsyncKeyedLock" />
     <PackageReference Include="System.Linq.Async" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
-    <PackageReference Include="EFCoreSecondLevelCacheInterceptor.MemoryCache" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CacheManager.Core" />
+    <PackageReference Include="CacheManager.Microsoft.Extensions.Caching.Memory" />
+    <PackageReference Include="CacheManager.Serialization.Json" />
+    <PackageReference Include="EFCoreSecondLevelCacheInterceptor.CacheManager.Core" />
   </ItemGroup>
 
   <ItemGroup>

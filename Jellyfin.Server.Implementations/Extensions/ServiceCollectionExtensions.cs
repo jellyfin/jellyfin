@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using CacheManager.Core;
 using EFCoreSecondLevelCacheInterceptor;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.DbConfiguration;
@@ -80,10 +81,16 @@ public static class ServiceCollectionExtensions
         IConfiguration configuration)
     {
         serviceCollection.AddEFSecondLevelCache(options =>
-            options.UseMemoryCacheProvider()
+            options.UseCacheManagerCoreProvider()
                 .ConfigureLogging(true)
                 .UseCacheKeyPrefix("EF_")
                 .UseDbCallsIfCachingProviderIsDown(TimeSpan.FromMinutes(1)));
+
+        serviceCollection.AddSingleton(typeof(ICacheManager<>), typeof(BaseCacheManager<>));
+        serviceCollection.AddSingleton(new CacheConfigurationBuilder()
+                                        .WithJsonSerializer()
+                                        .WithMicrosoftMemoryCacheHandle(instanceName: "MemoryCache")
+                                        .Build());
 
         var efCoreConfiguration = configurationManager.GetConfiguration<DatabaseConfigurationOptions>("database");
         JellyfinDbProviderFactory? providerFactory = null;
