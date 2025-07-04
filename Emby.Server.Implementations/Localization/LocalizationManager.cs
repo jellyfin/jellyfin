@@ -1,3 +1,5 @@
+#pragma warning disable CA1307
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Frozen;
@@ -128,7 +130,8 @@ namespace Emby.Server.Implementations.Localization
                     }
 
                     string name = parts[3];
-                    if (string.IsNullOrWhiteSpace(name))
+                    string displayname = parts[3];
+                    if (string.IsNullOrWhiteSpace(displayname))
                     {
                         continue;
                     }
@@ -137,6 +140,10 @@ namespace Emby.Server.Implementations.Localization
                     if (string.IsNullOrWhiteSpace(twoCharName))
                     {
                         continue;
+                    }
+                    else if (twoCharName.Contains('-'))
+                    {
+                        name = twoCharName;
                     }
 
                     string[] threeLetterNames;
@@ -153,7 +160,7 @@ namespace Emby.Server.Implementations.Localization
                         iso6392BtoTdict.TryAdd(parts[1], parts[0]);
                     }
 
-                    list.Add(new CultureDto(name, name, twoCharName, threeLetterNames));
+                    list.Add(new CultureDto(name, displayname, twoCharName, threeLetterNames));
                 }
 
                 _cultures = list;

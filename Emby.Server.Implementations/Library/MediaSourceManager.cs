@@ -1,6 +1,7 @@
 #nullable disable
 
 #pragma warning disable CS1591
+#pragma warning disable CA1307
 
 using System;
 using System.Collections.Concurrent;
@@ -379,7 +380,7 @@ namespace Emby.Server.Implementations.Library
             var culture = _localizationManager.FindLanguageInfo(language);
             if (culture is not null)
             {
-                return culture.ThreeLetterISOLanguageNames;
+                return [culture.Name.Contains('-') ? culture.Name : culture.ThreeLetterISOLanguageName];
             }
 
             return [language];
