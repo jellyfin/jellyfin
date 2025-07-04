@@ -36,6 +36,7 @@
     <PackageReference Include="CacheManager.Microsoft.Extensions.Caching.Memory" />
     <PackageReference Include="CacheManager.Serialization.Bond" />
     <PackageReference Include="EFCoreSecondLevelCacheInterceptor.CacheManager.Core" />
+    <PackageReference Include="Newtonsoft.Json" />
   </ItemGroup>
 
   <ItemGroup>
