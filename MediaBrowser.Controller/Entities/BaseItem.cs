@@ -1286,7 +1286,7 @@ namespace MediaBrowser.Controller.Entities
 
                     if (await LibraryManager.RebuildImages(this).ConfigureAwait(false))
                     {
-                        requiresSave = true;
+                        ItemRepository.SaveImages(this);
                     } // ensure all image properties are refreshed. The item gets updated later down the callstack.
                 }
                 catch (Exception ex)
