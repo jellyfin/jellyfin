@@ -14,7 +14,7 @@
     <PackageVersion Include="BlurHashSharp" Version="1.4.0-pre.1" />
     <PackageVersion Include="CacheManager.Core" Version="2.0.0" />
     <PackageVersion Include="CacheManager.Microsoft.Extensions.Caching.Memory" Version="2.0.0" />
-    <PackageVersion Include="CacheManager.Serialization.Json" Version="2.0.0" />
+    <PackageVersion Include="CacheManager.Serialization.Bond" Version="2.0.0" />
     <PackageVersion Include="CommandLineParser" Version="2.9.1" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
     <PackageVersion Include="Diacritics" Version="3.3.29" />

@@ -34,7 +34,7 @@
   <ItemGroup>
     <PackageReference Include="CacheManager.Core" />
     <PackageReference Include="CacheManager.Microsoft.Extensions.Caching.Memory" />
-    <PackageReference Include="CacheManager.Serialization.Json" />
+    <PackageReference Include="CacheManager.Serialization.Bond" />
     <PackageReference Include="EFCoreSecondLevelCacheInterceptor.CacheManager.Core" />
   </ItemGroup>
 

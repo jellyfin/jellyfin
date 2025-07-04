@@ -88,7 +88,7 @@ public static class ServiceCollectionExtensions
 
         serviceCollection.AddSingleton(typeof(ICacheManager<>), typeof(BaseCacheManager<>));
         serviceCollection.AddSingleton(new CacheConfigurationBuilder()
-                                        .WithJsonSerializer()
+                                        .WithBondCompactBinarySerializer()
                                         .WithMicrosoftMemoryCacheHandle(instanceName: "MemoryCache")
                                         .Build());
 
