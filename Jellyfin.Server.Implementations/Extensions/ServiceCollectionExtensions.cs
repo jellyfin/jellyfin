@@ -159,7 +159,6 @@ public static class ServiceCollectionExtensions
             opt.AddInterceptors(serviceProvider.GetRequiredService<JellyfinSecondLevelCacheInterceptor>());
             var lockingBehavior = serviceProvider.GetRequiredService<IEntityFrameworkCoreLockingBehavior>();
             lockingBehavior.Initialise(opt);
-            opt.AddInterceptors(serviceProvider.GetRequiredService<SecondLevelCacheInterceptor>());
         });
 
         return serviceCollection;
