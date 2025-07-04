@@ -32,14 +32,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CacheManager.Core" />
-    <PackageReference Include="CacheManager.Microsoft.Extensions.Caching.Memory" />
-    <PackageReference Include="CacheManager.Serialization.Bond" />
-    <PackageReference Include="EFCoreSecondLevelCacheInterceptor.CacheManager.Core" />
-    <PackageReference Include="Newtonsoft.Json" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Jellyfin.Data\Jellyfin.Data.csproj" />
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
