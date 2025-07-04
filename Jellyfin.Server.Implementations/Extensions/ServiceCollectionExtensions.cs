@@ -80,14 +80,16 @@ public static class ServiceCollectionExtensions
         IServerConfigurationManager configurationManager,
         IConfiguration configuration)
     {
+        serviceCollection.AddSingleton<IEFCacheServiceProvider>(c => new EFCacheProvider(
+            c.GetRequiredService<IEFDebugLogger>(),
+            configurationManager.Configuration.CacheSize));
+        serviceCollection.AddSingleton<JellyfinSecondLevelCacheInterceptor>();
         serviceCollection.AddEFSecondLevelCache(options =>
         {
-            options.UseMemoryCacheProvider();
+            options.UseCustomCacheProvider<EFCacheProvider>();
             options.ConfigureLogging(true);
-            options.UseCacheKeyPrefix("EF_");
             options.CacheAllQueries(CacheExpirationMode.Sliding, TimeSpan.FromMinutes(5));
         });
-        serviceCollection.AddSingleton<JellyfinSecondLevelCacheInterceptor>();
 
         var efCoreConfiguration = configurationManager.GetConfiguration<DatabaseConfigurationOptions>("database");
         JellyfinDbProviderFactory? providerFactory = null;
@@ -134,6 +136,8 @@ public static class ServiceCollectionExtensions
 
         serviceCollection.AddSingleton(providerFactory!);
 
+        serviceCollection.AddSingleton<IEntityFrameworkCoreLockingBehavior, NoLockBehavior>();
+        /*
         switch (efCoreConfiguration.LockingBehavior)
         {
             case DatabaseLockingBehaviorTypes.NoLock:
@@ -146,6 +150,7 @@ public static class ServiceCollectionExtensions
                 serviceCollection.AddSingleton<IEntityFrameworkCoreLockingBehavior, OptimisticLockBehavior>();
                 break;
         }
+        */
 
         serviceCollection.AddPooledDbContextFactory<JellyfinDbContext>((serviceProvider, opt) =>
         {
