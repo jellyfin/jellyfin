@@ -192,7 +192,20 @@ namespace MediaBrowser.Providers.MediaInfo
             if (audio.SupportsPeople && !audio.LockedFields.Contains(MetadataField.Cast))
             {
                 var people = new List<PersonInfo>();
-                var albumArtists = string.IsNullOrEmpty(trackAlbumArtist) ? [] : trackAlbumArtist.Split(InternalValueSeparator);
+                string[]? albumArtists = null;
+                if (libraryOptions.PreferNonstandardArtistsTag)
+                {
+                    TryGetSanitizedAdditionalFields(track, "ALBUMARTISTS", out var albumArtistsTagString);
+                    if (albumArtistsTagString is not null)
+                    {
+                        albumArtists = albumArtistsTagString.Split(InternalValueSeparator);
+                    }
+                }
+
+                if (albumArtists is null || albumArtists.Length == 0)
+                {
+                    albumArtists = string.IsNullOrEmpty(trackAlbumArtist) ? [] : trackAlbumArtist.Split(InternalValueSeparator);
+                }
 
                 if (libraryOptions.UseCustomTagDelimiters)
                 {
