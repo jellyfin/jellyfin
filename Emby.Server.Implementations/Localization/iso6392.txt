@@ -484,6 +484,7 @@ zgh|||Standard Moroccan Tamazight|amazighe standard marocain
 zha||za|Zhuang; Chuang|zhuang; chuang
 zho|chi|zh|Chinese|chinois
 zho|chi|ze|Chinese; Bilingual|chinois
+zho|chi|zh-cn|Chinese; Simplified|chinois
 zho|chi|zh-tw|Chinese; Traditional|chinois
 zho|chi|zh-hk|Chinese; Hong Kong|chinois
 znd|||Zande languages|zandé, langues
