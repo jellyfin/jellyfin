@@ -3084,6 +3084,11 @@ namespace Emby.Server.Implementations.Library
 
             var rootFolderPath = _configurationManager.ApplicationPaths.DefaultUserViewsPath;
             var virtualFolderPath = Path.Combine(rootFolderPath, virtualFolderName);
+            var libraryOptions = CollectionFolder.GetLibraryOptions(virtualFolderPath);
+            if (Array.Find(libraryOptions.PathInfos, i => string.Equals(i.Path, path, StringComparison.Ordinal)) is not null)
+            {
+                return;
+            }
 
             var shortcutFilename = Path.GetFileNameWithoutExtension(path);
 
@@ -3101,8 +3106,6 @@ namespace Emby.Server.Implementations.Library
 
             if (saveLibraryOptions)
             {
-                var libraryOptions = CollectionFolder.GetLibraryOptions(virtualFolderPath);
-
                 libraryOptions.PathInfos = [.. libraryOptions.PathInfos, pathInfo];
 
                 SyncLibraryOptionsToLocations(virtualFolderPath, libraryOptions);
